@@ -1327,6 +1327,7 @@ def test_second_level_contrast_computation_errors(rng, n_subjects):
     ):
         model.compute_contrast(None)
 
+
 @pytest.mark.timeout(300)
 def test_second_level_t_contrast_length_errors(n_subjects):
     func_img, mask = fake_fmri_data()
@@ -1343,6 +1344,7 @@ def test_second_level_t_contrast_length_errors(n_subjects):
         match=(r"t contrasts should be of length P=1, but it has length 2."),
     ):
         model.compute_contrast(second_level_contrast=[1, 2])
+
 
 @pytest.mark.timeout(300)
 @pytest.mark.slow
