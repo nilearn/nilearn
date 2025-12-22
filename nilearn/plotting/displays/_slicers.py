@@ -1131,7 +1131,8 @@ class _ThreeDSlicer(BaseSlicer):
                   value is used to threshold the image: values below the
                   threshold (in absolute value) are plotted as transparent.
 
-        cut_coords: 3 :obj:`tuple` of :obj:`float` or :obj:`int`
+        cut_coords: 3 :obj:`tuple` of :obj:`float` or :obj:`int`, or `None`,
+                    default=None
             The world coordinates ``(x, y, z)`` of the point where the cut is
             performed.
 
@@ -1173,7 +1174,7 @@ class _ThreeDSlicer(BaseSlicer):
 
         Parameters
         ----------
-        cut_coords: 3 :obj:`tuple` of :obj:`float` or :obj:`int`
+        cut_coords: 3 :obj:`tuple` of :obj:`float` or :obj:`int`, or `None`
             The world coordinates ``(x, y, z)`` of the point where the cut is
             performed.
 
@@ -1383,7 +1384,8 @@ class OrthoSlicer(_ThreeDSlicer):
 
         Parameters
         ----------
-        cut_coords : 3 :obj:`tuple` of :obj:`float` or :obj:`int`, optional
+        cut_coords : 3 :obj:`tuple` of :obj:`float` or :obj:`int`, or None,
+                     default=None
             The position of the cross to draw in world coordinates
             ``(x, y, z)``.
             If ``None`` is passed, the ``OrthoSlicer``'s cut coordinates are
@@ -1703,7 +1705,8 @@ class TiledSlicer(_ThreeDSlicer):
 
         Parameters
         ----------
-        cut_coords : 3 :obj:`tuple` of :obj:`float` or :obj:`int`, optional
+        cut_coords : 3 :obj:`tuple` of :obj:`float` or :obj:`int`, or None,
+                     default=None
             The position of the cross to draw in world coordinates
             ``(x, y, z)``.
             If ``None`` is passed, the ``TiledSlicer``'s cut coordinates are
@@ -1793,13 +1796,16 @@ class BaseStackedSlicer(BaseSlicer):
             If ``None``, the activation threshold is computed using the
             80% percentile of the absolute value of the map.
 
-        %(cut_coords)s
+        cut_coords : :obj:`int`, :obj:`list` or 1D :class:`~numpy.ndarray` of
+                     :obj:`float` or :obj:`int` or None, default=None
+            The number of cuts to perform or the list of cut positions in the
+             direction of this slicer.
+            If ``None`` is given, the cuts are calculated automatically.
 
         Returns
         -------
-        cut_coords : :obj:`list` of :obj:`int`
-            xyz world coordinates of cuts corresponding to the direction of
-        this slicer.
+        cut_coords : :obj:`list` of :obj:`float` or :obj:`int`
+            The list of cut positions in the direction of this slicer.
 
         """
         # checks if cut_coords is compatible with this slicer
@@ -1823,24 +1829,25 @@ class BaseStackedSlicer(BaseSlicer):
 
     @classmethod
     def _sanitize_cut_coords(cls, cut_coords):
-        """Check if the specified ``cut_coords`` is one of :obj:`tuple`,
-        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
-        the number of cuts of this slicer or a :class:`~number.Number` or
-        `None`.
+        """Check if the specified ``cut_coords`` is one of :obj:`int`,
+        :obj:`list` or 1D :class:`~numpy.ndarray` or `None`.
 
-        If `None` is specified return the default value 7.
+        If `None` is specified, return the default value 7.
 
         Parameters
         ----------
-        %(cut_coords)s
+        cut_coords : :obj:`int`, :obj:`list` or 1D :class:`~numpy.ndarray` of
+                     :obj:`float` or :obj:`int` or None
+            The number of cuts to perform or the list of cut positions in the
+             direction of this slicer.
+            If ``None`` is given, 7 cut coordinates are calculated
+            automatically.
 
         Raises
         ------
         ValueError
-            If the specified ``cut_coords`` is not one of :obj:`tuple`,
-        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
-        the number of cuts of this slicer or a :class:`~number.Number` or
-        `None`.
+            If the specified ``cut_coords`` is not one of :obj:`int`,
+        :obj:`list` or 1D :class:`~numpy.ndarray` or `None`
 
         """
         if cut_coords is None:
@@ -1879,9 +1886,9 @@ class BaseStackedSlicer(BaseSlicer):
             image bounds to check if the specified cut_coords is inside these
         bounds
 
-        cut_coords : :obj:`tuple`, :obj:`list` of :obj:`float`
-            xyz world coordinates of cuts corresponding to the direction of
-            this slicer.cut_coords to check
+        cut_coords : :obj:`list` or 1D :class:`~numpy.ndarray` of :obj:`float`
+                     or :obj:`int`
+            The list of cut positions in the direction of this slicer
 
         Return
         ------
@@ -1992,9 +1999,12 @@ class BaseStackedSlicer(BaseSlicer):
 
         Parameters
         ----------
-        cut_coords : 3-:obj:`tuple` of :obj:`float`, optional
-            The position of the cross to draw. If ``None`` is passed, the
-            ``OrthoSlicer``'s cut coordinates are used.
+        cut_coords : :obj:`list` or 1D :class:`~numpy.ndarray` of :obj:`float`
+                     or :obj:`int`, or None, default=None
+            The list of positions of the crosses to draw in the direction of
+            this slicer.
+            If ``None`` is passed, the this slicer's cut coordinates are
+            used.
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
@@ -2022,7 +2032,7 @@ class XSlicer(BaseStackedSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`list` of :obj:`float`
+    cut_coords : :obj:`list` of :obj:`float` or :obj:`int`
         The list of cut positions in direction x.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
@@ -2061,7 +2071,7 @@ class YSlicer(BaseStackedSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`list` of :obj:`float`
+    cut_coords : :obj:`list` of :obj:`float` or :obj:`int`
         The list of cut positions in direction y.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
@@ -2100,7 +2110,7 @@ class ZSlicer(BaseStackedSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`list` of :obj:`float`
+    cut_coords : :obj:`list` of :obj:`float` or :obj:`int`
         The list of cut positions in direction z.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
@@ -2139,8 +2149,8 @@ class XZSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords : 2D :obj:`tuple` of :obj:`float`
-        World coordinates (x, z) of the point where the cut is performed.
+    cut_coords : 2 :obj:`tuple` of :obj:`float` or :obj:`int`
+        The world coordinates (x, z) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'z' here).
@@ -2177,8 +2187,8 @@ class YXSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords : 2D :obj:`tuple` of :obj:`float`
-        World coordinates (x, y) of the point where the cut is performed.
+    cut_coords : 2 :obj:`tuple` of :obj:`float` or :obj:`int`
+        The world coordinates (x, y) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'y' here).
@@ -2215,8 +2225,8 @@ class YZSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords : 2D :obj:`tuple` of :obj:`float`
-        World coordinates (y, z) of the point where the cut is performed.
+    cut_coords : 2 :obj:`tuple` of :obj:`float` or :obj:`int`
+        The world coordinates (y, z) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('y' and 'z' here).
@@ -2280,26 +2290,29 @@ class MosaicSlicer(BaseSlicer):
 
     @classmethod
     def _sanitize_cut_coords(cls, cut_coords):
-        """Check if the specified ``cut_coords`` is one of :obj:`tuple`,
-        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
-        the number of cuts of this slicer, or a :class:`~number.Number` or
-        None.
-
-        If `None` is specified return the default value [7, 7, 7].
-        If a :class:`number.Number` is specified return a list of 3 elements
-        with the specified number.
+        """Check if the specified ``cut_coords`` is one of :obj:`int`,
+        :obj:`list` or :class:`~numpy.ndarray` of :obj:`int` where number of
+        elements equals to the number of cuts of this slicer or :obj:`dict`
+        <:obj:`str`: 1D :class:`~numpy.ndarray`> or `None`.
 
         Parameters
         ----------
-        %(cut_coords)s
+        cut_coords : :obj:`int`, :obj:`list` or :class:`~numpy.ndarray` of
+                     :obj:`int`, :obj:`dict` <:obj:`str`: 1D
+                     :class:`~numpy.ndarray`> or `None`
+            The world coordinates of the point where the cut is performed.
+
+        If `None` is specified, return the default value [7, 7, 7].
+        If an :obj:`int` is specified, return a list of 3 elements with the
+        specified number.
 
         Raises
         ------
         ValueError
-            If the specified ``cut_coords`` is not one of :obj:`tuple`,
-        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
-        the number of cuts of this slicer, or a :class:`~number.Number` or
-        None.
+            If the specified ``cut_coords`` is not one of :obj:`int`,
+        :obj:`list` or :class:`~numpy.ndarray` of :obj:`int` where number of
+        elements equals to the number of cuts of this slicer, :obj:`dict`
+        <:obj:`str`: 1D :class:`~numpy.ndarray`> or `None`.
 
         """
         if cut_coords is None:
@@ -2338,17 +2351,20 @@ class MosaicSlicer(BaseSlicer):
             the activation threshold is computed using the 80% percentile of
             the absolute value of the map.
 
-        cut_coords : :obj:`list` / :obj:`tuple` of 3 :obj:`int`,\
-                     :obj:`float`, optional
-            xyz world coordinates of cuts. If ``cut_coords``
-            are not provided, 7 coordinates of cuts are automatically
-            calculated.
+        cut_coords : :obj:`int`, :obj:`list` or :class:`~numpy.ndarray` of
+                     :obj:`int`,
+                     :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or
+                     `None`, default=None
+            xyz world coordinates of cuts.
+
+            If ``cut_coords`` are not provided, 7 coordinates of cuts are
+            automatically calculated.
             If an integer is provided, specified number of cuts are calculated
             for each direction.
 
         Returns
         -------
-        cut_coords : :obj:`dict`
+        cut_coords : :obj:`dict`  <:obj:`str`: 1D :class:`~numpy.ndarray`>
             xyz world coordinates of cuts in a direction.
             Each key denotes the direction.
 
@@ -2502,9 +2518,11 @@ class MosaicSlicer(BaseSlicer):
 
         Parameters
         ----------
-        cut_coords : 3-:obj:`tuple` of :obj:`float`, optional
-            The position of the cross to draw. If ``None`` is passed, the
-            ``OrthoSlicer``'s cut coordinates are used.
+        cut_coords : :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or
+                     `None`, default=None
+            The positions of the crosses to draw.
+            If ``None`` is passed, the ``MosaicSlicer``'s cut coordinates are
+            used.
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
