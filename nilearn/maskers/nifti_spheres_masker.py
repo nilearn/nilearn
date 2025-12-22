@@ -665,6 +665,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         params = get_params(NiftiSpheresMasker, self)
         params["clean_kwargs"] = self.clean_args_
 
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+
         signals, _ = self._cache(
             filter_and_extract, ignore=["verbose", "memory", "memory_level"]
         )(
@@ -681,13 +683,18 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             confounds=confounds,
             sample_mask=sample_mask,
             dtype=self.dtype,
+            sklearn_output_config=sklearn_output_config,
             # Caching
             memory=self.memory_,
             memory_level=self.memory_level,
             # kwargs
             verbose=self.verbose,
         )
-        return np.atleast_1d(signals)
+
+        if self.n_elements_ == 1:
+            return signals
+        else:
+            return np.atleast_1d(signals)
 
     @fill_doc
     def inverse_transform(self, region_signals):

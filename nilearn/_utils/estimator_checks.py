@@ -2578,7 +2578,7 @@ def check_masker_with_confounds(estimator):
     length = 20
     if accept_niimg_input(estimator):
         input_img = Nifti1Image(
-            _rng().random((4, 5, 6, length)), affine=_affine_eye()
+            _rng().random((*_shape_3d_default(), length)), affine=_affine_eye()
         )
     else:
         input_img = _make_surface_img(length)
