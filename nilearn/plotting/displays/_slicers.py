@@ -103,6 +103,15 @@ class BaseSlicer:
         """Act as placeholder and is not implemented in the base class \
         and has to be implemented in derived classes.
 
+        Parameters
+        ----------
+        img : 3D Nifti1Image
+            The brain map.
+
+        %(threshold)s
+
+        %(cut_coords)s
+
         """
         # Implement this as a staticmethod or a classmethod when
         # subclassing
