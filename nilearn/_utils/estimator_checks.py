@@ -78,7 +78,6 @@ from nilearn._utils.tags import (
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
     _affine_eye,
-    _affine_mni,
     _drop_surf_img_part,
     _flip_surf_img,
     _img_3d_mni,
@@ -105,8 +104,8 @@ from nilearn.decoding.space_net import BaseSpaceNet, SpaceNetClassifier
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.decomposition.tests.conftest import (
-    _decomposition_img,
-    _decomposition_mesh,
+    _canica_components_volume,
+    _make_volume_data_from_components,
 )
 from nilearn.exceptions import DimensionError, MeshDimensionError
 from nilearn.glm.second_level import SecondLevelModel
@@ -765,11 +764,12 @@ def generate_data_to_fit(estimator: BaseEstimator):
         return imgs, None
 
     elif isinstance(estimator, _BaseDecomposition):
-        decomp_input = _decomposition_img(
-            data_type="surface",
-            rng=_rng(),
-            mesh=_decomposition_mesh(),
-            with_activation=True,
+        decomp_input = _make_volume_data_from_components(
+            _canica_components_volume(_shape_3d_large()),
+            _affine_eye(),
+            _shape_3d_large(),
+            _rng(),
+            n_subjects=3,
         )
         return decomp_input, None
 
@@ -2289,7 +2289,7 @@ def check_masker_mask_img_from_imgs(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
         input_img = Nifti1Image(
-            _rng().random(_shape_3d_large()), _affine_mni()
+            _rng().random(_shape_3d_large()), _affine_eye()
         )
 
     else:
