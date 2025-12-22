@@ -41,7 +41,7 @@ class BaseSlicer:
 
     Attributes
     ----------
-    cut_coords : the type of allowed will depend on the each child class
+    %(cut_coords)s
 
     frame_axes : :class:`matplotlib.axes.Axes`, optional
         The matplotlib axes that will be subdivided in 3.
