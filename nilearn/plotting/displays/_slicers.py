@@ -1113,8 +1113,8 @@ class _ThreeDSlicer(BaseSlicer):
     _cut_displayed: ClassVar[str] = "yxz"
     _axes_class = CutAxes
 
-    @classmethod
     @fill_doc  # the fill_doc decorator must be last applied
+    @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Instantiate the slicer and find cut coordinates.
 
@@ -1131,7 +1131,9 @@ class _ThreeDSlicer(BaseSlicer):
                   value is used to threshold the image: values below the
                   threshold (in absolute value) are plotted as transparent.
 
-        %(cut_coords)s
+        cut_coords: 3 :obj:`tuple` of :obj:`float` or :obj:`int`
+            The world coordinates ``(x, y, z)`` of the point where the cut is
+            performed.
 
         Raises
         ------
@@ -1171,7 +1173,9 @@ class _ThreeDSlicer(BaseSlicer):
 
         Parameters
         ----------
-        %(cut_coords)s
+        cut_coords: 3 :obj:`tuple` of :obj:`float` or :obj:`int`
+            The world coordinates ``(x, y, z)`` of the point where the cut is
+            performed.
 
         Raises
         ------
@@ -1208,7 +1212,9 @@ class _ThreeDSlicer(BaseSlicer):
             image bounds to check if the specified `cut_coords` is inside these
         bounds
 
-        %(cut_coords)s
+        cut_coords: 3 :obj:`tuple` of :obj:`float` or :obj:`int`
+            The world coordinates ``(x, y, z)`` of the point where the cut is
+            performed.
 
         Return
         ------
@@ -1250,8 +1256,9 @@ class OrthoSlicer(_ThreeDSlicer):
 
     Attributes
     ----------
-    cut_coords : 3D :obj:`tuple`  of :obj:`float`
-        World coordinates (x, y, z) of the point where the cut is performed.
+    cut_coords: 3 :obj:`tuple` of :obj:`float` or :obj:`int`
+        The world coordinates ``(x, y, z)`` of the point where the cut is
+        performed.
 
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot each view.
@@ -1376,9 +1383,11 @@ class OrthoSlicer(_ThreeDSlicer):
 
         Parameters
         ----------
-        cut_coords : 3-:obj:`tuple` of :obj:`float`, optional
-            The position of the cross to draw. If ``None`` is passed, the
-            ``OrthoSlicer``'s cut coordinates are used.
+        cut_coords : 3 :obj:`tuple` of :obj:`float` or :obj:`int`, optional
+            The position of the cross to draw in world coordinates
+            ``(x, y, z)``.
+            If ``None`` is passed, the ``OrthoSlicer``'s cut coordinates are
+            used.
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
@@ -1441,8 +1450,9 @@ class TiledSlicer(_ThreeDSlicer):
 
     Attributes
     ----------
-    cut_coords : 3D :obj:`tuple` of :obj:`float`
-        World coordinates (x, y, z) of the point where the cut is performed.
+    cut_coords: 3 :obj:`tuple` of :obj:`float` or :obj:`int`
+        The world coordinates ``(x, y, z)`` of the point where the cut is
+        performed.
 
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot each view.
@@ -1693,9 +1703,11 @@ class TiledSlicer(_ThreeDSlicer):
 
         Parameters
         ----------
-        cut_coords : 3-:obj:`tuple` of :obj:`float`, optional
-            The position of the cross to draw. If ``None`` is passed, the
-            ``OrthoSlicer``'s cut coordinates are used.
+        cut_coords : 3 :obj:`tuple` of :obj:`float` or :obj:`int`, optional
+            The position of the cross to draw in world coordinates
+            ``(x, y, z)``.
+            If ``None`` is passed, the ``TiledSlicer``'s cut coordinates are
+            used.
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
