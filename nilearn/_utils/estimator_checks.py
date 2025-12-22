@@ -769,8 +769,8 @@ def generate_data_to_fit(estimator: BaseEstimator):
             _affine_eye(),
             _shape_3d_large(),
             _rng(),
-            n_subjects=3,
-        )
+            n_subjects=1,
+        )[0]
         return decomp_input, None
 
     elif not (
