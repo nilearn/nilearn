@@ -286,6 +286,7 @@ EXPECTED_COLUMNS = [
 ]
 
 
+@pytest.mark.slow
 def test_nifti_labels_masker_report(
     img_3d_rand_eye,
     img_mask_eye,
@@ -392,6 +393,7 @@ def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
     generate_and_check_masker_report(masker)
 
 
+@pytest.mark.slow
 def test_nifti_masker_overlaid_report(
     matplotlib_pyplot,  # noqa: ARG001
     img_fmri,
