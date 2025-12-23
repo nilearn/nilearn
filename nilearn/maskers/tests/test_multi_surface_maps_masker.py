@@ -10,7 +10,10 @@ from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _surf_maps_img
 from nilearn.maskers import MultiSurfaceMapsMasker
 
-ESTIMATORS_TO_CHECK = [MultiSurfaceMapsMasker(_surf_maps_img())]
+ESTIMATORS_TO_CHECK = [
+    MultiSurfaceMapsMasker(_surf_maps_img()),
+    MultiSurfaceMapsMasker(_surf_maps_img(n_regions=1)),
+]
 
 if SKLEARN_LT_1_6:
 
