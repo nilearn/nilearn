@@ -1544,7 +1544,7 @@ def test_regressor_vs_sklearn(
 
 
 def test_screening_priority_logic():
-    # Test that check_feature_screening prefers percentile over n_voxels
+    """Test that check_feature_screening prefers percentile over n_voxels."""
 
     # 1. Create a simple dummy mask
     mask = nib.Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
