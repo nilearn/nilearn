@@ -13,6 +13,12 @@ Notes
 -----
 Fsaverage standard surface as distributed with Freesurfer (:footcite:t:`Fischl1999`).
 
+Source
+------
+Source files for this dataset can be found at:
+
+- https://osf.io/svf8k/
+
 References
 ----------
 .. footbibliography::
