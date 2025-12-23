@@ -211,7 +211,7 @@ def canica_data(
     affine_eye,
     decomposition_mesh,
     data_type: str,
-    n_subjects=N_SUBJECTS,
+    n_subjects: int = N_SUBJECTS,
 ) -> list[Nifti1Image] | list[SurfaceImage]:
     """Create a "multi-subject" dataset."""
     if data_type == "nifti":
@@ -303,7 +303,7 @@ def _make_volume_data_from_components(
     affine,
     shape,
     rng,
-    n_subjects,
+    n_subjects: int,
 ) -> list[Nifti1Image]:
     """Create a "multi-subject" dataset of volume data."""
     background = -0.01 * rng.normal(size=shape) - 2
@@ -350,12 +350,12 @@ def canica_components(rng, _make_canica_components) -> np.ndarray:
 
 
 @pytest.fixture
-def canica_data_single_img(canica_data) -> Nifti1Image:
+def canica_data_single_img(canica_data) -> Nifti1Image | SurfaceImage:
     """Create a canonical ICA data for testing purposes."""
     return canica_data[0]
 
 
-def check_decomposition_estimator(estimator, data_type):
+def check_decomposition_estimator(estimator, data_type) -> None:
     """Run several standard checks on decomposition estimators."""
     assert estimator.mask_img_ == estimator.masker_.mask_img_
     assert estimator.components_.shape[0] == estimator.n_components
