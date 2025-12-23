@@ -81,6 +81,7 @@ def test_plot_connectome_to_file(
     assert filename.stat().st_size > 0
 
 
+@pytest.mark.thread_unsafe
 def test_plot_connectome_with_too_high_edge_threshold(adjacency, node_coords):
     """Smoke-test where there is no edge to draw, \
        e.g. when edge_threshold is too high.

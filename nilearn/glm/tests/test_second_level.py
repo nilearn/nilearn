@@ -142,6 +142,7 @@ def test_non_parametric_inference_with_flm_objects(shape_3d_default):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_process_second_level_input_as_dataframe(input_df):
     """Unit tests for function _process_second_level_input_as_dataframe()."""
     sample_map, subjects_label = _process_second_level_input_as_dataframe(
@@ -1649,6 +1650,7 @@ def test_second_level_input_as_flm_of_surface_image(
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
+@pytest.mark.thread_unsafe
 def test_second_level_surface_image_contrast_computation(
     surf_img_1d, n_subjects
 ):
