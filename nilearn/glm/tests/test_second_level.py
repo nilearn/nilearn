@@ -989,6 +989,7 @@ def test_fmri_inputs_for_non_parametric_inference_errors(
         non_parametric_inference("random string object")
 
 
+@pytest.mark.slow
 def test_second_level_glm_computation(n_subjects):
     func_img, mask = fake_fmri_data()
 

@@ -57,11 +57,11 @@ def _get_mask_strategy(strategy: str):
     elif strategy == "epi":
         return compute_epi_mask
     elif strategy == "whole-brain-template":
-        return _make_brain_mask_func("whole-brain")
+        return make_brain_mask_func("whole-brain")
     elif strategy == "gm-template":
-        return _make_brain_mask_func("gm")
+        return make_brain_mask_func("gm")
     elif strategy == "wm-template":
-        return _make_brain_mask_func("wm")
+        return make_brain_mask_func("wm")
     else:
         raise ValueError(
             f"Unknown value of mask_strategy '{strategy}'. "
@@ -72,7 +72,7 @@ def _get_mask_strategy(strategy: str):
         )
 
 
-def _make_brain_mask_func(mask_type: str, multi: bool = False):
+def make_brain_mask_func(mask_type: str, multi: bool = False):
     """Generate a compute_brain_mask function adapted for each mask.
 
     This is done instead of using functools.partial because
