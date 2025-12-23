@@ -723,7 +723,7 @@ class ResultFilter:
 
     Parameters
     ----------
-    query_terms : :obj:`dict`, optional
+    query_terms : :obj:`dict`, default=None
         A ``metadata`` dictionary will be blocked by the filter if it
         does not respect ``metadata[key] == value`` for all
         ``key``, ``value`` pairs in `query_terms`. If ``None``, the
