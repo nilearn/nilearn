@@ -1763,10 +1763,11 @@ def concat_imgs(
     """
     check_params(locals())
 
-    if (
-        isinstance(niimgs, (tuple, list))
-        and len(niimgs) > 0
-        and all(isinstance(x, SurfaceImage) for x in niimgs)
+    if isinstance(niimgs, (tuple, list)) and len(niimgs) == 0:
+        raise TypeError("Cannot concatenate empty objects.")
+
+    if isinstance(niimgs, (tuple, list)) and all(
+        isinstance(x, SurfaceImage) for x in niimgs
     ):
         if len(niimgs) == 1:
             return niimgs[0]
