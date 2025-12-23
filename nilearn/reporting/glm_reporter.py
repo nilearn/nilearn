@@ -3,13 +3,11 @@
 
 import warnings
 
-from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
 from nilearn.reporting.html_report import HTMLReport
 
 
-@fill_doc
 def make_glm_report(
     model,
     contrasts=None,
