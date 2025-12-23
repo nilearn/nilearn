@@ -2081,6 +2081,10 @@ def check_decoder_with_arrays(estimator_orig):
 
 def check_decoder_screening_n_voxels(estimator_orig):
     """Check that only n features are selected."""
+    if isinstance(estimator_orig, SearchLight):
+        # not applicable to searchlight
+        return
+
     estimator = clone(estimator_orig)
     estimator.screening_n_voxels = 100
     estimator = fit_estimator(estimator)
