@@ -469,6 +469,7 @@ def test_plot_surf_contours_legend(
     assert fig.legends is not None
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contours_colors(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
