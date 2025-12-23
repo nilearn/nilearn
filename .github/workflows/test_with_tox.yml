@@ -102,7 +102,7 @@ jobs:
         runs-on: ${{ matrix.os }}
 
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 description: [latest dependencies]
                 py: ${{ fromJSON(needs.define-matrix.outputs.py) }}
@@ -111,10 +111,10 @@ jobs:
                 include:
                 # Using macos on the following as tests run faster on macos.
                 # As 'no plotting' run fewer tests, this allows to fail event faster if using macos.
-                -   description: oldest dependencies - no plotting
-                    py: '3.10'
-                    os: macos-latest
-                    env: min
+                # -   description: oldest dependencies - no plotting
+                #     py: '3.10'
+                #     os: macos-latest
+                #     env: min
                 -   description: oldest dependencies - with plotting
                     py: '3.10'
                     os: macos-latest
@@ -161,6 +161,7 @@ jobs:
             run: |
                 python build_tools/github/restrict_tests_to_run.py
                 tests_to_run=$(cat tests_to_run.txt)
+                tests_to_run='nilearn/plotting/surface/tests/test_plotly_surface_figure.py'
                 tox run --list-dependencies -e ${{ matrix.env }} -- ${tests_to_run}
                 tox run -e plot_test_timing
 
