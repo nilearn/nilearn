@@ -614,6 +614,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
             yield (clone(estimator), check_decoder_compatibility_mask_image)
             yield (clone(estimator), check_decoder_with_surface_data)
             yield (clone(estimator), check_decoder_with_arrays)
+            yield (clone(estimator), check_decoder_screening_n_voxels)
             if is_regressor(estimator):
                 yield (
                     clone(estimator),
@@ -2076,6 +2077,16 @@ def check_decoder_with_arrays(estimator_orig):
             result_2 = getattr(estimator, method)(X_as_array)
 
         assert_array_equal(result_1, result_2)
+
+
+def check_decoder_screening_n_voxels(estimator_orig):
+    """Check that only n features are selected."""
+    estimator = clone(estimator_orig)
+    estimator.screening_n_voxels = 100
+    estimator = fit_estimator(estimator)
+
+    n_elements_ = estimator.n_elements_
+    assert n_elements_ == 100
 
 
 # ------------------ MASKER CHECKS ------------------
