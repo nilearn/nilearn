@@ -114,7 +114,7 @@ def sanitize_generate_report_input(
     return threshold, cut_coords, first_level_contrast, warning_messages
 
 
-def _turn_into_full_path(bunch, dir: Path) -> str | Bunch:
+def turn_into_full_path(bunch, dir: Path) -> str | Bunch:
     """Recursively turns str values of a dict into path.
 
     Used to turn relative paths into full paths.
@@ -124,13 +124,13 @@ def _turn_into_full_path(bunch, dir: Path) -> str | Bunch:
     tmp = Bunch()
     for k in bunch:
         if isinstance(bunch[k], (dict, str, Bunch)):
-            tmp[k] = _turn_into_full_path(bunch[k], dir)
+            tmp[k] = turn_into_full_path(bunch[k], dir)
         else:
             tmp[k] = bunch[k]
     return tmp
 
 
-def _glm_model_attributes_to_dataframe(model):
+def glm_model_attributes_to_dataframe(model):
     """Return a pandas dataframe with pertinent model attributes & information.
 
     Parameters
@@ -168,7 +168,7 @@ def _glm_model_attributes_to_dataframe(model):
     return model_attributes
 
 
-def _load_bg_img(bg_img, is_volume_glm):
+def load_bg_img(bg_img, is_volume_glm):
     if bg_img == "MNI152TEMPLATE":
         try:
             from nilearn.plotting.image.utils import (  # type: ignore[assignment]
@@ -185,7 +185,7 @@ def _load_bg_img(bg_img, is_volume_glm):
         )
 
 
-def _mask_to_plot(model, bg_img):
+def mask_to_plot(model, bg_img):
     """Plot a mask image and creates PNG code of it.
 
     Parameters
@@ -244,7 +244,7 @@ def _mask_to_plot(model, bg_img):
 
 
 @fill_doc
-def _make_stat_maps_contrast_clusters(
+def make_stat_maps_contrast_clusters(
     stat_img,
     threshold_orig,
     alpha,

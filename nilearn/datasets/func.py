@@ -2776,6 +2776,7 @@ def _download_spm_auditory_data(data_dir, verbose):
         return fetch_spm_auditory(data_dir=data_dir, data_name="")
 
 
+@fill_doc
 def fetch_spm_auditory(
     data_dir=None,
     data_name="spm_auditory",

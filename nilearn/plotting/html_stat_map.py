@@ -237,7 +237,7 @@ def _mask_stat_map(stat_map_img, threshold=None):
     return mask_img, stat_map_img, data, threshold
 
 
-def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
+def load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
     """Load and resample bg_img in an isotropic resolution, \
     with a positive diagonal affine matrix.
 
@@ -662,7 +662,7 @@ def view_img(
     )
 
     # Prepare the data for the cuts
-    bg_img, bg_min, bg_max, black_bg = _load_bg_img(
+    bg_img, bg_min, bg_max, black_bg = load_bg_img(
         stat_map_img, bg_img, black_bg, dim
     )
     stat_map_img, mask_img = _resample_stat_map(
