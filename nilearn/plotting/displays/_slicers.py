@@ -41,17 +41,15 @@ class BaseSlicer:
 
     Attributes
     ----------
-    %(cut_coords)s
+    cut_coords : the concrete type depends on the subclass
+        The world coordinates to be used by this slicer.
 
-    frame_axes : :class:`matplotlib.axes.Axes`, optional
+    axes : :class:`matplotlib.axes.Axes`
+
+    frame_axes : :class:`matplotlib.axes.Axes`
         The matplotlib axes that will be subdivided in 3.
 
-    %(black_bg)s
-        default=False
-
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    rect : 4 :obj:`tuple`
 
     """
 
@@ -67,6 +65,22 @@ class BaseSlicer:
         brain_color=(0.5, 0.5, 0.5),
         **kwargs,
     ):
+        """Initialize the slicer.
+
+        Parameters
+        ----------
+        %(cut_coords)s
+
+        axes : :class:`matplotlib.axes.Axes`, optional
+
+        %(black_bg)
+            default=False
+
+        brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+            The brain color to use as the background color (e.g., for
+            transparent colorbars).
+
+        """
         self.cut_coords = cut_coords
         if axes is None:
             axes = plt.axes((0.0, 0.0, 1.0, 1.0))
@@ -100,8 +114,8 @@ class BaseSlicer:
 
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
-        """Act as placeholder and is not implemented in the base class \
-        and has to be implemented in derived classes.
+        """Find world coordinates of cuts compatible with this slicer or
+        adjust the specified ``cut_coords`` depending on the specified ``img``.
 
         Parameters
         ----------
@@ -252,6 +266,12 @@ class BaseSlicer:
 
         %(black_bg)s
             default=False
+
+        leave_space : :obj:`bool`, default=False
+            If ``True``, leave space between the plots.
+
+        colorbar : :obj:`bool`, default=False
+            If ``True``, display a colorbar on the right of the plots.
 
         brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
             The brain color to use as the background color (e.g., for
@@ -414,12 +434,12 @@ class BaseSlicer:
                 value is used to threshold the image: values below the
                 threshold (in absolute value) are plotted as transparent.
 
+        colorbar : :obj:`bool`, default=False
+            If ``True``, display a colorbar on the right of the plots.
+
         cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
             Ex: use "%%i" to display as integers.
-
-        colorbar : :obj:`bool`, default=False
-            If ``True``, display a colorbar on the right of the plots.
 
         cbar_vmin : :obj:`float`, optional
             Minimal value for the colorbar. If None, the minimal value
@@ -495,7 +515,6 @@ class BaseSlicer:
 
         filled : :obj:`bool`, default=False
             If ``filled=True``, contours are displayed with color fillings.
-
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
@@ -923,7 +942,6 @@ class BaseSlicer:
             List of colors for each marker
             that can be string or matplotlib colors.
 
-
         marker_size : :obj:`float` or \
                     :obj:`list` of :obj:`float` of shape ``(n_markers,)``, \
                     default=30
@@ -1001,11 +1019,9 @@ class BaseSlicer:
             If ``True``, annotations indicating which side
             is left and which side is right are drawn.
 
-
         positions : :obj:`bool`, default=True
             If ``True``, annotations indicating the
             positions of the cuts are drawn.
-
 
         scalebar : :obj:`bool`, default=False
             If ``True``, cuts are annotated with a reference scale bar.
@@ -1013,13 +1029,11 @@ class BaseSlicer:
             the ``draw_scale_bar`` method on the axes in "axes" attribute
             of this object.
 
-
         size : :obj:`int`, default=12
             The size of the text used.
 
         scale_size : :obj:`int` or :obj:`float`, default=5.0
             The length of the scalebar, in units of ``scale_units``.
-
 
         scale_units : {'cm', 'mm'}, default='cm'
             The units for the ``scalebar``.
@@ -1042,7 +1056,6 @@ class BaseSlicer:
         decimals : :obj:`int`, default=0
             Number of decimal places on slice position annotation. If zero,
             the slice position is integer without decimal point.
-
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to matplotlib's text
