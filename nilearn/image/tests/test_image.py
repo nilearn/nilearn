@@ -1828,6 +1828,10 @@ def test_concat_niimgs_errors(affine_eye, shape_3d_default):
     ):
         concat_imgs([img5d, img5d])
 
+    # check error when an empty list is specified
+    with pytest.raises(TypeError, match="empty objects"):
+        concat_imgs([])
+
 
 def test_concat_niimgs(affine_eye, tmp_path):
     # create images different in affine and 3D/4D shape

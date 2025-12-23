@@ -183,6 +183,7 @@ def test_plot_with_nans(plot_func, img_3d_mni):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "plot_func", [plot_roi, plot_stat_map, plot_glass_brain]
 )
@@ -216,6 +217,7 @@ def test_plotting_functions_with_display_mode_tiled(plot_func, img_3d_mni):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.slow
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
 @pytest.mark.parametrize(
     "threshold, expected_ticks",

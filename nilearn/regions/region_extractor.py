@@ -2,6 +2,7 @@
 
 import collections.abc
 import numbers
+import warnings
 from copy import deepcopy
 
 import numpy as np
@@ -10,6 +11,7 @@ from scipy.stats import scoreatpercentile
 
 from nilearn import masking
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import (
@@ -257,6 +259,13 @@ def connected_regions(
         index_of_each_map.extend([index] * len(regions))
         all_regions_imgs.extend(regions)
 
+    if len(all_regions_imgs) == 0:
+        warnings.warn(
+            "No supra threshold regions was found",
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
+        return None, None
     regions_extracted_img = concat_imgs(all_regions_imgs)
 
     return regions_extracted_img, index_of_each_map
