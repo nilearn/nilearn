@@ -1659,14 +1659,8 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         down to this percentile. ReNA is typically efficient for
         cluster_percentile equal to 10.
 
-    screening_percentile : :obj:`int`, :obj:`float`, \
-        in closed interval [0, 100], \
-        default=20
-        The percentage of brain volume that will be kept with respect to a full
-        MNI template. In particular, if it is lower than 100, a univariate
-        feature selection based on the Anova F-value for the input data will be
-        performed. A float according to a percentile of the highest
-        scores.
+    %(screening_percentile)s
+
     screening_n_voxels : int, optional
         Number of voxels to select. If `None, ``screening_percentile` is used.
         If both are set, `screening_n_voxels` takes priority.
