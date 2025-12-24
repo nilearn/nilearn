@@ -71,6 +71,7 @@ def test_should_raise_warning_if_mpl_not_installed():
         set_mpl_backend()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.skipif(
     not is_matplotlib_installed(),
     reason="Test requires matplotlib to be installed.",
@@ -84,6 +85,7 @@ def test_should_raise_warning_if_backend_changes(*_):
         set_mpl_backend()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.skipif(
     not is_matplotlib_installed(),
     reason="Test requires matplotlib to be installed.",
@@ -98,6 +100,7 @@ def test_should_not_raise_warning_if_backend_is_not_changed(*_):
         set_mpl_backend()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.skipif(
     not is_matplotlib_installed(),
     reason="Test requires matplotlib to be installed.",
@@ -115,6 +118,7 @@ def test_should_switch_to_agg_backend_if_current_backend_fails(use_mock):
     use_mock.assert_called_with("Agg")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.skipif(
     not is_matplotlib_installed(),
     reason="Test requires matplotlib to be installed.",
@@ -125,6 +129,7 @@ def test_should_raise_import_error_for_version_check():
         set_mpl_backend()
 
 
+@pytest.mark.thread_unsafe
 def test_rename_parameters():
     """Test deprecated mock parameters in a mock function.
 
@@ -202,6 +207,7 @@ def test_transfer_deprecated_param_vals():
     assert actual_output == expected_output
 
 
+@pytest.mark.thread_unsafe
 def test_future_warn_deprecated_params():
     """Check that the correct warning is displayed."""
     mock_input, replacement_params = _mock_args_for_testing_replace_parameter()

@@ -2720,6 +2720,7 @@ def test_first_level_from_bids_surface(tmp_path):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs",
     [
@@ -2751,6 +2752,7 @@ def test_generate_report_default(kwargs):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_generate_report_height_none_future_default():
     """Make sure generate_report raises a single FutureWarning
     about the deprecation of the default threshold.
@@ -2781,6 +2783,7 @@ def test_generate_report_height_none_future_default():
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", [4, DEFAULT_Z_THRESHOLD])
 def test_generate_report_threshold_unused(threshold):
     """Make sure generate_report raises a single warning,

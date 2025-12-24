@@ -144,6 +144,7 @@ def test_as_ndarray(
         assert arr2.flags["C_CONTIGUOUS"]
 
 
+@pytest.mark.thread_unsafe
 def test_as_ndarray_memmap():
     # memmap
     filename = Path(__file__).parent / "data" / "mmap.dat"

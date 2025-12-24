@@ -41,6 +41,7 @@ def test_plot_markers_node_sizes(matplotlib_pyplot, node_size, coords):
     plot_markers([1, 2, 3, 4], coords, node_size=node_size, display_mode="x")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "node_size", [[10] * 4, [10, 20, 30, 40], np.array([10, 20, 30, 40])]
 )
@@ -66,6 +67,7 @@ def test_plot_markers_node_sizes_lyrz_display(
         assert np.all(display_sizes == expected_sizes)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "cmap,vmin,vmax",
     [
@@ -144,6 +146,7 @@ def test_plot_markers_dimension_mismatch(matplotlib_pyplot, matrix, coords):
         plot_markers(matrix, coords, display_mode="x")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("vmin,vmax", [(5, None), (None, 0)])
 def test_plot_markers_bound_error(matplotlib_pyplot, vmin, vmax, coords):
     """Tests that a ValueError is raised when vmin and vmax \
