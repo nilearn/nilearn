@@ -308,6 +308,10 @@ cut_coords : None, allowed types depend on the ``display_mode``, optional
       this must be a 3 :obj:`tuple`
       of :obj:`float` or :obj:`int`: ``(x, y, z)``.
 
+    - If ``display_mode`` is ``'xz'``, ``'yz'`` or ``'yx'``,
+      this must be a 2 :obj:`tuple`
+      of :obj:`float` or :obj:`int`: ``(x, z)``,  ``(y, z)`` or  ``(x, y)``.
+
     - If ``display_mode`` is ``"x"``, ``"y"``, or ``"z"``
       this can be:
 

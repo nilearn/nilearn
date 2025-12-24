@@ -41,23 +41,23 @@ class BaseSlicer:
 
     Attributes
     ----------
-    cut_coords : the type of allowed will depend on the each child class
+    cut_coords : :obj:`list`, :obj:`tuple` or :obj:`dict`
+        The world coordinates to be used. The concrete type depends on the
+        subclass.
 
-    frame_axes : :class:`matplotlib.axes.Axes`, optional
-        The matplotlib axes that will be subdivided in 3.
+    axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
+        The axes used for plotting in each direction of the cut.
 
-    %(black_bg)s
-        default=False
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    rect : 4 :obj:`tuple`
 
     """
 
     # This actually encodes the figsize for only one axe
     _default_figsize: ClassVar[list[float]] = [2.2, 2.6]
-    _axes_class = CutAxes
+    _axes_class: ClassVar[CutAxes] = CutAxes  # type: ignore[assignment, misc]
 
     def __init__(
         self,
@@ -98,26 +98,32 @@ class BaseSlicer:
         """Return black background."""
         return self._black_bg
 
-    @staticmethod
-    def find_cut_coords(img=None, threshold=None, cut_coords=None):
-        """Act as placeholder and is not implemented in the base class \
-        and has to be implemented in derived classes.
+    @classmethod
+    @fill_doc
+    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+        """Find world coordinates of cut positions compatible with this slicer.
+
+        Parameters
+        ----------
+        img : 3D :class:`~nibabel.nifti1.Nifti1Image`, default=None
+            The brain image.
+
+        %(threshold)s
+
+        %(cut_coords)s
 
         """
-        # Implement this as a staticmethod or a classmethod when
-        # subclassing
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @classmethod
     def _check_cut_coords_in_bounds(cls, img, cut_coords) -> None:
         """
-        Check if the specified ``cut_coords`` is within the bounds of the
-        specified image ``img``.
+        Check if the cut coordinates is within the image bounds.
 
         Parameters
         ----------
-        img : 3D Nifti1Image
-            The brain map.
+        img : 3D :class:`~nibabel.nifti1.Nifti1Image`
+            The brain image.
 
         %(cut_coords)s
 
@@ -172,13 +178,15 @@ class BaseSlicer:
 
     @classmethod
     def _cut_count(cls):
-        """Return the number of directions for this slicer."""
+        """Return the number of cut directions for this slicer."""
         raise NotImplementedError()
 
     @classmethod
     def _sanitize_cut_coords(cls, cut_coords):
-        """Check if the specified ``cut_coords`` is compatible with this
-        slicer and adjust its value if possible.
+        """Sanitize the cut coordinates.
+
+        Check if `cut_coords` is compatible with this slicer and adjust its
+        value if necessary.
 
         Parameters
         ----------
@@ -187,22 +195,21 @@ class BaseSlicer:
         Raises
         ------
         ValueError
-            If ``cut_coords`` is not compatible with this slicer.
+            If `cut_coords` is not compatible with this slicer.
 
         """
         raise NotImplementedError()
 
     @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords):
-        """Check for each coordinate in ``cut_coords`` if it is within the
-        specified ``bounds`` and return a list of boolean values corresponding
-        to each coordinate.
+        """Return a list that has boolean values corresponding to each cut
+        coordinate indicating if it is within the bounds of its direction or
+        not.
 
         Parameters
         ----------
         bounds:
-            image bounds to check if the specified ``cut_coords`` is inside
-            these bounds
+            valid bounds for the cut coordinates
 
         %(cut_coords)s
 
@@ -240,15 +247,29 @@ class BaseSlicer:
 
         %(cut_coords)s
 
-        axes : :class:`matplotlib.axes.Axes`, optional
+        figure : :class:`matplotlib.figure.Figure`
+            Figure to be used for plots.
+
+        axes : :class:`matplotlib.axes.Axes`, default=None
             The axes that will be subdivided in 3.
 
         %(black_bg)s
             default=False
 
+        leave_space : :obj:`bool`, default=False
+            If ``True``, leave space between the plots.
+
+        colorbar : :obj:`bool`, default=False
+            If ``True``, display a colorbar on the right of the plots.
+
         brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
             The brain color to use as the background color (e.g., for
             transparent colorbars).
+
+        kwargs :
+            Extra keyword arguments are passed to
+            :class:`~nilearn.plotting.displays.CutAxes` used for plotting in
+            each direction.
 
         Raises
         ------
@@ -327,10 +348,10 @@ class BaseSlicer:
         size : :obj:`int`, default=15
             The size of the title text.
 
-        color : matplotlib color specifier, optional
+        color : matplotlib color specifier, default=None
             The color of the font of the title.
 
-        bgcolor : matplotlib color specifier, optional
+        bgcolor : matplotlib color specifier, default=None
             The color of the background of the title.
 
         alpha : :obj:`float`, default=1
@@ -407,18 +428,18 @@ class BaseSlicer:
                 value is used to threshold the image: values below the
                 threshold (in absolute value) are plotted as transparent.
 
+        colorbar : :obj:`bool`, default=False
+            If ``True``, display a colorbar on the right of the plots.
+
         cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
             Ex: use "%%i" to display as integers.
 
-        colorbar : :obj:`bool`, default=False
-            If ``True``, display a colorbar on the right of the plots.
-
-        cbar_vmin : :obj:`float`, optional
+        cbar_vmin : :obj:`float`, default=None
             Minimal value for the colorbar. If None, the minimal value
             is computed based on the data.
 
-        cbar_vmax : :obj:`float`, optional
+        cbar_vmax : :obj:`float`, default=None
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
 
@@ -488,7 +509,6 @@ class BaseSlicer:
 
         filled : :obj:`bool`, default=False
             If ``filled=True``, contours are displayed with color fillings.
-
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
@@ -916,12 +936,14 @@ class BaseSlicer:
             List of colors for each marker
             that can be string or matplotlib colors.
 
-
         marker_size : :obj:`float` or \
                     :obj:`list` of :obj:`float` of shape ``(n_markers,)``, \
                     default=30
             Size in pixel for each marker.
 
+        kwargs : :obj:`dict`
+            Extra keyword arguments are passed to
+            :class:`matplotlib.axes.Axes`.scatter method.
         """
         defaults = {"marker": "o", "zorder": 1000}
         marker_coords = np.asanyarray(marker_coords)
@@ -994,11 +1016,9 @@ class BaseSlicer:
             If ``True``, annotations indicating which side
             is left and which side is right are drawn.
 
-
         positions : :obj:`bool`, default=True
             If ``True``, annotations indicating the
             positions of the cuts are drawn.
-
 
         scalebar : :obj:`bool`, default=False
             If ``True``, cuts are annotated with a reference scale bar.
@@ -1006,13 +1026,11 @@ class BaseSlicer:
             the ``draw_scale_bar`` method on the axes in "axes" attribute
             of this object.
 
-
         size : :obj:`int`, default=12
             The size of the text used.
 
         scale_size : :obj:`int` or :obj:`float`, default=5.0
             The length of the scalebar, in units of ``scale_units``.
-
 
         scale_units : {'cm', 'mm'}, default='cm'
             The units for the ``scalebar``.
@@ -1035,7 +1053,6 @@ class BaseSlicer:
         decimals : :obj:`int`, default=0
             Number of decimal places on slice position annotation. If zero,
             the slice position is integer without decimal point.
-
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to matplotlib's text
@@ -1088,8 +1105,12 @@ class BaseSlicer:
             The file name to save to. Its extension determines the
             file type, typically '.png', '.svg' or '.pdf'.
 
-        dpi : ``None`` or scalar, default=None
+        dpi : None or scalar, default=None
             The resolution in dots per inch.
+
+        kwargs : :obj:`dict`
+            Extra keyword arguments are passed to
+            :class:`matplotlib.figure.Figure`.savefig method.
 
         """
         facecolor = edgecolor = "k" if self._black_bg else "w"
@@ -1102,21 +1123,21 @@ class BaseSlicer:
         )
 
 
-class _ThreeDSlicer(BaseSlicer):
-    _cut_displayed: ClassVar[str] = "yxz"
-    _axes_class = CutAxes
+class _MultiDSlicer(BaseSlicer):
+    # This should be set by each inheriting Slicer
+    _cut_displayed: ClassVar[str] = ""
 
-    @classmethod
     @fill_doc  # the fill_doc decorator must be last applied
+    @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
-        """Instantiate the slicer and find cut coordinates.
+        """Find world coordinates of cut positions compatible with this slicer.
 
         Parameters
         ----------
-        img : 3D :class:`~nibabel.nifti1.Nifti1Image`
-            The brain map.
+        img : 3D :class:`~nibabel.nifti1.Nifti1Image`, default=None
+            The brain image.
 
-        threshold : :obj:`int` or :obj:`float` or ``None``, default=None
+        threshold : :obj:`int` or :obj:`float` or None, default=None
             Threshold to apply:
 
                 - If ``None`` is given, the maps are not thresholded.
@@ -1124,7 +1145,9 @@ class _ThreeDSlicer(BaseSlicer):
                   value is used to threshold the image: values below the
                   threshold (in absolute value) are plotted as transparent.
 
-        %(cut_coords)s
+        cut_coords : sequence of :obj:`float` or :obj:`int`, or None, \
+                    default=None
+            The world coordinates of the point where the cut is performed.
 
         Raises
         ------
@@ -1158,19 +1181,22 @@ class _ThreeDSlicer(BaseSlicer):
 
     @classmethod
     def _sanitize_cut_coords(cls, cut_coords):
-        """Check if the specified ``cut_coords`` is a list of world coordinates
-        with number of elements equal to the number of directions of this
-        slicer and return the specified value as it is.
+        """Sanitize the cut coordinates.
+
+        Check if `cut_coords` is a sequence of numbers compatible with the
+        number of cut directions of this slicer and adjust its value if
+        necessary.
 
         Parameters
         ----------
-        %(cut_coords)s
+        cut_coords : sequence of :obj:`float` or :obj:`int`, or None
+            The world coordinates of the point where the cut is performed.
 
         Raises
         ------
         ValueError
-            If ``cut_coords`` is not None or the number of elements of the
-        specified ``cut_coords`` is not equal to the number of cuts of this
+            If `cut_coords` is not None or the number of elements in
+        `cut_coords` is not equal to the number of cut directions of this
         slicer.
 
         """
@@ -1191,25 +1217,6 @@ class _ThreeDSlicer(BaseSlicer):
 
     @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
-        """Check for each coordinate in `cut_coords` if it is within the
-        specified `bounds` and return a list of boolean values corresponding to
-        each coordinate.
-
-        Parameters
-        ----------
-        bounds:
-            image bounds to check if the specified `cut_coords` is inside these
-        bounds
-
-        %(cut_coords)s
-
-        Return
-        ------
-        list[bool]
-            a list of boolean values corresponding to each coordinate
-        indicating if it is within the bounds or not
-
-        """
         coord_in = []
 
         for index, c in enumerate(sorted(cls._cut_displayed)):
@@ -1222,7 +1229,7 @@ class _ThreeDSlicer(BaseSlicer):
 
 
 @fill_doc
-class OrthoSlicer(_ThreeDSlicer):
+class OrthoSlicer(_MultiDSlicer):
     """Class to create 3 linked axes for plotting orthogonal \
     cuts of 3D maps.
 
@@ -1241,16 +1248,42 @@ class OrthoSlicer(_ThreeDSlicer):
          display = plot_img(img, display_mode="ortho")
 
 
+    Parameters
+    ----------
+    cut_coords : 3 sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates ``(x, y, z)`` of the point where the cut is
+        performed.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
+
     Attributes
     ----------
-    cut_coords : 3D :obj:`tuple`  of :obj:`float`
-        World coordinates (x, y, z) of the point where the cut is performed.
+    cut_coords : 3 :obj:`tuple` of :obj:`float` or :obj:`int`
+        The world coordinates ``(x, y, z)`` of the point where the cut is
+        performed.
 
-    axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
-        The 3 axes used to plot each view.
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+        The axes used for plotting in each direction ('x', 'y' and 'z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "yxz"
+        The directions of cuts for ``OrthoSlicer``.
 
     Notes
     -----
@@ -1266,10 +1299,11 @@ class OrthoSlicer(_ThreeDSlicer):
 
     """
 
+    _cut_displayed: ClassVar[str] = "yxz"
     _default_figsize: ClassVar[list[float]] = [2.2, 3.5]
 
     def _init_axes(self, **kwargs):
-        self.cut_coords = self._sanitize_cut_coords(self.cut_coords)
+        self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
         x0, y0, x1, y1 = self.rect
         facecolor = "k" if self._black_bg else "w"
         # Create our axes:
@@ -1369,9 +1403,12 @@ class OrthoSlicer(_ThreeDSlicer):
 
         Parameters
         ----------
-        cut_coords : 3-:obj:`tuple` of :obj:`float`, optional
-            The position of the cross to draw. If ``None`` is passed, the
-            ``OrthoSlicer``'s cut coordinates are used.
+        cut_coords : 3 sequence of :obj:`float` or :obj:`int`, or None, \
+                     default=None
+            The position of the cross to draw in world coordinates
+            ``(x, y, z)``.
+            If ``None`` is passed, the ``OrthoSlicer``'s cut coordinates are
+            used.
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
@@ -1415,7 +1452,8 @@ class OrthoSlicer(_ThreeDSlicer):
                 ax.axhline(y, **kwargs)
 
 
-class TiledSlicer(_ThreeDSlicer):
+@fill_doc
+class TiledSlicer(_MultiDSlicer):
     """A class to create 3 axes for plotting orthogonal \
     cuts of 3D maps, organized in a 2x2 grid.
 
@@ -1432,16 +1470,42 @@ class TiledSlicer(_ThreeDSlicer):
         # display is an instance of the TiledSlicer class
         display = plot_img(img, display_mode="tiled")
 
+    Parameters
+    ----------
+    cut_coords : 3 sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates ``(x, y, z)`` of the point where the cut is
+        performed.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
+
     Attributes
     ----------
-    cut_coords : 3D :obj:`tuple` of :obj:`float`
-        World coordinates (x, y, z) of the point where the cut is performed.
+    cut_coords : 3 :obj:`tuple` of :obj:`float` or :obj:`int`
+        The world coordinates ``(x, y, z)`` of the point where the cut is
+        performed.
 
-    axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
-        The 3 axes used to plot each view.
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+        The axes used for plotting in each direction ('x', 'y' and 'z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "yxz"
+        The directions of cuts for ``TiledSlicer``.
 
     Notes
     -----
@@ -1457,6 +1521,7 @@ class TiledSlicer(_ThreeDSlicer):
 
     """
 
+    _cut_displayed: ClassVar[str] = "yxz"
     _default_figsize: ClassVar[list[float]] = [2.0, 7.6]
 
     def _find_initial_axes_coord(self, index):
@@ -1686,9 +1751,13 @@ class TiledSlicer(_ThreeDSlicer):
 
         Parameters
         ----------
-        cut_coords : 3-:obj:`tuple` of :obj:`float`, optional
-            The position of the cross to draw. If ``None`` is passed, the
-            ``OrthoSlicer``'s cut coordinates are used.
+        cut_coords : 3 sequence of :obj:`float` or :obj:`int`, or None, \
+                     default=None
+
+            The position of the cross to draw in world coordinates
+            ``(x, y, z)``.
+            If ``None`` is passed, the ``TiledSlicer``'s cut coordinates are
+            used.
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
@@ -1737,14 +1806,6 @@ class TiledSlicer(_ThreeDSlicer):
 class BaseStackedSlicer(BaseSlicer):
     """A class to create linked axes for plotting stacked cuts of 2D maps.
 
-    Attributes
-    ----------
-    axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
-        The axes used to plot each view.
-
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
     Notes
     -----
     The extent of the different axes are adjusted to fit the data
@@ -1762,25 +1823,28 @@ class BaseStackedSlicer(BaseSlicer):
         threshold=None,  # noqa: ARG003
         cut_coords=None,
     ):
-        """Instantiate the slicer and find cut coordinates.
+        """Find world coordinates of cut positions compatible with this slicer.
 
         Parameters
         ----------
-        img : 3D :class:`~nibabel.nifti1.Nifti1Image`
-            The brain map.
+        img : 3D :class:`~nibabel.nifti1.Nifti1Image`, default=None
+            The brain image.
 
-        threshold : :obj:`float`, optional
+        threshold : :obj:`float`, default=None
             The lower threshold to the positive activation.
             If ``None``, the activation threshold is computed using the
             80% percentile of the absolute value of the map.
 
-        %(cut_coords)s
+        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
+                     None, default=None
+            The number of cuts to perform or the list of cut positions in the
+            direction of this slicer.
+            If ``None`` is given, the cuts are calculated automatically.
 
         Returns
         -------
-        cut_coords : :obj:`list` of :obj:`int`
-            xyz world coordinates of cuts corresponding to the direction of
-        this slicer.
+        cut_coords : :obj:`list` of :obj:`float` or :obj:`int`
+            The list of cut positions in the direction of this slicer.
 
         """
         # checks if cut_coords is compatible with this slicer
@@ -1804,24 +1868,25 @@ class BaseStackedSlicer(BaseSlicer):
 
     @classmethod
     def _sanitize_cut_coords(cls, cut_coords):
-        """Check if the specified ``cut_coords`` is one of :obj:`tuple`,
-        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
-        the number of cuts of this slicer or a :class:`~number.Number` or
-        `None`.
+        """Sanitize the cut coordinates.
 
-        If `None` is specified return the default value 7.
+        Check if `cut_coords` is a number or a sequence of numbers and adjust
+        its value if necessary.
 
         Parameters
         ----------
-        %(cut_coords)s
+        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or None
+
+            The number of cuts to perform or the list of cut positions in the
+            direction of this slicer.
+            If ``None`` is given, 7 cut coordinates are calculated
+            automatically.
 
         Raises
         ------
         ValueError
-            If the specified ``cut_coords`` is not one of :obj:`tuple`,
-        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
-        the number of cuts of this slicer or a :class:`~number.Number` or
-        `None`.
+            If `cut_coords` is not a number or a sequence of :obj:`float` or
+            :obj:`int` or `None`.
 
         """
         if cut_coords is None:
@@ -1850,27 +1915,6 @@ class BaseStackedSlicer(BaseSlicer):
 
     @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
-        """Check for each element in ``cut_coords`` if it is within the
-        ``bounds`` of the direction of this slicer return a list of boolean
-        values corresponding to each element.
-
-        Parameters
-        ----------
-        bounds :
-            image bounds to check if the specified cut_coords is inside these
-        bounds
-
-        cut_coords : :obj:`tuple`, :obj:`list` of :obj:`float`
-            xyz world coordinates of cuts corresponding to the direction of
-            this slicer.cut_coords to check
-
-        Return
-        ------
-        list[bool]
-            a list of boolean values corresponding to each coordinate
-        indicating if it is within the bounds or not
-
-        """
         coord_in = []
 
         index = "xyz".find(cls._direction)
@@ -1881,7 +1925,7 @@ class BaseStackedSlicer(BaseSlicer):
         return coord_in
 
     def _init_axes(self, **kwargs):
-        self._sanitize_cut_coords(self.cut_coords)
+        self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
         x0, y0, x1, y1 = self.rect
         # Create our axes:
         self.axes = {}
@@ -1973,9 +2017,12 @@ class BaseStackedSlicer(BaseSlicer):
 
         Parameters
         ----------
-        cut_coords : 3-:obj:`tuple` of :obj:`float`, optional
-            The position of the cross to draw. If ``None`` is passed, the
-            ``OrthoSlicer``'s cut coordinates are used.
+        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
+                     None, default=None
+            The list of positions of the crosses to draw in the direction of
+            this slicer.
+            If ``None`` is passed, the this slicer's cut coordinates are
+            used.
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
@@ -1984,6 +2031,7 @@ class BaseStackedSlicer(BaseSlicer):
         """
 
 
+@fill_doc
 class XSlicer(BaseStackedSlicer):
     """The ``XSlicer`` class enables sagittal visualization with \
     plotting functions of Nilearn like \
@@ -2001,16 +2049,42 @@ class XSlicer(BaseStackedSlicer):
         # display is an instance of the XSlicer class
         display = plot_img(img, display_mode="x")
 
+    Parameters
+    ----------
+    cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or None
+        The number of cuts to perform or the list of cut positions in the
+        direction 'x'.
+        If ``None``, 7 cut positions are calculated automatically.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
+
     Attributes
     ----------
-    cut_coords : :obj:`list` of :obj:`float`
+    cut_coords : :obj:`list` of :obj:`float` or :obj:`int`
         The list of cut positions in direction x.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
-        The axes used for plotting.
+        The axes used to plot each view in direction 'x'.
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _direction : "x"
+        The direction of the cut for ``XSlicer``.
 
     See Also
     --------
@@ -2023,6 +2097,7 @@ class XSlicer(BaseStackedSlicer):
     _default_figsize: ClassVar[list[float]] = [2.6, 2.3]
 
 
+@fill_doc
 class YSlicer(BaseStackedSlicer):
     """The ``YSlicer`` class enables coronal visualization with \
     plotting functions of Nilearn like \
@@ -2040,16 +2115,42 @@ class YSlicer(BaseStackedSlicer):
         # display is an instance of the YSlicer class
         display = plot_img(img, display_mode="y")
 
+    Parameters
+    ----------
+    cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or None
+        The number of cuts to perform or the list of cut positions in the
+        direction 'y'.
+        If ``None``, 7 cut positions are calculated automatically.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
+
     Attributes
     ----------
-    cut_coords : :obj:`list` of :obj:`float`
+    cut_coords : :obj:`list` of :obj:`float` or :obj:`int`
         The list of cut positions in direction y.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
-        The axes used for plotting.
+        The axes used to plot each view in direction 'y'.
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _direction : "y"
+        The direction of the cut for ``YSlicer``.
 
     See Also
     --------
@@ -2062,6 +2163,7 @@ class YSlicer(BaseStackedSlicer):
     _default_figsize: ClassVar[list[float]] = [2.2, 3.0]
 
 
+@fill_doc
 class ZSlicer(BaseStackedSlicer):
     """The ``ZSlicer`` class enables axial visualization with \
     plotting functions of Nilearn like \
@@ -2079,16 +2181,42 @@ class ZSlicer(BaseStackedSlicer):
         # display is an instance of the ZSlicer class
         display = plot_img(img, display_mode="z")
 
+    Parameters
+    ----------
+    cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or None
+        The number of cuts to perform or the list of cut positions in the
+        direction 'z'.
+        If ``None``, 7 cut positions are calculated automatically.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
+
     Attributes
     ----------
-    cut_coords : :obj:`list` of :obj:`float`
+    cut_coords : :obj:`list` of :obj:`float` or :obj:`int`
         The list of cut positions in direction z.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
-        The axes used for plotting.
+        The axes used to plot each view in direction 'z'.
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _direction : "z"
+        The direction of the cut for ``ZSlicer``.
 
     See Also
     --------
@@ -2101,6 +2229,7 @@ class ZSlicer(BaseStackedSlicer):
     _default_figsize: ClassVar[list[float]] = [2.2, 3.2]
 
 
+@fill_doc
 class XZSlicer(OrthoSlicer):
     """The ``XZSlicer`` class enables to combine sagittal and axial views \
     on the same figure with plotting functions of Nilearn like \
@@ -2118,16 +2247,41 @@ class XZSlicer(OrthoSlicer):
         # display is an instance of the XZSlicer class
         display = plot_img(img, display_mode="xz")
 
+    Parameters
+    ----------
+    cut_coords : 2 sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates ``(x, z)`` of the point where the cut is
+        performed.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
+
     Attributes
     ----------
-    cut_coords : 2D :obj:`tuple` of :obj:`float`
-        World coordinates (x, z) of the point where the cut is performed.
+    cut_coords : 2 :obj:`tuple` of :obj:`float` or :obj:`int`
+        The world coordinates (x, z) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "xz"
+        The directions of cuts for ``XZSlicer``.
 
     See Also
     --------
@@ -2139,6 +2293,7 @@ class XZSlicer(OrthoSlicer):
     _cut_displayed = "xz"
 
 
+@fill_doc
 class YXSlicer(OrthoSlicer):
     """The ``YXSlicer`` class enables to combine coronal and sagittal views \
     on the same figure with plotting functions of Nilearn like \
@@ -2156,16 +2311,41 @@ class YXSlicer(OrthoSlicer):
         # display is an instance of the YXSlicer class
         display = plot_img(img, display_mode="yx")
 
+    Parameters
+    ----------
+    cut_coords : 2 sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates ``(x, y)`` of the point where the cut is
+        performed.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
+
     Attributes
     ----------
-    cut_coords : 2D :obj:`tuple` of :obj:`float`
-        World coordinates (x, y) of the point where the cut is performed.
+    cut_coords : 2 :obj:`tuple` of :obj:`float` or :obj:`int`
+        The world coordinates (x, y) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'y' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "yx"
+        The directions of cuts for ``XYSlicer``.
 
     See Also
     --------
@@ -2177,6 +2357,7 @@ class YXSlicer(OrthoSlicer):
     _cut_displayed = "yx"
 
 
+@fill_doc
 class YZSlicer(OrthoSlicer):
     """The ``YZSlicer`` class enables to combine coronal and axial views \
     on the same figure with plotting functions of Nilearn like \
@@ -2194,16 +2375,41 @@ class YZSlicer(OrthoSlicer):
         # display is an instance of the YZSlicer class
         display = plot_img(img, display_mode="yz")
 
+    Parameters
+    ----------
+    cut_coords : 2 sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates ``(y, z)`` of the point where the cut is
+        performed.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
+
     Attributes
     ----------
-    cut_coords : 2D :obj:`tuple` of :obj:`float`
-        World coordinates (y, z) of the point where the cut is performed.
+    cut_coords : 2 :obj:`tuple` of :obj:`float` or :obj:`int`
+        The world coordinates (y, z) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('y' and 'z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "yz"
+        The directions of cuts for ``YZSlicer``.
 
     See Also
     --------
@@ -2216,6 +2422,7 @@ class YZSlicer(OrthoSlicer):
     _default_figsize: ClassVar[list[float]] = [2.2, 3.0]
 
 
+@fill_doc
 class MosaicSlicer(BaseSlicer):
     """A class to create 3 :class:`~matplotlib.axes.Axes` for \
     plotting cuts of 3D maps, in multiple rows and columns.
@@ -2233,18 +2440,46 @@ class MosaicSlicer(BaseSlicer):
         # display is an instance of the MosaicSlicer class
         display = plot_img(img, display_mode="mosaic")
 
+    Parameters
+    ----------
+    cut_coords : 3 sequence of :obj:`float` or :obj:`int`, \
+                 :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or None
+        Either a sequence of length 3 indicating the number of cuts in each
+        direction ``(x, y, z)``, or a dictionary where keys are the directions
+        ('x', 'y', 'z') and the values are sequences holding the cut
+        coordinates.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
+
     Attributes
     ----------
     cut_coords : :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`>
         The cut coordinates in a dictionary. The keys are the directions
-        ('x', 'y', 'z'), and the values are arrays holding the cut
+        ('x', 'y', 'z'), and the values are sequences holding the cut
         coordinates.
 
-    axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
-        The 3 axes used to plot multiple views.
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+        The axes used for plotting in each direction ('x', 'y' and 'z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "yxz"
+        The directions of cuts for ``MosaicSlicer``.
 
     See Also
     --------
@@ -2256,32 +2491,25 @@ class MosaicSlicer(BaseSlicer):
     """
 
     _cut_displayed: ClassVar[str] = "yxz"
-    _axes_class: ClassVar[CutAxes] = CutAxes  # type: ignore[assignment, misc]
     _default_figsize: ClassVar[list[float]] = [4.0, 5.0]
 
     @classmethod
     def _sanitize_cut_coords(cls, cut_coords):
-        """Check if the specified ``cut_coords`` is one of :obj:`tuple`,
-        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
-        the number of cuts of this slicer, or a :class:`~number.Number` or
-        None.
+        """Sanitize the cut coordinates.
 
-        If `None` is specified return the default value [7, 7, 7].
-        If a :class:`number.Number` is specified return a list of 3 elements
-        with the specified number.
+        Check if `cut_coords` is a number, a sequence of numbers and adjust its
+        value if necessary.
 
         Parameters
         ----------
-        %(cut_coords)s
+        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
+                     None
+            The world coordinates of the points where the cuts are performed.
 
         Raises
         ------
         ValueError
-            If the specified ``cut_coords`` is not one of :obj:`tuple`,
-        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
-        the number of cuts of this slicer, or a :class:`~number.Number` or
-        None.
-
+            If `cut_coords` is not a number, or a sequence of numbers.
         """
         if cut_coords is None:
             cut_coords = 7
@@ -2307,29 +2535,31 @@ class MosaicSlicer(BaseSlicer):
         threshold=None,  # noqa: ARG003
         cut_coords=None,
     ):
-        """Instantiate the slicer and find cut coordinates for mosaic plotting.
+        """Find world coordinates of cut positions compatible with this slicer.
 
         Parameters
         ----------
-        img : 3D :class:`~nibabel.nifti1.Nifti1Image`, optional
+        img : 3D :class:`~nibabel.nifti1.Nifti1Image`, default=None
             The brain image.
 
-        threshold : :obj:`float`, optional
+        threshold : :obj:`float`, default=None
             The lower threshold to the positive activation. If ``None``,
             the activation threshold is computed using the 80% percentile of
             the absolute value of the map.
 
-        cut_coords : :obj:`list` / :obj:`tuple` of 3 :obj:`int`,\
-                     :obj:`float`, optional
-            xyz world coordinates of cuts. If ``cut_coords``
-            are not provided, 7 coordinates of cuts are automatically
-            calculated.
+        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
+                     :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
+                     `None`, default=None
+            The world coordinates of the points where the cuts are performed.
+
+            If `cut_coords` is not provided, 7 coordinates of cuts are
+            automatically calculated for each direction ('x', 'y', 'z').
             If an integer is provided, specified number of cuts are calculated
             for each direction.
 
         Returns
         -------
-        cut_coords : :obj:`dict`
+        cut_coords : :obj:`dict`  <:obj:`str`: 1D :class:`~numpy.ndarray`>
             xyz world coordinates of cuts in a direction.
             Each key denotes the direction.
 
@@ -2368,7 +2598,7 @@ class MosaicSlicer(BaseSlicer):
             Additional arguments to pass to ``self._axes_class``.
 
         """
-        self.cut_coords = self._sanitize_cut_coords(self.cut_coords)
+        self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
         if not isinstance(self.cut_coords, dict):
             self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
 
@@ -2483,9 +2713,11 @@ class MosaicSlicer(BaseSlicer):
 
         Parameters
         ----------
-        cut_coords : 3-:obj:`tuple` of :obj:`float`, optional
-            The position of the cross to draw. If ``None`` is passed, the
-            ``OrthoSlicer``'s cut coordinates are used.
+        cut_coords : :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
+                     `None`, optional
+            The positions of the crosses to draw.
+            If ``None`` is passed, the ``MosaicSlicer``'s cut coordinates are
+            used.
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
