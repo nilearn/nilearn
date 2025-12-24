@@ -1110,7 +1110,7 @@ class BaseSlicer:
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to
-            :class:`matplotlib.axes.figure`.savefig method.
+            :class:`matplotlib.figure.Figure`.savefig method.
 
         """
         facecolor = edgecolor = "k" if self._black_bg else "w"
