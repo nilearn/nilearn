@@ -99,6 +99,7 @@ class BaseSlicer:
         return self._black_bg
 
     @classmethod
+    @fill_doc
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Find world coordinates of cut positions compatible with this slicer.
 
@@ -221,8 +222,8 @@ class BaseSlicer:
         """
         raise NotImplementedError()
 
-    @fill_doc  # the fill_doc decorator must be last applied
     @classmethod
+    @fill_doc  # the fill_doc decorator must be last applied
     def init_with_figure(
         cls,
         img,
@@ -246,6 +247,9 @@ class BaseSlicer:
 
         %(cut_coords)s
 
+        figure : :class:`matplotlib.figure.Figure`
+            Figure to be used for plots.
+
         axes : :class:`matplotlib.axes.Axes`, default=None
             The axes that will be subdivided in 3.
 
@@ -261,6 +265,11 @@ class BaseSlicer:
         brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
             The brain color to use as the background color (e.g., for
             transparent colorbars).
+
+        kwargs :
+            Extra keyword arguments are passed to
+            :class:`~nilearn.plotting.displays.CutAxes` used for plotting in
+            each direction.
 
         Raises
         ------
@@ -932,6 +941,9 @@ class BaseSlicer:
                     default=30
             Size in pixel for each marker.
 
+        kwargs :
+            Extra keyword arguments are passed to
+            :class:`matplotlib.axes.Axes`.scatter method.
         """
         defaults = {"marker": "o", "zorder": 1000}
         marker_coords = np.asanyarray(marker_coords)
@@ -1095,6 +1107,9 @@ class BaseSlicer:
 
         dpi : None or scalar, default=None
             The resolution in dots per inch.
+        kwargs :
+            Extra keyword arguments are passed to
+            :class:`matplotlib.axes.figure`.savefig method.
 
         """
         facecolor = edgecolor = "k" if self._black_bg else "w"
@@ -2015,6 +2030,7 @@ class BaseStackedSlicer(BaseSlicer):
         """
 
 
+@fill_doc
 class XSlicer(BaseStackedSlicer):
     """The ``XSlicer`` class enables sagittal visualization with \
     plotting functions of Nilearn like \
@@ -2041,12 +2057,17 @@ class XSlicer(BaseStackedSlicer):
 
     axes : :class:`matplotlib.axes.Axes`, default=None
 
-    %(black_bg)
+    %(black_bg)s
         default=False
 
     brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
         The brain color to use as the background color (e.g., for
         transparent colorbars).
+
+    kwargs :
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
 
     Attributes
     ----------
@@ -2075,6 +2096,7 @@ class XSlicer(BaseStackedSlicer):
     _default_figsize: ClassVar[list[float]] = [2.6, 2.3]
 
 
+@fill_doc
 class YSlicer(BaseStackedSlicer):
     """The ``YSlicer`` class enables coronal visualization with \
     plotting functions of Nilearn like \
@@ -2101,12 +2123,17 @@ class YSlicer(BaseStackedSlicer):
 
     axes : :class:`matplotlib.axes.Axes`, default=None
 
-    %(black_bg)
+    %(black_bg)s
         default=False
 
     brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
         The brain color to use as the background color (e.g., for
         transparent colorbars).
+
+    kwargs :
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
 
     Attributes
     ----------
@@ -2135,6 +2162,7 @@ class YSlicer(BaseStackedSlicer):
     _default_figsize: ClassVar[list[float]] = [2.2, 3.0]
 
 
+@fill_doc
 class ZSlicer(BaseStackedSlicer):
     """The ``ZSlicer`` class enables axial visualization with \
     plotting functions of Nilearn like \
@@ -2161,12 +2189,17 @@ class ZSlicer(BaseStackedSlicer):
 
     axes : :class:`matplotlib.axes.Axes`, default=None
 
-    %(black_bg)
+    %(black_bg)s
         default=False
 
     brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
         The brain color to use as the background color (e.g., for
         transparent colorbars).
+
+    kwargs :
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
 
     Attributes
     ----------
@@ -2195,6 +2228,7 @@ class ZSlicer(BaseStackedSlicer):
     _default_figsize: ClassVar[list[float]] = [2.2, 3.2]
 
 
+@fill_doc
 class XZSlicer(OrthoSlicer):
     """The ``XZSlicer`` class enables to combine sagittal and axial views \
     on the same figure with plotting functions of Nilearn like \
@@ -2220,12 +2254,17 @@ class XZSlicer(OrthoSlicer):
 
     axes : :class:`matplotlib.axes.Axes`, default=None
 
-    %(black_bg)
+    %(black_bg)s
         default=False
 
     brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
         The brain color to use as the background color (e.g., for
         transparent colorbars).
+
+    kwargs :
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
 
     Attributes
     ----------
@@ -2253,6 +2292,7 @@ class XZSlicer(OrthoSlicer):
     _cut_displayed = "xz"
 
 
+@fill_doc
 class YXSlicer(OrthoSlicer):
     """The ``YXSlicer`` class enables to combine coronal and sagittal views \
     on the same figure with plotting functions of Nilearn like \
@@ -2278,12 +2318,17 @@ class YXSlicer(OrthoSlicer):
 
     axes : :class:`matplotlib.axes.Axes`, default=None
 
-    %(black_bg)
+    %(black_bg)s
         default=False
 
     brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
         The brain color to use as the background color (e.g., for
         transparent colorbars).
+
+    kwargs :
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
 
     Attributes
     ----------
@@ -2311,6 +2356,7 @@ class YXSlicer(OrthoSlicer):
     _cut_displayed = "yx"
 
 
+@fill_doc
 class YZSlicer(OrthoSlicer):
     """The ``YZSlicer`` class enables to combine coronal and axial views \
     on the same figure with plotting functions of Nilearn like \
@@ -2336,12 +2382,17 @@ class YZSlicer(OrthoSlicer):
 
     axes : :class:`matplotlib.axes.Axes`, default=None
 
-    %(black_bg)
+    %(black_bg)s
         default=False
 
     brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
         The brain color to use as the background color (e.g., for
         transparent colorbars).
+
+    kwargs :
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
 
     Attributes
     ----------
@@ -2370,6 +2421,7 @@ class YZSlicer(OrthoSlicer):
     _default_figsize: ClassVar[list[float]] = [2.2, 3.0]
 
 
+@fill_doc
 class MosaicSlicer(BaseSlicer):
     """A class to create 3 :class:`~matplotlib.axes.Axes` for \
     plotting cuts of 3D maps, in multiple rows and columns.
@@ -2398,12 +2450,17 @@ class MosaicSlicer(BaseSlicer):
 
     axes : :class:`matplotlib.axes.Axes`, default=None
 
-    %(black_bg)
+    %(black_bg)s
         default=False
 
     brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
         The brain color to use as the background color (e.g., for
         transparent colorbars).
+
+    kwargs :
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+        direction.
 
     Attributes
     ----------
