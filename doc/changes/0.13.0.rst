@@ -47,6 +47,7 @@ Several classes and functions / methods have been added to the public API:
 NEW
 ---
 
+
 Fixes
 -----
 
@@ -60,7 +61,7 @@ Fixes
 
 - :bdg-dark:`Code` Better handling of errors during plotting when cut coordinates are out of bounds (:gh:`5861` by `Sanjana Soni`_).
 
-- :bdg-dark:`Code` Raise warning when no supra threshold regions were found by :func:`~nilearn.regions.region_extractor.connected_regions`  and raise error when :func:`~nilearn.image.image.concat_imgs` is called with an empty list (:gh:`5909` by `Hande Gözükan`_).
+- :bdg-dark:`Code` Raise warning when no supra threshold regions were found by :func:`~nilearn.regions.connected_regions` and raise error when :func:`~nilearn.image.concat_imgs` is called with an empty list (:gh:`5909` by `Hande Gözükan`_).
 
 - :bdg-primary:`Doc` Update allowed values for the parameter ``standardize`` to match those of :func:`~signal.clean` in :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMClassifier`, :class:`~decoding.FREMRegressor`, :class:`~decoding.SpaceNetClassifier`, :class:`~decoding.SpaceNetRegressor`, :class:`~connectome.ConnectivityMeasure`, :class:`~decomposition.DictLearning`, :class:`~decomposition.CanICA` as well as for all maskers  (:gh:`5668` by `Rémi Gau`_).
 
@@ -103,6 +104,7 @@ Enhancements
 - :bdg-dark:`Code` Reports (for maskers, GLMs...) can now be generated even when no plotting engine is available (:gh:`5757` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Add ``view`` parameter to :func:`~plotting.view_img_on_surf` to select the default view that will be used when displaying the figure  (:gh:`5692` by `Rémi Gau`_).
+
 
 Changes
 -------
