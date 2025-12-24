@@ -13,25 +13,23 @@ from sklearn.base import BaseEstimator
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import logger  # TODO just import log
+from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import (
-    check_params,
-)
+from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._version import __version__
 from nilearn.glm._reporting_utils import (
-    _glm_model_attributes_to_dataframe,
-    _load_bg_img,
-    _make_stat_maps_contrast_clusters,
-    _mask_to_plot,
-    _turn_into_full_path,
     check_generate_report_input,
+    glm_model_attributes_to_dataframe,
+    load_bg_img,
+    make_stat_maps_contrast_clusters,
+    mask_to_plot,
     sanitize_generate_report_input,
+    turn_into_full_path,
 )
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
@@ -261,12 +259,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
                     f"not {v.__class__.__name__}"
                 )
 
-        entities = {
-            "sub": None,
-            "ses": None,
-            "task": None,
-            "space": None,
-        }
+        entities = {"sub": None, "ses": None, "task": None, "space": None}
 
         if generate_bids_name:
             # try to figure out filename entities from input files
@@ -545,7 +538,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             )
         )
 
-        model_attributes = _glm_model_attributes_to_dataframe(self)
+        model_attributes = glm_model_attributes_to_dataframe(self)
         with pd.option_context("display.max_colwidth", 100):
             model_attributes_html = dataframe_to_html(
                 model_attributes,
@@ -569,7 +562,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         if contrasts is None:
             output = self._reporting_data.get("filenames", None)
             if output is not None and output.get("use_absolute_path", True):
-                output = _turn_into_full_path(output, output["dir"])
+                output = turn_into_full_path(output, output["dir"])
 
             warning_messages.append(
                 "No contrast passed during report generation."
@@ -590,8 +583,8 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 else self.design_matrices_
             )
 
-            bg_img = _load_bg_img(bg_img, self._is_volume_glm())
-            mask_plot = _mask_to_plot(self, bg_img)
+            bg_img = load_bg_img(bg_img, self._is_volume_glm())
+            mask_plot = mask_to_plot(self, bg_img)
 
             # We try to rely on the content of glm object only
             # by reading images from disk rarther than recomputing them
@@ -628,7 +621,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             logger.log(
                 "Generating contrast-level figures...", verbose=self.verbose
             )
-            results = _make_stat_maps_contrast_clusters(
+            results = make_stat_maps_contrast_clusters(
                 stat_img=statistical_maps,
                 threshold_orig=threshold,
                 alpha=alpha,
