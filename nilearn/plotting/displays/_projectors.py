@@ -8,6 +8,7 @@ from scipy.sparse import issparse
 from scipy.stats import scoreatpercentile
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
 from nilearn.plotting.displays._axes import GlassBrainAxes
@@ -15,6 +16,7 @@ from nilearn.plotting.displays._slicers import OrthoSlicer
 from nilearn.plotting.displays._utils import get_create_display_fun
 
 
+@fill_doc
 class OrthoProjector(OrthoSlicer):
     """A class to create linked axes for plotting orthogonal projections \
     of 3D maps.
@@ -32,13 +34,42 @@ class OrthoProjector(OrthoSlicer):
         # display is an instance of the OrthoProjector class
         display = plot_glass_brain(img, display_mode="ortho")
 
+    Parameters
+    ----------
+    cut_coords : 3 sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates ``(x, y, z)`` of the point where the cut is
+        performed.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs :
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : 3 :obj:`tuple` of :obj:`float` or :obj:`int`
+        The world coordinates ``(x, y, z)`` of the point where the cut is
+        performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-        The 3 axes used to plot each view ('x', 'y', and 'z').
+        The axes used for plotting in each direction ('x', 'y' and 'z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "yxz"
+        The directions of cuts for ``OrthoProjector``.
 
     """
 
