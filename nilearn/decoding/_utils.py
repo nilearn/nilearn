@@ -3,7 +3,12 @@
 import warnings
 
 import numpy as np
-from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
+from sklearn.feature_selection import (
+    SelectKBest,
+    SelectPercentile,
+    f_classif,
+    f_regression,
+)
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
@@ -140,7 +145,11 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
 
 @fill_doc
 def check_feature_screening(
-    screening_percentile, mask_img, is_classification, verbose=0
+    screening_percentile,
+    mask_img,
+    is_classification,
+    screening_n_features=None,
+    verbose=0,
 ):
     """Check feature screening method.
 
@@ -166,6 +175,19 @@ def check_feature_screening(
 
     """
     f_test = f_classif if is_classification else f_regression
+
+    if screening_percentile is None and screening_n_features is not None:
+        if mask_img is not None:
+            from nilearn.image import get_data
+
+            n_features_in_mask = np.sum(get_data(mask_img) != 0)
+
+            if screening_n_features > n_features_in_mask:
+                raise ValueError(
+                    f"screening_n_features={screening_n_features} is larger"
+                    f"the number of features in the mask({n_features_in_mask})"
+                )
+        return SelectKBest(f_test, k=screening_n_features)
 
     if screening_percentile == 100 or screening_percentile is None:
         return None
