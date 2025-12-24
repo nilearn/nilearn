@@ -113,7 +113,7 @@ class BaseSlicer:
         %(cut_coords)s
 
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @classmethod
     def _check_cut_coords_in_bounds(cls, img, cut_coords) -> None:
@@ -1303,7 +1303,7 @@ class OrthoSlicer(_MultiDSlicer):
     _default_figsize: ClassVar[list[float]] = [2.2, 3.5]
 
     def _init_axes(self, **kwargs):
-        self.cut_coords = self._sanitize_cut_coords(self.cut_coords)
+        self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
         x0, y0, x1, y1 = self.rect
         facecolor = "k" if self._black_bg else "w"
         # Create our axes:
@@ -1838,7 +1838,7 @@ class BaseStackedSlicer(BaseSlicer):
         cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
                      None, default=None
             The number of cuts to perform or the list of cut positions in the
-             direction of this slicer.
+            direction of this slicer.
             If ``None`` is given, the cuts are calculated automatically.
 
         Returns
@@ -1925,7 +1925,7 @@ class BaseStackedSlicer(BaseSlicer):
         return coord_in
 
     def _init_axes(self, **kwargs):
-        self._sanitize_cut_coords(self.cut_coords)
+        self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
         x0, y0, x1, y1 = self.rect
         # Create our axes:
         self.axes = {}
@@ -2598,7 +2598,7 @@ class MosaicSlicer(BaseSlicer):
             Additional arguments to pass to ``self._axes_class``.
 
         """
-        self.cut_coords = self._sanitize_cut_coords(self.cut_coords)
+        self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
         if not isinstance(self.cut_coords, dict):
             self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
 
