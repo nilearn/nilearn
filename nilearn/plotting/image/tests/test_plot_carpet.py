@@ -34,6 +34,7 @@ def test_plot_carpet(matplotlib_pyplot, img_4d_mni, img_3d_ones_mni):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_carpet_long_acquisition(
     matplotlib_pyplot, img_3d_ones_mni, img_4d_long_mni
 ):

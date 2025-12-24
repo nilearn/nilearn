@@ -180,6 +180,7 @@ def test_plot_surf_swap_hemi(plt, engine, surf_img_1d, hemi, flip_surf_img):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_error(plt, engine, rng, in_memory_mesh):
     """Check error if invalid parameters values are specified to
     nilearn.plotting.surface.surf_plotting.plot_surf.
@@ -1013,6 +1014,7 @@ def test_plot_surf_roi_parcellation_plotly(
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("avg_method", ["mean", "median"])
 @pytest.mark.parametrize("symmetric_cmap", [True, False, None])
 def test_plot_surf_roi_default_arguments(
