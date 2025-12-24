@@ -21,12 +21,12 @@ from nilearn.plotting.html_stat_map import (
     _json_view_params,
     _json_view_size,
     _json_view_to_html,
-    _load_bg_img,
     _mask_stat_map,
     _resample_stat_map,
     _save_cm,
     _save_sprite,
     _threshold_data,
+    load_bg_img,
     view_img,
 )
 
@@ -193,12 +193,12 @@ def test_load_bg_img(affine_eye):
     img, _ = _simulate_img(affine)
 
     # use empty bg_img
-    bg_img, _, _, _ = _load_bg_img(img, bg_img=None)
+    bg_img, _, _, _ = load_bg_img(img, bg_img=None)
     # Check positive isotropic, near-diagonal affine
     _check_affine(bg_img.affine)
 
     # Try to load the default background
-    bg_img, _, _, _ = _load_bg_img(img)
+    bg_img, _, _, _ = load_bg_img(img)
 
     # Check positive isotropic, near-diagonal affine
     _check_affine(bg_img.affine)

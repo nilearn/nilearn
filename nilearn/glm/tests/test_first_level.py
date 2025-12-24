@@ -1523,6 +1523,7 @@ def test_first_level_residuals_errors(shape_4d_default):
         model._get_element_wise_model_attribute("foo", True)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "shapes",
     [
