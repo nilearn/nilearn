@@ -1348,7 +1348,6 @@ def test_second_level_t_contrast_length_errors(n_subjects):
 
 
 @pytest.mark.slow
-@pytest.mark.slow
 def test_second_level_f_contrast_length_errors(n_subjects):
     func_img, mask = fake_fmri_data()
 

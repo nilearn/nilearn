@@ -1554,7 +1554,7 @@ def test_screening_priority_logic():
         screening_percentile=10,
         mask_img=mask,
         is_classification=True,
-        screening_n_voxels=50,
+        screening_n_features=50,
     )
 
     # 3. VERIFY: We should get a SelectPercentile object
@@ -1563,26 +1563,16 @@ def test_screening_priority_logic():
     assert isinstance(selector, SelectPercentile)
     assert not isinstance(selector, SelectKBest)
 
-
-def test_check_feature_screening_n_voxels_only():
-    """Test that screening_n_voxels works when percentile is None."""
-    import nibabel as nib
-    import numpy as np
-    from sklearn.feature_selection import SelectKBest
-
-    from nilearn.decoding.decoder import check_feature_screening
-
-    # 1. Create a simple dummy mask
-    mask = nib.Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
-
-    # 2. Trigger the red line: percentile is None, n_voxels is set
+def test_check_feature_screening_n_features_only(img_3d_rand_eye):
+    """Test that screening_n_features works when percentile is None."""
+    # Call the function with only n_voxels specified
     selector = check_feature_screening(
         screening_percentile=None,
-        mask_img=mask,
+        mask_img=img_3d_rand_eye,
         is_classification=True,
-        screening_n_voxels=15,
+        screening_n_features=15,
     )
 
-    # 3. Verify it returned a SelectKBest object with the right 'k'
+    # Verify it returned a SelectKBest object with the right 'k'
     assert isinstance(selector, SelectKBest)
     assert selector.k == 15

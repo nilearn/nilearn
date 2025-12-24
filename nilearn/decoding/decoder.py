@@ -570,7 +570,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         cv=10,
         param_grid=None,
         screening_percentile=20,
-        screening_n_voxels=None,
+        screening_n_features=None,
         scoring=None,
         smoothing_fwhm=None,
         standardize=True,
@@ -590,7 +590,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.cv = cv
         self.param_grid = param_grid
         self.screening_percentile = screening_percentile
-        self.screening_n_voxels = screening_n_voxels
+        self.screening_n_features = screening_n_features
         self.scoring = scoring
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
@@ -686,7 +686,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             self.screening_percentile,
             self.mask_img_,
             is_classifier(self),
-            screening_n_voxels=self.screening_n_voxels,
+            screening_n_features=self.screening_n_features,
             verbose=self.verbose,
         )
 
@@ -1146,7 +1146,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         predictions are estimated using default strategy.
 
     %(screening_percentile)s
-    screening_n_voxels : int, optional
+    screening_n_features : int, optional
         Number of voxels to select. If `None, ``screening_percentile` is used.
         If both are set, `screening_percentile` takes priority.
         Default is None.
@@ -1221,7 +1221,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         cv=10,
         param_grid=None,
         screening_percentile=20,
-        screening_n_voxels=None,
+        screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
         standardize=True,
@@ -1242,7 +1242,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
-            screening_n_voxels=screening_n_voxels,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1322,9 +1322,9 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         predictions are estimated using default strategy.
 
     %(screening_percentile)s
-    screening_n_voxels : int, optional
+    screening_n_features : int, optional
         Number of voxels to select. If `None, ``screening_percentile` is used.
-        If both are set, `screening_n_voxels` takes priority.
+        If both are set, `screening_n_features` takes priority.
         Default is None.
 
     scoring : :obj:`str`, callable or None, optional. default='r2'
@@ -1391,7 +1391,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         cv=10,
         param_grid=None,
         screening_percentile=20,
-        screening_n_voxels=None,
+        screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
         standardize=True,
@@ -1412,7 +1412,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
-            screening_n_voxels=screening_n_voxels,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1493,9 +1493,9 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         equal to 10.
 
     %(screening_percentile)s
-    screening_n_voxels : int, optional
+    screening_n_features : int, optional
         Number of voxels to select. If `None, ``screening_percentile` is used.
-        If both are set, `screening_n_voxels` takes priority.
+        If both are set, `screening_n_features` takes priority.
         Default is None.
 
     scoring : :obj:`str`, callable or None, default= 'r2'
@@ -1557,7 +1557,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         param_grid=None,
         clustering_percentile=10,
         screening_percentile=20,
-        screening_n_voxels=None,
+        screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
         standardize=True,
@@ -1578,7 +1578,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
-            screening_n_voxels=screening_n_voxels,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1659,11 +1659,17 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         down to this percentile. ReNA is typically efficient for
         cluster_percentile equal to 10.
 
-    %(screening_percentile)s
-
-    screening_n_voxels : int, optional
+    screening_percentile : :obj:`int`, :obj:`float`, \
+        in closed interval [0, 100], \
+        default=20
+        The percentage of brain volume that will be kept with respect to a full
+        MNI template. In particular, if it is lower than 100, a univariate
+        feature selection based on the Anova F-value for the input data will be
+        performed. A float according to a percentile of the highest
+        scores.
+    screening_n_features : int, optional
         Number of voxels to select. If `None, ``screening_percentile` is used.
-        If both are set, `screening_n_voxels` takes priority.
+        If both are set, `screening_n_features` takes priority.
         Default is None.
 
     scoring : :obj:`str`, callable or None, optional. default='roc_auc'
@@ -1732,7 +1738,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         param_grid=None,
         clustering_percentile=10,
         screening_percentile=20,
-        screening_n_voxels=None,
+        screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
         standardize=True,
@@ -1753,7 +1759,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
-            screening_n_voxels=screening_n_voxels,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
