@@ -396,7 +396,7 @@ def resample_img(
         False is intended for testing,
         this prevents the use of a padding optimization.
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
 
             Default changed to True.
 

@@ -1498,7 +1498,7 @@ def first_level_from_bids(
     exclude_subjects : :obj:`list` of :obj:`str` or None, default=None
         Specifies the subset of subject labels to skip.
 
-        .. nilearn_versionadded:: 0.13.0dev
+        .. nilearn_versionadded:: 0.13.0
 
     img_filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), \
         default=None

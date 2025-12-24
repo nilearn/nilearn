@@ -416,7 +416,7 @@ def permuted_ols(
 
         .. nilearn_versionadded:: 0.9.2
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
 
             The default was changed to ``'dict'``.
 

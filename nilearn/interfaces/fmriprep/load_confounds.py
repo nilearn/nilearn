@@ -217,14 +217,14 @@ def load_confounds(
 
     fd_threshold : :obj:`float`, default=0.5
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
            The default was changed from ``0.2`` to ``0.5``.
 
         Framewise displacement threshold for scrub in mm.
 
     std_dvars_threshold : :obj:`float`, default=1.5
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
            The default value will be changed from ``3.0`` to ``1.5``.
 
         Standardized DVARS threshold for scrub.
