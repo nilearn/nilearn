@@ -179,6 +179,7 @@ def check_feature_screening(
     if screening_percentile is None and screening_n_features is not None:
         if mask_img is not None:
             from nilearn.image import get_data
+
             n_features_in_mask = np.sum(get_data(mask_img) != 0)
 
             if screening_n_features > n_features_in_mask:
