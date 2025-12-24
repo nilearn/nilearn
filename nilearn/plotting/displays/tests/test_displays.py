@@ -716,9 +716,9 @@ def check_doc_attributes(obj) -> None:
     [
         OrthoSlicer((2, 3, 4)),
         TiledSlicer((3, 4, 5)),
-        XSlicer([1]),
-        YSlicer([1]),
-        ZSlicer([1]),
+        XSlicer(1),
+        YSlicer(2),
+        ZSlicer(3),
         XZSlicer((4, 5)),
         YXSlicer((2, 3)),
         YZSlicer((1, 2)),
