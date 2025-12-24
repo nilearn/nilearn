@@ -941,7 +941,7 @@ class BaseSlicer:
                     default=30
             Size in pixel for each marker.
 
-        kwargs :
+        kwargs : :obj:`dict`
             Extra keyword arguments are passed to
             :class:`matplotlib.axes.Axes`.scatter method.
         """
@@ -1107,7 +1107,8 @@ class BaseSlicer:
 
         dpi : None or scalar, default=None
             The resolution in dots per inch.
-        kwargs :
+
+        kwargs : :obj:`dict`
             Extra keyword arguments are passed to
             :class:`matplotlib.axes.figure`.savefig method.
 
@@ -1144,7 +1145,7 @@ class _MultiDSlicer(BaseSlicer):
                   value is used to threshold the image: values below the
                   threshold (in absolute value) are plotted as transparent.
 
-        cut_coords : sequence of :obj:`float` or :obj:`int`, or None,
+        cut_coords : sequence of :obj:`float` or :obj:`int`, or None, \
                     default=None
             The world coordinates of the point where the cut is performed.
 
@@ -1262,7 +1263,7 @@ class OrthoSlicer(_MultiDSlicer):
         The brain color to use as the background color (e.g., for
         transparent colorbars).
 
-    kwargs :
+    kwargs : :obj:`dict`
         Extra keyword arguments are passed to
         :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
         direction.
@@ -1402,7 +1403,7 @@ class OrthoSlicer(_MultiDSlicer):
 
         Parameters
         ----------
-        cut_coords : 3 sequence of :obj:`float` or :obj:`int`, or None,
+        cut_coords : 3 sequence of :obj:`float` or :obj:`int`, or None, \
                      default=None
             The position of the cross to draw in world coordinates
             ``(x, y, z)``.
@@ -1484,7 +1485,7 @@ class TiledSlicer(_MultiDSlicer):
         The brain color to use as the background color (e.g., for
         transparent colorbars).
 
-    kwargs :
+    kwargs : :obj:`dict`
         Extra keyword arguments are passed to
         :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
         direction.
@@ -1750,8 +1751,9 @@ class TiledSlicer(_MultiDSlicer):
 
         Parameters
         ----------
-        cut_coords : 3 sequence of :obj:`float` or :obj:`int`, or None,
-                     optional
+        cut_coords : 3 sequence of :obj:`float` or :obj:`int`, or None, \
+                     default=None
+
             The position of the cross to draw in world coordinates
             ``(x, y, z)``.
             If ``None`` is passed, the ``TiledSlicer``'s cut coordinates are
@@ -1825,15 +1827,15 @@ class BaseStackedSlicer(BaseSlicer):
 
         Parameters
         ----------
-        img : 3D :class:`~nibabel.nifti1.Nifti1Image`, optional
+        img : 3D :class:`~nibabel.nifti1.Nifti1Image`, default=None
             The brain image.
 
-        threshold : :obj:`float`, optional
+        threshold : :obj:`float`, default=None
             The lower threshold to the positive activation.
             If ``None``, the activation threshold is computed using the
             80% percentile of the absolute value of the map.
 
-        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or
+        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
                      None, default=None
             The number of cuts to perform or the list of cut positions in the
              direction of this slicer.
@@ -1873,8 +1875,7 @@ class BaseStackedSlicer(BaseSlicer):
 
         Parameters
         ----------
-        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or
-                     None
+        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or None
 
             The number of cuts to perform or the list of cut positions in the
             direction of this slicer.
@@ -2016,7 +2017,7 @@ class BaseStackedSlicer(BaseSlicer):
 
         Parameters
         ----------
-        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or
+        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
                      None, default=None
             The list of positions of the crosses to draw in the direction of
             this slicer.
@@ -2064,7 +2065,7 @@ class XSlicer(BaseStackedSlicer):
         The brain color to use as the background color (e.g., for
         transparent colorbars).
 
-    kwargs :
+    kwargs : :obj:`dict`
         Extra keyword arguments are passed to
         :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
         direction.
@@ -2130,7 +2131,7 @@ class YSlicer(BaseStackedSlicer):
         The brain color to use as the background color (e.g., for
         transparent colorbars).
 
-    kwargs :
+    kwargs : :obj:`dict`
         Extra keyword arguments are passed to
         :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
         direction.
@@ -2196,7 +2197,7 @@ class ZSlicer(BaseStackedSlicer):
         The brain color to use as the background color (e.g., for
         transparent colorbars).
 
-    kwargs :
+    kwargs : :obj:`dict`
         Extra keyword arguments are passed to
         :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
         direction.
@@ -2261,7 +2262,7 @@ class XZSlicer(OrthoSlicer):
         The brain color to use as the background color (e.g., for
         transparent colorbars).
 
-    kwargs :
+    kwargs : :obj:`dict`
         Extra keyword arguments are passed to
         :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
         direction.
@@ -2325,7 +2326,7 @@ class YXSlicer(OrthoSlicer):
         The brain color to use as the background color (e.g., for
         transparent colorbars).
 
-    kwargs :
+    kwargs : :obj:`dict`
         Extra keyword arguments are passed to
         :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
         direction.
@@ -2389,7 +2390,7 @@ class YZSlicer(OrthoSlicer):
         The brain color to use as the background color (e.g., for
         transparent colorbars).
 
-    kwargs :
+    kwargs : :obj:`dict`
         Extra keyword arguments are passed to
         :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
         direction.
@@ -2441,8 +2442,8 @@ class MosaicSlicer(BaseSlicer):
 
     Parameters
     ----------
-    cut_coords : 3 sequence of :obj:`float` or :obj:`int`, :obj:`dict`
-                <:obj:`str`: 1D :class:`~numpy.ndarray`> or None
+    cut_coords : 3 sequence of :obj:`float` or :obj:`int`, \
+                 :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or None
         Either a sequence of length 3 indicating the number of cuts in each
         direction ``(x, y, z)``, or a dictionary where keys are the directions
         ('x', 'y', 'z') and the values are sequences holding the cut
@@ -2457,7 +2458,7 @@ class MosaicSlicer(BaseSlicer):
         The brain color to use as the background color (e.g., for
         transparent colorbars).
 
-    kwargs :
+    kwargs : :obj:`dict`
         Extra keyword arguments are passed to
         :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
         direction.
@@ -2501,7 +2502,7 @@ class MosaicSlicer(BaseSlicer):
 
         Parameters
         ----------
-        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or
+        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
                      None
             The world coordinates of the points where the cuts are performed.
 
@@ -2538,16 +2539,16 @@ class MosaicSlicer(BaseSlicer):
 
         Parameters
         ----------
-        img : 3D :class:`~nibabel.nifti1.Nifti1Image`, optional
+        img : 3D :class:`~nibabel.nifti1.Nifti1Image`, default=None
             The brain image.
 
-        threshold : :obj:`float`, optional
+        threshold : :obj:`float`, default=None
             The lower threshold to the positive activation. If ``None``,
             the activation threshold is computed using the 80% percentile of
             the absolute value of the map.
 
-        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or
-                     :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or
+        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
+                     :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
                      `None`, default=None
             The world coordinates of the points where the cuts are performed.
 
@@ -2712,7 +2713,7 @@ class MosaicSlicer(BaseSlicer):
 
         Parameters
         ----------
-        cut_coords : :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or
+        cut_coords : :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
                      `None`, optional
             The positions of the crosses to draw.
             If ``None`` is passed, the ``MosaicSlicer``'s cut coordinates are
