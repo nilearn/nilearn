@@ -651,7 +651,7 @@ keep_masked_labels : :obj:`bool`, default=False
 
     .. nilearn_deprecated:: 0.10.2
 
-    .. nilearn_versionchanged:: 0.13.0dev
+    .. nilearn_versionchanged:: 0.13.0
 
         The ``keep_masked_labels`` parameter will be removed in 0.15.
 
@@ -668,7 +668,7 @@ keep_masked_maps : :obj:`bool`, optional
 
     .. nilearn_deprecated:: 0.10.2
 
-    .. nilearn_versionchanged:: 0.13.0dev
+    .. nilearn_versionchanged:: 0.13.0
 
         The ``keep_masked_maps`` parameter will be removed in 0.15.
 
@@ -1154,14 +1154,14 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
     - ``True``: The signal is z-scored (same as option `zscore`).
       Timeseries are shifted to zero mean and scaled to unit variance.
 
-      .. nilearn_deprecated:: 0.13.0dev
+      .. nilearn_deprecated:: 0.13.0
 
         In nilearn version 0.15.0,
         ``True`` will be replaced by  ``'zscore_sample'``.
 
     - ``False``: Do not standardize the data.
 
-      .. nilearn_deprecated:: 0.13.0dev
+      .. nilearn_deprecated:: 0.13.0
 
         In nilearn version 0.15.0,
         ``False`` will be replaced by ``None``.
@@ -1756,7 +1756,7 @@ signals_transform = """signals : :obj:`numpy.ndarray`, \
 
         Signal for each element.
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
 
             Added ``set_output`` support.
 

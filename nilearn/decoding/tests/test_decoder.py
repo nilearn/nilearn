@@ -868,6 +868,7 @@ def test_decoder_dummy_classifier_default_scoring():
 
 
 @ignore_warnings
+@pytest.mark.slow
 def test_decoder_classification_string_label():
     iris = load_iris()
     X, y = iris.data, iris.target

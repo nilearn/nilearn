@@ -1415,7 +1415,7 @@ def binarize_img(
 
         .. nilearn_versionadded:: 0.10.3
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
 
             Default was changed to False.
 
