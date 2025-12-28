@@ -1564,6 +1564,7 @@ def test_screening_priority_logic():
     assert isinstance(selector, SelectPercentile)
     assert not isinstance(selector, SelectKBest)
 
+
 def test_check_feature_screening_n_features_only(img_3d_rand_eye):
     """Test that screening_n_features works when percentile is None."""
     # Call the function with only n_voxels specified
