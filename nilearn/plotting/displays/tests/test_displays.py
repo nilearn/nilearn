@@ -261,16 +261,25 @@ def test_mosaic_slicer_img_none_false(cut_coords, img):
     slicer.close()
 
 
-@pytest.mark.parametrize("cut_coords", [(5, 4), (1, 2, 3, 4)])
+@pytest.mark.parametrize(
+    "cut_coords",
+    [
+        (5, 4),
+        (1, 2, 3, 4),
+        {"x": [3, 5], "y": [3, 6]},
+        {"x": [3, 5], "y": [3, 6], "z": [1, 2], "k": [6, 8, 8]},
+        {"x": [3, 5], "y": [3, 6], "z": 7},
+    ],
+)
 def test_mosaic_slicer_wrong_inputs(cut_coords):
     """Tests that providing wrong inputs raises a ``ValueError``."""
     with pytest.raises(
-        ValueError, match="MosaicSlicer plotting expects a number, list"
+        ValueError, match="MosaicSlicer plotting expects a number, 3D list"
     ):
         MosaicSlicer.init_with_figure(img=None, cut_coords=cut_coords)
 
     with pytest.raises(
-        ValueError, match="MosaicSlicer plotting expects a number, list"
+        ValueError, match="MosaicSlicer plotting expects a number, 3D list"
     ):
         MosaicSlicer(img=None, cut_coords=cut_coords)
 
