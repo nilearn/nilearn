@@ -195,7 +195,7 @@ def test_display_basics_projectors(display, name, img, cut_coords):
     display.add_overlay(img, cmap="gray")
     display.title(f"display mode is {name}")
     if name != "mosaic":
-        assert display.cut_coords == cut_coords
+        assert display.cut_coords == (None,) * len(cut_coords)
     assert isinstance(display.frame_axes, matplotlib.axes.Axes)
     display.close()
 
