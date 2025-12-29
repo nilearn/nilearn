@@ -2503,26 +2503,39 @@ class MosaicSlicer(BaseSlicer):
         Parameters
         ----------
         cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
-                     None
+                     :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
+                     `None`
             The world coordinates of the points where the cuts are performed.
 
         Raises
         ------
         ValueError
-            If `cut_coords` is not a number, or a sequence of numbers.
+            If `cut_coords` is not a number, or a sequence of numbers, or a
+        dictionary.
         """
         if cut_coords is None:
             cut_coords = 7
         if isinstance(cut_coords, numbers.Number):
             cut_coords = [cut_coords] * cls._cut_count()
-        elif (
-            isinstance(cut_coords, (list, tuple, np.ndarray))
+
+        not_compatible = False
+        if (
+            isinstance(cut_coords, (list, tuple, np.ndarray, dict))
             and len(cut_coords) != cls._cut_count()
         ):
+            not_compatible = True
+        elif isinstance(cut_coords, dict):
+            if not {"x", "y", "z"}.issubset(cut_coords):
+                not_compatible = True
+            for value in cut_coords.values():
+                if not isinstance(value, (list, tuple, np.ndarray)):
+                    not_compatible = True
+        if not_compatible:
             raise ValueError(
                 "cut_coords passed does not match the display mode. "
-                f" {cls.__name__} plotting expects a number, list, tuple or "
-                "array of numbers or None."
+                f" {cls.__name__} plotting expects a number, 3D list, tuple, "
+                "array of numbers, or a dictionary with keys 'x', 'y', 'z' "
+                "and values as array."
                 f"You provided cut_coords={cut_coords}."
             )
 
@@ -2566,22 +2579,26 @@ class MosaicSlicer(BaseSlicer):
         """
         cut_coords = cls._sanitize_cut_coords(cut_coords)
 
-        coords = {}
-        if img is None or img is False:
-            bounds = ((-40, 40), (-30, 30), (-30, 75))
-            for direction, n_cuts in zip(
-                sorted(cls._cut_displayed), cut_coords, strict=False
-            ):
-                lower, upper = bounds["xyz".index(direction)]
-                coords[direction] = np.linspace(lower, upper, n_cuts).tolist()
-        else:
-            for direction, n_cuts in zip(
-                sorted(cls._cut_displayed), cut_coords, strict=False
-            ):
-                coords[direction] = find_cut_slices(
-                    img, direction=direction, n_cuts=n_cuts
-                )
-        return coords
+        if isinstance(cut_coords, (list, tuple, np.ndarray)):
+            coords = {}
+            if img is None or img is False:
+                bounds = ((-40, 40), (-30, 30), (-30, 75))
+                for direction, n_cuts in zip(
+                    sorted(cls._cut_displayed), cut_coords, strict=False
+                ):
+                    lower, upper = bounds["xyz".index(direction)]
+                    coords[direction] = np.linspace(
+                        lower, upper, n_cuts
+                    ).tolist()
+            else:
+                for direction, n_cuts in zip(
+                    sorted(cls._cut_displayed), cut_coords, strict=False
+                ):
+                    coords[direction] = find_cut_slices(
+                        img, direction=direction, n_cuts=n_cuts
+                    )
+            cut_coords = coords
+        return cut_coords
 
     @classmethod
     def _cut_count(cls):
