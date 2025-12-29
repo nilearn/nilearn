@@ -1892,13 +1892,14 @@ class BaseStackedSlicer(BaseSlicer):
         if cut_coords is None:
             cut_coords = 7
         elif isinstance(cut_coords, (list, tuple, np.ndarray)):
-            cut_coords = np.asarray(cut_coords).tolist()
-            if len(cut_coords) != len(set(cut_coords)):
+            # use dict.fromkeys to preserve order
+            unique = dict.fromkeys(cut_coords)
+            if len(cut_coords) != len(unique):
                 warnings.warn(
                     f"Dropping duplicates cuts from: {cut_coords=}",
                     stacklevel=find_stack_level(),
                 )
-                cut_coords = list(set(cut_coords))
+                cut_coords = list(unique)
         elif not isinstance(cut_coords, numbers.Number):
             raise ValueError(
                 "cut_coords passed does not match the display mode."
