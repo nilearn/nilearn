@@ -2527,9 +2527,20 @@ class MosaicSlicer(BaseSlicer):
         elif isinstance(cut_coords, dict):
             if not {"x", "y", "z"}.issubset(cut_coords):
                 not_compatible = True
-            for value in cut_coords.values():
+            for key, value in cut_coords.items():
                 if not isinstance(value, (list, tuple, np.ndarray)):
                     not_compatible = True
+                else:
+                    # use dict.fromkeys to preserve order
+                    unique = dict.fromkeys(value)
+                    if len(value) != len(unique):
+                        warnings.warn(
+                            f"Dropping duplicates cuts from direction '{key}' "
+                            "values {value}",
+                            stacklevel=find_stack_level(),
+                        )
+                        cut_coords[key] = list(unique)
+
         if not_compatible:
             raise ValueError(
                 "cut_coords passed does not match the display mode. "
