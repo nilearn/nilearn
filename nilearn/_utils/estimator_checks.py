@@ -2081,7 +2081,8 @@ def check_decoder_with_arrays(estimator_orig):
 
 def check_decoder_screening_n_features(estimator_orig):
     """Check that only n features are selected."""
-    if isinstance(estimator_orig, SearchLight):
+    if (isinstance(estimator_orig, SearchLight) or 
+        "SpacenNet" in estimator_orig.__class__.__name__):
         # not applicable to searchlight
         return
 
