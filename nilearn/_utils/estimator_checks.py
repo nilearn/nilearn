@@ -2087,6 +2087,7 @@ def check_decoder_screening_n_features(estimator_orig):
 
     estimator = clone(estimator_orig)
     estimator.screening_n_features = 100
+    estimator.screening_percentile = None
     estimator = fit_estimator(estimator)
 
     n_elements_ = estimator.n_elements_

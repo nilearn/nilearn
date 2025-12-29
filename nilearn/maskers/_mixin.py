@@ -264,7 +264,7 @@ class _LabelMaskerMixin:
 
         sub_df = self.lut_[self.lut_["index"].isin(valid_ids)]
 
-        return sub_df["name"].reset_index(drop=True).to_dict() #type: ignore
+        return sub_df["name"].reset_index(drop=True).to_dict()  # type: ignore[return-value]
 
     @property
     def region_ids_(self) -> dict[str | int, int | float]:
