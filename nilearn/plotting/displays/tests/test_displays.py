@@ -299,7 +299,13 @@ def expected_cuts(cut_coords):
 
 
 @pytest.mark.parametrize(
-    "cut_coords", [(1, 1, 1), 5, {"x": [10, 20], "y": [30, 40], "z": [15, 16]}]
+    "cut_coords",
+    [
+        (1, 1, 1),
+        5,
+        {"x": [10, 20], "y": [30, 40], "z": [15, 16]},
+        {"x": [10, 20, 20], "y": [30, 40, 40], "z": [15, 15, 16]},
+    ],
 )
 def test_demo_mosaic_slicer(cut_coords, img, expected_cuts):
     """Tests for MosaicSlicer with different cut_coords in constructor."""
