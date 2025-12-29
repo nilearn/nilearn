@@ -2519,30 +2519,25 @@ class MosaicSlicer(BaseSlicer):
         if isinstance(cut_coords, numbers.Number):
             cut_coords = [cut_coords] * cls._cut_count()
 
-        not_compatible = False
-        if (
-            isinstance(cut_coords, (list, tuple, np.ndarray, dict))
-            and len(cut_coords) != cls._cut_count()
+        if any(
+            (
+                (
+                    isinstance(cut_coords, (list, tuple, np.ndarray, dict))
+                    and len(cut_coords) != cls._cut_count()
+                ),
+                (
+                    isinstance(cut_coords, dict)
+                    and not {"x", "y", "z"}.issubset(cut_coords)
+                ),
+                (
+                    isinstance(cut_coords, dict)
+                    and not all(
+                        isinstance(value, (list, tuple, np.ndarray))
+                        for value in cut_coords.values()
+                    )
+                ),
+            )
         ):
-            not_compatible = True
-        elif isinstance(cut_coords, dict):
-            if not {"x", "y", "z"}.issubset(cut_coords):
-                not_compatible = True
-            for key, value in cut_coords.items():
-                if not isinstance(value, (list, tuple, np.ndarray)):
-                    not_compatible = True
-                else:
-                    # use dict.fromkeys to preserve order
-                    unique = dict.fromkeys(value)
-                    if len(value) != len(unique):
-                        warnings.warn(
-                            f"Dropping duplicates cuts from direction '{key}' "
-                            "values {value}",
-                            stacklevel=find_stack_level(),
-                        )
-                        cut_coords[key] = list(unique)
-
-        if not_compatible:
             raise ValueError(
                 "cut_coords passed does not match the display mode. "
                 f" {cls.__name__} plotting expects a number, 3D list, tuple, "
@@ -2550,6 +2545,18 @@ class MosaicSlicer(BaseSlicer):
                 "and values as array."
                 f"You provided cut_coords={cut_coords}."
             )
+
+        if isinstance(cut_coords, dict):
+            for key, value in cut_coords.items():
+                # use dict.fromkeys to preserve order
+                unique = dict.fromkeys(value)
+                if len(value) != len(unique):
+                    warnings.warn(
+                        f"Dropping duplicates cuts from direction '{key}' "
+                        "values {value}",
+                        stacklevel=find_stack_level(),
+                    )
+                    cut_coords[key] = list(unique)
 
         return cut_coords
 
