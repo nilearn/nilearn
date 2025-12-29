@@ -943,7 +943,7 @@ class BaseSlicer:
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to
-            :class:`matplotlib.pylot.scatter`.
+            :func:`matplotlib.pylot.scatter`.
         """
         defaults = {"marker": "o", "zorder": 1000}
         marker_coords = np.asanyarray(marker_coords)
@@ -1110,7 +1110,7 @@ class BaseSlicer:
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to
-            :class:`matplotlib.pyplot.savefig`.
+            :func:`matplotlib.pyplot.savefig`.
 
         """
         facecolor = edgecolor = "k" if self._black_bg else "w"
