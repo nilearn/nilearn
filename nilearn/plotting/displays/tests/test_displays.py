@@ -159,6 +159,8 @@ def cut_coords(name):
         return (0,) * 2
     if name in ["lyrz", "lyr", "lzr"]:
         return (0,)
+    if name in ["x", "y", "z"]:
+        return [0]
     return (0,) * 4 if name in ["lr", "l"] else (0,) * 3
 
 
