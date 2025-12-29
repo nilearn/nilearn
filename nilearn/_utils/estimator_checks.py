@@ -614,7 +614,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
             yield (clone(estimator), check_decoder_compatibility_mask_image)
             yield (clone(estimator), check_decoder_with_surface_data)
             yield (clone(estimator), check_decoder_with_arrays)
-            yield (clone(estimator), check_decoder_screening_n_voxels)
+            yield (clone(estimator), check_decoder_screening_n_features)
             if is_regressor(estimator):
                 yield (
                     clone(estimator),
