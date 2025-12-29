@@ -629,38 +629,56 @@ def test_slicer_sanitize_cut_coords_error(slicer, cut_coords):
         slicer._sanitize_cut_coords(cut_coords)
 
 
-def check_if_all_covered(cls, parameters, doc_dict):
-    """Check is all parameters are documented without duplicates and extras."""
+def check_doc(obj) -> None:
+    """Check that class and method parameters and attributes are documented.
+
+    - Check if public class attributes are documented
+    - Check if __init__ parameters are documented
+    - Check if each public function and parameters are documented
+    - Check not to have duplicates
+    """
+    obj_doc = NumpyDocString(inspect.getdoc(obj.__class__))
+
+    # check public class attributes
+    # ------------------------------
+    attributes = [
+        x
+        for x in obj.__dict__
+        if not (x.startswith("_") or inspect.isfunction(x))
+    ]
+    check_parameters(attributes, obj_doc["Attributes"])
+
+    # check __init__ parameters
+    # -------------------------
+    parameters = dict(**inspect.signature(obj.__init__).parameters)
+    check_parameters(parameters, obj_doc["Parameters"])
+
+    # get public methods from class definition
+    # ----------------------------------------
+    check_methods(obj.__class__)
+
+
+def check_parameters(parameters, doc_dict):
+    """Check if all parameters are documented without duplicates and extras."""
     documented = {
-        param.name: param.type
+        name.strip(): param.type
         for param in doc_dict
         if not param.name.startswith("_")
+        for name in param.name.split(",")
     }
     undocumented = [param for param in parameters if param not in documented]
-    if undocumented:
-        raise ValueError(
-            "Missing docstring for "
-            f"[{', '.join(undocumented)}] "
-            f"in class {cls}."
-        )
     extras = [param for param in documented if param not in parameters]
-    if extras:
-        raise ValueError(
-            "Extra docstring for "
-            f"[{', '.join(extras)}] "
-            f"in estimator {cls.__name__}."
-        )
 
-    # avoid duplicates
+    # no undocumented
+    assert len(undocumented) == 0
+    # no extras
+    assert len(extras) == 0
+    # no duplicates
     assert len(documented) == len(set(documented))
 
 
-def check_class_method_docstrings(cls):
-    """Check is all public functions and parameters are documented."""
-    import inspect
-
-    from numpydoc.docscrape import NumpyDocString
-
+def check_methods(cls):
+    """Check if all public functions and parameters are documented."""
     for name, member in cls.__dict__.items():
         if name.startswith("_"):
             continue
@@ -679,36 +697,7 @@ def check_class_method_docstrings(cls):
         ]
         func_doc = NumpyDocString(inspect.getdoc(func))
 
-        check_if_all_covered(cls, params, func_doc["Parameters"])
-
-
-def check_doc_attributes(obj) -> None:
-    """Check that class and method parameters and attributes are documented.
-
-    - Check if public attributes are documented
-    - Check if __init__ parameters are documented
-    - Check if each public function and parameters are documented
-    - Check not to have duplicates
-    """
-    obj_doc = NumpyDocString(inspect.getdoc(obj.__class__))
-
-    # check public attributes
-    # ------------------------------
-    attributes = [
-        x
-        for x in obj.__dict__
-        if not (x.startswith("_") or inspect.isfunction(x))
-    ]
-    check_if_all_covered(obj.__class__, attributes, obj_doc["Attributes"])
-
-    # check __init__ parameters
-    # --------------------------------
-    parameters = dict(**inspect.signature(obj.__init__).parameters)
-    check_if_all_covered(obj.__class__, parameters, obj_doc["Parameters"])
-
-    # get public functions from class definition
-    # ------------------------------------------
-    check_class_method_docstrings(obj.__class__)
+        check_parameters(params, func_doc["Parameters"])
 
 
 @pytest.mark.parametrize(
@@ -729,13 +718,13 @@ def test_slicer_docstrings(slicer):
     """Test if all slicers defined nilearn.plotting.displays._slicers have
     complete docstrings.
     """
-    check_doc_attributes(slicer)
+    check_doc(slicer)
 
 
 def test_slicer_base_class_docstrings():
     """Test if base classes defined nilearn.plotting.displays._slicers have
     complete docstrings for methods.
     """
-    check_class_method_docstrings(BaseSlicer)
-    check_class_method_docstrings(_MultiDSlicer)
-    check_class_method_docstrings(BaseStackedSlicer)
+    check_methods(BaseSlicer)
+    check_methods(_MultiDSlicer)
+    check_methods(BaseStackedSlicer)
