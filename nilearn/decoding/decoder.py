@@ -513,7 +513,11 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'. Defaults to 'roc_auc'.
-
+    
+    screening_n_features : int, optional
+        The number of features to keep. Default=None.
+        If both `screening_percentile` and `screening_n_features` are set,
+        `screening_percentile` takes priority.
     %(smoothing_fwhm)s
 
     %(standardize_true)s
@@ -1324,7 +1328,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
     %(screening_percentile)s
     screening_n_features : int, optional
         Number of voxels to select. If `None, ``screening_percentile` is used.
-        If both are set, `screening_n_features` takes priority.
+        If both are set, `screening_percentile` takes priority.
         Default is None.
 
     scoring : :obj:`str`, callable or None, optional. default='r2'
