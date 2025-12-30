@@ -2086,9 +2086,9 @@ def check_decoder_screening_n_features(estimator_orig):
         return
 
     estimator = clone(estimator_orig)
-    estimator.screening_n_features = 100
-    # Set percentile to None so it doesn't override n_features
-    estimator.screening_percentile = None
+    
+    # CRITICAL FIX: Use set_params to ensure the changes stick!
+    estimator.set_params(screening_n_features=100, screening_percentile=None)
 
     try:
         estimator = fit_estimator(estimator)
@@ -2097,7 +2097,6 @@ def check_decoder_screening_n_features(estimator_orig):
 
     n_elements_ = estimator.n_elements_
     assert n_elements_ == 100
-
 
 # ------------------ MASKER CHECKS ------------------
 
