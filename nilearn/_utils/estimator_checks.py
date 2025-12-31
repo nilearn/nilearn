@@ -2087,18 +2087,17 @@ def check_decoder_screening_n_features(estimator_orig):
 
     # 2. GET PARAMS: Get the official list of ingredients for this machine
     params = estimator_orig.get_params()
-    # it's SpaceNet (or similar). Skip it to prevent a crash.
     if "screening_n_features" not in params:
         return
-    # 4. PREP DATA: Generate some data to fit the estimator
-    n_samples = 50
-    params["screening_n_features"] = 100
-    params["screening_percentile"] = None
+
+    # 4. MODIFY INGREDIENTS: Change the recipe before we bake the cake
+    params['screening_n_features'] = 100
+    params['screening_percentile'] = None
     estimator = estimator_orig._class_(**params)
 
     # 6. RUN TEST
     estimator = fit_estimator(estimator)
-
+    
     # 7. VERIFY
     assert estimator.n_elements_ == 100
 
