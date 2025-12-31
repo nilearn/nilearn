@@ -2084,20 +2084,23 @@ def check_decoder_screening_n_features(estimator_orig):
     # 1. Skip SearchLight (explicitly doesn't support global screening)
     if isinstance(estimator_orig, SearchLight):
         return
-    # 2. Skip estimators that do not have screening_n_features
-    if "screening_n_features" not in estimator_orig.get_params():
+
+    # 2. GET PARAMS: Get the official list of ingredients for this machine
+    params = estimator_orig.get_params()
+    # it's SpaceNet (or similar). Skip it to prevent a crash.
+    if "screening_n_features" not in params:
         return
+    # 4. PREP DATA: Generate some data to fit the estimator
+    n_samples = 50
+    params["screening_n_features"] = 100
+    params["screening_percentile"] = None
+    estimator = estimator_orig._class_(**params)
 
-    # 3. Setup the test for valid Decoders only
-    estimator = clone(estimator_orig)
-
-    # We now know it is safe to use set_params because we checked above.
-    estimator.set_params(screening_n_features=100, screening_percentile=None)
+    # 6. RUN TEST
     estimator = fit_estimator(estimator)
 
-    # 5. Verify the result
-    n_elements_ = estimator.n_elements_
-    assert n_elements_ == 100
+    # 7. VERIFY
+    assert estimator.n_elements_ == 100
 
 
 # ------------------ MASKER CHECKS ------------------
