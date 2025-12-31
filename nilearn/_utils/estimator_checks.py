@@ -2081,23 +2081,21 @@ def check_decoder_with_arrays(estimator_orig):
 
 def check_decoder_screening_n_features(estimator_orig):
     """Check that only n features are selected."""
-    # Skip SearchLight (it doesn't support global feature screening)
+    # 1. Skip SearchLight (explicitly doesn't support global screening)
     if isinstance(estimator_orig, SearchLight):
         return
-
-    estimator = clone(estimator_orig)
-
-    try:
-        estimator.set_params(
-            screening_n_features=100, screening_percentile=None
-        )
-        estimator = fit_estimator(estimator)
-    except (TypeError, ValueError):
-        # Catch errors:
-        # - ValueError: "Invalid parameter" (SpaceNet)
-        # - TypeError: Math errors with None (SpaceNet)
+    # 2. Skip estimators that do not have screening_n_features
+    if "screening_n_features" not in estimator_orig.get_params():
         return
 
+    # 3. Setup the test for valid Decoders only
+    estimator = clone(estimator_orig)
+
+    # We now know it is safe to use set_params because we checked above.
+    estimator.set_params(screening_n_features=100, screening_percentile=None)
+    estimator = fit_estimator(estimator)
+
+    # 5. Verify the result
     n_elements_ = estimator.n_elements_
     assert n_elements_ == 100
 
