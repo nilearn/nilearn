@@ -2081,24 +2081,27 @@ def check_decoder_with_arrays(estimator_orig):
 
 def check_decoder_screening_n_features(estimator_orig):
     """Check that only n features are selected."""
-    # 1. Skip SearchLight (explicitly doesn't support global screening)
+    # 1. Skip SearchLight (doesn't support this feature)
     if isinstance(estimator_orig, SearchLight):
         return
-
-    # 2. GET PARAMS: Get the official list of ingredients for this machine
-    params = estimator_orig.get_params()
-    if "screening_n_features" not in params:
+    # 2. Check that the estimator has the screening_n_features parameter
+    # This safely skips SpaceNet without errors.
+    if "screening_n_features" not in estimator_orig.get_params():
         return
 
-    # 4. MODIFY INGREDIENTS: Change the recipe before we bake the cake
+    # 3. Prepare the "Factory Order" (The params we want)
+    params = estimator_orig.get_params()
     params['screening_n_features'] = 100
     params['screening_percentile'] = None
-    estimator = estimator_orig.__class__(**params)
 
-    # 6. RUN TEST
+    # 4. Create a Fresh Instance (The "Factory Reset")
+    # We use _class_ (double underscore) so it works for ANY estimator type.
+    estimator = estimator_orig._class_(**params)
+
+    # 5. Run the Test (Standard Helper)
     estimator = fit_estimator(estimator)
-    
-    # 7. VERIFY
+
+    # 6. Verify
     assert estimator.n_elements_ == 100
 
 
