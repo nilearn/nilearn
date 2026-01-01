@@ -2093,7 +2093,7 @@ def check_decoder_screening_n_features(estimator_orig):
     # 4. MODIFY INGREDIENTS: Change the recipe before we bake the cake
     params['screening_n_features'] = 100
     params['screening_percentile'] = None
-    estimator = estimator_orig._class_(**params)
+    estimator = estimator_orig.__class__(**params)
 
     # 6. RUN TEST
     estimator = fit_estimator(estimator)
