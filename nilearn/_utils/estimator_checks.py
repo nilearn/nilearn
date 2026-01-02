@@ -2096,7 +2096,7 @@ def check_decoder_screening_n_features(estimator_orig):
 
     # 4. Create a Fresh Instance (The "Factory Reset")
     # We use _class_ (double underscore) so it works for ANY estimator type.
-    estimator = estimator_orig._class_(**params)
+    estimator = estimator_orig.__class__(**params)
 
     # 5. Run the Test (Standard Helper)
     estimator = fit_estimator(estimator)
