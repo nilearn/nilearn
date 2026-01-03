@@ -2098,8 +2098,10 @@ def check_decoder_screening_n_features(estimator_orig):
         return
 
     # 2. Skip Decoder / DecoderRegressor
-    # The Decoder's 'n_elements_' attribute tracks the Input Mask Size (125 voxels),
-    # NOT the features selected inside the internal cross-validation loop (10 features).
+    # The Decoder's 'n_elements_' attribute
+    #  tracks the Input Mask Size (125 voxels),
+    # NOT the features selected inside the 
+    # internal cross-validation loop (10 features).
     # Therefore, asserting n_elements_ == 10 will always fail.
     if "Decoder" in class_name:
         return
