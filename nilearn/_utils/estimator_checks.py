@@ -2092,7 +2092,7 @@ def check_decoder_screening_n_features(estimator_orig):
     class_name = estimator_orig.__class__.__name__
 
     # --- FIX: SKIP INCOMPATIBLE ESTIMATORS ---
-    
+
     # 1. Skip FREM (Ensemble models select > n features total)
     if "FREM" in class_name:
         return
@@ -2117,18 +2117,20 @@ def check_decoder_screening_n_features(estimator_orig):
     y = np.array([0] * 10 + [1] * 10)
 
     params = estimator_orig.get_params()
-    params['screening_n_features'] = 10
-    params['screening_percentile'] = None
-    
-    if 'clustering_percentile' in params:
-        params['clustering_percentile'] = 100 
-    if 'cv' in params:
-        params['cv'] = None
+    params["screening_n_features"] = 10
+    params["screening_percentile"] = None
+
+    if "clustering_percentile" in params:
+        params["clustering_percentile"] = 100
+    if "cv" in params:
+        params["cv"] = None
 
     estimator = estimator_orig.__class__(**params)
     estimator.fit(X_img, y)
 
     assert estimator.n_elements_ == 10
+
+
 # ------------------ MASKER CHECKS ------------------
 
 
