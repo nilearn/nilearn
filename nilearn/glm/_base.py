@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
-import pandas as pd
 from nibabel.onetime import auto_attr
 from sklearn.base import BaseEstimator
 from sklearn.utils import Bunch
@@ -24,7 +23,6 @@ from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._version import __version__
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
-    glm_model_attributes_to_dataframe,
     load_bg_img,
     make_stat_maps_contrast_clusters,
     mask_to_plot,
@@ -33,7 +31,6 @@ from nilearn.glm._reporting_utils import (
 )
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
-from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.html_report import (
     MISSING_ENGINE_MSG,
     UNFITTED_MSG,
@@ -538,15 +535,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
             )
         )
 
-        model_attributes = glm_model_attributes_to_dataframe(self)
-        with pd.option_context("display.max_colwidth", 100):
-            model_attributes_html = dataframe_to_html(
-                model_attributes,
-                precision=2,
-                header=True,
-                sparsify=False,
-            )
-
         if not hasattr(self, "_reporting_data"):
             self._reporting_data: dict[str, Any] = {
                 "trial_types": [],
@@ -715,7 +703,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             date=datetime.datetime.now().replace(microsecond=0).isoformat(),
             mask_plot=mask_plot,
             model_type=self.__str__(),
-            parameters=model_attributes_html,
+            parameters=self._repr_html_(),
             reporting_data=Bunch(**self._reporting_data),
             results=results,
             run_wise_dict=run_wise_dict,
