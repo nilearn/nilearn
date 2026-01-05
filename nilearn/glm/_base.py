@@ -55,6 +55,10 @@ class BaseGLM(_NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator):
     _estimator_type = "glm"  # TODO (sklearn >= 1.8) remove
 
     def _doc_link_url_param_generator(self):
+        """Return doc URL components for GLM estimators.
+
+        GLM doc URL is slightly different than that of other estimators.
+        """
         estimator_name = self.__class__.__name__
         tmp = list(
             itertools.takewhile(
