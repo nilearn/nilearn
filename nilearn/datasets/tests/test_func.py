@@ -1066,6 +1066,7 @@ def test_fetch_spm_multimodal(tmp_path, capsys):
     )
 
 
+@pytest.mark.single_process
 def test_fetch_spm_multimodal_missing_data(tmp_path, request_mocker):
     request_mocker.url_mapping[re.compile(r".*multimodal_.*mri.zip")] = (
         _generate_spm_multimodal()

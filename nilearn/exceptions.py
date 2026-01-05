@@ -28,14 +28,14 @@ AuthorizedException = (
 class NotImplementedWarning(UserWarning):
     """Custom warning to warn about not implemented features.
 
-    .. nilearn_versionadded:: 0.13.0dev
+    .. nilearn_versionadded:: 0.13.0
     """
 
 
 class MaskWarning(UserWarning):
     """Custom warning related to masks.
 
-    .. nilearn_versionadded:: 0.13.0dev
+    .. nilearn_versionadded:: 0.13.0
     """
 
 
