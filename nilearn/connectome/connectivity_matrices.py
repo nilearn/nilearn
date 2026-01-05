@@ -13,6 +13,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import signal
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
+from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin
 from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -374,7 +375,9 @@ def prec_to_partial(precision):
 
 
 @fill_doc
-class ConnectivityMeasure(TransformerMixin, BaseEstimator):
+class ConnectivityMeasure(
+    _NilearnHTMLDocumentationLinkMixin, TransformerMixin, BaseEstimator
+):
     """A class that computes different kinds of \
        :term:`functional connectivity` matrices.
 

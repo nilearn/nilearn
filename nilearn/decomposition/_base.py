@@ -25,6 +25,7 @@ import nilearn
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import (
@@ -298,7 +299,12 @@ def _mask_and_reduce_single(
 
 
 @fill_doc
-class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
+class _BaseDecomposition(
+    _NilearnHTMLDocumentationLinkMixin,
+    CacheMixin,
+    TransformerMixin,
+    BaseEstimator,
+):
     """Base class for matrix factorization based decomposition estimators.
 
     Handles mask logic, provides transform and inverse_transform methods

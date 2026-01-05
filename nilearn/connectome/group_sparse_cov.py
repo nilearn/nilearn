@@ -20,6 +20,7 @@ from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
+from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -545,7 +546,9 @@ def _check_if_tolerance_reached(tol, max_norm, verbose, n):
 
 
 @fill_doc
-class GroupSparseCovariance(CacheMixin, BaseEstimator):
+class GroupSparseCovariance(
+    _NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator
+):
     """Covariance and precision matrix estimator.
 
     The model used has been introduced in :footcite:t:`Varoquaux2010a`, and the
@@ -1024,7 +1027,9 @@ class EarlyStopProbe:
 
 
 @fill_doc
-class GroupSparseCovarianceCV(BaseEstimator):
+class GroupSparseCovarianceCV(
+    _NilearnHTMLDocumentationLinkMixin, BaseEstimator
+):
     """Sparse inverse covariance w/ cross-validated choice of the parameter.
 
     A cross-validated value for the regularization parameter is first

@@ -109,6 +109,7 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_mesh,
 )
 from nilearn.exceptions import DimensionError, MeshDimensionError
+from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import get_data, index_img, new_img_like
 from nilearn.image.image import check_imgs_equal
@@ -586,6 +587,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
     yield (clone(estimator), check_set_output)
     yield (clone(estimator), check_tags)
     yield (clone(estimator), check_verbose)
+    yield (clone(estimator), check_doc_link)
 
     if isinstance(estimator, CacheMixin):
         yield (clone(estimator), check_img_estimator_cache_warning)
@@ -987,6 +989,35 @@ def check_doc_attributes(estimator) -> None:
             ),
             stacklevel=find_stack_level(),
         )
+
+
+def check_doc_link(estimator_orig):
+    """Check that _get_doc_link provides the correct link to the doc.
+
+    All estimators but the GLM ones follow the same pattern.
+    """
+    estimator_name = estimator_orig.__class__.__name__
+
+    modules = estimator_orig.__class__.__module__.split(".")
+
+    extra = r"\."
+    if isinstance(estimator_orig, FirstLevelModel):
+        extra = r"\.first_level\."
+    elif isinstance(estimator_orig, SecondLevelModel):
+        extra = r"\.second_level\."
+
+    expected_pattern = (
+        rf"https://nilearn\.github\.io/"
+        rf"(dev|stable|\d+\.\d+\.\d+)/modules/generated/"
+        rf"nilearn\.{modules[1]}{extra}{estimator_name}\.html"
+    )
+
+    doc_link = estimator_orig._get_doc_link()
+
+    assert re.fullmatch(expected_pattern, doc_link), (
+        f"Doc link '{doc_link}' does not match expected pattern "
+        f"'{expected_pattern}'"
+    )
 
 
 # ------------------ GENERIC IMG ESTIMATORS CHECKS ------------------

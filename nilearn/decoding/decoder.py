@@ -44,6 +44,7 @@ from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -446,7 +447,9 @@ def _parallel_fit(
 
 
 @fill_doc
-class _BaseDecoder(CacheMixin, BaseEstimator):
+class _BaseDecoder(
+    _NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator
+):
     """A wrapper for popular classification/regression strategies in \
     neuroimaging.
 

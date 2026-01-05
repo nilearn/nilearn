@@ -9,10 +9,7 @@ from typing import Any
 
 import numpy as np
 from joblib import Memory
-from sklearn.base import (
-    BaseEstimator,
-    TransformerMixin,
-)
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
 
@@ -20,6 +17,7 @@ from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
+from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -301,6 +299,7 @@ def sanitize_displayed_maps(
 
 @fill_doc
 class BaseMasker(
+    _NilearnHTMLDocumentationLinkMixin,
     _ReportingMixin,
     TransformerMixin,
     CacheMixin,
@@ -557,7 +556,11 @@ class BaseMasker(
 
 
 class _BaseSurfaceMasker(
-    _ReportingMixin, TransformerMixin, CacheMixin, BaseEstimator
+    _NilearnHTMLDocumentationLinkMixin,
+    _ReportingMixin,
+    TransformerMixin,
+    CacheMixin,
+    BaseEstimator,
 ):
     """Class from which all surface maskers should inherit."""
 
