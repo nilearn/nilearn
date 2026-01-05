@@ -808,6 +808,7 @@ def test_iter_surface_img(surf_img_2d):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_iter_img_surface_2d(surf_img_1d, surf_img_2d):
     """Return as is if surface image is 2D."""
     input = surf_img_2d(1)

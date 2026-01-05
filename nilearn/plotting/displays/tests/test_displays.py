@@ -232,6 +232,7 @@ def test_mosaic_slicer_integer_cut_coords(cut_coords, img):
     slicer.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("cut_coords", [(4, 5, 2), (1, 1, 1)])
 def test_mosaic_slicer_tuple_cut_coords(cut_coords, img):
     """Tests for MosaicSlicer with cut_coords provided as a tuple."""

@@ -417,6 +417,7 @@ def test_plot_surf_avg_method_errors(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
     """Test if figure title is set correctly in
     nilearn.plotting.surface.surf_plotting.plot_surf.
