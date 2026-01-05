@@ -73,20 +73,16 @@ def generate_and_check_masker_report(
         # no image present if reports not requested or masker is not fitted
         excludes.append('<div class="image">')
 
-    else:
-        if masker.__sklearn_is_fitted__():
-            includes.append("<th>Parameter</th>")
-
-        if is_matplotlib_installed():
-            if accept_surf_img_input(masker):
-                includes.append("data:image/png;base64,")
-            else:
-                includes.append("data:image/svg+xml;base64,")
-
+    elif is_matplotlib_installed():
+        if accept_surf_img_input(masker):
+            includes.append("data:image/png;base64,")
         else:
-            excludes.extend(
-                ["data:image/svg+xml;base64,", "data:image/png;base64,"]
-            )
+            includes.append("data:image/svg+xml;base64,")
+
+    else:
+        excludes.extend(
+            ["data:image/svg+xml;base64,", "data:image/png;base64,"]
+        )
 
     if extend_includes is not None:
         includes.extend(extend_includes)
