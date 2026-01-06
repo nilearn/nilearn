@@ -9,6 +9,7 @@ from nibabel import Nifti1Image
 
 from nilearn._utils.helpers import is_windows_platform
 from nilearn.conftest import _affine_eye
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 from nilearn.regions.parcellations import (
     Parcellations,
     _check_parameters_transform,
@@ -27,7 +28,7 @@ METHODS = [
 
 
 @pytest.fixture
-def test_image():
+def image_1():
     data = np.zeros((10, 11, 12, 5))
     data[9, 10, 2] = 1
     data[4, 9, 3] = 2
@@ -35,45 +36,45 @@ def test_image():
 
 
 @pytest.fixture
-def test_image_2():
+def image_2():
     data = np.ones((10, 11, 12, 10))
     data[6, 7, 8] = 2
     data[9, 10, 11] = 3
     return Nifti1Image(data, affine=_affine_eye())
 
 
-def test_error_parcellation_method_none(test_image):
+def test_error_parcellation_method_none(image_1):
     with pytest.raises(
         ValueError, match=r"Parcellation method is specified as None. "
     ):
-        Parcellations(method=None).fit(test_image)
+        Parcellations(method=None).fit(image_1)
 
 
 @pytest.mark.parametrize("method", ["kmens", "avg", "completed"])
-def test_errors_raised_in_check_parameters_fit(method, test_image):
+def test_errors_raised_in_check_parameters_fit(method, image_1):
     """Test whether an error is raised or not given a false method type."""
     with pytest.raises(
         ValueError,
         match=("'method' must be one of"),
     ):
-        Parcellations(method=method).fit(test_image)
+        Parcellations(method=method).fit(image_1)
 
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5, 10, 15])
-def test_parcellations_fit_on_single_nifti_image(method, n_parcel, test_image):
+def test_parcellations_fit_on_single_nifti_image(method, n_parcel, image_1):
     """Test return attributes for each method."""
     parcellator = Parcellations(method=method, n_parcels=n_parcel)
-    parcellator.fit(test_image)
+    parcellator.fit(image_1)
 
     labels_img = parcellator.labels_img_
     # Test that object returns attribute labels_img_
     assert labels_img is not None
     # After inverse_transform, shape must match with
     # original input data
-    assert labels_img.shape == test_image.shape[:3]
+    assert labels_img.shape == image_1.shape[:3]
     # Test object returns attribute masker_
     assert parcellator.masker_ is not None
     assert parcellator.mask_img_ is not None
@@ -111,10 +112,8 @@ def test_parcellations_no_int64_warnings(img_4d_zeros_eye):
 
 @pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellations_fit_on_multi_nifti_images(
-    method, test_image, affine_eye
-):
-    fmri_imgs = [test_image] * 3
+def test_parcellations_fit_on_multi_nifti_images(method, image_1, affine_eye):
+    fmri_imgs = [image_1] * 3
 
     parcellator = Parcellations(method=method, n_parcels=5)
     parcellator.fit(fmri_imgs)
@@ -131,41 +130,37 @@ def test_parcellations_fit_on_multi_nifti_images(
 @pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
-def test_parcellations_transform_single_nifti_image(
-    method, n_parcel, test_image_2
-):
+def test_parcellations_transform_single_nifti_image(method, n_parcel, image_2):
     """Test with NiftiLabelsMasker extraction of timeseries data \
        after building a parcellations image.
     """
     parcellator = Parcellations(method=method, n_parcels=n_parcel)
-    parcellator.fit(test_image_2)
+    parcellator.fit(image_2)
     # transform to signals
-    signals = parcellator.transform(test_image_2)
+    signals = parcellator.transform(image_2)
 
     # Test if the signals extracted are of same shape as inputs
     # Here, we simply return numpy array for single subject input
-    assert signals.shape == (test_image_2.shape[3], n_parcel)
+    assert signals.shape == (image_2.shape[3], n_parcel)
     # Test for single subject but in a list.
-    signals = parcellator.transform([test_image_2])
-    assert signals.shape == (test_image_2.shape[3], n_parcel)
+    signals = parcellator.transform([image_2])
+    assert signals.shape == (image_2.shape[3], n_parcel)
 
 
 @pytest.mark.slow
 @pytest.mark.parametrize("verbose", [True, False, -1, 0, 1, 2])
-def test_parcellations_transform_verbose(test_image_2, verbose):
+def test_parcellations_transform_verbose(image_2, verbose):
     """Test verbose mostly for coverage purpose."""
     parcellator = Parcellations(method="kmeans", n_parcels=5, verbose=verbose)
-    parcellator.fit(test_image_2)
-    parcellator.transform(test_image_2)
+    parcellator.fit(image_2)
+    parcellator.transform(image_2)
 
 
 @pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
-def test_parcellations_transform_multi_nifti_images(
-    method, n_parcel, test_image_2
-):
-    fmri_imgs = [test_image_2] * 3
+def test_parcellations_transform_multi_nifti_images(method, n_parcel, image_2):
+    fmri_imgs = [image_2] * 3
 
     parcellator = Parcellations(method=method, n_parcels=n_parcel)
     parcellator.fit(fmri_imgs)
@@ -174,20 +169,39 @@ def test_parcellations_transform_multi_nifti_images(
     # In return, we have length equal to the number of images
     signals = parcellator.transform(fmri_imgs)
 
-    assert signals[0].shape == (test_image_2.shape[3], n_parcel)
-    assert signals[1].shape == (test_image_2.shape[3], n_parcel)
-    assert signals[2].shape == (test_image_2.shape[3], n_parcel)
+    assert signals[0].shape == (image_2.shape[3], n_parcel)
+    assert signals[1].shape == (image_2.shape[3], n_parcel)
+    assert signals[2].shape == (image_2.shape[3], n_parcel)
     assert len(signals) == len(fmri_imgs)
 
 
-def test_check_parameters_transform(test_image_2, rng):
+@pytest.mark.slow
+@pytest.mark.parametrize("masker", [NiftiMasker, MultiNiftiMasker])
+def test_parcellations_transform_nifti_masker(masker, image_2, affine_eye):
+    """Smoke test that mask can be (multi)NiftiMasker.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5926
+    """
+    fmri_imgs = [image_2] * 3
+
+    mask_img = np.ones((10, 11, 12))
+    mask_img = Nifti1Image(mask_img, affine_eye)
+
+    mask = masker(mask_img=mask_img)
+
+    parcellator = Parcellations(method="kmeans", mask=mask)
+    parcellator.fit(fmri_imgs)
+    parcellator.transform(fmri_imgs)
+
+
+def test_check_parameters_transform(image_2, rng):
     # single confound
     confounds = rng.standard_normal(size=(10, 3))
     # Tests to check whether imgs, confounds returned are
     # list or not. Pre-check in parameters to work for list
     # of multi images and multi confounds
     imgs, confounds, single_subject = _check_parameters_transform(
-        test_image_2, confounds
+        image_2, confounds
     )
 
     assert isinstance(imgs, (list, tuple))
@@ -196,13 +210,13 @@ def test_check_parameters_transform(test_image_2, rng):
 
     # confounds as pandas DataFrame
     imgs, confounds, single_subject = _check_parameters_transform(
-        test_image_2, pd.DataFrame(np.array(confounds)[0])
+        image_2, pd.DataFrame(np.array(confounds)[0])
     )
 
     assert isinstance(confounds, (list, tuple))
 
     # multi images
-    fmri_imgs = [test_image_2] * 3
+    fmri_imgs = [image_2] * 3
     confounds_list = [confounds] * 3
     imgs, confounds, _ = _check_parameters_transform(fmri_imgs, confounds_list)
 
@@ -223,9 +237,9 @@ def test_check_parameters_transform(test_image_2, rng):
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_with_multi_confounds_multi_images(
-    method, n_parcel, test_image_2, rng
+    method, n_parcel, image_2, rng
 ):
-    fmri_imgs = [test_image_2] * 3
+    fmri_imgs = [image_2] * 3
     confounds = rng.standard_normal(size=(10, 3))
     confounds_list = [confounds] * 3
 
@@ -242,8 +256,8 @@ def test_parcellations_transform_with_multi_confounds_multi_images(
 @pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
-def test_fit_transform(method, n_parcel, test_image_2):
-    fmri_imgs = [test_image_2] * 3
+def test_fit_transform(method, n_parcel, image_2):
+    fmri_imgs = [image_2] * 3
 
     parcellator = Parcellations(method=method, n_parcels=n_parcel)
     parcellator.fit_transform(fmri_imgs)
@@ -257,8 +271,8 @@ def test_fit_transform(method, n_parcel, test_image_2):
 @pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
-def test_fit_transform_with_confounds(method, n_parcel, test_image_2, rng):
-    fmri_imgs = [test_image_2] * 3
+def test_fit_transform_with_confounds(method, n_parcel, image_2, rng):
+    fmri_imgs = [image_2] * 3
     confounds = rng.standard_normal(size=(10, 3))
     confounds_list = [confounds] * 3
 
@@ -272,13 +286,13 @@ def test_fit_transform_with_confounds(method, n_parcel, test_image_2, rng):
 @pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
-def test_inverse_transform_single_nifti_image(method, n_parcel, test_image_2):
+def test_inverse_transform_single_nifti_image(method, n_parcel, image_2):
     parcellate = Parcellations(method=method, n_parcels=n_parcel)
-    parcellate.fit(test_image_2)
+    parcellate.fit(image_2)
 
     assert parcellate.labels_img_ is not None
 
-    fmri_reduced = parcellate.transform(test_image_2)
+    fmri_reduced = parcellate.transform(image_2)
 
     assert isinstance(fmri_reduced, np.ndarray)
     # Shape matching with (scans, regions)
@@ -289,7 +303,7 @@ def test_inverse_transform_single_nifti_image(method, n_parcel, test_image_2):
     # A single Nifti image for single subject input
     assert isinstance(fmri_compressed, Nifti1Image)
     # returns shape of fmri_img
-    assert fmri_compressed.shape == test_image_2.shape
+    assert fmri_compressed.shape == image_2.shape
 
     # fmri_reduced in a list
     fmri_compressed = parcellate.inverse_transform([fmri_reduced])
@@ -297,7 +311,7 @@ def test_inverse_transform_single_nifti_image(method, n_parcel, test_image_2):
     # A single Nifti image for single subject input
     assert isinstance(fmri_compressed, Nifti1Image)
     # returns shape of fmri_img
-    assert fmri_compressed.shape == test_image_2.shape
+    assert fmri_compressed.shape == image_2.shape
 
 
 @pytest.mark.slow
