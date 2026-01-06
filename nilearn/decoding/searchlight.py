@@ -162,10 +162,10 @@ def _group_iter_search_light(
         half labeled as `1`. This is useful during transformations
         where the model is applied without ground truth labels.
 
-    groups : array-like, optional
+    groups : array-like
         group label for each sample for cross validation.
 
-    scoring : string or callable, optional
+    scoring : string or callable
         Scoring strategy to use. See the scikit-learn documentation.
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
@@ -243,7 +243,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         See :ref:`extracting_data`.
         Boolean image giving location of voxels containing usable signals.
 
-    process_mask_img : Niimg-like object, optional
+    process_mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Boolean image giving voxels on which searchlight should be
         computed.
@@ -256,7 +256,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     %(n_jobs)s
 
-    scoring : :obj:`str` or callable, optional
+    scoring : :obj:`str` or callable or None, default=None
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
