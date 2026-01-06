@@ -45,6 +45,7 @@ from nilearn.reporting.html_report import (
 )
 from nilearn.surface import SurfaceImage
 from nilearn.typing import ClusterThreshold, HeightControl
+from nilearn.reporting._utils import dataframe_to_html
 
 FIGURE_FORMAT = "png"
 
@@ -740,7 +741,7 @@ class BaseGLM(_NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator):
             date=datetime.datetime.now().replace(microsecond=0).isoformat(),
             mask_plot=mask_plot,
             model_type=self.__str__(),
-            parameters=self._repr_html_(),
+            parameters=parameters,
             reporting_data=Bunch(**self._reporting_data),
             results=results,
             run_wise_dict=run_wise_dict,
