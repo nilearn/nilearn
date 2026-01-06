@@ -859,7 +859,7 @@ opening : :obj:`bool` or :obj:`int`, optional
 
 # output_file
 docdict["output_file"] = """
-output_file : :obj:`str` or :obj:`pathlib.Path` or None, optional
+output_file : :obj:`str` or :obj:`pathlib.Path` or None, default=None
     The name of an image file to export the plot to.
     Valid extensions are .png, .pdf, .svg.
     If `output_file` is not `None`, the plot is saved to a file,
@@ -1425,7 +1425,7 @@ vmax : :obj:`float` or obj:`int` or None, optional
 
 # vmin
 docdict["vmin"] = """
-vmin : :obj:`float`  or obj:`int` or None, optional
+vmin : :obj:`float` or obj:`int` or None, optional
     Lower bound of the colormap. The values below vmin are masked.
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.

@@ -149,7 +149,7 @@ def _chunk_read_(
         Size of downloaded chunks.
 
     report_hook : bool, optional
-        Whether or not to show downloading advancement. Default: None
+        Whether or not to show downloading advancement. default=None
 
     initial_size : int, default=0
         If resuming, indicate the initial size of the file.
