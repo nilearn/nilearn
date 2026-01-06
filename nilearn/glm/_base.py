@@ -18,7 +18,7 @@ from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin
+from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin, SKLEARN_GTE_1_8
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -54,23 +54,26 @@ class BaseGLM(_NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator):
 
     _estimator_type = "glm"  # TODO (sklearn >= 1.8) remove
 
-    def _doc_link_url_param_generator(self):
-        """Return doc URL components for GLM estimators.
+    if SKLEARN_GTE_1_8:
+        # TODO (sklearn >= 1.8) remove if
 
-        GLM doc URL is slightly different than that of other estimators.
-        """
-        estimator_name = self.__class__.__name__
-        tmp = list(
-            itertools.takewhile(
-                lambda part: not part.startswith("_"),
-                self.__class__.__module__.split("."),
+        def _doc_link_url_param_generator(self):
+            """Return doc URL components for GLM estimators.
+
+            GLM doc URL is slightly different than that of other estimators.
+            """
+            estimator_name = self.__class__.__name__
+            tmp = list(
+                itertools.takewhile(
+                    lambda part: not part.startswith("_"),
+                    self.__class__.__module__.split("."),
+                )
             )
-        )
-        estimator_module = ".".join([tmp[0], tmp[1], tmp[2]])
-        return {
-            "estimator_module": estimator_module,
-            "estimator_name": estimator_name,
-        }
+            estimator_module = ".".join([tmp[0], tmp[1], tmp[2]])
+            return {
+                "estimator_module": estimator_module,
+                "estimator_name": estimator_name,
+            }
 
     def _is_volume_glm(self):
         """Return if model is run on volume data or not."""

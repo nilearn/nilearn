@@ -4,6 +4,10 @@ from packaging.version import parse
 
 from nilearn._version import __version__
 
+from sklearn import __version__ as sklearn_version
+
+SKLEARN_GTE_1_8 = parse(sklearn_version).release[1] >= 8
+
 
 class _NilearnHTMLDocumentationLinkMixin:
     """Mixin class allowing to help a link to the API documentation.
@@ -27,19 +31,21 @@ class _NilearnHTMLDocumentationLinkMixin:
             f"https://nilearn.github.io/{version_url}/modules/generated/"
             "{estimator_module}.{estimator_name}.html"
         )
+    
+    if SKLEARN_GTE_1_8:
 
-    def _doc_link_url_param_generator(self):
-        """Generate a link to the API documentation for a given estimator."""
-        estimator_name = self.__class__.__name__
-        tmp = list(
-            itertools.takewhile(
-                lambda part: not part.startswith("_"),
-                self.__class__.__module__.split("."),
+        def _doc_link_url_param_generator(self):
+            """Generate a link to the API documentation for a given estimator."""
+            estimator_name = self.__class__.__name__
+            tmp = list(
+                itertools.takewhile(
+                    lambda part: not part.startswith("_"),
+                    self.__class__.__module__.split("."),
+                )
             )
-        )
-        estimator_module = ".".join([tmp[0], tmp[1]])
+            estimator_module = ".".join([tmp[0], tmp[1]])
 
-        return {
-            "estimator_module": estimator_module,
-            "estimator_name": estimator_name,
-        }
+            return {
+                "estimator_module": estimator_module,
+                "estimator_name": estimator_name,
+            }
