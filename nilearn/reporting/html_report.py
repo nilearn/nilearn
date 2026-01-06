@@ -12,12 +12,23 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
-from nilearn.reporting._utils import dataframe_to_html
+from nilearn.reporting._utils import (
+    dataframe_to_html,
+    model_attributes_to_dataframe,
+)
 from nilearn.reporting.utils import (
     CSS_PATH,
     TEMPLATE_ROOT_PATH,
     figure_to_svg_base64,
 )
+
+from packaging.version import parse
+
+from nilearn._version import __version__
+
+from sklearn import __version__ as sklearn_version
+
+SKLEARN_GTE_1_8 = parse(sklearn_version).release[1] >= 8
 
 UNFITTED_MSG = (
     "\nThis estimator has not been fit yet.\n"
@@ -262,6 +273,19 @@ def _create_report(
                 sparsify=False,
             )
 
+    if SKLEARN_GTE_1_8:
+        parameters = estimator._repr_html_()
+    else:
+        # TODO (sklearn >= 8) remove else block
+        parameters = model_attributes_to_dataframe(estimator)
+        with pd.option_context("display.max_colwidth", 100):
+            parameters = dataframe_to_html(
+                parameters,
+                precision=2,
+                header=True,
+                sparsify=False,
+            )
+
     if "n_elements" not in data:
         data["n_elements"] = 0
 
@@ -284,7 +308,7 @@ def _create_report(
     body = body_tpl.render(
         content=embeded_images,
         docstring=docstring,
-        parameters=estimator._repr_html_(),
+        parameters=parameters,
         figure=(
             _insert_figure_partial(
                 data["engine"],

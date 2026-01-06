@@ -7,6 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Literal
 
+import pandas as pd
 import numpy as np
 from nibabel.onetime import auto_attr
 from sklearn.base import BaseEstimator
@@ -30,6 +31,7 @@ from nilearn.glm._reporting_utils import (
     mask_to_plot,
     sanitize_generate_report_input,
     turn_into_full_path,
+    glm_model_attributes_to_dataframe,
 )
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
@@ -557,6 +559,18 @@ class BaseGLM(_NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator):
                 self._is_first_level_glm(),
             )
         )
+        if SKLEARN_GTE_1_8:
+            parameters = estimator._repr_html_()
+        else:
+            # TODO (sklearn >= 8) remove else block
+            model_attributes = glm_model_attributes_to_dataframe(self)
+            with pd.option_context("display.max_colwidth", 100):
+                parameters = dataframe_to_html(
+                    model_attributes,
+                    precision=2,
+                    header=True,
+                    sparsify=False,
+                )
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data: dict[str, Any] = {
