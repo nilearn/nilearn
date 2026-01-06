@@ -2,7 +2,6 @@
 
 import abc
 import itertools
-from collections.abc import Hashable
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, ClassVar
@@ -249,7 +248,7 @@ class _LabelMaskerMixin:
         return lut["index"].to_list()
 
     @property
-    def region_names_(self) -> dict[Hashable, str]:
+    def region_names_(self) -> dict[int, str]:
         """Return a dictionary containing the region names corresponding \
             to each column in the array returned by `transform`.
 
@@ -265,7 +264,7 @@ class _LabelMaskerMixin:
 
         sub_df = self.lut_[self.lut_["index"].isin(valid_ids)]
 
-        return sub_df["name"].reset_index(drop=True).to_dict()
+        return sub_df["name"].reset_index(drop=True).to_dict()  # type: ignore[return-value]
 
     @property
     def region_ids_(self) -> dict[str | int, int | float]:
