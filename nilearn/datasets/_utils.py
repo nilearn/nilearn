@@ -148,14 +148,15 @@ def _chunk_read_(
     chunk_size : int, default=8192
         Size of downloaded chunks.
 
-    report_hook : bool, optional
+    report_hook : bool or None, default=None
         Whether or not to show downloading advancement. default=None
 
     initial_size : int, default=0
         If resuming, indicate the initial size of the file.
 
-    total_size : int, optional
+    total_size : int or None, default=None
         Expected final size of download (None means it is unknown).
+
     %(verbose)s
 
     Returns
@@ -211,10 +212,13 @@ def get_dataset_dir(
     ----------
     dataset_name : string
         The unique name of the dataset.
+
     %(data_dir)s
-    default_paths : list of string, optional
+
+    default_paths : list of string or None, default=None
         Default system paths in which the dataset may already have been
         installed by a third party software. They will be checked first.
+
     %(verbose)s
 
     Returns
@@ -534,16 +538,18 @@ def fetch_single_file(
     overwrite : bool, default=False
         If true and file already exists, delete it.
 
-    md5sum : string, optional
+    md5sum : string or None, default=None
         MD5 sum of the file. Checked if download of the file is required.
 
-    username : string, optional
+    username : string or None, default=None
         Username used for basic HTTP authentication.
 
-    password : string, optional
+    password : string or None, default=None
         Password used for basic HTTP authentication.
+
     %(verbose)s
-    session : requests.Session, optional
+
+    session : requests.Session or None, default=None
         Session to use to send requests.
 
     Returns
@@ -765,6 +771,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     Parameters
     ----------
     %(data_dir)s
+
     files : list of (string, string, dict)
         List of files and their corresponding url with dictionary that contains
         options regarding the files. Eg. (file_path, url, opt). If a file_path
@@ -775,9 +782,12 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             * 'uncompress' to indicate that the file is an archive
             * 'md5sum' to check the md5 sum of the file
             * 'overwrite' if the file should be re-downloaded even if it exists
+
     %(resume)s
+
     %(verbose)s
-    session : `requests.Session`, optional
+
+    session : `requests.Session` or None, default=None
         Session to use to send requests.
 
     Returns
@@ -904,7 +914,7 @@ def tree(path, pattern=None, dictionary=False):
     path : string or pathlib.Path
         Path browsed.
 
-    pattern : string, optional
+    pattern : string or None, default=None
         Pattern used to filter files (see fnmatch).
 
     dictionary : boolean, default=False

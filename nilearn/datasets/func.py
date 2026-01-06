@@ -1099,7 +1099,8 @@ def fetch_abide_pcp(
     Parameters
     ----------
     %(data_dir)s
-    n_subjects : :obj:`int`, default=None
+
+    n_subjects : :obj:`int` or None, default=None
         The number of subjects to load. If None is given,
         all available subjects are used (this number depends on the
         preprocessing pipeline used).
@@ -1115,7 +1116,7 @@ def fetch_abide_pcp(
         Indicates if global signal regression should be applied on the
         signals.
 
-    derivatives : :obj:`list` of :obj:`str`, default=None
+    derivatives : :obj:`list` of :obj:`str`, or None, default=None
         Types of downloaded files. Possible values are: alff, degree_binarize,
         degree_weighted, dual_regression, eigenvector_binarize,
         eigenvector_weighted, falff, func_mask, func_mean, func_preproc, lfcd,
@@ -1127,7 +1128,9 @@ def fetch_abide_pcp(
     quality_checked : :obj:`bool`, default=True
         If true (default), restrict the list of the subjects to the one that
         passed quality assessment for all raters.
+
     %(url)s
+    
     %(verbose)s
 
     kwargs : extra parameters, optional
