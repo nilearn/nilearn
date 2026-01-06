@@ -1130,7 +1130,7 @@ def fetch_abide_pcp(
         passed quality assessment for all raters.
 
     %(url)s
-    
+
     %(verbose)s
 
     kwargs : extra parameters, optional
