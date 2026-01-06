@@ -7,11 +7,10 @@ from typing import Any
 
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.html_repr import SKLEARN_GTE_1_7
 from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
 from nilearn.reporting._utils import (
@@ -23,8 +22,6 @@ from nilearn.reporting.utils import (
     TEMPLATE_ROOT_PATH,
     figure_to_svg_base64,
 )
-from nilearn._utils.html_repr import SKLEARN_GTE_1_7
-
 
 UNFITTED_MSG = (
     "\nThis estimator has not been fit yet.\n"

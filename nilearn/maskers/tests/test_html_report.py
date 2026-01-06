@@ -79,7 +79,9 @@ def generate_and_check_masker_report(
             # TODO (sklearn > 1.6.2) remove this if block
             includes.append("<th>Parameter</th>")
         else:
-            includes.append('div id="sk-container-id-2" class="sk-top-container">')
+            includes.append(
+                'div id="sk-container-id-2" class="sk-top-container">'
+            )
 
         if is_matplotlib_installed():
             if accept_surf_img_input(masker):
