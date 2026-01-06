@@ -236,7 +236,7 @@ def _line_sample_locations(
     n_points : :obj:`int`, default=10
         Number of samples to draw for each vertex.
 
-    depth : sequence of :obj:`float` or None, optional
+    depth : sequence of :obj:`float` or None, default=None
         Cortical depth, expressed as a fraction of segment_half_width.
         Overrides n_points.
 
@@ -326,7 +326,7 @@ def _masked_indices(sample_locations, img_shape, mask=None):
     img_shape : :obj:`tuple`
         The dimensions of the image to be sampled.
 
-    mask : :obj:`numpy.ndarray` of shape img_shape or `None`, optional
+    mask : :obj:`numpy.ndarray` of shape img_shape or `None`, default=None
         Part of the image to be masked. If `None`, don't apply any mask.
 
     Returns
@@ -402,10 +402,10 @@ def _projection_matrix(
         [10, 20, 40, 80, 160], because cached positions are
         available.
 
-    mask : :obj:`numpy.ndarray` of shape img_shape or `None`, optional
+    mask : :obj:`numpy.ndarray` of shape img_shape or `None`, default=None
         Part of the image to be masked. If `None`, don't apply any mask.
 
-    inner_mesh : :obj:`str` or :obj:`numpy.ndarray`, optional
+    inner_mesh : :obj:`str` or :obj:`numpy.ndarray`, default=None
         Either a file containing surface mesh or a pair of ndarrays
         (coordinates, triangles). If provided this is an inner surface that is
         nested inside the one represented by `mesh` -- e.g. `mesh` is a pial
@@ -415,7 +415,7 @@ def _projection_matrix(
         are then sampled along the line joining these two points (if `kind` is
         'auto' or 'depth').
 
-    depth : sequence of :obj:`float` or `None`, optional
+    depth : sequence of :obj:`float` or `None`, default=None
         Cortical depth, expressed as a fraction of segment_half_width.
         overrides n_points. Should be None if kind is 'ball'
 
@@ -1453,7 +1453,7 @@ class PolyData:
         dim : int
             Dimensions the data should have.
 
-        var_name : str, optional
+        var_name : str, default = "img"
             Name of the variable to include in the error message.
 
         Returns
