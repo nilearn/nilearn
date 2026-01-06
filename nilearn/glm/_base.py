@@ -7,8 +7,8 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Literal
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from nibabel.onetime import auto_attr
 from sklearn.base import BaseEstimator
 from sklearn.utils import Bunch
@@ -19,22 +19,26 @@ from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin, SKLEARN_GTE_1_8
+from nilearn._utils.html_repr import (
+    SKLEARN_GTE_1_8,
+    _NilearnHTMLDocumentationLinkMixin,
+)
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._version import __version__
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
+    glm_model_attributes_to_dataframe,
     load_bg_img,
     make_stat_maps_contrast_clusters,
     mask_to_plot,
     sanitize_generate_report_input,
     turn_into_full_path,
-    glm_model_attributes_to_dataframe,
 )
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
+from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.html_report import (
     MISSING_ENGINE_MSG,
     UNFITTED_MSG,
@@ -45,7 +49,6 @@ from nilearn.reporting.html_report import (
 )
 from nilearn.surface import SurfaceImage
 from nilearn.typing import ClusterThreshold, HeightControl
-from nilearn.reporting._utils import dataframe_to_html
 
 FIGURE_FORMAT = "png"
 
@@ -561,7 +564,7 @@ class BaseGLM(_NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator):
             )
         )
         if SKLEARN_GTE_1_8:
-            parameters = estimator._repr_html_()
+            parameters = self._repr_html_()
         else:
             # TODO (sklearn >= 8) remove else block
             model_attributes = glm_model_attributes_to_dataframe(self)

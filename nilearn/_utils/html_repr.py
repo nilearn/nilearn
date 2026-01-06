@@ -1,10 +1,9 @@
 import itertools
 
 from packaging.version import parse
+from sklearn import __version__ as sklearn_version
 
 from nilearn._version import __version__
-
-from sklearn import __version__ as sklearn_version
 
 SKLEARN_GTE_1_8 = parse(sklearn_version).release[1] >= 8
 
@@ -31,11 +30,13 @@ class _NilearnHTMLDocumentationLinkMixin:
             f"https://nilearn.github.io/{version_url}/modules/generated/"
             "{estimator_module}.{estimator_name}.html"
         )
-    
+
     if SKLEARN_GTE_1_8:
 
         def _doc_link_url_param_generator(self):
-            """Generate a link to the API documentation for a given estimator."""
+            """Generate a link to the API documentation \
+                for a given estimator.
+            """
             estimator_name = self.__class__.__name__
             tmp = list(
                 itertools.takewhile(
