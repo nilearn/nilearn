@@ -2,6 +2,7 @@
 
 import abc
 import itertools
+from collections.abc import Hashable
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, ClassVar
@@ -248,7 +249,7 @@ class _LabelMaskerMixin:
         return lut["index"].to_list()
 
     @property
-    def region_names_(self) -> dict[int, str]:
+    def region_names_(self) -> dict[Hashable, str]:
         """Return a dictionary containing the region names corresponding \
             to each column in the array returned by `transform`.
 
