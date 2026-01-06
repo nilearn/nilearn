@@ -13,7 +13,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
-from nilearn._utils.html_repr import SKLEARN_GTE_1_8
+from nilearn._utils.html_repr import SKLEARN_GTE_1_7
 from nilearn._utils.tags import accept_surf_img_input
 from nilearn.conftest import _img_maps, _surf_maps_img
 from nilearn.image import get_data
@@ -75,9 +75,11 @@ def generate_and_check_masker_report(
         excludes.append('<div class="image">')
 
     else:
-        if not SKLEARN_GTE_1_8 and masker.__sklearn_is_fitted__():
-            # TODO (sklearn >= 1.8) remove this if block
+        if not SKLEARN_GTE_1_7 and masker.__sklearn_is_fitted__():
+            # TODO (sklearn > 1.6.2) remove this if block
             includes.append("<th>Parameter</th>")
+        else:
+            includes.append('div id="sk-container-id-2" class="sk-top-container">')
 
         if is_matplotlib_installed():
             if accept_surf_img_input(masker):

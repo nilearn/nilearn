@@ -20,7 +20,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_repr import (
-    SKLEARN_GTE_1_8,
+    SKLEARN_GTE_1_7,
     _NilearnHTMLDocumentationLinkMixin,
 )
 from nilearn._utils.logger import find_stack_level
@@ -60,8 +60,8 @@ class BaseGLM(_NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator):
 
     _estimator_type = "glm"  # TODO (sklearn >= 1.8) remove
 
-    if SKLEARN_GTE_1_8:
-        # TODO (sklearn >= 1.8) remove if
+    if SKLEARN_GTE_1_7:
+        # TODO (sklearn > 1.6.2) remove if
 
         def _doc_link_url_param_generator(self):
             """Return doc URL components for GLM estimators.
@@ -563,10 +563,10 @@ class BaseGLM(_NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator):
                 self._is_first_level_glm(),
             )
         )
-        if SKLEARN_GTE_1_8:
+        if SKLEARN_GTE_1_7:
             parameters = self._repr_html_()
         else:
-            # TODO (sklearn >= 8) remove else block
+            # TODO (sklearn > 1.6.2) remove else block
             model_attributes = glm_model_attributes_to_dataframe(self)
             with pd.option_context("display.max_colwidth", 100):
                 parameters = dataframe_to_html(

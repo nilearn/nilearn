@@ -23,8 +23,8 @@ from nilearn.reporting.utils import (
     TEMPLATE_ROOT_PATH,
     figure_to_svg_base64,
 )
+from nilearn._utils.html_repr import SKLEARN_GTE_1_7
 
-SKLEARN_GTE_1_8 = parse(sklearn_version).release[1] >= 8
 
 UNFITTED_MSG = (
     "\nThis estimator has not been fit yet.\n"
@@ -269,10 +269,10 @@ def _create_report(
                 sparsify=False,
             )
 
-    if SKLEARN_GTE_1_8:
+    if SKLEARN_GTE_1_7:
         parameters = estimator._repr_html_()
     else:
-        # TODO (sklearn >= 8) remove else block
+        # TODO (sklearn > 1.6.2) remove else block
         parameters = model_attributes_to_dataframe(estimator)
         with pd.option_context("display.max_colwidth", 100):
             parameters = dataframe_to_html(

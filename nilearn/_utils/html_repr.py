@@ -5,7 +5,7 @@ from sklearn import __version__ as sklearn_version
 
 from nilearn._version import __version__
 
-SKLEARN_GTE_1_8 = parse(sklearn_version).release[1] >= 8
+SKLEARN_GTE_1_7 = parse(sklearn_version).release[1] >= 7
 
 
 class _NilearnHTMLDocumentationLinkMixin:
@@ -31,7 +31,7 @@ class _NilearnHTMLDocumentationLinkMixin:
             "{estimator_module}.{estimator_name}.html"
         )
 
-    if SKLEARN_GTE_1_8:
+    if SKLEARN_GTE_1_7:
 
         def _doc_link_url_param_generator(self):
             """Generate a link to the API documentation \
