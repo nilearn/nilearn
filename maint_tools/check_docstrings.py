@@ -84,7 +84,7 @@ def check_fill_doc_decorator(
             for meth_def in list_functions(ast_node)
         ]
         expand_docstring_any_method = any(
-            "%(" in x for x in methods_docstrings
+            "%(" in x for x in methods_docstrings if x is not None
         )
         expand_docstring = expand_docstring or expand_docstring_any_method
 

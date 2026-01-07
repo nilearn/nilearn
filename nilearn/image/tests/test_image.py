@@ -1062,6 +1062,7 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
         threshold_img(maps, threshold="-10%", two_sided=False)
 
 
+@pytest.mark.slow
 def test_threshold_img(affine_eye):
     """Smoke test for threshold_img with valid threshold inputs."""
     shape = (10, 20, 30)
@@ -1799,6 +1800,10 @@ def test_concat_niimgs_errors(affine_eye, shape_3d_default):
         ),
     ):
         concat_imgs([img5d, img5d])
+
+    # check error when an empty list is specified
+    with pytest.raises(TypeError, match="empty objects"):
+        concat_imgs([])
 
 
 def test_concat_niimgs(affine_eye, tmp_path):

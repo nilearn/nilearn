@@ -126,7 +126,7 @@ class BaseAxes:
 
         Parameters
         ----------
-        size : :obj:`float`, optional
+        size : :obj:`float`
             Size of the text areas.
 
         bg_color : matplotlib color: :obj:`str` or (r, g, b) value
@@ -202,8 +202,8 @@ class BaseAxes:
             Physical units of the scale bar (`'cm'` or `'mm'`).
 
 
-        fontproperties : :class:`~matplotlib.font_manager.FontProperties`\
-        or :obj:`dict`, optional
+        fontproperties : :class:`~matplotlib.font_manager.FontProperties`, \
+                :obj:`dict` or None, default=None
             Font properties for the label text.
 
         frameon : :obj:`bool`, default=False
@@ -236,7 +236,7 @@ class BaseAxes:
         color : :obj:`str`, default='black'
             Color for the scale bar and label.
 
-        fontsize : :obj:`int`, optional
+        fontsize : :obj:`int` or None, default=None
             Label font size (overwrites the size passed in through the
             ``fontproperties`` argument).
 
@@ -333,7 +333,7 @@ class CutAxes(BaseAxes):
 
         Parameters
         ----------
-        size : :obj:`float`, optional
+        size : :obj:`float`
             Size of the text area.
 
         bg_color : matplotlib color: :obj:`str` or (r, g, b) value

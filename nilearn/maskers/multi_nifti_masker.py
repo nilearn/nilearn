@@ -24,8 +24,8 @@ from nilearn.maskers.base_masker import (
 )
 from nilearn.maskers.nifti_masker import (
     NiftiMasker,
-    _make_brain_mask_func,
     filter_and_mask,
+    make_brain_mask_func,
 )
 from nilearn.masking import (
     compute_multi_background_mask,
@@ -41,18 +41,18 @@ def _get_mask_strategy(strategy: str):
     elif strategy == "epi":
         return compute_multi_epi_mask
     elif strategy == "whole-brain-template":
-        return _make_brain_mask_func("whole-brain", multi=True)
+        return make_brain_mask_func("whole-brain", multi=True)
     elif strategy == "gm-template":
-        return _make_brain_mask_func("gm", multi=True)
+        return make_brain_mask_func("gm", multi=True)
     elif strategy == "wm-template":
-        return _make_brain_mask_func("wm", multi=True)
+        return make_brain_mask_func("wm", multi=True)
     elif strategy == "template":
         warnings.warn(
             "Masking strategy 'template' is deprecated. "
             "Please use 'whole-brain-template' instead.",
             stacklevel=find_stack_level(),
         )
-        return _make_brain_mask_func("whole-brain")
+        return make_brain_mask_func("whole-brain")
     else:
         raise ValueError(
             f"Unknown value of mask_strategy '{strategy}'. "
@@ -81,7 +81,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         Optional parameters can be set using mask_args and mask_strategy to
         fine tune the mask extraction.
 
-    runs : :obj:`numpy.ndarray`, optional
+    runs : :obj:`numpy.ndarray` or None, default=None
         Add a run level to the preprocessing. Each run will be
         detrended independently. Must be a 1D array of n_samples elements.
 
@@ -124,7 +124,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
 
         Default='background'.
 
-    mask_args : :obj:`dict`, optional
+    mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`

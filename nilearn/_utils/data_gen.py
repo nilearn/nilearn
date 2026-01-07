@@ -248,7 +248,7 @@ def generate_labeled_regions(
     %(random_state)s
         default=0
 
-    labels : iterable, optional
+    labels : iterable or None, default=None
         Labels to use for each zone. If provided, n_regions is unused.
 
     affine : :obj:`numpy.ndarray`, default=None
@@ -977,7 +977,7 @@ def create_fake_bids_dataset(
     %(random_state)s
         default=0
 
-    entities : :obj:`dict`, optional
+    entities : :obj:`dict` or None, default=None
         Extra entity to add to the :term:`BIDS` filename with a list of values.
         For example, if you want to add an 'echo' entity
         with values '1' for some files and '1' for others,
@@ -992,7 +992,7 @@ def create_fake_bids_dataset(
     n_voxels : :obj:`int`, default = 4
         Number of voxels along x, y, z dimensions for volume data.
 
-    spaces : :obj:`list` of :obj:`str`, optional.
+    spaces : :obj:`list` of :obj:`str` or None, default=None
         Defaults to ``("MNI", "T1w")``
 
     Returns
@@ -1074,7 +1074,7 @@ def _check_entities_and_labels(entities):
 
     Parameters
     ----------
-    entities : :obj:`dict`, optional
+    entities : :obj:`dict`
         Extra entity to add to the BIDS filename with a list of values.
         For example, if you want to add an 'echo' entity
         with values '1' for some files and '1' for others,
@@ -1135,7 +1135,7 @@ def _mock_bids_dataset(
         number of runs for the corresponding task.
         No run entity will be used if a value is equal to 1 or less.
 
-    entities : :obj:`dict`, optional
+    entities : :obj:`dict`
         Extra entities to add to the BIDS filename with a list of values.
 
     n_voxels : :obj:`int`
@@ -1250,7 +1250,7 @@ def _mock_bids_derivatives(
         Use n_vertices == 10242 to match the number of vertices
         in fsaverage5.
 
-    spaces : :obj:`list` of :obj:`str`, optional.
+    spaces : :obj:`list` of :obj:`str`
     """
     bids_path = bids_path / "derivatives"
     bids_path.mkdir(parents=True, exist_ok=True)
@@ -1461,7 +1461,7 @@ def _write_bids_derivative_func(
     rand_gen : :obj:`numpy.random.RandomState` instance
         Random number generator.
 
-    confounds_tag : :obj:`str`, optional.
+    confounds_tag : :obj:`str`
         Filename "suffix":
         For example: `desc-confounds_timeseries`
         or "desc-confounds_regressors".
@@ -1472,7 +1472,7 @@ def _write_bids_derivative_func(
         Use n_vertices == 10242 to match the number of vertices
         in fsaverage5.
 
-    spaces : :obj:`list` of :obj:`str`, optional.
+    spaces : :obj:`list` of :obj:`str` or None, default=None
         Defaults to ``("MNI", "T1w")``
     """
     n_time_points = 30

@@ -57,11 +57,11 @@ def _get_mask_strategy(strategy: str):
     elif strategy == "epi":
         return compute_epi_mask
     elif strategy == "whole-brain-template":
-        return _make_brain_mask_func("whole-brain")
+        return make_brain_mask_func("whole-brain")
     elif strategy == "gm-template":
-        return _make_brain_mask_func("gm")
+        return make_brain_mask_func("gm")
     elif strategy == "wm-template":
-        return _make_brain_mask_func("wm")
+        return make_brain_mask_func("wm")
     else:
         raise ValueError(
             f"Unknown value of mask_strategy '{strategy}'. "
@@ -72,7 +72,7 @@ def _get_mask_strategy(strategy: str):
         )
 
 
-def _make_brain_mask_func(mask_type: str, multi: bool = False):
+def make_brain_mask_func(mask_type: str, multi: bool = False):
     """Generate a compute_brain_mask function adapted for each mask.
 
     This is done instead of using functools.partial because
@@ -215,7 +215,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     Parameters
     ----------
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask for the data. If not given, a mask is computed in the fit step.
         Optional parameters (mask_args and mask_strategy) can be set to
@@ -226,7 +226,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         resampled first. After this, the images are resampled to the
         resampled mask.
 
-    runs : :obj:`numpy.ndarray`, optional
+    runs : :obj:`numpy.ndarray` or None, default=None
         Add a run level to the preprocessing. Each run will be
         detrended independently. Must be a 1D array of n_samples elements.
 
@@ -269,7 +269,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Default='background'.
 
-    mask_args : :obj:`dict`, optional
+    mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`

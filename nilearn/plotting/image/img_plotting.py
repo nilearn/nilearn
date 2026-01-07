@@ -8,7 +8,6 @@ Only matplotlib is required.
 import collections.abc
 import functools
 import inspect
-import numbers
 import warnings
 
 import matplotlib.pyplot as plt
@@ -143,10 +142,10 @@ def _plot_img_with_bg(
 
     %(vmax)s
 
-    bg_vmin : :obj:`float`, optional
+    bg_vmin : :obj:`float` or None, default=None
         vmin for `bg_img`.
 
-    bg_vmax : :obj:`float`, optional
+    bg_vmax : :obj:`float` or None, default=None
         vmax for `bg_img`.
 
     interpolation : :obj:`str`, default='nearest'
@@ -205,17 +204,6 @@ def _plot_img_with_bg(
             "Tip: Use np.nanmax() instead of np.max()."
         )
         warnings.warn(nan_msg, stacklevel=find_stack_level())
-
-    if isinstance(cut_coords, numbers.Number) and display_mode in (
-        "ortho",
-        "tiled",
-    ):
-        raise ValueError(
-            f"The input given for display_mode='{display_mode}' "
-            "needs to be a list of 3d world coordinates in (x, y, z). "
-            "You provided single cut, "
-            f"cut_coords={cut_coords}"
-        )
 
     if img is not False and img is not None:
         img = check_niimg_3d(img, dtype="auto")
