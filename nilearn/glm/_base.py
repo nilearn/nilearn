@@ -60,26 +60,25 @@ class BaseGLM(_NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator):
 
     _estimator_type = "glm"  # TODO (sklearn >= 1.8) remove
 
-    if SKLEARN_GTE_1_7:
-        # TODO (sklearn > 1.6.2) remove if
+    def _doc_link_url_param_generator(self, *args):  # noqa : ARG002
+        """Return doc URL components for GLM estimators.
 
-        def _doc_link_url_param_generator(self):
-            """Return doc URL components for GLM estimators.
+        GLM doc URL is slightly different than that of other estimators.
 
-            GLM doc URL is slightly different than that of other estimators.
-            """
-            estimator_name = self.__class__.__name__
-            tmp = list(
-                itertools.takewhile(
-                    lambda part: not part.startswith("_"),
-                    self.__class__.__module__.split("."),
-                )
+        # TODO (sklearn >= 1.7) remove *args from signature
+        """
+        estimator_name = self.__class__.__name__
+        tmp = list(
+            itertools.takewhile(
+                lambda part: not part.startswith("_"),
+                self.__class__.__module__.split("."),
             )
-            estimator_module = ".".join([tmp[0], tmp[1], tmp[2]])
-            return {
-                "estimator_module": estimator_module,
-                "estimator_name": estimator_name,
-            }
+        )
+        estimator_module = ".".join([tmp[0], tmp[1], tmp[2]])
+        return {
+            "estimator_module": estimator_module,
+            "estimator_name": estimator_name,
+        }
 
     def _is_volume_glm(self):
         """Return if model is run on volume data or not."""

@@ -31,11 +31,11 @@ class _NilearnHTMLDocumentationLinkMixin:
             "{estimator_module}.{estimator_name}.html"
         )
 
-    # if SKLEARN_GTE_1_7:
-
-    def _doc_link_url_param_generator(self):
+    def _doc_link_url_param_generator(self, *args):  # noqa : ARG002
         """Generate a link to the API documentation \
             for a given estimator.
+
+        # TODO (sklearn >= 1.7) remove *args from signature
         """
         estimator_name = self.__class__.__name__
         tmp = list(
