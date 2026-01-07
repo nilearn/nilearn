@@ -57,7 +57,7 @@ print(f"Actual number of subjects after quality check: {int(n_samples)}")
 # %%
 # Mask data
 nifti_masker = NiftiMasker(
-    smoothing_fwhm=5, memory="nilearn_cache", memory_level=1
+    smoothing_fwhm=5, memory="nilearn_cache", memory_level=1, verbose=1
 )
 fmri_masked = nifti_masker.fit_transform(contrast_map_filenames)
 
@@ -96,7 +96,6 @@ ols_outputs = permuted_ols(
     n_perm=100,  # 100 for the sake of time. Ideally, this should be 10000.
     verbose=1,  # display progress bar
     n_jobs=2,  # can be changed to use more CPUs
-    output_type="dict",
 )
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
     ols_outputs["logp_max_t"][0, :]  # select first regressor

@@ -14,7 +14,11 @@ from nilearn.plotting import plot_carpet
 def test_plot_carpet(matplotlib_pyplot, img_4d_mni, img_3d_ones_mni):
     """Check contents of plot_carpet figure against data in image."""
     display = plot_carpet(
-        img_4d_mni, img_3d_ones_mni, detrend=False, title="TEST"
+        img_4d_mni,
+        img_3d_ones_mni,
+        detrend=False,
+        title="TEST",
+        standardize="zscore_sample",
     )
 
     # Next two lines retrieve the numpy array from the plot
@@ -41,6 +45,7 @@ def test_plot_carpet_long_acquisition(
         title="TEST",
         figure=fig,
         axes=ax,
+        standardize="zscore_sample",
     )
 
     # Next two lines retrieve the numpy array from the plot
@@ -62,6 +67,7 @@ def test_plot_carpet_with_atlas(matplotlib_pyplot, img_4d_mni, img_atlas):
         t_r=2,
         detrend=False,
         title="TEST",
+        standardize="zscore_sample",
     )
 
     # Check the output
@@ -78,6 +84,7 @@ def test_plot_carpet_with_atlas(matplotlib_pyplot, img_4d_mni, img_atlas):
     assert len(np.unique(colorbar)) == len(img_atlas["labels"])
 
 
+@pytest.mark.slow
 def test_plot_carpet_with_atlas_and_labels(
     matplotlib_pyplot, img_4d_mni, img_atlas
 ):
@@ -92,6 +99,7 @@ def test_plot_carpet_with_atlas_and_labels(
         title="TEST",
         figure=fig,
         axes=ax,
+        standardize="zscore_sample",
     )
 
     # Check the output

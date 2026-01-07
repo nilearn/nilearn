@@ -11,6 +11,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
+from nilearn._utils.helpers import is_windows_platform
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
@@ -47,6 +48,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -153,7 +155,7 @@ def test_anisotropic_sphere_extraction(rng, affine_eye):
 def test_errors():
     """Check seed input."""
     masker = NiftiSpheresMasker(([1, 2]), radius=0.2)
-    with pytest.raises(ValueError, match="Seeds must be a list .+"):
+    with pytest.raises(ValueError, match=r"Seeds must be a list .+"):
         masker.fit()
 
 
@@ -189,6 +191,7 @@ def test_nifti_spheres_masker_overlap(rng, affine_eye):
         noverlapping_masker.fit_transform(fmri_img)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_small_radius(rng):
     """Check behavior when radius smaller than voxel size."""
     shape = (3, 3, 3)
@@ -257,31 +260,6 @@ def test_is_nifti_spheres_masker_give_nans(rng, affine_eye):
     masker = NiftiSpheresMasker(seeds=seed, radius=2.0, mask_img=mask_img)
 
     assert not np.isnan(np.sum(masker.fit_transform(img)))
-
-
-def test_standardization(rng, affine_eye):
-    """Check output properly standardized with 'standardize' parameter."""
-    data = rng.random((3, 3, 3, 5))
-    img = Nifti1Image(data, affine_eye)
-
-    # test zscore
-    masker = NiftiSpheresMasker([(1, 1, 1)], standardize="zscore_sample")
-    # Test the fit
-    s = masker.fit_transform(img)
-
-    np.testing.assert_almost_equal(s.mean(), 0)
-    np.testing.assert_almost_equal(s.std(), 1, decimal=1)
-
-    # test psc
-    masker = NiftiSpheresMasker([(1, 1, 1)], standardize="psc")
-    # Test the fit
-    s = masker.fit_transform(img)
-
-    np.testing.assert_almost_equal(s.mean(), 0)
-    np.testing.assert_almost_equal(
-        s.ravel(),
-        data[1, 1, 1] / data[1, 1, 1].mean() * 100 - 100,
-    )
 
 
 def test_nifti_spheres_masker_inverse_transform(rng, affine_eye):

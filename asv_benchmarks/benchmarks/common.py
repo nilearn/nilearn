@@ -1,6 +1,6 @@
 """Common Benchmarks class that does the setup for the benchmarks."""
 
-from nilearn.datasets import fetch_adhd, fetch_atlas_schaefer_2018
+from nilearn.datasets import fetch_abide_pcp, fetch_atlas_schaefer_2018
 from nilearn.image import concat_imgs, new_img_like, resample_to_img
 
 
@@ -11,13 +11,15 @@ class Benchmark:
     benchmarks.
     """
 
-    def setup_cache(self, n_subjects=10, n_masks=1):
+    timeout = 2400  # 40 mins
+
+    def setup_cache(self, n_subjects=100, n_masks=1):
         """Set up the cache directory with the necessary images and masks.
 
         The fMRI image is created by concatenating n_subjects subject images
-        from :func:`nilearn.datasets.fetch_adhd`. The masks are created by
+        from :func:`nilearn.datasets.fetch_abide_pcp`. The masks are created by
         resampling the atlas from
-        :func:`nilearn.datasets.fetch_atlas_basc_multiscale_2015` to the fMRI
+        :func:`nilearn.datasets.fetch_atlas_schaefer_2018` to the fMRI
         image and then creating masks for each region in the atlas.
 
         Parameters
@@ -29,8 +31,8 @@ class Benchmark:
             The number of masks to create.
         """
         # get an image
-        fmri_data = fetch_adhd(n_subjects=n_subjects)
-        concat = concat_imgs(fmri_data.func)
+        fmri_data = fetch_abide_pcp(n_subjects=n_subjects)
+        concat = concat_imgs(fmri_data.func_preproc)
         concat.to_filename(f"fmri_{n_subjects}.nii.gz")
 
         # get a mask
@@ -39,7 +41,6 @@ class Benchmark:
             atlas_path,
             concat,
             interpolation="nearest",
-            force_resample=True,
         )
         for idx in range(1, n_masks + 1):
             mask = resampled_atlas.get_fdata() == idx
@@ -47,6 +48,5 @@ class Benchmark:
                 resampled_atlas,
                 mask,
                 affine=resampled_atlas.affine,
-                copy_header=True,
             )
             mask_img.to_filename(f"mask_{idx}.nii.gz")

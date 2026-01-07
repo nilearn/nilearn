@@ -9,10 +9,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.helpers import constrained_layout_kwargs, rename_parameters
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
-from nilearn.plotting._utils import save_figure_if_needed
+from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.matrix._utils import (
     mask_matrix,
     pad_contrast_matrix,
@@ -111,7 +111,7 @@ def _sanitize_figure_and_axes(figure, axes):
             if hasattr(fig, "set_layout_engine"):  # can be removed w/mpl 3.5
                 fig.set_layout_engine("constrained")
         else:
-            fig = plt.figure(figsize=figure, **constrained_layout_kwargs())
+            fig = plt.figure(figsize=figure, layout="constrained")
         axes = plt.gca()
         own_fig = True
     elif axes is None:
@@ -119,7 +119,7 @@ def _sanitize_figure_and_axes(figure, axes):
             1,
             1,
             figsize=(7, 5),
-            **constrained_layout_kwargs(),
+            layout="constrained",
         )
         own_fig = True
     else:
@@ -163,7 +163,9 @@ def plot_matrix(
     ----------
     mat : 2-D :class:`numpy.ndarray`
         Matrix to be plotted.
+
     %(title)s
+
     labels : :obj:`list`, or :class:`numpy.ndarray` of :obj:`str`,\
     or False, or None, default=None
         The label of each row and column. Needs to be the same
@@ -218,7 +220,7 @@ def plot_matrix(
         .. note::
             This option is only available with SciPy >= 1.0.0.
 
-        .. versionadded:: 0.4.1
+        .. nilearn_versionadded:: 0.4.1
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments are sent to pylab.imshow.
@@ -236,9 +238,11 @@ def plot_matrix(
         mat, labels = reorder_matrix(mat, labels, reorder)
     if tri != "full":
         mat = mask_matrix(mat, tri)
-    display = axes.imshow(
-        mat, aspect="equal", interpolation="nearest", cmap=cmap, **kwargs
-    )
+
+    kwargs |= {"aspect": "equal", "interpolation": "nearest"}
+
+    display = axes.imshow(mat, cmap=cmap, **kwargs)
+
     axes.set_autoscale_on(False)
     ymin, ymax = axes.get_ylim()
     _configure_axis(
@@ -265,9 +269,7 @@ def plot_matrix(
     return display
 
 
-# TODO (nilearn >= 0.13.0)
 @fill_doc
-@rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_contrast_matrix(
     contrast_def, design_matrix, colorbar=True, axes=None, output_file=None
 ):
@@ -309,18 +311,21 @@ def plot_contrast_matrix(
     max_len = np.max([len(str(name)) for name in design_column_names])
 
     n_columns_design_matrix = len(design_column_names)
+    fig_width = max(0.4 * n_columns_design_matrix, 5)
+    fig_height = max(1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len, 3)
+
     if axes is None:
         _, axes = plt.subplots(
-            figsize=(
-                0.4 * n_columns_design_matrix,
-                1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
-            ),
-            **constrained_layout_kwargs(),
+            figsize=(fig_width, fig_height), layout="constrained"
         )
 
     maxval = np.max(np.abs(contrast_def))
     mat = axes.matshow(
-        con_matrix, aspect="equal", cmap="gray", vmin=-maxval, vmax=maxval
+        con_matrix,
+        aspect="equal",
+        cmap=DEFAULT_DIVERGING_CMAP,
+        vmin=-maxval,
+        vmax=maxval,
     )
 
     axes.set_label("conditions")
@@ -337,9 +342,7 @@ def plot_contrast_matrix(
     return save_figure_if_needed(axes, output_file)
 
 
-# TODO (nilearn >= 0.13.0)
 @fill_doc
-@rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_design_matrix(
     design_matrix,
     rescale=True,
@@ -383,7 +386,7 @@ def plot_design_matrix(
             fig_height = 10
         _, axes = plt.subplots(
             figsize=(1 + 0.23 * len(names), fig_height),
-            **constrained_layout_kwargs(),
+            layout="constrained",
         )
 
     axes.imshow(X, interpolation="nearest", aspect="auto")
@@ -445,8 +448,8 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         model_event[i] = event_copy
 
     n_runs = len(model_event)
-    if "layout" not in fig_kwargs and "constrained_layout" not in fig_kwargs:
-        fig_kwargs.update(**constrained_layout_kwargs())
+    if "layout" not in fig_kwargs:
+        fig_kwargs.update(layout="constrained")
     figure, axes = plt.subplots(1, 1, **fig_kwargs)
 
     # input validation
@@ -534,7 +537,7 @@ def plot_design_matrix_correlation(
 
     The drift and constant regressors are omitted from the plot.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -559,6 +562,8 @@ def plot_design_matrix_correlation(
         - ``"RdBu_r"``
         - ``"seismic_r"``
 
+    %(colorbar)s
+
     %(output_file)s
 
     kwargs : extra keyword arguments, optional
@@ -574,10 +579,9 @@ def plot_design_matrix_correlation(
 
     check_design_matrix(design_matrix)
 
-    ALLOWED_CMAP = ["RdBu_r", "bwr", "seismic_r"]
     cmap_name = cmap if isinstance(cmap, str) else cmap.name
-    if cmap_name not in ALLOWED_CMAP:
-        raise ValueError(f"cmap must be one of {ALLOWED_CMAP}")
+    ALLOWED_CMAP = ["RdBu_r", "bwr", "seismic_r"]
+    check_parameter_in_allowed(cmap_name, ALLOWED_CMAP, "cmap")
 
     columns_to_drop = ["intercept", "constant"]
     columns_to_drop.extend(

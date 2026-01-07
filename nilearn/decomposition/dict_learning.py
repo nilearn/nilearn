@@ -42,7 +42,7 @@ class DictLearning(_BaseDecomposition):
 
     See :footcite:t:`Mensch2016`.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
@@ -79,18 +79,12 @@ class DictLearning(_BaseDecomposition):
         Lasso solution (linear_model.Lasso). Lars will be faster if
         the estimated components are sparse.
 
-    mask : Niimg-like object, :obj:`~nilearn.maskers.MultiNiftiMasker` or \
-           :obj:`~nilearn.surface.SurfaceImage` or \
-           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given, for Nifti images,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters; for surface images, all the vertices will be used.
+    %(mask_decomposition)s
 
     %(smoothing_fwhm)s
         Default=4mm.
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(standardize_confounds)s
 
@@ -262,9 +256,15 @@ class DictLearning(_BaseDecomposition):
 
         _, n_features = data.shape
 
+        verbose = self.verbose
+        if verbose:
+            verbose = 1
+        elif not verbose:
+            verbose = 0
+
         logger.log(
             "Computing initial loadings",
-            verbose=self.verbose,
+            verbose=verbose,
         )
         self._init_loadings(data)
 
@@ -274,7 +274,7 @@ class DictLearning(_BaseDecomposition):
 
         logger.log(
             " Learning dictionary",
-            verbose=self.verbose,
+            verbose=verbose,
         )
 
         kwargs = transfer_deprecated_param_vals(
@@ -287,7 +287,7 @@ class DictLearning(_BaseDecomposition):
             batch_size=self.batch_size,
             method=self.method,
             dict_init=dict_init,
-            verbose=max(0, self.verbose - 1),
+            verbose=max(0, verbose - 1),
             random_state=self.random_state,
             return_code=True,
             shuffle=True,

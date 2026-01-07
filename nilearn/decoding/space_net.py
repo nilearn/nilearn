@@ -3,6 +3,7 @@
 For example: TV-L1, Graph-Net, etc
 """
 
+import abc
 import collections
 import time
 import warnings
@@ -13,12 +14,12 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy import stats
 from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
+from sklearn.base import is_classifier
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model._base import _preprocess_data as center_data
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import check_cv
-from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot
@@ -27,15 +28,16 @@ from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.param_validation import (
-    adjust_screening_percentile,
+    check_parameter_in_allowed,
     check_params,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
+from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
+from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import unmask_from_to_3d_array
 from nilearn.surface import SurfaceImage
 
@@ -315,7 +317,7 @@ def path_scores(
     key=None,
     debias=False,
     screening_percentile=20,
-    verbose=1,
+    verbose=0,
 ):
     """Compute scores of different alphas in regression \
     and classification used by CV objects.
@@ -367,7 +369,7 @@ def path_scores(
 
     %(screening_percentile)s
 
-    %(verbose)s
+    %(verbose0)s
 
     """
     if l1_ratios is None:
@@ -375,7 +377,11 @@ def path_scores(
 
     # misc
     _, n_features = X.shape
-    verbose = int(verbose if verbose is not None else 0)
+
+    if verbose:
+        verbose = 1
+    elif not verbose:
+        verbose = 0
 
     # Univariate feature screening. Note that if we have only as few as 100
     # features in the mask's support, then we should use all of them to
@@ -394,9 +400,14 @@ def path_scores(
     X_test, y_test = X[test].copy(), y[test].copy()
 
     # it is essential to center the data in regression
-    X_train, y_train, _, y_train_mean, _ = center_data(
-        X_train, y_train, fit_intercept=True, copy=False
-    )
+    # do not unpack tuple completely
+    # as it returns more values starting from sklearn 1.8
+    # TODO: try to find a public function in sklearn to do this
+    tmp = center_data(X_train, y_train, fit_intercept=True, copy=False)
+    X_train = tmp[0]
+    y_train = tmp[1]
+    y_train_mean = tmp[3]
+    del tmp
 
     # misc
     if not isinstance(l1_ratios, collections.abc.Iterable):
@@ -586,10 +597,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
     %(screening_percentile)s
 
-    standardize : :obj:`bool`, default=True
-        If set, then the data (X, y) are centered to have mean zero along
-        axis 0. This is here because nearly all linear models will want
-        their data to be centered.
+    %(standardize_true)s
 
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
@@ -599,7 +607,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     tol : :obj:`float`, default=5e-4
         Defines the tolerance for convergence for the backend FISTA solver.
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -607,11 +615,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
     %(memory_level1)s
 
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+    %(cv8_5)s
 
     %(debias)s
 
@@ -619,7 +623,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
     %(spacenet_fit_attributes)s
 
@@ -644,7 +648,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,
@@ -704,6 +708,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         tags.input_tags = InputTags(niimg_like=True, surf_img=False)
         return tags
 
+    # TODO: try to extract into children classes
     @property
     def _is_classification(self) -> bool:
         # TODO remove for sklearn>=1.6
@@ -711,7 +716,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         # when dropping sklearn>=1.5 and replaced by just:
         #   self.__sklearn_tags__().estimator_type == "classifier"
         if SKLEARN_LT_1_6:
-            # TODO remove for sklearn>=1.6
+            # TODO remove for sklearn>=1.8
             return self._estimator_type == "classifier"
         return self.__sklearn_tags__().estimator_type == "classifier"
 
@@ -739,12 +744,9 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 "screening_percentile should be in the interval [0, 100]. "
                 f"Got {self.screening_percentile:g}."
             )
-        if self.penalty not in self.SUPPORTED_PENALTIES:
-            raise ValueError(
-                "'penalty' parameter must be one of "
-                f"{self.SUPPORTED_PENALTIES}. "
-                f"Got {self.penalty}."
-            )
+        check_parameter_in_allowed(
+            self.penalty, self.SUPPORTED_PENALTIES, "penalty"
+        )
         if self._is_classification:
             self._validate_loss(self.loss)
 
@@ -756,22 +758,32 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         if self.w_.ndim == 1:
             self.w_ = self.w_[np.newaxis, :]
         self.coef_ = self.w_[:, :-1]
-        if self._is_classification:
-            self.intercept_ = self.w_[:, -1]
-        else:
-            self._set_intercept(self.Xmean_, self.ymean_, self.Xstd_)
+        self._set_intercept()
+
+    def _set_intercept(self):
+        super()._set_intercept(self.Xmean_, self.ymean_, self.Xstd_)
 
     def _return_loss_value(self):
-        """Set loss value for instances where it is not defined.
-
-        For SpaceNetRegressor it is always "mse".
-        """
+        """Set loss value for instances where it is not defined."""
         loss = getattr(self, "loss", None)
         if loss is None:
             loss = "logistic"
-            if not self._is_classification:
-                loss = "mse"
         return loss
+
+    @abc.abstractmethod
+    def _n_problems(self):
+        # implemented in mixin classes
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def _binarize_y(self, y):
+        # implemented in mixin classes
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def _check_x_y(self, X, y):
+        # implemented in children classes
+        raise NotImplementedError()
 
     def fit(self, X, y):
         """Fit the learner.
@@ -780,8 +792,10 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         ----------
         X : :obj:`list` of Niimg-like objects
             See :ref:`extracting_data`.
-            Data on which model is to be fitted. If this is a list,
+            Data on which model is to be fitted.
+            If this is a list,
             the affine is considered the same for all.
+            Must have exactly as many elements as the input images.
 
         y : array or :obj:`list` of length n_samples
             The dependent variable (age, sex, QI, etc.).
@@ -799,9 +813,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 "Running space net on surface objects is not supported."
             )
 
-        # misc
-        self._check_params()
-
         self._fit_cache()
 
         tic = time.time()
@@ -810,33 +821,21 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.masker_.memory_level = self.memory_level
         X = self.masker_.fit_transform(X)
 
-        X, y = check_X_y(
-            X,
-            y,
-            ["csr", "csc", "coo"],
-            dtype=float,
-            multi_output=True,
-            y_numeric=not self._is_classification,
-        )
+        X, y = self._check_x_y(X, y)
 
-        if not self._is_classification and np.all(np.diff(y) == 0.0):
-            raise ValueError(
-                "The given input y must have at least 2 targets"
-                " to do regression analysis. You provided only"
-                f" one target {np.unique(y)}"
-            )
-
-        # misc
         self.Xmean_ = X.mean(axis=0)
+
         self.Xstd_ = X.std(axis=0)
         self.Xstd_[self.Xstd_ < 1e-8] = 1
+
         self.mask_img_ = self.masker_.mask_img_
+
         self.mask_ = get_data(self.mask_img_).astype(bool)
-        n_samples, _ = X.shape
-        y = np.array(y).copy()
+
         l1_ratios = self.l1_ratios
         if not isinstance(l1_ratios, collections.abc.Iterable):
             l1_ratios = [l1_ratios]
+
         alphas = self.alphas
         if alphas is not None and not isinstance(
             alphas, collections.abc.Iterable
@@ -856,32 +855,27 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         else:
             solver = partial(tvl1_solver, loss="logistic")
 
+        y = np.array(y).copy()
+
         # generate fold indices
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
         case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
         if case1 or case2:
             self.cv_ = list(
-                check_cv(
-                    self.cv, y=y, classifier=self._is_classification
-                ).split(X, y)
+                # TODO try to extract
+                check_cv(self.cv, y=y, classifier=is_classifier(self)).split(
+                    X, y
+                )
             )
         else:
             # no cross-validation needed, user supplied all params
+            n_samples, _ = X.shape
             self.cv_ = [(np.arange(n_samples), [])]
-        n_folds = len(self.cv_)
 
-        # number of problems to solve
-        y = (
-            self._binarize_y(y)
-            if self._is_classification
-            else y[:, np.newaxis]
-        )
-
-        n_problems = (
-            self.n_classes_
-            if self._is_classification and self.n_classes_ > 2
-            else 1
-        )
+        # Define the number problems to solve. In case of classification this
+        # number corresponds to the number of binary problems to solve
+        y = self._binarize_y(y)
+        n_problems = self._n_problems()
 
         # standardize y
         self.ymean_ = np.zeros(y.shape[0])
@@ -889,6 +883,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             y = y[:, 0]
 
         # scores & mean weights map over all folds
+        n_folds = len(self.cv_)
         self.cv_scores_ = [[] for _ in range(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
@@ -922,7 +917,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 solver_params,
                 n_alphas=self.n_alphas,
                 eps=self.eps,
-                is_classif=self._is_classification,
+                # TODO try to extract
+                is_classif=is_classifier(self),
                 key=(cls, fold),
                 debias=self.debias,
                 verbose=self.verbose,
@@ -944,11 +940,9 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.cv_scores_ = np.array(self.cv_scores_)
         self.best_model_params_ = np.array(self.best_model_params_)
         self.alpha_grids_ = np.array(self.alpha_grids_)
+
         self.ymean_ /= n_folds
-        if not self._is_classification:
-            self.all_coef_ = np.array(self.all_coef_)
-            w = w[0]
-            self.ymean_ = self.ymean_[0]
+        w, self.ymean_, self.all_coef_ = self._adapt_weights_y_mean_all_coef(w)
 
         # bagging: average best weights maps over folds
         w /= n_folds
@@ -964,11 +958,14 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         # report time elapsed
         duration = time.time() - tic
         logger.log(
-            f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes.",
+            f"Time Elapsed: {duration:.3f} seconds.",
             self.verbose,
         )
 
         return self
+
+    def _adapt_weights_y_mean_all_coef(self, w):
+        return w, self.ymean_, self.all_coef_
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "masker_")
@@ -1002,11 +999,9 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 f"expecting {self.n_elements_}."
             )
 
-        # handle regression (least-squared loss)
-        if not self._is_classification:
+        if not is_classifier(self):
+            # handle regression (least-squared loss)
             return LinearRegression.predict(self, X)
-
-        # prediction proper
         scores = self.decision_function(X)
         if len(scores.shape) == 1:
             indices = (scores > 0).astype(int)
@@ -1070,12 +1065,9 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     %(memory_level1)s
 
-    standardize : :obj:`bool`, default=True
-        If set, then we'll center the data (X, y) have mean zero along axis 0.
-        This is here because nearly all linear models will want their data
-        to be centered.
+    %(standardize_true)s
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -1083,11 +1075,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+    %(cv8_5)s
 
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
@@ -1100,7 +1088,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.12.1
+        .. nilearn_versionadded:: 0.12.1
 
     %(spacenet_fit_attributes)s
 
@@ -1136,7 +1124,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,
@@ -1176,25 +1164,25 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         self._estimator_type = "classifier"
 
     def _validate_loss(self, value):
-        if value is not None and value not in self.SUPPORTED_LOSSES:
-            raise ValueError(
-                f"'loss' parameter must be one of {self.SUPPORTED_LOSSES}. "
-                f"Got {value}."
-            )
+        if value is not None:
+            check_parameter_in_allowed(value, self.SUPPORTED_LOSSES, "loss")
 
-    def _binarize_y(self, y):
-        """Encode target classes as -1 and 1.
+    def _check_params(self):
+        super()._check_params()
+        self._validate_loss(self.loss)
 
-        Helper function invoked just before fitting a classifier.
-        """
-        y = np.array(y)
+    def _check_x_y(self, X, y):
+        return check_X_y(
+            X,
+            y,
+            ["csr", "csc", "coo"],
+            dtype=float,
+            multi_output=True,
+            y_numeric=False,
+        )
 
-        # encode target classes as -1 and 1
-        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
-        y = self._enc.fit_transform(y)
-        self.classes_ = self._enc.classes_
-        self.n_classes_ = len(self.classes_)
-        return y
+    def _set_intercept(self):
+        self.intercept_ = self.w_[:, -1]
 
     def score(self, X, y):
         """Return the mean accuracy on the given test data and labels.
@@ -1309,12 +1297,9 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
 
     %(memory_level1)s
 
-    standardize : :obj:`bool`, default=True
-        If set, then we'll center the data (X, y) have mean zero along axis 0.
-        This is here because nearly all linear models will want their data
-        to be centered.
+    %(standardize_true)s
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -1322,11 +1307,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+    %(cv8_5)s
 
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
@@ -1339,7 +1320,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.12.1
+        .. nilearn_versionadded:: 0.12.1
 
 
     %(spacenet_fit_attributes)s
@@ -1368,7 +1349,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,
@@ -1402,3 +1383,56 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
             verbose=verbose,
             positive=positive,
         )
+
+    def _return_loss_value(self):
+        """Return loss value.
+
+        For SpaceNetRegressor it is always "mse".
+        """
+        return "mse"
+
+    def _check_x_y(self, X, y):
+        X, y = check_X_y(
+            X,
+            y,
+            ["csr", "csc", "coo"],
+            dtype=float,
+            multi_output=True,
+            y_numeric=True,
+        )
+
+        if np.all(np.diff(y) == 0.0):
+            raise ValueError(
+                "The given input y must have at least 2 targets"
+                " to do regression analysis. You provided only"
+                f" one target {np.unique(y)}"
+            )
+
+        return X, y
+
+    def _adapt_weights_y_mean_all_coef(self, w):
+        return w[0], self.ymean_[0], np.array(self.all_coef_)
+
+    def fit(self, X, y):
+        """Fit the learner.
+
+        Parameters
+        ----------
+        X : :obj:`list` of Niimg-like objects
+            See :ref:`extracting_data`.
+            Data on which model is to be fitted.
+            If this is a list,
+            the affine is considered the same for all.
+            Must have exactly as many elements as the input images.
+
+        y : array or :obj:`list` of length n_samples
+            The dependent variable (age, sex, QI, etc.).
+
+        Notes
+        -----
+        self : `SpaceNet` object
+            Model selection is via cross-validation with bagging.
+        """
+        # duplicated from BaseSpaceNet to not rely on the API / docstring
+        # from RegressorMixin
+        return BaseSpaceNet.fit(self, X, y)

@@ -102,6 +102,7 @@ decoder = Decoder(
     standardize="zscore_sample",
     screening_percentile=2,
     param_grid=param_grid,
+    verbose=1,
 )
 
 # %%
@@ -152,6 +153,7 @@ for sp in screening_percentile_range:
         standardize="zscore_sample",
         screening_percentile=sp,
         param_grid=param_grid,
+        verbose=1,
     )
     decoder.fit(index_img(fmri_niimgs, run < 10), y[run < 10])
     cv_scores.append(np.mean(decoder.cv_scores_["bottle"]))
@@ -195,6 +197,7 @@ for train, test in cv.split(run):
                 standardize="zscore_sample",
                 screening_percentile=sp,
                 param_grid=param_grid,
+                verbose=1,
             )
         decoder.fit(index_img(fmri_niimgs, train), y_train)
         y_pred = decoder.predict(index_img(fmri_niimgs, test))

@@ -1,7 +1,5 @@
 """Tests common to multiple image plotting functions."""
 
-from __future__ import annotations
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -54,9 +52,7 @@ def _add_nans_to_img(img, affine_mni=None):
 
 def test_mni152template_is_reordered():
     """See issue #2550."""
-    reordered_mni = reorder_img(
-        load_mni152_template(resolution=2), copy_header=True
-    )
+    reordered_mni = reorder_img(load_mni152_template(resolution=2))
     assert np.allclose(get_data(reordered_mni), get_data(MNI152TEMPLATE))
     assert np.allclose(reordered_mni.affine, MNI152TEMPLATE.affine)
     assert np.allclose(reordered_mni.shape, MNI152TEMPLATE.shape)
@@ -88,10 +84,10 @@ def test_plot_functions_invalid_threshold(plot_func, img_3d_mni, tmp_path):
     "plot_func", PLOTTING_FUNCS_3D.difference({plot_glass_brain})
 )
 @pytest.mark.parametrize("cut_coords", [None, 5, (5, 4, 3)])
-def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_mni):
+def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_rand_eye):
     """Smoke-test for plotting functions in mosaic mode."""
     plot_func(
-        img_3d_mni,
+        img_3d_rand_eye,
         display_mode="mosaic",
         title="mosaic mode",
         cut_coords=cut_coords,
@@ -99,6 +95,27 @@ def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_mni):
     plt.close()
 
 
+@pytest.mark.parametrize("display_mode", ["x", "y", "z"])
+def test_plot_functions_same_cut(display_mode, img_3d_rand_eye, tmp_path):
+    """Make sure that passing several times the same cut for stacked slicers
+       does not crash.
+
+    Should also throw a warning that a cut has been removed.
+
+    Regression test for:
+    https://github.com/nilearn/nilearn/issues/5903
+    """
+    with pytest.warns(UserWarning, match="Dropping duplicates cuts from"):
+        display = plot_img(
+            img_3d_rand_eye,
+            display_mode=display_mode,
+            cut_coords=[3, 3],
+        )
+        display.savefig(tmp_path / "tmp.png")
+        plt.close()
+
+
+@pytest.mark.slow
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
 def test_plot_threshold_for_uint8(affine_eye, plot_func):
     """Mask was applied in [-threshold, threshold] which is problematic \
@@ -132,21 +149,6 @@ def test_plot_threshold_for_uint8(affine_eye, plot_func):
     plt.close()
 
 
-@pytest.fixture
-def expected_error_message(display_mode, cut_coords):
-    """Return the expected error message depending on display_mode \
-       and cut_coords. Used in test_invalid_cut_coords_with_display_mode.
-    """
-    if display_mode == "ortho" or (
-        display_mode == "tiled" and cut_coords == 2
-    ):
-        return (
-            f"The input given for display_mode='{display_mode}' needs to "
-            "be a list of 3d world coordinates."
-        )
-    return "The number cut_coords passed does not match the display_mode"
-
-
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize(
     "display_mode,cut_coords",
@@ -157,12 +159,13 @@ def test_invalid_cut_coords_with_display_mode(
     display_mode,
     cut_coords,
     img_3d_mni,
-    expected_error_message,
 ):
     """Tests for invalid combinations of cut_coords and display_mode."""
-    if plot_func is plot_glass_brain and display_mode != "ortho":
+    if plot_func is plot_glass_brain:
         return
-    with pytest.raises(ValueError, match=expected_error_message):
+    with pytest.raises(
+        ValueError, match="cut_coords passed does not match the display mode"
+    ):
         plot_func(
             img_3d_mni,
             display_mode=display_mode,
@@ -176,6 +179,7 @@ def test_plot_with_nans(plot_func, img_3d_mni):
     plot_func(_add_nans_to_img(img_3d_mni))
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "plot_func", [plot_roi, plot_stat_map, plot_glass_brain]
 )
@@ -207,17 +211,19 @@ def test_plotting_functions_with_display_mode_tiled(plot_func, img_3d_mni):
     plt.close()
 
 
-functions = [plot_stat_map, plot_img]
-EXPECTED = [(i, ["-10", "-5", "0", "5", "10"]) for i in [0, 0.1, 0.9, 1]]
-EXPECTED += [
-    (i, ["-10", f"-{i}", "0", f"{i}", "10"]) for i in [1.3, 2.5, 3, 4.9, 7.5]
-]
-EXPECTED += [(i, [f"-{i}", "-5", "0", "5", f"{i}"]) for i in [7.6, 8, 9.9]]
-
-
+@pytest.mark.slow
+@pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
 @pytest.mark.parametrize(
-    "plot_func, threshold, expected_ticks",
-    [(f, e[0], e[1]) for e in EXPECTED for f in functions],
+    "threshold, expected_ticks",
+    [
+        (0, [-10, -5, 0, 5, 10]),
+        (0.1, [-10, -5, -0.1, 0.1, 5, 10]),
+        (1.3, [-10, -5, -1.3, 1.3, 5, 10]),
+        (3, [-10, -5, -3, 0, 3, 5, 10]),
+        (3.5, [-10, -3.5, 0, 3.5, 10]),
+        (7.5, [-10, -7.5, 0, 7.5, 10]),
+        (9.9, [-10, -9.9, 0, 9.9, 10]),
+    ],
 )
 def test_plot_symmetric_colorbar_threshold(
     tmp_path, plot_func, threshold, expected_ticks
@@ -229,27 +235,25 @@ def test_plot_symmetric_colorbar_threshold(
     display = plot_func(img, threshold=threshold, colorbar=True)
     plt.savefig(tmp_path / "test.png")
     assert [
-        tick.get_text() for tick in display._cbar.ax.get_yticklabels()
+        float(tick.get_text()) for tick in display._cbar.ax.get_yticklabels()
     ] == expected_ticks
     plt.close()
 
 
-functions = [plot_stat_map]
-EXPECTED2: list[tuple[float | int, list[str]]] = [
-    (0, ["0", "2.5", "5", "7.5", "10"])
-]
-EXPECTED2 += [(i, [f"{i}", "2.5", "5", "7.5", "10"]) for i in [0.1, 0.3, 1.2]]
-EXPECTED2 += [
-    (i, ["0", f"{i}", "5", "7.5", "10"]) for i in [1.3, 1.9, 2.5, 3, 3.7]
-]
-EXPECTED2 += [(i, ["0", "2.5", f"{i}", "7.5", "10"]) for i in [3.8, 4, 5, 6.2]]
-EXPECTED2 += [(i, ["0", "2.5", "5", f"{i}", "10"]) for i in [6.3, 7.5, 8, 8.7]]
-EXPECTED2 += [(i, ["0", "2.5", "5", "7.5", f"{i}"]) for i in [8.8, 9, 9.9]]
-
-
+@pytest.mark.parametrize("plot_func", [plot_stat_map])
 @pytest.mark.parametrize(
-    "plot_func, threshold, expected_ticks",
-    [(f, e[0], e[1]) for e in EXPECTED2 for f in functions],
+    "threshold, expected_ticks",
+    [
+        (0, [0, 2.5, 5, 7.5, 10]),
+        (0.1, [0, 0.1, 2.5, 5, 7.5, 10]),
+        (1.6, [0, 1.6, 2.5, 5, 7.5, 10]),
+        (1.7, [0, 1.7, 5, 7.5, 10]),
+        (3.3, [0, 3.3, 5, 7.5, 10]),
+        (3.4, [0, 3.4, 5, 7.5, 10]),
+        (6.6, [0, 6.6, 7.5, 10]),
+        (6.7, [0, 6.7, 10]),
+        (9.96, [0, 10]),
+    ],
 )
 def test_plot_asymmetric_colorbar_threshold(
     tmp_path, plot_func, threshold, expected_ticks
@@ -261,11 +265,12 @@ def test_plot_asymmetric_colorbar_threshold(
     display = plot_func(img, threshold=threshold, colorbar=True)
     plt.savefig(tmp_path / "test.png")
     assert [
-        tick.get_text() for tick in display._cbar.ax.get_yticklabels()
+        float(tick.get_text()) for tick in display._cbar.ax.get_yticklabels()
     ] == expected_ticks
     plt.close()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
 @pytest.mark.parametrize("vmax", [None, 0])
 def test_img_plotting_vmax_equal_to_zero(plot_func, vmax):

@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from nilearn._utils.helpers import constrained_layout_kwargs
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
@@ -40,7 +39,7 @@ def labels():
 def test_sanitize_figure_and_axes_error(fig, axes):
     with pytest.raises(
         ValueError,
-        match=("Parameters figure and axes cannot be specified together."),
+        match=(r"Parameters figure and axes cannot be specified together."),
     ):
         _sanitize_figure_and_axes(fig, axes)
 
@@ -125,6 +124,18 @@ def test_matrix_plotting_reorder(mat, labels):
 
     # test if reordering with specific linkage works
     ax = plot_matrix(mat, labels=labels, reorder="complete")
+
+
+def test_plot_matrix_empty_labels():
+    """When all labels are empty, they are turned to None.
+
+    Regression smoke test for https://github.com/nilearn/nilearn/pull/5839/files#r2550441937
+    """
+    mat = np.zeros((3, 3))
+
+    col_labels = ["", "", ""]
+
+    plot_matrix(mat, labels=col_labels)
 
 
 def test_show_design_matrix(tmp_path):
@@ -276,7 +287,7 @@ def test_show_contrast_matrix_axes():
         frame_times, drift_model="polynomial", drift_order=3
     )
     contrast = np.ones(4)
-    fig, ax = plt.subplots(**constrained_layout_kwargs())
+    fig, ax = plt.subplots(layout="constrained")
 
     plot_contrast_matrix(contrast, dmtx, axes=ax)
 
@@ -317,22 +328,34 @@ def test_plot_design_matrix_correlation_smoke_path(tmp_path):
 def test_plot_design_matrix_correlation_errors(mat):
     """Test plot_design_matrix_correlation errors."""
     with pytest.raises(
-        ValueError, match="Tables to load can only be TSV or CSV."
+        ValueError, match=r"Tables to load can only be TSV or CSV."
     ):
         plot_design_matrix_correlation("foo")
 
-    with pytest.raises(ValueError, match="dataframe cannot be empty."):
+    with pytest.raises(ValueError, match=r"dataframe cannot be empty."):
         plot_design_matrix_correlation(pd.DataFrame())
 
-    with pytest.raises(ValueError, match="cmap must be one of"):
+    with pytest.raises(ValueError, match="'cmap' must be one of"):
         plot_design_matrix_correlation(pd.DataFrame(mat), cmap="foo")
 
     dmtx = pd.DataFrame(
         {"event_1": [0, 1], "constant": [1, 1], "drift_1": [0, 1]}
     )
-    with pytest.raises(ValueError, match="tri needs to be one of"):
+    with pytest.raises(ValueError, match="'tri' must be one of"):
         plot_design_matrix_correlation(dmtx, tri="lower")
 
     dmtx = pd.DataFrame({"constant": [1, 1], "drift_1": [0, 1]})
     with pytest.raises(ValueError, match="Nothing left to plot after "):
         plot_design_matrix_correlation(dmtx)
+
+
+def test_override_kwargs(mat):
+    """Ensure kwargs can contain value that won't raise duplicate error.
+
+    In this case the value passed in kwargs
+    override the defaults used by Nilearn internally.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5904
+    """
+    kwargs = {"interpolation": "none", "aspect": "equal"}
+    plot_matrix(mat, **kwargs)

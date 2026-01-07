@@ -9,14 +9,13 @@ from scipy import stats
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import constrained_layout_kwargs
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn.image import check_niimg_3d
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.plotting._utils import save_figure_if_needed
+from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import NiimgLike
@@ -111,11 +110,14 @@ def plot_img_comparison(
         isinstance(x, NiimgLike) for x in src_imgs
     ):
         image_type = "volume"
+        ref_imgs = [check_niimg_3d(x) for x in ref_imgs]
+        src_imgs = [check_niimg_3d(x) for x in src_imgs]
 
     elif all(isinstance(x, SurfaceImage) for x in ref_imgs) and all(
         isinstance(x, SurfaceImage) for x in src_imgs
     ):
         image_type = "surface"
+
     else:
         types_ref_imgs = {type(x) for x in ref_imgs}
         types_src_imgs = {type(x) for x in src_imgs}
@@ -137,7 +139,7 @@ def plot_img_comparison(
                 1,
                 2,
                 figsize=(12, 5),
-                **constrained_layout_kwargs(),
+                layout="constrained",
             )
         else:
             (ax1, ax2) = axes
@@ -169,6 +171,7 @@ def plot_img_comparison(
                 np.max(src_data),
             ]
 
+            ax1.set_facecolor("black")
             hb = ax1.hexbin(
                 ref_data,
                 src_data,
@@ -353,6 +356,7 @@ def plot_bland_altman(
     )
 
     ax1 = figure.add_subplot(gs[:-1, 1:5])
+    ax1.set_facecolor("black")
     hb = ax1.hexbin(
         mean,
         diff,
@@ -395,9 +399,7 @@ def plot_bland_altman(
 
     if colorbar:
         ax4 = figure.add_subplot(gs[:-1, 5])
-        ax4.set_aspect(20)
-        pos1 = ax4.get_position()
-        ax4.set_position([pos1.x0 - 0.025, pos1.y0, pos1.width, pos1.height])
+        ax4.set_aspect(3)
 
         cb = figure.colorbar(hb, cax=ax4)
         cb.set_label("log10(N)")

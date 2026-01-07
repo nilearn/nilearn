@@ -50,6 +50,27 @@ from nilearn._utils.testing import serialize_niimg
 from nilearn.surface.surface import PolyMesh, SurfaceImage
 
 
+def check_fetcher_verbosity(fn, capsys, **kwargs):
+    """Check verbosity behavior of fetcher.
+
+    - Default verbosity == 1
+    - Verbose 0 is quiet
+    """
+    capsys.readouterr()  # necessary to flush what is already in system output
+
+    fn(**kwargs)
+    captured_default = capsys.readouterr().out
+
+    fn(verbose=1, **kwargs)
+    captured_verbose = capsys.readouterr().out
+
+    assert captured_default == captured_verbose
+
+    fn(verbose=0, **kwargs)
+    captured_verbose_0 = capsys.readouterr().out
+    assert captured_verbose_0 == ""
+
+
 @pytest.fixture(autouse=True)
 def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
     """Monkeypatch user home directory and NILEARN_DATA env variable.
@@ -347,14 +368,14 @@ def _index_archive_contents():
     index = {}
     for file_path in sorted(archive_contents_dir.glob("**/*")):
         if file_path.is_file() and file_path.suffix not in [".py", ".pyc"]:
-            fmt, url_pattern, n = _get_format_and_pattern(file_path)
+            _, url_pattern, _ = _get_format_and_pattern(file_path)
             index[url_pattern] = str(file_path.resolve())
     return index
 
 
 def _archive_from_contents_file(file_path):
     file_path = Path(file_path)
-    fmt, pattern, n_skip = _get_format_and_pattern(file_path)
+    fmt, _, n_skip = _get_format_and_pattern(file_path)
     with file_path.open() as f:
         contents = [p.strip().replace("/", os.sep) for p in f]
     return list_to_archive(list(filter(bool, contents))[n_skip:], fmt)
@@ -485,7 +506,7 @@ def check_type_fetcher(data):
                 assert isinstance(v, str)
                 assert v != ""
             if not check_type_fetcher(v):
-                raise TypeError(f"Found {k} : {type(v)}")
+                raise TypeError(f"Found {k} : {v.__class__.__name__}")
     elif isinstance(data, (set, list, tuple)):
         for v in data:
             if not check_type_fetcher(v):

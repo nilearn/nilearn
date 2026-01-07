@@ -50,6 +50,7 @@ masker = NiftiMapsMasker(
     standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
+    memory_level=1,
     verbose=1,
 )
 
@@ -60,7 +61,7 @@ time_series = masker.fit_transform(data.func[0], confounds=data.confounds)
 # -------------------------------------
 from sklearn.covariance import GraphicalLassoCV
 
-estimator = GraphicalLassoCV()
+estimator = GraphicalLassoCV(verbose=True)
 estimator.fit(time_series)
 
 # %%
@@ -126,7 +127,7 @@ show()
 
 view = view_connectome(-estimator.precision_, coords)
 
-# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# In a notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 view
 

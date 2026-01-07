@@ -45,7 +45,7 @@ from nilearn.plotting import plot_matrix, plot_surf, show
 surf_img_nki = load_nki()[0]
 print(f"NKI image: {surf_img_nki}")
 
-masker = SurfaceMasker()
+masker = SurfaceMasker(verbose=1)
 masked_data = masker.fit_transform(surf_img_nki)
 print(f"Masked data shape: {masked_data.shape}")
 
@@ -101,7 +101,6 @@ for view, ax_row in zip(views, axes, strict=False):
             vmax=vmax,
             bg_map=fsaverage_sulcal,
             cmap="seismic",
-            darkness=None,
         )
 fig.set_size_inches(12, 8)
 
@@ -138,8 +137,7 @@ labels_img = SurfaceImage(
 )
 
 labels_masker = SurfaceLabelsMasker(
-    labels_img=labels_img,
-    lut=destrieux.lut,
+    labels_img=labels_img, lut=destrieux.lut, verbose=1
 ).fit()
 
 masked_data = labels_masker.transform(surf_img_nki)
@@ -203,7 +201,7 @@ y = rng.choice(
 )
 
 decoder = Decoder(
-    mask=SurfaceMasker(),
+    mask=SurfaceMasker(verbose=1),
     param_grid={"C": [0.01, 0.1]},
     cv=3,
     screening_percentile=1,
@@ -218,7 +216,6 @@ plot_surf(
     bg_on_data=True,
     cmap="inferno",
     vmin=0,
-    darkness=None,
 )
 show()
 
@@ -228,7 +225,7 @@ show()
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
 decoder = pipeline.make_pipeline(
-    SurfaceMasker(),
+    SurfaceMasker(verbose=1),
     preprocessing.StandardScaler(),
     feature_selection.SelectKBest(
         score_func=feature_selection.f_regression, k=500
@@ -248,6 +245,5 @@ plot_surf(
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    darkness=None,
 )
 show()

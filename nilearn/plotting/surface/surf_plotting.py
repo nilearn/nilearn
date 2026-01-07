@@ -1,20 +1,17 @@
 """Functions for surface visualization."""
 
-from warnings import warn
-
 import numpy as np
 import pandas as pd
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
-from nilearn.image import get_data
+from nilearn.image import check_niimg_3d, get_data
 from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
     check_threshold_not_negative,
+    get_colorbar_and_data_ranges,
 )
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
@@ -53,7 +50,6 @@ def plot_surf(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     cbar_vmin=None,
@@ -67,7 +63,7 @@ def plot_surf(
 ):
     """Plot surfaces with optional background and data.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -100,7 +96,7 @@ def plot_surf(
 
     engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
         Selects which plotting engine will be used by ``plot_surf``.
         Currently, only ``matplotlib`` and ``plotly`` are supported.
@@ -130,9 +126,9 @@ def plot_surf(
         When using ``plotly`` as engine, ``symmetric_cmap`` will default to
         `False` if `None` is passed.
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
-        .. versionchanged:: 0.12.0
+        .. nilearn_versionchanged:: 0.12.0
             Default value changed to None.
 
     %(colorbar)s
@@ -165,9 +161,6 @@ def plot_surf(
 
     %(bg_on_data)s
 
-    %(darkness)s
-        Default=1.
-
     %(vmin)s
 
     %(vmax)s
@@ -194,7 +187,7 @@ def plot_surf(
         - `'%%.2g'` (scientific notation) with ``matplotlib`` engine.
         - `'.1f'` (rounded floats) with ``plotly`` engine.
 
-        .. versionadded:: 0.7.1
+        .. nilearn_versionadded:: 0.7.1
 
     %(title)s
 
@@ -208,7 +201,7 @@ def plot_surf(
         When using ``plotly`` as engine, ``title_font_size`` will default to
         `18` if `None` is passed.
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
     %(output_file)s
 
@@ -272,7 +265,6 @@ def plot_surf(
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmin=vmin,
         vmax=vmax,
         cbar_vmin=cbar_vmin,
@@ -334,7 +326,7 @@ def plot_surf_contours(
         and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
         Otherwise a warning will be displayed.
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     levels : :obj:`list` of :obj:`int`, or None, default=None
         A list of indices of the regions that are to be outlined.
@@ -346,7 +338,7 @@ def plot_surf_contours(
         Provide `None` as list entry to skip showing the label of that region.
         If `None`, no labels are used.
 
-    colors : :obj:`list` of matplotlib color names or RGBA values, or None,
+    colors : :obj:`list` of matplotlib color names or RGBA values, or None, \
         default=None
         Colors to be used.
 
@@ -386,11 +378,6 @@ def plot_surf_contours(
     )
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
-    if "darkness" not in kwargs:
-        # TODO (nilearn >= 0.13.0) remove when darkness is removed
-        # added now to prevent some extra warnings
-        kwargs["darkness"] = None
-
     backend = get_surface_backend(DEFAULT_ENGINE)
     fig = backend._plot_surf_contours(
         surf_mesh=surf_mesh,
@@ -424,7 +411,6 @@ def plot_surf_stat_map(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     symmetric_cbar="auto",
@@ -438,7 +424,7 @@ def plot_surf_stat_map(
 ):
     """Plot a stats map on a surface :term:`mesh` with optional background.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -471,7 +457,7 @@ def plot_surf_stat_map(
 
     engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
         Selects which plotting engine will be used by ``plot_surf_stat_map``.
         Currently, only ``matplotlib`` and ``plotly`` are supported.
@@ -508,7 +494,7 @@ def plot_surf_stat_map(
         When using matplotlib as engine,
         `avg_method` will default to ``"mean"`` if ``None`` is passed.
 
-        .. versionadded:: 0.10.3
+        .. nilearn_versionadded:: 0.10.3
 
     %(threshold)s
         Default=None
@@ -525,13 +511,6 @@ def plot_surf_stat_map(
 
     %(bg_on_data)s
 
-    %(darkness)s
-        Default=1.
-
-        .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
-
     %(vmin)s
 
     %(vmax)s
@@ -544,14 +523,14 @@ def plot_surf_stat_map(
             - '%%.2g' (scientific notation) with ``matplotlib`` engine.
             - '.1f' (rounded floats) with ``plotly`` engine.
 
-        .. versionadded:: 0.7.1
+        .. nilearn_versionadded:: 0.7.1
 
     %(title)s
 
     title_font_size : :obj:`int`, default=None
         Size of the title font (only implemented for the plotly engine).
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
     %(output_file)s
 
@@ -592,32 +571,31 @@ def plot_surf_stat_map(
     check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     loaded_stat_map = load_surf_data(stat_map)
 
-    backend = get_surface_backend(engine)
     # derive symmetric vmin, vmax and colorbar limits depending on
     # symmetric_cbar settings
-    cbar_vmin, cbar_vmax, vmin, vmax = (
-        backend._adjust_colorbar_and_data_ranges(
-            loaded_stat_map,
-            vmin=vmin,
-            vmax=vmax,
-            symmetric_cbar=symmetric_cbar,
-        )
+    cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
+        loaded_stat_map,
+        vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar,
     )
+    backend = get_surface_backend(engine)
+    if "cbar_vmin" in backend.PARAMS_NOT_IMPLEMENTED:
+        cbar_vmin = None
+        cbar_vmax = None
 
-    fig = plot_surf(
+    fig = backend._plot_surf(
         surf_mesh,
         surf_map=loaded_stat_map,
         bg_map=bg_map,
         hemi=hemi,
         view=view,
-        engine=engine,
         cmap=cmap,
         colorbar=colorbar,
         avg_method=avg_method,
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmin=vmin,
         vmax=vmax,
         cbar_vmin=cbar_vmin,
@@ -780,7 +758,7 @@ def plot_img_on_surf(
 
     backend = get_surface_backend(DEFAULT_ENGINE)
     # get vmin and vmax for entire data (all hemis)
-    _, _, vmin, vmax = backend._adjust_colorbar_and_data_ranges(
+    _, _, vmin, vmax = get_colorbar_and_data_ranges(
         get_data(stat_map),
         vmin=vmin,
         vmax=vmax,
@@ -790,7 +768,6 @@ def plot_img_on_surf(
     fig = backend._plot_img_on_surf(
         surf,
         surf_mesh=surf_mesh,
-        stat_map=stat_map,
         texture=texture,
         hemis=hemis,
         modes=modes,
@@ -824,7 +801,6 @@ def plot_surf_roi(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     cbar_tick_format="auto",
@@ -837,7 +813,7 @@ def plot_surf_roi(
 ):
     """Plot ROI on a surface :term:`mesh` with optional background.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -868,6 +844,10 @@ def plot_surf_roi(
         correct view, `hemi` should have a value corresponding to `roi_map`
         data.
 
+        .. nilearn_versionchanged :: nilearn 0.13.0
+
+            Negative or non-integer values are no longer allowed.
+
     %(bg_map)s
 
     %(hemi)s
@@ -876,7 +856,7 @@ def plot_surf_roi(
 
     engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
         Selects which plotting engine will be used by ``plot_surf_roi``.
         Currently, only ``matplotlib`` and ``plotly`` are supported.
@@ -929,13 +909,6 @@ def plot_surf_roi(
 
     %(bg_on_data)s
 
-    %(darkness)s
-        Default=1.
-
-        .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
-
     %(vmin)s
 
     %(vmax)s
@@ -946,14 +919,14 @@ def plot_surf_roi(
             - "%%i" for ``matplotlib`` engine.
             - "." for ``plotly`` engine.
 
-        .. versionadded:: 0.7.1
+        .. nilearn_versionadded:: 0.7.1
 
     %(title)s
 
     title_font_size : :obj:`int`, default=None
         Size of the title font (only implemented for the plotly engine).
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
     %(output_file)s
 
@@ -974,6 +947,11 @@ def plot_surf_roi(
 
     kwargs : :obj:`dict`, optional
         Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
+
+    Raises
+    ------
+    ValueError
+        If roi image contains negative or non-integer values.
 
     See Also
     --------
@@ -1001,15 +979,7 @@ def plot_surf_roi(
             f"{roi.ndim} dimensions"
         )
     if (roi < 0).any():
-        # TODO (nilearn >= 0.13.0) raise ValueError
-        warn(
-            (
-                "Negative values in roi_map will no longer be allowed in"
-                " Nilearn version 0.13"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
+        raise ValueError("Negative values in roi_map are not allowed.")
 
     mesh = load_surf_mesh(surf_mesh)
     if roi.shape[0] != mesh.n_vertices:
@@ -1028,25 +998,18 @@ def plot_surf_roi(
         vmax = float(1 + np.nanmax(roi))
 
     if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
-        # TODO (nilearn >= 0.13.0) raise ValueError
-        warn(
-            (
-                "Non-integer values in roi_map will no longer be allowed "
-                "in Nilearn version 0.13"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
+        raise ValueError("Non-integer values in roi_map are not allowed.")
+
     if isinstance(cmap, pd.DataFrame):
         cmap = create_colormap_from_lut(cmap)
 
-    params = {
-        "avg_method": avg_method,
-        "cbar_tick_format": cbar_tick_format,
-    }
-
     backend = get_surface_backend(engine)
-    backend._adjust_plot_roi_params(params)
+
+    if (
+        avg_method is None
+        and "avg_method" not in backend.PARAMS_NOT_IMPLEMENTED
+    ):
+        avg_method = "median"
 
     fig = backend._plot_surf(
         mesh,
@@ -1056,14 +1019,13 @@ def plot_surf_roi(
         view=view,
         cmap=cmap,
         colorbar=colorbar,
-        avg_method=params["avg_method"],
+        avg_method=avg_method,
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmin=vmin,
         vmax=vmax,
-        cbar_tick_format=params["cbar_tick_format"],
+        cbar_tick_format=cbar_tick_format,
         title=title,
         title_font_size=title_font_size,
         output_file=output_file,

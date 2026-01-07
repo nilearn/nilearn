@@ -457,9 +457,7 @@ def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
 
     request_mocker.url_mapping[url] = get_response
 
-    _utils.fetch_single_file(
-        url=url, data_dir=tmp_path, verbose=1, resume=True
-    )
+    _utils.fetch_single_file(url=url, data_dir=tmp_path, resume=True)
 
     assert file_full.exists()
     assert file_full.read_text() == "Dummy content"  # not overwritten
@@ -489,9 +487,7 @@ def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
     # the default Response from the mocker does not handle Range requests
     request_mocker.url_mapping[url] = "dummy content"
 
-    _utils.fetch_single_file(
-        url=url, data_dir=tmp_path, verbose=1, resume=True
-    )
+    _utils.fetch_single_file(url=url, data_dir=tmp_path, resume=True)
 
     assert (
         "Resuming failed, try to download the whole file."
@@ -626,10 +622,10 @@ def test_naive_ftp_adapter():
 def test_load_sample_motor_activation_image():
     """Test deprecation utils.load_sample_motor_activation_image.
 
-    # TODO (nilearn >= 0.13.0) remove
+    # TODO (nilearn >= 0.14.0) remove
     """
     with pytest.warns(
-        DeprecationWarning,
+        FutureWarning,
         match="Please import this function from 'nilearn.datasets.func'",
     ):
         utils.load_sample_motor_activation_image()

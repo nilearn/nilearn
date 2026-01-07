@@ -4,7 +4,10 @@ import inspect
 import traceback
 from pathlib import Path
 
+import numpy as np
 from sklearn.base import BaseEstimator
+
+from nilearn.typing import Verbose
 
 
 def _has_rich():
@@ -26,12 +29,12 @@ if _has_rich():
 # The technique used in the log() function only applies to CPython, because
 # it uses the inspect module to walk the call stack.
 def log(
-    msg,
-    verbose=1,
+    msg: str,
+    verbose: Verbose,
     object_classes=(BaseEstimator,),
-    stack_level=None,
-    msg_level=1,
-    with_traceback=False,
+    stack_level: int | np.integer | None = None,
+    msg_level: int | np.integer = 1,
+    with_traceback: bool = False,
 ):
     """Display a message to the user, depending on the verbosity level.
 
@@ -72,6 +75,11 @@ def log(
     is the one which is most likely to have been written in the user's script.
 
     """
+    if verbose is False:
+        verbose = 0
+    if verbose is True:
+        verbose = 1
+
     if verbose < msg_level:
         return
     if stack_level is None:
@@ -151,18 +159,32 @@ def find_stack_level() -> int:
 
     pkg_dir = Path(nil.__file__).parent
 
+    # list of stack frames to skip
+    skip_list = [
+        Path("sklearn") / "utils" / "_set_output.py",
+        Path("sklearn") / "base.py",
+        Path("joblib") / "memory.py",
+        Path("joblib") / "parallel.py",
+    ]
+
     # https://stackoverflow.com/questions/17407119/python-inspect-stack-is-slow
     frame = inspect.currentframe()
     try:
         n = 0
         while frame:
             filename = inspect.getfile(frame)
+
             is_test_file = Path(filename).name.startswith("test_")
+
             in_nilearn_code = filename.startswith(str(pkg_dir))
-            if not in_nilearn_code or is_test_file:
+            skip = any(str(x) in filename for x in skip_list)
+            if (not in_nilearn_code and not skip) or is_test_file:
                 break
+
             frame = frame.f_back
+
             n += 1
+
     finally:
         # See note in
         # https://docs.python.org/3/library/inspect.html#inspect.Traceback

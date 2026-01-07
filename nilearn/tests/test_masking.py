@@ -1,5 +1,6 @@
 """Test the mask-extracting utilities."""
 
+import re
 import warnings
 
 import numpy as np
@@ -9,13 +10,12 @@ from numpy.testing import assert_array_equal, assert_equal
 from sklearn.preprocessing import StandardScaler
 
 from nilearn._utils import data_gen
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _rng
+from nilearn.exceptions import DimensionError, MaskWarning
 from nilearn.image import get_data, high_variance_confounds
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import (
-    _MaskWarning,
     _unmask_3d,
     _unmask_4d,
     apply_mask,
@@ -73,12 +73,12 @@ def test_load_mask_img_error_inputs(surf_img_2d, img_4d_ones_eye):
 
     with pytest.raises(
         TypeError,
-        match="Expected dimension is 3D and you provided a 4D image.",
+        match=r"Expected dimension is 3D and you provided a 4D image.",
     ):
         load_mask_img(img_4d_ones_eye)
 
     with pytest.raises(
-        ValueError, match="Data for each part of .* should be 1D."
+        ValueError, match=r"Data for each part of .* should be 1D."
     ):
         load_mask_img(surf_img_2d())
 
@@ -264,7 +264,7 @@ def test_compute_epi_mask_errors_warnings(affine_eye):
     mean_image[0, 0, 2] = 1.1
     mean_image = Nifti1Image(mean_image, affine_eye)
 
-    with pytest.warns(_MaskWarning, match="Computed an empty mask"):
+    with pytest.warns(MaskWarning, match="Computed an empty mask"):
         compute_epi_mask(mean_image, exclude_zeros=True)
 
 
@@ -295,7 +295,7 @@ def test_compute_background_mask_errors_warnings(affine_eye):
     mean_image = np.zeros((9, 9, 9))
     mean_image = Nifti1Image(mean_image, affine_eye)
 
-    with pytest.warns(_MaskWarning, match="Computed an empty mask"):
+    with pytest.warns(MaskWarning, match="Computed an empty mask"):
         compute_background_mask(mean_image)
 
 
@@ -325,7 +325,7 @@ def test_compute_brain_mask():
     assert (np.logical_and(gm_data, wm_data) == 0).all()
 
     # Check that we get a useful warning for empty masks
-    with pytest.warns(_MaskWarning):
+    with pytest.warns(MaskWarning):
         compute_brain_mask(img, threshold=1)
 
     # Check that masks obtained from same FOV are the same
@@ -335,7 +335,7 @@ def test_compute_brain_mask():
     assert (brain_data == get_data(mask_img1)).all()
 
     # Check that error is raised if mask type is unknown
-    with pytest.raises(ValueError, match="Unknown mask type foo."):
+    with pytest.raises(ValueError, match=r"Unknown mask type foo."):
         compute_brain_mask(img, verbose=1, mask_type="foo")
 
 
@@ -402,7 +402,7 @@ def test_apply_mask_nan(affine_eye):
     assert np.all(np.isfinite(series))
 
 
-def test_apply_mask_errors(affine_eye):
+def test_apply_mask_errors(affine_eye, shape_3d_default):
     """Check errors for dimension."""
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
@@ -437,13 +437,28 @@ def test_apply_mask_errors(affine_eye):
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG % "2D"):
         apply_mask(data_img, Nifti1Image(mask[20, ...], affine_eye))
 
-    with pytest.raises(ValueError, match="is different from img affine"):
+    with pytest.raises(
+        ValueError, match=r"5\]\]\n is different from img affine:\n\[\[1"
+    ):
         apply_mask(data_img, Nifti1Image(mask, affine_eye / 2.0))
+
+    wrong_shape_mask_data = np.zeros(shape_3d_default)
+    wrong_shape_mask_data[1, 1, 0] = True
+    wrong_shape_mask_data[0, 1, 0] = True
+    wrong_shape_mask_data[0, 1, 1] = True
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Mask shape: (7, 8, 9)\n is different from img shape:(40, 40, 40)"
+        ),
+    ):
+        apply_mask(data_img, Nifti1Image(wrong_shape_mask_data, affine_eye))
 
     # Check that full masking raises error
     with pytest.raises(
         ValueError,
-        match="The mask is invalid as it is empty: it masks all data.",
+        match=r"The mask is invalid as it is empty: it masks all data.",
     ):
         apply_mask(data_img, full_mask_img)
 
@@ -451,13 +466,13 @@ def test_apply_mask_errors(affine_eye):
     mask[10, 10, 10] = 2
     with pytest.raises(
         ValueError,
-        match="Background of the mask must be represented with 0.",
+        match=r"Background of the mask must be represented with 0.",
     ):
         apply_mask(data_img, Nifti1Image(mask, affine_eye))
 
     mask[15, 15, 15] = 3
     with pytest.raises(
-        ValueError, match="Given mask is not made of 2 values.*"
+        ValueError, match=r"Given mask is not made of 2 values.*"
     ):
         apply_mask(Nifti1Image(data, affine_eye), mask_img)
 
@@ -732,6 +747,45 @@ def test_intersect_masks(
     assert_array_equal(mask_abc, get_data(mask_abc_))
 
 
+def test_intersect_masks_errors(affine_eye, surf_img_1d):
+    """Test errors of intersect_masks."""
+    affine_b = affine_eye * 2
+
+    shape_a = (2, 2, 2)
+    shape_b = (3, 3, 3)
+
+    shape_a_affine_a = Nifti1Image(np.ones(shape_a), affine_eye)
+    shape_a_affine_b = Nifti1Image(np.ones(shape_a), affine_b)
+    shape_b_affine_a = Nifti1Image(np.ones(shape_b), affine_eye)
+    shape_b_affine_b = Nifti1Image(np.ones(shape_b), affine_b)
+
+    with pytest.raises(ValueError, match="No mask provided for intersection"):
+        intersect_masks([])
+    with pytest.raises(
+        ValueError, match="The threshold should be greater than 0"
+    ):
+        intersect_masks([shape_a_affine_a, shape_a_affine_a], threshold=-1)
+    with pytest.raises(
+        ValueError, match="The threshold should be smaller than 1"
+    ):
+        intersect_masks([shape_a_affine_a, shape_a_affine_a], threshold=2)
+    with pytest.raises(
+        TypeError, match=r"All masks must be a 3D Niimg-like object."
+    ):
+        intersect_masks([shape_a_affine_a, surf_img_1d])
+    with pytest.raises(
+        ValueError, match="Following field of view errors were detected"
+    ):
+        intersect_masks(
+            [
+                shape_a_affine_a,
+                shape_a_affine_b,
+                shape_b_affine_a,
+                shape_b_affine_b,
+            ]
+        )
+
+
 def test_compute_multi_epi_mask(affine_eye):
     """Test resampling done with compute_multi_epi_mask."""
     mask_a = np.zeros((4, 4, 1), dtype=bool)
@@ -743,7 +797,7 @@ def test_compute_multi_epi_mask(affine_eye):
     mask_b_img = Nifti1Image(mask_b.astype("uint8"), affine_eye / 2.0)
 
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore", _MaskWarning)
+        warnings.simplefilter("ignore", MaskWarning)
         with pytest.raises(
             ValueError, match="cannot convert float NaN to integer"
         ):
@@ -771,11 +825,12 @@ def test_compute_multi_brain_mask_error():
     ]
     with pytest.raises(
         ValueError,
-        match="Field of view of image #1 is different from reference FOV.",
+        match=r"Field of view of image #1 is different from reference FOV.",
     ):
         compute_multi_brain_mask(imgs)
 
 
+@pytest.mark.slow
 def test_compute_multi_brain_mask():
     """Check results are the same if affine is the same."""
     imgs1 = [

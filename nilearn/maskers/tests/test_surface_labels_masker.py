@@ -10,23 +10,11 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.conftest import _make_mesh
 from nilearn.maskers import SurfaceLabelsMasker
+from nilearn.maskers.tests.conftest import sklearn_surf_label_img
 from nilearn.surface import SurfaceImage
 
-
-def _sklearn_surf_label_img():
-    """Create a sample surface label image using the sample mesh,
-    just to use for scikit-learn checks.
-    """
-    labels = {
-        "left": np.asarray([1, 1, 2, 2]),
-        "right": np.asarray([1, 1, 2, 2, 2]),
-    }
-    return SurfaceImage(_make_mesh(), labels)
-
-
-ESTIMATORS_TO_CHECK = [SurfaceLabelsMasker(_sklearn_surf_label_img())]
+ESTIMATORS_TO_CHECK = [SurfaceLabelsMasker(sklearn_surf_label_img())]
 
 if SKLEARN_LT_1_6:
 
@@ -58,6 +46,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -268,7 +257,7 @@ def test_surface_label_masker_error_names_and_lut(surf_label_img):
     )
     with pytest.raises(
         ValueError,
-        match="Pass either labels or a lookup table .* but not both.",
+        match=r"Pass either labels or a lookup table .* but not both.",
     ):
         masker.fit()
 
@@ -277,7 +266,7 @@ def test_surface_label_masker_fit_no_report(surf_label_img):
     """Check no report data is stored."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, reports=False)
     masker = masker.fit()
-    assert masker._reporting_data is None
+    assert masker._has_report_data() is False
 
 
 @pytest.mark.parametrize(
@@ -701,5 +690,5 @@ def test_surface_label_masker_labels_img_none():
 def test_error_wrong_strategy(surf_label_img):
     """Throw error for unsupported strategies."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, strategy="foo")
-    with pytest.raises(ValueError, match="Invalid strategy 'foo'."):
+    with pytest.raises(ValueError, match="'strategy' must be one of"):
         masker.fit()

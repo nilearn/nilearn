@@ -13,7 +13,6 @@ from scipy.linalg import pinv
 from scipy.stats import gamma
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 
@@ -86,8 +85,6 @@ def _gamma_difference_hrf(
     return hrf
 
 
-# TODO (nilearn >= 0.13.0)
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the :term:`SPM` :term:`HRF` model.
 
@@ -98,7 +95,7 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -120,8 +117,6 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     return _gamma_difference_hrf(t_r, oversampling, time_length, onset)
 
 
-# TODO (nilearn >= 0.13.0)
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the Glover :term:`HRF` model.
 
@@ -132,7 +127,7 @@ def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -201,8 +196,6 @@ def _generic_time_derivative(
     )
 
 
-# TODO (nilearn >= 0.13.0)
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the :term:`SPM` time derivative :term:`HRF` (dhrf) model.
 
@@ -213,7 +206,7 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -241,8 +234,6 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     )
 
 
-# TODO (nilearn >= 0.13.0)
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the Glover time derivative :term:`HRF` (dhrf) model.
 
@@ -253,7 +244,7 @@ def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -323,8 +314,6 @@ def _generic_dispersion_derivative(
     )
 
 
-# TODO (nilearn >= 0.13.0)
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def spm_dispersion_derivative(
     t_r, oversampling=50, time_length=32.0, onset=0.0
 ):
@@ -337,7 +326,7 @@ def spm_dispersion_derivative(
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -361,8 +350,6 @@ def spm_dispersion_derivative(
     )
 
 
-# TODO (nilearn >= 0.13.0)
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def glover_dispersion_derivative(
     t_r, oversampling=50, time_length=32.0, onset=0.0
 ):
@@ -378,7 +365,7 @@ def glover_dispersion_derivative(
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 

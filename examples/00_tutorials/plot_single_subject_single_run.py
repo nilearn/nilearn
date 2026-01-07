@@ -42,7 +42,7 @@ from nilearn.image import mean_img
 from nilearn.plotting import plot_anat, plot_img, plot_stat_map, show
 
 fmri_img = subject_data.func
-mean_img = mean_img(subject_data.func[0], copy_header=True)
+mean_img = mean_img(subject_data.func[0])
 plot_img(mean_img, cbar_tick_format="%i")
 
 plot_anat(subject_data.anat, cbar_tick_format="%i")
@@ -90,12 +90,13 @@ from nilearn.glm.first_level import FirstLevelModel
 # * ``high_pass=0.01`` (Hz) defines the cutoff frequency
 #   (inverse of the time period).
 fmri_glm = FirstLevelModel(
-    t_r=7,
+    t_r=subject_data.t_r,
     noise_model="ar1",
     standardize=False,
     hrf_model="spm",
     drift_model="cosine",
     high_pass=0.01,
+    verbose=1,
 )
 
 # %%

@@ -58,7 +58,7 @@ from nilearn.datasets import fetch_adhd
 from nilearn.image import concat_imgs
 
 N_SUBJECTS = 6
-N_REGIONS = 4
+N_REGIONS = 2
 
 
 def create_large_fmri(n_subjects):
@@ -100,11 +100,7 @@ def create_masks(fmri_path, n_regions):
     atlas_img = load_img(atlas_path)
 
     resampled_atlas = resample_to_img(
-        atlas_img,
-        fmri_path,
-        interpolation="nearest",
-        copy_header=True,
-        force_resample=True,
+        atlas_img, fmri_path, interpolation="nearest"
     )
 
     mask_paths = []
@@ -112,10 +108,7 @@ def create_masks(fmri_path, n_regions):
     for idx in range(1, n_regions + 1):
         mask = resampled_atlas.get_fdata() == idx
         mask = new_img_like(
-            ref_niimg=fmri_path,
-            data=mask,
-            affine=resampled_atlas.affine,
-            copy_header=True,
+            ref_niimg=fmri_path, data=mask, affine=resampled_atlas.affine
         )
         path = output_dir / f"mask_{idx}.nii.gz"
         mask.to_filename(path)
@@ -151,7 +144,7 @@ from nilearn.maskers import NiftiMasker
 
 
 def nifti_masker_single(fmri, mask):
-    return NiftiMasker(mask_img=mask).fit_transform(fmri)
+    return NiftiMasker(mask_img=mask, verbose=1).fit_transform(fmri)
 
 
 def nifti_masker_parallel_path(fmri_path, mask_paths):
@@ -247,7 +240,8 @@ print(
 # memory-efficient.
 #
 # For this method, we would have to load the fMRI image into shared memory
-# that can be accessed by multiple processes. This way, each process can
+# that can be accessed by multiple processes.
+# This way, each process can
 # access the data directly from the shared memory without loading the entire
 # image into memory again.
 

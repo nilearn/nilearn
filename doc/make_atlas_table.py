@@ -1,9 +1,19 @@
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#   "nilearn[min_plotting]",
+#    "tabulate"
+# ]
+# ///
 """Generate markdown files with table summarizing information about atlases."""
 
 from pathlib import Path
+from ssl import SSLCertVerificationError
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from requests.exceptions import SSLError
+from urllib3.exceptions import MaxRetryError
 
 from nilearn.datasets import (
     fetch_atlas_aal,
@@ -167,7 +177,10 @@ for display_name, details in deterministic_atlases.items():
     fn = details["fn"]
     params = details.get("params", {})
 
-    data = fn(**params)
+    try:
+        data = fn(**params)
+    except (SSLError, MaxRetryError, SSLCertVerificationError):
+        continue
 
     name = fn.__name__.replace("fetch_atlas_", "")
 
@@ -311,7 +324,10 @@ for display_name, details in probablistic_atlases.items():
     fn = details["fn"]
     params = details.get("params", {})
 
-    data = fn(**params)
+    try:
+        data = fn(**params)
+    except (SSLError, MaxRetryError, SSLCertVerificationError):
+        continue
 
     name = fn.__name__.replace("fetch_atlas_", "")
 

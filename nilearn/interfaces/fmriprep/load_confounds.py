@@ -5,6 +5,7 @@ import warnings
 import pandas as pd
 
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.interfaces.fmriprep import load_confounds_components as components
 from nilearn.interfaces.fmriprep.load_confounds_utils import (
     MissingConfoundError,
@@ -24,6 +25,7 @@ all_confounds = [
     "global_signal",
     "compcor",
     "ica_aroma",
+    "tedana",
     "scrub",
     "non_steady_state",
 ]
@@ -35,6 +37,7 @@ component_parameters = {
     "global_signal": ["global_signal"],
     "compcor": ["meta_json", "compcor", "n_compcor"],
     "ica_aroma": ["ica_aroma"],
+    "tedana": ["tedana"],
     "scrub": ["scrub", "fd_threshold", "std_dvars_threshold"],
 }
 
@@ -56,7 +59,7 @@ def _check_strategy(strategy):
     if (not isinstance(strategy, tuple)) and (not isinstance(strategy, list)):
         raise ValueError(
             "strategy needs to be a tuple or list of strings"
-            f" A {type(strategy)} was provided instead."
+            f" A {strategy.__class__.__name__} was provided instead."
         )
 
     if len(strategy) == 0:
@@ -74,8 +77,7 @@ def _check_strategy(strategy):
                 "will not have additional effect.",
                 stacklevel=find_stack_level(),
             )
-        if conf not in all_confounds:
-            raise ValueError(f"{conf} is not a supported type of confounds.")
+        check_parameter_in_allowed(conf, all_confounds, "confounds")
 
     # high pass filtering must be present if using fmriprep compcor outputs
     if ("compcor" in strategy) and ("high_pass" not in strategy):
@@ -102,13 +104,14 @@ def load_confounds(
     strategy=("motion", "high_pass", "wm_csf"),
     motion="full",
     scrub=5,
-    fd_threshold=0.2,
-    std_dvars_threshold=3,
+    fd_threshold=0.5,
+    std_dvars_threshold=1.5,
     wm_csf="basic",
     global_signal="basic",
     compcor="anat_combined",
     n_compcor="all",
     ica_aroma="full",
+    tedana="aggressive",
     demean=True,
 ):
     """
@@ -124,7 +127,7 @@ def load_confounds(
     directory from the 1.2.x series. The `compcor` noise component requires
     1.4.x series or above.
 
-    .. versionadded:: 0.9.0
+    .. nilearn_versionadded:: 0.9.0
 
     Parameters
     ----------
@@ -155,6 +158,7 @@ def load_confounds(
         - "ica_aroma" confounds derived
           from ICA-AROMA (:footcite:t:`Pruim2015`).
           Associated parameter: `ica_aroma`
+        - "tedana" confounds derived from TEDANA (:footcite:t:`DuPre2021`).
         - "scrub" regressors for :footcite:t:`Power2014` scrubbing approach.
           Associated parameter: `scrub`, `fd_threshold`, `std_dvars_threshold`
 
@@ -211,17 +215,17 @@ def load_confounds(
         remove time frames based on excessive framewise displacement and
         DVARS only.
 
-    fd_threshold : :obj:`float`, default=0.2
+    fd_threshold : :obj:`float`, default=0.5
 
-        .. deprecated:: 0.10.3
-           The default value will be changed to 0.5 in 0.13.0
+        .. nilearn_versionchanged:: 0.13.0
+           The default was changed from ``0.2`` to ``0.5``.
 
         Framewise displacement threshold for scrub in mm.
 
-    std_dvars_threshold : :obj:`float`, default=3
+    std_dvars_threshold : :obj:`float`, default=1.5
 
-        .. deprecated:: 0.10.3
-           The default value will be changed to 1.5 in 0.13.0
+        .. nilearn_versionchanged:: 0.13.0
+           The default value will be changed from ``3.0`` to ``1.5``.
 
         Standardized DVARS threshold for scrub.
         The default threshold matching :term:`fMRIPrep`.
@@ -260,6 +264,21 @@ def load_confounds(
           `~desc-smoothAROMAnonaggr_bold.nii.gz`.
         - "basic": use noise independent components only.
 
+    tedana : :obj:`str`, default="aggressive"
+
+        - "aggressive": use :term:`Tedana` tedana optimally combined
+            image output.
+            `~desc-optcom_bold.nii.gz`.
+            If aggressive is selected all the components classified as
+            rejected by tedana will be returned as a pandas DataFrame
+        - "non-aggressive": use :term:`Tedana` tedana optimally combined
+            image output.
+            `~desc-optcom_bold.nii.gz`.
+            If non-aggresive is selected all the components classified as
+            either rejected or accepted will be returned as a pandas DataFrame
+
+
+
     demean : :obj:`bool`, default=True
         If True, the confounds are standardized to a zero mean (over time).
         When using :class:`nilearn.maskers.NiftiMasker` with default
@@ -274,6 +293,8 @@ def load_confounds(
     confounds : :class:`pandas.DataFrame`, or :obj:`list` of \
         :class:`pandas.DataFrame`
         A reduced version of :term:`fMRIPrep` confounds based on selected
+        strategy and flags.
+        Or a reduced version of the :term:`Tedana` confounds based on the
         strategy and flags.
         The columns contains the labels of the regressors.
 
@@ -310,32 +331,22 @@ def load_confounds(
 
     """
     _check_strategy(strategy)
-    if "scrub" in strategy and fd_threshold == 0.2:
-        # TODO (nilearn >= 0.13.0)
-        fd_threshold_default = (
-            "The default parameter for fd_threshold is currently 0.2 "
-            "which is inconsistent with the fMRIPrep default of 0.5. "
-            "In release 0.13.0, "
-            "the default strategy will be replaced by 0.5."
+
+    if "tedana" in strategy and len(strategy) > 1:
+        tedana_warning = (
+            "TEDANA strategy will only look for the ~desc-ICA_mixing.tsv "
+            "and the ~desc-tedana_metrics.tsv for the provided "
+            "~desc-optcom_bold.nii.gz from the tedana folder "
+            "to load the rejected ICA confounds. Other strategies: \n"
+            f"{[s for s in strategy if 'tedana' not in s]} "
+            "will NOT be applied for the Tedana confounds."
         )
         warnings.warn(
-            category=DeprecationWarning,
-            message=fd_threshold_default,
+            category=UserWarning,
+            message=tedana_warning,
             stacklevel=find_stack_level(),
         )
-    if "scrub" in strategy and std_dvars_threshold == 3:
-        # TODO (nilearn >= 0.13.0)
-        std_dvars_threshold_default = (
-            "The default parameter for std_dvars_threshold is currently 3 "
-            "which is inconsistent with the fMRIPrep default of 1.5. "
-            "In release 0.13.0, "
-            "the default strategy will be replaced by 1.5."
-        )
-        warnings.warn(
-            category=DeprecationWarning,
-            message=std_dvars_threshold_default,
-            stacklevel=find_stack_level(),
-        )
+
     # load confounds per image provided
     img_files, flag_single = sanitize_confounds(img_files)
     confounds_out = []
@@ -354,6 +365,7 @@ def load_confounds(
             compcor=compcor,
             n_compcor=n_compcor,
             ica_aroma=ica_aroma,
+            tedana=tedana,
         )
         confounds_out.append(conf)
         sample_mask_out.append(sample_mask)
@@ -405,11 +417,17 @@ def _load_confounds_for_single_image_file(
     flag_full_aroma = ("ica_aroma" in strategy) and (
         kwargs.get("ica_aroma") == "full"
     )
+    # Check for tedana
+    flag_tedana = ("tedana" in strategy) and (kwargs.get("tedana"))
+
+    # make sure that if you use tedana we uset flag_full_aroma
+    if flag_tedana:
+        flag_full_aroma = False
 
     confounds_file = get_confounds_file(
-        image_file, flag_full_aroma=flag_full_aroma
+        image_file, flag_full_aroma=flag_full_aroma, flag_tedana=flag_tedana
     )
-    confounds_json_file = get_json(confounds_file)
+    confounds_json_file = get_json(confounds_file, flag_tedana=flag_tedana)
 
     return _load_single_confounds_file(
         confounds_file=confounds_file,
@@ -457,8 +475,16 @@ def _load_single_confounds_file(
     flag_acompcor = ("compcor" in strategy) and (
         "anat" in kwargs.get("compcor")
     )
+    flag_tedana = ("tedana" in strategy) and (kwargs.get("tedana"))
+
+    missing = {"confounds": [], "keywords": []}
+    # tedana will load multiple files so we need to handle if
+    # before loading "regular" confounds from other sources
+
     # Convert tsv file to pandas dataframe
-    confounds_all = load_confounds_file_as_dataframe(confounds_file)
+    confounds_all = load_confounds_file_as_dataframe(
+        confounds_file, flag_tedana=flag_tedana
+    )
 
     if confounds_json_file is None:
         confounds_json_file = get_json(confounds_file)
@@ -468,7 +494,6 @@ def _load_single_confounds_file(
         confounds_json_file, flag_acompcor=flag_acompcor
     )
 
-    missing = {"confounds": [], "keywords": []}
     # always check non steady state volumes are loaded
     confounds_select, missing = _load_noise_component(
         confounds_all,
@@ -477,6 +502,10 @@ def _load_single_confounds_file(
         meta_json=meta_json,
         **kwargs,
     )
+
+    # clean out the other strategies as tedana will only work with files from
+    # tedana output and no cross-functionality has been coded
+    strategy = ["tedana"] if "tedana" in strategy else strategy
     for component in strategy:
         loaded_confounds, missing = _load_noise_component(
             confounds_all, component, missing, meta_json=meta_json, **kwargs

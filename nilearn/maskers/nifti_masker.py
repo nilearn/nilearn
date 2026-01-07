@@ -6,15 +6,17 @@ from copy import copy as copy_object
 
 import numpy as np
 from joblib import Memory
+from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
 from nilearn._utils.param_validation import check_params
-from nilearn.image import crop_img, resample_img
+from nilearn.image import check_niimg, crop_img, resample_img
+from nilearn.image.image import check_same_fov
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -55,11 +57,11 @@ def _get_mask_strategy(strategy: str):
     elif strategy == "epi":
         return compute_epi_mask
     elif strategy == "whole-brain-template":
-        return _make_brain_mask_func("whole-brain")
+        return make_brain_mask_func("whole-brain")
     elif strategy == "gm-template":
-        return _make_brain_mask_func("gm")
+        return make_brain_mask_func("gm")
     elif strategy == "wm-template":
-        return _make_brain_mask_func("wm")
+        return make_brain_mask_func("wm")
     else:
         raise ValueError(
             f"Unknown value of mask_strategy '{strategy}'. "
@@ -70,7 +72,7 @@ def _get_mask_strategy(strategy: str):
         )
 
 
-def _make_brain_mask_func(mask_type: str, multi: bool = False):
+def make_brain_mask_func(mask_type: str, multi: bool = False):
     """Generate a compute_brain_mask function adapted for each mask.
 
     This is done instead of using functools.partial because
@@ -130,6 +132,7 @@ def filter_and_mask(
     sample_mask=None,
     copy=True,
     dtype=None,
+    sklearn_output_config=None,
 ):
     """Extract representative time series using given mask.
 
@@ -171,7 +174,7 @@ def filter_and_mask(
         )
         parameters = copy_object(parameters)
         # now we can crop
-        mask_img_ = crop_img(mask_img_, copy=False, copy_header=True)
+        mask_img_ = crop_img(mask_img_, copy=False)
         parameters["target_shape"] = mask_img_.shape
         parameters["target_affine"] = mask_img_.affine
 
@@ -192,13 +195,16 @@ def filter_and_mask(
     # earlier)
     # Optionally: 'doctor_nan', remove voxels with NaNs, other option
     # for later: some form of imputation
-    if temp_imgs.ndim == 3:
+
+    # if we need to output to numpy and input was a 3D img
+    # we return 1D array
+    if temp_imgs.ndim == 3 and sklearn_output_config is None:
         data = data.squeeze()
     return data
 
 
 @fill_doc
-class NiftiMasker(BaseMasker):
+class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
@@ -226,7 +232,7 @@ class NiftiMasker(BaseMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 
@@ -286,9 +292,9 @@ class NiftiMasker(BaseMasker):
         Only relevant for the report figures.
 
     %(clean_args)s
-        .. versionadded:: 0.12.0
 
-    %(masker_kwargs)s
+        .. nilearn_versionadded:: 0.12.0
+
 
     Attributes
     ----------
@@ -297,8 +303,6 @@ class NiftiMasker(BaseMasker):
 
     %(clean_args_)s
 
-    %(masker_kwargs_)s
-
     %(nifti_mask_img_)s
 
     memory_ : joblib memory cache
@@ -306,7 +310,7 @@ class NiftiMasker(BaseMasker):
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     See Also
     --------
@@ -342,7 +346,6 @@ class NiftiMasker(BaseMasker):
         reports=True,
         cmap="gray",
         clean_args=None,
-        **kwargs,  # TODO (nilearn >= 0.13.0) remove
     ):
         # Mask is provided or computed
         self.mask_img = mask_img
@@ -367,12 +370,52 @@ class NiftiMasker(BaseMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        # TODO (nilearn >= 0.13.0) remove
-        self.clean_kwargs = kwargs
+        self._report_content = {
+            "description": (
+                "This report shows the input Nifti image overlaid "
+                "with the outlines of the mask (in green). We "
+                "recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "n_elements": 0,
+            "coverage": 0,
+            "summary": {},
+            "warning_messages": [],
+        }
 
-    def generate_report(self):
-        """Generate a report of the masker."""
+    def generate_report(self, title: str | None = None):
+        """Generate an HTML report for the current object.
+
+        Parameters
+        ----------
+        title : :obj:`str` or None, default=None
+            title for the report. If None, title will be the class name.
+
+        Returns
+        -------
+        report : `nilearn.reporting.html_report.HTMLReport`
+            HTML report for the masker.
+        """
         from nilearn.reporting.html_report import generate_report
+
+        self._report_content["title"] = title
+
+        if self._has_report_data():
+            img = self._reporting_data["images"]
+
+            if img is None:  # images were not provided to fit
+                msg = (
+                    f"No image provided to fit in {self.__class__.__name__}. "
+                    "Setting image to mask for reporting."
+                )
+                self._report_content["warning_messages"].append(msg)
+
+            elif self._reporting_data["dim"] == 5:
+                msg = (
+                    "A list of 4D subject images were provided to fit. "
+                    "Only first subject is shown in the report."
+                )
+                self._report_content["warning_messages"].append(msg)
 
         return generate_report(self)
 
@@ -381,45 +424,48 @@ class NiftiMasker(BaseMasker):
 
         Returns
         -------
-        displays : list
+        displays : List of :class:`~matplotlib.figure.Figure`
             A list of all displays to be rendered.
-
+            Returns None when masker is not fitted
         """
-        import matplotlib.pyplot as plt
-
-        from nilearn import plotting
-
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
-            return [None]
+        if not self._has_report_data():
+            self._report_content["overlay"] = None
+            return None
+
+        return self._create_figure_for_report()
+
+    def _create_figure_for_report(self):
+        """Generate figure to include in the report.
+
+        Returns
+        -------
+        list of :class:`~matplotlib.figure.Figure` or None
+        """
+        if not is_matplotlib_installed():
+            self._report_content["overlay"] = None
+            return None
+
+        import matplotlib.pyplot as plt
+
+        from nilearn.plotting import plot_img
 
         img = self._reporting_data["images"]
         mask = self._reporting_data["mask"]
 
         if img is None:  # images were not provided to fit
-            msg = (
-                "No image provided to fit in NiftiMasker. "
-                "Setting image to mask for reporting."
-            )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
             img = mask
-        if self._reporting_data["dim"] == 5:
-            msg = (
-                "A list of 4D subject images were provided to fit. "
-                "Only first subject is shown in the report."
-            )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
+
         # create display of retained input mask, image
         # for visual comparison
-        init_display = plotting.plot_img(
+        init_display = plot_img(
             img,
             black_bg=False,
             cmap=self.cmap,
         )
         plt.close()
+
         if mask is not None:
             init_display.add_contours(
                 mask,
@@ -428,31 +474,37 @@ class NiftiMasker(BaseMasker):
                 linewidths=2.5,
             )
 
-        if "transform" not in self._reporting_data:
-            return [init_display]
-
+        overlay = None
+        resampled_img = None
+        resampled_mask = None
         # if resampling was performed
-        self._report_content["description"] += self._overlay_text
+        if "transform" in self._reporting_data:
+            self._report_content["description"] += (
+                "\n To see the input Nifti image before resampling, "
+                "hover over the displayed image."
+            )
 
-        # create display of resampled NiftiImage and mask
-        resampl_img, resampl_mask = self._reporting_data["transform"]
-        if resampl_img is None:  # images were not provided to fit
-            resampl_img = resampl_mask
+            # create display of resampled NiftiImage and mask
+            resampled_img, resampled_mask = self._reporting_data["transform"]
+            if resampled_img is None:  # images were not provided to fit
+                resampled_img = resampled_mask
 
-        final_display = plotting.plot_img(
-            resampl_img,
-            black_bg=False,
-            cmap=self.cmap,
-        )
-        plt.close()
-        final_display.add_contours(
-            resampl_mask,
-            levels=[0.5],
-            colors="g",
-            linewidths=2.5,
-        )
+            overlay = plot_img(
+                resampled_img,
+                black_bg=False,
+                cmap=self.cmap,
+            )
+            plt.close()
+            overlay.add_contours(
+                resampled_mask,
+                levels=[0.5],
+                colors="g",
+                linewidths=2.5,
+            )
 
-        return [init_display, final_display]
+        self._report_content["overlay"] = overlay
+
+        return init_display
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "mask_img_")
@@ -473,23 +525,10 @@ class NiftiMasker(BaseMasker):
         del y
         check_params(self.__dict__)
 
-        self._report_content = {
-            "description": (
-                "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (in green). We "
-                "recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "warning_message": None,
-            "n_elements": 0,
-            "coverage": 0,
-        }
-        self._overlay_text = (
-            "\n To see the input Nifti image before resampling, "
-            "hover over the displayed image."
-        )
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = []
 
-        self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         self._fit_cache()
@@ -535,6 +574,12 @@ class NiftiMasker(BaseMasker):
                         stacklevel=find_stack_level(),
                     )
 
+            verbose = self.verbose
+            if verbose:
+                verbose = 1
+            elif not verbose:
+                verbose = 0
+
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs, verbose=max(0, self.verbose - 1), **mask_args
             )
@@ -547,6 +592,7 @@ class NiftiMasker(BaseMasker):
                 stacklevel=find_stack_level(),
             )
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:  # save inputs for reporting
             self._reporting_data = {
                 "mask": self.mask_img_,
@@ -557,23 +603,18 @@ class NiftiMasker(BaseMasker):
                 imgs, dims = compute_middle_image(imgs)
                 self._reporting_data["images"] = imgs
                 self._reporting_data["dim"] = dims
-        else:
-            self._reporting_data = None
 
         # TODO add if block to only run when resampling is needed
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
         mask_logger("resample_mask", verbose=self.verbose)
 
-        # TODO (nilearn >= 0.13.0) force_resample=True
         self.mask_img_ = self._cache(resample_img)(
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
             copy=False,
             interpolation="nearest",
-            copy_header=True,
-            force_resample=False,
         )
 
         if self.target_affine is not None:  # resample image to target affine
@@ -595,14 +636,11 @@ class NiftiMasker(BaseMasker):
             (self.target_affine is not None) and self.reports
         ):
             if imgs is not None:
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 resampl_imgs = self._cache(resample_img)(
                     imgs,
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
-                    copy_header=True,
-                    force_resample=False,
                 )
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
             else:  # imgs not provided to fit
@@ -659,9 +697,8 @@ class NiftiMasker(BaseMasker):
             ],
         )
         params["clean_kwargs"] = self.clean_args_
-        # TODO (nilearn  >= 0.13.0) remove
-        if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs_
+
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
 
         data = self._cache(
             filter_and_mask,
@@ -683,6 +720,7 @@ class NiftiMasker(BaseMasker):
             sample_mask=sample_mask,
             copy=copy,
             dtype=self.dtype,
+            sklearn_output_config=sklearn_output_config,
         )
 
         return data

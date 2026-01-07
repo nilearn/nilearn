@@ -61,6 +61,7 @@ nifti_masker = NiftiMasker(
     mask_img=mask_filename,
     memory="nilearn_cache",  # cache options
     memory_level=1,
+    verbose=1,
 )
 func_filename = haxby_dataset.func[0]
 func_reduced = index_img(func_filename, condition_mask)
@@ -107,7 +108,6 @@ output = permuted_ols(
     two_sided_test=True,
     verbose=1,  # display progress bar
     n_jobs=2,  # can be changed to use more CPUs
-    output_type="dict",
 )
 neg_log_pvals = output["logp_max_t"]
 t_scores_original_data = output["t"]
@@ -142,7 +142,7 @@ neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
 from nilearn.image import get_data
 
 # Use the fMRI mean image as a surrogate of anatomical data
-mean_fmri_img = image.mean_img(func_filename, copy_header=True)
+mean_fmri_img = image.mean_img(func_filename)
 
 threshold = -np.log10(0.1)  # 10% corrected
 

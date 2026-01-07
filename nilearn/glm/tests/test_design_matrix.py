@@ -20,7 +20,6 @@ from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level.design_matrix import (
     _convolve_regressors,
     check_design_matrix,
-    create_cosine_drift,
     make_first_level_design_matrix,
     make_second_level_design_matrix,
 )
@@ -82,19 +81,10 @@ def frame_times(n_frames):
     return np.linspace(0, (n_frames - 1) * t_r, n_frames)
 
 
-def test_cosine_drift():
-    # add something so that when the tests are launched
-    # from a different directory
-    spm_drifts = DESIGN_MATRIX["cosbf_dt_1_nt_20_hcut_0p1"]
-    frame_times = np.arange(20)
-    high_pass_frequency = 0.1
-    nilearn_drifts = create_cosine_drift(high_pass_frequency, frame_times)
-    assert_almost_equal(spm_drifts[:, 1:], nilearn_drifts[:, :-2])
-    # nilearn_drifts is placing the constant at the end [:, : - 1]
-
-
 def test_design_matrix_no_experimental_paradigm(frame_times):
-    # Test design matrix creation when no experimental paradigm is provided
+    """Test design matrix creation \
+        when no experimental paradigm is provided.
+    """
     _, X, names = check_design_matrix(
         make_first_level_design_matrix(
             frame_times, drift_model="polynomial", drift_order=3
@@ -132,13 +122,13 @@ def test_design_matrix_regressors_provided_manually_errors(rng, frame_times):
     ax = rng.standard_normal(size=(len(frame_times) - 1, 4))
     with pytest.raises(
         AssertionError,
-        match="Incorrect specification of additional regressors:.",
+        match=r"Incorrect specification of additional regressors:.",
     ):
         make_first_level_design_matrix(frame_times, add_regs=ax)
 
     ax = rng.standard_normal(size=(len(frame_times), 4))
     with pytest.raises(
-        ValueError, match="Incorrect number of additional regressor names."
+        ValueError, match=r"Incorrect number of additional regressor names."
     ):
         make_first_level_design_matrix(
             frame_times, add_regs=ax, add_reg_names=""
@@ -469,11 +459,27 @@ def test_create_second_level_design():
     subjects_label = ["02", "01"]  # change order to test right output order
     regressors = [["01", 0.1], ["02", 0.75]]
     regressors = pd.DataFrame(regressors, columns=["subject_label", "f1"])
+
     design = make_second_level_design_matrix(subjects_label, regressors)
+
     expected_design = np.array([[0.75, 1.0], [0.1, 1.0]])
     assert_array_equal(design, expected_design)
     assert len(design.columns) == 2
     assert len(design) == 2
+
+
+def test_create_second_level_design_nan():
+    """Ensure second level matrix can be generated with nan in confounds."""
+    subjects_label = ["01", "02", "03"]
+    regressors = [
+        ["01", 0.1],
+        ["02", 0.75],
+        ["03", np.nan],
+    ]
+    regressors = pd.DataFrame(regressors, columns=["subject_label", "f1"])
+
+    with pytest.raises(ValueError, match="Confounds contain NaN values"):
+        make_second_level_design_matrix(subjects_label, regressors)
 
 
 def test_designs_with_negative_onsets_warning(frame_times):

@@ -69,7 +69,7 @@ def _permuted_ols_on_chunk(
         If ``threshold`` is not None, but ``masker`` is, an exception will be
         raised.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Clinical data (covariates).
@@ -82,7 +82,7 @@ def _permuted_ols_on_chunk(
         If ``threshold`` is not None, but ``masker`` is, an exception will be
         raised.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     n_perm : int, default=10000
         Total number of permutations to perform, only used for
@@ -109,13 +109,13 @@ def _permuted_ols_on_chunk(
         The TFCE calculation is implemented as described in
         :footcite:t:`Smith2009a`.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     tfce_original_data : None or array-like, \
             shape=(n_descriptors, n_regressors), optional
         TFCE values obtained for the original (non-permuted) data.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     %(random_state)s
 
@@ -140,7 +140,7 @@ def _permuted_ols_on_chunk(
         Only calculated if ``masker`` is not None.
         Otherwise, these will both be None.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     tfce_scores_as_ranks_part : array-like, shape=(n_regressors, n_descriptors)
         The ranks of the original TFCE values in ``h0_tfce_part``.
@@ -149,13 +149,13 @@ def _permuted_ols_on_chunk(
         Here, it is performed in parallel by the workers involved in the
         permutation computation.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     h0_tfce_part : array-like, shape=(n_perm_chunk, n_regressors)
         Distribution of the (max) TFCE value under the null hypothesis
         (limited to this permutation chunk).
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     References
     ----------
@@ -264,24 +264,24 @@ def _permuted_ols_on_chunk(
                 two_sided_test=two_sided_test,
             )
 
-        if verbose > 0:
-            step = 11 - min(verbose, 10)
-            if i_perm % step == 0:
-                # If there is only one job, progress information is fixed
-                crlf = "\n"
-                if n_perm == n_perm_chunk:
-                    crlf = "\r"
+        step = 11 - min(verbose, 10)
+        if i_perm % step == 0:
+            # If there is only one job, progress information is fixed
+            crlf = "\n"
+            if n_perm == n_perm_chunk:
+                crlf = "\r"
 
-                percent = float(i_perm) / n_perm_chunk
-                percent = round(percent * 100, 2)
-                dt = time.time() - t0
-                remaining = (100.0 - percent) / max(0.01, percent) * dt
+            percent = float(i_perm) / n_perm_chunk
+            percent = round(percent * 100, 2)
+            dt = time.time() - t0
+            remaining = (100.0 - percent) / max(0.01, percent) * dt
 
-                logger.log(
-                    f"Job #{thread_id}, processed {i_perm}/{n_perm_chunk} "
-                    f"permutations ({percent:0.2f}%, {remaining:0.2f} seconds "
-                    f"remaining){crlf}",
-                )
+            logger.log(
+                f"Job #{thread_id}, processed {i_perm}/{n_perm_chunk} "
+                f"permutations ({percent:0.2f}%, {remaining:0.2f} seconds "
+                f"remaining){crlf}",
+                verbose=verbose,
+            )
 
     return (
         scores_as_ranks_part,
@@ -307,7 +307,7 @@ def permuted_ols(
     masker=None,
     tfce=False,
     threshold=None,
-    output_type="legacy",
+    output_type="dict",
 ):
     """Massively univariate group analysis with permuted OLS.
 
@@ -383,7 +383,7 @@ def permuted_ols(
         This is required for cluster-level inference, so it must be provided
         if ``threshold`` is not None.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     threshold : None or :obj:`float`, default=None
         Cluster-forming threshold in p-scale.
@@ -395,32 +395,30 @@ def permuted_ols(
             Performing cluster-level inference will increase the computation
             time of the permutation procedure.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     %(tfce)s
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
-    output_type : {'legacy', 'dict'}, default="legacy"
+    output_type : {'legacy', 'dict'}, default="dict"
         Determines how outputs should be returned.
         The two options are:
 
         -   'legacy': return a pvals, score_orig_data, and h0_fmax.
-            This option is the default, but it is deprecated until 0.13,
-            when the default will be changed to 'dict'.
-            It will be removed in 0.15.
         -   'dict': return a dictionary containing output arrays.
-            This option will be made the default in 0.13.
             Additionally, if ``tfce`` is True or ``threshold`` is not None,
             ``output_type`` will automatically be set to 'dict'.
 
-        .. deprecated:: 0.9.2
+        .. nilearn_deprecated:: 0.9.2
 
-            The default value for this parameter will change from 'legacy' to
-            'dict' in 0.13, and the parameter will be removed completely in
-            0.15.
+            This parameter will be removed completely in nilearn>= 0.15.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
+
+        .. nilearn_versionchanged:: 0.13.0
+
+            The default was changed to ``'dict'``.
 
     Returns
     -------
@@ -433,7 +431,7 @@ def permuted_ols(
 
             This is returned if ``output_type`` == 'legacy'.
 
-        .. deprecated:: 0.9.2
+        .. nilearn_deprecated:: 0.9.2
 
             The 'legacy' option for ``output_type`` is deprecated.
             The default value will change to 'dict' in 0.13,
@@ -449,7 +447,7 @@ def permuted_ols(
 
             This is returned if ``output_type`` == 'legacy'.
 
-        .. deprecated:: 0.9.2
+        .. nilearn_deprecated:: 0.9.2
 
             The 'legacy' option for ``output_type`` is deprecated.
             The default value will change to 'dict' in 0.13,
@@ -463,13 +461,13 @@ def permuted_ols(
 
             This is returned if ``output_type`` == 'legacy'.
 
-        .. deprecated:: 0.9.2
+        .. nilearn_deprecated:: 0.9.2
 
             The 'legacy' option for ``output_type`` is deprecated.
             The default value will change to 'dict' in 0.13,
             and the ``output_type`` parameter will be removed in 0.15.
 
-        .. versionchanged:: 0.9.2
+        .. nilearn_versionchanged:: 0.9.2
 
             Return H0 for all regressors, instead of only the first one.
 
@@ -481,7 +479,7 @@ def permuted_ols(
             This is returned if ``output_type`` == 'dict'.
             This will be the default output starting in version 0.13.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
         Here are the keys:
 
@@ -744,7 +742,7 @@ def permuted_ols(
     if n_perm > n_jobs:
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
         n_perm_chunks[-1] += n_perm % n_jobs
-    elif n_perm > 0:
+    else:
         warnings.warn(
             f"The specified number of permutations is {n_perm} "
             "and the number of jobs to be performed in parallel "
@@ -884,7 +882,7 @@ def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
 
     if (threshold is not None) and (masker is None):
         raise ValueError(
-            'If "threshold" is not None, masker must be defined as well.'
+            "If 'threshold' is not None, masker must be defined as well."
         )
 
     # make target_vars F-ordered to speed-up computation
@@ -915,21 +913,21 @@ def _sanitize_inputs_permuted_ols(
 
     if (threshold is not None) and (output_type == "legacy"):
         warnings.warn(
-            'If "threshold" is not None, "output_type" must be set to "dict". '
+            "If 'threshold' is not None, 'output_type' must be set to 'dict'. "
             "Overriding.",
             stacklevel=find_stack_level(),
         )
         output_type = "dict"
 
     if output_type == "legacy":
-        # TODO (nilearn >= 0.13.0)
+        # TODO (nilearn >= 0.15.0)
         warnings.warn(
-            category=DeprecationWarning,
+            category=FutureWarning,
             message=(
-                'The "legacy" output structure for "permuted_ols" is '
+                "The 'output_type' parameter for 'permuted_ols' is "
                 "deprecated. "
-                'The default output structure will be changed to "dict" '
-                "in version 0.13."
+                "It will be removed in version 0.15.\n"
+                'Change its value to "dict" to silence this warning.'
             ),
             stacklevel=find_stack_level(),
         )

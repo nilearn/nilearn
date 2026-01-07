@@ -3,6 +3,7 @@
 import itertools
 import json
 import re
+from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
@@ -18,6 +19,7 @@ img_file_patterns = {
     "aroma": "_desc-smoothAROMAnonaggr_bold",
     "nii.gz": "(_space-.*)?_desc-preproc_bold.nii.gz",
     "dtseries.nii": "(_space-.*)?_bold.dtseries.nii",
+    "tedana": "_desc-optcom_bold.nii.gz",
     "func.gii": "_hemi-[LR](_space-.*)?_bold.func.gii",
 }
 
@@ -26,8 +28,12 @@ img_file_error = {
         "Input must be desc-smoothAROMAnonaggr_bold for full ICA-AROMA"
         " strategy."
     ),
-    "nii.gz": "Invalid file type for the selected method.",
-    "dtseries.nii": "Invalid file type for the selected method.",
+    "nii.gz": "Invalid file type for the selected 'nii.gz' method.",
+    "dtseries.nii": "Invalid file type for the selected 'dtseries.nii' method",
+    "tedana": "Input must be the ~desc-optcom_bold.nii.gz file "
+    "for tedana strategy. Other files like "
+    "~desc-denoised_bold.nii.gz are not supported or "
+    "have already been denoised.",
     "func.gii": "need fMRIprep output with extension func.gii",
 }
 
@@ -151,7 +157,7 @@ def add_suffix(params, model):
     return params_full
 
 
-def _generate_confounds_file_candidates(nii_file):
+def _generate_confounds_file_candidates(nii_file, flag_tedana=False):
     """Generate confounds file candidates.
 
     Build a list of potential confounds filenames using all combinations of
@@ -161,43 +167,80 @@ def _generate_confounds_file_candidates(nii_file):
     ----------
     nii_file : str
         Path to the functional image file.
+    flag_tedana : bool, optional
+        If True, also generate candidates with desc=ICA for TEDANA
+        optimally combined output. Defaults to False.
 
     Returns
     -------
     filenames : list of str
         List of potential confounds filenames.
     """
-    parsed_file = parse_bids_filename(nii_file, legacy=False)
+    parsed_file = parse_bids_filename(nii_file)
     entities = parsed_file["entities"]
-    entities["desc"] = "confounds"
 
-    all_subsets = [
-        list(itertools.combinations(entities.keys(), n_entities))
-        for n_entities in range(1, len(entities.keys()) + 1)
-    ]
+    variants = []
 
-    # Flatten the list of lists
-    all_subsets = [list(item) for sublist in all_subsets for item in sublist]
-    # https://stackoverflow.com/a/3724558/2589328
-    unique_subsets = [list(x) for x in {tuple(x) for x in all_subsets}]
+    # Standard confounds
+    entities_fmriprep = deepcopy(entities)
+    entities_fmriprep["desc"] = "confounds"
+    variants.append(entities_fmriprep)
 
-    # Require "desc"
-    unique_subsets = [subset for subset in unique_subsets if "desc" in subset]
+    if flag_tedana:
+        # ICA  mixing and tedana
+        entities_tedana = deepcopy(entities)
+        entities_tedana["desc"] = ["ICA", "tedana"]
+        variants.append(entities_tedana)
 
-    filenames = [
-        "_".join(["-".join([k, entities[k]]) for k in lst])
-        for lst in unique_subsets
-    ]
+    filenames = []
+
+    for variant in variants:
+        # make sure “desc” is iterable
+        desc_values = (
+            [variant["desc"]]
+            if isinstance(variant["desc"], str)
+            else variant["desc"]
+        )
+
+        # Allows us to generate filenames separately for each
+        # desc value (“confounds”, “ICA”, “tedana”).
+        for desc_value in desc_values:
+            variant_with_desc = variant.copy()
+            variant_with_desc["desc"] = desc_value
+
+            all_subsets = [
+                list(itertools.combinations(variant_with_desc.keys(), n))
+                for n in range(1, len(variant_with_desc.keys()) + 1)
+            ]
+            # Flatten the list of lists
+            all_subsets = [list(x) for sublist in all_subsets for x in sublist]
+            # https://stackoverflow.com/a/3724558/2589328
+            unique_subsets = [list(x) for x in {tuple(x) for x in all_subsets}]
+            # Require "desc"
+            subset_with_desc = [
+                subset for subset in unique_subsets if "desc" in subset
+            ]
+
+            # Prevents overwriting the list on each iteration;
+            # instead, accumulates all filename variants.
+            filenames.extend(
+                "_".join(f"{k}-{variant_with_desc[k]}" for k in subset)
+                for subset in subset_with_desc
+            )
+
     return filenames
 
 
-def _get_file_name(nii_file):
+def _get_file_name(nii_file, flag_tedana=False):
     """Identify the confounds file associated with a functional image.
 
     Parameters
     ----------
     nii_file : str
         Path to the functional image file.
+
+    flag_tedana : bool, optional
+        If True, look for TEDANA confounds files. Defaults to False.
 
     Returns
     -------
@@ -209,7 +252,9 @@ def _get_file_name(nii_file):
 
     base_dir = Path(nii_file).parent
 
-    filenames = _generate_confounds_file_candidates(nii_file)
+    filenames = _generate_confounds_file_candidates(
+        nii_file, flag_tedana=flag_tedana
+    )
 
     # fmriprep has changed the file suffix between v20.1.1 and v20.2.0 with
     # respect to BEP 012.
@@ -217,6 +262,8 @@ def _get_file_name(nii_file):
     # Check file with new naming scheme exists or replace,
     # for backward compatibility.
     suffixes = ["_timeseries.tsv", "_regressors.tsv"]
+    if flag_tedana:  # tedana has different suffixes
+        suffixes = ["_mixing.tsv", "_metrics.tsv"]
 
     confound_file_candidates = []
     for suffix in suffixes:
@@ -237,14 +284,25 @@ def _get_file_name(nii_file):
             "The functional derivatives should exist under the same parent "
             "directory."
         )
-    elif len(found_files) != 1:
+    elif len(found_files) != 1 and not flag_tedana:
         found_str = "\n\t".join(found_files)
         raise ValueError(f"Found more than one confound file:\n\t{found_str}")
-    else:
-        return found_files[0]
+    elif len(found_files) != 2 and flag_tedana:
+        found_str = "\n\t".join(found_files)
+        raise ValueError(
+            f"Found {len(found_files)} confound files "
+            f"(expected 2 for TEDANA):\n\t{found_str}\n\n"
+            "TEDANA should produce exactly two confound files:\n"
+            "- mixing.tsv\n"
+            "- table_status.tsv"
+        )
+    elif flag_tedana:
+        return found_files
+
+    return found_files[0]
 
 
-def get_confounds_file(image_file, flag_full_aroma):
+def get_confounds_file(image_file, flag_full_aroma, flag_tedana):
     """Return the confounds file associated with a functional image.
 
     Parameters
@@ -255,18 +313,25 @@ def get_confounds_file(image_file, flag_full_aroma):
     flag_full_aroma : :obj:`bool`
         True if the input is a full ICA-AROMA output, False otherwise.
 
+    flag_tedata : :obj:`bool`
+        True if the input is a TEDANA optimally combined output,
+        False otherwise.
+
     Returns
     -------
     confounds_raw_path : :obj:`str`
         Path to the associated confounds file.
     """
-    _check_images(image_file, flag_full_aroma)
-    confounds_raw_path = _get_file_name(image_file)
+    _check_images(image_file, flag_full_aroma, flag_tedana)
+    confounds_raw_path = _get_file_name(image_file, flag_tedana=flag_tedana)
     return confounds_raw_path
 
 
-def get_json(confounds_raw_path):
+def get_json(confounds_raw_path, flag_tedana=False):
     """Return json data companion file to the confounds tsv file."""
+    if flag_tedana:
+        # TEDANA does not have a json confound companion file
+        return None
     # Load JSON file
     return str(confounds_raw_path).replace("tsv", "json")
 
@@ -308,25 +373,55 @@ def load_confounds_json(confounds_json, flag_acompcor):
     return confounds_json
 
 
-def load_confounds_file_as_dataframe(confounds_raw_path):
+def load_confounds_file_as_dataframe(confounds_raw_path, flag_tedana=False):
     """Load raw confounds as a pandas DataFrame.
 
     Meanwhile detect if the fMRIPrep version is supported.
 
     Parameters
     ----------
-    confounds_raw_path : :obj:`str`
-        Path to the confounds file.
+    confounds_raw_path : :obj:`str` or :obj:`list`
+        Path to the confounds file or List of paths for tedana.
+
+    flag_tedana : :obj:`bool`
+        True if the input is a TEDANA optimally combined output, False
+        otherwise.
 
     Returns
     -------
     confounds_raw : pandas.DataFrame
         Raw confounds loaded from the confounds file.
     """
+    if flag_tedana:
+        # TEDANA outputs are not camel case, but they have a different
+        # header format.
+        confounds_tedana_raw = {}
+        for tedana_conf in ["mixing", "metrics"]:
+            confounds_tedana_raw[tedana_conf] = pd.read_csv(
+                next(
+                    file for file in confounds_raw_path if tedana_conf in file
+                ),
+                delimiter="\t",
+                encoding="utf-8",
+            )
+        if any(
+            col.startswith("ICA_")
+            for confounds_raw in confounds_tedana_raw.values()
+            for col in confounds_raw
+        ) or any(
+            "Component" in confounds_raw.columns
+            for confounds_raw in confounds_tedana_raw.values()
+        ):
+            return confounds_tedana_raw
+        else:
+            raise ValueError(
+                "The confound file does not contain the expected columns for "
+                "TEDANA output. Expected 'ICA_xx' for mixing.tsv and"
+                "'Component' for the metrics.tsv columns."
+            )
     confounds_raw = pd.read_csv(
         confounds_raw_path, delimiter="\t", encoding="utf-8"
     )
-
     # check if the version of fMRIprep (>=1.2.0) is supported based on
     # header format. 1.0.x and 1.1.x series uses camel case
     if any(is_camel_case(col_name) for col_name in confounds_raw.columns):
@@ -352,6 +447,7 @@ def load_confounds_file_as_dataframe(confounds_raw_path):
             "Is this an old version fMRIprep output?"
             f"{bad_file.head()}"
         )
+
     return confounds_raw
 
 
@@ -385,7 +481,7 @@ def _ext_validator(image_file, ext):
     return valid_img, error_message
 
 
-def _check_images(image_file, flag_full_aroma):
+def _check_images(image_file, flag_full_aroma, flag_tedana):
     """Validate input file and ICA AROMA related file.
 
     Parameters
@@ -396,6 +492,9 @@ def _check_images(image_file, flag_full_aroma):
     flag_full_aroma : bool
         True if the input is a full ICA-AROMA output, False otherwise.
 
+    flag_tedata : :obj:`bool`
+        True if the input is a TEDANA optimally combined output
+
     Raises
     ------
     ValueError
@@ -405,6 +504,8 @@ def _check_images(image_file, flag_full_aroma):
         valid_img, error_message = _ext_validator(image_file, "func.gii")
     elif flag_full_aroma:
         valid_img, error_message = _ext_validator([image_file], "aroma")
+    elif flag_tedana:
+        valid_img, error_message = _ext_validator([image_file], "tedana")
     else:
         ext = ".".join(image_file.split(".")[-2:])
         valid_img, error_message = _ext_validator([image_file], ext)

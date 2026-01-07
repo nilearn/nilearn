@@ -7,6 +7,7 @@ import hashlib
 import os
 import pickle
 import shutil
+import sys
 import tarfile
 import time
 import urllib
@@ -15,11 +16,13 @@ import zipfile
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import requests
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 
 from .utils import get_data_dirs
 
@@ -79,7 +82,7 @@ def read_md5_sum_file(path):
     return hashes
 
 
-def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
+def _chunk_report_(bytes_so_far, total_size, initial_size, t0, verbose):
     """Show downloading percentage.
 
     Parameters
@@ -100,7 +103,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
     """
     if not total_size:
-        logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.")
+        logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.", verbose)
 
     else:
         # Estimate remaining download time
@@ -118,6 +121,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
             f"\rDownloaded {bytes_so_far} of {total_size} bytes "
             f"({total_percent * 100:.1f}%%, "
             f"{_format_time(time_remaining)} remaining)",
+            verbose=verbose,
         )
 
 
@@ -189,7 +193,7 @@ def _chunk_read_(
             # finished.
             (time_last_read > time_last_display + 1.0 or not chunk)
         ):
-            _chunk_report_(bytes_so_far, total_size, initial_size, t0)
+            _chunk_report_(bytes_so_far, total_size, initial_size, t0, verbose)
             time_last_display = time_last_read
         if chunk:
             local_file.write(chunk)
@@ -317,7 +321,16 @@ def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
         if not _is_within_directory(path, member_path):
             raise Exception("Attempted Path Traversal in Tar File")
 
-    tar.extractall(path, members, numeric_owner=numeric_owner)
+    # TODO (python >= 3.14) simplify when dropping python 3.14
+    if sys.version_info[1] >= 14:
+        tar.extractall(path, members, numeric_owner=numeric_owner, filter=None)
+    else:
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                category=DeprecationWarning,
+            )
+            tar.extractall(path, members, numeric_owner=numeric_owner)
 
 
 @fill_doc
@@ -388,12 +401,12 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
         raise
 
 
-def _filter_column(array, col, criteria):
+def _filter_column(array, col: str, criteria):
     """Return index array matching criteria.
 
     Parameters
     ----------
-    array : numpy array with columns
+    array : array-like with columns
         Array in which data will be filtered.
 
     col : string
@@ -437,7 +450,10 @@ def _filter_column(array, col, criteria):
 
     # Handle strings with different encodings
     if isinstance(criteria, (str, bytes)):
-        criteria = np.array(criteria).astype(array[col].dtype)
+        dtype = array[col].dtype
+        if isinstance(dtype, pd.StringDtype):
+            dtype = "str"
+        criteria = np.array(criteria).astype(dtype)
 
     return array[col] == criteria
 
@@ -458,14 +474,13 @@ def filter_columns(array, filters, combination="and"):
         and "or".
 
     """
+    check_parameter_in_allowed(combination, ["and", "or"], "combination")
     if combination == "and":
         fcomb = np.logical_and
         mask = np.ones(array.shape[0], dtype=bool)
     elif combination == "or":
         fcomb = np.logical_or
         mask = np.zeros(array.shape[0], dtype=bool)
-    else:
-        raise ValueError(f"Combination mode not known: {combination}")
 
     for column in filters:
         mask = fcomb(mask, _filter_column(array, column, filters[column]))
@@ -665,7 +680,9 @@ def fetch_single_file(
         )
     except requests.RequestException:
         logger.log(
-            f"Error while fetching file {file_name}; dataset fetching aborted."
+            f"Error while fetching file {file_name}; "
+            "dataset fetching aborted.",
+            verbose=verbose,
         )
         raise
     if md5sum is not None and _md5_sum_file(full_name) != md5sum:

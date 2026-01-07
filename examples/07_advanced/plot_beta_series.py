@@ -69,7 +69,7 @@ from nilearn.datasets import fetch_language_localizer_demo_dataset
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.plotting import plot_design_matrix, plot_stat_map, show
 
-data = fetch_language_localizer_demo_dataset(legacy_output=False)
+data = fetch_language_localizer_demo_dataset()
 
 models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
     dataset_path=data.data_dir,
@@ -319,24 +319,18 @@ seed_masker = NiftiSpheresMasker(
     radius=8,
     detrend=True,
     standardize="zscore_sample",
-    low_pass=None,
-    high_pass=None,
-    t_r=None,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
+    verbose=1,
 )
 
 brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
     standardize="zscore_sample",
-    low_pass=None,
-    high_pass=None,
-    t_r=None,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
+    verbose=1,
 )
 
 # Perform the seed-to-voxel correlation for the LSS 'language' beta series

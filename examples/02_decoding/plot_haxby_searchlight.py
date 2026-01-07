@@ -80,11 +80,11 @@ n_jobs = 2
 # The radius is the one of the Searchlight sphere that will scan the volume
 from sklearn.model_selection import KFold
 
-import nilearn.decoding
+from nilearn.decoding import SearchLight
 
 cv = KFold(n_splits=4)
 
-searchlight = nilearn.decoding.SearchLight(
+searchlight = SearchLight(
     mask_img,
     process_mask_img=process_mask_img,
     radius=5.6,
@@ -106,7 +106,7 @@ scores_img = searchlight.scores_img_
 # Use the :term:`fMRI` mean image as a surrogate of anatomical data
 from nilearn.image import mean_img
 
-mean_fmri = mean_img(fmri_img, copy_header=True)
+mean_fmri = mean_img(fmri_img)
 
 # %%
 # Because scores are not a zero-center test statistics,
@@ -140,6 +140,7 @@ nifti_masker = NiftiMasker(
     standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
+    verbose=1,
 )
 fmri_masked = nifti_masker.fit_transform(fmri_img)
 

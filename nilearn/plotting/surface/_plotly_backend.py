@@ -12,7 +12,6 @@ import numpy as np
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.helpers import is_kaleido_installed
 from nilearn.plotting._engine_utils import colorscale
-from nilearn.plotting._utils import get_colorbar_and_data_ranges
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.surface._utils import (
     DEFAULT_ENGINE,
@@ -87,54 +86,18 @@ LAYOUT = {
     "paper_bgcolor": "#fff",
     "hovermode": False,
     "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
+    "title_font_family": "Arial",
+    "font_family": "Arial",
 }
 
-
-def _adjust_colorbar_and_data_ranges(
-    stat_map, vmin=None, vmax=None, symmetric_cbar=None
-):
-    """Adjust colorbar and data ranges for 'plotly' engine.
-
-    .. note::
-        colorbar ranges are not used for 'plotly' engine.
-
-    Parameters
-    ----------
-    stat_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
-
-    %(vmin)s
-
-    %(vmax)s
-
-    %(symmetric_cbar)s
-
-    Returns
-    -------
-        cbar_vmin, cbar_vmax, vmin, vmax
-    """
-    _, _, vmin, vmax = get_colorbar_and_data_ranges(
-        stat_map,
-        vmin=vmin,
-        vmax=vmax,
-        symmetric_cbar=symmetric_cbar,
-    )
-
-    return None, None, vmin, vmax
-
-
-def _adjust_plot_roi_params(params):
-    """Adjust cbar_tick_format value for 'plotly' engine.
-
-    Sets the values in params dict.
-
-    Parameters
-    ----------
-    params : dict
-        dictionary to set the adjusted parameters
-    """
-    cbar_tick_format = params.get("cbar_tick_format", "auto")
-    if cbar_tick_format == "auto":
-        params["cbar_tick_format"] = "."
+PARAMS_NOT_IMPLEMENTED = [
+    "avg_method",
+    "alpha",
+    "cbar_vmin",
+    "cbar_vmax",
+    "axes",
+    "figure",
+]
 
 
 def _configure_title(title, font_size, color="black"):
@@ -226,7 +189,7 @@ def _get_cbar(
     vmin,
     vmax,
     cbar_tick_format,
-    fontsize=25,
+    fontsize=18,
     color="black",
     height=0.5,
 ):
@@ -282,7 +245,6 @@ def _plot_surf(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     cbar_vmin=None,
@@ -307,13 +269,17 @@ def _plot_surf(
     }
     check_engine_params(parameters_not_implemented_in_plotly, "plotly")
 
-    # adjust values
-    cbar_tick_format = (
-        ".1f" if cbar_tick_format == "auto" else cbar_tick_format
-    )
-    cmap = DEFAULT_DIVERGING_CMAP if cmap is None else cmap
-    symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
-    title_font_size = 18 if title_font_size is None else title_font_size
+    # adjust common params
+    if cbar_tick_format is None or cbar_tick_format == "auto":
+        cbar_tick_format = ".1f"
+    if cmap is None:
+        cmap = DEFAULT_DIVERGING_CMAP
+
+    # adjust non-common params
+    if symmetric_cmap is None:
+        symmetric_cmap = False
+    if title_font_size is None:
+        title_font_size = 18
 
     coords, faces = load_surf_mesh(surf_mesh)
 
@@ -347,7 +313,6 @@ def _plot_surf(
             absolute_threshold=colors["abs_threshold"],
             bg_map=bg_data,
             bg_on_data=bg_on_data,
-            darkness=darkness,
         )
     else:
         if bg_data is None:
@@ -368,6 +333,7 @@ def _plot_surf(
             float(colors["vmin"]),
             float(colors["vmax"]),
             cbar_tick_format,
+            fontsize=title_font_size,
         )
         fig_data.append(dummy)
 

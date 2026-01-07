@@ -30,6 +30,7 @@ def test_plot_stat_map_bad_input(matplotlib_pyplot, img_3d_mni, tmp_path):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "params", [{}, {"display_mode": "x", "cut_coords": 3}]
 )
@@ -48,7 +49,7 @@ def test_save_plot_stat_map(matplotlib_pyplot, params, img_3d_mni, tmp_path):
 
 @pytest.mark.parametrize(
     "display_mode,cut_coords",
-    [("ortho", (80, -120, -60)), ("y", 2), ("yx", None)],
+    [("ortho", (-90, -125, -70)), ("y", 2), ("yx", None)],
 )
 def test_plot_stat_map_cut_coords_and_display_mode(
     matplotlib_pyplot, display_mode, cut_coords, img_3d_mni
@@ -58,11 +59,7 @@ def test_plot_stat_map_cut_coords_and_display_mode(
     Tests different combinations of parameters `cut_coords`
     and `display_mode`.
     """
-    plot_stat_map(
-        img_3d_mni,
-        display_mode=display_mode,
-        cut_coords=cut_coords,
-    )
+    plot_stat_map(img_3d_mni, display_mode=display_mode, cut_coords=cut_coords)
 
 
 def test_plot_stat_map_with_masked_image(
@@ -120,6 +117,7 @@ def test_plot_stat_map_threshold_for_affine_with_rotation(
     assert plotted_array.mask.any()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "params",
     [
@@ -145,7 +143,7 @@ def test_plot_stat_map_colorbar_variations(
     img_heterogeneous = Nifti1Image(data_heterogeneous, affine_mni)
 
     for img in [img_3d_mni, img_negative, img_heterogeneous]:
-        plot_stat_map(img, cut_coords=(80, -120, -60), **params)
+        plot_stat_map(img, cut_coords=(-90, -125, -70), **params)
 
 
 @pytest.mark.parametrize(
@@ -164,14 +162,7 @@ def test_outlier_cut_coords(matplotlib_pyplot):
     """Test to plot a subset of a large set of cuts found for a small area."""
     bg_img = load_mni152_template(resolution=2)
     data = np.zeros((79, 95, 79))
-    affine = np.array(
-        [
-            [-2.0, 0.0, 0.0, 78.0],
-            [0.0, 2.0, 0.0, -112.0],
-            [0.0, 0.0, 2.0, -70.0],
-            [0.0, 0.0, 0.0, 1.0],
-        ]
-    )
+    affine = bg_img.affine
     # Color a cube around a corner area:
     x, y, z = 20, 22, 60
     x_map, y_map, z_map = coord_transform(x, y, z, np.linalg.inv(affine))
@@ -183,7 +174,8 @@ def test_outlier_cut_coords(matplotlib_pyplot):
     img = Nifti1Image(data, affine)
     cuts = find_cut_slices(img, n_cuts=20, direction="z")
 
-    plot_stat_map(img, display_mode="z", cut_coords=cuts[-4:], bg_img=bg_img)
+    with pytest.warns(UserWarning, match="The following 'cut_coords'"):
+        plot_stat_map(img, display_mode="z", cut_coords=cuts, bg_img=bg_img)
 
 
 def test_plotting_functions_with_dim_invalid_input(

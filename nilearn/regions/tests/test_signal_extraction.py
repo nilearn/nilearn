@@ -13,9 +13,9 @@ from nilearn._utils.data_gen import (
     generate_maps,
     generate_timeseries,
 )
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _shape_3d_default
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiLabelsMasker
 from nilearn.regions.signal_extraction import (
@@ -249,7 +249,7 @@ def test_img_to_signals_labels_bad_mask_input(
 def test_img_to_signals_labels_error_strategy(
     img_4d_zeros_eye, img_3d_zeros_eye
 ):
-    with pytest.raises(ValueError, match="Invalid strategy"):
+    with pytest.raises(ValueError, match="'strategy' must be one of"):
         img_to_signals_labels(
             imgs=img_4d_zeros_eye, labels_img=img_3d_zeros_eye, strategy="foo"
         )
@@ -352,7 +352,8 @@ def test_signals_extraction_with_labels_without_mask(
 
     # and back
     signals_r, labels_r = img_to_signals_labels(
-        imgs=data_img, labels_img=labels_img
+        imgs=data_img,
+        labels_img=labels_img,
     )
 
     assert_almost_equal(signals_r, signals)
@@ -476,6 +477,7 @@ def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
     assert list(np.unique(labels_data_r)) == [0, 1, 2, 5]
 
 
+@pytest.mark.slow
 def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
     # Generate signal imgs
     maps_img, mask_img = generate_maps(shape_3d_default, N_REGIONS)
@@ -519,9 +521,11 @@ def test_signal_extraction_with_maps_and_labels(
     maps_img = Nifti1Image(maps_data, labeled_regions.affine)
 
     # Extract signals from maps and labels: results must be identical.
-    maps_signals, maps_labels = img_to_signals_maps(fmri_img, maps_img)
+    maps_signals, maps_labels = img_to_signals_maps(
+        fmri_img, maps_img, keep_masked_maps=True
+    )
     labels_signals, labels_labels = img_to_signals_labels(
-        imgs=fmri_img, labels_img=labeled_regions
+        imgs=fmri_img, labels_img=labeled_regions, keep_masked_labels=True
     )
     assert_almost_equal(maps_signals, labels_signals)
 
@@ -530,10 +534,13 @@ def test_signal_extraction_with_maps_and_labels(
         labels_data, labeled_regions.affine
     )
     labels_signals, labels_labels = img_to_signals_labels(
-        imgs=fmri_img, labels_img=labeled_regions, mask_img=mask_img
+        imgs=fmri_img,
+        labels_img=labeled_regions,
+        mask_img=mask_img,
+        keep_masked_labels=True,
     )
     maps_signals, maps_labels = img_to_signals_maps(
-        fmri_img, maps_img, mask_img=mask_img
+        fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
     )
 
     assert_almost_equal(maps_signals, labels_signals)
@@ -589,15 +596,8 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     # test if the warning is raised
 
     with pytest.warns(
-        DeprecationWarning,
-        match='Applying "mask_img" before '
-        "signal extraction may result in empty region signals in "
-        "the output. These are currently kept. "
-        "Starting from version 0.13, the default behavior will be "
-        "changed to remove them by setting "
-        '"keep_masked_labels=False". '
-        '"keep_masked_labels" parameter will be removed '
-        "in version 0.15.",
+        FutureWarning,
+        match='"keep_masked_labels" parameter will be removed.',
     ):
         labels_signals, labels_labels = img_to_signals_labels(
             imgs=fmri_img,
@@ -611,13 +611,12 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     assert len(labels_labels) == 8
 
     # test return_masked_atlas deprecation warning
-    # TODO (nilearn >= 0.13.0)
+    # TODO (nilearn >= 0.15.0)
     with pytest.warns(
-        DeprecationWarning,
-        match='After version 0.13. "img_to_signals_labels" will also return '
-        'the "masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
-        "used to toggle this behavior. In version 0.15, "
-        '"return_masked_atlas" parameter will be removed.',
+        FutureWarning,
+        match=(
+            'In version 0.15, "return_masked_atlas" parameter will be removed.'
+        ),
     ):
         img_to_signals_labels(
             imgs=fmri_img,
@@ -659,7 +658,7 @@ def test_img_to_signals_maps_warnings(
         "3 maps.",
     ):
         maps_signals, maps_labels = img_to_signals_maps(
-            fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=False
+            fmri_img, maps_img, mask_img=mask_img
         )
 
     # only 3 regions must be kept, others must be removed
@@ -671,17 +670,10 @@ def test_img_to_signals_maps_warnings(
     # keeping the masked labels
     # test if the warning is raised
 
-    # TODO (nilearn >= 0.13.0)
+    # TODO (nilearn >= 0.15.0)
     with pytest.warns(
-        DeprecationWarning,
-        match='Applying "mask_img" before '
-        "signal extraction may result in empty region signals in the "
-        "output. These are currently kept. "
-        "Starting from version 0.13, the default behavior will be "
-        "changed to remove them by setting "
-        '"keep_masked_maps=False". '
-        '"keep_masked_maps" parameter will be removed '
-        "in version 0.15.",
+        FutureWarning,
+        match='"keep_masked_maps" parameter will be removed',
     ):
         maps_signals, maps_labels = img_to_signals_maps(
             fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
@@ -763,6 +755,7 @@ def test_trim_maps(shape_3d_default):
     assert_equal(np.asarray(list(range(4))), maps_i_indices)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "target_dtype",
     (float, np.float32, np.float64, int, np.uint),

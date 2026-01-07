@@ -53,10 +53,23 @@ on:
         branches:
         -   main
     schedule:
-    # every Monday at 9am UTC
-    -   cron: 0 9 * * MON
+        # Uses the cron schedule for github actions
+        # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+        # Run every Monday at midnight UTC
+        #     ┌───────────── minute (0 - 59)
+        #     │ ┌───────────── hour (0 - 23)
+        #     │ │ ┌───────────── day of the month (1 - 31)
+        #     │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+        #     │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     * * * * *
+    -   cron: 0 0 * * 1
 
-    workflow_dispatch:  # This enables manual triggering from GitHub UI
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
+    workflow_dispatch:
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -80,14 +93,14 @@ jobs:
                 working-directory: ./asv_benchmarks
 
         steps:
-        -   uses: actions/checkout@v5
+        -   uses: actions/checkout@v6
             with:
-                # fetch all branches and tags
+                  # fetch all branches and tags
                 fetch-depth: 0
-        -   uses: actions/setup-python@v5
+        -   uses: actions/setup-python@v6
             with:
                 python-version: ${{ env.MIN_PYTHON }}
-        -   name: Install asv
+        -   name: Install asv and switch to asv_benchmarks directory
             run: |
                 pip install --upgrade pip
                 pip install asv
@@ -116,8 +129,9 @@ jobs:
             run: |
                 asv run --verbose --show-stderr --append-samples --machine fv-az1113-357 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
         -   name: Create html with all results
-            run: asv publish
-        -   uses: actions/upload-artifact@v4
+            run: |
+                asv publish
+        -   uses: actions/upload-artifact@v6
             with:
                 name: Upload asv benchmark results as artifacts
                 path: |

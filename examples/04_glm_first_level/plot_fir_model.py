@@ -27,7 +27,7 @@ from nilearn.plotting import plot_stat_map
 
 data = func.fetch_localizer_first_level()
 fmri_img = data.epi_img
-t_r = 2.4
+t_r = data.t_r
 events_file = data["events"]
 events = pd.read_table(events_file)
 
@@ -45,7 +45,9 @@ events = pd.read_table(events_file)
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.plotting import plot_contrast_matrix, plot_design_matrix
 
-first_level_model = FirstLevelModel(t_r, hrf_model="fir", fir_delays=[1, 2, 3])
+first_level_model = FirstLevelModel(
+    t_r, hrf_model="fir", fir_delays=[1, 2, 3], verbose=1
+)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)

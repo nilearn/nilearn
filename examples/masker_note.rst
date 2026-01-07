@@ -1,4 +1,4 @@
-.. note::
+.. warning::
 
        If you are using Nilearn with a version older than ``0.9.0``,
        then you should either upgrade your version or import maskers

@@ -13,7 +13,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils import data_gen, exceptions
+from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.estimator_checks import (
     check_estimator,
@@ -21,6 +21,7 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask
@@ -57,6 +58,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -99,12 +101,33 @@ def test_fit_transform_warning(img_3d_rand_eye, mask_img_1):
         assert np.any(X != 0)
 
 
-def test_resample(img_3d_rand_eye, mask_img_1):
-    """Check that target_affine triggers the right resampling."""
-    masker = NiftiMasker(mask_img=mask_img_1, target_affine=2 * np.eye(3))
+@pytest.mark.parametrize(
+    "target_affine", [2 * np.eye(3), (2 * np.eye(3)).tolist()]
+)
+def test_resample(img_3d_rand_eye, mask_img_1, target_affine):
+    """Check that target_affine triggers the right resampling.
+
+    Also check that target affine can be passed as a list.
+    """
+    masker = NiftiMasker(mask_img=mask_img_1, target_affine=target_affine)
     # Smoke test the fit
     X = masker.fit_transform(img_3d_rand_eye)
     assert np.any(X != 0)
+
+
+@pytest.mark.parametrize(
+    "target_affine",
+    [
+        [1, 2, 3],
+        [[1, 2, 3]],
+    ],
+)
+def test_target_affine_error(img_3d_rand_eye, target_affine):
+    """Check errors when passing affine as list with wrong dimensions."""
+    masker = NiftiMasker(target_affine=target_affine)
+
+    with pytest.raises(np.linalg.LinAlgError):
+        masker.fit_transform(img_3d_rand_eye)
 
 
 def test_resample_to_mask_warning(img_3d_rand_eye, affine_eye):
@@ -157,7 +180,9 @@ def test_matrix_orientation():
     # all signals being identical, standardizing along the wrong axis
     # would leave a null signal. Along the correct axis, the step remains.
     fmri, mask = data_gen.generate_fake_fmri(shape=(40, 41, 42), kind="step")
-    masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
+    masker = NiftiMasker(
+        mask_img=mask, standardize="zscore_sample", detrend=True
+    )
     timeseries = masker.fit_transform(fmri)
     assert timeseries.shape[0] == fmri.shape[3]
     assert timeseries.shape[1] == get_data(mask).sum()
@@ -166,13 +191,14 @@ def test_matrix_orientation():
     assert not np.any(std < 0.1)
 
     # Test inverse transform
-    masker = NiftiMasker(mask_img=mask, standardize=False, detrend=False)
+    masker = NiftiMasker(mask_img=mask)
     masker.fit()
     timeseries = masker.transform(fmri)
     recovered = masker.inverse_transform(timeseries)
     np.testing.assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
 
+@pytest.mark.slow
 def test_mask_4d(shape_3d_default, affine_eye):
     """Test performance with 4D data."""
     # Dummy mask
@@ -345,13 +371,14 @@ def test_compute_brain_mask_empty_mask_error(strategy):
         masker.fit(img)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
-    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+    "strategy",
+    [f"{p}-template" for p in ["whole-brain", "gm", "wm"]],
 )
 # We parametrize mask_args to make it accessible
 # to the expected_mask fixture.
-@pytest.mark.parametrize("mask_args", [{"threshold": 0.0}])
+@pytest.mark.parametrize("mask_args", [{"threshold": -0.5}])
 def test_compute_brain_mask(strategy, expected_mask, mask_args):
     """Check masker for template masking strategy."""
     masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
@@ -390,7 +417,7 @@ def test_no_warning_partial_joblib(strategy):
     """
     masker = NiftiMasker(
         mask_strategy=strategy,
-        mask_args={"threshold": 0.0},
+        mask_args={"threshold": -0.5},
         memory="nilearn_cache",
         memory_level=1,
     )
@@ -398,8 +425,8 @@ def test_no_warning_partial_joblib(strategy):
     with warnings.catch_warnings(record=True) as warning_list:
         masker.fit(img)
 
-    assert not any(
-        "Cannot inspect object functools.partial" in str(x)
+    assert all(
+        "Cannot inspect object functools.partial" not in str(x)
         for x in warning_list
     )
 
@@ -417,10 +444,12 @@ def test_filter_and_mask_error(affine_eye):
     params = get_params(NiftiMasker, masker)
 
     with pytest.raises(
-        exceptions.DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
+        DimensionError,
+        match=(
+            r"Input data has incompatible dimensionality: "
+            r"Expected dimension is 3D and you provided "
+            r"a 4D image."
+        ),
     ):
         filter_and_mask(data_img, mask_img, params)
 
@@ -435,44 +464,10 @@ def test_filter_and_mask(affine_eye):
     data_img = Nifti1Image(data, affine_eye)
     mask_img = Nifti1Image(mask, affine_eye)
 
-    masker = NiftiMasker()
+    masker = NiftiMasker(standardize=None)
     params = get_params(NiftiMasker, masker)
     params["clean_kwargs"] = {}
 
     # Test return_affine = False
     data = filter_and_mask(data_img, mask_img, params)
     assert data.shape == (data_shape[3], np.prod(np.array(mask.shape)))
-
-
-def test_standardization(rng, shape_3d_default, affine_eye):
-    """Check output properly standardized with 'standardize' parameter."""
-    n_samples = 500
-
-    signals = rng.standard_normal(size=(np.prod(shape_3d_default), n_samples))
-    means = (
-        rng.standard_normal(size=(np.prod(shape_3d_default), 1)) * 50 + 1000
-    )
-    signals += means
-    img = Nifti1Image(
-        signals.reshape((*shape_3d_default, n_samples)),
-        affine_eye,
-    )
-
-    mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
-
-    # z-score
-    masker = NiftiMasker(mask, standardize="zscore_sample")
-    trans_signals = masker.fit_transform(img)
-
-    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals.std(0), 1, decimal=3)
-
-    # psc
-    masker = NiftiMasker(mask, standardize="psc")
-    trans_signals = masker.fit_transform(img)
-
-    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(
-        trans_signals,
-        (signals / signals.mean(1)[:, np.newaxis] * 100 - 100).T,
-    )

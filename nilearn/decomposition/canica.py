@@ -22,13 +22,7 @@ class CanICA(_MultiPCA):
 
     Parameters
     ----------
-    mask : Niimg-like object, :obj:`~nilearn.maskers.MultiNiftiMasker` or \
-           :obj:`~nilearn.surface.SurfaceImage` or \
-           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given, for Nifti images,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters; for surface images, all the vertices will be used.
+    %(mask_decomposition)s
 
     n_components : :obj:`int`, default=20
         Number of components to extract.
@@ -54,7 +48,7 @@ class CanICA(_MultiPCA):
 
     %(random_state)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(standardize_confounds)s
 

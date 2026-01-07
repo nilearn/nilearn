@@ -1,13 +1,13 @@
+from itertools import pairwise
 from numbers import Number
-from pathlib import Path
 from warnings import warn
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn._utils.logger import find_stack_level
 
 DEFAULT_ENGINE = "matplotlib"
+DEFAULT_TICK_FORMAT = "%.2g"
 
 
 def engine_warning(engine):
@@ -19,74 +19,153 @@ def engine_warning(engine):
     warn(message, stacklevel=find_stack_level())
 
 
-def save_figure_if_needed(fig, output_file):
-    """Save figure if an output file value is given.
+def get_cbar_bounds(vmin, vmax, num_val, tick_format=DEFAULT_TICK_FORMAT):
+    """Return colorbar boundaries which include vmin and vmax values when
+    formatted with ``tick_format``.
+    """
+    # Formatting the vmin and vmax values with tick_format is
+    # necessary. Because get_cbar_ticks returns formatted values. When values
+    # are formatted, they are actually rounded depending on tick_format. If the
+    # rounded value is bigger than vmax, or smaller than vmin, these values are
+    # omitted in the display.
+    bounds = np.linspace(
+        float(tick_format % vmin), float(tick_format % vmax), num_val
+    )
 
-    Create output path if required.
+    # if all bound values are 0, return None
+    if np.all(bounds == 0):
+        bounds = None
+
+    return bounds
+
+
+def _remove_close_values(ticks, step_size, threshold, vmin, vmax):
+    """Remove some tick values if they are very close to each other."""
+    # create the list for the values to be kept in tick list
+    keep_list = [vmin, 0, vmax]
+    if threshold is not None:
+        keep_list.extend([-threshold, threshold])
+
+    for a, b in pairwise(ticks):
+        # if two consecutive values have distance less the 1/3th of step_size
+        # check for the possibility to remove one
+        if b - a < step_size / 3:
+            value_to_remove = a if a not in keep_list else None
+            if value_to_remove is None:
+                value_to_remove = b if b not in keep_list else None
+
+            # if one of the ticks is 0 and the other is threshold
+            if (
+                value_to_remove is None
+                and threshold is not None
+                and (
+                    a in [-threshold, threshold]
+                    or b in [-threshold, threshold]
+                )
+                and (a == 0 or b == 0)
+            ):
+                # if threshold is very close to 0, remove it and keep 0
+                if threshold <= 1e-5:
+                    value_to_remove = a if a != 0 else b
+                    # otherwise remove 0 if it is not vmin or vmax
+                elif vmin != 0 and vmax != 0:
+                    value_to_remove = 0
+            if value_to_remove is not None:
+                ticks = np.delete(ticks, np.where(ticks == value_to_remove))
+    return ticks
+
+
+def get_cbar_ticks(
+    vmin, vmax, threshold=None, n_ticks=5, tick_format=DEFAULT_TICK_FORMAT
+):
+    """Return an array of evenly spaced ``n_ticks`` tick values to be used for
+    the colorbar.
+
+    The final tick list will contain 0, vmin, vmax and threshold values. If
+    there are values very close to each other, it will favor threshold value
+    over 0.
 
     Parameters
     ----------
-    fig: figure, axes, or display instance
-
-    output_file: str, Path or None
+    vmin: :obj:`float`
+        minimum value for the colorbar, should not be None
+    vmax: :obj:`float`
+        maximum value for the colorbar, should not be None
+    threshold: :obj:`float`, :obj:`int` or None
+        threshold value
+    n_ticks: :obj:`int`
+        number of tick values to return
+    tick_format: :obj:`str`, default="%.2g"
+        formatting to be used for colorbar ticks
 
     Returns
     -------
-    None if ``output_file`` is None, ``fig`` otherwise.
+    :class:`~numpy.ndarray`
+        an array with ``n_ticks`` elements if ``vmin`` != ``vmax``, else array
+        with one element.
     """
-    # avoid circular import
-    from nilearn.plotting.displays import BaseSlicer
+    f_vmin = float(tick_format % vmin)
+    f_vmax = float(tick_format % vmax)
+    if f_vmin == f_vmax and (
+        threshold is None or threshold == 0 or f_vmax == 0
+    ):
+        return np.linspace(f_vmin, f_vmax, 1)
 
-    if output_file is None:
-        return fig
+    if tick_format == "%i":
+        if threshold is not None and int(threshold) != threshold:
+            warn(
+                "You provided a non integer threshold "
+                "but configured the colorbar to use integer formatting.",
+                stacklevel=find_stack_level(),
+            )
+        if f_vmax - f_vmin < n_ticks - 1:
+            n_ticks = int(f_vmax - f_vmin + 1)
 
-    output_file = Path(output_file)
-    output_file.parent.mkdir(exist_ok=True, parents=True)
-
-    if not isinstance(fig, (plt.Figure, BaseSlicer)):
-        fig = fig.figure
-
-    fig.savefig(output_file)
-    if isinstance(fig, plt.Figure):
-        plt.close(fig)
-    else:
-        fig.close()
-
-    return None
-
-
-def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
-    """Help for BaseSlicer."""
-    # edge case where the data has a single value yields
-    # a cryptic matplotlib error message when trying to plot the color bar
-    if vmin == vmax:
-        return np.linspace(vmin, vmax, 1)
-
-    # edge case where the data has all negative values but vmax is exactly 0
-    if vmax == 0:
-        vmax += np.finfo(np.float32).eps
-
-    # If a threshold is specified, we want two of the tick
-    # to correspond to -threshold and +threshold on the colorbar.
-    # If the threshold is very small compared to vmax,
-    # we use a simple linspace as the result would be very difficult to see.
     ticks = np.linspace(vmin, vmax, n_ticks)
-    if offset is not None and offset / vmax > 0.12:
-        diff = [abs(abs(tick) - offset) for tick in ticks]
-        # Edge case where the thresholds are exactly
-        # at the same distance to 4 ticks
-        if diff.count(min(diff)) == 4:
-            idx_closest = np.sort(np.argpartition(diff, 4)[:4])
-            idx_closest = np.isin(ticks, np.sort(ticks[idx_closest])[1:3])
+    # format tick values as matplotlib will display them
+    # this is to avoid double appearance of same tick value
+    # for example when threshold is 9.96 and vmax is 10, matplotlib rounds
+    # 9.96 to 10. If both 9.96 and 10 are in the tick list, matplotlib will
+    # display double 10 in the colorbar.
+    ticks = np.vectorize(lambda x: float(tick_format % x))(ticks)
+    # get the size of maximum interval between the ticks
+    step_size = max(b - a for a, b in pairwise(ticks))
+
+    if threshold is not None and threshold > 1e-6:
+        # set threshold to formatted threshold
+        threshold = float(tick_format % threshold)
+
+        # if the values are either positive or negative
+        if 0 <= vmin <= vmax or vmin <= vmax <= 0:
+            if vmax <= 0:
+                threshold = -threshold
+            ticks = np.append(ticks, threshold)
         else:
-            # Find the closest 2 ticks
-            idx_closest = np.sort(np.argpartition(diff, 2)[:2])
-            if 0 in ticks[idx_closest]:
-                idx_closest = np.sort(np.argpartition(diff, 3)[:3])
-                idx_closest = idx_closest[[0, 2]]
-        ticks[idx_closest] = [-offset, offset]
-    if len(ticks) > 0 and ticks[0] < vmin:
-        ticks[0] = vmin
+            ticks = np.append(ticks, [-threshold, threshold])
+
+        # remove unnecessary ticks that would be between 0 and +-threshold
+        ticks = ticks[
+            np.where(
+                # normally threshold should be positive
+                # however in the above condition, if data is either positive or
+                # negative
+                # we set threshold=-threshold
+                # in that case below we need to check with abs(threshold)
+                (ticks > abs(threshold))
+                | (ticks < -abs(threshold))
+                | (np.isin(ticks, [0, f_vmin, f_vmax, threshold, -threshold]))
+            )
+        ]
+
+    # we do this here to include the case where threshold is None
+    if vmin < 0 < vmax:
+        ticks = np.append(ticks, 0)
+
+    ticks = np.sort(np.unique(ticks))
+    abs_threshold = abs(threshold) if threshold is not None else None
+    ticks = _remove_close_values(
+        ticks, step_size, abs_threshold, f_vmin, f_vmax
+    )
 
     return ticks
 
@@ -152,10 +231,16 @@ def get_colorbar_and_data_ranges(
             vmin = -vmax
         elif vmax is None:
             vmax = -vmin
-        elif not np.isclose(vmin, -vmax):
-            raise ValueError(
-                "vmin must be equal to -vmax unless symmetric_cbar is False."
+        elif vmin != -vmax:
+            warn(
+                f"Specified {vmin=} and {vmax=} values do not create a "
+                "symmetric colorbar. The values will be modified to be "
+                "symmetric.",
+                stacklevel=find_stack_level(),
             )
+            vmax = max(abs(vmin), abs(vmax))
+            vmin = -vmax
+
         cbar_vmin = vmin
         cbar_vmax = vmax
     # set colorbar limits

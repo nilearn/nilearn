@@ -5,11 +5,13 @@ See the  maintenance page of our documentation for more information
 https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-for-plotting-tests
 """
 
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
 import pytest
 from matplotlib import pyplot as plt
 
+from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.datasets import (
     load_fsaverage_data,
     load_mni152_template,
@@ -19,6 +21,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.tests._testing import modulated_event_paradigm
+from nilearn.image import math_img
 from nilearn.plotting import (
     plot_anat,
     plot_bland_altman,
@@ -32,6 +35,7 @@ from nilearn.plotting import (
     plot_glass_brain,
     plot_img,
     plot_img_comparison,
+    plot_img_on_surf,
     plot_matrix,
     plot_prob_atlas,
     plot_roi,
@@ -58,6 +62,7 @@ SURFACE_FUNCS = {
 }
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_black_bg(plot_func, img_3d_mni):
@@ -68,6 +73,7 @@ def test_plot_functions_black_bg(plot_func, img_3d_mni):
     return plot_func(img_3d_mni, black_bg=True)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_title(plot_func, img_3d_mni):
@@ -78,6 +84,7 @@ def test_plot_functions_title(plot_func, img_3d_mni):
     return plot_func(img_3d_mni, title="foo")
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_annotate(plot_func, img_3d_mni):
@@ -88,6 +95,7 @@ def test_plot_functions_annotate(plot_func, img_3d_mni):
     return plot_func(img_3d_mni, annotate=False)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize(
     "display_mode", ["x", "y", "z", "yx", "xz", "yz", "ortho"]
@@ -102,6 +110,7 @@ def test_plot_stat_map_display_mode(display_mode):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_no_colorbar(plot_func, img_3d_mni):
@@ -125,6 +134,7 @@ def test_plot_functions_colorbar_ticks(plot_func, img_3d_mni):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("vmin", [-1, 1])
@@ -141,6 +151,7 @@ def test_plot_functions_vmax(plot_func, vmax):
     return plot_func(load_sample_motor_activation_image(), vmax=vmax)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plotting_func", PLOTTING_FUNCS_3D)
 def test_plotting_functions_radiological_view(plotting_func):
@@ -162,7 +173,7 @@ def test_plot_carpet_default_params(img_4d_mni, img_3d_ones_mni):
     return plot_carpet(img_4d_mni, mask_img=img_3d_ones_mni)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
     """Smoke-test for plot_prob_atlas with default arguments."""
@@ -268,6 +279,7 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
 
 
 @pytest.mark.mpl_image_compare(tolerance=5)
+@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize(
     "view",
@@ -282,6 +294,12 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
 def test_plot_surf_surface(plot_func, view, hemi):
     """Test surface plotting functions with views and hemispheres."""
     surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
     return plot_func(
         surf_img.mesh,
         surf_img,
@@ -292,13 +310,57 @@ def test_plot_surf_surface(plot_func, view, hemi):
     )
 
 
+@pytest.mark.skipif(
+    not (is_plotly_installed() and is_kaleido_installed()),
+    reason="This test requires plotly and kaleido to be installed",
+)
 @pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
+@pytest.mark.parametrize(
+    "view",
+    [
+        "anterior",
+        "posterior",
+        "dorsal",
+        "ventral",
+    ],
+)
+@pytest.mark.parametrize("hemi", ["left", "right", "both"])
+def test_plot_surf_surface_plotly(plot_func, view, hemi):
+    """Test surface plotting functions with views and hemispheres using plotly
+    backend.
+    """
+    surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
+    return plot_func(
+        surf_img.mesh,
+        surf_img,
+        engine="plotly",
+        view=view,
+        hemi=hemi,
+        title=f"{view=}, {hemi=}",
+    )
+
+
+@pytest.mark.mpl_image_compare(tolerance=5)
+@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
 def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
     """Test surface plotting functions with colorbars."""
     surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
     return plot_func(
         surf_img.mesh,
         surf_img,
@@ -306,6 +368,60 @@ def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
     )
+
+
+@pytest.mark.skipif(
+    not (is_plotly_installed() and is_kaleido_installed()),
+    reason="This test requires plotly and kaleido to be installed",
+)
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
+@pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
+def test_plot_surf_surface_colorbar_plotly(
+    plot_func, colorbar, cbar_tick_format
+):
+    """Test surface plotting functions with colorbars using plotly backend."""
+    surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
+    return plot_func(
+        surf_img.mesh,
+        surf_img,
+        engine="plotly",
+        colorbar=colorbar,
+        cbar_tick_format=cbar_tick_format,
+    )
+
+
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("bg_on_data", [True, False])
+@pytest.mark.parametrize("symmetric_cmap", [True, False])
+@pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.parametrize("title", [None, "Foo"])
+def test_plot_img_on_surf(bg_on_data, symmetric_cmap, colorbar, title):
+    stat_img = load_sample_motor_activation_image()
+    fig, _ = plot_img_on_surf(
+        stat_map=stat_img,
+        views=[
+            "lateral",
+            "medial",
+            "dorsal",
+            "ventral",
+            "anterior",
+            "posterior",
+        ],
+        hemispheres=["left", "right"],
+        bg_on_data=bg_on_data,
+        symmetric_cmap=symmetric_cmap,
+        colorbar=colorbar,
+        title=title,
+    )
+    return fig
 
 
 # ---------------------- design matrix plotting -------------------------------
@@ -460,6 +576,7 @@ def test_plot_with_transparency(fn):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("fn", [plot_stat_map, plot_img, plot_glass_brain])
 @pytest.mark.parametrize("transparency_range", [None, [0, 2], [2, 4]])
@@ -476,6 +593,7 @@ def test_plot_with_transparency_range(fn, transparency_range):
 IMG_COMPARISON_FUNCS = {plot_img_comparison, plot_bland_altman}
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
 def test_img_comparison_default(
@@ -487,6 +605,7 @@ def test_img_comparison_default(
     return plt.gcf()
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])

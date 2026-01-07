@@ -39,7 +39,7 @@ msdl_coords = msdl_data.region_coords
 masker = NiftiMapsMasker(
     msdl_data.maps,
     resampling_target="data",
-    t_r=2,
+    t_r=development_dataset.t_r,
     detrend=True,
     low_pass=0.1,
     high_pass=0.01,
@@ -47,6 +47,7 @@ masker = NiftiMapsMasker(
     memory_level=1,
     standardize="zscore_sample",
     standardize_confounds=True,
+    verbose=1,
 )
 
 masked_data = list(
@@ -111,7 +112,6 @@ gs = GridSearchCV(
     param_grid,
     scoring="accuracy",
     cv=cv,
-    verbose=1,
     refit=False,
     n_jobs=2,
 )

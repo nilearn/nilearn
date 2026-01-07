@@ -48,6 +48,7 @@ from nilearn.glm.first_level.hemodynamic_models import (
     compute_regressor,
     orthogonalize,
 )
+from nilearn.signal import create_cosine_drift
 
 ######################################################################
 # Ancillary functions
@@ -79,53 +80,6 @@ def _poly_drift(order, frame_times):
     pol = orthogonalize(pol)
     pol = np.hstack((pol[:, 1:], pol[:, :1]))
     return pol
-
-
-def create_cosine_drift(high_pass, frame_times):
-    """Create a cosine drift matrix with frequencies or equal to high_pass.
-
-    Parameters
-    ----------
-    high_pass : :obj:`float`
-        Cut frequency of the high-pass filter in Hz
-
-    frame_times : array of shape (n_scans,)
-        The sampling times in seconds
-
-    Returns
-    -------
-    cosine_drift : array of shape(n_scans, n_drifts)
-        Cosine drifts plus a constant regressor at cosine_drift[:, -1]
-
-    References
-    ----------
-    http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
-
-    """
-    n_frames = len(frame_times)
-    n_times = np.arange(n_frames)
-    dt = (frame_times[-1] - frame_times[0]) / (n_frames - 1)
-    if high_pass * dt >= 0.5:
-        warn(
-            "High-pass filter will span all accessible frequencies "
-            "and saturate the design matrix. "
-            "You may want to reduce the high_pass value."
-            f"The provided value is {high_pass} Hz",
-            stacklevel=find_stack_level(),
-        )
-    order = np.minimum(
-        n_frames - 1, int(np.floor(2 * n_frames * high_pass * dt))
-    )
-    cosine_drift = np.zeros((n_frames, order + 1))
-    normalizer = np.sqrt(2.0 / n_frames)
-
-    for k in range(1, order + 1):
-        cosine_drift[:, k - 1] = normalizer * np.cos(
-            (np.pi / n_frames) * (n_times + 0.5) * k
-        )
-
-    cosine_drift[:, -1] = 1.0
-    return cosine_drift
 
 
 def _none_drift(frame_times):
@@ -386,6 +340,10 @@ def make_first_level_design_matrix(
             add_reg_names = add_regs.columns.tolist()
         else:
             add_regs_ = np.atleast_2d(add_regs)
+
+        if np.any(np.isnan(add_regs_.ravel())):
+            raise ValueError("Extra regressors contain NaN values.")
+
         n_add_regs = add_regs_.shape[1]
         assert add_regs_.shape[0] == np.size(frame_times), (
             "Incorrect specification of additional regressors: "
@@ -499,6 +457,9 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
     if confounds is not None:
         confounds_name = confounds.columns.tolist()
         confounds_name.remove("subject_label")
+
+        if confounds.isna().to_numpy().any():
+            raise ValueError("Confounds contain NaN values.")
 
     design_columns = [*confounds_name, "intercept"]
     # check column names are unique
