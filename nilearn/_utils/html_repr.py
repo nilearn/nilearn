@@ -31,22 +31,22 @@ class _NilearnHTMLDocumentationLinkMixin:
             "{estimator_module}.{estimator_name}.html"
         )
 
-    if SKLEARN_GTE_1_7:
+    # if SKLEARN_GTE_1_7:
 
-        def _doc_link_url_param_generator(self):
-            """Generate a link to the API documentation \
-                for a given estimator.
-            """
-            estimator_name = self.__class__.__name__
-            tmp = list(
-                itertools.takewhile(
-                    lambda part: not part.startswith("_"),
-                    self.__class__.__module__.split("."),
-                )
+    def _doc_link_url_param_generator(self):
+        """Generate a link to the API documentation \
+            for a given estimator.
+        """
+        estimator_name = self.__class__.__name__
+        tmp = list(
+            itertools.takewhile(
+                lambda part: not part.startswith("_"),
+                self.__class__.__module__.split("."),
             )
-            estimator_module = ".".join([tmp[0], tmp[1]])
+        )
+        estimator_module = ".".join([tmp[0], tmp[1]])
 
-            return {
-                "estimator_module": estimator_module,
-                "estimator_name": estimator_name,
-            }
+        return {
+            "estimator_module": estimator_module,
+            "estimator_name": estimator_name,
+        }
