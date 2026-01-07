@@ -453,6 +453,19 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         tags.input_tags = InputTags(surf_img=True, niimg_like=True)
         return tags
 
+    def _validate_mask(self):
+        if self.mask is not None:
+            check_is_of_allowed_type(
+                self.mask,
+                (
+                    SurfaceMasker,
+                    SurfaceImage,
+                    NiftiMasker,
+                    *NiimgLike,
+                ),
+                "mask",
+            )
+
     @fill_doc
     def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the components across subjects.
@@ -517,18 +530,10 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         self._fit_cache()
 
+        self._validate_mask()
+
         masker_type = "multi_nii"
         if self.mask is not None:
-            check_is_of_allowed_type(
-                self.mask,
-                (
-                    SurfaceMasker,
-                    SurfaceImage,
-                    NiftiMasker,
-                    *NiimgLike,
-                ),
-                "mask",
-            )
             if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)):
                 masker_type = "multi_surface"
             if isinstance(self.mask, (MultiNiftiMasker, *NiimgLike)):

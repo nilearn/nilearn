@@ -14,6 +14,10 @@ from sklearn.linear_model import Ridge
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import transfer_deprecated_param_vals
+from nilearn._utils.param_validation import check_is_of_allowed_type
+from nilearn.maskers import MultiNiftiMasker, MultiSurfaceMasker
+from nilearn.surface import SurfaceImage
+from nilearn.typing import NiimgLike
 
 from ._base import _BaseDecomposition
 from .canica import CanICA
@@ -312,3 +316,16 @@ class DictLearning(_BaseDecomposition):
             )
 
         return self
+
+    def _validate_mask(self):
+        if self.mask is not None:
+            check_is_of_allowed_type(
+                self.mask,
+                (
+                    MultiSurfaceMasker,
+                    SurfaceImage,
+                    MultiNiftiMasker,
+                    *NiimgLike,
+                ),
+                "mask",
+            )
