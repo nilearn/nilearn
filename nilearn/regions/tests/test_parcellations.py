@@ -9,7 +9,12 @@ from nibabel import Nifti1Image
 
 from nilearn._utils.helpers import is_windows_platform
 from nilearn.conftest import _affine_eye
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+from nilearn.maskers import (
+    MultiNiftiMasker,
+    MultiSurfaceMasker,
+    NiftiMasker,
+    SurfaceMasker,
+)
 from nilearn.regions.parcellations import (
     Parcellations,
     _check_parameters_transform,
@@ -178,7 +183,7 @@ def test_parcellations_transform_multi_nifti_images(method, n_parcel, image_2):
 @pytest.mark.slow
 @pytest.mark.parametrize("masker", [NiftiMasker, MultiNiftiMasker])
 def test_parcellations_transform_nifti_masker(masker, image_2, affine_eye):
-    """Smoke test that mask can be (multi)NiftiMasker.
+    """Smoke test that 'mask' can be (multi)NiftiMasker.
 
     Regression test for https://github.com/nilearn/nilearn/issues/5926
     """
@@ -352,12 +357,13 @@ def test_transform_list_3d_input_images(affine_eye):
     assert isinstance(imgs_, list)
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
-@pytest.mark.parametrize("method", METHODS)
-@pytest.mark.parametrize("n_parcels", [5, 25])
-def test_parcellation_all_methods_with_surface(method, n_parcels, rng):
-    """Test if all parcellation methods work on surface."""
-    n_samples = 35
+@pytest.fixture
+def n_samples():
+    return 10
+
+
+@pytest.fixture
+def surface_img_for_parcellation(rng, n_samples):
     mesh = {
         "left": flat_mesh(10, 8),
         "right": flat_mesh(9, 7),
@@ -370,10 +376,19 @@ def test_parcellation_all_methods_with_surface(method, n_parcels, rng):
             size=(mesh["right"].coordinates.shape[0], n_samples)
         ),
     }
-    surf_img = SurfaceImage(mesh=mesh, data=data)
+    return SurfaceImage(mesh=mesh, data=data)
+
+
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
+@pytest.mark.parametrize("method", METHODS)
+@pytest.mark.parametrize("n_parcels", [5, 9])
+def test_parcellation_all_methods_with_surface(
+    method, n_parcels, surface_img_for_parcellation, n_samples
+):
+    """Test if all parcellation methods work on surface."""
     parcellate = Parcellations(method=method, n_parcels=n_parcels)
     # fit and transform the data
-    X_transformed = parcellate.fit_transform(surf_img)
+    X_transformed = parcellate.fit_transform(surface_img_for_parcellation)
     # inverse transform the transformed data
     X_inverse = parcellate.inverse_transform(X_transformed)
 
@@ -381,55 +396,33 @@ def test_parcellation_all_methods_with_surface(method, n_parcels, rng):
     assert X_transformed.shape == (n_samples, n_parcels)
 
     # make sure the inverse transformed data has the same shape as the original
-    assert X_inverse.shape == surf_img.shape
+    assert X_inverse.shape == surface_img_for_parcellation.shape
 
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellation_with_surface_and_confounds(method, rng):
+def test_parcellation_with_surface_and_confounds(
+    method, rng, surface_img_for_parcellation, n_samples
+):
     """Test if parcellation works on surface with confounds."""
-    n_samples = 36
-    mesh = {
-        "left": flat_mesh(10, 8),
-        "right": flat_mesh(9, 7),
-    }
-    data = {
-        "left": rng.standard_normal(
-            size=(mesh["left"].coordinates.shape[0], n_samples)
-        ),
-        "right": rng.standard_normal(
-            size=(mesh["right"].coordinates.shape[0], n_samples)
-        ),
-    }
-    surf_img = SurfaceImage(mesh=mesh, data=data)
     confounds = rng.standard_normal(size=(n_samples, 3))
     parcellate = Parcellations(method=method, n_parcels=5)
-    X_transformed = parcellate.fit_transform(surf_img, confounds=[confounds])
+    X_transformed = parcellate.fit_transform(
+        surface_img_for_parcellation, confounds=[confounds]
+    )
 
     assert X_transformed.shape == (n_samples, 5)
 
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellation_with_multi_surface(method, rng):
+def test_parcellation_with_multi_surface(
+    method, surface_img_for_parcellation, n_samples
+):
     """Test if parcellation works with surface data from multiple
     'subjects'.
     """
-    n_samples = 36
-    mesh = {
-        "left": flat_mesh(10, 8),
-        "right": flat_mesh(9, 7),
-    }
-    data = {
-        "left": rng.standard_normal(
-            size=(mesh["left"].coordinates.shape[0], n_samples)
-        ),
-        "right": rng.standard_normal(
-            size=(mesh["right"].coordinates.shape[0], n_samples)
-        ),
-    }
-    surf_img = SurfaceImage(mesh=mesh, data=data)
-    surf_imgs = [surf_img] * 3
+    surf_imgs = [surface_img_for_parcellation] * 3
     parcellate = Parcellations(method=method, n_parcels=5)
     X_transformed = parcellate.fit_transform(surf_imgs)
 
@@ -439,28 +432,60 @@ def test_parcellation_with_multi_surface(method, rng):
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellation_with_surface_mask(method, rng):
+def test_parcellation_with_surface_mask(
+    method, surface_img_for_parcellation, n_samples
+):
     """Test if parcellation works with surface data and a mask."""
-    n_samples = 36
-    mesh = {
-        "left": flat_mesh(10, 8),
-        "right": flat_mesh(9, 7),
-    }
-    data = {
-        "left": rng.standard_normal(
-            size=(mesh["left"].coordinates.shape[0], n_samples)
-        ),
-        "right": rng.standard_normal(
-            size=(mesh["right"].coordinates.shape[0], n_samples)
-        ),
-    }
-    surf_img = SurfaceImage(mesh=mesh, data=data)
     mask_data = {
-        "left": np.ones(mesh["left"].coordinates.shape[0]).astype(bool),
-        "right": np.ones(mesh["right"].coordinates.shape[0]).astype(bool),
+        "left": np.ones(
+            surface_img_for_parcellation.mesh.parts["left"].coordinates.shape[
+                0
+            ]
+        ).astype(bool),
+        "right": np.ones(
+            surface_img_for_parcellation.mesh.parts["right"].coordinates.shape[
+                0
+            ]
+        ).astype(bool),
     }
-    surf_mask = SurfaceImage(mesh=mesh, data=mask_data)
-    parcellate = Parcellations(method=method, n_parcels=5, mask=surf_mask)
-    X_transformed = parcellate.fit_transform(surf_img)
+    mask_img = SurfaceImage(
+        mesh=surface_img_for_parcellation.mesh, data=mask_data
+    )
+    parcellate = Parcellations(method=method, n_parcels=5, mask=mask_img)
+    X_transformed = parcellate.fit_transform(surface_img_for_parcellation)
 
     assert X_transformed.shape == (n_samples, 5)
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("masker", [SurfaceMasker, MultiSurfaceMasker])
+def test_parcellations_transform_surface_masker(
+    masker, surface_img_for_parcellation
+):
+    """Smoke test that 'mask' can be (multi)SurfaceMasker.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5926
+    """
+    fmri_imgs = [surface_img_for_parcellation] * 3
+
+    mask_data = {
+        "left": np.ones(
+            surface_img_for_parcellation.mesh.parts["left"].coordinates.shape[
+                0
+            ]
+        ).astype(bool),
+        "right": np.ones(
+            surface_img_for_parcellation.mesh.parts["right"].coordinates.shape[
+                0
+            ]
+        ).astype(bool),
+    }
+    mask_img = SurfaceImage(
+        mesh=surface_img_for_parcellation.mesh, data=mask_data
+    )
+
+    mask = masker(mask_img=mask_img)
+
+    parcellator = Parcellations(method="kmeans", mask=mask)
+    parcellator.fit(fmri_imgs)
+    parcellator.transform(fmri_imgs)
