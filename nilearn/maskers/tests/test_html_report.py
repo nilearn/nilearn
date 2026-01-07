@@ -236,6 +236,7 @@ def test_displayed_maps_warning_int_too_large(masker_class, input_parameters):
         masker.generate_report(7)
 
 
+@pytest.mark.thread_unsafe
 def test_nifti_spheres_masker_report_1_sphere(
     matplotlib_pyplot,  # noqa: ARG001
 ):

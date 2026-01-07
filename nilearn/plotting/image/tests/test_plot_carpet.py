@@ -11,6 +11,7 @@ import pytest
 from nilearn.plotting import plot_carpet
 
 
+@pytest.mark.thread_unsafe
 def test_plot_carpet(matplotlib_pyplot, img_4d_mni, img_3d_ones_mni):
     """Check contents of plot_carpet figure against data in image."""
     display = plot_carpet(
