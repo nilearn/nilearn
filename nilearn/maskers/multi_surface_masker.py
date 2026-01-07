@@ -24,7 +24,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
     MultiSurfaceMasker is useful when dealing with image sets from multiple
     subjects.
 
-    .. versionadded:: 0.13.0dev
+    .. versionadded:: 0.13.0
 
     Parameters
     ----------

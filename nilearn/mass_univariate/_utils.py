@@ -414,7 +414,7 @@ def t_score_with_covars_and_normalized_design(
         Targets variates. F-ordered is better for efficient computation.
 
     covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None, \
-            optional
+            default=None
         Confounding variates.
 
     Returns

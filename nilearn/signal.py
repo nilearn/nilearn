@@ -247,7 +247,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
         Detrending type, either "linear" or "constant".
         See also :func:`scipy.signal.detrend`.
 
-    n_batches : :obj:`int`, optional
+    n_batches : :obj:`int`, default=10
         Number of batches to use in the computation.
 
         .. note::
@@ -676,7 +676,7 @@ def clean(
         the signal data will be interpolated before filtering. Otherwise, they
         will be discarded from the band-pass filtering process.
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
             Default changed to False.
 
     kwargs : :obj:`dict`

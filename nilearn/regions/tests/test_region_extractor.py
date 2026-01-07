@@ -13,7 +13,7 @@ from nilearn._utils.estimator_checks import (
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _affine_eye, _img_4d_zeros, _shape_3d_large
 from nilearn.exceptions import DimensionError
-from nilearn.image import get_data
+from nilearn.image import get_data, threshold_img
 from nilearn.regions import (
     RegionExtractor,
     connected_label_regions,
@@ -95,6 +95,7 @@ else:
         return_expected_failed_checks,
     )
 
+    @pytest.mark.slow
     @parametrize_with_checks(
         estimators=ESTIMATORS_TO_CHECK,
         expected_failed_checks=return_expected_failed_checks,
@@ -241,6 +242,28 @@ def test_connected_regions_different_results_with_different_mask_images(
     )
 
 
+def test_connected_regions_no_regions(map_img_3d):
+    """Test if nilearn.regions.region_extractor.connected_regions raises
+    warning when no supra-threshold regions are found.
+
+    See issue : https://github.com/nilearn/nilearn/issues/5906
+    """
+    pos_thresholded_img = threshold_img(
+        map_img_3d,
+        threshold="99.9%",
+        copy=True,
+        two_sided=False,
+        copy_header=True,
+    )
+    with pytest.warns(UserWarning, match="No supra threshold regions"):
+        pos_regions_img, pos_index = connected_regions(
+            pos_thresholded_img, min_region_size=1000
+        )
+
+        assert pos_regions_img is None
+        assert pos_index is None
+
+
 def test_invalid_threshold_strategies(dummy_map):
     extract_strategy_check = RegionExtractor(
         dummy_map, thresholding_strategy="n_"
@@ -324,6 +347,7 @@ def test_region_extractor_two_sided(maps):
     )
 
 
+@pytest.mark.slow
 def test_region_extractor_strategy_percentile(maps_and_mask):
     maps, mask_img = maps_and_mask
 

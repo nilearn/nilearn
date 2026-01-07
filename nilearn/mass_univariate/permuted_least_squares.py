@@ -71,11 +71,12 @@ def _permuted_ols_on_chunk(
 
         .. nilearn_versionadded:: 0.9.2
 
-    confounding_vars : array-like, shape=(n_samples, n_covars), optional
+    confounding_vars : array-like of shape=(n_samples, n_covars) \
+             or None, default=None
         Clinical data (covariates).
 
     masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
-            :class:`~nilearn.maskers.MultiNiftiMasker`, optional
+            :class:`~nilearn.maskers.MultiNiftiMasker` or None, default=None
         A mask to be used on the data.
         This is used for cluster-level inference and :term:`TFCE`-based
         inference, if either is enabled.
@@ -112,7 +113,7 @@ def _permuted_ols_on_chunk(
         .. nilearn_versionadded:: 0.9.2
 
     tfce_original_data : None or array-like, \
-            shape=(n_descriptors, n_regressors), optional
+            shape=(n_descriptors, n_regressors), default=None
         TFCE values obtained for the original (non-permuted) data.
 
         .. nilearn_versionadded:: 0.9.2
@@ -416,7 +417,7 @@ def permuted_ols(
 
         .. nilearn_versionadded:: 0.9.2
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
 
             The default was changed to ``'dict'``.
 

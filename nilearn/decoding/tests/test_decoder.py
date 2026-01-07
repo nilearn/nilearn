@@ -865,6 +865,7 @@ def test_decoder_dummy_classifier_default_scoring():
 
 
 @ignore_warnings
+@pytest.mark.slow
 def test_decoder_classification_string_label():
     iris = load_iris()
     X, y = iris.data, iris.target
@@ -1470,6 +1471,7 @@ def _set_best_hyperparameters(
 
 
 @ignore_warnings
+@pytest.mark.slow
 @pytest.mark.parametrize("regressor", ["svr", "lasso", "ridge"])
 def test_regressor_vs_sklearn(regressor):
     """Compare scores from nilearn DecoderRegressor with sklearn regressors."""

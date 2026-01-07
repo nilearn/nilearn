@@ -56,6 +56,7 @@ from nilearn.glm.first_level.first_level import (
     _yule_walker,
 )
 from nilearn.glm.regression import ARModel, OLSModel
+from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker, SurfaceMasker
@@ -536,6 +537,7 @@ def test_high_level_glm_different_design_matrices_formulas():
         multi_run_model.compute_contrast(formula, output_type="effect_size")
 
 
+@pytest.mark.slow
 def test_compute_contrast_num_contrasts(shape_4d_default):
     """Check error when computing contrast with invalid contrast matrix."""
     shapes, rk = [shape_4d_default, shape_4d_default, shape_4d_default], 3
@@ -718,6 +720,7 @@ def test_scaling(rng):
     assert Y.std() > 1
 
 
+@pytest.mark.slow
 def test_fmri_inputs_shape(shape_4d_default):
     """Test different types of fit inputs.
 
@@ -1020,6 +1023,7 @@ def test_fmri_inputs_errors_confounds(shape_4d_default):
         )
 
 
+@pytest.mark.slow
 def test_first_level_design_creation(shape_4d_default):
     """Check that design matrices equals one built 'manually'."""
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(
@@ -1203,6 +1207,7 @@ def test_first_level_from_bids_set_slice_timing_ref_errors(
         )
 
 
+@pytest.mark.single_process
 def test_first_level_from_bids_get_metadata_from_derivatives(tmp_path):
     """No warning should be thrown given derivatives have metadata.
 
@@ -1518,6 +1523,7 @@ def test_first_level_residuals_errors(shape_4d_default):
         model._get_element_wise_model_attribute("foo", True)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "shapes",
     [
@@ -1546,6 +1552,7 @@ def test_get_element_wise_attributes_should_return_as_many_as_design_matrices(
     ) == len(shapes)
 
 
+@pytest.mark.slow
 def test_first_level_predictions_r_square(shape_4d_default):
     """Check r_square gives sensible values."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -2710,3 +2717,96 @@ def test_first_level_from_bids_surface(tmp_path):
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        ({}),
+        ({"height_control": None, "threshold": DEFAULT_Z_THRESHOLD}),
+    ],
+)
+def test_generate_report_default(kwargs):
+    """Make sure generate_report throws no warning by default,
+    or when height_control=None and the future default threshold.
+    """
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[(30, 31, 32, 33)], rk=3
+    )
+
+    flm = FirstLevelModel(mask_img=mask).fit(
+        fmri_data[0], design_matrices=design_matrices[0]
+    )
+
+    contrasts = [
+        np.asarray([1, 0, 0]),
+        np.asarray([1, 1, 0]),
+        np.asarray([1, 1, 1]),
+    ]
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        flm.generate_report(contrasts=contrasts, **kwargs)
+        assert len(warning_list) == 0
+
+
+@pytest.mark.slow
+def test_generate_report_height_none_future_default():
+    """Make sure generate_report raises a single FutureWarning
+    about the deprecation of the default threshold.
+
+    TODO (nilearn >= 0.15)
+    Remove this test
+    """
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[(30, 31, 32, 33)], rk=3
+    )
+
+    flm = FirstLevelModel(mask_img=mask).fit(
+        fmri_data[0], design_matrices=design_matrices[0]
+    )
+
+    contrasts = [
+        np.asarray([1, 0, 0]),
+        np.asarray([1, 1, 0]),
+        np.asarray([1, 1, 1]),
+    ]
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        flm.generate_report(contrasts=contrasts, height_control=None)
+        n_warnings = len(
+            [x for x in warning_list if issubclass(x.category, FutureWarning)]
+        )
+        assert n_warnings == 1
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("threshold", [4, DEFAULT_Z_THRESHOLD])
+def test_generate_report_threshold_unused(threshold):
+    """Make sure generate_report raises a single warning,
+    about threshold not being used.
+    """
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[(30, 31, 32, 33)], rk=3
+    )
+
+    flm = FirstLevelModel(mask_img=mask).fit(
+        fmri_data[0], design_matrices=design_matrices[0]
+    )
+
+    contrasts = [
+        np.asarray([1, 0, 0]),
+        np.asarray([1, 1, 0]),
+        np.asarray([1, 1, 1]),
+    ]
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        flm.generate_report(contrasts=contrasts, threshold=threshold)
+        assert (
+            sum(
+                1
+                for warning in warning_list
+                if "'threshold' was set to 'None'" in str(warning.message)
+            )
+            == 1
+        )

@@ -649,7 +649,7 @@ def clustering_params_to_dataframe(
         For display purposes only.
         Minimum distance between subpeaks in mm.
 
-    height_control : string or None
+    height_control : :obj:`str` or None
         False positive control meaning of cluster forming
         threshold: 'fpr' (default) or 'fdr' or 'bonferroni' or None
 

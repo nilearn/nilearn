@@ -150,6 +150,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
     assert_array_almost_equal(a, b, decimal=decimal)
 
 
+@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
 @pytest.mark.parametrize(
     "estimator, standardize",
@@ -230,6 +231,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
     assert_array_almost_equal(a, b, decimal=decimal)
 
 
+@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
 @pytest.mark.parametrize(
     "estimator, standardize",
@@ -271,6 +273,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
     assert_array_almost_equal(sl.coef_[0], tvl1.coef_[0], decimal=decimal)
 
 
+@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
 @pytest.mark.parametrize("standardize", [True, False])
 def test_graph_net_and_tv_same_for_pure_l1_spacenet_regressor(
@@ -306,6 +309,7 @@ def test_graph_net_and_tv_same_for_pure_l1_spacenet_regressor(
     assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("penalty", ["graph-net", "tv-l1"])
 @pytest.mark.parametrize("cls", [SpaceNetRegressor, SpaceNetClassifier])
 def test_coef_shape(penalty, cls):

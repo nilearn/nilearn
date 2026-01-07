@@ -963,6 +963,7 @@ def test_fetch_localizer(tmp_path):
     assert isinstance(dataset.epi_img, str)
 
 
+@pytest.mark.single_process
 def test_fetch_language_localizer_demo_dataset(tmp_path, capsys):
     data_dir = tmp_path
     expected_data_dir = tmp_path / "fMRI-language-localizer-demo-dataset"
@@ -1062,6 +1063,7 @@ def test_fetch_spm_multimodal(tmp_path, capsys):
     )
 
 
+@pytest.mark.single_process
 def test_fetch_spm_multimodal_missing_data(tmp_path, request_mocker):
     request_mocker.url_mapping[re.compile(r".*multimodal_.*mri.zip")] = (
         _generate_spm_multimodal()

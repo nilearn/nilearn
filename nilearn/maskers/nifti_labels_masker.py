@@ -91,7 +91,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         See :ref:`extracting_data`.
         Region definitions, as one image of labels.
 
-    labels : :obj:`list` of :obj:`str`, optional
+    labels : :obj:`list` of :obj:`str`, or None, default=None
         Full labels corresponding to the labels image.
         This is used to improve reporting quality if provided.
         Mutually exclusive with ``lut``.
@@ -118,7 +118,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
             This value must be consistent with label values and image provided.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
@@ -343,7 +343,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
             if img is None:
                 msg = (
-                    "No image provided to fit in NiftiLabelsMasker. "
+                    f"No image provided to fit in {self.__class__.__name__}. "
                     "Plotting ROIs of label image on the "
                     "MNI152Template for reporting."
                 )

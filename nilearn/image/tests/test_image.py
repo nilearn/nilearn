@@ -34,7 +34,12 @@ from nilearn._utils.testing import (
     with_memory_profiler,
     write_imgs_to_path,
 )
-from nilearn.conftest import _affine_eye, _img_3d_rand, _rng, _shape_4d_default
+from nilearn.conftest import (
+    _affine_eye,
+    _img_3d_rand,
+    _rng,
+    _shape_4d_default,
+)
 from nilearn.exceptions import DimensionError
 from nilearn.image.image import (
     _crop_img_to,
@@ -691,7 +696,7 @@ def test_index_img_surface(surf_img_2d, length, index, expected_n_samples):
         assert_array_equal(value, expected_data_3d[hemi])
 
 
-def test_index_img_error_volumne_4d(affine_eye):
+def test_index_img_error_volume_4d(affine_eye):
     """Test impossible indices with volume data."""
     img_4d, _ = generate_fake_fmri(affine=affine_eye)
     fourth_dim_size = img_4d.shape[3]
@@ -703,7 +708,10 @@ def test_index_img_error_volumne_4d(affine_eye):
     ]:
         with pytest.raises(
             IndexError,
-            match=r"out of bounds|invalid index|out of range|boolean index",
+            match=(
+                r"too large|out of bounds|invalid index|out of range|"
+                "boolean index"
+            ),
         ):
             index_img(img_4d, i)
 
@@ -717,7 +725,7 @@ def test_index_img_error_surface_2d(surf_img_2d, length, index):
 
 
 def test_pd_index_img(rng, img_4d_rand_eye):
-    # confirm indices from pandas dataframes are handled correctly
+    """Confirm indices from pandas dataframes are handled correctly."""
     fourth_dim_size = img_4d_rand_eye.shape[3]
 
     arr = rng.uniform(size=fourth_dim_size) > 0.5
@@ -1054,6 +1062,7 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
         threshold_img(maps, threshold="-10%", two_sided=False)
 
 
+@pytest.mark.slow
 def test_threshold_img(affine_eye):
     """Smoke test for threshold_img with valid threshold inputs."""
     shape = (10, 20, 30)
@@ -1791,6 +1800,10 @@ def test_concat_niimgs_errors(affine_eye, shape_3d_default):
         ),
     ):
         concat_imgs([img5d, img5d])
+
+    # check error when an empty list is specified
+    with pytest.raises(TypeError, match="empty objects"):
+        concat_imgs([])
 
 
 def test_concat_niimgs(affine_eye, tmp_path):

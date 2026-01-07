@@ -1380,12 +1380,12 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, optional
+    estimator : :obj:`str`, default="svr"
         The estimator to choose among:
         %(regressor_options)s
-        Default 'svr'.
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+    mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
+            or None, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
@@ -1411,7 +1411,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
-    scoring : :obj:`str`, callable or None, optional. default='r2'
+    scoring : :obj:`str`, callable or None, default='r2'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1542,10 +1542,9 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, optional
+    estimator : :obj:`str`, default="svr"
         The estimator to choose among:
         %(regressor_options)s
-        Default 'svr'.
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, \
         default=None
@@ -1711,7 +1710,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         %(classifier_options)s
 
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional,\
+    mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker or None,\
         default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
@@ -1750,7 +1749,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         performed. A float according to a percentile of the highest
         scores.
 
-    scoring : :obj:`str`, callable or None, optional. default='roc_auc'
+    scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the

@@ -136,7 +136,7 @@ plot_stat_map(
     stat_map_img=stat_img,
     display_mode="x",
     threshold=1.0,
-    cut_coords=range(0, 51, 10),
+    cut_coords=list(range(0, 51, 10)),
     title="Slices",
 )
 

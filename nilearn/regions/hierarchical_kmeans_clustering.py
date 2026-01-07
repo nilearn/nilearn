@@ -89,7 +89,7 @@ def hierarchical_k_means(
         If an ndarray is passed, it should be of shape (n_clusters, n_features)
         and gives the initial centers.
 
-    batch_size : :obj:`int`, default: 1000
+    batch_size : :obj:`int`, default=1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
     n_init : :obj:`int`, default=10
@@ -97,7 +97,7 @@ def hierarchical_k_means(
         In contrast to KMeans, the algorithm is only run once, using the
         best of the ``n_init`` initializations as measured by inertia.
 
-    max_no_improvement : :obj:`int`, default: 10
+    max_no_improvement : :obj:`int`, default=10
         Control early stopping based on the consecutive number of mini
         batches that does not yield an improvement on the smoothed inertia.
         To disable convergence detection based on inertia, set
@@ -182,7 +182,7 @@ class HierarchicalKMeans(
         * If an ndarray is passed, it should be of shape (n_clusters,
           n_features) and gives the initial centers.
 
-    batch_size : :obj:`int`, optional, default: 1000
+    batch_size : :obj:`int`, default=1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
     n_init : :obj:`int`, default=10
@@ -190,7 +190,7 @@ class HierarchicalKMeans(
         In contrast to KMeans, the algorithm is only run once, using the
         best of the ``n_init`` initializations as measured by inertia.
 
-    max_no_improvement : :obj:`int`, default: 10
+    max_no_improvement : :obj:`int`, default=10
         Control early stopping based on the consecutive number of mini
         batches that does not yield an improvement on the smoothed inertia.
         To disable convergence detection based on inertia, set

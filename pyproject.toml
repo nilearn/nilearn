@@ -211,10 +211,7 @@ ignore_imports = [
     "nilearn.plotting.image.img_plotting -> nilearn.maskers",
     "nilearn.plotting.img_comparison -> nilearn._utils.masker_validation",
     "nilearn.plotting.img_comparison -> nilearn.maskers",
-    "nilearn.image.image -> nilearn._utils.masker_validation",
-    # TODO
-    "nilearn.reporting.get_clusters_table -> nilearn.image",
-    "nilearn.reporting.tests.test_get_clusters_table -> nilearn.image"
+    "nilearn.image.image -> nilearn._utils.masker_validation"
 ]
 layers = [
     "nilearn.glm",
@@ -305,6 +302,11 @@ module = [
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -v --template=maint_tools/templates/index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
+# see https://docs.pytest.org/en/stable/how-to/capture-warnings.html#controlling-warnings
+filterwarnings = [
+    # ignoring warnings about using a non-interactive plotting backend
+    'ignore:.*you are using the.*:UserWarning'
+]
 junit_family = "xunit2"
 log_cli_level = "INFO"
 markers = [

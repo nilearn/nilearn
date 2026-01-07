@@ -80,7 +80,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Set of continuous maps. One representative time course per map is
         extracted using least square regression.
 
-    mask_img : 3D niimg-like object, optional
+    mask_img : 3D niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
@@ -290,7 +290,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
             if img is None:
                 msg = (
-                    "No image provided to fit in NiftiMapsMasker. "
+                    f"No image provided to fit in {self.__class__.__name__}. "
                     "Plotting only spatial maps for reporting."
                 )
                 self._report_content["warning_messages"].append(msg)
