@@ -35,6 +35,7 @@ from nilearn._utils.path_finding import resolve_globbing
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import check_niimg
 from nilearn.maskers import (
+    MultiNiftiMasker,
     MultiSurfaceMasker,
     NiftiMapsMasker,
     NiftiMasker,
@@ -530,6 +531,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             )
             if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)):
                 masker_type = "multi_surface"
+            if isinstance(self.mask, (MultiNiftiMasker, *NiimgLike)):
+                masker_type = "multi_nii"
             elif isinstance(self.mask, SurfaceMasker):
                 masker_type = "surface"
             elif isinstance(self.mask, NiftiMasker):
@@ -539,9 +542,9 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         if masker_type in ["surface", "multi_surface"]:
             _warn_ignored_surface_masker_params(self)
+
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         self.masker_.memory_level = self.memory_level
-
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
         if self.masker_.mask_img is None:
