@@ -206,6 +206,7 @@ def test_plotting_functions_with_nans_in_bg_img(plot_func, img_3d_mni):
     plt.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_anat, plot_img])
 def test_plotting_functions_with_display_mode_tiled(plot_func, img_3d_mni):
     """Smoke test for plotting functions with tiled display mode."""

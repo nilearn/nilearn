@@ -269,6 +269,7 @@ def expected_error_node_kwargs(node_kwargs):
         return "Please use 'node_color' and not 'node_kwargs'"
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("node_kwargs", [{"s": 50}, {"c": "blue"}])
 def test_plot_connectome_exceptions_providing_node_info_with_kwargs(
     node_kwargs, adjacency, node_coords, expected_error_node_kwargs
