@@ -1453,7 +1453,7 @@ class PolyData:
         dim : int
             Dimensions the data should have.
 
-        var_name : str, default = "img"
+        var_name : str, default="img"
             Name of the variable to include in the error message.
 
         Returns
