@@ -182,7 +182,7 @@ class Contrast:
     variance : array of shape (n_voxels)
         The associated variance estimate.
 
-    dim : :obj:`int` or None, optional
+    dim : :obj:`int` or None, default=None
         The dimension of the :term:`contrast`.
 
     dof : scalar, default=DEF_DOFMAX
@@ -468,7 +468,7 @@ def compute_fixed_effects(
     fixed_fx_stat_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         The fixed effects stat computed within the mask.
 
-    fixed_fx_z_score_img : Nifti1Image, optional
+    fixed_fx_z_score_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         The fixed effects corresponding z-transform
 
     """

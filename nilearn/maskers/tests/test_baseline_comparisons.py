@@ -38,6 +38,7 @@ def loaded_motor_activation_image():
     return load_img(load_sample_motor_activation_image())
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize(
     "mask_img, img",

@@ -29,13 +29,13 @@ class LikelihoodModelResults:
     model : ``LikelihoodModel`` instance
         Model used to generate fit.
 
-    cov : None or ndarray, optional
+    cov : None or ndarray, default=None
         Covariance of thetas.
 
     dispersion : scalar, default=1
         Multiplicative factor in front of `cov`.
 
-    nuisance : None of ndarray, optional
+    nuisance : None of ndarray, default=None
         Parameter estimates needed to compute logL.
 
     Notes
@@ -319,9 +319,6 @@ class LikelihoodModelResults:
         Notes
         -----
         Confidence intervals are two-tailed.
-
-        tails : string, optional
-            Possible values: 'two' | 'upper' | 'lower'
 
         """
         if cols is None:

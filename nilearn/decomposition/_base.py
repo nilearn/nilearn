@@ -174,17 +174,18 @@ def _mask_and_reduce(
         See :ref:`extracting_data`.
         List of subject data to mask, reduce and stack.
 
-    confounds : CSV file path or numpy ndarray, or pandas DataFrame, optional
+    confounds : CSV file path, numpy ndarray, pandas DataFrame, or None \
+            default=None
         This parameter is passed to signal.clean. Please see the
         corresponding documentation for details.
 
-    reduction_ratio : 'auto' or float between 0. and 1., default='auto'
-        - Between 0. or 1. : controls data reduction in the temporal domain
-        , 1. means no reduction, < 1. calls for an SVD based reduction.
-        - if set to 'auto', estimator will set the number of components per
-          reduced session to be n_components.
+    reduction_ratio : 'auto' or float between 0.0 and 1.0, default='auto'
+        - Between 0.0 or 1.0 : controls data reduction in the temporal domain,
+          1.0 means no reduction, < 1.0 calls for an SVD based reduction.
+        - if set to ``'auto'``, estimator will set the number of components per
+          reduced session to be ``n_components``.
 
-    n_components : integer, optional
+    n_components : integer or None, default=None
         Number of components per subject to be extracted by dimension reduction
 
     %(random_state)s
@@ -360,7 +361,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
           These strategies are only relevant for Nifti images and the parameter
           is ignored for SurfaceImage objects.
 
-    mask_args : dict, optional
+    mask_args : dict, or None, default=None
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`
@@ -467,8 +468,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         %(y_dummy)s
 
-        confounds : list of CSV file paths, numpy.ndarrays
-            or pandas DataFrames, optional.
+        confounds : list of CSV file paths, numpy.ndarrays \
+                or pandas DataFrames or None, default=None.
             This parameter is passed to nilearn.signal.clean.
             Please see the related documentation for details.
             Should match with the list of imgs given.
@@ -594,8 +595,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             See :ref:`extracting_data`.
             Data to be projected
 
-        confounds : CSV file path or numpy.ndarray
-            or pandas DataFrame, optional
+        confounds : CSV file path or numpy.ndarray \
+                or pandas DataFrame or None, default=None
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 
@@ -688,8 +689,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         %(y_dummy)s
 
-        confounds : CSV file path or numpy.ndarray
-            or pandas DataFrame, optional
+        confounds : CSV file path or numpy.ndarray \
+                or pandas DataFrame or None, default=None
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 
