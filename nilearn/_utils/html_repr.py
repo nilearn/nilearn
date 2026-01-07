@@ -23,7 +23,7 @@ class _NilearnHTMLDocumentationLinkMixin:
         nil_version = parse(__version__)
         if nil_version.dev is None:
             version_url = (
-                f"{nil_version.major}.{nil_version.minor}.{nil_version.minor}"
+                f"{nil_version.major}.{nil_version.minor}.{nil_version.micro}"
             )
 
         return (
