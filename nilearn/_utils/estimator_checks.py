@@ -3857,27 +3857,23 @@ def check_masker_generate_report_constant(estimator):
     report = estimator.generate_report(**_extra_kwargs(estimator))
     report_new = estimator.generate_report(**_extra_kwargs(estimator))
 
-    # svg/xml of images and UUID may be slightly different across calls
-    # so we redact them out
-    report_str = re.sub(
-        r'src="data:image/svg\+xml;base64,.*"',
-        'src="data:image/..."',
-        str(report),
-    )
-    report_str = re.sub(r"UUID-.*-", "UUID-XXXX-", report_str)
-    report_str = re.sub(r"UUID-.*", "UUID-XXXX", report_str)
-    report_str = re.sub(r'Carousel\(".*"', 'Carousel("XXXX"', report_str)
+    report_str = str(report)
+    report_new_str = str(report_new)
 
-    report_new_str = re.sub(
-        r'src="data:image/svg\+xml;base64,.*"',
-        'src="data:image/..."',
-        str(report_new),
-    )
-    report_new_str = re.sub(r"UUID-.*-", "UUID-XXXX-", report_new_str)
-    report_new_str = re.sub(r"UUID-.*", "UUID-XXXX", report_new_str)
-    report_new_str = re.sub(
-        r'Carousel\(".*"', 'Carousel("XXXX"', report_new_str
-    )
+    substitution_mapping = {
+        # svg/xml of images and UUID may be slightly different across calls
+        # so we redact them out
+        'src="data:image/..."': [r'src="data:image/svg\+xml;base64,.*"'],
+        "UUID-XXXX-": [r"UUID-.*-", r"UUID-.*"],
+        'Carousel("XXXX"': [r'Carousel\(".*"'],
+        # slklearn repr may vary slightly when generating successive reports
+        "sk-XXXX-id": [r"sk-(?:container|estimator)-id-[0-9]*"],
+    }
+
+    for k, v in substitution_mapping.items():
+        for regexp in v:
+            report_str = re.sub(regexp, k, report_str)
+            report_new_str = re.sub(regexp, k, report_new_str)
 
     assert report_str == report_new_str
 
