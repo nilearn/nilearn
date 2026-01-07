@@ -995,15 +995,20 @@ def check_doc_link(estimator_orig):
     """Check that _get_doc_link provides the correct link to the doc.
 
     All estimators but the GLM ones follow the same pattern.
-    """
-    estimator_name = estimator_orig.__class__.__name__
 
-    modules = estimator_orig.__class__.__module__.split(".")
+    Parameters
+    ----------
+    estimator_orig : a Nilearn estimator instance
+    """
+    estimator = clone(estimator_orig)
+    estimator_name = estimator.__class__.__name__
+
+    modules = estimator.__class__.__module__.split(".")
 
     extra = r"\."
-    if isinstance(estimator_orig, FirstLevelModel):
+    if isinstance(estimator, FirstLevelModel):
         extra = r"\.first_level\."
-    elif isinstance(estimator_orig, SecondLevelModel):
+    elif isinstance(estimator, SecondLevelModel):
         extra = r"\.second_level\."
 
     expected_pattern = (
@@ -1012,7 +1017,7 @@ def check_doc_link(estimator_orig):
         rf"nilearn\.{modules[1]}{extra}{estimator_name}\.html"
     )
 
-    doc_link = estimator_orig._get_doc_link()
+    doc_link = estimator._get_doc_link()
 
     assert re.fullmatch(expected_pattern, doc_link), (
         f"Doc link '{doc_link}' does not match expected pattern "
