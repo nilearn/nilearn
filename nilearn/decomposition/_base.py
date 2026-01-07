@@ -528,7 +528,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                 ),
                 "mask",
             )
-            if isinstance(self.mask, MultiSurfaceMasker):
+            if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)):
                 masker_type = "multi_surface"
             elif isinstance(self.mask, SurfaceMasker):
                 masker_type = "surface"
