@@ -142,10 +142,10 @@ def _plot_img_with_bg(
 
     %(vmax)s
 
-    bg_vmin : :obj:`float`, optional
+    bg_vmin : :obj:`float` or None, default=None
         vmin for `bg_img`.
 
-    bg_vmax : :obj:`float`, optional
+    bg_vmax : :obj:`float` or None, default=None
         vmax for `bg_img`.
 
     interpolation : :obj:`str`, default='nearest'

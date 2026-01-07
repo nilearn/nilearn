@@ -82,7 +82,7 @@ def _threshold_data(data, threshold=None):
     data : :class:`numpy.ndarray`
         Data to apply threshold on.
 
-    threshold : :obj:`float`, optional
+    threshold : :obj:`float` or None, default=None
         Threshold to apply to data.
 
     Returns
@@ -150,12 +150,11 @@ def _save_sprite(
     vmax, vmin : :obj:`float`
         ???
 
-    mask : :class:`numpy.ndarray`, optional
+    mask : :class:`numpy.ndarray` or None, default=None
         Mask to use.
 
     %(cmap)s
         default='Greys'
-
 
     format : :obj:`str`, default='png'
         Format to use for output image.
