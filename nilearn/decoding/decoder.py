@@ -813,11 +813,12 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             warnings.warn(
                 warning_msg, UserWarning, stacklevel=find_stack_level()
             )
-        elif self.verbose > 0:
-            log(
-                "The decoding model will be trained "
-                f"on {n_final_features} features. "
-            )
+
+        log(
+            "The decoding model will be trained "
+            f"on {n_final_features} features. ",
+            verbose=self.verbose,
+        )
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
