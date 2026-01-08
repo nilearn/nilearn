@@ -224,7 +224,21 @@ class Parcellations(_MultiPCA):
     %(random_state)s
         Default=0.
 
-    %(mask_decomposition)s
+    mask : Niimg-like object,  \
+        :obj:`~nilearn.maskers.NiftiMasker` or \
+        :obj:`~nilearn.maskers.MultiNiftiMasker` or \
+        :obj:`~nilearn.surface.SurfaceImage` or \
+        :obj:`~nilearn.maskers.SurfaceMasker` or \
+        :obj:`~nilearn.maskers.MultiSurfaceMasker` or \
+        None, \
+        default=None
+    Mask to be used on data.
+    If an instance of masker is passed,
+    then its mask will be used.
+    If no mask is given, for Nifti images,
+    it will be computed automatically by a MultiNiftiMasker
+    with default parameters;
+    for surface images, all the vertices will be used.
 
     %(smoothing_fwhm)s
         Default=4.0.
