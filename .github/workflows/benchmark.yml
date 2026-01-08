@@ -65,7 +65,7 @@ on:
         #     │ │ │ │ │
         #     │ │ │ │ │
         #     * * * * *
-    -   cron: 50 12 * * 5
+    -   cron: 0 0 * * 1
 
     # This enables manual triggering from GitHub UI
     # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
@@ -82,16 +82,14 @@ concurrency:
 
 env:
     FORCE_COLOR: true
-    MIN_PYTHON: '3.10'
+    MIN_PYTHON: 3.10.18
 
 
 jobs:
 
     benchmark:
-        if: >-
-            ((github.event_name == 'pull_request')
-            || (github.event_name == 'workflow_dispatch' && github.event.inputs.simulate_schedule == 'true')) &&
-            github.repository == 'nilearn/nilearn'
+        if: github.repository == 'nilearn/nilearn' && (github.event_name == 'workflow_dispatch' && github.event.inputs.simulate_schedule == 'true' || github.event_name
+            == 'pull_request')
         runs-on: ubuntu-24.04
         defaults:
             run:
@@ -103,8 +101,7 @@ jobs:
                   # fetch all branches and tags
                 fetch-depth: 0
         -   uses: actions/setup-python@v6
-            with:
-                python-version: 3.10.18
+            with: python-version:${{ env.MIN_PYTHON }}
         -   name: Install asv and switch to asv_benchmarks directory
             run: |
                 pip install --upgrade pip
