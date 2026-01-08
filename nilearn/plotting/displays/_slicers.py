@@ -943,7 +943,7 @@ class BaseSlicer:
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to
-            :func:`matplotlib.pylot.scatter`.
+            :func:`matplotlib.pyplot.scatter`.
         """
         defaults = {"marker": "o", "zorder": 1000}
         marker_coords = np.asanyarray(marker_coords)
