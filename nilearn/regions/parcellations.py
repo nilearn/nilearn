@@ -359,7 +359,7 @@ class Parcellations(_MultiPCA):
 
     def __init__(
         self,
-        method,
+        method=None,
         n_parcels=50,
         random_state=0,
         mask=None,

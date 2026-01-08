@@ -98,7 +98,7 @@ def test_error_parcellation_method_none(test_image):
     with pytest.raises(
         ValueError, match=r"Parcellation method is specified as None. "
     ):
-        Parcellations(method=None).fit(test_image)
+        Parcellations().fit(test_image)
 
 
 @pytest.mark.parametrize("method", ["kmens", "avg", "completed"])
