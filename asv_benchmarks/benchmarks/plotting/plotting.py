@@ -8,14 +8,9 @@ from nilearn.datasets import (
 )
 from nilearn.plotting import (
     plot_anat,
-    # plot_bland_altman,
-    # plot_carpet,
-    # plot_connectome,
     plot_epi,
     plot_glass_brain,
     plot_img,
-    # plot_img_comparison,
-    # plot_prob_atlas,
     plot_roi,
     plot_stat_map,
     plot_surf,
