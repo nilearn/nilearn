@@ -193,7 +193,7 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
         the result of the segmentation. Use copy=False if you want to
         save on memory.
 
-    spacing : iterable of floats, optional
+    spacing : iterable of floats, default=None
         Spacing between voxels in each spatial dimension. If `None`, then
         the spacing between pixels/voxels in each dimension is assumed 1.
 

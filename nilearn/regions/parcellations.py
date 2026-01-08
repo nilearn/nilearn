@@ -102,7 +102,7 @@ def _estimator_fit(data, estimator, method=None):
 
     method : str,
     {'kmeans', 'ward', 'complete', 'average', 'rena', 'hierarchical_kmeans'},
-    optional
+    default=None
 
         A method to choose between for brain parcellations.
 
@@ -296,7 +296,7 @@ class Parcellations(_MultiPCA):
 
         Default='epi'.
 
-    mask_args : :obj:`dict`, optional
+    mask_args : :obj:`dict`, default=None
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`
