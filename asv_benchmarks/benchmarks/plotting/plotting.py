@@ -11,10 +11,8 @@ from nilearn.plotting import (
     plot_epi,
     plot_glass_brain,
     plot_img,
-    plot_roi,
     plot_stat_map,
     plot_surf,
-    plot_surf_roi,
     plot_surf_stat_map,
 )
 
@@ -22,7 +20,6 @@ PLOTTING_FUNCS_3D = [
     plot_img,
     plot_anat,
     plot_stat_map,
-    plot_roi,
     plot_epi,
     plot_glass_brain,
 ]
@@ -30,7 +27,6 @@ PLOTTING_FUNCS_3D = [
 SURFACE_FUNCS = [
     plot_surf,
     plot_surf_stat_map,
-    plot_surf_roi,
 ]
 
 
