@@ -863,7 +863,7 @@ opening : :obj:`bool` or :obj:`int`, optional
 
 # output_file
 docdict["output_file"] = """
-output_file : :obj:`str` or :obj:`pathlib.Path` or None, optional
+output_file : :obj:`str` or :obj:`pathlib.Path` or None, default=None
     The name of an image file to export the plot to.
     Valid extensions are .png, .pdf, .svg.
     If `output_file` is not `None`, the plot is saved to a file,
@@ -1031,7 +1031,7 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
 
 # second_level_confounds
 docdict["second_level_confounds"] = """
-confounds : :obj:`pandas.DataFrame` or None, default=None
+confounds : :obj:`pandas.DataFrame` or None, Default=None
     Must contain a ``subject_label`` column.
     All other columns are considered as confounds and included in the model.
     If ``design_matrix`` is provided then this argument is ignored.
@@ -1045,7 +1045,7 @@ confounds : :obj:`pandas.DataFrame` or None, default=None
 docdict["second_level_design_matrix"] = """
 design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
                 or :obj:`pathlib.Path` to a CSV or TSV file, \
-                or None, default=None
+                or None, Default=None
     Design matrix to fit the :term:`GLM`.
     The number of rows in the design matrix
     must agree with the number of maps
@@ -1429,7 +1429,7 @@ vmax : :obj:`float` or obj:`int` or None, optional
 
 # vmin
 docdict["vmin"] = """
-vmin : :obj:`float`  or obj:`int` or None, optional
+vmin : :obj:`float` or obj:`int` or None, optional
     Lower bound of the colormap. The values below vmin are masked.
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.

@@ -193,14 +193,15 @@ class OrthoProjector(OrthoSlicer):
         edge_cmap : :class:`~matplotlib.colors.Colormap`, default="RdBu_r"
             Colormap used for representing the strength of the edges.
 
-        edge_vmin, edge_vmax : :obj:`float`, optional
+        edge_vmin, edge_vmax : :obj:`float` or None, default=None
             - If not ``None``, either or both of these values will be used
               to as the minimum and maximum values to color edges.
             - If ``None`` are supplied, the maximum absolute value within the
               given threshold will be used as minimum (multiplied by -1) and
               maximum coloring levels.
 
-        edge_threshold : :obj:`str` or :obj:`int` or :obj:`float`, optional
+        edge_threshold : :obj:`str` or :obj:`int` or :obj:`float` \
+              or None, default=None
             - If it is a number only the edges with a value greater than
               ``edge_threshold`` will be shown.
             - If it is a string it must finish with a percent sign,
