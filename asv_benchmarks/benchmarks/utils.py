@@ -20,9 +20,9 @@ def load(loader, n_masks=1, n_subjects=10):
         'nilearn' is selected, the load_img function from nilearn.image is
         used. When 'nibabel (ref)' is selected, the load function from nibabel
         is used.
-    n_masks : int, optional, default=1
+    n_masks : int, default=1
         The number of masks to load.
-    n_subjects : int, optional, default=10
+    n_subjects : int, default=10
         This parameter refers to the number of subjects images concatenated
         together to create the fMRI image in the cache directory. The fMRI
         image is named 'fmri_{n_subjects}.nii.gz'.
@@ -55,7 +55,7 @@ def apply_mask(mask, img, implementation, nifti_masker_params=None):
         The image to apply the mask to.
     implementation : str
         The implementation to use. Can be either 'nilearn' or 'numpy'.
-    nifti_masker_params : dict, optional, default=None
+    nifti_masker_params : dict, default=None
         Parameters to pass to the NiftiMasker object when using 'nilearn' as
         the implementation.
     """
