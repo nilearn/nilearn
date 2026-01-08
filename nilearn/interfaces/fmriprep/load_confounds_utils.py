@@ -167,7 +167,7 @@ def _generate_confounds_file_candidates(nii_file, flag_tedana=False):
     ----------
     nii_file : str
         Path to the functional image file.
-    flag_tedana : bool, optional
+    flag_tedana : bool, default=False
         If True, also generate candidates with desc=ICA for TEDANA
         optimally combined output. Defaults to False.
 
@@ -239,7 +239,7 @@ def _get_file_name(nii_file, flag_tedana=False):
     nii_file : str
         Path to the functional image file.
 
-    flag_tedana : bool, optional
+    flag_tedana : bool, default=False
         If True, look for TEDANA confounds files. Defaults to False.
 
     Returns

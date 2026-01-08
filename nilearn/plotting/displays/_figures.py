@@ -19,10 +19,10 @@ class SurfaceFigure:
 
     Parameters
     ----------
-    figure : Figure instance or ``None``, optional
+    figure : Figure instance  or None, default=None
         Figure to be wrapped.
 
-    output_file : :obj:`str` or ``None``, optional
+    output_file : :obj:`str` or None, default=None
         Path to output file.
     """
 
@@ -41,7 +41,7 @@ class SurfaceFigure:
 
         Parameters
         ----------
-        output_file : :obj:`str` or ``None``, optional
+        output_file : :obj:`str` or None, default=None
             Path to output file.
         """
         if output_file is None:
@@ -62,10 +62,10 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
     Parameters
     ----------
-    figure : Plotly figure instance or ``None``, optional
+    figure : Plotly figure instance or None, default=None
         Plotly figure instance to be used.
 
-    output_file : :obj:`str` or ``None``, optional
+    output_file : :obj:`str` or None, default=None
         Output file path.
 
     Attributes
@@ -122,7 +122,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Parameters
         ----------
-        output_file : :obj:`str` or ``None``, optional
+        output_file : :obj:`str` or None, default=None
             Path to output file.
 
         savefig_kwargs:
