@@ -615,7 +615,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
             yield (clone(estimator), check_decoder_with_surface_data)
             yield (clone(estimator), check_decoder_with_arrays)
             yield (clone(estimator), check_decoder_estimator_args)
-            yield (clone(estimator), check_decoder_verbose)
+            yield (clone(estimator), check_verbosity_embedded_masker)
             if is_regressor(estimator):
                 yield (
                     clone(estimator),
@@ -705,6 +705,10 @@ def nilearn_check_generator(estimator: BaseEstimator):
     if is_glm(estimator):
         yield (clone(estimator), check_glm_dtypes)
         yield (clone(estimator), check_glm_empty_data_messages)
+        yield (clone(estimator), check_verbosity_embedded_masker)
+
+    if isinstance(estimator, _BaseDecomposition):
+        yield (clone(estimator), check_verbosity_embedded_masker)
 
 
 def _not_fitted_error_message(estimator):
@@ -1078,7 +1082,52 @@ def check_img_estimator_verbose(estimator_orig):
     assert len(output_2) >= len(output), f"\n{output=}\n{output_2=}"
 
 
+@ignore_warnings
+def check_verbosity_embedded_masker(estimator_orig):
+    """Check control of verbosity of embedded maskers / estimators.
+
+    Only for decoder and GLM
+
+    verbose = 1: only messages from the estimator
+    verbose = 2: also messages from embedded nilearn masker
+    verbose = 3:
+        - for decoders: also messages from sklearn estimator
+    """
+    outputs = {}
+    for verbose in [1, 2, 3]:
+        estimator = clone(estimator_orig)
+        estimator.verbose = verbose
+
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            estimator = fit_estimator(estimator)
+            outputs[verbose] = buffer.getvalue()
+
+    if isinstance(estimator, _BaseDecomposition) or is_glm(estimator):
+        # no extra output at verbose=3 for decomposition / glm estimators
+        assert 0 < len(outputs[1]) < len(outputs[2])
+    else:
+        assert 0 < len(outputs[1]) < len(outputs[2]) < len(outputs[3])
+
+    # verbosity = 1
+    # message from estimator
+    assert f"[{estimator.__class__.__name__}.fit]" in outputs[1]
+    # message from embedded masker
+    assert "Extracting region signals" not in outputs[1]
+
+    # verbosity = 2
+    assert f"[{estimator.__class__.__name__}.fit]" in outputs[1]
+    if not isinstance(estimator, (SearchLight, SecondLevelModel)):
+        assert "Extracting region signals" in outputs[2]
+
+    # specific fo GLM
+    if is_glm(estimator):
+        for verbose in [1, 2, 3]:
+            assert re.search(r"Computation of .* done in", outputs[verbose])
+
+
 def _sanitize_standard_output(output):
+    """Clean standard output to facilitate comparison to another output."""
     output = re.sub(
         r"<nibabel.nifti1.Nifti1Image object at .*>", "Nifti1Image", output
     )
@@ -2090,22 +2139,6 @@ def check_decoder_estimator_args(estimator_orig):
         # TODO: something to fix?
         return
     assert estimator.estimator_.max_iter == 5000
-
-
-@ignore_warnings
-def check_decoder_verbose(estimator_orig):
-    """Smoke test verbose parameter.
-
-    verbose = 1: only messages from the estimator
-    verbose > 1: also messages from embedded
-                  nilearn masker / sklearn estimator
-
-    TODO: apply to GLM
-    """
-    for verbose in [0, 1, 2]:
-        estimator = clone(estimator_orig)
-        estimator.verbose = verbose
-        estimator = fit_estimator(estimator)
 
 
 # ------------------ MASKER CHECKS ------------------
