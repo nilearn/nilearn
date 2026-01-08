@@ -575,9 +575,9 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     )
 
             verbose = self.verbose
-            if verbose:
+            if verbose is True:
                 verbose = 1
-            elif not verbose:
+            elif verbose is False:
                 verbose = 0
 
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(

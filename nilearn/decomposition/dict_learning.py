@@ -257,9 +257,9 @@ class DictLearning(_BaseDecomposition):
         _, n_features = data.shape
 
         verbose = self.verbose
-        if verbose:
+        if verbose is True:
             verbose = 1
-        elif not verbose:
+        elif verbose is False:
             verbose = 0
 
         logger.log(

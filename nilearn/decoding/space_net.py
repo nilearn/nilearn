@@ -378,9 +378,9 @@ def path_scores(
     # misc
     _, n_features = X.shape
 
-    if verbose:
+    if verbose is True:
         verbose = 1
-    elif not verbose:
+    elif verbose is False:
         verbose = 0
 
     # Univariate feature screening. Note that if we have only as few as 100
@@ -515,7 +515,7 @@ def path_scores(
             y_test,
             is_classif=is_classif,
             debias=debias,
-            verbose=verbose,
+            verbose=max(verbose - 1, 0),
         )._debias(best_w)
 
     if len(test) == 0.0:
@@ -921,7 +921,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 is_classif=is_classifier(self),
                 key=(cls, fold),
                 debias=self.debias,
-                verbose=self.verbose,
+                verbose=max(self.verbose - 1, 0.0),
                 screening_percentile=self.screening_percentile_,
             )
             for cls in range(n_problems)

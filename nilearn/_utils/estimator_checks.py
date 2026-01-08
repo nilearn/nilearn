@@ -1103,10 +1103,8 @@ def check_verbosity_embedded_masker(estimator_orig):
             estimator = fit_estimator(estimator)
             outputs[verbose] = buffer.getvalue()
 
-    if isinstance(estimator, _BaseDecomposition) or is_glm(estimator):
+    if not isinstance(estimator, _BaseDecomposition) or is_glm(estimator):
         # no extra output at verbose=3 for decomposition / glm estimators
-        assert 0 < len(outputs[1]) < len(outputs[2])
-    else:
         assert 0 < len(outputs[1]) < len(outputs[2]) < len(outputs[3])
 
     # verbosity = 1

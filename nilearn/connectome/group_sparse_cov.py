@@ -656,9 +656,9 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         check_params(self.__dict__)
 
         verbose = self.verbose
-        if verbose:
+        if verbose is True:
             verbose = 1
-        elif not verbose:
+        elif verbose is False:
             verbose = 0
 
         # casting single arrays to list mostly to help

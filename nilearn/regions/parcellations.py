@@ -422,9 +422,9 @@ class Parcellations(_MultiPCA):
         check_parameter_in_allowed(self.method, valid_methods, "method")
 
         verbose = self.verbose
-        if verbose:
+        if verbose is True:
             verbose = 1
-        elif not verbose:
+        elif verbose is False:
             verbose = 0
 
         # we delay importing Ward or AgglomerativeClustering and same
