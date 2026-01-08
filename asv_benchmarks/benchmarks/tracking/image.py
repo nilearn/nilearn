@@ -42,8 +42,8 @@ class IndexImgBenchmark(Benchmark):
 
     def time_index_img(self):
         """Time the loading the image followed by indexing a voxel."""
-        index_img("fmri_100.nii.gz", slice(1, 90, 2))
+        index_img(f"fmri_{self.n_subjects}.nii.gz", slice(1, 90, 2))
 
     def peakmem_index_img(self):
         """Peak memory of loading the image followed by indexing a voxel."""
-        index_img("fmri_100.nii.gz", slice(1, 90, 2))
+        index_img(f"fmri_{self.n_subjects}.nii.gz", slice(1, 90, 2))
