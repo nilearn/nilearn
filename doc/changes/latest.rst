@@ -11,7 +11,7 @@ NEW
 Fixes
 -----
 
-- :bdg-dark:`Code` Reallow use non-multi maskers for :class:`~nilearn.regions.Parcellation` (:gh:`5930` by `Rémi Gau`_).
+- :bdg-dark:`Code` Reallow use non-multi maskers for :class:`~nilearn.regions.Parcellations` (:gh:`5930` by `Rémi Gau`_).
 
 
 Enhancements
