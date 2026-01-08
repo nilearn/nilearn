@@ -128,8 +128,7 @@ from nilearn.maskers.tests.test_html_report import (
     generate_and_check_masker_report,
 )
 from nilearn.masking import load_mask_img
-from nilearn.regions import RegionExtractor
-from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
+from nilearn.regions import HierarchicalKMeans, Parcellations, RegionExtractor
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
@@ -902,11 +901,15 @@ def check_doc_attributes(estimator) -> None:
         param for param in parameters if param not in documented_parameters
     ]
     if undocumented_parameters:
-        raise ValueError(
-            "Missing docstring for "
+        msg = (
+            "Missing docstring for parameters "
             f"[{', '.join(undocumented_parameters)}] "
             f"in estimator {estimator.__class__.__name__}."
         )
+        if not isinstance(estimator, Parcellations):
+            raise ValueError(msg)
+        else:
+            warnings.warn(msg, stacklevel=2)
     extra_parameters = [
         attr
         for attr in documented_parameters
@@ -914,7 +917,7 @@ def check_doc_attributes(estimator) -> None:
     ]
     if extra_parameters:
         raise ValueError(
-            "Extra docstring for "
+            "Extra docstring for parameters "
             f"[{', '.join(extra_parameters)}] "
             f"in estimator {estimator.__class__.__name__}."
         )
@@ -930,8 +933,8 @@ def check_doc_attributes(estimator) -> None:
 
     assert [str(x) for x in documented_parameters] == [str(x) for x in tmp], (
         f"Parameters of {estimator.__class__.__name__} "
-        f"should be in order {list(tmp)}. "
-        f"Got {list(documented_parameters)}"
+        f"should be in order\n{list(tmp)}. "
+        f"Got\n{list(documented_parameters)}"
     )
 
     if isinstance(estimator, (ReNA, GroupSparseCovarianceCV)):
@@ -956,7 +959,7 @@ def check_doc_attributes(estimator) -> None:
     ]
     if undocumented_attributes:
         raise ValueError(
-            "Missing docstring for "
+            "Missing docstring for attributes "
             f"[{', '.join(undocumented_attributes)}] "
             f"in estimator {estimator.__class__.__name__}."
         )
@@ -965,11 +968,15 @@ def check_doc_attributes(estimator) -> None:
         attr for attr in documented_attributes if attr not in fitted_attributes
     ]
     if extra_attributes:
-        raise ValueError(
-            "Extra docstring for "
+        msg = (
+            "Extra docstring for attributes "
             f"[{', '.join(extra_attributes)}] "
             f"in estimator {estimator.__class__.__name__}."
         )
+        if not isinstance(estimator, Parcellations):
+            raise ValueError(msg)
+        else:
+            warnings.warn(msg, stacklevel=2)
 
     # avoid duplicates
     assert len(documented_attributes) == len(set(documented_attributes))

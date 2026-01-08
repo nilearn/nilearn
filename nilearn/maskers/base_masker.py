@@ -761,9 +761,7 @@ class _BaseSurfaceMasker(
             Mesh and data for both hemispheres. The data for each hemisphere \
             is of shape (n_vertices_per_hemisphere, n_timepoints).
 
-        y : None
-            This parameter is unused.
-            It is solely included for scikit-learn compatibility.
+        %(y_dummy)s
 
         %(confounds)s
 

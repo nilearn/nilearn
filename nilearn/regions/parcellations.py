@@ -4,7 +4,7 @@ import warnings
 from typing import ClassVar
 
 import numpy as np
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 from scipy.sparse import coo_matrix
 from sklearn.base import clone
 from sklearn.feature_extraction import image
@@ -231,6 +231,10 @@ class Parcellations(_MultiPCA):
 
     %(standardize_false)s
 
+    standardize_confounds : boolean, default=True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
+
     %(detrend)s
 
         .. note::
@@ -238,6 +242,7 @@ class Parcellations(_MultiPCA):
             Please see the related documentation for details.
 
         Default=False.
+
     %(low_pass)s
 
         .. note::
@@ -297,13 +302,27 @@ class Parcellations(_MultiPCA):
     n_iter : :obj:`int`, default=10
         Used only when the method selected is 'rena'. Number of iterations of
         the recursive neighbor agglomeration.
+
     %(memory)s
+
     %(memory_level)s
+
     %(n_jobs)s
+
     %(verbose0)s
 
-    Attributes
-    ----------
+    %(base_decomposition_fit_attributes)s
+
+    %(multi_pca_fit_attributes)s
+
+    connectivity_ : :class:`numpy.ndarray`
+        Voxel-to-voxel connectivity matrix computed from a mask.
+
+        .. note::
+
+            This attribute is only seen if selected methods are
+            Agglomerative Clustering type, 'ward', 'complete', 'average'.
+
     labels_img_ : :class:`nibabel.nifti1.Nifti1Image`
         Labels image to each parcellation learned on fmri images.
 
@@ -311,10 +330,9 @@ class Parcellations(_MultiPCA):
                 :class:`nilearn.maskers.MultiNiftiMasker`
         The masker used to mask the data.
 
-    connectivity_ : :class:`numpy.ndarray`
-        Voxel-to-voxel connectivity matrix computed from a mask.
-        Note that this attribute is only seen if selected methods are
-        Agglomerative Clustering type, 'ward', 'complete', 'average'.
+    variance_ : numpy array (n_components,)
+        The amount of variance explained
+        by each of the selected components.
 
     Notes
     -----
@@ -347,6 +365,7 @@ class Parcellations(_MultiPCA):
         mask=None,
         smoothing_fwhm=4.0,
         standardize=False,
+        standardize_confounds=True,
         detrend=False,
         low_pass=None,
         high_pass=None,
@@ -362,8 +381,6 @@ class Parcellations(_MultiPCA):
         n_jobs=1,
         verbose=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         self.method = method
         self.n_parcels = n_parcels
         self.scaling = scaling
@@ -377,6 +394,7 @@ class Parcellations(_MultiPCA):
             memory=memory,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
+            standardize_confounds=standardize_confounds,
             detrend=detrend,
             low_pass=low_pass,
             high_pass=high_pass,
@@ -604,7 +622,7 @@ class Parcellations(_MultiPCA):
         return region_signals[0] if single_subject else region_signals
 
     @fill_doc
-    def fit_transform(self, imgs, confounds=None):
+    def fit_transform(self, imgs, y=None, confounds=None):
         """Fit the images to :term:`parcellations<parcellation>` and \
         then transform them.
 
@@ -612,6 +630,8 @@ class Parcellations(_MultiPCA):
         ----------
         %(imgs)s
             Images for process for fit as well for transform to signals.
+
+        %(y_dummy)s
 
         confounds : :obj:`list` of CSV files, arrays-like or\
             :class:`pandas.DataFrame`, default=None
@@ -636,6 +656,7 @@ class Parcellations(_MultiPCA):
             (number of scans, number of labels)
 
         """
+        del y
         return self.fit(imgs, confounds=confounds).transform(imgs, confounds)
 
     @fill_doc
