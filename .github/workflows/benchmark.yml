@@ -101,7 +101,8 @@ jobs:
                   # fetch all branches and tags
                 fetch-depth: 0
         -   uses: actions/setup-python@v6
-            with: python-version:${{ env.MIN_PYTHON }}
+            with:
+                python-version: ${{ env.MIN_PYTHON }}
         -   name: Install asv and switch to asv_benchmarks directory
             run: |
                 pip install --upgrade pip
