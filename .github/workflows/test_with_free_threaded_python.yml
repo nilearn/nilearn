@@ -60,6 +60,8 @@ jobs:
                 allow-prereleases: true
 
         -   name: Install dependencies
+            # for now one of the dependencies of plotly cannot be installed
+            # for free threaded python so only testing with matplotlib
             run: |
                 uv venv -p 3.14t
                 source .venv/bin/activate
