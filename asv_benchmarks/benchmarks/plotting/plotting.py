@@ -1,0 +1,75 @@
+"""Benchmarks for plotting."""
+
+# ruff: noqa: ARG002
+
+from nilearn.datasets import fetch_surf_fsaverage, load_mni152_template
+from nilearn.plotting import (
+    plot_anat,
+    plot_epi,
+    plot_glass_brain,
+    plot_img,
+    plot_stat_map,
+    plot_surf,
+    plot_surf_stat_map,
+)
+
+PLOTTING_FUNCS_3D = [
+    plot_img,
+    plot_anat,
+    plot_stat_map,
+    plot_epi,
+    plot_glass_brain,
+]
+
+SURFACE_FUNCS = [
+    plot_surf,
+    plot_surf_stat_map,
+]
+
+
+class BenchMarkPlotting3D:
+    """Check plotting of 3D images."""
+
+    param_names = "plot_func"
+    params = PLOTTING_FUNCS_3D
+
+    def setup(self, plot_func):
+        """Set up for all benchmarks."""
+        self.img = load_mni152_template()
+
+    def time_plotting_3d(self, plot_func):
+        """Check time."""
+        plot_func(self.img)
+
+    def peakmem_plotting_3d(self, plot_func):
+        """Check peak memory."""
+        plot_func(self.img)
+
+
+class BenchMarkPlottingSurface:
+    """Check plotting surface."""
+
+    param_names = ("plot_func", "engine")
+    params = (SURFACE_FUNCS, ["matplotlib"])
+
+    def setup(self, plot_func, engine):
+        """Set up for all benchmarks."""
+        self.surf_mesh = fetch_surf_fsaverage()["infl_left"]
+        self.surf_stat_map = fetch_surf_fsaverage()["curv_left"]
+        self.engine = engine
+
+    def time_plotting_surface(self, plot_func, engine):
+        """Check time."""
+        plot_func(
+            self.surf_mesh,
+            self.surf_stat_map,
+            engine=engine,
+        )
+
+    def peakmem_plotting_surface(self, plot_func, engine):
+        """Check peak memory."""
+        plot_func(
+            self.surf_mesh,
+            self.surf_stat_map,
+            engine=engine,
+        )
