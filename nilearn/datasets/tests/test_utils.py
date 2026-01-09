@@ -15,7 +15,7 @@ import pytest
 import requests
 
 from nilearn.datasets import _utils, utils
-from nilearn.datasets.tests._testing import Response
+from nilearn.datasets.tests.conftest import Response
 
 datadir = _utils.PACKAGE_DIRECTORY / "data"
 
