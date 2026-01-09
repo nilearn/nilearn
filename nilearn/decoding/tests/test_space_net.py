@@ -190,6 +190,7 @@ def test_logistic_path_scores():
         np.arange(len(X)),
         np.arange(len(X)),
         {},
+        verbose=0,
     )[:2]
     test_scores = test_scores[0]
 
@@ -214,6 +215,7 @@ def test_squared_loss_path_scores():
         np.arange(len(X)),
         np.arange(len(X)),
         {},
+        verbose=0,
     )[:2]
 
     test_scores = test_scores[0]
