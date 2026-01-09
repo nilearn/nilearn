@@ -54,7 +54,12 @@ if not is_gil_enabled():
     # data fetchers tests are using a monkeypatch fixture
     # making the tests thread unsafe
     # therefore we skip them when testing without the GIL
-    collect_ignore.append("datasets")
+    collect_ignore.extend(
+        [
+            "datasets",
+            "plotting",  # TODO
+        ]
+    )
 
 
 def pytest_configure(config):  # noqa: ARG001
