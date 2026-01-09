@@ -24,26 +24,23 @@ localizer = fetch_neurovault_auditory_computation_task(timeout=30.0)
 tmap_filename = localizer.images[0]
 
 # %%
-# Threshold the t-statistic image by importing threshold function
-from nilearn.image import threshold_img
-
 # Two types of strategies can be used from this threshold function
 # Type 1: strategy used will be based on scoreatpercentile
+from nilearn.image import threshold_img
+
 threshold_percentile_img = threshold_img(
     tmap_filename, threshold="97%", copy=False
 )
 
-
+# %%
 # Type 2: threshold strategy used will be based on image intensity
 # Here, threshold value should be within the limits i.e. less than max value.
 threshold_value_img = threshold_img(tmap_filename, threshold=3.0, copy=False)
 
 # %%
-# Visualization
-# Showing thresholding results by importing plotting modules and its utilities
+# Showing percentile threshold image
 from nilearn.plotting import plot_stat_map, show
 
-# Showing percentile threshold image
 plot_stat_map(
     threshold_percentile_img,
     display_mode="z",
@@ -52,6 +49,9 @@ plot_stat_map(
     colorbar=False,
 )
 
+show()
+
+# %%
 # Showing intensity threshold image
 plot_stat_map(
     threshold_value_img,
@@ -64,7 +64,7 @@ plot_stat_map(
 show()
 
 # %%
-# Extracting the regions by importing connected regions function
+# Extracting the regions
 from nilearn.regions import connected_regions
 
 regions_percentile_img, index = connected_regions(
@@ -95,4 +95,5 @@ for image, strategy in zip(
         cut_coords=5,
         title=title,
     )
+
 show()
