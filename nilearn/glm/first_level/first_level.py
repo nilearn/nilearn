@@ -422,7 +422,6 @@ class FirstLevelModel(BaseGLM):
         If 0, prints nothing
         If 1, prints progress by computation of each run.
         If 2, prints timing details of masker and GLM.
-        If 3, prints masker computation details.
 
     %(n_jobs)s
 

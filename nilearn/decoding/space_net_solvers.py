@@ -334,7 +334,7 @@ def graph_net_squared_loss(
         callback=callback,
         tol=tol,
         max_iter=max_iter,
-        verbose=verbose,
+        verbose=max(verbose - 1, 0),
         init=init,
     )
 
@@ -420,7 +420,7 @@ def graph_net_logistic(
         callback=callback,
         tol=tol,
         max_iter=max_iter,
-        verbose=verbose,
+        verbose=max(verbose - 1, 0),
         init=init,
     )
 
