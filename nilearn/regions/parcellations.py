@@ -15,16 +15,16 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    sanitize_verbose,
+)
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.image.image import iter_check_niimg
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
 from nilearn.maskers.surface_labels_masker import signals_to_surf_img_labels
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
-from nilearn.regions.rena_clustering import (
-    ReNA,
-    make_edges_surface,
-)
+from nilearn.regions.rena_clustering import ReNA, make_edges_surface
 from nilearn.surface import SurfaceImage
 
 
@@ -421,11 +421,7 @@ class Parcellations(_MultiPCA):
             )
         check_parameter_in_allowed(self.method, valid_methods, "method")
 
-        verbose = self.verbose
-        if verbose:
-            verbose = 1
-        elif not verbose:
-            verbose = 0
+        verbose = sanitize_verbose(self.verbose)
 
         # we delay importing Ward or AgglomerativeClustering and same
         # time import plotting module before that.
