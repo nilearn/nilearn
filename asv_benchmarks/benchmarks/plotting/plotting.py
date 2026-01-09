@@ -2,7 +2,7 @@
 
 # ruff: noqa: ARG002
 
-from nilearn.datasets import fetch_surf_fsaverage, load_fsaverage
+from nilearn.datasets import fetch_surf_fsaverage, load_mni152_template
 from nilearn.plotting import (
     plot_anat,
     plot_epi,
@@ -35,7 +35,7 @@ class BenchMarkPlotting3D:
 
     def setup(self, plot_func):
         """Set up for all benchmarks."""
-        self.img = load_sample_motor_activation_image()
+        self.img = load_mni152_template()
 
     def time_plotting_3d(self, plot_func):
         """Check time."""
@@ -50,12 +50,12 @@ class BenchMarkPlottingSurface:
     """Check plotting surface."""
 
     param_names = ("plot_func", "engine")
-    params = (SURFACE_FUNCS, ["matplotlib", "plotly"])
+    params = (SURFACE_FUNCS, ["matplotlib"])
 
     def setup(self, plot_func, engine):
         """Set up for all benchmarks."""
-        self.surf_stat_map = load_fsaverage()["infl_left"]
-        self.surf_mesh = fetch_surf_fsaverage()["curv_left"]
+        self.surf_mesh = fetch_surf_fsaverage()["infl_left"]
+        self.surf_stat_map = fetch_surf_fsaverage()["curv_left"]
         self.engine = engine
 
     def time_plotting_surface(self, plot_func, engine):
