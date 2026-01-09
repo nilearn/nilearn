@@ -697,7 +697,7 @@ class Parcellations(_MultiPCA):
         else:
             single_subject = False
 
-        signals = [self._check_array(x, sklearn_check=True) for x in signals]
+        signals = [self._check_array(x) for x in signals]
 
         if isinstance(self.mask_img_, SurfaceImage):
             labels = _get_unique_labels(self.labels_img_)
