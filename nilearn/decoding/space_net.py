@@ -31,6 +31,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
+    sanitize_verbose,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
@@ -378,10 +379,7 @@ def path_scores(
     # misc
     _, n_features = X.shape
 
-    if verbose is True:
-        verbose = 1
-    elif verbose is False:
-        verbose = 0
+    verbose = sanitize_verbose(verbose)
 
     # Univariate feature screening. Note that if we have only as few as 100
     # features in the mask's support, then we should use all of them to
