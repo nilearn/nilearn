@@ -16,6 +16,7 @@ import collections
 import numbers
 import warnings
 
+import nibabel as nib
 import numpy as np
 import pytest
 from nibabel import save
@@ -24,6 +25,7 @@ from sklearn import clone
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectKBest, SelectPercentile
 from sklearn.linear_model import (
     LassoCV,
     LogisticRegressionCV,
@@ -1540,3 +1542,39 @@ def test_regressor_vs_sklearn(
     )
     # also check individual scores are within 1% of each other
     assert np.allclose(scores_sklearn, scores_nilearn, atol=0.01)
+
+
+def test_screening_priority_logic():
+    """Test that check_feature_screening prefers percentile over n_voxels."""
+    # 1. Create a simple dummy mask
+    mask = nib.Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
+
+    # 2. Call the function with BOTH options (Conflict!)
+    # percentile=10, n_voxels=50
+    selector = check_feature_screening(
+        screening_percentile=10,
+        mask_img=mask,
+        is_classification=True,
+        screening_n_features=50,
+    )
+
+    # 3. VERIFY: We should get a SelectPercentile object
+    # (meaning percentile won)
+    # If logic is wrong, this will be SelectKBest and the test will fail.
+    assert isinstance(selector, SelectPercentile)
+    assert not isinstance(selector, SelectKBest)
+
+
+def test_check_feature_screening_n_features_only(img_3d_rand_eye):
+    """Test that screening_n_features works when percentile is None."""
+    # Call the function with only n_voxels specified
+    selector = check_feature_screening(
+        screening_percentile=None,
+        mask_img=img_3d_rand_eye,
+        is_classification=True,
+        screening_n_features=15,
+    )
+
+    # Verify it returned a SelectKBest object with the right 'k'
+    assert isinstance(selector, SelectKBest)
+    assert selector.k == 15

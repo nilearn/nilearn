@@ -62,7 +62,8 @@ decoder = Decoder(
     mask=mask_img,
     smoothing_fwhm=4,
     standardize="zscore_sample",
-    screening_percentile=5,
+    screening_percentile=None,
+    screening_n_features=500,
     scoring="accuracy",
     verbose=1,
 )
