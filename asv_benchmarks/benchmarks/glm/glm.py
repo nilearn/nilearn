@@ -7,9 +7,9 @@ import numpy as np
 
 from nilearn._utils.data_gen import generate_fake_fmri_data_and_design
 from nilearn.datasets import load_mni152_brain_mask
-from nilearn.glm import save_glm_to_bids
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.image import resample_to_img
+from nilearn.interfaces.bids import save_glm_to_bids
 
 
 class BenchMarkFirstLevelModel:

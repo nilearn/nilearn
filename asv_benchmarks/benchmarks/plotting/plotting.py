@@ -2,10 +2,7 @@
 
 # ruff: noqa: ARG002
 
-from nilearn.datasets import (
-    load_fsaverage_data,
-    load_sample_motor_activation_image,
-)
+from nilearn.datasets import fetch_surf_fsaverage, load_fsaverage
 from nilearn.plotting import (
     plot_anat,
     plot_epi,
@@ -57,21 +54,22 @@ class BenchMarkPlottingSurface:
 
     def setup(self, plot_func, engine):
         """Set up for all benchmarks."""
-        self.surf_img = load_fsaverage_data()
+        self.surf_stat_map = load_fsaverage()["infl_left"]
+        self.surf_mesh = fetch_surf_fsaverage()["curv_left"]
         self.engine = engine
 
     def time_plotting_surface(self, plot_func, engine):
         """Check time."""
         plot_func(
-            self.surf_img.mesh,
-            self.surf_img,
+            self.surf_mesh,
+            self.surf_stat_map,
             engine=engine,
         )
 
     def peakmem_plotting_surface(self, plot_func, engine):
         """Check peak memory."""
         plot_func(
-            self.surf_img.mesh,
-            self.surf_img,
+            self.surf_mesh,
+            self.surf_stat_map,
             engine=engine,
         )
