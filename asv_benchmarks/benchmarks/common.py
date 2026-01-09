@@ -12,7 +12,7 @@ class Benchmark:
     """
 
     timeout = 2400  # 40 mins
-    n_subject = 10
+    n_subjects = 10
 
     def setup_cache(self, n_masks=1):
         """Set up the cache directory with the necessary images and masks.
