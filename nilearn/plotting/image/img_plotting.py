@@ -66,6 +66,18 @@ def show():
     """
     if get_backend().lower() != "agg":  # avoid warnings
         plt.show()
+    else:
+        warnings.warn(
+            (
+                f"You are using the '{get_backend().lower()}' "
+                "matplotlib backend that is non-interactive."
+                "\nNo figure will be plotted when calling "
+                "matplotlib.pyplot.show() or nilearn.plotting.show()."
+                "\nYou can fix this by installing a different backend: "
+                "for example via\n\tpip install PyQt6"
+            ),
+            stacklevel=find_stack_level(),
+        )
 
 
 ###############################################################################
