@@ -132,9 +132,7 @@ from nilearn.regions import HierarchicalKMeans, Parcellations, RegionExtractor
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
-from nilearn.surface.utils import (
-    assert_surface_image_equal,
-)
+from nilearn.surface.utils import assert_surface_image_equal
 
 SKLEARN_MINOR = parse(sklearn_version).release[1]
 
@@ -1748,7 +1746,9 @@ def check_img_estimator_n_elements(estimator):
 
         X = _rng().random((1, estimator.n_elements_ + 1))
         if method == "inverse_transform":
-            if isinstance(estimator, _BaseDecomposition):
+            if isinstance(estimator, _BaseDecomposition) and not isinstance(
+                estimator, Parcellations
+            ):
                 X = [X]
             with pytest.raises(
                 ValueError,

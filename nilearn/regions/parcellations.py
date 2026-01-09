@@ -7,8 +7,10 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy.sparse import coo_matrix
 from sklearn.base import clone
+from sklearn.cluster import AgglomerativeClustering, MiniBatchKMeans
 from sklearn.feature_extraction import image
 from sklearn.utils.estimator_checks import check_is_fitted
+from sklearn.utils.validation import check_array
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
@@ -448,14 +450,9 @@ class Parcellations(_MultiPCA):
 
         mask_img_ = self.masker_.mask_img_
 
-        logger.log(
-            f"computing {self.method}",
-            verbose=verbose,
-        )
+        logger.log(f"computing {self.method}", verbose=verbose)
 
         if self.method == "kmeans":
-            from sklearn.cluster import MiniBatchKMeans
-
             kmeans = MiniBatchKMeans(
                 n_clusters=self.n_parcels,
                 init="k-means++",
@@ -466,6 +463,7 @@ class Parcellations(_MultiPCA):
             labels = self._cache(_estimator_fit, func_memory_level=1)(
                 components.T, kmeans
             )
+
         elif self.method == "hierarchical_kmeans":
             hkmeans = HierarchicalKMeans(
                 self.n_parcels,
@@ -480,6 +478,7 @@ class Parcellations(_MultiPCA):
             labels = self._cache(_estimator_fit, func_memory_level=1)(
                 components.T, hkmeans, self.method
             )
+
         elif self.method == "rena":
             rena = ReNA(
                 mask_img_,
@@ -504,7 +503,6 @@ class Parcellations(_MultiPCA):
                 connectivity = image.grid_to_graph(
                     n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
                 )
-            from sklearn.cluster import AgglomerativeClustering
 
             agglomerative = AgglomerativeClustering(
                 n_clusters=self.n_parcels,
@@ -512,12 +510,11 @@ class Parcellations(_MultiPCA):
                 linkage=self.method,
                 memory=self.memory_,
             )
-
             labels = self._cache(_estimator_fit, func_memory_level=1)(
                 components.T, agglomerative
             )
-
             self.connectivity_ = connectivity
+
         # Avoid 0 label
         labels = labels + 1
         unique_labels = np.unique(labels)
@@ -537,7 +534,20 @@ class Parcellations(_MultiPCA):
             labels.astype(np.int32)
         )
 
+        # we store n_elements_ in a private attribute
+        # otherwise its value will be set to the wrong value
+        # by fit in _BaseDecomposition
+        self._n_elements_ = len(unique_labels)
+
         return self
+
+    @property
+    def n_elements_(self):
+        """Return number of regions."""
+        return self._n_elements_
+
+    def _post_fit(self):
+        self.n_elements_ = self._n_elements_
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "labels_img_")
@@ -687,6 +697,8 @@ class Parcellations(_MultiPCA):
         else:
             single_subject = False
 
+        signals = [self._check_array(x, sklearn_check=True) for x in signals]
+
         if isinstance(self.mask_img_, SurfaceImage):
             labels = _get_unique_labels(self.labels_img_)
             imgs = Parallel(n_jobs=self.n_jobs)(
@@ -706,3 +718,45 @@ class Parcellations(_MultiPCA):
             )
 
         return imgs[0] if single_subject else imgs
+
+    def _check_array(self, signals):
+        """Check array to inverse transform.
+
+        Parameters
+        ----------
+        signals : :obj:`numpy.ndarray`
+        """
+        # adapted from BaseMasker and BaseSurfaceMasker
+        if isinstance(self.mask_img_, SurfaceImage):
+            signals = np.atleast_2d(signals)
+
+            signals = check_array(signals, ensure_2d=False)
+
+            if signals.shape[-1] != self.n_elements_:
+                raise ValueError(
+                    "Input to 'inverse_transform' has wrong shape.\n"
+                    f"Last dimension should be {self.n_elements_}.\n"
+                    f"Got {signals.shape[-1]}."
+                )
+
+        else:
+            signals = np.atleast_1d(signals)
+
+            signals = check_array(signals, ensure_2d=False)
+
+            assert signals.ndim <= 2
+
+            expected_shape = (
+                (self.n_elements_,)
+                if signals.ndim == 1
+                else (signals.shape[0], self.n_elements_)
+            )
+
+            if signals.shape != expected_shape:
+                raise ValueError(
+                    "Input to 'inverse_transform' has wrong shape.\n"
+                    f"Expected {expected_shape}.\n"
+                    f"Got {signals.shape}."
+                )
+
+        return signals
