@@ -32,6 +32,7 @@ def _testdata_3d_for_plotting_for_resampling(img, binary):
     return Nifti1Image(data, affine)
 
 
+@pytest.mark.slow
 def test_display_methods(matplotlib_pyplot, img_3d_mni):
     """Tests display methods."""
     display = plot_img(img_3d_mni)
@@ -91,6 +92,7 @@ def test_plot_img_with_resampling(matplotlib_pyplot, binary_img, img_3d_mni):
     display.add_edges(img, color="c")
 
 
+@pytest.mark.slow
 def test_display_methods_with_display_mode_tiled(
     matplotlib_pyplot, img_3d_mni
 ):
@@ -146,3 +148,117 @@ def test_plot_img_transparency_binary_image(
         img_3d_ones_mni,
         transparency=transparency_image,
     )
+
+
+@pytest.mark.parametrize(
+    "display_mode, cut_coords",
+    [
+        ("x", [7]),
+        ("x", [7, 8]),
+        ("y", [8]),
+        ("y", [8, 9]),
+        ("z", [9]),
+        ("z", [9, 10]),
+        ("xz", [7, 9]),
+        ("yz", [8, 9]),
+        ("yx", [7, 8]),
+        ("ortho", [7, 8, 9]),
+        ("tiled", [7, 8, 9]),
+    ],
+)
+def test_cut_coords_out_of_bounds_error(
+    matplotlib_pyplot, img_3d_rand_eye, display_mode, cut_coords
+):
+    """Test if nilearn.plotting.image.plot_img raises error when all elements
+    of cut_coords are out of bounds of the image for corresponding coordinate.
+    """
+    # img_3d_rand_eye has bounds:
+    # [(0.0, 6.0), (0.0, 7.0), (0.0, 8.0)]
+    with pytest.raises(ValueError, match="is out of the bounds of the image"):
+        plot_img(
+            img_3d_rand_eye, display_mode=display_mode, cut_coords=cut_coords
+        )
+
+
+@pytest.mark.parametrize(
+    "display_mode, cut_coords",
+    [
+        ("x", [7, 6]),
+        ("x", [6, 7, 8]),
+        ("y", [7, 8]),
+        ("y", [6, 8, 9]),
+        ("z", [8, 9]),
+        ("z", [9, 10, 8]),
+        ("xz", [6, 9]),
+        ("xz", [7, 8]),
+        ("yz", [7, 9]),
+        ("yz", [8, 7]),
+        ("yx", [6, 8]),
+        ("yx", [8, 7]),
+        ("ortho", [6, 8, 9]),
+        ("tiled", [8, 7, 9]),
+    ],
+)
+def test_cut_coords_out_of_bounds_warning(
+    matplotlib_pyplot, img_3d_rand_eye, display_mode, cut_coords
+):
+    """Test if nilearn.plotting.image.plot_img raises error when at least one
+    but not all elements of cut_coords is out of bounds of the image for
+    corresponding coordinate.
+    """
+    # img_3d_rand_eye has bounds:
+    # [(0.0, 6.0), (0.0, 7.0), (0.0, 8.0)]
+    with pytest.warns(
+        UserWarning,
+        match=("The following 'cut_coords'"),
+    ):
+        plot_img(
+            img_3d_rand_eye, display_mode=display_mode, cut_coords=cut_coords
+        )
+
+
+@pytest.mark.parametrize("display_mode", ["ortho", "tiled"])
+@pytest.mark.parametrize("cut_coords", [5, [3, 5]])
+def test_error_incompatible_cut_coords_3d(
+    matplotlib_pyplot, img_3d_rand_eye, display_mode, cut_coords
+):
+    """Test error when incompatible cut_coords is specified for slicers of type
+    `ortho` and `tiled`.
+    """
+    with pytest.raises(
+        ValueError,
+        match=("cut_coords passed does not match the display mode"),
+    ):
+        plot_img(
+            img_3d_rand_eye, display_mode=display_mode, cut_coords=cut_coords
+        )
+
+
+def test_error_incompatible_cut_coords_mosaic(
+    matplotlib_pyplot, img_3d_rand_eye
+):
+    """Test error when incompatible cut_coords is specified for `mosaic`
+    slicer.
+    """
+    with pytest.raises(
+        ValueError,
+        match=("cut_coords passed does not match the display mode"),
+    ):
+        plot_img(img_3d_rand_eye, display_mode="mosaic", cut_coords=[3, 5])
+
+
+@pytest.mark.parametrize("display_mode", ["xz", "yz", "yx"])
+@pytest.mark.parametrize("cut_coords", [5, [3, 5, 7]])
+def test_error_incompatible_cut_coords_2d(
+    matplotlib_pyplot, img_3d_rand_eye, display_mode, cut_coords
+):
+    """Test error when incompatible cut_coords is specified for slicers of type
+    `xy`, `yz` and `yx`.
+    """
+    with pytest.raises(
+        ValueError,
+        match=("cut_coords passed does not match the display mode"),
+    ):
+        plot_img(
+            img_3d_rand_eye, display_mode=display_mode, cut_coords=cut_coords
+        )

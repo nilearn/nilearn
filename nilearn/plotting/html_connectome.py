@@ -121,7 +121,7 @@ def _prepare_lines_metadata(
     coords : :class:`np.ndarray`, shape=(n_nodes, 3)
         The coordinates of the nodes in MNI space.
 
-    threshold : :obj:`str`, number or None, optional
+    threshold : :obj:`str`, number or None
         If None, no thresholding.
         If it is a number only connections of amplitude greater
         than threshold will be shown.

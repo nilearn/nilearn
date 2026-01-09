@@ -39,7 +39,7 @@ DataDir: TypeAlias = str | pathlib.Path | None
 Detrend: TypeAlias = bool
 DrawCross: TypeAlias = bool
 ForceResample: TypeAlias = bool
-
+HeightControl = Literal[None, "fpr", "fdr", "bonferroni"]
 # Note that for HrfModel
 # str is too generic here
 # and it should actually be Literal["spm", "glover", ...]
@@ -96,6 +96,6 @@ TransparencyRange: TypeAlias = list | tuple | None
 TwoSidedTest: TypeAlias = bool
 Url: TypeAlias = str | None
 UpperCutoff: TypeAlias = float | np.floating
-Verbose: TypeAlias = int | np.integer
+Verbose: TypeAlias = bool | int | np.integer
 Vmin: TypeAlias = float | int | np.floating | np.integer | None
 Vmax: TypeAlias = float | int | np.floating | np.integer | None

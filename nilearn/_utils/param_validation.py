@@ -315,3 +315,12 @@ def check_parameter_in_allowed(
             f"'{parameter_name}' must be one of {allowed}.\n"
             f"'{parameter}' was provided."
         )
+
+
+def sanitize_verbose(verbose: int | bool) -> int:
+    """Ensure that verbose is an int."""
+    if verbose is True:
+        verbose = 1
+    elif verbose is False:
+        verbose = 0
+    return verbose

@@ -213,6 +213,7 @@ linkcheck_ignore = [
     r"https://rrid.site/data/record.*",
     r"https://sites.wustl.edu/oasisbrains.*",
     r"https://www.cambridge.org/be/universitypress.*",
+    r"../../_static/notebook_reports_.*",
     "http://brainomics.cea.fr/localizer/",
     "https://childmind.org/science/global-open-science/healthy-brain-network/",
     "https://digicosme.cnrs.fr/en/digicosme-paris-saclay-english/",
@@ -222,6 +223,7 @@ linkcheck_ignore = [
     "https://pages.saclay.inria.fr/bertrand.thirion/",
     "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
     "https://surfer.nmr.mgh.harvard.edu/",
+    "https://www.gin.cnrs.fr/en/tools/aal",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
@@ -340,7 +342,7 @@ html_favicon = "logos/favicon.ico"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["images", "themes"]
+html_static_path = ["images", "themes", "reports"]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

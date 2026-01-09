@@ -8,7 +8,6 @@ Only matplotlib is required.
 import collections.abc
 import functools
 import inspect
-import numbers
 import warnings
 
 import matplotlib.pyplot as plt
@@ -27,7 +26,6 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -35,6 +33,8 @@ from nilearn._utils.param_validation import (
     check_threshold,
 )
 from nilearn.image import (
+    check_niimg_3d,
+    check_niimg_4d,
     get_data,
     iter_img,
     math_img,
@@ -52,10 +52,7 @@ from nilearn.plotting._utils import (
 )
 from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import save_figure_if_needed
-from nilearn.plotting.image.utils import (
-    MNI152TEMPLATE,
-    load_anat,
-)
+from nilearn.plotting.image.utils import MNI152TEMPLATE, load_anat
 from nilearn.signal import clean
 
 
@@ -145,10 +142,10 @@ def _plot_img_with_bg(
 
     %(vmax)s
 
-    bg_vmin : :obj:`float`, optional
+    bg_vmin : :obj:`float` or None, default=None
         vmin for `bg_img`.
 
-    bg_vmax : :obj:`float`, optional
+    bg_vmax : :obj:`float` or None, default=None
         vmax for `bg_img`.
 
     interpolation : :obj:`str`, default='nearest'
@@ -207,17 +204,6 @@ def _plot_img_with_bg(
             "Tip: Use np.nanmax() instead of np.max()."
         )
         warnings.warn(nan_msg, stacklevel=find_stack_level())
-
-    if isinstance(cut_coords, numbers.Number) and display_mode in (
-        "ortho",
-        "tiled",
-    ):
-        raise ValueError(
-            f"The input given for display_mode='{display_mode}' "
-            "needs to be a list of 3d world coordinates in (x, y, z). "
-            "You provided single cut, "
-            f"cut_coords={cut_coords}"
-        )
 
     if img is not False and img is not None:
         img = check_niimg_3d(img, dtype="auto")
@@ -407,7 +393,6 @@ def plot_img(
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
-
     display = _plot_img_with_bg(
         img,
         cut_coords=cut_coords,
@@ -1973,7 +1958,8 @@ def plot_carpet(
             if label_dtype != atlas_values.dtype:
                 logger.log(
                     "Coercing atlas_values to "
-                    f"{label_dtype.__class__.__name__}"
+                    f"{label_dtype.__class__.__name__}",
+                    verbose=1,
                 )
                 atlas_values = atlas_values.astype(type(label_dtype))
 

@@ -13,6 +13,7 @@ More specifically:
    (the FreeSurfer template, fsaverage).
 3. A :term:`GLM` is applied to the dataset
    (effect/covariance, then contrast estimation).
+4. Inspect GLM reports and save the results to disk.
 
 The result of the analysis are statistical maps that are defined
 on the brain mesh.
@@ -90,6 +91,7 @@ glm = FirstLevelModel(
     slice_time_ref=slice_time_ref,
     hrf_model="glover + derivative",
     minimize_memory=False,
+    verbose=1,
 ).fit(run_imgs=surface_image, events=data.events)
 
 # %%
@@ -122,6 +124,7 @@ basic_contrasts["audio"] = (
     + basic_contrasts["sentence_listening"]
 )
 
+# %%
 # one contrast adding all conditions involving instructions reading
 basic_contrasts["visual"] = (
     basic_contrasts["visual_left_hand_button_press"]
@@ -130,12 +133,14 @@ basic_contrasts["visual"] = (
     + basic_contrasts["sentence_reading"]
 )
 
+# %%
 # one contrast adding all conditions involving computation
 basic_contrasts["computation"] = (
     basic_contrasts["visual_computation"]
     + basic_contrasts["audio_computation"]
 )
 
+# %%
 # one contrast adding all conditions involving sentences
 basic_contrasts["sentences"] = (
     basic_contrasts["sentence_listening"] + basic_contrasts["sentence_reading"]
@@ -169,26 +174,49 @@ contrasts = {
 }
 
 # %%
-# Let's estimate the contrasts by iterating over them.
+# Let's estimate the t-contrasts,
+# and extract a table of clusters
+# that survive our thresholds.
+#
+# We use the same threshold (uncorrected p < 0.001)
+# for all contrasts.
+#
+# We plot each contrast map on the inflated fsaverage mesh,
+# together with a suitable background to give an impression
+# of the cortex folding.
+#
+
+from scipy.stats import norm
+
 from nilearn.datasets import load_fsaverage_data
 from nilearn.plotting import plot_surf_stat_map, show
+from nilearn.reporting import get_clusters_table
 
-#  let's make sure we use the same threshold
-threshold = 3.0
+p_val = 0.001
+threshold = norm.isf(p_val)
+cluster_threshold = 20
+two_sided = True
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
+results = {}
 for contrast_id, contrast_val in contrasts.items():
-    # compute contrast-related statistics
-    z_score = glm.compute_contrast(contrast_val, stat_type="t")
+    results[contrast_id] = glm.compute_contrast(contrast_val, stat_type="t")
 
+    table = get_clusters_table(
+        results[contrast_id],
+        stat_threshold=threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=two_sided,
+    )
+    print(f"\n{contrast_id=}")
+    print(table)
+
+for contrast_id, z_score in results.items():
     hemi = "left"
     if contrast_id == "(left - right) button press":
         hemi = "both"
 
-    # we plot it on the surface, on the inflated fsaverage mesh,
-    # together with a suitable background to give an impression
-    # of the cortex folding.
     plot_surf_stat_map(
         surf_mesh=fsaverage5["inflated"],
         stat_map=z_score,
@@ -201,41 +229,52 @@ for contrast_id, contrast_val in contrasts.items():
 show()
 
 # %%
-# Or we can save as an html file.
-from pathlib import Path
+# Cluster-level inference
+# -----------------------
+#
+# We can also perform cluster-level inference
+# (aka "All resolution Inference") for a given contrast.
+# This gives a high-probability lower bound
+# on the proportion of true discoveries in each cluster
+#
+from nilearn.glm import cluster_level_inference
+from nilearn.surface.surface import get_data as get_surf_data
 
-from nilearn.glm import save_glm_to_bids
-
-output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
-output_dir.mkdir(exist_ok=True, parents=True)
-
-save_glm_to_bids(
-    glm,
-    contrasts=contrasts,
-    threshold=threshold,
-    bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
-    height_control=None,
-    prefix="sub-01",
-    out_dir=output_dir,
-    cluster_threshold=10,
+proportion_true_discoveries_img = cluster_level_inference(
+    results["audio - visual"], threshold=[2.5, 3.5, 4.5], alpha=0.05
 )
 
+data = get_surf_data(proportion_true_discoveries_img)
+unique_vals = np.unique(data.ravel())
+print(unique_vals)
+
+plot_surf_stat_map(
+    surf_mesh=fsaverage5["inflated"],
+    stat_map=proportion_true_discoveries_img,
+    hemi="left",
+    cmap="inferno",
+    title="audio - visual, proportion true positives",
+    bg_map=fsaverage_data,
+    avg_method="max",
+)
+
+show()
+
+# %%
+# Generate a report for the GLM
+# -----------------------------
+#
 report = glm.generate_report(
     contrasts,
     threshold=threshold,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=None,
-    cluster_threshold=10,
+    cluster_threshold=cluster_threshold,
+    two_sided=two_sided,
 )
 
 # %%
-# This report can be viewed in a notebook.
+#
+# .. include:: ../../../examples/report_note.rst
+#
 report
-
-# %%
-# Or in a separate browser window
-# report.open_in_browser()
-
-report.save_as_html(output_dir / "report.html")
-
-# sphinx_gallery_thumbnail_number = 1

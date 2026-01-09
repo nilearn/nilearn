@@ -18,10 +18,15 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_threshold
 from nilearn.datasets import load_mni152_template
-from nilearn.image import get_data, new_img_like, reorder_img, resample_to_img
+from nilearn.image import (
+    check_niimg_3d,
+    get_data,
+    new_img_like,
+    reorder_img,
+    resample_to_img,
+)
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
@@ -77,7 +82,7 @@ def _threshold_data(data, threshold=None):
     data : :class:`numpy.ndarray`
         Data to apply threshold on.
 
-    threshold : :obj:`float`, optional
+    threshold : :obj:`float` or None, default=None
         Threshold to apply to data.
 
     Returns
@@ -145,12 +150,11 @@ def _save_sprite(
     vmax, vmin : :obj:`float`
         ???
 
-    mask : :class:`numpy.ndarray`, optional
+    mask : :class:`numpy.ndarray` or None, default=None
         Mask to use.
 
     %(cmap)s
         default='Greys'
-
 
     format : :obj:`str`, default='png'
         Format to use for output image.
@@ -232,7 +236,7 @@ def _mask_stat_map(stat_map_img, threshold=None):
     return mask_img, stat_map_img, data, threshold
 
 
-def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
+def load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
     """Load and resample bg_img in an isotropic resolution, \
     with a positive diagonal affine matrix.
 
@@ -657,7 +661,7 @@ def view_img(
     )
 
     # Prepare the data for the cuts
-    bg_img, bg_min, bg_max, black_bg = _load_bg_img(
+    bg_img, bg_min, bg_max, black_bg = load_bg_img(
         stat_map_img, bg_img, black_bg, dim
     )
     stat_map_img, mask_img = _resample_stat_map(

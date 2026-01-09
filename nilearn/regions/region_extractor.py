@@ -2,6 +2,7 @@
 
 import collections.abc
 import numbers
+import warnings
 from copy import deepcopy
 
 import numpy as np
@@ -10,20 +11,19 @@ from scipy.stats import scoreatpercentile
 
 from nilearn import masking
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import (
-    check_niimg,
-    check_niimg_3d,
-    check_niimg_4d,
-    check_same_fov,
-)
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
 from nilearn._utils.segmentation import random_walker
 from nilearn.image.image import (
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
+    check_same_fov,
     concat_imgs,
     new_img_like,
     smooth_array,
@@ -259,6 +259,13 @@ def connected_regions(
         index_of_each_map.extend([index] * len(regions))
         all_regions_imgs.extend(regions)
 
+    if len(all_regions_imgs) == 0:
+        warnings.warn(
+            "No supra threshold regions was found",
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
+        return None, None
     regions_extracted_img = concat_imgs(all_regions_imgs)
 
     return regions_extracted_img, index_of_each_map
@@ -284,7 +291,7 @@ class RegionExtractor(NiftiMapsMasker):
         Image containing a set of whole brain atlas maps or statistically
         decomposed brain maps.
 
-    mask_img : Niimg-like object or None, optional
+    mask_img : Niimg-like object or None, default=None
         Mask to be applied to input data, passed to NiftiMapsMasker.
         If None, no masking is applied.
 

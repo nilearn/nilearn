@@ -18,13 +18,13 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.niimg_conversions import (
+from nilearn.datasets import load_mni152_template
+from nilearn.image import resample_img
+from nilearn.image.image import (
     check_niimg_3d,
     check_niimg_4d,
     safe_get_data,
 )
-from nilearn.datasets import load_mni152_template
-from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
@@ -47,7 +47,7 @@ def apply_mask_and_get_affinity(
 
     Parameters
     ----------
-    seeds : List of triplets of coordinates in native space
+    seeds : :obj:`list` of triplets of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as target_affine.
 
@@ -63,7 +63,7 @@ def apply_mask_and_get_affinity(
     allow_overlap : boolean
         If False, a ValueError is raised if VOIs overlap
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object or None, default=None
         Mask to apply to regions before extracting signals. If niimg is None,
         mask_img is used as a reference space in which the spheres 'indices are
         placed.
@@ -183,7 +183,7 @@ def _iter_signals_from_spheres(
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 

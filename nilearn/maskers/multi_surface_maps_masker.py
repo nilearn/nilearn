@@ -14,7 +14,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
     MultiSurfaceMasker is useful when dealing with image sets from multiple
     subjects.
 
-    .. versionadded:: 0.13.0dev
+    .. versionadded:: 0.13.0
 
     Parameters
     ----------
@@ -23,7 +23,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         per map is extracted using least square regression. The data for \
         each hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
-    mask_img : :obj:`~nilearn.surface.SurfaceImage`, optional, default=None
+    mask_img : :obj:`~nilearn.surface.SurfaceImage` or None, default=None
         Mask to apply to regions before extracting signals. Defines the \
         overall area of the brain to consider. The data for each \
         hemisphere is of shape (n_vertices_per_hemisphere, n_regions).

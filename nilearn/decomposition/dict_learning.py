@@ -14,6 +14,7 @@ from sklearn.linear_model import Ridge
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import transfer_deprecated_param_vals
+from nilearn._utils.param_validation import sanitize_verbose
 
 from ._base import _BaseDecomposition
 from .canica import CanICA
@@ -62,7 +63,7 @@ class DictLearning(_BaseDecomposition):
           reduced session to be n_components.
 
     dict_init : Niimg-like object or \
-           :obj:`~nilearn.surface.SurfaceImage`, optional
+           :obj:`~nilearn.surface.SurfaceImage` or None, default=None
         Initial estimation of dictionary maps. Would be computed from CanICA if
         not provided.
 
@@ -123,7 +124,7 @@ class DictLearning(_BaseDecomposition):
             These strategies are only relevant for Nifti images and the
             parameter is ignored for SurfaceImage objects.
 
-    mask_args : :obj:`dict`, optional
+    mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`
@@ -256,9 +257,11 @@ class DictLearning(_BaseDecomposition):
 
         _, n_features = data.shape
 
+        verbose = sanitize_verbose(self.verbose)
+
         logger.log(
             "Computing initial loadings",
-            verbose=self.verbose,
+            verbose=verbose,
         )
         self._init_loadings(data)
 
@@ -268,7 +271,7 @@ class DictLearning(_BaseDecomposition):
 
         logger.log(
             " Learning dictionary",
-            verbose=self.verbose,
+            verbose=verbose,
         )
 
         kwargs = transfer_deprecated_param_vals(
@@ -281,7 +284,7 @@ class DictLearning(_BaseDecomposition):
             batch_size=self.batch_size,
             method=self.method,
             dict_init=dict_init,
-            verbose=max(0, self.verbose - 1),
+            verbose=max(0, verbose - 1),
             random_state=self.random_state,
             return_code=True,
             shuffle=True,

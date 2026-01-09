@@ -27,6 +27,7 @@ extraction = RegionExtractor(
     min_region_size=800,
     threshold=98,
     thresholding_strategy="percentile",
+    verbose=1,
 )
 
 # Just call fit() to execute region extraction procedure

@@ -145,12 +145,12 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
         l1_ratio=1.0,
         max_iter=max_iter,
         mask=mask,
-        verbose=0,
     )[0]
 
     assert_array_almost_equal(a, b, decimal=decimal)
 
 
+@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
 @pytest.mark.parametrize(
     "estimator, standardize",
@@ -190,7 +190,6 @@ def test_graph_net_and_tvl1_same_for_pure_l1_spacenet(
         penalty="graph-net",
         max_iter=max_iter,
         standardize=standardize,
-        verbose=0,
     ).fit(X, y)
     tvl1 = estimator(
         alphas=alpha,
@@ -199,7 +198,6 @@ def test_graph_net_and_tvl1_same_for_pure_l1_spacenet(
         penalty="tv-l1",
         max_iter=max_iter,
         standardize=standardize,
-        verbose=0,
     ).fit(X, y)
 
     assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
@@ -233,6 +231,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
     assert_array_almost_equal(a, b, decimal=decimal)
 
 
+@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
 @pytest.mark.parametrize(
     "estimator, standardize",
@@ -261,7 +260,6 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
         mask=mask_,
         penalty="graph-net",
         standardize=standardize,
-        verbose=0,
     ).fit(X_, y)
     tvl1 = estimator(
         alphas=alpha,
@@ -270,12 +268,12 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
         mask=mask_,
         penalty="tv-l1",
         standardize=standardize,
-        verbose=0,
     ).fit(X_, y)
 
     assert_array_almost_equal(sl.coef_[0], tvl1.coef_[0], decimal=decimal)
 
 
+@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
 @pytest.mark.parametrize("standardize", [True, False])
 def test_graph_net_and_tv_same_for_pure_l1_spacenet_regressor(
@@ -298,7 +296,6 @@ def test_graph_net_and_tv_same_for_pure_l1_spacenet_regressor(
         max_iter=max_iter,
         mask=mask,
         standardize=standardize,
-        verbose=0,
     ).fit(X, y)
     tvl1 = SpaceNetRegressor(
         alphas=alpha,
@@ -307,12 +304,12 @@ def test_graph_net_and_tv_same_for_pure_l1_spacenet_regressor(
         max_iter=max_iter,
         mask=mask,
         standardize=standardize,
-        verbose=0,
     ).fit(X, y)
 
     assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("penalty", ["graph-net", "tv-l1"])
 @pytest.mark.parametrize("cls", [SpaceNetRegressor, SpaceNetClassifier])
 def test_coef_shape(penalty, cls):
@@ -325,7 +322,6 @@ def test_coef_shape(penalty, cls):
         max_iter=3,
         penalty=penalty,
         alphas=1.0,
-        verbose=0,
         standardize="zscore_sample",
     ).fit(X, y)
 

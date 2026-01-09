@@ -15,10 +15,9 @@ from nilearn import masking
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_reduction_strategy
-from nilearn.image import new_img_like
+from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 
 INF = 1000 * np.finfo(np.float32).eps
 
@@ -32,11 +31,11 @@ def _check_shape_compatibility(img1, img2, dim=None):
         See :ref:`extracting_data`.
         Image to extract the data from.
 
-    img2 : Niimg-like object, optional
+    img2 : Niimg-like object
         See :ref:`extracting_data`.
         Contains map or mask.
 
-    dim : :obj:`int`, optional
+    dim : :obj:`int`, default=None
         Integer slices a mask for a specific dimension.
 
     """
@@ -57,7 +56,7 @@ def _check_affine_equality(img1, img2):
         See :ref:`extracting_data`.
         Image to extract the data from.
 
-    img2 : Niimg-like object, optional
+    img2 : Niimg-like object
         See :ref:`extracting_data`.
         Contains map or mask.
 
@@ -82,11 +81,11 @@ def _check_shape_and_affine_compatibility(img1, img2=None, dim=None):
         See :ref:`extracting_data`.
         Image to extract the data from.
 
-    img2 : Niimg-like object, optional
+    img2 : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Contains map or mask.
 
-    dim : :obj:`int`, optional
+    dim : :obj:`int`, default=None
         Integer slices a mask for a specific dimension.
 
     Returns
@@ -132,7 +131,7 @@ def _get_labels_data(
         By default, the label zero is used to denote an absence of region.
         Use background_label to change it.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Mask to apply to labels before extracting signals.
         Every point outside the mask is considered as background
@@ -141,7 +140,7 @@ def _get_labels_data(
     background_label : number, default=0
         Number representing background in labels_img.
 
-    dim : :obj:`int`, optional
+    dim : :obj:`int`, default=None
         Integer slices mask for a specific dimension.
 
     %(keep_masked_labels)s
@@ -260,11 +259,11 @@ def img_to_signals_labels(
     return_masked_atlas : :obj:`bool`, default=False
         If True, the masked atlas is returned.
 
-        .. nilearn_versionchanged :: 0.13.0dev
+        .. nilearn_versionchanged :: 0.13.0
 
             Default changed to False.
 
-        .. nilearn_deprecated:: 0.13.0dev
+        .. nilearn_deprecated:: 0.13.0
 
             This parameter will be removed in versions >= 0.15.0
 

@@ -661,6 +661,7 @@ def test_decoder_binary_classification_clustering(
 
 
 @ignore_warnings
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, data",
     [
@@ -716,6 +717,7 @@ def test_cross_validation(estimator, data, cv):
 
 
 @ignore_warnings
+@pytest.mark.slow
 def test_decoder_dummy_classifier(binary_classification_data):
     n_samples = N_SAMPLES
     X, y, mask = binary_classification_data
@@ -864,6 +866,7 @@ def test_decoder_dummy_classifier_default_scoring():
 
 
 @ignore_warnings
+@pytest.mark.slow
 def test_decoder_classification_string_label():
     iris = load_iris()
     X, y = iris.data, iris.target
@@ -985,6 +988,7 @@ def test_decoder_dummy_regression_other_strategy(regression_data):
 
 
 @ignore_warnings
+@pytest.mark.slow
 def test_decoder_multiclass_classification_masker(multiclass_data):
     X, y, _ = multiclass_data
 
@@ -1470,6 +1474,7 @@ def _set_best_hyperparameters(
 
 
 @ignore_warnings
+@pytest.mark.slow
 @pytest.mark.parametrize("regressor", ["svr", "lasso", "ridge"])
 def test_regressor_vs_sklearn(
     regressor, strings_to_sklearn=SUPPORTED_ESTIMATORS

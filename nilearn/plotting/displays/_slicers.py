@@ -12,10 +12,10 @@ from matplotlib.transforms import Bbox
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import is_binary_niimg, safe_get_data
-from nilearn._utils.niimg_conversions import _check_fov, check_niimg_3d
+from nilearn._utils.niimg import _get_data, is_binary_niimg, safe_get_data
 from nilearn._utils.param_validation import check_params
-from nilearn.image import get_data, new_img_like, reorder_img
+from nilearn.image import check_niimg_3d, get_data, new_img_like, reorder_img
+from nilearn.image.image import _check_fov
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
 from nilearn.plotting._engine_utils import create_colorbar_for_fig
 from nilearn.plotting._utils import (
@@ -41,21 +41,18 @@ class BaseSlicer:
 
     Attributes
     ----------
-    cut_coords : 3 :obj:`tuple` of :obj:`int`
-        The cut position, in world space.
+    cut_coords : the type of allowed will depend on the each child class
 
     frame_axes : :class:`matplotlib.axes.Axes`, optional
         The matplotlib axes that will be subdivided in 3.
 
-    black_bg : :obj:`bool`, default=False
-        If ``True``, the background of the figure will be put to
-        black. If you wish to save figures with a black background,
-        you will need to pass ``facecolor='k', edgecolor='k'``
-        to :func:`~matplotlib.pyplot.savefig`.
+    %(black_bg)s
+        default=False
 
     brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
         The brain color to use as the background color (e.g., for
         transparent colorbars).
+
     """
 
     # This actually encodes the figsize for only one axe
@@ -105,10 +102,118 @@ class BaseSlicer:
     def find_cut_coords(img=None, threshold=None, cut_coords=None):
         """Act as placeholder and is not implemented in the base class \
         and has to be implemented in derived classes.
+
         """
         # Implement this as a staticmethod or a classmethod when
         # subclassing
         raise NotImplementedError
+
+    @classmethod
+    def _check_cut_coords_in_bounds(cls, img, cut_coords) -> None:
+        """
+        Check if the specified ``cut_coords`` is within the bounds of the
+        specified image ``img``.
+
+        Parameters
+        ----------
+        img : 3D Nifti1Image
+            The brain map.
+
+        %(cut_coords)s
+
+        Raises
+        ------
+        ValueError
+            If none of the coords is in the specified image bounds.
+
+        Warns
+        -----
+        UserWarning
+            If at least one of the coordinates is not within the bounds.
+
+        """
+        if img is None or cut_coords is None:
+            return
+        data = _get_data(img)
+        bounds = get_bounds(data.shape, img.affine)
+
+        coord_in = cls._get_coords_in_bounds(bounds, cut_coords)
+
+        bounds_str = (
+            f"\n\tx: [{bounds[0][0]:.2f}, {bounds[0][1]:.2f}]"
+            f"\n\ty: [{bounds[1][0]:.2f}, {bounds[1][1]:.2f}]"
+            f"\n\tz: [{bounds[2][0]:.2f}, {bounds[2][1]:.2f}]"
+        )
+
+        # if none of the coordinates is in bounds
+        # raise error
+        if not any(coord_in):
+            raise ValueError(
+                f"Specified {cut_coords=} is out of the bounds of the image."
+                "\nPlease specify coordinates within the bounds:"
+                f"{bounds_str}"
+            )
+        # if at least one (but not all) of the coordinates is out of the
+        # bounds, warn user
+        if any(coord_in) and not all(coord_in):
+            out_of_bounds = np.asarray(cut_coords)[
+                np.logical_not(np.asarray(coord_in))
+            ].tolist()
+            warnings.warn(
+                (
+                    f"The following 'cut_coords':"
+                    f"\n{out_of_bounds} "
+                    "\nseem to be out of the image bounds:"
+                    f"{bounds_str}"
+                ),
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
+
+    @classmethod
+    def _cut_count(cls):
+        """Return the number of directions for this slicer."""
+        raise NotImplementedError()
+
+    @classmethod
+    def _sanitize_cut_coords(cls, cut_coords):
+        """Check if the specified ``cut_coords`` is compatible with this
+        slicer and adjust its value if possible.
+
+        Parameters
+        ----------
+        %(cut_coords)s
+
+        Raises
+        ------
+        ValueError
+            If ``cut_coords`` is not compatible with this slicer.
+
+        """
+        raise NotImplementedError()
+
+    @classmethod
+    def _get_coords_in_bounds(cls, bounds, cut_coords):
+        """Check for each coordinate in ``cut_coords`` if it is within the
+        specified ``bounds`` and return a list of boolean values corresponding
+        to each coordinate.
+
+        Parameters
+        ----------
+        bounds:
+            image bounds to check if the specified ``cut_coords`` is inside
+            these bounds
+
+        %(cut_coords)s
+
+        Return
+        ------
+        list[bool]
+            a list of boolean values corresponding to each coordinate
+        indicating if it is within the bounds or not
+
+        """
+        raise NotImplementedError()
 
     @classmethod
     @fill_doc  # the fill_doc decorator must be last applied
@@ -133,18 +238,13 @@ class BaseSlicer:
 
         %(threshold)s
 
-        cut_coords : 3 :obj:`tuple` of :obj:`int`
-            The cut position, in world space.
+        %(cut_coords)s
 
         axes : :class:`matplotlib.axes.Axes`, optional
             The axes that will be subdivided in 3.
 
-        black_bg : :obj:`bool`, default=False
-            If ``True``, the background of the figure will be put to
-            black. If you wish to save figures with a black background,
-            you will need to pass ``facecolor='k', edgecolor='k'``
-            to :func:`matplotlib.pyplot.savefig`.
-
+        %(black_bg)s
+            default=False
 
         brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
             The brain color to use as the background color (e.g., for
@@ -154,6 +254,7 @@ class BaseSlicer:
         ------
         ValueError
             if the specified threshold is a negative number
+
         """
         check_params(locals())
         check_threshold_not_negative(threshold)
@@ -238,6 +339,7 @@ class BaseSlicer:
         kwargs :
             Extra keyword arguments are passed to matplotlib's text
             function.
+
         """
         if color is None:
             color = "k" if self._black_bg else "w"
@@ -253,13 +355,18 @@ class BaseSlicer:
         else:
             first_axe = self.cut_coords[0]
         ax = self.axes[first_axe].ax
+
+        kwargs |= {
+            "horizontalalignment": "left",
+            "verticalalignment": "top",
+            "zorder": 1000,
+        }
+
         ax.text(
             x,
             y,
             text,
             transform=self.frame_axes.transAxes,
-            horizontalalignment="left",
-            verticalalignment="top",
             size=size,
             color=color,
             bbox={
@@ -268,7 +375,6 @@ class BaseSlicer:
                 "fc": bgcolor,
                 "alpha": alpha,
             },
-            zorder=1000,
             **kwargs,
         )
         ax.set_zorder(1000)
@@ -328,6 +434,7 @@ class BaseSlicer:
         ------
         ValueError
             if the specified threshold is a negative number
+
         """
         check_threshold_not_negative(threshold)
 
@@ -569,6 +676,7 @@ class BaseSlicer:
         transparency: None, float or np.ndarray
 
         transparency_affine: None or np.ndarray
+
         """
         transparency_affine = None
         if isinstance(transparency, NiimgLike):
@@ -670,6 +778,7 @@ class BaseSlicer:
         ------
         ValueError
             if the specified threshold is a negative number
+
         """
         check_params(locals())
         check_threshold_not_negative(threshold)
@@ -711,6 +820,7 @@ class BaseSlicer:
         cbar_vmax : :obj:`float`, optional
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
+
         """
         # create new  axis for the colorbar
         figure = self.frame_axes.figure
@@ -811,6 +921,7 @@ class BaseSlicer:
                     :obj:`list` of :obj:`float` of shape ``(n_markers,)``, \
                     default=30
             Size in pixel for each marker.
+
         """
         defaults = {"marker": "o", "zorder": 1000}
         marker_coords = np.asanyarray(marker_coords)
@@ -929,6 +1040,7 @@ class BaseSlicer:
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to matplotlib's text
             function.
+
         """
         kwargs = kwargs.copy()
         if "color" not in kwargs:
@@ -963,6 +1075,7 @@ class BaseSlicer:
         """Close the figure.
 
         This is necessary to avoid leaking memory.
+
         """
         plt.close(self.frame_axes.figure.number)
 
@@ -989,8 +1102,127 @@ class BaseSlicer:
         )
 
 
+class _ThreeDSlicer(BaseSlicer):
+    _cut_displayed: ClassVar[str] = "yxz"
+    _axes_class = CutAxes
+
+    @classmethod
+    @fill_doc  # the fill_doc decorator must be last applied
+    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+        """Instantiate the slicer and find cut coordinates.
+
+        Parameters
+        ----------
+        img : 3D :class:`~nibabel.nifti1.Nifti1Image`
+            The brain map.
+
+        threshold : :obj:`int` or :obj:`float` or ``None``, default=None
+            Threshold to apply:
+
+                - If ``None`` is given, the maps are not thresholded.
+                - If number is given, it must be non-negative. The specified
+                  value is used to threshold the image: values below the
+                  threshold (in absolute value) are plotted as transparent.
+
+        %(cut_coords)s
+
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
+
+        """
+        # checks if cut_coords is compatible with this slicer
+        # and adjust value if necessary
+        cut_coords = cls._sanitize_cut_coords(cut_coords)
+        if cut_coords is None:
+            if img is None or img is False:
+                cut_coords = (0, 0, 0)
+            else:
+                cut_coords = find_xyz_cut_coords(
+                    img, activation_threshold=threshold
+                )
+            cut_coords = [
+                cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
+            ]
+        else:
+            # check if cut_coords is within image bounds
+            # when it is not generated by this function
+            cls._check_cut_coords_in_bounds(img, cut_coords)
+
+        return cut_coords
+
+    @classmethod
+    def _cut_count(cls):
+        return len(cls._cut_displayed)
+
+    @classmethod
+    def _sanitize_cut_coords(cls, cut_coords):
+        """Check if the specified ``cut_coords`` is a list of world coordinates
+        with number of elements equal to the number of directions of this
+        slicer and return the specified value as it is.
+
+        Parameters
+        ----------
+        %(cut_coords)s
+
+        Raises
+        ------
+        ValueError
+            If ``cut_coords`` is not None or the number of elements of the
+        specified ``cut_coords`` is not equal to the number of cuts of this
+        slicer.
+
+        """
+        if not (
+            cut_coords is None
+            or (
+                isinstance(cut_coords, (list, tuple, np.ndarray))
+                and len(cut_coords) == cls._cut_count()
+            )
+        ):
+            raise ValueError(
+                "cut_coords passed does not match the display mode."
+                f" {cls.__name__} plotting expects tuple of length "
+                f"{cls._cut_count()} or None.\n"
+                f"You provided cut_coords={cut_coords}."
+            )
+        return cut_coords
+
+    @classmethod
+    def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
+        """Check for each coordinate in `cut_coords` if it is within the
+        specified `bounds` and return a list of boolean values corresponding to
+        each coordinate.
+
+        Parameters
+        ----------
+        bounds:
+            image bounds to check if the specified `cut_coords` is inside these
+        bounds
+
+        %(cut_coords)s
+
+        Return
+        ------
+        list[bool]
+            a list of boolean values corresponding to each coordinate
+        indicating if it is within the bounds or not
+
+        """
+        coord_in = []
+
+        for index, c in enumerate(sorted(cls._cut_displayed)):
+            bounds_index = "xyz".find(c)
+            coord_in.append(
+                bounds[bounds_index][0] <= cut_coords[index]
+                and cut_coords[index] <= bounds[bounds_index][1]
+            )
+        return coord_in
+
+
 @fill_doc
-class OrthoSlicer(BaseSlicer):
+class OrthoSlicer(_ThreeDSlicer):
     """Class to create 3 linked axes for plotting orthogonal \
     cuts of 3D maps.
 
@@ -1011,8 +1243,8 @@ class OrthoSlicer(BaseSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`list`
-        The cut coordinates.
+    cut_coords : 3D :obj:`tuple`  of :obj:`float`
+        World coordinates (x, y, z) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot each view.
@@ -1034,52 +1266,10 @@ class OrthoSlicer(BaseSlicer):
 
     """
 
-    _cut_displayed: ClassVar[str] = "yxz"
-    _axes_class = CutAxes
     _default_figsize: ClassVar[list[float]] = [2.2, 3.5]
 
-    @classmethod
-    @fill_doc  # the fill_doc decorator must be last applied
-    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
-        """Instantiate the slicer and find cut coordinates.
-
-        Parameters
-        ----------
-        %(img)s
-        threshold : :obj:`int` or :obj:`float` or ``None``, default=None
-            Threshold to apply:
-
-                - If ``None`` is given, the maps are not thresholded.
-                - If number is given, it must be non-negative. The specified
-                  value is used to threshold the image: values below the
-                  threshold (in absolute value) are plotted as transparent.
-
-        cut_coords : 3 :obj:`tuple` of :obj:`int`
-            The cut position, in world space.
-
-        Raises
-        ------
-        ValueError
-            if the specified threshold is a negative number
-        """
-        if cut_coords is None:
-            if img is None or img is False:
-                cut_coords = (0, 0, 0)
-            else:
-                cut_coords = find_xyz_cut_coords(
-                    img, activation_threshold=threshold
-                )
-            cut_coords = [
-                cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
-            ]
-        return cut_coords
-
     def _init_axes(self, **kwargs):
-        cut_coords = self.cut_coords
-        if len(cut_coords) != len(self._cut_displayed):
-            raise ValueError(
-                "The number cut_coords passed does not match the display_mode"
-            )
+        self.cut_coords = self._sanitize_cut_coords(self.cut_coords)
         x0, y0, x1, y1 = self.rect
         facecolor = "k" if self._black_bg else "w"
         # Create our axes:
@@ -1131,6 +1321,7 @@ class OrthoSlicer(BaseSlicer):
         Here we put the logic used to adjust the size of the axes.
 
         ``renderer`` is required to match the matplotlib API.
+
         """
         x0, y0, x1, y1 = self.rect
         # A dummy axes, for the situation in which we are not plotting
@@ -1185,6 +1376,7 @@ class OrthoSlicer(BaseSlicer):
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
             :func:`~matplotlib.pyplot.axhline`.
+
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
@@ -1223,7 +1415,7 @@ class OrthoSlicer(BaseSlicer):
                 ax.axhline(y, **kwargs)
 
 
-class TiledSlicer(BaseSlicer):
+class TiledSlicer(_ThreeDSlicer):
     """A class to create 3 axes for plotting orthogonal \
     cuts of 3D maps, organized in a 2x2 grid.
 
@@ -1242,8 +1434,8 @@ class TiledSlicer(BaseSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`list`
-        The cut coordinates.
+    cut_coords : 3D :obj:`tuple` of :obj:`float`
+        World coordinates (x, y, z) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot each view.
@@ -1265,49 +1457,7 @@ class TiledSlicer(BaseSlicer):
 
     """
 
-    _cut_displayed: ClassVar[str] = "yxz"
-    _axes_class = CutAxes
     _default_figsize: ClassVar[list[float]] = [2.0, 7.6]
-
-    @classmethod
-    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
-        """Instantiate the slicer and find cut coordinates.
-
-        Parameters
-        ----------
-        img : 3D :class:`~nibabel.nifti1.Nifti1Image`
-            The brain map.
-
-        threshold : :obj:`float`, optional
-            The lower threshold to the positive activation.
-            If ``None``, the activation threshold is computed using the
-            80% percentile of the absolute value of the map.
-
-        cut_coords : :obj:`list` of :obj:`float`, optional
-            xyz world coordinates of cuts.
-
-        Returns
-        -------
-        cut_coords : :obj:`list` of :obj:`float`
-            xyz world coordinates of cuts.
-
-        Raises
-        ------
-        ValueError
-            if the specified threshold is a negative number
-        """
-        if cut_coords is None:
-            if img is None or img is False:
-                cut_coords = (0, 0, 0)
-            else:
-                cut_coords = find_xyz_cut_coords(
-                    img, activation_threshold=threshold
-                )
-            cut_coords = [
-                cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
-            ]
-
-        return cut_coords
 
     def _find_initial_axes_coord(self, index):
         """Find coordinates for initial axes placement for xyz cuts.
@@ -1322,6 +1472,7 @@ class TiledSlicer(BaseSlicer):
         [coord1, coord2, coord3, coord4] : :obj:`list` of :obj:`int`
             x0, y0, x1, y1 coordinates used by matplotlib
             to position axes in figure.
+
         """
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
@@ -1349,13 +1500,9 @@ class TiledSlicer(BaseSlicer):
         ----------
         kwargs : :obj:`dict`
             Additional arguments to pass to ``self._axes_class``.
-        """
-        cut_coords = self.cut_coords
-        if len(cut_coords) != len(self._cut_displayed):
-            raise ValueError(
-                "The number cut_coords passed does not match the display_mode"
-            )
 
+        """
+        self.cut_coords = self._sanitize_cut_coords(self.cut_coords)
         facecolor = "k" if self._black_bg else "w"
 
         self.axes = {}
@@ -1397,6 +1544,7 @@ class TiledSlicer(BaseSlicer):
 
         height_dict : :obj:`dict`
             Height ratios of image cuts for optimal positioning of axes.
+
         """
         total_height = 0
         total_width = 0
@@ -1449,6 +1597,7 @@ class TiledSlicer(BaseSlicer):
         coord1, coord2, coord3, coord4 : :obj:`dict`
             x0, y0, x1, y1 coordinates per axes used by matplotlib
             to position axes in figure.
+
         """
         coord1 = {}
         coord2 = {}
@@ -1490,6 +1639,7 @@ class TiledSlicer(BaseSlicer):
         Here we put the logic used to adjust the size of the axes.
 
         ``renderer`` is required to match the matplotlib API.
+
         """
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
@@ -1543,6 +1693,7 @@ class TiledSlicer(BaseSlicer):
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
             :func:`~matplotlib.pyplot.axhline`.
+
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
@@ -1598,7 +1749,11 @@ class BaseStackedSlicer(BaseSlicer):
     -----
     The extent of the different axes are adjusted to fit the data
     best in the viewing area.
+
     """
+
+    # This should be set by each inheriting Slicer
+    _direction: ClassVar[str] = ""
 
     @classmethod
     def find_cut_coords(
@@ -1619,32 +1774,114 @@ class BaseStackedSlicer(BaseSlicer):
             If ``None``, the activation threshold is computed using the
             80% percentile of the absolute value of the map.
 
-        cut_coords : :obj:`list` of :obj:`float`, optional
-            xyz world coordinates of cuts.
+        %(cut_coords)s
 
         Returns
         -------
-        cut_coords : :obj:`list` of :obj:`float`
-            xyz world coordinates of cuts.
+        cut_coords : :obj:`list` of :obj:`int`
+            xyz world coordinates of cuts corresponding to the direction of
+        this slicer.
+
+        """
+        # checks if cut_coords is compatible with this slicer
+        # and adjust value if necessary
+        cut_coords = cls._sanitize_cut_coords(cut_coords)
+        if img is None or img is False:
+            if isinstance(cut_coords, numbers.Number):
+                bounds = ((-40, 40), (-30, 30), (-30, 75))
+                lower, upper = bounds["xyz".index(cls._direction)]
+                cut_coords = np.linspace(lower, upper, cut_coords).tolist()
+        elif isinstance(cut_coords, numbers.Number):
+            cut_coords = find_cut_slices(
+                img, direction=cls._direction, n_cuts=cut_coords
+            )
+        else:
+            # check if cut_coords is within image bounds
+            # when it is not generated by this function
+            cls._check_cut_coords_in_bounds(img, cut_coords)
+
+        return cut_coords
+
+    @classmethod
+    def _sanitize_cut_coords(cls, cut_coords):
+        """Check if the specified ``cut_coords`` is one of :obj:`tuple`,
+        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
+        the number of cuts of this slicer or a :class:`~number.Number` or
+        `None`.
+
+        If `None` is specified return the default value 7.
+
+        Parameters
+        ----------
+        %(cut_coords)s
+
+        Raises
+        ------
+        ValueError
+            If the specified ``cut_coords`` is not one of :obj:`tuple`,
+        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
+        the number of cuts of this slicer or a :class:`~number.Number` or
+        `None`.
+
         """
         if cut_coords is None:
             cut_coords = 7
-
-        if img is None or img is False:
-            bounds = ((-40, 40), (-30, 30), (-30, 75))
-            lower, upper = bounds["xyz".index(cls._direction)]
-            if isinstance(cut_coords, numbers.Number):
-                cut_coords = np.linspace(lower, upper, cut_coords).tolist()
-        elif not isinstance(
-            cut_coords, collections.abc.Sequence
-        ) and isinstance(cut_coords, numbers.Number):
-            cut_coords = find_cut_slices(
-                img, direction=cls._direction, n_cuts=cut_coords
+        elif isinstance(cut_coords, (list, tuple, np.ndarray)):
+            cut_coords = np.asarray(cut_coords).tolist()
+            if len(cut_coords) != len(set(cut_coords)):
+                warnings.warn(
+                    f"Dropping duplicates cuts from: {cut_coords=}",
+                    stacklevel=find_stack_level(),
+                )
+                cut_coords = list(set(cut_coords))
+        elif not isinstance(cut_coords, numbers.Number):
+            raise ValueError(
+                "cut_coords passed does not match the display mode."
+                f" {cls.__name__} plotting expects a number, list, tuple or "
+                "array of numbers or None."
+                f"You provided cut_coords={cut_coords}."
             )
 
         return cut_coords
 
+    @classmethod
+    def _cut_count(cls):
+        return len(cls._direction)
+
+    @classmethod
+    def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
+        """Check for each element in ``cut_coords`` if it is within the
+        ``bounds`` of the direction of this slicer return a list of boolean
+        values corresponding to each element.
+
+        Parameters
+        ----------
+        bounds :
+            image bounds to check if the specified cut_coords is inside these
+        bounds
+
+        cut_coords : :obj:`tuple`, :obj:`list` of :obj:`float`
+            xyz world coordinates of cuts corresponding to the direction of
+            this slicer.cut_coords to check
+
+        Return
+        ------
+        list[bool]
+            a list of boolean values corresponding to each coordinate
+        indicating if it is within the bounds or not
+
+        """
+        coord_in = []
+
+        index = "xyz".find(cls._direction)
+        coord_bounds = bounds[index]
+        coord_in = [
+            coord_bounds[0] <= c <= coord_bounds[1] for c in cut_coords
+        ]
+        return coord_in
+
     def _init_axes(self, **kwargs):
+        self._sanitize_cut_coords(self.cut_coords)
         x0, y0, x1, y1 = self.rect
         # Create our axes:
         self.axes = {}
@@ -1696,6 +1933,7 @@ class BaseStackedSlicer(BaseSlicer):
         Here we put the logic used to adjust the size of the axes.
 
         ``renderer`` is required to match the matplotlib API.
+
         """
         x0, y0, x1, y1 = self.rect
         width_dict = {}
@@ -1742,6 +1980,7 @@ class BaseStackedSlicer(BaseSlicer):
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
             :func:`matplotlib.pyplot.axhline`.
+
         """
 
 
@@ -1764,8 +2003,8 @@ class XSlicer(BaseStackedSlicer):
 
     Attributes
     ----------
-    cut_coords : 1D :class:`~numpy.ndarray`
-        The cut coordinates.
+    cut_coords : :obj:`list` of :obj:`float`
+        The list of cut positions in direction x.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting.
@@ -1803,8 +2042,8 @@ class YSlicer(BaseStackedSlicer):
 
     Attributes
     ----------
-    cut_coords : 1D :class:`~numpy.ndarray`
-        The cut coordinates.
+    cut_coords : :obj:`list` of :obj:`float`
+        The list of cut positions in direction y.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting.
@@ -1842,8 +2081,8 @@ class ZSlicer(BaseStackedSlicer):
 
     Attributes
     ----------
-    cut_coords : 1D :class:`~numpy.ndarray`
-        The cut coordinates.
+    cut_coords : :obj:`list` of :obj:`float`
+        The list of cut positions in direction z.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting.
@@ -1881,8 +2120,8 @@ class XZSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`list` of :obj:`float`
-        The cut coordinates.
+    cut_coords : 2D :obj:`tuple` of :obj:`float`
+        World coordinates (x, z) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'z' here).
@@ -1919,8 +2158,8 @@ class YXSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`list` of :obj:`float`
-        The cut coordinates.
+    cut_coords : 2D :obj:`tuple` of :obj:`float`
+        World coordinates (x, y) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'y' here).
@@ -1957,8 +2196,8 @@ class YZSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`list` of :obj:`float`
-        The cut coordinates.
+    cut_coords : 2D :obj:`tuple` of :obj:`float`
+        World coordinates (y, z) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('y' and 'z' here).
@@ -2021,6 +2260,47 @@ class MosaicSlicer(BaseSlicer):
     _default_figsize: ClassVar[list[float]] = [4.0, 5.0]
 
     @classmethod
+    def _sanitize_cut_coords(cls, cut_coords):
+        """Check if the specified ``cut_coords`` is one of :obj:`tuple`,
+        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
+        the number of cuts of this slicer, or a :class:`~number.Number` or
+        None.
+
+        If `None` is specified return the default value [7, 7, 7].
+        If a :class:`number.Number` is specified return a list of 3 elements
+        with the specified number.
+
+        Parameters
+        ----------
+        %(cut_coords)s
+
+        Raises
+        ------
+        ValueError
+            If the specified ``cut_coords`` is not one of :obj:`tuple`,
+        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
+        the number of cuts of this slicer, or a :class:`~number.Number` or
+        None.
+
+        """
+        if cut_coords is None:
+            cut_coords = 7
+        if isinstance(cut_coords, numbers.Number):
+            cut_coords = [cut_coords] * cls._cut_count()
+        elif (
+            isinstance(cut_coords, (list, tuple, np.ndarray))
+            and len(cut_coords) != cls._cut_count()
+        ):
+            raise ValueError(
+                "cut_coords passed does not match the display mode. "
+                f" {cls.__name__} plotting expects a number, list, tuple or "
+                "array of numbers or None."
+                f"You provided cut_coords={cut_coords}."
+            )
+
+        return cut_coords
+
+    @classmethod
     def find_cut_coords(
         cls,
         img=None,
@@ -2039,78 +2319,43 @@ class MosaicSlicer(BaseSlicer):
             the activation threshold is computed using the 80% percentile of
             the absolute value of the map.
 
-        cut_coords : :obj:`list` / :obj:`tuple` of 3 :obj:`float`,\
-        :obj:`int`, optional
+        cut_coords : :obj:`list` / :obj:`tuple` of 3 :obj:`int`,\
+                     :obj:`float`, optional
             xyz world coordinates of cuts. If ``cut_coords``
             are not provided, 7 coordinates of cuts are automatically
             calculated.
+            If an integer is provided, specified number of cuts are calculated
+            for each direction.
 
         Returns
         -------
         cut_coords : :obj:`dict`
             xyz world coordinates of cuts in a direction.
             Each key denotes the direction.
+
         """
-        if cut_coords is None:
-            cut_coords = 7
+        cut_coords = cls._sanitize_cut_coords(cut_coords)
 
-        if not isinstance(cut_coords, collections.abc.Sequence) and isinstance(
-            cut_coords, numbers.Number
-        ):
-            cut_coords = [cut_coords] * 3
-        elif len(cut_coords) == len(cls._cut_displayed):
-            cut_coords = [
-                cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
-            ]
-        else:
-            raise ValueError(
-                "The number cut_coords passed does not"
-                " match the display_mode. Mosaic plotting "
-                "expects tuple of length 3."
-            )
-        cut_coords = cls._find_cut_coords(img, cut_coords, cls._cut_displayed)
-        return cut_coords
-
-    @staticmethod
-    def _find_cut_coords(img, cut_coords, cut_displayed):
-        """Find slicing positions along a given axis.
-
-        Help to :func:`~nilearn.plotting.find_cut_coords`.
-
-        Parameters
-        ----------
-        img : 3D :class:`~nibabel.nifti1.Nifti1Image`
-            The brain image.
-
-        cut_coords : :obj:`list` / :obj:`tuple` of 3 :obj:`float`,\
-        :obj:`int`, optional
-            xyz world coordinates of cuts.
-
-        cut_displayed : :obj:`str`
-            Sectional directions 'yxz'.
-
-        Returns
-        -------
-        cut_coords : 1D :class:`~numpy.ndarray` of length specified\
-        in ``n_cuts``
-            The computed ``cut_coords``.
-        """
         coords = {}
         if img is None or img is False:
             bounds = ((-40, 40), (-30, 30), (-30, 75))
             for direction, n_cuts in zip(
-                sorted(cut_displayed), cut_coords, strict=False
+                sorted(cls._cut_displayed), cut_coords, strict=False
             ):
                 lower, upper = bounds["xyz".index(direction)]
                 coords[direction] = np.linspace(lower, upper, n_cuts).tolist()
         else:
             for direction, n_cuts in zip(
-                sorted(cut_displayed), cut_coords, strict=False
+                sorted(cls._cut_displayed), cut_coords, strict=False
             ):
                 coords[direction] = find_cut_slices(
                     img, direction=direction, n_cuts=n_cuts
                 )
         return coords
+
+    @classmethod
+    def _cut_count(cls):
+        return len(cls._cut_displayed)
 
     def _init_axes(self, **kwargs):
         """Initialize and place axes for display of 'xyz' multiple cuts.
@@ -2121,14 +2366,12 @@ class MosaicSlicer(BaseSlicer):
         ----------
         kwargs : :obj:`dict`
             Additional arguments to pass to ``self._axes_class``.
+
         """
+        self.cut_coords = self._sanitize_cut_coords(self.cut_coords)
         if not isinstance(self.cut_coords, dict):
             self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
 
-        if len(self.cut_coords) != len(self._cut_displayed):
-            raise ValueError(
-                "The number cut_coords passed does not match the mosaic mode"
-            )
         x0, y0, x1, y1 = self.rect
 
         # Create our axes:
@@ -2182,6 +2425,7 @@ class MosaicSlicer(BaseSlicer):
         Here we put the logic used to adjust the size of the axes.
 
         ``renderer`` is required to match the matplotlib API.
+
         """
         x0, y0, x1, y1 = self.rect
         display_ax_dict = self.axes
@@ -2246,6 +2490,7 @@ class MosaicSlicer(BaseSlicer):
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
             :func:`matplotlib.pyplot.axhline`.
+
         """
 
 
@@ -2325,6 +2570,7 @@ def save_figure_if_needed(fig, output_file):
     Returns
     -------
     None if ``output_file`` is None, ``fig`` otherwise.
+
     """
     if output_file is None:
         return fig

@@ -553,7 +553,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     con_name : :obj:`str`
         identifier of the condition
     %(hrf_model)s
-    fir_delays : 1D array_like, optional
+    fir_delays : 1D array_like or None, default=None
         Delays (in scans) used in case of an FIR model
 
     Returns
@@ -608,7 +608,7 @@ def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor to have a smooth hrf.
 
-    fir_delays : 1D-array-like, optional
+    fir_delays : 1D-array-like or None, default=None
         List of delays (in scans) for finite impulse response models.
 
     Returns

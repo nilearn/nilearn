@@ -166,42 +166,13 @@ show()
 # gray matter density on that dataset.
 
 # %%
-# Saving model outputs to disk
-# ----------------------------
-# It can be useful to quickly generate a portable, ready-to-view report with
-# most of the pertinent information.
-# We can do this by saving the output of the GLM to disk
-# including an HTML report.
-# This is easy to do if you have a fitted model and the list of contrasts,
-# which we do here.
-from pathlib import Path
-
-from nilearn.glm import save_glm_to_bids
-
-output_dir = Path.cwd() / "results" / "plot_oasis"
-output_dir.mkdir(exist_ok=True, parents=True)
+# Generate a report for the GLM
+# -----------------------------
+#
+# Generate a report and view it.
+#
 
 icbm152_2009 = fetch_icbm152_2009()
-
-second_level_model = save_glm_to_bids(
-    second_level_model,
-    contrasts=["age", "sex"],
-    out_dir=output_dir / "derivatives" / "nilearn_glm",
-    prefix="ageEffectOnGM",
-    bg_img=icbm152_2009["t1"],
-    alpha=0.05,
-    height_control="fdr",
-)
-
-# %%
-# View the generated files
-files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
-print("\n".join([str(x.relative_to(output_dir)) for x in files]))
-
-#  %%
-# Generate a report and view it.
-# If no new contrast is passed to ``generate_report``,
-# the results saved to disk will be reused to generate the report.
 
 report = second_level_model.generate_report(
     bg_img=icbm152_2009["t1"],
@@ -209,4 +180,9 @@ report = second_level_model.generate_report(
     alpha=0.05,
     height_control=None,
 )
-report.save_as_html(output_dir / "report.html")
+
+# %%
+#
+# .. include:: ../../../examples/report_note.rst
+#
+report

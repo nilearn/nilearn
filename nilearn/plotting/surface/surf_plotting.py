@@ -5,9 +5,8 @@ import pandas as pd
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
-from nilearn.image import get_data
+from nilearn.image import check_niimg_3d, get_data
 from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
@@ -845,7 +844,7 @@ def plot_surf_roi(
         correct view, `hemi` should have a value corresponding to `roi_map`
         data.
 
-        .. nilearn_versionchanged :: nilearn 0.13.0dev
+        .. nilearn_versionchanged :: nilearn 0.13.0
 
             Negative or non-integer values are no longer allowed.
 

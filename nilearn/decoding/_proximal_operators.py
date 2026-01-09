@@ -80,7 +80,7 @@ def _objective_function_prox_tvl1(input_img, output_img, gradient, weight):
 def prox_tvl1(
     input_img,
     l1_ratio=0.05,
-    weight=50,
+    weight=50.0,
     dgap_tol=5.0e-5,
     x_tol=None,
     max_iter=200,
@@ -104,31 +104,31 @@ def prox_tvl1(
         but it is cast into an ndarray of floats for the computation
         of the denoised image.
 
-    weight : float, optional
+    weight : float, default=50.0
         Denoising weight. The greater ``weight``, the more denoising (at
         the expense of fidelity to ``input``)
 
-    dgap_tol : float, optional
+    dgap_tol : float, default=5.0e-5
         Precision required. The distance to the exact solution is computed
         by the dual gap of the optimization problem and rescaled by the
         squared l2 norm of the image (for contrast invariance).
 
-    x_tol : float or None, optional
+    x_tol : float or None, default=None
         The maximal relative difference between input and output. If
         specified, this specifies a stopping criterion on x, rather than
         the dual gap.
 
     %(max_iter)s
 
-    val_min : None or float, optional
+    val_min : None or float, default=None
         An optional lower bound constraint on the reconstructed image.
 
-    val_max : None or float, optional
+    val_max : None or float, default=None
         An optional upper bound constraint on the reconstructed image.
 
-    %(verbose)s
+    %(verbose0)s
 
-    fista : bool, optional
+    fista : bool, default=True
         If True, uses a FISTA loop to perform the optimization.
         if False, uses an ISTA loop.
 
@@ -167,11 +167,6 @@ def prox_tvl1(
     For details on implementing the bound constraints, read the aforementioned
     Beck and Teboulle paper.
     """
-    if verbose is False:
-        verbose = 0
-    if verbose is True:
-        verbose = 1
-
     weight = float(weight)
     input_img_flat = input_img.view()
     input_img_flat.shape = input_img.size
@@ -318,17 +313,12 @@ def prox_tvl1_with_intercept(
 
     %(max_iter5000)s
 
-    %(verbose)s
+    %(verbose0)s
 
     dgap_tol : float
         Dual-gap tolerance for TV-L1 prox operator approximation loop.
 
     """
-    if verbose is False:
-        verbose = 0
-    if verbose is True:
-        verbose = 1
-
     init = init.reshape(shape) if init is not None else init
     out, prox_info = prox_tvl1(
         w[:-1].reshape(shape),

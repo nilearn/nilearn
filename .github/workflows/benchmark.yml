@@ -36,6 +36,10 @@
 name: Run and deploy Nilearn benchmarks
 
 on:
+    pull_request:
+        branches:
+        -   '*'
+
     schedule:
         # Uses the cron schedule for github actions
         # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
@@ -49,20 +53,23 @@ on:
         #     │ │ │ │ │
         #     │ │ │ │ │
         #     * * * * *
-    -   cron: 0 0 * * 1
+    -   cron: 50 12 * * 5
 
     # This enables manual triggering from GitHub UI
     # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
     workflow_dispatch:
+        inputs:
+            simulate_schedule:
+                description: Set to "true" to simulate a scheduled (cron) run
+                required: false
+                default: 'false'
 
 jobs:
     benchmark:
-        if: >-
-            (github.event_name == 'workflow_dispatch' ||
-            github.event_name == 'schedule') &&
-            github.repository == 'nilearn/nilearn'
-        # TODO bump to 24.04 when bumping minimum python to 3.10
-        runs-on: ubuntu-22.04
+        if: >
+            (github.event_name == 'pull_request' && github.repository == 'nilearn/nilearn')
+            || (github.event_name == 'workflow_dispatch' && github.event.inputs.simulate_schedule == 'true')
+        runs-on: ubuntu-24.04
         defaults:
             run:
                 working-directory: ./asv_benchmarks
@@ -74,13 +81,14 @@ jobs:
                 fetch-depth: 0
         -   uses: actions/setup-python@v6
             with:
-                  # TODO bump to 3.10 when minimum python is 3.10
-                python-version: 3.9
+                python-version: 3.10.18
         -   name: Install asv and switch to asv_benchmarks directory
             run: |
                 pip install --upgrade pip
                 pip install asv
+                pip install nilearn
         -   name: Add SSH key for benchmarks repo
+            if: github.event_name != 'pull_request'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -91,11 +99,20 @@ jobs:
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
         -   name: Pull previous results from benchmarks repo
+            if: github.event_name != 'pull_request'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
                 git clone git@github.com:nilearn/benchmarks.git benchmarks_repo
                 cp -r benchmarks_repo/results .
+
+        -   name: Pull previous results from benchmarks repo (PR fallback)
+            if: github.event_name == 'pull_request'
+            run: |
+                # Use HTTPS for PRs (read-only)
+                git clone https://github.com/nilearn/benchmarks.git benchmarks_repo
+                cp -r benchmarks_repo/results .
+
         -   name: Get all the machine info
             run: |
                 asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
@@ -107,7 +124,7 @@ jobs:
         -   name: Create html with all results
             run: |
                 asv publish
-        -   uses: actions/upload-artifact@v5
+        -   uses: actions/upload-artifact@v6
             with:
                 name: Upload asv benchmark results as artifacts
                 path: |
@@ -116,6 +133,7 @@ jobs:
                     ./asv_benchmarks/results
                 compression-level: 9
         -   name: Push new results and logs back to benchmarks repo
+            if: github.event_name != 'pull_request'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -128,6 +146,7 @@ jobs:
                 git commit -m "Update benchmark results and logs (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin main
         -   name: Push html to gh-pages branch
+            if: github.event_name != 'pull_request'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |

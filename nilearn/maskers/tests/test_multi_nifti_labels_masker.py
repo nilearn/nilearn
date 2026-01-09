@@ -123,6 +123,7 @@ def test_multi_nifti_labels_masker(
         assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
 
+@pytest.mark.slow
 def test_multi_nifti_labels_masker_errors(
     affine_eye, shape_3d_default, length, img_labels
 ):
@@ -188,6 +189,7 @@ def test_multi_nifti_labels_masker_errors_resampling(
         masker.fit()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("test_values", [[-2.0, -1.0, 0.0, 1.0, 2]])
 @pytest.mark.parametrize(
     "strategy, fn",
@@ -278,6 +280,7 @@ def test_multi_nifti_labels_masker_resampling(
         assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
 
+@pytest.mark.slow
 def test_multi_nifti_labels_masker_resampling_clipped_labels(
     affine_eye, n_regions, length, img_labels, img_fmri
 ):
@@ -325,6 +328,7 @@ def test_multi_nifti_labels_masker_resampling_clipped_labels(
         assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
 
+@pytest.mark.slow
 def test_multi_nifti_labels_masker_atlas_data_different_fov(
     affine_eye, img_labels, length
 ):
