@@ -18,6 +18,7 @@ from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn.maskers import MultiNiftiMasker, MultiSurfaceMasker
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike
+from nilearn._utils.param_validation import sanitize_verbose
 
 from ._base import _BaseDecomposition
 from .canica import CanICA
@@ -260,11 +261,7 @@ class DictLearning(_BaseDecomposition):
 
         _, n_features = data.shape
 
-        verbose = self.verbose
-        if verbose:
-            verbose = 1
-        elif not verbose:
-            verbose = 0
+        verbose = sanitize_verbose(self.verbose)
 
         logger.log(
             "Computing initial loadings",
