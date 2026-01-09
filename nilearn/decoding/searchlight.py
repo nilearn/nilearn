@@ -19,6 +19,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
@@ -234,7 +235,9 @@ def _group_iter_search_light(
 # Class for search_light #####################################################
 ##############################################################################
 @fill_doc
-class SearchLight(TransformerMixin, BaseEstimator):
+class SearchLight(
+    _NilearnHTMLDocumentationLinkMixin, TransformerMixin, BaseEstimator
+):
     """Implement search_light analysis using an arbitrary type of classifier.
 
     Parameters

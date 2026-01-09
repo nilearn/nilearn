@@ -18,6 +18,7 @@ from sklearn.utils.validation import check_is_fitted
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -594,7 +595,12 @@ def recursive_neighbor_agglomeration(
 
 
 @fill_doc
-class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
+class ReNA(
+    _NilearnHTMLDocumentationLinkMixin,
+    ClusterMixin,
+    TransformerMixin,
+    BaseEstimator,
+):
     """Recursive Neighbor Agglomeration (:term:`ReNA`).
 
     Recursively merges the pair of clusters according to 1-nearest neighbors

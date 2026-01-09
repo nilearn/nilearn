@@ -10,6 +10,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.html_repr import SKLEARN_GTE_1_7
 from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
 from nilearn.reporting._utils import (
@@ -264,14 +265,19 @@ def _create_report(
                 index=False,
                 sparsify=False,
             )
-    parameters = model_attributes_to_dataframe(estimator)
-    with pd.option_context("display.max_colwidth", 100):
-        parameters = dataframe_to_html(
-            parameters,
-            precision=2,
-            header=True,
-            sparsify=False,
-        )
+
+    if SKLEARN_GTE_1_7:
+        parameters = estimator._repr_html_()
+    else:
+        # TODO (sklearn > 1.6.2) remove else block
+        parameters = model_attributes_to_dataframe(estimator)
+        with pd.option_context("display.max_colwidth", 100):
+            parameters = dataframe_to_html(
+                parameters,
+                precision=2,
+                header=True,
+                sparsify=False,
+            )
 
     if "n_elements" not in data:
         data["n_elements"] = 0
