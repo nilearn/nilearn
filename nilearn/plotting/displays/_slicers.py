@@ -834,14 +834,14 @@ class BaseSlicer:
             This object is typically found as the ``norm`` attribute of
             :class:`~matplotlib.image.AxesImage`.
 
-        threshold : :obj:`float` or ``None``, optional
+        threshold : :obj:`float` or ``None``, default=None
             The absolute value at which the colorbar is thresholded.
 
-        cbar_vmin : :obj:`float`, optional
+        cbar_vmin : :obj:`float`, default=None
             Minimal value for the colorbar. If None, the minimal value
             is computed based on the data.
 
-        cbar_vmax : :obj:`float`, optional
+        cbar_vmax : :obj:`float`, default=None
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
 
@@ -2755,7 +2755,7 @@ class MosaicSlicer(BaseSlicer):
         Parameters
         ----------
         cut_coords : :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
-                     `None`, optional
+                     `None`, default=None
             The positions of the crosses to draw.
             If ``None`` is passed, the ``MosaicSlicer``'s cut coordinates are
             used.

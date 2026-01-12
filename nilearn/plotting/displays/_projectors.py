@@ -245,11 +245,11 @@ class OrthoProjector(OrthoSlicer):
               e.g. "25.3%", and only the edges with a abs(value) above
               the given percentile will be shown.
 
-        edge_kwargs : :obj:`dict`, optional
+        edge_kwargs : :obj:`dict`, default=None
             Will be passed as kwargs for each edge
             :class:`~matplotlib.lines.Line2D`.
 
-        node_kwargs : :obj:`dict`
+        node_kwargs : :obj:`dict`, default=None
             Will be passed as kwargs to the function
             :func:`~matplotlib.pyplot.scatter` which plots all the
             nodes at one.
