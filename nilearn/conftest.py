@@ -949,12 +949,12 @@ def check_doc(obj) -> None:
 
 def check_parameters(parameters, doc_dict):
     """Check if all parameters are documented without duplicates and extras."""
-    documented = {
-        name.strip(): param.type
+    documented = [
+        name.strip()
         for param in doc_dict
         if not param.name.startswith("_")
         for name in param.name.split(",")
-    }
+    ]
     undocumented = [param for param in parameters if param not in documented]
     extras = [param for param in documented if param not in parameters]
 
