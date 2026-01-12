@@ -1500,9 +1500,6 @@ masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
 
 memory_ : joblib memory cache
 
-n_elements_ : :obj:`int`
-    The number of components.
-
 """
 
 docdict["base_decoder_fit_attributes"] = """
