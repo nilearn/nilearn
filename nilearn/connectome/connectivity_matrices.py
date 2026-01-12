@@ -457,25 +457,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         self.standardize = standardize
         self.verbose = verbose
 
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(niimg_like=False)
-        return tags
-
     def _check_input(self, X, confounds=None):
         subjects_types = [type(s) for s in X]
         if set(subjects_types) != {np.ndarray}:
