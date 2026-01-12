@@ -953,6 +953,7 @@ def check_parameters(parameters, doc_dict):
         name.strip()
         for param in doc_dict
         if not param.name.startswith("_")
+        # in case multiple params are defined in a line
         for name in param.name.split(",")
     ]
     undocumented = [param for param in parameters if param not in documented]
