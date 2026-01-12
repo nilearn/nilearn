@@ -172,7 +172,7 @@ def skip_if_running_tests(msg=""):
 
     Parameters
     ----------
-    msg : string, optional
+    msg : string, default=""
         The message issued when a test is skipped.
 
     """

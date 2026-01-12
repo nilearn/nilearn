@@ -1038,15 +1038,15 @@ def _scroll_server_results(
         must return True if the result is to be kept and False otherwise.
         Is called with the dict containing the metadata as sole argument.
 
-    query_terms : dict, sequence of pairs or None, optional
+    query_terms : dict, sequence of pairs  or None, default=None
         Key-value pairs to add to the base url in order to form query.
         If ``None``, nothing is added to the url.
 
-    max_results : int or None, optional
+    max_results : int  or None, default=None
         Maximum number of results to fetch; if ``None``, all available data
         that matches the query is fetched.
 
-    batch_size : int or None, optional
+    batch_size : int  or None, default=None
         Neurovault returns the metadata for hits corresponding to a query
         in batches. batch_size is used to choose the (maximum) number of
         elements in a batch. If None, ``_DEFAULT_BATCH_SIZE`` is used.

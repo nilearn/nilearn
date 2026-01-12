@@ -129,7 +129,8 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         List of matrices whose geometric mean to compute. Raise an error if the
         matrices are not all symmetric positive definite of the same shape.
 
-    init : numpy.ndarray, shape (n_features, n_features), optional
+    init : numpy.ndarray of shape (n_features, n_features) or None, \
+            default=None
         Initialization matrix, default to the arithmetic mean of matrices.
         Raise an error if the matrix is not symmetric positive definite of the
         same shape as the elements of matrices.
