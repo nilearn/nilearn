@@ -1567,7 +1567,7 @@ class TiledSlicer(_MultiDSlicer):
             Additional arguments to pass to ``self._axes_class``.
 
         """
-        self.cut_coords = self._sanitize_cut_coords(self.cut_coords)
+        self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
         facecolor = "k" if self._black_bg else "w"
 
         self.axes = {}
