@@ -20,10 +20,8 @@ from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
-from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params, sanitize_verbose
-from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -546,9 +544,7 @@ def _check_if_tolerance_reached(tol, max_norm, verbose, n):
 
 
 @fill_doc
-class GroupSparseCovariance(
-    _NilearnHTMLDocumentationLinkMixin, CacheMixin, NilearnBaseEstimator
-):
+class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
     """Covariance and precision matrix estimator.
 
     The model used has been introduced in :footcite:t:`Varoquaux2010a`, and the
