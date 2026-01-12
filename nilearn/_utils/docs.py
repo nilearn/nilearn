@@ -144,6 +144,13 @@ border_size : :obj:`int`, optional
     the image to determine the value of the background.
 """
 
+# brain_color
+docdict["brain_color"] = """
+brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+    The brain color to use as the background color (e.g., for
+    transparent colorbars).
+"""
+
 # cbar_tick_format
 docdict["cbar_tick_format"] = """
 cbar_tick_format : :obj:`str`, optional

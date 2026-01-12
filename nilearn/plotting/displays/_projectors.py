@@ -46,9 +46,7 @@ class OrthoProjector(OrthoSlicer):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -393,9 +391,7 @@ class XProjector(OrthoProjector):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -457,9 +453,7 @@ class YProjector(OrthoProjector):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -521,9 +515,7 @@ class ZProjector(OrthoProjector):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -587,9 +579,7 @@ class XZProjector(OrthoProjector):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -653,9 +643,7 @@ class YXProjector(OrthoProjector):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -718,9 +706,7 @@ class YZProjector(OrthoProjector):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -784,9 +770,7 @@ class LYRZProjector(OrthoProjector):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -849,9 +833,7 @@ class LZRYProjector(OrthoProjector):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -914,9 +896,7 @@ class LZRProjector(OrthoProjector):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -978,9 +958,7 @@ class LYRProjector(OrthoProjector):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -1042,9 +1020,7 @@ class LRProjector(OrthoProjector):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -1101,9 +1077,7 @@ class LProjector(OrthoProjector):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -1164,9 +1138,7 @@ class RProjector(OrthoProjector):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to

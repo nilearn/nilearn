@@ -268,9 +268,7 @@ class BaseSlicer:
         colorbar : :obj:`bool`, default=False
             If ``True``, display a colorbar on the right of the plots.
 
-        brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-            The brain color to use as the background color (e.g., for
-            transparent colorbars).
+        %(brain_color)s
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to
@@ -1271,9 +1269,7 @@ class OrthoSlicer(_MultiDSlicer):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -1494,9 +1490,7 @@ class TiledSlicer(_MultiDSlicer):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -2078,9 +2072,7 @@ class XSlicer(BaseStackedSlicer):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -2145,9 +2137,7 @@ class YSlicer(BaseStackedSlicer):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -2212,9 +2202,7 @@ class ZSlicer(BaseStackedSlicer):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -2278,9 +2266,7 @@ class XZSlicer(OrthoSlicer):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -2343,9 +2329,7 @@ class YXSlicer(OrthoSlicer):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -2408,9 +2392,7 @@ class YZSlicer(OrthoSlicer):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
@@ -2478,9 +2460,7 @@ class MosaicSlicer(BaseSlicer):
     %(black_bg)s
         default=False
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
-        The brain color to use as the background color (e.g., for
-        transparent colorbars).
+    %(brain_color)s
 
     kwargs : :obj:`dict`
         Extra keyword arguments are passed to
