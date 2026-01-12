@@ -672,3 +672,29 @@ def test_slicer_base_class_docstrings():
     check_methods(BaseSlicer)
     check_methods(_MultiDSlicer)
     check_methods(BaseStackedSlicer)
+
+
+@pytest.mark.parametrize(
+    "projector",
+    [
+        OrthoProjector,
+        XProjector,
+        YProjector,
+        ZProjector,
+        XZProjector,
+        YXProjector,
+        YZProjector,
+        LYRZProjector,
+        LZRYProjector,
+        LZRProjector,
+        LYRProjector,
+        LRProjector,
+        LProjector,
+        RProjector,
+    ],
+)
+def test_projector_docstrings(projector):
+    """Test if all slicers defined nilearn.plotting.displays._projectors have
+    complete docstrings.
+    """
+    check_doc(projector((2, 3, 4)))
