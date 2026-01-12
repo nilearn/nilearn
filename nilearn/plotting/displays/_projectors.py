@@ -36,9 +36,9 @@ class OrthoProjector(OrthoSlicer):
 
     Parameters
     ----------
-    cut_coords : 3 sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates ``(x, y, z)`` of the point where the cut is
-        performed.
+    cut_coords : sequence of :obj:`float` or :obj:`int`
+        The world coordinates of the point where the cut is performed. Not used
+        for projectors.
 
     axes : :class:`matplotlib.axes.Axes`, default=None
 
@@ -49,16 +49,15 @@ class OrthoProjector(OrthoSlicer):
         The brain color to use as the background color (e.g., for
         transparent colorbars).
 
-    kwargs :
+    kwargs : :obj:`dict`
         Extra keyword arguments are passed to
         :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
         each direction.
 
     Attributes
     ----------
-    cut_coords : 3 :obj:`tuple` of :obj:`float` or :obj:`int`
-        The world coordinates ``(x, y, z)`` of the point where the cut is
-        performed.
+    cut_coords : (None, None, None)
+        The world coordinates of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('x', 'y' and 'z' here).
@@ -82,14 +81,53 @@ class OrthoProjector(OrthoSlicer):
         threshold=None,  # noqa: ARG003
         cut_coords=None,  # noqa: ARG003
     ):
-        """Find the coordinates of the cut."""
+        """Return a tuple of `None`s of length corresponding to the number of
+        directions of this projector.
+
+        Specified parameters are not used.
+
+        Parameters
+        ----------
+        img : 3D :class:`~nibabel.nifti1.Nifti1Image`, default=None
+            The brain image.
+
+        threshold : :obj:`int` or :obj:`float` or None, default=None
+            Threshold to apply
+
+        cut_coords : sequence of :obj:`float` or :obj:`int`, or None, \
+                    default=None
+            The world coordinates of the point where the cut is performed.
+
+        Returns
+        -------
+        cut_coords : :obj:`tuple` of :obj:`float` or :obj:`int`
+            tuple of `None`s of length corresponding to the number of
+        directions of this projector.
+
+        """
         return (None,) * len(cls._cut_displayed)
 
     def draw_cross(self, cut_coords=None, **kwargs):
-        """Do nothing.
+        """Draw a crossbar on the plot to show where the cut is performed.
+
+        Not implemented for this slicer.
 
         It does not make sense to draw crosses for the position of
         the cuts since we are taking the max along one axis.
+
+        Parameters
+        ----------
+        cut_coords : sequence of :obj:`float` or :obj:`int`, or None, \
+                     default=None
+            The position of the cross to draw in world coordinates
+            ``(x, y, z)``.
+            If ``None`` is passed, the ``OrthoSlicer``'s cut coordinates are
+            used.
+
+        kwargs : :obj:`dict`
+            Extra keyword arguments are passed to function
+            :func:`~matplotlib.pyplot.axhline`.
+
         """
 
     def _check_inputs_add_graph(
@@ -216,6 +254,9 @@ class OrthoProjector(OrthoSlicer):
             Will be passed as kwargs to the function
             :func:`~matplotlib.pyplot.scatter` which plots all the
             nodes at one.
+
+        colorbar : :obj:`bool`, default=False
+            If ``True``, display a colorbar on the right of the plots.
         """
         # set defaults
         edge_kwargs = edge_kwargs or {}
@@ -323,6 +364,7 @@ class OrthoProjector(OrthoSlicer):
         plt.draw_if_interactive()
 
 
+@fill_doc
 class XProjector(OrthoProjector):
     """The ``XProjector`` class enables sagittal visualization through 2D \
     projections with :func:`~nilearn.plotting.plot_glass_brain`.
@@ -338,13 +380,41 @@ class XProjector(OrthoProjector):
         # display is an instance of the XProjector class
         display = plot_glass_brain(img, display_mode="x")
 
+    Parameters
+    ----------
+    cut_coords : sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates of the point where the cut is performed. Not used
+        for projectors.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : (None,)
+        The world coordinates of the point where the cut is performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-           The axes used for plotting.
+        The axes used for plotting in each direction ('x' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
-                 The axes framing the whole set of views.
+        The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "x"
+        The direction of cuts for ``XProjector``.
 
     See Also
     --------
@@ -357,6 +427,7 @@ class XProjector(OrthoProjector):
     _default_figsize: ClassVar[list[float]] = [2.6, 3.0]
 
 
+@fill_doc
 class YProjector(OrthoProjector):
     """The ``YProjector`` class enables coronal visualization through 2D \
     projections with :func:`~nilearn.plotting.plot_glass_brain`.
@@ -372,13 +443,41 @@ class YProjector(OrthoProjector):
         # display is an instance of the YProjector class
         display = plot_glass_brain(img, display_mode="y")
 
+    Parameters
+    ----------
+    cut_coords : sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates of the point where the cut is performed. Not used
+        for projectors.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : (None,)
+        The world coordinates of the point where the cut is performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-        The axes used for plotting.
+        The axes used for plotting in each direction ('y' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "y"
+        The direction of cuts for ``YProjector``.
 
     See Also
     --------
@@ -391,6 +490,7 @@ class YProjector(OrthoProjector):
     _default_figsize: ClassVar[list[float]] = [2.2, 3.0]
 
 
+@fill_doc
 class ZProjector(OrthoProjector):
     """The ``ZProjector`` class enables axial visualization through 2D \
     projections with :func:`~nilearn.plotting.plot_glass_brain`.
@@ -406,13 +506,41 @@ class ZProjector(OrthoProjector):
         # display is an instance of the ZProjector class
         display = plot_glass_brain(img, display_mode="z")
 
+    Parameters
+    ----------
+    cut_coords : sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates of the point where the cut is performed. Not used
+        for projectors.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : (None,)
+        The world coordinates of the point where the cut is performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-        The axes used for plotting.
+        The axes used for plotting in each direction ('z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "z"
+        The direction of cuts for ``ZProjector``.
 
     See Also
     --------
@@ -425,6 +553,7 @@ class ZProjector(OrthoProjector):
     _default_figsize: ClassVar[list[float]] = [2.2, 3.4]
 
 
+@fill_doc
 class XZProjector(OrthoProjector):
     """The ``XZProjector`` class enables to combine sagittal \
     and axial views \
@@ -443,13 +572,40 @@ class XZProjector(OrthoProjector):
         # display is an instance of the XZProjector class
         display = plot_glass_brain(img, display_mode="xz")
 
+    Parameters
+    ----------
+    cut_coords : sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates of the point where the cut is performed.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : (None, None)
+        The world coordinates of the point where the cut is performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('x' and 'z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "xz"
+        The direction of cuts for ``XZProjector``.
 
     See Also
     --------
@@ -461,6 +617,7 @@ class XZProjector(OrthoProjector):
     _cut_displayed = "xz"
 
 
+@fill_doc
 class YXProjector(OrthoProjector):
     """The ``YXProjector`` class enables to combine coronal \
     and sagittal views \
@@ -479,13 +636,41 @@ class YXProjector(OrthoProjector):
         # display is an instance of the YXProjector class
         display = plot_glass_brain(img, display_mode="yx")
 
+    Parameters
+    ----------
+    cut_coords : sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates of the point where the cut is performed. Not used
+        for projectors.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : (None, None)
+        The world coordinates of the point where the cut is performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-        The axes used for plotting in each direction ('x' and 'y' here).
+        The axes used for plotting in each direction ('y' and 'x' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "yx"
+        The direction of cuts for ``YXProjector``.
 
     See Also
     --------
@@ -497,6 +682,7 @@ class YXProjector(OrthoProjector):
     _cut_displayed = "yx"
 
 
+@fill_doc
 class YZProjector(OrthoProjector):
     """The ``YZProjector`` class enables to combine coronal and axial views \
     on the same figure through 2D projections with \
@@ -514,13 +700,41 @@ class YZProjector(OrthoProjector):
         # display is an instance of the YZProjector class
         display = plot_glass_brain(img, display_mode="yz")
 
+    Parameters
+    ----------
+    cut_coords : sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates of the point where the cut is performed. Not used
+        for projectors.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : (None, None)
+        The world coordinates of the point where the cut is performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('y' and 'z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "yz"
+        The direction of cuts for ``YZProjector``.
 
     See Also
     --------
@@ -533,6 +747,7 @@ class YZProjector(OrthoProjector):
     _default_figsize: ClassVar[list[float]] = [2.2, 3.4]
 
 
+@fill_doc
 class LYRZProjector(OrthoProjector):
     """The ``LYRZProjector`` class enables ? visualization \
     on the same figure through 2D projections with \
@@ -550,14 +765,42 @@ class LYRZProjector(OrthoProjector):
         # display is an instance of the LYRZProjector class
         display = plot_glass_brain(img, display_mode="lyrz")
 
+    Parameters
+    ----------
+    cut_coords : sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates of the point where the cut is performed. Not used
+        for projectors.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : (None, None, None, None)
+        The world coordinates of the point where the cut is performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-        The axes used for plotting in each direction ('l', 'y', 'r',
-        and 'z' here).
+        The axes used for plotting in each direction ('l', 'y', 'r' and 'z'
+        here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "lyrz"
+        The direction of cuts for ``LYRZProjector``.
 
     See Also
     --------
@@ -568,6 +811,7 @@ class LYRZProjector(OrthoProjector):
     _cut_displayed = "lyrz"
 
 
+@fill_doc
 class LZRYProjector(OrthoProjector):
     """The ``LZRYProjector`` class enables ? visualization \
     on the same figure through 2D projections with \
@@ -585,14 +829,42 @@ class LZRYProjector(OrthoProjector):
         # display is an instance of the LZRYProjector class
         display = plot_glass_brain(img, display_mode="lzry")
 
+    Parameters
+    ----------
+    cut_coords : sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates of the point where the cut is performed. Not used
+        for projectors.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : (None, None, None, None)
+        The world coordinates of the point where the cut is performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-        The axes used for plotting in each direction ('l', 'z', 'r',
-        and 'y' here).
+        The axes used for plotting in each direction ('l', 'z', 'r' and 'y'
+        here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "lzry"
+        The direction of cuts for ``LZRYProjector``.
 
     See Also
     --------
@@ -603,6 +875,7 @@ class LZRYProjector(OrthoProjector):
     _cut_displayed = "lzry"
 
 
+@fill_doc
 class LZRProjector(OrthoProjector):
     """The ``LZRProjector`` class enables hemispheric sagittal visualization \
     on the same figure through 2D projections with \
@@ -620,13 +893,41 @@ class LZRProjector(OrthoProjector):
         # display is an instance of the LZRProjector class
         display = plot_glass_brain(img, display_mode="lzr")
 
+    Parameters
+    ----------
+    cut_coords : sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates of the point where the cut is performed. Not used
+        for projectors.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : (None, None, None)
+        The world coordinates of the point where the cut is performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('l', 'z' and 'r' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "lzr"
+        The direction of cuts for ``LZRProjector``.
 
     See Also
     --------
@@ -637,6 +938,7 @@ class LZRProjector(OrthoProjector):
     _cut_displayed = "lzr"
 
 
+@fill_doc
 class LYRProjector(OrthoProjector):
     """The ``LYRProjector`` class enables ? visualization \
     on the same figure through 2D projections with \
@@ -654,13 +956,41 @@ class LYRProjector(OrthoProjector):
         # display is an instance of the LYRProjector class
         display = plot_glass_brain(img, display_mode="lyr")
 
+    Parameters
+    ----------
+    cut_coords : sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates of the point where the cut is performed. Not used
+        for projectors.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : (None, None, None)
+        The world coordinates of the point where the cut is performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('l', 'y' and 'r' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "lyr"
+        The direction of cuts for ``LYRProjector``.
 
     See Also
     --------
@@ -671,6 +1001,7 @@ class LYRProjector(OrthoProjector):
     _cut_displayed = "lyr"
 
 
+@fill_doc
 class LRProjector(OrthoProjector):
     """The ``LRProjector`` class enables left-right visualization \
     on the same figure through 2D projections with \
@@ -688,19 +1019,48 @@ class LRProjector(OrthoProjector):
         # display is an instance of the LRProjector class
         display = plot_glass_brain(img, display_mode="lr")
 
+    Parameters
+    ----------
+    cut_coords : sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates of the point where the cut is performed. Not used
+        for projectors.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : (None, None)
+        The world coordinates of the point where the cut is performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-        The axes used for plotting in each direction ('l', and 'r' here).
+        The axes used for plotting in each direction ('l' and 'r' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "lr"
+        The direction of cuts for ``LRProjector``.
 
     """
 
     _cut_displayed = "lr"
 
 
+@fill_doc
 class LProjector(OrthoProjector):
     """The ``LProjector`` class enables the visualization of left 2D \
     projection with :func:`~nilearn.plotting.plot_glass_brain`.
@@ -717,13 +1077,41 @@ class LProjector(OrthoProjector):
         # display is an instance of the LProjector class
         display = plot_glass_brain(img, display_mode="l")
 
+    Parameters
+    ----------
+    cut_coords : sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates of the point where the cut is performed. Not used
+        for projectors.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : (None,)
+        The world coordinates of the point where the cut is performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('l' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "l"
+        The direction of cuts for ``LProjector``.
 
     See Also
     --------
@@ -735,6 +1123,7 @@ class LProjector(OrthoProjector):
     _default_figsize: ClassVar[list[float]] = [2.6, 3.0]
 
 
+@fill_doc
 class RProjector(OrthoProjector):
     """The ``RProjector`` class enables the visualization of right 2D \
     projection with :func:`~nilearn.plotting.plot_glass_brain`.
@@ -750,13 +1139,41 @@ class RProjector(OrthoProjector):
         # display is an instance of the RProjector class
         display = plot_glass_brain(img, display_mode="r")
 
+    Parameters
+    ----------
+    cut_coords : sequence of :obj:`float` or :obj:`int` or None
+        The world coordinates of the point where the cut is performed. Not used
+        for projectors.
+
+    axes : :class:`matplotlib.axes.Axes`, default=None
+
+    %(black_bg)s
+        default=False
+
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+        The brain color to use as the background color (e.g., for
+        transparent colorbars).
+
+    kwargs : :obj:`dict`
+        Extra keyword arguments are passed to
+        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+        each direction.
+
     Attributes
     ----------
+    cut_coords : (None,)
+        The world coordinates of the point where the cut is performed.
+
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('r' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
+
+    rect : 4 :obj:`tuple`
+
+    _cut_displayed : "r"
+        The direction of cuts for ``RProjector``.
 
     See Also
     --------
