@@ -57,13 +57,6 @@ class _NilearnHTMLDocumentationLinkMixin:
 
 
 class NilearnBaseEstimator(_NilearnHTMLDocumentationLinkMixin, BaseEstimator):
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 
@@ -81,3 +74,10 @@ class NilearnBaseEstimator(_NilearnHTMLDocumentationLinkMixin, BaseEstimator):
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(niimg_like=False)
         return tags
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO (sklearn >= 1.6.0) remove
+        """
+        return self.__sklearn_tags__()

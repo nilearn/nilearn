@@ -668,6 +668,13 @@ class ReNA(
         self.memory_level = memory_level
         self.verbose = verbose
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO (sklearn >= 1.6.0) remove
+        """
+        return self.__sklearn_tags__()
+
     def _set_mask_img_for_tests(self):
         """Create dummy nifti image with 1 slice if no mask images was passed.
 

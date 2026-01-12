@@ -574,10 +574,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
 
     Each nilearn check can be run on an initialized estimator.
     """
-    if SKLEARN_LT_1_6:  # pragma: no cover
-        tags = estimator._more_tags()
-    else:
-        tags = estimator.__sklearn_tags__()
+    tags = estimator.__sklearn_tags__()
 
     # TODO (sklearn >= 1.6.0) simplify
     #  for sklearn >= 1.6 tags are always a dataclass
@@ -819,7 +816,9 @@ def check_tags(estimator):
 
     TODO (sklearn >= 1.6) remove this check when bumping sklearn above 1.5
     """
-    assert estimator._more_tags() == estimator.__sklearn_tags__()
+    old_tags = estimator._more_tags()
+    new_tags = estimator.__sklearn_tags__()
+    assert old_tags == new_tags
 
 
 def check_verbose(estimator):

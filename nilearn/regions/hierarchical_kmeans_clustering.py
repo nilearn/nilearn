@@ -241,6 +241,13 @@ class HierarchicalKMeans(
         self.random_state = random_state
         self.scaling = scaling
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO (sklearn >= 1.6.0) remove
+        """
+        return self.__sklearn_tags__()
+
     @fill_doc
     def fit(self, X, y=None):
         """Compute clustering of the data.

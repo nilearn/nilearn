@@ -1412,6 +1412,13 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         """
         return super().__sklearn_tags__()
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO (sklearn >= 1.6.0) remove
+        """
+        return self.__sklearn_tags__()
+
 
 @fill_doc
 class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
@@ -1564,6 +1571,13 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
         return super().__sklearn_tags__()
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO (sklearn >= 1.6.0) remove
+        """
+        return self.__sklearn_tags__()
 
 
 @fill_doc
