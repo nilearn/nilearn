@@ -60,6 +60,8 @@ if not is_gil_enabled():
             # TODO: skipping those sub-packages for now
             "maskers",
             "plotting",
+            "glm",
+            "decomposition",
         ]
     )
 
