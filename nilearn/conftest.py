@@ -930,11 +930,7 @@ def check_doc(obj) -> None:
 
     # check public class attributes
     # ------------------------------
-    attributes = [
-        x
-        for x in obj.__dict__
-        if not (x.startswith("_") or inspect.isfunction(x))
-    ]
+    attributes = [x for x in obj.__dict__ if not x.startswith("_")]
     check_parameters(attributes, obj_doc["Attributes"])
 
     # check __init__ parameters
