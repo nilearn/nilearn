@@ -179,7 +179,7 @@ def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
         extra_warnings_allowed=True,
     )
 
-
+@pytest.mark.slow
 def test_flm_report_invalid_param(flm, contrasts):
     """Check if a warning is raised when first_level_contrast is specified to
     generate_report.
