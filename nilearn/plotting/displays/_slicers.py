@@ -112,6 +112,11 @@ class BaseSlicer:
 
         %(cut_coords)s
 
+        Returns
+        -------
+        cut_coords : :obj:`list`, :obj:`tuple` or :obj:`dict`
+            Cut positions depending on slicer type.
+
         """
         raise NotImplementedError()
 
@@ -1148,6 +1153,11 @@ class _MultiDSlicer(BaseSlicer):
         cut_coords : sequence of :obj:`float` or :obj:`int`, or None, \
                     default=None
             The world coordinates of the point where the cut is performed.
+
+        Returns
+        -------
+        cut_coords : :obj:`tuple` of :obj:`float` or :obj:`int`
+            The tuple of cut position corresponding to this slicer.
 
         Raises
         ------
