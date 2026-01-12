@@ -121,16 +121,14 @@ def test_cmap_as_lookup_table(img_labels):
 
 
 @pytest.mark.parametrize("background_label", [None, 0])
-def test_cmap_as_lookup_table_with_background(
-    shape_3d_default, background_label
-):
+def test_cmap_as_lookup_table_with_background(background_label):
     """Ensure that the background color is dropped from lut.
 
     regression test for https://github.com/nilearn/nilearn/issues/5934
     """
     n_regions = 7
 
-    label_img = _img_labels(shape=shape_3d_default, n_regions=n_regions)
+    label_img = _img_labels(n_regions=n_regions)
 
     lut = generate_atlas_look_up_table(
         index=label_img, background_label=background_label
