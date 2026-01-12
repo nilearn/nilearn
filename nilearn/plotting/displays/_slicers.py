@@ -2026,6 +2026,8 @@ class BaseStackedSlicer(BaseSlicer):
     def draw_cross(self, cut_coords=None, **kwargs):
         """Draw a crossbar on the plot to show where the cut is performed.
 
+        Not implemented for this slicer.
+
         Parameters
         ----------
         cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
@@ -2757,6 +2759,8 @@ class MosaicSlicer(BaseSlicer):
 
     def draw_cross(self, cut_coords=None, **kwargs):
         """Draw a crossbar on the plot to show where the cut is performed.
+
+        Not implemented for this slicer.
 
         Parameters
         ----------
