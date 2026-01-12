@@ -14,6 +14,7 @@ from sklearn.linear_model import Ridge
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import transfer_deprecated_param_vals
+from nilearn._utils.param_validation import sanitize_verbose
 
 from ._base import _BaseDecomposition
 from .canica import CanICA
@@ -256,11 +257,7 @@ class DictLearning(_BaseDecomposition):
 
         _, n_features = data.shape
 
-        verbose = self.verbose
-        if verbose:
-            verbose = 1
-        elif not verbose:
-            verbose = 0
+        verbose = sanitize_verbose(self.verbose)
 
         logger.log(
             "Computing initial loadings",

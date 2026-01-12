@@ -21,7 +21,7 @@ from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import check_params, sanitize_verbose
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
@@ -655,11 +655,7 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         del y
         check_params(self.__dict__)
 
-        verbose = self.verbose
-        if verbose:
-            verbose = 1
-        elif not verbose:
-            verbose = 0
+        verbose = sanitize_verbose(self.verbose)
 
         # casting single arrays to list mostly to help
         # with checking comlpliance with sklearn estimator guidelines
@@ -1193,11 +1189,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
                 f"Got {subjects.__class__.__name__}"
             )
 
-        verbose = self.verbose
-        if verbose:
-            verbose = 1
-        elif not verbose:
-            verbose = 0
+        verbose = sanitize_verbose(self.verbose)
 
         for x in subjects:
             check_array(
