@@ -40,7 +40,8 @@ class OrthoProjector(OrthoSlicer):
         The world coordinates of the point where the cut is performed. Not used
         for projectors.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -386,7 +387,8 @@ class XProjector(OrthoProjector):
         The world coordinates of the point where the cut is performed. Not used
         for projectors.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -449,7 +451,8 @@ class YProjector(OrthoProjector):
         The world coordinates of the point where the cut is performed. Not used
         for projectors.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -512,7 +515,8 @@ class ZProjector(OrthoProjector):
         The world coordinates of the point where the cut is performed. Not used
         for projectors.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -577,7 +581,8 @@ class XZProjector(OrthoProjector):
     cut_coords : sequence of :obj:`float` or :obj:`int` or None
         The world coordinates of the point where the cut is performed.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -642,7 +647,8 @@ class YXProjector(OrthoProjector):
         The world coordinates of the point where the cut is performed. Not used
         for projectors.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -706,7 +712,8 @@ class YZProjector(OrthoProjector):
         The world coordinates of the point where the cut is performed. Not used
         for projectors.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -771,7 +778,8 @@ class LYRZProjector(OrthoProjector):
         The world coordinates of the point where the cut is performed. Not used
         for projectors.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -835,7 +843,8 @@ class LZRYProjector(OrthoProjector):
         The world coordinates of the point where the cut is performed. Not used
         for projectors.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -899,7 +908,8 @@ class LZRProjector(OrthoProjector):
         The world coordinates of the point where the cut is performed. Not used
         for projectors.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -962,7 +972,8 @@ class LYRProjector(OrthoProjector):
         The world coordinates of the point where the cut is performed. Not used
         for projectors.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -1025,7 +1036,8 @@ class LRProjector(OrthoProjector):
         The world coordinates of the point where the cut is performed. Not used
         for projectors.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -1083,7 +1095,8 @@ class LProjector(OrthoProjector):
         The world coordinates of the point where the cut is performed. Not used
         for projectors.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -1145,7 +1158,8 @@ class RProjector(OrthoProjector):
         The world coordinates of the point where the cut is performed. Not used
         for projectors.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False

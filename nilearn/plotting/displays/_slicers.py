@@ -255,7 +255,8 @@ class BaseSlicer:
         figure : :class:`matplotlib.figure.Figure`
             Figure to be used for plots.
 
-        axes : :class:`matplotlib.axes.Axes`, default=None
+        %(axes)s
+            default=None
             The axes that will be subdivided in 3.
 
         %(black_bg)s
@@ -1264,7 +1265,8 @@ class OrthoSlicer(_MultiDSlicer):
         The world coordinates ``(x, y, z)`` of the point where the cut is
         performed.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -1486,7 +1488,8 @@ class TiledSlicer(_MultiDSlicer):
         The world coordinates ``(x, y, z)`` of the point where the cut is
         performed.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -2069,7 +2072,8 @@ class XSlicer(BaseStackedSlicer):
         direction 'x'.
         If ``None``, 7 cut positions are calculated automatically.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -2135,7 +2139,8 @@ class YSlicer(BaseStackedSlicer):
         direction 'y'.
         If ``None``, 7 cut positions are calculated automatically.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -2201,7 +2206,8 @@ class ZSlicer(BaseStackedSlicer):
         direction 'z'.
         If ``None``, 7 cut positions are calculated automatically.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -2266,7 +2272,8 @@ class XZSlicer(OrthoSlicer):
         The world coordinates ``(x, z)`` of the point where the cut is
         performed.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -2330,7 +2337,8 @@ class YXSlicer(OrthoSlicer):
         The world coordinates ``(x, y)`` of the point where the cut is
         performed.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -2394,7 +2402,8 @@ class YZSlicer(OrthoSlicer):
         The world coordinates ``(y, z)`` of the point where the cut is
         performed.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
@@ -2463,7 +2472,8 @@ class MosaicSlicer(BaseSlicer):
         ('x', 'y', 'z') and the values are sequences holding the cut
         coordinates.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    %(axes)s
+        default=None
 
     %(black_bg)s
         default=False
