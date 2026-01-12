@@ -2443,10 +2443,11 @@ class MosaicSlicer(BaseSlicer):
 
     Parameters
     ----------
-    cut_coords : 3 sequence of :obj:`float` or :obj:`int`, \
+    cut_coords : :obj:`int`, 3 sequence of :obj:`float` or :obj:`int`, \
                  :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or None
-        Either a sequence of length 3 indicating the number of cuts in each
-        direction ``(x, y, z)``, or a dictionary where keys are the directions
+        Either a number to indicate number of cuts in each direction, or a
+        sequence of length 3 indicating the number of cuts in each direction
+        ``(x, y, z)``, or a dictionary where keys are the directions
         ('x', 'y', 'z') and the values are sequences holding the cut
         coordinates.
 
@@ -2503,7 +2504,7 @@ class MosaicSlicer(BaseSlicer):
 
         Parameters
         ----------
-        cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
+        cut_coords : :obj:`int`, 3 sequence of :obj:`float` or :obj:`int` or \
                      :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
                      `None`
             The world coordinates of the points where the cuts are performed.
