@@ -1170,6 +1170,7 @@ def test_pass_lut_error(n_regions, img_labels):
         NiftiLabelsMasker(img_labels, lut=lut, labels=region_names).fit()
 
 
+@pytest.mark.slow
 def test_no_background(n_regions, img_labels, shape_3d_default, affine_eye):
     """Test label image with no background."""
     region_names = generate_labels(n_regions + 1, background=None)

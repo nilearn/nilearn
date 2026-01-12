@@ -144,6 +144,7 @@ def test_plot_functions_vmin(plot_func, vmin):
     return plot_func(load_sample_motor_activation_image(), vmin=vmin)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("vmax", [2, 3])
