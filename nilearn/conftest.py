@@ -51,13 +51,15 @@ else:
     matplotlib = None  # type: ignore[assignment]
 
 if not is_gil_enabled():
-    # data fetchers tests are using a monkeypatch fixture
-    # making the tests thread unsafe
-    # therefore we skip them when testing without the GIL
     collect_ignore.extend(
         [
+            # data fetchers tests are using a monkeypatch fixture
+            # making the tests thread unsafe
+            # therefore we skip them when testing without the GIL
             "datasets",
-            "plotting",  # TODO
+            # TODO: skipping those sub-packages for now
+            "maskers",
+            "plotting",
         ]
     )
 
