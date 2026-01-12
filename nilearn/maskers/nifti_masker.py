@@ -14,7 +14,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import check_params, sanitize_verbose
 from nilearn.image import check_niimg, crop_img, resample_img
 from nilearn.image.image import check_same_fov
 from nilearn.maskers._utils import compute_middle_image
@@ -215,7 +215,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     Parameters
     ----------
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask for the data. If not given, a mask is computed in the fit step.
         Optional parameters (mask_args and mask_strategy) can be set to
@@ -226,7 +226,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         resampled first. After this, the images are resampled to the
         resampled mask.
 
-    runs : :obj:`numpy.ndarray`, optional
+    runs : :obj:`numpy.ndarray` or None, default=None
         Add a run level to the preprocessing. Each run will be
         detrended independently. Must be a 1D array of n_samples elements.
 
@@ -269,7 +269,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Default='background'.
 
-    mask_args : :obj:`dict`, optional
+    mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`
@@ -574,14 +574,10 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                         stacklevel=find_stack_level(),
                     )
 
-            verbose = self.verbose
-            if verbose:
-                verbose = 1
-            elif not verbose:
-                verbose = 0
-
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
-                imgs, verbose=max(0, self.verbose - 1), **mask_args
+                imgs,
+                verbose=max(0, sanitize_verbose(self.verbose) - 1),
+                **mask_args,
             )
         elif imgs is not None:
             warnings.warn(
