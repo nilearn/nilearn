@@ -266,7 +266,7 @@ class BaseSlicer:
             The brain color to use as the background color (e.g., for
             transparent colorbars).
 
-        kwargs :
+        kwargs : :obj:`dict`
             Extra keyword arguments are passed to
             :class:`~nilearn.plotting.displays.CutAxes` used for plotting in
             each direction.
@@ -357,7 +357,7 @@ class BaseSlicer:
         alpha : :obj:`float`, default=1
             The alpha value for the background.
 
-        kwargs :
+        kwargs : :obj:`dict`
             Extra keyword arguments are passed to matplotlib's text
             function.
 
