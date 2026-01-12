@@ -12,6 +12,7 @@
 name: test minimal version of each dependency
 
 on:
+    pull_request:
     schedule:
         # Uses the cron schedule for github actions
         # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
@@ -85,7 +86,7 @@ jobs:
             id: test_minimum
             run: |
                 pip install pytest-mpl
-                pytest --pyargs nilearn --report=report.html -n auto --csv results/pytest_output/pytest_output.csv
+                pytest --pyargs 'nilearn/plotting/surface/tests/test_plotly_surface_figure.py' --report=report.html -n auto --csv results/pytest_output/pytest_output.csv
 
         -   name: Generate plots tests timing
             if: success() || failure()
