@@ -19,7 +19,6 @@ from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from sklearn import clone
 from sklearn.base import (
-    BaseEstimator,
     MultiOutputMixin,
     is_classifier,
 )
@@ -42,9 +41,9 @@ from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -447,9 +446,7 @@ def _parallel_fit(
 
 
 @fill_doc
-class _BaseDecoder(
-    _NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator
-):
+class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
     """A wrapper for popular classification/regression strategies in \
     neuroimaging.
 
@@ -1072,13 +1069,6 @@ class _BaseDecoder(
             )
         return scores.ravel() if scores.shape[1] == 1 else scores
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 
@@ -1414,13 +1404,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             n_jobs=n_jobs,
         )
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 
@@ -1574,13 +1557,6 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         )
 
         self.clustering_percentile = clustering_percentile
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.

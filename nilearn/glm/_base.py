@@ -10,10 +10,10 @@ from typing import Any, Literal
 import numpy as np
 import pandas as pd
 from nibabel.onetime import auto_attr
-from sklearn.base import BaseEstimator
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
@@ -21,7 +21,6 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_repr import (
     SKLEARN_GTE_1_7,
-    _NilearnHTMLDocumentationLinkMixin,
 )
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
@@ -53,7 +52,7 @@ from nilearn.typing import ClusterThreshold, HeightControl
 FIGURE_FORMAT = "png"
 
 
-class BaseGLM(_NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator):
+class BaseGLM(CacheMixin, NilearnBaseEstimator):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`.
     """
@@ -143,13 +142,6 @@ class BaseGLM(_NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator):
                 model_param[k] = v.tolist()
 
         return model_param
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.

@@ -4,7 +4,6 @@ import warnings
 
 import numpy as np
 from sklearn.base import (
-    BaseEstimator,
     ClassNamePrefixFeaturesOutMixin,
     ClusterMixin,
     TransformerMixin,
@@ -13,8 +12,8 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
@@ -155,11 +154,10 @@ def hierarchical_k_means(
 
 @fill_doc
 class HierarchicalKMeans(
-    _NilearnHTMLDocumentationLinkMixin,
     ClassNamePrefixFeaturesOutMixin,
     ClusterMixin,
     TransformerMixin,
-    BaseEstimator,
+    NilearnBaseEstimator,
 ):
     """Hierarchical KMeans.
 
@@ -242,13 +240,6 @@ class HierarchicalKMeans(
         self.verbose = verbose
         self.random_state = random_state
         self.scaling = scaling
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.

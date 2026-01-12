@@ -157,7 +157,7 @@ def generate_report(estimator) -> HTMLReport:
 
     Parameters
     ----------
-    estimator : Object instance of BaseEstimator.
+    estimator : Object instance of NilearnBaseEstimator.
         Object for which the report should be generated.
 
     Returns

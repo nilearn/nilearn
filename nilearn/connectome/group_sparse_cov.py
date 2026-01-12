@@ -10,12 +10,12 @@ import warnings
 import numpy as np
 import scipy.linalg
 from joblib import Parallel, delayed
-from sklearn.base import BaseEstimator
 from sklearn.covariance import empirical_covariance
 from sklearn.model_selection import check_cv
 from sklearn.utils import check_array
 from sklearn.utils.extmath import fast_logdet
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
@@ -547,7 +547,7 @@ def _check_if_tolerance_reached(tol, max_norm, verbose, n):
 
 @fill_doc
 class GroupSparseCovariance(
-    _NilearnHTMLDocumentationLinkMixin, CacheMixin, BaseEstimator
+    _NilearnHTMLDocumentationLinkMixin, CacheMixin, NilearnBaseEstimator
 ):
     """Covariance and precision matrix estimator.
 
@@ -609,13 +609,6 @@ class GroupSparseCovariance(
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -1027,9 +1020,7 @@ class EarlyStopProbe:
 
 
 @fill_doc
-class GroupSparseCovarianceCV(
-    _NilearnHTMLDocumentationLinkMixin, BaseEstimator
-):
+class GroupSparseCovarianceCV(NilearnBaseEstimator):
     """Sparse inverse covariance w/ cross-validated choice of the parameter.
 
     A cross-validated value for the regularization parameter is first
@@ -1139,13 +1130,6 @@ class GroupSparseCovarianceCV(
         self.n_jobs = n_jobs
         self.debug = debug
         self.early_stopping = early_stopping
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.

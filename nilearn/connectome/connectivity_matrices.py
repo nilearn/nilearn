@@ -5,15 +5,15 @@ from math import floor, sqrt
 
 import numpy as np
 from scipy import linalg
-from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.base import TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
 from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import signal
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
-from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin
 from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -375,9 +375,7 @@ def prec_to_partial(precision):
 
 
 @fill_doc
-class ConnectivityMeasure(
-    _NilearnHTMLDocumentationLinkMixin, TransformerMixin, BaseEstimator
-):
+class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
     """A class that computes different kinds of \
        :term:`functional connectivity` matrices.
 
@@ -458,13 +456,6 @@ class ConnectivityMeasure(
         self.discard_diagonal = discard_diagonal
         self.standardize = standardize
         self.verbose = verbose
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.

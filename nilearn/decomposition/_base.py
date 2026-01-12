@@ -15,17 +15,17 @@ import numpy as np
 from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from scipy import linalg
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import TransformerMixin
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.html_repr import _NilearnHTMLDocumentationLinkMixin
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import (
@@ -299,12 +299,7 @@ def _mask_and_reduce_single(
 
 
 @fill_doc
-class _BaseDecomposition(
-    _NilearnHTMLDocumentationLinkMixin,
-    CacheMixin,
-    TransformerMixin,
-    BaseEstimator,
-):
+class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
     """Base class for matrix factorization based decomposition estimators.
 
     Handles mask logic, provides transform and inverse_transform methods
@@ -432,13 +427,6 @@ class _BaseDecomposition(
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.
