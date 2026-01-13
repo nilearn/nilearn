@@ -1292,9 +1292,6 @@ class OrthoSlicer(_MultiDSlicer):
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
 
-    _cut_displayed : "yxz"
-        The directions of cuts for ``OrthoSlicer``.
-
     Notes
     -----
     The extent of the different axes are adjusted to fit the data
@@ -1513,9 +1510,6 @@ class TiledSlicer(_MultiDSlicer):
 
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
-
-    _cut_displayed : "yxz"
-        The directions of cuts for ``TiledSlicer``.
 
     Notes
     -----
@@ -2096,9 +2090,6 @@ class XSlicer(BaseStackedSlicer):
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
 
-    _direction : "x"
-        The direction of the cut for ``XSlicer``.
-
     See Also
     --------
     nilearn.plotting.displays.YSlicer : Coronal view
@@ -2161,9 +2152,6 @@ class YSlicer(BaseStackedSlicer):
 
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
-
-    _direction : "y"
-        The direction of the cut for ``YSlicer``.
 
     See Also
     --------
@@ -2228,9 +2216,6 @@ class ZSlicer(BaseStackedSlicer):
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
 
-    _direction : "z"
-        The direction of the cut for ``ZSlicer``.
-
     See Also
     --------
     nilearn.plotting.displays.XSlicer : Sagittal view
@@ -2293,9 +2278,6 @@ class XZSlicer(OrthoSlicer):
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
 
-    _cut_displayed : "xz"
-        The directions of cuts for ``XZSlicer``.
-
     See Also
     --------
     nilearn.plotting.displays.YXSlicer : Coronal + Sagittal views
@@ -2357,9 +2339,6 @@ class YXSlicer(OrthoSlicer):
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
 
-    _cut_displayed : "yx"
-        The directions of cuts for ``XYSlicer``.
-
     See Also
     --------
     nilearn.plotting.displays.XZSlicer : Sagittal + Axial views
@@ -2420,9 +2399,6 @@ class YZSlicer(OrthoSlicer):
 
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
-
-    _cut_displayed : "yz"
-        The directions of cuts for ``YZSlicer``.
 
     See Also
     --------
@@ -2491,9 +2467,6 @@ class MosaicSlicer(BaseSlicer):
 
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
-
-    _cut_displayed : "yxz"
-        The directions of cuts for ``MosaicSlicer``.
 
     See Also
     --------

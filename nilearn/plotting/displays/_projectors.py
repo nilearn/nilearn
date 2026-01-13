@@ -66,9 +66,6 @@ class OrthoProjector(OrthoSlicer):
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
 
-    _cut_displayed : "yxz"
-        The directions of cuts for ``OrthoProjector``.
-
     """
 
     _axes_class = GlassBrainAxes  # type: ignore[assignment]
@@ -409,9 +406,6 @@ class XProjector(OrthoProjector):
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
 
-    _cut_displayed : "x"
-        The direction of cuts for ``XProjector``.
-
     See Also
     --------
     nilearn.plotting.displays.YProjector : Coronal view
@@ -471,9 +465,6 @@ class YProjector(OrthoProjector):
 
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
-
-    _cut_displayed : "y"
-        The direction of cuts for ``YProjector``.
 
     See Also
     --------
@@ -535,9 +526,6 @@ class ZProjector(OrthoProjector):
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
 
-    _cut_displayed : "z"
-        The direction of cuts for ``ZProjector``.
-
     See Also
     --------
     nilearn.plotting.displays.XProjector : Sagittal view
@@ -596,9 +584,6 @@ class XZProjector(OrthoProjector):
 
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
-
-    _cut_displayed : "xz"
-        The direction of cuts for ``XZProjector``.
 
     See Also
     --------
@@ -660,9 +645,6 @@ class YXProjector(OrthoProjector):
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
 
-    _cut_displayed : "yx"
-        The direction of cuts for ``YXProjector``.
-
     See Also
     --------
     nilearn.plotting.displays.XZProjector : Sagittal + Axial views
@@ -721,9 +703,6 @@ class YZProjector(OrthoProjector):
 
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
-
-    _cut_displayed : "yz"
-        The direction of cuts for ``YZProjector``.
 
     See Also
     --------
@@ -787,9 +766,6 @@ class LYRZProjector(OrthoProjector):
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
 
-    _cut_displayed : "lyrz"
-        The direction of cuts for ``LYRZProjector``.
-
     See Also
     --------
     nilearn.plotting.displays.LZRYProjector : ?? views
@@ -850,9 +826,6 @@ class LZRYProjector(OrthoProjector):
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
 
-    _cut_displayed : "lzry"
-        The direction of cuts for ``LZRYProjector``.
-
     See Also
     --------
     nilearn.plotting.displays.LYRZProjector : ?? views
@@ -910,9 +883,6 @@ class LZRProjector(OrthoProjector):
 
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
-
-    _cut_displayed : "lzr"
-        The direction of cuts for ``LZRProjector``.
 
     See Also
     --------
@@ -972,9 +942,6 @@ class LYRProjector(OrthoProjector):
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
 
-    _cut_displayed : "lyr"
-        The direction of cuts for ``LYRProjector``.
-
     See Also
     --------
     nilearn.plotting.displays.LZRProjector : ?? views
@@ -1033,9 +1000,6 @@ class LRProjector(OrthoProjector):
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
 
-    _cut_displayed : "lr"
-        The direction of cuts for ``LRProjector``.
-
     """
 
     _cut_displayed = "lr"
@@ -1089,9 +1053,6 @@ class LProjector(OrthoProjector):
 
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
-
-    _cut_displayed : "l"
-        The direction of cuts for ``LProjector``.
 
     See Also
     --------
@@ -1151,9 +1112,6 @@ class RProjector(OrthoProjector):
 
     rect : 4- :obj:`tuple`
         Position of axes within the figure.
-
-    _cut_displayed : "r"
-        The direction of cuts for ``RProjector``.
 
     See Also
     --------
