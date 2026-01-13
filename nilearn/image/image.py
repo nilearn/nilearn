@@ -2305,7 +2305,7 @@ def check_niimg(
 
         if atleast_4d:
             data = _get_data(niimg).view()
-            data.shape = (*data.shape, 1)
+            data = data.reshape((*data.shape, 1))
             niimg = new_img_like(niimg, data, niimg.affine)
 
     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:
