@@ -267,6 +267,8 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
         then the colormap will be shifted by one.
 
         See `issue 5934 <https://github.com/nilearn/nilearn/issues/5934>`_.
+
+
 """
 
 # colorbar
