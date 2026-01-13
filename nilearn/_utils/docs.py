@@ -1694,6 +1694,35 @@ ymean_ : array, shape (n_samples,)
 
 """
 
+docdict["projector_init_parameters"] = """
+Parameters
+----------
+cut_coords : sequence of :obj:`float` or :obj:`int`
+    The world coordinates of the point where the cut is performed. Not used
+    for projectors.
+
+axes : :class:`matplotlib.axes.Axes`, or 4 :obj:`tuple` \
+    of :obj:`float`: (xmin, ymin, width, height), default=None
+    The axes, or the coordinates, in matplotlib figure space,
+    of the axes used to display the plot.
+    If `None`, the complete figure is used.
+
+black_bg : :obj:`bool`, or "auto", default=False
+    If `True`, the background of the image is set to be black.
+    If you wish to save figures with a black background,
+    you will need to pass `facecolor="k", edgecolor="k"`
+    to :func:`matplotlib.pyplot.savefig`.
+
+brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+    The brain color to use as the background color (e.g., for
+    transparent colorbars).
+
+kwargs : :obj:`dict`
+    Extra keyword arguments are passed to
+    :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+    each direction.
+"""
+
 # dataset description
 docdict["description"] = """'description' : :obj:`str`
         Description of the dataset."""

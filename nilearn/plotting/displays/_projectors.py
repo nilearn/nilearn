@@ -33,24 +33,7 @@ class OrthoProjector(OrthoSlicer):
         # display is an instance of the OrthoProjector class
         display = plot_glass_brain(img, display_mode="ortho")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int`
-        The world coordinates of the point where the cut is performed. Not used
-        for projectors.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
@@ -373,24 +356,7 @@ class XProjector(OrthoProjector):
         # display is an instance of the XProjector class
         display = plot_glass_brain(img, display_mode="x")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates of the point where the cut is performed. Not used
-        for projectors.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
@@ -433,24 +399,7 @@ class YProjector(OrthoProjector):
         # display is an instance of the YProjector class
         display = plot_glass_brain(img, display_mode="y")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates of the point where the cut is performed. Not used
-        for projectors.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
@@ -493,24 +442,7 @@ class ZProjector(OrthoProjector):
         # display is an instance of the ZProjector class
         display = plot_glass_brain(img, display_mode="z")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates of the point where the cut is performed. Not used
-        for projectors.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
@@ -553,23 +485,7 @@ class XZProjector(OrthoProjector):
         # display is an instance of the XZProjector class
         display = plot_glass_brain(img, display_mode="xz")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates of the point where the cut is performed.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
@@ -612,24 +528,7 @@ class YXProjector(OrthoProjector):
         # display is an instance of the YXProjector class
         display = plot_glass_brain(img, display_mode="yx")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates of the point where the cut is performed. Not used
-        for projectors.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
@@ -671,24 +570,7 @@ class YZProjector(OrthoProjector):
         # display is an instance of the YZProjector class
         display = plot_glass_brain(img, display_mode="yz")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates of the point where the cut is performed. Not used
-        for projectors.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
@@ -732,24 +614,7 @@ class LYRZProjector(OrthoProjector):
         # display is an instance of the LYRZProjector class
         display = plot_glass_brain(img, display_mode="lyrz")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates of the point where the cut is performed. Not used
-        for projectors.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
@@ -792,24 +657,7 @@ class LZRYProjector(OrthoProjector):
         # display is an instance of the LZRYProjector class
         display = plot_glass_brain(img, display_mode="lzry")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates of the point where the cut is performed. Not used
-        for projectors.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
@@ -851,24 +699,7 @@ class LZRProjector(OrthoProjector):
         # display is an instance of the LZRProjector class
         display = plot_glass_brain(img, display_mode="lzr")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates of the point where the cut is performed. Not used
-        for projectors.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
@@ -909,24 +740,7 @@ class LYRProjector(OrthoProjector):
         # display is an instance of the LYRProjector class
         display = plot_glass_brain(img, display_mode="lyr")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates of the point where the cut is performed. Not used
-        for projectors.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
@@ -967,24 +781,7 @@ class LRProjector(OrthoProjector):
         # display is an instance of the LRProjector class
         display = plot_glass_brain(img, display_mode="lr")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates of the point where the cut is performed. Not used
-        for projectors.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
@@ -1021,24 +818,7 @@ class LProjector(OrthoProjector):
         # display is an instance of the LProjector class
         display = plot_glass_brain(img, display_mode="l")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates of the point where the cut is performed. Not used
-        for projectors.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
@@ -1080,24 +860,7 @@ class RProjector(OrthoProjector):
         # display is an instance of the RProjector class
         display = plot_glass_brain(img, display_mode="r")
 
-    Parameters
-    ----------
-    cut_coords : sequence of :obj:`float` or :obj:`int` or None
-        The world coordinates of the point where the cut is performed. Not used
-        for projectors.
-
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
-        each direction.
+    %(projector_init_parameters)s
 
     Attributes
     ----------
