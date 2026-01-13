@@ -313,7 +313,7 @@ module = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -v --template=maint_tools/templates/index.html"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals --capture=no -v --template=maint_tools/templates/index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 # see https://docs.pytest.org/en/stable/how-to/capture-warnings.html#controlling-warnings
 filterwarnings = [
