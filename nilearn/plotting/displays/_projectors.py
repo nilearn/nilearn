@@ -81,7 +81,7 @@ class OrthoProjector(OrthoSlicer):
         threshold=None,  # noqa: ARG003
         cut_coords=None,  # noqa: ARG003
     ):
-        """Return a tuple of `None`s of length corresponding to the number of
+        """Return a tuple of None of length corresponding to the number of
         directions of this projector.
 
         Specified parameters are not used.
@@ -101,7 +101,7 @@ class OrthoProjector(OrthoSlicer):
         Returns
         -------
         cut_coords : :obj:`tuple` of `None`
-            tuple of `None`s of length corresponding to the number of
+            tuple of None of length corresponding to the number of
             directions of this projector.
 
         """
