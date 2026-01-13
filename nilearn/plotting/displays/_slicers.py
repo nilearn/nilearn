@@ -2525,9 +2525,9 @@ class MosaicSlicer(BaseSlicer):
         ):
             raise ValueError(
                 "cut_coords passed does not match the display mode. "
-                f" {cls.__name__} plotting expects a number, 3D list, tuple, "
-                "array of numbers, or a dictionary with keys 'x', 'y', 'z' "
-                "and values as array."
+                f" {cls.__name__} plotting expects a number, a list, tuple, "
+                "or array of 3 numbers, or a dictionary "
+                "with keys 'x', 'y', 'z' and values as array."
                 f"You provided cut_coords={cut_coords}."
             )
 
