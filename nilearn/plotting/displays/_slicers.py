@@ -58,7 +58,7 @@ class BaseSlicer:
 
     # This actually encodes the figsize for only one axe
     _default_figsize: ClassVar[list[float]] = [2.2, 2.6]
-    _axes_class: ClassVar[CutAxes] = CutAxes  # type: ignore[assignment, misc]
+    _axes_class: type[CutAxes] = CutAxes
 
     def __init__(
         self,
