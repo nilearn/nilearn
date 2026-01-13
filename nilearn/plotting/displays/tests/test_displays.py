@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn.conftest import check_doc, check_methods
+from nilearn.conftest import check_methods_docstring, check_obj_docstring
 from nilearn.datasets import load_mni152_template
 from nilearn.plotting.displays import (
     BaseAxes,
@@ -662,16 +662,16 @@ def test_slicer_docstrings(slicer):
     """Test if all slicers defined nilearn.plotting.displays._slicers have
     complete docstrings.
     """
-    check_doc(slicer)
+    check_obj_docstring(slicer)
 
 
 def test_slicer_base_class_docstrings():
     """Test if base classes defined nilearn.plotting.displays._slicers have
     complete docstrings for methods.
     """
-    check_methods(BaseSlicer)
-    check_methods(_MultiDSlicer)
-    check_methods(BaseStackedSlicer)
+    check_methods_docstring(BaseSlicer)
+    check_methods_docstring(_MultiDSlicer)
+    check_methods_docstring(BaseStackedSlicer)
 
 
 @pytest.mark.parametrize(
@@ -697,4 +697,4 @@ def test_projector_docstrings(projector):
     """Test if all slicers defined nilearn.plotting.displays._projectors have
     complete docstrings.
     """
-    check_doc(projector((2, 3, 4)))
+    check_obj_docstring(projector((2, 3, 4)))

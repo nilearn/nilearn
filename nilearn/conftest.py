@@ -918,32 +918,37 @@ def transparency_image(rng, affine_mni):
 # ------------------------ DOCSTRING ------------------------#
 
 
-def check_doc(obj) -> None:
+def check_obj_docstring(obj) -> None:
     """Check that class and method parameters and attributes are documented.
 
     - Check if public class attributes are documented
     - Check if __init__ parameters are documented
     - Check if each public function and parameters are documented
     - Check not to have duplicates
+
+    Parameters
+    ----------
+    obj: :obj:`object`
+        Instance of the class to check
     """
     obj_doc = NumpyDocString(inspect.getdoc(obj.__class__))
 
     # check public class attributes
     # ------------------------------
     attributes = [x for x in obj.__dict__ if not x.startswith("_")]
-    check_parameters(attributes, obj_doc["Attributes"])
+    check_parameters_doctring(attributes, obj_doc["Attributes"])
 
     # check __init__ parameters
     # -------------------------
     parameters = dict(**inspect.signature(obj.__init__).parameters)
-    check_parameters(parameters, obj_doc["Parameters"])
+    check_parameters_doctring(parameters, obj_doc["Parameters"])
 
     # get public methods from class definition
     # ----------------------------------------
-    check_methods(obj.__class__)
+    check_methods_docstring(obj.__class__)
 
 
-def check_parameters(parameters, doc_dict):
+def check_parameters_doctring(parameters, doc_dict):
     """Check if all parameters are documented without duplicates and extras."""
     documented = []
     for param in doc_dict:
@@ -966,7 +971,7 @@ def check_parameters(parameters, doc_dict):
     assert len(documented) == len(set(documented))
 
 
-def check_methods(cls):
+def check_methods_docstring(cls):
     """Check if all public functions and parameters are documented."""
     for name, member in cls.__dict__.items():
         if name.startswith("_"):
@@ -986,4 +991,4 @@ def check_methods(cls):
         ]
         func_doc = NumpyDocString(inspect.getdoc(func))
 
-        check_parameters(params, func_doc["Parameters"])
+        check_parameters_doctring(params, func_doc["Parameters"])
