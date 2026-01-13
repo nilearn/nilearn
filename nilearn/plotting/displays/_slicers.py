@@ -1279,7 +1279,7 @@ class OrthoSlicer(_MultiDSlicer):
 
     Attributes
     ----------
-    cut_coords : 3 :obj:`tuple` of :obj:`float` or :obj:`int`
+    cut_coords : 3- :obj:`tuple` of :obj:`float` or :obj:`int`
         The world coordinates ``(x, y, z)`` of the point where the cut is
         performed.
 
@@ -1501,7 +1501,7 @@ class TiledSlicer(_MultiDSlicer):
 
     Attributes
     ----------
-    cut_coords : 3 :obj:`tuple` of :obj:`float` or :obj:`int`
+    cut_coords : 3- :obj:`tuple` of :obj:`float` or :obj:`int`
         The world coordinates ``(x, y, z)`` of the point where the cut is
         performed.
 
@@ -2281,7 +2281,7 @@ class XZSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords : 2 :obj:`tuple` of :obj:`float` or :obj:`int`
+    cut_coords : 2- :obj:`tuple` of :obj:`float` or :obj:`int`
         The world coordinates (x, z) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
@@ -2345,7 +2345,7 @@ class YXSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords : 2 :obj:`tuple` of :obj:`float` or :obj:`int`
+    cut_coords : 2- :obj:`tuple` of :obj:`float` or :obj:`int`
         The world coordinates (x, y) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
@@ -2409,7 +2409,7 @@ class YZSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords : 2 :obj:`tuple` of :obj:`float` or :obj:`int`
+    cut_coords : 2- :obj:`tuple` of :obj:`float` or :obj:`int`
         The world coordinates (y, z) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
