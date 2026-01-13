@@ -64,7 +64,8 @@ class OrthoProjector(OrthoSlicer):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "yxz"
         The directions of cuts for ``OrthoProjector``.
@@ -409,7 +410,8 @@ class XProjector(OrthoProjector):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "x"
         The direction of cuts for ``XProjector``.
@@ -471,7 +473,8 @@ class YProjector(OrthoProjector):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "y"
         The direction of cuts for ``YProjector``.
@@ -533,7 +536,8 @@ class ZProjector(OrthoProjector):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "z"
         The direction of cuts for ``ZProjector``.
@@ -597,7 +601,8 @@ class XZProjector(OrthoProjector):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "xz"
         The direction of cuts for ``XZProjector``.
@@ -661,7 +666,8 @@ class YXProjector(OrthoProjector):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "yx"
         The direction of cuts for ``YXProjector``.
@@ -724,7 +730,8 @@ class YZProjector(OrthoProjector):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "yz"
         The direction of cuts for ``YZProjector``.
@@ -789,7 +796,8 @@ class LYRZProjector(OrthoProjector):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "lyrz"
         The direction of cuts for ``LYRZProjector``.
@@ -852,7 +860,8 @@ class LZRYProjector(OrthoProjector):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "lzry"
         The direction of cuts for ``LZRYProjector``.
@@ -914,7 +923,8 @@ class LZRProjector(OrthoProjector):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "lzr"
         The direction of cuts for ``LZRProjector``.
@@ -976,7 +986,8 @@ class LYRProjector(OrthoProjector):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "lyr"
         The direction of cuts for ``LYRProjector``.
@@ -1038,7 +1049,8 @@ class LRProjector(OrthoProjector):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "lr"
         The direction of cuts for ``LRProjector``.
@@ -1095,7 +1107,8 @@ class LProjector(OrthoProjector):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "l"
         The direction of cuts for ``LProjector``.
@@ -1156,7 +1169,8 @@ class RProjector(OrthoProjector):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "r"
         The direction of cuts for ``RProjector``.

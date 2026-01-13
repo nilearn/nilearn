@@ -51,7 +51,8 @@ class BaseSlicer:
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     """
 
@@ -1288,7 +1289,8 @@ class OrthoSlicer(_MultiDSlicer):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "yxz"
         The directions of cuts for ``OrthoSlicer``.
@@ -1509,7 +1511,8 @@ class TiledSlicer(_MultiDSlicer):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "yxz"
         The directions of cuts for ``TiledSlicer``.
@@ -2090,7 +2093,8 @@ class XSlicer(BaseStackedSlicer):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _direction : "x"
         The direction of the cut for ``XSlicer``.
@@ -2155,7 +2159,8 @@ class YSlicer(BaseStackedSlicer):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _direction : "y"
         The direction of the cut for ``YSlicer``.
@@ -2220,7 +2225,8 @@ class ZSlicer(BaseStackedSlicer):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _direction : "z"
         The direction of the cut for ``ZSlicer``.
@@ -2284,7 +2290,8 @@ class XZSlicer(OrthoSlicer):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "xz"
         The directions of cuts for ``XZSlicer``.
@@ -2347,7 +2354,8 @@ class YXSlicer(OrthoSlicer):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "yx"
         The directions of cuts for ``XYSlicer``.
@@ -2410,7 +2418,8 @@ class YZSlicer(OrthoSlicer):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "yz"
         The directions of cuts for ``YZSlicer``.
@@ -2480,7 +2489,8 @@ class MosaicSlicer(BaseSlicer):
     frame_axes : :class:`~matplotlib.axes.Axes`
         The axes framing the whole set of views.
 
-    rect : 4 :obj:`tuple`
+    rect : 4- :obj:`tuple`
+        Position of axes within the figure.
 
     _cut_displayed : "yxz"
         The directions of cuts for ``MosaicSlicer``.
