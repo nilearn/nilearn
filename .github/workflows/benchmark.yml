@@ -164,7 +164,7 @@ jobs:
                 git config --global user.name "GitHub Actions"
                 git config --global user.email "actions@github.com"
                 git add .
-                git commit -m "Update benchmark results and logs (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+                git commit --message "Update benchmark results and logs (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin main
         -   name: Push html to gh-pages branch
             if: github.event_name != 'pull_request'
@@ -175,7 +175,7 @@ jobs:
                 git checkout gh-pages
                 cp -r ../html/* .
                 git add .
-                git commit -m "Update benchmark HTML (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+                git commit --message "Update benchmark HTML (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin gh-pages
 
     compare_benchmark:
