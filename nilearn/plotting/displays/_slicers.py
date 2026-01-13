@@ -1132,7 +1132,6 @@ class _MultiDSlicer(BaseSlicer):
     # This should be set by each inheriting Slicer
     _cut_displayed: ClassVar[str] = ""
 
-    @fill_doc  # the fill_doc decorator must be last applied
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Find world coordinates of cut positions compatible with this slicer.
