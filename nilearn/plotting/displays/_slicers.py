@@ -1259,7 +1259,7 @@ class OrthoSlicer(_MultiDSlicer):
 
     Parameters
     ----------
-    cut_coords : 3 sequence of :obj:`float` or :obj:`int` or None
+    cut_coords : 3-sequence of :obj:`float` or :obj:`int` or None
         The world coordinates ``(x, y, z)`` of the point where the cut is
         performed.
 
@@ -1409,7 +1409,7 @@ class OrthoSlicer(_MultiDSlicer):
 
         Parameters
         ----------
-        cut_coords : 3 sequence of :obj:`float` or :obj:`int`, or None, \
+        cut_coords : 3-sequence of :obj:`float` or :obj:`int`, or None, \
                      default=None
             The position of the cross to draw in world coordinates
             ``(x, y, z)``.
@@ -1478,7 +1478,7 @@ class TiledSlicer(_MultiDSlicer):
 
     Parameters
     ----------
-    cut_coords : 3 sequence of :obj:`float` or :obj:`int` or None
+    cut_coords : 3-sequence of :obj:`float` or :obj:`int` or None
         The world coordinates ``(x, y, z)`` of the point where the cut is
         performed.
 
@@ -1754,7 +1754,7 @@ class TiledSlicer(_MultiDSlicer):
 
         Parameters
         ----------
-        cut_coords : 3 sequence of :obj:`float` or :obj:`int`, or None, \
+        cut_coords : 3-sequence of :obj:`float` or :obj:`int`, or None, \
                      default=None
 
             The position of the cross to draw in world coordinates
@@ -2246,7 +2246,7 @@ class XZSlicer(OrthoSlicer):
 
     Parameters
     ----------
-    cut_coords : 2 sequence of :obj:`float` or :obj:`int` or None
+    cut_coords : 2-sequence of :obj:`float` or :obj:`int` or None
         The world coordinates ``(x, z)`` of the point where the cut is
         performed.
 
@@ -2307,7 +2307,7 @@ class YXSlicer(OrthoSlicer):
 
     Parameters
     ----------
-    cut_coords : 2 sequence of :obj:`float` or :obj:`int` or None
+    cut_coords : 2-sequence of :obj:`float` or :obj:`int` or None
         The world coordinates ``(x, y)`` of the point where the cut is
         performed.
 
@@ -2368,7 +2368,7 @@ class YZSlicer(OrthoSlicer):
 
     Parameters
     ----------
-    cut_coords : 2 sequence of :obj:`float` or :obj:`int` or None
+    cut_coords : 2-sequence of :obj:`float` or :obj:`int` or None
         The world coordinates ``(y, z)`` of the point where the cut is
         performed.
 
@@ -2430,7 +2430,7 @@ class MosaicSlicer(BaseSlicer):
 
     Parameters
     ----------
-    cut_coords : :obj:`int`, 3 sequence of :obj:`float` or :obj:`int`, \
+    cut_coords : :obj:`int`, 3-sequence of :obj:`float` or :obj:`int`, \
                  :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or None
         Either a number to indicate number of cuts in each direction, or a
         sequence of length 3 indicating the number of cuts in each direction
@@ -2488,7 +2488,7 @@ class MosaicSlicer(BaseSlicer):
 
         Parameters
         ----------
-        cut_coords : :obj:`int`, 3 sequence of :obj:`float` or :obj:`int` or \
+        cut_coords : :obj:`int`, 3-sequence of :obj:`float` or :obj:`int` or \
                      :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
                      `None`
             The world coordinates of the points where the cuts are performed.
