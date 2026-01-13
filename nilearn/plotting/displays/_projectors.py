@@ -92,15 +92,15 @@ class OrthoProjector(OrthoSlicer):
             The brain image.
 
         threshold : :obj:`int` or :obj:`float` or None, default=None
-            Threshold to apply
+            Threshold to apply.
 
         cut_coords : sequence of :obj:`float` or :obj:`int`, or None, \
-                    default=None
+                     default=None
             The world coordinates of the point where the cut is performed.
 
         Returns
         -------
-        cut_coords : :obj:`tuple` of :obj:`float` or :obj:`int`
+        cut_coords : :obj:`tuple` of `None`
             tuple of `None`s of length corresponding to the number of
             directions of this projector.
 
@@ -110,7 +110,7 @@ class OrthoProjector(OrthoSlicer):
     def draw_cross(self, cut_coords=None, **kwargs):
         """Draw a crossbar on the plot to show where the cut is performed.
 
-        Not implemented for this slicer.
+        Not implemented for this projector.
 
         It does not make sense to draw crosses for the position of
         the cuts since we are taking the max along one axis.
@@ -119,10 +119,7 @@ class OrthoProjector(OrthoSlicer):
         ----------
         cut_coords : sequence of :obj:`float` or :obj:`int`, or None, \
                      default=None
-            The position of the cross to draw in world coordinates
-            ``(x, y, z)``.
-            If ``None`` is passed, the ``OrthoSlicer``'s cut coordinates are
-            used.
+            The position of the cross to draw in world coordinates.
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
