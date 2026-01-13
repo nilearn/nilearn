@@ -39,6 +39,7 @@ from nilearn.maskers import (
     MultiNiftiMasker,
     MultiSurfaceMasker,
     NiftiMapsMasker,
+    NiftiMasker,
     SurfaceMapsMasker,
     SurfaceMasker,
 )
@@ -447,6 +448,19 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         tags.input_tags = InputTags(surf_img=True, niimg_like=True)
         return tags
 
+    def _validate_mask(self):
+        if self.mask is not None:
+            check_is_of_allowed_type(
+                self.mask,
+                (
+                    SurfaceMasker,
+                    SurfaceImage,
+                    NiftiMasker,
+                    *NiimgLike,
+                ),
+                "mask",
+            )
+
     @fill_doc
     def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the components across subjects.
@@ -511,27 +525,26 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         self._fit_cache()
 
-        if self.mask is not None:
-            check_is_of_allowed_type(
-                self.mask,
-                (
-                    MultiSurfaceMasker,
-                    SurfaceImage,
-                    MultiNiftiMasker,
-                    *NiimgLike,
-                ),
-                "mask",
-            )
+        self._validate_mask()
 
         masker_type = "multi_nii"
-        if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)) or any(
-            isinstance(x, SurfaceImage) for x in imgs
-        ):
+        if self.mask is not None:
+            if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)):
+                masker_type = "multi_surface"
+            if isinstance(self.mask, (MultiNiftiMasker, *NiimgLike)):
+                masker_type = "multi_nii"
+            elif isinstance(self.mask, SurfaceMasker):
+                masker_type = "surface"
+            elif isinstance(self.mask, NiftiMasker):
+                masker_type = "nii"
+        elif any(isinstance(x, SurfaceImage) for x in imgs):
             masker_type = "multi_surface"
+
+        if masker_type in ["surface", "multi_surface"]:
             _warn_ignored_surface_masker_params(self)
+
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         self.masker_.memory_level = self.memory_level
-
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
         if self.masker_.mask_img is None:

@@ -2,6 +2,7 @@
 
 import warnings
 from string import Template
+from typing import Literal
 
 import numpy as np
 
@@ -15,9 +16,14 @@ from nilearn.maskers import (
     NiftiMasker,
     SurfaceMasker,
 )
+from nilearn.maskers._mixin import _MultiMixin
 
 
-def check_embedded_masker(estimator, masker_type, ignore=None):
+def check_embedded_masker(
+    estimator,
+    masker_type: Literal["nii", "surface", "multi_nii", "multi_surface"],
+    ignore: list[str] | None = None,
+) -> NiftiMasker | SurfaceMasker | MultiNiftiMasker | MultiSurfaceMasker:
     """Create a masker from instance parameters.
 
     Base function for using a masker within a NilearnBaseEstimator class
@@ -49,41 +55,37 @@ def check_embedded_masker(estimator, masker_type, ignore=None):
 
     Returns
     -------
-    masker : MultiNiftiMasker, NiftiMasker, \
-             or :obj:`~nilearn.maskers.SurfaceMasker`
+    masker : MultiNiftiMasker, NiftiMasker, SurfaceMasker, MultiSurfaceMasker
         New masker
 
     """
+    masker: type[
+        NiftiMasker | SurfaceMasker | MultiNiftiMasker | MultiSurfaceMasker
+    ] = NiftiMasker
     if masker_type == "surface":
-        masker_type = SurfaceMasker
+        masker = SurfaceMasker
     elif masker_type == "multi_surface":
-        masker_type = MultiSurfaceMasker
+        masker = MultiSurfaceMasker
     elif masker_type == "multi_nii":
-        masker_type = MultiNiftiMasker
-    else:
-        masker_type = NiftiMasker
+        masker = MultiNiftiMasker
 
-    estimator_params = get_params(masker_type, estimator, ignore=ignore)
+    estimator_params = get_params(masker, estimator, ignore=ignore)
 
     mask = getattr(estimator, "mask", None)
     if is_glm(estimator):
         mask = getattr(estimator, "mask_img", None)
 
-    if isinstance(
-        mask,
-        (NiftiMasker, MultiNiftiMasker, SurfaceMasker, MultiSurfaceMasker),
-    ):
+    if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         # Creating masker from provided masker
-        masker_params = get_params(masker_type, mask)
+        masker_params = get_params(masker, mask)
         new_masker_params = masker_params
     else:
         # Creating a masker with parameters extracted from estimator
         new_masker_params = estimator_params
         new_masker_params["mask_img"] = mask
+
     # Forwarding system parameters of instance to new masker in all case
-    if issubclass(
-        masker_type, (MultiNiftiMasker, MultiSurfaceMasker)
-    ) and hasattr(estimator, "n_jobs"):
+    if issubclass(masker, (_MultiMixin)) and hasattr(estimator, "n_jobs"):
         # For MultiMaskers only
         new_masker_params["n_jobs"] = estimator.n_jobs
 
@@ -144,11 +146,11 @@ def check_embedded_masker(estimator, masker_type, ignore=None):
         )
         warnings.warn(warn_str, stacklevel=find_stack_level())
 
-    masker = masker_type(**new_masker_params)
+    masker_instance = masker(**new_masker_params)
 
     # Forwarding potential attribute of provided masker
-    if hasattr(mask, "mask_img_"):
+    if mask is not None and hasattr(mask, "mask_img_"):
         # Allow free fit of returned mask
-        masker.mask_img = mask.mask_img_
+        masker_instance.mask_img = mask.mask_img_
 
-    return masker
+    return masker_instance
