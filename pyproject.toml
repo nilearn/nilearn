@@ -305,7 +305,10 @@ doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 # see https://docs.pytest.org/en/stable/how-to/capture-warnings.html#controlling-warnings
 filterwarnings = [
     # ignoring warnings about using a non-interactive plotting backend
-    'ignore:.*you are using the.*:UserWarning'
+    'ignore:.*you are using the.*:UserWarning',
+    # ingore warnings about convergence failure for decoders
+    'ignore:.*Liblinear failed to converge.*:UserWarning',
+    'ignore:.*Solver terminated early.*:UserWarning'
 ]
 junit_family = "xunit2"
 log_cli_level = "INFO"

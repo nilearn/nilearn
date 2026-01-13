@@ -75,6 +75,8 @@ SUPPORTED_ESTIMATORS = {
     "dummy_regressor": DummyRegressor(strategy="mean"),
 }
 
+MIN_N_FEATURES_FOR_SCREENING = 100
+
 
 @fill_doc
 def _check_param_grid(estimator, X, y, param_grid=None):
@@ -351,7 +353,7 @@ def _parallel_fit(
     scorer,
     mask_img,
     class_index,
-    clustering_percentile,
+    clustering_percentile: int,
 ):
     """Find the best estimator for a fold within a job.
 
@@ -380,7 +382,20 @@ def _parallel_fit(
         X_train = clustering.fit_transform(X_train)
         X_test = clustering.transform(X_test)
 
-    do_screening = (X_train.shape[1] > 100) and selector is not None
+    do_screening: bool = False
+    if selector is not None:
+        if X_train.shape[1] > MIN_N_FEATURES_FOR_SCREENING:
+            do_screening = True
+        else:
+            warnings.warn(
+                (
+                    f"number of features ({X_train.shape[1]}) "
+                    f"less than or equal to {MIN_N_FEATURES_FOR_SCREENING}: "
+                    "no feature selection will be performed."
+                ),
+                category=UserWarning,
+                stacklevel=find_stack_level(),
+            )
 
     if do_screening:
         X_train = selector.fit_transform(X_train, y_train)
