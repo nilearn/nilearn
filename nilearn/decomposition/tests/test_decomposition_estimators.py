@@ -21,6 +21,7 @@ from nilearn.decomposition.tests.conftest import (
     RANDOM_STATE,
     check_decomposition_estimator,
 )
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 
 ESTIMATORS_TO_CHECK = [
     DictLearning(standardize="zscore_sample"),
@@ -451,7 +452,7 @@ def test_with_globbing_patterns(
     estimator,
     n_subjects,  # noqa: ARG001
 ):
-    """Check DictLearning can work with files on disk.
+    """Check decomposition estimators can work with files on disk.
 
     Only for nifti as we cannot read surface from file.
     """
@@ -469,3 +470,22 @@ def test_with_globbing_patterns(
 
     # smoke test transform and inverse transform
     est.transform(img)
+
+
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+@pytest.mark.parametrize("n_subjects", [1, 3])
+def test_error_non_multi_masker(
+    canica_data,
+    data_type,
+    estimator,
+    n_subjects,  # noqa: ARG001
+):
+    """Check decomposition estimators raise errors with non multi maskers."""
+    mask = SurfaceMasker()
+    if data_type == "nifti":
+        mask = NiftiMasker()
+    est = estimator(n_components=3, standardize="zscore_sample", mask=mask)
+
+    with pytest.raises(TypeError, match="'mask' must be of type"):
+        est.fit(canica_data)
