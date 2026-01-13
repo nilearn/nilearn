@@ -1128,16 +1128,19 @@ def test_decoder_multiclass_warnings_frem(multiclass_data):
         screening and clustering.
     """
     X, y, _ = multiclass_data
-    with pytest.warns(
-        UserWarning, match=".*decoding model will be trained only.*"
+    model = FREMClassifier(
+        clustering_percentile=10,
+        screening_percentile=10,
+        mask=NiftiMasker(),
+        cv=1,
+        standardize="zscore_sample",
+    )
+    with (
+        pytest.warns(
+            UserWarning, match=".*decoding model will be trained only.*"
+        ),
+        pytest.warns(match="no feature selection will be performed"),
     ):
-        model = FREMClassifier(
-            clustering_percentile=10,
-            screening_percentile=10,
-            mask=NiftiMasker(),
-            cv=1,
-            standardize="zscore_sample",
-        )
         model.fit(X, y)
 
 
@@ -1214,7 +1217,8 @@ def test_decoder_screening_percentile_surface_default(
     X, y = _make_surface_class_data
 
     model = Decoder(mask=SurfaceMasker(), standardize="zscore_sample")
-    model.fit(X, y)
+    with pytest.warns(match="no feature selection will be performed"):
+        model.fit(X, y)
     assert model.screening_percentile_ == 20
 
 
@@ -1252,7 +1256,9 @@ def test_decoder_adjust_screening_less_than_mask_surface(
     mask_n_vertices = _get_mask_extent(surf_mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+
     assert screening_percentile <= mask_to_mesh_ratio
+
     decoder = Decoder(
         mask=surf_mask,
         param_grid={"C": [0.01, 0.1]},
@@ -1260,7 +1266,10 @@ def test_decoder_adjust_screening_less_than_mask_surface(
         screening_percentile=screening_percentile,
         standardize="zscore_sample",
     )
-    decoder.fit(img, y)
+
+    with pytest.warns(match="no feature selection will be performed"):
+        decoder.fit(img, y)
+
     adjusted = decoder.screening_percentile_
     assert adjusted == screening_percentile * (
         mesh_n_vertices / mask_n_vertices
@@ -1283,7 +1292,9 @@ def test_decoder_adjust_screening_greater_than_mask_surface(
     mask_n_vertices = _get_mask_extent(surf_mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+
     assert screening_percentile > mask_to_mesh_ratio
+
     decoder = Decoder(
         mask=surf_mask_1d,
         param_grid={"C": [0.01, 0.1]},
@@ -1291,7 +1302,10 @@ def test_decoder_adjust_screening_greater_than_mask_surface(
         screening_percentile=screening_percentile,
         standardize="zscore_sample",
     )
-    decoder.fit(img, y)
+
+    with pytest.warns(match="no feature selection will be performed"):
+        decoder.fit(img, y)
+
     adjusted = decoder.screening_percentile_
     assert adjusted == 100
 
@@ -1300,7 +1314,8 @@ def test_decoder_predict_score_surface(_make_surface_class_data):
     """Test classification predict and scoring for surface image."""
     X, y = _make_surface_class_data
     model = Decoder(mask=SurfaceMasker(), standardize="zscore_sample")
-    model.fit(X, y)
+    with pytest.warns(match="no feature selection will be performed"):
+        model.fit(X, y)
     y_pred = model.predict(X)
 
     assert model.scoring == "roc_auc"

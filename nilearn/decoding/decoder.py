@@ -731,10 +731,12 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                     extra_msg += "and / or"
             if clustering_percentile_lt_100:
                 extra_msg += "'clustering_percentile'"
+            if extra_msg != "":
+                extra_msg += "."
             warning_msg = (
                 "The decoding model will be trained only "
                 f"on {n_final_features} features. "
-                f"{extra_msg}."
+                f"{extra_msg}"
             )
             warnings.warn(
                 warning_msg, UserWarning, stacklevel=find_stack_level()
