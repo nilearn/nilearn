@@ -118,7 +118,7 @@ def _yule_walker(x, order):
     n = np.prod(np.array(x.shape[:-1], int))
     r = np.zeros((n, order + 1), np.float64)
     y = x - x.mean()
-    y.shape = (n, x.shape[-1])  # inplace
+    y = y.reshape(n, x.shape[-1])  # inplace
     r[:, 0] += (y[:, np.newaxis, :] @ y[:, :, np.newaxis])[:, 0, 0]
     for k in range(1, order + 1):
         r[:, k] += (y[:, np.newaxis, 0:-k] @ y[:, k:, np.newaxis])[:, 0, 0]
@@ -130,7 +130,8 @@ def _yule_walker(x, order):
     # section removed-ambiguity-when-broadcasting-in-np-solve
     rho = np.linalg.solve(rt, r[:, 1:, None])[..., 0]
 
-    rho.shape = x.shape[:-1] + (order,)
+    rho = rho.reshape(x.shape[:-1] + (order,))
+
     return rho
 
 

@@ -881,6 +881,7 @@ def test_decoder_classification_string_label():
 
 
 @ignore_warnings
+@pytest.mark.slow
 @pytest.mark.parametrize("screening_percentile", [100, 20, 1, None])
 @pytest.mark.parametrize("estimator", ESTIMATOR_REGRESSION)
 def test_decoder_regression_screening(
