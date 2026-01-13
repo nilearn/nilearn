@@ -32,7 +32,7 @@
 #
 # .. code-block:: bash
 #
-#   $ git commit -m "[full doc] request full build"
+#   $ git commit --message "[full doc] request full build"
 #
 # Full builds are always run on "main".
 # This is done every time there is a push on "main" and every week.
@@ -47,7 +47,7 @@
 #
 # .. code-block:: bash
 #
-#   $ git commit -m "[example] plot_nilearn_101.py"
+#   $ git commit --message "[example] plot_nilearn_101.py"
 #
 # However for quick checks to do yourself
 # you should always opt for local builds following the instructions here:
@@ -73,7 +73,7 @@
 #
 # .. code-block:: bash
 #
-#   $ git commit -m "[full doc][force download] request full build"
+#   $ git commit --message "[full doc][force download] request full build"
 ###
 name: DocumentationBuilder
 
@@ -229,7 +229,7 @@ jobs:
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
 
-                  # Set up environment
+                      # Set up environment
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
@@ -340,11 +340,11 @@ jobs:
         -   name: Free Disk Space (Ubuntu)
             uses: jlumbroso/free-disk-space@main
             with:
-                # this might remove tools that are actually needed,
-                # if set to "true" but frees about 6 GB
+                  # this might remove tools that are actually needed,
+                  # if set to "true" but frees about 6 GB
                 tool-cache: false
-                # all of these default to true, but feel free to set to
-                # "false" if necessary for your workflow
+                  # all of these default to true, but feel free to set to
+                  # "false" if necessary for your workflow
                 android: true
                 dotnet: true
                 haskell: true

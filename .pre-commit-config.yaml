@@ -55,7 +55,7 @@ repos:
 
     # Format TOML files
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.15.0
+    rev: v2.16.0
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
@@ -82,7 +82,7 @@ repos:
 
     # Lint and format Python code
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.10
+    rev: v0.14.11
     hooks:
     -   id: ruff-check
         # args: [--statistics]

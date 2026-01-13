@@ -169,7 +169,7 @@ def prox_tvl1(
     """
     weight = float(weight)
     input_img_flat = input_img.view()
-    input_img_flat.shape = input_img.size
+    input_img_flat = input_img_flat.reshape(input_img.size)
     input_img_norm = np.dot(input_img_flat, input_img_flat)
     if input_img.dtype.kind != "f":
         input_img = input_img.astype(np.float64)
