@@ -1903,7 +1903,6 @@ def check_supervised_img_estimator_y_no_nan(estimator) -> None:
             estimator.fit(X, y)
 
 
-@ignore_warnings()
 def check_decoder_empty_data_messages(estimator):
     """Check that empty images are caught properly.
 
@@ -1942,7 +1941,6 @@ def check_decoder_empty_data_messages(estimator):
         estimator.fit(X, y)
 
 
-@ignore_warnings()
 def check_decoder_compatibility_mask_image(estimator_orig):
     """Check compatibility of the mask_img and images for decoders.
 
@@ -1992,7 +1990,6 @@ def check_decoder_compatibility_mask_image(estimator_orig):
             getattr(estimator, method)(*input)
 
 
-@ignore_warnings()
 def check_decoder_with_surface_data(estimator_orig):
     """Test fit and other methods with surface image."""
     if isinstance(estimator_orig, SearchLight):
@@ -2031,7 +2028,6 @@ def check_decoder_with_surface_data(estimator_orig):
                 getattr(estimator, method)(X)
 
 
-@ignore_warnings
 def check_img_regressor_no_decision_function(regressor_orig):
     """Check that regressors don't have some method, attributes.
 
@@ -2049,7 +2045,6 @@ def check_img_regressor_no_decision_function(regressor_orig):
         )
 
 
-@ignore_warnings
 def check_decoder_with_arrays(estimator_orig):
     """Check that several methods of decoders work with ndarray and images.
 
