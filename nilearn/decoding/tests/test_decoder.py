@@ -1340,6 +1340,7 @@ def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
     assert r2 <= 0
 
 
+@pytest.mark.filterwarnings("ignore:divide by zero encountered in divide")
 @pytest.mark.parametrize("frem", [FREMRegressor, FREMClassifier])
 def test_frem_decoder_fit_surface(
     frem,
