@@ -267,12 +267,31 @@ def test_check_param_grid_replacement(rand_x_y, param_grid_input):
     X, Y = rand_x_y
     param_to_replace = "C"
     param_replaced = "Cs"
-    param_grid_output = _check_param_grid(
-        LogisticRegressionCV(l1_ratios=(0.0,), **kwarg_logistic_regression_cv),
-        X,
-        Y,
-        param_grid_input,
-    )
+    if "C" in param_grid_input or (
+        isinstance(param_grid_input, list)
+        and any("C" in x for x in param_grid_input)
+    ):
+        with pytest.warns(
+            FutureWarning,
+            match="change in the choice of underlying scikit-learn estimator",
+        ):
+            param_grid_output = _check_param_grid(
+                LogisticRegressionCV(
+                    l1_ratios=(0.0,), **kwarg_logistic_regression_cv
+                ),
+                X,
+                Y,
+                param_grid_input,
+            )
+    else:
+        param_grid_output = _check_param_grid(
+            LogisticRegressionCV(
+                l1_ratios=(0.0,), **kwarg_logistic_regression_cv
+            ),
+            X,
+            Y,
+            param_grid_input,
+        )
     for params in ParameterGrid(param_grid_output):
         assert param_to_replace not in params
         if param_replaced not in params:
@@ -509,7 +528,14 @@ def test_parallel_fit(rand_x_y):
     [
         (RidgeCV(), "alphas", "best_alpha", False),
         (RidgeClassifierCV(), "alphas", "best_alpha", True),
-        (LogisticRegressionCV(), "Cs", "best_C", True),
+        (
+            LogisticRegressionCV(
+                l1_ratios=(0,), **kwarg_logistic_regression_cv
+            ),
+            "Cs",
+            "best_C",
+            True,
+        ),
         (LassoCV(), "alphas", "best_alpha", False),
     ],
 )
