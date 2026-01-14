@@ -73,14 +73,15 @@ jobs:
                     pandas scikit-learn matplotlib
 
         -   name: Run test suite
-            # run on 8 threads
-            # this may take a bit longer with 2 threads some tests can be flaky,
+            # run on several threads
+            # this may take a bit longer with fewer threads
+            # but as some tests can be flaky,
             # they will more systematically fail with more threads
             id: test_free_threaded
             run: |
                 source .venv/bin/activate
                 PYTEST_RUN_PARALLEL_VERBOSE=1
-                N_THREADS=8
+                N_THREADS=16
                 pytest -m 'not flaky' --report=report.html --parallel-threads $N_THREADS nilearn
 
         -   name: Upload test report
