@@ -190,7 +190,6 @@ def test_display_basics_projectors(display, name, img, cut_coords):
     display.close()
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "slicer", [XSlicer, YSlicer, ZSlicer, YXSlicer, YZSlicer, XZSlicer]
 )
@@ -204,7 +203,6 @@ def test_stacked_slicer(slicer, img, tmp_path):
     slicer.close()
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("slicer", [OrthoSlicer, TiledSlicer, MosaicSlicer])
 def test_slicer_save_to_file(slicer, img, tmp_path):
     """Tests for saving to file with Ortho/Tiled/Mosaic slicers."""
@@ -232,7 +230,6 @@ def test_mosaic_slicer_integer_cut_coords(cut_coords, img):
     slicer.close()
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("cut_coords", [(4, 5, 2), (1, 1, 1)])
 def test_mosaic_slicer_tuple_cut_coords(cut_coords, img):
     """Tests for MosaicSlicer with cut_coords provided as a tuple."""
@@ -293,7 +290,6 @@ def test_demo_mosaic_slicer(cut_coords, img, expected_cuts):
     slicer.close()
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("projector", PROJECTORS)
 def test_projectors_basic(projector, img, tmp_path):
     """Basic tests for projectors."""

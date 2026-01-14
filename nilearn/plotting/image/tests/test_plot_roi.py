@@ -31,7 +31,6 @@ def demo_plot_roi(**kwargs):
 
 
 @pytest.mark.slow
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("view_type", ["contours", "continuous"])
 @pytest.mark.parametrize("threshold", [0.5, 0.2])
 @pytest.mark.parametrize("alpha", [0.7, 0.1])

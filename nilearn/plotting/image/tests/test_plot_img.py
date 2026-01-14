@@ -7,7 +7,6 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn._utils.helpers import is_gil_enabled
 from nilearn._utils.niimg import is_binary_niimg
 from nilearn.image import get_data
 from nilearn.plotting import plot_img
@@ -34,8 +33,6 @@ def _testdata_3d_for_plotting_for_resampling(img, binary):
 
 
 @pytest.mark.slow
-@pytest.mark.thread_unsafe
-@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_display_methods(matplotlib_pyplot, img_3d_mni):
     """Tests display methods."""
     display = plot_img(img_3d_mni)
@@ -79,8 +76,6 @@ def test_plot_empty_slice(matplotlib_pyplot, affine_mni):
     plot_img(img, display_mode="y", threshold=1)
 
 
-@pytest.mark.thread_unsafe
-@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize("binary_img", [True, False])
 def test_plot_img_with_resampling(matplotlib_pyplot, binary_img, img_3d_mni):
     """Tests for plot_img with resampling of the data image."""
@@ -98,8 +93,6 @@ def test_plot_img_with_resampling(matplotlib_pyplot, binary_img, img_3d_mni):
 
 
 @pytest.mark.slow
-@pytest.mark.thread_unsafe
-@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_display_methods_with_display_mode_tiled(
     matplotlib_pyplot, img_3d_mni
 ):

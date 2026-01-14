@@ -414,7 +414,6 @@ def test_single_subject_score(canica_data_single_img, data_type, estimator):
 
 
 @pytest.mark.slow
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_single_subject_file(
@@ -457,7 +456,6 @@ def test_single_subject_file(
 
 
 @pytest.mark.slow
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
 @pytest.mark.parametrize("n_subjects", [1, 3])

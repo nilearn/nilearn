@@ -11,7 +11,6 @@ import pytest
 from nilearn.plotting import plot_carpet
 
 
-@pytest.mark.thread_unsafe
 def test_plot_carpet(matplotlib_pyplot, img_4d_mni, img_3d_ones_mni):
     """Check contents of plot_carpet figure against data in image."""
     display = plot_carpet(
@@ -35,7 +34,6 @@ def test_plot_carpet(matplotlib_pyplot, img_4d_mni, img_3d_ones_mni):
     )
 
 
-@pytest.mark.thread_unsafe
 def test_plot_carpet_long_acquisition(
     matplotlib_pyplot, img_3d_ones_mni, img_4d_long_mni
 ):
@@ -60,7 +58,6 @@ def test_plot_carpet_long_acquisition(
     assert plotted_array.size == n_items
 
 
-@pytest.mark.thread_unsafe
 def test_plot_carpet_with_atlas(matplotlib_pyplot, img_4d_mni, img_atlas):
     """Test plot_carpet when using an atlas."""
     # t_r is set explicitly for this test as well
@@ -87,7 +84,6 @@ def test_plot_carpet_with_atlas(matplotlib_pyplot, img_4d_mni, img_atlas):
     assert len(np.unique(colorbar)) == len(img_atlas["labels"])
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.slow
 def test_plot_carpet_with_atlas_and_labels(
     matplotlib_pyplot, img_4d_mni, img_atlas

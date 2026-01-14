@@ -183,7 +183,6 @@ def test_surface_label_masker_fit_with_lut(surf_label_img, tmp_path):
         assert masker.lut_["name"].to_list() == ["Background", "bar"]
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "background_label, n_expected_regions", [(0, 3), (1, 2)]
 )
@@ -270,7 +269,6 @@ def test_surface_label_masker_fit_no_report(surf_label_img):
     assert masker._has_report_data() is False
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "strategy",
     (
