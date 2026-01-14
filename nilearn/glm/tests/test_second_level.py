@@ -142,6 +142,7 @@ def test_non_parametric_inference_with_flm_objects(shape_3d_default):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_process_second_level_input_as_dataframe(input_df):
     """Unit tests for function _process_second_level_input_as_dataframe()."""
     sample_map, subjects_label = _process_second_level_input_as_dataframe(
@@ -1568,6 +1569,7 @@ def test_second_level_input_as_surface_no_design_matrix(
         model.fit(second_level_input, design_matrix=None)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 def test_second_level_input_as_surface_image_with_mask(
     surf_img_1d, surf_mask_dim, surf_mask_1d, surf_mask_2d, n_subjects
@@ -1584,6 +1586,7 @@ def test_second_level_input_as_surface_image_with_mask(
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
+@pytest.mark.thread_unsafe
 def test_second_level_input_with_wrong_mask(
     surf_img_1d, surf_mask_1d, img_mask_mni, n_subjects
 ):
@@ -1647,6 +1650,7 @@ def test_second_level_input_as_flm_of_surface_image(
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
+@pytest.mark.thread_unsafe
 def test_second_level_surface_image_contrast_computation(
     surf_img_1d, n_subjects
 ):
@@ -1688,6 +1692,7 @@ def test_second_level_surface_image_contrast_computation(
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("two_sided_test", [True, False])
 def test_non_parametric_inference_with_surface_images(
     surf_img_1d, two_sided_test, n_subjects

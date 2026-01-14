@@ -34,6 +34,7 @@ def test_deprecation_function_moved(matplotlib_pyplot, img_3d_mni):
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker",
     [
@@ -53,6 +54,7 @@ def test_plot_img_comparison_masker(matplotlib_pyplot, img_3d_mni, masker):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_img_comparison_file(matplotlib_pyplot, img_3d_mni, tmp_path):
     """Tests plot_img_comparison with files."""
     img_3d_mni.to_filename(tmp_path / "img_compare.nii.gz")
@@ -172,6 +174,7 @@ def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     assert np.allclose(correlations, correlations_1)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker",
     [
@@ -210,6 +213,7 @@ def test_plot_bland_altman(
     assert (tmp_path / "spam.jpg").is_file()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker",
     [
