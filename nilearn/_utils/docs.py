@@ -1702,6 +1702,16 @@ rect : 4- :obj:`tuple`
     Position of axes within the figure.
 """
 
+docdict["slicer_init_parameters_partial"] = f"""
+{docdict["axes"]}
+{docdict["black_bg"]}
+{docdict["brain_color"]}
+kwargs : :obj:`dict`
+    Extra keyword arguments are passed to
+    :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+    direction.
+"""
+
 docdict["projector_init_parameters"] = f"""
 Parameters
 ----------

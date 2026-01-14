@@ -1255,18 +1255,7 @@ class OrthoSlicer(_MultiDSlicer):
         The world coordinates ``(x, y, z)`` of the point where the cut is
         performed.
 
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
-        direction.
+    %(slicer_init_parameters_partial)s
 
     Attributes
     ----------
@@ -1470,18 +1459,7 @@ class TiledSlicer(_MultiDSlicer):
         The world coordinates ``(x, y, z)`` of the point where the cut is
         performed.
 
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
-        direction.
+    %(slicer_init_parameters_partial)s
 
     Attributes
     ----------
@@ -2046,18 +2024,7 @@ class XSlicer(BaseStackedSlicer):
         direction 'x'.
         If ``None``, 7 cut positions are calculated automatically.
 
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
-        direction.
+    %(slicer_init_parameters_partial)s
 
     Attributes
     ----------
@@ -2105,18 +2072,7 @@ class YSlicer(BaseStackedSlicer):
         direction 'y'.
         If ``None``, 7 cut positions are calculated automatically.
 
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
-        direction.
+    %(slicer_init_parameters_partial)s
 
     Attributes
     ----------
@@ -2164,18 +2120,7 @@ class ZSlicer(BaseStackedSlicer):
         direction 'z'.
         If ``None``, 7 cut positions are calculated automatically.
 
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
-        direction.
+    %(slicer_init_parameters_partial)s
 
     Attributes
     ----------
@@ -2222,18 +2167,7 @@ class XZSlicer(OrthoSlicer):
         The world coordinates ``(x, z)`` of the point where the cut is
         performed.
 
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
-        direction.
+    %(slicer_init_parameters_partial)s
 
     Attributes
     ----------
@@ -2279,18 +2213,7 @@ class YXSlicer(OrthoSlicer):
         The world coordinates ``(x, y)`` of the point where the cut is
         performed.
 
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
-        direction.
+    %(slicer_init_parameters_partial)s
 
     Attributes
     ----------
@@ -2336,18 +2259,7 @@ class YZSlicer(OrthoSlicer):
         The world coordinates ``(y, z)`` of the point where the cut is
         performed.
 
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
-        direction.
+    %(slicer_init_parameters_partial)s
 
     Attributes
     ----------
@@ -2398,18 +2310,7 @@ class MosaicSlicer(BaseSlicer):
         ('x', 'y', 'z') and the values are sequences holding the cut
         coordinates.
 
-    %(axes)s
-        default=None
-
-    %(black_bg)s
-        default=False
-
-    %(brain_color)s
-
-    kwargs : :obj:`dict`
-        Extra keyword arguments are passed to
-        :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
-        direction.
+    %(slicer_init_parameters_partial)s
 
     Attributes
     ----------
