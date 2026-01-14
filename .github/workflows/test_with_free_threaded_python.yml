@@ -42,8 +42,6 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                # TODO:
-                # Run with nightly dependencies and with just latest stable
                 description: [latest dependencies]
                 py: [3.14t]
                 # TODO: ubuntu-latest fails - figure out why
@@ -62,6 +60,10 @@ jobs:
         -   name: Install dependencies
             # for now one of the dependencies of plotly cannot be installed
             # for free threaded python so only testing with matplotlib
+            #
+            # for now one of the dependencies of plotly
+            # cannot be installed for free threaded python
+            # so only testing with matplotlib
             run: |
                 uv venv -p 3.14t
                 source .venv/bin/activate
