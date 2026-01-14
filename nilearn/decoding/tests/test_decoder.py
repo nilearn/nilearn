@@ -622,6 +622,7 @@ def test_decoder_binary_classification_with_logistic_model(
 
 
 @ignore_warnings
+@pytest.mark.slow
 @pytest.mark.parametrize("screening_percentile", [100, 20, None])
 def test_decoder_binary_classification_screening(
     binary_classification_data, screening_percentile
@@ -903,6 +904,7 @@ def test_decoder_regression_screening(
 
 
 @ignore_warnings
+@pytest.mark.slow
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
 @pytest.mark.parametrize("estimator", ESTIMATOR_REGRESSION)
 def test_decoder_regression_clustering(
