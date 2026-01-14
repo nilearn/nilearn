@@ -7,7 +7,12 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+)
 from nilearn._utils.helpers import is_windows_platform
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _affine_eye
 from nilearn.maskers import (
     MultiNiftiMasker,
@@ -30,6 +35,53 @@ METHODS = [
     "rena",
     "hierarchical_kmeans",
 ]
+
+ESTIMATORS_TO_CHECK = [Parcellations(method=x, n_parcels=5) for x in METHODS]
+
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+    from sklearn.utils.estimator_checks import parametrize_with_checks
+
+    from nilearn._utils.estimator_checks import (
+        return_expected_failed_checks,
+    )
+
+    @pytest.mark.slow
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
+)
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
+    check(estimator)
 
 
 @pytest.fixture
@@ -72,11 +124,28 @@ def test_errors_raised_in_check_parameters_fit(method, image_1):
 def test_parcellations_fit_on_single_nifti_image(method, n_parcel, image_1):
     """Test return attributes for each method."""
     parcellator = Parcellations(method=method, n_parcels=n_parcel)
-    parcellator.fit(image_1)
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        parcellator.fit(image_1)
+
+    # The input image used for testing may not give the requested n_parcels.
+    # So we check that the proper warning is thrown
+    # and that n_elements is always 5
+    if not any(
+        (
+            "The number of generated labels does not "
+            "match the requested number of parcels."
+        )
+        in str(x)
+        for x in warning_list
+    ):
+        assert parcellator.n_elements_ == n_parcel
 
     labels_img = parcellator.labels_img_
+
     # Test that object returns attribute labels_img_
     assert labels_img is not None
+
     # After inverse_transform, shape must match with
     # original input data
     assert labels_img.shape == image_1.shape[:3]
@@ -406,12 +475,18 @@ def test_parcellation_with_surface_and_confounds(
 ):
     """Test if parcellation works on surface with confounds."""
     confounds = rng.standard_normal(size=(n_samples, 3))
-    parcellate = Parcellations(method=method, n_parcels=5)
+
+    n_parcels = 5
+
+    parcellate = Parcellations(method=method, n_parcels=n_parcels)
+
     X_transformed = parcellate.fit_transform(
         surface_img_for_parcellation, confounds=[confounds]
     )
 
-    assert X_transformed.shape == (n_samples, 5)
+    assert parcellate.n_elements_ == n_parcels
+
+    assert X_transformed.shape == (n_samples, n_parcels)
 
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
