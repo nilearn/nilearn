@@ -83,8 +83,8 @@ def check_embedded_masker(
         # Creating a masker with parameters extracted from estimator
         new_masker_params = estimator_params
         new_masker_params["mask_img"] = mask
-        # if we need to instanciate a masker
-        # make that it won't be instanciated with defaults
+        # if we need to instantiate a masker
+        # make that it won't be instantiated with defaults
         # that throw FutureWarning
         # that the user cannot do anything about
 
