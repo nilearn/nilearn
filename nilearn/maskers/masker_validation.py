@@ -83,6 +83,14 @@ def check_embedded_masker(
         # Creating a masker with parameters extracted from estimator
         new_masker_params = estimator_params
         new_masker_params["mask_img"] = mask
+        # if we need to instanciate a masker
+        # make that it won't be instanciated with defaults
+        # that throw FutureWarning
+        # that the user cannot do anything about
+
+        # TODO (nilearn >= 0.14)
+        # remove this if block
+        new_masker_params["standardize"] = "zscore_sample"
 
     # Forwarding system parameters of instance to new masker in all case
     if issubclass(masker, (_MultiMixin)) and hasattr(estimator, "n_jobs"):

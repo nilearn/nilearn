@@ -582,21 +582,28 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     )
 
     # one sided positive
-    result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, two_sided=False
-    )
+    # TODO (nilearn >= 0.15) remove catch FutureWarning
+    with pytest.warns(
+        FutureWarning, match="the default 'threshold' will be set to"
+    ):
+        result, _ = threshold_stats_img(
+            surf_img_1d, height_control=None, two_sided=False
+        )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 4.0]))
     assert_equal(
         result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
     )
-
-    result, _ = threshold_stats_img(
-        surf_img_1d,
-        height_control=None,
-        two_sided=False,
-        cluster_threshold=2,
-    )
+    # TODO (nilearn >= 0.15) remove catch FutureWarning
+    with pytest.warns(
+        FutureWarning, match="the default 'threshold' will be set to"
+    ):
+        result, _ = threshold_stats_img(
+            surf_img_1d,
+            height_control=None,
+            two_sided=False,
+            cluster_threshold=2,
+        )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 0.0]))
     assert_equal(
@@ -661,18 +668,18 @@ def test_deprecation_threshold(surf_img_1d, height_control, threshold):
     # TODO (nilearn >= 0.15.0)
     # remove
     """
-    with warnings.catch_warnings(record=True) as warning_list:
+    if height_control is None and threshold == 3.0:
+        # TODO (nilearn >= 0.15) remove catch FutureWarning
+        with pytest.warns(
+            FutureWarning, match="the default 'threshold' will be set to"
+        ):
+            threshold_stats_img(
+                surf_img_1d, height_control=height_control, threshold=threshold
+            )
+    else:
         threshold_stats_img(
             surf_img_1d, height_control=height_control, threshold=threshold
         )
-
-    n_warnings = len(
-        [x for x in warning_list if issubclass(x.category, FutureWarning)]
-    )
-    if height_control is None and threshold == 3.0:
-        assert n_warnings == 1
-    else:
-        assert n_warnings == 0
 
 
 @pytest.mark.slow

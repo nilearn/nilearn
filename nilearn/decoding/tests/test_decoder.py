@@ -689,7 +689,6 @@ def test_decoder_binary_classification_clustering(
     assert accuracy_score(y, y_pred) > 0.9
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, data",
     [
