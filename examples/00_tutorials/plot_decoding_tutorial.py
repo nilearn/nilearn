@@ -167,6 +167,7 @@ decoder
 # labels, and then predict labels on data without.
 #
 # We first fit it on the data.
+#
 # You can also note that after fitting,
 # the HTML representation of the estimator looks different
 # than before before fitting.
