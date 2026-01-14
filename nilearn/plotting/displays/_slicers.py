@@ -48,11 +48,7 @@ class BaseSlicer:
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The axes used for plotting in each direction of the cut.
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     """
 
@@ -1281,11 +1277,7 @@ class OrthoSlicer(_MultiDSlicer):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x', 'y' and 'z' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     Notes
     -----
@@ -1500,11 +1492,7 @@ class TiledSlicer(_MultiDSlicer):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x', 'y' and 'z' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     Notes
     -----
@@ -2079,11 +2067,7 @@ class XSlicer(BaseStackedSlicer):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used to plot each view in direction 'x'.
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -2142,11 +2126,7 @@ class YSlicer(BaseStackedSlicer):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used to plot each view in direction 'y'.
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -2205,11 +2185,7 @@ class ZSlicer(BaseStackedSlicer):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used to plot each view in direction 'z'.
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -2267,11 +2243,7 @@ class XZSlicer(OrthoSlicer):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'z' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -2328,11 +2300,7 @@ class YXSlicer(OrthoSlicer):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'y' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -2389,11 +2357,7 @@ class YZSlicer(OrthoSlicer):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('y' and 'z' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -2457,11 +2421,7 @@ class MosaicSlicer(BaseSlicer):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x', 'y' and 'z' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------

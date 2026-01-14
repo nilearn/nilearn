@@ -43,12 +43,7 @@ class OrthoProjector(OrthoSlicer):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('x', 'y' and 'z' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
-
+    %(displays_partial_attributes)s
     """
 
     _axes_class = GlassBrainAxes  # type: ignore[assignment]
@@ -366,11 +361,7 @@ class XProjector(OrthoProjector):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('x' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -409,11 +400,7 @@ class YProjector(OrthoProjector):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('y' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -452,11 +439,7 @@ class ZProjector(OrthoProjector):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('z' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -495,11 +478,7 @@ class XZProjector(OrthoProjector):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('x' and 'z' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -538,11 +517,7 @@ class YXProjector(OrthoProjector):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('y' and 'x' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -580,11 +555,7 @@ class YZProjector(OrthoProjector):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('y' and 'z' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -625,11 +596,7 @@ class LYRZProjector(OrthoProjector):
         The axes used for plotting in each direction ('l', 'y', 'r' and 'z'
         here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -668,11 +635,7 @@ class LZRYProjector(OrthoProjector):
         The axes used for plotting in each direction ('l', 'z', 'r' and 'y'
         here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -709,11 +672,7 @@ class LZRProjector(OrthoProjector):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('l', 'z' and 'r' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -750,11 +709,7 @@ class LYRProjector(OrthoProjector):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('l', 'y' and 'r' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -791,11 +746,7 @@ class LRProjector(OrthoProjector):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('l' and 'r' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     """
 
@@ -828,11 +779,7 @@ class LProjector(OrthoProjector):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('l' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------
@@ -870,11 +817,7 @@ class RProjector(OrthoProjector):
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
         The axes used for plotting in each direction ('r' here).
 
-    frame_axes : :class:`~matplotlib.axes.Axes`
-        The axes framing the whole set of views.
-
-    rect : 4- :obj:`tuple`
-        Position of axes within the figure.
+    %(displays_partial_attributes)s
 
     See Also
     --------

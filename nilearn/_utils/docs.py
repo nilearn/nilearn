@@ -1694,6 +1694,14 @@ ymean_ : array, shape (n_samples,)
 
 """
 
+docdict["displays_partial_attributes"] = """
+frame_axes : :class:`~matplotlib.axes.Axes`
+    The axes framing the whole set of views.
+
+rect : 4- :obj:`tuple`
+    Position of axes within the figure.
+"""
+
 docdict["projector_init_parameters"] = f"""
 Parameters
 ----------
