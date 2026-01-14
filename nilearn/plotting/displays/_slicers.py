@@ -1282,7 +1282,7 @@ class OrthoSlicer(_MultiDSlicer):
 
     """
 
-    _cut_displayed: ClassVar[str] = "yxz"
+    _cut_displayed: ClassVar[str] = "xyz"
     _default_figsize: ClassVar[list[float]] = [2.2, 3.5]
 
     def _init_axes(self, **kwargs):
@@ -1486,7 +1486,7 @@ class TiledSlicer(_MultiDSlicer):
 
     """
 
-    _cut_displayed: ClassVar[str] = "yxz"
+    _cut_displayed: ClassVar[str] = "xyz"
     _default_figsize: ClassVar[list[float]] = [2.0, 7.6]
 
     def _find_initial_axes_coord(self, index):
@@ -2232,7 +2232,7 @@ class YXSlicer(OrthoSlicer):
 
     """
 
-    _cut_displayed = "yx"
+    _cut_displayed = "xy"
 
 
 @fill_doc
@@ -2333,7 +2333,7 @@ class MosaicSlicer(BaseSlicer):
 
     """
 
-    _cut_displayed: ClassVar[str] = "yxz"
+    _cut_displayed: ClassVar[str] = "xyz"
     _default_figsize: ClassVar[list[float]] = [4.0, 5.0]
 
     @classmethod
