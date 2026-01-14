@@ -259,6 +259,16 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
     passed as a pandas dataframe.
     If the look up table does not contain a ``color`` column,
     then the default colormap of this function will be used.
+
+    .. warning::
+
+        If the ``name`` column in the look up table
+        does not contain a ``background`` or ``Background`` value,
+        then the colormap will be shifted by one.
+
+        See `issue 5934 <https://github.com/nilearn/nilearn/issues/5934>`_.
+
+
 """
 
 # colorbar
@@ -1499,9 +1509,6 @@ masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
     related parameters as initialization.
 
 memory_ : joblib memory cache
-
-n_elements_ : :obj:`int`
-    The number of components.
 
 """
 
