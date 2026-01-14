@@ -134,11 +134,14 @@ def create_colormap_from_lut(cmap, default_cmap="gist_ncar"):
         return default_cmap
 
     # Ensure colors are properly extracted from DataFrame
-    colors = cmap.sort_values(by="index")["color"].tolist()
+    cmap = cmap.sort_values(by="index")
+    cmap = cmap[cmap["name"] != "background"]
+    cmap = cmap[cmap["name"] != "Background"]
+    color = cmap["color"].tolist()
 
     # Create a colormap from the list of colors
     return LinearSegmentedColormap.from_list(
-        "custom_colormap", colors, N=len(colors)
+        "custom_colormap", color, N=len(color) + 1
     )
 
 
