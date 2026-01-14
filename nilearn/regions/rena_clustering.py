@@ -675,6 +675,24 @@ class ReNA(
         """
         return self.__sklearn_tags__()
 
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO (sklearn  >= 1.6.0) remove if block
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(niimg_like=False)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(niimg_like=False)
+        return tags
+
     def _set_mask_img_for_tests(self):
         """Create dummy nifti image with 1 slice if no mask images was passed.
 
