@@ -57,6 +57,8 @@ class _NilearnHTMLDocumentationLinkMixin:
 
 
 class NilearnBaseEstimator(_NilearnHTMLDocumentationLinkMixin, BaseEstimator):
+    """Base estimator for all Nilearn estimators."""
+
     def __sklearn_tags__(self):
         """Return estimator tags.
 
