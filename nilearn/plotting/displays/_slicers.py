@@ -168,14 +168,10 @@ class BaseSlicer:
         # if at least one (but not all) of the coordinates is out of the
         # bounds, warn user
         if any(coord_in) and not all(coord_in):
-            out_of_bounds = np.asarray(cut_coords)[
-                np.logical_not(np.asarray(coord_in))
-            ].tolist()
             warnings.warn(
                 (
-                    f"The following 'cut_coords':"
-                    f"\n{out_of_bounds} "
-                    "\nseem to be out of the image bounds:"
+                    f"Some of the specified cut_coords "
+                    "seem to be out of the image bounds:"
                     f"{bounds_str}"
                 ),
                 UserWarning,
@@ -1228,8 +1224,8 @@ class _MultiDSlicer(BaseSlicer):
     def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
         coord_in = []
 
-        for index, c in enumerate(sorted(cls._cut_displayed)):
-            bounds_index = "xyz".find(c)
+        for index, cut in enumerate(sorted(cls._cut_displayed)):
+            bounds_index = "xyz".find(cut)
             coord_in.append(
                 bounds[bounds_index][0] <= cut_coords[index]
                 and cut_coords[index] <= bounds[bounds_index][1]
@@ -1924,7 +1920,7 @@ class BaseStackedSlicer(BaseSlicer):
         index = "xyz".find(cls._direction)
         coord_bounds = bounds[index]
         coord_in = [
-            coord_bounds[0] <= c <= coord_bounds[1] for c in cut_coords
+            coord_bounds[0] <= coord <= coord_bounds[1] for coord in cut_coords
         ]
         return coord_in
 
@@ -2602,7 +2598,25 @@ class MosaicSlicer(BaseSlicer):
                         img, direction=direction, n_cuts=n_cuts
                     )
             cut_coords = coords
+        elif img is not None and img is not False:
+            cls._check_cut_coords_in_bounds(img, cut_coords)
         return cut_coords
+
+    @classmethod
+    def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
+        coord_in = []
+
+        for cut in sorted(cls._cut_displayed):
+            coords_list = cut_coords[cut]
+            bound_index = "xyz".find(cut)
+            coord_bounds = bounds[bound_index]
+            coord_in.extend(
+                [
+                    coord_bounds[0] <= coord <= coord_bounds[1]
+                    for coord in coords_list
+                ]
+            )
+        return coord_in
 
     @classmethod
     def _cut_count(cls):
