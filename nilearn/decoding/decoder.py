@@ -21,7 +21,7 @@ from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
     MultiOutputMixin,
-    is_classifier,
+    is_classifier
 )
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
@@ -701,6 +701,25 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             is_classifier(self),
             verbose=self.verbose,
         )
+
+        # Ensure all CVs have enough features to do feature selection
+        if selector is not None:
+            for _, (train, _) in itertools.product(
+                range(n_problems), self.cv_
+            ):
+                if not X[train].shape[1] > MIN_N_FEATURES_FOR_SCREENING:
+                    warnings.warn(
+                        (
+                            f"number of features ({X[train].shape[1]}) "
+                            "less than or equal to "
+                            f"{MIN_N_FEATURES_FOR_SCREENING}: "
+                            "no feature selection will be performed."
+                        ),
+                        category=UserWarning,
+                        stacklevel=find_stack_level(),
+                    )
+                    selector = None
+                    break
 
         # Return a suitable screening percentile according to the mask image
         if hasattr(selector, "percentile"):
