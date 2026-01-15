@@ -140,6 +140,7 @@ def data_butterworth_multiple_timeseries(
     return data
 
 
+@pytest.mark.thread_unsafe
 def test_butterworth(data_butterworth_single_timeseries):
     """Check butterworth onsingle timeseries."""
     sampling = 100
@@ -165,6 +166,7 @@ def test_butterworth(data_butterworth_single_timeseries):
     assert id(out_single) != id(data)
 
 
+@pytest.mark.thread_unsafe
 def test_butterworth_multiple_timeseries(
     data_butterworth_single_timeseries, data_butterworth_multiple_timeseries
 ):
@@ -337,6 +339,7 @@ def test_standardize_error(rng):
         standardize_signal(a, standardize="zscore")
 
 
+@pytest.mark.thread_unsafe
 def test_standardize(rng):
     """Test starndardize_signal with several options."""
     n_features = 10
@@ -796,6 +799,7 @@ def test_clean_errros(signals):
         clean(signals, high_pass=False)
 
 
+@pytest.mark.thread_unsafe
 def test_clean_confounds():
     """Check output of cleaning when counfoun is passed."""
     signals, noises, confounds = generate_signals(
@@ -930,6 +934,7 @@ def test_clean_confounds_detrending():
     assert (abs(coeffs) < 1000.0 * EPS).all()  # trend removed
 
 
+@pytest.mark.thread_unsafe
 def test_clean_standardize_true_false():
     """Check difference between standardize False and True."""
     signals, _, _ = generate_signals(n_features=41, n_confounds=5, length=45)

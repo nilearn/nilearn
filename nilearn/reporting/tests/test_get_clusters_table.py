@@ -247,6 +247,7 @@ def test_get_clusters_table_surface_two_sided(
     assert cluster_labels_negative.size == expected_n_cluster_right + 1
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, expected_n_cluster_two_sided",
     [
@@ -387,6 +388,7 @@ def test_get_clusters_table_negative_threshold_one_sided(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_smoke_get_clusters_table_filename(tmp_path, simple_stat_img):
     """Run get_clusters_table on a file."""
     fname = str(tmp_path / "stat_img.nii.gz")

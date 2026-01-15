@@ -126,6 +126,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("invalid_threshold", ["80%", "auto", -1.0])
 def test_invalid_thresholds_in_threshold_maps_ratio(
     dummy_map, invalid_threshold
@@ -141,6 +142,7 @@ def test_invalid_thresholds_in_threshold_maps_ratio(
         _threshold_maps_ratio(maps_img=dummy_map, threshold=invalid_threshold)
 
 
+@pytest.mark.thread_unsafe
 def test_nans_threshold_maps_ratio(maps, affine_eye):
     data = get_data(maps)
     data[:, :, 0] = np.nan
@@ -149,6 +151,7 @@ def test_nans_threshold_maps_ratio(maps, affine_eye):
     _threshold_maps_ratio(maps_img, threshold=0.8)
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_maps_ratio(maps):
     """Check _threshold_maps_ratio with randomly generated maps."""
     # test that there is no side effect
@@ -162,12 +165,14 @@ def test_threshold_maps_ratio(maps):
     assert thr_maps.shape[-1] == maps.shape[-1]
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_maps_ratio_3d(map_img_3d):
     """Check size is the same for 3D image before and after thresholding."""
     thr_maps_3d = _threshold_maps_ratio(map_img_3d, threshold=0.5)
     assert map_img_3d.shape == thr_maps_3d.shape
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("invalid_extract_type", ["spam", 1])
 def test_invalids_extract_types_in_connected_regions(
     dummy_map, invalid_extract_type
@@ -176,6 +181,7 @@ def test_invalids_extract_types_in_connected_regions(
         connected_regions(dummy_map, extract_type=invalid_extract_type)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "extract_type", ["connected_components", "local_regions"]
 )
@@ -188,6 +194,7 @@ def test_connected_regions_4d(maps, extract_type):
     assert index, np.ndarray
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "extract_type", ["connected_components", "local_regions"]
 )
@@ -199,6 +206,7 @@ def test_connected_regions_3d(map_img_3d, extract_type):
     assert connected_extraction_3d_img.shape[-1] >= 1
 
 
+@pytest.mark.thread_unsafe
 def test_connected_regions_different_results_with_different_mask_images(
     maps_and_mask,
 ):
@@ -410,6 +418,7 @@ def test_region_extractor_zeros_affine_diagonal(affine_eye, n_regions):
     assert extract_ratio.regions_img_.shape[-1] >= n_regions
 
 
+@pytest.mark.thread_unsafe
 def test_error_messages_connected_label_regions(img_labels):
     with pytest.raises(
         ValueError, match=r"Expected 'min_size' to be specified as integer."
@@ -442,6 +451,7 @@ def test_remove_small_regions(affine_eye):
     assert sum_removed_data < sum_label_data
 
 
+@pytest.mark.thread_unsafe
 def test_connected_label_regions(img_labels):
     labels_data = get_data(img_labels)
     n_labels_without_region_extraction = len(np.unique(labels_data))
@@ -463,6 +473,7 @@ def test_connected_label_regions(img_labels):
     assert n_labels_without_min > n_labels_with_min
 
 
+@pytest.mark.thread_unsafe
 def test_connected_label_regions_connect_diag_false(img_labels):
     labels_data = get_data(img_labels)
     n_labels_without_region_extraction = len(np.unique(labels_data))
@@ -476,6 +487,7 @@ def test_connected_label_regions_connect_diag_false(img_labels):
     assert n_labels_wo_connect_diag > n_labels_without_region_extraction
 
 
+@pytest.mark.thread_unsafe
 def test_connected_label_regions_return_empty_for_large_min_size(img_labels):
     """If min_size is large and if all the regions are removed \
     then empty image will be returned.
@@ -487,6 +499,7 @@ def test_connected_label_regions_return_empty_for_large_min_size(img_labels):
     assert np.unique(get_data(extract_reg_min_size_large)) == 0
 
 
+@pytest.mark.thread_unsafe
 def test_connected_label_regions_check_labels(img_labels):
     """Test the names of the brain regions given in labels."""
     # Test labels for 9 regions in n_regions
@@ -508,6 +521,7 @@ def test_connected_label_regions_check_labels(img_labels):
     assert len(new_labels) <= len(labels)
 
 
+@pytest.mark.thread_unsafe
 def test_connected_label_regions_check_labels_as_numpy_array(img_labels):
     """Test the names of the brain regions given in labels."""
     # labels given in numpy array
@@ -536,6 +550,7 @@ def test_connected_label_regions_check_labels_as_numpy_array(img_labels):
         connected_label_regions(img_labels, labels=provided_labels)
 
 
+@pytest.mark.thread_unsafe
 def test_connected_label_regions_unknonw_labels(
     img_labels, affine_eye, shape_3d_default
 ):
@@ -577,6 +592,7 @@ def test_connected_label_regions_unknonw_labels(
         connected_label_regions(labels_img=labels_img_4d)
 
 
+@pytest.mark.thread_unsafe
 def test_connected_label_regions_check_labels_string_without_list(
     img_labels, affine_eye, shape_3d_default
 ):

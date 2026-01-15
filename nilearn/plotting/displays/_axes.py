@@ -532,7 +532,7 @@ class GlassBrainAxes(BaseAxes):
         %(cmap)s
             Colormap used to map ``line_values`` to a color.
 
-        vmin, vmax : :obj:`float`, optional
+        vmin, vmax : :obj:`float`, default=None
             If not ``None``, either or both of these values will be used to
             as the minimum and maximum values to color lines. If ``None`` are
             supplied the maximum absolute value within the given threshold
