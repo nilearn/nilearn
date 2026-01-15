@@ -109,7 +109,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Parameters
         ----------
-        renderer : :obj:`str`, default='browser'
+        renderer : :obj:`str`, default=None
             Plotly renderer to be used.
 
         """
