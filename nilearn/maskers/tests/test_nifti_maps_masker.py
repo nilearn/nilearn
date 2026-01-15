@@ -350,6 +350,7 @@ def test_nifti_maps_masker_resampling_to_maps(
     assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
 
 
+@pytest.mark.slow
 def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
     """Test with clipped maps: mask does not contain all maps."""
     # Shapes do matter in that case

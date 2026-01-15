@@ -144,6 +144,13 @@ border_size : :obj:`int`, optional
     the image to determine the value of the background.
 """
 
+# brain_color
+docdict["brain_color"] = """
+brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+    The brain color to use as the background color (e.g., for
+    transparent colorbars).
+"""
+
 # cbar_tick_format
 docdict["cbar_tick_format"] = """
 cbar_tick_format : :obj:`str`, optional
@@ -259,6 +266,16 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
     passed as a pandas dataframe.
     If the look up table does not contain a ``color`` column,
     then the default colormap of this function will be used.
+
+    .. warning::
+
+        If the ``name`` column in the look up table
+        does not contain a ``background`` or ``Background`` value,
+        then the colormap will be shifted by one.
+
+        See `issue 5934 <https://github.com/nilearn/nilearn/issues/5934>`_.
+
+
 """
 
 # colorbar
@@ -307,6 +324,10 @@ cut_coords : None, allowed types depend on the ``display_mode``, optional
     - If ``display_mode`` is ``'ortho'`` or ``'tiled'``,
       this must be a 3 :obj:`tuple`
       of :obj:`float` or :obj:`int`: ``(x, y, z)``.
+
+    - If ``display_mode`` is ``'xz'``, ``'yz'`` or ``'yx'``,
+      this must be a 2 :obj:`tuple`
+      of :obj:`float` or :obj:`int`: ``(x, z)``,  ``(y, z)`` or  ``(x, y)``.
 
     - If ``display_mode`` is ``"x"``, ``"y"``, or ``"z"``
       this can be:
@@ -1500,9 +1521,6 @@ masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
 
 memory_ : joblib memory cache
 
-n_elements_ : :obj:`int`
-    The number of components.
-
 """
 
 docdict["base_decoder_fit_attributes"] = """
@@ -1681,6 +1699,39 @@ Xstd_ : array, shape (n_features,)
 ymean_ : array, shape (n_samples,)
     Mean of prediction targets
 
+"""
+
+docdict["displays_partial_attributes"] = """
+frame_axes : :class:`~matplotlib.axes.Axes`
+    The axes framing the whole set of views.
+
+rect : 4- :obj:`tuple`
+    Position of axes within the figure.
+"""
+
+docdict["slicer_init_parameters_partial"] = f"""
+{docdict["axes"]}
+{docdict["black_bg"]}
+{docdict["brain_color"]}
+kwargs : :obj:`dict`
+    Extra keyword arguments are passed to
+    :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+    direction.
+"""
+
+docdict["projector_init_parameters"] = f"""
+Parameters
+----------
+cut_coords : sequence of :obj:`float` or :obj:`int`
+    The world coordinates of the point where the cut is performed. Not used
+    for projectors.
+{docdict["axes"]}
+{docdict["black_bg"]}
+{docdict["brain_color"]}
+kwargs : :obj:`dict`
+    Extra keyword arguments are passed to
+    :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+    each direction.
 """
 
 # dataset description
