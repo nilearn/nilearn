@@ -1,10 +1,13 @@
 """Configuration and extra fixtures for pytest."""
 
+import inspect
+
 import nibabel
 import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
+from numpydoc.docscrape import NumpyDocString
 from scipy.signal import get_window
 
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -910,3 +913,82 @@ def transparency_image(rng, affine_mni):
     data_rng = rng.random((7, 7, 3)) * 10 - 5
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     return Nifti1Image(data_positive, affine_mni)
+
+
+# ------------------------ DOCSTRING ------------------------#
+
+
+def check_obj_docstring(obj) -> None:
+    """Check that class and method parameters and attributes are documented.
+
+    - Check if public class attributes are documented
+    - Check if __init__ parameters are documented
+    - Check if each public function and parameters are documented
+    - Check not to have duplicates
+
+    Parameters
+    ----------
+    obj: :obj:`object`
+        Instance of the class to check
+    """
+    obj_doc = NumpyDocString(inspect.getdoc(obj.__class__))
+
+    # check public class attributes
+    # ------------------------------
+    attributes = [x for x in obj.__dict__ if not x.startswith("_")]
+    check_parameters_doctring(attributes, obj_doc["Attributes"])
+
+    # check __init__ parameters
+    # -------------------------
+    parameters = dict(**inspect.signature(obj.__init__).parameters)
+    check_parameters_doctring(parameters, obj_doc["Parameters"])
+
+    # get public methods from class definition
+    # ----------------------------------------
+    check_methods_docstring(obj.__class__)
+
+
+def check_parameters_doctring(parameters, doc_dict):
+    """Check if all parameters are documented without duplicates and extras."""
+    documented = []
+    for param in doc_dict:
+        if param.name.startswith("_"):
+            continue
+        # make sure type is defined for the parameter
+        assert param.type
+
+        # in case multiple params are defined in a line
+        documented.extend([name.strip() for name in param.name.split(",")])
+
+    undocumented = [param for param in parameters if param not in documented]
+    extras = [param for param in documented if param not in parameters]
+
+    # no undocumented
+    assert len(undocumented) == 0
+    # no extras
+    assert len(extras) == 0
+    # no duplicates
+    assert len(documented) == len(set(documented))
+
+
+def check_methods_docstring(cls):
+    """Check if all public functions and parameters are documented."""
+    for name, member in cls.__dict__.items():
+        if name.startswith("_"):
+            continue
+        if isinstance(member, (staticmethod, classmethod)):
+            func = member.__func__
+        elif inspect.isfunction(member):
+            func = member
+        else:
+            continue
+
+        sig = inspect.signature(func)
+        params = [
+            p.name
+            for p in sig.parameters.values()
+            if p.name not in ("self", "cls")
+        ]
+        func_doc = NumpyDocString(inspect.getdoc(func))
+
+        check_parameters_doctring(params, func_doc["Parameters"])

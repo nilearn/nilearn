@@ -587,9 +587,11 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             )
         self.maps_masker_.fit()
 
-        self.n_elements_ = self.maps_masker_.n_elements_
-
         return self
+
+    @property
+    def n_elements_(self) -> int:
+        return self.maps_masker_.n_elements_
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "components_")
