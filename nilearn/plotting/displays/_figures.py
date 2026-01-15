@@ -115,7 +115,6 @@ class PlotlySurfaceFigure(SurfaceFigure):
         """
         if self.figure is not None:
             self.figure.show(renderer=renderer)
-            return self.figure
 
     def savefig(self, output_file=None, **savefig_kwargs):  # noqa: ARG002
         """Save the figure to file.
