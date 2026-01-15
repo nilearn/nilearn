@@ -92,6 +92,7 @@ def test_same_energy_calculus_pure_lasso(rng):
     assert_array_equal(g1, g2)
 
 
+@pytest.mark.thread_unsafe
 def test_lipschitz_constant_loss_mse(rng):
     X, _, _, mask = _make_data(rng=rng, masked=True)
     alpha = 0.1
@@ -104,6 +105,7 @@ def test_lipschitz_constant_loss_mse(rng):
     assert_almost_equal(a, b)
 
 
+@pytest.mark.thread_unsafe
 def test_lipschitz_constant_loss_logreg(rng):
     X, _, _, mask = _make_data(rng=rng, masked=True)
     grad_weight = 0.1 * X.shape[0] * 0.0

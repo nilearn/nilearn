@@ -627,18 +627,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             Images to process.
             If a 3D niimg is provided, a 1D array is returned.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
-
-        region_ids_: dict[str | int, int | float] = {}
-        if self.background_label in index:
-            index.pop(index.index(self.background_label))
-            region_ids_["background"] = self.background_label
-        for i, id in enumerate(index):
-            region_ids_[i] = id  # noqa : PERF403
-
-        return region_ids_
+        %(y_dummy)s
 
         %(confounds)s
 
