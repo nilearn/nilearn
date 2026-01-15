@@ -103,7 +103,12 @@ from nilearn.conftest import (
 )
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
-from nilearn.decoding.decoder import Decoder, FREMClassifier, _BaseDecoder
+from nilearn.decoding.decoder import (
+    Decoder,
+    DecoderRegressor,
+    FREMClassifier,
+    _BaseDecoder,
+)
 from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.space_net import BaseSpaceNet, SpaceNetClassifier
 from nilearn.decoding.tests.test_same_api import to_niimgs
@@ -2284,55 +2289,41 @@ def check_decoder_with_arrays(estimator_orig):
 
 
 def check_decoder_screening_n_features(estimator_orig):
-    """Check that only n features are selected."""
-    # 1. Skip SearchLight
-    if isinstance(estimator_orig, SearchLight):
+    """Set screening_n_features gives the requested number of weights / CV.
+
+    screening_n_features determines the number of seelcted features per CV
+    so we only run a single CV.
+    """
+    estimator = clone(estimator_orig)
+
+    if (
+        isinstance(estimator, SearchLight)
+        or "screening_n_features" not in estimator.get_params()
+    ):
         return
 
-    # 2. Check if parameter exists
-    if "screening_n_features" not in estimator_orig.get_params():
-        return
+    screening_n_features = 10
 
-    class_name = estimator_orig.__class__.__name__
+    estimator.cv = 1
+    estimator.screening_n_features = screening_n_features
+    estimator.screening_percentile = None
 
-    # --- FIX: SKIP INCOMPATIBLE ESTIMATORS ---
+    if hasattr(estimator, "clustering_percentile"):
+        estimator.clustering_percentile = 100
 
-    # 1. Skip FREM (Ensemble models select > n features total)
-    if "FREM" in class_name:
-        return
+    # Not possible to have only cv=1 for Decoder, DecoderRegressor
+    # so we can only check that n_non_zero_weights >= 10
+    if isinstance(estimator, (Decoder, DecoderRegressor)):
+        estimator.cv = 2
 
-    # 2. Skip Decoder / DecoderRegressor
-    # The Decoder's 'n_elements_' attribute
-    #  tracks the Input Mask Size (125 voxels),
-    # NOT the features selected inside the
-    # internal cross-validation loop (10 features).
-    # Therefore, asserting n_elements_ == 10 will always fail.
-    if "Decoder" in class_name:
-        return
-    # -----------------------------------------
+    estimator = fit_estimator(estimator)
 
-    # If there are any other estimators (unlikely), run the test logic
-    import nibabel as nib
+    n_non_zero_weights = np.sum(estimator.coef_ != 0)
 
-    # Create ROBUST Dummy Data
-    rng = np.random.RandomState(42)
-    X = rng.rand(5, 5, 5, 20)
-    X_img = nib.Nifti1Image(X, np.eye(4))
-    y = np.array([0] * 10 + [1] * 10)
-
-    params = estimator_orig.get_params()
-    params["screening_n_features"] = 10
-    params["screening_percentile"] = None
-
-    if "clustering_percentile" in params:
-        params["clustering_percentile"] = 100
-    if "cv" in params:
-        params["cv"] = None
-
-    estimator = estimator_orig.__class__(**params)
-    estimator.fit(X_img, y)
-
-    assert estimator.n_elements_ == 10
+    if isinstance(estimator, (Decoder, DecoderRegressor)):
+        assert n_non_zero_weights >= screening_n_features
+    else:
+        assert n_non_zero_weights == screening_n_features
 
 
 # ------------------ MASKER CHECKS ------------------
