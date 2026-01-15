@@ -216,7 +216,7 @@ class _EarlyStoppingCallback:
     for scoring.
     """
 
-    def __init__(self, X_test, y_test, is_classif, debias=False, verbose=0):
+    def __init__(self, X_test, y_test, is_classif, verbose, debias=False):
         self.X_test = X_test
         self.y_test = y_test
         self.is_classif = is_classif
@@ -312,13 +312,13 @@ def path_scores(
     train,
     test,
     solver_params,
+    verbose,
     is_classif=False,
     n_alphas=10,
     eps=1e-3,
     key=None,
     debias=False,
     screening_percentile=20,
-    verbose=0,
 ):
     """Compute scores of different alphas in regression \
     and classification used by CV objects.
@@ -460,7 +460,7 @@ def path_scores(
                     mask=mask,
                     init=init,
                     callback=early_stopper,
-                    verbose=max(verbose - 1, 0.0),
+                    verbose=verbose,
                     **path_solver_params,
                 )
 
@@ -513,7 +513,7 @@ def path_scores(
             y_test,
             is_classif=is_classif,
             debias=debias,
-            verbose=verbose,
+            verbose=max(verbose - 1, 0),
         )._debias(best_w)
 
     if len(test) == 0.0:
@@ -902,7 +902,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             alphas,
             y_train_mean,
             (cls, fold),
-        ) in Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)(
+        ) in Parallel(n_jobs=self.n_jobs)(
             delayed(self._cache(path_scores, func_memory_level=2))(
                 solver,
                 X,
@@ -919,7 +919,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 is_classif=is_classifier(self),
                 key=(cls, fold),
                 debias=self.debias,
-                verbose=self.verbose,
+                verbose=max(self.verbose - 1, 0.0),
                 screening_percentile=self.screening_percentile_,
             )
             for cls in range(n_problems)
