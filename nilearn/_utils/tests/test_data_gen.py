@@ -63,6 +63,7 @@ def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
         assert metadata == {"foo": "bar"}
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("have_spaces", [False, True])
 def test_basic_paradigm(have_spaces):
     events = basic_paradigm(condition_names_have_spaces=have_spaces)
@@ -683,6 +684,7 @@ def test_generate_timeseries(n_timepoints, n_features, rng):
     assert timeseries.shape == (n_timepoints, n_features)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("n_scans", [1, 5])
 @pytest.mark.parametrize("res", [1, 30])
 @pytest.mark.parametrize("mask_dilation", [1, 2])

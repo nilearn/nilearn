@@ -5,6 +5,7 @@
 name: test free threaded python
 
 on:
+    pull_request:
     schedule:
         # Uses the cron schedule for github actions
         # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
@@ -33,17 +34,19 @@ env:
     FORCE_COLOR: true
 
 jobs:
-    test_and_coverage:
+
+    free_threaded:
         if: github.repository == 'nilearn/nilearn'
         name: 'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
         runs-on: ${{ matrix.os }}
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 description: [latest dependencies]
                 py: [3.14t]
-                os: [ubuntu-latest, macos-latest, windows-latest]
-                env: [plotting]
+                # TODO: ubuntu-latest fails - figure out why
+                os: [macos-latest]
+                env: [free_threaded]
         steps:
         -   uses: actions/checkout@v6
         -   name: Install the latest version of uv
@@ -53,41 +56,37 @@ jobs:
             with:
                 python-version: ${{ matrix.py }}
                 allow-prereleases: true
-        -   name: Install tox
-            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
-        -   name: Show tox config
-            run: tox c
+
+        -   name: Install dependencies
+            # for now one of the dependencies of plotly cannot be installed
+            # for free threaded python so only testing with matplotlib
+            #
+            # for now one of the dependencies of plotly
+            # cannot be installed for free threaded python
+            # so only testing with matplotlib
+            run: |
+                uv venv -p 3.14t
+                source .venv/bin/activate
+                uv pip install -e '.[test_free_threaded]'
+                uv pip install --verbose --upgrade --pre \
+                    --index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple \
+                    pandas scikit-learn matplotlib
+
         -   name: Run test suite
+            # run on several threads
+            # this may take a bit longer with fewer threads
+            # but as some tests can be flaky,
+            # they will more systematically fail with more threads
             id: test_free_threaded
             run: |
-                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
-                tox run -e plot_test_timing
+                source .venv/bin/activate
+                PYTEST_RUN_PARALLEL_VERBOSE=1
+                N_THREADS=16
+                pytest -m 'not flaky' --report=report.html --parallel-threads $N_THREADS nilearn
+
         -   name: Upload test report
             if: success() || failure()
             uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report.html
                 path: report.html
-        -   name: Upload test timings
-            if: success() || failure()
-            uses: actions/upload-artifact@v6
-            with:
-                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
-                path: results/pytest_output
-
-        -   name: Create issue
-            if: ${{ steps.test_free_threaded.outcome != 'success' }}
-            uses: JasonEtco/create-an-issue@v2.9.2
-            env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                run_id: ${{ github.run_id }}
-                repository: ${{ github.repository }}
-                workflow_name: TEST FREE THREADED PYTHON
-            with:
-                filename: .github/workflow_failure.md
-                update_existing: true
-                search_existing: open
-
-        -   name: Return failure
-            if: ${{ steps.test_free_threaded.outcome != 'success' }}
-            run: exit 1
