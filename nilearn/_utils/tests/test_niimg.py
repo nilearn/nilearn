@@ -31,7 +31,6 @@ def test_new_img_like_side_effect(img1):
     assert hash1 == hash2
 
 
-@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_get_target_dtype(affine_eye):
     img = Nifti1Image(np.ones((2, 2, 2), dtype=np.float64), affine=affine_eye)
     assert get_data(img).dtype.kind == "f"
@@ -52,7 +51,6 @@ def test_get_target_dtype(affine_eye):
     assert dtype_kind_int == np.int32
 
 
-@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_img_data_dtype(rng, affine_eye, tmp_path):
     # Ignoring complex, binary, 128+ bit, RGBA
     nifti1_dtypes = (
@@ -90,6 +88,7 @@ def test_img_data_dtype(rng, affine_eye, tmp_path):
     assert not all(dtype_matches)
 
 
+@pytest.mark.thread_unsafe
 def test_load_niimg(img1, tmp_path):
     filename = write_imgs_to_path(img1, file_path=tmp_path, create_files=True)
     filename = Path(filename)
@@ -249,6 +248,7 @@ def test_repr_niimgs_with_niimg_pathlib():
     assert repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("shorten", [True, False])
 def test_repr_niimgs_with_niimg(
     shorten, tmp_path, affine_eye, img_3d_ones_eye, shape_3d_default
