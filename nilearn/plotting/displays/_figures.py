@@ -104,7 +104,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             )
         super().__init__(figure=figure, output_file=output_file, hemi=hemi)
 
-    def show(self, renderer="browser"):
+    def show(self, renderer=None):
         """Show the figure.
 
         Parameters
