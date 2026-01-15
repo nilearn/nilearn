@@ -19,5 +19,7 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` Add support for dictionary as ``cut_coords`` for :class:`~plotting.displays.MosaicSlicer` and image plotting functions. (:gh:`5920` by `Hande Gözükan`_).
+
 Changes
 -------
