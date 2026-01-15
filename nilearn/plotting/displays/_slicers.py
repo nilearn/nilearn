@@ -258,8 +258,8 @@ class BaseSlicer:
         leave_space : :obj:`bool`, default=False
             If ``True``, leave space between the plots.
 
-        colorbar : :obj:`bool`, default=False
-            If ``True``, display a colorbar on the right of the plots.
+        %(colorbar)s
+            Default=False.
 
         %(brain_color)s
 
@@ -425,8 +425,8 @@ class BaseSlicer:
                 value is used to threshold the image: values below the
                 threshold (in absolute value) are plotted as transparent.
 
-        colorbar : :obj:`bool`, default=False
-            If ``True``, display a colorbar on the right of the plots.
+        %(colorbar)s
+            Default=False.
 
         cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.

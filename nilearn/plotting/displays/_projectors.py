@@ -226,8 +226,8 @@ class OrthoProjector(OrthoSlicer):
             :func:`~matplotlib.pyplot.scatter` which plots all the
             nodes at one.
 
-        colorbar : :obj:`bool`, default=False
-            If ``True``, display a colorbar on the right of the plots.
+        %(colorbar)s
+            Default=False.
         """
         # set defaults
         edge_kwargs = edge_kwargs or {}
