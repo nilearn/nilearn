@@ -210,7 +210,7 @@ def test_cut_coords_out_of_bounds_warning(
     # [(0.0, 6.0), (0.0, 7.0), (0.0, 8.0)]
     with pytest.warns(
         UserWarning,
-        match=("The following 'cut_coords'"),
+        match=("seem to be out of the image"),
     ):
         plot_img(
             img_3d_rand_eye, display_mode=display_mode, cut_coords=cut_coords
