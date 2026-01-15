@@ -11,6 +11,8 @@ NEW
 Fixes
 -----
 
+- :bdg-info:`Plotting` drop background color when using look up table as colormap (:gh:`5936` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Reallow use non-multi maskers for :class:`~nilearn.regions.Parcellations` (:gh:`5930` by `Rémi Gau`_).
 
 
@@ -19,6 +21,7 @@ Enhancements
 
 - :bdg-dark:`Code` Added ``screening_n_features`` parameter to :class:`~nilearn.decoding.Decoder`,  :class:`~nilearn.decoding.DecoderRegressor`, :class:`~nilearn.decoding.FREMClassifier`,  and :class:`~nilearn.decoding.FREMRegressor`.
 
+- :bdg-success:`API` Add support for dictionary as ``cut_coords`` for :class:`~plotting.displays.MosaicSlicer` and image plotting functions. (:gh:`5920` by `Hande Gözükan`_).
 
 Changes
 -------

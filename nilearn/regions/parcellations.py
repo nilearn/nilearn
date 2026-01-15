@@ -4,11 +4,13 @@ import warnings
 from typing import ClassVar
 
 import numpy as np
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 from scipy.sparse import coo_matrix
 from sklearn.base import clone
+from sklearn.cluster import AgglomerativeClustering, MiniBatchKMeans
 from sklearn.feature_extraction import image
 from sklearn.utils.estimator_checks import check_is_fitted
+from sklearn.utils.validation import check_array
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
@@ -232,18 +234,22 @@ class Parcellations(_MultiPCA):
         :obj:`~nilearn.maskers.MultiSurfaceMasker` or \
         None, \
         default=None
-    Mask to be used on data.
-    If an instance of masker is passed,
-    then its mask will be used.
-    If no mask is given, for Nifti images,
-    it will be computed automatically by a MultiNiftiMasker
-    with default parameters;
-    for surface images, all the vertices will be used.
+        Mask to be used on data.
+        If an instance of masker is passed,
+        then its mask will be used.
+        If no mask is given, for Nifti images,
+        it will be computed automatically by a MultiNiftiMasker
+        with default parameters;
+        for surface images, all the vertices will be used.
 
     %(smoothing_fwhm)s
         Default=4.0.
 
     %(standardize_false)s
+
+    standardize_confounds : boolean, default=True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
 
     %(detrend)s
 
@@ -252,6 +258,7 @@ class Parcellations(_MultiPCA):
             Please see the related documentation for details.
 
         Default=False.
+
     %(low_pass)s
 
         .. note::
@@ -311,13 +318,27 @@ class Parcellations(_MultiPCA):
     n_iter : :obj:`int`, default=10
         Used only when the method selected is 'rena'. Number of iterations of
         the recursive neighbor agglomeration.
+
     %(memory)s
+
     %(memory_level)s
+
     %(n_jobs)s
+
     %(verbose0)s
 
-    Attributes
-    ----------
+    %(base_decomposition_fit_attributes)s
+
+    %(multi_pca_fit_attributes)s
+
+    connectivity_ : :class:`numpy.ndarray`
+        Voxel-to-voxel connectivity matrix computed from a mask.
+
+        .. note::
+
+            This attribute is only seen if selected methods are
+            Agglomerative Clustering type, 'ward', 'complete', 'average'.
+
     labels_img_ : :class:`nibabel.nifti1.Nifti1Image`
         Labels image to each parcellation learned on fmri images.
 
@@ -325,10 +346,9 @@ class Parcellations(_MultiPCA):
                 :class:`nilearn.maskers.MultiNiftiMasker`
         The masker used to mask the data.
 
-    connectivity_ : :class:`numpy.ndarray`
-        Voxel-to-voxel connectivity matrix computed from a mask.
-        Note that this attribute is only seen if selected methods are
-        Agglomerative Clustering type, 'ward', 'complete', 'average'.
+    variance_ : numpy array (n_components,)
+        The amount of variance explained
+        by each of the selected components.
 
     Notes
     -----
@@ -355,12 +375,13 @@ class Parcellations(_MultiPCA):
 
     def __init__(
         self,
-        method,
+        method=None,
         n_parcels=50,
         random_state=0,
         mask=None,
         smoothing_fwhm=4.0,
         standardize=False,
+        standardize_confounds=True,
         detrend=False,
         low_pass=None,
         high_pass=None,
@@ -376,8 +397,6 @@ class Parcellations(_MultiPCA):
         n_jobs=1,
         verbose=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         self.method = method
         self.n_parcels = n_parcels
         self.scaling = scaling
@@ -391,6 +410,7 @@ class Parcellations(_MultiPCA):
             memory=memory,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
+            standardize_confounds=standardize_confounds,
             detrend=detrend,
             low_pass=low_pass,
             high_pass=high_pass,
@@ -444,14 +464,9 @@ class Parcellations(_MultiPCA):
 
         mask_img_ = self.masker_.mask_img_
 
-        logger.log(
-            f"computing {self.method}",
-            verbose=verbose,
-        )
+        logger.log(f"computing {self.method}", verbose=verbose)
 
         if self.method == "kmeans":
-            from sklearn.cluster import MiniBatchKMeans
-
             kmeans = MiniBatchKMeans(
                 n_clusters=self.n_parcels,
                 init="k-means++",
@@ -462,6 +477,7 @@ class Parcellations(_MultiPCA):
             labels = self._cache(_estimator_fit, func_memory_level=1)(
                 components.T, kmeans
             )
+
         elif self.method == "hierarchical_kmeans":
             hkmeans = HierarchicalKMeans(
                 self.n_parcels,
@@ -476,6 +492,7 @@ class Parcellations(_MultiPCA):
             labels = self._cache(_estimator_fit, func_memory_level=1)(
                 components.T, hkmeans, self.method
             )
+
         elif self.method == "rena":
             rena = ReNA(
                 mask_img_,
@@ -500,7 +517,6 @@ class Parcellations(_MultiPCA):
                 connectivity = image.grid_to_graph(
                     n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
                 )
-            from sklearn.cluster import AgglomerativeClustering
 
             agglomerative = AgglomerativeClustering(
                 n_clusters=self.n_parcels,
@@ -508,12 +524,11 @@ class Parcellations(_MultiPCA):
                 linkage=self.method,
                 memory=self.memory_,
             )
-
             labels = self._cache(_estimator_fit, func_memory_level=1)(
                 components.T, agglomerative
             )
-
             self.connectivity_ = connectivity
+
         # Avoid 0 label
         labels = labels + 1
         unique_labels = np.unique(labels)
@@ -533,7 +548,20 @@ class Parcellations(_MultiPCA):
             labels.astype(np.int32)
         )
 
+        # we store n_elements_ in a private attribute
+        # otherwise its value will be set to the wrong value
+        # by fit in _BaseDecomposition
+        self._n_elements_ = len(unique_labels)
+
         return self
+
+    @property
+    def n_elements_(self):
+        """Return number of regions."""
+        return self._n_elements_
+
+    def _post_fit(self):
+        self.n_elements_ = self._n_elements_
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "labels_img_")
@@ -614,7 +642,7 @@ class Parcellations(_MultiPCA):
         return region_signals[0] if single_subject else region_signals
 
     @fill_doc
-    def fit_transform(self, imgs, confounds=None):
+    def fit_transform(self, imgs, y=None, confounds=None):
         """Fit the images to :term:`parcellations<parcellation>` and \
         then transform them.
 
@@ -622,6 +650,8 @@ class Parcellations(_MultiPCA):
         ----------
         %(imgs)s
             Images for process for fit as well for transform to signals.
+
+        %(y_dummy)s
 
         confounds : :obj:`list` of CSV files, arrays-like or\
             :class:`pandas.DataFrame`, default=None
@@ -646,6 +676,7 @@ class Parcellations(_MultiPCA):
             (number of scans, number of labels)
 
         """
+        del y
         return self.fit(imgs, confounds=confounds).transform(imgs, confounds)
 
     @fill_doc
@@ -680,6 +711,8 @@ class Parcellations(_MultiPCA):
         else:
             single_subject = False
 
+        signals = [self._check_array(x) for x in signals]
+
         if isinstance(self.mask_img_, SurfaceImage):
             labels = _get_unique_labels(self.labels_img_)
             imgs = Parallel(n_jobs=self.n_jobs)(
@@ -699,3 +732,45 @@ class Parcellations(_MultiPCA):
             )
 
         return imgs[0] if single_subject else imgs
+
+    def _check_array(self, signals):
+        """Check array to inverse transform.
+
+        Parameters
+        ----------
+        signals : :obj:`numpy.ndarray`
+        """
+        # adapted from BaseMasker and BaseSurfaceMasker
+        if isinstance(self.mask_img_, SurfaceImage):
+            signals = np.atleast_2d(signals)
+
+            signals = check_array(signals, ensure_2d=False)
+
+            if signals.shape[-1] != self.n_elements_:
+                raise ValueError(
+                    "Input to 'inverse_transform' has wrong shape.\n"
+                    f"Last dimension should be {self.n_elements_}.\n"
+                    f"Got {signals.shape[-1]}."
+                )
+
+        else:
+            signals = np.atleast_1d(signals)
+
+            signals = check_array(signals, ensure_2d=False)
+
+            assert signals.ndim <= 2
+
+            expected_shape = (
+                (self.n_elements_,)
+                if signals.ndim == 1
+                else (signals.shape[0], self.n_elements_)
+            )
+
+            if signals.shape != expected_shape:
+                raise ValueError(
+                    "Input to 'inverse_transform' has wrong shape.\n"
+                    f"Expected {expected_shape}.\n"
+                    f"Got {signals.shape}."
+                )
+
+        return signals
