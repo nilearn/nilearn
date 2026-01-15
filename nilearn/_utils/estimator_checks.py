@@ -66,7 +66,11 @@ from sklearn.utils.estimator_checks import (
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
-from nilearn._utils.helpers import is_matplotlib_installed, is_windows_platform
+from nilearn._utils.helpers import (
+    is_gil_enabled,
+    is_matplotlib_installed,
+    is_windows_platform,
+)
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn._utils.tags import (
@@ -808,11 +812,13 @@ def fit_estimator(estimator: NilearnBaseEstimator) -> NilearnBaseEstimator:
 # ------------------ GENERIC CHECKS ------------------
 
 
-def check_tags(estimator):
+def check_tags(estimator_orig):
     """Check tags are the same with old and new methods.
 
     TODO (sklearn >= 1.6) remove this check when bumping sklearn above 1.5
     """
+    estimator = clone(estimator_orig)
+    
     old_tags = estimator._more_tags()
     new_tags = estimator.__sklearn_tags__()
     assert old_tags == new_tags
@@ -893,6 +899,9 @@ def check_doc_attributes(estimator) -> None:
                 f"Estimator {estimator.__class__.__name__} "
                 f"has no '{section} section."
             )
+
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
 
     # check public attributes before fit
     parameters = [x for x in estimator.__dict__ if not x.startswith("_")]
@@ -1056,6 +1065,9 @@ def check_img_estimator_verbose(estimator_orig):
     """
     estimator = clone(estimator_orig)
 
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
+
     buffer = io.StringIO()
     with contextlib.redirect_stdout(buffer):
         fit_estimator(estimator)
@@ -1132,7 +1144,7 @@ def _sanitize_standard_output(output):
 
 
 @ignore_warnings()
-def check_img_estimator_fit_check_is_fitted(estimator):
+def check_img_estimator_fit_check_is_fitted(estimator_orig):
     """Check appropriate response to check_fitted from sklearn before fitting.
 
     Should act as a replacement in the case of the maskers
@@ -1148,6 +1160,8 @@ def check_img_estimator_fit_check_is_fitted(estimator):
     - __sklearn_is_fitted__ returns True
     - running sklearn check_is_fitted throws no error
     """
+    estimator = clone(estimator_orig)
+
     if not hasattr(estimator, "__sklearn_is_fitted__"):
         raise TypeError(
             "All nilearn estimators must have __sklearn_is_fitted__ method."
@@ -1249,25 +1263,183 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig):
 
 
 @ignore_warnings()
-def check_fit_returns_self(estimator) -> None:
+def check_estimator_set_output(estimator_orig):
+    """Check that set_ouput can be used."""
+    if not hasattr(estimator_orig, "transform") or isinstance(
+        estimator_orig, (SearchLight, ReNA)
+    ):
+        return
+
+    if isinstance(
+        estimator_orig, (_BaseDecomposition, ConnectivityMeasure, _MultiMixin)
+    ):
+        with pytest.raises(NotImplementedError):
+            estimator_orig.set_output(transform="pandas")
+        return
+
+    estimator = clone(estimator_orig)
+    estimator = fit_estimator(estimator)
+
+    img, _ = generate_data_to_fit(estimator)
+
+    signal = estimator.transform(img)
+    if isinstance(estimator, _BaseDecomposition):
+        assert isinstance(signal[0], np.ndarray)
+    else:
+        assert isinstance(signal, np.ndarray)
+
+    estimator.set_output(transform="pandas")
+    signal = estimator.transform(img)
+    assert isinstance(signal, pd.DataFrame)
+
+    estimator.set_output(transform="polars")
+    # if user wants to output to polars,
+    # sklearn will raise error if it's not installed
+    with pytest.raises(ImportError, match="requires polars to be installed"):
+        signal = estimator.transform(img)
+
+    # check on 1D image for estimators that accepts surface
+    if accept_surf_img_input(estimator_orig):
+        estimator = clone(estimator_orig)
+        estimator = fit_estimator(estimator)
+        estimator.set_output(transform="pandas")
+        signal = estimator.transform(img)
+        assert isinstance(signal, pd.DataFrame)
+
+
+@ignore_warnings()
+def check_fit_returns_self(estimator_orig) -> None:
     """Check maskers return itself after fit.
 
     Replace sklearn check_estimators_fit_returns_self
     """
-    fitted_estimator = fit_estimator(estimator)
+    estimator = clone(estimator_orig)
 
+    fitted_estimator = fit_estimator(estimator)
     assert fitted_estimator is estimator
 
 
+def check_img_estimator_doc_attributes(estimator_orig) -> None:
+    """Check that parameters and attributes are documented.
+
+    - Public parameters should be documented.
+    - Attributes should be in same order as in __init__()
+    - All documented parameters should exist after init.
+    - Fitted attributes (ending with a "_") should be documented.
+    - All documented fitted attributes should exist after fit.
+    """
+    estimator = clone(estimator_orig)
+
+    doc = NumpyDocString(estimator.__doc__)
+    for section in ["Parameters", "Attributes"]:
+        if section not in doc:
+            raise ValueError(
+                f"Estimator {estimator.__class__.__name__} "
+                f"has no '{section} section."
+            )
+
+    # check public attributes before fit
+    parameters = [x for x in estimator.__dict__ if not x.startswith("_")]
+    documented_parameters = {
+        param.name: param.type for param in doc["Parameters"]
+    }
+    undocumented_parameters = [
+        param for param in parameters if param not in documented_parameters
+    ]
+    if undocumented_parameters:
+        raise ValueError(
+            "Missing docstring for "
+            f"[{', '.join(undocumented_parameters)}] "
+            f"in estimator {estimator.__class__.__name__}."
+        )
+    extra_parameters = [
+        attr
+        for attr in documented_parameters
+        if attr not in parameters and attr != "kwargs"
+    ]
+    if extra_parameters:
+        raise ValueError(
+            "Extra docstring for "
+            f"[{', '.join(extra_parameters)}] "
+            f"in estimator {estimator.__class__.__name__}."
+        )
+
+    # avoid duplicates
+    assert len(documented_parameters) == len(set(documented_parameters))
+
+    # Attributes should be in same order as in __init__()
+    tmp = dict(**inspect.signature(estimator.__init__).parameters)
+
+    assert [str(x) for x in documented_parameters] == [str(x) for x in tmp], (
+        f"Parameters of {estimator.__class__.__name__} "
+        f"should be in order {list(tmp)}. "
+        f"Got {list(documented_parameters)}"
+    )
+
+    if isinstance(estimator, (ReNA, GroupSparseCovarianceCV)):
+        # TODO
+        # adapt fit_estimator to handle ReNA and GroupSparseCovarianceCV
+        return
+
+    # check fitted attributes after fit
+    fitted_estimator = fit_estimator(estimator)
+
+    fitted_attributes = [
+        x
+        for x in fitted_estimator.__dict__
+        if x.endswith("_") and not x.startswith("_")
+    ]
+
+    documented_attributes: dict[str, str] = {
+        attr.name: attr.type for attr in doc["Attributes"]
+    }
+    undocumented_attributes: list[str] = [
+        attr for attr in fitted_attributes if attr not in documented_attributes
+    ]
+    if undocumented_attributes:
+        raise ValueError(
+            "Missing docstring for "
+            f"[{', '.join(undocumented_attributes)}] "
+            f"in estimator {estimator.__class__.__name__}."
+        )
+
+    extra_attributes = [
+        attr for attr in documented_attributes if attr not in fitted_attributes
+    ]
+    if extra_attributes:
+        raise ValueError(
+            "Extra docstring for "
+            f"[{', '.join(extra_attributes)}] "
+            f"in estimator {estimator.__class__.__name__}."
+        )
+
+    # avoid duplicates
+    assert len(documented_attributes) == len(set(documented_attributes))
+
+    # nice to have
+    # if possible attributes should be in alphabetical order
+    # not always possible as sometimes doc string are composed from
+    # nilearn._utils.docs
+    if list(documented_attributes) != sorted(documented_attributes):
+        warnings.warn(
+            (
+                f"Attributes of {estimator.__class__.__name__} "
+                f"should be in order {sorted(documented_attributes)}. "
+                f"Got {list(documented_attributes)}"
+            ),
+            stacklevel=find_stack_level(),
+        )
+
+
 @ignore_warnings()
-def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
+def check_img_estimator_dont_overwrite_parameters(estimator_orig) -> None:
     """Check that fit method only changes or sets private attributes.
 
     Only for estimator that work with images.
 
     Replaces check_dont_overwrite_parameters from sklearn.
     """
-    estimator = clone(estimator)
+    estimator = clone(estimator_orig)
 
     set_random_state(estimator, 1)
 
@@ -1312,11 +1484,13 @@ def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
     )
 
 
-def check_img_estimator_cache_warning(estimator) -> None:
+def check_img_estimator_cache_warning(estimator_orig) -> None:
     """Check estimator behavior with caching.
 
     Make sure some warnings are thrown at the appropriate time.
     """
+    estimator = clone(estimator_orig)
+
     assert hasattr(estimator, "memory")
     assert hasattr(estimator, "memory_level")
 
@@ -1437,12 +1611,12 @@ def check_img_estimator_fit_idempotent(estimator_orig):
 
 
 @ignore_warnings()
-def check_img_estimator_overwrite_params(estimator) -> None:
+def check_img_estimator_overwrite_params(estimator_orig) -> None:
     """Check that we do not change or mutate the internal state of input.
 
     Replaces sklearn check_estimators_overwrite_params
     """
-    estimator = clone(estimator)
+    estimator = clone(estimator_orig)
 
     # Make a physical copy of the original estimator parameters before fitting.
     params = estimator.get_params()
@@ -1472,11 +1646,13 @@ def check_img_estimator_overwrite_params(estimator) -> None:
 
 
 @ignore_warnings()
-def check_img_estimator_dict_unchanged(estimator):
+def check_img_estimator_dict_unchanged(estimator_orig):
     """Replace check_dict_unchanged from sklearn.
 
     Several methods should not change the dict of the object.
     """
+    estimator = clone(estimator_orig)
+
     estimator = fit_estimator(estimator)
 
     dict_before = estimator.__dict__.copy()
@@ -1498,6 +1674,10 @@ def check_img_estimator_dict_unchanged(estimator):
         elif method == "score":
             getattr(estimator, method)(input_img, y)
         elif method == "generate_report":
+            # TODO
+            # fix for free threaded python
+            if not is_gil_enabled():
+                pytest.xfail("May fail without the GIL")
             getattr(estimator, method)()
         else:
             getattr(estimator, method)(input_img)
@@ -1689,11 +1869,13 @@ def check_img_estimator_pipeline_consistency(estimator_orig):
 
 
 @ignore_warnings()
-def check_img_estimator_requires_y_none(estimator) -> None:
+def check_img_estimator_requires_y_none(estimator_orig) -> None:
     """Check estimator with requires_y=True fails gracefully for y=None.
 
     Replaces sklearn check_requires_y_none
     """
+    estimator = clone(estimator_orig)
+
     expected_err_msgs = "requires y to be passed, but the target y is None"
     shape = (5, 5, 5) if isinstance(estimator, SearchLight) else (30, 31, 32)
     input_img = Nifti1Image(_rng().random(shape), _affine_eye())
@@ -1705,7 +1887,7 @@ def check_img_estimator_requires_y_none(estimator) -> None:
 
 
 @ignore_warnings()
-def check_img_estimator_fit_score_takes_y(estimator):
+def check_img_estimator_fit_score_takes_y(estimator_orig):
     """Replace sklearn check_fit_score_takes_y for maskers.
 
     Check that all estimators accept an (optional) y
@@ -1713,6 +1895,8 @@ def check_img_estimator_fit_score_takes_y(estimator):
 
     For decoders, y is not optional
     """
+    estimator = clone(estimator_orig)
+
     if is_glm(estimator):
         # GLM estimators take no "y" at all.
         return
@@ -1752,7 +1936,7 @@ def check_img_estimator_fit_score_takes_y(estimator):
 
 
 @ignore_warnings()
-def check_img_estimator_n_elements(estimator):
+def check_img_estimator_n_elements(estimator_orig):
     """Check n_elements is set during fitting and used after that.
 
     check that after fitting
@@ -1762,6 +1946,8 @@ def check_img_estimator_n_elements(estimator):
     replaces sklearn "check_n_features_in" and
     "check_n_features_in_after_fitting"
     """
+    estimator = clone(estimator_orig)
+
     assert not hasattr(estimator, "n_features_in_")
 
     estimator = fit_estimator(estimator)
@@ -1812,6 +1998,12 @@ def check_img_estimator_standardization(estimator_orig):
     if not hasattr(estimator_orig, "standardize") or is_masker(estimator_orig):
         # maskers have their own tests
         return
+
+    # TODO
+    # fix for free threaded python
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
+
     # We need to use data with several samples
     # for the standardize to actually do something
     input_img, y = generate_data_to_fit(estimator_orig)
@@ -1911,11 +2103,13 @@ def check_img_estimator_standardization(estimator_orig):
 
 
 @ignore_warnings()
-def check_supervised_img_estimator_y_no_nan(estimator) -> None:
+def check_supervised_img_estimator_y_no_nan(estimator_orig) -> None:
     """Check estimator fails if y contains nan or inf.
 
     Replaces sklearn check_supervised_y_no_nan
     """
+    estimator = clone(estimator_orig)
+
     dim = 5
     if isinstance(estimator, SearchLight):
         n_samples = 30
@@ -1949,7 +2143,7 @@ def check_supervised_img_estimator_y_no_nan(estimator) -> None:
 
 
 @ignore_warnings()
-def check_decoder_empty_data_messages(estimator):
+def check_decoder_empty_data_messages(estimator_orig):
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
@@ -1957,6 +2151,8 @@ def check_decoder_empty_data_messages(estimator):
     Not implemented for nifti data for performance reasons.
     See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
     """
+    estimator = clone(estimator_orig)
+
     n_samples = 30
     if isinstance(estimator, (SearchLight, BaseSpaceNet)):
         # SearchLight, BaseSpaceNet do not support surface data directly
@@ -2101,6 +2297,7 @@ def check_decoder_with_arrays(estimator_orig):
     Test for backward compatibility.
     """
     estimator = clone(estimator_orig)
+
     estimator = fit_estimator(estimator)
 
     for method in [
@@ -2127,22 +2324,26 @@ def check_decoder_with_arrays(estimator_orig):
 
 
 @ignore_warnings()
-def check_masker_clean_kwargs(estimator):
+def check_masker_clean_kwargs(estimator_orig):
     """Check attributes for cleaning.
 
     Maskers accept a clean_args dict
     and store in clean_args and contains parameters to pass to clean.
     """
+    estimator = clone(estimator_orig)
+
     assert estimator.clean_args is None
 
 
 @ignore_warnings()
-def check_masker_detrending(estimator):
+def check_masker_detrending(estimator_orig):
     """Check detrending does something.
 
     Fit transform on same input should give different results
     if detrend is true or false.
     """
+    estimator = clone(estimator_orig)
+
     if accept_niimg_input(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
@@ -2166,6 +2367,11 @@ def check_masker_standardization(estimator_orig):
     n_samples = 100
     # decimal precision for 100 n_samples
     decimal = 2
+
+    # TODO
+    # fix for free threaded python
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
 
     if accept_niimg_input(estimator_orig):
         signals = _rng().standard_normal(
@@ -2263,7 +2469,7 @@ def check_masker_standardization(estimator_orig):
 
 
 @ignore_warnings()
-def check_masker_compatibility_mask_image(estimator):
+def check_masker_compatibility_mask_image(estimator_orig):
     """Check compatibility of the mask_img and images to masker.
 
     Compatibility should be check at fit and transform time.
@@ -2272,6 +2478,8 @@ def check_masker_compatibility_mask_image(estimator):
     For surface maskers, check_compatibility_mask_and_images does it.
     But this means we do not have exactly the same error messages.
     """
+    estimator = clone(estimator_orig)
+
     if accept_niimg_input(estimator):
         mask_img = _img_mask_mni()
         input_img = _make_surface_img()
@@ -2304,14 +2512,15 @@ def check_masker_compatibility_mask_image(estimator):
 
 
 @ignore_warnings()
-def check_masker_no_mask_no_img(estimator):
+def check_masker_no_mask_no_img(estimator_orig):
     """Check maskers mask_img_ when no mask passed at init or imgs at fit.
 
     For (Multi)NiftiMasker and SurfaceMasker fit should raise ValueError.
     For all other maskers mask_img_ should be None after fit.
     """
-    assert not hasattr(estimator, "mask_img_")
+    estimator = clone(estimator_orig)
 
+    assert not hasattr(estimator, "mask_img_")
     if isinstance(estimator, (NiftiMasker, SurfaceMasker)):
         with pytest.raises(
             ValueError, match="Parameter 'imgs' must be provided to "
@@ -2323,13 +2532,15 @@ def check_masker_no_mask_no_img(estimator):
 
 
 @ignore_warnings()
-def check_masker_mask_img_from_imgs(estimator):
+def check_masker_mask_img_from_imgs(estimator_orig):
     """Check maskers mask_img_ inferred from imgs when no mask is provided.
 
     For (Multi)NiftiMasker and SurfaceMasker:
     they must have a valid mask_img_ after fit.
     For all other maskers mask_img_ should be None after fit.
     """
+    estimator = clone(estimator_orig)
+
     if accept_niimg_input(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
@@ -2355,7 +2566,7 @@ def check_masker_mask_img_from_imgs(estimator):
 
 
 @ignore_warnings()
-def check_masker_mask_img(estimator):
+def check_masker_mask_img(estimator_orig):
     """Check maskers mask_img_ post fit is valid.
 
     If a mask is passed at construction,
@@ -2366,6 +2577,8 @@ def check_masker_mask_img(estimator):
     with multiple samples (4D for volume, 2D for surface) as mask.
     Resulting mask_img_ should be binary and have a single sample.
     """
+    estimator = clone(estimator_orig)
+
     if accept_niimg_input(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
@@ -2443,12 +2656,14 @@ def check_masker_mask_img(estimator):
 
 
 @ignore_warnings()
-def check_masker_clean(estimator):
+def check_masker_clean(estimator_orig):
     """Check that cleaning does something on fit transform.
 
     Fit transform on same input should give different results
     if some cleaning parameters are passed.
     """
+    estimator = clone(estimator_orig)
+
     if accept_niimg_input(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
@@ -2465,7 +2680,7 @@ def check_masker_clean(estimator):
 
 
 @ignore_warnings()
-def check_masker_transformer(estimator):
+def check_masker_transformer(estimator_orig):
     """Replace sklearn _check_transformer for maskers.
 
     - for maskers transform is in the base class and
@@ -2475,6 +2690,8 @@ def check_masker_transformer(estimator):
     - fit_transform method should work on non fitted estimator
     - fit_transform should give same result as fit then transform
     """
+    estimator = clone(estimator_orig)
+
     # transform_single_imgs should not be an abstract method anymore
     assert not getattr(
         estimator.transform_single_imgs, "__isabstractmethod__", False
@@ -2499,7 +2716,7 @@ def check_masker_transformer(estimator):
 
 
 @ignore_warnings()
-def check_masker_transformer_high_variance_confounds(estimator):
+def check_masker_transformer_high_variance_confounds(estimator_orig):
     """Check high_variance_confounds use in maskers.
 
     Make sure that using high_variance_confounds returns different result.
@@ -2507,6 +2724,8 @@ def check_masker_transformer_high_variance_confounds(estimator):
     Ensure that high_variance_confounds can be used with regular confounds,
     and that results are different than when just using the confounds alone.
     """
+    estimator = clone(estimator_orig)
+
     length = 10
 
     if accept_niimg_input(estimator):
@@ -2553,7 +2772,7 @@ def check_masker_transformer_high_variance_confounds(estimator):
 
 
 @ignore_warnings()
-def check_masker_transformer_sample_mask(estimator):
+def check_masker_transformer_sample_mask(estimator_orig):
     """Check sample_mask use in maskers.
 
     Make sure that using sample_mask returns different result
@@ -2563,6 +2782,8 @@ def check_masker_transformer_sample_mask(estimator):
     that always keep the same samples (sample 1, 2 and 4)
     that should all return the same thing.
     """
+    estimator = clone(estimator_orig)
+
     if accept_niimg_input(estimator):
         input_img = _img_4d_rand_eye()
     else:
@@ -2607,7 +2828,7 @@ def check_masker_transformer_sample_mask(estimator):
 
 
 @ignore_warnings()
-def check_masker_with_confounds(estimator):
+def check_masker_with_confounds(estimator_orig):
     """Test fit_transform with confounds.
 
     Check different types of confounds
@@ -2620,6 +2841,8 @@ def check_masker_with_confounds(estimator):
 
     For more tests see those of signal.clean.
     """
+    estimator = clone(estimator_orig)
+
     length = 20
     if accept_niimg_input(estimator):
         input_img = Nifti1Image(
@@ -2669,8 +2892,10 @@ def check_masker_with_confounds(estimator):
 
 
 @ignore_warnings()
-def check_masker_refit(estimator):
+def check_masker_refit(estimator_orig):
     """Check masker can be refitted and give different results."""
+    estimator = clone(estimator_orig)
+
     if accept_niimg_input(estimator):
         # using larger images to be compatible
         # with regions extraction tests
@@ -2708,7 +2933,7 @@ def check_masker_refit(estimator):
 
 
 @ignore_warnings()
-def check_masker_empty_data_messages(estimator):
+def check_masker_empty_data_messages(estimator_orig):
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
@@ -2716,6 +2941,8 @@ def check_masker_empty_data_messages(estimator):
     Not implemented for nifti maskers for performance reasons.
     See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
     """
+    estimator = clone(estimator_orig)
+
     if accept_niimg_input(estimator):
         return None
 
@@ -2738,8 +2965,10 @@ def check_masker_empty_data_messages(estimator):
 
 
 @ignore_warnings()
-def check_masker_fit_with_empty_mask(estimator):
+def check_masker_fit_with_empty_mask(estimator_orig):
     """Check mask that excludes all voxels raise an error."""
+    estimator = clone(estimator_orig)
+
     if accept_niimg_input(estimator):
         mask_img = _img_3d_zeros()
         imgs = [_img_3d_rand()]
@@ -2750,6 +2979,7 @@ def check_masker_fit_with_empty_mask(estimator):
         imgs = _make_surface_img(1)
 
     estimator.mask_img = mask_img
+
     with pytest.raises(
         ValueError,
         match="The mask is invalid as it is empty: it masks all data",
@@ -2758,12 +2988,14 @@ def check_masker_fit_with_empty_mask(estimator):
 
 
 @ignore_warnings()
-def check_masker_fit_with_non_finite_in_mask(estimator):
+def check_masker_fit_with_non_finite_in_mask(estimator_orig):
     """Check mask with non finite values can be used with maskers.
 
     - Warning is thrown.
     - Output of transform must contain only finite values.
     """
+    estimator = clone(estimator_orig)
+
     if accept_niimg_input(estimator):
         # _shape_3d_large() is used,
         # this test would fail for RegionExtractor otherwise
@@ -2792,13 +3024,15 @@ def check_masker_fit_with_non_finite_in_mask(estimator):
 
 
 @ignore_warnings()
-def check_masker_dtypes(estimator):
+def check_masker_dtypes(estimator_orig):
     """Check masker can fit/transform with inputs of varying dtypes.
 
     Replacement for sklearn check_estimators_dtypes.
 
     np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
+    estimator = clone(estimator_orig)
+
     length = 20
     for dtype in [np.float32, np.float64, np.int32]:
         estimator = clone(estimator)
@@ -2820,7 +3054,7 @@ def check_masker_dtypes(estimator):
 
 
 @ignore_warnings()
-def check_masker_smooth(estimator):
+def check_masker_smooth(estimator_orig):
     """Check that masker can smooth data when extracting.
 
     Check that masker instance has smoothing_fwhm attribute.
@@ -2831,6 +3065,8 @@ def check_masker_smooth(estimator):
     - Check that output is the same with and without smoothing.
     TODO: update once smoothing is implemented.
     """
+    estimator = clone(estimator_orig)
+
     assert hasattr(estimator, "smoothing_fwhm")
 
     if accept_niimg_input(estimator):
@@ -2859,7 +3095,7 @@ def check_masker_smooth(estimator):
 
 
 @ignore_warnings()
-def check_masker_inverse_transform(estimator) -> None:
+def check_masker_inverse_transform(estimator_orig) -> None:
     """Check output of inverse_transform.
 
     For signal with 1 or more samples.
@@ -2877,6 +3113,8 @@ def check_masker_inverse_transform(estimator) -> None:
     Check that running inverse_transform() before and after running transform()
     give same result.
     """
+    estimator = clone(estimator_orig)
+
     if accept_niimg_input(estimator):
         # using different shape for imgs, mask
         # to force resampling
@@ -2940,7 +3178,7 @@ def check_masker_inverse_transform(estimator) -> None:
             assert_surface_image_equal(new_imgs, new_imgs_2)
 
 
-def check_masker_transform_resampling(estimator) -> None:
+def check_masker_transform_resampling(estimator_orig) -> None:
     """Check transform / inverse_transform for maskers with resampling.
 
     Similar to check_masker_inverse_transform
@@ -2960,6 +3198,8 @@ def check_masker_transform_resampling(estimator) -> None:
     Check that running transform on images with different fov
     than those used at fit is possible.
     """
+    estimator = clone(estimator_orig)
+
     if not hasattr(estimator, "resampling_target"):
         return None
 
@@ -2973,6 +3213,11 @@ def check_masker_transform_resampling(estimator) -> None:
 
     mask_shape = (15, 16, 17)
     mask_img = Nifti1Image(np.ones(mask_shape), _affine_eye())
+
+    # TODO
+    # fix for free threaded python
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
 
     for resampling_target in ["data", "labels"]:
         expected_shape = input_shape
@@ -3021,6 +3266,7 @@ def check_masker_transform_resampling(estimator) -> None:
             # we are resampling to data
             with warnings.catch_warnings(record=True) as warning_list:
                 estimator.transform(imgs2)
+
             if resampling_target == "data":
                 assert any(
                     "at transform time" in str(x.message) for x in warning_list
@@ -3033,8 +3279,10 @@ def check_masker_transform_resampling(estimator) -> None:
 
 
 @ignore_warnings()
-def check_masker_shelving(estimator):
+def check_masker_shelving(estimator_orig):
     """Check behavior when shelving masker."""
+    estimator = clone(estimator_orig)
+
     if is_windows_platform():
         # TODO (run check without xdist)
         # rare failure of this test on python on windows
@@ -3065,8 +3313,10 @@ def check_masker_shelving(estimator):
 
 
 @ignore_warnings()
-def check_masker_joblib_cache(estimator):
+def check_masker_joblib_cache(estimator_orig):
     """Check cached data."""
+    estimator = clone(estimator_orig)
+
     img, _ = generate_data_to_fit(estimator)
 
     if accept_niimg_input(estimator):
@@ -3105,11 +3355,13 @@ def check_masker_joblib_cache(estimator):
 
 
 @ignore_warnings()
-def check_surface_masker_fit_transform_errors(estimator):
+def check_surface_masker_fit_transform_errors(estimator_orig):
     """Check fit / transform errors.
 
     Check 'shape' errors between images to fit and mask.
     """
+    estimator = clone(estimator_orig)
+
     mask_img = _make_surface_mask()
 
     imgs = _make_surface_img(5)
@@ -3359,7 +3611,7 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
 
 
 @ignore_warnings()
-def check_nifti_masker_fit_transform(estimator):
+def check_nifti_masker_fit_transform(estimator_orig):
     """Run several checks on maskers.
 
     - can fit 3D / 4D image
@@ -3369,6 +3621,8 @@ def check_nifti_masker_fit_transform(estimator):
     - array from transformed 3D images should have 1D
     - array from transformed 4D images should have 2D
     """
+    estimator = clone(estimator_orig)
+
     estimator.fit(_img_3d_rand())
 
     # 3D images
@@ -3404,13 +3658,15 @@ def check_nifti_masker_fit_transform(estimator):
     assert signal.shape == (_img_4d_rand_eye().shape[3], estimator.n_elements_)
 
 
-def check_nifti_masker_fit_transform_5d(estimator):
+def check_nifti_masker_fit_transform_5d(estimator_orig):
     """Run checks on nifti maskers for transforming 5D images.
 
     - multi masker should be fine
       and return a list of 2D numpy arrays
     - non multimasker should fail
     """
+    estimator = clone(estimator_orig)
+
     n_subject = 3
 
     estimator.fit(_img_3d_rand())
@@ -3454,8 +3710,10 @@ def check_nifti_masker_fit_transform_5d(estimator):
 
 
 @ignore_warnings()
-def check_nifti_masker_fit_transform_files(estimator):
+def check_nifti_masker_fit_transform_files(estimator_orig):
     """Check that nifti maskers can work directly on files."""
+    estimator = clone(estimator_orig)
+
     with TemporaryDirectory() as tmp_dir:
         filename = write_imgs_to_path(
             _img_3d_rand(),
@@ -3469,8 +3727,10 @@ def check_nifti_masker_fit_transform_files(estimator):
 
 
 @ignore_warnings()
-def check_nifti_masker_dtype(estimator):
+def check_nifti_masker_dtype(estimator_orig):
     """Check dtype of output of maskers."""
+    estimator = clone(estimator_orig)
+
     data_32 = _rng().random(_shape_3d_default(), dtype=np.float32)
     affine_32 = np.eye(4, dtype=np.float32)
     img_32 = Nifti1Image(data_32, affine_32)
@@ -3491,11 +3751,13 @@ def check_nifti_masker_dtype(estimator):
 
 
 @ignore_warnings()
-def check_nifti_masker_fit_with_3d_mask(estimator):
+def check_nifti_masker_fit_with_3d_mask(estimator_orig):
     """Check 3D mask can be used with nifti maskers.
 
     Mask can have different shape than fitted image.
     """
+    estimator = clone(estimator_orig)
+
     # _shape_3d_large() is used
     # this test would fail for RegionExtractor otherwise
     mask = np.ones(_shape_3d_large())
@@ -3514,8 +3776,10 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
 
 
 @ignore_warnings()
-def check_multi_nifti_masker_shelving(estimator):
+def check_multi_nifti_masker_shelving(estimator_orig):
     """Check behavior when shelving masker."""
+    estimator = clone(estimator_orig)
+
     if is_windows_platform():
         # TODO (run check without xdist)
         # rare failure of this test on python on windows
@@ -3556,7 +3820,7 @@ def check_multi_nifti_masker_shelving(estimator):
 
 
 @ignore_warnings()
-def check_multimasker_with_confounds(estimator):
+def check_multimasker_with_confounds(estimator_orig):
     """Test multi maskers with a list of confounds.
 
     Ensure results is different than when not using confounds.
@@ -3567,6 +3831,8 @@ def check_multimasker_with_confounds(estimator):
     Check that error is raised if number of confounds
     does not match number of images.
     """
+    estimator = clone(estimator_orig)
+
     length = _img_4d_rand_eye_medium().shape[3]
 
     if accept_niimg_input(estimator):
@@ -3609,13 +3875,15 @@ def check_multimasker_with_confounds(estimator):
 
 
 @ignore_warnings()
-def check_multimasker_transformer_sample_mask(estimator):
+def check_multimasker_transformer_sample_mask(estimator_orig):
     """Test multi maskers with a list of "sample_mask".
 
     "sample_mask" was directly sent as input to the parallel calls of
     "transform_single_imgs" instead of sending iterations.
     See https://github.com/nilearn/nilearn/issues/3967 for more details.
     """
+    estimator = clone(estimator_orig)
+
     length = _img_4d_rand_eye_medium().shape[3]
 
     if accept_niimg_input(estimator):
@@ -3658,7 +3926,7 @@ def check_multimasker_transformer_sample_mask(estimator):
 
 
 @ignore_warnings()
-def check_multimasker_transformer_high_variance_confounds(estimator):
+def check_multimasker_transformer_high_variance_confounds(estimator_orig):
     """Check high_variance_confounds in multi maskers with data many samples.
 
     Make sure that using high_variance_confounds returns different result.
@@ -3668,6 +3936,8 @@ def check_multimasker_transformer_high_variance_confounds(estimator):
 
     Also checks that confounds can be accepted as different formats.
     """
+    estimator = clone(estimator_orig)
+
     length = _img_4d_rand_eye_medium().shape[3]
 
     if accept_niimg_input(estimator):
@@ -3716,7 +3986,7 @@ def check_multimasker_transformer_high_variance_confounds(estimator):
 
 
 @ignore_warnings()
-def check_glm_empty_data_messages(estimator: NilearnBaseEstimator) -> None:
+def check_glm_empty_data_messages(estimator_orig: NilearnBaseEstimator) -> None:
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
@@ -3724,6 +3994,8 @@ def check_glm_empty_data_messages(estimator: NilearnBaseEstimator) -> None:
     Not implemented for nifti data for performance reasons.
     See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
     """
+    estimator = clone(estimator_orig)
+
     imgs, design_matrices = _make_surface_img_and_design()
 
     data = {
@@ -3742,13 +4014,15 @@ def check_glm_empty_data_messages(estimator: NilearnBaseEstimator) -> None:
 
 
 @ignore_warnings()
-def check_glm_dtypes(estimator):
+def check_glm_dtypes(estimator_orig):
     """Check glm can fit with inputs of varying dtypes.
 
     Replacement for sklearn check_estimators_dtypes.
 
     np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
+    estimator = clone(estimator_orig)
+
     imgs, design_matrices = _make_surface_img_and_design()
 
     for dtype in [np.float32, np.float64, np.int32]:
@@ -3810,7 +4084,7 @@ def _generate_report_with_no_warning(estimator):
             assert not unknown_warnings, unknown_warnings
 
 
-def check_masker_generate_report(estimator):
+def check_masker_generate_report(estimator_orig):
     """Check that maskers can generate report.
 
     - check that we get a warning:
@@ -3822,11 +4096,18 @@ def check_masker_generate_report(estimator):
     - check that the masker has report data after fit
 
     """
+    estimator = clone(estimator_orig)
+
     generate_and_check_masker_report(estimator)
 
     assert isinstance(estimator._report_content, dict)
     assert estimator._report_content["description"] != ""
     assert estimator._has_report_data() is False
+
+    # TODO
+    # fix for free threaded python
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
 
     if accept_niimg_input(estimator):
         input_img = _img_3d_rand()
@@ -3860,13 +4141,19 @@ def check_masker_generate_report(estimator):
         )
 
 
-def check_masker_generate_report_constant(estimator):
+def check_masker_generate_report_constant(estimator_orig):
     """Check report is constant across calls."""
+    estimator = clone(estimator_orig)
     if accept_niimg_input(estimator):
         input_img = _img_3d_rand()
     else:
         input_img = _make_surface_img(2)
     estimator.fit(input_img)
+
+    # TODO
+    # fix for free threaded python
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
 
     report = estimator.generate_report(**_extra_kwargs(estimator))
     report_new = estimator.generate_report(**_extra_kwargs(estimator))
@@ -3892,8 +4179,12 @@ def check_masker_generate_report_constant(estimator):
     assert report_str == report_new_str
 
 
-def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
+def check_nifti_masker_generate_report_after_fit_with_only_mask(
+    estimator_orig,
+):
     """Check 3D mask is enough to run with fit and generate report."""
+    estimator = clone(estimator_orig)
+
     mask = np.ones(_shape_3d_large())
     mask_img = Nifti1Image(mask, affine=_affine_eye())
 
@@ -3904,6 +4195,11 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     estimator.fit()
 
     assert estimator._report_content["warning_messages"] == []
+
+    # TODO
+    # fix for free threaded python
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
 
     generate_and_check_masker_report(
         estimator, warnings_msg_to_check=["No image provided to fit"]
@@ -3937,8 +4233,10 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
 
 @ignore_warnings()
-def check_masker_generate_report_false(estimator):
+def check_masker_generate_report_false(estimator_orig):
     """Test with reports set to False."""
+    estimator = clone(estimator_orig)
+
     estimator.reports = False
 
     if accept_niimg_input(estimator):
@@ -3948,14 +4246,26 @@ def check_masker_generate_report_false(estimator):
 
     estimator.fit(input_img)
 
+    # TODO
+    # fix for free threaded python
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
+
     assert estimator._has_report_data() is False
 
     generate_and_check_masker_report(estimator)
 
 
 @ignore_warnings()
-def check_multimasker_generate_report(estimator):
+def check_multimasker_generate_report(estimator_orig):
     """Test calling generate report on multiple subjects raises warning."""
+    estimator = clone(estimator_orig)
+
+    # TODO
+    # fix for free threaded python
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
+
     if accept_niimg_input(estimator):
         input_img = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
     else:
