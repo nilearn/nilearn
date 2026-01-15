@@ -2462,9 +2462,9 @@ class MosaicSlicer(BaseSlicer):
     def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
         coord_in = []
 
-        for direction in cls._cut_displayed:
+        for index, direction in enumerate(cls._cut_displayed):
             coords_list = cut_coords[direction]
-            coord_bounds = bounds["xyz".find(direction)]
+            coord_bounds = bounds[index]
             coord_in.extend(
                 [
                     coord_bounds[0] <= coord <= coord_bounds[1]
