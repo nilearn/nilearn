@@ -1167,7 +1167,8 @@ class _MultiDSlicer(BaseSlicer):
                     img, activation_threshold=threshold
                 )
             cut_coords = [
-                cut_coords["xyz".find(c)] for c in cls._cut_displayed
+                cut_coords["xyz".find(direction)]
+                for direction in cls._cut_displayed
             ]
         else:
             # check if cut_coords is within image bounds
@@ -1220,8 +1221,8 @@ class _MultiDSlicer(BaseSlicer):
     def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
         coord_in = []
 
-        for index, cut in enumerate(cls._cut_displayed):
-            bounds_index = "xyz".find(cut)
+        for index, direction in enumerate(cls._cut_displayed):
+            bounds_index = "xyz".find(direction)
             coord_in.append(
                 bounds[bounds_index][0] <= cut_coords[index]
                 and cut_coords[index] <= bounds[bounds_index][1]
@@ -2460,9 +2461,9 @@ class MosaicSlicer(BaseSlicer):
     def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
         coord_in = []
 
-        for cut in cls._cut_displayed:
-            coords_list = cut_coords[cut]
-            bound_index = "xyz".find(cut)
+        for direction in cls._cut_displayed:
+            coords_list = cut_coords[direction]
+            bound_index = "xyz".find(direction)
             coord_bounds = bounds[bound_index]
             coord_in.extend(
                 [
