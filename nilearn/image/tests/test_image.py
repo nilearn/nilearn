@@ -1492,6 +1492,7 @@ def test_binarize_img(img_4d_rand_eye):
     assert_array_equal(img2.dataobj, img3.dataobj)
 
 
+@pytest.mark.thread_unsafe
 def test_binarize_img_surface(surf_img_1d):
     """Test binarize_img on surface data."""
     img = surf_img_1d
