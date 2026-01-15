@@ -306,7 +306,7 @@ doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 filterwarnings = [
     # ignoring warnings about using a non-interactive plotting backend
     'ignore:.*you are using the.*:UserWarning',
-    # ingore warnings about convergence failure for decoders
+    # ignore warnings about convergence failure for decoders
     'ignore:.*Liblinear failed to converge.*:UserWarning',
     'ignore:.*Solver terminated early.*:UserWarning'
 ]
