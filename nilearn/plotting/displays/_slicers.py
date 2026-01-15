@@ -1222,10 +1222,9 @@ class _MultiDSlicer(BaseSlicer):
         coord_in = []
 
         for index, direction in enumerate(cls._cut_displayed):
-            bounds_index = "xyz".find(direction)
+            coord_bounds = bounds["xyz".find(direction)]
             coord_in.append(
-                bounds[bounds_index][0] <= cut_coords[index]
-                and cut_coords[index] <= bounds[bounds_index][1]
+                coord_bounds[0] <= cut_coords[index] <= coord_bounds[1]
             )
         return coord_in
 
@@ -1301,7 +1300,7 @@ class OrthoSlicer(_MultiDSlicer):
             ax.set_facecolor(facecolor)
 
             ax.axis("off")
-            coord = self.cut_coords[self._cut_displayed.index(direction)]
+            coord = self.cut_coords[index]
             display_ax = self._axes_class(ax, direction, coord, **kwargs)
             self.axes[direction] = display_ax
             ax.set_axes_locator(self._locator)
@@ -1401,10 +1400,11 @@ class OrthoSlicer(_MultiDSlicer):
             cut_coords = self.cut_coords
         coords = {}
         for direction in "xyz":
-            coord = None
-            if direction in self._cut_displayed:
-                coord = cut_coords[self._cut_displayed.index(direction)]
-            coords[direction] = coord
+            coords[direction] = (
+                cut_coords[self._cut_displayed.index(direction)]
+                if direction in self._cut_displayed
+                else None
+            )
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()
@@ -1541,8 +1541,9 @@ class TiledSlicer(_MultiDSlicer):
             ax.set_facecolor(facecolor)
 
             ax.axis("off")
-            coord = self.cut_coords[self._cut_displayed.index(direction)]
-            display_ax = self._axes_class(ax, direction, coord, **kwargs)
+            display_ax = self._axes_class(
+                ax, direction, self.cut_coords[index], **kwargs
+            )
             self.axes[direction] = display_ax
             ax.set_axes_locator(self._locator)
 
@@ -1728,11 +1729,11 @@ class TiledSlicer(_MultiDSlicer):
             cut_coords = self.cut_coords
         coords = {}
         for direction in "xyz":
-            coord_ = None
-            if direction in self._cut_displayed:
-                index = self._cut_displayed.index(direction)
-                coord_ = cut_coords[index]
-            coords[direction] = coord_
+            coords[direction] = (
+                cut_coords[self._cut_displayed.index(direction)]
+                if direction in self._cut_displayed
+                else None
+            )
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()
@@ -2463,8 +2464,7 @@ class MosaicSlicer(BaseSlicer):
 
         for direction in cls._cut_displayed:
             coords_list = cut_coords[direction]
-            bound_index = "xyz".find(direction)
-            coord_bounds = bounds[bound_index]
+            coord_bounds = bounds["xyz".find(direction)]
             coord_in.extend(
                 [
                     coord_bounds[0] <= coord <= coord_bounds[1]
