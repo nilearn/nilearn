@@ -6,7 +6,6 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
-from sklearn.utils.estimator_checks import ignore_warnings
 
 from nilearn.datasets import load_fsaverage_data
 from nilearn.image import get_data, math_img
@@ -124,7 +123,6 @@ def test_cluster_nearest_neighbor(shape):
     assert np.array_equal(nbrs, np.array([[4, 7, 5], [4, 5, 5], [4, 2, 6]]))
 
 
-@ignore_warnings
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, two_sided, expected_n_cluster",
     [
@@ -153,7 +151,6 @@ def test_get_clusters_table(
     validate_clusters_table(clusters_table, expected_n_cluster)
 
 
-@ignore_warnings
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, expected_n_cluster",
     [
@@ -194,7 +191,6 @@ def test_get_clusters_table_surface(
     assert cluster_labels.size == expected_n_cluster + 1
 
 
-@ignore_warnings
 @pytest.mark.parametrize(
     (
         "stat_threshold, cluster_threshold, "
@@ -487,7 +483,6 @@ def test_get_clusters_table_return_label_maps(simple_stat_img):
     assert np.sum(label_map_negative_data[4:6, 7:9, 8:10] != 0) == 8
 
 
-@ignore_warnings
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, two_sided, expected_n_cluster",
     [
