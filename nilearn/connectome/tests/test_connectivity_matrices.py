@@ -1020,7 +1020,13 @@ def test_confounds_connectome_measure():
 
     # Confounds as pandas DataFrame
     confounds_df = DataFrame(confounds[:10])
-    correlation_measure.fit_transform(signals, confounds=confounds_df)
+    with pytest.warns(
+        FutureWarning,
+        match="default strategy for standardize is currently 'zscore'",
+    ):
+        # TODO we should not be getting a warning here as
+        # we have set standardize="zscore_sample" above
+        correlation_measure.fit_transform(signals, confounds=confounds_df)
 
 
 def test_confounds_connectome_measure_errors(signals):
