@@ -72,19 +72,6 @@ def set_mpl_backend(message=None):
                 stacklevel=find_stack_level(),
             )
 
-        if new_backend == "agg":
-            warnings.warn(
-                (
-                    f"You are using the '{matplotlib.get_backend()}' "
-                    "matplotlib backend that is non-interactive."
-                    "\nNo figure will be plotted when calling "
-                    "matplotlib.pyplot.show() or nilearn.plotting.show()."
-                    "\nYou can fix this by installing a different backend: "
-                    "for example via\n\tpip install PyQt6"
-                ),
-                stacklevel=find_stack_level(),
-            )
-
 
 def rename_parameters(
     replacement_params,
