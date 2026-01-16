@@ -69,7 +69,7 @@ masker
 # the final ``_`` ofd this attribute name means it was generated
 # by the :meth:`~nilearn.maskers.NiftiMasker.fit` method.
 #
-# We can then plot it using the :func:`~nilearn.plotting.plot_roi`` function
+# We can then plot it using the :func:`~nilearn.plotting.plot_roi` function
 # with the mean functional image as background.
 #
 from nilearn.image.image import mean_img

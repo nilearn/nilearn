@@ -100,8 +100,8 @@ slice and create a :ref:`Niimg <niimg>` in memory:
 
 
 .. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
-    :start-after: Load movie watching based brain development fMRI dataset
-    :end-before: # To display the background
+    :start-after: to speed up computation.
+    :end-before: epi_img = index_img(epi_filename, slice(0, 100))
 
 Controlling how the mask is computed from the data
 --------------------------------------------------
@@ -136,8 +136,8 @@ The mask can be retrieved and visualized from the ``mask_img_`` attribute
 of the masker:
 
 .. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
-    :start-after: # A NiftiMasker with the default strategy
-    :end-before: # Plot the generated mask using the .generate_report method
+    :start-after: # Let's use the NiftiMasker with its defaults parameters.
+    :end-before: # display the image
 
 .. figure:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_mask_computation_002.png
     :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
@@ -149,8 +149,8 @@ opened in a new browser tab using ``report.open_in_browser()``,
 or saved as a portable HTML file ``report.save_as_html(output_filepath)``.
 
 .. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
-    :start-after: # We need to specify an 'epi' mask_strategy, as this is raw :term:`EPI` data
-    :end-before: # Generate mask with strong opening
+    :start-after: # More information can be obtained about the masker and its mask
+    :end-before: # Computing a mask from raw :term:`EPI` data
 
 .. figure:: /images/niftimasker_report.png
     :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
