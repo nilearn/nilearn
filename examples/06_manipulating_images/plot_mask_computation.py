@@ -69,13 +69,15 @@ masker = NiftiMasker(verbose=1)
 masker
 
 # %%
+masker.fit(miyawaki_filename)
+
+# %%
 # .. note ::
 #
 #   You can also note that after fitting,
 #   the HTML representation of the estimator looks different
 #   than before before fitting.
 #
-masker.fit(miyawaki_filename)
 masker
 
 # %%
@@ -109,10 +111,12 @@ show()
 # by generating a masker report.
 # This can be done using
 # the :meth:`~nilearn.maskers.NiftiMasker.generate_report` method.
+report = masker.generate_report()
+
+# %%
 #
 # .. include:: ../../../examples/report_note.rst
 #
-report = masker.generate_report()
 report
 
 
@@ -132,7 +136,6 @@ report
 #
 # Here we only work with the first 100 volumes of the image
 # to speed up computation.
-#
 from nilearn.datasets import fetch_development_fmri
 from nilearn.image import index_img
 
@@ -153,7 +156,7 @@ show()
 #
 # We need to specify an ``'epi'`` mask_strategy,
 # as this is raw :term:`EPI` data
-#
+
 masker = NiftiMasker(mask_strategy="epi", verbose=1)
 masker.fit(epi_img)
 report = masker.generate_report()
@@ -170,7 +173,7 @@ report
 # and :term:`dilation<Dilation>` operations
 # on the outer voxel layers of the mask,
 # which can for example remove remaining skull parts in the image.
-#
+
 masker = NiftiMasker(mask_strategy="epi", mask_args={"opening": 10}, verbose=1)
 masker.fit(epi_img)
 report = masker.generate_report()
@@ -189,7 +192,6 @@ report
 # We will here increase the lower cutoff
 # to enforce selection of those voxels
 # that appear as bright in the :term:`EPI` image.
-#
 
 masker = NiftiMasker(
     mask_strategy="epi",
@@ -244,10 +246,6 @@ report
 # ----------------------------------------------
 #
 # We extract time series detrended and non-detrended.
-# Once extracted,
-# the timeseries are numpy arrays, so we can manipulate them with numpy
-#
-
 trended_data = NiftiMasker(mask_strategy="epi", verbose=1).fit_transform(
     epi_img
 )
@@ -255,6 +253,9 @@ detrended_data = NiftiMasker(
     mask_strategy="epi", detrend=True, verbose=1
 ).fit_transform(epi_img)
 
+# %%
+# Once extracted,
+# the timeseries are numpy arrays, so we can manipulate them with numpy
 print(
     f"Trended: mean {np.mean(trended_data):.2f}, "
     f"std {np.std(trended_data):.2f}"

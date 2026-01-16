@@ -49,13 +49,15 @@ masker = NiftiMasker(
 masker
 
 # %%
+masker.fit(func_filename)
+
+# %%
 # .. note ::
 #
 #   You can also note that after fitting,
 #   the HTML representation of the estimator looks different
 #   than before before fitting.
 #
-masker.fit(func_filename)
 masker
 
 # %%
@@ -71,15 +73,16 @@ masker
 #
 # We can then plot it using the :func:`~nilearn.plotting.plot_roi` function
 # with the mean functional image as background.
-#
 from nilearn.image.image import mean_img
-from nilearn.plotting import plot_roi
+from nilearn.plotting import plot_roi, show
 
 mask_img = masker.mask_img_
 
 mean_func_img = mean_img(func_filename)
 
 plot_roi(mask_img, mean_func_img, display_mode="y", cut_coords=4, title="Mask")
+
+show()
 
 # %%
 # Visualize the masker report
@@ -89,10 +92,12 @@ plot_roi(mask_img, mean_func_img, display_mode="y", cut_coords=4, title="Mask")
 # by generating a masker report.
 # This can be done using
 # the :meth:`~nilearn.maskers.NiftiMasker.generate_report` method.
+report = masker.generate_report()
+
+# %%
 #
 # .. include:: ../../../examples/report_note.rst
 #
-report = masker.generate_report()
 report
 
 # %%
