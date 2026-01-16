@@ -276,7 +276,7 @@ def view_connectome(
         If it is a number only connections of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%", and only connections of amplitude above the
+        e.g. "25.3%%", and only connections of amplitude above the
         given percentile will be shown.
 
     edge_cmap : :obj:`str` or matplotlib colormap, default="RdBu_r"
