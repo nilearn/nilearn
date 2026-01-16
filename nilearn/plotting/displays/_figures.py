@@ -104,18 +104,17 @@ class PlotlySurfaceFigure(SurfaceFigure):
             )
         super().__init__(figure=figure, output_file=output_file, hemi=hemi)
 
-    def show(self, renderer="browser"):
+    def show(self, renderer=None):
         """Show the figure.
 
         Parameters
         ----------
-        renderer : :obj:`str`, default='browser'
+        renderer : :obj:`str`, default=None
             Plotly renderer to be used.
 
         """
         if self.figure is not None:
             self.figure.show(renderer=renderer)
-            return self.figure
 
     def savefig(self, output_file=None, **savefig_kwargs):  # noqa: ARG002
         """Save the figure to file.
