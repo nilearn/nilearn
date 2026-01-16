@@ -1645,7 +1645,10 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
     assert_surface_image_equal(cleaned_img, cleaned_img_with_full_mask)
 
     # 1D fails
-    with pytest.raises(ValueError, match="should be 2D"):
+    with pytest.raises(
+        DimensionError,
+        match="Expected dimension is 2D and you provided a 1D image",
+    ):
         clean_img(surf_img_1d, detrend=True)
 
     sample_mask = np.arange(length - 1)

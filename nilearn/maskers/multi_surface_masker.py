@@ -13,7 +13,6 @@ from nilearn._utils.param_validation import check_params
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.base_masker import mask_logger
 from nilearn.maskers.surface_masker import SurfaceMasker
-from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -165,6 +164,8 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         self._report_content["warning_messages"] = []
 
         if imgs is not None:
+            if not hasattr(imgs, "__iter__"):
+                imgs = [imgs]
             self._check_imgs(imgs)
 
         return self._fit(imgs)
@@ -198,14 +199,6 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
         check_polymesh_equal(self.mask_img_.mesh, imgs.mesh)
-
-        if isinstance(imgs, SurfaceImage) and any(
-            hemi.ndim > 2 for hemi in imgs.data.parts.values()
-        ):
-            raise ValueError("should only be SurfaceImage should 1D or 2D.")
-        elif hasattr(imgs, "__iter__"):
-            for i, x in enumerate(imgs):
-                x.data._check_n_samples(1, f"imgs[{i}]")
 
         if self.reports:
             self._reporting_data["images"] = imgs

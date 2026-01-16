@@ -14,6 +14,7 @@ from sklearn.exceptions import EfficiencyWarning
 from nilearn import datasets, image
 from nilearn._utils import data_gen
 from nilearn._utils.helpers import is_windows_platform
+from nilearn.exceptions import DimensionError
 from nilearn.image import resampling
 from nilearn.surface.surface import (
     FileMesh,
@@ -872,7 +873,7 @@ def test_polydata_shape(shape):
 
 
 def test_polydata_1d_check_parts():
-    """Smoke test for check parts.
+    """Test for check parts.
 
     - passing a 1D array at instantiation is fine:
       they are convertd to 2D
@@ -884,6 +885,35 @@ def test_polydata_1d_check_parts():
     data.parts["left"] = np.ones((1,))
 
     data._check_parts()
+
+    data.parts["left"] = np.empty(0)
+    with pytest.raises(ValueError, match="part left is empty"):
+        data._check_parts()
+
+
+def test_polydata_check_ndim():
+    """Test for check_ndim."""
+    data = PolyData(left=np.ones((7,)), right=np.ones((5,)))
+    data._check_ndims(1)
+
+    with pytest.raises(
+        DimensionError,
+        match="Expected dimension is 2D and you provided a 1D image",
+    ):
+        data._check_ndims(2)
+
+    data = PolyData(left=np.ones((7, 1)), right=np.ones((5, 1)))
+    data._check_ndims(2)
+
+    with pytest.raises(
+        DimensionError,
+        match="Expected dimension is 1D and you provided a 2D image",
+    ):
+        data._check_ndims(1)
+
+    # checking for more dimension than 2 is equivalent to checking to 2
+    # as we do not support more than 2 dimensions
+    data._check_ndims(3)
 
 
 def test_mesh_to_gifti(single_mesh, tmp_path):
@@ -1231,13 +1261,18 @@ def test_check_surf_img(surf_img_1d, surf_img_2d):
     check_surf_img(surf_img_1d)
     check_surf_img(surf_img_2d())
 
-    data = {
+    {
         part: np.empty(0).reshape((surf_img_1d.data.parts[part].shape[0], 0))
         for part in surf_img_1d.data.parts
     }
-    imgs = SurfaceImage(surf_img_1d.mesh, data)
+    # force some parts to be empty
+    for part in surf_img_1d.data.parts:
+        surf_img_1d.data.parts[part] = np.empty(0).reshape(
+            (surf_img_1d.data.parts[part].shape[0], 0)
+        )
+
     with pytest.raises(ValueError, match="empty"):
-        check_surf_img(imgs)
+        check_surf_img(surf_img_1d)
 
 
 def test_check_surf_img_dtype(surf_img_1d):
@@ -1308,3 +1343,45 @@ def test_find_surface_clusters_4_faces(mask, expected_n_clusters, surf_mesh):
 def test_find_surface_clusters_5_faces(mask, expected_n_clusters, surf_mesh):
     clusters, _ = find_surface_clusters(surf_mesh.parts["right"], mask)
     assert len(clusters) == expected_n_clusters
+
+
+def test_3d_surface_image_not_implemented(surf_mesh):
+    """Raise error when trying to create an image with 3D.
+
+    For example to represent surface with several 'layers'
+    in the cortical sheet.
+    """
+    with pytest.raises(
+        NotImplementedError, match="more than 2D are not supported"
+    ):
+        SurfaceImage(
+            mesh=surf_mesh,
+            data={"left": np.ones((4, 3, 2)), "right": np.ones((5, 3, 2))},
+        )
+
+
+@pytest.mark.parametrize(
+    "part",
+    [
+        np.ones((2,)),  # 1D
+        np.ones((2, 1)),  # 1D
+        np.ones((2, 2)),  # 2D
+    ],
+)
+def test_polydata_check_n_samples_errors(part):
+    """Check n_samples throws errors when appropriate."""
+    data = PolyData(left=part, right=part)
+    data._check_n_samples(2)
+
+    if part.ndim > 1 and part.shape[1] > 1:
+        with pytest.raises(
+            DimensionError,
+            match="Expected 1 sample and you provided a 2 samples image",
+        ):
+            data._check_n_samples(1)
+    else:
+        # testing value <=0 for coverage
+        # as it will default to 1 in this case
+        data._check_n_samples(-1)
+
+        data._check_n_samples(1)

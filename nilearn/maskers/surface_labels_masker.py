@@ -25,7 +25,6 @@ from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
-    check_surf_img,
     get_data,
 )
 from nilearn.surface.utils import check_polymesh_equal
@@ -239,18 +238,9 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         if imgs is not None:
             self._check_imgs(imgs)
 
-        if imgs is not None:
-            check_surf_img(imgs)
-
-            if isinstance(imgs, SurfaceImage) and any(
-                hemi.ndim > 2 for hemi in imgs.data.parts.values()
-            ):
-                raise ValueError(
-                    "should only be SurfaceImage should 1D or 2D."
-                )
-            elif hasattr(imgs, "__iter__"):
-                for i, x in enumerate(imgs):
-                    x.data._check_n_samples(1, f"imgs[{i}]")
+            if hasattr(imgs, "__iter__"):
+                for x in imgs:
+                    x.data._check_n_samples(1)
 
         return self._fit(imgs)
 
@@ -380,15 +370,12 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         check_compatibility_mask_and_images(self.labels_img_, imgs)
         check_polymesh_equal(self.labels_img_.mesh, imgs.mesh)
 
-        if isinstance(imgs, SurfaceImage) and any(
-            hemi.ndim > 2 for hemi in imgs.data.parts.values()
-        ):
-            raise ValueError("SurfaceImage should only be 1D or 2D.")
-        elif hasattr(imgs, "__iter__"):
-            for i, x in enumerate(imgs):
-                x.data._check_n_samples(1, f"imgs[{i}]")
+        if hasattr(imgs, "__iter__"):
+            for x in imgs:
+                x.data._check_n_samples(1)
 
         imgs = at_least_2d(imgs)
+
         img_data = get_data(imgs)
 
         target_datatype = (
