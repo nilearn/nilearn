@@ -2,7 +2,7 @@
 Understanding NiftiMasker and mask computation
 ==============================================
 
-In this example, the Nifti masker is used to automatically compute a mask.
+In this example, the NiftiMasker is used to automatically compute a mask.
 
 * The default strategy is based on the background.
 
@@ -23,11 +23,11 @@ underlying routine that extract masks from EPI
 # Computing a mask from the background
 # ------------------------------------
 #
-# The default strategy to compute a mask, eg in NiftiMasker is to try to
-# detect the background.
+# The default strategy to compute a mask, like the NiftiMasker,
+# is to try to detect the background.
 #
-# With data that has already been masked, this will work well, as it lies
-# on a homogeneous background
+# With data that has already been masked this will work well,
+# as it relies on a homogeneous background
 from nilearn import image
 from nilearn.datasets import fetch_development_fmri, fetch_miyawaki2008
 from nilearn.maskers import NiftiMasker
@@ -55,7 +55,16 @@ plot_roi(
 )
 
 # %%
-# Plot the generated mask using the .generate_report method
+# View the generated mask
+# -----------------------
+#
+# More information can be obtained about the masker and its mask
+# by generating a masker report.
+# This can be done using
+# the :meth:`~nilearn.maskers.NiftiMasker.generate_report` method.
+#
+# .. include:: ../../../examples/report_note.rst
+#
 report = masker.generate_report()
 report
 
@@ -166,10 +175,12 @@ report
 # Extract time series
 
 # trended vs detrended
-trended = NiftiMasker(mask_strategy="epi", verbose=1)
-detrended = NiftiMasker(mask_strategy="epi", detrend=True, verbose=1)
-trended_data = trended.fit_transform(epi_img)
-detrended_data = detrended.fit_transform(epi_img)
+trended_data = NiftiMasker(mask_strategy="epi", verbose=1).fit_transform(
+    epi_img
+)
+detrended_data = NiftiMasker(
+    mask_strategy="epi", detrend=True, verbose=1
+).fit_transform(epi_img)
 
 # The timeseries are numpy arrays, so we can manipulate them with numpy
 
