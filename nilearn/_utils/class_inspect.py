@@ -1,7 +1,9 @@
 """Small utilities to inspect classes."""
 
+from typing import Any
 
-def get_params(cls, instance, ignore=None):
+
+def get_params(cls, instance, ignore=None) -> dict[str, Any]:
     """Retrieve the initialization parameters corresponding to a class.
 
     This helper function retrieves the parameters of function __init__ for

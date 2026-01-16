@@ -2064,7 +2064,6 @@ def check_img_estimator_standardization(estimator_orig):
 # ------------------ DECODERS CHECKS ------------------
 
 
-@ignore_warnings()
 def check_supervised_img_estimator_y_no_nan(estimator_orig) -> None:
     """Check estimator fails if y contains nan or inf.
 
@@ -2104,7 +2103,6 @@ def check_supervised_img_estimator_y_no_nan(estimator_orig) -> None:
             estimator.fit(X, y)
 
 
-@ignore_warnings()
 def check_decoder_empty_data_messages(estimator_orig):
     """Check that empty images are caught properly.
 
@@ -2145,7 +2143,6 @@ def check_decoder_empty_data_messages(estimator_orig):
         estimator.fit(X, y)
 
 
-@ignore_warnings()
 def check_decoder_compatibility_mask_image(estimator_orig):
     """Check compatibility of the mask_img and images for decoders.
 
@@ -2195,7 +2192,6 @@ def check_decoder_compatibility_mask_image(estimator_orig):
             getattr(estimator, method)(*input)
 
 
-@ignore_warnings()
 def check_decoder_with_surface_data(estimator_orig):
     """Test fit and other methods with surface image."""
     if isinstance(estimator_orig, SearchLight):
@@ -2234,7 +2230,6 @@ def check_decoder_with_surface_data(estimator_orig):
                 getattr(estimator, method)(X)
 
 
-@ignore_warnings
 def check_img_regressor_no_decision_function(regressor_orig):
     """Check that regressors don't have some method, attributes.
 
@@ -2252,7 +2247,6 @@ def check_img_regressor_no_decision_function(regressor_orig):
         )
 
 
-@ignore_warnings
 def check_decoder_with_arrays(estimator_orig):
     """Check that several methods of decoders work with ndarray and images.
 
@@ -3947,7 +3941,6 @@ def check_multimasker_transformer_high_variance_confounds(estimator_orig):
 # ------------------ GLM CHECKS ------------------
 
 
-@ignore_warnings()
 def check_glm_empty_data_messages(estimator_orig: BaseEstimator) -> None:
     """Check that empty images are caught properly.
 
@@ -3975,7 +3968,6 @@ def check_glm_empty_data_messages(estimator_orig: BaseEstimator) -> None:
             estimator.fit(imgs, design_matrix=design_matrices)
 
 
-@ignore_warnings()
 def check_glm_dtypes(estimator_orig):
     """Check glm can fit with inputs of varying dtypes.
 
