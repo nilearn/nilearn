@@ -118,8 +118,8 @@ def save_glm_to_bids(
             :obj:`~nilearn.glm.second_level.SecondLevelModel`
         First- or second-level model from which to save outputs.
 
-    contrasts : :obj:`str` or array of shape (n_col) or :obj:`list` \
-                of (:obj:`str` or array of shape (n_col)) or :obj:`dict`
+    contrasts : :obj:`str` or array of shape (n_col), or :obj:`list` \
+                of (:obj:`str` or array of shape (n_col)), or :obj:`dict`
         Contrast definitions.
 
         If a dictionary is passed then it must be a dictionary of
@@ -128,6 +128,77 @@ def save_glm_to_bids(
 
         Arrays may be 1D or 2D, with 1D arrays typically being
         t-contrasts and 2D arrays typically being F-contrasts.
+
+        ..  admonition:: Contrasts names and output filenames
+            :class: important
+
+            It is import to note that the content of ``contrasts``
+            may greatly influence the output filenames.
+
+            For a model with a design matrix with 3 regressors:
+
+            - "win"
+            - "neutral"
+            - "intercept"
+
+            Passing a list of arrays:
+
+            .. code-block:: python
+
+                contrasts=[
+                    np.asarray([1, 0, 0]),
+                    np.asarray([0, 1, 0]),
+                    np.asarray([1, -1, 0]),
+                ]
+
+            would give output files:
+
+            - ``contrast-100_stat-t_statmap.nii.gz``
+            - ``contrast-010_stat-t_statmap.nii.gz``
+            - ``contrast-1Minus10_stat-t_statmap.nii.gz``
+
+            Passing a list of strings
+            with names matching regressors names:
+
+            .. code-block:: python
+
+                contrasts=[
+                    "win",
+                    "neutral",
+                    "win - neutral",
+                ]
+
+            would give output files:
+
+            - ``contrast-Win_stat-t_statmap.nii.gz``
+            - ``contrast-Neutral_stat-t_statmap.nii.gz``
+            - ``contrast-WinMinusNeutral_stat-t_statmap.nii.gz``
+
+            Note also that the keys in a dictionary
+            may affect how files are named:
+
+            .. code-block:: python
+
+                contrasts={
+                    "WinMinusNeutral": "win - neutral",
+                }
+
+            will output these files where the keys are lower-cased:
+
+            - ``contrast-winminusneutral_stat-t_statmap.nii.gz``
+
+
+            but this dictionary:
+
+            .. code-block:: python
+
+                contrasts={
+                    "Win - Neutral": "win - neutral",
+                }
+
+            will output these files where the keys are camel-cased:
+
+            - ``contrast-winMinusNeutral_stat-t_statmap.nii.gz``
 
     %(first_level_contrast)s
 
