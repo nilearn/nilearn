@@ -1666,10 +1666,9 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest
         scores.
-    screening_n_features : int, optional
-        Number of voxels to select. If `None, ``screening_percentile` is used.
-        If both are set, `screening_n_features` takes priority.
-        Default is None.
+
+%(screening_n_features)s
+
 
     scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
