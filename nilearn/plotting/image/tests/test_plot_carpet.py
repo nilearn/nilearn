@@ -127,7 +127,10 @@ def test_plot_carpet_standardize(
     """
     match = "default strategy for standardize"
 
-    with pytest.warns(FutureWarning, match=match):
+    with (
+        pytest.warns(FutureWarning, match=match),
+        pytest.warns(FutureWarning, match="boolean values for 'standardize'"),
+    ):
         plot_carpet(img_4d_mni, mask_img=img_3d_ones_mni)
 
     with warnings.catch_warnings(record=True) as record:

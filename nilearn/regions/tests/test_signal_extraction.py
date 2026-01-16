@@ -570,8 +570,8 @@ def test_signal_extraction_with_maps_and_labels(
     with pytest.warns(
         FutureWarning,
         match=(
-            'Applying "mask_img" before signal extraction "'
-            '"may result in empty region signals in the output.'
+            'Applying "mask_img" before signal extraction '
+            "may result in empty region signals in the output."
         ),
     ):
         maps_signals, maps_labels = img_to_signals_maps(
