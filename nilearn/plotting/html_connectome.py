@@ -7,6 +7,7 @@ from matplotlib import cm as mpl_cm
 from scipy import sparse
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting._engine_utils import colorscale, to_color_strings
@@ -240,6 +241,7 @@ def _make_connectome_html(connectome_info, embed_js=True):
     return ConnectomeView(as_html)
 
 
+@fill_doc
 def view_connectome(
     adjacency_matrix,
     node_coords,
@@ -288,8 +290,8 @@ def view_connectome(
     node_size : :obj:`float`, default=3.0
         Size of the markers showing the seeds in pixels.
 
-    colorbar : :obj:`bool`, default=True
-        Add a colorbar.
+    %(colorbar)s
+        default=True
 
     colorbar_height : :obj:`float`, default=0.5
         Height of the colorbar, relative to the figure height.
@@ -297,8 +299,7 @@ def view_connectome(
     colorbar_fontsize : :obj:`int`, default=25
         Fontsize of the colorbar tick labels.
 
-    title : :obj:`str` or None, default=None
-        Title for the plot.
+    %(title)s
 
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
@@ -374,8 +375,7 @@ def view_markers(
                      or None, default=None
         Labels for the markers: list of strings
 
-    title : :obj:`str` or None, default=None
-        Title for the plot.
+    %(title)s
 
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.

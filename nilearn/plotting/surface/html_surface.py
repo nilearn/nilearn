@@ -281,8 +281,8 @@ def view_img_on_surf(
         Make colormap symmetric (ranging from -vmax to vmax).
         You can set it to False if you are plotting only positive values.
 
-    colorbar : :obj:`bool`, default=True
-        Add a colorbar or not.
+    %(colorbar)s
+        default=True
 
     colorbar_height : :obj:`float`, default=0.5
         Height of the colorbar, relative to the figure height
@@ -290,8 +290,7 @@ def view_img_on_surf(
     colorbar_fontsize : :obj:`int`, default=25
         Fontsize of the colorbar tick labels.
 
-    title : :obj:`str`, default=None
-        Title for the plot.
+    %(title)s
 
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
@@ -433,8 +432,8 @@ def view_surf(
         If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
         image, or 0 when a threshold is used.
 
-    colorbar : :obj:`bool`, default=True
-        Add a colorbar or not.
+    %(colorbar)s
+        default=True
 
     colorbar_height : :obj:`float`, default=0.5
         Height of the colorbar, relative to the figure height.
@@ -442,8 +441,7 @@ def view_surf(
     colorbar_fontsize : :obj:`int`, default=25
         Fontsize of the colorbar tick labels.
 
-    title : :obj:`str`, default=None
-        Title for the plot.
+    %(title)s
 
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.

@@ -570,9 +570,11 @@ def view_img(
         as a 3-tuple: (x, y, z). If None is given, the cuts are calculated
         automatically.
 
-    colorbar : :obj:`bool`, default=True
-        If True, display a colorbar on top of the plots.
+    %(colorbar)s
+        default=True
+
     %(title)s
+
     threshold : :obj:`str`, number or None, default=1e-06
         If None is given, the image is not thresholded.
         If a string of the form "90%%" is given, use the 90-th percentile of

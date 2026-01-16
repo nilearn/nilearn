@@ -281,7 +281,7 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
 # colorbar
 docdict["colorbar"] = """
 colorbar : :obj:`bool`, optional
-    If `True`, display a colorbar on the right of the plots.
+    If `True`, display a colorbar next to the plots.
 """
 
 # connected
