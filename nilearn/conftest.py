@@ -61,7 +61,6 @@ if not is_gil_enabled():
             # therefore we skip them when testing without the GIL
             "datasets",
             # TODO: skipping those sub-packages for now
-            "maskers",
             "plotting",
             "glm",
             "decomposition",
