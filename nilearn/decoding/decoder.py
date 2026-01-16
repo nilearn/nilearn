@@ -1148,10 +1148,8 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         predictions are estimated using default strategy.
 
     %(screening_percentile)s
-    screening_n_features : int, optional
-        Number of voxels to select. If `None, ``screening_percentile` is used.
-        If both are set, `screening_percentile` takes priority.
-        Default is None.
+
+%(screening_n_features)s
 
 
     scoring : :obj:`str`, callable or None, default='roc_auc'
