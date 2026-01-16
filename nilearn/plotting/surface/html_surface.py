@@ -322,6 +322,8 @@ def view_img_on_surf(
     nilearn.plotting.view_surf: plot from a surface map on a cortical mesh.
 
     """
+    check_params(locals())
+
     if vol_to_surf_kwargs is None:
         vol_to_surf_kwargs = {}
 

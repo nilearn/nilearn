@@ -9,6 +9,7 @@ from scipy import sparse
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.param_validation import check_params
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting._engine_utils import colorscale, to_color_strings
 from nilearn.plotting.js_plotting_utils import (
@@ -327,6 +328,7 @@ def view_connectome(
         surface.
 
     """
+    check_params(locals())
     node_coords = np.asarray(node_coords)
 
     connectome_info = _get_connectome(
@@ -403,6 +405,8 @@ def view_markers(
         surface.
 
     """
+    check_params(locals())
+
     marker_coords = np.asarray(marker_coords)
     if marker_color is None:
         marker_color = ["red" for _ in range(len(marker_coords))]

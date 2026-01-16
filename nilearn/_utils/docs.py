@@ -40,7 +40,7 @@ alphas : :obj:`float` or :obj:`list` of :obj:`float` or None, default=None
 # annotate
 docdict["annotate"] = """
 annotate : :obj:`bool`, default=True
-    If `annotate` is `True`, positions and left/right annotation
+    If `annotate` is `True` (like positions and / or  left/right annotation)
     are added to the plot.
 """
 
