@@ -57,6 +57,7 @@ from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
+_MIN_N_FEATURES_FOR_SCREENING = 100
 
 SUPPORTED_ESTIMATORS = {
     "svc_l1": LinearSVC(penalty="l1", dual=False, max_iter=10000),
@@ -380,7 +381,7 @@ def _parallel_fit(
         X_train = clustering.fit_transform(X_train)
         X_test = clustering.transform(X_test)
 
-    do_screening = (X_train.shape[1] > 100) and selector is not None
+    do_screening = (X_train.shape[1] > _MIN_N_FEATURES_FOR_SCREENING) and selector is not None
 
     if do_screening:
         X_train = selector.fit_transform(X_train, y_train)
