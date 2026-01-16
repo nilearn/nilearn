@@ -11,10 +11,11 @@ from pathlib import Path
 import numpy as np
 from nibabel import Nifti1Image
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
-from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
+from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.docs import fill_doc
@@ -594,7 +595,11 @@ def recursive_neighbor_agglomeration(
 
 
 @fill_doc
-class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
+class ReNA(
+    ClusterMixin,
+    TransformerMixin,
+    NilearnBaseEstimator,
+):
     """Recursive Neighbor Agglomeration (:term:`ReNA`).
 
     Recursively merges the pair of clusters according to 1-nearest neighbors

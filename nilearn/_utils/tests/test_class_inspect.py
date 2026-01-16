@@ -1,14 +1,13 @@
 """Test the class_inspect module."""
 
-from sklearn.base import BaseEstimator
-
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import class_inspect
 
 ##############################################################################
 # Helpers for the tests
 
 
-class A(BaseEstimator):
+class A(NilearnBaseEstimator):
     def __init__(self, a=1):
         self.a = a
 

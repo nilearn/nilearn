@@ -153,10 +153,23 @@ decoder = Decoder(
 )
 
 # %%
+#
+# .. include:: ../../../examples/html_repr_note.rst
+#
+decoder
+
+# %%
 # The decoder object is an object that can be fit (or trained) on data with
 # labels, and then predict labels on data without.
 #
-# We first fit it on the data
+# We first fit it on the data.
+#
+# .. note ::
+#
+#   After fitting,
+#   the HTML representation of the estimator looks different
+#   than before before fitting.
+#
 decoder.fit(fmri_niimgs, conditions)
 
 # %%
