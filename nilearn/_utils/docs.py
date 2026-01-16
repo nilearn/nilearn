@@ -322,31 +322,38 @@ cut_coords : None, allowed types depend on the ``display_mode``, optional
     The world coordinates of the point where the cut is performed.
 
     - If ``display_mode`` is ``'ortho'`` or ``'tiled'``,
-      this must be a 3 :obj:`tuple`
-      of :obj:`float` or :obj:`int`: ``(x, y, z)``.
+      this must be a 3-sequence of :obj:`float` or :obj:`int`:
+      ``(x, y, z)``.
 
     - If ``display_mode`` is ``'xz'``, ``'yz'`` or ``'yx'``,
-      this must be a 2 :obj:`tuple`
-      of :obj:`float` or :obj:`int`: ``(x, z)``,  ``(y, z)`` or  ``(x, y)``.
+      this must be a 2-sequence of :obj:`float` or :obj:`int`:
+      ``(x, z)``,  ``(y, z)`` or  ``(x, y)``.
 
-    - If ``display_mode`` is ``"x"``, ``"y"``, or ``"z"``
+    - If ``display_mode`` is ``"x"``, ``"y"``, or ``"z"``,
       this can be:
 
-      - an array-like of :obj:`float` or :obj:`int`
+      - a sequence of :obj:`float` or :obj:`int`
         representing the coordinates of each cut
         in the corresponding direction,
 
       - an :obj:`int`
         in which case it specifies the number of cuts to perform.
 
+    - If ``display_mode`` is ``'mosaic'``, this can be:
+
+      - an :obj:`int`
+        in which case it specifies the number of cuts to perform in each
+        direction ``"x"``, ``"y"``, ``"z"``.
+
+      - a 3-sequence of :obj:`float` or :obj:`int`
+        in which case it specifies the number of cuts to perform in each
+        direction ``"x"``, ``"y"``, ``"z"`` separately.
+
+      - :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`>
+        in which case keys are the directions ('x', 'y', 'z') and the values
+        are sequences holding the cut coordinates.
+
     - If ``None`` is given, the cuts are calculated automatically.
-
-    - If ``display_mode`` is ``'mosaic'``, and the number of cuts is the same
-      for all directions, ``cut_coords`` can be specified as an :obj:`int`.
-      It can also be a length 3 :obj:`tuple` of  :obj:`int`
-      specifying the number of cuts for
-      every direction if these are different.
-
 
 """
 
