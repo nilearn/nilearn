@@ -526,7 +526,7 @@ class YXProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = "yx"
+    _cut_displayed = "xy"
 
 
 @fill_doc
