@@ -91,7 +91,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         See :ref:`extracting_data`.
         Region definitions, as one image of labels.
 
-    labels : :obj:`list` of :obj:`str`, optional
+    labels : :obj:`list` of :obj:`str`, or None, default=None
         Full labels corresponding to the labels image.
         This is used to improve reporting quality if provided.
         Mutually exclusive with ``lut``.
@@ -118,7 +118,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
             This value must be consistent with label values and image provided.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
@@ -615,18 +615,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             Images to process.
             If a 3D niimg is provided, a 1D array is returned.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
-
-        region_ids_: dict[str | int, int | float] = {}
-        if self.background_label in index:
-            index.pop(index.index(self.background_label))
-            region_ids_["background"] = self.background_label
-        for i, id in enumerate(index):
-            region_ids_[i] = id  # noqa : PERF403
-
-        return region_ids_
+        %(y_dummy)s
 
         %(confounds)s
 

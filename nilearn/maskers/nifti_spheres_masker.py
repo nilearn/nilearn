@@ -63,7 +63,7 @@ def apply_mask_and_get_affinity(
     allow_overlap : boolean
         If False, a ValueError is raised if VOIs overlap
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object or None, default=None
         Mask to apply to regions before extracting signals. If niimg is None,
         mask_img is used as a reference space in which the spheres 'indices are
         placed.
@@ -183,7 +183,7 @@ def _iter_signals_from_spheres(
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
@@ -616,9 +616,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             See :ref:`extracting_data`.
             Images to process.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
+        %(y_dummy)s
 
         %(confounds)s
 

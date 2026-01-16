@@ -118,7 +118,7 @@ def _yule_walker(x, order):
     n = np.prod(np.array(x.shape[:-1], int))
     r = np.zeros((n, order + 1), np.float64)
     y = x - x.mean()
-    y.shape = (n, x.shape[-1])  # inplace
+    y = y.reshape(n, x.shape[-1])  # inplace
     r[:, 0] += (y[:, np.newaxis, :] @ y[:, :, np.newaxis])[:, 0, 0]
     for k in range(1, order + 1):
         r[:, k] += (y[:, np.newaxis, 0:-k] @ y[:, k:, np.newaxis])[:, 0, 0]
@@ -130,7 +130,8 @@ def _yule_walker(x, order):
     # section removed-ambiguity-when-broadcasting-in-np-solve
     rho = np.linalg.solve(rt, r[:, 1:, None])[..., 0]
 
-    rho.shape = x.shape[:-1] + (order,)
+    rho = rho.reshape(x.shape[:-1] + (order,))
+
     return rho
 
 
@@ -432,7 +433,7 @@ class FirstLevelModel(BaseGLM):
         further inspection of model details. This has an important impact
         on memory consumption.
 
-    subject_label : :obj:`str`, optional
+    subject_label : :obj:`str` or None, default=None
         This id will be used to identify a `FirstLevelModel` when passed to
         a `SecondLevelModel` object.
 
@@ -2382,14 +2383,14 @@ def _make_bids_files_filter(
     task_label : :obj:`str`
         Task label as specified in the file names like _task-<task_label>_.
 
-    space_label : :obj:`str` or None, optional
+    space_label : :obj:`str` or None, default=None
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
-    supported_filters : :obj:`list` of :obj:`str` or None, optional
+    supported_filters : :obj:`list` of :obj:`str` or None, default=None
         List of authorized BIDS entities
 
-    extra_filter : :obj:`list` of :obj:`tuple` (str, str) or None, optional
+    extra_filter : :obj:`list` of :obj:`tuple` (str, str) or None, default=None
         Filters are of the form (field, label).
         Only one filter per field allowed.
 

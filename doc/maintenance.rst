@@ -378,7 +378,7 @@ Add these changes and submit a PR:
 .. code:: bash
 
     git add doc/changes/
-    git commit -m "REL x.y.z"
+    git commit --message "REL x.y.z"
     git push origin REL-x.y.z
 
 

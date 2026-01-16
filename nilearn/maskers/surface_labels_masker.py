@@ -89,7 +89,8 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             This value must be consistent with label values
             and image provided.
 
-    mask_img : :obj:`~nilearn.surface.SurfaceImage` object, optional
+    mask_img : :obj:`~nilearn.surface.SurfaceImage` object or None, \
+            default=None
         Mask to apply to labels_img before extracting signals. Defines the \
         overall area of the brain to consider. The data for each \
         hemisphere is of shape (n_vertices_per_hemisphere, n_regions).

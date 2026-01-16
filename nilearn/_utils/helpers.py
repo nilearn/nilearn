@@ -1,6 +1,7 @@
 import functools
 import operator
 import os
+import sys
 import warnings
 
 from packaging.version import parse
@@ -323,3 +324,12 @@ def is_kaleido_installed():
 def is_windows_platform():
     """Check if the current platform is Windows."""
     return os.name == "nt"
+
+
+def is_gil_enabled():
+    """Check if the Python GIL is enabled."""
+    try:
+        sys._is_gil_enabled()
+    except AttributeError:
+        # sys._is_gil_enabled does not exist in standard Python builds
+        return True
