@@ -12,7 +12,6 @@ from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
 from sklearn.utils.estimator_checks import (
-    ignore_warnings,
     parametrize_with_checks,
 )
 
@@ -546,7 +545,6 @@ def test_targets_in_y_space_net_regressor():
         regressor.fit(imgs, y)
 
 
-@ignore_warnings
 @pytest.mark.slow
 @pytest.mark.parametrize("estimator", [SpaceNetRegressor, SpaceNetClassifier])
 # TODO
