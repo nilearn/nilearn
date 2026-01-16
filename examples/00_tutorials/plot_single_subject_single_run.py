@@ -100,21 +100,20 @@ fmri_glm = FirstLevelModel(
 )
 
 # %%
-# When viewing an Nilearn estimator in a notebook
-# (or more generally on an HTML page like here)
-# you get an 'expandable' 'Parameters' section
-# where the parameters that have diifferent values from their default
-# are highlighted in orange.
-# If you are using a version of scikit-learn >= 1.8.0
-# you will also get access to the 'docstring' description of each parameter.
+#
+# .. include:: ../../../examples/html_repr_note.rst
+#
 fmri_glm
 
 # %%
 # Now that we have specified the model, we can run it on the :term:`fMRI` image
 #
-# You can also note that after fitting,
-# the HTML representation of the estimator looks different
-# than before before fitting.
+# .. note ::
+#
+#   After fitting,
+#   the HTML representation of the estimator looks different
+#   than before before fitting.
+#
 fmri_glm = fmri_glm.fit(fmri_img, events)
 fmri_glm
 
