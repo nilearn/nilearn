@@ -515,10 +515,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'. Defaults to 'roc_auc'.
 
-    screening_n_features : int, optional
-        The number of features to keep. Default=None.
-        If both `screening_percentile` and `screening_n_features` are set,
-        `screening_percentile` takes priority.
+    %(screening_n_features)s
     %(smoothing_fwhm)s
 
     %(standardize_true)s
