@@ -15,13 +15,15 @@ Fixes
 
 - :bdg-dark:`Code` Reallow use non-multi maskers for :class:`~nilearn.regions.Parcellations` (:gh:`5930` by `Rémi Gau`_).
 
+- :bdg-info:`Plotting` Add support for dictionary as ``cut_coords`` for :class:`~plotting.displays.MosaicSlicer` and image plotting functions. (:gh:`5920` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Change default slice order of slicers and projectors to be x, y, z. (:gh:`5944` by `Hande Gözükan`_).
+
 
 Enhancements
 ------------
 
 - :bdg-dark:`Code` Added ``screening_n_features`` parameter to :class:`~nilearn.decoding.Decoder`,  :class:`~nilearn.decoding.DecoderRegressor`, :class:`~nilearn.decoding.FREMClassifier`,  and :class:`~nilearn.decoding.FREMRegressor`.
-
-- :bdg-success:`API` Add support for dictionary as ``cut_coords`` for :class:`~plotting.displays.MosaicSlicer` and image plotting functions. (:gh:`5920` by `Hande Gözükan`_).
 
 Changes
 -------
