@@ -818,7 +818,7 @@ def check_tags(estimator_orig):
     TODO (sklearn >= 1.6) remove this check when bumping sklearn above 1.5
     """
     estimator = clone(estimator_orig)
-    
+
     old_tags = estimator._more_tags()
     new_tags = estimator.__sklearn_tags__()
     assert old_tags == new_tags
@@ -3986,7 +3986,9 @@ def check_multimasker_transformer_high_variance_confounds(estimator_orig):
 
 
 @ignore_warnings()
-def check_glm_empty_data_messages(estimator_orig: NilearnBaseEstimator) -> None:
+def check_glm_empty_data_messages(
+    estimator_orig: NilearnBaseEstimator,
+) -> None:
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
