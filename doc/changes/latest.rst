@@ -13,6 +13,8 @@ Fixes
 
 - :bdg-dark:`Code` Use sklearn HTML representation of estimators and their parameters in notebooks and reports (:gh:`5925` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Only throw warning about non-interactive plotting backend when using :func:`nilearn.plotting.show` (:gh:`5929` by `Rémi Gau`_).
+
 - :bdg-info:`Plotting` drop background color when using look up table as colormap (:gh:`5936` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Reallow use non-multi maskers for :class:`~nilearn.regions.Parcellations` (:gh:`5930` by `Rémi Gau`_).
