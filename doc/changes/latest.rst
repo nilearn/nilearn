@@ -19,9 +19,12 @@ Fixes
 
 - :bdg-info:`Plotting` Add support for dictionary as ``cut_coords`` for :class:`~plotting.displays.MosaicSlicer` and image plotting functions. (:gh:`5920` by `Hande Gözükan`_).
 
+- :bdg-dark:`Code` Change default slice order of slicers and projectors to be x, y, z. (:gh:`5944` by `Hande Gözükan`_).
+
 
 Enhancements
 ------------
+
 
 Changes
 -------

@@ -1167,7 +1167,8 @@ class _MultiDSlicer(BaseSlicer):
                     img, activation_threshold=threshold
                 )
             cut_coords = [
-                cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
+                cut_coords["xyz".find(direction)]
+                for direction in cls._cut_displayed
             ]
         else:
             # check if cut_coords is within image bounds
@@ -1220,11 +1221,10 @@ class _MultiDSlicer(BaseSlicer):
     def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
         coord_in = []
 
-        for index, cut in enumerate(sorted(cls._cut_displayed)):
-            bounds_index = "xyz".find(cut)
+        for index, direction in enumerate(cls._cut_displayed):
+            coord_bounds = bounds["xyz".find(direction)]
             coord_in.append(
-                bounds[bounds_index][0] <= cut_coords[index]
-                and cut_coords[index] <= bounds[bounds_index][1]
+                coord_bounds[0] <= cut_coords[index] <= coord_bounds[1]
             )
         return coord_in
 
@@ -1282,7 +1282,7 @@ class OrthoSlicer(_MultiDSlicer):
 
     """
 
-    _cut_displayed: ClassVar[str] = "yxz"
+    _cut_displayed: ClassVar[str] = "xyz"
     _default_figsize: ClassVar[list[float]] = [2.2, 3.5]
 
     def _init_axes(self, **kwargs):
@@ -1300,9 +1300,7 @@ class OrthoSlicer(_MultiDSlicer):
             ax.set_facecolor(facecolor)
 
             ax.axis("off")
-            coord = self.cut_coords[
-                sorted(self._cut_displayed).index(direction)
-            ]
+            coord = self.cut_coords[index]
             display_ax = self._axes_class(ax, direction, coord, **kwargs)
             self.axes[direction] = display_ax
             ax.set_axes_locator(self._locator)
@@ -1402,12 +1400,11 @@ class OrthoSlicer(_MultiDSlicer):
             cut_coords = self.cut_coords
         coords = {}
         for direction in "xyz":
-            coord = None
-            if direction in self._cut_displayed:
-                coord = cut_coords[
-                    sorted(self._cut_displayed).index(direction)
-                ]
-            coords[direction] = coord
+            coords[direction] = (
+                cut_coords[self._cut_displayed.index(direction)]
+                if direction in self._cut_displayed
+                else None
+            )
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()
@@ -1486,7 +1483,7 @@ class TiledSlicer(_MultiDSlicer):
 
     """
 
-    _cut_displayed: ClassVar[str] = "yxz"
+    _cut_displayed: ClassVar[str] = "xyz"
     _default_figsize: ClassVar[list[float]] = [2.0, 7.6]
 
     def _find_initial_axes_coord(self, index):
@@ -1544,10 +1541,9 @@ class TiledSlicer(_MultiDSlicer):
             ax.set_facecolor(facecolor)
 
             ax.axis("off")
-            coord = self.cut_coords[
-                sorted(self._cut_displayed).index(direction)
-            ]
-            display_ax = self._axes_class(ax, direction, coord, **kwargs)
+            display_ax = self._axes_class(
+                ax, direction, self.cut_coords[index], **kwargs
+            )
             self.axes[direction] = display_ax
             ax.set_axes_locator(self._locator)
 
@@ -1733,12 +1729,11 @@ class TiledSlicer(_MultiDSlicer):
             cut_coords = self.cut_coords
         coords = {}
         for direction in "xyz":
-            coord_ = None
-            if direction in self._cut_displayed:
-                sorted_cuts = sorted(self._cut_displayed)
-                index = sorted_cuts.index(direction)
-                coord_ = cut_coords[index]
-            coords[direction] = coord_
+            coords[direction] = (
+                cut_coords[self._cut_displayed.index(direction)]
+                if direction in self._cut_displayed
+                else None
+            )
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()
@@ -2232,7 +2227,7 @@ class YXSlicer(OrthoSlicer):
 
     """
 
-    _cut_displayed = "yx"
+    _cut_displayed = "xy"
 
 
 @fill_doc
@@ -2333,7 +2328,7 @@ class MosaicSlicer(BaseSlicer):
 
     """
 
-    _cut_displayed: ClassVar[str] = "yxz"
+    _cut_displayed: ClassVar[str] = "xyz"
     _default_figsize: ClassVar[list[float]] = [4.0, 5.0]
 
     @classmethod
@@ -2445,7 +2440,7 @@ class MosaicSlicer(BaseSlicer):
             if img is None or img is False:
                 bounds = ((-40, 40), (-30, 30), (-30, 75))
                 for direction, n_cuts in zip(
-                    sorted(cls._cut_displayed), cut_coords, strict=False
+                    cls._cut_displayed, cut_coords, strict=False
                 ):
                     lower, upper = bounds["xyz".index(direction)]
                     coords[direction] = np.linspace(
@@ -2453,7 +2448,7 @@ class MosaicSlicer(BaseSlicer):
                     ).tolist()
             else:
                 for direction, n_cuts in zip(
-                    sorted(cls._cut_displayed), cut_coords, strict=False
+                    cls._cut_displayed, cut_coords, strict=False
                 ):
                     coords[direction] = find_cut_slices(
                         img, direction=direction, n_cuts=n_cuts
@@ -2467,10 +2462,9 @@ class MosaicSlicer(BaseSlicer):
     def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
         coord_in = []
 
-        for cut in sorted(cls._cut_displayed):
-            coords_list = cut_coords[cut]
-            bound_index = "xyz".find(cut)
-            coord_bounds = bounds[bound_index]
+        for index, direction in enumerate(cls._cut_displayed):
+            coords_list = cut_coords[direction]
+            coord_bounds = bounds[index]
             coord_in.extend(
                 [
                     coord_bounds[0] <= coord <= coord_bounds[1]
