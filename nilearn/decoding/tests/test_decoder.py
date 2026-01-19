@@ -1385,6 +1385,7 @@ def test_frem_decoder_fit_surface(
 
 
 @ignore_warnings
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "classifier_penalty",
