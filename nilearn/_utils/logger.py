@@ -5,8 +5,8 @@ import traceback
 from pathlib import Path
 
 import numpy as np
-from sklearn.base import BaseEstimator
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn.typing import Verbose
 
 
@@ -31,7 +31,7 @@ if _has_rich():
 def log(
     msg: str,
     verbose: Verbose,
-    object_classes=(BaseEstimator,),
+    object_classes=(NilearnBaseEstimator,),
     stack_level: int | np.integer | None = None,
     msg_level: int | np.integer = 1,
     with_traceback: bool = False,
@@ -51,7 +51,7 @@ def log(
         Message is displayed if this value is greater
         or equal to msg_level.
 
-    object_classes : tuple of type, default=(BaseEstimator, )
+    object_classes : tuple of type, default=(NilearnBaseEstimator, )
         Classes that should appear to emit the message.
 
     stack_level : int or None, default=None

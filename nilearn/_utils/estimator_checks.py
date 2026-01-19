@@ -46,7 +46,7 @@ from packaging.version import parse
 from scipy import __version__ as scipy_version
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
-from sklearn.base import BaseEstimator, is_classifier, is_regressor
+from sklearn.base import is_classifier, is_regressor
 from sklearn.datasets import make_classification, make_regression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
@@ -64,6 +64,7 @@ from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.helpers import (
     is_gil_enabled,
@@ -113,6 +114,7 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_mesh,
 )
 from nilearn.exceptions import DimensionError, MeshDimensionError
+from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import get_data, index_img, new_img_like
 from nilearn.image.image import check_imgs_equal
@@ -145,7 +147,9 @@ def nilearn_dir() -> Path:
     return Path(__file__).parents[1]
 
 
-def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
+def check_estimator(
+    estimators: list[NilearnBaseEstimator], valid: bool = True
+):
     """Yield a valid or invalid sklearn estimators check.
 
     ONLY USED FOR sklearn<1.6
@@ -203,7 +207,7 @@ IS_SKLEARN_1_6_1_on_py_lt_3_13 = (
 
 
 def return_expected_failed_checks(
-    estimator: BaseEstimator,
+    estimator: NilearnBaseEstimator,
 ) -> dict[str, str]:
     """Return the expected failures for a given estimator.
 
@@ -556,14 +560,14 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
     return expected_failed_checks
 
 
-def nilearn_check_estimator(estimators: list[BaseEstimator]):
+def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
     check_is_of_allowed_type(estimators, (list,), "estimators")
     for est in estimators:
         for e, check in nilearn_check_generator(estimator=est):
             yield e, check, check.__name__
 
 
-def nilearn_check_generator(estimator: BaseEstimator):
+def nilearn_check_generator(estimator: NilearnBaseEstimator):
     """Yield (estimator, check) tuples.
 
     This will yield only the nilearn specific checks
@@ -571,10 +575,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
 
     Each nilearn check can be run on an initialized estimator.
     """
-    if SKLEARN_LT_1_6:  # pragma: no cover
-        tags = estimator._more_tags()
-    else:
-        tags = estimator.__sklearn_tags__()
+    tags = estimator.__sklearn_tags__()
 
     # TODO (sklearn >= 1.6.0) simplify
     #  for sklearn >= 1.6 tags are always a dataclass
@@ -587,6 +588,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
     yield (clone(estimator), check_set_output)
     yield (clone(estimator), check_tags)
     yield (clone(estimator), check_verbose)
+    yield (clone(estimator), check_doc_link)
 
     if isinstance(estimator, CacheMixin):
         yield (clone(estimator), check_img_estimator_cache_warning)
@@ -713,7 +715,7 @@ def _not_fitted_error_message(estimator):
     )
 
 
-def generate_data_to_fit(estimator: BaseEstimator):
+def generate_data_to_fit(estimator: NilearnBaseEstimator):
     if is_glm(estimator):
         data, design_matrices = _make_surface_img_and_design()
         return data, design_matrices
@@ -784,7 +786,7 @@ def generate_data_to_fit(estimator: BaseEstimator):
         return imgs, None
 
 
-def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
+def fit_estimator(estimator: NilearnBaseEstimator) -> NilearnBaseEstimator:
     """Fit on a nilearn estimator with appropriate input and return it."""
     X, y = generate_data_to_fit(estimator)
 
@@ -817,7 +819,9 @@ def check_tags(estimator_orig):
     """
     estimator = clone(estimator_orig)
 
-    assert estimator._more_tags() == estimator.__sklearn_tags__()
+    old_tags = estimator._more_tags()
+    new_tags = estimator.__sklearn_tags__()
+    assert old_tags == new_tags
 
 
 def check_verbose(estimator):
@@ -1001,6 +1005,40 @@ def check_doc_attributes(estimator) -> None:
             ),
             stacklevel=find_stack_level(),
         )
+
+
+def check_doc_link(estimator_orig):
+    """Check that _get_doc_link provides the correct link to the doc.
+
+    All estimators but the GLM ones follow the same pattern.
+
+    Parameters
+    ----------
+    estimator_orig : a Nilearn estimator instance
+    """
+    estimator = clone(estimator_orig)
+    estimator_name = estimator.__class__.__name__
+
+    modules = estimator.__class__.__module__.split(".")
+
+    extra = r"\."
+    if isinstance(estimator, FirstLevelModel):
+        extra = r"\.first_level\."
+    elif isinstance(estimator, SecondLevelModel):
+        extra = r"\.second_level\."
+
+    expected_pattern = (
+        rf"https://nilearn\.github\.io/"
+        rf"(dev|stable|\d+\.\d+\.\d+)/modules/generated/"
+        rf"nilearn\.{modules[1]}{extra}{estimator_name}\.html"
+    )
+
+    doc_link = estimator._get_doc_link()
+
+    assert re.fullmatch(expected_pattern, doc_link), (
+        f"Doc link '{doc_link}' does not match expected pattern "
+        f"'{expected_pattern}'"
+    )
 
 
 # ------------------ GENERIC IMG ESTIMATORS CHECKS ------------------
@@ -3944,7 +3982,9 @@ def check_multimasker_transformer_high_variance_confounds(estimator_orig):
 
 
 @ignore_warnings()
-def check_glm_empty_data_messages(estimator_orig: BaseEstimator) -> None:
+def check_glm_empty_data_messages(
+    estimator_orig: NilearnBaseEstimator,
+) -> None:
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
@@ -4116,27 +4156,23 @@ def check_masker_generate_report_constant(estimator_orig):
     report = estimator.generate_report(**_extra_kwargs(estimator))
     report_new = estimator.generate_report(**_extra_kwargs(estimator))
 
-    # svg/xml of images and UUID may be slightly different across calls
-    # so we redact them out
-    report_str = re.sub(
-        r'src="data:image/svg\+xml;base64,.*"',
-        'src="data:image/..."',
-        str(report),
-    )
-    report_str = re.sub(r"UUID-.*-", "UUID-XXXX-", report_str)
-    report_str = re.sub(r"UUID-.*", "UUID-XXXX", report_str)
-    report_str = re.sub(r'Carousel\(".*"', 'Carousel("XXXX"', report_str)
+    report_str = str(report)
+    report_new_str = str(report_new)
 
-    report_new_str = re.sub(
-        r'src="data:image/svg\+xml;base64,.*"',
-        'src="data:image/..."',
-        str(report_new),
-    )
-    report_new_str = re.sub(r"UUID-.*-", "UUID-XXXX-", report_new_str)
-    report_new_str = re.sub(r"UUID-.*", "UUID-XXXX", report_new_str)
-    report_new_str = re.sub(
-        r'Carousel\(".*"', 'Carousel("XXXX"', report_new_str
-    )
+    substitution_mapping = {
+        # svg/xml of images and UUID may be slightly different across calls
+        # so we redact them out
+        'src="data:image/..."': [r'src="data:image/svg\+xml;base64,.*"'],
+        "UUID-XXXX-": [r"UUID-.*-", r"UUID-.*"],
+        'Carousel("XXXX"': [r'Carousel\(".*"'],
+        # slklearn repr may vary slightly when generating successive reports
+        "sk-XXXX-id": [r"sk-(?:container|estimator)-id-[0-9]*"],
+    }
+
+    for k, v in substitution_mapping.items():
+        for regexp in v:
+            report_str = re.sub(regexp, k, report_str)
+            report_new_str = re.sub(regexp, k, report_new_str)
 
     assert report_str == report_new_str
 
