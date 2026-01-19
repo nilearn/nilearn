@@ -16,7 +16,7 @@ def get_params(cls, instance, ignore=None) -> dict[str, Any]:
     cls : class
         The class that gives us the list of parameters we are interested in.
 
-    instance : object, instance of BaseEstimator
+    instance : object, instance of NilearnBaseEstimator
         The object that gives us the values of the parameters.
 
     ignore : None or list of strings

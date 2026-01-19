@@ -258,8 +258,8 @@ class BaseSlicer:
         leave_space : :obj:`bool`, default=False
             If ``True``, leave space between the plots.
 
-        colorbar : :obj:`bool`, default=False
-            If ``True``, display a colorbar on the right of the plots.
+        %(colorbar)s
+            Default=False.
 
         %(brain_color)s
 
@@ -425,8 +425,8 @@ class BaseSlicer:
                 value is used to threshold the image: values below the
                 threshold (in absolute value) are plotted as transparent.
 
-        colorbar : :obj:`bool`, default=False
-            If ``True``, display a colorbar on the right of the plots.
+        %(colorbar)s
+            Default=False.
 
         cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
@@ -499,10 +499,10 @@ class BaseSlicer:
         threshold : :obj:`int` or :obj:`float` or ``None``, default=1e-6
             Threshold to apply:
 
-                - If ``None`` is given, the maps are not thresholded.
-                - If number is given, it must be non-negative. The specified
-                  value is used to threshold the image: values below the
-                  threshold (in absolute value) are plotted as transparent.
+            - If ``None`` is given, the maps are not thresholded.
+            - If number is given, it must be non-negative. The specified
+                value is used to threshold the image: values below the
+                threshold (in absolute value) are plotted as transparent.
 
         filled : :obj:`bool`, default=False
             If ``filled=True``, contours are displayed with color fillings.
@@ -1136,10 +1136,10 @@ class _MultiDSlicer(BaseSlicer):
         threshold : :obj:`int` or :obj:`float` or None, default=None
             Threshold to apply:
 
-                - If ``None`` is given, the maps are not thresholded.
-                - If number is given, it must be non-negative. The specified
-                  value is used to threshold the image: values below the
-                  threshold (in absolute value) are plotted as transparent.
+            - If ``None`` is given, the maps are not thresholded.
+            - If number is given, it must be non-negative. The specified
+                value is used to threshold the image: values below the
+                threshold (in absolute value) are plotted as transparent.
 
         cut_coords : sequence of :obj:`float` or :obj:`int`, or None, \
                     default=None

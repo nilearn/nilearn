@@ -402,6 +402,7 @@ def test_region_extractor_high_resolution_image(
     assert extract_ratio.regions_img_.shape[-1] >= n_regions
 
 
+@pytest.mark.thread_unsafe
 def test_region_extractor_zeros_affine_diagonal(affine_eye, n_regions):
     affine = affine_eye
     affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines

@@ -7,7 +7,9 @@ from matplotlib import cm as mpl_cm
 from scipy import sparse
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.param_validation import check_params
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting._engine_utils import colorscale, to_color_strings
 from nilearn.plotting.js_plotting_utils import (
@@ -240,6 +242,7 @@ def _make_connectome_html(connectome_info, embed_js=True):
     return ConnectomeView(as_html)
 
 
+@fill_doc
 def view_connectome(
     adjacency_matrix,
     node_coords,
@@ -273,7 +276,7 @@ def view_connectome(
         If it is a number only connections of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%", and only connections of amplitude above the
+        e.g. "25.3%%", and only connections of amplitude above the
         given percentile will be shown.
 
     edge_cmap : :obj:`str` or matplotlib colormap, default="RdBu_r"
@@ -288,8 +291,8 @@ def view_connectome(
     node_size : :obj:`float`, default=3.0
         Size of the markers showing the seeds in pixels.
 
-    colorbar : :obj:`bool`, default=True
-        Add a colorbar.
+    %(colorbar)s
+        default=True
 
     colorbar_height : :obj:`float`, default=0.5
         Height of the colorbar, relative to the figure height.
@@ -297,8 +300,7 @@ def view_connectome(
     colorbar_fontsize : :obj:`int`, default=25
         Fontsize of the colorbar tick labels.
 
-    title : :obj:`str` or None, default=None
-        Title for the plot.
+    %(title)s
 
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
@@ -326,6 +328,7 @@ def view_connectome(
         surface.
 
     """
+    check_params(locals())
     node_coords = np.asarray(node_coords)
 
     connectome_info = _get_connectome(
@@ -374,8 +377,7 @@ def view_markers(
                      or None, default=None
         Labels for the markers: list of strings
 
-    title : :obj:`str` or None, default=None
-        Title for the plot.
+    %(title)s
 
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
@@ -403,6 +405,8 @@ def view_markers(
         surface.
 
     """
+    check_params(locals())
+
     marker_coords = np.asarray(marker_coords)
     if marker_color is None:
         marker_color = ["red" for _ in range(len(marker_coords))]

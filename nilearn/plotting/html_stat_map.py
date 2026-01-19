@@ -18,7 +18,7 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.param_validation import check_threshold
+from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn.datasets import load_mni152_template
 from nilearn.image import (
     check_niimg_3d,
@@ -560,6 +560,7 @@ def view_img(
         See :ref:`extracting_data`.
         The statistical map image. Can be either a 3D volume or a 4D volume
         with exactly one time point.
+
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
@@ -570,9 +571,11 @@ def view_img(
         as a 3-tuple: (x, y, z). If None is given, the cuts are calculated
         automatically.
 
-    colorbar : :obj:`bool`, default=True
-        If True, display a colorbar on top of the plots.
+    %(colorbar)s
+        default=True
+
     %(title)s
+
     threshold : :obj:`str`, number or None, default=1e-06
         If None is given, the image is not thresholded.
         If a string of the form "90%%" is given, use the 90-th percentile of
@@ -582,23 +585,28 @@ def view_img(
         as transparent. If auto is given, the threshold is determined
         automatically.
 
-    annotate : :obj:`bool`, default=True
-        If annotate is True, current cuts are added to the viewer.
+    %(annotate)s
+
     %(draw_cross)s
+
     black_bg : :obj:`bool` or 'auto', default='auto'
         If True, the background of the image is set to be black.
         Otherwise, a white background is used.
         If set to auto, an educated guess is made to find if the background
         is white or black.
+
     %(cmap)s
         default="RdBu_r"
+
     symmetric_cmap : :obj:`bool`, default=True
         True: make colormap symmetric (ranging from -vmax to vmax).
         False: the colormap will go from the minimum of the volume to vmax.
         Set it to False if you are plotting a positive volume, e.g. an atlas
         or an anatomical image.
+
     %(dim)s
         Default='auto'.
+
     vmax : :obj:`float`, or None, default=None
         max value for mapping colors.
         If vmax is None and symmetric_cmap is True, vmax is the max
@@ -612,6 +620,7 @@ def view_img(
         cannot be chosen.
         If `symmetric_cmap` is `False`, `vmin` is equal to the min of the
         image, or 0 when a threshold is used.
+
     %(resampling_interpolation)s
         Default='continuous'.
 
@@ -647,6 +656,8 @@ def view_img(
         surface.
 
     """
+    check_params(locals())
+
     # Prepare the color map and thresholding
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
         stat_map_img, threshold

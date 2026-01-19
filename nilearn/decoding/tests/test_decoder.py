@@ -689,6 +689,8 @@ def test_decoder_binary_classification_clustering(
     assert accuracy_score(y, y_pred) > 0.9
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, data",
     [
@@ -1254,6 +1256,7 @@ def test_decoder_screening_percentile_surface_default(
     assert model.screening_percentile_ == 20
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("perc", [None, 100, 0])
 def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
     """Test passing screening percentile with surface image."""
@@ -1271,6 +1274,7 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
         assert model.screening_percentile_ == perc
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 def test_decoder_adjust_screening_less_than_mask_surface(
     surf_mask_dim,
@@ -1302,6 +1306,7 @@ def test_decoder_adjust_screening_less_than_mask_surface(
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 def test_decoder_adjust_screening_greater_than_mask_surface(
     surf_mask_dim,

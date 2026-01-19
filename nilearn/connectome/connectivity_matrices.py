@@ -5,12 +5,13 @@ from math import floor, sqrt
 
 import numpy as np
 from scipy import linalg
-from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.base import TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
 from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import signal
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level, log
@@ -375,7 +376,7 @@ def prec_to_partial(precision):
 
 
 @fill_doc
-class ConnectivityMeasure(TransformerMixin, BaseEstimator):
+class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
     """A class that computes different kinds of \
        :term:`functional connectivity` matrices.
 
@@ -456,32 +457,6 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         self.discard_diagonal = discard_diagonal
         self.standardize = standardize
         self.verbose = verbose
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(niimg_like=False)
-        return tags
 
     def _check_input(self, X, confounds=None):
         subjects_types = [type(s) for s in X]
