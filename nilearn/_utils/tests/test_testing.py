@@ -36,7 +36,6 @@ def test_memory_usage():
         assert_memory_less_than(100, 0.1, create_object, 200 * 1024**2)
 
 
-@pytest.mark.xfail(not is_gil_enabled(), reason="fails without GIL")
 def test_int64_niftis(affine_eye, tmp_path):
     data = np.ones((3, 3, 3), dtype=bool)
     for dtype in "uint8", "int32", "float32":
