@@ -13,9 +13,8 @@ from sklearn.base import TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
 
-from nilearn._base import NilearnBaseEstimator
+from nilearn._base import CacheMixin, NilearnBaseEstimator, cache
 from nilearn._utils import logger
-from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level

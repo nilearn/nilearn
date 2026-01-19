@@ -7,7 +7,7 @@ import pytest
 from joblib import Memory
 
 import nilearn
-from nilearn._utils.cache_mixin import CacheMixin, cache, check_memory
+from nilearn._base import CacheMixin, cache, check_memory
 from nilearn._utils.helpers import is_gil_enabled
 
 
@@ -18,14 +18,17 @@ def _get_subdirs(top_dir):
 
 
 def f(x):
-    # A simple test function
+    """Return x.
+
+    A simple test function.
+    """
     return x
 
 
 def test_check_memory(tmp_path):
-    # Test if check_memory returns a memory object with the location equal to
-    # input path
-
+    """Test if check_memory returns a memory object with the location equal to
+    input path.
+    """
     mem_none = Memory(location=None)
     mem_temp = Memory(location=str(tmp_path))
 
@@ -41,13 +44,14 @@ def test_check_memory(tmp_path):
 
 
 class CacheMixinTest(CacheMixin):
-    """Dummy mock object that wraps a CacheMixin."""
+    """Mock object that wraps a CacheMixin."""
 
     def __init__(self, memory=None, memory_level=1):
         self.memory = memory
         self.memory_level = memory_level
 
     def run(self):
+        """Fit cache."""
         self._fit_cache()
         self._cache(f)
 
@@ -55,7 +59,7 @@ class CacheMixinTest(CacheMixin):
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_cache_mixin_with_expand_user():
-    # Test the memory cache is correctly created when using ~.
+    """Test the memory cache is correctly created when using ~."""
     cache_dir = "~/nilearn_data/test_cache"
     expand_cache_dir = Path(cache_dir).expanduser()
     mixin_mock = CacheMixinTest(cache_dir)
@@ -71,7 +75,7 @@ def test_cache_mixin_with_expand_user():
 
 @pytest.mark.thread_unsafe
 def test_cache_mixin_without_expand_user():
-    # Test the memory cache is correctly created when using ~.
+    """Test the memory cache is correctly created when using ~."""
     cache_dir = "~/nilearn_data/test_cache"
     expand_cache_dir = Path(cache_dir).expanduser()
     mixin_mock = CacheMixinTest(cache_dir)
@@ -91,9 +95,9 @@ def test_cache_mixin_without_expand_user():
 
 
 def test_cache_mixin_wrong_dirs():
-    # Test the memory cache raises a ValueError when input base path doesn't
-    # exist.
-
+    """Test the memory cache raises a ValueError when input base path doesn't
+    exist.
+    """
     for cache_dir in ("/bad_dir/cache", "~/nilearn_data/tmp/test_cache"):
         expand_cache_dir = Path(cache_dir).expanduser()
         mixin_mock = CacheMixinTest(cache_dir)
@@ -110,6 +114,7 @@ def test_cache_mixin_wrong_dirs():
 
 
 def test_cache_memory_level(tmp_path):
+    """Test cache memory_level."""
     joblib_dir = (
         tmp_path
         / "joblib"
@@ -136,6 +141,7 @@ def test_cache_memory_level(tmp_path):
 
 
 def test_cache_shelving(tmp_path):
+    """Test shelving."""
     joblib_dir = (
         tmp_path
         / "joblib"

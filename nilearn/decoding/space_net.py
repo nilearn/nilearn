@@ -24,9 +24,8 @@ from sklearn.utils import check_array, check_X_y
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot
 
-from nilearn._base import NilearnBaseEstimator
+from nilearn._base import CacheMixin, NilearnBaseEstimator
 from nilearn._utils import logger
-from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
