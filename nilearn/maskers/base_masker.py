@@ -10,10 +10,6 @@ from typing import Any, overload
 import numpy as np
 from joblib import Memory
 from nibabel import Nifti1Image
-from sklearn.base import (
-    BaseEstimator,
-    TransformerMixin
-)
 from sklearn.base import TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
