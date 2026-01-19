@@ -3976,7 +3976,7 @@ def check_multimasker_transformer_high_variance_confounds(estimator_orig):
 
 
 def check_glm_empty_data_messages(
-    estimator_orig: NilearnBaseEstimator
+    estimator_orig: NilearnBaseEstimator,
 ) -> None:
     """Check that empty images are caught properly.
 
