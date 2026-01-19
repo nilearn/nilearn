@@ -1516,60 +1516,56 @@ def check_img_estimator_fit_idempotent(estimator_orig):
     """
     check_methods = ["predict", "transform", "decision_function"]
 
-    estimator = clone(estimator_orig)
-
-    # Fit for the first time
-    set_random_state(estimator)
-    estimator = fit_estimator(estimator)
-
-    X, _ = generate_data_to_fit(estimator)
-
-    result = {
-        method: getattr(estimator, method)(X)
-        for method in check_methods
-        if hasattr(estimator, method)
-    }
-
-    # Fit again
-    set_random_state(estimator)
-    estimator = fit_estimator(estimator)
-
     for method in check_methods:
-        if hasattr(estimator, method):
-            new_result = getattr(estimator, method)(X)
-            if hasattr(new_result, "dtype") and np.issubdtype(
-                new_result.dtype, np.floating
-            ):
-                tol = 2 * np.finfo(new_result.dtype).eps
-            else:
-                tol = 2 * np.finfo(np.float64).eps
-
-            if (
-                isinstance(estimator, FREMClassifier)
-                and method == "decision_function"
-            ):
-                # TODO
-                # Fails for FREMClassifier
-                # mostly on Mac and sometimes linux
-                continue
-
+        if not hasattr(estimator_orig, method) or (
+            isinstance(estimator_orig, FREMClassifier)
+            and method == "decision_function"
+        ):
             # TODO
-            # some estimator can return some pretty different results
-            # investigate why
-            if isinstance(estimator, Decoder):
-                tol = 1e-5
-            elif isinstance(estimator, SearchLight):
-                tol = 1e-4
-            elif isinstance(estimator, FREMClassifier):
-                tol = 0.1
+            # Fails for FREMClassifier
+            # mostly on Mac and sometimes linux
+            continue
 
-            assert_allclose_dense_sparse(
-                result[method],
-                new_result,
-                atol=max(tol, 1e-9),
-                rtol=max(tol, 1e-7),
-                err_msg=f"Idempotency check failed for method {method}",
-            )
+        estimator = clone(estimator_orig)
+
+        X, _ = generate_data_to_fit(estimator)
+
+        # Fit for the first time
+        set_random_state(estimator)
+        estimator = fit_estimator(estimator)
+
+        result = getattr(estimator, method)(X)
+
+        # Fit again
+        set_random_state(estimator)
+        estimator = fit_estimator(estimator)
+
+        new_result = getattr(estimator, method)(X)
+
+        if hasattr(new_result, "dtype") and np.issubdtype(
+            new_result.dtype, np.floating
+        ):
+            tol = 2 * np.finfo(new_result.dtype).eps
+        else:
+            tol = 2 * np.finfo(np.float64).eps
+
+        # TODO
+        # some estimator can return some pretty different results
+        # investigate why
+        if isinstance(estimator, Decoder):
+            tol = 1e-5
+        elif isinstance(estimator, SearchLight):
+            tol = 1e-4
+        elif isinstance(estimator, FREMClassifier):
+            tol = 0.1
+
+        assert_allclose_dense_sparse(
+            result,
+            new_result,
+            atol=max(tol, 1e-9),
+            rtol=max(tol, 1e-7),
+            err_msg=f"Idempotency check failed for method {method}",
+        )
 
 
 @ignore_warnings()
