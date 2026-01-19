@@ -1614,10 +1614,10 @@ def check_img_estimator_fit_idempotent(estimator_orig):
             continue
 
         estimator = clone(estimator_orig)
-  
+
         if isinstance(estimator, FREMClassifier):
-          # relaxes convergence criterion
-          estimator.estimator_args = {"tol": 1e-3}  
+            # relaxes convergence criterion
+            estimator.estimator_args = {"tol": 1e-3}
 
         X, _ = generate_data_to_fit(estimator)
 
