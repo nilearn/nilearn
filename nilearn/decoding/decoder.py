@@ -57,6 +57,7 @@ from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
+import cupy
 
 SUPPORTED_ESTIMATORS = {
     "svc_l1": LinearSVC(penalty="l1", dual=False, max_iter=10000),
@@ -637,6 +638,11 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
+
+        if "ridge" in self.estimator:
+            X = cupy.asarray(X)
+            y = cupy.asarray(y)
+            print("Using cupy arrays for ridge estimator.")
 
         self.n_outputs_ = 1 if y.ndim == 1 else y.shape[1]
 
