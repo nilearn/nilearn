@@ -166,6 +166,7 @@ class OrthoProjector(OrthoSlicer):
                 f"'node_coords' shape is {node_coords_shape}."
             )
 
+    @fill_doc
     def add_graph(
         self,
         adjacency_matrix,
@@ -214,7 +215,7 @@ class OrthoProjector(OrthoSlicer):
             - If it is a number only the edges with a value greater than
               ``edge_threshold`` will be shown.
             - If it is a string it must finish with a percent sign,
-              e.g. "25.3%", and only the edges with a abs(value) above
+              e.g. "25.3%%", and only the edges with a abs(value) above
               the given percentile will be shown.
 
         edge_kwargs : :obj:`dict`, default=None
@@ -226,8 +227,8 @@ class OrthoProjector(OrthoSlicer):
             :func:`~matplotlib.pyplot.scatter` which plots all the
             nodes at one.
 
-        colorbar : :obj:`bool`, default=False
-            If ``True``, display a colorbar on the right of the plots.
+        %(colorbar)s
+            Default=False.
         """
         # set defaults
         edge_kwargs = edge_kwargs or {}
@@ -526,7 +527,7 @@ class YXProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = "yx"
+    _cut_displayed = "xy"
 
 
 @fill_doc

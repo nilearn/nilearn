@@ -24,6 +24,7 @@ from sklearn.utils import check_array, check_X_y
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
@@ -546,7 +547,7 @@ def path_scores(
 
 
 @fill_doc
-class BaseSpaceNet(CacheMixin, LinearRegression):
+class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
     """Regression and classification learners with sparsity and spatial priors.
 
     `SpaceNet` implements Graph-Net and TV-L1 priors /
