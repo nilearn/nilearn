@@ -1281,7 +1281,6 @@ def test_decoder_adjust_screening_less_than_mask_surface(
     )
 
 
-
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 def test_decoder_adjust_screening_greater_than_mask_surface(

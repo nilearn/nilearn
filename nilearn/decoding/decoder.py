@@ -18,11 +18,7 @@ import numpy as np
 from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from sklearn import clone
-from sklearn.base import BaseEstimator, MultiOutputMixin, is_classifier
-from sklearn.base import (
-    MultiOutputMixin,
-    is_classifier
-)
+from sklearn.base import MultiOutputMixin, is_classifier
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
     LassoCV,
