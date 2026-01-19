@@ -44,7 +44,7 @@ def main() -> None:
     """Find missing :obj:`` in doc string type."""
     print("\n[blue]Finding missing :obj:`` in doc string type.\n")
 
-    filenames = list_modules(skip_private=True)
+    filenames = list_modules(skip_private=False)
 
     n_issues = 0
 

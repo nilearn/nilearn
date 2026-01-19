@@ -6,9 +6,7 @@ import numpy as np
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.param_validation import (
-    check_params,
-)
+from nilearn._utils.param_validation import check_params
 
 from ._objective_functions import (
     divergence_id,
@@ -327,6 +325,8 @@ def prox_tvl1_with_intercept(
         Dual-gap tolerance for TV-L1 prox operator approximation loop.
 
     """
+    check_params(locals())
+
     init = init.reshape(shape) if init is not None else init
     out, prox_info = prox_tvl1(
         w[:-1].reshape(shape),
