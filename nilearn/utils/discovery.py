@@ -6,9 +6,10 @@ from importlib import import_module
 from operator import itemgetter
 from pathlib import Path
 
-from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
+from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.utils._testing import ignore_warnings
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
@@ -79,7 +80,7 @@ def all_estimators(type_filter=None):
     """Get a list of all estimators from `nilearn`.
 
     This function crawls the module and gets all classes that inherit
-    from sklearn BaseEstimator.
+    from nilearn NilearnBaseEstimator.
     Classes that are defined in test-modules are not included.
 
     Parameters
@@ -119,7 +120,10 @@ def all_estimators(type_filter=None):
     estimators = [
         c
         for c in all_classes
-        if (issubclass(c[1], BaseEstimator) and c[0] != "BaseEstimator")
+        if (
+            issubclass(c[1], NilearnBaseEstimator)
+            and c[0] != "NilearnBaseEstimator"
+        )
     ]
 
     if type_filter is not None:

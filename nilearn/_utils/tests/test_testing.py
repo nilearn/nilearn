@@ -63,6 +63,7 @@ def test_write_tmp_imgs_default(
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("create_files", [True, False])
 @pytest.mark.parametrize("use_wildcards", [True, False])
 def test_write_tmp_imgs_set_path(
