@@ -43,7 +43,7 @@ def test_int64_niftis(affine_eye, tmp_path):
         img = Nifti1Image(data.astype(dtype), affine_eye)
         img.to_filename(tmp_path.joinpath("img.nii.gz"))
     for dtype in "int64", "uint64":
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             Nifti1Image(data.astype(dtype), affine_eye)
 
 
