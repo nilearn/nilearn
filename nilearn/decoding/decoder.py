@@ -14,6 +14,7 @@ import itertools
 import warnings
 from collections.abc import Iterable
 
+import cupy
 import numpy as np
 from joblib import Parallel, delayed
 from nibabel import Nifti1Image
@@ -57,7 +58,6 @@ from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
-import cupy
 
 SUPPORTED_ESTIMATORS = {
     "svc_l1": LinearSVC(penalty="l1", dual=False, max_iter=10000),
