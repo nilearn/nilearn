@@ -15,7 +15,54 @@ from nilearn.datasets import (
 )
 from nilearn.image import mean_img
 from nilearn.maskers import NiftiLabelsMasker, NiftiMapsMasker
-from nilearn.plotting import plot_roi, plot_stat_map, show
+from nilearn.plotting import plot_roi, plot_stat_map, plot_surf_roi, show
+
+# %%
+# Surface template
+# ----------------
+#
+# get surface template from templateflow
+#
+#
+from nilearn.surface import SurfaceImage
+
+template = "fsaverage"
+density = "41k"  # number of vertices per hemisphere
+
+mesh = {}
+data = {}
+
+for hemi in ["left", "right"]:
+    mesh[hemi] = tflow.get(
+        template,
+        extension="surf.gii",
+        suffix="pial",
+        density=density,
+        hemi=hemi[0].upper(),
+    )
+
+    data[hemi] = tflow.get(
+        template,
+        atlas="Desikan2006",
+        density=density,
+        hemi=hemi[0].upper(),
+        extension="label.gii",
+    )
+
+lut = tflow.get(
+    template,
+    atlas="Desikan2006",
+    suffix="dseg",
+    extension="tsv",
+)
+
+desikan = SurfaceImage(mesh=mesh, data=data)
+
+# TODO we should be able to pass lut as Path
+# bug to fix
+plot_surf_roi(roi_map=desikan, cmap=pd.read_csv(lut, sep="\t"))
+
+show()
 
 # %%
 # Let's have a look at the Harvard-Oxford deterministic atlas
