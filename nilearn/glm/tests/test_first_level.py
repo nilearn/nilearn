@@ -768,6 +768,7 @@ def test_fmri_inputs_design_matrices_csv(tmp_path, shape_4d_default):
     )
 
 
+@pytest.mark.slow
 def test_fmri_inputs_events_type(tmp_path):
     """Check events can be dataframe or pathlike to CSV / TSV."""
     n_timepoints = 10
