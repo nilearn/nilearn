@@ -1149,7 +1149,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
-%(screening_n_features)s
+    %(screening_n_features)s
 
 
     scoring : :obj:`str`, callable or None, default='roc_auc'
@@ -1323,7 +1323,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
-%(screening_n_features)s
+    %(screening_n_features)s
 
 
     scoring : :obj:`str`, callable or None, default='r2'
@@ -1492,7 +1492,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
-%(screening_n_features)s
+    %(screening_n_features)s
 
 
     scoring : :obj:`str`, callable or None, default= 'r2'
@@ -1665,7 +1665,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         performed. A float according to a percentile of the highest
         scores.
 
-%(screening_n_features)s
+    %(screening_n_features)s
 
 
     scoring : :obj:`str`, callable or None, default='roc_auc'
