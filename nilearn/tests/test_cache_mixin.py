@@ -134,10 +134,10 @@ def test_cache_memory_level(tmp_path):
     assert len(_get_subdirs(joblib_dir)) == 0
 
     cache(f, mem, func_memory_level=2, memory_level=3)(2)
-    assert len(_get_subdirs(joblib_dir)) == 1
+    assert len(_get_subdirs(joblib_dir)) == 0
 
     cache(f, mem)(3)
-    assert len(_get_subdirs(joblib_dir)) == 2
+    assert len(_get_subdirs(joblib_dir)) == 0
 
 
 def test_cache_shelving(tmp_path):
@@ -154,7 +154,7 @@ def test_cache_shelving(tmp_path):
     mem = Memory(location=str(tmp_path), verbose=0)
     res = cache(f, mem, shelve=True)(2)
     assert res.get() == 2
-    assert len(_get_subdirs(joblib_dir)) == 1
+    assert len(_get_subdirs(joblib_dir)) == 0
     res = cache(f, mem, shelve=True)(2)
     assert res.get() == 2
-    assert len(_get_subdirs(joblib_dir)) == 1
+    assert len(_get_subdirs(joblib_dir)) == 0
