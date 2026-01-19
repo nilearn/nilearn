@@ -9,7 +9,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.plotting.displays._slicers import save_figure_if_needed
@@ -231,6 +234,7 @@ def plot_matrix(
         Axes image.
 
     """
+    check_params(locals())
     labels, reorder, fig, axes, _ = _sanitize_inputs_plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
@@ -304,6 +308,8 @@ def plot_contrast_matrix(
         Figure object.
 
     """
+    check_params(locals())
+
     contrast_def = pad_contrast_matrix(contrast_def, design_matrix)
     con_matrix = np.array(contrast_def, ndmin=2)
 
@@ -371,6 +377,8 @@ def plot_design_matrix(
         The axes used for plotting.
 
     """
+    check_params(locals())
+
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     _, X, names = check_design_matrix(design_matrix)
@@ -441,6 +449,8 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         Plot Figure object.
 
     """
+    check_params(locals())
+
     model_event = check_and_load_tables(model_event, "model_event")
 
     for i, event in enumerate(model_event):
@@ -575,6 +585,8 @@ def plot_design_matrix_correlation(
     display : :class:`matplotlib.axes.Axes`
         Axes image.
     """
+    check_params(locals())
+
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     check_design_matrix(design_matrix)

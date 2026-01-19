@@ -168,6 +168,8 @@ def cluster_level_inference(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     # TODO (nilearn >= 0.15.0) remove
     if threshold == 3.0:
         warnings.warn(

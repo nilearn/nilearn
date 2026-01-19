@@ -44,7 +44,7 @@ def main() -> None:
     """Find missing :obj:`` in doc string type."""
     print("\n[blue]Finding missing :obj:`` in doc string type.\n")
 
-    filenames = list_modules()
+    filenames = list_modules(skip_private=True)
 
     n_issues = 0
 
@@ -55,6 +55,7 @@ def main() -> None:
 
         for class_def in list_classes(filename):
             check_fill_doc_decorator(class_def, filename)
+
             n_issues = check_docstring(class_def, filename, n_issues)
 
             for meth_def in list_functions(class_def):
@@ -88,12 +89,9 @@ def check_fill_doc_decorator(
         )
         expand_docstring = expand_docstring or expand_docstring_any_method
 
-    if expand_docstring:
-        if len(ast_node.decorator_list) == 0:
-            print(
-                f"{filename}:{ast_node.lineno} "
-                "- [red]missing @fill_doc decorator."
-            )
+    has_fill_doc_decorator = False
+    if len(ast_node.decorator_list) == 0:
+        has_fill_doc_decorator = False
     elif any(
         (
             getattr(x, "name", "") == "fill_doc"
@@ -102,10 +100,43 @@ def check_fill_doc_decorator(
         )
         for x in ast_node.decorator_list
     ):
+        has_fill_doc_decorator = True
+
+    if expand_docstring:
+        if not has_fill_doc_decorator:
+            print(
+                f"{filename}:{ast_node.lineno} "
+                "- [red]missing @fill_doc decorator."
+            )
+    elif has_fill_doc_decorator:
         print(
             f"{filename}:{ast_node.lineno} "
             "- [red]@fill_doc decorator not needed."
         )
+
+    if expand_docstring and not contains_check_params_call(ast_node):
+        print(
+            f"{filename}:{ast_node.lineno} "
+            "- [red]expandable docstring used "
+            "but no call to check_params found."
+        )
+
+
+def contains_check_params_call(node: ast.AST) -> bool:
+    """Return True if the AST node contains a call to `check_params`."""
+    for subnode in ast.walk(node):
+        if isinstance(subnode, ast.Call):
+            func = subnode.func
+
+            # check_params(...)
+            if isinstance(func, ast.Name) and func.id == "check_params":
+                return True
+
+            # something.check_params(...)
+            if isinstance(func, ast.Attribute) and func.attr == "check_params":
+                return True
+
+    return False
 
 
 def check_docstring(ast_node, filename: str, n_issues: int) -> int:

@@ -238,6 +238,8 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     This function is most efficient with arr in C order.
 
     """
+    check_params(locals())
+
     # Here, we have to investigate use cases of fwhm. Particularly, if fwhm=0.
     # See issue #1537
     if isinstance(fwhm, (int, float)) and (fwhm == 0.0):
@@ -293,6 +295,8 @@ def smooth_img(imgs, fwhm):
         then `filtered_img` is a list.
 
     """
+    check_params(locals())
+
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
     imgs = stringify_path(imgs)
@@ -834,6 +838,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=True):
         as the reference image.
 
     """
+    check_params(locals())
+
     if isinstance(ref_niimg, SurfaceImage):
         mesh = ref_niimg.mesh
         return SurfaceImage(
@@ -1448,6 +1454,8 @@ def binarize_img(
      >>> img = binarize_img(anatomical_image)
 
     """
+    check_params(locals())
+
     return math_img(
         "img.astype(bool).astype('int8')",
         img=threshold_img(
@@ -1697,6 +1705,8 @@ def load_img(img, wildcards=True, dtype=None):
         nilearn.image.get_data returns its data.
 
     """
+    check_params(locals())
+
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 
 
@@ -2037,6 +2047,8 @@ def iter_check_niimg(
         check_niimg, check_niimg_3d, check_niimg_4d
 
     """
+    check_params(locals())
+
     # avoid circular import
     from nilearn.image.resampling import resample_img
 
@@ -2226,6 +2238,8 @@ def check_niimg(
         check_niimg_3d, check_niimg_4d
 
     """
+    check_params(locals())
+
     if not (
         isinstance(niimg, (NiimgLike, SpatialImage))
         or (hasattr(niimg, "__iter__"))
@@ -2352,6 +2366,8 @@ def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
     Its application is idempotent.
 
     """
+    check_params(locals())
+
     return check_niimg(niimg, ensure_ndim=3, dtype=dtype)
 
 
@@ -2412,6 +2428,8 @@ def check_niimg_4d(
     Its application is idempotent.
 
     """
+    check_params(locals())
+
     ensure_ndim: Literal[4] = 4
     return check_niimg(
         niimg,

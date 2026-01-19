@@ -13,7 +13,10 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
     sanitize_generate_report_input,
@@ -203,6 +206,8 @@ def save_glm_to_bids(
     - Contrast weights figure (``contrast-[name]_design.svg``)
 
     """
+    check_params(locals())
+
     # grab the default from generate_report()
     # fail early if invalid parameters to pass to generate_report()
     tmp = dict(**inspect.signature(model.generate_report).parameters)
