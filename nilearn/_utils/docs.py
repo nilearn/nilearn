@@ -40,7 +40,7 @@ alphas : :obj:`float` or :obj:`list` of :obj:`float` or None, default=None
 # annotate
 docdict["annotate"] = """
 annotate : :obj:`bool`, default=True
-    If `annotate` is `True`, positions and left/right annotation
+    If `annotate` is `True` (like positions and / or  left/right annotation)
     are added to the plot.
 """
 
@@ -281,7 +281,7 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
 # colorbar
 docdict["colorbar"] = """
 colorbar : :obj:`bool`, optional
-    If `True`, display a colorbar on the right of the plots.
+    If `True`, display a colorbar next to the plots.
 """
 
 # connected

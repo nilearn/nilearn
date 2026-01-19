@@ -5,8 +5,8 @@ import sys
 from io import StringIO
 
 import pytest
-from sklearn.base import BaseEstimator
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.logger import (
     _has_rich,
     find_stack_level,
@@ -32,14 +32,14 @@ class Run3:
         run()
 
 
-class Run2(BaseEstimator):
+class Run2(NilearnBaseEstimator):
     def run2(self):
         log("method Test2", verbose=1, stack_level=1)
         t = Run1()
         t.run()
 
 
-class Run1(BaseEstimator):
+class Run1(NilearnBaseEstimator):
     def run(self):
         log("method Test", verbose=1, stack_level=1)
         run()
