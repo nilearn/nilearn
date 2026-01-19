@@ -533,6 +533,7 @@ def test_surface_maps_masker_generate_report_engine_error(
         masker.generate_report(engine="invalid", displayed_maps=2)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.skipif(
     is_plotly_installed(),
     reason="Test requires plotly not to be installed.",
