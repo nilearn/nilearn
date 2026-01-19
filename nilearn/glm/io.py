@@ -132,7 +132,7 @@ def save_glm_to_bids(
         ..  admonition:: Contrasts names and output filenames
             :class: important
 
-            It is import to note that the content of ``contrasts``
+            It is important to note that the content of ``contrasts``
             may greatly influence the output filenames.
 
             For a model with a design matrix with 3 regressors:
