@@ -1038,7 +1038,9 @@ screening_percentile : int, float, \
             may be included even for very small ``screening_percentile``.
 
 """
-docdict["screening_n_features"] = """screening_n_features : :obj:int, default=None
+docdict[
+    "screening_n_features"
+] = """screening_n_features : :obj:int, default=None
     The number of features to keep.
     If both ``screening_percentile`` and ``screening_n_features`` are set,
     ``screening_percentile`` takes priority.
