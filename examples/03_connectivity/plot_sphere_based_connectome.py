@@ -114,8 +114,7 @@ plt.legend()
 from nilearn.connectome import ConnectivityMeasure
 
 connectivity_measure = ConnectivityMeasure(
-    kind="partial correlation",
-    standardize="zscore_sample",
+    kind="partial correlation", standardize="zscore_sample", verbose=1
 )
 partial_correlation_matrix = connectivity_measure.fit_transform([time_series])[
     0
@@ -158,7 +157,7 @@ from nilearn.plotting import view_connectome
 
 view = view_connectome(partial_correlation_matrix, dmn_coords)
 
-# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# In a notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 view
 
@@ -212,6 +211,7 @@ spheres_masker = NiftiSpheresMasker(
     low_pass=0.1,
     high_pass=0.01,
     t_r=dataset.t_r,
+    verbose=1,
 )
 
 timeseries = spheres_masker.fit_transform(
@@ -352,13 +352,14 @@ spheres_masker = NiftiSpheresMasker(
     low_pass=0.1,
     high_pass=0.01,
     t_r=dataset.t_r,
+    verbose=1,
 )
 
 timeseries = spheres_masker.fit_transform(
     func_filename, confounds=confounds_filename
 )
 
-covariance_estimator = GraphicalLassoCV()
+covariance_estimator = GraphicalLassoCV(verbose=True)
 covariance_estimator.fit(timeseries)
 matrix = covariance_estimator.covariance_
 

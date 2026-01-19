@@ -19,10 +19,9 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.image import new_img_like
+from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 
 from .. import masking
@@ -163,10 +162,10 @@ def _group_iter_search_light(
         half labeled as `1`. This is useful during transformations
         where the model is applied without ground truth labels.
 
-    groups : array-like, optional
+    groups : array-like
         group label for each sample for cross validation.
 
-    scoring : string or callable, optional
+    scoring : string or callable
         Scoring strategy to use. See the scikit-learn documentation.
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
@@ -226,6 +225,7 @@ def _group_iter_search_light(
                     f"Job #{thread_id}, processed {i}/{len(list_rows)} steps "
                     f"({percent:0.2f}%, "
                     f"{remaining:0.1f} seconds remaining){crlf}",
+                    verbose,
                 )
     return par_scores
 
@@ -243,7 +243,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         See :ref:`extracting_data`.
         Boolean image giving location of voxels containing usable signals.
 
-    process_mask_img : Niimg-like object, optional
+    process_mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Boolean image giving voxels on which searchlight should be
         computed.
@@ -256,7 +256,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     %(n_jobs)s
 
-    scoring : :obj:`str` or callable, optional
+    scoring : :obj:`str` or callable or None, default=None
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is

@@ -40,7 +40,7 @@ alphas : :obj:`float` or :obj:`list` of :obj:`float` or None, default=None
 # annotate
 docdict["annotate"] = """
 annotate : :obj:`bool`, default=True
-    If `annotate` is `True`, positions and left/right annotation
+    If `annotate` is `True` (like positions and / or  left/right annotation)
     are added to the plot.
 """
 
@@ -142,6 +142,13 @@ docdict["border_size"] = """
 border_size : :obj:`int`, optional
     The size, in :term:`voxel` of the border used on the side of
     the image to determine the value of the background.
+"""
+
+# brain_color
+docdict["brain_color"] = """
+brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+    The brain color to use as the background color (e.g., for
+    transparent colorbars).
 """
 
 # cbar_tick_format
@@ -259,12 +266,22 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
     passed as a pandas dataframe.
     If the look up table does not contain a ``color`` column,
     then the default colormap of this function will be used.
+
+    .. warning::
+
+        If the ``name`` column in the look up table
+        does not contain a ``background`` or ``Background`` value,
+        then the colormap will be shifted by one.
+
+        See `issue 5934 <https://github.com/nilearn/nilearn/issues/5934>`_.
+
+
 """
 
 # colorbar
 docdict["colorbar"] = """
 colorbar : :obj:`bool`, optional
-    If `True`, display a colorbar on the right of the plots.
+    If `True`, display a colorbar next to the plots.
 """
 
 # connected
@@ -301,28 +318,42 @@ copy_header : :obj:`bool`, default=True
 
 # cut_coords
 docdict["cut_coords"] = """
-cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
-    The MNI coordinates of the point where the cut is performed.
+cut_coords : None, allowed types depend on the ``display_mode``, optional
+    The world coordinates of the point where the cut is performed.
 
-    - If `display_mode` is `'ortho'` or `'tiled'`, this should
-      be a 3-tuple: `(x, y, z)`
+    - If ``display_mode`` is ``'ortho'`` or ``'tiled'``,
+      this must be a 3-sequence of :obj:`float` or :obj:`int`:
+      ``(x, y, z)``.
 
-    - For `display_mode == "x"`, "y", or "z", then these are
-      the coordinates of each cut in the corresponding direction.
+    - If ``display_mode`` is ``'xz'``, ``'yz'`` or ``'yx'``,
+      this must be a 2-sequence of :obj:`float` or :obj:`int`:
+      ``(x, z)``,  ``(y, z)`` or  ``(x, y)``.
 
-    - If `None` is given, the cuts are calculated automatically.
+    - If ``display_mode`` is ``"x"``, ``"y"``, or ``"z"``,
+      this can be:
 
-    - If `display_mode` is 'mosaic', and the number of cuts is the same
-      for all directions, `cut_coords` can be specified as an integer.
-      It can also be a length 3 :obj:`tuple`
-      specifying the number of cuts for
-      every direction if these are different.
+      - a sequence of :obj:`float` or :obj:`int`
+        representing the coordinates of each cut
+        in the corresponding direction,
 
-    .. note::
-
-        If `display_mode` is "x", "y" or "z",
-        `cut_coords` can be an integer,
+      - an :obj:`int`
         in which case it specifies the number of cuts to perform.
+
+    - If ``display_mode`` is ``'mosaic'``, this can be:
+
+      - an :obj:`int`
+        in which case it specifies the number of cuts to perform in each
+        direction ``"x"``, ``"y"``, ``"z"``.
+
+      - a 3-sequence of :obj:`float` or :obj:`int`
+        in which case it specifies the number of cuts to perform in each
+        direction ``"x"``, ``"y"``, ``"z"`` separately.
+
+      - :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`>
+        in which case keys are the directions ('x', 'y', 'z') and the values
+        are sequences holding the cut coordinates.
+
+    - If ``None`` is given, the cuts are calculated automatically.
 
 """
 
@@ -448,6 +479,7 @@ dtype : dtype like, "auto" or None, default=None
     Data type toward which the data should be converted.
     If "auto", the data will be converted to int32
     if dtype is discrete and float32 if it is continuous.
+    If None, data will not be converted to a new data type.
 """
 
 # extractor / extract_type
@@ -497,7 +529,8 @@ first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
       from the :class:`~pandas.DataFrame` ``map_name`` column.
       (it has to be a 't' contrast).
 
-    This parameter is ignored for all other cases.
+    When the model is a :class:`~nilearn.glm.first_level.FirstLevelModel`:
+    This parameter is ignored.
 """
 
 # fwhm
@@ -646,7 +679,7 @@ keep_masked_labels : :obj:`bool`, default=False
 
     .. nilearn_deprecated:: 0.10.2
 
-    .. nilearn_versionchanged:: 0.13.0dev
+    .. nilearn_versionchanged:: 0.13.0
 
         The ``keep_masked_labels`` parameter will be removed in 0.15.
 
@@ -663,7 +696,7 @@ keep_masked_maps : :obj:`bool`, optional
 
     .. nilearn_deprecated:: 0.10.2
 
-    .. nilearn_versionchanged:: 0.13.0dev
+    .. nilearn_versionchanged:: 0.13.0
 
         The ``keep_masked_maps`` parameter will be removed in 0.15.
 
@@ -790,7 +823,7 @@ docdict["max_iter5000"] = verbose.format(5000)
 # memory
 docdict["memory"] = """
 memory : None, instance of :class:`joblib.Memory`, :obj:`str`, or \
-:class:`pathlib.Path`
+:class:`pathlib.Path`, default=None
     Used to cache the masking process.
     By default, no caching is done.
     If a :obj:`str` is given, it is the path to the caching directory.
@@ -854,7 +887,7 @@ opening : :obj:`bool` or :obj:`int`, optional
 
 # output_file
 docdict["output_file"] = """
-output_file : :obj:`str` or :obj:`pathlib.Path` or None, optional
+output_file : :obj:`str` or :obj:`pathlib.Path` or None, default=None
     The name of an image file to export the plot to.
     Valid extensions are .png, .pdf, .svg.
     If `output_file` is not `None`, the plot is saved to a file,
@@ -1022,7 +1055,7 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
 
 # second_level_confounds
 docdict["second_level_confounds"] = """
-confounds : :obj:`pandas.DataFrame` or None, default=None
+confounds : :obj:`pandas.DataFrame` or None, Default=None
     Must contain a ``subject_label`` column.
     All other columns are considered as confounds and included in the model.
     If ``design_matrix`` is provided then this argument is ignored.
@@ -1036,7 +1069,7 @@ confounds : :obj:`pandas.DataFrame` or None, default=None
 docdict["second_level_design_matrix"] = """
 design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
                 or :obj:`pathlib.Path` to a CSV or TSV file, \
-                or None, default=None
+                or None, Default=None
     Design matrix to fit the :term:`GLM`.
     The number of rows in the design matrix
     must agree with the number of maps
@@ -1149,14 +1182,14 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
     - ``True``: The signal is z-scored (same as option `zscore`).
       Timeseries are shifted to zero mean and scaled to unit variance.
 
-      .. nilearn_deprecated:: 0.13.0dev
+      .. nilearn_deprecated:: 0.13.0
 
         In nilearn version 0.15.0,
         ``True`` will be replaced by  ``'zscore_sample'``.
 
     - ``False``: Do not standardize the data.
 
-      .. nilearn_deprecated:: 0.13.0dev
+      .. nilearn_deprecated:: 0.13.0
 
         In nilearn version 0.15.0,
         ``False`` will be replaced by ``None``.
@@ -1389,12 +1422,11 @@ url : :obj:`str` or None, default=None
 
 # verbose
 verbose = """
-verbose : :obj:`int`, default={}
-    Verbosity level (`0` means no message).
+verbose : :obj:`bool` or :obj:`int`, default={}
+    Verbosity level (``0`` or ``False`` means no message).
 """
 docdict["verbose"] = verbose.format(1)
 docdict["verbose0"] = verbose.format(0)
-docdict["verbose2"] = verbose.format(2)
 docdict["verbose3"] = verbose.format(3)
 
 # view
@@ -1421,7 +1453,7 @@ vmax : :obj:`float` or obj:`int` or None, optional
 
 # vmin
 docdict["vmin"] = """
-vmin : :obj:`float`  or obj:`int` or None, optional
+vmin : :obj:`float` or obj:`int` or None, optional
     Lower bound of the colormap. The values below vmin are masked.
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
@@ -1495,9 +1527,6 @@ masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
     related parameters as initialization.
 
 memory_ : joblib memory cache
-
-n_elements_ : :obj:`int`
-    The number of components.
 
 """
 
@@ -1679,6 +1708,39 @@ ymean_ : array, shape (n_samples,)
 
 """
 
+docdict["displays_partial_attributes"] = """
+frame_axes : :class:`~matplotlib.axes.Axes`
+    The axes framing the whole set of views.
+
+rect : 4- :obj:`tuple`
+    Position of axes within the figure.
+"""
+
+docdict["slicer_init_parameters_partial"] = f"""
+{docdict["axes"]}
+{docdict["black_bg"]}
+{docdict["brain_color"]}
+kwargs : :obj:`dict`
+    Extra keyword arguments are passed to
+    :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+    direction.
+"""
+
+docdict["projector_init_parameters"] = f"""
+Parameters
+----------
+cut_coords : sequence of :obj:`float` or :obj:`int`
+    The world coordinates of the point where the cut is performed. Not used
+    for projectors.
+{docdict["axes"]}
+{docdict["black_bg"]}
+{docdict["brain_color"]}
+kwargs : :obj:`dict`
+    Extra keyword arguments are passed to
+    :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+    each direction.
+"""
+
 # dataset description
 docdict["description"] = """'description' : :obj:`str`
         Description of the dataset."""
@@ -1752,7 +1814,7 @@ signals_transform = """signals : :obj:`numpy.ndarray`, \
 
         Signal for each element.
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
 
             Added ``set_output`` support.
 
@@ -1823,6 +1885,16 @@ docdict["templateflow"] = """
    If you wish to use the exact same release as :term:`fMRIPrep`,
    please refer to `TemplateFlow <https://www.templateflow.org>`_.
 
+"""
+
+
+docdict["fetcher_note"] = """
+If the dataset files are already present in the user's Nilearn data
+directory, this fetcher will **not** re-download them. To force a fresh
+download, you can remove the existing dataset folder from your local
+Nilearn data directory.
+
+For more details on :ref:`how Nilearn stores datasets <datasets>`.
 """
 
 ##############################################################################

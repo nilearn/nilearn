@@ -11,6 +11,8 @@ class Benchmark:
     benchmarks.
     """
 
+    timeout = 2400  # 40 mins
+
     def setup_cache(self, n_subjects=10, n_masks=1):
         """Set up the cache directory with the necessary images and masks.
 
@@ -22,10 +24,10 @@ class Benchmark:
 
         Parameters
         ----------
-        n_subjects : int, optional, default=10
+        n_subjects : int, default=10
             The number of subject images concatenated together to create the
             fMRI image.
-        n_masks : int, optional, default=1
+        n_masks : int, default=1
             The number of masks to create.
         """
         # get an image

@@ -50,6 +50,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
@@ -254,6 +255,7 @@ def test_mask_img_dimension_mismatch():
     assert sl.scores_.shape == invalid_mask_img.shape
 
 
+@pytest.mark.slow
 def test_transform_applies_mask_correctly():
     """Test if `transform()` applies the mask correctly."""
     frames = 20

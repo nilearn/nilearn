@@ -480,7 +480,7 @@ def tvl1_solver(
     prox_max_iter=5000,
     tol=1e-4,
     callback=None,
-    verbose=1,
+    verbose=0,
 ):
     """Minimizes empirical risk for TV-L1 penalized models.
 
@@ -527,9 +527,11 @@ def tvl1_solver(
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.
 
-    callback : callable(dict) -> bool, default=None
+    callback : callable(dict) -> :obj:`bool`, default=None
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
+
+    %(verbose0)s
 
     Returns
     -------

@@ -126,6 +126,18 @@ def test_matrix_plotting_reorder(mat, labels):
     ax = plot_matrix(mat, labels=labels, reorder="complete")
 
 
+def test_plot_matrix_empty_labels():
+    """When all labels are empty, they are turned to None.
+
+    Regression smoke test for https://github.com/nilearn/nilearn/pull/5839/files#r2550441937
+    """
+    mat = np.zeros((3, 3))
+
+    col_labels = ["", "", ""]
+
+    plot_matrix(mat, labels=col_labels)
+
+
 def test_show_design_matrix(tmp_path):
     """Test plot_design_matrix saving to file."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
@@ -335,3 +347,15 @@ def test_plot_design_matrix_correlation_errors(mat):
     dmtx = pd.DataFrame({"constant": [1, 1], "drift_1": [0, 1]})
     with pytest.raises(ValueError, match="Nothing left to plot after "):
         plot_design_matrix_correlation(dmtx)
+
+
+def test_override_kwargs(mat):
+    """Ensure kwargs can contain value that won't raise duplicate error.
+
+    In this case the value passed in kwargs
+    override the defaults used by Nilearn internally.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5904
+    """
+    kwargs = {"interpolation": "none", "aspect": "equal"}
+    plot_matrix(mat, **kwargs)

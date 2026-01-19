@@ -25,11 +25,11 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.niimg import repr_niimgs, safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.image import (
+    check_niimg,
     concat_imgs,
     high_variance_confounds,
     new_img_like,
@@ -111,7 +111,7 @@ def filter_and_extract(
     target_shape = parameters.get("target_shape")
     target_affine = parameters.get("target_affine")
     if target_shape is not None or target_affine is not None:
-        logger.log("Resampling images")
+        logger.log("Resampling images", verbose=verbose)
 
         imgs = cache(
             resample_img,
@@ -309,6 +309,8 @@ class BaseMasker(
     """Base class for NiftiMaskers."""
 
     _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
+
+    _template_name = "body_masker.jinja"
 
     @abc.abstractmethod
     @fill_doc
@@ -561,6 +563,8 @@ class _BaseSurfaceMasker(
 
     _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
 
+    _template_name = "body_surface_masker.jinja"
+
     def _more_tags(self):
         """Return estimator tags.
 
@@ -757,9 +761,7 @@ class _BaseSurfaceMasker(
             Mesh and data for both hemispheres. The data for each hemisphere \
             is of shape (n_vertices_per_hemisphere, n_timepoints).
 
-        y : None
-            This parameter is unused.
-            It is solely included for scikit-learn compatibility.
+        %(y_dummy)s
 
         %(confounds)s
 

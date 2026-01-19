@@ -163,7 +163,9 @@ def plot_matrix(
     ----------
     mat : 2-D :class:`numpy.ndarray`
         Matrix to be plotted.
+
     %(title)s
+
     labels : :obj:`list`, or :class:`numpy.ndarray` of :obj:`str`,\
     or False, or None, default=None
         The label of each row and column. Needs to be the same
@@ -236,9 +238,11 @@ def plot_matrix(
         mat, labels = reorder_matrix(mat, labels, reorder)
     if tri != "full":
         mat = mask_matrix(mat, tri)
-    display = axes.imshow(
-        mat, aspect="equal", interpolation="nearest", cmap=cmap, **kwargs
-    )
+
+    kwargs |= {"aspect": "equal", "interpolation": "nearest"}
+
+    display = axes.imshow(mat, cmap=cmap, **kwargs)
+
     axes.set_autoscale_on(False)
     ymin, ymax = axes.get_ylim()
     _configure_axis(

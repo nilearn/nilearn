@@ -1,6 +1,7 @@
 import functools
 import operator
 import os
+import sys
 import warnings
 
 from packaging.version import parse
@@ -68,19 +69,6 @@ def set_mpl_backend(message=None):
             # Matplotlib backend has been changed, let's warn the user
             warnings.warn(
                 f"Backend changed to {new_backend}...",
-                stacklevel=find_stack_level(),
-            )
-
-        if new_backend == "agg":
-            warnings.warn(
-                (
-                    f"\nYou are using the '{matplotlib.get_backend()}' "
-                    "matplotlib backend that is non-interactive."
-                    "\nNo figure will be plotted when calling "
-                    "matplotlib.pyplot.show() or nilearn.plotting.show()."
-                    "\nYou can fix this by installing a different backend: "
-                    "for example via\n\tpip install PyQt6"
-                ),
                 stacklevel=find_stack_level(),
             )
 
@@ -336,3 +324,12 @@ def is_kaleido_installed():
 def is_windows_platform():
     """Check if the current platform is Windows."""
     return os.name == "nt"
+
+
+def is_gil_enabled():
+    """Check if the Python GIL is enabled."""
+    try:
+        sys._is_gil_enabled()
+    except AttributeError:
+        # sys._is_gil_enabled does not exist in standard Python builds
+        return True

@@ -44,7 +44,7 @@ jobs:
 
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
             with:
                   # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -70,14 +70,14 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: nightly_report.html
                 path: report.html
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: pytest_output
                 path: results/pytest_output

@@ -16,6 +16,7 @@ import zipfile
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import requests
 
 from nilearn._utils import logger
@@ -81,7 +82,7 @@ def read_md5_sum_file(path):
     return hashes
 
 
-def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
+def _chunk_report_(bytes_so_far, total_size, initial_size, t0, verbose):
     """Show downloading percentage.
 
     Parameters
@@ -102,7 +103,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
     """
     if not total_size:
-        logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.")
+        logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.", verbose)
 
     else:
         # Estimate remaining download time
@@ -120,6 +121,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
             f"\rDownloaded {bytes_so_far} of {total_size} bytes "
             f"({total_percent * 100:.1f}%%, "
             f"{_format_time(time_remaining)} remaining)",
+            verbose=verbose,
         )
 
 
@@ -146,14 +148,15 @@ def _chunk_read_(
     chunk_size : int, default=8192
         Size of downloaded chunks.
 
-    report_hook : bool, optional
-        Whether or not to show downloading advancement. Default: None
+    report_hook : bool or None, default=None
+        Whether or not to show downloading advancement. default=None
 
     initial_size : int, default=0
         If resuming, indicate the initial size of the file.
 
-    total_size : int, optional
+    total_size : int or None, default=None
         Expected final size of download (None means it is unknown).
+
     %(verbose)s
 
     Returns
@@ -191,7 +194,7 @@ def _chunk_read_(
             # finished.
             (time_last_read > time_last_display + 1.0 or not chunk)
         ):
-            _chunk_report_(bytes_so_far, total_size, initial_size, t0)
+            _chunk_report_(bytes_so_far, total_size, initial_size, t0, verbose)
             time_last_display = time_last_read
         if chunk:
             local_file.write(chunk)
@@ -209,10 +212,13 @@ def get_dataset_dir(
     ----------
     dataset_name : string
         The unique name of the dataset.
+
     %(data_dir)s
-    default_paths : list of string, optional
+
+    default_paths : list of string or None, default=None
         Default system paths in which the dataset may already have been
         installed by a third party software. They will be checked first.
+
     %(verbose)s
 
     Returns
@@ -399,12 +405,12 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
         raise
 
 
-def _filter_column(array, col, criteria):
+def _filter_column(array, col: str, criteria):
     """Return index array matching criteria.
 
     Parameters
     ----------
-    array : numpy array with columns
+    array : array-like with columns
         Array in which data will be filtered.
 
     col : string
@@ -448,7 +454,10 @@ def _filter_column(array, col, criteria):
 
     # Handle strings with different encodings
     if isinstance(criteria, (str, bytes)):
-        criteria = np.array(criteria).astype(array[col].dtype)
+        dtype = array[col].dtype
+        if isinstance(dtype, pd.StringDtype):
+            dtype = "str"
+        criteria = np.array(criteria).astype(dtype)
 
     return array[col] == criteria
 
@@ -529,16 +538,18 @@ def fetch_single_file(
     overwrite : bool, default=False
         If true and file already exists, delete it.
 
-    md5sum : string, optional
+    md5sum : string or None, default=None
         MD5 sum of the file. Checked if download of the file is required.
 
-    username : string, optional
+    username : string or None, default=None
         Username used for basic HTTP authentication.
 
-    password : string, optional
+    password : string or None, default=None
         Password used for basic HTTP authentication.
+
     %(verbose)s
-    session : requests.Session, optional
+
+    session : requests.Session or None, default=None
         Session to use to send requests.
 
     Returns
@@ -675,7 +686,9 @@ def fetch_single_file(
         )
     except requests.RequestException:
         logger.log(
-            f"Error while fetching file {file_name}; dataset fetching aborted."
+            f"Error while fetching file {file_name}; "
+            "dataset fetching aborted.",
+            verbose=verbose,
         )
         raise
     if md5sum is not None and _md5_sum_file(full_name) != md5sum:
@@ -758,6 +771,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     Parameters
     ----------
     %(data_dir)s
+
     files : list of (string, string, dict)
         List of files and their corresponding url with dictionary that contains
         options regarding the files. Eg. (file_path, url, opt). If a file_path
@@ -768,9 +782,12 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             * 'uncompress' to indicate that the file is an archive
             * 'md5sum' to check the md5 sum of the file
             * 'overwrite' if the file should be re-downloaded even if it exists
+
     %(resume)s
+
     %(verbose)s
-    session : `requests.Session`, optional
+
+    session : `requests.Session` or None, default=None
         Session to use to send requests.
 
     Returns
@@ -897,7 +914,7 @@ def tree(path, pattern=None, dictionary=False):
     path : string or pathlib.Path
         Path browsed.
 
-    pattern : string, optional
+    pattern : string or None, default=None
         Pattern used to filter files (see fnmatch).
 
     dictionary : boolean, default=False

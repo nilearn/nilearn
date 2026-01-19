@@ -48,11 +48,11 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import check_feature_screening
+from nilearn.image import check_niimg
 from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
@@ -1282,12 +1282,12 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, optional
+    estimator : :obj:`str`, default="svr"
         The estimator to choose among:
         %(regressor_options)s
-        Default 'svr'.
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+    mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
+            or None, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
@@ -1313,7 +1313,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
-    scoring : :obj:`str`, callable or None, optional. default='r2'
+    scoring : :obj:`str`, callable or None, default='r2'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1440,10 +1440,9 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, optional
+    estimator : :obj:`str`, default="svr"
         The estimator to choose among:
         %(regressor_options)s
-        Default 'svr'.
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, \
         default=None
@@ -1605,7 +1604,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         %(classifier_options)s
 
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional,\
+    mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker or None,\
         default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
@@ -1644,7 +1643,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         performed. A float according to a percentile of the highest
         scores.
 
-    scoring : :obj:`str`, callable or None, optional. default='roc_auc'
+    scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the

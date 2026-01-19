@@ -55,7 +55,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         per map is extracted using least square regression. The data for \
         each hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
-    mask_img : :obj:`~nilearn.surface.SurfaceImage`, optional, default=None
+    mask_img : :obj:`~nilearn.surface.SurfaceImage` or None, default=None
         Mask to apply to regions before extracting signals. Defines the \
         overall area of the brain to consider. The data for each \
         hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
@@ -126,6 +126,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         nilearn.maskers.SurfaceLabelsMasker
 
     """
+
+    _template_name = "body_surface_maps_masker.jinja"
 
     def __init__(
         self,

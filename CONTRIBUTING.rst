@@ -503,14 +503,9 @@ Code inside ``maskers._validation.py``:
 Guidelines for HTML and CSS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We use `prettier <https://prettier.io/>`_ to format HTML and CSS.
+We use `prettier <https://prettier.io/>`_ and `djlint <https://github.com/djlint/djlint>`_ to format HTML and CSS.
 
-This is implemented via a pre-commit hook (see below)
-that can be run with
-
-.. code-block:: bash
-
-      pre-commit run --all-files prettier
+This is implemented via a pre-commit hook.
 
 Pre-commit
 ----------
@@ -896,7 +891,7 @@ An even quicker option is:
 
             PATTERN='examples/04_glm_first_level/plot_bids_features.py'
             export PATTERN
-            make -C doc html-modified-examples-only
+            make --directory doc html-modified-examples-only
 
 
 Additional cases

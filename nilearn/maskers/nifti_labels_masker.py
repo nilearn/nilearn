@@ -15,17 +15,19 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import (
-    check_niimg,
-    check_niimg_3d,
-    check_same_fov,
-)
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
     check_reduction_strategy,
 )
-from nilearn.image import get_data, load_img, resample_img
+from nilearn.image import (
+    check_niimg,
+    check_niimg_3d,
+    get_data,
+    load_img,
+    resample_img,
+)
+from nilearn.image.image import check_same_fov
 from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
@@ -89,7 +91,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         See :ref:`extracting_data`.
         Region definitions, as one image of labels.
 
-    labels : :obj:`list` of :obj:`str`, optional
+    labels : :obj:`list` of :obj:`str`, or None, default=None
         Full labels corresponding to the labels image.
         This is used to improve reporting quality if provided.
         Mutually exclusive with ``lut``.
@@ -116,7 +118,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
             This value must be consistent with label values and image provided.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
@@ -192,6 +194,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
     nilearn.maskers.NiftiMasker
 
     """
+
+    _template_name = "body_nifti_labels_masker.jinja"
 
     # memory and memory_level are used by _utils.CacheMixin.
 
@@ -339,7 +343,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
             if img is None:
                 msg = (
-                    "No image provided to fit in NiftiLabelsMasker. "
+                    f"No image provided to fit in {self.__class__.__name__}. "
                     "Plotting ROIs of label image on the "
                     "MNI152Template for reporting."
                 )
@@ -611,18 +615,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             Images to process.
             If a 3D niimg is provided, a 1D array is returned.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
-
-        region_ids_: dict[str | int, int | float] = {}
-        if self.background_label in index:
-            index.pop(index.index(self.background_label))
-            region_ids_["background"] = self.background_label
-        for i, id in enumerate(index):
-            region_ids_[i] = id  # noqa : PERF403
-
-        return region_ids_
+        %(y_dummy)s
 
         %(confounds)s
 

@@ -14,13 +14,18 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
-from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.image.image import copy_img, crop_img, new_img_like
+from nilearn.image import (
+    check_niimg,
+    check_niimg_3d,
+    copy_img,
+    crop_img,
+    new_img_like,
+)
 
 ###############################################################################
 # Affine utils
@@ -158,7 +163,7 @@ def coord_transform(x, y, z, affine):
     return np.reshape(x, shape), np.reshape(y, shape), np.reshape(z, shape)
 
 
-def get_bounds(shape, affine):
+def get_bounds(shape, affine) -> list[tuple[np.float64, np.float64]]:
     """Return the world-space bounds occupied by an array given an affine.
 
     The coordinates returned correspond to the **center** of the corner voxels.
@@ -391,7 +396,7 @@ def resample_img(
         False is intended for testing,
         this prevents the use of a padding optimization.
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
 
             Default changed to True.
 

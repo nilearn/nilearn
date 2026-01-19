@@ -12,12 +12,18 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.image import clean_img, get_data, index_img, resample_img
+from nilearn.image import (
+    check_niimg,
+    clean_img,
+    get_data,
+    index_img,
+    resample_img,
+)
+from nilearn.image.image import check_same_fov
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -74,7 +80,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Set of continuous maps. One representative time course per map is
         extracted using least square regression.
 
-    mask_img : 3D niimg-like object, optional
+    mask_img : 3D niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
@@ -166,6 +172,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     nilearn.maskers.NiftiLabelsMasker
 
     """
+
+    _template_name = "body_nifti_maps_masker.jinja"
 
     # memory and memory_level are used by CacheMixin.
 
@@ -263,8 +271,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         check_displayed_maps(displayed_maps)
 
-        self.displayed_maps = displayed_maps
-
         self._report_content["number_of_maps"] = 0
         self._report_content["displayed_maps"] = []
 
@@ -284,7 +290,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
             if img is None:
                 msg = (
-                    "No image provided to fit in NiftiMapsMasker. "
+                    f"No image provided to fit in {self.__class__.__name__}. "
                     "Plotting only spatial maps for reporting."
                 )
                 self._report_content["warning_messages"].append(msg)

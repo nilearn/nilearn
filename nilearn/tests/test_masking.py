@@ -32,12 +32,6 @@ from nilearn.masking import (
 )
 from nilearn.surface.surface import SurfaceImage
 
-np_version = (
-    np.version.full_version
-    if hasattr(np.version, "full_version")
-    else np.version.short_version
-)
-
 _TEST_DIM_ERROR_MSG = (
     "Input data has incompatible dimensionality: "
     "Expected dimension is 3D and you provided "
@@ -64,6 +58,7 @@ def _cov_conf(tseries, conf):
     return cov_mat
 
 
+@pytest.mark.thread_unsafe
 def test_load_mask_img_error_inputs(surf_img_2d, img_4d_ones_eye):
     """Check input validation of load_mask_img."""
     with pytest.raises(
@@ -83,6 +78,7 @@ def test_load_mask_img_error_inputs(surf_img_2d, img_4d_ones_eye):
         load_mask_img(surf_img_2d())
 
 
+@pytest.mark.thread_unsafe
 def test_load_mask_img_surface(surf_mask_1d):
     """Check load_mask_img returns a boolean surface image \
     when SurfaceImage is used as input.
@@ -645,6 +641,7 @@ def img_2d_mask_center(affine_eye):
     return Nifti1Image(mask_b.astype("int32"), affine_eye)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("create_files", (False, True))
 def test_intersect_masks_filename(
     tmp_path, img_2d_mask_bottom_right, img_2d_mask_center, create_files
@@ -820,8 +817,8 @@ def test_compute_multi_epi_mask(affine_eye):
 def test_compute_multi_brain_mask_error():
     """Check error raised if images with different shapes given as input."""
     imgs = [
-        data_gen.generate_mni_space_img(res=8, random_state=0)[0],
-        data_gen.generate_mni_space_img(res=12, random_state=0)[0],
+        data_gen.generate_mni_space_img(res=8)[0],
+        data_gen.generate_mni_space_img(res=12)[0],
     ]
     with pytest.raises(
         ValueError,
@@ -830,6 +827,7 @@ def test_compute_multi_brain_mask_error():
         compute_multi_brain_mask(imgs)
 
 
+@pytest.mark.slow
 def test_compute_multi_brain_mask():
     """Check results are the same if affine is the same."""
     imgs1 = [

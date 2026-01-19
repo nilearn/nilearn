@@ -156,6 +156,7 @@ def test_check_shape_and_affine_compatibility_error(
         _check_shape_and_affine_compatibility(img1=img_3d_zeros_eye, img2=img2)
 
 
+@pytest.mark.thread_unsafe
 def test_errors_3d(img_3d_zeros_eye, img_4d_zeros_eye):
     """Verify that 3D images are refused."""
     wrong_dim_image = img_3d_zeros_eye
@@ -169,6 +170,7 @@ def test_errors_3d(img_3d_zeros_eye, img_4d_zeros_eye):
         img_to_signals_maps(imgs=img_4d_zeros_eye, maps_img=wrong_dim_image)
 
 
+@pytest.mark.thread_unsafe
 def test_errors_4d_labels(img_4d_zeros_eye):
     """Verify that 4D images are refused."""
     wrong_dim_label_img = img_4d_zeros_eye
@@ -184,6 +186,7 @@ def test_errors_4d_labels(img_4d_zeros_eye):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_errors_4d_masks(img_3d_zeros_eye, img_4d_zeros_eye):
     """Verify that 4D images are refused."""
     wrong_dim_mask_img = img_4d_zeros_eye
@@ -210,6 +213,7 @@ def test_errors_4d_masks(img_3d_zeros_eye, img_4d_zeros_eye):
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "shape, affine, error_msg",
     [
@@ -226,6 +230,7 @@ def test_img_to_signals_labels_bad_labels_input(
         img_to_signals_labels(imgs=img_4d_zeros_eye, labels_img=bad_img)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "shape, affine, error_msg",
     [
@@ -246,6 +251,7 @@ def test_img_to_signals_labels_bad_mask_input(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_img_to_signals_labels_error_strategy(
     img_4d_zeros_eye, img_3d_zeros_eye
 ):
@@ -295,6 +301,7 @@ def test_signals_to_img_labels_bad_mask_input(
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "shape, affine, error_msg",
     [
@@ -314,6 +321,7 @@ def test_img_to_signals_maps_bad_maps(
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "shape, affine, error_msg",
     [
@@ -332,6 +340,7 @@ def test_img_to_signals_maps_bad_masks(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_signals_extraction_with_labels_without_mask(
     signals, labels_data, labels_img, shape_3d_default, tmp_path
 ):
@@ -368,6 +377,7 @@ def test_signals_extraction_with_labels_without_mask(
     assert labels_r == list(range(1, 9))
 
 
+@pytest.mark.thread_unsafe
 def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
     signals, labels_img
 ):
@@ -398,6 +408,7 @@ def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
     assert list(np.unique(labels_data_r)) == list(range(1, 9))
 
 
+@pytest.mark.thread_unsafe
 def test_signals_extraction_with_labels_with_mask(
     signals, labels_img, labels_data, mask_img, shape_3d_default, tmp_path
 ):
@@ -443,6 +454,7 @@ def test_signals_extraction_with_labels_with_mask(
     assert labels_r == list(range(1, 9))
 
 
+@pytest.mark.thread_unsafe
 def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
     signals, labels_img, mask_img
 ):
@@ -477,6 +489,8 @@ def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
     assert list(np.unique(labels_data_r)) == [0, 1, 2, 5]
 
 
+@pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
     # Generate signal imgs
     maps_img, mask_img = generate_maps(shape_3d_default, N_REGIONS)
@@ -505,6 +519,7 @@ def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
     assert_almost_equal(get_data(img_r), get_data(imgs))
 
 
+@pytest.mark.thread_unsafe
 def test_signal_extraction_with_maps_and_labels(
     labeled_regions, fmri_img, shape_3d_default
 ):
@@ -558,6 +573,7 @@ def test_signal_extraction_with_maps_and_labels(
     assert maps_img_r.shape == (*shape_3d_default, N_TIMEPOINTS)
 
 
+@pytest.mark.thread_unsafe
 def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     labels_data = get_data(labeled_regions)
 
@@ -626,6 +642,7 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_img_to_signals_maps_warnings(
     labeled_regions, fmri_img, shape_3d_default
 ):
@@ -683,6 +700,7 @@ def test_img_to_signals_maps_warnings(
     assert len(maps_labels) == 8
 
 
+@pytest.mark.thread_unsafe
 def test_signal_extraction_nans_in_regions_are_replaced_with_zeros():
     shape = (4, 5, 6)
     labels = list(range(N_REGIONS + 1))  # 0 is background
@@ -754,6 +772,7 @@ def test_trim_maps(shape_3d_default):
     assert_equal(np.asarray(list(range(4))), maps_i_indices)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "target_dtype",
     (float, np.float32, np.float64, int, np.uint),

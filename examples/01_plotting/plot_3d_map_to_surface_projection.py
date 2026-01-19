@@ -136,7 +136,7 @@ plot_stat_map(
     stat_map_img=stat_img,
     display_mode="x",
     threshold=1.0,
-    cut_coords=range(0, 51, 10),
+    cut_coords=list(range(0, 51, 10)),
     title="Slices",
 )
 
@@ -285,7 +285,7 @@ view = view_surf(
     title="3D visualization in a web browser",
 )
 
-# In a Jupyter notebook, if ``view`` is the output of a cell,
+# In a notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
 view
 # view.open_in_browser()

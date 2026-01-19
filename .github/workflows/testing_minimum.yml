@@ -56,7 +56,7 @@ jobs:
 
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
 
         -   name: Setup python
             uses: actions/setup-python@v6
@@ -85,7 +85,7 @@ jobs:
             id: test_minimum
             run: |
                 pip install pytest-mpl
-                pytest --pyargs nilearn --report=report.html -n auto --csv results/pytest_output/pytest_output.csv
+                pytest --pyargs nilearn --report=report.html --numprocesses auto --csv results/pytest_output/pytest_output.csv
 
         -   name: Generate plots tests timing
             if: success() || failure()
@@ -95,14 +95,14 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.os }}_${{ matrix.min_dep }}_report.html
                 path: report.html
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.os }}_${{ matrix.min_dep }}_pytest_output
                 path: results/pytest_output

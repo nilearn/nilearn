@@ -39,7 +39,7 @@ jobs:
 
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
 
         -   name: Setup python
             uses: actions/setup-python@v6
@@ -59,7 +59,7 @@ jobs:
 
         -   name: Upload masker reports
             if: success() || failure()
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: label_masker_reports
                 path: maint_tools/tmp

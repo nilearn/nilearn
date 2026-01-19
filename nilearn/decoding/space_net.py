@@ -31,6 +31,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
+    sanitize_verbose,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
@@ -317,7 +318,7 @@ def path_scores(
     key=None,
     debias=False,
     screening_percentile=20,
-    verbose=1,
+    verbose=0,
 ):
     """Compute scores of different alphas in regression \
     and classification used by CV objects.
@@ -369,7 +370,7 @@ def path_scores(
 
     %(screening_percentile)s
 
-    %(verbose)s
+    %(verbose0)s
 
     """
     if l1_ratios is None:
@@ -377,7 +378,8 @@ def path_scores(
 
     # misc
     _, n_features = X.shape
-    verbose = int(verbose if verbose is not None else 0)
+
+    verbose = sanitize_verbose(verbose)
 
     # Univariate feature screening. Note that if we have only as few as 100
     # features in the mask's support, then we should use all of them to
@@ -396,9 +398,14 @@ def path_scores(
     X_test, y_test = X[test].copy(), y[test].copy()
 
     # it is essential to center the data in regression
-    X_train, y_train, _, y_train_mean, _ = center_data(
-        X_train, y_train, fit_intercept=True, copy=False
-    )
+    # do not unpack tuple completely
+    # as it returns more values starting from sklearn 1.8
+    # TODO: try to find a public function in sklearn to do this
+    tmp = center_data(X_train, y_train, fit_intercept=True, copy=False)
+    X_train = tmp[0]
+    y_train = tmp[1]
+    y_train_mean = tmp[3]
+    del tmp
 
     # misc
     if not isinstance(l1_ratios, collections.abc.Iterable):
@@ -598,7 +605,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     tol : :obj:`float`, default=5e-4
         Defines the tolerance for convergence for the backend FISTA solver.
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -639,7 +646,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,
@@ -949,7 +956,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         # report time elapsed
         duration = time.time() - tic
         logger.log(
-            f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes.",
+            f"Time Elapsed: {duration:.3f} seconds.",
             self.verbose,
         )
 
@@ -1058,7 +1065,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     %(standardize_true)s
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -1115,7 +1122,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,
@@ -1290,7 +1297,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
 
     %(standardize_true)s
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -1340,7 +1347,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,
