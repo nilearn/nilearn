@@ -45,10 +45,9 @@ from sklearn.model_selection import (
 )
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
-from sklearn.utils.estimator_checks import (
-    parametrize_with_checks,
-)
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
+from nilearn._base import SKLEARN_GTE_1_7
 from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
@@ -62,10 +61,7 @@ from nilearn.decoding import (
     FREMClassifier,
     FREMRegressor,
 )
-from nilearn.decoding._utils import (
-    _get_mask_extent,
-    check_feature_screening,
-)
+from nilearn.decoding._utils import _get_mask_extent, check_feature_screening
 from nilearn.decoding.decoder import (
     SUPPORTED_ESTIMATORS,
     _BaseDecoder,
@@ -1501,7 +1497,15 @@ def test_regressor_vs_sklearn(
         scoring=scorer,
         screening_percentile=100,  # disable screening
     )
-    nilearn_regressor.fit(X, y)
+    if regressor == "lasso" and SKLEARN_GTE_1_7:
+        # TODO
+        # see https://github.com/nilearn/nilearn/issues/5452
+        with pytest.warns(
+            FutureWarning, match="'n_alphas' was deprecated in 1.7"
+        ):
+            nilearn_regressor.fit(X, y)
+    else:
+        nilearn_regressor.fit(X, y)
     scores_nilearn = nilearn_regressor.cv_scores_["beta"]
 
     # start decoding with sklearn
@@ -1524,11 +1528,12 @@ def test_regressor_vs_sklearn(
         elif regressor == "lasso":
             # this sets n_alphas as coded within nilearn and
             # LassoCV will select the best one using cross-validation
-            sklearn_regressor = clone(sklearn_regressor).set_params(
-                n_alphas=nilearn_regressor.cv_params_["beta"]["n_alphas"][
-                    count
-                ],
-            )
+            tmp = nilearn_regressor.cv_params_["beta"]["n_alphas"][count]
+            sklearn_regressor = clone(sklearn_regressor)
+            if SKLEARN_GTE_1_7:
+                sklearn_regressor.set_params(alphas=tmp)
+            else:
+                sklearn_regressor.set_params(n_alphas=tmp)
         elif regressor in ["ridge"]:
             # same as lasso but with alphas
             sklearn_regressor = clone(sklearn_regressor).set_params(

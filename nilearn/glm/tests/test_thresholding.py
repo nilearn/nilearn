@@ -693,13 +693,20 @@ def test_deprecation_threshold_cluster_level_inference(
     # remove
     """
     for stat_img in [img_3d_rand_eye, surf_img_1d]:
-        with warnings.catch_warnings(record=True) as warning_list:
-            cluster_level_inference(stat_img, threshold=threshold)
-
-        n_warnings = len(
-            [x for x in warning_list if issubclass(x.category, FutureWarning)]
-        )
         if threshold == 3.0:
-            assert n_warnings == 1
+            with pytest.warns(
+                FutureWarning, match="the default 'threshold' will be set to"
+            ):
+                cluster_level_inference(stat_img, threshold=threshold)
+
         else:
+            with warnings.catch_warnings(record=True) as warning_list:
+                cluster_level_inference(stat_img, threshold=threshold)
+            n_warnings = len(
+                [
+                    x
+                    for x in warning_list
+                    if issubclass(x.category, FutureWarning)
+                ]
+            )
             assert n_warnings == 0
