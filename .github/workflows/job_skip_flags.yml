@@ -1,0 +1,20 @@
+---
+name: Check skip flags
+on:
+    workflow_call:
+
+jobs:
+    check_skip_flags:
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Get repo
+            uses: actions/checkout@v6
+            with:
+                ref: ${{ github.event.pull_request.head.sha }}
+        -   name: Check head git commit message
+            run: |
+                headCommitMsg=$(git show -s --format=%s)
+                if [[ $headCommitMsg == *"[skip test]"* ]]; then
+                    echo "skipping tests"
+                    exit 1
+                fi
