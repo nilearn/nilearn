@@ -99,7 +99,7 @@ figure = plot_surf_stat_map(
     bg_on_data=True,
     engine=engine,  # Specify the plotting engine here
 )
-figure.show()
+figure.figure
 
 # Uncomment the line below
 # to view the figure in browser.
@@ -203,8 +203,8 @@ elif engine == "plotly":
         labels=labels,
         lines=[{"width": 5}],
     )
-    # view the contours in a browser
-    figure.show()
+    
+    figure.figure
     # Uncomment the line below
     # to view the figure in browser.
     # figure.show(renderer="browser")
