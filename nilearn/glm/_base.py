@@ -9,6 +9,7 @@ from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
+from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -21,7 +22,7 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.tags import SKLEARN_LT_1_6, accept_niimg_input, is_masker
 from nilearn._version import __version__
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
@@ -32,6 +33,7 @@ from nilearn.glm._reporting_utils import (
     sanitize_generate_report_input,
     turn_into_full_path,
 )
+from nilearn.image import check_niimg
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.reporting._utils import dataframe_to_html
@@ -95,6 +97,20 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
         otherwise.
         """
         return False
+
+    @property
+    def mask_img_(self) -> Nifti1Image | SurfaceImage:
+        """Return mask image using during fit."""
+        check_is_fitted(self)
+        if is_masker(self.mask_img) and accept_niimg_input(self.mask_img):
+            return self.masker_.mask_img_
+        else:
+            try:
+                # check that mask_img is a niiimg-like object
+                check_niimg(self.mask_img)
+                return self.mask_img
+            except Exception:
+                return self.masker_.mask_img_
 
     def _attributes_to_dict(self):
         """Return dict with pertinent model attributes & information.
@@ -640,6 +656,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             )
             results = make_stat_maps_contrast_clusters(
                 stat_img=statistical_maps,
+                mask_img=self.mask_img_,
                 threshold_orig=threshold,
                 alpha=alpha,
                 cluster_threshold=cluster_threshold,
