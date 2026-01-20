@@ -309,7 +309,7 @@ def test_generate_report_warning_glass_cut_coords(flm, contrasts):
         )
 
 
-# @pytest.mark.slow
+@pytest.mark.slow
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_slm_reporting_method(slm, height_control):
     """Test for the second level reporting."""
@@ -318,7 +318,6 @@ def test_slm_reporting_method(slm, height_control):
     extra_warnings_allowed = False
     if height_control is None:
         extra_warnings_allowed = True
-
     generate_and_check_glm_report(
         slm,
         contrasts=c1,
