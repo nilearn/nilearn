@@ -535,11 +535,9 @@ def test_signal_extraction_with_maps_and_labels(
     maps_img = Nifti1Image(maps_data, labeled_regions.affine)
 
     # Extract signals from maps and labels: results must be identical.
-    maps_signals, maps_labels = img_to_signals_maps(
-        fmri_img, maps_img, keep_masked_maps=True
-    )
+    maps_signals, maps_labels = img_to_signals_maps(fmri_img, maps_img)
     labels_signals, labels_labels = img_to_signals_labels(
-        imgs=fmri_img, labels_img=labeled_regions, keep_masked_labels=True
+        imgs=fmri_img, labels_img=labeled_regions
     )
     assert_almost_equal(maps_signals, labels_signals)
 
@@ -548,13 +546,10 @@ def test_signal_extraction_with_maps_and_labels(
         labels_data, labeled_regions.affine
     )
     labels_signals, labels_labels = img_to_signals_labels(
-        imgs=fmri_img,
-        labels_img=labeled_regions,
-        mask_img=mask_img,
-        keep_masked_labels=True,
+        imgs=fmri_img, labels_img=labeled_regions, mask_img=mask_img
     )
     maps_signals, maps_labels = img_to_signals_maps(
-        fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
+        fmri_img, maps_img, mask_img=mask_img
     )
 
     assert_almost_equal(maps_signals, labels_signals)
@@ -637,7 +632,6 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
             imgs=fmri_img,
             labels_img=labeled_regions,
             mask_img=mask_img,
-            keep_masked_labels=False,
             return_masked_atlas=False,
         )
 
