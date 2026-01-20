@@ -461,7 +461,7 @@ def path_scores(
                     mask=mask,
                     init=init,
                     callback=early_stopper,
-                    verbose=max(verbose - 1, 0.0),
+                    verbose=max(verbose - 1, 0),
                     **path_solver_params,
                 )
 

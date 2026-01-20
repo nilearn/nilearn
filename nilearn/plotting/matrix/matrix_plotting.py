@@ -377,8 +377,6 @@ def plot_design_matrix(
         The axes used for plotting.
 
     """
-    check_params(locals())
-
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     _, X, names = check_design_matrix(design_matrix)
@@ -449,8 +447,6 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         Plot Figure object.
 
     """
-    check_params(locals())
-
     model_event = check_and_load_tables(model_event, "model_event")
 
     for i, event in enumerate(model_event):

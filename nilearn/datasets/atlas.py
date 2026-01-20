@@ -1018,8 +1018,6 @@ def fetch_coords_power_2011():
     .. footbibliography::
 
     """
-    check_params(locals())
-
     dataset_name = "power_2011"
     fdescr = get_dataset_descr(dataset_name)
     csv = PACKAGE_DIRECTORY / "data" / "power_2011.csv"
@@ -1658,8 +1656,6 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
     .. footbibliography::
 
     """
-    check_params(locals())
-
     dataset_name = "dosenbach_2010"
     fdescr = get_dataset_descr(dataset_name)
     csv = PACKAGE_DIRECTORY / "data" / "dosenbach_2010.csv"
@@ -1730,8 +1726,6 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     .. footbibliography::
 
     """
-    check_params(locals())
-
     dataset_name = "seitzman_2018"
     fdescr = get_dataset_descr(dataset_name)
     roi_file = (
