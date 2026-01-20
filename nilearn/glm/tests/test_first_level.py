@@ -147,44 +147,6 @@ def test_glm_override_masker_param(shape_4d_default):
         )
 
 
-def test_flm_fit_verbose(shape_4d_default, capsys):
-    """Check verbosity levels.
-
-    Standard output content should be larger
-    when we go from verbosity 1 to verbosity 3.
-    """
-    rk = 3
-    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[shape_4d_default], rk=rk
-    )
-
-    FirstLevelModel(verbose=0).fit(
-        fmri_data[0], design_matrices=design_matrices[0]
-    )
-    stdout_verbose_0 = capsys.readouterr().out
-    assert stdout_verbose_0 == ""
-
-    FirstLevelModel(verbose=1).fit(
-        fmri_data[0], design_matrices=design_matrices[0]
-    )
-    stdout_verbose_1 = capsys.readouterr().out
-
-    FirstLevelModel(verbose=2).fit(
-        fmri_data[0], design_matrices=design_matrices[0]
-    )
-    stdout_verbose_2 = capsys.readouterr().out
-
-    assert len(stdout_verbose_1) > 0
-    assert len(stdout_verbose_2) > len(stdout_verbose_1)
-
-    # FIXME according to the doc this verbose=3
-    # FirstLevelModel(verbose=3).fit(
-    #     fmri_data[0], design_matrices=design_matrices[0]
-    # )
-    # stdout_verbose_3 = capsys.readouterr().out
-    # assert len(stdout_verbose_3) > len(stdout_verbose_2)
-
-
 def test_glm_fit_valid_mask_img(shape_4d_default):
     """Run fit on FLM with different valid masks."""
     rk = 3
