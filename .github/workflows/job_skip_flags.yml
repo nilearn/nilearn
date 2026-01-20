@@ -1,4 +1,11 @@
 ---
+# Job to check skip flags in a commit message.
+#
+# To reuse from a job, use:
+#
+#     uses: ./.github/workflows/job_skip_flags.yml
+#
+###
 name: Check skip flags
 on:
     workflow_call:
