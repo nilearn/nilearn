@@ -285,6 +285,7 @@ def test_nifti_maps_masker_resampling_to_mask(
         maps33_img,
         mask_img=mask22_img,
         resampling_target="mask",
+        keep_masked_maps=True,
         standardize=None,
     )
 

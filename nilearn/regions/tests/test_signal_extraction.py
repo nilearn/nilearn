@@ -535,30 +535,17 @@ def test_signal_extraction_with_maps_and_labels(
     maps_img = Nifti1Image(maps_data, labeled_regions.affine)
 
     # Extract signals from maps and labels: results must be identical.
-    maps_signals, maps_labels = img_to_signals_maps(fmri_img, maps_img)
-    labels_signals, labels_labels = img_to_signals_labels(
+    maps_signals, _ = img_to_signals_maps(fmri_img, maps_img)
+    labels_signals, _ = img_to_signals_labels(
         imgs=fmri_img, labels_img=labeled_regions
     )
     assert_almost_equal(maps_signals, labels_signals)
 
-    # Same thing with a mask, containing only 3 regions.
+    # Inverse operation (mostly smoke test)
     mask_img = _create_mask_with_3_regions_from_labels_data(
         labels_data, labeled_regions.affine
     )
-    labels_signals, labels_labels = img_to_signals_labels(
-        imgs=fmri_img, labels_img=labeled_regions, mask_img=mask_img
-    )
-    maps_signals, maps_labels = img_to_signals_maps(
-        fmri_img, maps_img, mask_img=mask_img
-    )
 
-    assert_almost_equal(maps_signals, labels_signals)
-    assert maps_signals.shape[1] == N_REGIONS
-    assert maps_labels == list(range(len(maps_labels)))
-    assert labels_signals.shape == (N_TIMEPOINTS, N_REGIONS)
-    assert labels_labels == labels[1:]
-
-    # Inverse operation (mostly smoke test)
     labels_img_r = signals_to_img_labels(
         labels_signals, labeled_regions, mask_img=mask_img
     )
@@ -566,6 +553,54 @@ def test_signal_extraction_with_maps_and_labels(
 
     maps_img_r = signals_to_img_maps(maps_signals, maps_img, mask_img=mask_img)
     assert maps_img_r.shape == (*shape_3d_default, N_TIMEPOINTS)
+
+
+@pytest.mark.thread_unsafe
+def test_signal_extraction_with_maps_and_labels_keep_masked(
+    labeled_regions, fmri_img, shape_3d_default
+):
+    """Extract signals from maps and labels, with a mask.
+
+    Test for keep_masked_labels=True and keep_masked_maps=True
+    # TODO (nilearn>=0.15)
+    adapt accordingly given those parameters will be removed
+    """
+    labels = list(range(N_REGIONS + 1))
+    labels_data = get_data(labeled_regions)
+    # Convert to maps
+    maps_data = np.zeros((*shape_3d_default, N_REGIONS))
+    for n, l in enumerate(labels):
+        if n == 0:
+            continue
+        maps_data[labels_data == l, n - 1] = 1
+
+    maps_img = Nifti1Image(maps_data, labeled_regions.affine)
+
+    maps_signals, maps_labels = img_to_signals_maps(fmri_img, maps_img)
+    labels_signals, labels_labels = img_to_signals_labels(
+        imgs=fmri_img, labels_img=labeled_regions
+    )
+
+    mask_img = _create_mask_with_3_regions_from_labels_data(
+        labels_data, labeled_regions.affine
+    )
+    labels_signals, labels_labels = img_to_signals_labels(
+        imgs=fmri_img,
+        labels_img=labeled_regions,
+        mask_img=mask_img,
+        keep_masked_labels=True,
+    )
+    maps_signals, maps_labels = img_to_signals_maps(
+        fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
+    )
+
+    # Results must be identical.
+    assert_almost_equal(maps_signals, labels_signals)
+
+    assert maps_signals.shape[1] == N_REGIONS
+    assert maps_labels == list(range(len(maps_labels)))
+    assert labels_signals.shape == (N_TIMEPOINTS, N_REGIONS)
+    assert labels_labels == labels[1:]
 
 
 @pytest.mark.thread_unsafe
