@@ -1236,7 +1236,7 @@ def test_decoder_apply_mask_surface(_make_surface_class_data):
     X_masked = model._apply_mask(X)
 
     assert X_masked.shape == X.shape[::-1]
-    assert type(model._mask_img).__name__ == "SurfaceImage"
+    assert type(model.mask_img_).__name__ == "SurfaceImage"
 
 
 @ignore_warnings
