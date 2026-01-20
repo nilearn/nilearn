@@ -950,6 +950,7 @@ def test_fmri_inputs_errors(shape_4d_default):
         FirstLevelModel(mask_img=None, t_r=1.0).fit(fmri_data, design_matrices)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "to_ignore",
     [{"slice_time_ref": 0.5}, {"t_r": 2}, {"hrf_model": "fir"}],
