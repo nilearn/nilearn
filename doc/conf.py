@@ -20,6 +20,8 @@ from nilearn._version import __version__
 from sphinx.domains import changeset
 from sphinx.locale import _
 
+from sphinx_gallery.scrapers import matplotlib_scraper, plotly_scraper
+
 # ----------------------------------------------------------------------------
 
 
@@ -460,7 +462,7 @@ sphinx_gallery_conf = {
         "dependencies": "./binder/requirements.txt",
         "use_jupyter_lab": True,
     },
-    "image_scrapers": ("plotly","matplotlib"),
+    "image_scrapers": (matplotlib_scraper, plotly_scraper),
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
     "within_subsection_order": "ExampleTitleSortKey",
 }
