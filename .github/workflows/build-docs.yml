@@ -120,7 +120,6 @@ env:
     NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
     MIN_PYTHON_VERSION: '3.10'
     HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-    PLOTLY_RENDERER: sphinx_gallery
 
 jobs:
     # Make citation metadata from CITATION.cff is valid.
