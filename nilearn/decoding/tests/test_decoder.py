@@ -1131,7 +1131,7 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
 
     for cv in ["abc", LinearSVC(dual=True)]:
         model = Decoder(mask=NiftiMasker(), cv=cv, standardize="zscore_sample")
-        with pytest.raises(ValueError, match="Expected cv as an integer"):
+        with pytest.raises(ValueError, match=r"Expected .* as an integer"):
             model.fit(X, y)
 
 
