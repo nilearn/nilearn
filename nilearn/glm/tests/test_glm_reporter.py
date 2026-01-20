@@ -318,26 +318,14 @@ def test_slm_reporting_method(slm, height_control):
     extra_warnings_allowed = False
     if height_control is None:
         extra_warnings_allowed = True
-    if height_control is None:
-        with pytest.warns(
-            FutureWarning, match="the default 'threshold' will be set to"
-        ):
-            # TODO (nilearn >= 0.15) remove this pytest.warn
-            generate_and_check_glm_report(
-                slm,
-                contrasts=c1,
-                height_control=height_control,
-                alpha=0.01,
-                extra_warnings_allowed=extra_warnings_allowed,
-            )
-    else:
-        generate_and_check_glm_report(
-            slm,
-            contrasts=c1,
-            height_control=height_control,
-            alpha=0.01,
-            extra_warnings_allowed=extra_warnings_allowed,
-        )
+
+    generate_and_check_glm_report(
+        slm,
+        contrasts=c1,
+        height_control=height_control,
+        alpha=0.01,
+        extra_warnings_allowed=extra_warnings_allowed,
+    )
 
 
 @pytest.mark.slow

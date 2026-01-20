@@ -88,8 +88,7 @@ def check_embedded_masker(
         # that throw FutureWarning
         # that the user cannot do anything about
 
-        # TODO (nilearn >= 0.14)
-        # remove this if block
+        # TODO (nilearn >= 0.14) remove
         new_masker_params["standardize"] = "zscore_sample"
 
     # Forwarding system parameters of instance to new masker in all case
