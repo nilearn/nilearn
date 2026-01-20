@@ -99,7 +99,7 @@ figure = plot_surf_stat_map(
     bg_on_data=True,
     engine=engine,  # Specify the plotting engine here
 )
-figure.figure
+figure.show()
 
 # Uncomment the line below
 # to view the figure in browser.
