@@ -204,6 +204,13 @@ def mask_to_plot(model, bg_img):
 
     from matplotlib import pyplot as plt
 
+    if not model._is_volume_glm():
+        fig = model.masker_._create_figure_for_report()
+        mask_plot = figure_to_png_base64(fig)
+        # prevents sphinx-gallery & jupyter from scraping & inserting plots
+        plt.close()
+        return mask_plot
+
     from nilearn.plotting import plot_roi
 
     plot_roi(
