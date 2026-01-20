@@ -40,6 +40,8 @@ def dataframe_to_html(df, precision, **kwargs):
 def model_attributes_to_dataframe(model):
     """Return dataframe with pertinent model attributes & information.
 
+    TODO (sklearn > 1.6.2) remove
+
     Parameters
     ----------
     model : Any masker object.

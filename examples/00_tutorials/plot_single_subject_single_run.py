@@ -100,8 +100,22 @@ fmri_glm = FirstLevelModel(
 )
 
 # %%
+#
+# .. include:: ../../../examples/html_repr_note.rst
+#
+fmri_glm
+
+# %%
 # Now that we have specified the model, we can run it on the :term:`fMRI` image
+#
+# .. note ::
+#
+#   After fitting,
+#   the HTML representation of the estimator looks different
+#   than before before fitting.
+#
 fmri_glm = fmri_glm.fit(fmri_img, events)
+fmri_glm
 
 # %%
 # One can inspect the design matrix (rows represent time, and

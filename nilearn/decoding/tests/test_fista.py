@@ -12,6 +12,7 @@ from nilearn.decoding._proximal_operators import prox_l1
 from nilearn.decoding.fista import _check_lipschitz_continuous, mfista
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("scaling", list(np.logspace(-3, 3, num=7)))
 def test_logistic_lipschitz(rng, scaling, n_samples=4, n_features=2):
     X = rng.standard_normal((n_samples, n_features)) * scaling
