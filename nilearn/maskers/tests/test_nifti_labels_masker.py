@@ -442,7 +442,6 @@ def test_nifti_labels_masker_resampling_to_clipped_labels(
         labels33_img,
         mask_img=mask22_img,
         resampling_target="labels",
-        keep_masked_labels=True,
     )
 
     signals = masker.fit_transform(fmri11_img)
