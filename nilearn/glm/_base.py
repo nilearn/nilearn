@@ -22,7 +22,7 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6, accept_niimg_input, is_masker
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._version import __version__
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
@@ -99,18 +99,18 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
         return False
 
     @property
-    def mask_img_(self) -> Nifti1Image | SurfaceImage:
-        """Return mask image using during fit."""
-        check_is_fitted(self)
-        if is_masker(self.mask_img) and accept_niimg_input(self.mask_img):
+    def _mask_img(self) -> Nifti1Image | SurfaceImage | None:
+        """Return mask image using during fit or mask image passed at init."""
+        if self.__sklearn_is_fitted__():
             return self.masker_.mask_img_
         else:
+            if self.mask_img is None:
+                return None
             try:
-                # check that mask_img is a niiimg-like object
-                check_niimg(self.mask_img)
-                return self.mask_img
+                # load mask_img if is a niiimg-like object
+                return check_niimg(self.mask_img)
             except Exception:
-                return self.masker_.mask_img_
+                return self.mask_img
 
     def _attributes_to_dict(self):
         """Return dict with pertinent model attributes & information.
@@ -656,7 +656,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             )
             results = make_stat_maps_contrast_clusters(
                 stat_img=statistical_maps,
-                mask_img=self.mask_img_,
+                mask_img=self._mask_img,
                 threshold_orig=threshold,
                 alpha=alpha,
                 cluster_threshold=cluster_threshold,

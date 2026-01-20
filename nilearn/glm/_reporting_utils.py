@@ -214,7 +214,7 @@ def mask_to_plot(model, bg_img):
     from nilearn.plotting import plot_roi
 
     plot_roi(
-        roi_img=model.mask_img_,
+        roi_img=model._mask_img,
         bg_img=bg_img,
         display_mode="z",
         cmap="Set1",
