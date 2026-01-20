@@ -122,6 +122,7 @@ def test_nifti_maps_masker_create_figure_for_report(src_masker, mask_img, img):
     return masker._create_figure_for_report()[0]
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("mask_img", [load_mni152_gm_mask(), None])
 @pytest.mark.parametrize("img", [None, loaded_motor_activation_image()])
