@@ -93,6 +93,7 @@ def test_multi_nifti_labels_masker(
         img_labels,
         mask_img=mask11_img,
         resampling_target=None,
+        keep_masked_labels=True,
         standardize=None,
     )
     signals11 = masker11.fit_transform(fmri11_img)
@@ -257,6 +258,7 @@ def test_multi_nifti_labels_masker_resampling(
         img_labels,
         mask_img=mask22_img,
         resampling_target="labels",
+        keep_masked_labels=True,
         standardize=None,
     )
 
@@ -301,6 +303,7 @@ def test_multi_nifti_labels_masker_resampling_clipped_labels(
         img_labels,
         mask_img=mask22_img,
         resampling_target="labels",
+        keep_masked_labels=True,
         standardize=None,
     )
 
@@ -370,6 +373,7 @@ def test_multi_nifti_labels_masker_resampling_target():
         masker = MultiNiftiLabelsMasker(
             labels_img=labels_img,
             resampling_target=resampling_target,
+            keep_masked_labels=True,
         )
         if resampling_target == "data":
             with pytest.warns(

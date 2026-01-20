@@ -304,6 +304,7 @@ def test_nifti_labels_masker_report(
         img_labels,
         labels=labels,
         mask_img=img_mask_eye,
+        keep_masked_labels=True,
     )
     masker.fit_transform(img_3d_rand_eye)
 
