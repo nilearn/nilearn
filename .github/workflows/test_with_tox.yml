@@ -57,7 +57,7 @@ env:
 jobs:
 
     check_skip_flags:
-        uses: ./.github/workflows/job_skip_flags.yml
+        uses: ./.github/workflows/check_skip_flags.yml
 
     define-matrix:
         runs-on: ubuntu-latest
