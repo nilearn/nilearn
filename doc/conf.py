@@ -460,6 +460,7 @@ sphinx_gallery_conf = {
         "dependencies": "./binder/requirements.txt",
         "use_jupyter_lab": True,
     },
+    "image_scrapers": ("plotly","matplotlib"),
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
     "within_subsection_order": "ExampleTitleSortKey",
 }
