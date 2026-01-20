@@ -681,14 +681,13 @@ keep_masked_labels : :obj:`bool`, default=False
 
     .. nilearn_versionchanged:: 0.13.0
 
-        Default changed to False.
         The ``keep_masked_labels`` parameter will be removed in 0.15.
 
 """
 
 # keep_masked_maps
 docdict["keep_masked_maps"] = """
-keep_masked_maps : :obj:`bool`, default=False
+keep_masked_maps : :obj:`bool`, optional
     If True, masked atlas with invalid maps (maps that contain only
     zeros after applying the mask) will be retained in the output, resulting
     in corresponding time series containing zeros only. If False, the
@@ -699,7 +698,6 @@ keep_masked_maps : :obj:`bool`, default=False
 
     .. nilearn_versionchanged:: 0.13.0
 
-        Default changed to False.
         The ``keep_masked_maps`` parameter will be removed in 0.15.
 
 """
