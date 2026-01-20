@@ -18,6 +18,22 @@ output_file_path = doc_dir / "ci.rst"
 
 SEPARATOR = "###"
 
+# -- Plotly Configuration ----------------------------------------------------
+
+try:
+    import plotly.io as pio
+
+    pio.renderers.default = "png"
+    pio.kaleido.scope.default_scale = 2
+except ImportError:
+    import warnings
+
+    warnings.warn(
+        stacklevel=2,
+        message="Plotly is not installed. Plotly figures will not be shown.",
+        category=UserWarning,
+    )
+
 
 def main() -> None:
     """Get top comment of each github action workflows \
