@@ -548,6 +548,7 @@ def test_plot_surf_contours_fig_axes(
     plot_surf_contours(in_memory_mesh, parcellation, figure=fig)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contours_error(
     matplotlib_pyplot, rng, in_memory_mesh, parcellation
 ):
@@ -742,6 +743,7 @@ def test_plot_surf_stat_map_symmetric_cmap_matplotlib(
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("symmetric_cmap", [True, False])
 def test_plot_surf_stat_map_symmetric_cmap_matplotlib_error(
     matplotlib_pyplot, in_memory_mesh, bg_map, symmetric_cmap
