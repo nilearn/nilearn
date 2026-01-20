@@ -11,10 +11,7 @@ from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
-from sklearn.utils.estimator_checks import (
-    ignore_warnings,
-    parametrize_with_checks,
-)
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
     check_estimator,
@@ -39,6 +36,7 @@ from nilearn.decoding.space_net_solvers import (
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.image import get_data
+from nilearn.maskers import NiftiMasker
 
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
@@ -378,9 +376,10 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
     X_, mask = to_niimgs(X, (2, 2, 2))
+    masker = NiftiMasker(mask_img=mask, standardize=None).fit()
 
     tvl1 = SpaceNetClassifier(
-        mask=mask,
+        mask=masker,
         alphas=1.0 / C / X.shape[0],
         l1_ratios=1.0,
         tol=tol,
@@ -391,7 +390,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     ).fit(X_, y)
 
     sklogreg = LogisticRegression(
-        penalty="l1", fit_intercept=True, solver="liblinear", tol=tol, C=C
+        l1_ratio=1, fit_intercept=True, solver="liblinear", tol=tol, C=C
     ).fit(X, y)
 
     # compare supports
@@ -546,8 +545,6 @@ def test_targets_in_y_space_net_regressor():
         regressor.fit(imgs, y)
 
 
-@ignore_warnings
-@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [SpaceNetRegressor, SpaceNetClassifier])
 # TODO
 # fails with cv=LeaveOneGroupOut()
