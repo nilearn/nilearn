@@ -23,7 +23,7 @@ SEPARATOR = "###"
 try:
     import plotly.io as pio
 
-    pio.renderers.default = "png"
+    pio.renderers.default = "sphinx_gallery"
     pio.kaleido.scope.default_scale = 2
 except ImportError:
     import warnings
