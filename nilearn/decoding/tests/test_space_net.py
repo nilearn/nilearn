@@ -5,7 +5,9 @@ from functools import partial
 import numpy as np
 import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
+from packaging.version import parse
 from scipy import linalg
+from sklearn import __version__ as sklearn_version
 from sklearn.datasets import load_iris
 from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.linear_model._coordinate_descent import _alpha_grid
@@ -36,6 +38,8 @@ from nilearn.decoding.space_net_solvers import (
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.image import get_data
+
+SKLEARN_GTE_1_8 = parse(sklearn_version).release[1] >= 8
 
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
@@ -387,9 +391,16 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         screening_percentile=100.0,
     ).fit(X_, y)
 
-    sklogreg = LogisticRegression(
-        l1_ratio=1, fit_intercept=True, solver="liblinear", tol=tol, C=C
-    ).fit(X, y)
+    # TODO (sklearn >= 1.8)
+    # drop the else block
+    if SKLEARN_GTE_1_8:
+        sklogreg = LogisticRegression(
+            l1_ratio=1, fit_intercept=True, solver="liblinear", tol=tol, C=C
+        ).fit(X, y)
+    else:
+        sklogreg = LogisticRegression(
+            penalty="l1", fit_intercept=True, solver="liblinear", tol=tol, C=C
+        ).fit(X, y)
 
     # compare supports
     assert_array_equal(
