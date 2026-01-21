@@ -212,6 +212,8 @@ def group_sparse_covariance(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     emp_covs, n_samples = empirical_covariances(
         subjects, assume_centered=False
     )
@@ -918,6 +920,8 @@ def group_sparse_covariance_path(
         only if test_subjs is not None.
 
     """
+    check_params(locals())
+
     train_covs, train_n_samples = empirical_covariances(
         train_subjs, assume_centered=False, standardize=True
     )
