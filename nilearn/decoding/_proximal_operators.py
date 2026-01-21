@@ -5,6 +5,8 @@ from math import sqrt
 import numpy as np
 
 from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.param_validation import check_params
 
 from ._objective_functions import (
     divergence_id,
@@ -77,6 +79,7 @@ def _objective_function_prox_tvl1(input_img, output_img, gradient, weight):
     return 0.5 * (diff * diff).sum() + weight * tv_l1_from_gradient(gradient)
 
 
+@fill_doc
 def prox_tvl1(
     input_img,
     l1_ratio=0.05,
@@ -167,6 +170,8 @@ def prox_tvl1(
     For details on implementing the bound constraints, read the aforementioned
     Beck and Teboulle paper.
     """
+    check_params(locals())
+
     weight = float(weight)
     input_img_flat = input_img.view()
     input_img_flat = input_img_flat.reshape(input_img.size)
@@ -287,6 +292,7 @@ def prox_tvl1(
     return output, {"converged": (i < max_iter)}
 
 
+@fill_doc
 def prox_tvl1_with_intercept(
     w,
     shape,
@@ -319,6 +325,8 @@ def prox_tvl1_with_intercept(
         Dual-gap tolerance for TV-L1 prox operator approximation loop.
 
     """
+    check_params(locals())
+
     init = init.reshape(shape) if init is not None else init
     out, prox_info = prox_tvl1(
         w[:-1].reshape(shape),

@@ -1237,6 +1237,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     sklearn.feature_extraction.DictVectorizer
 
     """
+    check_params(locals())
+
     logger.log("Computing word features.", msg_level=_INFO, verbose=verbose)
     words = []
     voc_empty = True

@@ -16,7 +16,10 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn._utils.param_validation import check_reduction_strategy
+from nilearn._utils.param_validation import (
+    check_params,
+    check_reduction_strategy,
+)
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 
 INF = 1000 * np.finfo(np.float32).eps
@@ -291,6 +294,8 @@ def img_to_signals_labels(
         e.g. clusters
 
     """
+    check_params(locals())
+
     labels_img = check_niimg_3d(labels_img)
 
     check_reduction_strategy(strategy)
@@ -474,6 +479,8 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
         maps e.g. ICA
 
     """
+    check_params(locals())
+
     maps_img = check_niimg_4d(maps_img)
     imgs = check_niimg_4d(imgs)
 
