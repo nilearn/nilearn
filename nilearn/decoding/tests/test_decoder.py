@@ -1124,14 +1124,13 @@ def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
 
 
-@pytest.mark.thread_unsafe
 def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
     """Check whether ValueError is raised when cv is not set correctly."""
     X, y, _ = multiclass_data
 
     for cv in ["abc", LinearSVC(dual=True)]:
         model = Decoder(mask=NiftiMasker(), cv=cv, standardize="zscore_sample")
-        with pytest.raises(ValueError, match=r"Expected .* as an integer"):
+        with pytest.raises(ValueError, match="Expected cv as an integer"):
             model.fit(X, y)
 
 
@@ -1386,7 +1385,6 @@ def test_frem_decoder_fit_surface(
 
 
 @ignore_warnings
-@pytest.mark.thread_unsafe
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "classifier_penalty",
