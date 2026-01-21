@@ -20,6 +20,7 @@ def _normalize_ws(text):
     return re.sub(r"\s+", " ", text)
 
 
+@pytest.mark.thread_unsafe
 def test_add_js_lib():
     """Tests for function add_js_lib.
 

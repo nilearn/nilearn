@@ -47,6 +47,7 @@ def test_sanitize_figure_and_axes_error(fig, axes):
         _sanitize_figure_and_axes(fig, axes)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "fig,axes,expected",
     [

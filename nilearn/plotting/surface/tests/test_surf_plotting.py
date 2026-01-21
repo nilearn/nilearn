@@ -221,6 +221,7 @@ def test_plot_surf_error(plt, engine, rng, in_memory_mesh):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_tick_format_warning_matplotlib(
     matplotlib_pyplot, in_memory_mesh, bg_map
 ):
@@ -654,6 +655,7 @@ def test_plot_surf_stat_map_vmax(plt, engine, in_memory_mesh, bg_map):
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, vmax=5, engine=engine)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("colorbar", [True, False])
 def test_plot_surf_stat_map_error_vmax_equal_vmin(
     plt, engine, in_memory_mesh, bg_map, colorbar

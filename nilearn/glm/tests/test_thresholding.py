@@ -275,6 +275,7 @@ def test_hommel(alpha, expected):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, expected, expected_n_unique_values",
     [

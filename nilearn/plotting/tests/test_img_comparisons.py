@@ -144,6 +144,7 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     """Tests for plot_img_comparison no plot should return same result."""
     _, axes = plt.subplots(2, 1)
