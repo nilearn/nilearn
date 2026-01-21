@@ -518,6 +518,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
                     f"{len(labels_after_mask)} maps.",
                     stacklevel=find_stack_level(),
                 )
+                labels = labels_after_mask
 
     data = safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :], data[maps_mask, :])[

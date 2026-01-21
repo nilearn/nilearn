@@ -334,14 +334,22 @@ def test_nifti_maps_masker_resampling_to_maps(
 
     signals = masker.fit_transform(img_fmri)
 
+    # We are losing a few regions due to resampling
+    n_expected_regions = n_regions - 7
+
+    assert masker.n_elements_ == n_expected_regions
+
     assert_array_equal(masker.maps_img_.affine, maps33_img.affine)
-    assert masker.maps_img_.shape == maps33_img.shape
+    assert masker.maps_img_.shape == (
+        *maps33_img.shape[:3],
+        n_expected_regions,
+    )
 
     assert_array_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
     # We are losing a few regions due to resampling
-    assert signals.shape == (length, n_regions - 7)
+    assert signals.shape == (length, n_expected_regions)
 
     fmri11_img_r = masker.inverse_transform(signals)
 
@@ -373,14 +381,21 @@ def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
 
     signals = masker.fit_transform(fmri11_img)
 
+    # we are missing some regions due to masking
+    n_expected_regions = n_regions - 5
+
+    assert masker.n_elements_ == n_expected_regions
+
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
-    assert masker.maps_img_.shape == maps33_img.shape
+    assert masker.maps_img_.shape == (
+        *maps33_img.shape[:3],
+        n_expected_regions,
+    )
 
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
-    # We are losing a few regions due to resampling
-    assert signals.shape == (length, n_regions - 5)
+    assert signals.shape == (length, n_expected_regions)
 
     # Some regions have been clipped. Resulting signal must be zero
     assert (signals.var(axis=0) == 0).sum() < n_regions

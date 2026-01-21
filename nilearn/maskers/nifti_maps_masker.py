@@ -5,6 +5,7 @@ from copy import deepcopy
 from typing import Literal
 
 import numpy as np
+from nibabel import Nifti1Image
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -147,18 +148,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     ----------
     %(clean_args_)s
 
-    maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
-        The maps mask of the data.
-
     %(nifti_mask_img_)s
 
     memory_ : joblib memory cache
-
-    n_elements_ : :obj:`int`
-        The number of overlapping maps in the mask.
-        This is equivalent to the number of volumes in the mask image.
-
-        .. nilearn_versionadded:: 0.9.2
 
     Notes
     -----
@@ -418,12 +410,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         mask_logger("load_regions", maps_img, verbose=self.verbose)
 
-        self.maps_img_ = deepcopy(maps_img)
-        self.maps_img_ = check_niimg(
-            self.maps_img_, dtype=self.dtype, atleast_4d=True
+        self._maps_img = deepcopy(maps_img)
+        self._maps_img = check_niimg(
+            self._maps_img, dtype=self.dtype, atleast_4d=True
         )
-        self.maps_img_ = clean_img(
-            self.maps_img_,
+        self._maps_img = clean_img(
+            self._maps_img,
             detrend=False,
             standardize=None,
             ensure_finite=True,
@@ -436,7 +428,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         # Check shapes and affines for resample.
         if self.resampling_target is None:
-            images = {"maps": self.maps_img_}
+            images = {"maps": self._maps_img}
             if self.mask_img_ is not None:
                 images["mask"] = self.mask_img_
             if imgs is not None:
@@ -449,11 +441,11 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         elif self.resampling_target == "mask":
             ref_img = self.mask_img_
         elif self.resampling_target == "maps":
-            ref_img = self.maps_img_
+            ref_img = self._maps_img
 
         if ref_img is not None:
             if self.resampling_target != "maps" and not check_same_fov(
-                ref_img, self.maps_img_
+                ref_img, self._maps_img
             ):
                 mask_logger("resample_regions", verbose=self.verbose)
 
@@ -470,8 +462,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                             "with continuous or linear interpolation"
                         ),
                     )
-                    self.maps_img_ = self._cache(resample_img)(
-                        self.maps_img_,
+                    self._maps_img = self._cache(resample_img)(
+                        self._maps_img,
                         interpolation="linear",
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.affine,
@@ -495,7 +487,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._reporting_data = {
-                "maps_image": self.maps_img_,
+                "maps_image": self._maps_img,
                 "mask": self.mask_img_,
                 "dim": None,
                 "images": imgs,
@@ -505,21 +497,28 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 self._reporting_data["images"] = imgs
                 self._reporting_data["dim"] = dims
 
-        # The number of elements is equal to the number of volumes
-        self._n_elements = self.maps_img_.shape[3]
-
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
 
     def __sklearn_is_fitted__(self):
-        return hasattr(self, "maps_img_") and hasattr(self, "_n_elements")
+        return hasattr(self, "mask_img_") and hasattr(self, "_maps_img")
 
     @property
-    def n_elements_(self):
-        """Return number of regions."""
+    def n_elements_(self) -> int:
+        """The number of overlapping maps in the mask.
+        This is equivalent to the number of volumes in the mask image.
+
+        .. nilearn_versionadded:: 0.9.2
+        """
         check_is_fitted(self)
-        return self._n_elements
+        return self._maps_img.shape[3]
+
+    @property
+    def maps_img_(self) -> Nifti1Image:
+        """Return the maps mask of the data."""
+        check_is_fitted(self)
+        return self._maps_img
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
@@ -593,7 +592,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         # or resampling of the data will be done at extract time.
 
         mask_img_ = self.mask_img_
-        maps_img_ = self.maps_img_
+        maps_img_ = self._maps_img
 
         imgs_ = check_niimg(imgs, atleast_4d=True)
 
@@ -629,7 +628,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                         ),
                     )
                     maps_img_ = self._cache(resample_img)(
-                        self.maps_img_,
+                        maps_img_,
                         interpolation="linear",
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.affine,
@@ -683,9 +682,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             target_affine = maps_img_.affine
 
         params = get_params(
-            NiftiMapsMasker,
-            self,
-            ignore=["resampling_target"],
+            NiftiMapsMasker, self, ignore=["resampling_target"]
         )
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
@@ -693,7 +690,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         sklearn_output_config = getattr(self, "_sklearn_output_config", None)
 
-        region_signals, _ = self._cache(
+        region_signals, labels = self._cache(
             filter_and_extract,
             ignore=["verbose", "memory", "memory_level"],
         )(
@@ -717,10 +714,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             sklearn_output_config=sklearn_output_config,
         )
 
-        # Update the number of elements
-        # because some maps may have been dropped
-        # at transform time
-        self._n_elements = region_signals.shape[1]
+        # Drop the maps empty after masking and resampling
+        self._maps_img = index_img(maps_img_, labels)
 
         return region_signals
 

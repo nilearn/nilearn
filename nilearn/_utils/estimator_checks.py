@@ -1099,6 +1099,7 @@ def check_img_estimator_verbose(estimator_orig):
 
     # verbose True == verbose 1
     # should mostly be the same except for object reference
+    estimator = clone(estimator_orig)
     estimator.verbose = True
 
     buffer = io.StringIO()
@@ -1679,6 +1680,17 @@ def check_img_estimator_dict_unchanged(estimator_orig):
             getattr(estimator, method)(input_img)
 
         dict_after = estimator.__dict__
+
+        if isinstance(estimator, (NiftiMapsMasker)):
+            # NiftiMapsMasker may change some private attributes
+            # at transform or report time
+            # so we only ensure that public attributes are not changed
+            dict_after = {
+                k: v for k, v in dict_after.items() if not k.startswith("_")
+            }
+            dict_before = {
+                k: v for k, v in dict_before.items() if not k.startswith("_")
+            }
 
         # TODO NiftiLabelsMasker is modified at transform time
         # see issue https://github.com/nilearn/nilearn/issues/2720
