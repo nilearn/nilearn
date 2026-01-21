@@ -97,16 +97,17 @@ def test_multi_nifti_labels_masker(
     )
     signals11 = masker11.fit_transform(fmri11_img)
 
-    # We are losing a few regions due to resampling / masking
-    assert signals11.shape == (length, n_regions - 5)
+    # We are losing a few regions due to masking
+    n_regions_expected = n_regions - 5
+
+    assert signals11.shape == (length, n_regions_expected)
 
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
     signals11_list = masker11.fit_transform(signals_input)
 
     for signals in signals11_list:
-        # We are losing a few regions due to resampling
-        assert signals.shape == (length, n_regions - 5)
+        assert signals.shape == (length, n_regions_expected)
 
     masker11 = MultiNiftiLabelsMasker(
         img_labels, resampling_target=None, standardize=None
@@ -266,6 +267,9 @@ def test_multi_nifti_labels_masker_resampling(
 
     signals = masker.fit_transform(fmri11_img)
 
+    # We are losing a few regions due to masking
+    n_regions_expected = n_regions - 7
+
     assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
     assert masker.labels_img_.shape == img_labels.shape
 
@@ -273,8 +277,7 @@ def test_multi_nifti_labels_masker_resampling(
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
     for t in signals:
-        # We are losing a few regions due to resampling
-        assert t.shape == (length, n_regions - 7)
+        assert t.shape == (length, n_regions_expected)
 
         fmri11_img_r = masker.inverse_transform(t)
         assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
@@ -309,6 +312,9 @@ def test_multi_nifti_labels_masker_resampling_clipped_labels(
 
     signals = masker.fit_transform(fmri11_img)
 
+    # We are losing a few regions due to masking
+    n_regions_expected = n_regions - 4
+
     assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
     assert masker.labels_img_.shape == img_labels.shape
     assert_almost_equal(masker.mask_img_.affine, masker.labels_img_.affine)
@@ -319,7 +325,7 @@ def test_multi_nifti_labels_masker_resampling_clipped_labels(
 
     for t in signals:
         # We are losing a few regions due to clipping
-        assert t.shape == (length, n_regions - 4)
+        assert t.shape == (length, n_regions_expected)
 
         # Some regions have been clipped. Resulting signal must be zero
         assert (t.var(axis=0) == 0).sum() < n_regions
