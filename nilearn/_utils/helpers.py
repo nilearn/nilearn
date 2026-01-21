@@ -336,4 +336,4 @@ def is_gil_enabled():
 
 
 def is_sphinx_build():
-    return os.environ.get("SPHINX_BUILD") is not None
+    return any(module.startswith("sphinx.") for module in sys.modules)
