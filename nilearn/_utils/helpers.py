@@ -333,3 +333,7 @@ def is_gil_enabled():
     except AttributeError:
         # sys._is_gil_enabled does not exist in standard Python builds
         return True
+
+
+def is_sphinx_build():
+    return os.environ.get("SPHINX_BUILD") is not None
