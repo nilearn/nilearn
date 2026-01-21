@@ -176,6 +176,7 @@ def test_plot_markers_threshold_errors(matplotlib_pyplot, coords):
         plot_markers([1, 2, 2, 4], coords, node_threshold=5, display_mode="x")
 
 
+@pytest.mark.thread_unsafe
 def test_plot_markers_single_node_value(matplotlib_pyplot):
     """Regression test for Issue #3253."""
     plot_markers([1], [[1, 1, 1]])
