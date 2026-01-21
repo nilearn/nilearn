@@ -7,6 +7,7 @@ from warnings import warn
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_params
 
 
 def _get_metadata_from_bids(
@@ -89,6 +90,8 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
         Value of the field or None if the field is not found.
 
     """
+    check_params(locals())
+
     img_specs = get_bids_files(
         bids_path,
         modality_folder="func",
@@ -135,6 +138,8 @@ def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
         Value of the field or None if the field is not found.
 
     """
+    check_params(locals())
+
     img_specs = get_bids_files(
         main_path=bids_path,
         modality_folder="func",
