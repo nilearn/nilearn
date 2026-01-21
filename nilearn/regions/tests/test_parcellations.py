@@ -202,6 +202,7 @@ def test_parcellations_fit_on_multi_nifti_images(method, image_1, affine_eye):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_single_nifti_image(method, n_parcel, image_2):
@@ -231,6 +232,7 @@ def test_parcellations_transform_verbose(image_2, verbose):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_multi_nifti_images(method, n_parcel, image_2):
@@ -308,6 +310,7 @@ def test_check_parameters_transform(image_2, rng):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_with_multi_confounds_multi_images(
@@ -343,6 +346,7 @@ def test_fit_transform(method, n_parcel, image_2):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_fit_transform_with_confounds(method, n_parcel, image_2, rng):
@@ -358,6 +362,7 @@ def test_fit_transform_with_confounds(method, n_parcel, image_2, rng):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_inverse_transform_single_nifti_image(method, n_parcel, image_2):
