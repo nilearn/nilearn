@@ -186,7 +186,7 @@ figure = plot_surf_stat_map(
     engine=engine,
 )
 if engine == "matplotlib":
-    plot_surf_contours(
+    figure = plot_surf_contours(
         roi_map=destrieux_atlas,
         hemi=hemi,
         labels=labels,
@@ -195,7 +195,6 @@ if engine == "matplotlib":
         legend=True,
         colors=["g", "k"],
     )
-    show()
 elif engine == "plotly":
     figure.add_contours(
         roi_map=destrieux_atlas,
@@ -205,10 +204,10 @@ elif engine == "plotly":
     )
 
     # Uncomment the line below
-    # to view the figure in browser.
+    # to view the plotly figure in browser.
     # figure.show(renderer="browser")
 
-    figure.show()
+figure.show()
 
 # %%
 # Plot with higher-resolution mesh
