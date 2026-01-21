@@ -502,7 +502,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return self
 
     def __sklearn_is_fitted__(self):
-        return hasattr(self, "mask_img_") and hasattr(self, "_maps_img")
+        return hasattr(self, "mask_img_") and hasattr(self, "_maps_img_")
 
     @property
     def n_elements_(self) -> int:
