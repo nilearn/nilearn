@@ -506,8 +506,14 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     @property
     def n_elements_(self) -> int:
-        """The number of overlapping maps in the mask.
-        This is equivalent to the number of volumes in the mask image.
+        """The number of maps in the maps image.
+
+        This is equivalent to the number of volumes in the maps image.
+
+        If some resampling or masking happened
+        at fit / transform time the number of maps
+        may be different from that in the maps image passed
+        at masker construction.
 
         .. nilearn_versionadded:: 0.9.2
         """
@@ -516,7 +522,13 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     @property
     def maps_img_(self) -> Nifti1Image:
-        """Return the maps mask of the data."""
+        """Return the maps image modified after fit / transform.
+
+        If some resampling or masking happened
+        at fit / transform time the number of maps
+        may be different from that in the maps image passed
+        at masker construction.
+        """
         check_is_fitted(self)
         return self._maps_img_
 
