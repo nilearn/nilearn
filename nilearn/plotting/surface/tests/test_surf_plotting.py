@@ -606,6 +606,7 @@ def test_plot_surf_stat_map(plt, engine, in_memory_mesh, bg_map):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_with_background(
     plt, engine, in_memory_mesh, bg_map
 ):

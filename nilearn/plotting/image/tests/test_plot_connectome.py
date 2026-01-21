@@ -208,6 +208,7 @@ def test_plot_connectome_exceptions_wrong_number_node_colors(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_connectome_exception_wrong_edge_threshold(
     adjacency, node_coords
 ):
