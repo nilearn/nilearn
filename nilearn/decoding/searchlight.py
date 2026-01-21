@@ -80,6 +80,8 @@ def search_light(
     scores : array-like of shape (number of rows in A)
         search_light scores
     """
+    check_params(locals())
+
     group_iter = GroupIterator(A.shape[0], n_jobs)
     scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(_group_iter_search_light)(

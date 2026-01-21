@@ -373,6 +373,7 @@ def plot_surf_contours(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    check_params(locals())
     roi_map, surf_mesh, _ = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, map_var_name="roi_map"
     )

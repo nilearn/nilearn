@@ -205,6 +205,8 @@ def load_mni152_template(resolution=None):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     brain_template = check_niimg(MNI152_FILE_PATH)
@@ -261,6 +263,8 @@ def load_mni152_gm_template(resolution=None):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     gm_template = check_niimg(GM_MNI152_FILE_PATH)
@@ -318,6 +322,8 @@ def load_mni152_wm_template(resolution=None):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     wm_template = check_niimg(WM_MNI152_FILE_PATH)
@@ -374,6 +380,8 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     # Load MNI template
@@ -423,6 +431,8 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     # Load MNI template
@@ -477,6 +487,8 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     # Load MNI template

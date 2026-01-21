@@ -791,6 +791,8 @@ def resample_to_img(
     nilearn.image.resample_img
 
     """
+    check_params(locals())
+
     target = check_niimg(target_img)
     target_shape = target.shape
 

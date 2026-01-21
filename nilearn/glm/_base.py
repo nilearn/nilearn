@@ -49,6 +49,7 @@ from nilearn.typing import ClusterThreshold, HeightControl
 FIGURE_FORMAT = "png"
 
 
+@fill_doc
 class BaseGLM(CacheMixin, NilearnBaseEstimator):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`.

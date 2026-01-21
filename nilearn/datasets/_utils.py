@@ -22,7 +22,10 @@ import requests
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 
 from .utils import get_data_dirs
 
@@ -796,6 +799,8 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
         Absolute paths of downloaded files on disk.
 
     """
+    check_params(locals())
+
     if session is None:
         with requests.Session() as sess:
             sess.mount("ftp:", _NaiveFTPAdapter())

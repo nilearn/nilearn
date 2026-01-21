@@ -863,6 +863,7 @@ def apply_mask(
     When using smoothing, ``ensure_finite`` is set to True, as non-finite
     values would spread across the image.
     """
+    check_params(locals())
     if not isinstance(imgs, SurfaceImage):
         mask_img = check_niimg_3d(mask_img)
         mask, mask_affine = load_mask_img(mask_img)

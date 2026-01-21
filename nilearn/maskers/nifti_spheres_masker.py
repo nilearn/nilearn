@@ -18,6 +18,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
+from nilearn._utils.param_validation import check_params
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.image import (
@@ -534,6 +535,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         """
         del y
+        check_params(self.__dict__)
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
