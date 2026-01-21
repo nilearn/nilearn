@@ -344,7 +344,7 @@ def test_glm_target_shape_affine(shape_3d_default, affine_eye):
         fmri_data, design_matrices=design_matrices
     )
 
-    assert model_1.mask_img_.shape == shape_3d_default
+    assert model_1._mask_img.shape == shape_3d_default
 
     z_image = model_1.compute_contrast(np.eye(rk)[1])
 
@@ -353,8 +353,8 @@ def test_glm_target_shape_affine(shape_3d_default, affine_eye):
     model_2 = FirstLevelModel(
         mask_img=None, target_shape=(10, 11, 12), target_affine=affine_eye
     ).fit(fmri_data, design_matrices=design_matrices)
-    assert model_2.mask_img_.shape != shape_3d_default
-    assert model_2.mask_img_.shape == (10, 11, 12)
+    assert model_2._mask_img.shape != shape_3d_default
+    assert model_2._mask_img.shape == (10, 11, 12)
 
     z_image = model_2.compute_contrast(np.eye(rk)[1])
 
