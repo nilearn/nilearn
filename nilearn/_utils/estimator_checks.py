@@ -1681,10 +1681,14 @@ def check_img_estimator_dict_unchanged(estimator_orig):
 
         dict_after = estimator.__dict__
 
-        if isinstance(estimator, (NiftiMapsMasker)):
+        if isinstance(estimator, (NiftiMapsMasker, NiftiLabelsMasker)):
             # NiftiMapsMasker may change some private attributes
             # at transform or report time
             # so we only ensure that public attributes are not changed
+
+            # Similarly NiftiLabelsMasker is modified at transform time
+            # see issue https://github.com/nilearn/nilearn/issues/2720
+
             dict_after = {
                 k: v for k, v in dict_after.items() if not k.startswith("_")
             }
@@ -1692,60 +1696,50 @@ def check_img_estimator_dict_unchanged(estimator_orig):
                 k: v for k, v in dict_before.items() if not k.startswith("_")
             }
 
-        # TODO NiftiLabelsMasker is modified at transform time
-        # see issue https://github.com/nilearn/nilearn/issues/2720
-        if isinstance(estimator, (NiftiLabelsMasker)):
-            with pytest.raises(AssertionError):
-                assert dict_after == dict_before
-        else:
-            # The following try / except is mostly
-            # to give more informative error messages when this check fails.
-            try:
-                assert dict_after == dict_before
-            except AssertionError as e:
-                unmatched_keys = set(dict_after.keys()) ^ set(
-                    dict_before.keys()
+        # The following try / except is mostly
+        # to give more informative error messages when this check fails.
+        try:
+            assert dict_after == dict_before
+        except AssertionError as e:
+            unmatched_keys = set(dict_after.keys()) ^ set(dict_before.keys())
+            if len(unmatched_keys) > 0:
+                raise ValueError(
+                    "Estimator changes '__dict__' keys "
+                    f"during '{method}'.\n"
+                    f"{unmatched_keys} \n"
                 )
-                if len(unmatched_keys) > 0:
-                    raise ValueError(
-                        "Estimator changes '__dict__' keys "
-                        f"during '{method}'.\n"
-                        f"{unmatched_keys} \n"
-                    )
 
-                difference = {}
-                for x in dict_before:
-                    if type(dict_before[x]) is not type(dict_after[x]):
-                        difference[x] = {
-                            "before": dict_before[x],
-                            "after": dict_after[x],
-                        }
-                        continue
-                    if (
-                        isinstance(dict_before[x], np.ndarray)
-                        and not np.array_equal(dict_before[x], dict_after[x])
-                        and not check_imgs_equal(dict_before[x], dict_after[x])
-                    ) or (
-                        not isinstance(
-                            dict_before[x], (np.ndarray, Nifti1Image)
-                        )
-                        and dict_before[x] != dict_after[x]
-                    ):
-                        difference[x] = {
-                            "before": dict_before[x],
-                            "after": dict_after[x],
-                        }
-                        continue
-                if difference:
-                    raise ValueError(
-                        "Estimator changes the following '__dict__' keys \n"
-                        f"during '{method}'.\n"
-                        f"{difference}"
-                    )
-                else:
-                    raise e
-            except Exception as e:
+            difference = {}
+            for x in dict_before:
+                if type(dict_before[x]) is not type(dict_after[x]):
+                    difference[x] = {
+                        "before": dict_before[x],
+                        "after": dict_after[x],
+                    }
+                    continue
+                if (
+                    isinstance(dict_before[x], np.ndarray)
+                    and not np.array_equal(dict_before[x], dict_after[x])
+                    and not check_imgs_equal(dict_before[x], dict_after[x])
+                ) or (
+                    not isinstance(dict_before[x], (np.ndarray, Nifti1Image))
+                    and dict_before[x] != dict_after[x]
+                ):
+                    difference[x] = {
+                        "before": dict_before[x],
+                        "after": dict_after[x],
+                    }
+                    continue
+            if difference:
+                raise ValueError(
+                    "Estimator changes the following '__dict__' keys \n"
+                    f"during '{method}'.\n"
+                    f"{difference}"
+                )
+            else:
                 raise e
+        except Exception as e:
+            raise e
 
 
 @ignore_warnings()
