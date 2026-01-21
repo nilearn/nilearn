@@ -204,10 +204,11 @@ elif engine == "plotly":
         lines=[{"width": 5}],
     )
 
-    figure.show()
     # Uncomment the line below
     # to view the figure in browser.
     # figure.show(renderer="browser")
+
+    figure.show()
 
 # %%
 # Plot with higher-resolution mesh
