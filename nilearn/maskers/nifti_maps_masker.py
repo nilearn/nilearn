@@ -506,14 +506,20 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 self._reporting_data["dim"] = dims
 
         # The number of elements is equal to the number of volumes
-        self.n_elements_ = self.maps_img_.shape[3]
+        self._n_elements = self.maps_img_.shape[3]
 
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
 
     def __sklearn_is_fitted__(self):
-        return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
+        return hasattr(self, "maps_img_") and hasattr(self, "_n_elements")
+
+    @property
+    def n_elements_(self):
+        """Return number of regions."""
+        check_is_fitted(self)
+        return self._n_elements
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
@@ -710,6 +716,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             verbose=self.verbose,
             sklearn_output_config=sklearn_output_config,
         )
+
+        # Update the number of elements
+        # because some maps may have been dropped
+        # at transform time
+        self._n_elements = region_signals.shape[1]
+
         return region_signals
 
     @fill_doc

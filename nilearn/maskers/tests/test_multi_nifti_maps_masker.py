@@ -91,8 +91,12 @@ def test_multi_nifti_maps_masker(
     signals11 = masker.fit_transform(fmri11_img)
 
     # We are losing a few regions due to resampling
-    assert signals11.shape == (length, n_regions - 3)
+    n_regions_expected = n_regions - 3
 
+    assert signals11.shape == (length, n_regions_expected)
+    assert masker.n_elements_ == n_regions_expected
+
+    # with default resampling_target="data"
     MultiNiftiMapsMasker(img_maps, standardize=None).fit_transform(fmri11_img)
 
     # Should work with 4D + 1D input too (also test fit_transform)
@@ -101,8 +105,12 @@ def test_multi_nifti_maps_masker(
     signals11_list = masker.fit_transform(signals_input)
 
     # We are losing a few regions due to resampling
+    assert n_regions_expected == n_regions - 3
+
+    assert masker.n_elements_ == n_regions_expected
+
     for signals in signals11_list:
-        assert signals.shape == (length, n_regions - 3)
+        assert signals.shape == (length, n_regions_expected)
 
     # Call inverse transform
     for signals in signals11_list:
