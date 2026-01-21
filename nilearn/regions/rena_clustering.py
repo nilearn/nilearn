@@ -568,6 +568,8 @@ def recursive_neighbor_agglomeration(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     connectivity = _weighted_connectivity_graph(X, mask_img)
 
     # Initialization
