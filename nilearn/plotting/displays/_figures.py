@@ -4,7 +4,11 @@ import numpy as np
 from scipy import linalg
 from scipy.spatial import distance_matrix
 
-from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn._utils.helpers import (
+    is_kaleido_installed,
+    is_plotly_installed,
+    is_sphinx_build,
+)
 from nilearn._utils.logger import find_stack_level
 from nilearn.plotting.surface._utils import DEFAULT_HEMI, get_faces_on_edge
 from nilearn.surface import SurfaceImage
@@ -114,8 +118,10 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         """
         if self.figure is not None:
-            self.figure.show(renderer=renderer)
-            return self.figure
+            if is_sphinx_build():
+                return self.figure
+            else:
+                self.figure.show(renderer=renderer)
 
     def savefig(self, output_file=None, **savefig_kwargs):  # noqa: ARG002
         """Save the figure to file.
