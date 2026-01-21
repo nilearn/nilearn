@@ -158,20 +158,10 @@ jobs:
                     -e doc_qc
 
     check_skip_flags:
-        name: Check skip flags
-        runs-on: ubuntu-latest
-        steps:
-        -   name: Get repo
-            uses: actions/checkout@v6
-            with:
-                ref: ${{ github.event.pull_request.head.sha }}
-        -   name: Check head git commit message
-            run: |
-                headCommitMsg=$(git show -s --format=%s)
-                if [[ $headCommitMsg == *"[skip doc]"* ]]; then
-                    echo "skipping doc build"
-                    exit 1
-                fi
+        uses: ./.github/workflows/check_skip_flags.yml
+        with:
+            skip_type: doc
+
 
     # Check the build type and files examples to generate
     # Upload as an artifact for other jobs.
