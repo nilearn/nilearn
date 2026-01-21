@@ -400,22 +400,20 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         # Load images
-        maps_img = self.maps_img
+        tmp_maps_img = self.maps_img
         if hasattr(self, "_maps_img"):
             # This is for RegionExtractor that first modifies
             # maps_img before passing to its parent fit method.
-            maps_img = self._maps_img
+            tmp_maps_img = self._maps_img
 
         self._fit_cache()
 
-        mask_logger("load_regions", maps_img, verbose=self.verbose)
+        mask_logger("load_regions", tmp_maps_img, verbose=self.verbose)
 
-        self._maps_img_ = deepcopy(maps_img)
-        self._maps_img_ = check_niimg(
-            self._maps_img_, dtype=self.dtype, atleast_4d=True
-        )
-        self._maps_img_ = clean_img(
-            self._maps_img_,
+        maps_img = deepcopy(tmp_maps_img)
+        maps_img = check_niimg(maps_img, dtype=self.dtype, atleast_4d=True)
+        maps_img = clean_img(
+            maps_img,
             detrend=False,
             standardize=None,
             ensure_finite=True,
@@ -428,7 +426,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         # Check shapes and affines for resample.
         if self.resampling_target is None:
-            images = {"maps": self._maps_img_}
+            images = {"maps": maps_img}
             if self.mask_img_ is not None:
                 images["mask"] = self.mask_img_
             if imgs is not None:
@@ -441,11 +439,11 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         elif self.resampling_target == "mask":
             ref_img = self.mask_img_
         elif self.resampling_target == "maps":
-            ref_img = self._maps_img_
+            ref_img = maps_img
 
         if ref_img is not None:
             if self.resampling_target != "maps" and not check_same_fov(
-                ref_img, self._maps_img_
+                ref_img, maps_img
             ):
                 mask_logger("resample_regions", verbose=self.verbose)
 
@@ -462,8 +460,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                             "with continuous or linear interpolation"
                         ),
                     )
-                    self._maps_img_ = self._cache(resample_img)(
-                        self._maps_img_,
+                    maps_img = self._cache(resample_img)(
+                        maps_img,
                         interpolation="linear",
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.affine,
@@ -483,6 +481,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
                 # Just check that the mask is valid
                 load_mask_img(self.mask_img_)
+
+        self._maps_img_ = maps_img
 
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
