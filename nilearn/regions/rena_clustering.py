@@ -376,9 +376,22 @@ def _nn_connectivity(connectivity, threshold=1e-7):
 
     # maximum on the axis = 0
     max_connectivity = connectivity_.max(axis=0).toarray()[0]
-    inv_max = dia_matrix(
-        (1.0 / max_connectivity, 0), shape=(n_features, n_features)
-    )
+    with warnings.catch_warnings(
+        record=True, category=RuntimeWarning
+    ) as warning_list:
+        inv_max = dia_matrix(
+            (1.0 / max_connectivity, 0), shape=(n_features, n_features)
+        )
+    # raise stacklevel of some warning
+    for w in warning_list:
+        if "divide by zero encountered in divide" in str(w):
+            warnings.warn(
+                "divide by zero encountered in divide",
+                category=RuntimeWarning,
+                stacklevel=find_stack_level(),
+            )
+        else:
+            warnings.warn(w, stacklevel=2)
 
     connectivity_ = inv_max * connectivity_
 

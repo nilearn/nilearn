@@ -46,7 +46,6 @@ from sklearn.model_selection import (
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
 from sklearn.utils.estimator_checks import (
-    ignore_warnings,
     parametrize_with_checks,
 )
 
@@ -245,7 +244,6 @@ def test_check_param_grid_classification(rand_x_y, classifier, param):
     assert list(param_grid.keys()) == list(param)
 
 
-@ignore_warnings
 @pytest.mark.parametrize(
     "param_grid_input",
     [
@@ -290,7 +288,6 @@ def test_check_parameter_grid_is_empty(rand_x_y):
     assert param_grid == {}
 
 
-@ignore_warnings
 @pytest.mark.parametrize(
     "param_grid",
     [
@@ -489,7 +486,6 @@ def test_parallel_fit(rand_x_y):
             assert a == b
 
 
-@ignore_warnings
 @pytest.mark.parametrize(
     "param_values",
     (
@@ -562,7 +558,6 @@ def test_parallel_fit_builtin_cv(
     assert isinstance(best_param[fitted_param_name], numbers.Number)
 
 
-@ignore_warnings
 def test_decoder_param_grid_sequence(binary_classification_data):
     X, y, _ = binary_classification_data
     n_cv_folds = 10
@@ -590,7 +585,6 @@ def test_decoder_param_grid_sequence(binary_classification_data):
             assert len(param_list) == n_cv_folds
 
 
-@ignore_warnings
 def test_decoder_binary_classification_with_masker_object(
     binary_classification_data,
 ):
@@ -605,7 +599,6 @@ def test_decoder_binary_classification_with_masker_object(
     assert accuracy_score(y, y_pred) > 0.95
 
 
-@ignore_warnings
 def test_decoder_binary_classification_with_logistic_model(
     binary_classification_data,
 ):
@@ -621,7 +614,6 @@ def test_decoder_binary_classification_with_logistic_model(
     assert accuracy_score(y, y_pred) > 0.95
 
 
-@ignore_warnings
 @pytest.mark.slow
 @pytest.mark.parametrize("screening_percentile", [100, 20, None])
 def test_decoder_binary_classification_screening(
@@ -640,7 +632,6 @@ def test_decoder_binary_classification_screening(
     assert accuracy_score(y, y_pred) > 0.95
 
 
-@ignore_warnings
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
 def test_decoder_binary_classification_clustering(
     binary_classification_data, clustering_percentile
@@ -661,7 +652,6 @@ def test_decoder_binary_classification_clustering(
     assert accuracy_score(y, y_pred) > 0.9
 
 
-@ignore_warnings
 @pytest.mark.thread_unsafe
 @pytest.mark.slow
 @pytest.mark.parametrize(
@@ -700,7 +690,8 @@ def test_cross_validation(estimator, data, cv):
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
         groups = _rng(0).binomial(2, 0.3, size=len(y))
-    model.fit(X, y, groups=groups)
+    with pytest.warns(match="no feature selection will be performed"):
+        model.fit(X, y, groups=groups)
 
     y_pred = model.predict(X)
 
@@ -718,7 +709,6 @@ def test_cross_validation(estimator, data, cv):
         assert r2_score(y, y_pred) > 0.9
 
 
-@ignore_warnings
 @pytest.mark.slow
 def test_decoder_dummy_classifier(binary_classification_data):
     n_samples = N_SAMPLES
@@ -739,7 +729,6 @@ def test_decoder_dummy_classifier(binary_classification_data):
     assert np.sum(y_pred == 1.0) / n_samples - proportion < 0.05
 
 
-@ignore_warnings
 def test_decoder_dummy_classifier_with_callable(binary_classification_data):
     X, y, mask = binary_classification_data
 
@@ -757,7 +746,6 @@ def test_decoder_dummy_classifier_with_callable(binary_classification_data):
     assert model.score(X, y) == accuracy_score(y, y_pred)
 
 
-@ignore_warnings
 def test_decoder_dummy_classifier_strategy_prior():
     X, y, mask = _make_binary_classification_test_data(n_samples=300)
 
@@ -774,7 +762,6 @@ def test_decoder_dummy_classifier_strategy_prior():
     assert roc_auc_score(y, y_pred) == 0.5
 
 
-@ignore_warnings
 def test_decoder_dummy_classifier_strategy_most_frequent():
     X, y, mask = _make_binary_classification_test_data(n_samples=300)
 
@@ -797,7 +784,6 @@ def test_decoder_dummy_classifier_strategy_most_frequent():
     assert model.cv_scores_ is not None
 
 
-@ignore_warnings
 def test_decoder_dummy_classifier_roc_scoring(binary_classification_data):
     X, y, mask = binary_classification_data
 
@@ -812,7 +798,6 @@ def test_decoder_dummy_classifier_roc_scoring(binary_classification_data):
     assert np.mean(model.cv_scores_[0]) >= 0.45
 
 
-@ignore_warnings
 def test_decoder_error_not_implemented(tiny_binary_classification_data):
     X, y, mask = tiny_binary_classification_data
 
@@ -828,7 +813,6 @@ def test_decoder_error_not_implemented(tiny_binary_classification_data):
         model.fit(X, y)
 
 
-@ignore_warnings
 def test_decoder_error_unknown_scoring_metrics(
     tiny_binary_classification_data,
 ):
@@ -850,7 +834,6 @@ def test_decoder_error_unknown_scoring_metrics(
         model.fit(X, y)
 
 
-@ignore_warnings
 def test_decoder_dummy_classifier_default_scoring():
     X, y, _ = _make_binary_classification_test_data()
 
@@ -867,7 +850,6 @@ def test_decoder_dummy_classifier_default_scoring():
     assert model.score(X, y) > 0.5
 
 
-@ignore_warnings
 @pytest.mark.slow
 def test_decoder_classification_string_label():
     iris = load_iris()
@@ -877,13 +859,13 @@ def test_decoder_classification_string_label():
     y_str = [labels[y[i]] for i in range(len(y))]
 
     model = Decoder(mask=mask, standardize="zscore_sample")
-    model.fit(X, y_str)
+    with pytest.warns(match="no feature selection will be performed"):
+        model.fit(X, y_str)
     y_pred = model.predict(X)
 
     assert accuracy_score(y_str, y_pred) > 0.95
 
 
-@ignore_warnings
 @pytest.mark.slow
 @pytest.mark.parametrize("screening_percentile", [100, 20, 1, None])
 @pytest.mark.parametrize("estimator", ESTIMATOR_REGRESSION)
@@ -904,7 +886,6 @@ def test_decoder_regression_screening(
     assert r2_score(y, y_pred) > 0.95
 
 
-@ignore_warnings
 @pytest.mark.slow
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
 @pytest.mark.parametrize("estimator", ESTIMATOR_REGRESSION)
@@ -929,7 +910,6 @@ def test_decoder_regression_clustering(
     assert model.score(X, y) == r2_score(y, y_pred)
 
 
-@ignore_warnings
 def test_decoder_dummy_regression(regression_data):
     X, y, mask = regression_data
 
@@ -949,7 +929,6 @@ def test_decoder_dummy_regression(regression_data):
     assert model.score(X, y) == r2_score(y, y_pred)
 
 
-@ignore_warnings
 def test_decoder_dummy_regression_default_scoring_metric_is_r2(
     regression_data,
 ):
@@ -968,7 +947,6 @@ def test_decoder_dummy_regression_default_scoring_metric_is_r2(
     assert model.score(X, y) == r2_score(y, y_pred)
 
 
-@ignore_warnings
 def test_decoder_dummy_regression_other_strategy(regression_data):
     """Chexk that decoder object use other strategy for dummy regressor."""
     X, y, mask = regression_data
@@ -991,7 +969,6 @@ def test_decoder_dummy_regression_other_strategy(regression_data):
     assert model.cv_scores_ is not None
 
 
-@ignore_warnings
 @pytest.mark.slow
 def test_decoder_multiclass_classification_masker(multiclass_data):
     X, y, _ = multiclass_data
@@ -1003,7 +980,6 @@ def test_decoder_multiclass_classification_masker(multiclass_data):
     assert accuracy_score(y, y_pred) > 0.95
 
 
-@ignore_warnings
 def test_decoder_multiclass_classification_masker_dummy_classifier(
     multiclass_data,
 ):
@@ -1024,7 +1000,6 @@ def test_decoder_multiclass_classification_masker_dummy_classifier(
     assert model.score(X, y) == accuracy_score(y, y_pred)
 
 
-@ignore_warnings
 @pytest.mark.slow
 @pytest.mark.parametrize("screening_percentile", [100, 20, None])
 def test_decoder_multiclass_classification_screening(
@@ -1043,7 +1018,6 @@ def test_decoder_multiclass_classification_screening(
     assert accuracy_score(y, y_pred) > 0.95
 
 
-@ignore_warnings
 @pytest.mark.slow
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
 @pytest.mark.parametrize("estimator", ["svc_l2", "svc_l1"])
@@ -1134,7 +1108,6 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
             model.fit(X, y)
 
 
-@ignore_warnings
 def test_decoder_multiclass_warnings_decoder(multiclass_data):
     """Check whether decoder raised warning \
         when groups is set to specific value but CV Splitter is not set.
@@ -1152,23 +1125,25 @@ def test_decoder_multiclass_warnings_decoder(multiclass_data):
         model.fit(X, y, groups=groups)
 
 
-@ignore_warnings
 def test_decoder_multiclass_warnings_frem(multiclass_data):
     """Check that warning is raised \
         when n_features is lower than 50 after \
         screening and clustering.
     """
     X, y, _ = multiclass_data
-    with pytest.warns(
-        UserWarning, match=".*decoding model will be trained only.*"
+    model = FREMClassifier(
+        clustering_percentile=10,
+        screening_percentile=10,
+        mask=NiftiMasker(),
+        cv=1,
+        standardize="zscore_sample",
+    )
+    with (
+        pytest.warns(
+            UserWarning, match=".*decoding model will be trained only.*"
+        ),
+        pytest.warns(match="no feature selection will be performed"),
     ):
-        model = FREMClassifier(
-            clustering_percentile=10,
-            screening_percentile=10,
-            mask=NiftiMasker(),
-            cv=1,
-            standardize="zscore_sample",
-        )
         model.fit(X, y)
 
 
@@ -1192,7 +1167,6 @@ def test_decoder_tags_regression():
         assert model.__sklearn_tags__().target_tags.multi_output is True
 
 
-@ignore_warnings
 @pytest.mark.slow
 def test_decoder_strings_filepaths_input(
     tiny_binary_classification_data, tmp_path
@@ -1239,7 +1213,6 @@ def test_decoder_apply_mask_surface(_make_surface_class_data):
     assert type(model.mask_img_).__name__ == "SurfaceImage"
 
 
-@ignore_warnings
 def test_decoder_screening_percentile_surface_default(
     _make_surface_class_data,
 ):
@@ -1247,11 +1220,11 @@ def test_decoder_screening_percentile_surface_default(
     X, y = _make_surface_class_data
 
     model = Decoder(mask=SurfaceMasker(), standardize="zscore_sample")
-    model.fit(X, y)
+    with pytest.warns(match="no feature selection will be performed"):
+        model.fit(X, y)
     assert model.screening_percentile_ == 20
 
 
-@ignore_warnings
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("perc", [None, 100, 0])
 def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
@@ -1263,14 +1236,14 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
         screening_percentile=perc,
         standardize="zscore_sample",
     )
-    model.fit(X, y)
+    with pytest.warns(match="no feature selection will be performed"):
+        model.fit(X, y)
     if perc is None:
         assert model.screening_percentile_ == 100
     else:
         assert model.screening_percentile_ == perc
 
 
-@ignore_warnings
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 def test_decoder_adjust_screening_less_than_mask_surface(
@@ -1288,7 +1261,9 @@ def test_decoder_adjust_screening_less_than_mask_surface(
     mask_n_vertices = _get_mask_extent(surf_mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+
     assert screening_percentile <= mask_to_mesh_ratio
+
     decoder = Decoder(
         mask=surf_mask,
         param_grid={"C": [0.01, 0.1]},
@@ -1296,14 +1271,16 @@ def test_decoder_adjust_screening_less_than_mask_surface(
         screening_percentile=screening_percentile,
         standardize="zscore_sample",
     )
-    decoder.fit(img, y)
+
+    with pytest.warns(match="no feature selection will be performed"):
+        decoder.fit(img, y)
+
     adjusted = decoder.screening_percentile_
     assert adjusted == screening_percentile * (
         mesh_n_vertices / mask_n_vertices
     )
 
 
-@ignore_warnings
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 def test_decoder_adjust_screening_greater_than_mask_surface(
@@ -1321,7 +1298,9 @@ def test_decoder_adjust_screening_greater_than_mask_surface(
     mask_n_vertices = _get_mask_extent(surf_mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+
     assert screening_percentile > mask_to_mesh_ratio
+
     decoder = Decoder(
         mask=surf_mask_1d,
         param_grid={"C": [0.01, 0.1]},
@@ -1329,17 +1308,20 @@ def test_decoder_adjust_screening_greater_than_mask_surface(
         screening_percentile=screening_percentile,
         standardize="zscore_sample",
     )
-    decoder.fit(img, y)
+
+    with pytest.warns(match="no feature selection will be performed"):
+        decoder.fit(img, y)
+
     adjusted = decoder.screening_percentile_
     assert adjusted == 100
 
 
-@ignore_warnings
 def test_decoder_predict_score_surface(_make_surface_class_data):
     """Test classification predict and scoring for surface image."""
     X, y = _make_surface_class_data
     model = Decoder(mask=SurfaceMasker(), standardize="zscore_sample")
-    model.fit(X, y)
+    with pytest.warns(match="no feature selection will be performed"):
+        model.fit(X, y)
     y_pred = model.predict(X)
 
     assert model.scoring == "roc_auc"
@@ -1349,12 +1331,12 @@ def test_decoder_predict_score_surface(_make_surface_class_data):
     assert 0.3 < acc < 0.7
 
 
-@ignore_warnings
 def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
     """Test regression predict and scoring for surface image."""
     X, y = _make_surface_reg_data
     model = DecoderRegressor(mask=SurfaceMasker(), standardize="zscore_sample")
-    model.fit(X, y)
+    with pytest.warns(match="no feature selection will be performed"):
+        model.fit(X, y)
     y_pred = model.predict(X)
 
     assert model.scoring == "r2"
@@ -1364,7 +1346,7 @@ def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
     assert r2 <= 0
 
 
-@ignore_warnings
+@pytest.mark.filterwarnings("ignore:divide by zero encountered in divide")
 @pytest.mark.parametrize("frem", [FREMRegressor, FREMClassifier])
 def test_frem_decoder_fit_surface(
     frem,
@@ -1378,13 +1360,13 @@ def test_frem_decoder_fit_surface(
         clustering_percentile=90,
         standardize="zscore_sample",
     )
-    model.fit(X, y)
+    with pytest.warns(match="no feature selection will be performed"):
+        model.fit(X, y)
 
 
 # ------------------------ test decoder vs sklearn -------------------------- #
 
 
-@ignore_warnings
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "classifier_penalty",
@@ -1480,7 +1462,6 @@ def _set_best_hyperparameters(
     return sklearn_classifier
 
 
-@ignore_warnings
 @pytest.mark.slow
 @pytest.mark.parametrize("regressor", ["svr", "lasso", "ridge"])
 def test_regressor_vs_sklearn(
