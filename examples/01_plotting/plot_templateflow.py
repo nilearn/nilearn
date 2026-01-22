@@ -92,3 +92,65 @@ plot_surf_roi(
 )
 
 show()
+
+
+# %%
+# Getting the right template for volumetric atlases
+# -------------------------------------------------
+# The template used by nilearn to plot volumetric images is ICBM152 2009, release a.
+# However, some atlases are defined on different templates, this is the case for the
+# Harvard-Oxford atlas. This can lead to some imprecisions when plotting volumetric
+# atlases, with regions encompassing non-brain areas.
+
+from nilearn.datasets import fetch_atlas_harvard_oxford
+from nilearn.plotting import plot_roi
+
+plotting_params = {
+    "view_type": "contours",
+    "display_mode": "x",
+    "cut_coords": [-4, -2, 0],
+    "black_bg": False,
+}
+
+harvard_oxford_sub = fetch_atlas_harvard_oxford("sub-maxprob-thr25-1mm")
+
+
+plot_roi(
+    harvard_oxford_sub.filename,
+    title="Harvard-Oxford atlas | sub-cortical | ICBM152 2009",
+    **plotting_params,
+)
+
+
+# %%
+# This is because the template of the Harvard-Oxford atlas is:
+
+print(f"Harvard-Oxford atlas template: {harvard_oxford_sub.template}")
+
+#  %%
+# Getting a template
+# ------------------
+# If you want to visualize the Harvard-Oxford atlas on the proper template,
+# you can get it from templateFlow. This template is also used by FSL.
+
+template = "MNI152NLin6Asym"
+resolution = "01"
+
+MNI152NLin6Asym_template_img = tflow.get(
+    template,
+    resolution=resolution,
+    suffix="T1w",
+    desc="brain",
+    extension="nii.gz",
+)
+
+print(f"{MNI152NLin6Asym_template_img=}")
+
+plot_roi(
+    harvard_oxford_sub.filename,
+    title="Harvard-Oxford atlas | sub-cortical | MNI152NLin6Asym",
+    bg_img=MNI152NLin6Asym_template_img,
+    **plotting_params,
+)
+
+show()
