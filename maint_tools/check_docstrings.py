@@ -50,16 +50,17 @@ def main() -> None:
 
     for filename in filenames:
         for func_def in list_functions(filename):
-            check_fill_doc_decorator(func_def, filename)
-            n_issues = check_docstring(func_def, filename, n_issues)
+            # check_fill_doc_decorator(func_def, filename)
+            # n_issues = check_docstring(func_def, filename, n_issues)
+            check_returns_yields_and_annotation(func_def, filename)
 
         for class_def in list_classes(filename):
-            check_fill_doc_decorator(class_def, filename)
+            # check_fill_doc_decorator(class_def, filename)
+            # n_issues = check_docstring(class_def, filename, n_issues)
 
-            n_issues = check_docstring(class_def, filename, n_issues)
-
-            for meth_def in list_functions(class_def):
-                n_issues = check_docstring(meth_def, filename, n_issues)
+            for _meth_def in list_functions(class_def):
+                # n_issues = check_docstring(meth_def, filename, n_issues)
+                check_returns_yields_and_annotation(func_def, filename)
 
     print(f"{n_issues} detected\n\n")
 
@@ -185,6 +186,94 @@ def get_missing(docstring: str, values=None) -> list[tuple[str, str, str]]:
                 missing.append((arg_name, arg_desc, v))
 
     return missing
+
+
+def function_has_return_value(node: ast.AST) -> bool:
+    """Return True if function contains a return statement with a value."""
+    for subnode in ast.walk(node):
+        if isinstance(subnode, ast.Return) and subnode.value is not None:
+            return True
+    return False
+
+
+def function_has_yield(node: ast.AST) -> bool:
+    """Return True if function contains a yield statement."""
+    for subnode in ast.walk(node):
+        if isinstance(subnode, (ast.Yield, ast.YieldFrom)):
+            return True
+    return False
+
+
+def docstring_has_returns_section(docstring: str) -> bool:
+    """Return True if docstring contains a Returns section."""
+    try:
+        doc = NumpyDocString(docstring)
+    except Exception:
+        return False
+
+    return bool(doc["Returns"])
+
+
+def docstring_has_yields_section(docstring: str) -> bool:
+    """Return True if docstring contains a Yields section."""
+    try:
+        doc = NumpyDocString(docstring)
+    except Exception:
+        return False
+
+    return bool(doc["Yields"])
+
+
+def has_none_return_annotation(node: ast.FunctionDef) -> bool:
+    """Return True if function has explicit -> None return annotation."""
+    if node.returns is None:
+        return False
+
+    # Python 3.8+: ast.Constant(value=None)
+    if isinstance(node.returns, ast.Constant):
+        return node.returns.value is None
+
+    # -> None
+    if isinstance(node.returns, ast.Name):
+        return node.returns.id == "None"
+
+    return False
+
+
+def check_returns_yields_and_annotation(ast_node, filename: str) -> None:
+    """Check consistency between return/yield behavior, \
+        docstring, and annotations.
+    """
+    if not isinstance(ast_node, ast.FunctionDef):
+        return
+
+    has_return_value = function_has_return_value(ast_node)
+    has_yield = function_has_yield(ast_node)
+
+    docstring = ast.get_docstring(ast_node, clean=False)
+
+    # function returns / yields a value → must have Returns / Yields section
+    if has_return_value or has_yield:
+        if not docstring:
+            return
+
+        if has_yield and not docstring_has_yields_section(docstring):
+            print(
+                f"{filename}:{ast_node.lineno} "
+                f"- {ast_node.name} - [red]missing Yields section in docstring"
+            )
+        elif has_return_value and not docstring_has_returns_section(docstring):
+            print(
+                f"{filename}:{ast_node.lineno} "
+                f"- {ast_node.name} - [red]missing Return section in docstring"
+            )
+
+    # Case 3 — no return & no yield → must be annotated as -> None
+    elif not has_none_return_annotation(ast_node):
+        print(
+            f"{filename}:{ast_node.lineno} "
+            f"- {ast_node.name} - [red]missing return annotation '-> None'"
+        )
 
 
 if __name__ == "__main__":

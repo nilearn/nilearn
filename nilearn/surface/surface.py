@@ -983,7 +983,9 @@ def load_surf_data(surf_data):
     return np.squeeze(data)
 
 
-def check_extensions(surf_data, data_extensions, freesurfer_data_extensions):
+def check_extensions(
+    surf_data, data_extensions, freesurfer_data_extensions
+) -> None:
     """Check the extension of the input file.
 
     Should either be one one of the supported data formats

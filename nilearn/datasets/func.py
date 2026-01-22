@@ -2536,7 +2536,7 @@ def select_from_index(
     return urls
 
 
-def patch_openneuro_dataset(file_list):
+def patch_openneuro_dataset(file_list) -> None:
     """Add symlinks for files not named according to :term:`BIDS` conventions.
 
     .. warning::

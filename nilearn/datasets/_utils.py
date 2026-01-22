@@ -341,7 +341,7 @@ def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
 
 
 @fill_doc
-def uncompress_file(file_, delete_archive=True, verbose=1):
+def uncompress_file(file_, delete_archive=True, verbose=1) -> None:
     """Uncompress files contained in a data_set.
 
     Parameters
@@ -724,7 +724,7 @@ def get_dataset_descr(ds_name):
     return descr
 
 
-def movetree(src, dst):
+def movetree(src, dst) -> None:
     """Move entire tree under `src` inside `dst`.
 
     Creates `dst` if it does not already exist.
