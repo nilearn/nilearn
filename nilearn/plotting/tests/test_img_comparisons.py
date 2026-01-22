@@ -21,6 +21,7 @@ def _mask():
     return Nifti1Image(data_positive, affine)
 
 
+@pytest.mark.thread_unsafe
 def test_deprecation_function_moved(matplotlib_pyplot, img_3d_mni):
     from nilearn.plotting.image.img_plotting import (
         plot_img_comparison as old_fn,

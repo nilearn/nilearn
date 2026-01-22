@@ -684,6 +684,7 @@ def test_plot_surf_stat_map_colormap(plt, engine, in_memory_mesh, bg_map):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_error(in_memory_mesh, bg_map):
     """Test if nilearn.plotting.surface.surf_plotting.plot_surf_stat_map
     raises error with wrong size of stat map data.

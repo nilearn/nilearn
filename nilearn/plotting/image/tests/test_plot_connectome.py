@@ -223,6 +223,7 @@ def test_plot_connectome_exception_wrong_edge_threshold(
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", ["0.1", "10", "10.2.3%", "asdf%"])
 def test_plot_connectome_exception_wrong_edge_threshold_format(
     threshold, adjacency, node_coords

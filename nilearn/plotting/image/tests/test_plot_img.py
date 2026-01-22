@@ -123,6 +123,7 @@ def test_plot_img_transparency_warning(
         plot_img(img_3d_ones_mni, transparency=transparency)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("transparency_range", [[10, -1], [5]])
 def test_plot_img_transparency_range_error(
     matplotlib_pyplot, img_3d_ones_mni, transparency_range, transparency_image
@@ -187,6 +188,7 @@ def test_cut_coords_out_of_bounds_error(
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "display_mode, cut_coords",
     [
