@@ -183,6 +183,8 @@ def run_glm(
         values are RegressionResults instances corresponding to the voxels.
 
     """
+    check_params(locals())
+
     acceptable_noise_models = ["ols", "arN"]
     if (noise_model[:2] != "ar") and (noise_model != "ols"):
         raise ValueError(

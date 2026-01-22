@@ -1,4 +1,5 @@
 import datetime
+import itertools
 import uuid
 import warnings
 from collections import OrderedDict
@@ -9,10 +10,10 @@ from typing import Any, Literal
 import numpy as np
 import pandas as pd
 from nibabel.onetime import auto_attr
-from sklearn.base import BaseEstimator
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn._base import SKLEARN_GTE_1_7, NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
@@ -48,12 +49,33 @@ from nilearn.typing import ClusterThreshold, HeightControl
 FIGURE_FORMAT = "png"
 
 
-class BaseGLM(CacheMixin, BaseEstimator):
+@fill_doc
+class BaseGLM(CacheMixin, NilearnBaseEstimator):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`.
     """
 
     _estimator_type = "glm"  # TODO (sklearn >= 1.8) remove
+
+    def _doc_link_url_param_generator(self, *args):  # noqa : ARG002
+        """Return doc URL components for GLM estimators.
+
+        GLM doc URL is slightly different than that of other estimators.
+
+        # TODO (sklearn >= 1.7) remove *args from signature
+        """
+        estimator_name = self.__class__.__name__
+        tmp = list(
+            itertools.takewhile(
+                lambda part: not part.startswith("_"),
+                self.__class__.__module__.split("."),
+            )
+        )
+        estimator_module = ".".join([tmp[0], tmp[1], tmp[2]])
+        return {
+            "estimator_module": estimator_module,
+            "estimator_name": estimator_name,
+        }
 
     def _is_volume_glm(self):
         """Return if model is run on volume data or not."""
@@ -118,13 +140,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 model_param[k] = v.tolist()
 
         return model_param
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -537,15 +552,18 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 self._is_first_level_glm(),
             )
         )
-
-        model_attributes = glm_model_attributes_to_dataframe(self)
-        with pd.option_context("display.max_colwidth", 100):
-            model_attributes_html = dataframe_to_html(
-                model_attributes,
-                precision=2,
-                header=True,
-                sparsify=False,
-            )
+        if SKLEARN_GTE_1_7:
+            parameters = self._repr_html_()
+        else:
+            # TODO (sklearn > 1.6.2) remove else block
+            model_attributes = glm_model_attributes_to_dataframe(self)
+            with pd.option_context("display.max_colwidth", 100):
+                parameters = dataframe_to_html(
+                    model_attributes,
+                    precision=2,
+                    header=True,
+                    sparsify=False,
+                )
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data: dict[str, Any] = {
@@ -715,7 +733,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             date=datetime.datetime.now().replace(microsecond=0).isoformat(),
             mask_plot=mask_plot,
             model_type=self.__str__(),
-            parameters=model_attributes_html,
+            parameters=parameters,
             reporting_data=Bunch(**self._reporting_data),
             results=results,
             run_wise_dict=run_wise_dict,

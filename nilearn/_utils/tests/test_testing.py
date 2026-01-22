@@ -36,14 +36,13 @@ def test_memory_usage():
         assert_memory_less_than(100, 0.1, create_object, 200 * 1024**2)
 
 
-@pytest.mark.xfail(not is_gil_enabled(), reason="fails without GIL")
 def test_int64_niftis(affine_eye, tmp_path):
     data = np.ones((3, 3, 3), dtype=bool)
     for dtype in "uint8", "int32", "float32":
         img = Nifti1Image(data.astype(dtype), affine_eye)
         img.to_filename(tmp_path.joinpath("img.nii.gz"))
     for dtype in "int64", "uint64":
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             Nifti1Image(data.astype(dtype), affine_eye)
 
 

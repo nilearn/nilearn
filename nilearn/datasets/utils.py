@@ -6,6 +6,9 @@ from warnings import warn
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import (
+    check_params,
+)
 
 
 @fill_doc
@@ -36,6 +39,8 @@ def get_data_dirs(data_dir=None):
     5. nilearn_data in the user home folder
 
     """
+    check_params(locals())
+
     # We build an array of successive paths by priority
     # The boolean indicates if it is a pre_dir: in that case, we won't add the
     # dataset name to the path.

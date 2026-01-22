@@ -834,6 +834,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=True):
         as the reference image.
 
     """
+    check_params(locals())
+
     if isinstance(ref_niimg, SurfaceImage):
         mesh = ref_niimg.mesh
         return SurfaceImage(
@@ -1448,6 +1450,8 @@ def binarize_img(
      >>> img = binarize_img(anatomical_image)
 
     """
+    check_params(locals())
+
     return math_img(
         "img.astype(bool).astype('int8')",
         img=threshold_img(
@@ -2037,6 +2041,8 @@ def iter_check_niimg(
         check_niimg, check_niimg_3d, check_niimg_4d
 
     """
+    check_params(locals())
+
     # avoid circular import
     from nilearn.image.resampling import resample_img
 

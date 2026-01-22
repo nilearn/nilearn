@@ -10,19 +10,18 @@ import warnings
 import numpy as np
 import scipy.linalg
 from joblib import Parallel, delayed
-from sklearn.base import BaseEstimator
 from sklearn.covariance import empirical_covariance
 from sklearn.model_selection import check_cv
 from sklearn.utils import check_array
 from sklearn.utils.extmath import fast_logdet
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params, sanitize_verbose
-from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -213,6 +212,8 @@ def group_sparse_covariance(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     emp_covs, n_samples = empirical_covariances(
         subjects, assume_centered=False
     )
@@ -545,7 +546,7 @@ def _check_if_tolerance_reached(tol, max_norm, verbose, n):
 
 
 @fill_doc
-class GroupSparseCovariance(CacheMixin, BaseEstimator):
+class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
     """Covariance and precision matrix estimator.
 
     The model used has been introduced in :footcite:t:`Varoquaux2010a`, and the
@@ -606,30 +607,6 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(niimg_like=False)
-        return tags
 
     @fill_doc
     def fit(self, subjects, y=None):
@@ -943,6 +920,8 @@ def group_sparse_covariance_path(
         only if test_subjs is not None.
 
     """
+    check_params(locals())
+
     train_covs, train_n_samples = empirical_covariances(
         train_subjs, assume_centered=False, standardize=True
     )
@@ -1020,7 +999,7 @@ class EarlyStopProbe:
 
 
 @fill_doc
-class GroupSparseCovarianceCV(BaseEstimator):
+class GroupSparseCovarianceCV(NilearnBaseEstimator):
     """Sparse inverse covariance w/ cross-validated choice of the parameter.
 
     A cross-validated value for the regularization parameter is first
@@ -1130,30 +1109,6 @@ class GroupSparseCovarianceCV(BaseEstimator):
         self.n_jobs = n_jobs
         self.debug = debug
         self.early_stopping = early_stopping
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(niimg_like=False)
-        return tags
 
     @fill_doc
     def fit(self, subjects, y=None):

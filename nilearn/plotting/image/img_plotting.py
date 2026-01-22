@@ -1654,6 +1654,8 @@ def plot_connectome(
         node coords on brain probabilistic atlases.
 
     """
+    check_params(locals())
+
     display = plot_glass_brain(
         None,
         display_mode=display_mode,
@@ -1767,6 +1769,8 @@ def plot_markers(
         An instance of the OrthoProjector class. If ``output_file`` is defined,
         None is returned.
     """
+    check_params(locals())
+
     node_values = np.array(node_values).flatten()
     node_coords = np.array(node_coords)
 

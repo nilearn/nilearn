@@ -11,21 +11,21 @@ from copy import deepcopy
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
 from sklearn import svm
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
 from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
+from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
-
-from .. import masking
-from ..image.resampling import coord_transform
+from nilearn.masking import load_mask_img
 
 ESTIMATOR_CATALOG = {"svc": svm.LinearSVC, "svr": svm.SVR}
 
@@ -80,6 +80,8 @@ def search_light(
     scores : array-like of shape (number of rows in A)
         search_light scores
     """
+    check_params(locals())
+
     group_iter = GroupIterator(A.shape[0], n_jobs)
     scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(_group_iter_search_light)(
@@ -234,7 +236,7 @@ def _group_iter_search_light(
 # Class for search_light #####################################################
 ##############################################################################
 @fill_doc
-class SearchLight(TransformerMixin, BaseEstimator):
+class SearchLight(TransformerMixin, NilearnBaseEstimator):
     """Implement search_light analysis using an arbitrary type of classifier.
 
     Parameters
@@ -333,13 +335,6 @@ class SearchLight(TransformerMixin, BaseEstimator):
         self.cv = cv
         self.verbose = verbose
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 
@@ -419,9 +414,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         process_mask_img = self.process_mask_img or self.mask_img_
 
         # Compute world coordinates of the seeds
-        process_mask, process_mask_affine = masking.load_mask_img(
-            process_mask_img
-        )
+        process_mask, process_mask_affine = load_mask_img(process_mask_img)
 
         self.process_mask_ = process_mask
 
