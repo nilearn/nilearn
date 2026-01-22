@@ -538,7 +538,7 @@ def test_signal_extraction_with_maps_and_labels(
     maps_signals, maps_labels = img_to_signals_maps(
         fmri_img, maps_img, keep_masked_maps=True
     )
-    labels_signals, labels_labels = img_to_signals_labels(
+    labels_signals, labels_labels, _ = img_to_signals_labels(
         imgs=fmri_img, labels_img=labeled_regions, keep_masked_labels=True
     )
     assert_almost_equal(maps_signals, labels_signals)
@@ -547,7 +547,7 @@ def test_signal_extraction_with_maps_and_labels(
     mask_img = _create_mask_with_3_regions_from_labels_data(
         labels_data, labeled_regions.affine
     )
-    labels_signals, labels_labels = img_to_signals_labels(
+    labels_signals, labels_labels, _ = img_to_signals_labels(
         imgs=fmri_img,
         labels_img=labeled_regions,
         mask_img=mask_img,
