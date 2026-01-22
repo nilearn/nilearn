@@ -50,8 +50,8 @@ def _generate_model_metadata(out_file, model):
     }
     if not model._is_volume_glm():
         density = {}
-        for hemi in model.masker_.mask_img_.mesh.parts:
-            d = model.masker_.mask_img_.mesh.parts[hemi].n_vertices
+        for hemi in model._mask_img.mesh.parts:
+            d = model._mask_img.mesh.parts[hemi].n_vertices
             if d not in density:
                 density[d] = f"{d} vertices per hemisphere"
         model_metadata["Density"] = density
@@ -496,11 +496,11 @@ def _write_mask(model):
     filenames = model._reporting_data["filenames"]
     out_dir = filenames["dir"]
     if model._is_volume_glm():
-        model.masker_.mask_img_.to_filename(out_dir / filenames["mask"])
+        model._mask_img.to_filename(out_dir / filenames["mask"])
     else:
         # need to convert mask from book to a type that's gifti friendly
 
-        mask = deepcopy(model.masker_.mask_img_)
+        mask = deepcopy(model._mask_img)
         for label, hemi in zip(["L", "R"], ["left", "right"], strict=False):
             mask.data.parts[hemi] = mask.data.parts[hemi].astype("uint8")
             density = mask.mesh.parts[hemi].n_vertices
