@@ -4229,6 +4229,14 @@ def check_multimasker_generate_report(estimator_orig):
         )
 
     else:
+        warnings_msg_to_check = []
+        if isinstance(estimator, SurfaceMapsMasker):
+            warnings_msg_to_check = [
+                "SurfaceMapsMasker has not been transformed",
+                "masker only has 6 map",
+            ]
         # TODO add a warning
         estimator.fit(input_img)
-        generate_and_check_masker_report(estimator)
+        generate_and_check_masker_report(
+            estimator, warnings_msg_to_check=warnings_msg_to_check
+        )
