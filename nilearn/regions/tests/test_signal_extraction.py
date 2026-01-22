@@ -538,45 +538,24 @@ def test_signal_extraction_with_maps_and_labels(
     maps_signals, maps_labels = img_to_signals_maps(
         fmri_img, maps_img, keep_masked_maps=True
     )
-    with pytest.warns(
-        FutureWarning,
-        match=(
-            "In version 0.15.0, "
-            '"keep_masked_labels" parameter will be removed.'
-        ),
-    ):
-        labels_signals, labels_labels, _ = img_to_signals_labels(
-            imgs=fmri_img, labels_img=labeled_regions, keep_masked_labels=True
-        )
+    labels_signals, labels_labels = img_to_signals_labels(
+        imgs=fmri_img, labels_img=labeled_regions, keep_masked_labels=True
+    )
     assert_almost_equal(maps_signals, labels_signals)
 
     # Same thing with a mask, containing only 3 regions.
     mask_img = _create_mask_with_3_regions_from_labels_data(
         labels_data, labeled_regions.affine
     )
-    with pytest.warns(
-        FutureWarning,
-        match=(
-            "In version 0.15.0, "
-            '"keep_masked_labels" parameter will be removed.'
-        ),
-    ):
-        labels_signals, labels_labels, _ = img_to_signals_labels(
-            imgs=fmri_img,
-            labels_img=labeled_regions,
-            mask_img=mask_img,
-            keep_masked_labels=True,
-        )
-    with pytest.warns(
-        FutureWarning,
-        match=(
-            'Applying "mask_img" before signal extraction '
-            "may result in empty region signals in the output."
-        ),
-    ):
-        maps_signals, maps_labels = img_to_signals_maps(
-            fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
-        )
+    labels_signals, labels_labels = img_to_signals_labels(
+        imgs=fmri_img,
+        labels_img=labeled_regions,
+        mask_img=mask_img,
+        keep_masked_labels=True,
+    )
+    maps_signals, maps_labels = img_to_signals_maps(
+        fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
+    )
 
     assert_almost_equal(maps_signals, labels_signals)
     assert maps_signals.shape[1] == N_REGIONS
