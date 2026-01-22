@@ -27,7 +27,7 @@ def _gamma_difference_hrf(
     dispersion=1.0,
     u_dispersion=1.0,
     ratio=0.167,
-):
+) -> np.ndarray:
     """Compute an hrf as the difference of two gamma functions.
 
     Parameters
@@ -85,7 +85,7 @@ def _gamma_difference_hrf(
     return hrf
 
 
-def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
+def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0) -> np.ndarray:
     """Implement the :term:`SPM` :term:`HRF` model.
 
     Parameters
