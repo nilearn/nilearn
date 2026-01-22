@@ -1549,7 +1549,7 @@ class SurfaceMesh(abc.ABC):
             f"{len(self.faces)} faces.>"
         )
 
-    def to_gifti(self, gifti_file):
+    def to_gifti(self, gifti_file) -> None:
         """Write surface mesh to a Gifti file on disk.
 
         Parameters
@@ -1762,7 +1762,7 @@ def _check_data_and_mesh_compat(mesh, data):
             )
 
 
-def _mesh_to_gifti(coordinates, faces, gifti_file):
+def _mesh_to_gifti(coordinates, faces, gifti_file) -> None:
     """Write surface mesh to gifti file on disk.
 
     Parameters

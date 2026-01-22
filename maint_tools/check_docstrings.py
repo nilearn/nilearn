@@ -7,6 +7,7 @@
 """
 
 import ast
+import contextlib
 import re
 from pathlib import Path
 
@@ -44,25 +45,23 @@ def main() -> None:
     """Find missing :obj:`` in doc string type."""
     print("\n[blue]Finding missing :obj:`` in doc string type.\n")
 
-    filenames = list_modules(skip_private=False)
-
-    n_issues = 0
+    filenames = list_modules(skip_private=True)
 
     for filename in filenames:
         for func_def in list_functions(filename):
             # check_fill_doc_decorator(func_def, filename)
-            # n_issues = check_docstring(func_def, filename, n_issues)
+            # check_docstring(func_def, filename)
             check_returns_yields_and_annotation(func_def, filename)
+            # check_missing_return_annotation(func_def, filename)
 
         for class_def in list_classes(filename):
             # check_fill_doc_decorator(class_def, filename)
-            # n_issues = check_docstring(class_def, filename, n_issues)
+            # check_docstring(class_def, filename)
 
-            for _meth_def in list_functions(class_def):
-                # n_issues = check_docstring(meth_def, filename, n_issues)
-                check_returns_yields_and_annotation(func_def, filename)
-
-    print(f"{n_issues} detected\n\n")
+            for meth_def in list_functions(class_def):
+                # check_docstring(meth_def, filename)
+                check_returns_yields_and_annotation(meth_def, filename)
+                # check_missing_return_annotation(meth_def, filename)
 
 
 def check_fill_doc_decorator(
@@ -140,7 +139,7 @@ def contains_check_params_call(node: ast.AST) -> bool:
     return False
 
 
-def check_docstring(ast_node, filename: str, n_issues: int) -> int:
+def check_docstring(ast_node, filename: str) -> None:
     """Check that defaults in an AST node are present in docstring type."""
     docstring = ast.get_docstring(ast_node, clean=False)
     if not docstring:
@@ -149,19 +148,14 @@ def check_docstring(ast_node, filename: str, n_issues: int) -> int:
             f"- {ast_node.name} - [red] No docstring detected"
         )
     else:
-        try:
+        missing = None
+        with contextlib.suppress(Exception):
             missing = get_missing(docstring)
-        except Exception:
-            return n_issues
-
-        n_issues += len(missing)
 
         if missing:
             print(f"{filename}:{ast_node.lineno} - {ast_node.name}")
             for param, desc, value in missing:
                 print(f" '{param}: {desc}' - [red] missing :obj:`{value}`")
-
-    return n_issues
 
 
 def get_missing(docstring: str, values=None) -> list[tuple[str, str, str]]:
@@ -240,6 +234,18 @@ def has_none_return_annotation(node: ast.FunctionDef) -> bool:
     return False
 
 
+def check_missing_return_annotation(ast_node, filename: str) -> None:
+    """Warn if a function or method has no return type annotation."""
+    if not isinstance(ast_node, ast.FunctionDef):
+        return
+
+    if ast_node.returns is None:
+        print(
+            f"{filename}:{ast_node.lineno} "
+            f"- {ast_node.name} - [red]missing return type annotation"
+        )
+
+
 def check_returns_yields_and_annotation(ast_node, filename: str) -> None:
     """Check consistency between return/yield behavior, \
         docstring, and annotations.
@@ -268,7 +274,7 @@ def check_returns_yields_and_annotation(ast_node, filename: str) -> None:
                 f"- {ast_node.name} - [red]missing Return section in docstring"
             )
 
-    # Case 3 — no return & no yield → must be annotated as -> None
+    # no return & no yield → must be annotated as -> None
     elif not has_none_return_annotation(ast_node):
         print(
             f"{filename}:{ast_node.lineno} "
