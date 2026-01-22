@@ -4,17 +4,17 @@ Using brain templates from TemplateFlow
 =======================================
 
 In this example, we see how to fetch and use brain templates from
-`TemplateFlow <https://https://www.templateflow.org/>`. We see how to fetch and use the
-Desikan-Killiany (DK) atlas in order to make surface plots.
+`TemplateFlow <https://https://www.templateflow.org/>`. We see how to fetch and
+use the Desikan-Killiany (DK) atlas in order to make surface plots.
 """
 
 # %%
 # Fetch DK Surface template
 # -------------------------
 #
-# We fetch the DK atlas from TemplateFlow. The template is available at multiple
-# resolutions (number of vertices per hemisphere). Here, we fetch the 10k
-# resolution.
+# We fetch the DK atlas from TemplateFlow. The template is available at
+# multiple resolutions (number of vertices per hemisphere). Here, we fetch the
+# 10k resolution.
 
 import templateflow.api as tflow
 
@@ -58,10 +58,10 @@ desikan = SurfaceImage(mesh=mesh, data=data)
 # %%
 # Plotting the DK atlas
 # ---------------------
-# To plot the DK atlas, we also fetch the lookup table (LUT) from TemplateFlow, to map
-# region indices to the original region names and colors. We also fetch the background
-# sulcal depth map to add more detail to the surface plot. To do this we map the density
-# to the corresponding fsaverage template name.
+# To plot the DK atlas, we also fetch the lookup table (LUT) from TemplateFlow,
+# to map region indices to the original region names and colors. We also fetch
+# the background sulcal depth map to add more detail to the surface plot. To
+# do this we map the density to the corresponding fsaverage template name.
 
 
 import pandas as pd
@@ -97,10 +97,10 @@ show()
 # %%
 # Getting the right template for volumetric atlases
 # -------------------------------------------------
-# The template used by nilearn to plot volumetric images is ICBM152 2009, release a.
-# However, some atlases are defined on different templates, this is the case for the
-# Harvard-Oxford atlas. This can lead to some imprecisions when plotting volumetric
-# atlases, with regions encompassing non-brain areas.
+# The template used by nilearn to plot volumetric images is ICBM152 2009,
+# release a. However, some atlases are defined on different templates, this is
+# the case for the Harvard-Oxford atlas. This can lead to some imprecisions
+# when plotting volumetric atlases, with regions encompassing non-brain areas.
 
 from nilearn.datasets import fetch_atlas_harvard_oxford
 from nilearn.plotting import plot_roi
