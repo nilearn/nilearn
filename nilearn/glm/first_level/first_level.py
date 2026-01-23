@@ -1349,10 +1349,6 @@ def _check_events_file_uses_tab_separators(events_files):
         Files are expected to be text files.
         Non-text files will raise ValueError.
 
-    Returns
-    -------
-    None
-
     Raises
     ------
     ValueError:
