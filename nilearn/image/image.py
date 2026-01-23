@@ -56,7 +56,7 @@ from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
 from nilearn.typing import ClusterThreshold, NiimgLike
 
 
-def get_data(img) -> np.ndarray:
+def get_data(img):
     """Get the image data as a :class:`numpy.ndarray`.
 
     Parameters
