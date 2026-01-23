@@ -30,3 +30,5 @@ Enhancements
 
 Changes
 -------
+
+- :bdg-danger:`Deprecation` The default for the parameter ``return_masked_atlas`` of :func:`~regions.img_to_signals_labels` to True. This deprecation was planned for 0.13.0 but missed. The parameter will be removed in version >= 0.15 (:gh:`5942` by `Rémi Gau`_).
