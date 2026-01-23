@@ -577,7 +577,7 @@ def test_signal_extraction_with_maps_and_labels_keep_masked(
     maps_img = Nifti1Image(maps_data, labeled_regions.affine)
 
     maps_signals, maps_labels = img_to_signals_maps(fmri_img, maps_img)
-    labels_signals, labels_labels = img_to_signals_labels(
+    labels_signals, labels_labels, _ = img_to_signals_labels(
         imgs=fmri_img, labels_img=labeled_regions
     )
 

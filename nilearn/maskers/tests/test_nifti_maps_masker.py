@@ -281,9 +281,12 @@ def test_resampling_to_mask(
     with warnings.catch_warnings(record=True) as warning_list:
         signals = masker.fit_transform(img_fmri)
         assert not any(
-            "consider using nearest interpolation instead" in x.message
+            "consider using nearest interpolation instead" in str(x)
             for x in warning_list
         )
+
+    # We are losing a few regions due to masking
+    n_regions_expected = n_regions - 7
 
     expected_shape = mask22_img.shape
     expected_affine = mask22_img.affine
@@ -294,7 +297,7 @@ def test_resampling_to_mask(
     assert_almost_equal(masker.maps_img_.affine, expected_affine)
     assert masker.maps_img_.shape[:3] == expected_shape
 
-    assert signals.shape == (length, n_regions)
+    assert signals.shape == (length, n_regions_expected)
 
     fmri11_img_r = masker.inverse_transform(signals)
 
@@ -440,9 +443,16 @@ def test_overlap(maps_img_fn, allow_overlap, img_fmri):
         masker.fit_transform(img_fmri)
 
 
-@pytest.mark.parametrize("keep_masked_maps", [True, False])
+@pytest.mark.parametrize(
+    "keep_masked_maps, expected_n_regions", [(True, 9), (False, 6)]
+)
 def test_keep_masked_maps(
-    affine_eye, length, n_regions, shape_3d_default, img_maps, keep_masked_maps
+    affine_eye,
+    length,
+    shape_3d_default,
+    img_maps,
+    keep_masked_maps,
+    expected_n_regions,
 ):
     """Test keep_masked_maps.
 
@@ -462,6 +472,6 @@ def test_keep_masked_maps(
 
     signals11 = masker.fit_transform(fmri11_img)
 
-    assert masker.n_elements_ == n_regions
+    assert masker.n_elements_ == expected_n_regions
 
-    assert signals11.shape == (length, n_regions)
+    assert signals11.shape == (length, expected_n_regions)
