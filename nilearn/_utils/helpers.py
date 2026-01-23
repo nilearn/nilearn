@@ -11,7 +11,7 @@ from nilearn._utils.logger import find_stack_level
 OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.8.0"
 
 
-def set_mpl_backend(message=None):
+def set_mpl_backend(message=None) -> None:
     """Check if matplotlib is installed.
 
     If not installed, raise error and display warning to install necessary
@@ -289,7 +289,7 @@ def is_matplotlib_installed():
         return True
 
 
-def check_matplotlib():
+def check_matplotlib() -> None:
     """Check if matplotlib is installed, raise an error if not.
 
     Used in examples that require matplolib.

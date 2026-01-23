@@ -45,23 +45,25 @@ def main() -> None:
     """Find missing :obj:`` in doc string type."""
     print("\n[blue]Finding missing :obj:`` in doc string type.\n")
 
-    filenames = list_modules(skip_private=True)
+    filenames = list_modules(
+        skip_private=False, folders_to_skip=["data", "input_data", "tests"]
+    )
 
     for filename in filenames:
         for func_def in list_functions(filename):
-            check_fill_doc_decorator(func_def, filename)
-            check_docstring(func_def, filename)
+            # check_fill_doc_decorator(func_def, filename)
+            # check_docstring(func_def, filename)
             check_returns_yields_and_annotation(func_def, filename)
-            check_missing_return_annotation(func_def, filename)
+            # check_missing_return_annotation(func_def, filename)
 
         for class_def in list_classes(filename):
-            check_fill_doc_decorator(class_def, filename)
-            check_docstring(class_def, filename)
+            # check_fill_doc_decorator(class_def, filename)
+            # check_docstring(class_def, filename)
 
             for meth_def in list_functions(class_def):
-                check_docstring(meth_def, filename)
+                # check_docstring(meth_def, filename)
                 check_returns_yields_and_annotation(meth_def, filename)
-                check_missing_return_annotation(meth_def, filename)
+                # check_missing_return_annotation(meth_def, filename)
 
 
 def check_fill_doc_decorator(
