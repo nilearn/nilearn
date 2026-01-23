@@ -4,7 +4,8 @@ Using brain templates from TemplateFlow
 =======================================
 
 In this example, we see how to fetch and use brain templates from
-`TemplateFlow <https://https://www.templateflow.org/>`. We see how to fetch and
+`TemplateFlow <https://https://www.templateflow.org/>`_.
+We see how to fetch and
 use the Desikan-Killiany (DK) atlas in order to make surface plots.
 """
 
