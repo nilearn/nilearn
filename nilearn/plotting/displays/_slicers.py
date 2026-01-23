@@ -211,8 +211,8 @@ class BaseSlicer:
 
         %(cut_coords)s
 
-        Return
-        ------
+        Returns
+        -------
         list[bool]
             a list of boolean values corresponding to each coordinate
         indicating if it is within the bounds or not
