@@ -9,7 +9,6 @@ from sklearn.base import TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
 from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
-from typing_extensions import Self
 
 from nilearn import signal
 from nilearn._base import NilearnBaseEstimator
@@ -491,7 +490,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             )
 
     @fill_doc
-    def fit(self, X, y=None) -> Self:
+    def fit(self, X, y=None):
         """Fit the covariance estimator to the given time series for each \
         subject.
 

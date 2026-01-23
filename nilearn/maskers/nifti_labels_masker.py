@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
-from typing_extensions import Self
 
 from nilearn._utils.bids import sanitize_look_up_table
 from nilearn._utils.class_inspect import get_params
@@ -470,7 +469,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         return display
 
     @fill_doc
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
         Parameters

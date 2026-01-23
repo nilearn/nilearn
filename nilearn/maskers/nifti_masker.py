@@ -8,7 +8,6 @@ import numpy as np
 from joblib import Memory
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
-from typing_extensions import Self
 
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
@@ -511,7 +510,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return hasattr(self, "mask_img_")
 
     @fill_doc
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y=None):
         """Compute the mask corresponding to the data.
 
         Parameters

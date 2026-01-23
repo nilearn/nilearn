@@ -12,7 +12,6 @@ from scipy import sparse
 from sklearn import neighbors
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
-from typing_extensions import Self
 
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
@@ -525,7 +524,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return embedded_images
 
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
         All parameters are unused; they are for scikit-learn compatibility.

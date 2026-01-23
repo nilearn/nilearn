@@ -8,7 +8,6 @@ from copy import deepcopy
 import numpy as np
 from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
-from typing_extensions import Self
 
 from nilearn import masking
 from nilearn._utils.docs import fill_doc
@@ -520,7 +519,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.smoothing_fwhm = smoothing_fwhm
 
     @fill_doc
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
         Parameters
