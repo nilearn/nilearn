@@ -864,14 +864,6 @@ def check_set_output(estimator_orig):
                 estimator_orig.set_output(transform=output)
         return
 
-    # check on 1D image for estimators that accepts surface
-    if accept_surf_img_input(estimator_orig):
-        estimator = clone(estimator_orig)
-        estimator = fit_estimator(estimator)
-        for output in ["default", "pandas", "polars"]:
-            estimator.set_output(transform=output)
-            estimator.transform(_surf_mask_1d())
-
     # default
     estimator = clone(estimator_orig)
     img, _ = generate_data_to_fit(estimator)
@@ -909,6 +901,14 @@ def check_set_output(estimator_orig):
         if hasattr(estimator, "inverse_transform"):
             for v in to_inverse_transform.values():
                 estimator.inverse_transform(v)
+
+    # check on 1D image for estimators that accepts surface
+    if accept_surf_img_input(estimator_orig):
+        estimator = clone(estimator_orig)
+        estimator = fit_estimator(estimator)
+        for output in ["default", "pandas", "polars"]:
+            estimator.set_output(transform=output)
+            estimator.transform(_surf_mask_1d())
 
 
 def check_doc_attributes(estimator) -> None:
