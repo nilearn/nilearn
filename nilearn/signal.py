@@ -540,7 +540,7 @@ def high_variance_confounds(
     return u
 
 
-def _ensure_float(data):
+def _ensure_float(data: np.ndarray) -> np.ndarray:
     """Make sure that data is a float type."""
     if data.dtype.kind != "f":
         if data.dtype.itemsize == 8:
@@ -1154,7 +1154,7 @@ def _sanitize_runs(n_time, runs):
     return n_runs, runs
 
 
-def _sanitize_confound_dtype(n_signal, confound):
+def _sanitize_confound_dtype(n_signal: int, confound) -> np.ndarray:
     """Check confound is the correct datatype."""
     if isinstance(confound, pd.DataFrame):
         confound = confound.to_numpy()

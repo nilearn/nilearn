@@ -274,12 +274,12 @@ def check_returns_yields_and_annotation(ast_node, filename: str) -> None:
                 f"- {ast_node.name} - [red]missing Return section in docstring"
             )
 
-    # # no return & no yield → must be annotated as -> None
-    # elif not has_none_return_annotation(ast_node):
-    #     print(
-    #         f"{filename}:{ast_node.lineno} "
-    #         f"- {ast_node.name} - [red]missing return annotation '-> None'"
-    #     )
+    # no return & no yield → must be annotated as -> None
+    elif not has_none_return_annotation(ast_node):
+        print(
+            f"{filename}:{ast_node.lineno} "
+            f"- {ast_node.name} - [red]missing return annotation '-> None'"
+        )
 
 
 if __name__ == "__main__":

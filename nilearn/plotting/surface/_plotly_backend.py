@@ -255,7 +255,7 @@ def _plot_surf(
     output_file=None,
     axes=None,
     figure=None,
-):
+) -> PlotlySurfaceFigure:
     """Implement 'plotly' backend code for
     `~nilearn.plotting.surface.surf_plotting.plot_surf` function.
     """
