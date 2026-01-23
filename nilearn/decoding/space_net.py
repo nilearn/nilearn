@@ -1180,7 +1180,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
             y_numeric=False,
         )
 
-    def _set_intercept(self):
+    def _set_intercept(self) -> None:
         self.intercept_ = self.w_[:, -1]
 
     def score(self, X, y):

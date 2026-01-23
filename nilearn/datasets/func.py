@@ -945,7 +945,7 @@ def fetch_localizer_contrasts(
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
 
-def _check_inputs_fetch_localizer_contrasts(contrasts):
+def _check_inputs_fetch_localizer_contrasts(contrasts) -> None:
     """Check that requested contrast name exists."""
     if isinstance(contrasts, str):
         raise TypeError(

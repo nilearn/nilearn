@@ -1026,7 +1026,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         return coefs, intercepts
 
-    def _set_scorer(self):
+    def _set_scorer(self) -> None:
         if self.scoring is not None:
             self.scorer_ = check_scoring(self.estimator_, self.scoring)
         elif is_classifier(self):

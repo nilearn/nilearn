@@ -283,7 +283,9 @@ def _check_confounds(confounds) -> None:
             raise ValueError("subject_label column must contain only strings")
 
 
-def _check_first_level_contrast(second_level_input, first_level_contrast):
+def _check_first_level_contrast(
+    second_level_input, first_level_contrast
+) -> None:
     if (
         isinstance(second_level_input, list)
         and isinstance(second_level_input[0], FirstLevelModel)
@@ -297,7 +299,7 @@ def _check_first_level_contrast(second_level_input, first_level_contrast):
         )
 
 
-def _check_design_matrix(design_matrix):
+def _check_design_matrix(design_matrix) -> None:
     """Check design_matrix type."""
     if design_matrix is not None and not isinstance(
         design_matrix, (str, Path, pd.DataFrame)
