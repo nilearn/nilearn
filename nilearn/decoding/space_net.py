@@ -966,7 +966,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
     def _adapt_weights_y_mean_all_coef(self, w):
         return w, self.ymean_, self.all_coef_
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "masker_")
 
     def predict(self, X):

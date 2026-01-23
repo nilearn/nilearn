@@ -659,7 +659,7 @@ class SecondLevelModel(BaseGLM):
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return (
             hasattr(self, "second_level_input_")
             and self.second_level_input_ is not None

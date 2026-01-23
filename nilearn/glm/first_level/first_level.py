@@ -820,7 +820,7 @@ class FirstLevelModel(BaseGLM):
 
         return design
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return (
             hasattr(self, "labels_")
             and hasattr(self, "results_")

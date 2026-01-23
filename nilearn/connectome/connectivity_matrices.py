@@ -722,7 +722,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         check_is_fitted(self)
         return self._fit_transform(X, do_transform=True, confounds=confounds)
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "cov_estimator_")
 
     def inverse_transform(self, connectivities, diagonal=None):

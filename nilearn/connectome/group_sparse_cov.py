@@ -678,7 +678,7 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
         self.precisions_ = ret
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "precisions_") and hasattr(self, "covariances_")
 
 
@@ -1321,5 +1321,5 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         )
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "precisions_") and hasattr(self, "covariances_")

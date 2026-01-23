@@ -634,7 +634,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "labels_img_") and hasattr(self, "lut_")
 
     @fill_doc

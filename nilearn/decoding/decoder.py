@@ -798,7 +798,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "coef_") and hasattr(self, "masker_")
 
     def _prep_input_post_fit(self, X) -> np.ndarray:
