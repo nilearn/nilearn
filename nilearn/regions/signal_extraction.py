@@ -188,12 +188,19 @@ def _get_labels_data(
         mask_data = safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
         labels_before_mask = {int(label) for label in np.unique(labels_data)}
+
         # Applying mask on labels_data
         labels_data[np.logical_not(mask_data)] = background_label
         labels_after_mask = {int(label) for label in np.unique(labels_data)}
         labels_diff = labels_before_mask.difference(labels_after_mask)
+
         # Raising a warning if any label is removed due to the mask
         if labels_diff and not keep_masked_labels:
+            if len(labels_after_mask) == 1:
+                raise ValueError(
+                    "No label left after applying mask to the labels image."
+                )
+
             warnings.warn(
                 "After applying mask to the labels image, "
                 "the following labels were "
@@ -489,13 +496,13 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
 
     maps_data = safe_get_data(maps_img, ensure_finite=True)
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
-    labels = np.arange(maps_data.shape[-1], dtype=int)
+    maps = np.arange(maps_data.shape[-1], dtype=int)
 
     use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
     if use_mask:
         mask_img = check_niimg_3d(mask_img)
-        labels_before_mask = {int(label) for label in labels}
-        maps_data, maps_mask, labels = _trim_maps(
+        maps_before_mask = {int(map) for map in maps}
+        maps_data, maps_mask, maps = _trim_maps(
             maps_data,
             safe_get_data(mask_img, ensure_finite=True),
             keep_empty=keep_masked_maps,
@@ -514,17 +521,23 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
                 stacklevel=find_stack_level(),
             )
         else:
-            labels_after_mask = {int(label) for label in labels}
-            labels_diff = labels_before_mask.difference(labels_after_mask)
+            maps_after_mask = {int(map) for map in maps}
+            maps_diff = maps_before_mask.difference(maps_after_mask)
+
             # Raising a warning if any map is removed due to the mask
-            if labels_diff:
+            if maps_diff:
+                if len(maps_after_mask) == 0:
+                    raise ValueError(
+                        "No map left after applying mask to the maps image."
+                    )
+
                 warnings.warn(
                     "After applying mask to the maps image, "
                     "maps with the following indices were "
-                    f"removed: {labels_diff}. "
-                    f"Out of {len(labels_before_mask)} maps, the "
+                    f"removed: {maps_diff}. "
+                    f"Out of {len(maps_before_mask)} maps, the "
                     "masked map image only contains "
-                    f"{len(labels_after_mask)} maps.",
+                    f"{len(maps_after_mask)} maps.",
                     stacklevel=find_stack_level(),
                 )
 
@@ -533,7 +546,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
         0
     ].T
 
-    return region_signals, list(labels)
+    return region_signals, list(maps)
 
 
 def signals_to_img_maps(region_signals, maps_img, mask_img=None):

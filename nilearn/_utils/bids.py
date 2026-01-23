@@ -7,7 +7,11 @@ from nilearn.image.image import get_indices_from_image
 
 
 def generate_atlas_look_up_table(
-    function=None, name=None, index=None, strict=False, background_label=None
+    function=None,
+    name=None,
+    index=None,
+    strict=False,
+    background_label=None,
 ):
     """Generate a BIDS compatible look up table for an atlas.
 
@@ -48,7 +52,7 @@ def generate_atlas_look_up_table(
         If True, an error will be thrown
         if ``name`` and ``index``have different length.
 
-    background_label: str or None, default=None
+    background_label: int or float or None, default=None
         If not None and no 'name' was passed,
         this label is used to describe the background value in the image.
     """
@@ -73,6 +77,20 @@ def generate_atlas_look_up_table(
         index = list(range(len(name)))
     else:
         index = get_indices_from_image(index).tolist()
+
+        if len(index) == 1:
+            if background_label is None:
+                warnings.warn(
+                    (
+                        "The image either contains no label "
+                        "or a single label covering the whole image."
+                    ),
+                    category=UserWarning,
+                    stacklevel=find_stack_level(),
+                )
+            elif index[0] == background_label:
+                raise ValueError("The image contains no label.")
+
     if fname in ["fetch_atlas_basc_multiscale_2015"]:
         index = []
         for x in name:
@@ -132,7 +150,9 @@ def generate_atlas_look_up_table(
     return lut
 
 
-def check_look_up_table(lut: pd.DataFrame, atlas, strict=False, verbose=0):
+def check_look_up_table(
+    lut: pd.DataFrame, atlas, strict=False, verbose=0
+) -> None:
     """Validate atlas look up table (LUT).
 
     Make sure it complies with BIDS requirements.
