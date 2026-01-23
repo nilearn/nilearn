@@ -9,6 +9,9 @@ from numpy.testing import assert_no_warnings
 from nilearn._utils import html_document
 from nilearn._utils.helpers import is_gil_enabled
 
+#  import autoused fixture
+from nilearn.datasets.tests.conftest import request_mocker  # noqa: F401
+
 # Note: html output by nilearn view_* functions
 # should validate as html5 using https://validator.w3.org/nu/ with no
 # warnings
@@ -29,6 +32,8 @@ class Get:
 
 
 @pytest.mark.thread_unsafe
+# disable request mocking for this test -- note we are accessing localhost only
+@pytest.mark.parametrize("request_mocker", [None])
 def test_open_in_browser(monkeypatch):
     opener = Get()
     monkeypatch.setattr(webbrowser, "open", opener)
