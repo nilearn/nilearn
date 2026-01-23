@@ -49,18 +49,18 @@ def main() -> None:
 
     for filename in filenames:
         for func_def in list_functions(filename):
-            # check_fill_doc_decorator(func_def, filename)
-            # check_docstring(func_def, filename)
-            # check_returns_yields_and_annotation(func_def, filename)
+            check_fill_doc_decorator(func_def, filename)
+            check_docstring(func_def, filename)
+            check_returns_yields_and_annotation(func_def, filename)
             check_missing_return_annotation(func_def, filename)
 
         for class_def in list_classes(filename):
-            # check_fill_doc_decorator(class_def, filename)
-            # check_docstring(class_def, filename)
+            check_fill_doc_decorator(class_def, filename)
+            check_docstring(class_def, filename)
 
             for meth_def in list_functions(class_def):
-                # check_docstring(meth_def, filename)
-                # check_returns_yields_and_annotation(meth_def, filename)
+                check_docstring(meth_def, filename)
+                check_returns_yields_and_annotation(meth_def, filename)
                 check_missing_return_annotation(meth_def, filename)
 
 
@@ -139,7 +139,7 @@ def contains_check_params_call(node: ast.AST) -> bool:
     return False
 
 
-def check_docstring(ast_node, filename: str) -> None:
+def check_docstring(ast_node, filename: str | Path) -> None:
     """Check that defaults in an AST node are present in docstring type."""
     docstring = ast.get_docstring(ast_node, clean=False)
     if not docstring:
@@ -234,7 +234,7 @@ def has_none_return_annotation(node: ast.FunctionDef) -> bool:
     return False
 
 
-def check_missing_return_annotation(ast_node, filename: str) -> None:
+def check_missing_return_annotation(ast_node, filename: str | Path) -> None:
     """Warn if a function or method has no return type annotation."""
     if not isinstance(ast_node, ast.FunctionDef):
         return
@@ -246,7 +246,9 @@ def check_missing_return_annotation(ast_node, filename: str) -> None:
         )
 
 
-def check_returns_yields_and_annotation(ast_node, filename: str) -> None:
+def check_returns_yields_and_annotation(
+    ast_node, filename: str | Path
+) -> None:
     """Check consistency between return/yield behavior, \
         docstring, and annotations.
     """
