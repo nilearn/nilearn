@@ -9,10 +9,17 @@
 name: Check skip flags
 on:
     workflow_call:
+        inputs:
+            skip_type:
+                description: The type of test to skip
+                required: true
+                type: string
 
 jobs:
     check_skip_flags:
         runs-on: ubuntu-latest
+        env:
+            SKIP_TYPE: ${{ inputs.skip_type }}
         steps:
         -   name: Get repo
             uses: actions/checkout@v6
@@ -21,7 +28,7 @@ jobs:
         -   name: Check head git commit message
             run: |
                 headCommitMsg=$(git show -s --format=%s)
-                if [[ $headCommitMsg == *"[skip test]"* ]]; then
-                    echo "skipping tests"
+                if [[ $headCommitMsg == *"[skip ${SKIP_TYPE}]"* ]]; then
+                    echo "Skipping ${SKIP_TYPE}"
                     exit 1
                 fi

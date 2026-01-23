@@ -360,7 +360,7 @@ def test_signals_extraction_with_labels_without_mask(
     )
 
     # and back
-    signals_r, labels_r = img_to_signals_labels(
+    signals_r, labels_r, _ = img_to_signals_labels(
         imgs=data_img,
         labels_img=labels_img,
     )
@@ -369,7 +369,7 @@ def test_signals_extraction_with_labels_without_mask(
     assert labels_r == list(range(1, 9))
 
     filenames = write_imgs_to_path(data_img, file_path=tmp_path)
-    signals_r, labels_r = img_to_signals_labels(
+    signals_r, labels_r, _ = img_to_signals_labels(
         imgs=filenames, labels_img=labels_img
     )
 
@@ -446,7 +446,7 @@ def test_signals_extraction_with_labels_with_mask(
     )
 
     # and back
-    signals_r, labels_r = img_to_signals_labels(
+    signals_r, labels_r, _ = img_to_signals_labels(
         imgs=data_img, labels_img=labels_img, mask_img=mask_img
     )
 
@@ -584,7 +584,7 @@ def test_signal_extraction_with_maps_and_labels_keep_masked(
     mask_img = _create_mask_with_3_regions_from_labels_data(
         labels_data, labeled_regions.affine
     )
-    labels_signals, labels_labels = img_to_signals_labels(
+    labels_signals, labels_labels, _ = img_to_signals_labels(
         imgs=fmri_img,
         labels_img=labeled_regions,
         mask_img=mask_img,
@@ -624,7 +624,7 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
         "4 labels "
         r"\(including background\).",
     ):
-        labels_signals, labels_labels = img_to_signals_labels(
+        labels_signals, labels_labels, _ = img_to_signals_labels(
             imgs=fmri_img,
             labels_img=labeled_regions,
             mask_img=mask_img,
@@ -644,7 +644,7 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
         FutureWarning,
         match='"keep_masked_labels" parameter will be removed.',
     ):
-        labels_signals, labels_labels = img_to_signals_labels(
+        labels_signals, labels_labels, _ = img_to_signals_labels(
             imgs=fmri_img,
             labels_img=labeled_regions,
             mask_img=mask_img,
@@ -747,7 +747,7 @@ def test_signal_extraction_nans_in_regions_are_replaced_with_zeros():
     indices = tuple(ind[:1] for ind in np.where(region1))
     get_data(fmri_img)[indices] = np.nan
 
-    labels_signals, labels_labels = img_to_signals_labels(
+    labels_signals, labels_labels, _ = img_to_signals_labels(
         imgs=fmri_img, labels_img=labels_img, mask_img=mask_img
     )
 

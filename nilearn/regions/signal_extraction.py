@@ -224,7 +224,7 @@ def img_to_signals_labels(
     order="F",
     strategy="mean",
     keep_masked_labels=False,
-    return_masked_atlas=False,
+    return_masked_atlas=True,
 ):
     """Extract region signals from image.
 
@@ -259,16 +259,17 @@ def img_to_signals_labels(
 
     %(keep_masked_labels)s
 
-    return_masked_atlas : :obj:`bool`, default=False
+    return_masked_atlas : :obj:`bool`, default=True
         If True, the masked atlas is returned.
 
-        .. nilearn_versionchanged :: 0.13.0
+        .. nilearn_versionchanged :: 0.13.1
 
-            Default changed to False.
+            Default changed to True.
 
         .. nilearn_deprecated:: 0.13.0
 
             This parameter will be removed in versions >= 0.15.0
+            and the masked atlas will always be returned.
 
     Returns
     -------
@@ -284,7 +285,6 @@ def img_to_signals_labels(
 
     masked_atlas : Niimg-like object
         Regions definition as labels after applying the mask.
-        returned if `return_masked_atlas` is True.
 
     See Also
     --------
@@ -340,7 +340,9 @@ def img_to_signals_labels(
         warnings.warn(
             (
                 "In version 0.15, "
-                '"return_masked_atlas" parameter will be removed.'
+                '"return_masked_atlas" parameter will be removed '
+                "and the masked atlas will always be returned. "
+                'Set "return_masked_atlas" to True to avoid this warning.'
             ),
             FutureWarning,
             stacklevel=find_stack_level(),
