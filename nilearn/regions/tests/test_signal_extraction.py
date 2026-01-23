@@ -536,7 +536,7 @@ def test_signal_extraction_with_maps_and_labels(
 
     # Extract signals from maps and labels: results must be identical.
     maps_signals, _ = img_to_signals_maps(fmri_img, maps_img)
-    labels_signals, _ = img_to_signals_labels(
+    labels_signals, _, _ = img_to_signals_labels(
         imgs=fmri_img, labels_img=labeled_regions
     )
     assert_almost_equal(maps_signals, labels_signals)
