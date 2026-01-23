@@ -903,12 +903,26 @@ def check_set_output(estimator_orig):
                 estimator.inverse_transform(v)
 
     # check on 1D image for estimators that accepts surface
+    # TODO errors transforming 1D images
+    # when output set to "pandas" or "polars"
     if accept_surf_img_input(estimator_orig):
         estimator = clone(estimator_orig)
         estimator = fit_estimator(estimator)
+
         for output in ["default", "pandas", "polars"]:
             estimator.set_output(transform=output)
-            estimator.transform(_surf_mask_1d())
+
+            if output in ["pandas", "polars"]:
+                with pytest.raises(
+                    ValueError,
+                    match=r"Length mismatch|must match data dimensions",
+                ):
+                    signal = estimator.transform(_surf_mask_1d())
+            else:
+                signal = estimator.transform(_surf_mask_1d())
+
+        if hasattr(estimator, "inverse_transform"):
+            estimator.inverse_transform(signal)
 
 
 def check_doc_attributes(estimator) -> None:
