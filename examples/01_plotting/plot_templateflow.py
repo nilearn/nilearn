@@ -22,7 +22,6 @@ use the Desikan-Killiany (DK) atlas in order to make surface plots.
 # In this example, the Desikan-Killiany (DK) atlas is fetched. This template
 # is available at multiple densities; here, the 10k resolution is used.
 
-
 import templateflow.api as tflow
 
 from nilearn import surface
