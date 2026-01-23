@@ -51,22 +51,22 @@ def main() -> None:
 
     for filename in filenames:
         for func_def in list_functions(filename, include="all"):
-            # check_fill_doc_decorator(func_def, filename)
-            # check_docstring(func_def, filename)
+            check_fill_doc_decorator(func_def, filename)
+            check_docstring(func_def, filename)
             check_returns_yields_and_annotation(func_def, filename)
-            # check_missing_return_annotation(func_def, filename)
+            check_missing_return_annotation(func_def, filename)
 
         for class_def in list_classes(filename, include="all"):
-            # check_fill_doc_decorator(class_def, filename)
-            # check_docstring(class_def, filename)
+            check_fill_doc_decorator(class_def, filename)
+            check_docstring(class_def, filename)
 
             for meth_def in list_functions(class_def, include="all"):
                 if meth_def.name == "__init__":
                     continue
-                # check_fill_doc_decorator(meth_def, filename)
-                # check_docstring(meth_def, filename)
+                check_fill_doc_decorator(meth_def, filename)
+                check_docstring(meth_def, filename)
                 check_returns_yields_and_annotation(meth_def, filename)
-                # check_missing_return_annotation(meth_def, filename)
+                check_missing_return_annotation(meth_def, filename)
 
 
 def check_fill_doc_decorator(
