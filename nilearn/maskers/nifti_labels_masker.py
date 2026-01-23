@@ -65,7 +65,6 @@ class _ExtractionFunctor:
             strategy=self.strategy,
             keep_masked_labels=self.keep_masked_labels,
             mask_img=self.mask_img,
-            return_masked_atlas=True,
         )
         return signals, (labels, masked_labels_img)
 

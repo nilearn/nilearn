@@ -36,6 +36,8 @@ env:
 jobs:
     check_skip_flags:
         uses: ./.github/workflows/check_skip_flags.yml
+        with:
+            skip_type: test
 
     free_threaded:
         if: github.repository == 'nilearn/nilearn'

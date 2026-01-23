@@ -340,7 +340,8 @@ def img_to_signals_labels(
         warnings.warn(
             (
                 "In version 0.15, "
-                '"return_masked_atlas" parameter will be removed. '
+                '"return_masked_atlas" parameter will be removed '
+                "and the masked atlas will always be returned. "
                 'Set "return_masked_atlas" to True to avoid this warning.'
             ),
             FutureWarning,
