@@ -1789,7 +1789,7 @@ def _mesh_to_gifti(coordinates, faces, gifti_file) -> None:
     gifti_img.to_filename(gifti_file)
 
 
-def _data_to_gifti(data, gifti_file):
+def _data_to_gifti(data, gifti_file) -> None:
     """Save data from Polydata to a gifti file.
 
     Parameters

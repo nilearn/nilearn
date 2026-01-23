@@ -9,6 +9,7 @@ import warnings
 import numpy as np
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
+from typing_extensions import Self
 
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
@@ -236,7 +237,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         self,
         imgs=None,
         y=None,
-    ):
+    ) -> Self:
         """Compute the mask corresponding to the data.
 
         Parameters

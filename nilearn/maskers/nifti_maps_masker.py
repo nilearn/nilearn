@@ -7,6 +7,7 @@ from typing import Literal
 import numpy as np
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
+from typing_extensions import Self
 
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
@@ -374,7 +375,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return embedded_images
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters

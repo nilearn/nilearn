@@ -2,6 +2,7 @@
 
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
+from typing_extensions import Self
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
@@ -140,7 +141,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         self.n_jobs = n_jobs
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters

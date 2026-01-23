@@ -6,6 +6,7 @@ from warnings import warn
 import numpy as np
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
+from typing_extensions import Self
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
@@ -195,7 +196,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters

@@ -14,6 +14,7 @@ from scipy.sparse import coo_matrix, csgraph, dia_matrix
 from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
+from typing_extensions import Self
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
@@ -720,7 +721,7 @@ class ReNA(
             )
 
     @fill_doc
-    def fit(self, X, y=None):
+    def fit(self, X, y=None) -> Self:
         """Compute clustering of the data.
 
         Parameters

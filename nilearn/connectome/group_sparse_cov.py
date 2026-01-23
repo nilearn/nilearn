@@ -14,6 +14,7 @@ from sklearn.covariance import empirical_covariance
 from sklearn.model_selection import check_cv
 from sklearn.utils import check_array
 from sklearn.utils.extmath import fast_logdet
+from typing_extensions import Self
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
@@ -609,7 +610,7 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
         self.verbose = verbose
 
     @fill_doc
-    def fit(self, subjects, y=None):
+    def fit(self, subjects, y=None) -> Self:
         """Fits the group sparse precision model according \
         to the given training data and parameters.
 

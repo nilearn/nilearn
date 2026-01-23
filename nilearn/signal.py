@@ -1120,7 +1120,7 @@ def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
     return sample_mask[0] if sum(runs) == 0 else sample_mask
 
 
-def _check_sample_mask_index(i, n_runs, runs, current_mask):
+def _check_sample_mask_index(i, n_runs, runs, current_mask) -> None:
     """Ensure the index in sample mask is valid."""
     len_run = sum(i == runs)
     len_current_mask = len(current_mask)

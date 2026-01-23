@@ -11,6 +11,7 @@ from sklearn.base import (
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
+from typing_extensions import Self
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
@@ -270,7 +271,7 @@ class HierarchicalKMeans(
         return tags
 
     @fill_doc
-    def fit(self, X, y=None):
+    def fit(self, X, y=None) -> Self:
         """Compute clustering of the data.
 
         Parameters
