@@ -44,6 +44,7 @@ from nilearn.glm.second_level.second_level import (
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.reporting import get_clusters_table
+from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_surface_image_equal
 
 ESTIMATORS_TO_CHECK = [SecondLevelModel()]
@@ -552,6 +553,19 @@ def test_infer_effect_maps_error(tmp_path, shape_3d_default):
     )
     with pytest.raises(ValueError, match="File not found: 'bar'"):
         _infer_effect_maps(second_level_input, "b")
+
+
+def test_mask_img_volume(n_subjects):
+    """Check mask_img_ with volume data."""
+    func_img, mask = fake_fmri_data()
+
+    model = SecondLevelModel(mask_img=mask)
+
+    Y = [func_img] * n_subjects
+    X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+
+    assert isinstance(model._mask_img, Nifti1Image)
 
 
 @pytest.mark.slow
@@ -1509,6 +1523,8 @@ def test_second_level_input_as_surface_image(surf_img_1d, n_subjects):
 
     model = SecondLevelModel()
     model = model.fit(second_level_input, design_matrix=design_matrix)
+
+    assert isinstance(model._mask_img, SurfaceImage)
 
 
 def test_second_level_input_as_surface_image_3d(surf_img_2d, n_subjects):

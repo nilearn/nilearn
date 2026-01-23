@@ -12,6 +12,7 @@ from scipy import linalg
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.param_validation import check_params
 
 
 def _check_lipschitz_continuous(
@@ -149,6 +150,8 @@ def mfista(
     Jun 2014, Tubingen, Germany. IEEE
 
     """
+    check_params(locals())
+
     # initialization
     if init is None:
         init = {}
