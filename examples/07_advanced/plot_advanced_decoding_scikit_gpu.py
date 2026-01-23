@@ -1,0 +1,100 @@
+"""
+Advanced decoding using scikit learn
+====================================
+
+This tutorial opens the box of decoding pipelines to bridge integrated
+functionalities provided by the :class:`~nilearn.decoding.Decoder` object
+with more advanced usecases. It reproduces basic examples functionalities with
+direct calls to scikit-learn function and gives pointers to more advanced
+objects. If some concepts seem unclear,
+please refer to the :ref:`documentation on decoding <decoding_intro>`
+and in particular to the :ref:`advanced section <going_further>`.
+As in many other examples, we perform decoding of the visual category of a
+stimuli on :footcite:t:`Haxby2001` dataset,
+focusing on distinguishing two categories:
+face and cat images.
+
+.. include:: ../../../examples/masker_note.rst
+
+"""
+
+# %%
+# Retrieve and load the :term:`fMRI` data from the Haxby study
+# ------------------------------------------------------------
+#
+# First download the data
+# .......................
+#
+
+# The :func:`~nilearn.datasets.fetch_haxby` function will download the
+# Haxby dataset composed of fMRI images in a Niimg,
+# a spatial mask and a text document with label of each image
+from nilearn import datasets
+
+haxby_dataset = datasets.fetch_haxby()
+mask_filename = haxby_dataset.mask_vt[0]
+fmri_filename = haxby_dataset.func[0]
+
+# Loading the behavioral labels
+import pandas as pd
+
+behavioral = pd.read_csv(haxby_dataset.session_target[0], delimiter=" ")
+behavioral
+
+# %%
+# We keep only a images from a pair of conditions(cats versus faces).
+from sklearn.preprocessing import label_binarize
+
+from nilearn.image import index_img
+
+conditions = behavioral["labels"]
+condition_mask = conditions.isin(["face", "cat"])
+fmri_niimgs = index_img(fmri_filename, condition_mask)
+conditions = conditions[condition_mask]
+conditions = conditions.to_numpy()
+conditions = label_binarize(conditions, classes=["cat", "face"]).ravel()
+run_label = behavioral["chunks"][condition_mask]
+
+
+# %%
+# Masking the data
+# ................
+# To use a scikit-learn estimator on brain images, you should first mask the
+# data using a :class:`~nilearn.maskers.NiftiMasker` to extract only the
+# voxels inside the mask of interest,
+# and transform 4D input :term:`fMRI` data to 2D arrays
+# (`shape=(n_timepoints, n_voxels)`) that estimators can work on.
+from nilearn.maskers import NiftiMasker
+
+masker = NiftiMasker(
+    mask_img=mask_filename,
+    runs=run_label,
+    smoothing_fwhm=4,
+    standardize="zscore_sample",
+    memory="nilearn_cache",
+    memory_level=1,
+    verbose=1,
+)
+fmri_masked = masker.fit_transform(fmri_niimgs)
+
+# %% convert to torch tensor for GPU processing
+import torch
+
+fmri_masked_torch = torch.asarray(
+    fmri_masked, device="mps", dtype=torch.float32
+)
+conditions_torch = torch.asarray(conditions, device="mps", dtype=torch.float32)
+
+# %%
+# Fit the classifier
+# ......................
+from sklearn import config_context
+from sklearn.linear_model import RidgeClassifier
+from sklearn.model_selection import cross_val_predict
+
+with config_context(array_api_dispatch=True):
+    ridge = RidgeClassifier(solver="svd")
+    ridge.fit(fmri_masked_torch, conditions_torch)
+    cv_predict = cross_val_predict(ridge, fmri_masked, conditions, cv=5)
+
+print(cv_predict)
