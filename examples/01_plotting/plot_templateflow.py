@@ -128,7 +128,7 @@ plot_roi(
 
 print(f"Harvard-Oxford atlas template: {harvard_oxford_sub.template}")
 
-#  %%
+# %%
 # Getting a template
 # ------------------
 # If you want to visualize the Harvard-Oxford atlas on the proper template,
