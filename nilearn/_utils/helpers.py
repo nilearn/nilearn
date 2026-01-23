@@ -113,7 +113,9 @@ def rename_parameters(
     return _replace_params
 
 
-def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
+def _warn_deprecated_params(
+    replacement_params, end_version, lib_name, kwargs
+) -> None:
     """Raise warnings about deprecated parameters, \
     for the decorator replace_parameters().
 

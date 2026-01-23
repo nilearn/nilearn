@@ -479,7 +479,7 @@ def _init_omega(emp_covs, precisions_init):
     return omega
 
 
-def _check_alpha(alpha):
+def _check_alpha(alpha) -> None:
     if not isinstance(alpha, (int, float)) or alpha < 0:
         raise ValueError(
             "Regularization parameter alpha must be a positive number.\n"
@@ -487,7 +487,7 @@ def _check_alpha(alpha):
         )
 
 
-def _check_diagonal_normalization(emp_covs, n_subjects):
+def _check_diagonal_normalization(emp_covs, n_subjects) -> None:
     ones = np.ones(emp_covs.shape[0])
     for k in range(n_subjects):
         if (

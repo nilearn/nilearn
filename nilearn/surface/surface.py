@@ -1170,7 +1170,7 @@ def check_mesh_and_data(mesh, data):
     return mesh, data
 
 
-def _validate_mesh(mesh):
+def _validate_mesh(mesh) -> None:
     """Check mesh coordinates and faces.
 
     Mesh coordinates and faces must be numpy arrays.
@@ -1366,7 +1366,7 @@ class PolyData:
 
         self._check_parts()
 
-    def _check_parts(self):
+    def _check_parts(self) -> None:
         """Ensure all parts have same shape and type.
 
         This allows to get the shape of any part
@@ -1437,7 +1437,7 @@ class PolyData:
         vmax = max(x.max() for x in self.parts.values())
         return vmin, vmax
 
-    def _check_n_samples(self, n_samples: int, var_name="img"):
+    def _check_n_samples(self, n_samples: int, var_name="img") -> None:
         """Check that the PolyData does not have more than n_samples."""
         if self._n_samples > n_samples:
             raise ValueError(
@@ -1445,7 +1445,7 @@ class PolyData:
                 f"Found: {self._n_samples}."
             )
 
-    def _check_ndims(self, dim: int, var_name="img"):
+    def _check_ndims(self, dim: int, var_name="img") -> None:
         """Check if the data is of a given dimension.
 
         Raise error if not.
@@ -1470,7 +1470,7 @@ class PolyData:
                 f"Found: {', '.join(msg)}."
             )
 
-    def to_filename(self, filename):
+    def to_filename(self, filename) -> None:
         """Save data to gifti.
 
         Parameters
@@ -1500,7 +1500,7 @@ class PolyData:
 
         _data_to_gifti(data, filename)
 
-    def _set_data_dtype(self, dtype):
+    def _set_data_dtype(self, dtype) -> None:
         if dtype is not None:
             for h, v in self.parts.items():
                 self.parts[h] = v.astype(dtype)
@@ -1740,7 +1740,7 @@ class PolyMesh:
         mesh.to_gifti(filename)
 
 
-def _check_data_and_mesh_compat(mesh, data):
+def _check_data_and_mesh_compat(mesh, data) -> None:
     """Check that mesh and data have the same keys and that shapes match.
 
     mesh : :obj:`nilearn.surface.PolyMesh`

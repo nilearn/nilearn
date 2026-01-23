@@ -649,7 +649,7 @@ class FirstLevelModel(BaseGLM):
 
     def _log(
         self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
-    ):
+    ) -> None:
         """Generate and log messages for different step of the model fit."""
         if step == "progress":
             msg = self._report_progress(run_idx, n_runs, t0)
@@ -686,7 +686,7 @@ class FirstLevelModel(BaseGLM):
             f"Computing run {run_idx + 1} out of {n_runs} runs ({remaining})."
         )
 
-    def _fit_single_run(self, sample_masks, bins, run_img, run_idx):
+    def _fit_single_run(self, sample_masks, bins, run_img, run_idx) -> None:
         """Fit the model for a single and keep only the regression results."""
         design = self.design_matrices_[run_idx]
 
@@ -1915,7 +1915,7 @@ def _list_valid_subjects(derivatives_path, sub_labels) -> list[str]:
     return sorted(set(sub_labels_exist))
 
 
-def _report_found_files(files, text, sub_label, filters, verbose):
+def _report_found_files(files, text, sub_label, filters, verbose) -> None:
     """Print list of files found for a given subject and filter.
 
     Parameters
@@ -2230,7 +2230,7 @@ def _get_confounds(
     return confounds
 
 
-def _check_confounds_list(confounds, imgs):
+def _check_confounds_list(confounds, imgs) -> None:
     """Check the number of confounds.tsv files.
 
     If no file is found, it will be assumed there are none,
@@ -2505,7 +2505,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
 
 def _check_bids_events_list(
     events, imgs, sub_label, task_label, dataset_path, events_filters, verbose
-):
+) -> None:
     """Check input BIDS events.
 
     Check that:

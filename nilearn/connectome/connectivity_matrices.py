@@ -34,7 +34,7 @@ def _check_square(matrix):
         )
 
 
-def _check_spd(matrix):
+def _check_spd(matrix) -> None:
     """Raise a ValueError if the input matrix is not symmetric positive \
     definite.
 

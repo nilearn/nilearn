@@ -1246,7 +1246,7 @@ def _sanitize_signals(signals, ensure_finite):
     return _ensure_float(signals)
 
 
-def _check_signal_parameters(detrend, standardize_confounds):
+def _check_signal_parameters(detrend, standardize_confounds) -> None:
     """Raise warning if the combination is illogical."""
     if not detrend and not standardize_confounds:
         warnings.warn(

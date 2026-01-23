@@ -64,7 +64,7 @@ def _input_type_error_message(second_level_input):
 
 def _check_second_level_input(
     second_level_input, design_matrix, confounds=None
-):
+) -> None:
     """Check second_level_input type."""
     _check_design_matrix(design_matrix)
 
@@ -119,7 +119,7 @@ def _check_input_type_when_list(second_level_input):
     raise TypeError(_input_type_error_message(second_level_input))
 
 
-def _check_all_elements_of_same_type(data):
+def _check_all_elements_of_same_type(data) -> None:
     for idx, input in enumerate(data):
         if not isinstance(input, type(data[0])):
             raise TypeError(
@@ -130,7 +130,7 @@ def _check_all_elements_of_same_type(data):
 
 def _check_input_as_type(
     second_level_input, input_type, none_confounds, none_design_matrix
-):
+) -> None:
     if input_type == "flm_object":
         _check_input_as_first_level_model(second_level_input, none_confounds)
     elif input_type == "pd_series":
@@ -147,7 +147,9 @@ def _check_input_as_type(
 INF = 1000 * np.finfo(np.float32).eps
 
 
-def _check_input_as_first_level_model(second_level_input, none_confounds):
+def _check_input_as_first_level_model(
+    second_level_input, none_confounds
+) -> None:
     """Check that all all first level models are valid.
 
     - must have been fit
@@ -208,7 +210,7 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
             )
 
 
-def _check_input_as_dataframe(second_level_input):
+def _check_input_as_dataframe(second_level_input) -> None:
     for col in ("subject_label", "map_name", "effects_map_path"):
         if col not in second_level_input.columns:
             raise ValueError(
@@ -223,7 +225,9 @@ def _check_input_as_dataframe(second_level_input):
         raise ValueError("'subject_label' column must contain only strings.")
 
 
-def _check_input_as_nifti_images(second_level_input, none_design_matrix):
+def _check_input_as_nifti_images(
+    second_level_input, none_design_matrix
+) -> None:
     if isinstance(second_level_input, NiimgLike):
         second_level_input = [second_level_input]
     for niimg in second_level_input:
@@ -235,7 +239,9 @@ def _check_input_as_nifti_images(second_level_input, none_design_matrix):
         )
 
 
-def _check_input_as_surface_images(second_level_input, none_design_matrix):
+def _check_input_as_surface_images(
+    second_level_input, none_design_matrix
+) -> None:
     if isinstance(second_level_input, SurfaceImage) and (
         len(second_level_input.shape) == 1 or second_level_input.shape[1] == 1
     ):
@@ -255,7 +261,7 @@ def _check_input_as_surface_images(second_level_input, none_design_matrix):
             )
 
 
-def _check_confounds(confounds):
+def _check_confounds(confounds) -> None:
     """Check confounds type."""
     if confounds is not None:
         if not isinstance(confounds, pd.DataFrame):
@@ -303,7 +309,7 @@ def _check_design_matrix(design_matrix):
         )
 
 
-def _check_n_rows_desmat_vs_n_effect_maps(effect_maps, design_matrix):
+def _check_n_rows_desmat_vs_n_effect_maps(effect_maps, design_matrix) -> None:
     """Check design matrix and effect maps agree on number of rows."""
     if len(effect_maps) != design_matrix.shape[0]:
         raise ValueError(

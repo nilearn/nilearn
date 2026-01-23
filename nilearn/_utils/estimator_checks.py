@@ -4057,7 +4057,7 @@ def _extra_kwargs(estimator):
         return {}
 
 
-def _generate_report_with_no_warning(estimator):
+def _generate_report_with_no_warning(estimator) -> None:
     """Check that report generation throws no warning."""
     with warnings.catch_warnings(record=True) as warning_list:
         estimator.generate_report(**_extra_kwargs(estimator))

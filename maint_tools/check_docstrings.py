@@ -50,19 +50,20 @@ def main() -> None:
     )
 
     for filename in filenames:
-        for func_def in list_functions(filename):
-            # check_fill_doc_decorator(func_def, filename)
+        for func_def in list_functions(filename, include="all"):
+            check_fill_doc_decorator(func_def, filename)
             # check_docstring(func_def, filename)
-            check_returns_yields_and_annotation(func_def, filename)
+            # check_returns_yields_and_annotation(func_def, filename)
             # check_missing_return_annotation(func_def, filename)
 
-        for class_def in list_classes(filename):
+        for class_def in list_classes(filename, include="all"):
             # check_fill_doc_decorator(class_def, filename)
             # check_docstring(class_def, filename)
 
-            for meth_def in list_functions(class_def):
+            for meth_def in list_functions(class_def, include="all"):
+                check_fill_doc_decorator(meth_def, filename)
                 # check_docstring(meth_def, filename)
-                check_returns_yields_and_annotation(meth_def, filename)
+                # check_returns_yields_and_annotation(meth_def, filename)
                 # check_missing_return_annotation(meth_def, filename)
 
 
@@ -270,12 +271,14 @@ def check_returns_yields_and_annotation(
         if has_yield and not docstring_has_yields_section(docstring):
             print(
                 f"{filename}:{ast_node.lineno} "
-                f"- {ast_node.name} - [red]missing Yields section in docstring"
+                f"- {ast_node.name} "
+                "- [red]missing Yields section in docstring"
             )
         elif has_return_value and not docstring_has_returns_section(docstring):
             print(
                 f"{filename}:{ast_node.lineno} "
-                f"- {ast_node.name} - [red]missing Return section in docstring"
+                f"- {ast_node.name} "
+                "- [red]missing Return section in docstring"
             )
 
     # no return & no yield → must be annotated as -> None

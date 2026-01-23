@@ -719,7 +719,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
             return self._estimator_type == "classifier"
         return self.__sklearn_tags__().estimator_type == "classifier"
 
-    def _check_params(self):
+    def _check_params(self) -> None:
         """Make sure parameters are sane."""
         if self.l1_ratios is not None:
             l1_ratios = self.l1_ratios
@@ -1162,7 +1162,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         # TODO (sklearn  >= 1.6.0) remove
         self._estimator_type = "classifier"
 
-    def _validate_loss(self, value):
+    def _validate_loss(self, value) -> None:
         if value is not None:
             check_parameter_in_allowed(value, self.SUPPORTED_LOSSES, "loss")
 

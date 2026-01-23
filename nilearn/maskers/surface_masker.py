@@ -143,7 +143,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             and self.n_elements_ is not None
         )
 
-    def _fit_mask_img(self, img):
+    def _fit_mask_img(self, img) -> None:
         """Get mask passed during init or compute one from input image.
 
         Parameters
