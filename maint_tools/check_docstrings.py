@@ -51,18 +51,17 @@ def main() -> None:
         for func_def in list_functions(filename):
             # check_fill_doc_decorator(func_def, filename)
             # check_docstring(func_def, filename)
-            # check_returns_yields_and_annotation(func_def, filename)
-            check_missing_return_annotation(func_def, filename)
+            check_returns_yields_and_annotation(func_def, filename)
+            # check_missing_return_annotation(func_def, filename)
 
         for class_def in list_classes(filename):
             # check_fill_doc_decorator(class_def, filename)
             # check_docstring(class_def, filename)
 
-            for _meth_def in list_functions(class_def):
+            for meth_def in list_functions(class_def):
                 # check_docstring(meth_def, filename)
-                # check_returns_yields_and_annotation(meth_def, filename)
+                check_returns_yields_and_annotation(meth_def, filename)
                 # check_missing_return_annotation(meth_def, filename)
-                ...
 
 
 def check_fill_doc_decorator(
@@ -275,12 +274,12 @@ def check_returns_yields_and_annotation(ast_node, filename: str) -> None:
                 f"- {ast_node.name} - [red]missing Return section in docstring"
             )
 
-    # no return & no yield → must be annotated as -> None
-    elif not has_none_return_annotation(ast_node):
-        print(
-            f"{filename}:{ast_node.lineno} "
-            f"- {ast_node.name} - [red]missing return annotation '-> None'"
-        )
+    # # no return & no yield → must be annotated as -> None
+    # elif not has_none_return_annotation(ast_node):
+    #     print(
+    #         f"{filename}:{ast_node.lineno} "
+    #         f"- {ast_node.name} - [red]missing return annotation '-> None'"
+    #     )
 
 
 if __name__ == "__main__":
