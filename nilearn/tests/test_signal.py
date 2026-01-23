@@ -1742,8 +1742,9 @@ full_path_design_matrix_file = my_path / "spm_dmtx.npz"
 DESIGN_MATRIX = np.load(full_path_design_matrix_file)
 
 
+@pytest.mark.thread_unsafe
 def test_cosine_drift():
-    """Check cosine drift created buy nilearn."""
+    """Check cosine drift created by nilearn."""
     spm_drifts = DESIGN_MATRIX["cosbf_dt_1_nt_20_hcut_0p1"]
     frame_times = np.arange(20)
     high_pass_frequency = 0.1
