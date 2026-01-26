@@ -272,7 +272,6 @@ def check_returns_yields_and_annotation(
     docstring = ast.get_docstring(ast_node, clean=False)
 
     np_docstring = NumpyDocString(docstring)
-    bool(np_docstring["Returns"])
 
     # function returns / yields a value → must have Returns / Yields section
     if has_return_value or has_yield:
