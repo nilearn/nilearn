@@ -5,8 +5,9 @@ Using brain templates from TemplateFlow
 
 In this example, we see how to fetch and use brain templates from
 `TemplateFlow <https://https://www.templateflow.org/>`_.
-We see how to fetch and
-use the Desikan-Killiany (DK) atlas in order to make surface plots.
+We first see how to fetch and use the Desikan-Killiany (DK) atlas in order to
+make surface plots. Then, we see how to get the proper template for the
+Harvard-Oxford volumetric atlas.
 """
 
 # %%
@@ -21,45 +22,45 @@ use the Desikan-Killiany (DK) atlas in order to make surface plots.
 # `TemplateFlow browser <https://www.templateflow.org/browse/>`_.
 # In this example, the Desikan-Killiany (DK) atlas is fetched. This template
 # is available at multiple densities (number of vertices per hemisphere):
-# here, we use the 10k density.
+# here, we use the 3k and 10k densities.
 
 import templateflow.api as tflow
 
-from nilearn import surface
 from nilearn.surface import SurfaceImage, load_surf_data
-
-mesh = {}
-data = {}
 
 template = "fsaverage"
 density = "10k"
 
-for hemi in ["left", "right"]:
-    mesh[hemi] = tflow.get(
-        template,
-        extension="surf.gii",
-        suffix="pial",
-        density=density,
-        hemi=hemi[0].upper(),
-    )
-
-    desc = "curated" if density == "164k" else None
-    roi_data = load_surf_data(
-        tflow.get(
+desikan_dict = {}
+for density in ["3k", "10k"]:
+    mesh = {}
+    data = {}
+    for hemi in ["left", "right"]:
+        mesh[hemi] = tflow.get(
             template,
-            atlas="Desikan2006",
+            extension="surf.gii",
+            suffix="pial",
             density=density,
             hemi=hemi[0].upper(),
-            extension="label.gii",
-            desc=desc,
         )
-    )
-    if density == "164k":
-        roi_data[roi_data < 0] = 0
 
-    data[hemi] = roi_data
+        desc = "curated" if density == "164k" else None
+        roi_data = load_surf_data(
+            tflow.get(
+                template,
+                atlas="Desikan2006",
+                density=density,
+                hemi=hemi[0].upper(),
+                extension="label.gii",
+                desc=desc,
+            )
+        )
+        if density == "164k":
+            roi_data[roi_data < 0] = 0
 
-desikan = SurfaceImage(mesh=mesh, data=data)
+        data[hemi] = roi_data
+
+    desikan_dict[density] = SurfaceImage(mesh=mesh, data=data)
 
 
 # %%
@@ -71,10 +72,13 @@ desikan = SurfaceImage(mesh=mesh, data=data)
 # do this we map the density to the corresponding fsaverage template name.
 
 
+import matplotlib.pyplot as plt
 import pandas as pd
 
 from nilearn.datasets import load_fsaverage_data
 from nilearn.plotting import plot_surf_roi, show
+
+_, axes = plt.subplots(1, 2, subplot_kw={"projection": "3d"})
 
 fs_density = {
     "3k": "fsaverage4",
@@ -90,13 +94,19 @@ lut = tflow.get(
     extension="tsv",
 )
 
-bg_data = load_fsaverage_data(mesh=fs_density[density], mesh_type="pial")
-plot_surf_roi(
-    roi_map=desikan,
-    cmap=pd.read_csv(lut, sep="\t"),
-    bg_map=bg_data,
-    bg_on_data=True,
-)
+for ax, density in zip(axes, ["3k", "10k"]):
+    desikan = desikan_dict[density]
+    bg_data = load_fsaverage_data(mesh=fs_density[density])
+    plot_surf_roi(
+        roi_map=desikan,
+        cmap=pd.read_csv(lut, sep="\t"),
+        bg_map=bg_data,
+        bg_on_data=True,
+        title=f"DK atlas ({density})",
+        axes=ax,
+    )
+    if density == "10k":
+        ax._colorbars[0].remove()
 
 show()
 
