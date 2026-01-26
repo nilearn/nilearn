@@ -56,13 +56,26 @@ from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
 from nilearn.typing import ClusterThreshold, NiimgLike
 
 
-def get_data(img):
+def get_data(img) -> np.ndarray:
     """Get the image data as a :class:`numpy.ndarray`.
 
     Parameters
     ----------
     img : Niimg-like object or iterable of Niimg-like objects
         See :ref:`extracting_data`.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import numpy.testing as assert_array_equal
+    >>> from nibabel import Nifti1Image
+
+    # let's create a simple Nifti1Image
+    img = Nifti1Image(np.arange(24).reshape((2, 3, 4)), affine=np.eye(4))
+
+    # get the data as a numpy array
+    data = get_data(img)
+    assert_array_equal(data, np.arange(24).reshape((2, 3, 4)))
 
     Returns
     -------
@@ -552,6 +565,27 @@ def mean_img(
     %(copy_header)s
 
         .. nilearn_versionadded:: 0.11.0
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import numpy.testing as assert_array_equal
+    >>> from nibabel import Nifti1Image
+    >>> shape = (2, 2, 2, 1)
+
+    # Create a simple 4D Nifti1Image
+    # with a volume of ones and a volume of zeros.
+    >>> img = Nifti1Image(
+        np.concatenate([np.ones(shape), np.zeros(shape)], axis=-1), np.eye(4)
+    )
+    >>> from nilearn.image import mean_img, get_data
+    >>> mean_image = mean_img(img)
+    >>> mean_image.get_fdata()
+    array([[[0.5, 0.5],
+        [0.5, 0.5]],
+
+       [[0.5, 0.5],
+        [0.5, 0.5]]])
 
     Returns
     -------
@@ -1563,6 +1597,7 @@ def clean_img(
         Within :func:`~nilearn.signal.clean`, kwargs prefixed with
         ``'butterworth__'`` will be passed to the Butterworth filter
         (i.e., ``clean__butterworth__``).
+
 
     Returns
     -------
