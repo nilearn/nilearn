@@ -67,15 +67,14 @@ def get_data(img) -> np.ndarray:
     Examples
     --------
     >>> import numpy as np
-    >>> import numpy.testing as assert_array_equal
+    >>> from numpy.testing import assert_array_equal
     >>> from nibabel import Nifti1Image
-
-    # let's create a simple Nifti1Image
-    img = Nifti1Image(np.arange(24).reshape((2, 3, 4)), affine=np.eye(4))
-
-    # get the data as a numpy array
-    data = get_data(img)
-    assert_array_equal(data, np.arange(24).reshape((2, 3, 4)))
+    >>> from nilearn.image import get_data
+    >>> img = Nifti1Image(
+    ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
+    ... )
+    >>> data = get_data(img)
+    >>> assert_array_equal(data, np.arange(24).reshape((2, 3, 4)))
 
     Returns
     -------
@@ -569,23 +568,23 @@ def mean_img(
     Examples
     --------
     >>> import numpy as np
-    >>> import numpy.testing as assert_array_equal
+    >>> from numpy.testing import assert_array_equal
     >>> from nibabel import Nifti1Image
+    >>> # Create a 4D image with one volume of ones and one of zeros
     >>> shape = (2, 2, 2, 1)
-
-    # Create a simple 4D Nifti1Image
-    # with a volume of ones and a volume of zeros.
-    >>> img = Nifti1Image(
-        np.concatenate([np.ones(shape), np.zeros(shape)], axis=-1), np.eye(4)
-    )
-    >>> from nilearn.image import mean_img, get_data
+    >>> img = Nifti1Image(np.concatenate([np.ones(shape),
+    ...                                   np.zeros(shape)],
+    ...                                  axis=-1),
+    ...                   affine=np.eye(4),
+    ...                   dtype=np.int32)
+    >>> # Compute the mean image and get its content as a numpy array
+    >>> from nilearn.image import mean_img
     >>> mean_image = mean_img(img)
     >>> mean_image.get_fdata()
     array([[[0.5, 0.5],
-        [0.5, 0.5]],
-
-       [[0.5, 0.5],
-        [0.5, 0.5]]])
+            [0.5, 0.5]],
+           [[0.5, 0.5],
+            [0.5, 0.5]]])
 
     Returns
     -------
