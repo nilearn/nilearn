@@ -7,7 +7,6 @@ import requests
 from numpy.testing import assert_no_warnings
 
 from nilearn._utils import html_document
-from nilearn._utils.helpers import is_gil_enabled
 
 #  import autoused fixture
 from nilearn.datasets.tests.conftest import request_mocker  # noqa: F401
@@ -43,7 +42,6 @@ def test_open_in_browser(monkeypatch):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.xfail(not is_gil_enabled(), reason="fails without GIL")
 def test_open_in_browser_timeout(monkeypatch):
     opener = Get(delay=1.0)
     monkeypatch.setattr(webbrowser, "open", opener)
