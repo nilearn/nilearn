@@ -18,7 +18,7 @@ use the Desikan-Killiany (DK) atlas in order to make surface plots.
 # suffix, atlas, hemisphere (hemi), space, or description (desc). If a search
 # matches multiple files, the function returns a list of all matching paths.
 # Available resources can be explored in the
-# `TemplateFlow browser <https://www.templateflow.org/browse/>`.
+# `TemplateFlow browser <https://www.templateflow.org/browse/>`_.
 # In this example, the Desikan-Killiany (DK) atlas is fetched. This template
 # is available at multiple densities; here, the 10k resolution is used.
 
