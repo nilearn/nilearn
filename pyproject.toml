@@ -204,7 +204,7 @@ layers = [
     "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting : nilearn.masking : nilearn.reporting : nilearn.datasets : nilearn.interfaces",
     "nilearn.signal",
     "nilearn._base",
-    "nilearn.typing | nilearn.exceptions"
+    "nilearn.typing | nilearn.exceptions | nilearn._utils.versions"
 ]
 name = "main architecture"
 type = "layers"
