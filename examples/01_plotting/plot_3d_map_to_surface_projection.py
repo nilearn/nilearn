@@ -203,9 +203,6 @@ elif engine == "plotly":
         lines=[{"width": 5}],
     )
 
-    # Uncomment the line below
-    # to view the plotly figure in browser.
-    # figure.show(renderer="browser")
 
 figure.show()
 
