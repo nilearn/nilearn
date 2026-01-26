@@ -44,7 +44,7 @@ for hemi in ["left", "right"]:
     )
 
     desc = "curated" if density == "164k" else None
-    roi_data = surface.load_surf_data(
+    roi_data = load_surf_data(
         tflow.get(
             template,
             atlas="Desikan2006",
