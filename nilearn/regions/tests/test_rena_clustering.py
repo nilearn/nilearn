@@ -65,7 +65,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-def test_rena_clustering_mask_error():
+def test_mask_error():
     """Check an error is raised if invalid mask is provided before fit."""
     data_img, mask_img = generate_fake_fmri(
         shape=_shape_3d_default(), length=5
@@ -194,7 +194,7 @@ def test_make_edges_and_weights_surface(surf_mesh, surf_img_2d):
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.parametrize("mask_as", ["surface_image", "surface_masker"])
 @pytest.mark.parametrize("n_clusters", [2, 4, 5])
-def test_rena_clustering_input_mask_surface(
+def test_input_mask_surface(
     surf_img_2d, surf_mask_dim, surf_mask_1d, surf_mask_2d, mask_as, n_clusters
 ):
     """Test if ReNA clustering works in both cases when mask_img is either a
