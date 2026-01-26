@@ -19,9 +19,9 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import SKLEARN_LT_1_6
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array

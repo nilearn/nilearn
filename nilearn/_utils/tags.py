@@ -18,7 +18,7 @@ https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
 from dataclasses import dataclass
 from typing import Any
 
-from nilearn._utils.helpers import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 
 if SKLEARN_LT_1_6:
 

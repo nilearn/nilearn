@@ -9,7 +9,8 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.helpers import SKLEARN_LT_1_6, is_windows_platform
+from nilearn._utils.helpers import is_windows_platform
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
     HierarchicalKMeans,

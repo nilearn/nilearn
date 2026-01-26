@@ -13,11 +13,11 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
 from nilearn._utils.helpers import (
-    SKLEARN_GTE_1_7,
     is_matplotlib_installed,
     is_plotly_installed,
 )
 from nilearn._utils.tags import accept_surf_img_input
+from nilearn._utils.versions import SKLEARN_GTE_1_7
 from nilearn.conftest import _img_maps, _surf_maps_img
 from nilearn.image import get_data
 from nilearn.maskers import (

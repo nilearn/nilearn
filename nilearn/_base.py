@@ -5,7 +5,7 @@ import itertools
 from packaging.version import parse
 from sklearn.base import BaseEstimator
 
-from nilearn._utils.helpers import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn._version import __version__
 
 

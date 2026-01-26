@@ -65,8 +65,6 @@ from sklearn.utils.estimator_checks import (
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.helpers import (
-    SKLEARN_LT_1_6,
-    compare_version,
     is_gil_enabled,
     is_matplotlib_installed,
     is_windows_platform,
@@ -80,6 +78,7 @@ from nilearn._utils.tags import (
     is_masker,
 )
 from nilearn._utils.testing import write_imgs_to_path
+from nilearn._utils.versions import SKLEARN_LT_1_6, compare_version
 from nilearn.conftest import (
     _affine_eye,
     _affine_mni,

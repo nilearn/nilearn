@@ -44,12 +44,12 @@ from sklearn.utils.validation import check_is_fitted, check_X_y
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
+from nilearn._utils.versions import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import check_feature_screening
 from nilearn.image import check_niimg

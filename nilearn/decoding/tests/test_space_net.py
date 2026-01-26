@@ -18,7 +18,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.helpers import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     SpaceNetClassifier,
