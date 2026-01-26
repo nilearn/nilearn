@@ -1,8 +1,6 @@
 import pytest
 
-from nilearn._utils.helpers import (
-    compare_version,
-)
+from nilearn._utils.versions import compare_version
 
 
 @pytest.mark.parametrize(
