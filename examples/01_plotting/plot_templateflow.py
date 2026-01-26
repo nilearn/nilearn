@@ -29,7 +29,6 @@ import templateflow.api as tflow
 from nilearn.surface import SurfaceImage, load_surf_data
 
 template = "fsaverage"
-density = "10k"
 
 desikan_dict = {}
 for density in ["3k", "10k"]:
