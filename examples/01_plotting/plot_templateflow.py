@@ -20,7 +20,8 @@ use the Desikan-Killiany (DK) atlas in order to make surface plots.
 # Available resources can be explored in the
 # `TemplateFlow browser <https://www.templateflow.org/browse/>`_.
 # In this example, the Desikan-Killiany (DK) atlas is fetched. This template
-# is available at multiple densities; here, the 10k resolution is used.
+# is available at multiple densities (number of vertices per hemisphere):
+# here, we use the 10k density.
 
 import templateflow.api as tflow
 
