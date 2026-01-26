@@ -94,7 +94,7 @@ lut = tflow.get(
     extension="tsv",
 )
 
-for ax, density in zip(axes, ["3k", "10k"]):
+for ax, density in zip(axes, ["3k", "10k"], strict=True):
     desikan = desikan_dict[density]
     bg_data = load_fsaverage_data(mesh=fs_density[density])
     plot_surf_roi(
