@@ -1,4 +1,4 @@
-"""Utilities and constants for version comparisons1."""
+"""Utilities and constants for version comparisons."""
 
 import operator
 
