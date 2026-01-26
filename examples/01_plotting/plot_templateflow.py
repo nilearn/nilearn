@@ -26,7 +26,7 @@ use the Desikan-Killiany (DK) atlas in order to make surface plots.
 import templateflow.api as tflow
 
 from nilearn import surface
-from nilearn.surface import SurfaceImage
+from nilearn.surface import SurfaceImage, load_surf_data
 
 mesh = {}
 data = {}
