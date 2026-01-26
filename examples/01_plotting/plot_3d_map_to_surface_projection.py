@@ -101,6 +101,10 @@ figure = plot_surf_stat_map(
 )
 figure.show()
 
+# Uncomment the line below to have interactive
+# visualization in the browser
+# figure.show(renderer="browser")
+
 # %%
 # When using ``matplolib`` as the plotting engine, a standard
 # :class:`matplotlib.figure.Figure` is returned.
@@ -198,7 +202,9 @@ elif engine == "plotly":
         labels=labels,
         lines=[{"width": 5}],
     )
-
+    # Uncomment the line below to have interactive
+    # visualization in the browser
+    # figure.show(renderer="browser")
 
 figure.show()
 
