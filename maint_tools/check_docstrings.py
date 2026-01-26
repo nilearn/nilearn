@@ -1,3 +1,11 @@
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#   "nilearn[plotting]>=0.12",
+#    "numpydoc",
+#    "rich",
+# ]
+# ///
 """Utility to check dostrings.
 
 - checks docstrings of functions, classes and methods
@@ -51,22 +59,46 @@ def main() -> None:
 
     for filename in filenames:
         for func_def in list_functions(filename, include="all"):
+            check_missing_return_annotation(func_def, filename)
+
+            docstring = _get_doctring(func_def, filename)
+            if docstring is None:
+                continue
+
             check_fill_doc_decorator(func_def, filename)
             check_docstring(func_def, filename)
             check_returns_yields_and_annotation(func_def, filename)
-            check_missing_return_annotation(func_def, filename)
 
         for class_def in list_classes(filename, include="all"):
-            check_fill_doc_decorator(class_def, filename)
-            check_docstring(class_def, filename)
+            if _get_doctring(func_def, filename) is not None:
+                check_fill_doc_decorator(class_def, filename)
+                check_docstring(class_def, filename)
 
             for meth_def in list_functions(class_def, include="all"):
                 if meth_def.name == "__init__":
                     continue
+
+                check_missing_return_annotation(meth_def, filename)
+
+                docstring = _get_doctring(meth_def, filename)
+                if docstring is None:
+                    continue
+
                 check_fill_doc_decorator(meth_def, filename)
                 check_docstring(meth_def, filename)
                 check_returns_yields_and_annotation(meth_def, filename)
-                check_missing_return_annotation(meth_def, filename)
+
+
+def _get_doctring(ast_node, filename):
+    docstring = ast.get_docstring(ast_node, clean=False)
+    if not bool(docstring):
+        print(
+            f"{filename}:{ast_node.lineno} "
+            f"- {ast_node.name} - [red] No docstring detected"
+        )
+        return None
+    else:
+        return docstring
 
 
 def check_fill_doc_decorator(
@@ -147,20 +179,14 @@ def contains_check_params_call(node: ast.AST) -> bool:
 def check_docstring(ast_node, filename: str | Path) -> None:
     """Check that defaults in an AST node are present in docstring type."""
     docstring = ast.get_docstring(ast_node, clean=False)
-    if not docstring:
-        print(
-            f"{filename}:{ast_node.lineno} "
-            f"- {ast_node.name} - [red] No docstring detected"
-        )
-    else:
-        missing = None
-        with contextlib.suppress(Exception):
-            missing = get_missing(docstring)
+    missing = None
+    with contextlib.suppress(Exception):
+        missing = get_missing(docstring)
 
-        if missing:
-            print(f"{filename}:{ast_node.lineno} - {ast_node.name}")
-            for param, desc, value in missing:
-                print(f" '{param}: {desc}' - [red] missing :obj:`{value}`")
+    if missing:
+        print(f"{filename}:{ast_node.lineno} - {ast_node.name}")
+        for param, desc, value in missing:
+            print(f" '{param}: {desc}' - [red] missing :obj:`{value}`")
 
 
 def get_missing(docstring: str, values=None) -> list[tuple[str, str, str]]:
@@ -201,26 +227,6 @@ def function_has_yield(node: ast.AST) -> bool:
         if isinstance(subnode, (ast.Yield, ast.YieldFrom)):
             return True
     return False
-
-
-def docstring_has_returns_section(docstring: str) -> bool:
-    """Return True if docstring contains a Returns section."""
-    try:
-        doc = NumpyDocString(docstring)
-    except Exception:
-        return False
-
-    return bool(doc["Returns"])
-
-
-def docstring_has_yields_section(docstring: str) -> bool:
-    """Return True if docstring contains a Yields section."""
-    try:
-        doc = NumpyDocString(docstring)
-    except Exception:
-        return False
-
-    return bool(doc["Yields"])
 
 
 def has_none_return_annotation(node: ast.FunctionDef) -> bool:
@@ -265,18 +271,21 @@ def check_returns_yields_and_annotation(
 
     docstring = ast.get_docstring(ast_node, clean=False)
 
+    np_docstring = NumpyDocString(docstring)
+    bool(np_docstring["Returns"])
+
     # function returns / yields a value → must have Returns / Yields section
     if has_return_value or has_yield:
         if not docstring:
             return
 
-        if has_yield and not docstring_has_yields_section(docstring):
+        if has_yield and bool(np_docstring["Yields"]):
             print(
                 f"{filename}:{ast_node.lineno} "
                 f"- {ast_node.name} "
                 "- [red]missing Yields section in docstring"
             )
-        elif has_return_value and not docstring_has_returns_section(docstring):
+        elif has_return_value and not bool(np_docstring["Returns"]):
             print(
                 f"{filename}:{ast_node.lineno} "
                 f"- {ast_node.name} "
