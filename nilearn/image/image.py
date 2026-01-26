@@ -1597,7 +1597,6 @@ def clean_img(
         ``'butterworth__'`` will be passed to the Butterworth filter
         (i.e., ``clean__butterworth__``).
 
-
     Returns
     -------
     Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
