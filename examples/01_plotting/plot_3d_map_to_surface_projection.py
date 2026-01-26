@@ -101,10 +101,6 @@ figure = plot_surf_stat_map(
 )
 figure.show()
 
-# Uncomment the line below
-# to view the figure in browser.
-# figure.show(renderer="browser")
-
 # %%
 # When using ``matplolib`` as the plotting engine, a standard
 # :class:`matplotlib.figure.Figure` is returned.
