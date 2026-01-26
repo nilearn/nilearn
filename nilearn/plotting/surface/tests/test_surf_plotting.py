@@ -675,6 +675,7 @@ def test_plot_surf_stat_map_error_vmax_equal_vmin(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_colormap(plt, engine, in_memory_mesh, bg_map):
     """Smoke test when colormap is specified to
     nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
@@ -963,6 +964,7 @@ def test_plot_surf_roi_matplotlib_specific_nan_handling(
     assert n_faces == ((tmp._facecolors[:, 3]) != 0).sum()
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
     matplotlib_pyplot, surface_image_roi
 ):

@@ -63,6 +63,7 @@ def test_display_methods_invalid_threshold(matplotlib_pyplot, img_3d_mni):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_with_axes_or_figure(matplotlib_pyplot, img_3d_mni):
     """Smoke tests for plot_img with providing figure or Axes."""
     figure = plt.figure()
