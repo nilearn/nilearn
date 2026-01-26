@@ -118,8 +118,12 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         """
         if self.figure is not None:
+            # Figure should be returned for sphinx-gallery to be able to
+            # display it in the docs.
             if is_sphinx_build():
                 return self.figure
+            # When run in notebook, if both figure is returned and show
+            # is called, the figure is displayed twice.
             else:
                 self.figure.show(renderer=renderer)
 
