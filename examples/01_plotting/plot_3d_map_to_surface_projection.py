@@ -286,6 +286,7 @@ view = view_surf(
 view
 # view.open_in_browser()
 
+# %%
 # We don't need to do the projection ourselves, we can use
 # :func:`~nilearn.plotting.view_img_on_surf`:
 from nilearn.plotting import view_img_on_surf
