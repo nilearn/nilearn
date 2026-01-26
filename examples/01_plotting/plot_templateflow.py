@@ -31,7 +31,7 @@ mesh = {}
 data = {}
 
 template = "fsaverage"
-density = "10k"  # number of vertices per hemisphere
+density = "10k"
 
 for hemi in ["left", "right"]:
     mesh[hemi] = tflow.get(
