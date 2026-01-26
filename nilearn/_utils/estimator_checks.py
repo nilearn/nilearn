@@ -42,7 +42,6 @@ from numpy.testing import (
     assert_raises,
 )
 from numpydoc.docscrape import NumpyDocString
-from packaging.version import parse
 from scipy import __version__ as scipy_version
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
@@ -66,6 +65,8 @@ from sklearn.utils.estimator_checks import (
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.helpers import (
+    SKLEARN_LT_1_6,
+    compare_version,
     is_gil_enabled,
     is_matplotlib_installed,
     is_windows_platform,
@@ -73,7 +74,6 @@ from nilearn._utils.helpers import (
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn._utils.tags import (
-    SKLEARN_LT_1_6,
     accept_niimg_input,
     accept_surf_img_input,
     is_glm,
@@ -139,7 +139,9 @@ from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_surface_image_equal
 
-SKLEARN_MINOR = parse(sklearn_version).release[1]
+SKLEARN_GTE_1_4 = compare_version(sklearn_version, ">=", "1.4.0")
+SKLEARN_GTE_1_5 = compare_version(sklearn_version, ">=", "1.5.0")
+SKLEARN_GTE_1_6 = compare_version(sklearn_version, ">=", "1.5.0")
 
 
 def nilearn_dir() -> Path:
@@ -199,8 +201,7 @@ def check_estimator(
 # some checks would fail on sklearn 1.6.1 on older python
 # see https://github.com/scikit-learn-contrib/imbalanced-learn/issues/1131
 IS_SKLEARN_1_6_1_on_py_lt_3_13 = (
-    SKLEARN_MINOR == 6
-    and parse(sklearn_version).release[2] == 1
+    compare_version(sklearn_version, "==", "1.6.1")
     and sys.version_info[1] < 13
 )
 
@@ -249,7 +250,7 @@ def return_expected_failed_checks(
             "check_transformer_data_not_an_array": "TODO",
             "check_transformer_general": "TODO",
         }
-        if SKLEARN_MINOR > 4:
+        if SKLEARN_GTE_1_4:
             expected_failed_checks.pop("check_estimator_sparse_data")
             expected_failed_checks |= {
                 "check_transformer_preserve_dtypes": "TODO",
@@ -269,7 +270,7 @@ def return_expected_failed_checks(
             "check_estimator_sparse_matrix": "TODO",
             "check_estimator_sparse_tag": "TODO",
         }
-        if SKLEARN_MINOR > 4:
+        if SKLEARN_GTE_1_4:
             expected_failed_checks.pop("check_estimator_sparse_data")
         if isinstance(estimator, GroupSparseCovarianceCV):
             expected_failed_checks |= {
@@ -363,10 +364,10 @@ def return_expected_failed_checks(
 
     if is_glm(estimator):
         expected_failed_checks.pop("check_estimator_sparse_data")
-        if SKLEARN_MINOR >= 5:
+        if SKLEARN_GTE_1_5:
             expected_failed_checks.pop("check_estimator_sparse_matrix")
             expected_failed_checks.pop("check_estimator_sparse_array")
-        if SKLEARN_MINOR >= 6:
+        if SKLEARN_GTE_1_6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
         expected_failed_checks |= {
@@ -393,16 +394,16 @@ def return_expected_failed_checks(
             "check_transformer_general": "TODO",
             "check_transformer_preserve_dtypes": "TODO",
         }
-        if SKLEARN_MINOR >= 6:
+        if SKLEARN_GTE_1_6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
         if (
             not IS_SKLEARN_1_6_1_on_py_lt_3_13
-            and SKLEARN_MINOR >= 5
+            and SKLEARN_GTE_1_5
             and scipy_version != "1.9.0"
         ):
             expected_failed_checks.pop("check_estimator_sparse_array")
 
-    if isinstance(estimator, (MultiNiftiMasker)) and SKLEARN_MINOR >= 6:
+    if isinstance(estimator, (MultiNiftiMasker)) and SKLEARN_GTE_1_6:
         expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if is_masker(estimator):
@@ -447,7 +448,7 @@ def expected_failed_checks_clustering() -> dict[str, str]:
         "check_clustering": "TODO",
     }
 
-    if SKLEARN_MINOR >= 5:
+    if SKLEARN_GTE_1_5:
         expected_failed_checks.pop("check_estimator_sparse_matrix")
         expected_failed_checks.pop("check_estimator_sparse_array")
 

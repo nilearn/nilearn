@@ -4,10 +4,10 @@ import numpy as np
 from sklearn.preprocessing import LabelBinarizer
 
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import SKLEARN_LT_1_6
 from nilearn._utils.param_validation import (
     check_params,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 class _ClassifierMixin:

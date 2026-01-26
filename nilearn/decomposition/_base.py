@@ -26,6 +26,7 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import SKLEARN_LT_1_6
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import (
@@ -33,7 +34,6 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import check_niimg
 from nilearn.maskers import (
     MultiNiftiMasker,

@@ -18,10 +18,7 @@ https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
 from dataclasses import dataclass
 from typing import Any
 
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
-
-SKLEARN_LT_1_6 = parse(sklearn_version).release[1] < 6
+from nilearn._utils.helpers import SKLEARN_LT_1_6
 
 if SKLEARN_LT_1_6:
 

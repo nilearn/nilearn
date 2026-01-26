@@ -17,8 +17,6 @@ from collections.abc import Iterable
 import numpy as np
 from joblib import Parallel, delayed
 from nibabel import Nifti1Image
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import (
     MultiOutputMixin,
@@ -46,12 +44,12 @@ from sklearn.utils.validation import check_is_fitted, check_X_y
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import check_feature_screening
 from nilearn.image import check_niimg
@@ -60,10 +58,8 @@ from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
 
-SKLEARN_GET_1_8 = parse(sklearn_version).release[1] >= 8
-
 kwarg_logistic_regression_cv = {}
-if SKLEARN_GET_1_8:
+if SKLEARN_GTE_1_8:
     # TODO (sklearn 1.8) remove if
     # TODO (sklearn 1.10) remove 'use_legacy_attributes'
     kwarg_logistic_regression_cv = {"use_legacy_attributes": False}

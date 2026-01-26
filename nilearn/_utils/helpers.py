@@ -5,6 +5,7 @@ import sys
 import warnings
 
 from packaging.version import parse
+from sklearn import __version__ as sklearn_version
 
 from nilearn._utils.logger import find_stack_level
 
@@ -277,6 +278,11 @@ def compare_version(version_a, operator, version_b):
         error_msg = "'compare_version' received an unexpected operator "
         raise ValueError(error_msg + operator + ".")
     return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))
+
+
+SKLEARN_LT_1_6 = compare_version(sklearn_version, "<", "1.6.0")
+SKLEARN_GTE_1_7 = compare_version(sklearn_version, ">=", "1.7.0")
+SKLEARN_GTE_1_8 = compare_version(sklearn_version, ">=", "1.8.0")
 
 
 def is_matplotlib_installed():

@@ -14,9 +14,9 @@ from sklearn.utils.validation import check_is_fitted
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import SKLEARN_LT_1_6
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 def _remove_empty_labels(labels):

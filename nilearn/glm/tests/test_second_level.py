@@ -25,7 +25,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.helpers import SKLEARN_LT_1_6
 from nilearn.conftest import _shape_3d_default
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.first_level import FirstLevelModel, run_glm

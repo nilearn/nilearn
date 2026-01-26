@@ -3,13 +3,10 @@
 import itertools
 
 from packaging.version import parse
-from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator
 
+from nilearn._utils.helpers import SKLEARN_LT_1_6
 from nilearn._version import __version__
-
-SKLEARN_GTE_1_7 = parse(sklearn_version).release[1] >= 7
-SKLEARN_LT_1_6 = parse(sklearn_version).release[1] < 6
 
 
 class _NilearnHTMLDocumentationLinkMixin:

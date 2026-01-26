@@ -4,7 +4,7 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
 
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.helpers import SKLEARN_LT_1_6
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 

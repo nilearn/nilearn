@@ -5,9 +5,7 @@ from functools import partial
 import numpy as np
 import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
-from packaging.version import parse
 from scipy import linalg
-from sklearn import __version__ as sklearn_version
 from sklearn.datasets import load_iris
 from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.linear_model._coordinate_descent import _alpha_grid
@@ -20,7 +18,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.helpers import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     SpaceNetClassifier,
@@ -38,8 +36,6 @@ from nilearn.decoding.space_net_solvers import (
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.image import get_data
-
-SKLEARN_GTE_1_8 = parse(sklearn_version).release[1] >= 8
 
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)

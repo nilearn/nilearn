@@ -1,7 +1,7 @@
 """Check Nilearn estimators tags."""
 
 from nilearn._base import NilearnBaseEstimator
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.helpers import SKLEARN_LT_1_6
 
 
 class NilearnEstimator(NilearnBaseEstimator):

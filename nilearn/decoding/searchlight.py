@@ -20,8 +20,8 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import SKLEARN_LT_1_6
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity

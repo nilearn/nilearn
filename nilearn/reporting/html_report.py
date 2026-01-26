@@ -8,8 +8,7 @@ from typing import Any
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from nilearn._base import SKLEARN_GTE_1_7
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import SKLEARN_GTE_1_7, is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
