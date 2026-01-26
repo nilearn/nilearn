@@ -15,8 +15,8 @@
 """
 
 import ast
-import contextlib
 import re
+from contextlib import suppress
 from pathlib import Path
 
 from numpydoc.docscrape import NumpyDocString
@@ -61,7 +61,7 @@ def main() -> None:
         for func_def in list_functions(filename, include="all"):
             check_missing_return_annotation(func_def, filename)
 
-            docstring = _get_doctring(func_def, filename)
+            docstring = _get_docstring(func_def, filename)
             if docstring is None:
                 continue
 
@@ -70,7 +70,7 @@ def main() -> None:
             check_returns_yields_and_annotation(func_def, filename)
 
         for class_def in list_classes(filename, include="all"):
-            if _get_doctring(func_def, filename) is not None:
+            if _get_docstring(class_def, filename) is not None:
                 check_fill_doc_decorator(class_def, filename)
                 check_docstring(class_def, filename)
 
@@ -80,7 +80,7 @@ def main() -> None:
 
                 check_missing_return_annotation(meth_def, filename)
 
-                docstring = _get_doctring(meth_def, filename)
+                docstring = _get_docstring(meth_def, filename)
                 if docstring is None:
                     continue
 
@@ -89,7 +89,7 @@ def main() -> None:
                 check_returns_yields_and_annotation(meth_def, filename)
 
 
-def _get_doctring(ast_node, filename):
+def _get_docstring(ast_node, filename):
     docstring = ast.get_docstring(ast_node, clean=False)
     if not bool(docstring):
         print(
@@ -179,8 +179,9 @@ def contains_check_params_call(node: ast.AST) -> bool:
 def check_docstring(ast_node, filename: str | Path) -> None:
     """Check that defaults in an AST node are present in docstring type."""
     docstring = ast.get_docstring(ast_node, clean=False)
+
     missing = None
-    with contextlib.suppress(Exception):
+    with suppress(Exception):
         missing = get_missing(docstring)
 
     if missing:
@@ -275,9 +276,6 @@ def check_returns_yields_and_annotation(
 
     # function returns / yields a value → must have Returns / Yields section
     if has_return_value or has_yield:
-        if not docstring:
-            return
-
         if has_yield and bool(np_docstring["Yields"]):
             print(
                 f"{filename}:{ast_node.lineno} "
