@@ -233,8 +233,11 @@ def test_with_nans_and_infs_in_data(
         ("variance", np.var),
     ],
 )
-def test_reduction_strategies(affine_eye, strategy, function):
-    """Tests NiftiLabelsMasker strategies.
+@pytest.mark.parametrize(
+    "estimator", [NiftiLabelsMasker, MultiNiftiLabelsMasker]
+)
+def test_reduction_strategies(affine_eye, strategy, function, estimator):
+    """Tests (Multi)NiftiLabelsMasker strategies.
 
     1. whether the usage of different reduction strategies work.
     2. whether unrecognized strategies raise a ValueError
@@ -249,17 +252,24 @@ def test_reduction_strategies(affine_eye, strategy, function):
     img = Nifti1Image(img_data, affine_eye)
     labels = Nifti1Image(labels_data, affine_eye)
 
-    # What NiftiLabelsMasker should return for each reduction strategy?
+    masker = estimator(labels, strategy=strategy)
+
     expected_result = function(test_values)
 
-    masker = NiftiLabelsMasker(labels, strategy=strategy)
-    # Here passing [img] within a list because it's a 3D object.
-    result = masker.fit_transform([img]).squeeze()
+    if isinstance(masker, MultiNiftiLabelsMasker):
+        # Here passing [img, img] within a list
+        # because it is multiple subjects
+        # with a 3D object.
+        results = masker.fit_transform([img, img])
+        for r in results:
+            assert r.squeeze() == expected_result
+    else:
+        # Here passing [img] within a list because it's a 3D object.
+        result = masker.fit_transform([img]).squeeze()
 
-    assert result == expected_result
+        assert result == expected_result
 
-    default_masker = NiftiLabelsMasker(labels)
-
+    default_masker = estimator(labels)
     assert default_masker.strategy == "mean"
 
 

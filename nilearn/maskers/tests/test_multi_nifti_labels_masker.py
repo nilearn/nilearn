@@ -1,8 +1,6 @@
 """Test the multi_nifti_labels_masker module."""
 
-import numpy as np
 import pytest
-from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
@@ -108,50 +106,6 @@ def test_multi_nifti_labels_masker(
 
         assert fmri11_img_r.shape == fmri11_img.shape
         assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize("test_values", [[-2.0, -1.0, 0.0, 1.0, 2]])
-@pytest.mark.parametrize(
-    "strategy, fn",
-    [
-        ("mean", np.mean),
-        ("median", np.median),
-        ("sum", np.sum),
-        ("minimum", np.min),
-        ("maximum", np.max),
-        ("standard_deviation", np.std),
-        ("variance", np.var),
-    ],
-)
-def test_reduction_strategies(affine_eye, test_values, strategy, fn):
-    """Tests strategies of MultiNiftiLabelsMasker.
-
-    - whether the usage of different reduction strategies work
-    - whether the default option is backwards compatible (calls "mean")
-    """
-    img_data = np.array([[test_values, test_values]])
-
-    labels_data = np.array([[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1]]], dtype=np.int8)
-
-    img = Nifti1Image(img_data, affine_eye)
-    labels = Nifti1Image(labels_data, affine_eye)
-
-    masker = MultiNiftiLabelsMasker(
-        labels, strategy=strategy, standardize=None
-    )
-    # Here passing [img, img] within a list because it is multiple subjects
-    # with a 3D object.
-    results = masker.fit_transform([img, img])
-
-    # What MultiNiftiLabelsMasker should return for each reduction strategy?
-    expected_result = fn(test_values)
-
-    for r in results:
-        assert r.squeeze() == expected_result
-
-    default_masker = MultiNiftiLabelsMasker(labels)
-    assert default_masker.strategy == "mean"
 
 
 @pytest.mark.slow
