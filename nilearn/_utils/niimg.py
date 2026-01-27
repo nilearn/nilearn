@@ -59,7 +59,8 @@ def has_non_finite(data) -> bool:
     """Return True if data contains at least one NaN or inf value; False if
     there are no NaN and inf values.
     """
-    return ~np.isfinite(data).any()
+    non_finite_mask = ~np.isfinite(data)
+    return non_finite_mask.any()
 
 
 def ensure_finite_data(data) -> np.ndarray:

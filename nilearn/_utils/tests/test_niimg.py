@@ -9,7 +9,9 @@ import pytest
 from nibabel import Nifti1Header, Nifti1Image, load
 
 from nilearn._utils.niimg import (
+    _get_data,
     _get_target_dtype,
+    has_non_finite,
     img_data_dtype,
     is_binary_niimg,
     load_niimg,
@@ -295,6 +297,22 @@ def test_repr_niimgs_with_niimg(
 @pytest.mark.parametrize(
     "has_inf,has_nan,non_bin,expected",
     [
+        (False, False, False, False),
+        (True, False, False, True),
+        (False, True, False, True),
+        (False, False, True, False),
+        (True, True, True, True),
+    ],
+)
+def test_has_non_finite(img_bin, expected):
+    """Test nilearn._utils.niimg.has_non_finite."""
+    data = _get_data(img_bin)
+    assert has_non_finite(data) == expected
+
+
+@pytest.mark.parametrize(
+    "has_inf,has_nan,non_bin,expected",
+    [
         (False, False, False, True),
         (True, False, False, True),
         (False, True, False, True),
@@ -304,4 +322,4 @@ def test_repr_niimgs_with_niimg(
 )
 def test_is_binary_niimg(img_bin, expected):
     """Test nilearn._utils.niimg.is_binary_niimg."""
-    assert is_binary_niimg(img_bin) is expected
+    assert is_binary_niimg(img_bin) == expected
