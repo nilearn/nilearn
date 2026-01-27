@@ -15,12 +15,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn._utils.tags import (
-    accept_niimg_input,
-    is_masker,
-)
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD, threshold_stats_img
-from nilearn.image import check_niimg
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
@@ -33,7 +28,7 @@ from nilearn.surface.surface import get_data as get_surface_data
 
 def check_generate_report_input(
     height_control, cluster_threshold, min_distance, plot_type
-):
+) -> None:
     height_control_methods = [
         "fpr",
         "fdr",
@@ -183,6 +178,7 @@ def load_bg_img(bg_img, is_volume_glm):
             "'bg_img' must a SurfaceImage instance. "
             f"Got {bg_img.__class__.__name__}"
         )
+    return bg_img
 
 
 def mask_to_plot(model, bg_img):
@@ -209,9 +205,6 @@ def mask_to_plot(model, bg_img):
 
     from matplotlib import pyplot as plt
 
-    from nilearn.plotting import plot_roi
-
-    # Select mask_img to use for plotting
     if not model._is_volume_glm():
         fig = model.masker_._create_figure_for_report()
         mask_plot = figure_to_png_base64(fig)
@@ -219,18 +212,10 @@ def mask_to_plot(model, bg_img):
         plt.close()
         return mask_plot
 
-    if is_masker(model.mask_img) and accept_niimg_input(model.mask_img):
-        mask_img = model.masker_.mask_img_
-    else:
-        try:
-            # check that mask_img is a niiimg-like object
-            check_niimg(model.mask_img)
-            mask_img = model.mask_img
-        except Exception:
-            mask_img = model.masker_.mask_img_
+    from nilearn.plotting import plot_roi
 
     plot_roi(
-        roi_img=mask_img,
+        roi_img=model._mask_img,
         bg_img=bg_img,
         display_mode="z",
         cmap="Set1",
@@ -246,6 +231,7 @@ def mask_to_plot(model, bg_img):
 @fill_doc
 def make_stat_maps_contrast_clusters(
     stat_img,
+    mask_img,
     threshold_orig,
     alpha,
     cluster_threshold,
@@ -273,6 +259,9 @@ def make_stat_maps_contrast_clusters(
        stat_img=None is acceptable.
        If it is 'fdr' or 'bonferroni',
        an error is raised if stat_img is None.
+
+    mask_img: Nifti or Surface image
+        Mask used during the fit of the model.
 
     contrasts_plots : Dict[str, str]
         Contains contrast names & HTML code of the contrast's PNG plot.
@@ -347,6 +336,7 @@ def make_stat_maps_contrast_clusters(
 
         thresholded_img, threshold = threshold_stats_img(
             stat_img=stat_map_img,
+            mask_img=mask_img,
             threshold=threshold_orig,
             alpha=alpha,
             cluster_threshold=cluster_threshold,

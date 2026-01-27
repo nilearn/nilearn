@@ -170,7 +170,7 @@ class CanICA(_MultiPCA):
         self.threshold = threshold
         self.n_init = n_init
 
-    def _unmix_components(self, components):
+    def _unmix_components(self, components) -> None:
         """Core function of CanICA than rotate components_ to maximize \
         independence.
         """
@@ -263,7 +263,7 @@ class CanICA(_MultiPCA):
         self._unmix_components(components)
         return self
 
-    def _validate_mask(self):
+    def _validate_mask(self) -> None:
         if self.mask is not None:
             check_is_of_allowed_type(
                 self.mask,
