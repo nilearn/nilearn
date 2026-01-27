@@ -201,6 +201,7 @@ def test_mahalanobis_errors():
         multiple_mahalanobis(effect, cov)
 
 
+@pytest.mark.thread_unsafe
 def test_multiple_fast_inv(rng):
     shape = (10, 20, 20)
     X = rng.standard_normal(size=shape)
