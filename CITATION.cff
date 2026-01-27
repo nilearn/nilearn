@@ -396,6 +396,10 @@ authors:
     affiliation: BarcelonaBeta Brain Research Center
     email: jhuguetn@gmail.com
     orcid: https://orcid.org/0000-0001-8420-4833
+  - given-names: Joseph
+    family-names: Paillard
+    affiliation: Inria, Saclay, France
+    website: https://github.com/jpaillard
   - given-names: Joshua
     family-names: Teves
     website: https://github.com/jbteves
