@@ -133,16 +133,18 @@ def load_niimg(niimg, dtype=None):
             + repr_niimgs(niimg, shorten=True)
         )
 
-    img_data = _get_data(niimg)
-    target_dtype = _get_target_dtype(img_data.dtype, dtype)
+    # avoid loading data if dtype is None
+    if dtype is not None:
+        img_data = _get_data(niimg)
+        target_dtype = _get_target_dtype(img_data.dtype, dtype)
 
-    if target_dtype is not None:
-        copy_header = niimg.header is not None
-        niimg = new_img_like(
-            niimg, img_data.astype(target_dtype), niimg.affine
-        )
-        if copy_header:
-            niimg.header.set_data_dtype(target_dtype)
+        if target_dtype is not None:
+            copy_header = niimg.header is not None
+            niimg = new_img_like(
+                niimg, img_data.astype(target_dtype), niimg.affine
+            )
+            if copy_header:
+                niimg.header.set_data_dtype(target_dtype)
 
     return niimg
 
