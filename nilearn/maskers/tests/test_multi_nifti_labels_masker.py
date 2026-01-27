@@ -349,8 +349,9 @@ def test_multi_nifti_labels_masker_resampling_clipped_labels(
 
 
 @pytest.mark.slow
+@pytest.mark.parametrize("keep_masked_labels", [True, False])
 def test_multi_nifti_labels_masker_atlas_data_different_fov(
-    affine_eye, img_labels, length
+    affine_eye, img_labels, length, keep_masked_labels
 ):
     """Test with data and atlas of different shape.
 
@@ -366,11 +367,14 @@ def test_multi_nifti_labels_masker_atlas_data_different_fov(
     )
 
     fmri22_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
-    masker = MultiNiftiLabelsMasker(img_labels, mask_img=mask22_img)
+    masker = MultiNiftiLabelsMasker(
+        img_labels, mask_img=mask22_img, keep_masked_labels=keep_masked_labels
+    )
 
     masker.fit_transform(fmri22_img)
 
     assert_array_equal(masker.labels_img_.affine, affine2)
+    assert_array_equal(masker.labels_img_.shape, shape2)
 
 
 @pytest.mark.slow
