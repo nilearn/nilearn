@@ -11,6 +11,7 @@ from nibabel import Nifti1Header, Nifti1Image, load
 from nilearn._utils.niimg import (
     _get_data,
     _get_target_dtype,
+    ensure_finite_data,
     has_non_finite,
     img_data_dtype,
     is_binary_niimg,
@@ -308,6 +309,17 @@ def test_has_non_finite(img_bin, expected):
     """Test nilearn._utils.niimg.has_non_finite."""
     data = _get_data(img_bin)
     assert has_non_finite(data) == expected
+
+
+@pytest.mark.parametrize("has_inf,has_nan,non_bin", [(True, True, False)])
+def test_ensure_finite_data(img_bin):
+    data = _get_data(img_bin)
+    data_returned = ensure_finite_data(data)
+    expected_data = np.ones((3, 3, 3, 3))
+    expected_data[0, 0, 0, 0] = 0
+    expected_data[1, 1, 1, 1] = 0
+
+    assert np.array_equal(data_returned, expected_data)
 
 
 @pytest.mark.parametrize(
