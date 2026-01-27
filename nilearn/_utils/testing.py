@@ -48,7 +48,7 @@ def is_64bit() -> bool:
 
 def assert_memory_less_than(
     memory_limit, tolerance, callable_obj, *args, **kwargs
-):
+) -> None:
     """Check memory consumption of a callable stays below a given limit.
 
     Parameters
@@ -167,7 +167,7 @@ def are_tests_running():
     return os.environ.get("PYTEST_VERSION") is not None
 
 
-def skip_if_running_tests(msg=""):
+def skip_if_running_tests(msg="") -> None:
     """Raise a SkipTest if we appear to be running the pytest test loader.
 
     Parameters

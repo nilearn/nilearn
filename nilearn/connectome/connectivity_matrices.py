@@ -16,7 +16,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_parameter_in_allowed
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 
 
 def _check_square(matrix):
@@ -34,7 +34,7 @@ def _check_square(matrix):
         )
 
 
-def _check_spd(matrix):
+def _check_spd(matrix) -> None:
     """Raise a ValueError if the input matrix is not symmetric positive \
     definite.
 
@@ -721,7 +721,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         check_is_fitted(self)
         return self._fit_transform(X, do_transform=True, confounds=confounds)
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "cov_estimator_")
 
     def inverse_transform(self, connectivities, diagonal=None):

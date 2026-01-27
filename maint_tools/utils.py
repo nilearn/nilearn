@@ -10,7 +10,7 @@ import nilearn
 
 FOLDERS_TO_SKIP = ["data", "input_data", "tests", "_utils"]
 
-FILES_TO_SKIP = ["test_", "conftest"]
+FILES_TO_SKIP = ["test_"]
 
 
 def root_dir() -> Path:

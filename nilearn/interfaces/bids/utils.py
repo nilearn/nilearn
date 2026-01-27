@@ -37,7 +37,7 @@ def bids_entities():
     }
 
 
-def check_bids_label(label):
+def check_bids_label(label) -> None:
     """Validate a BIDS label.
 
     https://bids-specification.readthedocs.io/en/stable/glossary.html#label-formats

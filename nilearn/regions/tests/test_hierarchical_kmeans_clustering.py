@@ -10,7 +10,7 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.helpers import is_windows_platform
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
     HierarchicalKMeans,
@@ -101,7 +101,7 @@ def test_hierarchical_k_means():
 
 
 @pytest.mark.single_process
-def test_hierarchical_k_means_clustering_transform():
+def test_transform():
     n_samples = 15
     n_clusters = 8
     data_img, mask_img = generate_fake_fmri(
@@ -116,7 +116,7 @@ def test_hierarchical_k_means_clustering_transform():
 
 
 @pytest.mark.single_process
-def test_hierarchical_k_means_clustering_inverse_transform():
+def test_inverse_transform():
     n_samples = 15
     n_clusters = 8
     data_img, mask_img = generate_fake_fmri(
@@ -132,7 +132,7 @@ def test_hierarchical_k_means_clustering_inverse_transform():
 
 
 @pytest.mark.parametrize("n_clusters", [None, -2, 0, "2"])
-def test_hierarchical_k_means_clustering_error_n_clusters(n_clusters):
+def test_error_n_clusters(n_clusters):
     n_samples = 15
     data_img, mask_img = generate_fake_fmri(
         shape=(10, 11, 12), length=n_samples
@@ -149,7 +149,7 @@ def test_hierarchical_k_means_clustering_error_n_clusters(n_clusters):
 
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
-def test_hierarchical_k_means_clustering_scaling():
+def test_scaling():
     n_samples = 15
     n_clusters = 8
     data_img, mask_img = generate_fake_fmri(
@@ -179,7 +179,7 @@ def test_hierarchical_k_means_clustering_scaling():
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.parametrize("n_clusters", [2, 4, 5])
-def test_hierarchical_k_means_clustering_surface(
+def test_surface(
     surf_img_2d, surf_mask_dim, surf_mask_1d, surf_mask_2d, n_clusters
 ):
     """Test hierarchical k-means clustering on surface."""
@@ -206,7 +206,7 @@ def test_hierarchical_k_means_clustering_surface(
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("img_type", ["surface", "volume"])
-def test_hierarchical_k_means_n_clusters_warning(img_type, rng):
+def test_n_clusters_warning(img_type, rng):
     n_samples = 15
     if img_type == "surface":
         mesh = {
