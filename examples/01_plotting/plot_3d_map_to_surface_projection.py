@@ -291,8 +291,8 @@ view = view_surf(
 # it will be displayed below the cell
 view
 
-# If plotly is not installed or the code is run in script mode, 
-# it is still possible to have interactive visualization in the 
+# If plotly is not installed or the code is run in script mode,
+# it is still possible to have interactive visualization in the
 # browser by uncommenting the below line.
 # view.open_in_browser()
 
@@ -305,8 +305,8 @@ view = view_img_on_surf(stat_img, threshold="90%")
 
 view
 
-# If plotly is not installed or the code is run in script mode, 
-# it is still possible to have interactive visualization in the 
+# If plotly is not installed or the code is run in script mode,
+# it is still possible to have interactive visualization in the
 # browser by uncommenting the below line.
 # view.open_in_browser()
 
@@ -339,8 +339,8 @@ view = view_img_on_surf(
 
 view
 
-# If plotly is not installed or the code is run in script mode, 
-# it is still possible to have interactive visualization in the 
+# If plotly is not installed or the code is run in script mode,
+# it is still possible to have interactive visualization in the
 # browser by uncommenting the below line.
 # view.open_in_browser()
 
