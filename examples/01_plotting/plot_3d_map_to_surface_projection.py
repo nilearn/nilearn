@@ -291,9 +291,9 @@ view = view_surf(
 # it will be displayed below the cell
 view
 
-# If plotly is not installed, it is still possible to have
-# interactive visualization in the browser by uncommenting
-# the below line.
+# If plotly is not installed or the code is run in script mode, 
+# it is still possible to have interactive visualization in the 
+# browser by uncommenting the below line.
 # view.open_in_browser()
 
 # %%
@@ -304,9 +304,10 @@ from nilearn.plotting import view_img_on_surf
 view = view_img_on_surf(stat_img, threshold="90%")
 
 view
-# If plotly is not installed, it is still possible to have
-# interactive visualization in the browser by uncommenting
-# the below line.
+
+# If plotly is not installed or the code is run in script mode, 
+# it is still possible to have interactive visualization in the 
+# browser by uncommenting the below line.
 # view.open_in_browser()
 
 # %%
@@ -338,9 +339,9 @@ view = view_img_on_surf(
 
 view
 
-# If plotly is not installed, it is still possible to have
-# interactive visualization in the browser by uncommenting
-# the below line.
+# If plotly is not installed or the code is run in script mode, 
+# it is still possible to have interactive visualization in the 
+# browser by uncommenting the below line.
 # view.open_in_browser()
 
 # sphinx_gallery_dummy_images=1
