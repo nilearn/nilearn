@@ -105,7 +105,7 @@ def sanitize_reorder(reorder):
     return reorder
 
 
-def sanitize_tri(tri, allowed_values=None):
+def sanitize_tri(tri, allowed_values=None) -> None:
     """Help for plot_matrix."""
     if allowed_values is None:
         allowed_values = VALID_TRI_VALUES

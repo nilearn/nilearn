@@ -10,7 +10,7 @@ from nilearn._utils.versions import (
 )
 
 
-def set_mpl_backend(message=None):
+def set_mpl_backend(message=None) -> None:
     """Check if matplotlib is installed.
 
     If not installed, raise error and display warning to install necessary
@@ -112,7 +112,9 @@ def rename_parameters(
     return _replace_params
 
 
-def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
+def _warn_deprecated_params(
+    replacement_params, end_version, lib_name, kwargs
+) -> None:
     """Raise warnings about deprecated parameters, \
     for the decorator replace_parameters().
 
@@ -246,7 +248,7 @@ def is_matplotlib_installed():
         return True
 
 
-def check_matplotlib():
+def check_matplotlib() -> None:
     """Check if matplotlib is installed, raise an error if not.
 
     Used in examples that require matplolib.
