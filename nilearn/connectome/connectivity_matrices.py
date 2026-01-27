@@ -16,7 +16,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_parameter_in_allowed
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 
 
 def _check_square(matrix):
