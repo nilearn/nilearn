@@ -140,7 +140,7 @@ from nilearn.surface.utils import assert_surface_image_equal
 
 SKLEARN_GTE_1_4 = compare_version(sklearn_version, ">=", "1.4.0")
 SKLEARN_GTE_1_5 = compare_version(sklearn_version, ">=", "1.5.0")
-SKLEARN_GTE_1_6 = compare_version(sklearn_version, ">=", "1.5.0")
+SKLEARN_GTE_1_6 = compare_version(sklearn_version, ">=", "1.6.0")
 
 
 def nilearn_dir() -> Path:
