@@ -3,12 +3,11 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-from numpy.testing import assert_almost_equal, assert_array_equal
+from numpy.testing import assert_almost_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
-    generate_labeled_regions,
 )
 from nilearn._utils.estimator_checks import (
     check_estimator,
@@ -17,7 +16,6 @@ from nilearn._utils.estimator_checks import (
 )
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _img_labels
-from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker
 
 ESTIMATORS_TO_CHECK = [MultiNiftiLabelsMasker(standardize=None)]
@@ -236,62 +234,3 @@ def test_resampling_to_clipped_labels(
 
         # ensure we can inverse transform even after losing a few regions
         masker.inverse_transform(t)
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize("resampling_target", ["data", "labels"])
-def test_resampling_target(resampling_target):
-    """Test labels masker with resampling target in 'data', 'labels'.
-
-    Must return resampled labels having number of labels
-    equal with transformed shape of 2nd dimension.
-
-    This tests are added based on issue #1673 in Nilearn.
-    """
-    n_regions = 10
-    shape = (13, 11, 12)
-    affine = np.eye(4) * 2
-
-    fmri_img, _ = generate_fake_fmri(shape, affine=affine, length=21)
-    labels_img = generate_labeled_regions(
-        (9, 8, 6), affine=np.eye(4), n_regions=n_regions
-    )
-
-    masker = MultiNiftiLabelsMasker(
-        labels_img=labels_img,
-        resampling_target=resampling_target,
-    )
-
-    if resampling_target == "data":
-        with pytest.warns(
-            UserWarning,
-            match=(
-                "After resampling the label image "
-                "to the data image, the following "
-                "labels were removed"
-            ),
-        ):
-            signals = masker.fit_transform(fmri_img)
-    else:
-        signals = masker.fit_transform(fmri_img)
-
-    # We are losing a few regions due to resampling
-    n_expected_regions = n_regions - 3
-
-    resampled_labels_img = masker.labels_img_
-    n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
-    assert n_resampled_labels - 1 == signals.shape[1] == n_expected_regions
-
-    assert masker.n_elements_ == n_expected_regions
-
-    # inverse transform
-    compressed_img = masker.inverse_transform(signals)
-
-    # Test that compressing the image a second time should yield an image
-    # with the same data as compressed_img.
-    signals2 = masker.fit_transform(fmri_img)
-
-    # inverse transform again
-    compressed_img2 = masker.inverse_transform(signals2)
-
-    assert_array_equal(get_data(compressed_img), get_data(compressed_img2))

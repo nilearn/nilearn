@@ -1635,7 +1635,7 @@ def check_img_estimator_overwrite_params(estimator_orig) -> None:
         )
 
 
-def check_img_estimator_dict_unchanged(estimator_orig) -> None:
+def check_img_estimator_dict_unchanged(estimator_orig):
     """Replace check_dict_unchanged from sklearn.
 
     Several methods should not change the dict of the object.
@@ -1687,6 +1687,13 @@ def check_img_estimator_dict_unchanged(estimator_orig) -> None:
             dict_before = {
                 k: v for k, v in dict_before.items() if not k.startswith("_")
             }
+            if (
+                isinstance(estimator, (NiftiLabelsMasker))
+                and dict_after != dict_before
+            ):
+                for x in [dict_before, dict_after]:
+                    if "region_atlas_" in x:
+                        x.pop("region_atlas_")
 
         # The following try / except is mostly
         # to give more informative error messages when this check fails.

@@ -15,6 +15,7 @@ from numpy.testing import assert_almost_equal, assert_array_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import (
+    generate_fake_fmri,
     generate_labeled_regions,
     generate_random_img,
 )
@@ -26,7 +27,11 @@ from nilearn._utils.estimator_checks import (
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _img_labels
 from nilearn.image import get_data
-from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
+from nilearn.maskers import (
+    MultiNiftiLabelsMasker,
+    NiftiLabelsMasker,
+    NiftiMasker,
+)
 
 ESTIMATORS_TO_CHECK = [NiftiLabelsMasker()]
 
@@ -308,25 +313,29 @@ def test_resampling_to_data(affine_eye, n_regions, length):
 
 @pytest.mark.slow
 @pytest.mark.parametrize("resampling_target", ["data", "labels"])
-def test_resampling(
-    affine_eye,
-    shape_3d_default,
-    resampling_target,
-    length,
-    img_labels,
-):
-    """Test to return resampled labels having number of labels \
-       equal with transformed shape of 2nd dimension.
+@pytest.mark.parametrize(
+    "estimator", [NiftiLabelsMasker, MultiNiftiLabelsMasker]
+)
+def test_resampling_target(resampling_target, estimator):
+    """Test labels masker with resampling target in 'data', 'labels'.
+
+    check resampled labels image has number of labels \
+    equal with the 2nd dimension of the shape of the array returned
+    by transform.
 
     See https://github.com/nilearn/nilearn/issues/1673
     """
-    shape = (*shape_3d_default, length)
-    affine = 2 * affine_eye
+    n_regions = 10
+    shape = (13, 11, 12)
+    affine = np.eye(4) * 2
 
-    fmri_img, _ = generate_random_img(shape, affine=affine)
+    fmri_img, _ = generate_fake_fmri(shape, affine=affine, length=21)
+    labels_img = generate_labeled_regions(
+        (9, 8, 6), affine=np.eye(4), n_regions=n_regions
+    )
 
-    masker = NiftiLabelsMasker(
-        labels_img=img_labels, resampling_target=resampling_target
+    masker = estimator(
+        labels_img=labels_img, resampling_target=resampling_target
     )
     if resampling_target == "data":
         with pytest.warns(
@@ -339,12 +348,18 @@ def test_resampling(
     else:
         signals = masker.fit_transform(fmri_img)
 
+    # We are losing a few regions due to resampling
+    n_expected_regions = n_regions - 3
+
+    assert masker.n_elements_ == n_expected_regions
+    assert signals.shape[1] == n_expected_regions
+
     resampled_labels_img = masker.labels_img_
     n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
 
-    assert n_resampled_labels - 1 == signals.shape[1]
+    assert n_resampled_labels - 1 == n_expected_regions
 
-    # inverse transform
+    # smokr test for inverse transform
     compressed_img = masker.inverse_transform(signals)
 
     # Test that compressing the image a second time should yield an image
@@ -381,17 +396,20 @@ def test_resampling_to_labels(affine_eye, shape_3d_default, n_regions, length):
 
     signals = masker.fit_transform(fmri_img)
 
-    assert_almost_equal(masker.labels_img_.affine, labels_img.affine)
-    assert masker.labels_img_.shape == labels_img.shape
-    assert_almost_equal(masker.mask_img_.affine, masker.labels_img_.affine)
-    assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
+    expected_shape = labels_img.shape
+    expected_affine = labels_img.affine
+
+    assert_almost_equal(masker.labels_img_.affine, expected_affine)
+    assert_almost_equal(masker.mask_img_.affine, expected_affine)
+    assert masker.labels_img_.shape == expected_shape
+    assert masker.mask_img_.shape == expected_shape
 
     assert signals.shape == (length, n_regions)
 
     fmri11_img_r = masker.inverse_transform(signals)
 
-    assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
-    assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
+    assert_almost_equal(fmri11_img_r.affine, expected_affine)
+    assert fmri11_img_r.shape == (*expected_shape, length)
 
 
 @pytest.mark.slow
