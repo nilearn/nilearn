@@ -28,7 +28,7 @@ from nilearn.reporting.get_clusters_table import (
 from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 
 
-def _generate_model_metadata(out_file, model):
+def _generate_model_metadata(out_file, model) -> None:
     """Generate a sidecar JSON file containing model metadata.
 
     .. nilearn_versionadded:: 0.9.2
@@ -60,7 +60,7 @@ def _generate_model_metadata(out_file, model):
         json.dump(model_metadata, f_obj, indent=4, sort_keys=True)
 
 
-def _generate_dataset_description(out_file, model_level):
+def _generate_dataset_description(out_file, model_level) -> None:
     """Generate a BIDS dataset_description.json file with relevant metadata.
 
     .. nilearn_versionadded:: 0.9.2
@@ -491,7 +491,7 @@ def save_glm_to_bids(
     return model
 
 
-def _write_mask(model):
+def _write_mask(model) -> None:
     logger.log("Saving mask...", verbose=model.verbose)
     filenames = model._reporting_data["filenames"]
     out_dir = filenames["dir"]

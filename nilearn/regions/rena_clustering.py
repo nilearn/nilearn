@@ -811,7 +811,7 @@ class ReNA(
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "labels_")
 
     @fill_doc
