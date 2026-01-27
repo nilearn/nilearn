@@ -67,8 +67,14 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 
 
 @pytest.mark.slow
+@pytest.mark.parametrize("keep_masked_labels", [True, False])
 def test_multi_nifti_labels_masker(
-    affine_eye, n_regions, shape_3d_default, length, img_labels
+    affine_eye,
+    n_regions,
+    shape_3d_default,
+    length,
+    img_labels,
+    keep_masked_labels,
 ):
     """Check working of shape/affine checks."""
     fmri11_img, mask11_img = generate_fake_fmri(
@@ -93,7 +99,7 @@ def test_multi_nifti_labels_masker(
         img_labels,
         mask_img=mask11_img,
         resampling_target=None,
-        keep_masked_labels=True,
+        keep_masked_labels=keep_masked_labels,
         standardize=None,
     )
     signals11 = masker11.fit_transform(fmri11_img)
@@ -236,8 +242,9 @@ def test_multi_nifti_labels_masker_reduction_strategies(
 
 
 @pytest.mark.slow
+@pytest.mark.parametrize("keep_masked_labels", [True, False])
 def test_multi_nifti_labels_masker_resampling(
-    affine_eye, n_regions, length, img_labels
+    affine_eye, n_regions, length, img_labels, keep_masked_labels
 ):
     """Test resampling in MultiNiftiLabelsMasker."""
     shape1 = (10, 11, 12)
@@ -258,7 +265,7 @@ def test_multi_nifti_labels_masker_resampling(
         img_labels,
         mask_img=mask22_img,
         resampling_target="labels",
-        keep_masked_labels=True,
+        keep_masked_labels=keep_masked_labels,
         standardize=None,
     )
 
@@ -281,8 +288,9 @@ def test_multi_nifti_labels_masker_resampling(
 
 
 @pytest.mark.slow
+@pytest.mark.parametrize("keep_masked_labels", [True, False])
 def test_multi_nifti_labels_masker_resampling_clipped_labels(
-    affine_eye, n_regions, length, img_labels, img_fmri
+    affine_eye, n_regions, length, img_labels, img_fmri, keep_masked_labels
 ):
     """Test with clipped labels.
 
@@ -303,7 +311,7 @@ def test_multi_nifti_labels_masker_resampling_clipped_labels(
         img_labels,
         mask_img=mask22_img,
         resampling_target="labels",
-        keep_masked_labels=True,
+        keep_masked_labels=keep_masked_labels,
         standardize=None,
     )
 
@@ -354,7 +362,8 @@ def test_multi_nifti_labels_masker_atlas_data_different_fov(
 
 
 @pytest.mark.slow
-def test_multi_nifti_labels_masker_resampling_target():
+@pytest.mark.parametrize("keep_masked_labels", [True, False])
+def test_multi_nifti_labels_masker_resampling_target(keep_masked_labels):
     """Test labels masker with resampling target in 'data', 'labels'.
 
     Must return resampled labels having number of labels
@@ -373,7 +382,7 @@ def test_multi_nifti_labels_masker_resampling_target():
         masker = MultiNiftiLabelsMasker(
             labels_img=labels_img,
             resampling_target=resampling_target,
-            keep_masked_labels=True,
+            keep_masked_labels=keep_masked_labels,
         )
         if resampling_target == "data":
             with pytest.warns(

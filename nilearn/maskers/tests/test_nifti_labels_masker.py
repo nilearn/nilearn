@@ -414,8 +414,9 @@ def test_nifti_labels_masker_resampling_to_labels(
 
 
 @pytest.mark.slow
+@pytest.mark.parametrize("keep_masked_labels", [True, False])
 def test_nifti_labels_masker_resampling_to_clipped_labels(
-    affine_eye, shape_3d_default, n_regions, length
+    affine_eye, shape_3d_default, n_regions, length, keep_masked_labels
 ):
     """Test with clipped labels.
 
@@ -442,7 +443,7 @@ def test_nifti_labels_masker_resampling_to_clipped_labels(
         labels33_img,
         mask_img=mask22_img,
         resampling_target="labels",
-        keep_masked_labels=True,
+        keep_masked_labels=keep_masked_labels,
     )
 
     signals = masker.fit_transform(fmri11_img)
