@@ -15,6 +15,7 @@ from nilearn.plotting import plot_stat_map
 from nilearn.plotting.find_cuts import find_cut_slices
 
 
+@pytest.mark.slow
 def test_plot_stat_map_bad_input(matplotlib_pyplot, img_3d_mni, tmp_path):
     """Test for bad input arguments (cf. #510)."""
     filename = tmp_path / "temp.png"
@@ -146,6 +147,7 @@ def test_plot_stat_map_colorbar_variations(
         plot_stat_map(img, cut_coords=(-90, -125, -70), **params)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "shape,direction", [((1, 6, 7), "x"), ((5, 1, 7), "y"), ((5, 6, 1), "z")]
 )
@@ -158,6 +160,7 @@ def test_plot_stat_map_singleton_ax_dim(
     )
 
 
+@pytest.mark.slow
 def test_outlier_cut_coords(matplotlib_pyplot):
     """Test to plot a subset of a large set of cuts found for a small area."""
     bg_img = load_mni152_template(resolution=2)

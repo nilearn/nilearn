@@ -407,6 +407,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     assert_array_equal(tvl1.predict(X_), sklogreg.predict(X))
 
 
+@pytest.mark.slow
 def test_lasso_vs_graph_net():
     """Test for one of the extreme cases of Graph-Net.
 
@@ -495,6 +496,7 @@ def test_crop_mask_empty_mask(mask_empty):
         _crop_mask(mask_empty)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
 def test_space_net_one_alpha_no_crash(model):
     """Regression test."""
