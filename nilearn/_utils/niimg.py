@@ -51,15 +51,22 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
         data = data.copy()
 
     if ensure_finite:
-        non_finite_mask = np.logical_not(np.isfinite(data))
-        if non_finite_mask.sum() > 0:  # any non_finite_mask values?
-            warn(
-                "Non-finite values detected. "
-                "These values will be replaced with zeros.",
-                stacklevel=find_stack_level(),
-            )
-            data[non_finite_mask] = 0
+        return ensure_finite_data(data)
+    return data
 
+
+def ensure_finite_data(data):
+    """Check is there are any infinite values in the data, set infinite values
+    to 0 and return data.
+    """
+    non_finite_mask = ~np.isfinite(data)
+    if non_finite_mask.any():  # any non finite values?
+        warn(
+            "Non-finite values detected. "
+            "These values will be replaced with zeros.",
+            stacklevel=find_stack_level(),
+        )
+        data[non_finite_mask] = 0
     return data
 
 
