@@ -69,8 +69,9 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 
 
 @pytest.mark.slow
+@pytest.mark.parametrize("keep_masked_maps", [True, False])
 def test_multi_nifti_maps_masker(
-    affine_eye, length, n_regions, shape_3d_default, img_maps
+    affine_eye, length, n_regions, shape_3d_default, img_maps, keep_masked_maps
 ):
     """Check basic functions of MultiNiftiMapsMasker.
 
@@ -85,7 +86,7 @@ def test_multi_nifti_maps_masker(
         img_maps,
         mask_img=mask11_img,
         resampling_target=None,
-        keep_masked_maps=True,
+        keep_masked_maps=keep_masked_maps,
         standardize=None,
     )
 
@@ -249,6 +250,7 @@ def test_multi_nifti_maps_masker_resampling_error(
 
 
 @pytest.mark.slow
+@pytest.mark.parametrize("keep_masked_maps", [True, False])
 def test_multi_nifti_maps_masker_resampling_to_mask(
     shape_mask,
     affine_eye,
@@ -256,6 +258,7 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
     n_regions,
     shape_3d_large,
     img_fmri,
+    keep_masked_maps,
 ):
     """Test resampling to mask in MultiNiftiMapsMasker."""
     _, mask22_img = generate_fake_fmri(
@@ -267,7 +270,7 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
         maps33_img,
         mask_img=mask22_img,
         resampling_target="mask",
-        keep_masked_maps=True,
+        keep_masked_maps=keep_masked_maps,
         standardize=None,
     )
 
@@ -289,12 +292,14 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
 
 
 @pytest.mark.slow
+@pytest.mark.parametrize("keep_masked_maps", [True, False])
 def test_multi_nifti_maps_masker_resampling_to_maps(
     shape_mask,
     affine_eye,
     length,
     n_regions,
     shape_3d_large,
+    keep_masked_maps,
     img_fmri,
 ):
     """Test resampling to maps in MultiNiftiMapsMasker."""
@@ -307,7 +312,7 @@ def test_multi_nifti_maps_masker_resampling_to_maps(
         maps33_img,
         mask_img=mask22_img,
         resampling_target="maps",
-        keep_masked_maps=True,
+        keep_masked_maps=keep_masked_maps,
         standardize=None,
     )
 
@@ -329,8 +334,9 @@ def test_multi_nifti_maps_masker_resampling_to_maps(
 
 
 @pytest.mark.slow
+@pytest.mark.parametrize("keep_masked_maps", [True, False])
 def test_multi_nifti_maps_masker_resampling_clipped_mask(
-    affine_eye, length, n_regions, img_fmri
+    affine_eye, length, n_regions, img_fmri, keep_masked_maps
 ):
     """Test with clipped maps: mask does not contain all maps."""
     # Shapes do matter in that case
@@ -345,7 +351,7 @@ def test_multi_nifti_maps_masker_resampling_clipped_mask(
         maps33_img,
         mask_img=mask22_img,
         resampling_target="maps",
-        keep_masked_maps=True,
+        keep_masked_maps=keep_masked_maps,
         standardize=None,
     )
 

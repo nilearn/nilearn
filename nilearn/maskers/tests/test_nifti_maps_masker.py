@@ -266,6 +266,7 @@ def test_nifti_maps_masker_with_nans_and_infs_in_data(
     assert np.all(np.isfinite(signals))
 
 
+@pytest.mark.parametrize("keep_masked_maps", [True, False])
 def test_nifti_maps_masker_resampling_to_mask(
     length,
     n_regions,
@@ -273,6 +274,7 @@ def test_nifti_maps_masker_resampling_to_mask(
     shape_mask,
     shape_3d_large,
     img_fmri,
+    keep_masked_maps,
 ):
     """Test resampling to_mask in NiftiMapsMasker."""
     _, mask22_img = generate_fake_fmri(
@@ -285,7 +287,7 @@ def test_nifti_maps_masker_resampling_to_mask(
         maps33_img,
         mask_img=mask22_img,
         resampling_target="mask",
-        keep_masked_maps=True,
+        keep_masked_maps=keep_masked_maps,
         standardize=None,
     )
 
@@ -311,12 +313,14 @@ def test_nifti_maps_masker_resampling_to_mask(
 
 
 @pytest.mark.slow
+@pytest.mark.parametrize("keep_masked_maps", [True, False])
 def test_nifti_maps_masker_resampling_to_maps(
     length,
     n_regions,
     affine_eye,
     shape_mask,
     shape_3d_large,
+    keep_masked_maps,
     img_fmri,
 ):
     """Test resampling to maps in NiftiMapsMasker."""
@@ -329,7 +333,7 @@ def test_nifti_maps_masker_resampling_to_maps(
         maps33_img,
         mask_img=mask22_img,
         resampling_target="maps",
-        keep_masked_maps=True,
+        keep_masked_maps=keep_masked_maps,
         standardize=None,
     )
 
@@ -350,7 +354,10 @@ def test_nifti_maps_masker_resampling_to_maps(
 
 
 @pytest.mark.slow
-def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
+@pytest.mark.parametrize("keep_masked_maps", [True, False])
+def test_nifti_maps_masker_clipped_mask(
+    n_regions, affine_eye, keep_masked_maps
+):
     """Test with clipped maps: mask does not contain all maps."""
     # Shapes do matter in that case
     length = 21
@@ -368,7 +375,7 @@ def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
         maps33_img,
         mask_img=mask22_img,
         resampling_target="maps",
-        keep_masked_maps=True,
+        keep_masked_maps=keep_masked_maps,
         standardize=None,
     )
 
