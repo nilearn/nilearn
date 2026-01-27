@@ -11,6 +11,7 @@ from nibabel import Nifti1Header, Nifti1Image, load
 from nilearn._utils.niimg import (
     _get_target_dtype,
     img_data_dtype,
+    is_binary_niimg,
     load_niimg,
     repr_niimgs,
 )
@@ -21,6 +22,18 @@ from nilearn.image import get_data, new_img_like
 @pytest.fixture
 def img1(affine_eye):
     data = np.ones((2, 2, 2, 2))
+    return Nifti1Image(data, affine=affine_eye)
+
+
+@pytest.fixture
+def img_bin(affine_eye, has_inf, has_nan, non_bin):
+    data = np.ones((3, 3, 3, 3))
+    if has_inf:
+        data[0, 0, 0, 0] = np.inf
+    if has_nan:
+        data[1, 1, 1, 1] = np.nan
+    if non_bin:
+        data[2, 2, 2, 2] = 5
     return Nifti1Image(data, affine=affine_eye)
 
 
@@ -277,3 +290,18 @@ def test_repr_niimgs_with_niimg(
         repr_niimgs(img_3d_ones_eye, shorten=True)
         == f"{class_name}('{Path(filename).name[:18]}...')"
     )
+
+
+@pytest.mark.parametrize(
+    "has_inf,has_nan,non_bin,expected",
+    [
+        (False, False, False, True),
+        (True, False, False, True),
+        (False, True, False, True),
+        (False, False, True, False),
+        (True, True, True, False),
+    ],
+)
+def test_is_binary_niimg(img_bin, expected):
+    """Test nilearn._utils.niimg.is_binary_niimg."""
+    assert is_binary_niimg(img_bin) is expected
