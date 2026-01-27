@@ -10,7 +10,7 @@ DEFAULT_ENGINE = "matplotlib"
 DEFAULT_TICK_FORMAT = "%.2g"
 
 
-def engine_warning(engine):
+def engine_warning(engine: str) -> None:
     message = (
         f"'{engine}' is not installed. To be able to use '{engine}' as "
         "plotting engine for 'nilearn.plotting' package:\n"
@@ -267,7 +267,7 @@ def get_colorbar_and_data_ranges(
     return cbar_vmin, cbar_vmax, float(vmin), float(vmax)
 
 
-def check_threshold_not_negative(threshold):
+def check_threshold_not_negative(threshold) -> None:
     """Make sure threshold is non negative number.
 
     If threshold == "auto", it may be set to very small value.

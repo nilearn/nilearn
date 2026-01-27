@@ -117,7 +117,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             self.figure.show(renderer=renderer)
             return self.figure
 
-    def savefig(self, output_file=None, **savefig_kwargs):  # noqa: ARG002
+    def savefig(self, output_file=None, **savefig_kwargs) -> None:  # noqa: ARG002
         """Save the figure to file.
 
         Parameters

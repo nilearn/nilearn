@@ -945,7 +945,7 @@ def fetch_localizer_contrasts(
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
 
-def _check_inputs_fetch_localizer_contrasts(contrasts):
+def _check_inputs_fetch_localizer_contrasts(contrasts) -> None:
     """Check that requested contrast name exists."""
     if isinstance(contrasts, str):
         raise TypeError(
@@ -2536,7 +2536,7 @@ def select_from_index(
     return urls
 
 
-def patch_openneuro_dataset(file_list):
+def patch_openneuro_dataset(file_list) -> None:
     """Add symlinks for files not named according to :term:`BIDS` conventions.
 
     .. warning::

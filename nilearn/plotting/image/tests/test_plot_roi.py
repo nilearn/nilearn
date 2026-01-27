@@ -81,6 +81,7 @@ def test_plot_roi_view_type_error(matplotlib_pyplot):
         demo_plot_roi(view_type="flled")
 
 
+@pytest.mark.slow
 def test_demo_plot_roi_output_file(matplotlib_pyplot, tmp_path):
     """Tests plot_roi file saving capabilities."""
     filename = tmp_path / "test.png"
@@ -88,6 +89,7 @@ def test_demo_plot_roi_output_file(matplotlib_pyplot, tmp_path):
     assert out is None
 
 
+@pytest.mark.slow
 def test_cmap_with_one_level(matplotlib_pyplot, shape_3d_default, affine_eye):
     """Test we can handle cmap with only 1 level.
 
@@ -121,6 +123,7 @@ def test_cmap_as_lookup_table(img_labels):
         plot_roi(img_labels, cmap=lut)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("background_label", [None, 0])
 def test_cmap_as_lookup_table_with_background(background_label):
     """Ensure that the background color is dropped from lut.
