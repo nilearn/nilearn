@@ -563,7 +563,7 @@ class Parcellations(_MultiPCA):
     def _post_fit(self):
         self.n_elements_ = self._n_elements_
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "labels_img_")
 
     @fill_doc

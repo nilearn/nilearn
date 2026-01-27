@@ -42,7 +42,7 @@ component_parameters = {
 }
 
 
-def _check_strategy(strategy):
+def _check_strategy(strategy) -> None:
     """Ensure the denoising strategies combinations are valid.
 
     Parameters
@@ -87,7 +87,7 @@ def _check_strategy(strategy):
         )
 
 
-def _check_error(missing):
+def _check_error(missing) -> None:
     """Consolidate a single error message across multiple missing confounds."""
     if missing["confounds"] or missing["keywords"]:
         error_msg = (

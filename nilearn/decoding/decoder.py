@@ -820,7 +820,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "coef_") and hasattr(self, "masker_")
 
     def _prep_input_post_fit(self, X) -> np.ndarray:
@@ -1048,7 +1048,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         return coefs, intercepts
 
-    def _set_scorer(self):
+    def _set_scorer(self) -> None:
         if self.scoring is not None:
             self.scorer_ = check_scoring(self.estimator_, self.scoring)
         elif is_classifier(self):

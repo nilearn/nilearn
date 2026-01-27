@@ -49,7 +49,7 @@ from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
 
-def _warn_ignored_surface_masker_params(estimator):
+def _warn_ignored_surface_masker_params(estimator) -> None:
     """Warn about parameters that are ignored by SurfaceMasker.
 
     Only raise warning if parameters are different
@@ -448,7 +448,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         tags.input_tags = InputTags(surf_img=True, niimg_like=True)
         return tags
 
-    def _validate_mask(self):
+    def _validate_mask(self) -> None:
         if self.mask is not None:
             check_is_of_allowed_type(
                 self.mask,
@@ -593,7 +593,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
     def n_elements_(self) -> int:
         return self.maps_masker_.n_elements_
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "components_")
 
     def transform(self, imgs, confounds=None):

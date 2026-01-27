@@ -46,7 +46,7 @@ class BaseAxes:
             "'transform_to_2d' needs to be implemented in derived classes'"
         )
 
-    def add_object_bounds(self, bounds):
+    def add_object_bounds(self, bounds) -> None:
         """Ensure that axes get rescaled when adding object bounds."""
         old_object_bounds = self.get_object_bounds()
         self._object_bounds.append(bounds)
@@ -121,7 +121,7 @@ class BaseAxes:
 
         return xmin, xmax, ymin, ymax
 
-    def draw_left_right(self, size, bg_color, **kwargs):
+    def draw_left_right(self, size, bg_color, **kwargs) -> None:
         """Draw the annotation "L" for left, and "R" for right.
 
         Parameters
@@ -186,7 +186,7 @@ class BaseAxes:
         color="black",
         fontsize=None,
         **kwargs,
-    ):
+    ) -> None:
         """Add a scale bar annotation to the display.
 
         Parameters
@@ -231,7 +231,6 @@ class BaseAxes:
 
         label_top : :obj:`bool`, default=False
             If ``True``, the label will be over the scale bar.
-
 
         color : :obj:`str`, default='black'
             Color for the scale bar and label.
@@ -328,7 +327,7 @@ class CutAxes(BaseAxes):
             cut = np.rot90(data[:, :, z_map])
         return cut
 
-    def draw_position(self, size, bg_color, decimals=False, **kwargs):
+    def draw_position(self, size, bg_color, decimals=False, **kwargs) -> None:
         """Draw coordinates.
 
         Parameters

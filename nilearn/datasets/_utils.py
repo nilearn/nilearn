@@ -85,7 +85,9 @@ def read_md5_sum_file(path):
     return hashes
 
 
-def _chunk_report_(bytes_so_far, total_size, initial_size, t0, verbose):
+def _chunk_report_(
+    bytes_so_far, total_size, initial_size, t0, verbose
+) -> None:
     """Show downloading percentage.
 
     Parameters
@@ -137,7 +139,7 @@ def _chunk_read_(
     initial_size=0,
     total_size=None,
     verbose=1,
-):
+) -> None:
     """Download a file chunk by chunk and show advancement.
 
     Parameters
@@ -292,7 +294,7 @@ def get_dataset_dir(
     )
 
 
-def _add_readme_to_default_data_locations(data_dir=None, verbose=1):
+def _add_readme_to_default_data_locations(data_dir=None, verbose=1) -> None:
     for d in get_data_dirs(data_dir=data_dir):
         file = Path(d) / "README.md"
         if file.parent.exists() and not file.exists():
@@ -321,7 +323,7 @@ def _is_within_directory(directory, target):
     return prefix == str(abs_directory)
 
 
-def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+def _safe_extract(tar, path=".", members=None, *, numeric_owner=False) -> None:
     path = Path(path)
     for member in tar.getmembers():
         member_path = path / member.name
@@ -341,7 +343,7 @@ def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
 
 
 @fill_doc
-def uncompress_file(file_, delete_archive=True, verbose=1):
+def uncompress_file(file_, delete_archive=True, verbose=1) -> None:
     """Uncompress files contained in a data_set.
 
     Parameters
@@ -515,7 +517,7 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
         resp.headers = dict(data.info().items())
         return resp
 
-    def close(self):
+    def close(self) -> None:
         pass
 
 
@@ -724,7 +726,7 @@ def get_dataset_descr(ds_name):
     return descr
 
 
-def movetree(src, dst):
+def movetree(src, dst) -> None:
     """Move entire tree under `src` inside `dst`.
 
     Creates `dst` if it does not already exist.

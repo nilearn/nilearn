@@ -182,7 +182,7 @@ def filter_and_extract(
     return region_signals, aux
 
 
-def mask_logger(step, img=None, verbose=0):
+def mask_logger(step, img=None, verbose=0) -> None:
     """Log similar messages for all maskers."""
     repr = None
     if img is not None:

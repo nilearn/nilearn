@@ -56,7 +56,7 @@ def check_memory(memory, verbose=0):
                 error_msg = (
                     "Given cache path parent directory doesn't "
                     f"exists, you gave '{split_cache_dir[0]}' "
-                    "which was expanded as '{os.path.dirname(memory)}' "
+                    f"which was expanded as '{Path(memory).parent}' "
                     "but doesn't exist either. "
                     "Use nilearn.EXPAND_PATH_WILDCARDS to deactivate "
                     "auto expand user path (~) behavior."
@@ -65,7 +65,7 @@ def check_memory(memory, verbose=0):
                 # The given cache base path doesn't exist.
                 error_msg = (
                     "Given cache path parent directory doesn't "
-                    "exists, you gave '{split_cache_dir[0]}'."
+                    f"exists, you gave '{split_cache_dir[0]}'."
                 )
             raise ValueError(error_msg)
 

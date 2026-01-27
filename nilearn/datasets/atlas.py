@@ -2037,7 +2037,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         )
 
 
-def _download_talairach(talairach_dir, verbose):
+def _download_talairach(talairach_dir, verbose) -> None:
     """Download the Talairach atlas and separate the different levels."""
     atlas_url = "https://www.talairach.org/talairach.nii"
     temp_dir = mkdtemp()

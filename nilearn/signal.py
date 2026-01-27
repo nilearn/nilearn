@@ -540,7 +540,7 @@ def high_variance_confounds(
     return u
 
 
-def _ensure_float(data):
+def _ensure_float(data: np.ndarray) -> np.ndarray:
     """Make sure that data is a float type."""
     if data.dtype.kind != "f":
         if data.dtype.itemsize == 8:
@@ -1120,7 +1120,7 @@ def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
     return sample_mask[0] if sum(runs) == 0 else sample_mask
 
 
-def _check_sample_mask_index(i, n_runs, runs, current_mask):
+def _check_sample_mask_index(i, n_runs, runs, current_mask) -> None:
     """Ensure the index in sample mask is valid."""
     len_run = sum(i == runs)
     len_current_mask = len(current_mask)
@@ -1154,7 +1154,7 @@ def _sanitize_runs(n_time, runs):
     return n_runs, runs
 
 
-def _sanitize_confound_dtype(n_signal, confound):
+def _sanitize_confound_dtype(n_signal: int, confound) -> np.ndarray:
     """Check confound is the correct datatype."""
     if isinstance(confound, pd.DataFrame):
         confound = confound.to_numpy()
@@ -1246,7 +1246,7 @@ def _sanitize_signals(signals, ensure_finite):
     return _ensure_float(signals)
 
 
-def _check_signal_parameters(detrend, standardize_confounds):
+def _check_signal_parameters(detrend, standardize_confounds) -> None:
     """Raise warning if the combination is illogical."""
     if not detrend and not standardize_confounds:
         warnings.warn(

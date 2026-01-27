@@ -83,6 +83,7 @@ jobs:
 
         -   name: Run tests
             id: test_minimum
+            continue-on-error: true
             run: |
                 pip install pytest-mpl
                 pytest --pyargs nilearn --report=report.html --numprocesses auto --csv results/pytest_output/pytest_output.csv

@@ -135,7 +135,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             "coverage": 0,
         }
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return (
             hasattr(self, "mask_img_")
             and hasattr(self, "n_elements_")
@@ -143,7 +143,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             and self.n_elements_ is not None
         )
 
-    def _fit_mask_img(self, img):
+    def _fit_mask_img(self, img) -> None:
         """Get mask passed during init or compute one from input image.
 
         Parameters

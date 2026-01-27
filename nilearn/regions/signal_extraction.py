@@ -25,7 +25,7 @@ from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 INF = 1000 * np.finfo(np.float32).eps
 
 
-def _check_shape_compatibility(img1, img2, dim=None):
+def _check_shape_compatibility(img1, img2, dim=None) -> None:
     """Check that shapes match for dimensions going from 0 to dim-1.
 
     Parameters
@@ -50,7 +50,7 @@ def _check_shape_compatibility(img1, img2, dim=None):
         raise ValueError("Images have incompatible shapes.")
 
 
-def _check_affine_equality(img1, img2):
+def _check_affine_equality(img1, img2) -> None:
     """Validate affines of 2 images.
 
     Parameters

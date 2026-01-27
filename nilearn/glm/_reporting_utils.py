@@ -28,7 +28,7 @@ from nilearn.surface.surface import get_data as get_surface_data
 
 def check_generate_report_input(
     height_control, cluster_threshold, min_distance, plot_type
-):
+) -> None:
     height_control_methods = [
         "fpr",
         "fdr",
@@ -178,6 +178,7 @@ def load_bg_img(bg_img, is_volume_glm):
             "'bg_img' must a SurfaceImage instance. "
             f"Got {bg_img.__class__.__name__}"
         )
+    return bg_img
 
 
 def mask_to_plot(model, bg_img):

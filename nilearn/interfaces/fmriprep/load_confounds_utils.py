@@ -481,7 +481,7 @@ def _ext_validator(image_file, ext):
     return valid_img, error_message
 
 
-def _check_images(image_file, flag_full_aroma, flag_tedana):
+def _check_images(image_file, flag_full_aroma, flag_tedana: bool) -> None:
     """Validate input file and ICA AROMA related file.
 
     Parameters

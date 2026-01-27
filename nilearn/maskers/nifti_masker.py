@@ -506,7 +506,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return init_display
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "mask_img_")
 
     @fill_doc

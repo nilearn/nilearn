@@ -165,7 +165,7 @@ def _handle_modulation(events):
 VALID_FIELDS = {"onset", "duration", "trial_type", "modulation"}
 
 
-def _check_unexpected_columns(events):
+def _check_unexpected_columns(events) -> None:
     """Warn for each unexpected column that will not be used afterwards."""
     unexpected_columns = list(set(events.columns).difference(VALID_FIELDS))
     if unexpected_columns:

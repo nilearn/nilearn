@@ -35,7 +35,7 @@ def log(
     stack_level: int | np.integer | None = None,
     msg_level: int | np.integer = 1,
     with_traceback: bool = False,
-):
+) -> None:
     """Display a message to the user, depending on the verbosity level.
 
     This function allows to display some information that references an object
