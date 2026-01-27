@@ -11,7 +11,7 @@ from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 
 
-def _get_data(img):
+def _get_data(img) -> np.ndarray:
     # copy-pasted from
     # https://github.com/nipy/nibabel/blob/de44a10/nibabel/dataobj_images.py#L204
     #
@@ -55,14 +55,14 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
     return data
 
 
-def has_non_finite(data):
+def has_non_finite(data) -> bool:
     """Return True if data contains at least one NaN or inf value; False if
     there are no NaN and inf values.
     """
     return ~np.isfinite(data).any()
 
 
-def ensure_finite_data(data):
+def ensure_finite_data(data) -> np.ndarray:
     """Check is there are any infinite values in the data, set infinite values
     to 0 and return data.
     """
