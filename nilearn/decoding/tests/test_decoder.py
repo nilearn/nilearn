@@ -53,7 +53,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_7, SKLEARN_LT_1_6
 from nilearn.conftest import _rng
 from nilearn.decoding import (
     Decoder,
@@ -830,7 +830,6 @@ def test_decoder_dummy_classifier_roc_scoring(binary_classification_data):
     assert np.mean(model.cv_scores_[0]) >= 0.45
 
 
-
 @pytest.mark.slow
 def test_decoder_error_not_implemented(tiny_binary_classification_data):
     X, y, mask = tiny_binary_classification_data
@@ -1013,7 +1012,6 @@ def test_decoder_multiclass_classification_masker(multiclass_data):
     assert accuracy_score(y, y_pred) > 0.95
 
 
-
 @pytest.mark.slow
 def test_decoder_multiclass_classification_masker_dummy_classifier(
     multiclass_data,
@@ -1143,7 +1141,6 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
         model = Decoder(mask=NiftiMasker(), cv=cv, standardize="zscore_sample")
         with pytest.raises(ValueError, match=r"Expected .* as an integer"):
             model.fit(X, y)
-
 
 
 @pytest.mark.slow

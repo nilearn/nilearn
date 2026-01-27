@@ -23,7 +23,6 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
-from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.numpy_conversions import as_ndarray
@@ -32,6 +31,7 @@ from nilearn._utils.param_validation import (
     check_params,
     check_threshold,
 )
+from nilearn._utils.versions import compare_version
 from nilearn.image import (
     check_niimg_3d,
     check_niimg_4d,

@@ -6,7 +6,6 @@ import pytest
 
 from nilearn._utils.helpers import (
     _warn_deprecated_params,
-    compare_version,
     is_kaleido_installed,
     is_matplotlib_installed,
     is_plotly_installed,
@@ -237,28 +236,6 @@ def test_future_warn_deprecated_params():
     ):
         assert raised_warning_.category is FutureWarning
         assert str(raised_warning_.message) == expected_warning_
-
-
-@pytest.mark.parametrize(
-    "version_a,operator,version_b",
-    [
-        ("0.1.0", ">", "0.0.1"),
-        ("0.1.0", ">=", "0.0.1"),
-        ("0.1", "==", "0.1.0"),
-        ("0.0.0", "<", "0.1.0"),
-        ("1.0", "!=", "0.1.0"),
-    ],
-)
-def test_compare_version(version_a, operator, version_b):
-    assert compare_version(version_a, operator, version_b)
-
-
-def test_compare_version_error():
-    with pytest.raises(
-        ValueError,
-        match=r"'compare_version' received an unexpected operator <>.",
-    ):
-        compare_version("0.1.0", "<>", "1.1.0")
 
 
 def test_is_plotly_installed():

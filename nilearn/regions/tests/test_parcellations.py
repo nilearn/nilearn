@@ -12,7 +12,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
 )
 from nilearn._utils.helpers import is_windows_platform
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _affine_eye
 from nilearn.maskers import (
     MultiNiftiMasker,

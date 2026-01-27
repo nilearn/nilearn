@@ -16,8 +16,8 @@ from scipy import ndimage as ndi
 from scipy.sparse.linalg import cg
 from sklearn.utils import as_float_array
 
-from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.versions import compare_version
 
 
 def _make_graph_edges_3d(n_x, n_y, n_z):
