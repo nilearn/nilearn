@@ -55,6 +55,13 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
     return data
 
 
+def has_non_finite(data):
+    """Return True if data contains at least one NaN or inf value; False if
+    there are no NaN and inf values.
+    """
+    return ~np.isfinite(data).any()
+
+
 def ensure_finite_data(data):
     """Check is there are any infinite values in the data, set infinite values
     to 0 and return data.
