@@ -135,6 +135,7 @@ def test_plot_connectome_non_symmetric(node_coords, non_symmetric_matrix):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
     """Test for plot_connectome with edge thresholding."""
     # Case 1: Threshold is a number
@@ -168,6 +169,7 @@ def test_plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "matrix",
     [

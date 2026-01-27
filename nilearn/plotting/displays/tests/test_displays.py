@@ -389,6 +389,7 @@ def test_add_markers_cut_coords_is_none():
     orthoslicer.close()
 
 
+@pytest.mark.thread_unsafe
 def test_annotations():
     """Tests for ``display.annotate()``.
 

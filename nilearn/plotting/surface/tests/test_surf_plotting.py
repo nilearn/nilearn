@@ -842,6 +842,7 @@ def test_plot_surf_roi(plt, engine, surface_image_roi, colorbar):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_roi_cmap_as_lookup_table(surface_image_roi):
     """Test colormap passed as BIDS lookup table."""
     lut = pd.DataFrame(
@@ -1132,6 +1133,7 @@ def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni, kwargs):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "tick_format",
     ["%i", "%.2g", "%.1f"],

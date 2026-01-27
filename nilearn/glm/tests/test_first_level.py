@@ -708,6 +708,7 @@ def test_glm_random_state(random_state):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_scaling(rng):
     """Test the scaling function."""
     shape = (400, 10)

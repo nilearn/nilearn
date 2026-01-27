@@ -118,6 +118,7 @@ def test_plot_functions_same_cut(display_mode, img_3d_rand_eye, tmp_path):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
 def test_plot_threshold_for_uint8(affine_eye, plot_func):
     """Mask was applied in [-threshold, threshold] which is problematic \
