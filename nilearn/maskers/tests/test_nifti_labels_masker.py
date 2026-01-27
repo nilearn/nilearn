@@ -133,9 +133,7 @@ def test_nifti_labels_masker(
     assert signals.shape == (length, expected_n_regions - 1)
 
 
-def test_nifti_labels_masker_errors(
-    affine_eye, shape_3d_default, n_regions, length
-):
+def test_errors(affine_eye, shape_3d_default, n_regions, length):
     """Check working of shape/affine checks."""
     masker = NiftiLabelsMasker()
     with pytest.raises(TypeError, match="input should be a NiftiLike object"):
@@ -184,7 +182,7 @@ def test_nifti_labels_masker_errors(
         masker11.fit()
 
 
-def test_nifti_labels_masker_with_nans_and_infs(
+def test_with_nans_and_infs(
     affine_eye, n_regions, length, img_labels, img_fmri
 ):
     """Deal with NaNs and infs in label image.
@@ -216,7 +214,7 @@ def test_nifti_labels_masker_with_nans_and_infs(
     assert sig.shape == (length, n_regions)
 
 
-def test_nifti_labels_masker_with_nans_and_infs_in_data(
+def test_with_nans_and_infs_in_data(
     affine_eye, img_fmri, n_regions, length, img_labels
 ):
     """Apply a NiftiLabelsMasker to 4D data containing NaNs and infs.
@@ -254,9 +252,7 @@ def test_nifti_labels_masker_with_nans_and_infs_in_data(
         ("variance", np.var),
     ],
 )
-def test_nifti_labels_masker_reduction_strategies(
-    affine_eye, strategy, function
-):
+def test_reduction_strategies(affine_eye, strategy, function):
     """Tests NiftiLabelsMasker strategies.
 
     1. whether the usage of different reduction strategies work.
@@ -286,7 +282,7 @@ def test_nifti_labels_masker_reduction_strategies(
     assert default_masker.strategy == "mean"
 
 
-def test_nifti_labels_masker_reduction_strategies_error(affine_eye):
+def test_reduction_strategies_error(affine_eye):
     """Tests NiftiLabelsMasker invalid strategy."""
     labels_data = np.array([[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1]]], dtype=np.int8)
 
@@ -297,7 +293,7 @@ def test_nifti_labels_masker_reduction_strategies_error(affine_eye):
         masker.fit()
 
 
-def test_nifti_labels_masker_resampling_errors(img_labels):
+def test_resampling_errors(img_labels):
     """Test errors of resampling in NiftiLabelsMasker."""
     with pytest.raises(
         ValueError,
@@ -318,9 +314,7 @@ def test_nifti_labels_masker_resampling_errors(img_labels):
 
 
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
-def test_nifti_labels_masker_resampling_to_data(
-    affine_eye, n_regions, length, keep_masked_labels
-):
+def test_resampling_to_data(affine_eye, n_regions, length, keep_masked_labels):
     """Test resampling to data in NiftiLabelsMasker."""
     # mask
     shape2 = (8, 9, 10, length)
@@ -353,7 +347,7 @@ def test_nifti_labels_masker_resampling_to_data(
 @pytest.mark.slow
 @pytest.mark.parametrize("resampling_target", ["data", "labels"])
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
-def test_nifti_labels_masker_resampling(
+def test_resampling(
     affine_eye,
     shape_3d_default,
     resampling_target,
@@ -406,7 +400,7 @@ def test_nifti_labels_masker_resampling(
 
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
-def test_nifti_labels_masker_resampling_to_labels(
+def test_resampling_to_labels(
     affine_eye, shape_3d_default, n_regions, length, keep_masked_labels
 ):
     """Test resampling to labels in NiftiLabelsMasker."""
@@ -450,7 +444,7 @@ def test_nifti_labels_masker_resampling_to_labels(
 
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
-def test_nifti_labels_masker_resampling_to_clipped_labels(
+def test_resampling_to_clipped_labels(
     affine_eye, shape_3d_default, n_regions, length, keep_masked_labels
 ):
     """Test with clipped labels.
@@ -508,7 +502,7 @@ def test_nifti_labels_masker_resampling_to_clipped_labels(
 
 
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
-def test_nifti_labels_masker_resampling_to_none(
+def test_resampling_to_none(
     affine_eye, length, shape_3d_default, img_labels, keep_masked_labels
 ):
     """Test resampling to None in NiftiLabelsMasker.
@@ -546,7 +540,7 @@ def test_nifti_labels_masker_resampling_to_none(
 
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
-def test_nifti_labels_masker_with_mask(
+def test_with_mask(
     shape_3d_default, affine_eye, length, img_labels, keep_masked_labels
 ):
     """Test NiftiLabelsMasker with a separate mask_img parameter."""
