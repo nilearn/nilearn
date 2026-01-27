@@ -279,7 +279,6 @@ exclude = [
     '.*/tests/test_.*',
     'doc/.*',
     'examples/.*',
-    'maint_tools/.*',
     'nilearn_cache/.*',
     'nilearn/_version.py'
 ]

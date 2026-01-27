@@ -459,7 +459,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         self.scores_[np.where(process_mask)] = scores
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return (
             hasattr(self, "scores_")
             and hasattr(self, "process_mask_")
