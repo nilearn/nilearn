@@ -47,7 +47,7 @@ STANDARIZE_WARNING_MESSAGE = (
     "behavior by using the sample std. "
     "In release 0.14.0, the 'zscore' option will be removed "
     "and using standardize=True will fall back "
-    "to 'zscore_sample'."
+    "to 'zscore_sample'. "
     "To avoid this warning, please use 'zscore_sample' instead."
 )
 

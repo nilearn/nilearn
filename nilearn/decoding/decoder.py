@@ -17,6 +17,8 @@ from collections.abc import Iterable
 import numpy as np
 from joblib import Parallel, delayed
 from nibabel import Nifti1Image
+from packaging.version import parse
+from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import (
     MultiOutputMixin,

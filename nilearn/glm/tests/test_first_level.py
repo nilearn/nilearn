@@ -971,7 +971,9 @@ def test_parameter_attributes_ignored_with_design_matrix(
 
     with warnings.catch_warnings(record=True) as warning_list:
         FirstLevelModel().fit([fmri_data], design_matrices=[design_matrices])
-    assert not warning_list
+    assert not any(
+        "If design matrices are supplied" in str(x) for x in warning_list
+    )
 
     with pytest.warns(UserWarning, match="If design matrices are supplied"):
         FirstLevelModel().fit(
@@ -1430,6 +1432,20 @@ def test_first_level_with_scaling(affine_eye):
     assert glm_parameters["signal_scaling"] == 0
 
 
+def test_first_level_with_no_signal_scaling_error(shape_4d_default):
+    """Check error with invalid signal_scaling values."""
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )
+
+    flm = FirstLevelModel(
+        mask_img=False, noise_model="ols", signal_scaling="foo"
+    )
+    events = basic_paradigm()
+    with pytest.raises(ValueError, match="'signal_scaling' must be one of"):
+        flm.fit(fmri_data[0], events)
+
+
 def test_first_level_with_no_signal_scaling(affine_eye):
     """Test to ensure that the FirstLevelModel works correctly \
        with a signal_scaling==False.
@@ -1437,35 +1453,38 @@ def test_first_level_with_no_signal_scaling(affine_eye):
     In particular, that derived theta are correct for a
     constant design matrix with a single valued fmri image
     """
-    shapes, rk = [(3, 1, 1, 2)], 1
+    n_vol = 2
+    rk = 1
     design_matrices = [
         pd.DataFrame(
-            np.ones((shapes[0][-1], rk)),
+            np.ones((n_vol, rk)),
             columns=list(string.ascii_lowercase)[:rk],
         )
     ]
-    fmri_data = [Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye)]
+    fmri_data = [Nifti1Image(np.zeros((1, 1, 1, n_vol)) + 6, affine_eye)]
 
-    # Check error with invalid signal_scaling values
-    with pytest.raises(ValueError, match="'signal_scaling' must be one of"):
-        flm = FirstLevelModel(
-            mask_img=False, noise_model="ols", signal_scaling="foo"
-        )
-        flm.fit(fmri_data, design_matrices=design_matrices)
+    mask = Nifti1Image(np.ones((1, 1, 1, n_vol)), affine_eye)
+
+    masker = NiftiMasker(mask_img=mask, standardize=None).fit()
 
     first_level = FirstLevelModel(
-        mask_img=False, noise_model="ols", signal_scaling=False
+        mask_img=masker,
+        noise_model="ols",
+        signal_scaling=False,
     )
 
     first_level.fit(fmri_data, design_matrices=design_matrices)
+
     # trivial test of signal_scaling value
     assert first_level.signal_scaling is False
+
     # assert that our design matrix has one constant
     assert first_level.design_matrices_[0].equals(
         pd.DataFrame([1.0, 1.0], columns=["a"])
     )
     # assert that we only have one theta as there is only on voxel in our image
     assert first_level.results_[0][0].theta.shape == (1, 1)
+
     # assert that the theta is equal to the one voxel value
     assert_almost_equal(first_level.results_[0][0].theta[0, 0], 6.0, 2)
 

@@ -71,7 +71,13 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
 
     contrasts = {"effects of interest": np.eye(rk)}
     contrast_types = {"effects of interest": "F"}
-    with warnings.catch_warnings(record=True) as warning_list:
+    with (
+        warnings.catch_warnings(record=True) as warning_list,
+        pytest.warns(
+            FutureWarning, match="the default 'threshold' will be set to"
+        ),
+    ):
+        # TODO (nilearn >= 0.15.0) remove the FutureWarning catch
         save_glm_to_bids(
             model=single_run_model,
             contrasts=contrasts,
@@ -80,12 +86,6 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
             prefix=prefix,
             height_control=None,
         )
-
-        # TODO (nilearn >= 0.15.0) remove
-        n_future_warnings = len(
-            [x for x in warning_list if issubclass(x.category, FutureWarning)]
-        )
-        assert n_future_warnings == 1
 
         n_no_contrasts_warnings = len(
             [
