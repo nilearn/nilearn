@@ -829,6 +829,7 @@ def test_decoder_dummy_classifier_roc_scoring(binary_classification_data):
     assert np.mean(model.cv_scores_[0]) >= 0.45
 
 
+@pytest.mark.slow
 def test_decoder_error_not_implemented(tiny_binary_classification_data):
     X, y, mask = tiny_binary_classification_data
 
@@ -1010,6 +1011,7 @@ def test_decoder_multiclass_classification_masker(multiclass_data):
     assert accuracy_score(y, y_pred) > 0.95
 
 
+@pytest.mark.slow
 def test_decoder_multiclass_classification_masker_dummy_classifier(
     multiclass_data,
 ):
@@ -1071,6 +1073,7 @@ def test_decoder_multiclass_classification_clustering(
     assert accuracy_score(y, y_pred) > 0.9
 
 
+@pytest.mark.slow
 def test_decoder_multiclass_classification_apply_mask_shape():
     """Test whether if _apply mask output has the same shape \
     as original matrix.
@@ -1139,6 +1142,8 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
             model.fit(X, y)
 
 
+
+@pytest.mark.slow
 def test_decoder_multiclass_warnings_decoder(multiclass_data):
     """Check whether decoder raised warning \
         when groups is set to specific value but CV Splitter is not set.
