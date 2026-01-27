@@ -7,8 +7,8 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy.ndimage import binary_dilation, binary_erosion
 
+from nilearn._base import cache
 from nilearn._utils import logger
-from nilearn._utils.cache_mixin import cache
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import get_border_data, largest_connected_component

@@ -6,7 +6,7 @@ from typing import Literal
 
 import numpy as np
 
-from nilearn._utils.cache_mixin import check_memory
+from nilearn._base import check_memory
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import is_glm
