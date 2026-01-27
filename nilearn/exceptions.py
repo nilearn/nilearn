@@ -48,18 +48,27 @@ class DimensionError(TypeError):
 
     Parameters
     ----------
-    file_dimension : integer
+    file_dimension : :obj:`int`
         Indicates the dimensionality of the bottom-level nifti file.
 
-    required_dimension : integer
+    required_dimension : :obj:`int`
         The dimension the nifti file should have.
+
+    msg_about_samples : :obj:`bool`
+        If set to True,
+        when the error message will mention the number of expected samples
+        rather than dimensions.
+        This is useful when working with surface images.
 
     """
 
-    def __init__(self, file_dimension, required_dimension):
+    def __init__(
+        self, file_dimension, required_dimension, msg_about_samples=False
+    ):
         self.file_dimension = file_dimension
         self.required_dimension = required_dimension
         self.stack_counter = 0
+        self.msg_about_samples = msg_about_samples
 
         super().__init__()
 
@@ -76,12 +85,21 @@ class DimensionError(TypeError):
     @property
     def message(self):
         """Format error message."""
+
+        def unit(n):
+            unit = f"{n} sample" if self.msg_about_samples else f"{n}D"
+            if self.msg_about_samples and n > 1:
+                unit += "s"
+            return unit
+
         expected_dim = self.required_dimension + self.stack_counter
-        total_file_dim = f" ({self.file_dimension + self.stack_counter}D)"
+        total_file_dim = f" ({unit(self.file_dimension + self.stack_counter)})"
         return (
             "Input data has incompatible dimensionality: "
-            f"Expected dimension is {expected_dim}D and you provided a "
-            f"{'list of ' * self.stack_counter}{self.file_dimension}D "
+            f"Expected{' dimension is' if not self.msg_about_samples else ''} "
+            f"{unit(expected_dim)} and you provided a "
+            f"{'list of ' * self.stack_counter}"
+            f"{unit(self.file_dimension)} "
             f"image{'s' * (self.stack_counter > 0)}"
             f"{total_file_dim * (self.stack_counter > 0)}. "
             "See https://nilearn.github.io/stable/manipulating_images/"

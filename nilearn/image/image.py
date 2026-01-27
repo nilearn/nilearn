@@ -48,6 +48,7 @@ from nilearn.exceptions import DimensionError
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
+    check_surf_img,
     extract_data,
     find_surface_clusters,
 )
@@ -1605,7 +1606,7 @@ def clean_img(
     }
 
     if isinstance(imgs, SurfaceImage):
-        imgs.data._check_ndims(2, "imgs")
+        imgs.data._check_ndims(2)
 
         data = {}
         # Clean signal
@@ -2061,6 +2062,8 @@ def iter_check_niimg(
     for i, niimg in enumerate(niimgs):
         if isinstance(niimg, SurfaceImage):
             # TODO do some checks
+
+            check_surf_img(niimg)
             yield niimg
 
         else:

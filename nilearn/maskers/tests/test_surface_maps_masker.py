@@ -9,6 +9,7 @@ from nilearn._utils.estimator_checks import (
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _surf_maps_img
+from nilearn.exceptions import DimensionError
 from nilearn.maskers import SurfaceMapsMasker
 from nilearn.surface import SurfaceImage
 
@@ -125,8 +126,8 @@ def test_inverse_transform_actual_output(surf_mesh, rng):
 def test_1d_maps_img(surf_img_1d):
     """Test that an error is raised when maps_img has 1D data."""
     with pytest.raises(
-        ValueError,
-        match="maps_img should be 2D",
+        DimensionError,
+        match="Expected dimension is 2D and you provided a 1D image",
     ):
         SurfaceMapsMasker(maps_img=surf_img_1d).fit()
 

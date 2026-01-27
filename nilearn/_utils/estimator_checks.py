@@ -2166,12 +2166,13 @@ def check_decoder_empty_data_messages(estimator_orig):
         random_state=42,
     )
 
-    imgs = _make_surface_img(n_samples)
-    data = {
-        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-        for part in imgs.data.parts
-    }
-    X = SurfaceImage(imgs.mesh, data)
+    X = _make_surface_img(n_samples)
+
+    # force some parts to be empty
+    for part in X.data.parts:
+        X.data.parts[part] = np.empty(0).reshape(
+            (X.data.parts[part].shape[0], 0)
+        )
 
     y = _rng().random(y.shape)
 
@@ -2943,15 +2944,15 @@ def check_masker_empty_data_messages(estimator_orig):
         return None
 
     imgs = _make_surface_img()
-    data = {
-        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-        for part in imgs.data.parts
-    }
-    imgs = SurfaceImage(imgs.mesh, data)
+    # force some parts to be empty
+    for part in imgs.data.parts:
+        imgs.data.parts[part] = np.empty(0).reshape(
+            (imgs.data.parts[part].shape[0], 0)
+        )
 
     mask_img = _make_surface_mask()
 
-    with pytest.raises(ValueError, match="The image is empty"):
+    with pytest.raises(ValueError, match=r"The image .*is empty"):
         estimator.fit(imgs)
 
     estimator.mask_img = mask_img
@@ -3400,12 +3401,12 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
             - 1D surface image -> 1D array
             - 2D surface image -> 2D array
             - list of 1D surface images -> 2D array
-            - list of 2D surface images -> ERROR (TODO)
+            - list of 2D surface images -> ERROR
         - multimasker
             - 1D surface image -> 1D array
             - 2D surface image -> 2D array
             - list of 1D surface images -> list of 1D array
-            - list of 2D surface images -> list of 2D array (TODO)
+            - list of 2D surface images -> list of 2D array
 
     - inverse_transform
         - masker
@@ -3474,7 +3475,7 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
         # TODO error msg should give hint as to how to fix:
         # point to the appropriate masker to use
         with pytest.raises(
-            ValueError, match=r"Data for each part of .* should be 1D"
+            DimensionError, match="Input data has incompatible dimensionality"
         ):
             estimator.fit([_make_surface_img(5), _make_surface_img(5)])
 
@@ -3497,12 +3498,10 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
             - 1D surface image -> 1D array
             - 2D surface image -> 2D array
             - list of 1D surface images -> 2D array
-            - list of 2D surface images -> ERROR
         - multimasker
             - 1D surface image -> 1D array
             - 2D surface image -> 2D array
             - list of 1D surface images -> list of 1D array
-            - list of 2D surface images -> list of 2D array
 
     - inverse_transform
         - masker
@@ -3996,11 +3995,11 @@ def check_glm_empty_data_messages(
 
     imgs, design_matrices = _make_surface_img_and_design()
 
-    data = {
-        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-        for part in imgs.data.parts
-    }
-    imgs = SurfaceImage(imgs.mesh, data)
+    # force some parts to be empty
+    for part in imgs.data.parts:
+        imgs.data.parts[part] = np.empty(0).reshape(
+            (imgs.data.parts[part].shape[0], 0)
+        )
 
     with pytest.raises(ValueError, match="empty"):
         # FirstLevel

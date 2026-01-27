@@ -73,7 +73,8 @@ def test_load_mask_img_error_inputs(surf_img_2d, img_4d_ones_eye):
         load_mask_img(img_4d_ones_eye)
 
     with pytest.raises(
-        ValueError, match=r"Data for each part of .* should be 1D."
+        DimensionError,
+        match="Expected dimension is 1D and you provided a 2D image",
     ):
         load_mask_img(surf_img_2d())
 

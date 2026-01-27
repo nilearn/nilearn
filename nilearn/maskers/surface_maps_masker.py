@@ -206,15 +206,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if imgs is not None:
             self._check_imgs(imgs)
 
-            if isinstance(imgs, SurfaceImage) and any(
-                hemi.ndim > 2 for hemi in imgs.data.parts.values()
-            ):
-                raise ValueError(
-                    "should only be SurfaceImage should 1D or 2D."
-                )
-            elif hasattr(imgs, "__iter__"):
-                for i, x in enumerate(imgs):
-                    x.data._check_n_samples(1, f"imgs[{i}]")
+            if hasattr(imgs, "__iter__"):
+                for x in imgs:
+                    x.data._check_n_samples(1)
 
         return self._fit(imgs)
 
@@ -233,7 +227,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         mask_logger("load_regions", self.maps_img, verbose=self.verbose)
 
         # check maps_img data is 2D
-        self.maps_img.data._check_ndims(2, "maps_img")
+        self.maps_img.data._check_ndims(2)
         self.maps_img_ = self.maps_img
 
         self.n_elements_ = self.maps_img.shape[1]
@@ -294,13 +288,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         check_compatibility_mask_and_images(self.maps_img, imgs)
         check_polymesh_equal(self.maps_img.mesh, imgs.mesh)
 
-        if isinstance(imgs, SurfaceImage) and any(
-            hemi.ndim > 2 for hemi in imgs.data.parts.values()
-        ):
-            raise ValueError("should only be SurfaceImage should 1D or 2D.")
-        elif hasattr(imgs, "__iter__"):
-            for i, x in enumerate(imgs):
-                x.data._check_n_samples(1, f"imgs[{i}]")
+        if hasattr(imgs, "__iter__"):
+            for x in imgs:
+                x.data._check_n_samples(1)
 
         imgs = at_least_2d(imgs)
 
