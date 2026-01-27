@@ -10,6 +10,7 @@ Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
 
+import abc
 import itertools
 import warnings
 from collections.abc import Iterable
@@ -610,6 +611,22 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
             return self.clustering_percentile
         return 100
 
+    @abc.abstractmethod
+    def _set_classes(self, y):
+        # implemented in mixin classes
+        raise NotImplementedError()
+
+    def _n_problems(self) -> int:
+        """Define the number problems to solve.
+
+        In case of classification this
+        number corresponds to the number of binary problems to solve.
+        """
+        if len(self._get_classes()) > 2:
+            return len(self._get_classes())
+        else:
+            return 1
+
     @fill_doc
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
@@ -673,9 +690,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         self.cv_ = list(cv_object.split(X, y, groups=groups))
 
-        # Define the number problems to solve. In case of classification this
-        # number corresponds to the number of binary problems to solve
-        y = self._binarize_y(y)
+        y = self._set_classes(y)
         n_problems = self._n_problems()
 
         # Check if the size of the mask image and the number of features allow
@@ -777,8 +792,9 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
                 classes_, self.coef_, self.std_coef_
             )
 
-            # TODO try to extract
-            if is_classifier(self) and (self.n_classes_ == 2):
+            # Note this will only apply to classifiers
+            # as regressors only have 1 problem
+            if self._n_problems == 2:
                 self.coef_ = self.coef_[0, :][np.newaxis, :]
                 self.intercept_ = self.intercept_[0]
 
@@ -793,7 +809,10 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
                     for class_index in classes_
                 ]
             )
-            if is_classifier(self) and (self.n_classes_ == 2):
+
+            # Note this will only apply to classifiers
+            # as regressors only have 1 problem
+            if self._n_problems == 2:
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
         return self
@@ -1187,9 +1206,6 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     classes_ : ndarray of labels (`n_classes_`)
         Labels of the classes
-
-    n_classes_ : int
-        number of classes
 
     See Also
     --------
@@ -1678,9 +1694,6 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
 
     classes_ : ndarray of labels (`n_classes_`)
         Labels of the classes
-
-    n_classes_ : int
-        number of classes
 
     References
     ----------

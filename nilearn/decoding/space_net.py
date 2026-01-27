@@ -769,13 +769,19 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
             loss = "logistic"
         return loss
 
-    @abc.abstractmethod
     def _n_problems(self):
-        # implemented in mixin classes
-        raise NotImplementedError()
+        """Define the number problems to solve.
+
+        In case of classification this
+        number corresponds to the number of binary problems to solve.
+        """
+        if len(self._get_classes()) > 2:
+            return len(self._get_classes())
+        else:
+            return 1
 
     @abc.abstractmethod
-    def _binarize_y(self, y):
+    def _set_classes(self, y):
         # implemented in mixin classes
         raise NotImplementedError()
 
@@ -871,9 +877,10 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
             n_samples, _ = X.shape
             self.cv_ = [(np.arange(n_samples), [])]
 
-        # Define the number problems to solve. In case of classification this
-        # number corresponds to the number of binary problems to solve
-        y = self._binarize_y(y)
+        y = self._set_classes(y)
+        # Define the number problems to solve.
+        # In case of classification this
+        # number corresponds to the number of binary problems to solve.
         n_problems = self._n_problems()
 
         # standardize y
@@ -1093,9 +1100,6 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     classes_ : ndarray of labels (`n_classes_`)
         Labels of the classes
-
-    n_classes_ : int
-        Number of classes
 
     See Also
     --------
@@ -1411,27 +1415,3 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
 
     def _adapt_weights_y_mean_all_coef(self, w):
         return w[0], self.ymean_[0], np.array(self.all_coef_)
-
-    def fit(self, X, y):
-        """Fit the learner.
-
-        Parameters
-        ----------
-        X : :obj:`list` of Niimg-like objects
-            See :ref:`extracting_data`.
-            Data on which model is to be fitted.
-            If this is a list,
-            the affine is considered the same for all.
-            Must have exactly as many elements as the input images.
-
-        y : array or :obj:`list` of length n_samples
-            The dependent variable (age, sex, QI, etc.).
-
-        Notes
-        -----
-        self : `SpaceNet` object
-            Model selection is via cross-validation with bagging.
-        """
-        # duplicated from BaseSpaceNet to not rely on the API / docstring
-        # from RegressorMixin
-        return BaseSpaceNet.fit(self, X, y)
