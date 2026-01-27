@@ -123,7 +123,10 @@ def test_multi_nifti_maps_masker(
     masker.inverse_transform(signals)
 
 
-def test_data_atlas_different_shape(affine_eye, length, img_maps):
+@pytest.mark.parametrize("keep_masked_maps", [True, False])
+def test_data_atlas_different_shape(
+    affine_eye, length, img_maps, keep_masked_maps
+):
     """Test with data and atlas of different shape.
 
     The atlas should be resampled to the data.
@@ -141,12 +144,16 @@ def test_data_atlas_different_shape(affine_eye, length, img_maps):
     fmri22_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
 
     masker = MultiNiftiMapsMasker(
-        img_maps, mask_img=mask21_img, standardize=None
+        img_maps,
+        mask_img=mask21_img,
+        standardize=None,
+        keep_masked_maps=keep_masked_maps,
     )
 
     masker.fit_transform(fmri22_img)
 
     assert_array_equal(masker.maps_img_.affine, affine2)
+    assert_array_equal(masker.maps_img_.shape[:3], shape22)
 
 
 def test_errors(affine_eye, length, shape_3d_default, img_maps):

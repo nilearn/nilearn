@@ -77,7 +77,10 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-def test_data_atlas_different_shape(length, affine_eye, img_maps):
+@pytest.mark.parametrize("keep_masked_maps", [True, False])
+def test_data_atlas_different_shape(
+    length, affine_eye, img_maps, keep_masked_maps
+):
     """Test with data and atlas of different shape.
 
     The atlas should be resampled to the data.
@@ -94,7 +97,12 @@ def test_data_atlas_different_shape(length, affine_eye, img_maps):
     )
     fmri22_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
 
-    masker = NiftiMapsMasker(img_maps, mask_img=mask21_img, standardize=None)
+    masker = NiftiMapsMasker(
+        img_maps,
+        mask_img=mask21_img,
+        standardize=None,
+        keep_masked_maps=keep_masked_maps,
+    )
 
     with warnings.catch_warnings(record=True) as warning_list:
         masker.fit(fmri22_img)
@@ -104,6 +112,7 @@ def test_data_atlas_different_shape(length, affine_eye, img_maps):
         )
 
     assert_array_equal(masker.maps_img_.affine, affine2)
+    assert_array_equal(masker.maps_img_.shape[:3], shape22)
 
 
 def test_fit(n_regions, img_maps):
