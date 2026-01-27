@@ -369,9 +369,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        return_1D = region_signals.ndim < 2
-
         region_signals = self._check_array(region_signals)
+
+        return_1D = region_signals.ndim < 2
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)

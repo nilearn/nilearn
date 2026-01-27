@@ -512,18 +512,20 @@ class BaseMasker(
             img._header._structarr = np.array(img._header._structarr).copy()
         return img
 
-    def _check_array(
-        self, signals: np.ndarray, sklearn_check: bool = True
-    ) -> np.ndarray:
+    def _check_array(self, signals, sklearn_check: bool = True) -> np.ndarray:
         """Check array to inverse transform.
 
         Parameters
         ----------
-        signals : :obj:`numpy.ndarray`
+        signals : array like (numpy array, pandas or polars DataFrame)
 
         sklearn_check : :obj:`bool`
             Run scikit learn check on input
         """
+        if hasattr(signals, "to_numpy"):
+            # convert pandas or polars dataframe to numpy
+            signals = signals.to_numpy().squeeze()
+
         signals = np.atleast_1d(signals)
 
         if sklearn_check:
@@ -762,18 +764,20 @@ class _BaseSurfaceMasker(
         del y
         return self.fit(imgs).transform(imgs, confounds, sample_mask)
 
-    def _check_array(
-        self, signals: np.ndarray, sklearn_check: bool = True
-    ) -> np.ndarray:
+    def _check_array(self, signals, sklearn_check: bool = True) -> np.ndarray:
         """Check array to inverse transform.
 
         Parameters
         ----------
-        signals : :obj:`numpy.ndarray`
+        signals : array like (numpy array, pandas or polars DataFrame)
 
         sklearn_check : :obj:`bool`
             Run scikit learn check on input
         """
+        if hasattr(signals, "to_numpy"):
+            # convert pandas or polars dataframe to numpy
+            signals = signals.to_numpy().squeeze()
+
         signals = np.atleast_2d(signals)
 
         if sklearn_check:
