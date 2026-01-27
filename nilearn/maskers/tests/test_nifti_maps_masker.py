@@ -288,7 +288,7 @@ def test_resampling_to_mask(
     with warnings.catch_warnings(record=True) as warning_list:
         signals = masker.fit_transform(img_fmri)
         assert not any(
-            "consider using nearest interpolation instead" in x.message
+            "consider using nearest interpolation instead" in str(x)
             for x in warning_list
         )
 
@@ -298,12 +298,16 @@ def test_resampling_to_mask(
     assert_almost_equal(masker.maps_img_.affine, masker.mask_img_.affine)
     assert masker.maps_img_.shape[:3] == masker.mask_img_.shape
 
-    assert signals.shape == (length, n_regions)
+    expected_n_regions = n_regions
+    if not keep_masked_maps:
+        expected_n_regions = n_regions - 7
+
+    assert signals.shape == (length, expected_n_regions)
 
     fmri11_img_r = masker.inverse_transform(signals)
 
     assert_almost_equal(fmri11_img_r.affine, masker.mask_img_.affine)
-    assert fmri11_img_r.shape == (masker.mask_img_.shape[:3] + (length,))
+    assert fmri11_img_r.shape == (*masker.mask_img_.shape[:3], length)
 
 
 @pytest.mark.slow
@@ -333,13 +337,20 @@ def test_resampling_to_maps(
 
     signals = masker.fit_transform(img_fmri)
 
+    expected_n_regions = n_regions
+    if not keep_masked_maps:
+        expected_n_regions = n_regions - 7
+
     assert_array_equal(masker.maps_img_.affine, maps33_img.affine)
-    assert masker.maps_img_.shape == maps33_img.shape
+    assert masker.maps_img_.shape == (
+        *maps33_img.shape[:3],
+        expected_n_regions,
+    )
 
     assert_array_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
-    assert signals.shape == (length, n_regions)
+    assert signals.shape == (length, expected_n_regions)
 
     fmri11_img_r = masker.inverse_transform(signals)
 
@@ -373,15 +384,22 @@ def test_clipped_mask(n_regions, affine_eye, keep_masked_maps):
 
     signals = masker.fit_transform(fmri11_img)
 
+    expected_n_regions = n_regions
+    if not keep_masked_maps:
+        expected_n_regions = n_regions - 5
+
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
-    assert masker.maps_img_.shape == maps33_img.shape
+    assert masker.maps_img_.shape == (
+        *maps33_img.shape[:3],
+        expected_n_regions,
+    )
 
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
-    assert signals.shape == (length, n_regions)
+    assert signals.shape == (length, expected_n_regions)
     # Some regions have been clipped. Resulting signal must be zero
-    assert (signals.var(axis=0) == 0).sum() < n_regions
+    assert (signals.var(axis=0) == 0).sum() < expected_n_regions
 
     fmri11_img_r = masker.inverse_transform(signals)
 

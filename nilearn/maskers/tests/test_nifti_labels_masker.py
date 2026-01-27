@@ -448,6 +448,10 @@ def test_nifti_labels_masker_resampling_to_clipped_labels(
 
     signals = masker.fit_transform(fmri11_img)
 
+    expected_n_regions = n_regions
+    if not keep_masked_labels:
+        expected_n_regions = n_regions - 6
+
     assert_almost_equal(masker.labels_img_.affine, labels33_img.affine)
 
     assert masker.labels_img_.shape == labels33_img.shape
@@ -458,9 +462,9 @@ def test_nifti_labels_masker_resampling_to_clipped_labels(
     assert uniq_labels[0] == 0
     assert len(uniq_labels) - 1 == n_regions
 
-    assert signals.shape == (length, n_regions)
+    assert signals.shape == (length, expected_n_regions)
     # Some regions have been clipped. Resulting signal must be zero
-    assert (signals.var(axis=0) == 0).sum() < n_regions
+    assert (signals.var(axis=0) == 0).sum() < expected_n_regions
 
     fmri11_img_r = masker.inverse_transform(signals)
 
