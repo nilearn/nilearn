@@ -146,7 +146,7 @@ def load_niimg(niimg, dtype=None):
     return niimg
 
 
-def is_binary_niimg(niimg):
+def is_binary_niimg(niimg, block_size=1_000_000) -> bool:
     """Return whether a given niimg is binary or not.
 
     Parameters
@@ -162,11 +162,24 @@ def is_binary_niimg(niimg):
 
     """
     niimg = load_niimg(niimg)
-    data = safe_get_data(niimg, ensure_finite=True)
-    unique_values = np.unique(data)
-    return (
-        False if len(unique_values) != 2 else sorted(unique_values) == [0, 1]
-    )
+    data = niimg.dataobj
+    flat = np.ravel(data)
+
+    for i in range(0, flat.size, block_size):
+        block = flat[i : i + block_size]
+
+        # Check if only 0, 1, inf, or nan
+        mask = (
+            (block == 0)
+            | (block == 1)
+            | np.isnan(block)
+            | (block == np.inf)
+            | (block == -np.inf)
+        )
+        if not mask.all():
+            return False
+
+    return True
 
 
 def repr_niimgs(niimgs, shorten=True):
