@@ -12,9 +12,12 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
-from nilearn._base import SKLEARN_GTE_1_7
-from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.helpers import (
+    is_matplotlib_installed,
+    is_plotly_installed,
+)
 from nilearn._utils.tags import accept_surf_img_input
+from nilearn._utils.versions import SKLEARN_GTE_1_7
 from nilearn.conftest import _img_maps, _surf_maps_img
 from nilearn.image import get_data
 from nilearn.maskers import (
@@ -292,8 +295,7 @@ EXPECTED_COLUMNS = [
 
 @pytest.mark.slow
 def test_nifti_labels_masker_report(
-    img_3d_rand_eye,
-    img_mask_eye,
+    img_3d_ones_eye,
     affine_eye,
     n_regions,
     labels,
@@ -303,10 +305,9 @@ def test_nifti_labels_masker_report(
     masker = NiftiLabelsMasker(
         img_labels,
         labels=labels,
-        mask_img=img_mask_eye,
-        keep_masked_labels=True,
+        # mask_img=img_mask_eye,
     )
-    masker.fit_transform(img_3d_rand_eye)
+    masker.fit_transform(img_3d_ones_eye)
 
     assert masker._reporting_data is not None
 
@@ -321,6 +322,7 @@ def test_nifti_labels_masker_report(
     )
 
     # Check that the number of regions is correct
+    # We may lose a few regions due to resampling
     assert masker._report_content["number_of_regions"] == n_regions
 
     # Check that all expected columns are present with the right size
@@ -349,6 +351,56 @@ def test_nifti_labels_masker_report(
             expected_region_sizes[r]
             * np.abs(np.linalg.det(affine_eye[:3, :3])),
         )
+
+
+@pytest.mark.slow
+def test_nifti_labels_masker_report_with_mask(
+    img_3d_ones_eye,
+    img_mask_eye,
+    n_regions,
+    labels,
+    img_labels,
+):
+    """Check content nifti label masker.
+
+    Using causes some regions to be dropped
+    """
+    masker = NiftiLabelsMasker(
+        img_labels,
+        labels=labels,
+        mask_img=img_mask_eye,
+    )
+    masker.fit_transform(img_3d_ones_eye)
+
+    generate_and_check_masker_report(
+        masker, extend_includes=["Regions summary"]
+    )
+
+    # We may lose a few regions due to resampling
+    n_regions_dropped = 5
+
+    # Check that the number of regions is correct
+    assert (
+        masker._report_content["number_of_regions"]
+        == n_regions - n_regions_dropped
+    )
+
+    # Check that all expected columns are present with the right size
+    assert masker._report_content["summary"]["region name"].to_list() == [
+        "region_5",
+        "region_6",
+        "region_8",
+        "region_9",
+    ]
+    assert (
+        len(masker._report_content["summary"]) == n_regions - n_regions_dropped
+    )
+
+    assert_almost_equal(
+        sum(masker._report_content["summary"]["relative size (in %)"]),
+        63.5,
+        decimal=2,
+    )
 
 
 @pytest.mark.slow
