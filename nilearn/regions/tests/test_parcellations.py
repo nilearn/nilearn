@@ -100,6 +100,7 @@ def image_2():
     return Nifti1Image(data, affine=_affine_eye())
 
 
+@pytest.mark.slow
 def test_error_parcellation_method_none(image_1):
     with pytest.raises(
         ValueError, match=r"Parcellation method is specified as None. "
@@ -107,6 +108,7 @@ def test_error_parcellation_method_none(image_1):
         Parcellations(method=None).fit(image_1)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("method", ["kmens", "avg", "completed"])
 def test_errors_raised_in_check_parameters_fit(method, image_1):
     """Test whether an error is raised or not given a false method type."""

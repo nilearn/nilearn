@@ -174,6 +174,7 @@ def test_nan(affine_eye):
     assert not mask[:, :, -1].any()
 
 
+@pytest.mark.slow
 def test_matrix_orientation():
     """Test if processing is performed along the correct axis."""
     # the "step" kind generate heavyside-like signals for each voxel.
@@ -248,6 +249,7 @@ def test_mask_4d(shape_3d_default, affine_eye):
     assert_array_equal(data_trans3, data_trans_direct_diff)
 
 
+@pytest.mark.slow
 def test_4d_single_scan(rng, shape_3d_default, affine_eye):
     """Test that list of 4D images with last dim=1 is treated as 3D."""
     shape_3d = (10, 10, 10)
