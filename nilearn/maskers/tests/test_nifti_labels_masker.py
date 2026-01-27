@@ -384,7 +384,7 @@ def test_resampling_target(resampling_target, estimator):
 
 @pytest.mark.slow
 def test_resampling_to_labels(affine_eye, shape_3d_default, n_regions, length):
-    """Test resampling to labels in NiftiLabelsMasker."""
+    """Test resampling to labels in (Multi)NiftiLabelsMasker."""
     # fmri
     shape1 = (*shape_3d_default, length)
     # mask
@@ -402,7 +402,10 @@ def test_resampling_to_labels(affine_eye, shape_3d_default, n_regions, length):
     labels_img = generate_labeled_regions(shape3, n_regions, affine=affine_eye)
 
     masker = NiftiLabelsMasker(
-        labels_img, mask_img=mask_img, resampling_target="labels"
+        labels_img,
+        mask_img=mask_img,
+        resampling_target="labels",
+        standardize=None,
     )
 
     signals = masker.fit_transform(fmri_img)

@@ -109,7 +109,7 @@ def test_multi_nifti_labels_masker(
 
 
 @pytest.mark.slow
-def test_resampling(affine_eye, n_regions, length, img_labels):
+def test_resampling_to_labels(affine_eye, n_regions, length, img_labels):
     """Test resampling in MultiNiftiLabelsMasker."""
     shape1 = (10, 11, 12)
 
