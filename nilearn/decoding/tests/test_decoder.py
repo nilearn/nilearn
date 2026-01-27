@@ -1142,7 +1142,6 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
             model.fit(X, y)
 
 
-
 @pytest.mark.slow
 def test_decoder_multiclass_warnings_decoder(multiclass_data):
     """Check whether decoder raised warning \

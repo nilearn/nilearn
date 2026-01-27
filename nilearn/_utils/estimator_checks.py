@@ -837,7 +837,6 @@ def check_verbose(estimator) -> None:
     assert default_verbose == 0
 
 
-
 def check_set_output(estimator_orig) -> None:
     """Check that set_ouput can be used."""
     if not hasattr(estimator_orig, "transform") or isinstance(
@@ -1142,7 +1141,6 @@ def _sanitize_standard_output(output):
     return output
 
 
-
 def check_img_estimator_fit_check_is_fitted(estimator_orig) -> None:
     """Check appropriate response to check_fitted from sklearn before fitting.
 
@@ -1259,7 +1257,6 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig) -> None:
                 atol=1e-9,
                 err_msg=msg,
             )
-
 
 
 def check_estimator_set_output(estimator_orig) -> None:
@@ -1637,7 +1634,6 @@ def check_img_estimator_overwrite_params(estimator_orig) -> None:
         )
 
 
-
 def check_img_estimator_dict_unchanged(estimator_orig) -> None:
     """Replace check_dict_unchanged from sklearn.
 
@@ -1732,7 +1728,6 @@ def check_img_estimator_dict_unchanged(estimator_orig) -> None:
                 raise e
 
 
-
 def check_img_estimator_pickle(estimator_orig) -> None:
     """Test that we can pickle all estimators.
 
@@ -1800,7 +1795,6 @@ def check_img_estimator_pickle(estimator_orig) -> None:
             assert_surface_image_equal(result[method], unpickled_result)
         elif isinstance(unpickled_result, Nifti1Image):
             check_imgs_equal(result[method], unpickled_result)
-
 
 
 def check_img_estimator_pipeline_consistency(estimator_orig) -> None:
@@ -1877,7 +1871,6 @@ def check_img_estimator_requires_y_none(estimator_orig) -> None:
             raise ve
 
 
-
 def check_img_estimator_fit_score_takes_y(estimator_orig) -> None:
     """Replace sklearn check_fit_score_takes_y for maskers.
 
@@ -1924,7 +1917,6 @@ def check_img_estimator_fit_score_takes_y(estimator_orig) -> None:
                     f"is missing 'y=None' for the method '{attr}'."
                 )
             assert tmp["y"] is None
-
 
 
 def check_img_estimator_n_elements(estimator_orig) -> None:
@@ -2221,7 +2213,6 @@ def check_decoder_compatibility_mask_image(estimator_orig):
             getattr(estimator, method)(*input)
 
 
-
 def check_decoder_with_surface_data(estimator_orig) -> None:
     """Test fit and other methods with surface image."""
     if isinstance(estimator_orig, SearchLight):
@@ -2258,7 +2249,6 @@ def check_decoder_with_surface_data(estimator_orig) -> None:
                 getattr(estimator, method)(X, y)
             else:
                 getattr(estimator, method)(X)
-
 
 
 def check_img_regressor_no_decision_function(regressor_orig) -> None:
@@ -2310,7 +2300,6 @@ def check_decoder_with_arrays(estimator_orig) -> None:
 # ------------------ MASKER CHECKS ------------------
 
 
-
 def check_masker_clean_kwargs(estimator_orig) -> None:
     """Check attributes for cleaning.
 
@@ -2320,7 +2309,6 @@ def check_masker_clean_kwargs(estimator_orig) -> None:
     estimator = clone(estimator_orig)
 
     assert estimator.clean_args is None
-
 
 
 def check_masker_detrending(estimator_orig) -> None:
@@ -2455,7 +2443,6 @@ def check_masker_standardization(estimator_orig) -> None:
             )
 
 
-
 def check_masker_compatibility_mask_image(estimator_orig) -> None:
     """Check compatibility of the mask_img and images to masker.
 
@@ -2498,7 +2485,6 @@ def check_masker_compatibility_mask_image(estimator_orig) -> None:
     _check_mask_img_(estimator)
 
 
-
 def check_masker_no_mask_no_img(estimator_orig) -> None:
     """Check maskers mask_img_ when no mask passed at init or imgs at fit.
 
@@ -2516,7 +2502,6 @@ def check_masker_no_mask_no_img(estimator_orig) -> None:
     else:
         estimator.fit()
         assert estimator.mask_img_ is None
-
 
 
 def check_masker_mask_img_from_imgs(estimator_orig) -> None:
@@ -2550,7 +2535,6 @@ def check_masker_mask_img_from_imgs(estimator_orig) -> None:
         _check_mask_img_(estimator)
     else:
         assert estimator.mask_img_ is None
-
 
 
 def check_masker_mask_img(estimator_orig) -> None:
@@ -2642,7 +2626,6 @@ def check_masker_mask_img(estimator_orig) -> None:
         )
 
 
-
 def check_masker_clean(estimator_orig) -> None:
     """Check that cleaning does something on fit transform.
 
@@ -2664,7 +2647,6 @@ def check_masker_clean(estimator_orig) -> None:
     detrended_signal = estimator.fit_transform(input_img)
 
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
-
 
 
 def check_masker_transformer(estimator_orig) -> None:
@@ -2946,7 +2928,6 @@ def check_masker_empty_data_messages(estimator_orig):
         estimator.transform(imgs)
 
 
-
 def check_masker_fit_with_empty_mask(estimator_orig) -> None:
     """Check mask that excludes all voxels raise an error."""
     estimator = clone(estimator_orig)
@@ -2967,7 +2948,6 @@ def check_masker_fit_with_empty_mask(estimator_orig) -> None:
         match="The mask is invalid as it is empty: it masks all data",
     ):
         estimator.fit(imgs)
-
 
 
 def check_masker_fit_with_non_finite_in_mask(estimator_orig) -> None:
@@ -3005,7 +2985,6 @@ def check_masker_fit_with_non_finite_in_mask(estimator_orig) -> None:
     assert np.all(np.isfinite(signal))
 
 
-
 def check_masker_dtypes(estimator_orig) -> None:
     """Check masker can fit/transform with inputs of varying dtypes.
 
@@ -3033,7 +3012,6 @@ def check_masker_dtypes(estimator_orig) -> None:
 
         estimator.fit(imgs)
         estimator.transform(imgs)
-
 
 
 def check_masker_smooth(estimator_orig) -> None:
@@ -3259,7 +3237,6 @@ def check_masker_transform_resampling(estimator_orig) -> None:
                 )
 
 
-
 def check_masker_shelving(estimator_orig) -> None:
     """Check behavior when shelving masker."""
     estimator = clone(estimator_orig)
@@ -3291,7 +3268,6 @@ def check_masker_shelving(estimator_orig) -> None:
         epi_shelved = epi_shelved.get()
 
         assert_array_equal(epi_shelved, epi)
-
 
 
 def check_masker_joblib_cache(estimator_orig) -> None:
@@ -3333,7 +3309,6 @@ def check_masker_joblib_cache(estimator_orig) -> None:
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------
-
 
 
 def check_surface_masker_fit_transform_errors(estimator_orig) -> None:
@@ -3687,7 +3662,6 @@ def check_nifti_masker_fit_transform_5d(estimator_orig) -> None:
         # assert all(isinstance(x, pd.DataFrame) for x in signal)
 
 
-
 def check_nifti_masker_fit_transform_files(estimator_orig) -> None:
     """Check that nifti maskers can work directly on files."""
     estimator = clone(estimator_orig)
@@ -3702,7 +3676,6 @@ def check_nifti_masker_fit_transform_files(estimator_orig) -> None:
         estimator.fit(filename)
         estimator.transform(filename)
         estimator.fit_transform(filename)
-
 
 
 def check_nifti_masker_dtype(estimator_orig) -> None:
@@ -3728,7 +3701,6 @@ def check_nifti_masker_dtype(estimator_orig) -> None:
         assert estimator.fit_transform(img).dtype == np.float64
 
 
-
 def check_nifti_masker_fit_with_3d_mask(estimator_orig) -> None:
     """Check 3D mask can be used with nifti maskers.
 
@@ -3751,7 +3723,6 @@ def check_nifti_masker_fit_with_3d_mask(estimator_orig) -> None:
 
 
 # ------------------ MULTI MASKER CHECKS ------------------
-
 
 
 def check_multi_nifti_masker_shelving(estimator_orig) -> None:
@@ -3795,7 +3766,6 @@ def check_multi_nifti_masker_shelving(estimator_orig) -> None:
         for e_shelved, e in zip(epis_shelved, epis, strict=False):
             e_shelved = e_shelved.get()
             assert_array_equal(e_shelved, e)
-
 
 
 def check_multimasker_with_confounds(estimator_orig) -> None:
@@ -3988,7 +3958,6 @@ def check_glm_empty_data_messages(
         # SecondLevel
         else:
             estimator.fit(imgs, design_matrix=design_matrices)
-
 
 
 def check_glm_dtypes(estimator_orig) -> None:
@@ -4209,7 +4178,6 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(
     )
 
 
-
 def check_masker_generate_report_false(estimator_orig) -> None:
     """Test with reports set to False."""
     estimator = clone(estimator_orig)
@@ -4231,7 +4199,6 @@ def check_masker_generate_report_false(estimator_orig) -> None:
     assert estimator._has_report_data() is False
 
     generate_and_check_masker_report(estimator)
-
 
 
 def check_multimasker_generate_report(estimator_orig) -> None:
