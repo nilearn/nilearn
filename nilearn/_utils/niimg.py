@@ -1,15 +1,13 @@
 """Neuroimaging file input and output."""
 
 import collections.abc
-import gc
-from copy import deepcopy
 from pathlib import Path
 from warnings import warn
 
 import numpy as np
 from nibabel import is_proxy, load, spatialimages
 
-from nilearn._utils.helpers import is_gil_enabled, stringify_path
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 
 
@@ -47,15 +45,11 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
     data : numpy array
         nilearn.image.get_data return from Nifti image.
     """
-    if copy_data:
-        img = deepcopy(img)
-
-    if is_gil_enabled():
-        # typically the line below can double memory usage
-        # that's why we invoke a forced call to the garbage collector
-        gc.collect()
-
     data = _get_data(img)
+
+    if copy_data:
+        data = data.copy()
+
     if ensure_finite:
         non_finite_mask = np.logical_not(np.isfinite(data))
         if non_finite_mask.sum() > 0:  # any non_finite_mask values?
