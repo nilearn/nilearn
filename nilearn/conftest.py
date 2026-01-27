@@ -25,7 +25,7 @@ collect_ignore = []
 if is_matplotlib_installed():
     import matplotlib
 
-    from nilearn._utils.helpers import (
+    from nilearn._utils.versions import (
         OPTIONAL_MATPLOTLIB_MIN_VERSION,
         compare_version,
     )
