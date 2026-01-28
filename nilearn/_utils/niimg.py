@@ -63,17 +63,18 @@ def has_non_finite(data) -> bool:
     return non_finite_mask.any()
 
 
-def ensure_finite_data(data) -> np.ndarray:
+def ensure_finite_data(data, raise_warning=True) -> np.ndarray:
     """Check is there are any infinite values in the data, set infinite values
     to 0 and return data.
     """
     non_finite_mask = ~np.isfinite(data)
     if non_finite_mask.any():  # any non finite values?
-        warn(
-            "Non-finite values detected. "
-            "These values will be replaced with zeros.",
-            stacklevel=find_stack_level(),
-        )
+        if raise_warning:
+            warn(
+                "Non-finite values detected. "
+                "These values will be replaced with zeros.",
+                stacklevel=find_stack_level(),
+            )
         data[non_finite_mask] = 0
     return data
 
