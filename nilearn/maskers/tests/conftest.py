@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nilearn.conftest import _make_mesh
 from nilearn.image import get_data
@@ -40,7 +41,12 @@ def sklearn_surf_label_img() -> SurfaceImage:
     return SurfaceImage(_make_mesh(), labels)
 
 
-def check_nifti_labels_masker_post_fit(masker, expected_n_regions):
+def check_nifti_labels_masker_post_fit(
+    masker,
+    expected_n_regions: int,
+    ref_shape: tuple[int, int, int] | None = None,
+    ref_affine=None,
+) -> None:
     """Run some common check on NiftiLabelsMasker post fit."""
     assert masker.n_elements_ == expected_n_regions
 
@@ -49,44 +55,85 @@ def check_nifti_labels_masker_post_fit(masker, expected_n_regions):
 
     assert n_resampled_labels == expected_n_regions + 1
 
+    if ref_affine is not None:
+        assert_array_equal(masker.labels_img_.affine, ref_affine)
+    if ref_shape:
+        assert len(ref_shape) == 3, "len(ref_shape) must be 3"
+        assert_array_equal(masker.labels_img_.shape, ref_shape)
+
 
 def check_nifti_labels_masker_post_transform(
-    masker, expected_n_regions, signals, length=None
-):
-    """Run some common check on NiftiLabelsMasker post transform.
+    masker,
+    expected_n_regions: int,
+    signals: np.ndarray,
+    length: int | None = None,
+    ref_shape: tuple[int, int, int] | None = None,
+    ref_affine=None,
+) -> None:
+    """Run some common check on NiftiLabelsMasker post transform."""
+    check_nifti_labels_masker_post_fit(
+        masker, expected_n_regions, ref_shape, ref_affine
+    )
 
-    - check shape of signal
-    - ensure that signal can be turned back into an image
-    """
-    check_nifti_labels_masker_post_fit(masker, expected_n_regions)
-
-    if not isinstance(signals, list):
-        signals = [signals]
-
-    for s in signals:
-        if length is None:
-            assert s.shape[1] == expected_n_regions
-        else:
-            assert s.shape == (length, expected_n_regions)
-
-        masker.inverse_transform(s)
+    _check_signals(
+        masker, expected_n_regions, signals, length, ref_affine, ref_shape
+    )
 
 
-def check_nifti_maps_masker_post_fit(masker, expected_n_regions):
+def check_nifti_maps_masker_post_fit(
+    masker, expected_n_regions: int, ref_shape=None, ref_affine=None
+) -> None:
     """Run some common check on NiftiMapsMasker post fit."""
     assert masker.n_elements_ == expected_n_regions
 
+    if ref_affine is not None:
+        assert_array_equal(masker.maps_img_.affine, ref_affine)
+        if masker.mask_img_ is not None:
+            assert_almost_equal(masker.mask_img_.affine, ref_affine)
+    if ref_shape:
+        assert len(ref_shape) == 3, "len(ref_shape) must be 3"
+        assert_array_equal(masker.maps_img_.shape[:3], ref_shape)
+        if masker.mask_img_ is not None:
+            assert_array_equal(masker.mask_img_.shape, ref_shape)
+
 
 def check_nifti_maps_masker_post_transform(
-    masker, expected_n_regions, signals, length=None
-):
+    masker,
+    expected_n_regions: int,
+    signals: np.ndarray,
+    length: int | None = None,
+    ref_shape: tuple[int, int, int] | None = None,
+    ref_affine=None,
+) -> None:
     """Run some common check on NiftiMapsMasker post transform.
 
     - check shape of signal
     - ensure that signal can be turned back into an image
+      with expected shapre and affine
     """
-    assert masker.n_elements_ == expected_n_regions
+    check_nifti_maps_masker_post_fit(
+        masker, expected_n_regions, ref_shape, ref_affine
+    )
 
+    _check_signals(
+        masker, expected_n_regions, signals, length, ref_affine, ref_shape
+    )
+
+
+def _check_signals(
+    masker,
+    expected_n_regions: int,
+    signals,
+    length: int | None = None,
+    ref_affine=None,
+    ref_shape: tuple[int, int, int] | None = None,
+) -> None:
+    """Run check on signals obtained from transform.
+
+    - check shape of signal
+    - ensure that signal can be turned back into an image
+      with expected shapre and affine
+    """
     if not isinstance(signals, list):
         signals = [signals]
 
@@ -96,4 +143,11 @@ def check_nifti_maps_masker_post_transform(
         else:
             assert s.shape == (length, expected_n_regions)
 
-        masker.inverse_transform(s)
+        img = masker.inverse_transform(s)
+
+        if ref_affine is not None:
+            assert_array_equal(img.affine, ref_affine)
+        if ref_shape:
+            assert img.shape[:3] == ref_shape[:3]
+        if length:
+            assert img.shape[-1] == length
