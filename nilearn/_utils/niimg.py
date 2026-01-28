@@ -51,7 +51,7 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
         data = data.copy()
 
     if ensure_finite:
-        return ensure_finite_data(data)
+        ensure_finite_data(data)
     return data
 
 
