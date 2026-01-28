@@ -1260,10 +1260,7 @@ class FirstLevelModel(BaseGLM):
             Used for setting up the masker object.
         """
         masker_type = "nii"
-        # all elements of X should be of the similar type by now
-        # so we can only check the first one
-        to_check = run_img
-        if not self._is_volume_glm() or isinstance(to_check, SurfaceImage):
+        if not self._is_volume_glm() or isinstance(run_img, SurfaceImage):
             masker_type = "surface"
 
         # Learn the mask
