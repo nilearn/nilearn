@@ -103,7 +103,15 @@ def test_multi_nifti_maps_masker(
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
 
-    signals11_list = masker.fit_transform(signals_input)
+    if keep_masked_maps:
+        # TODO (nilearn >=0.15)
+        # only keep else block
+        with pytest.warns(
+            FutureWarning, match='"keep_masked_maps" parameter will be removed'
+        ):
+            signals11_list = masker.fit_transform(signals_input)
+    else:
+        signals11_list = masker.fit_transform(signals_input)
 
     assert masker.n_elements_ == expected_n_regions
 
@@ -316,7 +324,15 @@ def test_resampling_to_mask(
         standardize=None,
     )
 
-    signals = masker.fit_transform([img_fmri, img_fmri])
+    if keep_masked_maps:
+        # TODO (nilearn >=0.15)
+        # only keep else block
+        with pytest.warns(
+            FutureWarning, match='"keep_masked_maps" parameter will be removed'
+        ):
+            signals = masker.fit_transform([img_fmri, img_fmri])
+    else:
+        signals = masker.fit_transform([img_fmri, img_fmri])
 
     assert_almost_equal(masker.mask_img_.affine, mask22_img.affine)
     assert masker.mask_img_.shape == mask22_img.shape
@@ -364,7 +380,15 @@ def test_resampling_to_maps(
         standardize=None,
     )
 
-    signals = masker.fit_transform([img_fmri, img_fmri])
+    if keep_masked_maps:
+        # TODO (nilearn >=0.15)
+        # only keep else block
+        with pytest.warns(
+            FutureWarning, match='"keep_masked_maps" parameter will be removed'
+        ):
+            signals = masker.fit_transform([img_fmri, img_fmri])
+    else:
+        signals = masker.fit_transform([img_fmri, img_fmri])
 
     expected_n_regions = n_regions
     if not keep_masked_maps:
@@ -412,7 +436,15 @@ def test_resampling_clipped_mask(
         standardize=None,
     )
 
-    signals = masker.fit_transform([img_fmri, img_fmri])
+    if keep_masked_maps:
+        # TODO (nilearn >=0.15)
+        # only keep else block
+        with pytest.warns(
+            FutureWarning, match='"keep_masked_maps" parameter will be removed'
+        ):
+            signals = masker.fit_transform([img_fmri, img_fmri])
+    else:
+        signals = masker.fit_transform([img_fmri, img_fmri])
 
     expected_n_regions = n_regions
     if not keep_masked_maps:

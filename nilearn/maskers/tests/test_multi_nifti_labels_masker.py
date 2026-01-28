@@ -116,7 +116,17 @@ def test_multi_nifti_labels_masker(
 
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
-    signals11_list = masker11.fit_transform(signals_input)
+
+    if keep_masked_labels:
+        # TODO (nilearn >=0.15)
+        # only keep else block
+        with pytest.warns(
+            FutureWarning,
+            match='"keep_masked_labels" parameter will be removed',
+        ):
+            signals11_list = masker11.fit_transform(signals_input)
+    else:
+        signals11_list = masker11.fit_transform(signals_input)
 
     for signals in signals11_list:
         assert signals.shape == (length, expected_n_regions)
@@ -277,7 +287,16 @@ def test_resampling(
 
     fmri11_img = [fmri11_img, fmri11_img]
 
-    signals = masker.fit_transform(fmri11_img)
+    if keep_masked_labels:
+        # TODO (nilearn >=0.15)
+        # only keep else block
+        with pytest.warns(
+            FutureWarning,
+            match='"keep_masked_labels" parameter will be removed',
+        ):
+            signals = masker.fit_transform(fmri11_img)
+    else:
+        signals = masker.fit_transform(fmri11_img)
 
     assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
     assert masker.labels_img_.shape == img_labels.shape
@@ -327,7 +346,16 @@ def test_resampling_clipped_labels(
         standardize=None,
     )
 
-    signals = masker.fit_transform(fmri11_img)
+    if keep_masked_labels:
+        # TODO (nilearn >=0.15)
+        # only keep else block
+        with pytest.warns(
+            FutureWarning,
+            match='"keep_masked_labels" parameter will be removed',
+        ):
+            signals = masker.fit_transform(fmri11_img)
+    else:
+        signals = masker.fit_transform(fmri11_img)
 
     expected_n_regions = n_regions
     if not keep_masked_labels:
