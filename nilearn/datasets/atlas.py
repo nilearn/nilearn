@@ -2013,6 +2013,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         f"Separating talairach atlas levels: {_TALAIRACH_LEVELS}",
         verbose=verbose,
     )
+    atlas_data = get_img_data(atlas_img)
     for level_name, old_level_labels in zip(
         _TALAIRACH_LEVELS, np.asarray(labels).T, strict=False
     ):
@@ -2022,9 +2023,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         level_labels = {"*": 0}
         for region_nb, region_name in enumerate(old_level_labels):
             level_labels.setdefault(region_name, len(level_labels))
-            level_data[get_img_data(atlas_img) == region_nb] = level_labels[
-                region_name
-            ]
+            level_data[atlas_data == region_nb] = level_labels[region_name]
         new_img_like(atlas_img, level_data).to_filename(
             output_dir / f"{level_name}.nii.gz"
         )
@@ -2047,14 +2046,14 @@ def _download_talairach(talairach_dir, verbose) -> None:
         )[0]
         atlas_img = load(temp_file, mmap=False)
         atlas_img = check_niimg(atlas_img)
+        labels_text = atlas_img.header.extensions[0].get_content()
+        multi_labels = labels_text.strip().decode("utf-8").split("\n")
+        labels = [lab.split(".") for lab in multi_labels]
+        _separate_talairach_levels(
+            atlas_img, labels, talairach_dir, verbose=verbose
+        )
     finally:
         shutil.rmtree(temp_dir)
-    labels_text = atlas_img.header.extensions[0].get_content()
-    multi_labels = labels_text.strip().decode("utf-8").split("\n")
-    labels = [lab.split(".") for lab in multi_labels]
-    _separate_talairach_levels(
-        atlas_img, labels, talairach_dir, verbose=verbose
-    )
 
 
 @fill_doc
