@@ -120,9 +120,13 @@ def test_data_atlas_different_shape(
 
     signals = masker.transform(fmri22_img)
 
+    expected_n_regions = n_regions
+    if not keep_masked_maps:
+        expected_n_regions = n_regions - 7
+
     check_nifti_maps_masker_post_transform(
         masker,
-        n_regions,
+        expected_n_regions,
         signals,
         length,
         ref_shape=shape22,
