@@ -19,6 +19,7 @@ from nilearn._utils.bids import (
 )
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import rename_parameters
+from nilearn._utils.niimg import _get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -30,7 +31,6 @@ from nilearn.datasets._utils import (
     get_dataset_dir,
 )
 from nilearn.image import check_niimg, new_img_like, reorder_img
-from nilearn.image import get_data as get_img_data
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -715,7 +715,7 @@ def fetch_atlas_juelich(
         verbose=verbose,
     )
     atlas_niimg = check_niimg(atlas_img)
-    atlas_data = get_img_data(atlas_niimg)
+    atlas_data = _get_data(atlas_niimg)
 
     if atlas_type == "probabilistic":
         new_atlas_data, new_names = _merge_probabilistic_maps_juelich(
@@ -870,7 +870,7 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     # should be positive. This is important to
     # correctly split left and right hemispheres.
     assert atlas_niimg.affine[0, 0] > 0
-    atlas_data = get_img_data(atlas_niimg)
+    atlas_data = _get_data(atlas_niimg)
     labels = np.unique(atlas_data)
     # Build a mask of both halves of the brain
     middle_ind = (atlas_data.shape[0]) // 2
@@ -2013,7 +2013,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         f"Separating talairach atlas levels: {_TALAIRACH_LEVELS}",
         verbose=verbose,
     )
-    atlas_data = get_img_data(atlas_img)
+    atlas_data = _get_data(atlas_img)
     for level_name, old_level_labels in zip(
         _TALAIRACH_LEVELS, np.asarray(labels).T, strict=False
     ):
