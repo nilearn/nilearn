@@ -33,6 +33,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg import (
     _get_data,
+    ensure_finite_data,
     load_niimg,
     repr_niimgs,
     safe_get_data,
@@ -256,7 +257,7 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         arr = arr.copy()
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
-        arr[np.logical_not(np.isfinite(arr))] = 0
+        ensure_finite_data(arr)
     if isinstance(fwhm, str) and (fwhm == "fast"):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
