@@ -48,3 +48,19 @@ def check_nifti_label_masker_post_fit(masker, expected_n_regions):
     n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
 
     assert n_resampled_labels == expected_n_regions + 1
+
+
+def check_nifti_label_masker_post_transform(
+    masker, expected_n_regions, signals, length=None
+):
+    """Run some common check on nifti label masker post transform."""
+    check_nifti_label_masker_post_fit(masker, expected_n_regions)
+
+    if not isinstance(signals, list):
+        signals = [signals]
+
+    for s in signals:
+        if length is None:
+            assert s.shape[1] == expected_n_regions
+        else:
+            assert s.shape == (length, expected_n_regions)
