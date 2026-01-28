@@ -5,6 +5,7 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn.conftest import _make_mesh
+from nilearn.image import get_data
 from nilearn.surface import SurfaceImage
 
 
@@ -37,3 +38,13 @@ def sklearn_surf_label_img() -> SurfaceImage:
         "right": np.asarray([1, 1, 2, 2, 2]),
     }
     return SurfaceImage(_make_mesh(), labels)
+
+
+def check_nifti_label_masker_post_fit(masker, expected_n_regions):
+    """Run some common check on nifti label masker post fit."""
+    assert masker.n_elements_ == expected_n_regions
+
+    resampled_labels_img = masker.labels_img_
+    n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
+
+    assert n_resampled_labels == expected_n_regions + 1

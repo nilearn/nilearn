@@ -19,6 +19,7 @@ from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker
+from nilearn.maskers.tests.conftest import check_nifti_label_masker_post_fit
 
 ESTIMATORS_TO_CHECK = [MultiNiftiLabelsMasker(standardize=None)]
 
@@ -88,7 +89,7 @@ def test_multi_nifti_labels_masker(
 
     expected_n_regions = n_regions
 
-    assert masker11.n_elements_ == expected_n_regions
+    check_nifti_label_masker_post_fit(masker11, expected_n_regions)
 
     assert signals11.shape == (length, expected_n_regions)
 
@@ -308,7 +309,7 @@ def test_resampling(
     if not keep_masked_labels:
         expected_n_regions = n_regions - 7
 
-    assert masker.n_elements_ == expected_n_regions
+    check_nifti_label_masker_post_fit(masker, expected_n_regions)
 
     for t in signals:
         assert t.shape == (length, expected_n_regions)
@@ -361,7 +362,7 @@ def test_resampling_clipped_labels(
     if not keep_masked_labels:
         expected_n_regions = n_regions - 4
 
-    assert masker.n_elements_ == expected_n_regions
+    check_nifti_label_masker_post_fit(masker, expected_n_regions)
 
     assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
     assert masker.labels_img_.shape == img_labels.shape
@@ -401,17 +402,27 @@ def test_atlas_data_different_fov(
     )
 
     fmri22_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
+
     masker = MultiNiftiLabelsMasker(
         img_labels, mask_img=mask22_img, keep_masked_labels=keep_masked_labels
     )
 
-    masker.fit_transform(fmri22_img)
+    masker.fit(fmri22_img)
+
+    expected_n_regions = n_regions
+
+    check_nifti_label_masker_post_fit(masker, expected_n_regions)
+
+    assert_array_equal(masker.labels_img_.affine, affine2)
+    assert_array_equal(masker.labels_img_.shape, shape2)
+
+    masker.transform(fmri22_img)
 
     expected_n_regions = n_regions - 2
     if not keep_masked_labels:
         expected_n_regions = n_regions - 6
 
-    assert masker.n_elements_ == expected_n_regions
+    check_nifti_label_masker_post_fit(masker, expected_n_regions)
 
     assert_array_equal(masker.labels_img_.affine, affine2)
     assert_array_equal(masker.labels_img_.shape, shape2)
@@ -462,7 +473,7 @@ def test_resampling_target(keep_masked_labels, resampling_target):
     if not keep_masked_labels and resampling_target == "labels":
         expected_n_regions = n_regions
 
-    assert masker.n_elements_ == expected_n_regions
+    check_nifti_label_masker_post_fit(masker, expected_n_regions)
 
     resampled_labels_img = masker.labels_img_
     n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
