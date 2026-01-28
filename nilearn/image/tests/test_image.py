@@ -1924,6 +1924,8 @@ def test_copy_img():
 
 @pytest.mark.thread_unsafe
 def test_copy_img_side_effect(img_4d_ones_eye):
+    # load data from proxy array to ndarray to make sure that
+    # data is not changed
     _get_data(img_4d_ones_eye)
     hash1 = joblib.hash(img_4d_ones_eye)
     copy_img(img_4d_ones_eye)
