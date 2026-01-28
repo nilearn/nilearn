@@ -358,7 +358,7 @@ def compute_epi_mask(
         # Get rid of memmapping
         mean_epi = as_ndarray(mean_epi)
         # SPM tends to put NaNs in the data outside the brain
-        ensure_finite_data(mean_epi)
+        ensure_finite_data(mean_epi, raise_warning=False)
     sorted_input = np.sort(np.ravel(mean_epi))
     if exclude_zeros:
         sorted_input = sorted_input[sorted_input != 0]
