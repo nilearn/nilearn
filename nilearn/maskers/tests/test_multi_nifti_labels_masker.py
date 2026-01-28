@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-from numpy.testing import assert_almost_equal, assert_array_equal
+from numpy.testing import assert_array_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import (
@@ -115,7 +115,12 @@ def test_multi_nifti_labels_masker(
         expected_n_regions = n_regions - 5
 
     check_nifti_labels_masker_post_transform(
-        masker11, expected_n_regions, signals11, length
+        masker11,
+        expected_n_regions,
+        signals11,
+        length,
+        ref_affine=affine_eye,
+        ref_shape=shape_3d_default,
     )
 
     # Should work with 4D + 1D input too (also test fit_transform)
@@ -133,24 +138,13 @@ def test_multi_nifti_labels_masker(
         signals11_list = masker11.fit_transform(signals_input)
 
     check_nifti_labels_masker_post_transform(
-        masker11, expected_n_regions, signals11_list, length
+        masker11,
+        expected_n_regions,
+        signals11_list,
+        length,
+        ref_affine=affine_eye,
+        ref_shape=shape_3d_default,
     )
-
-    masker11 = MultiNiftiLabelsMasker(
-        img_labels, resampling_target=None, standardize=None
-    )
-    signals11_list = masker11.fit_transform(signals_input)
-
-    check_nifti_labels_masker_post_transform(
-        masker11, n_regions, signals11_list, length
-    )
-
-    # Call inverse transform (smoke test)
-    for signals in signals11_list:
-        fmri11_img_r = masker11.inverse_transform(signals)
-
-        assert fmri11_img_r.shape == fmri11_img.shape
-        assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
 
 @pytest.mark.slow
@@ -300,24 +294,18 @@ def test_resampling(
     else:
         signals = masker.fit_transform(fmri11_img)
 
-    assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
-    assert masker.labels_img_.shape == img_labels.shape
-
-    assert_almost_equal(masker.mask_img_.affine, masker.labels_img_.affine)
-    assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
-
     expected_n_regions = n_regions
     if not keep_masked_labels:
         expected_n_regions = n_regions - 7
 
     check_nifti_labels_masker_post_transform(
-        masker, expected_n_regions, signals, length
+        masker,
+        expected_n_regions,
+        signals,
+        length,
+        ref_affine=img_labels.affine,
+        ref_shape=img_labels.shape,
     )
-
-    for t in signals:
-        fmri11_img_r = masker.inverse_transform(t)
-        assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
-        assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
 
 @pytest.mark.slow
@@ -364,22 +352,17 @@ def test_resampling_clipped_labels(
         expected_n_regions = n_regions - 4
 
     check_nifti_labels_masker_post_transform(
-        masker, expected_n_regions, signals, length
+        masker,
+        expected_n_regions,
+        signals,
+        length,
+        ref_affine=img_labels.affine,
+        ref_shape=img_labels.shape,
     )
-
-    assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
-    assert masker.labels_img_.shape == img_labels.shape
-    assert_almost_equal(masker.mask_img_.affine, masker.labels_img_.affine)
-    assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
     for t in signals:
         # Some regions have been clipped. Resulting signal must be zero
         assert (t.var(axis=0) == 0).sum() < expected_n_regions
-
-        fmri11_img_r = masker.inverse_transform(t)
-
-        assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
-        assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
 
 @pytest.mark.slow
@@ -408,12 +391,9 @@ def test_atlas_data_different_fov(
 
     masker.fit(fmri22_img)
 
-    expected_n_regions = n_regions
-
-    check_nifti_labels_masker_post_fit(masker, expected_n_regions)
-
-    assert_array_equal(masker.labels_img_.affine, affine2)
-    assert_array_equal(masker.labels_img_.shape, shape2)
+    check_nifti_labels_masker_post_fit(
+        masker, n_regions, ref_affine=affine2, ref_shape=shape2
+    )
 
     signals = masker.transform(fmri22_img)
 
@@ -422,17 +402,19 @@ def test_atlas_data_different_fov(
         expected_n_regions = n_regions - 6
 
     check_nifti_labels_masker_post_transform(
-        masker, expected_n_regions, signals, length
+        masker,
+        expected_n_regions,
+        signals,
+        length,
+        ref_affine=affine2,
+        ref_shape=shape2,
     )
-
-    assert_array_equal(masker.labels_img_.affine, affine2)
-    assert_array_equal(masker.labels_img_.shape, shape2)
 
 
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
 @pytest.mark.parametrize("resampling_target", ["data", "labels"])
-def test_resampling_target(keep_masked_labels, resampling_target):
+def test_resampling_target(keep_masked_labels, resampling_target, affine_eye):
     """Test labels masker with resampling target in 'data', 'labels'.
 
     Must return resampled labels having number of labels
@@ -442,12 +424,12 @@ def test_resampling_target(keep_masked_labels, resampling_target):
     """
     shape = (13, 11, 12)
     affine = np.eye(4) * 2
+    fmri_img, _ = generate_fake_fmri(shape, affine=affine, length=21)
 
     n_regions = 10
-
-    fmri_img, _ = generate_fake_fmri(shape, affine=affine, length=21)
+    labels_shape = (9, 8, 6)
     labels_img = generate_labeled_regions(
-        (9, 8, 6), affine=np.eye(4), n_regions=n_regions
+        labels_shape, affine=affine_eye, n_regions=n_regions
     )
 
     masker = MultiNiftiLabelsMasker(
@@ -465,8 +447,14 @@ def test_resampling_target(keep_masked_labels, resampling_target):
             ),
         ):
             signals = masker.fit_transform(fmri_img)
+
+        ref_shape = shape
+        ref_affine = affine
     else:
         signals = masker.fit_transform(fmri_img)
+
+        ref_shape = labels_shape
+        ref_affine = affine_eye
 
     expected_n_regions = n_regions
     if not keep_masked_labels or resampling_target == "data":
@@ -475,7 +463,11 @@ def test_resampling_target(keep_masked_labels, resampling_target):
         expected_n_regions = n_regions
 
     check_nifti_labels_masker_post_transform(
-        masker, expected_n_regions, signals
+        masker,
+        expected_n_regions,
+        signals,
+        ref_shape=ref_shape,
+        ref_affine=ref_affine,
     )
 
     # inverse transform

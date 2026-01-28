@@ -57,9 +57,14 @@ def check_nifti_labels_masker_post_fit(
 
     if ref_affine is not None:
         assert_array_equal(masker.labels_img_.affine, ref_affine)
+        if masker.mask_img_ is not None:
+            assert_array_equal(masker.mask_img_.affine, ref_affine)
+
     if ref_shape:
         assert len(ref_shape) == 3, "len(ref_shape) must be 3"
-        assert_array_equal(masker.labels_img_.shape, ref_shape)
+        assert masker.labels_img_.shape == ref_shape
+        if masker.mask_img_ is not None:
+            assert masker.mask_img_.shape == ref_shape
 
 
 def check_nifti_labels_masker_post_transform(
@@ -90,11 +95,12 @@ def check_nifti_maps_masker_post_fit(
         assert_array_equal(masker.maps_img_.affine, ref_affine)
         if masker.mask_img_ is not None:
             assert_almost_equal(masker.mask_img_.affine, ref_affine)
+
     if ref_shape:
         assert len(ref_shape) == 3, "len(ref_shape) must be 3"
-        assert_array_equal(masker.maps_img_.shape[:3], ref_shape)
+        assert masker.maps_img_.shape[:3] == ref_shape
         if masker.mask_img_ is not None:
-            assert_array_equal(masker.mask_img_.shape, ref_shape)
+            assert masker.mask_img_.shape == ref_shape
 
 
 def check_nifti_maps_masker_post_transform(
