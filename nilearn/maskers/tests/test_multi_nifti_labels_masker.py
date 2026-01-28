@@ -86,7 +86,11 @@ def test_multi_nifti_labels_masker(
     # No exception raised here
     signals11 = masker11.fit_transform(fmri11_img)
 
-    assert signals11.shape == (length, n_regions)
+    expected_n_regions = n_regions
+
+    assert masker11.n_elements_ == expected_n_regions
+
+    assert signals11.shape == (length, expected_n_regions)
 
     # No exception should be raised either
     masker11 = MultiNiftiLabelsMasker(
@@ -122,8 +126,12 @@ def test_multi_nifti_labels_masker(
     )
     signals11_list = masker11.fit_transform(signals_input)
 
+    expected_n_regions = n_regions
+
+    assert masker11.n_elements_ == expected_n_regions
+
     for signals in signals11_list:
-        assert signals.shape == (length, n_regions)
+        assert signals.shape == (length, expected_n_regions)
 
     # Call inverse transform (smoke test)
     for signals in signals11_list:
@@ -281,6 +289,8 @@ def test_resampling(
     if not keep_masked_labels:
         expected_n_regions = n_regions - 7
 
+    assert masker.n_elements_ == expected_n_regions
+
     for t in signals:
         assert t.shape == (length, expected_n_regions)
 
@@ -323,6 +333,8 @@ def test_resampling_clipped_labels(
     if not keep_masked_labels:
         expected_n_regions = n_regions - 4
 
+    assert masker.n_elements_ == expected_n_regions
+
     assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
     assert masker.labels_img_.shape == img_labels.shape
     assert_almost_equal(masker.mask_img_.affine, masker.labels_img_.affine)
@@ -345,7 +357,7 @@ def test_resampling_clipped_labels(
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
 def test_atlas_data_different_fov(
-    affine_eye, img_labels, length, keep_masked_labels
+    affine_eye, img_labels, length, keep_masked_labels, n_regions
 ):
     """Test with data and atlas of different shape.
 
@@ -367,13 +379,20 @@ def test_atlas_data_different_fov(
 
     masker.fit_transform(fmri22_img)
 
+    expected_n_regions = n_regions - 2
+    if not keep_masked_labels:
+        expected_n_regions = n_regions - 6
+
+    assert masker.n_elements_ == expected_n_regions
+
     assert_array_equal(masker.labels_img_.affine, affine2)
     assert_array_equal(masker.labels_img_.shape, shape2)
 
 
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
-def test_resampling_target(keep_masked_labels):
+@pytest.mark.parametrize("resampling_target", ["data", "labels"])
+def test_resampling_target(keep_masked_labels, resampling_target):
     """Test labels masker with resampling target in 'data', 'labels'.
 
     Must return resampled labels having number of labels
@@ -384,41 +403,51 @@ def test_resampling_target(keep_masked_labels):
     shape = (13, 11, 12)
     affine = np.eye(4) * 2
 
+    n_regions = 10
+
     fmri_img, _ = generate_fake_fmri(shape, affine=affine, length=21)
     labels_img = generate_labeled_regions(
-        (9, 8, 6), affine=np.eye(4), n_regions=10
+        (9, 8, 6), affine=np.eye(4), n_regions=n_regions
     )
-    for resampling_target in ["data", "labels"]:
-        masker = MultiNiftiLabelsMasker(
-            labels_img=labels_img,
-            resampling_target=resampling_target,
-            keep_masked_labels=keep_masked_labels,
-        )
-        if resampling_target == "data":
-            with pytest.warns(
-                UserWarning,
-                match=(
-                    "After resampling the label image "
-                    "to the data image, the following "
-                    "labels were removed"
-                ),
-            ):
-                signals = masker.fit_transform(fmri_img)
-        else:
+
+    masker = MultiNiftiLabelsMasker(
+        labels_img=labels_img,
+        resampling_target=resampling_target,
+        keep_masked_labels=keep_masked_labels,
+    )
+    if resampling_target == "data":
+        with pytest.warns(
+            UserWarning,
+            match=(
+                "After resampling the label image "
+                "to the data image, the following "
+                "labels were removed"
+            ),
+        ):
             signals = masker.fit_transform(fmri_img)
+    else:
+        signals = masker.fit_transform(fmri_img)
 
-        resampled_labels_img = masker.labels_img_
-        n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
-        assert n_resampled_labels - 1 == signals.shape[1]
+    expected_n_regions = n_regions
+    if not keep_masked_labels or resampling_target == "data":
+        expected_n_regions = n_regions - 3
+    if not keep_masked_labels and resampling_target == "labels":
+        expected_n_regions = n_regions
 
-        # inverse transform
-        compressed_img = masker.inverse_transform(signals)
+    assert masker.n_elements_ == expected_n_regions
 
-        # Test that compressing the image a second time should yield an image
-        # with the same data as compressed_img.
-        signals2 = masker.fit_transform(fmri_img)
+    resampled_labels_img = masker.labels_img_
+    n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
+    assert n_resampled_labels - 1 == signals.shape[1]
 
-        # inverse transform again
-        compressed_img2 = masker.inverse_transform(signals2)
+    # inverse transform
+    compressed_img = masker.inverse_transform(signals)
 
-        assert_array_equal(get_data(compressed_img), get_data(compressed_img2))
+    # Test that compressing the image a second time should yield an image
+    # with the same data as compressed_img.
+    signals2 = masker.fit_transform(fmri_img)
+
+    # inverse transform again
+    compressed_img2 = masker.inverse_transform(signals2)
+
+    assert_array_equal(get_data(compressed_img), get_data(compressed_img2))
