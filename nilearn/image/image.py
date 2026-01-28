@@ -462,7 +462,7 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     input_repr = repr_niimgs(imgs, shorten=True)
 
     imgs = check_niimg(imgs)
-    mean_data = safe_get_data(imgs)
+    mean_data = _get_data(imgs)
     affine = imgs.affine
     # Free memory ASAP
     del imgs
@@ -2300,7 +2300,7 @@ def check_niimg(
 
     if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.
-        data = safe_get_data(niimg)
+        data = _get_data(niimg)
         affine = niimg.affine
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
 
