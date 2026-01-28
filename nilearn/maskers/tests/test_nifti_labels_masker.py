@@ -29,8 +29,8 @@ from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 from nilearn.maskers.tests.conftest import (
-    check_nifti_label_masker_post_fit,
-    check_nifti_label_masker_post_transform,
+    check_nifti_labels_masker_post_fit,
+    check_nifti_labels_masker_post_transform,
 )
 
 ESTIMATORS_TO_CHECK = [NiftiLabelsMasker()]
@@ -107,7 +107,7 @@ def test_nifti_labels_masker(
     if not keep_masked_labels:
         expected_n_regions = n_regions - 1
 
-    check_nifti_label_masker_post_transform(
+    check_nifti_labels_masker_post_transform(
         masker, expected_n_regions, signals, length
     )
 
@@ -120,15 +120,13 @@ def test_nifti_labels_masker(
 
     masker.fit()
 
-    expected_n_regions = n_regions
-
     # Check attributes defined at fit
-    check_nifti_label_masker_post_fit(masker, expected_n_regions)
+    check_nifti_labels_masker_post_fit(masker, n_regions)
 
     # transform
     signals = masker.fit_transform(fmri_img)
 
-    check_nifti_label_masker_post_transform(
+    check_nifti_labels_masker_post_transform(
         masker, expected_n_regions, signals, length
     )
 
@@ -145,7 +143,7 @@ def test_nifti_labels_masker(
     if not keep_masked_labels:
         expected_n_regions = n_regions - 1
 
-    check_nifti_label_masker_post_transform(
+    check_nifti_labels_masker_post_transform(
         masker, expected_n_regions, signals, length
     )
 
@@ -179,7 +177,7 @@ def test_atlas_data_different_fov(
     if not keep_masked_labels:
         expected_n_regions = n_regions - 6
 
-    check_nifti_label_masker_post_transform(
+    check_nifti_labels_masker_post_transform(
         masker, expected_n_regions, signals, length
     )
 
@@ -266,7 +264,9 @@ def test_with_nans_and_infs(
 
     assert np.all(np.isfinite(signals))
 
-    check_nifti_label_masker_post_transform(masker, n_regions, signals, length)
+    check_nifti_labels_masker_post_transform(
+        masker, n_regions, signals, length
+    )
 
 
 def test_with_nans_and_infs_in_data(
@@ -293,7 +293,9 @@ def test_with_nans_and_infs_in_data(
 
     assert np.all(np.isfinite(signals))
 
-    check_nifti_label_masker_post_transform(masker, n_regions, signals, length)
+    check_nifti_labels_masker_post_transform(
+        masker, n_regions, signals, length
+    )
 
 
 @pytest.mark.parametrize(
@@ -401,7 +403,7 @@ def test_resampling_to_data(affine_eye, n_regions, length, keep_masked_labels):
     if not keep_masked_labels:
         expected_n_regions = n_regions - 7
 
-    check_nifti_label_masker_post_transform(
+    check_nifti_labels_masker_post_transform(
         masker, expected_n_regions, signals, length
     )
 
@@ -452,7 +454,7 @@ def test_resampling(
     elif not keep_masked_labels and resampling_target == "labels":
         expected_n_regions = n_regions
 
-    check_nifti_label_masker_post_transform(
+    check_nifti_labels_masker_post_transform(
         masker, expected_n_regions, signals, length
     )
 
@@ -499,10 +501,8 @@ def test_resampling_to_labels(
 
     signals = masker.fit_transform(fmri_img)
 
-    expected_n_regions = n_regions
-
-    check_nifti_label_masker_post_transform(
-        masker, expected_n_regions, signals, length
+    check_nifti_labels_masker_post_transform(
+        masker, n_regions, signals, length
     )
 
     assert_almost_equal(masker.labels_img_.affine, labels_img.affine)
@@ -555,7 +555,7 @@ def test_resampling_to_clipped_labels(
     if not keep_masked_labels:
         expected_n_regions = n_regions - 6
 
-    check_nifti_label_masker_post_transform(
+    check_nifti_labels_masker_post_transform(
         masker, expected_n_regions, signals, length
     )
 
@@ -607,7 +607,7 @@ def test_resampling_to_none(
     if not keep_masked_labels:
         expected_n_regions = n_regions - 1
 
-    check_nifti_label_masker_post_transform(
+    check_nifti_labels_masker_post_transform(
         masker, expected_n_regions, signals, length
     )
 
@@ -653,7 +653,7 @@ def test_with_mask(
     if not keep_masked_labels:
         expected_n_regions = n_regions - 1
 
-    check_nifti_label_masker_post_transform(
+    check_nifti_labels_masker_post_transform(
         masker, expected_n_regions, signals, length
     )
 
@@ -673,7 +673,7 @@ def test_with_mask(
     if not keep_masked_labels:
         expected_n_regions = n_regions - 1
 
-    check_nifti_label_masker_post_transform(
+    check_nifti_labels_masker_post_transform(
         masker, expected_n_regions, signals, length
     )
 
@@ -1355,7 +1355,7 @@ def test_no_background(n_regions, img_labels, shape_3d_default, affine_eye):
 
     expected_n_regions = n_regions + 1
 
-    check_nifti_label_masker_post_transform(
+    check_nifti_labels_masker_post_transform(
         masker, expected_n_regions, signals
     )
 

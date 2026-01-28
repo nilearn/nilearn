@@ -40,8 +40,8 @@ def sklearn_surf_label_img() -> SurfaceImage:
     return SurfaceImage(_make_mesh(), labels)
 
 
-def check_nifti_label_masker_post_fit(masker, expected_n_regions):
-    """Run some common check on nifti label masker post fit."""
+def check_nifti_labels_masker_post_fit(masker, expected_n_regions):
+    """Run some common check on NiftiLabelsMasker post fit."""
     assert masker.n_elements_ == expected_n_regions
 
     resampled_labels_img = masker.labels_img_
@@ -50,11 +50,15 @@ def check_nifti_label_masker_post_fit(masker, expected_n_regions):
     assert n_resampled_labels == expected_n_regions + 1
 
 
-def check_nifti_label_masker_post_transform(
+def check_nifti_labels_masker_post_transform(
     masker, expected_n_regions, signals, length=None
 ):
-    """Run some common check on nifti label masker post transform."""
-    check_nifti_label_masker_post_fit(masker, expected_n_regions)
+    """Run some common check on NiftiLabelsMasker post transform.
+
+    - check shape of signal
+    - ensure that signal can be turned back into an image
+    """
+    check_nifti_labels_masker_post_fit(masker, expected_n_regions)
 
     if not isinstance(signals, list):
         signals = [signals]
@@ -64,3 +68,32 @@ def check_nifti_label_masker_post_transform(
             assert s.shape[1] == expected_n_regions
         else:
             assert s.shape == (length, expected_n_regions)
+
+        masker.inverse_transform(s)
+
+
+def check_nifti_maps_masker_post_fit(masker, expected_n_regions):
+    """Run some common check on NiftiMapsMasker post fit."""
+    assert masker.n_elements_ == expected_n_regions
+
+
+def check_nifti_maps_masker_post_transform(
+    masker, expected_n_regions, signals, length=None
+):
+    """Run some common check on NiftiMapsMasker post transform.
+
+    - check shape of signal
+    - ensure that signal can be turned back into an image
+    """
+    assert masker.n_elements_ == expected_n_regions
+
+    if not isinstance(signals, list):
+        signals = [signals]
+
+    for s in signals:
+        if length is None:
+            assert s.shape[-1] == expected_n_regions
+        else:
+            assert s.shape == (length, expected_n_regions)
+
+        masker.inverse_transform(s)

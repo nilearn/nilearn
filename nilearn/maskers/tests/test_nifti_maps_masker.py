@@ -29,6 +29,10 @@ from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
+from nilearn.maskers.tests.conftest import (
+    check_nifti_maps_masker_post_fit,
+    check_nifti_maps_masker_post_transform,
+)
 
 ESTIMATORS_TO_CHECK = [NiftiMapsMasker(standardize=None)]
 
@@ -114,10 +118,11 @@ def test_data_atlas_different_shape(
     assert_array_equal(masker.maps_img_.affine, affine2)
     assert_array_equal(masker.maps_img_.shape[:3], shape22)
 
-    assert masker.n_elements_ == n_regions
+    check_nifti_maps_masker_post_fit(masker, n_regions)
 
-    signal = masker.transform(fmri22_img)
-    masker.inverse_transform(signal)
+    signals = masker.transform(fmri22_img)
+
+    check_nifti_maps_masker_post_transform(masker, n_regions, signals, length)
 
 
 def test_fit(n_regions, img_maps):
@@ -148,9 +153,7 @@ def test_transfer_on_another_masker(
 
     signals = masker.fit_transform(fmri11_img)
 
-    expected_n_regions = n_regions
-
-    assert masker.n_elements_ == expected_n_regions
+    check_nifti_maps_masker_post_transform(masker, n_regions, signals, length)
 
     # Now try on a masker that has never seen the call to "transform"
     masker = NiftiMapsMasker(
@@ -273,7 +276,8 @@ def test_with_nans_and_infs(length, n_regions, affine_eye):
 
     signals = masker.fit_transform(fmri_img)
 
-    assert signals.shape == (length, n_regions)
+    check_nifti_maps_masker_post_transform(masker, n_regions, signals, length)
+
     assert np.all(np.isfinite(signals))
 
 
@@ -301,7 +305,8 @@ def test_with_nans_and_infs_in_data(length, n_regions, affine_eye):
     with pytest.warns(UserWarning, match="Non-finite values detected."):
         signals = masker.fit_transform(fmri_img)
 
-    assert signals.shape == (length, n_regions)
+    check_nifti_maps_masker_post_transform(masker, n_regions, signals, length)
+
     assert np.all(np.isfinite(signals))
 
 
@@ -347,8 +352,9 @@ def test_resampling_to_mask(
     if not keep_masked_maps:
         expected_n_regions = n_regions - 7
 
-    assert masker.n_elements_ == expected_n_regions
-    assert signals.shape == (length, expected_n_regions)
+    check_nifti_maps_masker_post_transform(
+        masker, expected_n_regions, signals, length
+    )
 
     fmri11_img_r = masker.inverse_transform(signals)
 
@@ -387,7 +393,9 @@ def test_resampling_to_maps(
     if not keep_masked_maps:
         expected_n_regions = n_regions - 7
 
-    assert masker.n_elements_ == expected_n_regions
+    check_nifti_maps_masker_post_transform(
+        masker, expected_n_regions, signals, length
+    )
 
     assert_array_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == (
@@ -397,8 +405,6 @@ def test_resampling_to_maps(
 
     assert_array_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
-
-    assert signals.shape == (length, expected_n_regions)
 
     fmri11_img_r = masker.inverse_transform(signals)
 
@@ -436,7 +442,9 @@ def test_clipped_mask(n_regions, affine_eye, keep_masked_maps):
     if not keep_masked_maps:
         expected_n_regions = n_regions - 5
 
-    assert masker.n_elements_ == expected_n_regions
+    check_nifti_maps_masker_post_transform(
+        masker, expected_n_regions, signals, length
+    )
 
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == (
@@ -447,7 +455,6 @@ def test_clipped_mask(n_regions, affine_eye, keep_masked_maps):
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
-    assert signals.shape == (length, expected_n_regions)
     # Some regions have been clipped. Resulting signal must be zero
     assert (signals.var(axis=0) == 0).sum() < expected_n_regions
 
@@ -457,7 +464,7 @@ def test_clipped_mask(n_regions, affine_eye, keep_masked_maps):
     assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
 
 
-def non_overlapping_maps():
+def non_overlapping_maps() -> Nifti1Image:
     """Generate maps with non-overlapping regions.
 
     All voxels belong to only 1 region.
@@ -465,13 +472,10 @@ def non_overlapping_maps():
     non_overlapping_data = np.zeros((*_shape_3d_default(), 2))
     non_overlapping_data[:2, :, :, 0] = 1.0
     non_overlapping_data[2:, :, :, 1] = 1.0
-    return Nifti1Image(
-        non_overlapping_data,
-        np.eye(4),
-    )
+    return Nifti1Image(non_overlapping_data, np.eye(4))
 
 
-def overlapping_maps():
+def overlapping_maps() -> Nifti1Image:
     """Generate maps with overlapping regions.
 
     Same voxel has non null value for 2 different regions.
@@ -488,12 +492,20 @@ def overlapping_maps():
 @pytest.mark.parametrize("allow_overlap", [True, False])
 def test_overlap(maps_img_fn, allow_overlap, img_fmri):
     """Test resampling in NiftiMapsMasker."""
+    maps_img = maps_img_fn()
+
     masker = NiftiMapsMasker(
-        maps_img_fn(), allow_overlap=allow_overlap, standardize=None
+        maps_img, allow_overlap=allow_overlap, standardize=None
     )
 
     if allow_overlap is False and maps_img_fn.__name__ == "overlapping_maps":
         with pytest.raises(ValueError, match="Overlap detected"):
-            masker.fit_transform(img_fmri)
+            signals = masker.fit_transform(img_fmri)
     else:
-        masker.fit_transform(img_fmri)
+        signals = masker.fit_transform(img_fmri)
+
+        expected_n_regions = maps_img.shape[3]
+
+        check_nifti_maps_masker_post_transform(
+            masker, expected_n_regions, signals
+        )
