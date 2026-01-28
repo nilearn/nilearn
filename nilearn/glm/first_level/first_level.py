@@ -7,7 +7,6 @@ import csv
 import inspect
 import time
 import warnings
-from collections.abc import Iterable
 from pathlib import Path
 from warnings import warn
 
@@ -1261,10 +1260,7 @@ class FirstLevelModel(BaseGLM):
             Used for setting up the masker object.
         """
         masker_type = "nii"
-        # all elements of X should be of the similar type by now
-        # so we can only check the first one
-        to_check = run_img[0] if isinstance(run_img, Iterable) else run_img
-        if not self._is_volume_glm() or isinstance(to_check, SurfaceImage):
+        if not self._is_volume_glm() or isinstance(run_img, SurfaceImage):
             masker_type = "surface"
 
         # Learn the mask
