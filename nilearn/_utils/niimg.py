@@ -57,8 +57,7 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
 
 
 def is_empty_niimg(img):
-    """
-    Check if specified image is empty (all zeros, NaN or Inf).
+    """Check if specified image is empty (all zeros, NaN or Inf).
 
     Parameters
     ----------
@@ -71,7 +70,13 @@ def is_empty_niimg(img):
         True if the image is empty; False otherwise
     """
     data = img.dataobj
+    return is_empty_data(data)
 
+
+def is_empty_data(data):
+    """Check if specified proxy array or ndarray is empty
+    (all zeros, NaN or Inf).
+    """
     for slice_index in range(data.shape[0]):
         slice_data = data[slice_index]
         # check if there is a finite value other then 0
