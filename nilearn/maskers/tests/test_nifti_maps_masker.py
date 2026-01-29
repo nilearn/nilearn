@@ -417,6 +417,7 @@ def test_resampling_to_target(
     if isinstance(masker, MultiNiftiMapsMasker):
         input = [img_fmri, img_fmri]
 
+    # TODO: why is warning only thrown by MultiNiftiMapsMasker
     if keep_masked_maps and isinstance(masker, MultiNiftiMapsMasker):
         # TODO (nilearn >=0.15)
         # only keep else block
@@ -477,6 +478,7 @@ def test_resampling_clipped_mask(
     if isinstance(masker, MultiNiftiMapsMasker):
         input = [fmri_img, fmri_img]
 
+    # TODO: why is warning only thrown by MultiNiftiMapsMasker
     if keep_masked_maps and isinstance(masker, MultiNiftiMapsMasker):
         # TODO (nilearn >=0.15)
         # only keep else block
