@@ -11,7 +11,6 @@ from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data, has_non_finite, is_binary_data
 from nilearn._utils.numpy_conversions import as_ndarray
@@ -461,7 +460,6 @@ def resample_img(
     check_params(locals())
     _check_resample_img_inputs(target_shape, target_affine, interpolation)
 
-    img = stringify_path(img)
     img = check_niimg(img)
 
     # If later on we want to impute sform using qform add this condition
@@ -476,15 +474,12 @@ def resample_img(
                 stacklevel=find_stack_level(),
             )
 
-    # noop cases
-    input_img_is_string = isinstance(img, str)
-    if _resampling_not_needed(img, target_affine, target_shape):
-        if copy and not input_img_is_string:
-            img = copy_img(img)
-        return img
-
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
+
+    # noop cases
+    if _resampling_not_needed(img, target_affine, target_shape):
+        return copy_img(img) if copy else img
 
     # We now know that some resampling must be done.
     # The value of "copy" is of no importance:
@@ -624,7 +619,6 @@ def resample_img(
                 target_shape,
                 interpolation_order,
                 out=resampled_data[all_img + ind],
-                copy=not input_img_is_string,
                 fill_value=fill_value,
             )
 
@@ -653,9 +647,6 @@ def _resampling_not_needed(img, target_affine, target_shape):
         and np.array_equal(target_shape, shape)
     ):
         return True
-
-    if target_affine is not None:
-        target_affine = np.asarray(target_affine)
 
     return np.all(np.array(target_shape) == shape[:3]) and np.allclose(
         target_affine, affine
