@@ -81,8 +81,8 @@ def has_non_finite(data, return_mask=False):
 
 
 def ensure_finite_data(data, raise_warning=True) -> np.ndarray:
-    """Check is there are any infinite values in the data, set infinite values
-    to 0 and return data.
+    """Check if data contains NaN or inf values, set infinite values
+    to 0 inplace if exists and return data.
     """
     has_not_finite, non_finite_mask = has_non_finite(data, return_mask=True)
     if has_not_finite:
@@ -201,7 +201,7 @@ def _mask_with_nonfinite(mask_base):
 
 def is_binary_data(data, block_size=1_000_000, accept_non_finite=True) -> bool:
     """Return whether a given ndarray is binary or not.
-    If accept_non_finite is True, nan and inf values are ignored.
+    If accept_non_finite is True, NaN and inf values are ignored.
     """
     flat = np.ravel(data)
 
