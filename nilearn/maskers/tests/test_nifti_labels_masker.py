@@ -364,7 +364,7 @@ def test_reduction_strategies(affine_eye, strategy, function, estimator):
     # What NiftiLabelsMasker should return for each reduction strategy?
     expected_result = function(test_values)
 
-    masker = estimator(labels, strategy=strategy)
+    masker = estimator(labels, strategy=strategy, standardize=None)
 
     # 4D object.
     input = [img]
@@ -487,24 +487,21 @@ def test_resampling_to_target_no_mask(
         input = [fmri_img, fmri_img]
 
     if resampling_target == "data":
-        with pytest.warns(
-            UserWarning,
-            match=(
-                "After resampling the label image "
-                "to the data image, the following "
-                "labels were removed"
-            ),
-        ):
-            signals = masker.fit_transform(input)
-
         ref_shape = shape
         ref_affine = affine
 
     else:
-        signals = masker.fit_transform(input)
-
         ref_shape = labels_shape
         ref_affine = affine_eye
+
+    if keep_masked_labels and isinstance(masker, MultiNiftiLabelsMasker):
+        with pytest.warns(
+            FutureWarning,
+            match='"keep_masked_labels" parameter will be removed',
+        ):
+            signals = masker.fit_transform(input)
+    else:
+        signals = masker.fit_transform(input)
 
     expected_n_regions = n_regions
     if not keep_masked_labels or resampling_target == "data":

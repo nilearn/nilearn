@@ -158,7 +158,13 @@ def test_data_atlas_different_shape(
         masker, n_regions, ref_shape=shape22, ref_affine=affine2
     )
 
-    signals = masker.transform(input)
+    if keep_masked_maps and isinstance(masker, MultiNiftiMapsMasker):
+        with pytest.warns(
+            FutureWarning, match='"keep_masked_maps" parameter will be removed'
+        ):
+            signals = masker.transform(input)
+    else:
+        signals = masker.transform(input)
 
     expected_n_regions = n_regions
     if not keep_masked_maps:
