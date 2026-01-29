@@ -263,7 +263,7 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
     or a matplotlib colormap object,
     or a BIDS compliant
     `look-up table <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
-    passed as a pandas dataframe.
+    passed as a pandas dataframe or a path to a tsv or csv file.
     If the look up table does not contain a ``color`` column,
     then the default colormap of this function will be used.
 
