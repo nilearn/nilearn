@@ -535,41 +535,60 @@ def test_resampling_to_target_no_mask(
 
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
+@pytest.mark.parametrize(
+    "estimator", [NiftiLabelsMasker, MultiNiftiLabelsMasker]
+)
 def test_resampling_to_labels_with_mask(
-    affine_eye, shape_3d_default, n_regions, length, keep_masked_labels
+    affine_eye, img_labels, n_regions, length, keep_masked_labels, estimator
 ):
     """Test resampling to labels in NiftiLabelsMasker.
 
     same affine for labels, mask, and input image
     """
-    shape1 = (*shape_3d_default, length)
-    fmri_img, _ = generate_random_img(
-        shape1,
-        affine=affine_eye,
-    )
+    shape1 = (10, 11, 12)
+    fmri_img, _ = generate_fake_fmri(shape1, affine=affine_eye, length=length)
 
-    shape2 = (16, 17, 18, length)
-    _, mask_img = generate_random_img(shape2, affine=affine_eye)
+    shape2 = (16, 17, 18)
+    _, mask_img = generate_fake_fmri(shape2, affine=affine_eye, length=length)
 
-    shape3 = (13, 14, 15)
-    labels_img = generate_labeled_regions(shape3, n_regions, affine=affine_eye)
-
-    masker = NiftiLabelsMasker(
-        labels_img,
+    masker = estimator(
+        img_labels,
         mask_img=mask_img,
         resampling_target="labels",
         keep_masked_labels=keep_masked_labels,
     )
 
-    signals = masker.fit_transform(fmri_img)
+    input = fmri_img
+    if isinstance(masker, MultiNiftiLabelsMasker):
+        input = [fmri_img, fmri_img]
+
+    if isinstance(masker, MultiNiftiLabelsMasker):
+        with pytest.warns(
+            FutureWarning,
+            match="boolean values for 'standardize' will be deprecated",
+        ):
+            if keep_masked_labels:
+                with pytest.warns(
+                    FutureWarning,
+                    match='"keep_masked_labels" parameter will be removed',
+                ):
+                    signals = masker.fit_transform(input)
+            else:
+                signals = masker.fit_transform(input)
+    else:
+        signals = masker.fit_transform(input)
+
+    expected_n_regions = n_regions
+    if not keep_masked_labels:
+        expected_n_regions = n_regions - 7
 
     check_nifti_labels_masker_post_transform(
         masker,
-        n_regions,
+        expected_n_regions,
         signals,
         length,
-        ref_shape=labels_img.shape,
-        ref_affine=affine_eye,
+        ref_shape=img_labels.shape,
+        ref_affine=img_labels.affine,
     )
 
 
