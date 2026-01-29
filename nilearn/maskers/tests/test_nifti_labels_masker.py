@@ -450,7 +450,7 @@ def test_resampling_to_data(affine_eye, n_regions, length, keep_masked_labels):
 @pytest.mark.parametrize(
     "estimator", [NiftiLabelsMasker, MultiNiftiLabelsMasker]
 )
-def test_resampling_to_target(
+def test_resampling_to_target_no_mask(
     keep_masked_labels,
     n_regions,
     length,
@@ -538,24 +538,23 @@ def test_resampling_to_target(
 
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
-def test_resampling_to_labels(
+def test_resampling_to_labels_with_mask(
     affine_eye, shape_3d_default, n_regions, length, keep_masked_labels
 ):
-    """Test resampling to labels in NiftiLabelsMasker."""
-    # fmri
-    shape1 = (*shape_3d_default, length)
-    # mask
-    shape2 = (16, 17, 18, length)
-    # labels
-    shape3 = (13, 14, 15)
+    """Test resampling to labels in NiftiLabelsMasker.
 
-    # With data of the same affine
+    same affine for labels, mask, and input image
+    """
+    shape1 = (*shape_3d_default, length)
     fmri_img, _ = generate_random_img(
         shape1,
         affine=affine_eye,
     )
+
+    shape2 = (16, 17, 18, length)
     _, mask_img = generate_random_img(shape2, affine=affine_eye)
 
+    shape3 = (13, 14, 15)
     labels_img = generate_labeled_regions(shape3, n_regions, affine=affine_eye)
 
     masker = NiftiLabelsMasker(
@@ -573,14 +572,22 @@ def test_resampling_to_labels(
         signals,
         length,
         ref_shape=labels_img.shape,
-        ref_affine=labels_img.affine,
+        ref_affine=affine_eye,
     )
 
 
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
+@pytest.mark.parametrize(
+    "estimator", [NiftiLabelsMasker, MultiNiftiLabelsMasker]
+)
 def test_resampling_to_clipped_labels(
-    affine_eye, shape_3d_default, n_regions, length, keep_masked_labels
+    affine_eye,
+    shape_3d_default,
+    n_regions,
+    length,
+    keep_masked_labels,
+    estimator,
 ):
     """Test with clipped labels.
 
@@ -596,21 +603,24 @@ def test_resampling_to_clipped_labels(
     # maps
     shape3 = (16, 18, 20)
 
-    fmri11_img, _ = generate_random_img(shape1, affine=affine_eye)
-    _, mask22_img = generate_random_img(shape2, affine=affine_eye)
+    fmri_img, _ = generate_random_img(shape1, affine=affine_eye)
+    _, mask_img = generate_random_img(shape2, affine=affine_eye)
 
-    labels33_img = generate_labeled_regions(
-        shape3, n_regions, affine=affine_eye
-    )
+    labels_img = generate_labeled_regions(shape3, n_regions, affine=affine_eye)
 
-    masker = NiftiLabelsMasker(
-        labels33_img,
-        mask_img=mask22_img,
+    masker = estimator(
+        labels_img,
+        mask_img=mask_img,
         resampling_target="labels",
         keep_masked_labels=keep_masked_labels,
+        standardize=None,
     )
 
-    signals = masker.fit_transform(fmri11_img)
+    input = fmri_img
+    if isinstance(masker, MultiNiftiLabelsMasker):
+        input = [fmri_img, fmri_img]
+
+    signals = masker.fit_transform(input)
 
     expected_n_regions = n_regions
     if not keep_masked_labels:
@@ -621,19 +631,23 @@ def test_resampling_to_clipped_labels(
         expected_n_regions,
         signals,
         length,
-        ref_affine=labels33_img.affine,
-        ref_shape=labels33_img.shape,
+        ref_affine=labels_img.affine,
+        ref_shape=labels_img.shape,
     )
 
     uniq_labels = np.unique(get_data(masker.labels_img_))
     assert uniq_labels[0] == 0
 
+    if not isinstance(signals, list):
+        signals = [signals]
+
     # Some regions have been clipped. Resulting signal must be zero
-    assert (signals.var(axis=0) == 0).sum() < expected_n_regions
+    for t in signals:
+        assert (t.var(axis=0) == 0).sum() < expected_n_regions
 
 
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
-def test_resampling_to_none(
+def test_resampling_to_none_with_mask(
     affine_eye,
     length,
     shape_3d_default,

@@ -79,22 +79,6 @@ def test_multi_nifti_labels_masker(
         shape_3d_default, affine=affine_eye, length=length
     )
 
-    masker11 = MultiNiftiLabelsMasker(img_labels, resampling_target=None)
-
-    # No exception raised here
-    signals11 = masker11.fit_transform(fmri11_img)
-
-    check_nifti_labels_masker_post_transform(
-        masker11, n_regions, signals11, length
-    )
-
-    # No exception should be raised either
-    masker11 = MultiNiftiLabelsMasker(
-        img_labels, resampling_target=None, standardize=None
-    )
-    masker11.fit()
-    masker11.inverse_transform(signals11)
-
     masker11 = MultiNiftiLabelsMasker(
         img_labels,
         mask_img=mask11_img,
@@ -102,20 +86,10 @@ def test_multi_nifti_labels_masker(
         keep_masked_labels=keep_masked_labels,
         standardize=None,
     )
-    signals11 = masker11.fit_transform(fmri11_img)
 
     expected_n_regions = n_regions
     if not keep_masked_labels:
         expected_n_regions = n_regions - 5
-
-    check_nifti_labels_masker_post_transform(
-        masker11,
-        expected_n_regions,
-        signals11,
-        length,
-        ref_affine=affine_eye,
-        ref_shape=shape_3d_default,
-    )
 
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
@@ -194,60 +168,3 @@ def test_resampling(
         ref_affine=img_labels.affine,
         ref_shape=img_labels.shape,
     )
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize("keep_masked_labels", [True, False])
-def test_resampling_clipped_labels(
-    affine_eye, n_regions, length, img_labels, img_fmri, keep_masked_labels
-):
-    """Test with clipped labels.
-
-    Mask does not contain all labels.
-    Shapes do matter in that case,
-    because there is some resampling taking place.
-    """
-    shape2 = (8, 9, 10)  # mask
-
-    _, mask22_img = generate_fake_fmri(
-        shape2, affine=affine_eye, length=length
-    )
-
-    # Multi-subject example
-    fmri11_img = [img_fmri, img_fmri]
-
-    masker = MultiNiftiLabelsMasker(
-        img_labels,
-        mask_img=mask22_img,
-        resampling_target="labels",
-        keep_masked_labels=keep_masked_labels,
-        standardize=None,
-    )
-
-    if keep_masked_labels:
-        # TODO (nilearn >=0.15)
-        # only keep else block
-        with pytest.warns(
-            FutureWarning,
-            match='"keep_masked_labels" parameter will be removed',
-        ):
-            signals = masker.fit_transform(fmri11_img)
-    else:
-        signals = masker.fit_transform(fmri11_img)
-
-    expected_n_regions = n_regions
-    if not keep_masked_labels:
-        expected_n_regions = n_regions - 4
-
-    check_nifti_labels_masker_post_transform(
-        masker,
-        expected_n_regions,
-        signals,
-        length,
-        ref_affine=img_labels.affine,
-        ref_shape=img_labels.shape,
-    )
-
-    for t in signals:
-        # Some regions have been clipped. Resulting signal must be zero
-        assert (t.var(axis=0) == 0).sum() < expected_n_regions
