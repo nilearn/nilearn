@@ -1552,6 +1552,7 @@ def test_second_level_input_error_surface_image_2d(surf_img_2d):
         model.fit(second_level_input, design_matrix=design_matrix)
 
 
+@pytest.mark.thread_unsafe
 def test_second_level_input_as_surface_image_3d_same_as_list_2d(
     surf_img_1d, n_subjects
 ):

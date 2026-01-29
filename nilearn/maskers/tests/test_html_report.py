@@ -231,6 +231,7 @@ def test_displayed_maps_warning_too_many(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
     [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
