@@ -15,6 +15,7 @@ from nilearn._utils.niimg import (
     has_non_finite,
     img_data_dtype,
     is_binary_niimg,
+    is_nifti_empty,
     load_niimg,
     repr_niimgs,
 )
@@ -22,22 +23,41 @@ from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data, new_img_like
 
 
-@pytest.fixture
-def img1(affine_eye):
-    data = np.ones((2, 2, 2, 2))
-    return Nifti1Image(data, affine=affine_eye)
-
-
-@pytest.fixture
-def img_binary(affine_eye, has_inf, has_nan, non_bin):
-    data = np.ones((3, 3, 3, 3))
+def _update_data(data, has_inf, has_nan, non_bin):
     if has_inf:
         data[0, 0, 0, 0] = np.inf
     if has_nan:
         data[1, 1, 1, 1] = np.nan
     if non_bin:
         data[2, 2, 2, 2] = 5
-    return Nifti1Image(data, affine=affine_eye)
+    return data
+
+
+@pytest.fixture
+def data_ones():
+    return np.ones((3, 3, 3, 3))
+
+
+@pytest.fixture
+def data_zeros():
+    return np.zeros((3, 3, 3, 3))
+
+
+@pytest.fixture
+def img1(data_ones, affine_eye):
+    return Nifti1Image(data_ones, affine=affine_eye)
+
+
+@pytest.fixture
+def img_binary(data_ones, affine_eye, has_inf, has_nan, non_bin):
+    data_ones = _update_data(data_ones, has_inf, has_nan, non_bin)
+    return Nifti1Image(data_ones, affine=affine_eye)
+
+
+@pytest.fixture
+def img_empty(data_zeros, affine_eye, has_inf, has_nan, non_bin):
+    data_zeros = _update_data(data_zeros, has_inf, has_nan, non_bin)
+    return Nifti1Image(data_zeros, affine=affine_eye)
 
 
 def test_new_img_like_side_effect(img1):
@@ -293,6 +313,21 @@ def test_repr_niimgs_with_niimg(
         repr_niimgs(img_3d_ones_eye, shorten=True)
         == f"{class_name}('{Path(filename).name[:18]}...')"
     )
+
+
+@pytest.mark.parametrize(
+    "has_inf,has_nan,non_bin,expected",
+    [
+        (False, False, False, True),
+        (True, False, False, True),
+        (False, True, False, True),
+        (True, True, False, True),
+        (False, False, True, False),
+        (True, True, True, False),
+    ],
+)
+def test_is_img_empty(img_empty, expected):
+    assert is_nifti_empty(img_empty) == expected
 
 
 @pytest.mark.parametrize(
