@@ -38,11 +38,6 @@ def data_ones():
 
 
 @pytest.fixture
-def data_zeros():
-    return np.zeros((3, 3, 3, 3))
-
-
-@pytest.fixture
 def img1(data_ones, affine_eye):
     return Nifti1Image(data_ones, affine=affine_eye)
 
