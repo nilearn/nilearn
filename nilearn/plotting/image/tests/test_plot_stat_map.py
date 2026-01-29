@@ -157,6 +157,7 @@ def test_plot_stat_map_colorbar_variations(
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "shape,direction", [((1, 6, 7), "x"), ((5, 1, 7), "y"), ((5, 6, 1), "z")]
 )

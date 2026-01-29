@@ -431,6 +431,7 @@ def test_view_img_3d_warnings_more():
     check_html_view_img(html_view, title="SOME_TITLE")
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "params",
     [
