@@ -80,6 +80,40 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+def test_fit(n_regions, img_maps, shape_3d_default, affine_eye, length):
+    """Check basic functions of MultiNiftiMapsMasker.
+
+    - fit, transform, fit_transform, inverse_transform.
+    """
+    fmri11_img, _ = generate_fake_fmri(
+        shape_3d_default, affine=affine_eye, length=length
+    )
+
+    masker = NiftiMapsMasker(
+        img_maps, resampling_target=None, standardize=None
+    )
+
+    masker.fit()
+
+    check_nifti_maps_masker_post_fit(
+        masker,
+        n_regions,
+        ref_affine=affine_eye,
+        ref_shape=shape_3d_default,
+    )
+
+    signals = masker.transform(fmri11_img)
+
+    check_nifti_maps_masker_post_transform(
+        masker,
+        n_regions,
+        signals,
+        length,
+        ref_affine=affine_eye,
+        ref_shape=shape_3d_default,
+    )
+
+
 @pytest.mark.parametrize("keep_masked_maps", [True, False])
 def test_data_atlas_different_shape(
     length, affine_eye, img_maps, keep_masked_maps, n_regions
@@ -132,17 +166,6 @@ def test_data_atlas_different_shape(
         ref_shape=shape22,
         ref_affine=affine2,
     )
-
-
-def test_fit(n_regions, img_maps):
-    """Check fitted attributes."""
-    masker = NiftiMapsMasker(
-        img_maps, resampling_target=None, standardize=None
-    )
-
-    masker.fit()
-
-    check_nifti_maps_masker_post_fit(masker, n_regions)
 
 
 @pytest.mark.slow

@@ -83,6 +83,9 @@ def test_multi_nifti_maps_masker(
         shape_3d_default, affine=affine_eye, length=length
     )
 
+    # Should work with 4D + 1D input too (also test fit_transform)
+    signals_input = [fmri11_img, fmri11_img]
+
     masker = MultiNiftiMapsMasker(
         img_maps,
         mask_img=mask11_img,
@@ -91,23 +94,14 @@ def test_multi_nifti_maps_masker(
         standardize=None,
     )
 
-    signals11 = masker.fit_transform(fmri11_img)
+    masker.fit()
 
-    expected_n_regions = n_regions
-    if not keep_masked_maps:
-        expected_n_regions = n_regions - 3
-
-    check_nifti_maps_masker_post_transform(
+    check_nifti_maps_masker_post_fit(
         masker,
-        expected_n_regions,
-        signals11,
-        length,
+        n_regions,
         ref_affine=affine_eye,
         ref_shape=shape_3d_default,
     )
-
-    # Should work with 4D + 1D input too (also test fit_transform)
-    signals_input = [fmri11_img, fmri11_img]
 
     if keep_masked_maps:
         # TODO (nilearn >=0.15)
@@ -118,6 +112,10 @@ def test_multi_nifti_maps_masker(
             signals11_list = masker.fit_transform(signals_input)
     else:
         signals11_list = masker.fit_transform(signals_input)
+
+    expected_n_regions = n_regions
+    if not keep_masked_maps:
+        expected_n_regions = n_regions - 3
 
     check_nifti_maps_masker_post_transform(
         masker,
