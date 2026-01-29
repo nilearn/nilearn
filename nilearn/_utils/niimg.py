@@ -167,7 +167,9 @@ def load_niimg(niimg, dtype=None):
     return niimg
 
 
-def is_binary_niimg(niimg, block_size=1_000_000) -> bool:
+def is_binary_niimg(
+    niimg, block_size=1_000_000, accept_non_finite=True
+) -> bool:
     """Return whether a given niimg is binary or not.
 
     Parameters
@@ -184,24 +186,29 @@ def is_binary_niimg(niimg, block_size=1_000_000) -> bool:
     """
     niimg = load_niimg(niimg)
     data = niimg.dataobj
-    return is_binary_data(data, block_size)
+    return is_binary_data(data, block_size, accept_non_finite)
 
 
-def is_binary_data(data, block_size=1_000_000):
+def _base_mask(block: np.ndarray) -> np.ndarray:
+    return (block == 0) | (block == 1)
+
+
+def _mask_with_nonfinite(mask_base):
+    return lambda block: mask_base(block) | ~np.isfinite(block)
+
+
+def is_binary_data(data, block_size=1_000_000, accept_non_finite=True):
     """Return whether a given ndarray is binary or not."""
     flat = np.ravel(data)
+
+    mask_fn = _base_mask
+    if accept_non_finite:
+        mask_fn = _mask_with_nonfinite(mask_fn)
 
     for i in range(0, flat.size, block_size):
         block = flat[i : i + block_size]
 
-        # Check if only 0, 1, inf, or nan
-        mask = (
-            (block == 0)
-            | (block == 1)
-            | np.isnan(block)
-            | (block == np.inf)
-            | (block == -np.inf)
-        )
+        mask = mask_fn(block)
         if not mask.all():
             return False
 
