@@ -2,6 +2,7 @@
 
 import collections.abc
 from pathlib import Path
+from typing import Literal, overload
 from warnings import warn
 
 import numpy as np
@@ -55,20 +56,36 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
     return data
 
 
-def has_non_finite(data) -> bool:
+@overload
+def has_non_finite(
+    data: np.ndarray, return_mask: Literal[False] = False
+) -> bool: ...
+
+
+@overload
+def has_non_finite(
+    data: np.ndarray, return_mask: Literal[True]
+) -> tuple[bool, np.ndarray]: ...
+
+
+def has_non_finite(data, return_mask=False):
     """Return True if data contains at least one NaN or inf value; False if
     there are no NaN and inf values.
+    If return_mask is True, return both boolean value and the mask.
     """
     non_finite_mask = ~np.isfinite(data)
-    return non_finite_mask.any()
+    has_not_finite = non_finite_mask.any()
+    if return_mask:
+        return has_not_finite, non_finite_mask
+    return has_not_finite
 
 
 def ensure_finite_data(data, raise_warning=True) -> np.ndarray:
     """Check is there are any infinite values in the data, set infinite values
     to 0 and return data.
     """
-    non_finite_mask = ~np.isfinite(data)
-    if non_finite_mask.any():  # any non finite values?
+    has_not_finite, non_finite_mask = has_non_finite(data, return_mask=True)
+    if has_not_finite:
         if raise_warning:
             warn(
                 "Non-finite values detected. "
