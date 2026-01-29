@@ -223,12 +223,13 @@ def test_errors_field_of_view(
     masker = NiftiMapsMasker(
         labels11, resampling_target=None, standardize=None
     )
+    masker.fit()
 
     with pytest.raises(ValueError, match=error_msg):
-        masker.fit_transform(fmri12_img)
+        masker.transform(fmri12_img)
 
     with pytest.raises(ValueError, match=error_msg):
-        masker.fit_transform(fmri21_img)
+        masker.transform(fmri21_img)
 
     masker = NiftiMapsMasker(labels11, mask_img=mask12, resampling_target=None)
     with pytest.raises(ValueError, match=error_msg):

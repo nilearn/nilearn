@@ -10,11 +10,9 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.testing import write_imgs_to_path
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _img_maps
-from nilearn.exceptions import DimensionError
-from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
+from nilearn.maskers import MultiNiftiMapsMasker
 from nilearn.maskers.tests.conftest import (
     check_nifti_maps_masker_post_fit,
     check_nifti_maps_masker_post_transform,
@@ -217,104 +215,6 @@ def test_data_atlas_different_shape(
         ref_affine=affine2,
         ref_shape=shape22,
     )
-
-
-def test_errors(affine_eye, length, shape_3d_default, img_maps):
-    """Check errors raised by MultiNiftiMapsMasker."""
-    fmri11_img, mask11_img = generate_fake_fmri(
-        shape_3d_default, affine=affine_eye, length=length
-    )
-
-    masker = MultiNiftiMapsMasker(
-        img_maps, mask_img=mask11_img, resampling_target=None, standardize=None
-    )
-
-    signals_input = [fmri11_img, fmri11_img]
-
-    # NiftiMapsMasker should not work with 4D + 1D input
-    masker = NiftiMapsMasker(
-        img_maps, resampling_target=None, standardize=None
-    )
-    with pytest.raises(DimensionError, match="incompatible dimensionality"):
-        masker.fit_transform(signals_input)
-
-
-@pytest.mark.parametrize("create_files", [True, False])
-def test_errors_field_of_view(
-    tmp_path,
-    affine_eye,
-    length,
-    create_files,
-    shape_3d_default,
-    img_maps,
-):
-    """Test all kinds of mismatches between shapes and between affines."""
-    # Check working of shape/affine checks
-    shape2 = (12, 10, 14)
-    affine2 = np.diag((1, 2, 3, 1))
-
-    fmri12_img, mask12_img = generate_fake_fmri(
-        shape_3d_default, affine=affine2, length=length
-    )
-    fmri21_img, mask21_img = generate_fake_fmri(
-        shape2, affine=affine_eye, length=length
-    )
-
-    error_msg = "Following field of view errors were detected"
-
-    masker = MultiNiftiMapsMasker(
-        img_maps, mask_img=mask21_img, resampling_target=None, standardize=None
-    )
-    with pytest.raises(ValueError, match=error_msg):
-        masker.fit()
-
-    images = write_imgs_to_path(
-        img_maps,
-        mask12_img,
-        file_path=tmp_path,
-        create_files=create_files,
-    )
-    labels11, mask12 = images
-    masker = MultiNiftiMapsMasker(
-        labels11, resampling_target=None, standardize=None
-    )
-    masker.fit()
-
-    with pytest.raises(ValueError, match=error_msg):
-        masker.transform(fmri12_img)
-
-    with pytest.raises(ValueError, match=error_msg):
-        masker.transform(fmri21_img)
-
-    masker = MultiNiftiMapsMasker(
-        labels11, mask_img=mask12, resampling_target=None
-    )
-    with pytest.raises(ValueError, match=error_msg):
-        masker.fit()
-
-
-def test_resampling_error(affine_eye, n_regions, shape_3d_large):
-    """Test MultiNiftiMapsMasker when using resampling."""
-    maps33_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
-
-    # Test error checking
-    masker = MultiNiftiMapsMasker(
-        maps33_img, resampling_target="mask", standardize=None
-    )
-    with pytest.raises(
-        ValueError,
-        match=(
-            "resampling_target has been set to 'mask' "
-            "but no mask has been provided"
-        ),
-    ):
-        masker.fit()
-
-    masker = MultiNiftiMapsMasker(
-        maps33_img, resampling_target="invalid", standardize=None
-    )
-    with pytest.raises(ValueError, match="'resampling_target' must be one of"):
-        masker.fit()
 
 
 @pytest.mark.slow
