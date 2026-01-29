@@ -300,7 +300,9 @@ def _resample_one_img(
 
     # If data is binary and interpolation is continuous or linear,
     # warn the user as this might be unintentional
-    if interpolation_order != 0 and is_binary_data(data):
+    if interpolation_order != 0 and is_binary_data(
+        data, accept_non_finite=False
+    ):
         warnings.warn(
             "Resampling binary images with continuous or "
             "linear interpolation. This might lead to "
