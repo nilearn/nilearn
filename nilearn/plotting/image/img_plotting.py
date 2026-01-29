@@ -201,6 +201,7 @@ def _plot_img_with_bg(
         if the specified threshold is a negative number
     """
     check_params(locals())
+
     check_threshold_not_negative(threshold)
 
     show_nan_msg = False
@@ -224,6 +225,11 @@ def _plot_img_with_bg(
 
         if np.isnan(np.sum(data)):
             data = np.nan_to_num(data)
+
+        if threshold is not None:
+            threshold = check_threshold(
+                threshold, data, percentile_func=fast_abs_percentile, name="threshold"
+            )
 
         # Deal with automatic settings of plot parameters
         if threshold == "auto":
