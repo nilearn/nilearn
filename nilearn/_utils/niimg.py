@@ -56,7 +56,7 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
     return data
 
 
-def is_nifti_empty(img):
+def is_empty_niimg(img):
     """
     Check if specified image is empty (all zeros, NaN or Inf).
 
@@ -70,7 +70,7 @@ def is_nifti_empty(img):
     bool
         True if the image is empty; False otherwise
     """
-    data = img.dataobj  # lazy-loading
+    data = img.dataobj
 
     for slice_index in range(data.shape[0]):
         slice_data = data[slice_index]
@@ -225,7 +225,7 @@ def _mask_with_nonfinite(mask_base):
 
 
 def is_binary_data(data, block_size=1_000_000, accept_non_finite=True) -> bool:
-    """Return whether a given ndarray is binary or not.
+    """Return whether a given proxy array or ndarray is binary or not.
     If accept_non_finite is True, NaN and inf values are ignored.
     """
     flat = np.ravel(data)

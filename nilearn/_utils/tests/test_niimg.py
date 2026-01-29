@@ -15,7 +15,7 @@ from nilearn._utils.niimg import (
     has_non_finite,
     img_data_dtype,
     is_binary_niimg,
-    is_nifti_empty,
+    is_empty_niimg,
     load_niimg,
     repr_niimgs,
 )
@@ -327,7 +327,7 @@ def test_repr_niimgs_with_niimg(
     ],
 )
 def test_is_img_empty(img_empty, expected):
-    assert is_nifti_empty(img_empty) == expected
+    assert is_empty_niimg(img_empty) == expected
 
 
 @pytest.mark.parametrize(
