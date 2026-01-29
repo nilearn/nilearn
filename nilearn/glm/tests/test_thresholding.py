@@ -303,6 +303,7 @@ def test_all_resolution_inference(
     assert len(np.unique(vals)) == expected_n_unique_values
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, expected_left, expected_right, expected_n_unique_values",
     [
