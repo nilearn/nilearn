@@ -4,6 +4,7 @@
 
 import re
 import tempfile
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -833,6 +834,14 @@ def test_plot_surf_roi_cmap_as_lookup_table(surface_image_roi):
         {"index": [0, 1], "name": ["foo", "bar"], "color": ["#000", "#fff"]}
     )
     plot_surf_roi(surface_image_roi.mesh, roi_map=surface_image_roi, cmap=lut)
+    tmp_path = Path("./tmp")
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    lut.to_csv(tmp_path / "lut.tsv", sep="\t", index=False)
+    plot_surf_roi(
+        surface_image_roi.mesh,
+        roi_map=surface_image_roi,
+        cmap=tmp_path / "lut.tsv",
+    )
 
     lut = pd.DataFrame({"index": [0, 1], "name": ["foo", "bar"]})
     with pytest.warns(
