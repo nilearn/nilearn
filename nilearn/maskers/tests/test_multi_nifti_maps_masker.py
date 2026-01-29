@@ -79,16 +79,16 @@ def test_multi_nifti_maps_masker(
     - fit, transform, fit_transform, inverse_transform.
     - 4D and list[4D] inputs
     """
-    fmri11_img, mask11_img = generate_fake_fmri(
+    fmri_img, mask_img = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )
 
-    # Should work with 4D + 1D input too (also test fit_transform)
-    signals_input = [fmri11_img, fmri11_img]
+    # Should work with 4D + 1D input too
+    input = [fmri_img, fmri_img]
 
     masker = MultiNiftiMapsMasker(
         img_maps,
-        mask_img=mask11_img,
+        mask_img=mask_img,
         resampling_target=None,
         keep_masked_maps=keep_masked_maps,
         standardize=None,
@@ -109,9 +109,9 @@ def test_multi_nifti_maps_masker(
         with pytest.warns(
             FutureWarning, match='"keep_masked_maps" parameter will be removed'
         ):
-            signals11_list = masker.fit_transform(signals_input)
+            signals11_list = masker.fit_transform(input)
     else:
-        signals11_list = masker.fit_transform(signals_input)
+        signals11_list = masker.fit_transform(input)
 
     expected_n_regions = n_regions
     if not keep_masked_maps:
@@ -133,7 +133,7 @@ def test_transfer_on_another_masker(
     affine_eye, length, shape_3d_default, img_maps, n_regions, keep_masked_maps
 ):
     """Inverse transform signal obtained from another masker."""
-    fmri11_img, _ = generate_fake_fmri(
+    fmri_img, _ = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )
 
@@ -141,9 +141,9 @@ def test_transfer_on_another_masker(
         img_maps, standardize=None, keep_masked_maps=keep_masked_maps
     )
 
-    signals_input = [fmri11_img, fmri11_img]
+    input = [fmri_img, fmri_img]
 
-    signals11_list = masker.fit_transform(signals_input)
+    signals11_list = masker.fit_transform(input)
 
     check_nifti_maps_masker_post_transform(
         masker,
@@ -180,19 +180,19 @@ def test_data_atlas_different_shape(
     affine2 = 2 * np.eye(4)
     affine2[-1, -1] = 1
 
-    _, mask21_img = generate_fake_fmri(
-        shape2, affine=affine_eye, length=length
-    )
-    fmri22_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
+    _, mask_img = generate_fake_fmri(shape2, affine=affine_eye, length=length)
+    fmri_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
+
+    input = [fmri_img, fmri_img]
 
     masker = MultiNiftiMapsMasker(
         img_maps,
-        mask_img=mask21_img,
+        mask_img=mask_img,
         standardize=None,
         keep_masked_maps=keep_masked_maps,
     )
 
-    masker.fit(fmri22_img)
+    masker.fit(input)
 
     expected_n_regions = n_regions
 
@@ -200,7 +200,7 @@ def test_data_atlas_different_shape(
         masker, expected_n_regions, ref_affine=affine2, ref_shape=shape22
     )
 
-    signals = masker.transform(fmri22_img)
+    signals = masker.transform(input)
 
     if not keep_masked_maps:
         expected_n_regions = n_regions - 7
@@ -227,18 +227,20 @@ def test_resampling_to_mask(
     keep_masked_maps,
 ):
     """Test resampling to mask in MultiNiftiMapsMasker."""
-    _, mask22_img = generate_fake_fmri(
+    _, mask_img = generate_fake_fmri(
         shape_mask, affine=affine_eye, length=length
     )
-    maps33_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
+    maps_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
 
     masker = MultiNiftiMapsMasker(
-        maps33_img,
-        mask_img=mask22_img,
+        maps_img,
+        mask_img=mask_img,
         resampling_target="mask",
         keep_masked_maps=keep_masked_maps,
         standardize=None,
     )
+
+    input = [img_fmri, img_fmri]
 
     if keep_masked_maps:
         # TODO (nilearn >=0.15)
@@ -246,9 +248,9 @@ def test_resampling_to_mask(
         with pytest.warns(
             FutureWarning, match='"keep_masked_maps" parameter will be removed'
         ):
-            signals = masker.fit_transform([img_fmri, img_fmri])
+            signals = masker.fit_transform(input)
     else:
-        signals = masker.fit_transform([img_fmri, img_fmri])
+        signals = masker.fit_transform(input)
 
     expected_n_regions = n_regions
     if not keep_masked_maps:
@@ -259,8 +261,8 @@ def test_resampling_to_mask(
         expected_n_regions,
         signals,
         length,
-        ref_affine=mask22_img.affine,
-        ref_shape=mask22_img.shape,
+        ref_affine=mask_img.affine,
+        ref_shape=mask_img.shape,
     )
 
 
@@ -276,18 +278,20 @@ def test_resampling_to_maps(
     img_fmri,
 ):
     """Test resampling to maps in MultiNiftiMapsMasker."""
-    _, mask22_img = generate_fake_fmri(
+    _, mask_img = generate_fake_fmri(
         shape_mask, affine=affine_eye, length=length
     )
-    maps33_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
+    maps_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
 
     masker = MultiNiftiMapsMasker(
-        maps33_img,
-        mask_img=mask22_img,
+        maps_img,
+        mask_img=mask_img,
         resampling_target="maps",
         keep_masked_maps=keep_masked_maps,
         standardize=None,
     )
+
+    input = [img_fmri, img_fmri]
 
     if keep_masked_maps:
         # TODO (nilearn >=0.15)
@@ -295,9 +299,9 @@ def test_resampling_to_maps(
         with pytest.warns(
             FutureWarning, match='"keep_masked_maps" parameter will be removed'
         ):
-            signals = masker.fit_transform([img_fmri, img_fmri])
+            signals = masker.fit_transform(input)
     else:
-        signals = masker.fit_transform([img_fmri, img_fmri])
+        signals = masker.fit_transform(input)
 
     expected_n_regions = n_regions
     if not keep_masked_maps:
@@ -308,8 +312,8 @@ def test_resampling_to_maps(
         expected_n_regions,
         signals,
         length,
-        ref_affine=maps33_img.affine,
-        ref_shape=maps33_img.shape[:3],
+        ref_affine=maps_img.affine,
+        ref_shape=maps_img.shape[:3],
     )
 
 
@@ -324,16 +328,18 @@ def test_resampling_clipped_mask(
     shape3 = (16, 18, 20)  # maps
     affine2 = np.diag((2, 2, 2, 1))  # just for mask
 
-    _, mask22_img = generate_fake_fmri(shape2, length=1, affine=affine2)
-    maps33_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
+    _, mask_img = generate_fake_fmri(shape2, length=1, affine=affine2)
+    maps_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
 
     masker = MultiNiftiMapsMasker(
-        maps33_img,
-        mask_img=mask22_img,
+        maps_img,
+        mask_img=mask_img,
         resampling_target="maps",
         keep_masked_maps=keep_masked_maps,
         standardize=None,
     )
+
+    input = [img_fmri, img_fmri]
 
     if keep_masked_maps:
         # TODO (nilearn >=0.15)
@@ -341,9 +347,9 @@ def test_resampling_clipped_mask(
         with pytest.warns(
             FutureWarning, match='"keep_masked_maps" parameter will be removed'
         ):
-            signals = masker.fit_transform([img_fmri, img_fmri])
+            signals = masker.fit_transform(input)
     else:
-        signals = masker.fit_transform([img_fmri, img_fmri])
+        signals = masker.fit_transform(input)
 
     expected_n_regions = n_regions
     if not keep_masked_maps:
@@ -354,8 +360,8 @@ def test_resampling_clipped_mask(
         expected_n_regions,
         signals,
         length,
-        ref_affine=maps33_img.affine,
-        ref_shape=maps33_img.shape[:3],
+        ref_affine=maps_img.affine,
+        ref_shape=maps_img.shape[:3],
     )
 
     for t in signals:
