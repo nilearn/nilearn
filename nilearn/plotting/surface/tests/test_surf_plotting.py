@@ -4,7 +4,6 @@
 
 import re
 import tempfile
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -828,15 +827,14 @@ def test_plot_surf_roi(plt, engine, surface_image_roi, colorbar):
     )
 
 
-def test_plot_surf_roi_cmap_as_lookup_table(surface_image_roi):
+def test_plot_surf_roi_cmap_as_lookup_table(surface_image_roi, tmp_path):
     """Test colormap passed as BIDS lookup table."""
     lut = pd.DataFrame(
         {"index": [0, 1], "name": ["foo", "bar"], "color": ["#000", "#fff"]}
     )
     plot_surf_roi(surface_image_roi.mesh, roi_map=surface_image_roi, cmap=lut)
-    
+
     lut.to_csv(tmp_path / "lut.tsv", sep="\t", index=False)
-    
     plot_surf_roi(
         surface_image_roi.mesh,
         roi_map=surface_image_roi,
