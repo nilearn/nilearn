@@ -462,6 +462,7 @@ def resample_img(
     _check_resample_img_inputs(target_shape, target_affine, interpolation)
 
     img = stringify_path(img)
+    input_img_is_string = isinstance(img, str)
     img = check_niimg(img)
 
     # If later on we want to impute sform using qform add this condition
@@ -477,7 +478,6 @@ def resample_img(
             )
 
     # noop cases
-    input_img_is_string = isinstance(img, str)
     if _resampling_not_needed(img, target_affine, target_shape):
         if copy and not input_img_is_string:
             img = copy_img(img)
