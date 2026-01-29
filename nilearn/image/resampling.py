@@ -13,7 +13,7 @@ from scipy.ndimage import affine_transform, find_objects
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import _get_data, is_binary_data
+from nilearn._utils.niimg import _get_data, has_non_finite, is_binary_data
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -276,8 +276,9 @@ def _resample_one_img(
         # Integers are always finite
         has_not_finite = False
     else:
-        not_finite = np.logical_not(np.isfinite(data))
-        has_not_finite = np.any(not_finite)
+        has_not_finite, non_finite_mask = has_non_finite(
+            data, return_mask=True
+        )
     if has_not_finite:
         warnings.warn(
             "NaNs or infinite values are present in the data "
@@ -294,7 +295,7 @@ def _resample_one_img(
         from ..masking import extrapolate_out_mask
 
         data = extrapolate_out_mask(
-            data, np.logical_not(not_finite), iterations=2
+            data, np.logical_not(non_finite_mask), iterations=2
         )[0]
 
     # If data is binary and interpolation is continuous or linear,
@@ -332,7 +333,7 @@ def _resample_one_img(
             )
             # We need to resample the mask of not_finite values
             not_finite = affine_transform(
-                not_finite,
+                non_finite_mask,
                 A,
                 offset=b,
                 output_shape=target_shape,
