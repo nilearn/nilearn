@@ -29,7 +29,7 @@ def img1(affine_eye):
 
 
 @pytest.fixture
-def img_bin(affine_eye, has_inf, has_nan, non_bin):
+def img_binary(affine_eye, has_inf, has_nan, non_bin):
     data = np.ones((3, 3, 3, 3))
     if has_inf:
         data[0, 0, 0, 0] = np.inf
@@ -305,15 +305,15 @@ def test_repr_niimgs_with_niimg(
         (True, True, True, True),
     ],
 )
-def test_has_non_finite(img_bin, expected):
+def test_has_non_finite(img_binary, expected):
     """Test nilearn._utils.niimg.has_non_finite."""
-    data = _get_data(img_bin)
+    data = _get_data(img_binary)
     assert has_non_finite(data) == expected
 
 
 @pytest.mark.parametrize("has_inf,has_nan,non_bin", [(True, True, False)])
-def test_ensure_finite_data(img_bin):
-    data = _get_data(img_bin)
+def test_ensure_finite_data(img_binary):
+    data = _get_data(img_binary)
     data_returned = ensure_finite_data(data)
     expected_data = np.ones((3, 3, 3, 3))
     expected_data[0, 0, 0, 0] = 0
@@ -339,9 +339,9 @@ def test_ensure_finite_data(img_bin):
         (True, True, True, False, False),
     ],
 )
-def test_is_binary_niimg(img_bin, accept_non_finite, expected):
+def test_is_binary_niimg(img_binary, accept_non_finite, expected):
     """Test nilearn._utils.niimg.is_binary_niimg."""
     assert (
-        is_binary_niimg(img_bin, accept_non_finite=accept_non_finite)
+        is_binary_niimg(img_binary, accept_non_finite=accept_non_finite)
         == expected
     )
