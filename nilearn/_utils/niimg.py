@@ -199,7 +199,7 @@ def _mask_with_nonfinite(mask_base):
     return lambda block: mask_base(block) | ~np.isfinite(block)
 
 
-def is_binary_data(data, block_size=1_000_000, accept_non_finite=True):
+def is_binary_data(data, block_size=1_000_000, accept_non_finite=True) -> bool:
     """Return whether a given ndarray is binary or not.
     If accept_non_finite is True, nan and inf values are ignored.
     """
