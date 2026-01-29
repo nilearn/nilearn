@@ -56,36 +56,6 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
     return data
 
 
-def is_empty_niimg(img):
-    """Check if specified image is empty (all zeros, NaN or Inf).
-
-    Parameters
-    ----------
-    img : Nifti image/object
-        Image to check
-
-    Returns
-    -------
-    bool
-        True if the image is empty; False otherwise
-    """
-    data = img.dataobj
-    return is_empty_data(data)
-
-
-def is_empty_data(data):
-    """Check if specified proxy array or ndarray is empty
-    (all zeros, NaN or Inf).
-    """
-    for slice_index in range(data.shape[0]):
-        slice_data = data[slice_index]
-        # check if there is a finite value other then 0
-        if np.any(np.isfinite(slice_data) & (slice_data != 0)):
-            return False
-
-    return True
-
-
 @overload
 def has_non_finite(
     data: np.ndarray, return_mask: Literal[False] = False

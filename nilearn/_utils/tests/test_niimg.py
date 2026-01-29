@@ -15,7 +15,6 @@ from nilearn._utils.niimg import (
     has_non_finite,
     img_data_dtype,
     is_binary_niimg,
-    is_empty_niimg,
     load_niimg,
     repr_niimgs,
 )
@@ -52,12 +51,6 @@ def img1(data_ones, affine_eye):
 def img_binary(data_ones, affine_eye, has_inf, has_nan, non_bin):
     data_ones = _update_data(data_ones, has_inf, has_nan, non_bin)
     return Nifti1Image(data_ones, affine=affine_eye)
-
-
-@pytest.fixture
-def img_empty(data_zeros, affine_eye, has_inf, has_nan, non_bin):
-    data_zeros = _update_data(data_zeros, has_inf, has_nan, non_bin)
-    return Nifti1Image(data_zeros, affine=affine_eye)
 
 
 def test_new_img_like_side_effect(img1):
@@ -313,21 +306,6 @@ def test_repr_niimgs_with_niimg(
         repr_niimgs(img_3d_ones_eye, shorten=True)
         == f"{class_name}('{Path(filename).name[:18]}...')"
     )
-
-
-@pytest.mark.parametrize(
-    "has_inf,has_nan,non_bin,expected",
-    [
-        (False, False, False, True),
-        (True, False, False, True),
-        (False, True, False, True),
-        (True, True, False, True),
-        (False, False, True, False),
-        (True, True, True, False),
-    ],
-)
-def test_is_img_empty(img_empty, expected):
-    assert is_empty_niimg(img_empty) == expected
 
 
 @pytest.mark.parametrize(
