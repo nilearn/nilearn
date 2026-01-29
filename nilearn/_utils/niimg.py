@@ -167,6 +167,11 @@ def is_binary_niimg(niimg, block_size=1_000_000) -> bool:
     """
     niimg = load_niimg(niimg)
     data = niimg.dataobj
+    return is_binary_data(data, block_size)
+
+
+def is_binary_data(data, block_size=1_000_000):
+    """Return whether a given ndarray is binary or not."""
     flat = np.ravel(data)
 
     for i in range(0, flat.size, block_size):
