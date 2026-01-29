@@ -190,15 +190,19 @@ def is_binary_niimg(
 
 
 def _base_mask(block: np.ndarray) -> np.ndarray:
+    """Create a boolean mask for values equal to 0 or 1."""
     return (block == 0) | (block == 1)
 
 
 def _mask_with_nonfinite(mask_base):
+    """Extend specified mask function to include non-finite values."""
     return lambda block: mask_base(block) | ~np.isfinite(block)
 
 
 def is_binary_data(data, block_size=1_000_000, accept_non_finite=True):
-    """Return whether a given ndarray is binary or not."""
+    """Return whether a given ndarray is binary or not.
+    If accept_non_finite is True, nan and inf values are ignored.
+    """
     flat = np.ravel(data)
 
     mask_fn = _base_mask
