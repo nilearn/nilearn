@@ -13,7 +13,7 @@ from scipy.ndimage import affine_transform, find_objects
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import _get_data
+from nilearn._utils.niimg import _get_data, is_binary_data
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -299,7 +299,7 @@ def _resample_one_img(
 
     # If data is binary and interpolation is continuous or linear,
     # warn the user as this might be unintentional
-    if interpolation_order != 0 and np.array_equal(np.unique(data), [0, 1]):
+    if interpolation_order != 0 and is_binary_data(data):
         warnings.warn(
             "Resampling binary images with continuous or "
             "linear interpolation. This might lead to "
