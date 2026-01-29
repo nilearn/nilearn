@@ -1,6 +1,5 @@
 """Test the multi_nifti_labels_masker module."""
 
-import numpy as np
 import pytest
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
@@ -16,7 +15,6 @@ from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _img_labels
 from nilearn.maskers import MultiNiftiLabelsMasker
 from nilearn.maskers.tests.conftest import (
-    check_nifti_labels_masker_post_fit,
     check_nifti_labels_masker_post_transform,
 )
 
@@ -253,49 +251,3 @@ def test_resampling_clipped_labels(
     for t in signals:
         # Some regions have been clipped. Resulting signal must be zero
         assert (t.var(axis=0) == 0).sum() < expected_n_regions
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize("keep_masked_labels", [True, False])
-def test_atlas_data_different_fov(
-    affine_eye, img_labels, length, keep_masked_labels, n_regions
-):
-    """Test with data and atlas of different shape.
-
-    The atlas should be resampled to the data.
-    """
-    shape2 = (8, 9, 10)  # mask
-    shape22 = (5, 5, 6)
-    affine2 = 2 * np.eye(4)
-    affine2[-1, -1] = 1
-
-    _, mask22_img = generate_fake_fmri(
-        shape2, affine=affine_eye, length=length
-    )
-
-    fmri22_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
-
-    masker = MultiNiftiLabelsMasker(
-        img_labels, mask_img=mask22_img, keep_masked_labels=keep_masked_labels
-    )
-
-    masker.fit(fmri22_img)
-
-    check_nifti_labels_masker_post_fit(
-        masker, n_regions, ref_affine=affine2, ref_shape=shape2
-    )
-
-    signals = masker.transform(fmri22_img)
-
-    expected_n_regions = n_regions - 2
-    if not keep_masked_labels:
-        expected_n_regions = n_regions - 6
-
-    check_nifti_labels_masker_post_transform(
-        masker,
-        expected_n_regions,
-        signals,
-        length,
-        ref_affine=affine2,
-        ref_shape=shape2,
-    )

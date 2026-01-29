@@ -171,35 +171,40 @@ def test_nifti_labels_masker(
 
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
+@pytest.mark.parametrize(
+    "estimator", [NiftiLabelsMasker, MultiNiftiLabelsMasker]
+)
 def test_atlas_data_different_fov(
-    affine_eye, img_labels, length, keep_masked_labels, n_regions
+    affine_eye, img_labels, length, keep_masked_labels, n_regions, estimator
 ):
     """Test with data and atlas of different shape.
 
     The atlas should be resampled to the data.
     """
     shape2 = (8, 9, 10)  # mask
+    _, mask_img = generate_fake_fmri(shape2, affine=affine_eye, length=length)
+
     shape22 = (5, 5, 6)
     affine2 = 2 * np.eye(4)
     affine2[-1, -1] = 1
+    fmri_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
 
-    _, mask22_img = generate_fake_fmri(
-        shape2, affine=affine_eye, length=length
+    masker = estimator(
+        img_labels, mask_img=mask_img, keep_masked_labels=keep_masked_labels
     )
 
-    fmri22_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
-    masker = NiftiLabelsMasker(
-        img_labels, mask_img=mask22_img, keep_masked_labels=keep_masked_labels
-    )
+    input = fmri_img
+    if isinstance(masker, MultiNiftiLabelsMasker):
+        input = [fmri_img, fmri_img]
 
-    masker.fit(fmri22_img)
+    masker.fit(input)
 
     expected_n_regions = n_regions
     check_nifti_labels_masker_post_fit(
         masker, expected_n_regions, ref_affine=affine2, ref_shape=shape22
     )
 
-    signals = masker.transform(fmri22_img)
+    signals = masker.transform(input)
 
     expected_n_regions = n_regions - 2
     if not keep_masked_labels:
