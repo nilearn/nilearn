@@ -323,15 +323,25 @@ def test_ensure_finite_data(img_bin):
 
 
 @pytest.mark.parametrize(
-    "has_inf,has_nan,non_bin,expected",
+    "has_inf,has_nan,non_bin,accept_non_finite,expected",
     [
-        (False, False, False, True),
-        (True, False, False, True),
-        (False, True, False, True),
-        (False, False, True, False),
-        (True, True, True, False),
+        (False, False, False, True, True),
+        (False, False, False, False, True),
+        (True, False, False, True, True),
+        (True, False, False, False, False),
+        (False, True, False, True, True),
+        (False, True, False, False, False),
+        (True, True, False, True, True),
+        (True, True, False, False, False),
+        (False, False, True, True, False),
+        (False, False, True, False, False),
+        (True, True, True, True, False),
+        (True, True, True, False, False),
     ],
 )
-def test_is_binary_niimg(img_bin, expected):
+def test_is_binary_niimg(img_bin, accept_non_finite, expected):
     """Test nilearn._utils.niimg.is_binary_niimg."""
-    assert is_binary_niimg(img_bin) == expected
+    assert (
+        is_binary_niimg(img_bin, accept_non_finite=accept_non_finite)
+        == expected
+    )
