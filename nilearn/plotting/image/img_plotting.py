@@ -231,7 +231,7 @@ def _plot_img_with_bg(
                 threshold,
                 data,
                 percentile_func=fast_abs_percentile,
-                name="threshold"
+                name="threshold",
             )
 
         # Deal with automatic settings of plot parameters
