@@ -565,6 +565,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             # Just check that the mask is valid
             load_mask_img(self.mask_img_)
 
+        # generating the LUT must be done
+        # after masking and resampling
+        # as some labels may have been dropped
         self.lut_ = self._generate_lut()
 
         self._original_region_ids = self.lut_["index"].to_list()
