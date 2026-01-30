@@ -201,7 +201,6 @@ def _plot_img_with_bg(
         if the specified threshold is a negative number
     """
     check_params(locals())
-
     check_threshold_not_negative(threshold)
 
     show_nan_msg = False
@@ -239,7 +238,6 @@ def _plot_img_with_bg(
                 percentile_func=fast_abs_percentile,
                 name="threshold",
             )
-
         img = new_img_like(img, as_ndarray(data), affine)
 
     display = display_factory(display_mode)(
