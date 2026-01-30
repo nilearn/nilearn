@@ -38,6 +38,21 @@ linkcode_resolve = make_linkcode_resolve
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, str(Path("..").absolute()))
 
+# -- Plotly Configuration ----------------------------------------------------
+
+try:
+    import plotly.io as pio
+
+    pio.renderers.default = "sphinx_gallery"
+except ImportError:
+    import warnings
+
+    warnings.warn(
+        stacklevel=2,
+        message="Plotly is not installed. Plotly figures will not be shown.",
+        category=UserWarning,
+    )
+
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
