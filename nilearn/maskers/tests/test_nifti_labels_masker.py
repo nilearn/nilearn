@@ -403,7 +403,9 @@ def test_resampling_errors(img_labels, resampling_target):
 
 
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
-def test_resampling_to_data(affine_eye, n_regions, length, keep_masked_labels):
+def test_resampling_to_data_with_mask(
+    affine_eye, n_regions, length, keep_masked_labels
+):
     """Test resampling to data in NiftiLabelsMasker."""
     # mask
     shape2 = (8, 9, 10, length)
@@ -428,7 +430,21 @@ def test_resampling_to_data(affine_eye, n_regions, length, keep_masked_labels):
         resampling_target="data",
         keep_masked_labels=keep_masked_labels,
     )
-    signals = masker.fit_transform(fmri_img)
+
+    masker.fit(fmri_img)
+
+    expected_n_regions = n_regions - 5
+    if not keep_masked_labels:
+        expected_n_regions = n_regions - 5
+
+    check_nifti_labels_masker_post_fit(
+        masker,
+        expected_n_regions,
+        ref_affine=affine2,
+        ref_shape=shape22[:3],
+    )
+
+    signals = masker.transform(fmri_img)
 
     expected_n_regions = n_regions - 6
     if not keep_masked_labels:
@@ -785,12 +801,15 @@ def test_with_mask(
         assert np.allclose(get_data(masker.region_atlas_), masked_labels_data)
 
 
-def generate_labels(n_regions: int, background: str = ""):
+def generate_labels(n_regions: int | list[int], background: str = ""):
     """Create list of strings to use as labels."""
     labels = []
     if background:
         labels.append(background)
-    labels.extend([f"region_{i + 1!s}" for i in range(n_regions)])
+    if isinstance(n_regions, int):
+        labels.extend([f"region_{i + 1!s}" for i in range(n_regions)])
+    else:
+        labels.extend([f"region_{i + 1!s}" for i in n_regions])
     return labels
 
 
@@ -1292,7 +1311,15 @@ def test_region_names_ids_match_after_fit(
 
     masker.fit_transform(fmri_img)
 
-    tmp = generate_labels(n_regions, background=background)
+    # TODO adapt regions depending on masking and resampling
+    if masking:
+        if not keep_masked_labels:
+            tmp = generate_labels([0, 1, 7, 8], background=background)
+        else:
+            tmp = generate_labels(5, background=background)
+    else:
+        tmp = generate_labels(n_regions, background=background)
+
     if background is None:
         expected_lut = generate_expected_lut(["Background", *tmp])
     else:

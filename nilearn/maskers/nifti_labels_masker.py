@@ -499,8 +499,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         mask_logger("load_regions", self.labels_img, verbose=self.verbose)
 
-        self.labels_img_ = deepcopy(self.labels_img)
-        self.labels_img_ = check_niimg_3d(self.labels_img_)
+        labels_img_ = deepcopy(self.labels_img)
+        self.labels_img_ = check_niimg_3d(labels_img_)
 
         if self.labels:
             if self.lut is not None:
@@ -513,10 +513,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             if "background" in self.labels:
                 idx = self.labels.index("background")
                 self.labels[idx] = "Background"
-
-        self.lut_ = self._generate_lut()
-
-        self._original_region_ids = self.lut_["index"].to_list()
 
         if imgs is not None:
             imgs_ = check_niimg(imgs, atleast_4d=True)
@@ -568,6 +564,10 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
             # Just check that the mask is valid
             load_mask_img(self.mask_img_)
+
+        self.lut_ = self._generate_lut()
+
+        self._original_region_ids = self.lut_["index"].to_list()
 
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
