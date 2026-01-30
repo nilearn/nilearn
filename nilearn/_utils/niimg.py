@@ -93,13 +93,13 @@ def ensure_finite_data(data, raise_warning=True) -> np.ndarray:
     """
     has_not_finite, non_finite_mask = has_non_finite(data, return_mask=True)
     if has_not_finite:
-        data[non_finite_mask] = 0
         if raise_warning:
             warn(
                 "Non-finite values detected. "
                 "These values will be replaced with zeros.",
                 stacklevel=find_stack_level(),
             )
+        data[non_finite_mask] = 0
     return data
 
 
