@@ -226,6 +226,12 @@ def _plot_img_with_bg(
         if np.isnan(np.sum(data)):
             data = np.nan_to_num(data)
 
+        # Deal with automatic settings of plot parameters
+        if threshold == "auto":
+            # Threshold epsilon below a percentile value, to be sure that some
+            # voxels pass the threshold
+            threshold = float(fast_abs_percentile(data)) - 1e-5
+
         if threshold is not None:
             threshold = check_threshold(
                 threshold,
@@ -233,12 +239,6 @@ def _plot_img_with_bg(
                 percentile_func=fast_abs_percentile,
                 name="threshold",
             )
-
-        # Deal with automatic settings of plot parameters
-        if threshold == "auto":
-            # Threshold epsilon below a percentile value, to be sure that some
-            # voxels pass the threshold
-            threshold = float(fast_abs_percentile(data)) - 1e-5
 
         img = new_img_like(img, as_ndarray(data), affine)
 
