@@ -228,7 +228,10 @@ def _plot_img_with_bg(
 
         if threshold is not None:
             threshold = check_threshold(
-                threshold, data, percentile_func=fast_abs_percentile, name="threshold"
+                threshold,
+                data,
+                percentile_func=fast_abs_percentile,
+                name="threshold",
             )
 
         # Deal with automatic settings of plot parameters
