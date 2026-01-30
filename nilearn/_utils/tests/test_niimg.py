@@ -22,30 +22,23 @@ from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data, new_img_like
 
 
-def _update_data(data, has_inf, has_nan, non_bin):
+@pytest.fixture
+def img1(affine_eye):
+    data = np.ones((2, 2, 2, 2))
+    return Nifti1Image(data, affine=affine_eye)
+
+
+@pytest.fixture
+def img_binary(affine_eye, has_inf, has_nan, non_bin):
+    data = np.ones((3, 3, 3, 3))
+
     if has_inf:
         data[0, 0, 0, 0] = np.inf
     if has_nan:
         data[1, 1, 1, 1] = np.nan
     if non_bin:
         data[2, 2, 2, 2] = 5
-    return data
-
-
-@pytest.fixture
-def data_ones():
-    return np.ones((3, 3, 3, 3))
-
-
-@pytest.fixture
-def img1(data_ones, affine_eye):
-    return Nifti1Image(data_ones, affine=affine_eye)
-
-
-@pytest.fixture
-def img_binary(data_ones, affine_eye, has_inf, has_nan, non_bin):
-    data_ones = _update_data(data_ones, has_inf, has_nan, non_bin)
-    return Nifti1Image(data_ones, affine=affine_eye)
+    return Nifti1Image(data, affine=affine_eye)
 
 
 def test_new_img_like_side_effect(img1):
