@@ -2210,6 +2210,7 @@ def test_first_level_from_bids_no_session(tmp_path):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_first_level_from_bids_mismatch_run_index(tmp_path_factory):
     """Test error when run index is zero padded in raw but not in derivatives.
 
