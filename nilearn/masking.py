@@ -156,7 +156,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
     extrapolation = np.nansum(extrapolation, axis=0) / np.sum(
         np.isfinite(extrapolation), axis=0
     )
-    ensure_finite_data(extrapolation)
+    ensure_finite_data(extrapolation, raise_warning=False)
     new_data = np.zeros_like(masked_data)
     new_data[outer_shell] = extrapolation
     new_data[larger_mask] = masked_data[larger_mask]
