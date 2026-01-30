@@ -476,6 +476,7 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_surface_masker_mask_img_generate_report(surf_img_1d, surf_mask_1d):
     """Smoke test generate report."""
     masker = SurfaceMasker(surf_mask_1d, reports=True).fit()
