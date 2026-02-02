@@ -24,7 +24,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.param_validation import check_parameter_in_allowed
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.image import (
     check_niimg,
@@ -182,7 +182,7 @@ def filter_and_extract(
     return region_signals, aux
 
 
-def mask_logger(step, img=None, verbose=0):
+def mask_logger(step, img=None, verbose=0) -> None:
     """Log similar messages for all maskers."""
     repr = None
     if img is not None:

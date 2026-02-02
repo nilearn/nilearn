@@ -867,7 +867,9 @@ def _compute_t_stat_threshold(
     )
 
 
-def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
+def _check_inputs_permuted_ols(
+    n_jobs, tfce, masker, threshold, target_vars
+) -> None:
     # invalid according to joblib's conventions
     if n_jobs == 0:
         raise ValueError(

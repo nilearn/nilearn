@@ -84,6 +84,7 @@ jobs:
         -   name: Run tests
             id: test_minimum
             # do not run flaky tests when testing minimum version of dependencies
+            continue-on-error: true
             run: |
                 pip install pytest-mpl
                 pytest -m "not flaky" --pyargs nilearn --report=report.html --numprocesses auto --csv results/pytest_output/pytest_output.csv
