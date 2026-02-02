@@ -28,9 +28,9 @@ from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.image.image import (
     check_niimg,
+    check_volume_for_fit,
     concat_imgs,
     high_variance_confounds,
-    is_volume_image,
     new_img_like,
     smooth_img,
 )
@@ -397,12 +397,7 @@ class BaseMasker(
         return mask_img_
 
     def _check_imgs(self, imgs):
-        if not is_volume_image(imgs):
-            raise TypeError(
-                "input should be a NiftiLike object "
-                "or an iterable of NiftiLike object. "
-                f"Got: {imgs.__class__.__name__}"
-            )
+        check_volume_for_fit(imgs)
 
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
