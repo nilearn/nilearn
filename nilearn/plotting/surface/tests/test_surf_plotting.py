@@ -827,18 +827,30 @@ def test_plot_surf_roi(plt, engine, surface_image_roi, colorbar):
     )
 
 
-def test_plot_surf_roi_cmap_as_lookup_table(surface_image_roi, tmp_path):
-    """Test colormap passed as BIDS lookup table."""
+@pytest.mark.parametrize(
+    "cmap_source", ["pandas", "path", "str_path", "cmap_str"]
+)
+def test_plot_surf_roi_cmap_as_lookup_table(
+    surface_image_roi, tmp_path, cmap_source
+):
+    """Test colormap passed as BIDS lookup table. Supported formats are
+    pandas DataFrame, path to file, string path to file, and string colormap.
+    """
     lut = pd.DataFrame(
         {"index": [0, 1], "name": ["foo", "bar"], "color": ["#000", "#fff"]}
     )
-    plot_surf_roi(surface_image_roi.mesh, roi_map=surface_image_roi, cmap=lut)
-
     lut.to_csv(tmp_path / "lut.tsv", sep="\t", index=False)
+    lut_sources = {
+        "pandas": lut,
+        "path": tmp_path / "lut.tsv",
+        "str_path": (tmp_path / "lut.tsv").as_posix(),
+        "cmap_str": "viridis",  # check that string colormaps also work
+    }
+
     plot_surf_roi(
         surface_image_roi.mesh,
         roi_map=surface_image_roi,
-        cmap=tmp_path / "lut.tsv",
+        cmap=lut_sources[cmap_source],
     )
 
     lut = pd.DataFrame({"index": [0, 1], "name": ["foo", "bar"]})
