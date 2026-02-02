@@ -26,14 +26,15 @@ from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.exceptions import NotImplementedWarning
-from nilearn.image import (
+from nilearn.image.image import (
     check_niimg,
     concat_imgs,
     high_variance_confounds,
+    is_volume_image,
     new_img_like,
-    resample_img,
     smooth_img,
 )
+from nilearn.image.resampling import resample_img
 from nilearn.maskers._mixin import _ReportingMixin
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
@@ -394,6 +395,14 @@ class BaseMasker(
             check_compatibility_mask_and_images(self.mask_img, imgs)
 
         return mask_img_
+
+    def _check_imgs(self, imgs):
+        if not is_volume_image(imgs):
+            raise TypeError(
+                "input should be a NiftiLike object "
+                "or an iterable of NiftiLike object. "
+                f"Got: {imgs.__class__.__name__}"
+            )
 
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
