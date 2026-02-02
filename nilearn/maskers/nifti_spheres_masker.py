@@ -549,6 +549,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._fit_cache()
 
         if imgs is not None:
+            self._check_imgs(imgs)
             if self.reports:
                 if self.mask_img_ is not None:
                     resampl_imgs = self._cache(resample_img)(

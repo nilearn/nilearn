@@ -580,6 +580,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 **mask_args,
             )
         elif imgs is not None:
+            self._check_imgs(imgs)
             warnings.warn(
                 f"[{self.__class__.__name__}.fit] "
                 "Generation of a mask has been requested (imgs != None) "

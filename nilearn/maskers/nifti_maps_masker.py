@@ -430,6 +430,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         )
 
         if imgs is not None:
+            self._check_imgs(imgs)
             imgs_ = check_niimg(imgs)
 
         self.mask_img_ = self._load_mask(imgs)

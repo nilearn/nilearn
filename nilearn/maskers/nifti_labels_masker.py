@@ -481,7 +481,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         """
         del y
         check_params(self.__dict__)
-
         check_reduction_strategy(self.strategy)
         check_parameter_in_allowed(
             self.resampling_target,
@@ -519,6 +518,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         self._original_region_ids = self.lut_["index"].to_list()
 
         if imgs is not None:
+            self._check_imgs(imgs)
             imgs_ = check_niimg(imgs, atleast_4d=True)
 
         self.mask_img_ = self._load_mask(imgs)
