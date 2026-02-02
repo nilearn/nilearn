@@ -85,8 +85,78 @@ def is_volume_image(imgs):
 
 
 def is_empty_volume(img):
-    """Check if specified img is empty."""
+    """Check if specified img is empty.
+
+    Parameters
+    ----------
+    img : Nifti image
+        Should be a loaded nifti image
+    """
     return 0 in img.dataobj.shape
+
+
+def _get_file_imgs(imgs, wildcards=True):
+    if wildcards and EXPAND_PATH_WILDCARDS:
+        # Expand user path
+        expanded_niimg = str(Path(imgs).expanduser())
+        # Ascending sorting
+        filenames = sorted(glob.glob(expanded_niimg))
+
+        # processing filenames matching globbing expression
+        if len(filenames) >= 1 and glob.has_magic(imgs):
+            imgs = filenames  # iterable case
+        # niimg is an existing filename
+        elif [expanded_niimg] == filenames:
+            imgs = filenames[0]
+        # No files found by glob
+        elif glob.has_magic(imgs):
+            # No files matching the glob expression, warn the user
+            message = (
+                "No files matching the entered niimg expression: "
+                f"'{imgs}'.\n"
+                "You may have left wildcards usage activated: "
+                "please set the global constant "
+                "'nilearn.EXPAND_PATH_WILDCARDS' to False "
+                "to deactivate this behavior."
+            )
+            raise ValueError(message)
+        else:
+            raise ValueError(f"File not found: '{imgs}'")
+    elif not Path(imgs).exists():
+        raise ValueError(f"File not found: '{imgs}'")
+    return imgs
+
+
+def check_volume_for_fit(imgs):
+    """Check if specified `imgs` is a non-empty volume image or iterable of
+    non-empty volume images.
+
+    Raises
+    ------
+    TypeError
+        If image or iterable of images are not NiftiLike objects.
+    ValueError
+        If image or iterable of images are filenames but not found or empty
+    image.
+    """
+    if not is_volume_image(imgs):
+        raise TypeError(
+            "input should be a NiftiLike object "
+            "or an iterable of NiftiLike object. "
+            f"Got: {imgs.__class__.__name__}"
+        )
+
+    imgs = stringify_path(imgs)
+    if isinstance(imgs, str):
+        imgs = _get_file_imgs(imgs)
+    if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
+        for img in imgs:
+            check_volume_for_fit(img)
+
+    imgs = load_niimg(imgs)
+
+    if is_empty_volume(imgs):
+        raise ValueError("The image is empty.")
 
 
 def get_data(img):
@@ -2275,34 +2345,7 @@ def check_niimg(
     niimg = stringify_path(niimg)
 
     if isinstance(niimg, str):
-        if wildcards and EXPAND_PATH_WILDCARDS:
-            # Expand user path
-            expanded_niimg = str(Path(niimg).expanduser())
-            # Ascending sorting
-            filenames = sorted(glob.glob(expanded_niimg))
-
-            # processing filenames matching globbing expression
-            if len(filenames) >= 1 and glob.has_magic(niimg):
-                niimg = filenames  # iterable case
-            # niimg is an existing filename
-            elif [expanded_niimg] == filenames:
-                niimg = filenames[0]
-            # No files found by glob
-            elif glob.has_magic(niimg):
-                # No files matching the glob expression, warn the user
-                message = (
-                    "No files matching the entered niimg expression: "
-                    f"'{niimg}'.\n"
-                    "You may have left wildcards usage activated: "
-                    "please set the global constant "
-                    "'nilearn.EXPAND_PATH_WILDCARDS' to False "
-                    "to deactivate this behavior."
-                )
-                raise ValueError(message)
-            else:
-                raise ValueError(f"File not found: '{niimg}'")
-        elif not Path(niimg).exists():
-            raise ValueError(f"File not found: '{niimg}'")
+        niimg = _get_file_imgs(niimg, wildcards)
 
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, str):
