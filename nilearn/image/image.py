@@ -149,14 +149,16 @@ def check_volume_for_fit(imgs):
     imgs = stringify_path(imgs)
     if isinstance(imgs, str):
         imgs = _get_file_imgs(imgs)
+
     if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
-        for img in imgs:
+        for i, img in enumerate(imgs):
+            print(i)
             check_volume_for_fit(img)
+    else:
+        imgs = load_niimg(imgs)
 
-    imgs = load_niimg(imgs)
-
-    if is_empty_volume(imgs):
-        raise ValueError("The image is empty.")
+        if is_empty_volume(imgs):
+            raise ValueError("The image is empty.")
 
 
 def get_data(img):
