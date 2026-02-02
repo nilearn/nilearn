@@ -2323,11 +2323,8 @@ def test_check_niimg_4d_errors(affine_eye, img_3d_zeros_eye, shape_3d_default):
 
     a = img_3d_zeros_eye
     b = np.zeros(shape_3d_default)
-    c = check_niimg_4d([a, b], return_iterator=True)
-    with pytest.raises(
-        TypeError, match="Error encountered while loading image #1"
-    ):
-        list(c)
+    with pytest.raises(TypeError, match="input should be a NiftiLike object"):
+        c = check_niimg_4d([a, b], return_iterator=True)
 
     b = Nifti1Image(np.zeros((10, 20, 10)), affine_eye)
     c = check_niimg_4d([a, b], return_iterator=True)

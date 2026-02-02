@@ -299,7 +299,7 @@ def sanitize_displayed_maps(
 
 
 @fill_doc
-class BaseMasker(
+class _BaseMasker(
     _ReportingMixin,
     TransformerMixin,
     CacheMixin,
@@ -308,6 +308,16 @@ class BaseMasker(
     """Base class for NiftiMaskers."""
 
     _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
+
+    @property
+    def _n_features_out(self):
+        """Needed by sklearn machinery for set_ouput."""
+        return self.n_elements_
+
+
+@fill_doc
+class BaseMasker(_BaseMasker):
+    """Base class for NiftiMaskers."""
 
     _template_name = "body_masker.jinja"
 
@@ -358,11 +368,6 @@ class BaseMasker(
         tags.input_tags = InputTags()
         tags.estimator_type = "masker"
         return tags
-
-    @property
-    def _n_features_out(self):
-        """Needed by sklearn machinery for set_ouput."""
-        return self.n_elements_
 
     @abc.abstractmethod
     def fit(self, imgs=None, y=None):
@@ -552,15 +557,8 @@ class BaseMasker(
         return signals
 
 
-class _BaseSurfaceMasker(
-    _ReportingMixin,
-    TransformerMixin,
-    CacheMixin,
-    NilearnBaseEstimator,
-):
+class _BaseSurfaceMasker(_BaseMasker):
     """Class from which all surface maskers should inherit."""
-
-    _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
 
     _template_name = "body_surface_masker.jinja"
 
@@ -582,11 +580,6 @@ class _BaseSurfaceMasker(
         tags.input_tags = InputTags(surf_img=True, niimg_like=False)
         tags.estimator_type = "masker"
         return tags
-
-    @property
-    def _n_features_out(self):
-        """Needed by sklearn machinery for set_ouput."""
-        return self.n_elements_
 
     def _check_imgs(self, imgs) -> None:
         """Check that imgs is a SurfaceImage or an iterable of SurfaceImage."""
