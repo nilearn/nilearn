@@ -56,6 +56,27 @@ from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
 from nilearn.typing import ClusterThreshold, NiimgLike
 
 
+def is_volume_image(imgs):
+    """Return True if specified `imgs` is of type NiimgLike, SpatialImage, or
+    an iterable of those; False otherwise.
+
+    Parameters
+    ----------
+    imgs: object
+        object to check if volume image
+
+    Returns
+    -------
+    bool
+        True if volume object or iterable of volume objects, False otherwise
+
+    """
+    return isinstance(imgs, (NiimgLike, SpatialImage)) or (
+        hasattr(imgs, "__iter__")
+        and all(isinstance(x, (NiimgLike, SpatialImage)) for x in imgs)
+    )
+
+
 def get_data(img):
     """Get the image data as a :class:`numpy.ndarray`.
 
