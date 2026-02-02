@@ -71,10 +71,22 @@ def is_volume_image(imgs):
         True if volume object or iterable of volume objects, False otherwise
 
     """
-    return isinstance(imgs, (NiimgLike, SpatialImage)) or (
-        hasattr(imgs, "__iter__")
-        and all(isinstance(x, (NiimgLike, SpatialImage)) for x in imgs)
-    )
+    if not (
+        isinstance(imgs, (NiimgLike, SpatialImage))
+        or (hasattr(imgs, "__iter__"))
+    ):
+        return False
+
+    if hasattr(imgs, "__iter__"):
+        for x in imgs:
+            if not is_volume_image(x):
+                return False
+    return True
+
+
+def is_empty_volume(img):
+    """Check if specified img is empty."""
+    return 0 in img.dataobj.shape
 
 
 def get_data(img):
@@ -2253,27 +2265,12 @@ def check_niimg(
         check_niimg_3d, check_niimg_4d
 
     """
-    if not (
-        isinstance(niimg, (NiimgLike, SpatialImage))
-        or (hasattr(niimg, "__iter__"))
-    ):
+    if not is_volume_image(niimg):
         raise TypeError(
             "input should be a NiftiLike object "
             "or an iterable of NiftiLike object. "
             f"Got: {niimg.__class__.__name__}"
         )
-
-    if hasattr(niimg, "__iter__"):
-        for x in niimg:
-            if not (
-                isinstance(x, (NiimgLike, SpatialImage))
-                or hasattr(x, "__iter__")
-            ):
-                raise TypeError(
-                    "iterable inputs should contain "
-                    "NiftiLike objects or iterables. "
-                    f"Got: {x.__class__.__name__}"
-                )
 
     niimg = stringify_path(niimg)
 
