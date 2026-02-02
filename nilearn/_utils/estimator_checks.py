@@ -299,8 +299,7 @@ def return_expected_failed_checks(
         "check_estimators_dtypes": ("replaced by check_masker_dtypes"),
         "check_estimators_empty_data_messages": (
             "replaced by check_masker_empty_data_messages "
-            "for surface maskers and not implemented for nifti maskers "
-            "for performance reasons."
+            "for surface and nifti maskers."
         ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
@@ -2908,16 +2907,19 @@ def check_masker_empty_data_messages(estimator_orig):
     estimator = clone(estimator_orig)
 
     if accept_niimg_input(estimator):
-        return None
+        data = np.zeros((64, 64, 0))
+        imgs = Nifti1Image(data, np.eye(4))
+        mask = np.ones(_shape_3d_large())
+        mask_img = Nifti1Image(mask, affine=_affine_eye())
+    else:
+        imgs = _make_surface_img()
+        data = {
+            part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
+            for part in imgs.data.parts
+        }
+        imgs = SurfaceImage(imgs.mesh, data)
 
-    imgs = _make_surface_img()
-    data = {
-        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-        for part in imgs.data.parts
-    }
-    imgs = SurfaceImage(imgs.mesh, data)
-
-    mask_img = _make_surface_mask()
+        mask_img = _make_surface_mask()
 
     with pytest.raises(ValueError, match="The image is empty"):
         estimator.fit(imgs)
