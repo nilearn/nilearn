@@ -396,7 +396,7 @@ class BaseMasker(
 
         return mask_img_
 
-    def _check_imgs(self, imgs):
+    def _check_imgs(self, imgs) -> None:
         check_volume_for_fit(imgs)
 
     @fill_doc
@@ -421,6 +421,7 @@ class BaseMasker(
         %(signals_transform_nifti)s
         """
         check_is_fitted(self)
+        self._check_imgs(imgs)
 
         if (self.standardize == "zscore") or (self.standardize is True):
             # TODO (nilearn >= 0.14.0) remove or adapt warning
