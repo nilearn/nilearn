@@ -77,7 +77,7 @@ def is_volume_image(imgs):
     ):
         return False
 
-    if hasattr(imgs, "__iter__"):
+    if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
         for x in imgs:
             if not is_volume_image(x):
                 return False
