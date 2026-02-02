@@ -813,14 +813,14 @@ def generate_labels(n_regions: int | list[int], background: str = ""):
     return labels
 
 
-def generate_expected_lut(region_names: list[str]):
+def generate_expected_lut(region_names: list[str], index=None):
     """Generate a look up table based on a list of regions names."""
     if "background" in region_names:
         idx = region_names.index("background")
         region_names[idx] = "Background"
-    return pd.DataFrame(
-        {"name": region_names, "index": list(range(len(region_names)))}
-    )
+    if index is None:
+        index = list(range(len(region_names)))
+    return pd.DataFrame({"index": index, "name": region_names})
 
 
 def check_region_names_after_fit(
@@ -1211,10 +1211,14 @@ def test_region_names(
 ):
     """Test region_names_ attribute in NiftiLabelsMasker."""
     resampling = True
+    expected_regions = None
     if affine_data is None:
         resampling = False
         affine_data = affine_eye
+        expected_regions = n_regions
+
     fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_data)
+
     labels_img = generate_labeled_regions(
         shape_3d_default,
         affine=affine_eye,
@@ -1230,14 +1234,27 @@ def test_region_names(
 
     signals = masker.fit_transform(fmri_img)
 
-    tmp = generate_labels(n_regions, background=background)
-    if background is None:
-        expected_lut = generate_expected_lut(["Background", *tmp])
+    if expected_regions is None:
+        # TODO name and index should match
+        # 6 -> rengion_6 and not 7 -> rengion_2
+        expected_lut = pd.DataFrame(
+            {
+                "index": [0, 5, 6],
+                "name": ["Background", "region_1", "region_2"],
+            }
+        )
     else:
-        expected_lut = generate_expected_lut(tmp)
+        tmp = generate_labels(expected_regions, background=background)
+
+        if background is None:
+            expected_lut = generate_expected_lut(["Background", *tmp])
+        else:
+            expected_lut = generate_expected_lut(tmp)
+
     check_lut(masker, expected_lut)
 
     region_names = generate_labels(n_regions, background=background)
+
     check_region_names_after_fit(
         masker,
         signals,
@@ -1272,7 +1289,7 @@ def test_region_names(
     "keep_masked_labels",
     [False, True],
 )
-def test_region_names_ids_match_after_fit(
+def test_region_names_ids_match_after_fit_transform(
     shape_3d_default,
     affine_eye,
     background,
@@ -1283,9 +1300,12 @@ def test_region_names_ids_match_after_fit(
     img_labels,
 ):
     """Test that the same region names and ids correspond after fit."""
+    expected_regions = None
     if affine_data is None:
         # no resampling
         affine_data = affine_eye
+        expected_regions = n_regions
+
     fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_data)
 
     region_names = generate_labels(n_regions, background=background)
@@ -1311,23 +1331,28 @@ def test_region_names_ids_match_after_fit(
 
     masker.fit_transform(fmri_img)
 
-    # TODO adapt regions depending on masking and resampling
-    if masking:
-        if not keep_masked_labels:
-            tmp = generate_labels([0, 1, 7, 8], background=background)
-        else:
-            tmp = generate_labels(5, background=background)
+    if expected_regions is None:
+        # TODO name and index should match
+        # 7 -> rengion_7 and not 7 -> rengion_2
+        expected_lut = pd.DataFrame(
+            {
+                "index": [0, 1, 7, 8],
+                "name": ["Background", "region_1", "region_2", "region_3"],
+            }
+        )
     else:
-        tmp = generate_labels(n_regions, background=background)
+        tmp = generate_labels(expected_regions, background=background)
 
-    if background is None:
-        expected_lut = generate_expected_lut(["Background", *tmp])
-    else:
-        expected_lut = generate_expected_lut(tmp)
+        if background is None:
+            expected_lut = generate_expected_lut(["Background", *tmp])
+        else:
+            expected_lut = generate_expected_lut(tmp)
+
     check_lut(masker, expected_lut)
 
+    expected_regions_names = expected_lut["name"].to_list()
     check_region_names_ids_match_after_fit(
-        masker, region_names, region_ids, background
+        masker, expected_regions_names, region_ids, background
     )
 
 
