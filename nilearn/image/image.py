@@ -151,8 +151,7 @@ def check_volume_for_fit(imgs):
         imgs = _get_file_imgs(imgs)
 
     if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
-        for i, img in enumerate(imgs):
-            print(i)
+        for img in imgs:
             check_volume_for_fit(img)
     else:
         imgs = load_niimg(imgs)
