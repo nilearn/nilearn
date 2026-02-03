@@ -23,6 +23,8 @@ Fixes
 
 - :bdg-dark:`Code` Change default slice order of slicers and projectors to be x, y, z. (:gh:`5944` by `Hande Gözükan`_).
 
+- :bdg-primary:`Doc` Fix broken scikit-learn contributing anchor in the docs to avoid linkcheck failures (:gh:`5983` by `Mohammad Sadeghi Hardengi`_).
+
 
 Enhancements
 ------------

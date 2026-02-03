@@ -160,6 +160,7 @@ Some other past or present contributors are:
 * `Michelle Wang`_: Origami lab, McGill University, Montréal, Canada
 * `Milton Camacho`_: University of Calgary, Calgary, Alberta, Canada
 * `Mohammad Torabi`_: Origami lab, McGill University, Montréal, Canada
+* `Mohammad Sadeghi Hardengi`_: IAUN, Iran (M.Sc. student, AI and robotics)
 * `Moritz Boos`_
 * `Mudassir Chapra`_
 * `Myeong Seop Song`_
