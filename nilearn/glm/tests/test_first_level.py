@@ -708,6 +708,7 @@ def test_glm_random_state(random_state):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_scaling(rng):
     """Test the scaling function."""
     shape = (400, 10)
@@ -950,6 +951,7 @@ def test_fmri_inputs_errors(shape_4d_default):
         FirstLevelModel(mask_img=None, t_r=1.0).fit(fmri_data, design_matrices)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "to_ignore",
     [{"slice_time_ref": 0.5}, {"t_r": 2}, {"hrf_model": "fir"}],
@@ -2208,6 +2210,7 @@ def test_first_level_from_bids_no_session(tmp_path):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_first_level_from_bids_mismatch_run_index(tmp_path_factory):
     """Test error when run index is zero padded in raw but not in derivatives.
 
@@ -2721,6 +2724,7 @@ def test_first_level_from_bids_surface(tmp_path):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs",
     [
@@ -2752,6 +2756,7 @@ def test_generate_report_default(kwargs):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_generate_report_height_none_future_default():
     """Make sure generate_report raises a single FutureWarning
     about the deprecation of the default threshold.
@@ -2782,6 +2787,7 @@ def test_generate_report_height_none_future_default():
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", [4, DEFAULT_Z_THRESHOLD])
 def test_generate_report_threshold_unused(threshold):
     """Make sure generate_report raises a single warning,

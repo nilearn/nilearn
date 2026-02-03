@@ -127,7 +127,7 @@ Pull Requests
 We welcome pull requests from all community members, if they follow the
 :ref:`contribution_guidelines` inspired from scikit learn conventions. (More
 details on their process are available
-:sklearn:`here <developers/contributing.html#contributing-code>`).
+:sklearn:`here <developers/contributing.html#contributing-code-and-documentation>`).
 
 Using tox
 =========
