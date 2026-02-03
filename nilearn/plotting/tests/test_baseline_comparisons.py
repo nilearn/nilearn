@@ -127,6 +127,7 @@ def test_plot_functions_no_colorbar(plot_func, img_3d_mni):
 
 
 @pytest.mark.mpl_image_compare
+@pytest.mark.slow
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_colorbar_ticks(plot_func, img_3d_mni):
     """Test parameter for colorbar."""

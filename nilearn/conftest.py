@@ -60,11 +60,8 @@ if not is_gil_enabled():
             # making the tests thread unsafe
             # therefore we skip them when testing without the GIL
             "datasets",
-            # TODO: skipping those sub-packages for now
-            "maskers",
+            # TODO
             "plotting",
-            "glm",
-            "decomposition",
         ]
     )
 

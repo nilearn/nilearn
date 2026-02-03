@@ -236,6 +236,7 @@ def test_errors():
         masker.fit()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("create_files", (True, False))
 def test_errors_field_of_view(
     tmp_path, length, affine_eye, shape_3d_default, create_files, img_maps
