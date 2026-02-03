@@ -31,6 +31,13 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
     """Get the data in the image without having a side effect \
     on the Nifti1Image object.
 
+    This function will create a copy of the image and load data to new image
+    if:
+
+    - image data is not loaded to cache,
+    - ``ensure_finite`` is `True`
+    - ``copy_data`` is `True`,
+
     Parameters
     ----------
     img : Nifti image/object
@@ -48,7 +55,7 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
     data : numpy array
         nilearn.image.get_data return from Nifti image.
     """
-    if copy_data:
+    if not img.in_memory or ensure_finite or copy_data:
         img = deepcopy(img)
 
     if is_gil_enabled():
