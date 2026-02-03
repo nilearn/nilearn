@@ -18,7 +18,6 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.param_validation import check_params
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.image import (
@@ -524,32 +523,11 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return embedded_images
 
-    def fit(self, imgs=None, y=None):
-        """Prepare signal extraction from regions.
-
-        All parameters are unused; they are for scikit-learn compatibility.
-
-        """
-        del y
-        check_params(self.__dict__)
-
-        if imgs is not None:
-            self._check_imgs(imgs)
-
-        self.clean_args_ = {} if self.clean_args is None else self.clean_args
-
-        # Reset warning message
-        # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
-
+    def _fit(self, imgs):
         error = (
             "Seeds must be a list of triplets of coordinates in "
             "native space.\n"
         )
-
-        self.mask_img_ = self._load_mask(imgs)
-
-        self._fit_cache()
 
         if imgs is not None:
             if self.reports:

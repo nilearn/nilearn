@@ -23,7 +23,10 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.niimg import repr_niimgs, safe_get_data
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.image.image import (
@@ -328,6 +331,37 @@ class BaseMasker(_BaseMasker):
 
     _template_name = "body_masker.jinja"
 
+    @fill_doc
+    def fit(self, imgs=None, y=None):
+        """Compute the mask corresponding to the data.
+
+        Parameters
+        ----------
+        imgs : :obj:`list` of Niimg-like objects or None, default=None
+            See :ref:`extracting_data`.
+            Data on which the mask must be calculated. If this is a list,
+            the affine is considered the same for all.
+
+        %(y_dummy)s
+        """
+        del y
+        check_params(self.__dict__)
+
+        if imgs is not None:
+            self._check_imgs(imgs)
+
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = []
+
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
+
+        self._fit_cache()
+
+        self.mask_img_ = self._load_mask(imgs)
+
+        return self._fit(imgs)
+
     @abc.abstractmethod
     @fill_doc
     def transform_single_imgs(
@@ -375,10 +409,6 @@ class BaseMasker(_BaseMasker):
         tags.input_tags = InputTags()
         tags.estimator_type = "masker"
         return tags
-
-    @abc.abstractmethod
-    def fit(self, imgs=None, y=None):
-        """Present only to comply with sklearn estimators checks."""
 
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
