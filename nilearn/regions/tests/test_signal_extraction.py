@@ -601,7 +601,7 @@ def test_signal_extraction_with_maps_and_labels_keep_masked(
     assert maps_signals.shape[1] == N_REGIONS
     assert maps_labels == list(range(len(maps_labels)))
     assert labels_signals.shape == (N_TIMEPOINTS, N_REGIONS)
-    assert labels_labels == labels[1:]
+    assert_equal(labels_labels, np.array(labels)[1:])
 
 
 @pytest.mark.thread_unsafe

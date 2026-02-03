@@ -328,6 +328,8 @@ def img_to_signals_labels(
         labels_index = {l: n for n, l in enumerate(labels)}
         for this_label in missing_labels:
             signals[:, labels_index[this_label]] = 0
+    else:
+        labels = list(set(np.unique(labels_data)) - {background_label})
 
     if return_masked_atlas:
         # finding the new labels image

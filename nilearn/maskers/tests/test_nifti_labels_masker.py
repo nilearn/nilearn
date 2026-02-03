@@ -108,8 +108,6 @@ def test_nifti_labels_masker(
     signals = masker.fit_transform(fmri_img)
 
     expected_n_regions = n_regions
-    if not keep_masked_labels:
-        expected_n_regions = n_regions - 1
 
     check_nifti_labels_masker_post_transform(
         masker,
@@ -199,7 +197,7 @@ def test_atlas_data_different_fov(
 
     masker.fit(input)
 
-    expected_n_regions = n_regions
+    expected_n_regions = n_regions - 2
     check_nifti_labels_masker_post_fit(
         masker, expected_n_regions, ref_affine=affine2, ref_shape=shape22
     )
@@ -433,10 +431,7 @@ def test_resampling_to_data_with_mask(
 
     masker.fit(fmri_img)
 
-    expected_n_regions = n_regions - 5
-    if not keep_masked_labels:
-        expected_n_regions = n_regions - 5
-
+    expected_n_regions = n_regions - 6
     check_nifti_labels_masker_post_fit(
         masker,
         expected_n_regions,
