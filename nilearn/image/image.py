@@ -95,7 +95,7 @@ def is_empty_volume(img):
     return 0 in img.dataobj.shape
 
 
-def _get_file_imgs(imgs, wildcards=True):
+def _get_imgs_as_filenames(imgs, wildcards=True):
     if wildcards and EXPAND_PATH_WILDCARDS:
         # Expand user path
         expanded_niimg = str(Path(imgs).expanduser())
@@ -148,7 +148,7 @@ def check_volume_for_fit(imgs):
 
     imgs = stringify_path(imgs)
     if isinstance(imgs, str):
-        imgs = _get_file_imgs(imgs)
+        imgs = _get_imgs_as_filenames(imgs)
 
     if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
         for img in imgs:
@@ -2346,7 +2346,7 @@ def check_niimg(
     niimg = stringify_path(niimg)
 
     if isinstance(niimg, str):
-        niimg = _get_file_imgs(niimg, wildcards)
+        niimg = _get_imgs_as_filenames(niimg, wildcards)
 
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, str):
