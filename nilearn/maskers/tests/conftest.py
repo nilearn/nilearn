@@ -46,36 +46,59 @@ def check_nifti_labels_masker_post_fit(
     ref_shape: tuple[int, int, int] | None = None,
     ref_affine=None,
 ) -> None:
-    """Run some common check on NiftiLabelsMasker post fit."""
+    """Run some common check on NiftiLabelsMasker post fit.
+
+    - check reference affine / shape have been applied to
+      - labels_img_
+    """
     if ref_affine is not None:
         assert_array_equal(masker.labels_img_.affine, ref_affine)
         if masker.mask_img_ is not None:
             assert_array_equal(masker.mask_img_.affine, ref_affine)
+        if hasattr(masker, "region_atlas_"):
+            assert_array_equal(masker.region_atlas_.affine, ref_affine)
 
     if ref_shape:
         assert len(ref_shape) == 3, "len(ref_shape) must be 3"
         assert masker.labels_img_.shape == ref_shape
         if masker.mask_img_ is not None:
             assert masker.mask_img_.shape == ref_shape
+        if hasattr(masker, "region_atlas_"):
+            assert masker.region_atlas_.shape == ref_shape
 
     assert masker.n_elements_ == expected_n_regions
 
-    # resampled_labels_img = masker.labels_img_
-    # labels = np.unique(get_data(resampled_labels_img))
+    resampled_labels_img = masker.labels_img_
+    if hasattr(masker, "region_atlas_"):
+        # get the masked / resampled image
+        # from post transform
+        # if it exists
+        resampled_labels_img = masker.region_atlas_
+    labels = np.unique(resampled_labels_img.get_fdata())
     # n_resampled_labels = len(labels)
 
-    # if masker.background_label in labels:
-    #     assert n_resampled_labels == expected_n_regions + 1
-    # else:
-    #     assert n_resampled_labels == expected_n_regions
+    # TODO
+    # assert masker.n_elements_ <= n_resampled_labels
 
-    # if hasattr(masker, "_lut_"):
-    #     # get the LUT that tracks content after masking / resampling
-    #     # done at transform time
-    #     # if it exists
-    #     assert len(masker._lut_) == n_resampled_labels
-    # else:
-    #     assert len(masker.lut_) == n_resampled_labels
+    # # if masker.background_label in labels:
+    # #     assert n_resampled_labels == expected_n_regions + 1
+    # # else:
+    # #     assert n_resampled_labels == expected_n_regions
+
+    lut = masker.lut_
+    if hasattr(masker, "_lut_"):
+        # get the LUT that tracks content after masking / resampling
+        # done at transform time
+        # if it exists
+        lut = masker._lut_
+
+    if masker.background_label in labels:
+        assert len(lut) - 1 == masker.n_elements_
+    else:
+        assert len(lut) == masker.n_elements_
+
+    # TODO
+    # assert lut["index"].to_list() == labels.tolist()
 
 
 def check_nifti_labels_masker_post_transform(
