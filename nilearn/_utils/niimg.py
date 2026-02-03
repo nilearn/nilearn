@@ -208,14 +208,14 @@ def is_binary_niimg(
     return is_binary_data(data, block_size, accept_non_finite)
 
 
-def _base_mask(block: np.ndarray) -> np.ndarray:
+def _binary_mask(block: np.ndarray) -> np.ndarray:
     """Create a boolean mask for values equal to 0 or 1."""
     return (block == 0) | (block == 1)
 
 
-def _mask_with_nonfinite(mask_base):
-    """Extend specified mask function to include non-finite values."""
-    return lambda block: mask_base(block) | ~np.isfinite(block)
+def _binary_mask_with_nonfinite(block: np.ndarray) -> np.ndarray:
+    """Create a boolean mask for values equal to 0, 1, nan, or +-inf."""
+    return _binary_mask(block) | ~np.isfinite(block)
 
 
 def is_binary_data(data, block_size=1_000_000, accept_non_finite=True) -> bool:
@@ -224,14 +224,14 @@ def is_binary_data(data, block_size=1_000_000, accept_non_finite=True) -> bool:
     """
     flat = np.ravel(data)
 
-    mask_fn = _base_mask
-    if accept_non_finite:
-        mask_fn = _mask_with_nonfinite(mask_fn)
+    mask_func = (
+        _binary_mask_with_nonfinite if accept_non_finite else _binary_mask
+    )
 
     for i in range(0, flat.size, block_size):
         block = flat[i : i + block_size]
 
-        mask = mask_fn(block)
+        mask = mask_func(block)
         if not mask.all():
             return False
 
