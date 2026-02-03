@@ -314,6 +314,13 @@ class _BaseMasker(
         """Needed by sklearn machinery for set_ouput."""
         return self.n_elements_
 
+    @abc.abstractmethod
+    def _check_imgs(self, imgs) -> None:
+        """Check if the images specified are not empty and of correct type for
+        this masker.
+        """
+        raise NotImplementedError()
+
 
 @fill_doc
 class BaseMasker(_BaseMasker):
