@@ -482,12 +482,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 # Just check that the mask is valid
                 load_mask_img(self.mask_img_)
 
-        self._maps_img_ = maps_img
+        self._post_fit_maps_img_ = maps_img
 
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._reporting_data = {
-                "maps_image": self._maps_img_,
+                "maps_image": self._post_fit_maps_img_,
                 "mask": self.mask_img_,
                 "dim": None,
                 "images": imgs,
@@ -502,7 +502,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return self
 
     def __sklearn_is_fitted__(self) -> bool:
-        return hasattr(self, "mask_img_") and hasattr(self, "_maps_img_")
+        return hasattr(self, "mask_img_") and hasattr(
+            self, "_post_fit_maps_img_"
+        )
 
     @property
     def n_elements_(self) -> int:
@@ -517,8 +519,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         .. nilearn_versionadded:: 0.9.2
         """
-        check_is_fitted(self)
-        return self._maps_img_.shape[3]
+        return self.maps_img_.shape[3]
 
     @property
     def maps_img_(self) -> Nifti1Image:
@@ -530,7 +531,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         at masker construction.
         """
         check_is_fitted(self)
-        return self._maps_img_
+        if hasattr(self, "_post_transform_maps_img_"):
+            return self._post_transform_maps_img_
+        return self._post_fit_maps_img_
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
@@ -604,7 +607,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         # or resampling of the data will be done at extract time.
 
         mask_img_ = self.mask_img_
-        maps_img_ = self._maps_img_
+        maps_img_ = self._post_fit_maps_img_
 
         imgs_ = check_niimg(imgs, atleast_4d=True)
 
@@ -727,7 +730,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         )
 
         # Drop the maps empty after masking and resampling
-        self._maps_img_ = index_img(maps_img_, labels)
+        self._post_transform_maps_img_ = index_img(maps_img_, labels)
 
         return region_signals
 

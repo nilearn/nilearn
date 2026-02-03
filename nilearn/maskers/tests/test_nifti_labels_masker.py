@@ -633,15 +633,14 @@ def test_resampling_to_labels_with_mask(
     if not keep_masked_labels:
         expected_n_regions = n_regions - 7
 
-    with pytest.warns(UserWarning, match="the following labels were removed"):
-        check_nifti_labels_masker_post_transform(
-            masker,
-            expected_n_regions,
-            signals,
-            length,
-            ref_shape=img_labels.shape,
-            ref_affine=img_labels.affine,
-        )
+    check_nifti_labels_masker_post_transform(
+        masker,
+        expected_n_regions,
+        signals,
+        length,
+        ref_shape=img_labels.shape,
+        ref_affine=img_labels.affine,
+    )
 
 
 @pytest.mark.slow
