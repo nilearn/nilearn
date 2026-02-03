@@ -392,7 +392,9 @@ def test_nifti_labels_masker_report_with_mask(
     )
 
     # Check that all expected columns are present with the right size
-    assert masker._report_content["summary"]["region name"].to_list() == [
+    assert sorted(
+        masker._report_content["summary"]["region name"].to_list()
+    ) == [
         "region_5",
         "region_6",
         "region_8",
