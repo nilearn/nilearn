@@ -110,7 +110,10 @@ def test_multi_nifti_maps_masker(
         ):
             signals11_list = masker.fit_transform(input)
     else:
-        signals11_list = masker.fit_transform(input)
+        with pytest.warns(
+            UserWarning, match="maps with the following indices were removed"
+        ):
+            signals11_list = masker.fit_transform(input)
 
     expected_n_regions = n_regions
     if not keep_masked_maps:

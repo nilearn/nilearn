@@ -103,13 +103,27 @@ def test_multi_nifti_labels_masker(
         ):
             signals11_list = masker11.fit_transform(signals_input)
     else:
-        signals11_list = masker11.fit_transform(signals_input)
+        with pytest.warns(
+            UserWarning,
+            match=(
+                "After applying mask to the labels image, "
+                "the following labels were removed"
+            ),
+        ):
+            signals11_list = masker11.fit_transform(signals_input)
 
-    check_nifti_labels_masker_post_transform(
-        masker11,
-        expected_n_regions,
-        signals11_list,
-        length,
-        ref_affine=affine_eye,
-        ref_shape=shape_3d_default,
-    )
+    with pytest.warns(
+        UserWarning,
+        match=(
+            "After applying mask to the labels image, "
+            "the following labels were removed"
+        ),
+    ):
+        check_nifti_labels_masker_post_transform(
+            masker11,
+            expected_n_regions,
+            signals11_list,
+            length,
+            ref_affine=affine_eye,
+            ref_shape=shape_3d_default,
+        )

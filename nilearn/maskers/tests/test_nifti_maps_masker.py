@@ -163,6 +163,11 @@ def test_data_atlas_different_shape(
             FutureWarning, match='"keep_masked_maps" parameter will be removed'
         ):
             signals = masker.transform(input)
+    elif keep_masked_maps is False:
+        with pytest.warns(
+            UserWarning, match="maps with the following indices were removed"
+        ):
+            signals = masker.transform(input)
     else:
         signals = masker.transform(input)
 
@@ -432,6 +437,11 @@ def test_resampling_to_target(
             FutureWarning, match='"keep_masked_maps" parameter will be removed'
         ):
             signals = masker.fit_transform(input)
+    elif keep_masked_maps is False:
+        with pytest.warns(
+            UserWarning, match="maps with the following indices were removed"
+        ):
+            signals = masker.fit_transform(input)
     else:
         signals = masker.fit_transform(input)
 
@@ -491,6 +501,11 @@ def test_resampling_clipped_mask(
         # only keep else block
         with pytest.warns(
             FutureWarning, match='"keep_masked_maps" parameter will be removed'
+        ):
+            signals = masker.fit_transform(input)
+    elif keep_masked_maps is False:
+        with pytest.warns(
+            UserWarning, match="maps with the following indices were removed"
         ):
             signals = masker.fit_transform(input)
     else:
