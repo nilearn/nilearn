@@ -276,9 +276,7 @@ def _resample_one_img(
         # Integers are always finite
         has_not_finite = False
     else:
-        has_not_finite, non_finite_mask = has_non_finite(
-            data, return_mask=True
-        )
+        has_not_finite, non_finite_mask = has_non_finite(data)
     if has_not_finite:
         warnings.warn(
             "NaNs or infinite values are present in the data "
