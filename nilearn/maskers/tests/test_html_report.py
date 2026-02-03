@@ -154,6 +154,7 @@ def input_parameters(masker_class, img_mask_eye, labels, img_labels):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
     [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
@@ -210,6 +211,7 @@ def test_displayed_maps_error(masker_class, input_parameters, displayed_maps):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
     [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
@@ -229,6 +231,7 @@ def test_displayed_maps_warning_too_many(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
     [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
@@ -241,6 +244,7 @@ def test_displayed_maps_warning_int_too_large(masker_class, input_parameters):
         masker.generate_report(7)
 
 
+@pytest.mark.thread_unsafe
 def test_nifti_spheres_masker_report_1_sphere(
     matplotlib_pyplot,  # noqa: ARG001
 ):
@@ -258,6 +262,7 @@ def test_nifti_spheres_masker_report_1_sphere(
     assert empty_div not in report.body
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 def test_nifti_labels_masker_report_no_image_for_fit(
     img_3d_rand_eye, n_regions, labels, img_labels
@@ -293,6 +298,7 @@ EXPECTED_COLUMNS = [
 ]
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 def test_nifti_labels_masker_report(
     img_3d_rand_eye,
@@ -355,6 +361,7 @@ def test_nifti_labels_masker_report(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
 def test_nifti_labels_masker_report_cut_coords(
     matplotlib_pyplot,  # noqa: ARG001
@@ -374,6 +381,7 @@ def test_nifti_labels_masker_report_cut_coords(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
     """Test for NiftiMasker reports with 4D data."""
     # Dummy 4D data
@@ -400,6 +408,7 @@ def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
     generate_and_check_masker_report(masker)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 def test_nifti_masker_overlaid_report(
     matplotlib_pyplot,  # noqa: ARG001
@@ -425,6 +434,7 @@ def test_nifti_masker_overlaid_report(
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 def test_multi_nifti_masker_generate_report_mask(
     img_3d_ones_eye, shape_3d_default, affine_eye
@@ -443,6 +453,7 @@ def test_multi_nifti_masker_generate_report_mask(
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 def test_multi_nifti_masker_generate_report_imgs_and_mask(
     shape_3d_default, affine_eye, img_fmri
@@ -465,6 +476,7 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_surface_masker_mask_img_generate_report(surf_img_1d, surf_mask_1d):
     """Smoke test generate report."""
     masker = SurfaceMasker(surf_mask_1d, reports=True).fit()
@@ -490,6 +502,7 @@ def test_surface_masker_minimal_report_no_fit(
     generate_and_check_masker_report(masker)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize("empty_mask", [True, False])
 def test_surface_masker_minimal_report_fit(
@@ -525,6 +538,7 @@ def test_surface_maps_masker_generate_report_engine_error(
         masker.generate_report(engine="invalid", displayed_maps=2)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.skipif(
     is_plotly_installed(),
     reason="Test requires plotly not to be installed.",
@@ -578,6 +592,7 @@ def test_surface_maps_masker_generate_report_plotly_out_figure_type(
     assert "<img" not in report_str
 
 
+@pytest.mark.thread_unsafe
 def test_surface_maps_masker_generate_report_matplotlib_out_figure_type(
     matplotlib_pyplot,  # noqa: ARG001
     surf_maps_img,
