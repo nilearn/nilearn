@@ -80,7 +80,7 @@ def has_non_finite(data: np.ndarray) -> tuple[bool, np.ndarray]:
     return has_not_finite, non_finite_mask
 
 
-def ensure_finite_data(data, raise_warning=True) -> np.ndarray:
+def ensure_finite_data(data: np.ndarray, raise_warning=True) -> np.ndarray:
     """Check if data contains NaN or inf values, set infinite values
     to 0 inplace if exists and return data.
     """
