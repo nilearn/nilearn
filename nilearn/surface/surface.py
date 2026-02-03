@@ -1184,7 +1184,8 @@ def _validate_mesh(mesh) -> None:
     - larger or equal to the length of the coordinates array
     - negative
     """
-    if has_non_finite(mesh.coordinates):
+    has_not_finite, _ = has_non_finite(mesh.coordinates)
+    if has_not_finite:
         raise ValueError(
             "Mesh coordinates must be finite. "
             "Current coordinates contains NaN or Inf values."
