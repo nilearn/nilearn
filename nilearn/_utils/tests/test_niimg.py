@@ -309,7 +309,8 @@ def test_repr_niimgs_with_niimg(
 def test_has_non_finite(img_binary, expected):
     """Test nilearn._utils.niimg.has_non_finite."""
     data = _get_data(img_binary)
-    assert has_non_finite(data) == expected
+    has_not_finite, _ = has_non_finite(data)
+    assert has_not_finite == expected
 
 
 @pytest.mark.parametrize("has_inf,has_nan,non_bin", [(True, True, False)])
