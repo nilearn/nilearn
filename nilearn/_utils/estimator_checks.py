@@ -118,7 +118,6 @@ from nilearn.image import get_data, index_img, new_img_like
 from nilearn.image.image import check_imgs_equal
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
-    MultiNiftiMasker,
     NiftiLabelsMasker,
     NiftiMapsMasker,
     NiftiMasker,
@@ -400,9 +399,6 @@ def return_expected_failed_checks(
             and scipy_version != "1.9.0"
         ):
             expected_failed_checks.pop("check_estimator_sparse_array")
-
-    if isinstance(estimator, (MultiNiftiMasker)) and SKLEARN_GTE_1_6:
-        expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if is_masker(estimator):
         expected_failed_checks |= {
