@@ -388,6 +388,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         del y
         check_params(self.__dict__)
 
+        if imgs is not None:
+            self._check_imgs(imgs)
+
         check_parameter_in_allowed(
             self.resampling_target,
             ("mask", "maps", "data", None),
@@ -430,7 +433,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         )
 
         if imgs is not None:
-            self._check_imgs(imgs)
             imgs_ = check_niimg(imgs)
 
         self.mask_img_ = self._load_mask(imgs)

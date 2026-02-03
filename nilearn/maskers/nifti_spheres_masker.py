@@ -533,6 +533,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         del y
         check_params(self.__dict__)
 
+        if imgs is not None:
+            self._check_imgs(imgs)
+
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         # Reset warning message
@@ -549,7 +552,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._fit_cache()
 
         if imgs is not None:
-            self._check_imgs(imgs)
             if self.reports:
                 if self.mask_img_ is not None:
                     resampl_imgs = self._cache(resample_img)(

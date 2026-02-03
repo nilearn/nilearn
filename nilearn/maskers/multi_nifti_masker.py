@@ -253,6 +253,9 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         del y
         check_params(self.__dict__)
 
+        if imgs is not None:
+            self._check_imgs(imgs)
+
         # Reset warning message
         # in case where the masker was previously fitted
         self._report_content["warning_messages"] = []
