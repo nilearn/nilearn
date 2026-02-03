@@ -167,11 +167,6 @@ def load_niimg(niimg, dtype=None):
     return niimg
 
 
-def is_empty_niimg(img):
-    """Check if specified img is empty."""
-    return 0 in img.dataobj.shape
-
-
 def is_binary_niimg(
     niimg, block_size=1_000_000, accept_non_finite=True
 ) -> bool:
