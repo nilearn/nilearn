@@ -852,9 +852,13 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         mask_logger("inverse_transform", verbose=self.verbose)
 
+        labels_img = self.labels_img_
+        if hasattr(self, "region_atlas_"):
+            labels_img = self.region_atlas_
+
         return signal_extraction.signals_to_img_labels(
             signals,
-            self.labels_img_,
+            labels_img,
             self.mask_img_,
             background_label=self.background_label,
         )
