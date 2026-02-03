@@ -231,6 +231,13 @@ def _plot_img_with_bg(
             # voxels pass the threshold
             threshold = float(fast_abs_percentile(data)) - 1e-5
 
+        if threshold is not None:
+            threshold = check_threshold(
+                threshold,
+                data,
+                percentile_func=fast_abs_percentile,
+                name="threshold",
+            )
         img = new_img_like(img, as_ndarray(data), affine)
 
     display = display_factory(display_mode)(
