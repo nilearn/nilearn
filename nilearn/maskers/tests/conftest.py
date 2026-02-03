@@ -6,7 +6,6 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nilearn.conftest import _make_mesh
-from nilearn.image import get_data
 from nilearn.surface import SurfaceImage
 
 
@@ -61,9 +60,9 @@ def check_nifti_labels_masker_post_fit(
 
     assert masker.n_elements_ == expected_n_regions
 
-    resampled_labels_img = masker.labels_img_
-    labels = np.unique(get_data(resampled_labels_img))
-    len(labels)
+    # resampled_labels_img = masker.labels_img_
+    # labels = np.unique(get_data(resampled_labels_img))
+    # n_resampled_labels = len(labels)
 
     # if masker.background_label in labels:
     #     assert n_resampled_labels == expected_n_regions + 1
