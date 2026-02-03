@@ -188,7 +188,10 @@ def test_atlas_data_different_fov(
     fmri_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
 
     masker = estimator(
-        img_labels, mask_img=mask_img, keep_masked_labels=keep_masked_labels
+        img_labels,
+        mask_img=mask_img,
+        keep_masked_labels=keep_masked_labels,
+        standardize=None,
     )
 
     input = fmri_img
@@ -202,7 +205,14 @@ def test_atlas_data_different_fov(
         masker, expected_n_regions, ref_affine=affine2, ref_shape=shape22
     )
 
-    signals = masker.transform(input)
+    if isinstance(masker, MultiNiftiLabelsMasker) and keep_masked_labels:
+        with pytest.warns(
+            FutureWarning,
+            match='"keep_masked_labels" parameter will be removed',
+        ):
+            signals = masker.fit_transform(input)
+    else:
+        signals = masker.fit_transform(input)
 
     expected_n_regions = n_regions - 2
     if not keep_masked_labels:
@@ -647,7 +657,14 @@ def test_resampling_to_clipped_labels(
     if isinstance(masker, MultiNiftiLabelsMasker):
         input = [fmri_img, fmri_img]
 
-    signals = masker.fit_transform(input)
+    if isinstance(masker, MultiNiftiLabelsMasker) and keep_masked_labels:
+        with pytest.warns(
+            FutureWarning,
+            match='"keep_masked_labels" parameter will be removed',
+        ):
+            signals = masker.fit_transform(input)
+    else:
+        signals = masker.fit_transform(input)
 
     expected_n_regions = n_regions
     if not keep_masked_labels:
