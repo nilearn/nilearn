@@ -12,6 +12,7 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
+from sklearn.utils._testing import ignore_warnings
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import (
@@ -81,6 +82,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+@ignore_warnings(category=RuntimeWarning)
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
 def test_nifti_labels_masker(
@@ -167,6 +169,7 @@ def test_nifti_labels_masker(
     )
 
 
+@ignore_warnings(category=RuntimeWarning)
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
 @pytest.mark.parametrize(
@@ -198,10 +201,7 @@ def test_atlas_data_different_fov(
     if isinstance(masker, MultiNiftiLabelsMasker):
         input = [fmri_img, fmri_img]
 
-    with pytest.warns(
-        UserWarning,
-        match=r"After resampling .* the following labels were removed",
-    ):
+    with pytest.warns(UserWarning, match="labels were removed"):
         masker.fit(input)
 
     expected_n_regions = n_regions - 2
@@ -215,17 +215,11 @@ def test_atlas_data_different_fov(
                 FutureWarning,
                 match='"keep_masked_labels" parameter will be removed',
             ),
-            pytest.warns(
-                UserWarning,
-                match=r"After resampling .* the following labels were removed",
-            ),
+            pytest.warns(UserWarning, match="labels were removed"),
         ):
             signals = masker.fit_transform(input)
     else:
-        with pytest.warns(
-            UserWarning,
-            match=r"After resampling .* the following labels were removed",
-        ):
+        with pytest.warns(UserWarning, match="labels were removed"):
             signals = masker.fit_transform(input)
 
     expected_n_regions = n_regions - 2
@@ -424,6 +418,7 @@ def test_resampling_errors(img_labels, resampling_target):
         masker.fit()
 
 
+@ignore_warnings(category=RuntimeWarning)
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
 def test_resampling_to_data_with_mask(
     affine_eye, n_regions, length, keep_masked_labels
@@ -452,10 +447,7 @@ def test_resampling_to_data_with_mask(
         resampling_target="data",
         keep_masked_labels=keep_masked_labels,
     )
-    with pytest.warns(
-        UserWarning,
-        match=r"After resampling .* the following labels were removed",
-    ):
+    with pytest.warns(UserWarning, match="labels were removed"):
         masker.fit(fmri_img)
 
     expected_n_regions = n_regions - 6
@@ -466,7 +458,8 @@ def test_resampling_to_data_with_mask(
         ref_shape=shape22[:3],
     )
 
-    signals = masker.transform(fmri_img)
+    with pytest.warns(UserWarning, match="labels were removed"):
+        signals = masker.fit_transform(fmri_img)
 
     expected_n_regions = n_regions - 6
     if not keep_masked_labels:
@@ -537,12 +530,13 @@ def test_resampling_to_target_no_mask(
             FutureWarning,
             match='"keep_masked_labels" parameter will be removed',
         ):
-            signals = masker.fit_transform(input)
+            if resampling_target == "data":
+                with pytest.warns(UserWarning, match="labels were removed"):
+                    signals = masker.fit_transform(input)
+            else:
+                signals = masker.fit_transform(input)
     elif resampling_target == "data":
-        with pytest.warns(
-            UserWarning,
-            match=r"After resampling .* the following labels were removed",
-        ):
+        with pytest.warns(UserWarning, match="labels were removed"):
             signals = masker.fit_transform(input)
     else:
         signals = masker.fit_transform(input)
@@ -570,10 +564,7 @@ def test_resampling_to_target_no_mask(
     # Test that compressing the image a second time should yield an image
     # with the same data as compressed_img.
     if resampling_target == "data":
-        with pytest.warns(
-            UserWarning,
-            match=r"After resampling .* the following labels were removed",
-        ):
+        with pytest.warns(UserWarning, match="labels were removed"):
             signals2 = masker.fit_transform(fmri_img)
     else:
         signals2 = masker.fit_transform(fmri_img)
@@ -584,6 +575,7 @@ def test_resampling_to_target_no_mask(
     assert_array_equal(get_data(compressed_img), get_data(compressed_img2))
 
 
+@ignore_warnings(category=RuntimeWarning)
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
 @pytest.mark.parametrize(
@@ -625,7 +617,11 @@ def test_resampling_to_labels_with_mask(
                 ):
                     signals = masker.fit_transform(input)
             else:
-                signals = masker.fit_transform(input)
+                with pytest.warns(UserWarning, match="labels were removed"):
+                    signals = masker.fit_transform(input)
+    elif not keep_masked_labels:
+        with pytest.warns(UserWarning, match="labels were removed"):
+            signals = masker.fit_transform(input)
     else:
         signals = masker.fit_transform(input)
 
@@ -643,6 +639,7 @@ def test_resampling_to_labels_with_mask(
     )
 
 
+@ignore_warnings(category=RuntimeWarning)
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
 @pytest.mark.parametrize(
@@ -694,10 +691,7 @@ def test_resampling_to_clipped_labels(
         ):
             signals = masker.fit_transform(input)
     elif not keep_masked_labels:
-        with pytest.warns(
-            UserWarning,
-            match="the following labels were removed",
-        ):
+        with pytest.warns(UserWarning, match="labels were removed"):
             signals = masker.fit_transform(input)
     else:
         signals = masker.fit_transform(input)
@@ -726,6 +720,7 @@ def test_resampling_to_clipped_labels(
         assert (t.var(axis=0) == 0).sum() < expected_n_regions
 
 
+@ignore_warnings(category=RuntimeWarning)
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
 def test_resampling_to_none_with_mask(
     affine_eye,
@@ -750,7 +745,11 @@ def test_resampling_to_none_with_mask(
         resampling_target=None,
         keep_masked_labels=keep_masked_labels,
     )
-    signals = masker.fit_transform(fmri_img)
+    if not keep_masked_labels:
+        with pytest.warns(UserWarning, match="labels were removed"):
+            signals = masker.fit_transform(fmri_img)
+    else:
+        signals = masker.fit_transform(fmri_img)
 
     expected_n_regions = n_regions
     if not keep_masked_labels:
@@ -781,6 +780,7 @@ def test_resampling_to_none_with_mask(
         masker.fit_transform(fmri_img)
 
 
+@ignore_warnings(category=RuntimeWarning)
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
 def test_with_mask(
@@ -801,7 +801,11 @@ def test_with_mask(
         mask_img=mask_img,
         keep_masked_labels=keep_masked_labels,
     )
-    signals = masker.fit_transform(fmri_img)
+    if not keep_masked_labels:
+        with pytest.warns(UserWarning, match="labels were removed"):
+            signals = masker.fit_transform(fmri_img)
+    else:
+        signals = masker.fit_transform(fmri_img)
 
     expected_n_regions = n_regions
     if not keep_masked_labels:
@@ -1281,9 +1285,9 @@ def test_region_names(
     )
 
     if resampling is True:
-        with pytest.warns(
-            UserWarning,
-            match=r"After resampling .* the following labels were removed",
+        with (
+            pytest.warns(UserWarning, match="labels were removed"),
+            pytest.warns(UserWarning, match="Too many names for the indices"),
         ):
             signals = masker.fit_transform(fmri_img)
     else:
@@ -1320,6 +1324,7 @@ def test_region_names(
 
 
 @pytest.mark.slow
+@ignore_warnings(category=RuntimeWarning)
 @pytest.mark.parametrize(
     "background",
     [None, "background", "Background"],
@@ -1387,10 +1392,15 @@ def test_region_names_ids_match_after_fit_transform(
     )
 
     if resampling:
-        with pytest.warns(
-            UserWarning,
-            match=r"After resampling .* the following labels were removed",
+        # if keep_masked_labels and masking:
+        with (
+            pytest.warns(UserWarning, match="labels were removed"),
+            pytest.warns(UserWarning, match="Too many names for the indices"),
         ):
+            masker.fit_transform(fmri_img)
+
+    elif not keep_masked_labels and masking and not resampling:
+        with pytest.warns(UserWarning, match="labels were removed"):
             masker.fit_transform(fmri_img)
     else:
         masker.fit_transform(fmri_img)

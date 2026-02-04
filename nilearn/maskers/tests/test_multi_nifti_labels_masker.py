@@ -1,6 +1,7 @@
 """Test the multi_nifti_labels_masker module."""
 
 import pytest
+from sklearn.utils._testing import ignore_warnings
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import (
@@ -64,6 +65,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+@ignore_warnings(category=RuntimeWarning)
 @pytest.mark.slow
 @pytest.mark.parametrize("keep_masked_labels", [True, False])
 def test_multi_nifti_labels_masker(
