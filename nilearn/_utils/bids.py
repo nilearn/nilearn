@@ -7,11 +7,7 @@ from nilearn.image.image import get_indices_from_image
 
 
 def generate_atlas_look_up_table(
-    function=None,
-    name=None,
-    index=None,
-    strict=False,
-    background_label=None,
+    function=None, name=None, index=None, strict=False, background_label=None
 ):
     """Generate a BIDS compatible look up table for an atlas.
 

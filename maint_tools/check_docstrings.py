@@ -302,12 +302,12 @@ def check_returns_yields_and_annotation(
                 f"- {ast_node.name} "
                 "- [red]missing Yields section in docstring"
             )
-        # elif has_return_value and not bool(np_docstring["Returns"]):
-        #     print(
-        #         f"{filename}:{ast_node.lineno} "
-        #         f"- {ast_node.name} "
-        #         "- [red]missing Return section in docstring"
-        #     )
+        elif has_return_value and not bool(np_docstring["Returns"]):
+            print(
+                f"{filename}:{ast_node.lineno} "
+                f"- {ast_node.name} "
+                "- [red]missing Return section in docstring"
+            )
 
     # no return & no yield → must be annotated as -> None
     elif not has_none_return_annotation(ast_node):
