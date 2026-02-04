@@ -33,6 +33,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg import (
     _get_data,
+    ensure_finite_data,
     load_niimg,
     repr_niimgs,
     safe_get_data,
@@ -247,7 +248,7 @@ def high_variance_confounds(
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
     else:
         imgs = check_niimg_4d(imgs)
-        sigs = as_ndarray(get_data(imgs))
+        sigs = as_ndarray(_get_data(imgs))
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
 
     del imgs  # help reduce memory consumption
@@ -360,7 +361,7 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         arr = arr.copy()
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
-        arr[np.logical_not(np.isfinite(arr))] = 0
+        ensure_finite_data(arr, raise_warning=False)
     if isinstance(fwhm, str) and (fwhm == "fast"):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
@@ -411,7 +412,7 @@ def smooth_img(imgs, fwhm):
         img = check_niimg(img)
         affine = img.affine
         filtered = smooth_array(
-            get_data(img), affine, fwhm=fwhm, ensure_finite=True, copy=True
+            _get_data(img), affine, fwhm=fwhm, ensure_finite=True, copy=True
         )
         ret.append(new_img_like(img, filtered, affine))
 
@@ -454,8 +455,8 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
 
     """
     img = check_niimg(img)
+    data = _get_data(img)
 
-    data = get_data(img)
     affine = img.affine
 
     cropped_data = data[tuple(slices)]
@@ -523,7 +524,7 @@ def crop_img(
     check_params(locals())
 
     img = check_niimg(img)
-    data = get_data(img)
+    data = _get_data(img)
     infinity_norm = max(-data.min(), data.max())
     passes_threshold = np.logical_or(
         data < -rtol * infinity_norm, data > rtol * infinity_norm
@@ -1742,7 +1743,7 @@ def clean_img(
     if mask_img is not None:
         signals = masking.apply_mask(imgs_, mask_img)
     else:
-        signals = get_data(imgs_).reshape(-1, imgs_.shape[-1]).T
+        signals = _get_data(imgs_).reshape(-1, imgs_.shape[-1]).T
 
     # Clean signal
     data = signal.clean(
