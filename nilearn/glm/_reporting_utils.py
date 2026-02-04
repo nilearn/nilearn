@@ -125,7 +125,7 @@ def turn_into_full_path(bunch, dir: Path) -> str | Bunch:
     return tmp
 
 
-def glm_model_attributes_to_dataframe(model):
+def glm_model_attributes_to_dataframe(model) -> pd.DataFrame:
     """Return a pandas dataframe with pertinent model attributes & information.
 
     Parameters

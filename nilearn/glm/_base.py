@@ -79,7 +79,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             "estimator_name": estimator_name,
         }
 
-    def _is_volume_glm(self):
+    def _is_volume_glm(self) -> bool:
         """Return if model is run on volume data or not."""
         return not (
             (
@@ -93,7 +93,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             )
         )
 
-    def _is_first_level_glm(self):
+    def _is_first_level_glm(self) -> bool:
         """Return True if this estimator is of type FirstLevelModel; False
         otherwise.
         """
