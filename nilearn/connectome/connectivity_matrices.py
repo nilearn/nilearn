@@ -19,7 +19,7 @@ from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.versions import SKLEARN_LT_1_6
 
 
-def _check_square(matrix):
+def _check_square(matrix) -> None:
     """Raise a ValueError if the input matrix is square.
 
     Parameters

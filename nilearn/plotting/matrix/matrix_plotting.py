@@ -28,7 +28,7 @@ from nilearn.plotting.matrix._utils import (
 
 def _configure_axis(
     axes, labels, label_size, x_label_rotation, y_label_rotation
-):
+) -> None:
     """Help for plot_matrix."""
     if not labels:
         axes.xaxis.set_major_formatter(plt.NullFormatter())
@@ -70,7 +70,7 @@ def _configure_grid(axes, tri, size):
             axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
 
 
-def _fit_axes(axes):
+def _fit_axes(axes) -> None:
     """Help for plot_matrix.
 
     This function redimensions the given axes to have
