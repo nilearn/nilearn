@@ -788,9 +788,13 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         # Create a lut that may be different from the fitted lut_
 
         labels = set(np.unique(safe_get_data(masked_atlas)))
-        desired_order = [*ids]
-        if self.background_label in labels:
-            desired_order = [self.background_label, *ids]
+
+        if self.keep_masked_labels:
+            desired_order = [*ids]
+            if self.background_label in labels:
+                desired_order = [self.background_label, *desired_order]
+        else:
+            desired_order = [*labels]
 
         mask = self.lut_["index"].isin(desired_order)
 
@@ -805,6 +809,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         self._lut_ = _lut_
 
         self.region_atlas_ = masked_atlas
+
+        # n_resampled_labels = len(np.unique(masked_atlas.get_fdata()))
+        # assert self.n_elements_ == n_resampled_labels - 1
 
         return region_signals
 

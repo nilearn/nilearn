@@ -126,9 +126,14 @@ def check_nifti_labels_masker_post_transform(
 
     assert masker.n_elements_ == expected_n_regions
     if masker.background_label in labels:
-        # TODO
-        # assert masker.n_elements_ == n_resampled_labels - 1
-        ...
+        try:
+            assert masker.n_elements_ == n_resampled_labels - 1, (
+                f"{masker.n_elements_} != {n_resampled_labels - 1}"
+            )
+        except Exception as e:
+            print(masker.lut_)
+            print(masker._lut_)
+            raise e
     else:
         assert masker.n_elements_ == n_resampled_labels
 
