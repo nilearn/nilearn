@@ -18,6 +18,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
+from nilearn._utils.param_validation import check_params
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.image import (
@@ -523,17 +524,14 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return embedded_images
 
-    def fit(
-        self,
-        imgs=None,
-        y=None,
-    ):
+    def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
         All parameters are unused; they are for scikit-learn compatibility.
 
         """
         del y
+        check_params(self.__dict__)
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
@@ -634,7 +632,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "seeds_") and hasattr(self, "n_elements_")
 
     @fill_doc

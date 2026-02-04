@@ -12,11 +12,12 @@ from scipy import linalg
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.param_validation import check_params
 
 
 def _check_lipschitz_continuous(
     f, ndim, lipschitz_constant, n_trials=10, random_state=42
-):
+) -> None:
     """Empirically check Lipschitz continuity of a function.
 
     If this test is passed, then we are empirically confident in the
@@ -149,6 +150,8 @@ def mfista(
     Jun 2014, Tubingen, Germany. IEEE
 
     """
+    check_params(locals())
+
     # initialization
     if init is None:
         init = {}

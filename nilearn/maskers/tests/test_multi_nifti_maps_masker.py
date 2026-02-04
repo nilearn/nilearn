@@ -11,8 +11,8 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _img_maps
 from nilearn.exceptions import DimensionError
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
@@ -168,6 +168,7 @@ def test_multi_nifti_maps_masker_errors(
         masker.fit_transform(signals_input)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("create_files", [True, False])
 def test_multi_nifti_maps_masker_errors_field_of_view(
     tmp_path,

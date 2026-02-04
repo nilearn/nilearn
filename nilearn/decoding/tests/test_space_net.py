@@ -11,17 +11,14 @@ from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
-from sklearn.utils.estimator_checks import (
-    ignore_warnings,
-    parametrize_with_checks,
-)
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     SpaceNetClassifier,
@@ -390,9 +387,16 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         screening_percentile=100.0,
     ).fit(X_, y)
 
-    sklogreg = LogisticRegression(
-        penalty="l1", fit_intercept=True, solver="liblinear", tol=tol, C=C
-    ).fit(X, y)
+    # TODO (sklearn >= 1.8)
+    # drop the else block
+    if SKLEARN_GTE_1_8:
+        sklogreg = LogisticRegression(
+            l1_ratio=1, fit_intercept=True, solver="liblinear", tol=tol, C=C
+        ).fit(X, y)
+    else:
+        sklogreg = LogisticRegression(
+            penalty="l1", fit_intercept=True, solver="liblinear", tol=tol, C=C
+        ).fit(X, y)
 
     # compare supports
     assert_array_equal(
@@ -403,6 +407,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     assert_array_equal(tvl1.predict(X_), sklogreg.predict(X))
 
 
+@pytest.mark.slow
 def test_lasso_vs_graph_net():
     """Test for one of the extreme cases of Graph-Net.
 
@@ -491,6 +496,7 @@ def test_crop_mask_empty_mask(mask_empty):
         _crop_mask(mask_empty)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
 def test_space_net_one_alpha_no_crash(model):
     """Regression test."""
@@ -546,8 +552,6 @@ def test_targets_in_y_space_net_regressor():
         regressor.fit(imgs, y)
 
 
-@ignore_warnings
-@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [SpaceNetRegressor, SpaceNetClassifier])
 # TODO
 # fails with cv=LeaveOneGroupOut()

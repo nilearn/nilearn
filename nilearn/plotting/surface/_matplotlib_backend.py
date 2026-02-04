@@ -251,7 +251,7 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
     return data_copy, _threshold(data, threshold, vmin, vmax), vmin, vmax
 
 
-def _check_figure_axes_inputs(figure, axes):
+def _check_figure_axes_inputs(figure, axes) -> None:
     """Check if the specified figure and axes are matplotlib objects."""
     if figure is not None and not isinstance(figure, plt.Figure):
         raise ValueError(

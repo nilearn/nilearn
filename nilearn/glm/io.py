@@ -13,7 +13,9 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+)
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
     sanitize_generate_report_input,
@@ -26,7 +28,7 @@ from nilearn.reporting.get_clusters_table import (
 from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 
 
-def _generate_model_metadata(out_file, model):
+def _generate_model_metadata(out_file, model) -> None:
     """Generate a sidecar JSON file containing model metadata.
 
     .. nilearn_versionadded:: 0.9.2
@@ -48,8 +50,8 @@ def _generate_model_metadata(out_file, model):
     }
     if not model._is_volume_glm():
         density = {}
-        for hemi in model.masker_.mask_img_.mesh.parts:
-            d = model.masker_.mask_img_.mesh.parts[hemi].n_vertices
+        for hemi in model._mask_img.mesh.parts:
+            d = model._mask_img.mesh.parts[hemi].n_vertices
             if d not in density:
                 density[d] = f"{d} vertices per hemisphere"
         model_metadata["Density"] = density
@@ -58,7 +60,7 @@ def _generate_model_metadata(out_file, model):
         json.dump(model_metadata, f_obj, indent=4, sort_keys=True)
 
 
-def _generate_dataset_description(out_file, model_level):
+def _generate_dataset_description(out_file, model_level) -> None:
     """Generate a BIDS dataset_description.json file with relevant metadata.
 
     .. nilearn_versionadded:: 0.9.2
@@ -118,8 +120,8 @@ def save_glm_to_bids(
             :obj:`~nilearn.glm.second_level.SecondLevelModel`
         First- or second-level model from which to save outputs.
 
-    contrasts : :obj:`str` or array of shape (n_col) or :obj:`list` \
-                of (:obj:`str` or array of shape (n_col)) or :obj:`dict`
+    contrasts : :obj:`str` or array of shape (n_col), or :obj:`list` \
+                of (:obj:`str` or array of shape (n_col)), or :obj:`dict`
         Contrast definitions.
 
         If a dictionary is passed then it must be a dictionary of
@@ -128,6 +130,77 @@ def save_glm_to_bids(
 
         Arrays may be 1D or 2D, with 1D arrays typically being
         t-contrasts and 2D arrays typically being F-contrasts.
+
+        ..  admonition:: Contrasts names and output filenames
+            :class: important
+
+            It is important to note that the content of ``contrasts``
+            may greatly influence the output filenames.
+
+            For a model with a design matrix with 3 regressors:
+
+            - "win"
+            - "neutral"
+            - "intercept"
+
+            Passing a list of arrays:
+
+            .. code-block:: python
+
+                contrasts=[
+                    np.asarray([1, 0, 0]),
+                    np.asarray([0, 1, 0]),
+                    np.asarray([1, -1, 0]),
+                ]
+
+            would give output files:
+
+            - ``contrast-100_stat-t_statmap.nii.gz``
+            - ``contrast-010_stat-t_statmap.nii.gz``
+            - ``contrast-1Minus10_stat-t_statmap.nii.gz``
+
+            Passing a list of strings
+            with names matching regressors names:
+
+            .. code-block:: python
+
+                contrasts=[
+                    "win",
+                    "neutral",
+                    "win - neutral",
+                ]
+
+            would give output files:
+
+            - ``contrast-Win_stat-t_statmap.nii.gz``
+            - ``contrast-Neutral_stat-t_statmap.nii.gz``
+            - ``contrast-WinMinusNeutral_stat-t_statmap.nii.gz``
+
+            Note also that the keys in a dictionary
+            may affect how files are named:
+
+            .. code-block:: python
+
+                contrasts={
+                    "WinMinusNeutral": "win - neutral",
+                }
+
+            will output these files where the keys are lower-cased:
+
+            - ``contrast-winminusneutral_stat-t_statmap.nii.gz``
+
+
+            but this dictionary:
+
+            .. code-block:: python
+
+                contrasts={
+                    "Win - Neutral": "win - neutral",
+                }
+
+            will output these files where the keys are camel-cased:
+
+            - ``contrast-winMinusNeutral_stat-t_statmap.nii.gz``
 
     %(first_level_contrast)s
 
@@ -418,16 +491,16 @@ def save_glm_to_bids(
     return model
 
 
-def _write_mask(model):
+def _write_mask(model) -> None:
     logger.log("Saving mask...", verbose=model.verbose)
     filenames = model._reporting_data["filenames"]
     out_dir = filenames["dir"]
     if model._is_volume_glm():
-        model.masker_.mask_img_.to_filename(out_dir / filenames["mask"])
+        model._mask_img.to_filename(out_dir / filenames["mask"])
     else:
         # need to convert mask from book to a type that's gifti friendly
 
-        mask = deepcopy(model.masker_.mask_img_)
+        mask = deepcopy(model._mask_img)
         for label, hemi in zip(["L", "R"], ["left", "right"], strict=False):
             mask.data.parts[hemi] = mask.data.parts[hemi].astype("uint8")
             density = mask.mesh.parts[hemi].n_vertices

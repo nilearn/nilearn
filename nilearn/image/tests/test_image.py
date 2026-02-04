@@ -29,6 +29,7 @@ from nilearn._utils.data_gen import (
     generate_labeled_regions,
     generate_maps,
 )
+from nilearn._utils.niimg import _get_data
 from nilearn._utils.testing import (
     assert_memory_less_than,
     with_memory_profiler,
@@ -1923,6 +1924,9 @@ def test_copy_img():
 
 @pytest.mark.thread_unsafe
 def test_copy_img_side_effect(img_4d_ones_eye):
+    # load data from proxy array to ndarray to make sure that
+    # data is not changed
+    _get_data(img_4d_ones_eye)
     hash1 = joblib.hash(img_4d_ones_eye)
     copy_img(img_4d_ones_eye)
     hash2 = joblib.hash(img_4d_ones_eye)
