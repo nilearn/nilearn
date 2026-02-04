@@ -363,6 +363,14 @@ class BaseMasker(_BaseMasker):
         return self._fit(imgs)
 
     @abc.abstractmethod
+    def _fit(self, imgs):
+        """Compute the mask corresponding to the data.
+
+        Should be implement in inheriting classes.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
     @fill_doc
     def transform_single_imgs(
         self, imgs, confounds=None, sample_mask=None, copy=True
