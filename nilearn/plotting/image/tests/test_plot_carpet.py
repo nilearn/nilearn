@@ -125,10 +125,16 @@ def test_plot_carpet_with_atlas_and_labels(
 def test_plot_carpet_standardize(
     matplotlib_pyplot, img_4d_mni, img_3d_ones_mni
 ):
-    """Check warning is raised and then suppressed with setting standardize."""
+    """Check warning is raised and then suppressed with setting standardize.
+
+    TODO (nilearn>=0.14) remove test
+    """
     match = "default strategy for standardize"
 
-    with pytest.deprecated_call(match=match):
+    with (
+        pytest.warns(FutureWarning, match=match),
+        pytest.warns(FutureWarning, match="boolean values for 'standardize'"),
+    ):
         plot_carpet(img_4d_mni, mask_img=img_3d_ones_mni)
 
     with warnings.catch_warnings(record=True) as record:

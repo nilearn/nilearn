@@ -47,6 +47,7 @@ from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
+from nilearn._base import SKLEARN_GTE_1_7
 from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,

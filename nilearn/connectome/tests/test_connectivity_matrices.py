@@ -1002,9 +1002,15 @@ def test_confounds_connectome_measure():
 
     # Clean confounds on 10 subjects with confounds filtered to 10 subjects in
     # length
-    cleaned_vectors = correlation_measure.fit_transform(
-        signals, confounds=confounds[:10]
-    )
+    with pytest.warns(
+        FutureWarning,
+        match="default strategy for standardize is currently 'zscore'",
+    ):
+        # TODO we should not be getting a warning here as
+        # we have set standardize="zscore_sample" above
+        cleaned_vectors = correlation_measure.fit_transform(
+            signals, confounds=confounds[:10]
+        )
 
     zero_matrix = np.zeros((confounds.shape[1], cleaned_vectors.shape[1]))
     assert_array_almost_equal(
@@ -1014,7 +1020,13 @@ def test_confounds_connectome_measure():
 
     # Confounds as pandas DataFrame
     confounds_df = DataFrame(confounds[:10])
-    correlation_measure.fit_transform(signals, confounds=confounds_df)
+    with pytest.warns(
+        FutureWarning,
+        match="default strategy for standardize is currently 'zscore'",
+    ):
+        # TODO we should not be getting a warning here as
+        # we have set standardize="zscore_sample" above
+        correlation_measure.fit_transform(signals, confounds=confounds_df)
 
 
 def test_confounds_connectome_measure_errors(signals):

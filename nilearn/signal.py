@@ -99,9 +99,9 @@ def standardize_signal(
                 "behavior by using the sample std. "
                 "In release 0.14.0, the default strategy "
                 "will be replaced by the new strategy, "
-                "the 'zscore' option will be removed. "
+                "the 'zscore' option will be removed "
                 "and using standardize=True will fall back "
-                "to 'zscore_sample'."
+                "to 'zscore_sample'. "
                 "To avoid this warning, please use 'zscore_sample' instead."
             )
             warnings.warn(
