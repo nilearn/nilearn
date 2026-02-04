@@ -21,6 +21,7 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg import ensure_finite_data, has_non_finite
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
     check_parameter_in_allowed,
@@ -1183,8 +1184,8 @@ def _validate_mesh(mesh) -> None:
     - larger or equal to the length of the coordinates array
     - negative
     """
-    non_finite_mask = np.logical_not(np.isfinite(mesh.coordinates))
-    if non_finite_mask.any():
+    has_not_finite, _ = has_non_finite(mesh.coordinates)
+    if has_not_finite:
         raise ValueError(
             "Mesh coordinates must be finite. "
             "Current coordinates contains NaN or Inf values."
@@ -2039,15 +2040,7 @@ def get_data(img, ensure_finite: bool = False) -> np.ndarray:
     data = np.concatenate(list(data.parts.values()), axis=0)
 
     if ensure_finite:
-        non_finite_mask = np.logical_not(np.isfinite(data))
-        if non_finite_mask.any():  # any non_finite_mask values?
-            warnings.warn(
-                "Non-finite values detected. "
-                "These values will be replaced with zeros.",
-                stacklevel=find_stack_level(),
-            )
-            data[non_finite_mask] = 0
-
+        return ensure_finite_data(data)
     return data
 
 
