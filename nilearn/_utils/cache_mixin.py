@@ -89,7 +89,7 @@ def cache(
     memory,
     func_memory_level=None,
     memory_level=None,
-    shelve=False,
+    shelve: bool = False,
     **kwargs,
 ):
     """Return a joblib.Memory object.

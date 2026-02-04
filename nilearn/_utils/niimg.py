@@ -26,7 +26,9 @@ def _get_data(img) -> np.ndarray:
     return data
 
 
-def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
+def safe_get_data(
+    img, ensure_finite: bool = False, copy_data: bool = False
+) -> np.ndarray:
     """Get the data in the image without having a side effect \
     on the Nifti1Image object.
 
@@ -82,7 +84,9 @@ def has_non_finite(data: np.ndarray) -> tuple[bool, np.ndarray]:
     return has_not_finite, non_finite_mask
 
 
-def ensure_finite_data(data: np.ndarray, raise_warning=True) -> np.ndarray:
+def ensure_finite_data(
+    data: np.ndarray, raise_warning: bool = True
+) -> np.ndarray:
     """Check if data contains NaN or inf values, set infinite values
     to 0 inplace if exists and return data.
     """
@@ -170,7 +174,7 @@ def load_niimg(niimg, dtype=None):
 
 
 def is_binary_niimg(
-    niimg, block_size=1_000_000, accept_non_finite=True
+    niimg, block_size=1_000_000, accept_non_finite: bool = True
 ) -> bool:
     """Return whether a given niimg is binary or not.
 
@@ -281,7 +285,7 @@ def repr_niimgs(niimgs, shorten=True):
     return _short_repr(repr(niimgs), shorten=shorten)
 
 
-def _short_repr(niimg_rep, shorten=True, truncate=20):
+def _short_repr(niimg_rep, shorten: bool = True, truncate: int = 20) -> str:
     """Give a shorter version of niimg representation."""
     # Make sure truncate has a reasonable value
     truncate = max(truncate, 10)

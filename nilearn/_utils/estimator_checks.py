@@ -707,7 +707,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
         yield (clone(estimator), check_glm_empty_data_messages)
 
 
-def _not_fitted_error_message(estimator):
+def _not_fitted_error_message(estimator) -> str:
     return (
         f"This {estimator.__class__.__name__} instance is not fitted yet. "
         "Call 'fit' with appropriate arguments before using this estimator."

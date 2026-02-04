@@ -10,7 +10,7 @@ from nilearn.surface.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
 
-def check_compatibility_mask_and_images(mask_img, run_imgs):
+def check_compatibility_mask_and_images(mask_img, run_imgs) -> None:
     """Check that mask type and image types are compatible.
 
     Images to fit should be a Niimg-Like

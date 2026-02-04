@@ -5,7 +5,7 @@ import numpy as np
 from nilearn._utils import logger
 
 
-def fast_abs_percentile(data, percentile=80):
+def fast_abs_percentile(data: np.ndarray, percentile=80) -> np.ndarray:
     """Implement a fast version of the percentile of the absolute value.
 
     Parameters
@@ -38,7 +38,7 @@ def fast_abs_percentile(data, percentile=80):
     return data[index]
 
 
-def is_spd(M, decimal=15):
+def is_spd(M: np.ndarray, decimal=15) -> bool:
     """Assert that input matrix is symmetric positive definite.
 
     M must be symmetric down to specified decimal places.
