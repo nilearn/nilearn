@@ -58,12 +58,12 @@ from nilearn.typing import ClusterThreshold, NiimgLike
 
 
 def is_volume_image(imgs):
-    """Return True if specified `imgs` is of type NiimgLike, SpatialImage, or
+    """Return True if specified ``imgs`` is of type NiimgLike, SpatialImage, or
     an iterable of those; False otherwise.
 
     Parameters
     ----------
-    imgs: object
+    imgs : object
         object to check if volume image
 
     Returns
@@ -86,12 +86,19 @@ def is_volume_image(imgs):
 
 
 def is_empty_volume(img):
-    """Check if specified img is empty.
+    """Check if the specified Nifti image ``img`` is empty.
+
+    Empty means any dimension of image data has length 0.
 
     Parameters
     ----------
-    img : Nifti image
-        Should be a loaded nifti image
+    img : :class:`nibabel.nifti1.Nifti1Image`
+        Should be a loaded nifti image.
+
+    Returns
+    -------
+    bool
+        True if the image is empty; False otherwise
     """
     return 0 in img.dataobj.shape
 
@@ -129,8 +136,13 @@ def _get_imgs_as_filenames(imgs, wildcards=True):
 
 
 def check_volume_for_fit(imgs):
-    """Check if specified `imgs` is a non-empty volume image or iterable of
+    """Check if specified ``imgs`` is a non-empty volume image or iterable of
     non-empty volume images.
+
+    Parameters
+    ----------
+    imgs : object
+        object to check if volume image
 
     Raises
     ------
