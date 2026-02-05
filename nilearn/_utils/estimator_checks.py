@@ -444,9 +444,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_dont_overwrite_parameters": (
             "replaced by check_img_estimator_dont_overwrite_parameters"
         ),
-        "check_estimators_empty_data_messages": (
-            "not implemented for nifti data performance reasons"
-        ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
@@ -2108,8 +2105,6 @@ def check_decoder_empty_data_messages(estimator_orig):
 
     Replaces sklearn check_estimators_empty_data_messages.
 
-    Not implemented for nifti data for performance reasons.
-    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
     """
     estimator = clone(estimator_orig)
 
@@ -2130,12 +2125,16 @@ def check_decoder_empty_data_messages(estimator_orig):
         random_state=42,
     )
 
-    imgs = _make_surface_img(n_samples)
-    data = {
-        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-        for part in imgs.data.parts
-    }
-    X = SurfaceImage(imgs.mesh, data)
+    if accept_niimg_input(estimator):
+        data = np.zeros((64, 64, 0))
+        X = Nifti1Image(data, np.eye(4))
+    else:
+        imgs = _make_surface_img(n_samples)
+        data = {
+            part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
+            for part in imgs.data.parts
+        }
+        X = SurfaceImage(imgs.mesh, data)
 
     y = _rng().random(y.shape)
 
