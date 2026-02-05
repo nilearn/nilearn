@@ -1584,10 +1584,8 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
         # TODO
         # some estimator can return some pretty different results
         # investigate why
-        if isinstance(estimator, Decoder):
+        if isinstance(estimator, (Decoder, SearchLight)):
             tol = 1e-5
-        elif isinstance(estimator, SearchLight):
-            tol = 1e-4
         elif isinstance(estimator, FREMClassifier):
             tol = 0.1
 
