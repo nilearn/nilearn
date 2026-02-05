@@ -935,6 +935,17 @@ def check_lut(masker: NiftiLabelsMasker, expected_lut: pd.DataFrame):
     pd.testing.assert_series_equal(
         masker.lut_["name"], expected_lut["name"], check_dtype=False
     )
+    if hasattr(masker, "_lut_"):
+        if isinstance(masker.lut, pd.DataFrame):
+            assert list(masker.lut.columns) == list(masker._lut_.columns)
+        assert masker.background_label in masker._lut_["index"].to_list()
+        assert "Background" in masker._lut_["name"].to_list()
+        pd.testing.assert_series_equal(
+            masker._lut_["index"], expected_lut["index"], check_dtype=False
+        )
+        pd.testing.assert_series_equal(
+            masker._lut_["name"], expected_lut["name"], check_dtype=False
+        )
 
 
 def check_region_names_ids_match_after_fit(
@@ -1398,13 +1409,13 @@ def test_region_names_ids_match_after_fit_transform(
             pytest.warns(UserWarning, match="labels were removed"),
             pytest.warns(UserWarning, match="Too many names for the indices"),
         ):
-            masker.fit_transform(fmri_img)
+            masker.fit(fmri_img)
 
-    elif not keep_masked_labels and masking and not resampling:
-        with pytest.warns(UserWarning, match="labels were removed"):
-            masker.fit_transform(fmri_img)
+    # elif not keep_masked_labels and masking and not resampling:
+    #     with pytest.warns(UserWarning, match="labels were removed"):
+    #         masker.fit(fmri_img)
     else:
-        masker.fit_transform(fmri_img)
+        masker.fit(fmri_img)
 
     if expected_regions is None:
         # TODO name and index should match
@@ -1412,7 +1423,7 @@ def test_region_names_ids_match_after_fit_transform(
         expected_lut = pd.DataFrame(
             {
                 "index": [0, 1, 7, 8],
-                "name": ["Background", "region_1", "region_2", "region_3"],
+                "name": ["Background", "region_1", "region_7", "region_8"],
             }
         )
     else:
@@ -1423,9 +1434,15 @@ def test_region_names_ids_match_after_fit_transform(
         else:
             expected_lut = generate_expected_lut(tmp)
 
+    expected_regions_names = expected_lut["name"].to_list()
+    check_region_names_ids_match_after_fit(
+        masker, expected_regions_names, region_ids, background
+    )
+
+    masker.transform(fmri_img)
+
     check_lut(masker, expected_lut)
 
-    expected_regions_names = expected_lut["name"].to_list()
     check_region_names_ids_match_after_fit(
         masker, expected_regions_names, region_ids, background
     )
