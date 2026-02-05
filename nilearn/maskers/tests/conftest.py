@@ -10,7 +10,7 @@ from nilearn.surface import SurfaceImage
 
 
 @pytest.fixture
-def data_1(shape_3d_default):
+def data_1(shape_3d_default) -> np.ndarray:
     """Return 3D zeros with a few 10 in the center."""
     data = np.zeros(shape_3d_default)
     data[2:-2, 2:-2, 2:-2] = 10
@@ -18,13 +18,13 @@ def data_1(shape_3d_default):
 
 
 @pytest.fixture
-def mask_img_1(data_1, affine_eye):
+def mask_img_1(data_1, affine_eye) -> Nifti1Image:
     """Return a mask image."""
     return Nifti1Image(data_1.astype("uint8"), affine_eye)
 
 
 @pytest.fixture
-def shape_mask():
+def shape_mask() -> tuple[int, int, int]:
     """Shape for masks."""
     return (13, 14, 15)
 
@@ -94,7 +94,7 @@ def check_nifti_labels_masker_post_transform(
     signals: np.ndarray,
     length: int | None = None,
     ref_shape: tuple[int, int, int] | None = None,
-    ref_affine=None,
+    ref_affine: np.ndarray | None = None,
 ) -> None:
     """Run some common check on NiftiLabelsMasker post transform."""
     if ref_affine is not None:
@@ -110,7 +110,10 @@ def check_nifti_labels_masker_post_transform(
             assert masker.mask_img_.shape == ref_shape
         assert masker.region_atlas_.shape == ref_shape
 
-    resampled_labels_img = masker.region_atlas_
+    if masker.keep_masked_labels:
+        resampled_labels_img = masker.labels_img_
+    else:
+        resampled_labels_img = masker.region_atlas_
     labels = np.unique(resampled_labels_img.get_fdata())
 
     lut = masker._lut_
@@ -122,18 +125,10 @@ def check_nifti_labels_masker_post_transform(
     else:
         assert len(lut) == masker.n_elements_
 
-    n_resampled_labels = len(labels)
-
     assert masker.n_elements_ == expected_n_regions
+    n_resampled_labels = len(labels)
     if masker.background_label in labels:
-        try:
-            assert masker.n_elements_ == n_resampled_labels - 1, (
-                f"{masker.n_elements_} != {n_resampled_labels - 1}"
-            )
-        except Exception as e:
-            print(masker.lut_)
-            print(masker._lut_)
-            raise e
+        assert masker.n_elements_ == n_resampled_labels - 1
     else:
         assert masker.n_elements_ == n_resampled_labels
 
@@ -143,7 +138,10 @@ def check_nifti_labels_masker_post_transform(
 
 
 def check_nifti_maps_masker_post_fit(
-    masker, expected_n_regions: int, ref_shape=None, ref_affine=None
+    masker,
+    expected_n_regions: int,
+    ref_shape: tuple[int, int, int] | None | None = None,
+    ref_affine: np.ndarray | None = None,
 ) -> None:
     """Run some common check on NiftiMapsMasker post fit."""
     assert masker.n_elements_ == expected_n_regions
@@ -186,9 +184,9 @@ def check_nifti_maps_masker_post_transform(
 def _check_signals(
     masker,
     expected_n_regions: int,
-    signals,
+    signals: np.ndarray | list[np.ndarray],
     length: int | None = None,
-    ref_affine=None,
+    ref_affine: np.ndarray | None = None,
     ref_shape: tuple[int, int, int] | None = None,
 ) -> None:
     """Run check on signals obtained from transform.

@@ -625,16 +625,17 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
         "4 labels "
         r"\(including background\).",
     ):
-        labels_signals, labels_labels, _ = img_to_signals_labels(
-            imgs=fmri_img,
-            labels_img=labeled_regions,
-            mask_img=mask_img,
-            keep_masked_labels=False,
+        labels_signals, labels_labels, new_labels_image = (
+            img_to_signals_labels(
+                imgs=fmri_img, labels_img=labeled_regions, mask_img=mask_img
+            )
         )
 
     # only 3 regions must be kept, others must be removed
     assert labels_signals.shape == (N_TIMEPOINTS, 3)
     assert len(labels_labels) == 3
+    # new image has 3 regions plus background
+    assert len(np.unique(new_labels_image.get_fdata())) == 4
 
     # apply img_to_signals_labels with a masking,
     # containing only 3 regions, and

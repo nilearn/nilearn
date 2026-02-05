@@ -661,12 +661,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         # from those passed at fit time.
         # So it may be needed to resample mask and labels,
         # if 'data' is the resampling target.
-        # We handle the resampling of labels and mask separately because the
-        # affine of the labels and mask images should not impact the extraction
-        # of the signal.
-        #
-        # Any resampling of the mask or labels is not 'kept' after transform,
-        # to avoid modifying the masker after fit.
         #
         # If the resampling target is different,
         # then resampling was already done at fit time
@@ -784,9 +778,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         self._lut_ = _lut_
 
         self.region_atlas_ = masked_atlas
-
-        # n_resampled_labels = len(np.unique(masked_atlas.get_fdata()))
-        # assert self.n_elements_ == n_resampled_labels - 1
 
         return region_signals
 
