@@ -135,7 +135,7 @@ def _get_imgs_as_filenames(imgs, wildcards=True):
     return imgs
 
 
-def check_volume_for_fit(imgs):
+def check_volume_for_fit(imgs) -> None:
     """Check if specified ``imgs`` is a non-empty volume image or iterable of
     non-empty volume images.
 
