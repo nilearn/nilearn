@@ -85,7 +85,7 @@ def is_volume_image(imgs) -> bool:
     return True
 
 
-def is_empty_volume(img):
+def is_empty_volume(img) -> bool:
     """Check if the specified Nifti image ``img`` is empty.
 
     Empty means any dimension of image data has length 0.
