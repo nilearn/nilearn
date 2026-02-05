@@ -364,9 +364,6 @@ def return_expected_failed_checks(
                 "does not apply - no relevant method"
             ),
             "check_estimators_dtypes": ("replaced by check_glm_dtypes"),
-            "check_estimators_empty_data_messages": (
-                "not implemented for nifti data for performance reasons"
-            ),
             "check_estimators_fit_returns_self": (
                 "replaced by check_glm_fit_returns_self"
             ),
@@ -2104,7 +2101,6 @@ def check_decoder_empty_data_messages(estimator_orig):
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
-
     """
     estimator = clone(estimator_orig)
 
@@ -2879,9 +2875,6 @@ def check_masker_empty_data_messages(estimator_orig):
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
-
-    Not implemented for nifti maskers for performance reasons.
-    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
     """
     estimator = clone(estimator_orig)
 
@@ -3918,19 +3911,22 @@ def check_glm_empty_data_messages(
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
-
-    Not implemented for nifti data for performance reasons.
-    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
     """
     estimator = clone(estimator_orig)
 
-    imgs, design_matrices = _make_surface_img_and_design()
-
-    data = {
-        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-        for part in imgs.data.parts
-    }
-    imgs = SurfaceImage(imgs.mesh, data)
+    if accept_niimg_input(estimator):
+        imgs = []
+        for _ in range(3):
+            data_nifti = np.zeros((7, 9, 0))
+            imgs.append(Nifti1Image(data_nifti, np.eye(4)))
+        design_matrices = pd.DataFrame([1] * len(imgs), columns=["intercept"])
+    else:
+        imgs, design_matrices = _make_surface_img_and_design()
+        data = {
+            part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
+            for part in imgs.data.parts
+        }
+        imgs = SurfaceImage(imgs.mesh, data)
 
     with pytest.raises(ValueError, match="empty"):
         # FirstLevel
