@@ -104,7 +104,6 @@ def test_nifti_labels_masker(
     # No exception raised here
     masker = NiftiLabelsMasker(
         img_labels,
-        resampling_target=None,
         keep_masked_labels=keep_masked_labels,
     )
     signals = masker.fit_transform(fmri_img)
@@ -123,7 +122,6 @@ def test_nifti_labels_masker(
     # No exception should be raised either
     masker = NiftiLabelsMasker(
         img_labels,
-        resampling_target=None,
         keep_masked_labels=keep_masked_labels,
     )
 
@@ -135,7 +133,7 @@ def test_nifti_labels_masker(
     )
 
     # transform
-    signals = masker.fit_transform(fmri_img)
+    signals = masker.transform(fmri_img)
 
     check_nifti_labels_masker_post_transform(
         masker,
@@ -150,7 +148,6 @@ def test_nifti_labels_masker(
     masker = NiftiLabelsMasker(
         img_labels,
         mask_img=mask11_img,
-        resampling_target=None,
         keep_masked_labels=keep_masked_labels,
     )
     signals = masker.fit_transform(fmri_img)
@@ -797,7 +794,6 @@ def test_with_mask(
 
     masker = NiftiLabelsMasker(
         img_labels,
-        resampling_target=None,
         mask_img=mask_img,
         keep_masked_labels=keep_masked_labels,
     )
@@ -826,7 +822,6 @@ def test_with_mask(
 
     masked_masker = NiftiLabelsMasker(
         masked_labels,
-        resampling_target=None,
         mask_img=mask_img,
         keep_masked_labels=keep_masked_labels,
     )
@@ -875,7 +870,7 @@ def generate_expected_lut(region_names: list[str], index=None):
     return pd.DataFrame({"index": index, "name": region_names})
 
 
-def check_region_names_after_fit(
+def check_region_names_after_transform(
     masker: NiftiLabelsMasker,
     signals: np.ndarray,
     region_names: list[str],
@@ -995,7 +990,9 @@ def test_regions_id_names_no_labels_no_lut(affine_eye, shape_3d_default):
     check_region_names_ids_match_after_fit(
         masker, region_names, region_ids, "Background"
     )
-    check_region_names_after_fit(masker, signals, region_names, "Background")
+    check_region_names_after_transform(
+        masker, signals, region_names, "Background"
+    )
 
     expected_lut = pd.DataFrame(
         columns=["index", "name"],
@@ -1035,7 +1032,9 @@ def test_regions_id_names_with_labels(
     check_region_names_ids_match_after_fit(
         masker, region_names, region_ids, "Background"
     )
-    check_region_names_after_fit(masker, signals, region_names, "Background")
+    check_region_names_after_transform(
+        masker, signals, region_names, "Background"
+    )
 
     expected_lut = pd.DataFrame(
         columns=["index", "name"],
@@ -1103,7 +1102,9 @@ def test_regions_id_names_lut(affine_eye, shape_3d_default):
     check_region_names_ids_match_after_fit(
         masker, region_names, region_ids, "Background"
     )
-    check_region_names_after_fit(masker, signals, region_names, "Background")
+    check_region_names_after_transform(
+        masker, signals, region_names, "Background"
+    )
 
     # fitted lut now includes background
     expected_lut = pd.DataFrame(
@@ -1314,7 +1315,7 @@ def test_region_names(
 
     region_names = generate_labels(n_regions, background=background)
 
-    check_region_names_after_fit(
+    check_region_names_after_transform(
         masker,
         signals,
         region_names,
@@ -1431,8 +1432,9 @@ def test_region_names_ids_match_after_fit_transform(
 
 
 @pytest.mark.parametrize("background", [None, "background", "Background"])
+@pytest.mark.parametrize("keep_masked_labels", [True, False])
 def test_region_names_with_non_sequential_labels(
-    shape_3d_default, affine_eye, background
+    shape_3d_default, affine_eye, background, keep_masked_labels
 ):
     """Test for atlases with region id that are not consecutive.
 
@@ -1441,7 +1443,7 @@ def test_region_names_with_non_sequential_labels(
     labels = [2001, 2002, 2101, 2102, 9170]
     fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
     labels_img = generate_labeled_regions(
-        shape_3d_default[:3],
+        shape_3d_default,
         affine=affine_eye,
         n_regions=len(labels),
         labels=[0, *labels],
@@ -1450,7 +1452,7 @@ def test_region_names_with_non_sequential_labels(
     masker = NiftiLabelsMasker(
         labels_img,
         labels=generate_labels(len(labels), background=background),
-        resampling_target=None,
+        keep_masked_labels=keep_masked_labels,
     )
 
     signals = masker.fit_transform(fmri_img)
@@ -1466,7 +1468,9 @@ def test_region_names_with_non_sequential_labels(
 
     region_names = generate_labels(len(labels), background=background)
 
-    check_region_names_after_fit(masker, signals, region_names, background)
+    check_region_names_after_transform(
+        masker, signals, region_names, background
+    )
 
 
 @pytest.mark.parametrize("background", [None, "background", "Background"])

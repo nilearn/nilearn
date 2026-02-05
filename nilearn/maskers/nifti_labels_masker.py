@@ -562,16 +562,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         mask_logger("fit_done", verbose=self.verbose)
 
-        labels = np.unique(self.labels_img_.get_fdata())
-        n_resampled_labels = len(labels)
-
-        n_elements_ = self.n_elements_
-
-        if self.background_label in labels:
-            assert n_elements_ + 1 == n_resampled_labels
-        else:
-            assert n_elements_ == n_resampled_labels
-
         return self
 
     def _check_labels(self):
@@ -758,12 +748,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         labels = set(np.unique(safe_get_data(masked_atlas)))
 
-        if self.keep_masked_labels:
-            desired_order = [*ids]
-            if self.background_label in labels:
-                desired_order = [self.background_label, *desired_order]
-        else:
-            desired_order = [*labels]
+        desired_order = [*ids]
+        if self.background_label in labels:
+            desired_order = [self.background_label, *desired_order]
 
         mask = self.lut_["index"].isin(desired_order)
 
