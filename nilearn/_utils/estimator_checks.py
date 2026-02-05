@@ -3914,6 +3914,8 @@ def check_glm_empty_data_messages(
     """
     estimator = clone(estimator_orig)
 
+    imgs: list[Nifti1Image] | SurfaceImage
+
     if accept_niimg_input(estimator):
         imgs = []
         for _ in range(3):
@@ -3921,12 +3923,14 @@ def check_glm_empty_data_messages(
             imgs.append(Nifti1Image(data_nifti, np.eye(4)))
         design_matrices = pd.DataFrame([1] * len(imgs), columns=["intercept"])
     else:
-        imgs, design_matrices = _make_surface_img_and_design()
+        surface_imgs, design_matrices = _make_surface_img_and_design()
         data = {
-            part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-            for part in imgs.data.parts
+            part: np.empty(0).reshape(
+                (surface_imgs.data.parts[part].shape[0], 0)
+            )
+            for part in surface_imgs.data.parts
         }
-        imgs = SurfaceImage(imgs.mesh, data)
+        imgs = SurfaceImage(surface_imgs.mesh, data)
 
     with pytest.raises(ValueError, match="empty"):
         # FirstLevel
