@@ -127,6 +127,7 @@ def test_matrix_plotting_reorder(matplotlib_pyplot, mat, labels):  # noqa: ARG00
     ax = plot_matrix(mat, labels=labels, reorder="complete")
 
 
+@pytest.mark.thread_unsafe
 def test_plot_matrix_empty_labels():
     """When all labels are empty, they are turned to None.
 

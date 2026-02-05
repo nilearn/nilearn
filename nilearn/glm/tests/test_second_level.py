@@ -1514,6 +1514,7 @@ def test_second_lvl_dataframe_computation(tmp_path, shape_3d_default):
 # -----------------------surface tests----------------------- #
 
 
+@pytest.mark.thread_unsafe
 def test_second_level_input_as_surface_image(surf_img_1d, n_subjects):
     """Test slm with a list surface images as input."""
     second_level_input = [surf_img_1d for _ in range(n_subjects)]
