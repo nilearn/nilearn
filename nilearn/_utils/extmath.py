@@ -38,7 +38,7 @@ def fast_abs_percentile(data: np.ndarray, percentile=80) -> np.ndarray:
     return data[index]
 
 
-def is_spd(M: np.ndarray, decimal=15) -> bool:
+def is_spd(M: np.ndarray, decimal: int = 15) -> bool:
     """Assert that input matrix is symmetric positive definite.
 
     M must be symmetric down to specified decimal places.

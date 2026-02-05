@@ -59,7 +59,7 @@ def largest_connected_component(volume) -> np.ndarray:
     return labels == label_count.argmax()
 
 
-def get_border_data(data: np.ndarray, border_size) -> np.ndarray:
+def get_border_data(data: np.ndarray, border_size: int) -> np.ndarray:
     """Return the data at the border of an array."""
     return np.concatenate(
         [
@@ -75,9 +75,9 @@ def get_border_data(data: np.ndarray, border_size) -> np.ndarray:
 
 def peak_local_max(
     image: np.ndarray,
-    min_distance=10,
-    threshold_abs=0,
-    threshold_rel=0.1,
+    min_distance: int = 10,
+    threshold_abs: float = 0,
+    threshold_rel: float = 0.1,
     num_peaks=np.inf,
 ) -> np.ndarray:
     """Find peaks in an image, and return them \

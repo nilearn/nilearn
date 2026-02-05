@@ -154,7 +154,7 @@ def _convert_bool2index(sample_mask):
     return sample_mask
 
 
-def _cast_to_int32(sample_mask) -> np.ndarray:
+def _cast_to_int32(sample_mask: np.ndarray) -> np.ndarray:
     """Ensure the sample mask dtype is signed."""
     new_dtype = np.int32
     if np.min(sample_mask) < 0:

@@ -20,7 +20,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.versions import compare_version
 
 
-def _make_graph_edges_3d(n_x, n_y, n_z) -> np.ndarray:
+def _make_graph_edges_3d(n_x: int, n_y: int, n_z: int) -> np.ndarray:
     """Return a list of edges for a 3D image.
 
     Parameters
@@ -163,7 +163,12 @@ def _build_laplacian(data, spacing, mask=None, beta=50):
 
 
 def random_walker(
-    data, labels, beta=130, tol=1.0e-3, copy: bool = True, spacing=None
+    data,
+    labels: np.ndarray,
+    beta: float = 130.0,
+    tol: float = 1.0e-3,
+    copy: bool = True,
+    spacing=None,
 ):
     """Random walker algorithm for segmentation from markers.
 

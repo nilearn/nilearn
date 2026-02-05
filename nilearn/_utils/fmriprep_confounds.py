@@ -14,7 +14,7 @@ def flag_single_gifti(img_files) -> bool:
     return all(flag_single_gifti)
 
 
-def is_camel_case(s) -> bool:
+def is_camel_case(s: str) -> bool:
     """Check if the given string is in camel case."""
     return s != s.lower() and s != s.upper() and "_" not in s
 

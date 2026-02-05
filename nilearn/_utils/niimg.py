@@ -7,7 +7,7 @@ from pathlib import Path
 from warnings import warn
 
 import numpy as np
-from nibabel import is_proxy, load, spatialimages
+from nibabel import Nifti1Image, is_proxy, load, spatialimages
 
 from nilearn._utils.helpers import is_gil_enabled, stringify_path
 from nilearn._utils.logger import find_stack_level
@@ -27,7 +27,7 @@ def _get_data(img) -> np.ndarray:
 
 
 def safe_get_data(
-    img, ensure_finite: bool = False, copy_data: bool = False
+    img: Nifti1Image, ensure_finite: bool = False, copy_data: bool = False
 ) -> np.ndarray:
     """Get the data in the image without having a side effect \
     on the Nifti1Image object.
@@ -174,7 +174,9 @@ def load_niimg(niimg, dtype=None):
 
 
 def is_binary_niimg(
-    niimg, block_size=1_000_000, accept_non_finite: bool = True
+    niimg: Nifti1Image,
+    block_size: int = 1_000_000,
+    accept_non_finite: bool = True,
 ) -> bool:
     """Return whether a given niimg is binary or not.
 

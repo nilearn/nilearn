@@ -8,7 +8,7 @@ from nilearn._utils.niimg import repr_niimgs
 from nilearn.typing import NiimgLike
 
 
-def dataframe_to_html(df: pd.DataFrame, precision, **kwargs) -> str:
+def dataframe_to_html(df: pd.DataFrame, precision: int, **kwargs) -> str:
     """Make HTML table from provided dataframe.
 
     Removes HTML5 non-compliant attributes (ex: `border`).

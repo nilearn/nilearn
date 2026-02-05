@@ -27,7 +27,7 @@ from nilearn.plotting.matrix._utils import (
 
 
 def _configure_axis(
-    axes, labels, label_size, x_label_rotation, y_label_rotation
+    axes, labels, label_size: int, x_label_rotation, y_label_rotation
 ) -> None:
     """Help for plot_matrix."""
     if not labels:
