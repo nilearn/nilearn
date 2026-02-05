@@ -24,7 +24,6 @@ import io
 import os
 import pickle
 import re
-import sys
 import warnings
 from copy import deepcopy
 from pathlib import Path
@@ -192,14 +191,6 @@ def check_estimator(
                 yield e, check, check.func.__name__
             if valid and check.func.__name__ not in expected_failed_checks:
                 yield e, check, check.func.__name__
-
-
-# some checks would fail on sklearn 1.6.1 on older python
-# see https://github.com/scikit-learn-contrib/imbalanced-learn/issues/1131
-IS_SKLEARN_1_6_1_on_py_lt_3_13 = (
-    compare_version(sklearn_version, "==", "1.6.1")
-    and sys.version_info[1] < 13
-)
 
 
 def return_expected_failed_checks(
@@ -392,12 +383,6 @@ def return_expected_failed_checks(
         }
         if SKLEARN_GTE_1_6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
-        # if (
-        #     not IS_SKLEARN_1_6_1_on_py_lt_3_13
-        #     and SKLEARN_GTE_1_5
-        #     and scipy_version != "1.9.0"
-        # ):
-        # expected_failed_checks.pop("check_estimator_sparse_array")
 
     if is_masker(estimator):
         expected_failed_checks |= {
