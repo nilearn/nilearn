@@ -58,6 +58,8 @@ from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
 
+_MIN_N_FEATURES_FOR_SCREENING = 100
+
 kwarg_logistic_regression_cv = {}
 if SKLEARN_GTE_1_8:
     # TODO (sklearn 1.8) remove if
@@ -392,7 +394,9 @@ def _parallel_fit(
         X_train = clustering.fit_transform(X_train)
         X_test = clustering.transform(X_test)
 
-    do_screening = (X_train.shape[1] > 100) and selector is not None
+    do_screening = (
+        X_train.shape[1] > _MIN_N_FEATURES_FOR_SCREENING
+    ) and selector is not None
 
     if do_screening:
         X_train = selector.fit_transform(X_train, y_train)
@@ -532,6 +536,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'. Defaults to 'roc_auc'.
 
+    %(screening_n_features)s
     %(smoothing_fwhm)s
 
     %(standardize_true)s
@@ -588,6 +593,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         cv=10,
         param_grid=None,
         screening_percentile=20,
+        screening_n_features=None,
         scoring=None,
         smoothing_fwhm=None,
         standardize=True,
@@ -607,6 +613,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         self.cv = cv
         self.param_grid = param_grid
         self.screening_percentile = screening_percentile
+        self.screening_n_features = screening_n_features
         self.scoring = scoring
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
@@ -702,6 +709,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
             self.screening_percentile,
             self.mask_img_,
             is_classifier(self),
+            screening_n_features=self.screening_n_features,
             verbose=self.verbose,
         )
 
@@ -1155,6 +1163,9 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
+    %(screening_n_features)s
+
+
     scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
@@ -1224,6 +1235,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         cv=10,
         param_grid=None,
         screening_percentile=20,
+        screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
         standardize=True,
@@ -1244,6 +1256,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1324,6 +1337,9 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
+    %(screening_n_features)s
+
+
     scoring : :obj:`str`, callable or None, default='r2'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
@@ -1334,6 +1350,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
+
 
     %(smoothing_fwhm)s
 
@@ -1387,6 +1404,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         cv=10,
         param_grid=None,
         screening_percentile=20,
+        screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
         standardize=True,
@@ -1407,6 +1425,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1487,6 +1506,9 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
+    %(screening_n_features)s
+
+
     scoring : :obj:`str`, callable or None, default= 'r2'
 
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1498,6 +1520,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
+
     %(smoothing_fwhm)s
 
     %(standardize_true)s
@@ -1545,6 +1568,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         param_grid=None,
         clustering_percentile=10,
         screening_percentile=20,
+        screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
         standardize=True,
@@ -1565,6 +1589,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1654,6 +1679,9 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         performed. A float according to a percentile of the highest
         scores.
 
+    %(screening_n_features)s
+
+
     scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
@@ -1720,6 +1748,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         param_grid=None,
         clustering_percentile=10,
         screening_percentile=20,
+        screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
         standardize=True,
@@ -1740,6 +1769,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
