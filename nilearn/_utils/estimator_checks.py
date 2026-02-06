@@ -3908,37 +3908,49 @@ def check_multimasker_transformer_high_variance_confounds(estimator_orig):
 
 
 def check_glm_empty_data_messages(
-    estimator_orig: NilearnBaseEstimator,
+    estimator_orig: FirstLevelModel | SecondLevelModel,
 ) -> None:
     """Check that empty images are caught properly.
+
+    Test on both surface and volume data.
 
     Replaces sklearn check_estimators_empty_data_messages.
     """
     estimator = clone(estimator_orig)
 
-    imgs: Nifti1Image | SurfaceImage
-
     surface_imgs, design_matrices = _make_surface_img_and_design()
 
-    if accept_niimg_input(estimator):
-        data_nifti = np.zeros((7, 9, 0))
-        imgs = Nifti1Image(data_nifti, np.eye(4))
-    else:
-        data = {
-            part: np.empty(0).reshape(
-                (surface_imgs.data.parts[part].shape[0], 0)
-            )
-            for part in surface_imgs.data.parts
-        }
-        imgs = SurfaceImage(surface_imgs.mesh, data)
+    data = {
+        part: np.empty(0).reshape((surface_imgs.data.parts[part].shape[0], 0))
+        for part in surface_imgs.data.parts
+    }
+    surface_imgs = SurfaceImage(surface_imgs.mesh, data)
 
     with pytest.raises(ValueError, match="empty"):
         # FirstLevel
         if hasattr(estimator, "hrf_model"):
-            estimator.fit(imgs, design_matrices=design_matrices)
+            estimator.fit(surface_imgs, design_matrices=design_matrices)
         # SecondLevel
         else:
-            estimator.fit(imgs, design_matrix=design_matrices)
+            estimator.fit(surface_imgs, design_matrix=design_matrices)
+
+    estimator = clone(estimator_orig)
+
+    data_nifti = np.zeros((7, 9, 0))
+
+    with pytest.raises(ValueError, match="empty"):
+        # FirstLevel
+        if hasattr(estimator, "hrf_model"):
+            estimator.fit(
+                Nifti1Image(data_nifti, np.eye(4)),
+                design_matrices=design_matrices,
+            )
+        # SecondLevel
+        else:
+            estimator.fit(
+                [Nifti1Image(data_nifti, np.eye(4)) for _ in range(3)],
+                design_matrix=design_matrices,
+            )
 
 
 def check_glm_dtypes(estimator_orig) -> None:
