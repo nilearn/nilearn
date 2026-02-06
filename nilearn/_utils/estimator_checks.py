@@ -287,8 +287,7 @@ def return_expected_failed_checks(
         ),
         "check_estimators_dtypes": ("replaced by check_masker_dtypes"),
         "check_estimators_empty_data_messages": (
-            "replaced by check_masker_empty_data_messages "
-            "for surface and nifti maskers."
+            "replaced by check_*_empty_data_messages "
         ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
@@ -440,6 +439,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         ),
         "check_dont_overwrite_parameters": (
             "replaced by check_img_estimator_dont_overwrite_parameters"
+        ),
+        "check_estimators_empty_data_messages": (
+            "replaced by check_*_empty_data_messages "
         ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
