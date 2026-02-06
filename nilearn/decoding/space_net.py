@@ -35,6 +35,7 @@ from nilearn._utils.param_validation import (
     sanitize_verbose,
 )
 from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.helpers import readable_time
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.image import get_data
@@ -957,7 +958,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         # report time elapsed
         duration = time.time() - tic
         logger.log(
-            f"Time Elapsed: {duration:.3f} seconds.",
+            f"Time Elapsed: {readable_time(duration)} seconds.",
             self.verbose,
         )
 
