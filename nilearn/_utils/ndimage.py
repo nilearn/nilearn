@@ -10,7 +10,7 @@ from scipy.ndimage import label, maximum_filter
 ###############################################################################
 
 
-def largest_connected_component(volume):
+def largest_connected_component(volume) -> np.ndarray:
     """Return the largest connected component of a 3D array.
 
     Parameters
@@ -59,7 +59,7 @@ def largest_connected_component(volume):
     return labels == label_count.argmax()
 
 
-def get_border_data(data, border_size):
+def get_border_data(data: np.ndarray, border_size: int) -> np.ndarray:
     """Return the data at the border of an array."""
     return np.concatenate(
         [
@@ -74,12 +74,12 @@ def get_border_data(data, border_size):
 
 
 def peak_local_max(
-    image,
-    min_distance=10,
-    threshold_abs=0,
-    threshold_rel=0.1,
+    image: np.ndarray,
+    min_distance: int = 10,
+    threshold_abs: float = 0,
+    threshold_rel: float = 0.1,
     num_peaks=np.inf,
-):
+) -> np.ndarray:
     """Find peaks in an image, and return them \
     as coordinates or a boolean array.
 
