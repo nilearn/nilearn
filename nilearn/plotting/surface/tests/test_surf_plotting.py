@@ -300,6 +300,7 @@ def test_plot_surf_error_when_kaleido_missing(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
     """Test nilearn.plotting.surface.surf_plotting.plot_surf for valid
     values of avg_method.
@@ -497,6 +498,7 @@ def test_plot_surf_contours_colors(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contours_axis_title(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
@@ -942,6 +944,7 @@ def test_plot_surf_roi_matplotlib_specific(
     assert cbar_vmax == 8.9
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_roi_matplotlib_specific_nan_handling(
     matplotlib_pyplot,
     surface_image_parcellation,
@@ -1254,6 +1257,7 @@ def test_plot_img_on_surf_with_engine_kwarg(img_3d_mni):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_img_on_surf_title(matplotlib_pyplot, img_3d_mni):
     """Test nilearn.plotting.surface.plot_img_on_surf with and without title
     specified.
