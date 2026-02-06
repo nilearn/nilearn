@@ -11,6 +11,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Ensure ``inverse_transform`` for :class:`~maskers.NiftiMapsMasker` and :class:`~maskers.NiftiLabelsMasker` expects the correct number of features when some maps / labels were dropped at fit or transform time (:gh:`5963` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Use sklearn HTML representation of estimators and their parameters in notebooks and reports (:gh:`5925` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Only throw warning about non-interactive plotting backend when using :func:`nilearn.plotting.show` (:gh:`5929` by `Rémi Gau`_).

@@ -328,6 +328,8 @@ def img_to_signals_labels(
         labels_index = {l: n for n, l in enumerate(labels)}
         for this_label in missing_labels:
             signals[:, labels_index[this_label]] = 0
+    else:
+        labels = list(set(np.unique(labels_data)) - {background_label})
 
     if return_masked_atlas:
         # finding the new labels image
@@ -527,6 +529,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
                     f"{len(labels_after_mask)} maps.",
                     stacklevel=find_stack_level(),
                 )
+                labels = labels_after_mask
 
     data = safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :], data[maps_mask, :])[

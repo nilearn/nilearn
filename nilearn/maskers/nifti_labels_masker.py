@@ -499,8 +499,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         mask_logger("load_regions", self.labels_img, verbose=self.verbose)
 
-        self.labels_img_ = deepcopy(self.labels_img)
-        self.labels_img_ = check_niimg_3d(self.labels_img_)
+        labels_img_ = deepcopy(self.labels_img)
+        self.labels_img_ = check_niimg_3d(labels_img_)
 
         if self.labels:
             if self.lut is not None:
@@ -513,10 +513,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             if "background" in self.labels:
                 idx = self.labels.index("background")
                 self.labels[idx] = "Background"
-
-        self.lut_ = self._generate_lut()
-
-        self._original_region_ids = self.lut_["index"].to_list()
 
         if imgs is not None:
             imgs_ = check_niimg(imgs, atleast_4d=True)
@@ -569,6 +565,13 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             # Just check that the mask is valid
             load_mask_img(self.mask_img_)
 
+        # generating the LUT must be done
+        # after masking and resampling
+        # as some labels may have been dropped
+        self.lut_ = self._generate_lut()
+
+        self._original_region_ids = self.lut_["index"].to_list()
+
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._reporting_data = {
@@ -583,6 +586,16 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 self._reporting_data["dim"] = dims
 
         mask_logger("fit_done", verbose=self.verbose)
+
+        labels = np.unique(self.labels_img_.get_fdata())
+        n_resampled_labels = len(labels)
+
+        n_elements_ = self.n_elements_
+
+        if self.background_label in labels:
+            assert n_elements_ + 1 == n_resampled_labels
+        else:
+            assert n_elements_ == n_resampled_labels
 
         return self
 
@@ -773,25 +786,32 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         )
 
         # Create a lut that may be different from the fitted lut_
-        # and whose rows are sorted according
-        # to the columns in the region_signals array.
-        self._lut_ = self.lut_.copy()
 
-        labels = set(np.unique(safe_get_data(self.labels_img_)))
-        desired_order = [*ids]
-        if self.background_label in labels:
-            desired_order = [self.background_label, *ids]
+        labels = set(np.unique(safe_get_data(masked_atlas)))
+
+        if self.keep_masked_labels:
+            desired_order = [*ids]
+            if self.background_label in labels:
+                desired_order = [self.background_label, *desired_order]
+        else:
+            desired_order = [*labels]
 
         mask = self.lut_["index"].isin(desired_order)
-        self._lut_ = self._lut_[mask]
-        self._lut_ = sanitize_look_up_table(
-            self._lut_, atlas=np.array(desired_order)
-        )
-        self._lut_ = (
-            self._lut_.set_index("index").loc[desired_order].reset_index()
-        )
+
+        # Create a lut that may be different from the fitted lut_
+        # and whose rows are sorted according
+        # to the columns in the region_signals array.
+        _lut_ = self.lut_.copy()
+        _lut_ = _lut_[mask]
+        _lut_ = sanitize_look_up_table(_lut_, atlas=np.array(desired_order))
+        _lut_ = _lut_.set_index("index").loc[desired_order].reset_index()
+
+        self._lut_ = _lut_
 
         self.region_atlas_ = masked_atlas
+
+        # n_resampled_labels = len(np.unique(masked_atlas.get_fdata()))
+        # assert self.n_elements_ == n_resampled_labels - 1
 
         return region_signals
 
@@ -849,9 +869,13 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         mask_logger("inverse_transform", verbose=self.verbose)
 
+        labels_img = self.labels_img_
+        if hasattr(self, "region_atlas_"):
+            labels_img = self.region_atlas_
+
         return signal_extraction.signals_to_img_labels(
             signals,
-            self.labels_img_,
+            labels_img,
             self.mask_img_,
             background_label=self.background_label,
         )
