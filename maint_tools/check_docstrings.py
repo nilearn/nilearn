@@ -23,6 +23,8 @@ from numpydoc.docscrape import NumpyDocString
 from rich import print
 from utils import list_classes, list_functions, list_modules
 
+from nilearn._utils.param_validation import TYPE_MAPS
+
 # List of values to check for missing :obj:`` link
 VALUES = [
     "integers",
@@ -112,9 +114,19 @@ def check_fill_doc_decorator(
 
     Also warns if the decorator is used for no reason.
     """
+    tmp = "|".join(list(TYPE_MAPS.keys()))
+    check_params_docstring_regex = rf"\%\([{tmp}]\)s"
+
     expand_docstring = False
+    check_params_needed = False
     if ast.get_docstring(ast_node, clean=False):
-        expand_docstring = "%(" in ast.get_docstring(ast_node, clean=False)
+        expand_docstring = re.search(
+            r"\%\(", ast.get_docstring(ast_node, clean=False)
+        )
+        check_params_needed = re.search(
+            check_params_docstring_regex,
+            ast.get_docstring(ast_node, clean=False),
+        )
 
     if isinstance(ast_node, ast.ClassDef):
         methods_docstrings = [
@@ -122,9 +134,17 @@ def check_fill_doc_decorator(
             for meth_def in list_functions(ast_node)
         ]
         expand_docstring_any_method = any(
-            "%(" in x for x in methods_docstrings if x is not None
+            re.search(r"\%\(", x) for x in methods_docstrings if x is not None
+        )
+        check_params_needed_any_method = any(
+            re.search(check_params_docstring_regex, x)
+            for x in methods_docstrings
+            if x is not None
         )
         expand_docstring = expand_docstring or expand_docstring_any_method
+        check_params_needed = (
+            check_params_needed or check_params_needed_any_method
+        )
 
     has_fill_doc_decorator = False
     if len(ast_node.decorator_list) == 0:
@@ -151,7 +171,7 @@ def check_fill_doc_decorator(
             "- [red]@fill_doc decorator not needed."
         )
 
-    if expand_docstring and not contains_check_params_call(ast_node):
+    if check_params_needed and not contains_check_params_call(ast_node):
         print(
             f"{filename}:{ast_node.lineno} "
             "- [red]expandable docstring used "
