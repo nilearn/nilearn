@@ -17,7 +17,6 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
-    check_params,
     check_reduction_strategy,
 )
 from nilearn.image import (
@@ -467,35 +466,13 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return display
 
-    @fill_doc
-    def fit(self, imgs=None, y=None):
-        """Prepare signal extraction from regions.
-
-        Parameters
-        ----------
-        imgs : :obj:`list` of Niimg-like objects or None, default=None
-            See :ref:`extracting_data`.
-            Image data passed to the reporter.
-
-        %(y_dummy)s
-        """
-        del y
-        check_params(self.__dict__)
-
+    def _fit(self, imgs):
         check_reduction_strategy(self.strategy)
         check_parameter_in_allowed(
             self.resampling_target,
             ("labels", "data", None),
             "resampling_target",
         )
-
-        # Reset warning message
-        # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
-
-        self.clean_args_ = {} if self.clean_args is None else self.clean_args
-
-        self._fit_cache()
 
         mask_logger("load_regions", self.labels_img, verbose=self.verbose)
 
@@ -520,8 +497,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         if imgs is not None:
             imgs_ = check_niimg(imgs, atleast_4d=True)
-
-        self.mask_img_ = self._load_mask(imgs)
 
         # Check shapes and affines for resample.
         if self.resampling_target is None:
