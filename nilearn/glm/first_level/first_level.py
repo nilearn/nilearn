@@ -31,6 +31,7 @@ from nilearn._utils.param_validation import (
     check_params,
     check_run_sample_masks,
 )
+from nilearn._utils.helpers import readable_time
 from nilearn.datasets import load_fsaverage
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
@@ -663,7 +664,7 @@ class FirstLevelModel(BaseGLM):
         elif step == "done":
             msg = (
                 f"Computation of {n_runs} runs done "
-                f"in {int(time_in_second)} seconds."
+                f"in {readable_time(time_in_second)}."
             )
 
         logger.log(
@@ -679,7 +680,7 @@ class FirstLevelModel(BaseGLM):
             dt = time.time() - t0
             # We use a max to avoid a division by zero
             remaining = (100.0 - percent) / max(0.01, percent) * dt
-            remaining = f"{int(remaining)} seconds remaining"
+            remaining = f"{readable_time(remaining)} remaining"
 
         return (
             f"Computing run {run_idx + 1} out of {n_runs} runs ({remaining})."

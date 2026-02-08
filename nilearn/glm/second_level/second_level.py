@@ -26,6 +26,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
+from nilearn._utils.helpers import readable_time
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
@@ -659,7 +660,7 @@ class SecondLevelModel(BaseGLM):
         # Report progress
         logger.log(
             "\nComputation of second level model done in "
-            f"{time.time() - t0:0.2f} seconds.\n",
+            f"{readable_time(time.time() - t0)}.\n",
             verbose=self.verbose,
         )
 
@@ -1129,7 +1130,7 @@ def non_parametric_inference(
     # Report progress
     logger.log(
         "\nComputation of second level model done in "
-        f"{time.time() - t0} seconds\n",
+        f"{readable_time(time.time() - t0)}\n",
         verbose=verbose,
     )
 

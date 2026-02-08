@@ -22,6 +22,7 @@ from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.helpers import readable_time
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
@@ -226,7 +227,7 @@ def _group_iter_search_light(
                 logger.log(
                     f"Job #{thread_id}, processed {i}/{len(list_rows)} steps "
                     f"({percent:0.2f}%, "
-                    f"{remaining:0.1f} seconds remaining){crlf}",
+                    f"{readable_time(remaining)} remaining){crlf}",
                     verbose,
                 )
     return par_scores
