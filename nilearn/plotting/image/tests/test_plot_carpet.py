@@ -122,6 +122,7 @@ def test_plot_carpet_with_atlas_and_labels(
     assert len(np.unique(colorbar)) == len(img_atlas["labels"])
 
 
+@pytest.mark.thread_unsafe
 def test_plot_carpet_standardize(
     matplotlib_pyplot, img_4d_mni, img_3d_ones_mni
 ):

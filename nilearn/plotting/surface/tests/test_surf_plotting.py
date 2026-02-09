@@ -452,6 +452,7 @@ def test_plot_surf_contours(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contour_roi_map_as_surface_image(
     matplotlib_pyplot, surf_mesh, surf_mask_1d
 ):
@@ -637,6 +638,7 @@ def test_plot_surf_stat_map_with_title(plt, engine, in_memory_mesh, bg_map):
     assert display.axes[0].title._text == "Stat map title"
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_with_threshold(
     plt, engine, in_memory_mesh, bg_map
 ):
