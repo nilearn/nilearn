@@ -2102,6 +2102,8 @@ def check_supervised_img_estimator_y_no_nan(estimator_orig) -> None:
 def check_decoder_empty_data_messages(estimator_orig):
     """Check that empty images are caught properly.
 
+    Run on both surfance and volume data.
+
     Replaces sklearn check_estimators_empty_data_messages.
     """
     estimator = clone(estimator_orig)
@@ -2123,18 +2125,22 @@ def check_decoder_empty_data_messages(estimator_orig):
         random_state=42,
     )
 
-    if accept_niimg_input(estimator):
-        data = np.zeros((64, 64, 0))
-        X = Nifti1Image(data, np.eye(4))
-    else:
-        imgs = _make_surface_img(n_samples)
-        data = {
-            part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-            for part in imgs.data.parts
-        }
-        X = SurfaceImage(imgs.mesh, data)
+    data = np.zeros((64, 64, 0))
+    X = Nifti1Image(data, np.eye(4))
 
     y = _rng().random(y.shape)
+
+    with pytest.raises(ValueError, match="empty"):
+        estimator.fit(X, y)
+
+    estimator = clone(estimator_orig)
+
+    imgs = _make_surface_img(n_samples)
+    data = {
+        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
+        for part in imgs.data.parts
+    }
+    X = SurfaceImage(imgs.mesh, data)
 
     with pytest.raises(ValueError, match="empty"):
         estimator.fit(X, y)
