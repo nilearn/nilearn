@@ -1810,7 +1810,7 @@ def _data_to_gifti(data, gifti_file) -> None:
         data = data.astype(np.uint8)
     elif data.dtype in [np.int8, np.int16, np.int64]:
         data = data.astype(np.int32)
-    elif data.dtype in [np.float64]:
+    elif data.dtype == np.float64:
         data = data.astype(np.float32)
 
     if data.dtype == np.uint8:
