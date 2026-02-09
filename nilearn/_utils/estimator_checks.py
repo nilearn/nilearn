@@ -24,7 +24,6 @@ import io
 import os
 import pickle
 import re
-import sys
 import warnings
 from copy import deepcopy
 from pathlib import Path
@@ -42,7 +41,6 @@ from numpy.testing import (
     assert_raises,
 )
 from numpydoc.docscrape import NumpyDocString
-from scipy import __version__ as scipy_version
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import is_classifier, is_regressor
@@ -118,7 +116,6 @@ from nilearn.image import get_data, index_img, new_img_like
 from nilearn.image.image import check_imgs_equal
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
-    MultiNiftiMasker,
     NiftiLabelsMasker,
     NiftiMapsMasker,
     NiftiMasker,
@@ -194,14 +191,6 @@ def check_estimator(
                 yield e, check, check.func.__name__
             if valid and check.func.__name__ not in expected_failed_checks:
                 yield e, check, check.func.__name__
-
-
-# some checks would fail on sklearn 1.6.1 on older python
-# see https://github.com/scikit-learn-contrib/imbalanced-learn/issues/1131
-IS_SKLEARN_1_6_1_on_py_lt_3_13 = (
-    compare_version(sklearn_version, "==", "1.6.1")
-    and sys.version_info[1] < 13
-)
 
 
 def return_expected_failed_checks(
@@ -298,9 +287,7 @@ def return_expected_failed_checks(
         ),
         "check_estimators_dtypes": ("replaced by check_masker_dtypes"),
         "check_estimators_empty_data_messages": (
-            "replaced by check_masker_empty_data_messages "
-            "for surface maskers and not implemented for nifti maskers "
-            "for performance reasons."
+            "replaced by check_*_empty_data_messages "
         ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
@@ -376,9 +363,6 @@ def return_expected_failed_checks(
                 "does not apply - no relevant method"
             ),
             "check_estimators_dtypes": ("replaced by check_glm_dtypes"),
-            "check_estimators_empty_data_messages": (
-                "not implemented for nifti data for performance reasons"
-            ),
             "check_estimators_fit_returns_self": (
                 "replaced by check_glm_fit_returns_self"
             ),
@@ -395,15 +379,6 @@ def return_expected_failed_checks(
         }
         if SKLEARN_GTE_1_6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
-        if (
-            not IS_SKLEARN_1_6_1_on_py_lt_3_13
-            and SKLEARN_GTE_1_5
-            and scipy_version != "1.9.0"
-        ):
-            expected_failed_checks.pop("check_estimator_sparse_array")
-
-    if isinstance(estimator, (MultiNiftiMasker)) and SKLEARN_GTE_1_6:
-        expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if is_masker(estimator):
         expected_failed_checks |= {
@@ -466,7 +441,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
             "replaced by check_img_estimator_dont_overwrite_parameters"
         ),
         "check_estimators_empty_data_messages": (
-            "not implemented for nifti data performance reasons"
+            "replaced by check_*_empty_data_messages "
         ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
@@ -2127,10 +2102,9 @@ def check_supervised_img_estimator_y_no_nan(estimator_orig) -> None:
 def check_decoder_empty_data_messages(estimator_orig):
     """Check that empty images are caught properly.
 
-    Replaces sklearn check_estimators_empty_data_messages.
+    Run on both surfance and volume data.
 
-    Not implemented for nifti data for performance reasons.
-    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
+    Replaces sklearn check_estimators_empty_data_messages.
     """
     estimator = clone(estimator_orig)
 
@@ -2151,14 +2125,22 @@ def check_decoder_empty_data_messages(estimator_orig):
         random_state=42,
     )
 
+    data = np.zeros((64, 64, 0))
+    X = Nifti1Image(data, np.eye(4))
+
+    y = _rng().random(y.shape)
+
+    with pytest.raises(ValueError, match="empty"):
+        estimator.fit(X, y)
+
+    estimator = clone(estimator_orig)
+
     imgs = _make_surface_img(n_samples)
     data = {
         part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
         for part in imgs.data.parts
     }
     X = SurfaceImage(imgs.mesh, data)
-
-    y = _rng().random(y.shape)
 
     with pytest.raises(ValueError, match="empty"):
         estimator.fit(X, y)
@@ -2901,23 +2883,23 @@ def check_masker_empty_data_messages(estimator_orig):
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
-
-    Not implemented for nifti maskers for performance reasons.
-    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
     """
     estimator = clone(estimator_orig)
 
     if accept_niimg_input(estimator):
-        return None
+        data = np.zeros((64, 64, 0))
+        imgs = Nifti1Image(data, np.eye(4))
+        mask = np.ones(_shape_3d_large())
+        mask_img = Nifti1Image(mask, affine=_affine_eye())
+    else:
+        imgs = _make_surface_img()
+        data = {
+            part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
+            for part in imgs.data.parts
+        }
+        imgs = SurfaceImage(imgs.mesh, data)
 
-    imgs = _make_surface_img()
-    data = {
-        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-        for part in imgs.data.parts
-    }
-    imgs = SurfaceImage(imgs.mesh, data)
-
-    mask_img = _make_surface_mask()
+        mask_img = _make_surface_mask()
 
     with pytest.raises(ValueError, match="The image is empty"):
         estimator.fit(imgs)
@@ -3932,32 +3914,49 @@ def check_multimasker_transformer_high_variance_confounds(estimator_orig):
 
 
 def check_glm_empty_data_messages(
-    estimator_orig: NilearnBaseEstimator,
+    estimator_orig: FirstLevelModel | SecondLevelModel,
 ) -> None:
     """Check that empty images are caught properly.
 
-    Replaces sklearn check_estimators_empty_data_messages.
+    Test on both surface and volume data.
 
-    Not implemented for nifti data for performance reasons.
-    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
+    Replaces sklearn check_estimators_empty_data_messages.
     """
     estimator = clone(estimator_orig)
 
-    imgs, design_matrices = _make_surface_img_and_design()
+    surface_imgs, design_matrices = _make_surface_img_and_design()
 
     data = {
-        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-        for part in imgs.data.parts
+        part: np.empty(0).reshape((surface_imgs.data.parts[part].shape[0], 0))
+        for part in surface_imgs.data.parts
     }
-    imgs = SurfaceImage(imgs.mesh, data)
+    surface_imgs = SurfaceImage(surface_imgs.mesh, data)
 
     with pytest.raises(ValueError, match="empty"):
         # FirstLevel
         if hasattr(estimator, "hrf_model"):
-            estimator.fit(imgs, design_matrices=design_matrices)
+            estimator.fit(surface_imgs, design_matrices=design_matrices)
         # SecondLevel
         else:
-            estimator.fit(imgs, design_matrix=design_matrices)
+            estimator.fit(surface_imgs, design_matrix=design_matrices)
+
+    estimator = clone(estimator_orig)
+
+    data_nifti = np.zeros((7, 9, 0))
+
+    with pytest.raises(ValueError, match="empty"):
+        # FirstLevel
+        if hasattr(estimator, "hrf_model"):
+            estimator.fit(
+                Nifti1Image(data_nifti, np.eye(4)),
+                design_matrices=design_matrices,
+            )
+        # SecondLevel
+        else:
+            estimator.fit(
+                [Nifti1Image(data_nifti, np.eye(4)) for _ in range(3)],
+                design_matrix=design_matrices,
+            )
 
 
 def check_glm_dtypes(estimator_orig) -> None:
