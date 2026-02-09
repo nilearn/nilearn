@@ -1,6 +1,7 @@
 """Utilities and constants for version comparisons."""
 
 import operator
+from typing import Literal
 
 from packaging.version import parse
 from sklearn import __version__ as sklearn_version
@@ -17,7 +18,11 @@ VERSION_OPERATORS = {
 }
 
 
-def compare_version(version_a, operator, version_b):
+def compare_version(
+    version_a: str,
+    operator: Literal["==", "!=", ">", "<", ">=", "<="],
+    version_b: str,
+) -> bool:
     """Compare two version strings via a user-specified operator.
 
     .. note::

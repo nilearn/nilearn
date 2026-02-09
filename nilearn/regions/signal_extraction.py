@@ -50,7 +50,7 @@ def _check_shape_compatibility(img1, img2, dim=None) -> None:
         raise ValueError("Images have incompatible shapes.")
 
 
-def _check_affine_equality(img1, img2) -> None:
+def _check_affine_equality(img1: Nifti1Image, img2: Nifti1Image) -> None:
     """Validate affines of 2 images.
 
     Parameters

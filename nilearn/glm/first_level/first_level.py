@@ -263,7 +263,7 @@ def run_glm(
     return labels, results
 
 
-def _check_trial_type(events) -> None:
+def _check_trial_type(events: list[str | Path]) -> None:
     """Check that the event files contain a "trial_type" column.
 
     Parameters

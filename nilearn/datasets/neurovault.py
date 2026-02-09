@@ -2084,7 +2084,7 @@ def _scroll_explicit(download_params):
     yield from _scroll_image_ids(download_params)
 
 
-def _print_progress(found, download_params, level=_INFO):
+def _print_progress(found, download_params, level: int = _INFO) -> None:
     """Print number of images fetched so far."""
     logger.log(
         f"Already fetched {found} image{'s' if found > 1 else ''}",
