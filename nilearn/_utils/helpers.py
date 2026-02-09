@@ -218,7 +218,8 @@ def remove_parameters(removed_params, reason, end_version="future"):
         return wrapper
 
     return _remove_params
-    
+
+
 def readable_time(seconds):
     """Convert a duration in seconds to a human-readable string.
 
@@ -235,11 +236,10 @@ def readable_time(seconds):
     str
         Human-readable time string.
     """
-    
-    seconds = int(round(seconds))
+    seconds = round(seconds)
     if seconds <= 0:
         return "0 SEC"
-        
+
     hour, remainder = divmod(seconds, 3600)
     minute, seconds = divmod(remainder, 60)
 

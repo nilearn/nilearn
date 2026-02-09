@@ -15,9 +15,9 @@ from sklearn.utils import check_random_state
 from nilearn import image
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import readable_time
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.helpers import readable_time
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,

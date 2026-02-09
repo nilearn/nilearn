@@ -21,6 +21,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.helpers import readable_time
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -31,7 +32,6 @@ from nilearn._utils.param_validation import (
     check_params,
     check_run_sample_masks,
 )
-from nilearn._utils.helpers import readable_time
 from nilearn.datasets import load_fsaverage
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM

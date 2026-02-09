@@ -28,6 +28,7 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import readable_time
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -35,7 +36,6 @@ from nilearn._utils.param_validation import (
     sanitize_verbose,
 )
 from nilearn._utils.versions import SKLEARN_LT_1_6
-from nilearn._utils.helpers import readable_time
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.image import get_data
