@@ -196,7 +196,9 @@ def _bytes_io_to_base64(handle_io):
     return data
 
 
-def _save_cm(output_cmap, cmap, format="png", n_colors=256) -> None:
+def _save_cm(
+    output_cmap, cmap, format: str = "png", n_colors: int = 256
+) -> None:
     """Save the colormap of an image as an image file."""
     # save the colormap
     data = np.arange(0.0, n_colors) / (n_colors - 1.0)

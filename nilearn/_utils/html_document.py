@@ -227,7 +227,7 @@ class HTMLDocument:
     def __str__(self):
         return self.html
 
-    def save_as_html(self, file_name) -> None:
+    def save_as_html(self, file_name: str | Path) -> None:
         """Save the plot in an HTML file, that can later be opened \
         in a browser.
 
