@@ -12,7 +12,11 @@ from nilearn._utils.logger import find_stack_level
 
 
 def check_threshold(
-    threshold, data, percentile_func, name="threshold", two_sided=True
+    threshold,
+    data: np.ndarray,
+    percentile_func,
+    name: str = "threshold",
+    two_sided: bool = True,
 ):
     """Check if the given threshold is in correct format and within the limit.
 
@@ -120,7 +124,7 @@ def check_threshold(
     return threshold
 
 
-def check_run_sample_masks(n_runs, sample_masks):
+def check_run_sample_masks(n_runs: int, sample_masks: Any):
     """Check that number of sample_mask matches number of runs."""
     check_is_of_allowed_type(
         sample_masks, (list, tuple, np.ndarray), "sample_masks"
@@ -150,7 +154,7 @@ def _convert_bool2index(sample_mask):
     return sample_mask
 
 
-def _cast_to_int32(sample_mask):
+def _cast_to_int32(sample_mask: np.ndarray) -> np.ndarray:
     """Ensure the sample mask dtype is signed."""
     new_dtype = np.int32
     if np.min(sample_mask) < 0:

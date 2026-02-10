@@ -10,7 +10,7 @@ from nilearn._utils.versions import (
 )
 
 
-def set_mpl_backend(message=None) -> None:
+def set_mpl_backend(message: str | None = None) -> None:
     """Check if matplotlib is installed.
 
     If not installed, raise error and display warning to install necessary

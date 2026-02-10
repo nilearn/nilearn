@@ -308,7 +308,7 @@ def test_nifti_maps_masker_resampling_to_mask(
     fmri11_img_r = masker.inverse_transform(signals)
 
     assert_almost_equal(fmri11_img_r.affine, masker.mask_img_.affine)
-    assert fmri11_img_r.shape == (masker.mask_img_.shape[:3] + (length,))
+    assert fmri11_img_r.shape == ((*masker.mask_img_.shape[:3], length))
 
 
 @pytest.mark.slow
@@ -347,7 +347,7 @@ def test_nifti_maps_masker_resampling_to_maps(
     fmri11_img_r = masker.inverse_transform(signals)
 
     assert_array_equal(fmri11_img_r.affine, masker.maps_img_.affine)
-    assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
+    assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
 
 
 @pytest.mark.slow
@@ -388,7 +388,7 @@ def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
     fmri11_img_r = masker.inverse_transform(signals)
 
     assert_almost_equal(fmri11_img_r.affine, masker.maps_img_.affine)
-    assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
+    assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
 
 
 def non_overlapping_maps():

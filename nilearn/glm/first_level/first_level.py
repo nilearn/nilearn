@@ -129,7 +129,7 @@ def _yule_walker(x, order):
     # section removed-ambiguity-when-broadcasting-in-np-solve
     rho = np.linalg.solve(rt, r[:, 1:, None])[..., 0]
 
-    rho = rho.reshape(x.shape[:-1] + (order,))
+    rho = rho.reshape((*x.shape[:-1], order))
 
     return rho
 
@@ -209,8 +209,8 @@ def run_glm(
         )
         try:
             ar_order = int(noise_model[2:])
-        except ValueError:
-            raise ValueError(err_msg)
+        except ValueError as e:
+            raise ValueError(err_msg) from e
 
         # compute the AR coefficients
         ar_coef_ = _yule_walker(ols_result.residuals.T, ar_order)
@@ -262,7 +262,7 @@ def run_glm(
     return labels, results
 
 
-def _check_trial_type(events) -> None:
+def _check_trial_type(events: list[str | Path]) -> None:
     """Check that the event files contain a "trial_type" column.
 
     Parameters
