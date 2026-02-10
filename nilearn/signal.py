@@ -792,7 +792,7 @@ def clean(
                 confounds,
                 standardize=None
                 if standardize_confounds is False
-                else "zscore",
+                else "zscore_sample",
                 detrend=False,
             )
         if not standardize_confounds:
