@@ -652,6 +652,13 @@ class SecondLevelModel(BaseGLM):
         self.masker_ = check_embedded_masker(self, masker_type)
         self.masker_.memory_level = self.memory_level
 
+        # TODO (nilearn >= 0.15.0) remove
+        # avoid some FutureWarning the user cannot affect
+        if self.mask_img is None or isinstance(
+            self.mask_img, (SurfaceImage, Nifti1Image)
+        ):
+            self.masker_.standardize = None
+
         self.masker_.fit(sample_map)
 
         self.n_elements_ = self.masker_.n_elements_

@@ -1307,6 +1307,10 @@ class FirstLevelModel(BaseGLM):
             )
             self.masker_.memory_level = self.memory_level
 
+            # TODO (nilearn >= 0.15.0) remove
+            # avoid some FutureWarning the user cannot affect
+            self.masker_.standardize = self.standardize
+
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"
 
