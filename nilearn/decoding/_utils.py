@@ -16,7 +16,8 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
 from nilearn.exceptions import MaskWarning
 from nilearn.image import get_data
-from nilearn.surface import SurfaceImage
+from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import get_data as get_surface_data
 
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1882989.0
@@ -179,12 +180,17 @@ def check_feature_screening(
 
     if screening_percentile is None and screening_n_features is not None:
         if mask_img is not None:
-            n_features_in_mask = np.sum(get_data(mask_img) != 0)
+            if isinstance(mask_img, SurfaceImage):
+                data = get_surface_data(mask_img)
+            else:
+                data = get_data(mask_img)
+            n_features_in_mask = np.sum(data != 0)
 
             if screening_n_features > n_features_in_mask:
                 raise ValueError(
-                    f"screening_n_features={screening_n_features} is larger"
-                    f"the number of features in the mask({n_features_in_mask})"
+                    f"{screening_n_features=} is larger "
+                    "the number of features in the mask "
+                    f"({n_features_in_mask})."
                 )
         return SelectKBest(f_test, k=screening_n_features)
 

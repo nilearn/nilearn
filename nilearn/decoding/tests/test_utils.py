@@ -4,7 +4,9 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
+from sklearn.feature_selection import SelectKBest, SelectPercentile
 
+from nilearn.conftest import _img_3d_rand, _surf_img_1d
 from nilearn.datasets import load_mni152_brain_mask
 from nilearn.decoding._utils import (
     MNI152_BRAIN_VOLUME,
@@ -27,7 +29,7 @@ def test_feature_screening(
 ):
     """Check that screening percentile is correctly adjusted.
 
-    For very small ROIs, all elements should be included.
+    For very small ROIs, all elements should be i_img_3d_randncluded.
     """
     mask_img_data = np.zeros((182, 218, 182))
 
@@ -65,3 +67,55 @@ def test_feature_screening(
             )
             assert screening_percentile <= select_percentile.percentile < 100
         assert isinstance(select_percentile, BaseEstimator)
+
+
+@pytest.mark.parametrize("mask_img", [_img_3d_rand(), _surf_img_1d()])
+def test_screening_priority_logic(mask_img):
+    """Test that check_feature_screening prefers percentile over n_voxels.
+
+    Call the function with BOTH options (Conflict!)
+    screening_percentile=10, screening_n_features=50
+
+    We should get a SelectPercentile object
+    If logic is wrong, this will be SelectKBest and the test will fail.
+    """
+    with pytest.warns(UserWarning):
+        selector = check_feature_screening(
+            screening_percentile=10,
+            mask_img=mask_img,
+            is_classification=True,
+            screening_n_features=50,
+        )
+
+    assert isinstance(selector, SelectPercentile)
+    assert not isinstance(selector, SelectKBest)
+
+
+@pytest.mark.parametrize("mask_img", [_img_3d_rand(), _surf_img_1d()])
+def test_check_feature_screening_n_features_only(mask_img):
+    """Test that screening_n_features works when percentile is None."""
+    # Call the function with only n_voxels specified
+    selector = check_feature_screening(
+        screening_percentile=None,
+        mask_img=mask_img,
+        is_classification=True,
+        screening_n_features=7,
+    )
+
+    # Verify it returned a SelectKBest object with the right 'k'
+    assert isinstance(selector, SelectKBest)
+    assert selector.k == 7
+
+
+def test_check_feature_screening_n_features_error(surf_img_1d):
+    """Test when not enough feature in image."""
+    with pytest.raises(
+        ValueError,
+        match="screening_n_features=100 is larger the number of features",
+    ):
+        check_feature_screening(
+            screening_percentile=None,
+            mask_img=surf_img_1d,
+            is_classification=True,
+            screening_n_features=100,
+        )
