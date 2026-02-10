@@ -1471,7 +1471,7 @@ def _set_best_hyperparameters(
         sklearn_classifier = clone(sklearn_classifier).set_params(
             Cs=nilearn_decoder.cv_params_[klass]["Cs"][count],
         )
-    elif classifier_penalty in ["ridge_classifier"]:
+    elif classifier_penalty == "ridge_classifier":
         # same as logistic regression
         sklearn_classifier = clone(sklearn_classifier).set_params(
             alphas=nilearn_decoder.cv_params_[klass]["alphas"][count]
@@ -1539,7 +1539,7 @@ def test_regressor_vs_sklearn(
                 sklearn_regressor.set_params(alphas=tmp)
             else:
                 sklearn_regressor.set_params(n_alphas=tmp)
-        elif regressor in ["ridge"]:
+        elif regressor == "ridge":
             # same as lasso but with alphas
             sklearn_regressor = clone(sklearn_regressor).set_params(
                 alphas=nilearn_regressor.cv_params_["beta"]["alphas"][count]
