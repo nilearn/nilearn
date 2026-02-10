@@ -525,7 +525,7 @@ def clean(
     signals,
     runs=None,
     detrend=True,
-    standardize="zscore",
+    standardize="zscore_sample",
     sample_mask=None,
     confounds=None,
     standardize_confounds=True,
@@ -764,37 +764,13 @@ def clean(
 
     # Remove confounds
     if confounds is not None:
-        # TODO (nilearn >= 0.14.0)
-        # - remove DeprecationWarning
-        # - remove warnings.filterwarnings
-        # - remove comment below
-        # The following call to standardize_signal relies on the default of
-        # standardize (True) which will throw a FutureWarning
-        # that contains some actions they cannot perform
-        # as users cannot affect this call.
-        # This can be confusing because if they call clean with
-        # standardize="zscore_sample", they will get a warning to set
-        # standardize to "zscore_sample"!!!
-        # So we ignore the FutureWarning
-        # and instead throw a DeprecationWarning that's only for devs.
-        std_strategy_default = (
-            "From release 0.14.0, confounds will be standardized "
-            "using the sample std instead of the population std."
+        tmp = None if standardize_confounds is False else "zscore_sample"
+        confounds = standardize_signal(
+            confounds,
+            standardize=tmp,
+            detrend=False,
         )
-        warnings.warn(
-            category=DeprecationWarning,
-            message=std_strategy_default,
-            stacklevel=find_stack_level(),
-        )
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=FutureWarning)
-            confounds = standardize_signal(
-                confounds,
-                standardize=None
-                if standardize_confounds is False
-                else "zscore_sample",
-                detrend=False,
-            )
+
         if not standardize_confounds:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on standardize_signal as it removes any
@@ -1042,7 +1018,7 @@ def _sanitize_inputs(
             ),
         )
         if standardize is True:
-            standardize = "zscore"
+            standardize = "zscore_sample"
         elif standardize is False:
             standardize = None
 
