@@ -135,7 +135,6 @@ from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_surface_image_equal
 
-SKLEARN_GTE_1_5 = compare_version(sklearn_version, ">=", "1.5.0")
 SKLEARN_GTE_1_6 = compare_version(sklearn_version, ">=", "1.6.0")
 
 
@@ -237,8 +236,6 @@ def return_expected_failed_checks(
             "check_transformer_data_not_an_array": "TODO",
             "check_transformer_general": "TODO",
         }
-        if SKLEARN_GTE_1_5:
-            expected_failed_checks.pop("check_estimator_sparse_data")
         if SKLEARN_GTE_1_6:
             expected_failed_checks |= {
                 "check_transformer_preserve_dtypes": "TODO",
@@ -258,8 +255,6 @@ def return_expected_failed_checks(
             "check_estimator_sparse_matrix": "TODO",
             "check_estimator_sparse_tag": "TODO",
         }
-        if SKLEARN_GTE_1_5:
-            expected_failed_checks.pop("check_estimator_sparse_data")
         if isinstance(estimator, GroupSparseCovarianceCV):
             expected_failed_checks |= {
                 "check_estimators_dtypes": "TODO",
@@ -350,9 +345,6 @@ def return_expected_failed_checks(
 
     if is_glm(estimator):
         expected_failed_checks.pop("check_estimator_sparse_data")
-        if SKLEARN_GTE_1_5:
-            expected_failed_checks.pop("check_estimator_sparse_matrix")
-            expected_failed_checks.pop("check_estimator_sparse_array")
         if SKLEARN_GTE_1_6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
@@ -421,11 +413,6 @@ def expected_failed_checks_clustering() -> dict[str, str]:
         "check_estimator_sparse_matrix": "remove when dropping sklearn 1.4",
         "check_clustering": "TODO",
     }
-
-    if SKLEARN_GTE_1_5:
-        expected_failed_checks.pop("check_estimator_sparse_matrix")
-        expected_failed_checks.pop("check_estimator_sparse_array")
-
     return expected_failed_checks
 
 
