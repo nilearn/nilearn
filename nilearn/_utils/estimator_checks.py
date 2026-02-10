@@ -226,7 +226,6 @@ def return_expected_failed_checks(
 
     if isinstance(estimator, ConnectivityMeasure):
         expected_failed_checks = {
-            "check_estimator_sparse_data": "remove when dropping sklearn 1.4",
             "check_fit2d_predict1d": "not applicable",
             "check_estimator_sparse_array": "TODO",
             "check_estimator_sparse_matrix": "TODO",
@@ -409,8 +408,6 @@ def unapplicable_checks() -> dict[str, str]:
 
 def expected_failed_checks_clustering() -> dict[str, str]:
     expected_failed_checks = {
-        "check_estimator_sparse_array": "remove when dropping sklearn 1.4",
-        "check_estimator_sparse_matrix": "remove when dropping sklearn 1.4",
         "check_clustering": "TODO",
     }
     return expected_failed_checks
