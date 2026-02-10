@@ -240,6 +240,7 @@ def test_plot_surf_tick_format_warning_matplotlib(
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs", [{"symmetric_cmap": True}, {"title_font_size": 18}]
 )
@@ -833,6 +834,7 @@ def test_plot_surf_stat_map_matplotlib_specific(
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("colorbar", [True, False])
 def test_plot_surf_roi(plt, engine, surface_image_roi, colorbar):
     """Smoke test for nilearn.plotting.surface.surf_plotting.plot_surf_roi
@@ -1101,6 +1103,7 @@ def test_plot_img_on_surf_hemispheres_and_orientations(
     plot_img_on_surf(img_3d_mni, hemispheres=hemispheres, views=views)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs",
     [
