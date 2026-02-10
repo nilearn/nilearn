@@ -5,6 +5,8 @@
 0.13.0
 ======
 
+**Released January 2026**
+
 HIGHLIGHTS
 ----------
 
@@ -43,10 +45,6 @@ Several classes and functions / methods have been added to the public API:
 - most notably ``check_niimg``, ``check_niimg_3d`` and ``check_niimg_4d``,
 - Nilearn specific exceptions and warnings,
 - also most maskers can now extract data and return it as a Pandas or `Polar dataframe <https://docs.pola.rs/api/python/stable/reference/index.html>`_ via the scikit-learn ``set_output`` `method <https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html>`_
-
-NEW
----
-
 
 Fixes
 -----

@@ -1646,10 +1646,10 @@ def _download_image_terms(image_info, collection, download_params):
             verbose=download_params["verbose"],
         )
         assert _check_has_words(image_info["ns_words_absolute_path"])
-    except Exception:
+    except Exception as e:
         message = f"Could not fetch words for image {image_info['id']}"
         if not download_params.get("allow_neurosynth_failure", True):
-            raise RuntimeError(message)
+            raise RuntimeError(message) from e
         logger.log(
             message,
             msg_level=_ERROR,
@@ -2084,7 +2084,7 @@ def _scroll_explicit(download_params):
     yield from _scroll_image_ids(download_params)
 
 
-def _print_progress(found, download_params, level=_INFO):
+def _print_progress(found, download_params, level: int = _INFO) -> None:
     """Print number of images fetched so far."""
     logger.log(
         f"Already fetched {found} image{'s' if found > 1 else ''}",

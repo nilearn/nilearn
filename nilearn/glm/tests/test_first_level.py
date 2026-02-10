@@ -185,6 +185,7 @@ def test_flm_fit_verbose(shape_4d_default, capsys):
     # assert len(stdout_verbose_3) > len(stdout_verbose_2)
 
 
+@pytest.mark.slow
 def test_glm_fit_valid_mask_img(shape_4d_default):
     """Run fit on FLM with different valid masks."""
     rk = 3
