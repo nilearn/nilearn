@@ -29,7 +29,7 @@ def test_feature_screening(
 ):
     """Check that screening percentile is correctly adjusted.
 
-    For very small ROIs, all elements should be i_img_3d_randncluded.
+    For very small ROIs, all elements should be included.
     """
     mask_img_data = np.zeros((182, 218, 182))
 
