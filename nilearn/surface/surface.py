@@ -970,12 +970,12 @@ def load_surf_data(surf_data):
             else:
                 try:
                     data = np.concatenate((data, data_part), axis=1)
-                except ValueError:
+                except ValueError as e:
                     raise ValueError(
                         "When more than one file is input, "
                         "all files must contain data "
                         "with the same shape in axis=0."
-                    )
+                    ) from e
 
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
@@ -1035,7 +1035,7 @@ def _gifti_img_to_mesh(gifti_img):
         coords = gifti_img.get_arrays_from_intent(
             nifti1.intent_codes["NIFTI_INTENT_POINTSET"]
         )[0].data
-    except IndexError:
+    except IndexError as e:
         raise ValueError(
             error_message.format(
                 "NIFTI_INTENT_POINTSET",
@@ -1043,12 +1043,12 @@ def _gifti_img_to_mesh(gifti_img):
                     nifti1.intent_codes["NIFTI_INTENT_POINTSET"]
                 ),
             )
-        )
+        ) from e
     try:
         faces = gifti_img.get_arrays_from_intent(
             nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"]
         )[0].data
-    except IndexError:
+    except IndexError as e:
         raise ValueError(
             error_message.format(
                 "NIFTI_INTENT_TRIANGLE",
@@ -1056,7 +1056,7 @@ def _gifti_img_to_mesh(gifti_img):
                     nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"]
                 ),
             )
-        )
+        ) from e
     return coords, faces
 
 
@@ -1269,7 +1269,7 @@ def load_surf_mesh(surf_mesh):
         try:
             coords, faces = surf_mesh
             mesh = InMemoryMesh(coordinates=coords, faces=faces)
-        except Exception:
+        except Exception as e:
             raise ValueError(
                 "\nIf a list or tuple is given as input, "
                 "it must have two elements,\n"
@@ -1279,7 +1279,7 @@ def load_surf_mesh(surf_mesh):
                 "containing the indices (into coords) of the mesh faces.\n"
                 f"The input was a {surf_mesh.__class__.__name__} with "
                 f"{len(surf_mesh)} elements: {[type(x) for x in surf_mesh]}."
-            )
+            ) from e
     elif hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates"):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
         mesh = InMemoryMesh(coordinates=coords, faces=faces)
@@ -1810,7 +1810,7 @@ def _data_to_gifti(data, gifti_file) -> None:
         data = data.astype(np.uint8)
     elif data.dtype in [np.int8, np.int16, np.int64]:
         data = data.astype(np.int32)
-    elif data.dtype in [np.float64]:
+    elif data.dtype == np.float64:
         data = data.astype(np.float32)
 
     if data.dtype == np.uint8:
