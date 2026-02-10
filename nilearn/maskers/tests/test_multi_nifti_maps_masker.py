@@ -168,6 +168,7 @@ def test_multi_nifti_maps_masker_errors(
         masker.fit_transform(signals_input)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("create_files", [True, False])
 def test_multi_nifti_maps_masker_errors_field_of_view(
     tmp_path,
@@ -285,7 +286,7 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
         fmri11_img_r = masker.inverse_transform(t)
 
         assert_almost_equal(fmri11_img_r.affine, masker.maps_img_.affine)
-        assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
+        assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
 
 
 @pytest.mark.slow
@@ -325,7 +326,7 @@ def test_multi_nifti_maps_masker_resampling_to_maps(
         fmri11_img_r = masker.inverse_transform(t)
 
         assert_almost_equal(fmri11_img_r.affine, masker.maps_img_.affine)
-        assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
+        assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
 
 
 @pytest.mark.slow
@@ -365,4 +366,4 @@ def test_multi_nifti_maps_masker_resampling_clipped_mask(
         fmri11_img_r = masker.inverse_transform(t)
 
         assert_almost_equal(fmri11_img_r.affine, masker.maps_img_.affine)
-        assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
+        assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))

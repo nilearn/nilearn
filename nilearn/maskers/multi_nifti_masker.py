@@ -14,7 +14,7 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params, sanitize_verbose
+from nilearn._utils.param_validation import sanitize_verbose
 from nilearn.image import resample_img
 from nilearn.image.image import iter_check_niimg
 from nilearn.maskers._mixin import _MultiMixin
@@ -231,38 +231,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         )
         self.n_jobs = n_jobs
 
-    @fill_doc
-    def fit(
-        self,
-        imgs=None,
-        y=None,
-    ):
-        """Compute the mask corresponding to the data.
-
-        Parameters
-        ----------
-        imgs : Niimg-like objects, :obj:`list` of Niimg-like objects or None, \
-            default=None
-            See :ref:`extracting_data`.
-            Data on which the mask must be calculated.
-            If this is a list, the affine is considered the same for all.
-
-        %(y_dummy)s
-
-        """
-        del y
-        check_params(self.__dict__)
-
-        # Reset warning message
-        # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
-
-        self.clean_args_ = {} if self.clean_args is None else self.clean_args
-
-        self.mask_img_ = self._load_mask(imgs)
-
-        self._fit_cache()
-
+    def _fit(self, imgs):
         mask_logger("load_data", img=imgs, verbose=self.verbose)
 
         # Compute the mask if not given by the user

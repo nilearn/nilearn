@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
+from nilearn._utils.helpers import is_gil_enabled
 from nilearn._utils.niimg import is_binary_niimg
 from nilearn.image import get_data
 from nilearn.plotting import plot_img
@@ -33,6 +34,8 @@ def _testdata_3d_for_plotting_for_resampling(img, binary):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_display_methods(matplotlib_pyplot, img_3d_mni):
     """Tests display methods."""
     display = plot_img(img_3d_mni)
@@ -65,6 +68,7 @@ def test_check_string_threshold(matplotlib_pyplot, img_3d_mni):
     plot_img(img_3d_mni, threshold="97%")
 
 
+@pytest.mark.thread_unsafe
 def test_plot_with_axes_or_figure(matplotlib_pyplot, img_3d_mni):
     """Smoke tests for plot_img with providing figure or Axes."""
     figure = plt.figure()
@@ -81,6 +85,8 @@ def test_plot_empty_slice(matplotlib_pyplot, affine_mni):
     plot_img(img, display_mode="y", threshold=1)
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize("binary_img", [True, False])
 def test_plot_img_with_resampling(matplotlib_pyplot, binary_img, img_3d_mni):
     """Tests for plot_img with resampling of the data image."""
@@ -98,6 +104,8 @@ def test_plot_img_with_resampling(matplotlib_pyplot, binary_img, img_3d_mni):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_display_methods_with_display_mode_tiled(
     matplotlib_pyplot, img_3d_mni
 ):
@@ -121,6 +129,7 @@ def test_plot_img_transparency_warning(
         plot_img(img_3d_ones_mni, transparency=transparency)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("transparency_range", [[10, -1], [5]])
 def test_plot_img_transparency_range_error(
     matplotlib_pyplot, img_3d_ones_mni, transparency_range, transparency_image
@@ -185,6 +194,7 @@ def test_cut_coords_out_of_bounds_error(
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "display_mode, cut_coords",
     [

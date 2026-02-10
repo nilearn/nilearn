@@ -116,7 +116,7 @@ def _update_submatrix(full, sub, sub_inv, p, h, v):
     sub_inv /= 2.0
 
 
-def _assert_submatrix(full, sub, n):
+def _assert_submatrix(full: np.ndarray, sub: np.ndarray, n: int) -> None:
     """Check that "sub" is the matrix obtained \
     by removing the p-th col and row in "full".
 
