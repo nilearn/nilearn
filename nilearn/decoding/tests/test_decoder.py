@@ -16,7 +16,6 @@ import collections
 import numbers
 import warnings
 
-import nibabel as nib
 import numpy as np
 import pytest
 from nibabel import save
@@ -1558,23 +1557,22 @@ def test_regressor_vs_sklearn(
     assert np.allclose(scores_sklearn, scores_nilearn, atol=0.01)
 
 
-def test_screening_priority_logic():
-    """Test that check_feature_screening prefers percentile over n_voxels."""
-    # 1. Create a simple dummy mask
-    mask = nib.Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
+def test_screening_priority_logic(img_3d_rand_eye):
+    """Test that check_feature_screening prefers percentile over n_voxels.
 
-    # 2. Call the function with BOTH options (Conflict!)
-    # percentile=10, n_voxels=50
+    Call the function with BOTH options (Conflict!)
+    percentile=10, n_voxels=50
+
+    We should get a SelectPercentile object
+    If logic is wrong, this will be SelectKBest and the test will fail.
+    """
     selector = check_feature_screening(
         screening_percentile=10,
-        mask_img=mask,
+        mask_img=img_3d_rand_eye,
         is_classification=True,
         screening_n_features=50,
     )
 
-    # 3. VERIFY: We should get a SelectPercentile object
-    # (meaning percentile won)
-    # If logic is wrong, this will be SelectKBest and the test will fail.
     assert isinstance(selector, SelectPercentile)
     assert not isinstance(selector, SelectKBest)
 
