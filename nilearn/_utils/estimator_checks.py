@@ -1979,7 +1979,6 @@ def check_img_estimator_standardization(estimator_orig) -> None:
 
         results = {}
         standardize_values = [
-            "zscore",
             "zscore_sample",
             "psc",
             True,
@@ -2007,7 +2006,7 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             # TODO (nilearn >= 0.14.0) adapt if necessary
             # Make sure that a FutureWarning warning is thrown
             # and not one during call to fit and then call to clean.
-            if standardize in ["zscore", True]:
+            if standardize:
                 with warnings.catch_warnings(record=True) as warnings_list:
                     results[str(standardize)] = getattr(estimator, method)(
                         input_img
@@ -2354,7 +2353,6 @@ def check_masker_standardization(estimator_orig) -> None:
 
         results = {}
         standardize_values = [
-            "zscore",
             "zscore_sample",
             "psc",
             True,
@@ -2368,10 +2366,10 @@ def check_masker_standardization(estimator_orig) -> None:
 
             estimator.fit(input_img)
 
-            # TODO (nilearn >= 0.14.0) adapt if necessary
+            # TODO (nilearn >= 0.15.0) remove warning catch
             # Make sure that a FutureWarning warning is thrown
             # and not one during call to fit and then call to clean.
-            if standardize in ["zscore", True]:
+            if standardize is True:
                 with warnings.catch_warnings(record=True) as warnings_list:
                     results[str(standardize)] = estimator.transform(input_img)
                 n_future_warnings = len(
@@ -2388,18 +2386,13 @@ def check_masker_standardization(estimator_orig) -> None:
         unstandarized_result = results[str(False)]
 
         # check which options are equal or different
-        assert_array_equal(results["zscore"], results[str(True)])
         assert_array_equal(results[str(None)], results[str(False)])
 
-        with pytest.raises(AssertionError):
-            assert_array_equal(results["zscore"], results["zscore_sample"])
-        for x in ["zscore_sample", "zscore", "psc"]:
+        for x in ["zscore_sample", "psc"]:
             with pytest.raises(AssertionError):
                 assert_array_equal(unstandarized_result, results[x])
         with pytest.raises(AssertionError):
             assert_array_equal(results["psc"], results["zscore_sample"])
-        with pytest.raises(AssertionError):
-            assert_array_equal(results["psc"], results["zscore"])
 
         # check output values
         if not is_masker(estimator_orig) or isinstance(
@@ -2409,9 +2402,10 @@ def check_masker_standardization(estimator_orig) -> None:
 
         assert_array_equal(default_result, unstandarized_result)
 
-        for x in ["zscore_sample", "zscore"]:
-            assert_almost_equal(results[x].mean(0), 0)
-            assert_almost_equal(results[x].std(0), 1, decimal=decimal)
+        assert_almost_equal(results["zscore_sample"].mean(0), 0)
+        assert_almost_equal(
+            results["zscore_sample"].std(0), 1, decimal=decimal
+        )
 
         assert_almost_equal(results["psc"].mean(0), 0)
         if not isinstance(estimator, SurfaceMapsMasker):
