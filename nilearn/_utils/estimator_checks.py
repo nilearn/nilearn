@@ -2006,7 +2006,7 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             # TODO (nilearn >= 0.14.0) adapt if necessary
             # Make sure that a FutureWarning warning is thrown
             # and not one during call to fit and then call to clean.
-            if standardize:
+            if standardize is True:
                 with warnings.catch_warnings(record=True) as warnings_list:
                     results[str(standardize)] = getattr(estimator, method)(
                         input_img
