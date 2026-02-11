@@ -1681,7 +1681,7 @@ def check_img_estimator_dict_unchanged(estimator_orig):
                     "Estimator changes '__dict__' keys "
                     f"during '{method}'.\n"
                     f"{unmatched_keys} \n"
-                )
+                ) from e
 
             difference = {}
             for x in dict_before:
@@ -1709,7 +1709,7 @@ def check_img_estimator_dict_unchanged(estimator_orig):
                     "Estimator changes the following '__dict__' keys \n"
                     f"during '{method}'.\n"
                     f"{difference}"
-                )
+                ) from e
             else:
                 raise e
         except Exception as e:
