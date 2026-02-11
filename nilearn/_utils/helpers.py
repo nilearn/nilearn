@@ -2,6 +2,9 @@ import functools
 import os
 import sys
 import warnings
+from importlib.metadata import version as importlib_version
+
+from packaging import version
 
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.versions import (
@@ -278,6 +281,22 @@ def is_kaleido_installed():
     except ImportError:
         return False
     return True
+
+
+def is_kaleido_plotly_compatible():
+    """Check if installed versions of plotly and kaleido are compatible.
+
+    This function assumes that both plotly and kaleido are installed.
+    """
+    min_plotly = "6.1.1"
+    min_kaleido = "0.2.1"
+    plotly_version = importlib_version("plotly")
+    kaleido_version = importlib_version("kaleido")
+
+    return not (
+        version.parse(kaleido_version) > version.parse(min_kaleido)
+        and version.parse(plotly_version) < version.parse(min_plotly)
+    )
 
 
 def is_windows_platform():
