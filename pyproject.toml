@@ -356,7 +356,6 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 fixable = ["ALL"]
 ignore = [
     "ARG005",
-    "B904",
     "D105",
     "D205",
     "D301",
@@ -367,7 +366,6 @@ ignore = [
     "PERF203",
     "PLR2004",
     "PTH207",
-    "RUF005",
     # Avoid linter rules conflicting with the formatter
     # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
     "COM812",

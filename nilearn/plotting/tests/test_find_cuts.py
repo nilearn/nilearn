@@ -13,6 +13,7 @@ from nilearn.plotting.find_cuts import (
 )
 
 
+@pytest.mark.thread_unsafe
 def test_find_cut_coords(affine_eye):
     """Test find_xyz_cut_coords."""
     data = np.zeros((100, 100, 100))
@@ -51,6 +52,7 @@ def test_find_cut_coords(affine_eye):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_no_data_exceeds_activation_threshold(affine_eye):
     """Test when no data exceeds the activation threshold.
 
@@ -79,6 +81,7 @@ def test_no_data_exceeds_activation_threshold(affine_eye):
     assert_array_equal(cut_coords, [9.0, 9.0, 9.0])
 
 
+@pytest.mark.thread_unsafe
 def test_warning_all_voxels_masked(affine_eye):
     """Warning when all values are masked.
 
@@ -101,6 +104,7 @@ def test_warning_all_voxels_masked(affine_eye):
     assert_array_equal(cut_coords, [4.5, 4.5, 4.5])
 
 
+@pytest.mark.thread_unsafe
 def test_warning_all_voxels_masked_thresholding(affine_eye):
     """Warn when all values are masked due to thresholding.
 
@@ -128,6 +132,7 @@ def test_warning_all_voxels_masked_thresholding(affine_eye):
     assert_array_equal(cut_coords, [4.5, 4.5, 4.5])
 
 
+@pytest.mark.thread_unsafe
 def test_pseudo_4d_image(rng, shape_3d_default, affine_eye):
     """Check pseudo-4D images as input (i.e., X, Y, Z, 1).
 
@@ -143,6 +148,7 @@ def test_pseudo_4d_image(rng, shape_3d_default, affine_eye):
     assert find_xyz_cut_coords(img_3d) == find_xyz_cut_coords(img_4d)
 
 
+@pytest.mark.thread_unsafe
 def test_empty_image_ac_pc_line(img_3d_zeros_eye):
     """Pass empty image returns coordinates pointing to AC-PC line."""
     with pytest.warns(UserWarning, match="Given img is empty."):
@@ -151,6 +157,7 @@ def test_empty_image_ac_pc_line(img_3d_zeros_eye):
     assert cut_coords == [0.0, 0.0, 0.0]
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("direction", ["x", "z"])
 def test_find_cut_slices(affine_eye, direction):
     """Test find_cut_slices.
@@ -191,6 +198,7 @@ def test_find_cut_slices(affine_eye, direction):
     cuts = find_cut_slices(img, direction=direction, n_cuts=n_cuts, spacing=2)
 
 
+@pytest.mark.thread_unsafe
 def test_find_cut_slices_direction_z():
     """Test find_cut_slices in the z direction.
 
@@ -247,6 +255,7 @@ def test_find_cut_slices_direction_z():
     assert np.diff(cuts).min() != 0.0
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "n_cuts", (0, -2, -10.00034, 0.999999, 0.4, 0.11111111)
 )
@@ -265,6 +274,7 @@ def test_validity_of_ncuts_error_in_find_cut_slices(n_cuts, img_3d_rand_eye):
         find_cut_slices(img_3d_rand_eye, n_cuts=n_cuts)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("n_cuts", (1, 5.0, 0.9999999, 2.000000004))
 def test_passing_of_ncuts_in_find_cut_slices(n_cuts, img_mask_mni):
     """Test valid cut numbers: check if it rounds the floating point inputs."""
@@ -274,6 +284,7 @@ def test_passing_of_ncuts_in_find_cut_slices(n_cuts, img_mask_mni):
     assert_array_equal(cut1, cut2)
 
 
+@pytest.mark.thread_unsafe
 def test_singleton_ax_dim(affine_eye):
     for axis, direction in enumerate("xyz"):
         shape = [5, 6, 7]
@@ -301,6 +312,7 @@ def test_tranform_cut_coords_n_cuts(affine_eye, direction):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_find_cuts_empty_mask_no_crash(affine_eye):
     img = Nifti1Image(np.ones((2, 2, 2)), affine_eye)
     mask_img = compute_epi_mask(img)
@@ -309,6 +321,7 @@ def test_find_cuts_empty_mask_no_crash(affine_eye):
     assert_array_equal(cut_coords, [0.5, 0.5, 0.5])
 
 
+@pytest.mark.thread_unsafe
 def test_fast_abs_percentile_no_index_error_find_cuts(affine_eye):
     # check that find_cuts functions are safe
     data = np.array([[[1.0, 2.0], [3.0, 4.0]], [[0.0, 0.0], [0.0, 0.0]]])

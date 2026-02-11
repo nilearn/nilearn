@@ -50,7 +50,7 @@ def _check_shape_compatibility(img1, img2, dim=None) -> None:
         raise ValueError("Images have incompatible shapes.")
 
 
-def _check_affine_equality(img1, img2) -> None:
+def _check_affine_equality(img1: Nifti1Image, img2: Nifti1Image) -> None:
     """Validate affines of 2 images.
 
     Parameters
@@ -641,7 +641,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
 
     n_regions = maps.shape[-1] if keep_empty else (sums > 0).sum()
     trimmed_maps = np.zeros(
-        maps.shape[:3] + (n_regions,), dtype=maps.dtype, order=order
+        (*maps.shape[:3], n_regions), dtype=maps.dtype, order=order
     )
     # use int8 instead of np.bool for Nifti1Image
     maps_mask = np.zeros(mask.shape, dtype=np.int8)

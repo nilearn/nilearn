@@ -5,12 +5,12 @@ def get_create_display_fun(display_mode, class_dict):
     """
     try:
         return class_dict[display_mode].init_with_figure
-    except KeyError:
+    except KeyError as e:
         message = (
             f"{display_mode} is not a valid display_mode. "
             f"Valid options are {sorted(class_dict.keys())}"
         )
-        raise ValueError(message)
+        raise ValueError(message) from e
 
 
 def _get_index_from_direction(direction):
@@ -19,12 +19,12 @@ def _get_index_from_direction(direction):
     try:
         # l and r are subcases of x
         index = 0 if direction in "lr" else directions.index(direction)
-    except ValueError:
+    except ValueError as e:
         message = (
             f"{direction} is not a valid direction. "
             "Allowed values are 'l', 'r', 'x', 'y' and 'z'"
         )
-        raise ValueError(message)
+        raise ValueError(message) from e
     return index
 
 

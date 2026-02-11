@@ -60,11 +60,8 @@ if not is_gil_enabled():
             # making the tests thread unsafe
             # therefore we skip them when testing without the GIL
             "datasets",
-            # TODO: skipping those sub-packages for now
-            "maskers",
+            # TODO
             "plotting",
-            "glm",
-            "decomposition",
         ]
     )
 
@@ -778,7 +775,7 @@ def surf_maps_img():
 def _flip_surf_img_parts(poly_obj):
     """Flip hemispheres of a surface image data or mesh."""
     keys = list(poly_obj.parts.keys())
-    keys = [keys[-1]] + keys[:-1]
+    keys = [keys[-1], *keys[:-1]]
     return dict(zip(keys, poly_obj.parts.values(), strict=False))
 
 
