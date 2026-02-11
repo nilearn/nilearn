@@ -63,7 +63,7 @@ repos:
     # Check formatting of CSS
     # prettier: https://prettier.io/
 -   repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.8.0
+    rev: v3.8.1
     hooks:
     -   id: prettier
         types_or: [css]
@@ -82,7 +82,7 @@ repos:
 
     # Lint and format Python code
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.13
+    rev: v0.15.0
     hooks:
     -   id: ruff-check
         # args: [--statistics]
@@ -92,7 +92,7 @@ repos:
 
     # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter
-    rev: v2.9
+    rev: v2.10
     hooks:
     -   id: import-linter
         args: [--verbose]

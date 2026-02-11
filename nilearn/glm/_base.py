@@ -9,18 +9,19 @@ from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
+from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._base import SKLEARN_GTE_1_7, CacheMixin, NilearnBaseEstimator
+from nilearn._base import CacheMixin, NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_7, SKLEARN_LT_1_6
 from nilearn._version import __version__
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
@@ -31,6 +32,7 @@ from nilearn.glm._reporting_utils import (
     sanitize_generate_report_input,
     turn_into_full_path,
 )
+from nilearn.image import check_niimg
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.reporting._utils import dataframe_to_html
@@ -48,6 +50,7 @@ from nilearn.typing import ClusterThreshold, HeightControl
 FIGURE_FORMAT = "png"
 
 
+@fill_doc
 class BaseGLM(CacheMixin, NilearnBaseEstimator):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`.
@@ -75,7 +78,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             "estimator_name": estimator_name,
         }
 
-    def _is_volume_glm(self):
+    def _is_volume_glm(self) -> bool:
         """Return if model is run on volume data or not."""
         return not (
             (
@@ -89,11 +92,25 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             )
         )
 
-    def _is_first_level_glm(self):
+    def _is_first_level_glm(self) -> bool:
         """Return True if this estimator is of type FirstLevelModel; False
         otherwise.
         """
         return False
+
+    @property
+    def _mask_img(self) -> Nifti1Image | SurfaceImage | None:
+        """Return mask image using during fit or mask image passed at init."""
+        if self.__sklearn_is_fitted__():
+            return self.masker_.mask_img_
+        else:
+            if self.mask_img is None:
+                return None
+            try:
+                # load mask_img if is a niiimg-like object
+                return check_niimg(self.mask_img)
+            except Exception:
+                return self.mask_img
 
     def _attributes_to_dict(self):
         """Return dict with pertinent model attributes & information.
@@ -639,6 +656,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             )
             results = make_stat_maps_contrast_clusters(
                 stat_img=statistical_maps,
+                mask_img=self._mask_img,
                 threshold_orig=threshold,
                 alpha=alpha,
                 cluster_threshold=cluster_threshold,

@@ -225,6 +225,8 @@
 
 .. _Mohammad Torabi: https://github.com/mtorabi59
 
+.. _Mohammad Sadeghi Hardengi: https://github.com/mohammedsadeghi
+
 .. _Moritz Boos: https://github.com/mjboos
 
 .. _Mudassir Chapra: https://github.com/muddi900

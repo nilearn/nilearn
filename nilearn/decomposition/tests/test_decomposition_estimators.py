@@ -11,8 +11,8 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.decomposition import CanICA, DictLearning
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.decomposition.tests.conftest import (
@@ -414,6 +414,7 @@ def test_single_subject_score(canica_data_single_img, data_type, estimator):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_single_subject_file(
@@ -456,6 +457,7 @@ def test_single_subject_file(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
 @pytest.mark.parametrize("n_subjects", [1, 3])

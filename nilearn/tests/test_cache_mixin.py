@@ -9,6 +9,7 @@ from joblib import Memory
 import nilearn
 from nilearn._base import CacheMixin, cache, check_memory
 from nilearn._utils.helpers import is_gil_enabled
+from nilearn.datasets.tests.conftest import temp_nilearn_data_dir  # noqa: F401
 
 
 def _get_subdirs(top_dir):
