@@ -49,7 +49,7 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import check_feature_screening
 from nilearn.image import check_niimg
@@ -58,13 +58,25 @@ from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
 
+kwarg_logistic_regression_cv = {}
+if SKLEARN_GTE_1_8:
+    # TODO (sklearn 1.8) remove if
+    # TODO (sklearn 1.10) remove 'use_legacy_attributes'
+    kwarg_logistic_regression_cv = {"use_legacy_attributes": False}
+
 SUPPORTED_ESTIMATORS = {
     "svc_l1": LinearSVC(penalty="l1", dual=False, max_iter=10000),
     "svc_l2": LinearSVC(penalty="l2", dual=True, max_iter=10000),
     "svc": LinearSVC(penalty="l2", dual=True, max_iter=10000),
-    "logistic_l1": LogisticRegressionCV(penalty="l1", solver="liblinear"),
-    "logistic_l2": LogisticRegressionCV(penalty="l2", solver="liblinear"),
-    "logistic": LogisticRegressionCV(penalty="l2", solver="liblinear"),
+    "logistic_l1": LogisticRegressionCV(
+        l1_ratios=(1,), solver="liblinear", **kwarg_logistic_regression_cv
+    ),
+    "logistic_l2": LogisticRegressionCV(
+        l1_ratios=(0,), solver="liblinear", **kwarg_logistic_regression_cv
+    ),
+    "logistic": LogisticRegressionCV(
+        l1_ratios=(0,), solver="liblinear", **kwarg_logistic_regression_cv
+    ),
     "ridge_classifier": RidgeClassifierCV(),
     "ridge_regressor": RidgeCV(),
     "ridge": RidgeCV(),
@@ -420,7 +432,13 @@ def _parallel_fit(
             if isinstance(estimator, (RidgeCV, RidgeClassifierCV, LassoCV)):
                 params["best_alpha"] = estimator.alpha_
             elif isinstance(estimator, LogisticRegressionCV):
-                params["best_C"] = estimator.C_.item()
+                if isinstance(estimator.C_, float):
+                    # TODO (sklearn >= 1.10)
+                    # estimator.C_ is always a float
+                    # so we can get rif of the else part
+                    params["best_C"] = estimator.C_
+                else:
+                    params["best_C"] = estimator.C_.item()
             best_params = params
 
             # fill in any missing param from param_grid
