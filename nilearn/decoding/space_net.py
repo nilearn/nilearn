@@ -17,7 +17,6 @@ from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
 from sklearn.base import is_classifier
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 from sklearn.linear_model import LinearRegression
-from sklearn.linear_model._base import _preprocess_data as center_data
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import check_cv
 from sklearn.utils import check_array, check_X_y
@@ -438,14 +437,7 @@ def path_scores(
     X_test, y_test = X[test].copy(), y[test].copy()
 
     # it is essential to center the data in regression
-    # do not unpack tuple completely
-    # as it returns more values starting from sklearn 1.8
-    # TODO: try to find a public function in sklearn to do this
-    tmp = center_data(X_train, y_train, fit_intercept=True, copy=False)
-    X_train = tmp[0]
-    y_train = tmp[1]
-    y_train_mean = tmp[3]
-    del tmp
+    X_train, y_train, y_train_mean = _center_data(X_train, y_train)
 
     # misc
     if not isinstance(l1_ratios, collections.abc.Iterable):
