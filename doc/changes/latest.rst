@@ -14,7 +14,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-success:`API` Support pathlike objects for ``cmap`` argument in :func:`~plotting.plot_surf_roi`` (:gh:`5981` by `Joseph Paillard`_).
+- :bdg-success:`API` Support pathlike objects for ``cmap`` argument in :func:`~plotting.plot_surf_roi` (:gh:`5981` by `Joseph Paillard`_).
 
 Changes
 -------
