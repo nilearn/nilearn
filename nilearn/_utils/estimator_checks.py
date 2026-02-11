@@ -102,7 +102,7 @@ from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
 from nilearn.decoding.decoder import Decoder, FREMClassifier, _BaseDecoder
 from nilearn.decoding.searchlight import SearchLight
-from nilearn.decoding.space_net import BaseSpaceNet, SpaceNetClassifier
+from nilearn.decoding.space_net import BaseSpaceNet
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.decomposition.tests.conftest import (
@@ -2003,23 +2003,20 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             else:
                 estimator.fit(input_img)
 
-            # TODO (nilearn >= 0.14.0) adapt if necessary
-            # Make sure that a FutureWarning warning is thrown
-            # and not one during call to fit and then call to clean.
-            if standardize is True:
-                with warnings.catch_warnings(record=True) as warnings_list:
+            if (
+                not isinstance(estimator, _BaseDecomposition)
+                and isinstance(standardize, bool)
+                and method == "transform"
+            ):
+                with pytest.warns(
+                    FutureWarning,
+                    match=(
+                        "boolean values for 'standardize' will be deprecated"
+                    ),
+                ):
                     results[str(standardize)] = getattr(estimator, method)(
                         input_img
                     )
-                if not isinstance(estimator, _BaseDecomposition):
-                    n_future_warnings = len(
-                        [
-                            x
-                            for x in warnings_list
-                            if issubclass(x.category, FutureWarning)
-                        ]
-                    )
-                    assert n_future_warnings == 1
             else:
                 results[str(standardize)] = getattr(estimator, method)(
                     input_img
@@ -2032,7 +2029,6 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             return
 
         # check which options are equal or different
-        assert_array_equal(results["zscore"], results[str(True)])
         try:
             assert_array_equal(results[str(None)], results[str(False)])
         except AssertionError:
@@ -2043,17 +2039,11 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             # differences are too small to have an effect in this test
             return
 
-        if not isinstance(estimator, (FREMClassifier, SpaceNetClassifier)):
-            # differences are too small to have an effect in this test
-            with pytest.raises(AssertionError):
-                assert_array_equal(results["zscore"], results["zscore_sample"])
-        for x in ["zscore_sample", "zscore", "psc"]:
+        for x in ["zscore_sample", "psc"]:
             with pytest.raises(AssertionError):
                 assert_array_equal(unstandarized_result, results[x])
         with pytest.raises(AssertionError):
             assert_array_equal(results["psc"], results["zscore_sample"])
-        with pytest.raises(AssertionError):
-            assert_array_equal(results["psc"], results["zscore"])
 
 
 # ------------------ DECODERS CHECKS ------------------
