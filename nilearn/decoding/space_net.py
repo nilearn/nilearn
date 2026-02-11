@@ -302,6 +302,45 @@ class _EarlyStoppingCallback:
             return pearson_score, spearman_score
 
 
+def _center_data(X, y):
+    """Center `X` and `y` and store the mean of `y` in `y_offset`.
+    Before centering perform standard input validation of `X`, `y`.
+
+    Parameters
+    ----------
+    X : ndarray of shape (n_samples, n_features)
+
+    y : ndarray of shape (n_samples,) or (n_samples, n_targets)
+
+    Returns
+    -------
+    X : ndarray of shape (n_samples, n_features)
+        Centered version of X
+    y : ndarray of shape (n_samples,) or (n_samples, n_targets)
+        Centered version of y
+    y_offset : float or ndarray of shape (n_features,)
+        Mean of y
+    """
+    X = check_array(
+        X,
+        copy=False,
+        accept_sparse=False,
+        dtype=(np.float16, np.float32, np.float64, np.longdouble),
+    )
+    y = check_array(y, dtype=X.dtype, copy=False, ensure_2d=False)
+
+    X_offset = np.asarray(np.average(X, axis=0))
+
+    if X_offset.dtype != X.dtype:
+        X_offset = X_offset.astype(X.dtype, copy=False)
+    X -= X_offset
+
+    y_offset = np.asarray(np.average(y, axis=0))
+    y -= y_offset
+
+    return X, y, y_offset
+
+
 @fill_doc
 def path_scores(
     solver,
