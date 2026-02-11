@@ -11,7 +11,6 @@ from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     is_matplotlib_installed,
@@ -316,7 +315,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             get_data(self.mask_img_) if self.mask_img_ is not None else None
         )
 
-        parameters = get_params(self.__class__, self)
+        parameters = self._get_masker_params()
         parameters["clean_args"] = self.clean_args_
 
         # apply mask if provided
@@ -335,7 +334,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         mask_logger("cleaning", verbose=self.verbose)
 
-        parameters = get_params(self.__class__, self)
+        parameters = self._get_masker_params()
 
         parameters["clean_args"] = self.clean_args_
 

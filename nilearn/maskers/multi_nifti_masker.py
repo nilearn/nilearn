@@ -10,7 +10,6 @@ import numpy as np
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
@@ -402,15 +401,8 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         # Ignore the mask-computing params: they are not useful and will
         # just invalidate the cache for no good reason
         # target_shape and target_affine are conveyed implicitly in mask_img
-        params = get_params(
-            self.__class__,
-            self,
-            ignore=[
-                "mask_img",
-                "mask_args",
-                "mask_strategy",
-                "copy",
-            ],
+        params = self._get_masker_params(
+            ignore=["mask_img", "mask_args", "mask_strategy", "copy"]
         )
         params["clean_kwargs"] = self.clean_args_
 

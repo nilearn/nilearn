@@ -9,7 +9,6 @@ from joblib import Memory
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
@@ -656,16 +655,14 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         # Ignore the mask-computing params: they are not useful and will
         # just invalid the cache for no good reason
         # target_shape and target_affine are conveyed implicitly in mask_img
-        params = get_params(
-            self.__class__,
-            self,
+        params = self._get_masker_params(
             ignore=[
                 "mask_img",
                 "mask_args",
                 "mask_strategy",
                 "_sample_mask",
                 "sample_mask",
-            ],
+            ]
         )
         params["clean_kwargs"] = self.clean_args_
 

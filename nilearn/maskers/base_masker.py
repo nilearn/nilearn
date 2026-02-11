@@ -324,6 +324,41 @@ class _BaseMasker(
         """
         raise NotImplementedError()
 
+    def _get_masker_params(self, ignore: None | list[str] = None, deep=False):
+        """Get parameters for this masker.
+
+        Very similar to the BaseEstimator.get_params() from sklearn
+        but allows to avoid returning some keys.
+
+        Parameters
+        ----------
+        ignore : None or list of strings
+            Names of the parameters that are not returned.
+
+        deep : bool, default=True
+            If True, will return the parameters for this estimator
+            and contained subobjects that are estimators.
+
+        Returns
+        -------
+        params : dict
+            The dict of parameters.
+
+        """
+        _ignore = {"memory", "memory_level", "verbose", "copy", "n_jobs"}
+        if ignore is not None:
+            _ignore.update(ignore)
+
+        params = super().get_params(deep=deep)
+
+        params = {
+            k: v
+            for k, v in super().get_params(deep=deep).items()
+            if k not in _ignore
+        }
+
+        return params
+
 
 @fill_doc
 class BaseMasker(_BaseMasker):

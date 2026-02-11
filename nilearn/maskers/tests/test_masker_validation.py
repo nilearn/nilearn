@@ -4,9 +4,35 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
-from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.maskers.masker_validation import check_embedded_masker, get_params
+
+
+class A(NilearnBaseEstimator):
+    """Dummy class A."""
+
+    def __init__(self, a=1):
+        self.a = a
+
+
+class B(A):
+    """Dummy class B derived from A."""
+
+    def __init__(self, a=1, b=2):
+        self.a = a
+        self.b = b
+
+
+def test_get_params():
+    """Ensure get_params returns parameters common to both class
+    unless ignored.
+    """
+    b = B()
+    assert get_params(A, b) == {"a": 1}
+    assert get_params(A, b, ignore=["a"]) == {}
+    assert get_params(A, b, ignore=["a", "b"]) == {}
 
 
 class OwningClass(BaseEstimator):

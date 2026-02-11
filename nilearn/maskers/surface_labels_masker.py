@@ -8,7 +8,6 @@ from scipy import ndimage
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
@@ -422,7 +421,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         mask_logger("cleaning", verbose=self.verbose)
 
-        parameters = get_params(self.__class__, self, ignore=["mask_img"])
+        parameters = self._get_masker_params(ignore=["mask_img"])
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
