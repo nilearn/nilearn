@@ -23,6 +23,7 @@ from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     SpaceNetClassifier,
     SpaceNetRegressor,
+    _center_data,
     _crop_mask,
     _EarlyStoppingCallback,
     _space_net_alpha_grid,
@@ -224,12 +225,10 @@ def test_screening_space_net():
     ],
 )
 def test_center_data(X, y, expected_X, expected_y, expected_y_mean):
-    from sklearn.linear_model._base import _preprocess_data
-
-    tmp = _preprocess_data(X, y, fit_intercept=True, copy=False)
+    tmp = _center_data(X, y)
     np.testing.assert_allclose(tmp[0], expected_X, rtol=1e-2, atol=1e-2)
     np.testing.assert_allclose(tmp[1], expected_y)
-    assert tmp[3] == expected_y_mean
+    assert tmp[2] == expected_y_mean
 
 
 def test_logistic_path_scores():
