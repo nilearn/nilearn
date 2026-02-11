@@ -305,6 +305,9 @@ def _center_data(X, y):
     """Center `X` and `y` and store the mean of `y` in `y_offset`.
     Before centering perform standard input validation of `X`, `y`.
 
+    This function replaces `sklearn.linear_model._base._preprocess_data`. The
+    implementation is inspired from `_preprocess_data`.
+
     Parameters
     ----------
     X : ndarray of shape (n_samples, n_features)
