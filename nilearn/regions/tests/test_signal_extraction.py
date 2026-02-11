@@ -792,7 +792,7 @@ def test_trim_maps(shape_3d_default):
 
     assert maps_i.flags["F_CONTIGUOUS"]
     assert len(maps_i_indices) == maps_i.shape[-1]
-    assert maps_i.shape == (maps_data.shape[:3] + (4,))
+    assert maps_i.shape == ((*maps_data.shape[:3], 4))
     maps_i_correct = maps_data[..., :4].copy()
     maps_i_correct[np.logical_not(mask_data), :] = 0
     assert_almost_equal(maps_i_correct, maps_i)

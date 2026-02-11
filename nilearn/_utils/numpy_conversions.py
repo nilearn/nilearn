@@ -8,7 +8,12 @@ import numpy as np
 from nilearn._utils.param_validation import check_is_of_allowed_type
 
 
-def as_ndarray(arr, copy=False, dtype=None, order="K"):
+def as_ndarray(
+    arr,
+    copy: bool = False,
+    dtype=None,
+    order="K",
+) -> np.ndarray:
     """Convert to numpy.ndarray starting with an arbitrary array.
 
     In the case of a memmap array, a copy is automatically made to break the
@@ -124,7 +129,7 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
         except csv.Error as e:
             raise TypeError(
                 f"Could not read CSV file [{csv_path}]: {e.args[0]}"
-            )
+            ) from e
 
         array = np.genfromtxt(
             csv_path, delimiter=dialect.delimiter, encoding=None, **kwargs

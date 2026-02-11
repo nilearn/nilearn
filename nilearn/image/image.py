@@ -57,6 +57,122 @@ from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
 from nilearn.typing import ClusterThreshold, NiimgLike
 
 
+def is_volume_image(imgs) -> bool:
+    """Return True if specified ``imgs`` is of type NiimgLike, SpatialImage, or
+    an iterable of those; False otherwise.
+
+    Parameters
+    ----------
+    imgs : object
+        object to check if volume image
+
+    Returns
+    -------
+    bool
+        True if volume object or iterable of volume objects, False otherwise
+
+    """
+    if not (
+        isinstance(imgs, (NiimgLike, SpatialImage))
+        or (hasattr(imgs, "__iter__"))
+    ):
+        return False
+
+    if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
+        for x in imgs:
+            if not is_volume_image(x):
+                return False
+    return True
+
+
+def is_empty_volume(img) -> bool:
+    """Check if the specified Nifti image ``img`` is empty.
+
+    Empty means any dimension of image data has length 0.
+
+    Parameters
+    ----------
+    img : :class:`nibabel.nifti1.Nifti1Image`
+        Should be a loaded nifti image.
+
+    Returns
+    -------
+    bool
+        True if the image is empty; False otherwise
+    """
+    return 0 in img.dataobj.shape
+
+
+def _get_imgs_as_filenames(imgs, wildcards=True):
+    if wildcards and EXPAND_PATH_WILDCARDS:
+        # Expand user path
+        expanded_niimg = str(Path(imgs).expanduser())
+        # Ascending sorting
+        filenames = sorted(glob.glob(expanded_niimg))
+
+        # processing filenames matching globbing expression
+        if len(filenames) >= 1 and glob.has_magic(imgs):
+            imgs = filenames  # iterable case
+        # niimg is an existing filename
+        elif [expanded_niimg] == filenames:
+            imgs = filenames[0]
+        # No files found by glob
+        elif glob.has_magic(imgs):
+            # No files matching the glob expression, warn the user
+            message = (
+                "No files matching the entered niimg expression: "
+                f"'{imgs}'.\n"
+                "You may have left wildcards usage activated: "
+                "please set the global constant "
+                "'nilearn.EXPAND_PATH_WILDCARDS' to False "
+                "to deactivate this behavior."
+            )
+            raise ValueError(message)
+        else:
+            raise ValueError(f"File not found: '{imgs}'")
+    elif not Path(imgs).exists():
+        raise ValueError(f"File not found: '{imgs}'")
+    return imgs
+
+
+def check_volume_for_fit(imgs) -> None:
+    """Check if specified ``imgs`` is a non-empty volume image or iterable of
+    non-empty volume images.
+
+    Parameters
+    ----------
+    imgs : object
+        object to check if volume image
+
+    Raises
+    ------
+    TypeError
+        If image or iterable of images are not NiftiLike objects.
+    ValueError
+        If image or iterable of images are filenames but not found or empty
+    image.
+    """
+    if not is_volume_image(imgs):
+        raise TypeError(
+            "input should be a NiftiLike object "
+            "or an iterable of NiftiLike object. "
+            f"Got: {imgs.__class__.__name__}"
+        )
+
+    imgs = stringify_path(imgs)
+    if isinstance(imgs, str):
+        imgs = _get_imgs_as_filenames(imgs)
+
+    if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
+        for img in imgs:
+            check_volume_for_fit(img)
+    else:
+        imgs = load_niimg(imgs)
+
+        if is_empty_volume(imgs):
+            raise ValueError("The image is empty.")
+
+
 def get_data(img):
     """Get the image data as a :class:`numpy.ndarray`.
 
@@ -1810,8 +1926,8 @@ def concat_imgs(
     iterator, literator = itertools.tee(iter(niimgs))
     try:
         first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
-    except StopIteration:
-        raise TypeError("Cannot concatenate empty objects")
+    except StopIteration as e:
+        raise TypeError("Cannot concatenate empty objects") from e
     except DimensionError as exc:
         # Keep track of the additional dimension in the error
         exc.increment_stack_counter()
@@ -2233,59 +2349,17 @@ def check_niimg(
         check_niimg_3d, check_niimg_4d
 
     """
-    if not (
-        isinstance(niimg, (NiimgLike, SpatialImage))
-        or (hasattr(niimg, "__iter__"))
-    ):
+    if not is_volume_image(niimg):
         raise TypeError(
             "input should be a NiftiLike object "
             "or an iterable of NiftiLike object. "
             f"Got: {niimg.__class__.__name__}"
         )
 
-    if hasattr(niimg, "__iter__"):
-        for x in niimg:
-            if not (
-                isinstance(x, (NiimgLike, SpatialImage))
-                or hasattr(x, "__iter__")
-            ):
-                raise TypeError(
-                    "iterable inputs should contain "
-                    "NiftiLike objects or iterables. "
-                    f"Got: {x.__class__.__name__}"
-                )
-
     niimg = stringify_path(niimg)
 
     if isinstance(niimg, str):
-        if wildcards and EXPAND_PATH_WILDCARDS:
-            # Expand user path
-            expanded_niimg = str(Path(niimg).expanduser())
-            # Ascending sorting
-            filenames = sorted(glob.glob(expanded_niimg))
-
-            # processing filenames matching globbing expression
-            if len(filenames) >= 1 and glob.has_magic(niimg):
-                niimg = filenames  # iterable case
-            # niimg is an existing filename
-            elif [expanded_niimg] == filenames:
-                niimg = filenames[0]
-            # No files found by glob
-            elif glob.has_magic(niimg):
-                # No files matching the glob expression, warn the user
-                message = (
-                    "No files matching the entered niimg expression: "
-                    f"'{niimg}'.\n"
-                    "You may have left wildcards usage activated: "
-                    "please set the global constant "
-                    "'nilearn.EXPAND_PATH_WILDCARDS' to False "
-                    "to deactivate this behavior."
-                )
-                raise ValueError(message)
-            else:
-                raise ValueError(f"File not found: '{niimg}'")
-        elif not Path(niimg).exists():
-            raise ValueError(f"File not found: '{niimg}'")
+        niimg = _get_imgs_as_filenames(niimg, wildcards)
 
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, str):

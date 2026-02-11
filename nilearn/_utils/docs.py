@@ -21,7 +21,7 @@ import sys
 #
 # Entries are listed in alphabetical order.
 #
-docdict = {}
+docdict: dict[str, str] = {}
 
 ##############################################################################
 #
@@ -1971,5 +1971,5 @@ def fill_doc(f):
         raise RuntimeError(
             f"Error documenting {funcname}:\n{exp!s}.\n"
             "Did you forget to escape a character with an extra '%'"
-        )
+        ) from exp
     return f
