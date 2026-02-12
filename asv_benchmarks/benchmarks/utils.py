@@ -4,7 +4,11 @@ import nibabel as nib
 import numpy as np
 
 from nilearn.image import load_img
-from nilearn.maskers import NiftiMasker
+
+try:
+    from nilearn.maskers import NiftiMasker
+except ImportError:
+    from nilearn.input_data import NiftiMasker
 
 
 def load(loader, n_masks=1, n_subjects=10):
