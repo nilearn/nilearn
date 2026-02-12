@@ -357,8 +357,11 @@ def butterworth(
 
     sampling_rate : :obj:`float`
         Number of samples per second (sample frequency, in Hertz).
+
     %(low_pass)s
+
     %(high_pass)s
+
     order : :obj:`int`, default=5
         Order of the `Butterworth filter
         <https://en.wikipedia.org/wiki/Butterworth_filter>`_.
@@ -493,6 +496,7 @@ def high_variance_confounds(
         singular value decomposition, 0. <= `percentile` <= 100.
         ``series.shape[0] * percentile / 100`` must be greater
         than ``n_confounds``.
+
     %(detrend)s
         Default=True.
 
@@ -648,6 +652,7 @@ def clean(
 
     %(t_r)s
         Default=2.5.
+
     filter : {'butterworth', 'cosine', False}, default='butterworth'
         Filtering methods:
 
@@ -661,6 +666,7 @@ def clean(
             `low_pass` is not implemented for filter='cosine'.
 
     %(high_pass)s
+
     %(detrend)s
 
     %(standardize_zscore)s
