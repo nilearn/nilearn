@@ -83,6 +83,8 @@ plotly = ["nilearn[plotting]"]
 # See https://github.com/plotly/Kaleido/issues/134 for more detail
 plotting = [
     "matplotlib>=3.8.0",
+    # plotly 6.1.0 cannot save images
+    # https://github.com/plotly/plotly.py/issues/5187
     "plotly>=5.0.0,!=6.1.0 ; platform_system != 'Windows'",
     "kaleido ; platform_system != 'Windows'",
     "plotly>=5.0.0,<6.1.0 ; platform_system == 'Windows'",
