@@ -1,4 +1,5 @@
 import warnings
+from importlib.util import find_spec
 
 import numpy as np
 from scipy import linalg
@@ -145,8 +146,6 @@ class PlotlySurfaceFigure(SurfaceFigure):
             try:
                 self.figure.write_image(self.output_file)
             except RuntimeError as e:
-                from importlib.util import find_spec
-
                 kaleido_spec = find_spec("kaleido")
                 if "Kaleido requires Google Chrome" in str(e) or kaleido_spec:
                     raise RuntimeError(
@@ -162,9 +161,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                 else:
                     raise e
             except ValueError as e:
-                import importlib
-
-                kaleido_spec = importlib.util.find_spec("kaleido")
+                kaleido_spec = find_spec("kaleido")
                 if not kaleido_spec:
                     raise RuntimeError(
                         "Kaleido and Google Chrome are required to save "
