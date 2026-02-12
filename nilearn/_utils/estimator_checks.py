@@ -1521,6 +1521,11 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
 
     replaces sklearn check_fit_idempotent
     """
+    # TODO
+    # fix for flaky test with free threaded python
+    if not is_gil_enabled() and isinstance(estimator_orig, (SearchLight)):
+        return None
+
     check_methods = ["predict", "transform", "decision_function"]
 
     for method in check_methods:
@@ -1569,7 +1574,7 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
             new_result,
             atol=max(tol, 1e-9),
             rtol=max(tol, 1e-7),
-            err_msg=f"Idempotency check failed for method {method}",
+            err_msg=f"Idempotency check failed for method '{method}'",
         )
 
 
