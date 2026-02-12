@@ -924,3 +924,22 @@ class _BaseSurfaceMasker(_BaseMasker):
     def _set_contour_colors(self, hemi):
         """Set the colors for the contours in the report."""
         del hemi
+
+    def _clean(self, region_signals: np.ndarray, confounds, sample_mask):
+        """Clean extracted signal before
+        returning it at the end of transform.
+        """
+        mask_logger("cleaning", verbose=self.verbose)
+        region_signals = self._cache(clean, func_memory_level=2)(
+            region_signals,
+            detrend=self.detrend,
+            standardize=self.standardize,
+            standardize_confounds=self.standardize_confounds,
+            t_r=self.t_r,
+            low_pass=self.low_pass,
+            high_pass=self.high_pass,
+            confounds=confounds,
+            sample_mask=sample_mask,
+            **self.clean_args_,
+        )
+        return region_signals

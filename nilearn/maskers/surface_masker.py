@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
+from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
@@ -322,23 +322,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
-        mask_logger("cleaning", verbose=self.verbose)
-
-        # signal cleaning here
-        output = self._cache(signal.clean, func_memory_level=2)(
-            output,
-            detrend=self.detrend,
-            standardize=self.standardize,
-            standardize_confounds=self.standardize_confounds,
-            t_r=self.t_r,
-            low_pass=self.low_pass,
-            high_pass=self.high_pass,
-            confounds=confounds,
-            sample_mask=sample_mask,
-            **self.clean_args_,
-        )
-
-        return output
+        return self._clean(output, confounds, sample_mask)
 
     @fill_doc
     def inverse_transform(self, signals):
