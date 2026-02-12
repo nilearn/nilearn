@@ -1006,14 +1006,13 @@ Then, change to the ``asv_benchmarks`` directory:
       cd asv_benchmarks
 
 To run a specific benchmark on the current HEAD of your clone of the
-repository, use the following command:
+repository, use command like the following:
 
 .. code-block:: bash
 
       asv run -b load_img
 
-This will measure both time taken and peak memory usage of the
-:func:`nilearn.image.load_img` function.
+This will run any benchmarck with ``load_img`` in the name.
 
 You can also track the performance of a specific benchmark over, say,
 5 commits, until release 0.10.0, like this:
@@ -1021,13 +1020,6 @@ You can also track the performance of a specific benchmark over, say,
 .. code-block:: bash
 
       asv run 0.10.0..main -b load_img --steps 5
-
-You can also compare the performance of loading an image using
-:func:`nilearn.image.load_img` vs. :func:`nibabel.loadsave.load`:
-
-.. code-block:: bash
-
-      asv run -b compare_load
 
 For more information on how to use asv, please refer to the
 `asv documentation <https://asv.readthedocs.io/en/stable/>`_.

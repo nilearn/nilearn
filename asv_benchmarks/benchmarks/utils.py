@@ -1,4 +1,4 @@
-"""Common Benchmarks class that does the setup for the benchmarks."""
+"""Common utils for all benchmarks."""
 
 from typing import Literal
 
@@ -210,6 +210,7 @@ class Benchmark:
 
     timeout = 2400  # 40 mins
     n_subjects: int = N_SUBJECTS
+    n_vol_per_subject = 190
 
     @property
     def fmri_filename(self):
@@ -234,8 +235,6 @@ class Benchmark:
         n_masks : int, default=1
             The number of masks to create.
         """
-        n_vol_per_subject = 190
-
         shape = (60, 65, 70)
 
         affine = np.asarray(
@@ -249,7 +248,7 @@ class Benchmark:
 
         img, mask = generate_fake_fmri(
             shape=shape,
-            length=n_vol_per_subject * self.n_subjects,
+            length=self.n_vol_per_subject * self.n_subjects,
             affine=affine,
         )
         img.to_filename(self.fmri_filename)
