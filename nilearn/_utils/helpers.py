@@ -288,13 +288,15 @@ def is_kaleido_plotly_compatible():
 
     This function assumes that both plotly and kaleido are installed.
     """
+    # minimum plotly compatible with kaleido >= 1.0.0
     min_plotly = "6.1.1"
-    min_kaleido = "0.2.1"
+    # max kaleido version compatible with versions of plotly less than 6.1.1
+    max_kaleido = "0.2.1"
     plotly_version = importlib_version("plotly")
     kaleido_version = importlib_version("kaleido")
 
     return not (
-        version.parse(kaleido_version) > version.parse(min_kaleido)
+        version.parse(kaleido_version) > version.parse(max_kaleido)
         and version.parse(plotly_version) < version.parse(min_plotly)
     )
 
