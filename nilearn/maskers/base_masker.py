@@ -22,18 +22,22 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import repr_niimgs, safe_get_data
-from nilearn._utils.param_validation import check_parameter_in_allowed
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.niimg import ensure_finite_data, repr_niimgs, safe_get_data
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.exceptions import NotImplementedWarning
-from nilearn.image import (
+from nilearn.image.image import (
     check_niimg,
+    check_volume_for_fit,
     concat_imgs,
     high_variance_confounds,
     new_img_like,
-    resample_img,
     smooth_img,
 )
+from nilearn.image.resampling import resample_img
 from nilearn.maskers._mixin import _ReportingMixin
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
@@ -182,7 +186,7 @@ def filter_and_extract(
     return region_signals, aux
 
 
-def mask_logger(step, img=None, verbose=0):
+def mask_logger(step, img=None, verbose=0) -> None:
     """Log similar messages for all maskers."""
     repr = None
     if img is not None:
@@ -298,7 +302,7 @@ def sanitize_displayed_maps(
 
 
 @fill_doc
-class BaseMasker(
+class _BaseMasker(
     _ReportingMixin,
     TransformerMixin,
     CacheMixin,
@@ -308,7 +312,63 @@ class BaseMasker(
 
     _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
 
+    @property
+    def _n_features_out(self):
+        """Needed by sklearn machinery for set_ouput."""
+        return self.n_elements_
+
+    @abc.abstractmethod
+    def _check_imgs(self, imgs) -> None:
+        """Check if the images specified are not empty and of correct type for
+        this masker.
+        """
+        raise NotImplementedError()
+
+
+@fill_doc
+class BaseMasker(_BaseMasker):
+    """Base class for NiftiMaskers."""
+
     _template_name = "body_masker.jinja"
+
+    @fill_doc
+    def fit(self, imgs=None, y=None):
+        """Compute the mask corresponding to the data.
+
+        Parameters
+        ----------
+        imgs : :obj:`list` of Niimg-like objects or None, default=None
+            See :ref:`extracting_data`.
+            Data on which the mask must be calculated. If this is a list,
+            the affine is considered the same for all.
+
+        %(y_dummy)s
+        """
+        del y
+        check_params(self.__dict__)
+
+        if imgs is not None:
+            self._check_imgs(imgs)
+
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = []
+
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
+
+        self._fit_cache()
+
+        self.mask_img_ = self._load_mask(imgs)
+
+        return self._fit(imgs)
+
+    @abc.abstractmethod
+    def _fit(self, imgs):
+        """Compute the mask corresponding to the data.
+
+        Should be implement in inheriting classes.
+        """
+        raise NotImplementedError()
 
     @abc.abstractmethod
     @fill_doc
@@ -358,15 +418,6 @@ class BaseMasker(
         tags.estimator_type = "masker"
         return tags
 
-    @property
-    def _n_features_out(self):
-        """Needed by sklearn machinery for set_ouput."""
-        return self.n_elements_
-
-    @abc.abstractmethod
-    def fit(self, imgs=None, y=None):
-        """Present only to comply with sklearn estimators checks."""
-
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
 
@@ -395,6 +446,9 @@ class BaseMasker(
 
         return mask_img_
 
+    def _check_imgs(self, imgs) -> None:
+        check_volume_for_fit(imgs)
+
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
@@ -417,6 +471,7 @@ class BaseMasker(
         %(signals_transform_nifti)s
         """
         check_is_fitted(self)
+        self._check_imgs(imgs)
 
         if (self.standardize == "zscore") or (self.standardize is True):
             # TODO (nilearn >= 0.14.0) remove or adapt warning
@@ -547,15 +602,8 @@ class BaseMasker(
         return signals
 
 
-class _BaseSurfaceMasker(
-    _ReportingMixin,
-    TransformerMixin,
-    CacheMixin,
-    NilearnBaseEstimator,
-):
+class _BaseSurfaceMasker(_BaseMasker):
     """Class from which all surface maskers should inherit."""
-
-    _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
 
     _template_name = "body_surface_masker.jinja"
 
@@ -577,11 +625,6 @@ class _BaseSurfaceMasker(
         tags.input_tags = InputTags(surf_img=True, niimg_like=False)
         tags.estimator_type = "masker"
         return tags
-
-    @property
-    def _n_features_out(self):
-        """Needed by sklearn machinery for set_ouput."""
-        return self.n_elements_
 
     def _check_imgs(self, imgs) -> None:
         """Check that imgs is a SurfaceImage or an iterable of SurfaceImage."""
@@ -616,14 +659,7 @@ class _BaseSurfaceMasker(
         mask = {}
         for part, v in mask_img_.data.parts.items():
             mask[part] = v
-            non_finite_mask = np.logical_not(np.isfinite(mask[part]))
-            if non_finite_mask.any():
-                warnings.warn(
-                    "Non-finite values detected. "
-                    "These values will be replaced with zeros.",
-                    stacklevel=find_stack_level(),
-                )
-                mask[part][non_finite_mask] = 0
+            ensure_finite_data(mask[part])
             mask[part] = mask[part].astype(bool).all(axis=1)
 
         mask_img_ = new_img_like(self.mask_img, mask)

@@ -174,8 +174,8 @@ def _compute_surf_map_faces(
     if isinstance(avg_method, str):
         try:
             avg_method = getattr(np, avg_method)
-        except AttributeError:
-            raise ValueError(error_message)
+        except AttributeError as e:
+            raise ValueError(error_message) from e
         surf_map_faces = avg_method(surf_map_data[faces], axis=1)
     elif callable(avg_method):
         surf_map_faces = np.apply_along_axis(
@@ -251,7 +251,7 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
     return data_copy, _threshold(data, threshold, vmin, vmax), vmin, vmax
 
 
-def _check_figure_axes_inputs(figure, axes):
+def _check_figure_axes_inputs(figure, axes) -> None:
     """Check if the specified figure and axes are matplotlib objects."""
     if figure is not None and not isinstance(figure, plt.Figure):
         raise ValueError(
@@ -353,13 +353,13 @@ def _plot_surf(
 
     try:
         axes.view_init(elev=elev, azim=azim)
-    except AttributeError:
+    except AttributeError as e:
         raise AttributeError(
             "'Axes' object has no attribute 'view_init'.\n"
             "Remember that the projection must be '3d'.\n"
             "For example:\n"
             "\t plt.subplots(subplot_kw={'projection': '3d'})"
-        )
+        ) from e
     except Exception as e:  # pragma: no cover
         raise e
 
@@ -490,11 +490,11 @@ def _plot_surf_contours(
     else:
         try:
             colors = [to_rgba(color, alpha=1.0) for color in colors]
-        except ValueError:
+        except ValueError as e:
             raise ValueError(
                 "All elements of colors need to be either a"
                 " matplotlib color string or RGBA values."
-            )
+            ) from e
 
     if not (len(levels) == len(labels) == len(colors)):
         raise ValueError(

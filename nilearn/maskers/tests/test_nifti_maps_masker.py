@@ -24,8 +24,8 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
@@ -127,6 +127,7 @@ def test_nifti_maps_masker_errors():
         masker.fit()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("create_files", (True, False))
 def test_nifti_maps_masker_errors_field_of_view(
     tmp_path, length, affine_eye, shape_3d_default, create_files, img_maps
@@ -307,7 +308,7 @@ def test_nifti_maps_masker_resampling_to_mask(
     fmri11_img_r = masker.inverse_transform(signals)
 
     assert_almost_equal(fmri11_img_r.affine, masker.mask_img_.affine)
-    assert fmri11_img_r.shape == (masker.mask_img_.shape[:3] + (length,))
+    assert fmri11_img_r.shape == ((*masker.mask_img_.shape[:3], length))
 
 
 @pytest.mark.slow
@@ -346,7 +347,7 @@ def test_nifti_maps_masker_resampling_to_maps(
     fmri11_img_r = masker.inverse_transform(signals)
 
     assert_array_equal(fmri11_img_r.affine, masker.maps_img_.affine)
-    assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
+    assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
 
 
 @pytest.mark.slow
@@ -387,7 +388,7 @@ def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
     fmri11_img_r = masker.inverse_transform(signals)
 
     assert_almost_equal(fmri11_img_r.affine, masker.maps_img_.affine)
-    assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
+    assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
 
 
 def non_overlapping_maps():

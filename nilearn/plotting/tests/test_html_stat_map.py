@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 from nibabel import Nifti1Image
 
 from nilearn import datasets, image
+from nilearn._utils.helpers import is_gil_enabled
 from nilearn.image import get_data, new_img_like
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.html_stat_map import (
@@ -169,6 +170,7 @@ def test_save_cmap(cmap, n_colors):
     assert np.allclose(img, expected, atol=0.1)
 
 
+@pytest.mark.thread_unsafe
 def test_mask_stat_map():
     # Generate simple simulated data with one "spot"
     img, data = _simulate_img()
@@ -182,6 +184,7 @@ def test_mask_stat_map():
     assert np.min((data == 0) == get_data(mask_img))
 
 
+@pytest.mark.thread_unsafe
 def test_load_bg_img(affine_eye):
     # Generate simple simulated data with non-diagonal affine
     affine = affine_eye
@@ -367,6 +370,8 @@ def test_get_cut_slices(affine_eye):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize(
     "params, warning_msg",
     [
@@ -426,6 +431,7 @@ def test_view_img_3d_warnings_more():
     check_html_view_img(html_view, title="SOME_TITLE")
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "params",
     [

@@ -56,7 +56,7 @@ def check_memory(memory, verbose=0):
                 error_msg = (
                     "Given cache path parent directory doesn't "
                     f"exists, you gave '{split_cache_dir[0]}' "
-                    "which was expanded as '{os.path.dirname(memory)}' "
+                    f"which was expanded as '{Path(memory).parent}' "
                     "but doesn't exist either. "
                     "Use nilearn.EXPAND_PATH_WILDCARDS to deactivate "
                     "auto expand user path (~) behavior."
@@ -65,7 +65,7 @@ def check_memory(memory, verbose=0):
                 # The given cache base path doesn't exist.
                 error_msg = (
                     "Given cache path parent directory doesn't "
-                    "exists, you gave '{split_cache_dir[0]}'."
+                    f"exists, you gave '{split_cache_dir[0]}'."
                 )
             raise ValueError(error_msg)
 
@@ -86,10 +86,10 @@ class _ShelvedFunc:
 
 def cache(
     func,
-    memory,
+    memory: Memory | Path,
     func_memory_level=None,
     memory_level=None,
-    shelve=False,
+    shelve: bool = False,
     **kwargs,
 ):
     """Return a joblib.Memory object.
@@ -202,7 +202,7 @@ class CacheMixin:
             self._shelving = False
 
     def _cache(self, func, func_memory_level=1, shelve=False, **kwargs):
-        """Return a joblib.Memory object.
+        """Return a joblib.Memory object.nilearn/_utils/cache_mixin.py.
 
         The memory_level determines the level above which the wrapped
         function output is cached. By specifying a numeric value for

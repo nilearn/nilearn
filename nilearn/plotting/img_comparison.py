@@ -13,6 +13,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.plotting.displays._slicers import save_figure_if_needed
@@ -94,6 +95,7 @@ def plot_img_comparison(
         Pearson correlation between the images.
 
     """
+    check_params(locals())
     # Cast to list
     if isinstance(ref_imgs, (*NiimgLike, SurfaceImage)):
         ref_imgs = [ref_imgs]
@@ -317,6 +319,7 @@ def plot_bland_altman(
     .. footbibliography::
 
     """
+    check_params(locals())
     data_ref, data_src = _extract_data_2_images(
         ref_img, src_img, masker=masker
     )

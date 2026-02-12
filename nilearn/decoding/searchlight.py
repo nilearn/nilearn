@@ -21,7 +21,7 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
@@ -80,6 +80,8 @@ def search_light(
     scores : array-like of shape (number of rows in A)
         search_light scores
     """
+    check_params(locals())
+
     group_iter = GroupIterator(A.shape[0], n_jobs)
     scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(_group_iter_search_light)(
@@ -472,7 +474,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         self.scores_[np.where(process_mask)] = scores
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return (
             hasattr(self, "scores_")
             and hasattr(self, "process_mask_")

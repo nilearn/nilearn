@@ -50,7 +50,7 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import check_feature_screening
 from nilearn.image import check_niimg
@@ -60,6 +60,12 @@ from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
 
 MAX_ITER = 10000
+
+kwarg_logistic_regression_cv = {}
+if SKLEARN_GTE_1_8:
+    # TODO (sklearn 1.8) remove if
+    # TODO (sklearn 1.10) remove 'use_legacy_attributes'
+    kwarg_logistic_regression_cv = {"use_legacy_attributes": False}
 
 SUPPORTED_ESTIMATORS = {
     # "params" cannot be overridden
@@ -81,17 +87,29 @@ SUPPORTED_ESTIMATORS = {
     },
     "logistic_l1": {
         "estimator": LogisticRegressionCV,
-        "params": {"penalty": "l1", "solver": "liblinear"},
+        "params": {
+            "l1_ratios": (1,),
+            "solver": "liblinear",
+            **kwarg_logistic_regression_cv,
+        },
         "extra_params": {},
     },
     "logistic_l2": {
         "estimator": LogisticRegressionCV,
-        "params": {"penalty": "l2", "solver": "liblinear"},
+        "params": {
+            "l1_ratios": (0,),
+            "solver": "liblinear",
+            **kwarg_logistic_regression_cv,
+        },
         "extra_params": {},
     },
     "logistic": {
         "estimator": LogisticRegressionCV,
-        "params": {"penalty": "l2", "solver": "liblinear"},
+        "params": {
+            "l1_ratios": (0,),
+            "solver": "liblinear",
+            **kwarg_logistic_regression_cv,
+        },
         "extra_params": {},
     },
     "ridge_classifier": {
@@ -497,7 +515,13 @@ def _parallel_fit(
             if isinstance(estimator, (RidgeCV, RidgeClassifierCV, LassoCV)):
                 params["best_alpha"] = estimator.alpha_
             elif isinstance(estimator, LogisticRegressionCV):
-                params["best_C"] = estimator.C_.item()
+                if isinstance(estimator.C_, float):
+                    # TODO (sklearn >= 1.10)
+                    # estimator.C_ is always a float
+                    # so we can get rif of the else part
+                    params["best_C"] = estimator.C_
+                else:
+                    params["best_C"] = estimator.C_.item()
             best_params = params
 
             # fill in any missing param from param_grid
@@ -893,7 +917,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "coef_") and hasattr(self, "masker_")
 
     def _prep_input_post_fit(self, X) -> np.ndarray:
@@ -1121,7 +1145,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         return coefs, intercepts
 
-    def _set_scorer(self):
+    def _set_scorer(self) -> None:
         if self.scoring is not None:
             self.scorer_ = check_scoring(self.estimator_, self.scoring)
         elif is_classifier(self):

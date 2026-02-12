@@ -267,7 +267,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "n_elements_")
 
     @fill_doc
@@ -479,7 +479,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
             if self._reporting_data.get("images") is None:
                 msg = (
-                    "SurfaceMapsMasker has not been transformed "
+                    f"{self.__class__.__name__} has not been transformed "
                     "(via transform() method) on any image yet. "
                     "Plotting only maps for reporting."
                 )

@@ -159,6 +159,8 @@
 
 .. _Jordi Huguet: https://github.com/jhuguetn
 
+.. _Joseph Paillard: https://github.com/jpaillard
+
 .. _Joshua Teves: https://github.com/jbteves
 
 .. _Julia Huntenburg: https://github.com/juhuntenburg
@@ -224,6 +226,8 @@
 .. _Milton Camacho: https://github.com/miltoncamacho
 
 .. _Mohammad Torabi: https://github.com/mtorabi59
+
+.. _Mohammad Sadeghi Hardengi: https://github.com/mohammedsadeghi
 
 .. _Moritz Boos: https://github.com/mjboos
 

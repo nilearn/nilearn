@@ -21,7 +21,7 @@ from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -568,6 +568,8 @@ def recursive_neighbor_agglomeration(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     connectivity = _weighted_connectivity_graph(X, mask_img)
 
     # Initialization
@@ -809,7 +811,7 @@ class ReNA(
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "labels_")
 
     @fill_doc

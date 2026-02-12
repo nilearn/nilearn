@@ -80,6 +80,7 @@ def test_plot_functions_invalid_threshold(plot_func, img_3d_mni, tmp_path):
     plt.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "plot_func", PLOTTING_FUNCS_3D.difference({plot_glass_brain})
 )
@@ -95,6 +96,7 @@ def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_rand_eye):
     plt.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("display_mode", ["x", "y", "z"])
 def test_plot_functions_same_cut(display_mode, img_3d_rand_eye, tmp_path):
     """Make sure that passing several times the same cut for stacked slicers
@@ -116,6 +118,7 @@ def test_plot_functions_same_cut(display_mode, img_3d_rand_eye, tmp_path):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
 def test_plot_threshold_for_uint8(affine_eye, plot_func):
     """Mask was applied in [-threshold, threshold] which is problematic \
@@ -149,6 +152,7 @@ def test_plot_threshold_for_uint8(affine_eye, plot_func):
     plt.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize(
     "display_mode,cut_coords",
@@ -173,12 +177,14 @@ def test_invalid_cut_coords_with_display_mode(
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_with_nans(plot_func, img_3d_mni):
     """Smoke test for plotting functions with nans in data image."""
     plot_func(_add_nans_to_img(img_3d_mni))
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "plot_func", [plot_roi, plot_stat_map, plot_glass_brain]
@@ -190,6 +196,7 @@ def test_plotting_functions_with_cmaps(plot_func, cmap, img_3d_mni):
     plt.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_anat, plot_roi, plot_stat_map])
 def test_plotting_functions_with_nans_in_bg_img(plot_func, img_3d_mni):
     """Smoke test for plotting functions with nans in background image."""
@@ -201,6 +208,7 @@ def test_plotting_functions_with_nans_in_bg_img(plot_func, img_3d_mni):
     plt.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_anat, plot_img])
 def test_plotting_functions_with_display_mode_tiled(plot_func, img_3d_mni):
     """Smoke test for plotting functions with tiled display mode."""
@@ -211,6 +219,7 @@ def test_plotting_functions_with_display_mode_tiled(plot_func, img_3d_mni):
     plt.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
 @pytest.mark.parametrize(
@@ -240,6 +249,7 @@ def test_plot_symmetric_colorbar_threshold(
     plt.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_stat_map])
 @pytest.mark.parametrize(
     "threshold, expected_ticks",
@@ -271,6 +281,7 @@ def test_plot_asymmetric_colorbar_threshold(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
 @pytest.mark.parametrize("vmax", [None, 0])
 def test_img_plotting_vmax_equal_to_zero(plot_func, vmax):
