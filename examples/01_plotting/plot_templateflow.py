@@ -11,6 +11,13 @@ in order to make surface plots.
 
 Then, we see how to get the proper template
 for the Harvard-Oxford volumetric atlas.
+
+.. admonition:: Datasets used in this example
+
+    - :ref:`harvard_oxford_atlas`
+
+    - The Desikan-Killiany atlas (TODO add ref)
+
 """
 
 # %%
@@ -51,7 +58,8 @@ print(fetched_files)
 
 # %%
 # In this example, the Desikan-Killiany (DK) atlas is fetched.
-# DK is defined with reference to the _FreeSurfer average_ (fsaverage) template,
+# DK is defined with reference
+# to the *FreeSurfer average* (fsaverage) template,
 # which is provided at multiple densities (number of vertices per hemisphere):
 # 3k, 10k, 41k, 164k
 # Here, we build a SurfaceImage containing the labels for both hemispheres
@@ -182,9 +190,11 @@ print(f"Harvard-Oxford atlas template: {harvard_oxford_sub.template}")
 # %%
 # Getting a template
 # ------------------
-# If you want to visualize the Harvard-Oxford atlas on the template it was originally defined,
+# If you want to visualize the Harvard-Oxford atlas
+# on the template it was originally defined,
 # you can get it from TemplateFlow.
-# This template is the default template used by FSL, and its unique identifier within TemplateFlow
+# This template is the default template used by FSL,
+# and its unique identifier within TemplateFlow
 # is`MNI152NLin6Asym`.
 
 template = "MNI152NLin6Asym"
