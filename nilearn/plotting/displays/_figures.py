@@ -170,6 +170,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
                         "Kaleido and Google Chrome are required to save "
                         "plotly figures to disk."
                     ) from None
+                # TODO remove this check when min supported kaleido version is
+                # >= 1.0.0
                 elif not is_kaleido_plotly_compatible():
                     raise RuntimeError(
                         "Incompatible Plotly/Kaleido versions detected:\n "

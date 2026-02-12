@@ -283,6 +283,7 @@ def is_kaleido_installed():
     return True
 
 
+# TODO remove this when min supported kaleido version is >= 1.0.0
 def is_kaleido_plotly_compatible():
     """Check if installed versions of plotly and kaleido are compatible.
 
