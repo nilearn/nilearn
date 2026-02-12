@@ -10,11 +10,11 @@ class LoadImgBenchmark(Benchmark):
     nilearn.load_img.
     """
 
-    def time_load_img(self):
+    def time_image_load_img(self):
         """Time the loading of images."""
         load("nilearn")
 
-    def peakmem_load_img(self):
+    def peakmem_image_load_img(self):
         """Peak memory of loading images."""
         load("nilearn")
 
@@ -25,12 +25,12 @@ class MeanImgBenchmark(Benchmark):
     computing the mean of a 4D image.
     """
 
-    def time_mean_img(self):
+    def time_image_mean_img(self):
         """Time the loading followed by taking the mean."""
         img = load("nilearn")[1]
         mean_img(img)
 
-    def peakmem_mean_img(self):
+    def peakmem_image_mean_img(self):
         """Peak memory of loading followed by taking the mean."""
         img = load("nilearn")[1]
         mean_img(img)
@@ -39,14 +39,14 @@ class MeanImgBenchmark(Benchmark):
 class IndexImgBenchmark(Benchmark):
     """A benchmark that compares the performance of indexing a 4D image."""
 
-    def time_index_img(self):
+    def time_image_index_img(self):
         """Time the loading the image followed by indexing a voxel."""
         index_img(
             self.fmri_filename,
             slice(1, self.n_vol_per_subject * self.n_subjects - 10, 2),
         )
 
-    def peakmem_index_img(self):
+    def peakmem_image_index_img(self):
         """Peak memory of loading the image followed by indexing a voxel."""
         index_img(
             self.fmri_filename,
@@ -64,11 +64,11 @@ class CompareLoad(Benchmark):
     param_names = ("loader",)
     params = ("nilearn", "nibabel (ref)")
 
-    def time_compare_load(self, loader):
+    def time_image_compare_load(self, loader):
         """Time the loading of images."""
         load(loader)
 
-    def peakmem_compare_load(self, loader):
+    def peakmem_image_compare_load(self, loader):
         """Peak memory of loading images."""
         load(loader)
 
@@ -83,12 +83,12 @@ class CompareMean(Benchmark):
     param_names = ("loader",)
     params = ("nilearn", "nibabel (ref)")
 
-    def time_compare_mean_img(self, loader):
+    def time_image_compare_mean_img(self, loader):
         """Time the loading followed by taking the mean."""
         img = load(loader)[1]
         mean_img(img)
 
-    def peakmem_compare_mean_img(self, loader):
+    def peakmem_image_compare_mean_img(self, loader):
         """Peak memory of loading followed by taking the mean."""
         img = load(loader)[1]
         mean_img(img)
@@ -104,12 +104,12 @@ class CompareSlice(Benchmark):
     param_names = ("loader",)
     params = ("nilearn", "nibabel (ref)")
 
-    def time_compare_slice(self, loader):
+    def time_image_compare_slice(self, loader):
         """Time the loading the image followed by extracting a slice of it."""
         img = load(loader)[1]
         img.dataobj[..., 0]
 
-    def peakmem_compare_slice(self, loader):
+    def peakmem_image_compare_slice(self, loader):
         """Peak memory of loading the image followed by extracting a
         slice of it.
         """
