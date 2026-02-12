@@ -1040,10 +1040,18 @@ screening_percentile : int, float, \
 """
 docdict[
     "screening_n_features"
-] = """screening_n_features : :obj:int, default=None
-    The number of features to keep.
+] = """screening_n_features : :obj:`int`, default=None
+    The number of features to keep for a single cross-validation.
     If both ``screening_percentile`` and ``screening_n_features`` are set,
     ``screening_percentile`` takes priority.
+
+    .. admonition:: Important
+
+        Given ``screening_n_features``
+        is the number of features kept **for each fold** of a cross-validation,
+        the final modal can have
+        more than ``screening_n_features`` non-zero weights.
+
     """
 
 # second_level_contrast
