@@ -6,11 +6,11 @@ from scipy import linalg
 from scipy.spatial import distance_matrix
 
 from nilearn._utils.helpers import (
-    is_kaleido_plotly_compatible,
     is_plotly_installed,
     is_sphinx_build,
 )
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.versions import is_kaleido_plotly_compatible
 from nilearn.plotting.surface._utils import DEFAULT_HEMI, get_faces_on_edge
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data, load_surf_data
