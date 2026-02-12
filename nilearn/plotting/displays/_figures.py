@@ -155,7 +155,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                         "To be able to save images with plotly, make sure "
                         "that Google Chrome is installed!\n"
                         "You can install a compatible Chrome version using "
-                        "the `kaleido_get_chrome` command or "
+                        "the `kaleido_get_chrome` command in command line or "
                         "`kaleido.get_chrome_sync()` function "
                         "in Python."
                     ) from None
