@@ -182,9 +182,10 @@ print(f"Harvard-Oxford atlas template: {harvard_oxford_sub.template}")
 # %%
 # Getting a template
 # ------------------
-# If you want to visualize the Harvard-Oxford atlas on the proper template,
-# you can get it from templateFlow.
-# This template is also used by FSL.
+# If you want to visualize the Harvard-Oxford atlas on the template it was originally defined,
+# you can get it from TemplateFlow.
+# This template is the default template used by FSL, and its unique identifier within TemplateFlow
+# is`MNI152NLin6Asym`.
 
 template = "MNI152NLin6Asym"
 resolution = "01"
