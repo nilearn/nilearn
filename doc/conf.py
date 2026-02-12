@@ -16,9 +16,10 @@ import re
 import sys
 from pathlib import Path
 
-from nilearn._version import __version__
 from sphinx.domains import changeset
 from sphinx.locale import _
+
+from nilearn._version import __version__
 
 # ----------------------------------------------------------------------------
 
@@ -53,6 +54,14 @@ except ImportError:
     )
 
 # -- General configuration ---------------------------------------------------
+
+# avoid some warnings to show in the the sphinx gallery
+# https://sphinx-gallery.github.io/stable/configuration.html#removing-warnings
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message=".*matplotlib backend that is non-interactive.*",
+)
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
