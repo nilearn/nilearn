@@ -159,10 +159,12 @@ which are needed to demo and teach features.
 
 The following projects are dedicated to host atlases and accept contributions:
 
-* `templateflow <https://www.templateflow.org>`_
-* `neuromaps <https://netneurolab.github.io/neuromaps>`_
-* `neuroparc <https://github.com/neurodata/neuroparc>`_
+* `templateflow <https://www.templateflow.org>`_ : the example :ref:`sphx_glr_auto_examples_01_plotting_plot_templateflow.py`
+   shows how to use templateflow with nilearn.
 
+* `neuromaps <https://netneurolab.github.io/neuromaps>`_
+
+* `neuroparc <https://github.com/neurodata/neuroparc>`_
 
 .. _nilearn_governance:
 
