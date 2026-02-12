@@ -1,13 +1,11 @@
 """Utility functions for the benchmarks."""
 
-from typing import Any, Literal
+from typing import Literal
 
 import nibabel as nib
-import numpy as np
 from nibabel import Nifti1Image
 
 from nilearn.image import load_img
-from nilearn.maskers import NiftiMasker
 
 
 def load(
@@ -49,36 +47,3 @@ def load(
         return [
             loading_func(f"mask_{idx}.nii.gz") for idx in range(1, n_masks + 1)
         ], loading_func(f"fmri_{n_subjects}.nii.gz")
-
-
-def apply_mask(
-    mask: Nifti1Image,
-    img: Nifti1Image,
-    implementation: Literal["nilearn", "numpy"],
-    nifti_masker_params: None | dict[str, Any] = None,
-):
-    """Apply a mask to an image using nilearn or numpy.
-
-    Parameters
-    ----------
-    mask : Nifti1Image
-        The mask to apply.
-    img : Nifti1Image
-        The image to apply the mask to.
-    implementation : str
-        The implementation to use. Can be either 'nilearn' or 'numpy'.
-    nifti_masker_params : dict, default=None
-        Parameters to pass to the NiftiMasker object when using 'nilearn' as
-        the implementation.
-    """
-    if implementation == "nilearn":
-        if nifti_masker_params is None:
-            NiftiMasker(mask_img=mask).fit_transform(img)
-        else:
-            masker = NiftiMasker(mask_img=mask)
-            masker.set_params(**nifti_masker_params)
-            masker.fit_transform(img)
-    elif implementation == "numpy":
-        mask_data = np.asarray(mask.dataobj).astype(bool)
-        img_data = np.asarray(img.dataobj)
-        img_data[mask_data]

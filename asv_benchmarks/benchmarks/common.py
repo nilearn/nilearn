@@ -135,7 +135,6 @@ def img_labels(
 
     adapted from nilearn._utils.data_gen.generate_labeled_regions
 
-    DO NOT CHANGE n_regions (some tests expect this value).
     """
     n_voxels = shape[0] * shape[1] * shape[2]
 
@@ -154,7 +153,9 @@ def img_labels(
 
 class Benchmark:
     """
-    Base class for the benchmarks. Currently, it only contains a method to
+    Base class for the benchmarks.
+
+    Currently, it only contains a method to
     setup the cache which is used to store the images and masks used in the
     benchmarks.
     """
@@ -180,7 +181,9 @@ class Benchmark:
             The number of masks to create.
         """
         n_vol_per_subject = 190
+
         shape = (60, 65, 70)
+
         affine = np.asarray(
             [
                 [-3.0, -0.0, 0.0, 90.0],
