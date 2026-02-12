@@ -83,12 +83,12 @@ class CompareMean(Benchmark):
     param_names = ("loader",)
     params = ("nilearn", "nibabel (ref)")
 
-    def time_image_compare_mean_img(self, loader):
+    def time_image_mean_img_compare(self, loader):
         """Time the loading followed by taking the mean."""
         img = load(loader)[1]
         mean_img(img)
 
-    def peakmem_image_compare_mean_img(self, loader):
+    def peakmem_image_mean_img_compare(self, loader):
         """Peak memory of loading followed by taking the mean."""
         img = load(loader)[1]
         mean_img(img)
