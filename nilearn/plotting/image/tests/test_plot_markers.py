@@ -182,6 +182,7 @@ def test_plot_markers_single_node_value(matplotlib_pyplot):
     plot_markers([1], [[1, 1, 1]])
 
 
+@pytest.mark.thread_unsafe
 def test_plot_markers_radiological_view(matplotlib_pyplot):
     """Smoke test for radiological view."""
     result = plot_markers([1], [[1, 1, 1]], radiological=True)
