@@ -51,8 +51,8 @@ print(fetched_files)
 
 # %%
 # In this example, the Desikan-Killiany (DK) atlas is fetched.
-# This template is available
-# at multiple densities (number of vertices per hemisphere):
+# DK is defined with reference to the _FreeSurfer average_ (fsaverage) template,
+# which is provided at multiple densities (number of vertices per hemisphere):
 # 3k, 10k, 41k, 164k
 # Here, we build a SurfaceImage containing the labels for both hemispheres
 # for the 3k and 10k densities.
