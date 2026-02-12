@@ -16,8 +16,6 @@ Enhancements
 
 - :bdg-success:`API` The parameter ``estimator_args`` was added to all decoding estimators to allow to pass parameters directly to the underlying Scikit-Learn estimators (:gh:`5641` by `Rémi Gau`_).
 
-- :bdg-success:`API` Add support for dictionary as ``cut_coords`` for :class:`~plotting.displays.MosaicSlicer` and image plotting functions. (:gh:`5920` by `Hande Gözükan`_).
-
 - :bdg-success:`API` Support pathlike objects for ``cmap`` argument in :func:`~plotting.plot_surf_roi` (:gh:`5981` by `Joseph Paillard`_).
 
 Changes
