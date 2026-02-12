@@ -7,8 +7,7 @@ from nibabel import Nifti1Image
 
 from nilearn.maskers import NiftiMasker
 
-from ..common import Benchmark
-from ..utils import load
+from ..utils import Benchmark, load
 
 
 def apply_mask(
@@ -32,12 +31,10 @@ def apply_mask(
         the implementation.
     """
     if implementation == "nilearn":
-        if nifti_masker_params is None:
-            NiftiMasker(mask_img=mask).fit_transform(img)
-        else:
-            masker = NiftiMasker(mask_img=mask)
+        masker = NiftiMasker(mask_img=mask)
+        if nifti_masker_params is not None:
             masker.set_params(**nifti_masker_params)
-            masker.fit_transform(img)
+        masker.fit_transform(img)
     elif implementation == "numpy":
         mask_data = np.asarray(mask.dataobj).astype(bool)
         img_data = np.asarray(img.dataobj)
@@ -57,7 +54,7 @@ class NiftiMaskerBenchmark(Benchmark):
         [False, True],
     )
 
-    def time_nifti_masker(self, smoothing_fwhm, detrend):
+    def time_nifti_masker_fit_transform(self, smoothing_fwhm, detrend):
         """Time the loading (only with nilearn here) and then masking with
         different parameters.
         """
@@ -72,7 +69,7 @@ class NiftiMaskerBenchmark(Benchmark):
             },
         )
 
-    def peakmem_nifti_masker(self, smoothing_fwhm, detrend):
+    def peakmem_nifti_masker_fit_transform(self, smoothing_fwhm, detrend):
         """Peak memory for the loading (only with nilearn here) and then
         masking with different parameters.
         """
