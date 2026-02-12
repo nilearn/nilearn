@@ -27,7 +27,7 @@ dependencies = [
     "numpy>=1.22.4",
     "pandas>=2.2.0",
     "requests>=2.30.0",
-    "scikit-learn>=1.4.0",
+    "scikit-learn>=1.5.0",
     "jinja2>=3.1.2",
     "scipy>=1.9.0",
     "packaging"
@@ -71,7 +71,7 @@ min = [
     "numpy==1.22.4",
     "pandas==2.2.0",
     "requests==2.30.0",
-    "scikit-learn==1.4.0",
+    "scikit-learn==1.5.0",
     "scipy==1.9.0",
     "jinja2==3.1.2"
 ]
