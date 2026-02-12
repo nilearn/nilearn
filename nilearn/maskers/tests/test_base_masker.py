@@ -5,7 +5,6 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
 from nilearn import image
-from nilearn.maskers.base_masker import _BaseMasker
 from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
 
 
@@ -52,9 +51,6 @@ def test_cropping_code_paths(rng):
 
 def test_get_masker_params():
     """Test for private method to return params of an instance as dict."""
-    masker = _BaseMasker()
-    assert masker._get_masker_params() == {}
-
     masker = NiftiMasker()
     assert masker._get_masker_params() == {
         "clean_args": None,

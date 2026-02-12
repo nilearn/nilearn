@@ -324,41 +324,6 @@ class _BaseMasker(
         """
         raise NotImplementedError()
 
-    def _get_masker_params(self, ignore: None | list[str] = None, deep=False):
-        """Get parameters for this masker.
-
-        Very similar to the BaseEstimator.get_params() from sklearn
-        but allows to avoid returning some keys.
-
-        Parameters
-        ----------
-        ignore : None or list of strings
-            Names of the parameters that are not returned.
-
-        deep : bool, default=True
-            If True, will return the parameters for this estimator
-            and contained subobjects that are estimators.
-
-        Returns
-        -------
-        params : dict
-            The dict of parameters.
-
-        """
-        _ignore = {"memory", "memory_level", "verbose", "copy", "n_jobs"}
-        if ignore is not None:
-            _ignore.update(ignore)
-
-        params = super().get_params(deep=deep)
-
-        params = {
-            k: v
-            for k, v in super().get_params(deep=deep).items()
-            if k not in _ignore
-        }
-
-        return params
-
 
 @fill_doc
 class BaseMasker(_BaseMasker):
@@ -452,6 +417,39 @@ class BaseMasker(_BaseMasker):
         tags.input_tags = InputTags()
         tags.estimator_type = "masker"
         return tags
+
+    def _get_masker_params(self, ignore: None | list[str] = None, deep=False):
+        """Get parameters for this masker.
+
+        Very similar to the BaseEstimator.get_params() from sklearn
+        but allows to avoid returning some keys.
+
+        Parameters
+        ----------
+        ignore : None or list of strings
+            Names of the parameters that are not returned.
+
+        deep : bool, default=True
+            If True, will return the parameters for this estimator
+            and contained subobjects that are estimators.
+
+        Returns
+        -------
+        params : dict
+            The dict of parameters.
+
+        """
+        _ignore = {"memory", "memory_level", "verbose", "copy", "n_jobs"}
+        if ignore is not None:
+            _ignore.update(ignore)
+
+        params = {
+            k: v
+            for k, v in super().get_params(deep=deep).items()
+            if k not in _ignore
+        }
+
+        return params
 
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
@@ -925,9 +923,11 @@ class _BaseSurfaceMasker(_BaseMasker):
         """Set the colors for the contours in the report."""
         del hemi
 
-    def _clean(self, region_signals: np.ndarray, confounds, sample_mask):
-        """Clean extracted signal before
-        returning it at the end of transform.
+    def _clean(
+        self, region_signals: np.ndarray, confounds, sample_mask
+    ) -> np.ndarray:
+        """Clean extracted signal before \
+            returning it at the end of transform.
         """
         mask_logger("cleaning", verbose=self.verbose)
         region_signals = self._cache(clean, func_memory_level=2)(
