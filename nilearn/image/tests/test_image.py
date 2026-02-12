@@ -29,6 +29,7 @@ from nilearn._utils.data_gen import (
     generate_labeled_regions,
     generate_maps,
 )
+from nilearn._utils.niimg import _get_data
 from nilearn._utils.testing import (
     assert_memory_less_than,
     with_memory_profiler,
@@ -1923,6 +1924,9 @@ def test_copy_img():
 
 @pytest.mark.thread_unsafe
 def test_copy_img_side_effect(img_4d_ones_eye):
+    # load data from proxy array to ndarray to make sure that
+    # data is not changed
+    _get_data(img_4d_ones_eye)
     hash1 = joblib.hash(img_4d_ones_eye)
     copy_img(img_4d_ones_eye)
     hash2 = joblib.hash(img_4d_ones_eye)
@@ -2323,11 +2327,8 @@ def test_check_niimg_4d_errors(affine_eye, img_3d_zeros_eye, shape_3d_default):
 
     a = img_3d_zeros_eye
     b = np.zeros(shape_3d_default)
-    c = check_niimg_4d([a, b], return_iterator=True)
-    with pytest.raises(
-        TypeError, match="Error encountered while loading image #1"
-    ):
-        list(c)
+    with pytest.raises(TypeError, match="input should be a NiftiLike object"):
+        c = check_niimg_4d([a, b], return_iterator=True)
 
     b = Nifti1Image(np.zeros((10, 20, 10)), affine_eye)
     c = check_niimg_4d([a, b], return_iterator=True)

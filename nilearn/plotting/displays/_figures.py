@@ -4,7 +4,11 @@ import numpy as np
 from scipy import linalg
 from scipy.spatial import distance_matrix
 
-from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn._utils.helpers import (
+    is_kaleido_installed,
+    is_plotly_installed,
+    is_sphinx_build,
+)
 from nilearn._utils.logger import find_stack_level
 from nilearn.plotting.surface._utils import DEFAULT_HEMI, get_faces_on_edge
 from nilearn.surface import SurfaceImage
@@ -104,20 +108,26 @@ class PlotlySurfaceFigure(SurfaceFigure):
             )
         super().__init__(figure=figure, output_file=output_file, hemi=hemi)
 
-    def show(self, renderer="browser"):
+    def show(self, renderer=None):
         """Show the figure.
 
         Parameters
         ----------
-        renderer : :obj:`str`, default='browser'
+        renderer : :obj:`str`, default=None
             Plotly renderer to be used.
 
         """
         if self.figure is not None:
-            self.figure.show(renderer=renderer)
-            return self.figure
+            # Figure should be returned for sphinx-gallery to be able to
+            # display it in the docs.
+            if is_sphinx_build():
+                return self.figure
+            # When run in notebook, if both figure is returned and show
+            # is called, the figure is displayed twice.
+            else:
+                self.figure.show(renderer=renderer)
 
-    def savefig(self, output_file=None, **savefig_kwargs):  # noqa: ARG002
+    def savefig(self, output_file=None, **savefig_kwargs) -> None:  # noqa: ARG002
         """Save the figure to file.
 
         Parameters

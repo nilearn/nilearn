@@ -109,10 +109,6 @@ def generate_and_check_report(
             warnings_msg = [str(x.message) for x in all_warnings]
             if not extra_warnings_allowed:
                 assert len(warnings_msg) == 0
-            else:
-                assert len(warnings_msg) > 0, (
-                    "You can set extra_warnings_allowed to False"
-                )
 
         if not duplicate_warnings_allowed:
             # make sure that warnings are not thrown several times

@@ -379,7 +379,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
 
-    def logL(self):  # noqa: N802
+    def logL(self) -> None:  # noqa: N802
         """Return the maximized log-likelihood."""
         raise NotImplementedError(
             "logL not implemented for "

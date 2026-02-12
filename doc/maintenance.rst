@@ -127,7 +127,7 @@ Pull Requests
 We welcome pull requests from all community members, if they follow the
 :ref:`contribution_guidelines` inspired from scikit learn conventions. (More
 details on their process are available
-:sklearn:`here <developers/contributing.html#contributing-code>`).
+:sklearn:`here <developers/contributing.html#contributing-code-and-documentation>`).
 
 Using tox
 =========
@@ -268,7 +268,8 @@ Prepare the documentation for the release
 Check illustrations
 ...................
 
-In several places the user guide relies on figures generated in the examples for illustration.
+In several places the user guide relies
+on the code examples and the figures they generate.
 
 If the examples are modified, and an expected figure is not created anymore
 or the order of the generated figures is changed,
@@ -279,6 +280,7 @@ but care should be taken that at least the following have not been affected:
 
 - ``.rst`` files containing the string ``image:: ../auto_examples``,
 - the tables in the :ref:`plotting` section,
+- ``literalinclude`` sphinx-directives with a ``:start-after:``
 - ...
 
 Update links

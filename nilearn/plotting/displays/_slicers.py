@@ -211,8 +211,8 @@ class BaseSlicer:
 
         %(cut_coords)s
 
-        Return
-        ------
+        Returns
+        -------
         list[bool]
             a list of boolean values corresponding to each coordinate
         indicating if it is within the bounds or not
@@ -258,8 +258,8 @@ class BaseSlicer:
         leave_space : :obj:`bool`, default=False
             If ``True``, leave space between the plots.
 
-        colorbar : :obj:`bool`, default=False
-            If ``True``, display a colorbar on the right of the plots.
+        %(colorbar)s
+            Default=False.
 
         %(brain_color)s
 
@@ -409,7 +409,7 @@ class BaseSlicer:
         transparency=None,
         transparency_range=None,
         **kwargs,
-    ):
+    ) -> None:
         """Plot a 3D map in all the views.
 
         Parameters
@@ -425,8 +425,8 @@ class BaseSlicer:
                 value is used to threshold the image: values below the
                 threshold (in absolute value) are plotted as transparent.
 
-        colorbar : :obj:`bool`, default=False
-            If ``True``, display a colorbar on the right of the plots.
+        %(colorbar)s
+            Default=False.
 
         cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
@@ -488,7 +488,9 @@ class BaseSlicer:
         plt.draw_if_interactive()
 
     @fill_doc
-    def add_contours(self, img, threshold=1e-6, filled=False, **kwargs):
+    def add_contours(
+        self, img, threshold=1e-6, filled=False, **kwargs
+    ) -> None:
         """Contour a 3D map in all the views.
 
         Parameters
@@ -499,10 +501,10 @@ class BaseSlicer:
         threshold : :obj:`int` or :obj:`float` or ``None``, default=1e-6
             Threshold to apply:
 
-                - If ``None`` is given, the maps are not thresholded.
-                - If number is given, it must be non-negative. The specified
-                  value is used to threshold the image: values below the
-                  threshold (in absolute value) are plotted as transparent.
+            - If ``None`` is given, the maps are not thresholded.
+            - If number is given, it must be non-negative. The specified
+                value is used to threshold the image: values below the
+                threshold (in absolute value) are plotted as transparent.
 
         filled : :obj:`bool`, default=False
             If ``filled=True``, contours are displayed with color fillings.
@@ -1085,7 +1087,7 @@ class BaseSlicer:
                     **kwargs,
                 )
 
-    def close(self):
+    def close(self) -> None:
         """Close the figure.
 
         This is necessary to avoid leaking memory.
@@ -1093,7 +1095,7 @@ class BaseSlicer:
         """
         plt.close(self.frame_axes.figure.number)
 
-    def savefig(self, filename, dpi=None, **kwargs):
+    def savefig(self, filename, dpi=None, **kwargs) -> None:
         """Save the figure to a file.
 
         Parameters
@@ -1136,10 +1138,10 @@ class _MultiDSlicer(BaseSlicer):
         threshold : :obj:`int` or :obj:`float` or None, default=None
             Threshold to apply:
 
-                - If ``None`` is given, the maps are not thresholded.
-                - If number is given, it must be non-negative. The specified
-                  value is used to threshold the image: values below the
-                  threshold (in absolute value) are plotted as transparent.
+            - If ``None`` is given, the maps are not thresholded.
+            - If number is given, it must be non-negative. The specified
+                value is used to threshold the image: values below the
+                threshold (in absolute value) are plotted as transparent.
 
         cut_coords : sequence of :obj:`float` or :obj:`int`, or None, \
                     default=None
@@ -1167,7 +1169,8 @@ class _MultiDSlicer(BaseSlicer):
                     img, activation_threshold=threshold
                 )
             cut_coords = [
-                cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
+                cut_coords["xyz".find(direction)]
+                for direction in cls._cut_displayed
             ]
         else:
             # check if cut_coords is within image bounds
@@ -1220,11 +1223,10 @@ class _MultiDSlicer(BaseSlicer):
     def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
         coord_in = []
 
-        for index, cut in enumerate(sorted(cls._cut_displayed)):
-            bounds_index = "xyz".find(cut)
+        for index, direction in enumerate(cls._cut_displayed):
+            coord_bounds = bounds["xyz".find(direction)]
             coord_in.append(
-                bounds[bounds_index][0] <= cut_coords[index]
-                and cut_coords[index] <= bounds[bounds_index][1]
+                coord_bounds[0] <= cut_coords[index] <= coord_bounds[1]
             )
         return coord_in
 
@@ -1282,7 +1284,7 @@ class OrthoSlicer(_MultiDSlicer):
 
     """
 
-    _cut_displayed: ClassVar[str] = "yxz"
+    _cut_displayed: ClassVar[str] = "xyz"
     _default_figsize: ClassVar[list[float]] = [2.2, 3.5]
 
     def _init_axes(self, **kwargs):
@@ -1300,9 +1302,7 @@ class OrthoSlicer(_MultiDSlicer):
             ax.set_facecolor(facecolor)
 
             ax.axis("off")
-            coord = self.cut_coords[
-                sorted(self._cut_displayed).index(direction)
-            ]
+            coord = self.cut_coords[index]
             display_ax = self._axes_class(ax, direction, coord, **kwargs)
             self.axes[direction] = display_ax
             ax.set_axes_locator(self._locator)
@@ -1381,7 +1381,7 @@ class OrthoSlicer(_MultiDSlicer):
             [[left_dict[axes], y0], [left_dict[axes] + width_dict[axes], y1]]
         )
 
-    def draw_cross(self, cut_coords=None, **kwargs):
+    def draw_cross(self, cut_coords=None, **kwargs) -> None:
         """Draw a crossbar on the plot to show where the cut is performed.
 
         Parameters
@@ -1402,12 +1402,11 @@ class OrthoSlicer(_MultiDSlicer):
             cut_coords = self.cut_coords
         coords = {}
         for direction in "xyz":
-            coord = None
-            if direction in self._cut_displayed:
-                coord = cut_coords[
-                    sorted(self._cut_displayed).index(direction)
-                ]
-            coords[direction] = coord
+            coords[direction] = (
+                cut_coords[self._cut_displayed.index(direction)]
+                if direction in self._cut_displayed
+                else None
+            )
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()
@@ -1486,7 +1485,7 @@ class TiledSlicer(_MultiDSlicer):
 
     """
 
-    _cut_displayed: ClassVar[str] = "yxz"
+    _cut_displayed: ClassVar[str] = "xyz"
     _default_figsize: ClassVar[list[float]] = [2.0, 7.6]
 
     def _find_initial_axes_coord(self, index):
@@ -1544,10 +1543,9 @@ class TiledSlicer(_MultiDSlicer):
             ax.set_facecolor(facecolor)
 
             ax.axis("off")
-            coord = self.cut_coords[
-                sorted(self._cut_displayed).index(direction)
-            ]
-            display_ax = self._axes_class(ax, direction, coord, **kwargs)
+            display_ax = self._axes_class(
+                ax, direction, self.cut_coords[index], **kwargs
+            )
             self.axes[direction] = display_ax
             ax.set_axes_locator(self._locator)
 
@@ -1711,7 +1709,7 @@ class TiledSlicer(_MultiDSlicer):
             [[coord1[axes], coord2[axes]], [coord3[axes], coord4[axes]]]
         )
 
-    def draw_cross(self, cut_coords=None, **kwargs):
+    def draw_cross(self, cut_coords=None, **kwargs) -> None:
         """Draw a crossbar on the plot to show where the cut is performed.
 
         Parameters
@@ -1733,12 +1731,11 @@ class TiledSlicer(_MultiDSlicer):
             cut_coords = self.cut_coords
         coords = {}
         for direction in "xyz":
-            coord_ = None
-            if direction in self._cut_displayed:
-                sorted_cuts = sorted(self._cut_displayed)
-                index = sorted_cuts.index(direction)
-                coord_ = cut_coords[index]
-            coords[direction] = coord_
+            coords[direction] = (
+                cut_coords[self._cut_displayed.index(direction)]
+                if direction in self._cut_displayed
+                else None
+            )
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()
@@ -2232,7 +2229,7 @@ class YXSlicer(OrthoSlicer):
 
     """
 
-    _cut_displayed = "yx"
+    _cut_displayed = "xy"
 
 
 @fill_doc
@@ -2333,7 +2330,7 @@ class MosaicSlicer(BaseSlicer):
 
     """
 
-    _cut_displayed: ClassVar[str] = "yxz"
+    _cut_displayed: ClassVar[str] = "xyz"
     _default_figsize: ClassVar[list[float]] = [4.0, 5.0]
 
     @classmethod
@@ -2445,7 +2442,7 @@ class MosaicSlicer(BaseSlicer):
             if img is None or img is False:
                 bounds = ((-40, 40), (-30, 30), (-30, 75))
                 for direction, n_cuts in zip(
-                    sorted(cls._cut_displayed), cut_coords, strict=False
+                    cls._cut_displayed, cut_coords, strict=False
                 ):
                     lower, upper = bounds["xyz".index(direction)]
                     coords[direction] = np.linspace(
@@ -2453,7 +2450,7 @@ class MosaicSlicer(BaseSlicer):
                     ).tolist()
             else:
                 for direction, n_cuts in zip(
-                    sorted(cls._cut_displayed), cut_coords, strict=False
+                    cls._cut_displayed, cut_coords, strict=False
                 ):
                     coords[direction] = find_cut_slices(
                         img, direction=direction, n_cuts=n_cuts
@@ -2467,10 +2464,9 @@ class MosaicSlicer(BaseSlicer):
     def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
         coord_in = []
 
-        for cut in sorted(cls._cut_displayed):
-            coords_list = cut_coords[cut]
-            bound_index = "xyz".find(cut)
-            coord_bounds = bounds[bound_index]
+        for index, direction in enumerate(cls._cut_displayed):
+            coords_list = cut_coords[direction]
+            coord_bounds = bounds[index]
             coord_in.extend(
                 [
                     coord_bounds[0] <= coord <= coord_bounds[1]

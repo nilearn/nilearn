@@ -21,7 +21,7 @@ import sys
 #
 # Entries are listed in alphabetical order.
 #
-docdict = {}
+docdict: dict[str, str] = {}
 
 ##############################################################################
 #
@@ -40,7 +40,7 @@ alphas : :obj:`float` or :obj:`list` of :obj:`float` or None, default=None
 # annotate
 docdict["annotate"] = """
 annotate : :obj:`bool`, default=True
-    If `annotate` is `True`, positions and left/right annotation
+    If `annotate` is `True` (like positions and / or  left/right annotation)
     are added to the plot.
 """
 
@@ -263,7 +263,7 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
     or a matplotlib colormap object,
     or a BIDS compliant
     `look-up table <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
-    passed as a pandas dataframe.
+    passed as a pandas dataframe or a path to a tsv or csv file.
     If the look up table does not contain a ``color`` column,
     then the default colormap of this function will be used.
 
@@ -281,7 +281,7 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
 # colorbar
 docdict["colorbar"] = """
 colorbar : :obj:`bool`, optional
-    If `True`, display a colorbar on the right of the plots.
+    If `True`, display a colorbar next to the plots.
 """
 
 # connected
@@ -322,31 +322,38 @@ cut_coords : None, allowed types depend on the ``display_mode``, optional
     The world coordinates of the point where the cut is performed.
 
     - If ``display_mode`` is ``'ortho'`` or ``'tiled'``,
-      this must be a 3 :obj:`tuple`
-      of :obj:`float` or :obj:`int`: ``(x, y, z)``.
+      this must be a 3-sequence of :obj:`float` or :obj:`int`:
+      ``(x, y, z)``.
 
     - If ``display_mode`` is ``'xz'``, ``'yz'`` or ``'yx'``,
-      this must be a 2 :obj:`tuple`
-      of :obj:`float` or :obj:`int`: ``(x, z)``,  ``(y, z)`` or  ``(x, y)``.
+      this must be a 2-sequence of :obj:`float` or :obj:`int`:
+      ``(x, z)``,  ``(y, z)`` or  ``(x, y)``.
 
-    - If ``display_mode`` is ``"x"``, ``"y"``, or ``"z"``
+    - If ``display_mode`` is ``"x"``, ``"y"``, or ``"z"``,
       this can be:
 
-      - an array-like of :obj:`float` or :obj:`int`
+      - a sequence of :obj:`float` or :obj:`int`
         representing the coordinates of each cut
         in the corresponding direction,
 
       - an :obj:`int`
         in which case it specifies the number of cuts to perform.
 
+    - If ``display_mode`` is ``'mosaic'``, this can be:
+
+      - an :obj:`int`
+        in which case it specifies the number of cuts to perform in each
+        direction ``"x"``, ``"y"``, ``"z"``.
+
+      - a 3-sequence of :obj:`float` or :obj:`int`
+        in which case it specifies the number of cuts to perform in each
+        direction ``"x"``, ``"y"``, ``"z"`` separately.
+
+      - :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`>
+        in which case keys are the directions ('x', 'y', 'z') and the values
+        are sequences holding the cut coordinates.
+
     - If ``None`` is given, the cuts are calculated automatically.
-
-    - If ``display_mode`` is ``'mosaic'``, and the number of cuts is the same
-      for all directions, ``cut_coords`` can be specified as an :obj:`int`.
-      It can also be a length 3 :obj:`tuple` of  :obj:`int`
-      specifying the number of cuts for
-      every direction if these are different.
-
 
 """
 
@@ -1962,5 +1969,5 @@ def fill_doc(f):
         raise RuntimeError(
             f"Error documenting {funcname}:\n{exp!s}.\n"
             "Did you forget to escape a character with an extra '%'"
-        )
+        ) from exp
     return f

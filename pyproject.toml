@@ -27,7 +27,7 @@ dependencies = [
     "numpy>=1.22.4",
     "pandas>=2.2.0",
     "requests>=2.30.0",
-    "scikit-learn>=1.4.0",
+    "scikit-learn>=1.5.0",
     "jinja2>=3.1.2",
     "scipy>=1.9.0",
     "packaging"
@@ -71,7 +71,7 @@ min = [
     "numpy==1.22.4",
     "pandas==2.2.0",
     "requests==2.30.0",
-    "scikit-learn==1.4.0",
+    "scikit-learn==1.5.0",
     "scipy==1.9.0",
     "jinja2==3.1.2"
 ]
@@ -203,7 +203,8 @@ layers = [
     "nilearn.mass_univariate",
     "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting : nilearn.masking : nilearn.reporting : nilearn.datasets : nilearn.interfaces",
     "nilearn.signal",
-    "nilearn.typing | nilearn.exceptions"
+    "nilearn._base",
+    "nilearn.typing | nilearn.exceptions | nilearn._utils.versions"
 ]
 name = "main architecture"
 type = "layers"
@@ -278,7 +279,6 @@ exclude = [
     '.*/tests/test_.*',
     'doc/.*',
     'examples/.*',
-    'maint_tools/.*',
     'nilearn_cache/.*',
     'nilearn/_version.py'
 ]
@@ -324,7 +324,8 @@ junit_family = "xunit2"
 log_cli_level = "INFO"
 markers = [
     "slow",  # for tests that exceed the timeout allowed for each test
-    "single_process"  # for test that require testing n_jobs>1 or that are flaky when used xdist testing parallelization
+    "single_process",  # for test that require testing n_jobs>1 or that are flaky when used xdist testing parallelization
+    "thread_unsafe"
 ]
 minversion = "6.0"
 xfail_strict = true
@@ -354,7 +355,6 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 fixable = ["ALL"]
 ignore = [
     "ARG005",
-    "B904",
     "D105",
     "D205",
     "D301",
@@ -365,7 +365,6 @@ ignore = [
     "PERF203",
     "PLR2004",
     "PTH207",
-    "RUF005",
     # Avoid linter rules conflicting with the formatter
     # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
     "COM812",

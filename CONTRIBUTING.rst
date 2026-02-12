@@ -211,7 +211,7 @@ Contribution Guidelines
 
 When modifying the codebase, we ask every contributor to respect common
 guidelines.
-Those are inspired from :sklearn:`scikit-learn <developers/contributing.html#contributing-code>`
+Those are inspired from :sklearn:`scikit-learn <developers/contributing.html#contributing-code-and-documentation>`
 and ensure Nilearn remains simple to understand, efficient and maintainable.
 For example, code needs to be tested and those tests need to run quickly in order
 not to burden the development process.

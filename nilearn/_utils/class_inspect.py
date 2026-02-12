@@ -1,7 +1,7 @@
 """Small utilities to inspect classes."""
 
 
-def get_params(cls, instance, ignore=None):
+def get_params(cls, instance, ignore: None | list[str] = None):
     """Retrieve the initialization parameters corresponding to a class.
 
     This helper function retrieves the parameters of function __init__ for
@@ -14,7 +14,7 @@ def get_params(cls, instance, ignore=None):
     cls : class
         The class that gives us the list of parameters we are interested in.
 
-    instance : object, instance of BaseEstimator
+    instance : object, instance of NilearnBaseEstimator
         The object that gives us the values of the parameters.
 
     ignore : None or list of strings
