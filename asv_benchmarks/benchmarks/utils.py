@@ -1,13 +1,20 @@
 """Utility functions for the benchmarks."""
 
+from typing import Any, Literal
+
 import nibabel as nib
 import numpy as np
+from nibabel import Nifti1Image
 
 from nilearn.image import load_img
 from nilearn.maskers import NiftiMasker
 
 
-def load(loader, n_masks=1, n_subjects=10):
+def load(
+    loader: Literal["nilearn", "nibabel (ref)"],
+    n_masks: int = 1,
+    n_subjects: int = 10,
+) -> tuple[list[Nifti1Image] | Nifti1Image, Nifti1Image]:
     """
     There are already some masks and an fMRI image in the cache directory
     created by the setup_cache method in the Benchmark class. This function
@@ -44,7 +51,12 @@ def load(loader, n_masks=1, n_subjects=10):
         ], loading_func(f"fmri_{n_subjects}.nii.gz")
 
 
-def apply_mask(mask, img, implementation, nifti_masker_params=None):
+def apply_mask(
+    mask: Nifti1Image,
+    img: Nifti1Image,
+    implementation: Literal["nilearn", "numpy"],
+    nifti_masker_params: None | dict[str, Any] = None,
+):
     """Apply a mask to an image using nilearn or numpy.
 
     Parameters
@@ -67,6 +79,6 @@ def apply_mask(mask, img, implementation, nifti_masker_params=None):
             masker.set_params(**nifti_masker_params)
             masker.fit_transform(img)
     elif implementation == "numpy":
-        mask = np.asarray(mask.dataobj).astype(bool)
-        img = np.asarray(img.dataobj)
-        img[mask]
+        mask_data = np.asarray(mask.dataobj).astype(bool)
+        img_data = np.asarray(img.dataobj)
+        img_data[mask_data]
