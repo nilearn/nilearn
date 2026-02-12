@@ -654,14 +654,12 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         # Ignore the mask-computing params: they are not useful and will
         # just invalid the cache for no good reason
-        # target_shape and target_affine are conveyed implicitly in mask_img
+        # target_shape and target_affine are conveyed implicitly in mask_img_
         params = self._get_masker_params(
             ignore=[
                 "mask_img",
                 "mask_args",
                 "mask_strategy",
-                "_sample_mask",
-                "sample_mask",
             ]
         )
         params["clean_kwargs"] = self.clean_args_

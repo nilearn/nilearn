@@ -402,7 +402,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         # just invalidate the cache for no good reason
         # target_shape and target_affine are conveyed implicitly in mask_img
         params = self._get_masker_params(
-            ignore=["mask_img", "mask_args", "mask_strategy", "copy"]
+            ignore=["mask_img", "mask_args", "mask_strategy"]
         )
         params["clean_kwargs"] = self.clean_args_
 

@@ -315,9 +315,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             get_data(self.mask_img_) if self.mask_img_ is not None else None
         )
 
-        parameters = self._get_masker_params()
-        parameters["clean_args"] = self.clean_args_
-
         # apply mask if provided
         # and then extract signal via least square regression
         mask_logger("extracting", verbose=self.verbose)
@@ -334,22 +331,18 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         mask_logger("cleaning", verbose=self.verbose)
 
-        parameters = self._get_masker_params()
-
-        parameters["clean_args"] = self.clean_args_
-
         # signal cleaning here
         region_signals = self._cache(signal.clean, func_memory_level=2)(
             region_signals,
-            detrend=parameters["detrend"],
-            standardize=parameters["standardize"],
-            standardize_confounds=parameters["standardize_confounds"],
-            t_r=parameters["t_r"],
-            low_pass=parameters["low_pass"],
-            high_pass=parameters["high_pass"],
+            detrend=self.detrend,
+            standardize=self.standardize,
+            standardize_confounds=self.standardize_confounds,
+            t_r=self.t_r,
+            low_pass=self.low_pass,
+            high_pass=self.high_pass,
             confounds=confounds,
             sample_mask=sample_mask,
-            **parameters["clean_args"],
+            **self.clean_args_,
         )
 
         return region_signals
