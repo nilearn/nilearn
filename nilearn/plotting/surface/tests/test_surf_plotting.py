@@ -540,6 +540,7 @@ def test_plot_surf_contours_axis_title(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contours_fig_axes(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
@@ -1099,6 +1100,7 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "hemispheres, views",
     [
