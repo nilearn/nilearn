@@ -25,8 +25,6 @@ receptive fields for a set of voxels to see which pixel location a
     :doc:`plot_miyawaki_reconstruction` for a decoding approach
     for the same dataset.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 from nilearn._utils.helpers import check_matplotlib
