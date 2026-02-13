@@ -7,7 +7,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _surf_maps_img
 from nilearn.maskers import SurfaceMapsMasker
 from nilearn.surface import SurfaceImage
@@ -57,7 +57,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-def test_surface_maps_masker_fit_transform_mask_vs_no_mask(
+def test_fit_transform_mask_vs_no_mask(
     surf_maps_img, surf_img_2d, surf_mask_1d
 ):
     """Test that fit_transform returns the different results when a mask is
@@ -72,7 +72,7 @@ def test_surface_maps_masker_fit_transform_mask_vs_no_mask(
     assert not (region_signals_with_mask == region_signals_no_mask).all()
 
 
-def test_surface_maps_masker_fit_transform_actual_output(surf_mesh, rng):
+def test_fit_transform_actual_output(surf_mesh, rng):
     """Test that fit_transform returns the expected output.
     Meaning that the SurfaceMapsMasker gives the solution to equation Ax = B,
     where A is the maps_img, x is the region_signals, and B is the img.
@@ -97,7 +97,7 @@ def test_surface_maps_masker_fit_transform_actual_output(surf_mesh, rng):
     assert np.allclose(region_signals, expected_region_signals)
 
 
-def test_surface_maps_masker_inverse_transform_actual_output(surf_mesh, rng):
+def test_inverse_transform_actual_output(surf_mesh, rng):
     """Test that inverse_transform returns the expected output."""
     # create a maps_img with 9 vertices and 2 regions
     A = rng.random((9, 2))
@@ -125,13 +125,13 @@ def test_surface_maps_masker_inverse_transform_actual_output(surf_mesh, rng):
     )
 
 
-def test_surface_maps_masker_1d_maps_img_error(surf_img_1d):
+def test_1d_maps_img(surf_img_1d):
     """Test that an error is raised when maps_img has 1D data."""
     with pytest.raises(ValueError, match="maps_img should be 2D"):
         SurfaceMapsMasker(maps_img=surf_img_1d).fit()
 
 
-def test_surface_maps_masker_labels_img_none_error():
+def test_labels_img_none():
     """Test that an error is raised when maps_img is None."""
     with pytest.raises(
         ValueError,

@@ -27,7 +27,7 @@ dependencies = [
     "numpy>=1.22.4",
     "pandas>=2.2.0",
     "requests>=2.30.0",
-    "scikit-learn>=1.4.0",
+    "scikit-learn>=1.5.0",
     "jinja2>=3.1.2",
     "scipy>=1.9.0",
     "packaging"
@@ -71,7 +71,7 @@ min = [
     "numpy==1.22.4",
     "pandas==2.2.0",
     "requests==2.30.0",
-    "scikit-learn==1.4.0",
+    "scikit-learn==1.5.0",
     "scipy==1.9.0",
     "jinja2==3.1.2"
 ]
@@ -83,6 +83,8 @@ plotly = ["nilearn[plotting]"]
 # See https://github.com/plotly/Kaleido/issues/134 for more detail
 plotting = [
     "matplotlib>=3.8.0",
+    # plotly 6.1.0 cannot save images
+    # https://github.com/plotly/plotly.py/issues/5187
     "plotly>=5.0.0,!=6.1.0 ; platform_system != 'Windows'",
     "kaleido ; platform_system != 'Windows'",
     "plotly>=5.0.0,<6.1.0 ; platform_system == 'Windows'",
@@ -203,7 +205,8 @@ layers = [
     "nilearn.mass_univariate",
     "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting : nilearn.masking : nilearn.reporting : nilearn.datasets : nilearn.interfaces",
     "nilearn.signal",
-    "nilearn.typing | nilearn.exceptions | nilearn._base"
+    "nilearn._base",
+    "nilearn.typing | nilearn.exceptions | nilearn._utils.versions"
 ]
 name = "main architecture"
 type = "layers"
@@ -278,7 +281,6 @@ exclude = [
     '.*/tests/test_.*',
     'doc/.*',
     'examples/.*',
-    'maint_tools/.*',
     'nilearn_cache/.*',
     'nilearn/_version.py'
 ]
@@ -355,7 +357,6 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 fixable = ["ALL"]
 ignore = [
     "ARG005",
-    "B904",
     "D105",
     "D205",
     "D301",
@@ -366,7 +367,6 @@ ignore = [
     "PERF203",
     "PLR2004",
     "PTH207",
-    "RUF005",
     # Avoid linter rules conflicting with the formatter
     # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
     "COM812",
@@ -452,7 +452,6 @@ max-complexity = 23
 "nilearn/plotting/image/tests/test_img_plotting.py" = ["D103"]
 "nilearn/plotting/matrix/tests/test_matrix_plotting.py" = ["D103"]
 "nilearn/plotting/matrix/tests/test_utils.py" = ["D103"]
-"nilearn/plotting/surface/tests/conftest.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_html_surface.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_surf_plotting.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_utils.py" = ["D103"]
@@ -463,7 +462,7 @@ max-complexity = 23
 "nilearn/plotting/tests/test_html_stat_map.py" = ["D103"]
 "nilearn/plotting/tests/test_img_comparisons.py" = ["D103"]
 "nilearn/regions/**/{tests}/*" = ["D103"]  # 64 errors to fix
-"nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
+"nilearn/surface/tests/test_surface.py" = ["D103"]  # 43 errors to fix
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

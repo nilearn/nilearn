@@ -14,7 +14,6 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
-    check_params,
 )
 from nilearn.image import (
     check_niimg,
@@ -373,30 +372,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return embedded_images
 
-    @fill_doc
-    def fit(self, imgs=None, y=None):
-        """Prepare signal extraction from regions.
-
-        Parameters
-        ----------
-        imgs : :obj:`list` of Niimg-like objects or None, default=None
-            See :ref:`extracting_data`.
-            Image data passed to the reporter.
-
-        %(y_dummy)s
-        """
-        del y
-        check_params(self.__dict__)
-
+    def _fit(self, imgs=None):
         check_parameter_in_allowed(
             self.resampling_target,
             ("mask", "maps", "data", None),
             "resampling_target",
         )
-
-        # Reset warning message
-        # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
 
         if self.mask_img is None and self.resampling_target == "mask":
             raise ValueError(
@@ -405,16 +386,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "Set resampling_target to something else or provide a mask."
             )
 
-        self.clean_args_ = {} if self.clean_args is None else self.clean_args
-
         # Load images
         maps_img = self.maps_img
         if hasattr(self, "_maps_img"):
             # This is for RegionExtractor that first modifies
             # maps_img before passing to its parent fit method.
             maps_img = self._maps_img
-
-        self._fit_cache()
 
         mask_logger("load_regions", maps_img, verbose=self.verbose)
 
@@ -431,8 +408,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         if imgs is not None:
             imgs_ = check_niimg(imgs)
-
-        self.mask_img_ = self._load_mask(imgs)
 
         # Check shapes and affines for resample.
         if self.resampling_target is None:
@@ -524,7 +499,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
 
     @fill_doc

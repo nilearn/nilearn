@@ -563,7 +563,7 @@ cortical mesh:
 
      from nilearn import plotting, datasets, surface
      fsaverage = datasets.fetch_surf_fsaverage()
-     motor_images = datasets.fetch_neurovault_motor_task()
+     motor_images = datasets.load_sample_motor_activation_image()
      mesh = surface.load_surf_mesh(fsaverage.pial_right)
      map = surface.vol_to_surf(motor_images.images[0], mesh)
      fig = plotting.plot_surf_stat_map(mesh, map, hemi='right',

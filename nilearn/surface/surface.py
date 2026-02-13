@@ -21,6 +21,7 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg import ensure_finite_data, has_non_finite
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
     check_parameter_in_allowed,
@@ -969,12 +970,12 @@ def load_surf_data(surf_data):
             else:
                 try:
                     data = np.concatenate((data, data_part), axis=1)
-                except ValueError:
+                except ValueError as e:
                     raise ValueError(
                         "When more than one file is input, "
                         "all files must contain data "
                         "with the same shape in axis=0."
-                    )
+                    ) from e
 
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
@@ -983,7 +984,9 @@ def load_surf_data(surf_data):
     return np.squeeze(data)
 
 
-def check_extensions(surf_data, data_extensions, freesurfer_data_extensions):
+def check_extensions(
+    surf_data, data_extensions, freesurfer_data_extensions
+) -> None:
     """Check the extension of the input file.
 
     Should either be one one of the supported data formats
@@ -1032,7 +1035,7 @@ def _gifti_img_to_mesh(gifti_img):
         coords = gifti_img.get_arrays_from_intent(
             nifti1.intent_codes["NIFTI_INTENT_POINTSET"]
         )[0].data
-    except IndexError:
+    except IndexError as e:
         raise ValueError(
             error_message.format(
                 "NIFTI_INTENT_POINTSET",
@@ -1040,12 +1043,12 @@ def _gifti_img_to_mesh(gifti_img):
                     nifti1.intent_codes["NIFTI_INTENT_POINTSET"]
                 ),
             )
-        )
+        ) from e
     try:
         faces = gifti_img.get_arrays_from_intent(
             nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"]
         )[0].data
-    except IndexError:
+    except IndexError as e:
         raise ValueError(
             error_message.format(
                 "NIFTI_INTENT_TRIANGLE",
@@ -1053,7 +1056,7 @@ def _gifti_img_to_mesh(gifti_img):
                     nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"]
                 ),
             )
-        )
+        ) from e
     return coords, faces
 
 
@@ -1168,7 +1171,7 @@ def check_mesh_and_data(mesh, data):
     return mesh, data
 
 
-def _validate_mesh(mesh):
+def _validate_mesh(mesh) -> None:
     """Check mesh coordinates and faces.
 
     Mesh coordinates and faces must be numpy arrays.
@@ -1181,8 +1184,8 @@ def _validate_mesh(mesh):
     - larger or equal to the length of the coordinates array
     - negative
     """
-    non_finite_mask = np.logical_not(np.isfinite(mesh.coordinates))
-    if non_finite_mask.any():
+    has_not_finite, _ = has_non_finite(mesh.coordinates)
+    if has_not_finite:
         raise ValueError(
             "Mesh coordinates must be finite. "
             "Current coordinates contains NaN or Inf values."
@@ -1266,7 +1269,7 @@ def load_surf_mesh(surf_mesh):
         try:
             coords, faces = surf_mesh
             mesh = InMemoryMesh(coordinates=coords, faces=faces)
-        except Exception:
+        except Exception as e:
             raise ValueError(
                 "\nIf a list or tuple is given as input, "
                 "it must have two elements,\n"
@@ -1276,7 +1279,7 @@ def load_surf_mesh(surf_mesh):
                 "containing the indices (into coords) of the mesh faces.\n"
                 f"The input was a {surf_mesh.__class__.__name__} with "
                 f"{len(surf_mesh)} elements: {[type(x) for x in surf_mesh]}."
-            )
+            ) from e
     elif hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates"):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
         mesh = InMemoryMesh(coordinates=coords, faces=faces)
@@ -1364,7 +1367,7 @@ class PolyData:
 
         self._check_parts()
 
-    def _check_parts(self):
+    def _check_parts(self) -> None:
         """Ensure all parts have same shape and type.
 
         This allows to get the shape of any part
@@ -1435,7 +1438,7 @@ class PolyData:
         vmax = max(x.max() for x in self.parts.values())
         return vmin, vmax
 
-    def _check_n_samples(self, n_samples: int, var_name="img"):
+    def _check_n_samples(self, n_samples: int, var_name="img") -> None:
         """Check that the PolyData does not have more than n_samples."""
         if self._n_samples > n_samples:
             raise ValueError(
@@ -1443,7 +1446,7 @@ class PolyData:
                 f"Found: {self._n_samples}."
             )
 
-    def _check_ndims(self, dim: int, var_name="img"):
+    def _check_ndims(self, dim: int, var_name="img") -> None:
         """Check if the data is of a given dimension.
 
         Raise error if not.
@@ -1468,7 +1471,7 @@ class PolyData:
                 f"Found: {', '.join(msg)}."
             )
 
-    def to_filename(self, filename):
+    def to_filename(self, filename) -> None:
         """Save data to gifti.
 
         Parameters
@@ -1498,7 +1501,7 @@ class PolyData:
 
         _data_to_gifti(data, filename)
 
-    def _set_data_dtype(self, dtype):
+    def _set_data_dtype(self, dtype) -> None:
         if dtype is not None:
             for h, v in self.parts.items():
                 self.parts[h] = v.astype(dtype)
@@ -1547,7 +1550,7 @@ class SurfaceMesh(abc.ABC):
             f"{len(self.faces)} faces.>"
         )
 
-    def to_gifti(self, gifti_file):
+    def to_gifti(self, gifti_file) -> None:
         """Write surface mesh to a Gifti file on disk.
 
         Parameters
@@ -1738,7 +1741,7 @@ class PolyMesh:
         mesh.to_gifti(filename)
 
 
-def _check_data_and_mesh_compat(mesh, data):
+def _check_data_and_mesh_compat(mesh, data) -> None:
     """Check that mesh and data have the same keys and that shapes match.
 
     mesh : :obj:`nilearn.surface.PolyMesh`
@@ -1760,7 +1763,7 @@ def _check_data_and_mesh_compat(mesh, data):
             )
 
 
-def _mesh_to_gifti(coordinates, faces, gifti_file):
+def _mesh_to_gifti(coordinates, faces, gifti_file) -> None:
     """Write surface mesh to gifti file on disk.
 
     Parameters
@@ -1787,7 +1790,7 @@ def _mesh_to_gifti(coordinates, faces, gifti_file):
     gifti_img.to_filename(gifti_file)
 
 
-def _data_to_gifti(data, gifti_file):
+def _data_to_gifti(data, gifti_file) -> None:
     """Save data from Polydata to a gifti file.
 
     Parameters
@@ -1807,7 +1810,7 @@ def _data_to_gifti(data, gifti_file):
         data = data.astype(np.uint8)
     elif data.dtype in [np.int8, np.int16, np.int64]:
         data = data.astype(np.int32)
-    elif data.dtype in [np.float64]:
+    elif data.dtype == np.float64:
         data = data.astype(np.float32)
 
     if data.dtype == np.uint8:
@@ -2037,15 +2040,7 @@ def get_data(img, ensure_finite: bool = False) -> np.ndarray:
     data = np.concatenate(list(data.parts.values()), axis=0)
 
     if ensure_finite:
-        non_finite_mask = np.logical_not(np.isfinite(data))
-        if non_finite_mask.any():  # any non_finite_mask values?
-            warnings.warn(
-                "Non-finite values detected. "
-                "These values will be replaced with zeros.",
-                stacklevel=find_stack_level(),
-            )
-            data[non_finite_mask] = 0
-
+        return ensure_finite_data(data)
     return data
 
 

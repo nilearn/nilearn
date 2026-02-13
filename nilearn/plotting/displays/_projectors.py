@@ -81,7 +81,7 @@ class OrthoProjector(OrthoSlicer):
         """
         return (None,) * len(cls._cut_displayed)
 
-    def draw_cross(self, cut_coords=None, **kwargs):
+    def draw_cross(self, cut_coords=None, **kwargs) -> None:
         """Draw a crossbar on the plot to show where the cut is performed.
 
         Not implemented for this projector.
@@ -180,7 +180,7 @@ class OrthoProjector(OrthoSlicer):
         edge_kwargs=None,
         node_kwargs=None,
         colorbar=False,
-    ):
+    ) -> None:
         """Plot undirected graph on each of the axes.
 
         Parameters

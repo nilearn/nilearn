@@ -360,7 +360,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             "images": None,
         }
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "lut_") and hasattr(self, "mask_img_")
 
     @fill_doc

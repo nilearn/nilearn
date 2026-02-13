@@ -349,6 +349,7 @@ def view_connectome(
     return _make_connectome_html(connectome_info)
 
 
+@fill_doc
 def view_markers(
     marker_coords,
     marker_color="auto",

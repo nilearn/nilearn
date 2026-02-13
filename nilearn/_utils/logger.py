@@ -10,7 +10,7 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn.typing import Verbose
 
 
-def _has_rich():
+def _has_rich() -> bool:
     """Check if rich is installed."""
     try:
         import rich  # noqa: F401
@@ -35,7 +35,7 @@ def log(
     stack_level: int | np.integer | None = None,
     msg_level: int | np.integer = 1,
     with_traceback: bool = False,
-):
+) -> None:
     """Display a message to the user, depending on the verbosity level.
 
     This function allows to display some information that references an object
@@ -115,7 +115,7 @@ def log(
         traceback.print_exc()
 
 
-def compose_err_msg(msg, **kwargs):
+def compose_err_msg(msg: str, **kwargs) -> str:
     """Append key-value pairs to msg, for display. # noqa: D301.
 
     Parameters
@@ -192,7 +192,7 @@ def find_stack_level() -> int:
     return n
 
 
-def one_level_deeper():
+def one_level_deeper() -> int:
     """Use for testing find_stack_level.
 
     Needs to be in a module that does not start with 'test'

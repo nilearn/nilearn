@@ -15,7 +15,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker
@@ -280,7 +280,7 @@ def test_multi_nifti_labels_masker_resampling(
 
         fmri11_img_r = masker.inverse_transform(t)
         assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
-        assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
+        assert fmri11_img_r.shape == ((*masker.labels_img_.shape[:3], length))
 
 
 @pytest.mark.slow
@@ -328,7 +328,7 @@ def test_multi_nifti_labels_masker_resampling_clipped_labels(
         fmri11_img_r = masker.inverse_transform(t)
 
         assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
-        assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
+        assert fmri11_img_r.shape == ((*masker.labels_img_.shape[:3], length))
 
 
 @pytest.mark.slow

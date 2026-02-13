@@ -38,6 +38,7 @@ def test_plot_prob_atlas(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_plot_prob_atlas_radiological_view(matplotlib_pyplot, img_4d_rand_eye):
     """Smoke test for radiological view."""
     result = plot_prob_atlas(img_4d_rand_eye, radiological=True)
