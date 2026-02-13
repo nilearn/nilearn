@@ -6,7 +6,6 @@ from pathlib import Path
 
 import numpy as np
 
-from nilearn._base import NilearnBaseEstimator
 from nilearn.typing import Verbose
 
 
@@ -31,7 +30,7 @@ if _has_rich():
 def log(
     msg: str,
     verbose: Verbose,
-    object_classes=(NilearnBaseEstimator,),
+    object_classes=None,
     stack_level: int | np.integer | None = None,
     msg_level: int | np.integer = 1,
     with_traceback: bool = False,
@@ -51,7 +50,8 @@ def log(
         Message is displayed if this value is greater
         or equal to msg_level.
 
-    object_classes : tuple of type, default=(NilearnBaseEstimator, )
+    object_classes : tuple of type, or None
+        Defaults to (NilearnBaseEstimator, ) is set to None
         Classes that should appear to emit the message.
 
     stack_level : int or None, default=None
@@ -75,6 +75,11 @@ def log(
     is the one which is most likely to have been written in the user's script.
 
     """
+    if object_classes is None:
+        from nilearn._base import NilearnBaseEstimator
+
+        object_classes = (NilearnBaseEstimator,)
+
     if verbose is False:
         verbose = 0
     if verbose is True:

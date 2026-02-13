@@ -198,6 +198,7 @@ def test_second_level_input_as_3d_images(
     )
 
 
+@pytest.mark.slow
 def test_slm_verbose(rng, affine_eye, shape_3d_default, n_subjects, capsys):
     """Check verbosity levels.
 

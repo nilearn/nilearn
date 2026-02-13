@@ -60,8 +60,7 @@ from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
 
-from nilearn._base import NilearnBaseEstimator
-from nilearn._utils.cache_mixin import CacheMixin
+from nilearn._base import CacheMixin, NilearnBaseEstimator
 from nilearn._utils.helpers import (
     is_gil_enabled,
     is_matplotlib_installed,
