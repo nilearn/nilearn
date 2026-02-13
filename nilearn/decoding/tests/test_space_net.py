@@ -23,7 +23,6 @@ from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     SpaceNetClassifier,
     SpaceNetRegressor,
-    _center_data,
     _crop_mask,
     _EarlyStoppingCallback,
     _space_net_alpha_grid,
@@ -37,6 +36,7 @@ from nilearn.decoding.space_net_solvers import (
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.image import get_data
+from nilearn.maskers import NiftiMasker
 
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
@@ -169,66 +169,6 @@ def test_screening_space_net():
     # thus the screening_percentile_ corrected for brain size should
     # be 100%
     assert screening_percentile == 100
-
-
-@pytest.mark.parametrize(
-    "X, y, expected_X, expected_y, expected_y_mean",
-    [
-        # all zeros
-        (
-            np.zeros((3, 2)),
-            np.array([1, 2, 3]),
-            np.zeros((3, 2)),
-            np.array([-1, 0, 1]),
-            2,
-        ),
-        # constant value
-        (
-            np.array([[5, 5], [5, 5], [5, 5]]),
-            np.array([10, 10, 10]),
-            np.zeros((3, 2)),
-            np.zeros(3),
-            10,
-        ),
-        # positive-negative value
-        (
-            np.array([[1, -2], [-3, 4], [5, -6]]),
-            np.array([7, 8, 9]),
-            np.array([[0, -0.66], [-4, 5.33], [4, -4.66]]),
-            np.array([-1, 0, 1]),
-            8,
-        ),
-        # single feature
-        (
-            np.array([[1], [2], [3]]),
-            np.array([1, 2, 3]),
-            np.array([[-1], [0], [1]]),
-            np.array([-1, 0, 1]),
-            2,
-        ),
-        # single sample
-        (
-            np.array([[42, 43]]),
-            np.array([99]),
-            np.zeros((1, 2)),
-            np.array([0]),
-            99,
-        ),
-        # already centered
-        (
-            np.array([[-1, 1], [0, 0], [1, -1]]),
-            np.array([-1, 0, 1]),
-            np.array([[-1, 1], [0, 0], [1, -1]]),
-            np.array([-1, 0, 1]),
-            0,
-        ),
-    ],
-)
-def test_center_data(X, y, expected_X, expected_y, expected_y_mean):
-    tmp = _center_data(X, y)
-    np.testing.assert_allclose(tmp[0], expected_X, rtol=1e-2, atol=1e-2)
-    np.testing.assert_allclose(tmp[1], expected_y)
-    assert tmp[2] == expected_y_mean
 
 
 def test_logistic_path_scores():
@@ -436,9 +376,10 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
     X_, mask = to_niimgs(X, (2, 2, 2))
+    masker = NiftiMasker(mask_img=mask, standardize=None).fit()
 
     tvl1 = SpaceNetClassifier(
-        mask=mask,
+        mask=masker,
         alphas=1.0 / C / X.shape[0],
         l1_ratios=1.0,
         tol=tol,

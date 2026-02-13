@@ -129,6 +129,26 @@ We welcome pull requests from all community members, if they follow the
 details on their process are available
 :sklearn:`here <developers/contributing.html#contributing-code-and-documentation>`).
 
+Deprecations
+============
+
+Use :class:`FutureWarning` for deprecations that users should know about
+on which they can have some control,
+for example by making sure that the warning message mentions
+what action to take to prevent the warning to be thrown.
+If there is no way for the user to prevent the warning to be thrown,
+consider using a :class:`DeprecationWarning`.
+
+Tests are run via tox using ``-W error::FutureWarning``
+so that Any FutureWarning thrown by a test will raise an error.
+To prevent this, any call that will throw a :class:`FutureWarning`
+must be handled with a ``pytest.warns`` context manager:
+
+.. code-block:: python
+
+    with pytest.warns(FutureWarning, match="message"):
+        ...
+
 Using tox
 =========
 
