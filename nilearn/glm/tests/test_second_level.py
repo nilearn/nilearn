@@ -1761,6 +1761,7 @@ def test_non_parametric_inference_with_surface_images_2d_mask(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_non_parametric_inference_with_surface_images_warnings(
     surf_img_1d, n_subjects
 ):
