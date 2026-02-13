@@ -9,7 +9,7 @@ from scipy.signal import get_window
 
 from nilearn.image import load_img
 
-N_SUBJECTS = 10
+LENGTH = 10
 
 
 def _rng():
@@ -159,9 +159,7 @@ def img_labels(
 
 
 def load(
-    loader: Literal["nilearn", "nibabel (ref)"],
-    n_masks: int = 1,
-    n_subjects: int = N_SUBJECTS,
+    loader: Literal["nilearn", "nibabel (ref)"], n_masks: int = 1
 ) -> tuple[list[Nifti1Image] | Nifti1Image, Nifti1Image]:
     """
     There are already some masks and an fMRI image in the cache directory
@@ -177,10 +175,6 @@ def load(
         is used.
     n_masks : int, default=1
         The number of masks to load.
-    n_subjects : int, default=10
-        This parameter refers to the number of subjects images concatenated
-        together to create the fMRI image in the cache directory. The fMRI
-        image is named 'fmri_{n_subjects}.nii.gz'.
     """
     loader_to_func = {
         "nilearn": load_img,
@@ -191,12 +185,12 @@ def load(
         raise ValueError("Number of masks must be at least 1.")
     elif n_masks == 1:
         return loading_func("mask_1.nii.gz"), loading_func(
-            f"fmri_{n_subjects}.nii.gz"
+            f"fmri_{LENGTH}.nii.gz"
         )
     else:
         return [
             loading_func(f"mask_{idx}.nii.gz") for idx in range(1, n_masks + 1)
-        ], loading_func(f"fmri_{n_subjects}.nii.gz")
+        ], loading_func(f"fmri_{LENGTH}.nii.gz")
 
 
 class Benchmark:
@@ -208,14 +202,13 @@ class Benchmark:
     benchmarks.
     """
 
-    timeout = 2400  # 40 mins
-    n_subjects: int = N_SUBJECTS
-    n_vol_per_subject = 190
+    timeout: int = 2400  # 40 mins
+    length: int = LENGTH
 
     @property
     def fmri_filename(self):
         """Return name of fmri image used in benchmarks."""
-        return f"fmri_{self.n_subjects}.nii.gz"
+        return f"fmri_{self.length}.nii.gz"
 
     def setup_cache(self, n_masks: int = 1):
         """Set up the cache directory with the necessary images and masks.
@@ -228,10 +221,6 @@ class Benchmark:
 
         Parameters
         ----------
-        n_subjects : int, default=10
-            The number of subject images concatenated
-            together to create the fMRI image.
-
         n_masks : int, default=1
             The number of masks to create.
         """
@@ -248,7 +237,7 @@ class Benchmark:
 
         img, mask = generate_fake_fmri(
             shape=shape,
-            length=self.n_vol_per_subject * self.n_subjects,
+            length=self.length,
             affine=affine,
         )
         img.to_filename(self.fmri_filename)
