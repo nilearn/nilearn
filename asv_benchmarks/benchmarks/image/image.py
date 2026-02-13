@@ -104,7 +104,7 @@ class CompareSlice(Benchmark):
     param_names = ("loader",)
     params = ("nilearn", "nibabel (ref)")
 
-    def time_image_compare_slice(self, loader):
+    def time_image_slice_compare(self, loader):
         """Time the loading the image followed by extracting a slice of it."""
         img = load(loader)[1]
         img.dataobj[..., 0]
