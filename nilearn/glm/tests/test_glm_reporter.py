@@ -151,7 +151,9 @@ def flm(rk) -> FirstLevelModel:
         shapes, rk=rk
     )
     # generate_fake_fmri_data_and_design
-    return FirstLevelModel().fit(fmri_data, design_matrices=design_matrices)
+    return FirstLevelModel(standardize=None).fit(
+        fmri_data, design_matrices=design_matrices
+    )
 
 
 @pytest.fixture()
@@ -437,7 +439,7 @@ def test_masking_first_level_model(contrasts):
         shapes,
         rk,
     )
-    masker = NiftiMasker(mask_img=mask)
+    masker = NiftiMasker(mask_img=mask, standardize=None)
     masker.fit(fmri_data)
     flm = FirstLevelModel(mask_img=masker).fit(
         fmri_data, design_matrices=design_matrices
@@ -464,7 +466,9 @@ def test_fir_delays_in_params(contrasts):
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
     )
-    model = FirstLevelModel(hrf_model="fir", fir_delays=[1, 2, 3])
+    model = FirstLevelModel(
+        hrf_model="fir", fir_delays=[1, 2, 3], standardize=None
+    )
     model.fit(fmri_data, design_matrices=design_matrices)
 
     # FIXME:
@@ -520,7 +524,7 @@ def test_flm_generate_report_surface_data(rng):
     fmri_data = SurfaceImage(mesh, data)
 
     # using smoothing_fwhm for coverage
-    model = FirstLevelModel(t_r=t_r, smoothing_fwhm=None)
+    model = FirstLevelModel(t_r=t_r, smoothing_fwhm=None, standardize=None)
 
     model.fit(fmri_data, events=events)
 
@@ -565,7 +569,7 @@ def test_carousel_several_runs(
     contrasts = np.zeros((1, rk))
     contrasts[0][1] = 1
 
-    flm_two_runs = FirstLevelModel().fit(
+    flm_two_runs = FirstLevelModel(standardize=None).fit(
         fmri_data, design_matrices=design_matrices
     )
 

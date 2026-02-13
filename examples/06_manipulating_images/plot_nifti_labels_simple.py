@@ -8,8 +8,6 @@ More precisely, this example shows how to use the
 :class:`~nilearn.maskers.NiftiLabelsMasker` object to perform this
 operation in just a few lines of code.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 from nilearn._utils.helpers import check_matplotlib

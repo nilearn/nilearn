@@ -21,8 +21,6 @@ concatenated and given directly to
 correlation matrices for each atlas across all subjects.
 
 Mean correlation matrix is displayed on glass brain on extracted coordinates.
-
-.. include:: ../../../examples/masker_note.rst
 """
 
 # %%

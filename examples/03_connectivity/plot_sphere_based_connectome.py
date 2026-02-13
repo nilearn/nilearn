@@ -13,8 +13,6 @@ to recover the functional brain **networks structure**.
 
 We'll start by extracting signals from Default Mode Network regions and
 computing a connectome from them.
-
-.. include:: ../../../examples/masker_note.rst
 """
 
 # %%

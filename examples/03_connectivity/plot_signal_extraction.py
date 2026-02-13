@@ -21,8 +21,6 @@ is :footcite:t:`Varoquaux2013`.
 This is just a code example, see the :ref:`corresponding section in the
 documentation <parcellation_time_series>` for more.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%

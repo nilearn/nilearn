@@ -14,8 +14,6 @@ stimuli on :footcite:t:`Haxby2001` dataset,
 focusing on distinguishing two categories:
 face and cat images.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%

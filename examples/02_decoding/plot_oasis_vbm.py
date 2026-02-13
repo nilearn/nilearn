@@ -45,8 +45,6 @@ much clearer view of the important regions.
     see the :ref:`dataset description <oasis_maps>`.
 
 ____
-
-.. include:: ../../../examples/masker_note.rst
 """
 
 # %%

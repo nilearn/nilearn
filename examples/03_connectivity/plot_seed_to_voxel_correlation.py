@@ -16,8 +16,6 @@ numpy array, corresponding to the data inside the mask.
     :ref:`for a similar example using cortical surface input data
     <sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%

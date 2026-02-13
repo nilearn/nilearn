@@ -22,20 +22,6 @@ def _mask():
 
 
 @pytest.mark.thread_unsafe
-def test_deprecation_function_moved(matplotlib_pyplot, img_3d_mni):
-    from nilearn.plotting.image.img_plotting import (
-        plot_img_comparison as old_fn,
-    )
-
-    with pytest.warns(FutureWarning, match="moved"):
-        old_fn(
-            img_3d_mni,
-            img_3d_mni,
-            plot_hist=False,
-        )
-
-
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker",
     [

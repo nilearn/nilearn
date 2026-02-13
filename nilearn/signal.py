@@ -41,7 +41,7 @@ available_filters = ("butterworth", "cosine")
 def standardize_signal(
     signals,
     detrend: bool = False,
-    standardize: Literal["zscore", "psc", "zscore_sample"] | None = "zscore",
+    standardize: Literal["psc", "zscore_sample"] | None = "zscore_sample",
 ) -> np.ndarray:
     """Center and standardize a given signal (time is along first axis).
 
@@ -69,7 +69,7 @@ def standardize_signal(
     if standardize is not None:
         check_parameter_in_allowed(
             standardize,
-            allowed=["psc", "zscore", "zscore_sample"],
+            allowed=["psc", "zscore_sample"],
             parameter_name="standardize",
         )
         if signals.shape[0] == 1:
@@ -88,36 +88,6 @@ def standardize_signal(
             std = signals.std(axis=0, ddof=1)
             # avoid numerical problems
             std[std < np.finfo(np.float64).eps] = 1.0
-            signals /= std
-
-        elif standardize == "zscore":
-            # TODO (nilearn >= 0.14.0) change default to 'zscore'
-            std_strategy_default = (
-                "The default strategy for standardize is currently 'zscore' "
-                "which incorrectly uses population std to calculate sample "
-                "zscores. The new strategy 'zscore_sample' corrects this "
-                "behavior by using the sample std. "
-                "In release 0.14.0, the default strategy "
-                "will be replaced by the new strategy, "
-                "the 'zscore' option will be removed. "
-                "and using standardize=True will fall back "
-                "to 'zscore_sample'."
-                "To avoid this warning, please use 'zscore_sample' instead."
-            )
-            warnings.warn(
-                category=FutureWarning,
-                message=std_strategy_default,
-                stacklevel=find_stack_level(),
-            )
-
-            if not detrend:
-                # remove mean if not already detrended
-                signals = signals - signals.mean(axis=0)
-
-            std = signals.std(axis=0)
-            # avoid numerical problems
-            std[std < np.finfo(np.float64).eps] = 1.0
-
             signals /= std
 
         elif standardize == "psc":
@@ -559,7 +529,7 @@ def clean(
     signals,
     runs=None,
     detrend=True,
-    standardize="zscore",
+    standardize="zscore_sample",
     sample_mask=None,
     confounds=None,
     standardize_confounds=True,
@@ -800,37 +770,13 @@ def clean(
 
     # Remove confounds
     if confounds is not None:
-        # TODO (nilearn >= 0.14.0)
-        # - remove DeprecationWarning
-        # - remove warnings.filterwarnings
-        # - remove comment below
-        # The following call to standardize_signal relies on the default of
-        # standardize (True) which will throw a FutureWarning
-        # that contains some actions they cannot perform
-        # as users cannot affect this call.
-        # This can be confusing because if they call clean with
-        # standardize="zscore_sample", they will get a warning to set
-        # standardize to "zscore_sample"!!!
-        # So we ignore the FutureWarning
-        # and instead throw a DeprecationWarning that's only for devs.
-        std_strategy_default = (
-            "From release 0.14.0, confounds will be standardized "
-            "using the sample std instead of the population std."
+        tmp = None if standardize_confounds is False else "zscore_sample"
+        confounds = standardize_signal(
+            confounds,
+            standardize=tmp,
+            detrend=False,
         )
-        warnings.warn(
-            category=DeprecationWarning,
-            message=std_strategy_default,
-            stacklevel=find_stack_level(),
-        )
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=FutureWarning)
-            confounds = standardize_signal(
-                confounds,
-                standardize=None
-                if standardize_confounds is False
-                else "zscore",
-                detrend=False,
-            )
+
         if not standardize_confounds:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on standardize_signal as it removes any
@@ -1078,7 +1024,7 @@ def _sanitize_inputs(
             ),
         )
         if standardize is True:
-            standardize = "zscore"
+            standardize = "zscore_sample"
         elif standardize is False:
             standardize = None
 
