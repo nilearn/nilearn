@@ -59,16 +59,13 @@ from nilearn.maskers import MultiNiftiLabelsMasker
 
 # ConnectivityMeasure from Nilearn uses simple 'correlation' to compute
 # connectivity matrices for all subjects in a list
-connectome_measure = ConnectivityMeasure(
-    kind="correlation", standardize="zscore_sample", verbose=1
-)
+connectome_measure = ConnectivityMeasure(kind="correlation", verbose=1)
 
 # create masker using MultiNiftiLabelsMasker to extract functional data within
 # atlas parcels from multiple subjects using parallelization to speed up the
 # computation
 masker = MultiNiftiLabelsMasker(
     labels_img=yeo["maps"],  # Both hemispheres
-    standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
     n_jobs=2,
@@ -149,7 +146,6 @@ for hemi, img in zip(
 ):
     masker = MultiNiftiLabelsMasker(
         labels_img=img,
-        standardize="zscore_sample",
         standardize_confounds=True,
         verbose=1,
     )
@@ -229,7 +225,6 @@ from nilearn.maskers import MultiNiftiMapsMasker
 # computation.
 masker = MultiNiftiMapsMasker(
     maps_img=difumo.maps,
-    standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
     memory_level=1,

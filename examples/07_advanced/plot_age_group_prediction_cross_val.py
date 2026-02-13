@@ -45,7 +45,6 @@ masker = NiftiMapsMasker(
     high_pass=0.01,
     memory="nilearn_cache",
     memory_level=1,
-    standardize="zscore_sample",
     standardize_confounds=True,
     verbose=1,
 )
@@ -81,7 +80,6 @@ pipe = Pipeline(
             "connectivity",
             ConnectivityMeasure(
                 vectorize=True,
-                standardize="zscore_sample",
             ),
         ),
         (
