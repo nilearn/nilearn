@@ -14,8 +14,6 @@ is included in the model.
 
 2. A permuted Ordinary Least Squares algorithm is run at each :term:`voxel`.
    Data smoothed at 5 :term:`voxels<voxel>` :term:`FWHM` are used.
-
-.. include:: ../../../examples/masker_note.rst
 """
 
 from nilearn._utils.helpers import check_matplotlib

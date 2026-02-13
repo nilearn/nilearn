@@ -10,8 +10,6 @@ We use a calculation task and 20 subjects out of the 94 available.
 The Localizer dataset contains many contrasts and subject-related
 variates.  The user can refer to the
 `plot_localizer_mass_univariate_methods.py` example to see how to use these.
-
-.. include:: ../../../examples/masker_note.rst
 """
 
 from nilearn._utils.helpers import check_matplotlib

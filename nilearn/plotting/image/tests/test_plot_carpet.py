@@ -2,8 +2,6 @@
 
 # ruff: noqa: ARG001
 
-import warnings
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -120,21 +118,3 @@ def test_plot_carpet_with_atlas_and_labels(
     ax = display.axes[0]
     colorbar = ax.images[0].get_array()
     assert len(np.unique(colorbar)) == len(img_atlas["labels"])
-
-
-@pytest.mark.thread_unsafe
-def test_plot_carpet_standardize(
-    matplotlib_pyplot, img_4d_mni, img_3d_ones_mni
-):
-    """Check warning is raised and then suppressed with setting standardize."""
-    match = "default strategy for standardize"
-
-    with pytest.deprecated_call(match=match):
-        plot_carpet(img_4d_mni, mask_img=img_3d_ones_mni)
-
-    with warnings.catch_warnings(record=True) as record:
-        plot_carpet(
-            img_4d_mni, mask_img=img_3d_ones_mni, standardize="zscore_sample"
-        )
-        for m in record:
-            assert match not in m.message

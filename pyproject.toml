@@ -83,6 +83,8 @@ plotly = ["nilearn[plotting]"]
 # See https://github.com/plotly/Kaleido/issues/134 for more detail
 plotting = [
     "matplotlib>=3.8.0",
+    # plotly 6.1.0 cannot save images
+    # https://github.com/plotly/plotly.py/issues/5187
     "plotly>=5.0.0,!=6.1.0 ; platform_system != 'Windows'",
     "kaleido ; platform_system != 'Windows'",
     "plotly>=5.0.0,<6.1.0 ; platform_system == 'Windows'",
@@ -450,7 +452,6 @@ max-complexity = 23
 "nilearn/plotting/image/tests/test_img_plotting.py" = ["D103"]
 "nilearn/plotting/matrix/tests/test_matrix_plotting.py" = ["D103"]
 "nilearn/plotting/matrix/tests/test_utils.py" = ["D103"]
-"nilearn/plotting/surface/tests/conftest.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_html_surface.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_surf_plotting.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_utils.py" = ["D103"]
@@ -461,7 +462,7 @@ max-complexity = 23
 "nilearn/plotting/tests/test_html_stat_map.py" = ["D103"]
 "nilearn/plotting/tests/test_img_comparisons.py" = ["D103"]
 "nilearn/regions/**/{tests}/*" = ["D103"]  # 64 errors to fix
-"nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
+"nilearn/surface/tests/test_surface.py" = ["D103"]  # 43 errors to fix
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

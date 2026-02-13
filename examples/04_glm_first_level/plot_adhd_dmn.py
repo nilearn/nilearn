@@ -17,8 +17,6 @@ More specifically:
    then contrast estimation).
 4. The Default Mode Network is displayed.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
