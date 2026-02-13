@@ -1,6 +1,5 @@
 """Common utils for all benchmarks."""
 
-import contextlib
 from typing import Literal
 
 import nibabel as nib
@@ -9,9 +8,6 @@ from nibabel import Nifti1Image
 from scipy.signal import get_window
 
 from nilearn.image import load_img
-
-with contextlib.suppress(ImportError):
-    pass
 
 LENGTH = 10
 

@@ -69,8 +69,7 @@ env:
 
 jobs:
     benchmark:
-        if: >
-            (github.event_name == 'pull_request' && github.repository == 'nilearn/nilearn') || (github.event_name == 'workflow_dispatch')
+        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-24.04
         defaults:
             run:
