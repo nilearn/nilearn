@@ -23,8 +23,7 @@ env:
 jobs:
 
     compare_benchmark:
-        # run on pull request
-        # if: github.event_name == 'pull_request' && github.repository == 'nilearn/nilearn'
+        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-24.04
         defaults:
             run:
