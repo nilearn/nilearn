@@ -94,6 +94,7 @@ class DummyEstimator:
         self.masker = check_embedded_masker(self, masker_type="nii")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, warning_msg, expected_verbose, expected_memory_level",
     [
