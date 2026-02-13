@@ -141,7 +141,7 @@ def _confounds_regression(
     "standardize_signal, standardize_confounds, expected",
     [
         # Signal is not standardized
-        (False, True, 10.0 * 10e-10),
+        (None, True, 10.0 * 10e-10),
         # Signal is z-scored with string arg
         ("zscore_sample", True, 10e-10),
         # Signal is psc standardized
@@ -171,7 +171,7 @@ def test_confounds_standardization(
     "standardize_signal",
     [
         # Signal is not standardized
-        False,
+        None,
         # Signal is z-scored with string arg
         "zscore_sample",
         # Signal is psc standardized
