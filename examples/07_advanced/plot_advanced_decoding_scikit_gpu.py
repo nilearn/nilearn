@@ -43,17 +43,13 @@ behavioral
 
 # %%
 # We keep only a images from a pair of conditions(cats versus faces).
-from sklearn.preprocessing import label_binarize
-
-from nilearn.image import index_img
+from sklearn.preprocessing import LabelEncoder
 
 conditions = behavioral["labels"]
-condition_mask = conditions.isin(["face", "cat"])
-fmri_niimgs = index_img(fmri_filename, condition_mask)
-conditions = conditions[condition_mask]
 conditions = conditions.to_numpy()
-conditions = label_binarize(conditions, classes=["cat", "face"]).ravel()
-run_label = behavioral["chunks"][condition_mask]
+le = LabelEncoder()
+conditions = le.fit_transform(conditions)
+run_label = behavioral["chunks"]
 
 
 # %%
@@ -75,15 +71,13 @@ masker = NiftiMasker(
     memory_level=1,
     verbose=1,
 )
-fmri_masked = masker.fit_transform(fmri_niimgs)
+fmri_masked = masker.fit_transform(fmri_filename)
 
 # %% convert to torch tensor for GPU processing
-import torch
+import cupy as cp
 
-fmri_masked_torch = torch.asarray(
-    fmri_masked, device="mps", dtype=torch.float32
-)
-conditions_torch = torch.asarray(conditions, device="mps", dtype=torch.float32)
+fmri_masked_cp = cp.asarray(fmri_masked)
+conditions_cp = cp.asarray(conditions)
 
 # %%
 # Fit the classifier
@@ -92,9 +86,15 @@ from sklearn import config_context
 from sklearn.linear_model import RidgeClassifier
 from sklearn.model_selection import cross_val_predict
 
+# %%
+# Fit the classifier on GPU
+# ......................
 with config_context(array_api_dispatch=True):
     ridge = RidgeClassifier(solver="svd")
-    ridge.fit(fmri_masked_torch, conditions_torch)
-    cv_predict = cross_val_predict(ridge, fmri_masked, conditions, cv=5)
+    cv_predict = cross_val_predict(ridge, fmri_masked_cp, conditions_cp, cv=5)
 
-print(cv_predict)
+# %%
+# Fit the classifier on CPU
+# ......................
+ridge = RidgeClassifier(solver="svd")
+cv_predict = cross_val_predict(ridge, fmri_masked, conditions, cv=5)
