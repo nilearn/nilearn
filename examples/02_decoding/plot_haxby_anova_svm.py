@@ -56,16 +56,19 @@ run_label = behavioral["chunks"][condition_mask]
 from nilearn.decoding import Decoder
 
 # Here screening_percentile is set to 5 percent
+screening_n_features = 500
+screening_percentile = None
+
 mask_img = haxby_dataset.mask
 decoder = Decoder(
     estimator="svc",
     mask=mask_img,
     smoothing_fwhm=4,
     standardize="zscore_sample",
-    screening_percentile=None,
-    screening_n_features=500,
+    screening_percentile=screening_percentile,
+    screening_n_features=screening_n_features,
     scoring="accuracy",
-    verbose=1,
+    verbose=2,
 )
 
 # %%
@@ -91,7 +94,8 @@ decoder = Decoder(
     estimator="svc",
     mask=mask_img,
     standardize="zscore_sample",
-    screening_percentile=5,
+    screening_percentile=screening_percentile,
+    screening_n_features=screening_n_features,
     scoring="accuracy",
     cv=cv,
     verbose=1,
