@@ -46,9 +46,6 @@ from sklearn.model_selection import (
 )
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
-from sklearn.utils.estimator_checks import (
-    parametrize_with_checks
-)
 from sklearn.utils._testing import ignore_warnings
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
