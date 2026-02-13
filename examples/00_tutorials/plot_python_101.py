@@ -5,8 +5,8 @@ Basic numerics and plotting with Python
 
 try:
     import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+except ImportError as e:
+    raise RuntimeError("This script needs the matplotlib library") from e
 
 # %%
 # A simple example of basic Python numerics and how to plot it.

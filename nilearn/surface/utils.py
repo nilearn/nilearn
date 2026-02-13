@@ -8,7 +8,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn.exceptions import MeshDimensionError
 
 
-def assert_polydata_equal(data_1, data_2):
+def assert_polydata_equal(data_1, data_2) -> None:
     """Check that 2 PolyData data are equal."""
     set_1 = set(data_1.parts.keys())
     set_2 = set(data_2.parts.keys())
@@ -32,7 +32,7 @@ def assert_polymesh_equal(mesh_1, mesh_2) -> None:
         assert_surface_mesh_equal(mesh_1.parts[key], mesh_2.parts[key])
 
 
-def assert_polymesh_have_same_keys(mesh_1, mesh_2):
+def assert_polymesh_have_same_keys(mesh_1, mesh_2) -> None:
     """Check that 2 polymeshes have the same keys."""
     set_1 = set(mesh_1.parts.keys())
     set_2 = set(mesh_2.parts.keys())
@@ -58,7 +58,7 @@ def check_polymesh_equal(mesh_1, mesh_2) -> None:
         )
 
 
-def assert_same_number_vertices(mesh_1, mesh_2):
+def assert_same_number_vertices(mesh_1, mesh_2) -> None:
     """Assert 2 meshes or polymeshes have the same number of vertices."""
     if mesh_1.n_vertices != mesh_2.n_vertices:
         raise MeshDimensionError(

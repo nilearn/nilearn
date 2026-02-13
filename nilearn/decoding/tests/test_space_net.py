@@ -12,19 +12,21 @@ from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
 from sklearn.utils.estimator_checks import (
-    parametrize_with_checks,
+    parametrize_with_checks
 )
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     SpaceNetClassifier,
     SpaceNetRegressor,
+    _center_data,
     _crop_mask,
     _EarlyStoppingCallback,
     _space_net_alpha_grid,
@@ -170,6 +172,66 @@ def test_screening_space_net():
     # thus the screening_percentile_ corrected for brain size should
     # be 100%
     assert screening_percentile == 100
+
+
+@pytest.mark.parametrize(
+    "X, y, expected_X, expected_y, expected_y_mean",
+    [
+        # all zeros
+        (
+            np.zeros((3, 2)),
+            np.array([1, 2, 3]),
+            np.zeros((3, 2)),
+            np.array([-1, 0, 1]),
+            2,
+        ),
+        # constant value
+        (
+            np.array([[5, 5], [5, 5], [5, 5]]),
+            np.array([10, 10, 10]),
+            np.zeros((3, 2)),
+            np.zeros(3),
+            10,
+        ),
+        # positive-negative value
+        (
+            np.array([[1, -2], [-3, 4], [5, -6]]),
+            np.array([7, 8, 9]),
+            np.array([[0, -0.66], [-4, 5.33], [4, -4.66]]),
+            np.array([-1, 0, 1]),
+            8,
+        ),
+        # single feature
+        (
+            np.array([[1], [2], [3]]),
+            np.array([1, 2, 3]),
+            np.array([[-1], [0], [1]]),
+            np.array([-1, 0, 1]),
+            2,
+        ),
+        # single sample
+        (
+            np.array([[42, 43]]),
+            np.array([99]),
+            np.zeros((1, 2)),
+            np.array([0]),
+            99,
+        ),
+        # already centered
+        (
+            np.array([[-1, 1], [0, 0], [1, -1]]),
+            np.array([-1, 0, 1]),
+            np.array([[-1, 1], [0, 0], [1, -1]]),
+            np.array([-1, 0, 1]),
+            0,
+        ),
+    ],
+)
+def test_center_data(X, y, expected_X, expected_y, expected_y_mean):
+    tmp = _center_data(X, y)
+    np.testing.assert_allclose(tmp[0], expected_X, rtol=1e-2, atol=1e-2)
+    np.testing.assert_allclose(tmp[1], expected_y)
+    assert tmp[2] == expected_y_mean
 
 
 def test_logistic_path_scores():
@@ -389,9 +451,16 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         screening_percentile=100.0,
     ).fit(X_, y)
 
-    sklogreg = LogisticRegression(
-        penalty="l1", fit_intercept=True, solver="liblinear", tol=tol, C=C
-    ).fit(X, y)
+    # TODO (sklearn >= 1.8)
+    # drop the else block
+    if SKLEARN_GTE_1_8:
+        sklogreg = LogisticRegression(
+            l1_ratio=1, fit_intercept=True, solver="liblinear", tol=tol, C=C
+        ).fit(X, y)
+    else:
+        sklogreg = LogisticRegression(
+            penalty="l1", fit_intercept=True, solver="liblinear", tol=tol, C=C
+        ).fit(X, y)
 
     # compare supports
     assert_array_equal(
@@ -402,6 +471,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     assert_array_equal(tvl1.predict(X_), sklogreg.predict(X))
 
 
+@pytest.mark.slow
 def test_lasso_vs_graph_net():
     """Test for one of the extreme cases of Graph-Net.
 
@@ -490,6 +560,7 @@ def test_crop_mask_empty_mask(mask_empty):
         _crop_mask(mask_empty)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
 def test_space_net_one_alpha_no_crash(model):
     """Regression test."""

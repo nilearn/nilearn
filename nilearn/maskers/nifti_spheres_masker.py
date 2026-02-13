@@ -13,7 +13,6 @@ from sklearn import neighbors
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
@@ -523,32 +522,11 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return embedded_images
 
-    def fit(
-        self,
-        imgs=None,
-        y=None,
-    ):
-        """Prepare signal extraction from regions.
-
-        All parameters are unused; they are for scikit-learn compatibility.
-
-        """
-        del y
-
-        self.clean_args_ = {} if self.clean_args is None else self.clean_args
-
-        # Reset warning message
-        # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
-
+    def _fit(self, imgs):
         error = (
             "Seeds must be a list of triplets of coordinates in "
             "native space.\n"
         )
-
-        self.mask_img_ = self._load_mask(imgs)
-
-        self._fit_cache()
 
         if imgs is not None:
             if self.reports:
@@ -634,7 +612,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "seeds_") and hasattr(self, "n_elements_")
 
     @fill_doc
@@ -660,7 +638,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         check_is_fitted(self)
 
-        params = get_params(NiftiSpheresMasker, self)
+        params = self._get_masker_params()
         params["clean_kwargs"] = self.clean_args_
 
         signals, _ = self._cache(

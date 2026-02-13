@@ -16,7 +16,7 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.extmath import is_spd
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
     _check_spd,
@@ -1057,18 +1057,3 @@ def test_confounds_connectome_measure_errors(signals):
         ValueError, match="'confounds' are provided but vectorize=False"
     ):
         conn_measure.fit_transform(signals, None, confounds[:10])
-
-
-def test_connectivity_measure_standardize(signals):
-    """Check warning is raised and then suppressed with setting standardize."""
-    match = "default strategy for standardize"
-
-    with pytest.deprecated_call(match=match):
-        ConnectivityMeasure(kind="correlation").fit_transform(signals)
-
-    with warnings.catch_warnings(record=True) as record:
-        ConnectivityMeasure(
-            kind="correlation", standardize="zscore_sample"
-        ).fit_transform(signals)
-        for m in record:
-            assert match not in m.message

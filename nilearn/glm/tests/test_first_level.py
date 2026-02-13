@@ -35,7 +35,7 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.helpers import is_windows_platform
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
@@ -185,6 +185,7 @@ def test_flm_fit_verbose(shape_4d_default, capsys):
     # assert len(stdout_verbose_3) > len(stdout_verbose_2)
 
 
+@pytest.mark.slow
 def test_glm_fit_valid_mask_img(shape_4d_default):
     """Run fit on FLM with different valid masks."""
     rk = 3
@@ -203,7 +204,7 @@ def test_glm_fit_valid_mask_img(shape_4d_default):
     single_run_model = FirstLevelModel(mask_img=None).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
-    assert isinstance(single_run_model.masker_.mask_img_, Nifti1Image)
+    assert isinstance(single_run_model._mask_img, Nifti1Image)
 
     single_run_model = FirstLevelModel(mask_img=mask).fit(
         fmri_data[0], design_matrices=design_matrices[0]
@@ -325,7 +326,7 @@ def test_high_level_glm_with_data(shape_3d_default):
     multi_run_model = FirstLevelModel(mask_img=None).fit(
         fmri_data, design_matrices=design_matrices
     )
-    n_voxels = get_data(multi_run_model.masker_.mask_img_).sum()
+    n_voxels = get_data(multi_run_model._mask_img).sum()
     z_image = multi_run_model.compute_contrast(np.eye(rk)[1])
 
     assert np.sum(get_data(z_image) != 0) == n_voxels
@@ -344,7 +345,7 @@ def test_glm_target_shape_affine(shape_3d_default, affine_eye):
         fmri_data, design_matrices=design_matrices
     )
 
-    assert model_1.masker_.mask_img_.shape == shape_3d_default
+    assert model_1._mask_img.shape == shape_3d_default
 
     z_image = model_1.compute_contrast(np.eye(rk)[1])
 
@@ -353,8 +354,8 @@ def test_glm_target_shape_affine(shape_3d_default, affine_eye):
     model_2 = FirstLevelModel(
         mask_img=None, target_shape=(10, 11, 12), target_affine=affine_eye
     ).fit(fmri_data, design_matrices=design_matrices)
-    assert model_2.masker_.mask_img_.shape != shape_3d_default
-    assert model_2.masker_.mask_img_.shape == (10, 11, 12)
+    assert model_2._mask_img.shape != shape_3d_default
+    assert model_2._mask_img.shape == (10, 11, 12)
 
     z_image = model_2.compute_contrast(np.eye(rk)[1])
 
@@ -708,6 +709,7 @@ def test_glm_random_state(random_state):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_scaling(rng):
     """Test the scaling function."""
     shape = (400, 10)
@@ -950,6 +952,7 @@ def test_fmri_inputs_errors(shape_4d_default):
         FirstLevelModel(mask_img=None, t_r=1.0).fit(fmri_data, design_matrices)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "to_ignore",
     [{"slice_time_ref": 0.5}, {"t_r": 2}, {"hrf_model": "fir"}],
@@ -970,8 +973,10 @@ def test_parameter_attributes_ignored_with_design_matrix(
     design_matrices = design_matrices[0]
 
     with warnings.catch_warnings(record=True) as warning_list:
-        FirstLevelModel().fit([fmri_data], design_matrices=[design_matrices])
-    assert not warning_list
+        FirstLevelModel(standardize=None).fit(
+            [fmri_data], design_matrices=[design_matrices]
+        )
+    assert not warning_list, [str(x) for x in warning_list]
 
     with pytest.warns(UserWarning, match="If design matrices are supplied"):
         FirstLevelModel().fit(
@@ -2208,6 +2213,7 @@ def test_first_level_from_bids_no_session(tmp_path):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_first_level_from_bids_mismatch_run_index(tmp_path_factory):
     """Test error when run index is zero padded in raw but not in derivatives.
 
@@ -2453,12 +2459,12 @@ def test_flm_fit_surface_image_default_mask_img(surface_glm_data):
     model = FirstLevelModel()
     model.fit(img, design_matrices=des)
 
-    assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert isinstance(model._mask_img, SurfaceImage)
+    assert model._mask_img.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
     sum_mask = (
-        model.masker_.mask_img_.data.parts["left"].sum()
-        + model.masker_.mask_img_.data.parts["right"].sum()
+        model._mask_img.data.parts["left"].sum()
+        + model._mask_img.data.parts["right"].sum()
     )
     assert sum_mask == 9
 
@@ -2469,8 +2475,8 @@ def test_flm_fit_surface_image(surface_glm_data):
     model = FirstLevelModel(mask_img=False)
     model.fit(img, design_matrices=des)
 
-    assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert isinstance(model._mask_img, SurfaceImage)
+    assert model._mask_img.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2494,8 +2500,8 @@ def test_flm_fit_surface_image_one_hemisphere(
     model = FirstLevelModel(mask_img=False)
     model.fit(mini_img_one_hemi, design_matrices=des)
 
-    assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (4,)
+    assert isinstance(model._mask_img, SurfaceImage)
+    assert model._mask_img.shape == (4,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2509,8 +2515,8 @@ def test_flm_fit_surface_image_with_mask(
     model = FirstLevelModel(mask_img=surf_mask)
     model.fit(img, design_matrices=des)
 
-    assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert isinstance(model._mask_img, SurfaceImage)
+    assert model._mask_img.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2560,8 +2566,8 @@ def test_flm_with_surface_image_with_surface_masker(surface_glm_data):
     model = FirstLevelModel(mask_img=masker)
     model.fit(img, design_matrices=des)
 
-    assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert isinstance(model._mask_img, SurfaceImage)
+    assert model._mask_img.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2576,8 +2582,8 @@ def test_flm_with_surface_masker_with_mask(
     model = FirstLevelModel(mask_img=masker)
     model.fit(img, design_matrices=des)
 
-    assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert isinstance(model._mask_img, SurfaceImage)
+    assert model._mask_img.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2721,6 +2727,7 @@ def test_first_level_from_bids_surface(tmp_path):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs",
     [
@@ -2752,6 +2759,7 @@ def test_generate_report_default(kwargs):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_generate_report_height_none_future_default():
     """Make sure generate_report raises a single FutureWarning
     about the deprecation of the default threshold.
@@ -2782,6 +2790,7 @@ def test_generate_report_height_none_future_default():
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", [4, DEFAULT_Z_THRESHOLD])
 def test_generate_report_threshold_unused(threshold):
     """Make sure generate_report raises a single warning,

@@ -21,7 +21,7 @@ import sys
 #
 # Entries are listed in alphabetical order.
 #
-docdict = {}
+docdict: dict[str, str] = {}
 
 ##############################################################################
 #
@@ -263,7 +263,7 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
     or a matplotlib colormap object,
     or a BIDS compliant
     `look-up table <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
-    passed as a pandas dataframe.
+    passed as a pandas dataframe or a path to a tsv or csv file.
     If the look up table does not contain a ``color`` column,
     then the default colormap of this function will be used.
 
@@ -1038,6 +1038,21 @@ screening_percentile : int, float, \
             may be included even for very small ``screening_percentile``.
 
 """
+docdict[
+    "screening_n_features"
+] = """screening_n_features : :obj:`int`, default=None
+    The number of features to keep for a single cross-validation.
+    If both ``screening_percentile`` and ``screening_n_features`` are set,
+    ``screening_percentile`` takes priority.
+
+    .. admonition:: Important
+
+        Given ``screening_n_features``
+        is the number of features kept **for each fold** of a cross-validation,
+        the final model can have
+        more than ``screening_n_features`` non-zero weights.
+
+    """
 
 # second_level_contrast
 docdict["second_level_contrast"] = """
@@ -1166,16 +1181,6 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
       Timeseries are shifted to zero mean and scaled to unit variance.
       Uses sample std.
 
-    - ``'zscore'``: The signal is z-scored.
-      Timeseries are shifted to zero mean and scaled to unit variance.
-      Uses population std by calling default
-      :obj:`numpy.std` with N - ``ddof=0``.
-
-      .. nilearn_deprecated:: 0.10.1
-
-        This option will be removed in Nilearn version 0.14.0.
-        Use ``zscore_sample`` instead.
-
     - ``'psc'``:  Timeseries are shifted to zero mean value and scaled
       to percent signal change (as compared to original mean signal).
 
@@ -1194,16 +1199,6 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
         In nilearn version 0.15.0,
         ``False`` will be replaced by ``None``.
 
-
-"""
-# TODO (nilearn >= 0.14.0) update to ..versionchanged
-deprecation_notice = """
-
-    .. nilearn_deprecated:: 0.10.1
-
-        The default will be changed to ``'zscore_sample'``
-        and ``'zscore'`` will be removed in
-        in version 0.14.0.
 
 """
 
@@ -1233,13 +1228,9 @@ docdict["standardize_false"] = (
 # TODO (nilearn >= 0.14.0 and 0.15.0)
 # adapt the deprecation notices
 docdict["standardize_true"] = (
-    standardize.format("True")
-    + deprecation_notice
-    + deprecation_notice_true_to_zscore_sample
+    standardize.format("True") + deprecation_notice_true_to_zscore_sample
 )
-docdict["standardize_zscore"] = (
-    standardize.format("zscore") + deprecation_notice
-)
+docdict["standardize_zscore"] = standardize.format("zscore_sample")
 
 
 # standardize_confounds
@@ -1969,5 +1960,5 @@ def fill_doc(f):
         raise RuntimeError(
             f"Error documenting {funcname}:\n{exp!s}.\n"
             "Did you forget to escape a character with an extra '%'"
-        )
+        ) from exp
     return f

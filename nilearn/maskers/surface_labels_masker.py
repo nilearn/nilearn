@@ -7,8 +7,7 @@ import numpy as np
 from scipy import ndimage
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils.class_inspect import get_params
+from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
@@ -353,7 +352,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             "images": None,
         }
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "lut_") and hasattr(self, "mask_img_")
 
     @fill_doc
@@ -420,26 +419,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             )
             region_signals[n] = tmp
 
-        mask_logger("cleaning", verbose=self.verbose)
-
-        parameters = get_params(self.__class__, self, ignore=["mask_img"])
-        parameters["clean_args"] = self.clean_args_
-
-        # signal cleaning here
-        region_signals = self._cache(signal.clean, func_memory_level=2)(
-            region_signals,
-            detrend=parameters["detrend"],
-            standardize=parameters["standardize"],
-            standardize_confounds=parameters["standardize_confounds"],
-            t_r=parameters["t_r"],
-            low_pass=parameters["low_pass"],
-            high_pass=parameters["high_pass"],
-            confounds=confounds,
-            sample_mask=sample_mask,
-            **parameters["clean_args"],
-        )
-
-        return region_signals
+        return self._clean(region_signals, confounds, sample_mask)
 
     @fill_doc
     def inverse_transform(self, signals):

@@ -11,14 +11,12 @@ discriminate children from adults. In general, the tangent space embedding
 **outperforms** the standard correlations:
 see :footcite:t:`Dadi2019` for a careful study.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 try:
     import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+except ImportError as e:
+    raise RuntimeError("This script needs the matplotlib library") from e
 
 # %%
 # Load brain development :term:`fMRI` dataset and MSDL atlas

@@ -9,12 +9,11 @@ from joblib import Memory
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.param_validation import check_params, sanitize_verbose
+from nilearn._utils.param_validation import sanitize_verbose
 from nilearn.image import check_niimg, crop_img, resample_img
 from nilearn.image.image import check_same_fov
 from nilearn.maskers._utils import compute_middle_image
@@ -506,37 +505,12 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return init_display
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "mask_img_")
 
-    @fill_doc
-    def fit(self, imgs=None, y=None):
-        """Compute the mask corresponding to the data.
-
-        Parameters
-        ----------
-        imgs : :obj:`list` of Niimg-like objects or None, default=None
-            See :ref:`extracting_data`.
-            Data on which the mask must be calculated. If this is a list,
-            the affine is considered the same for all.
-
-        %(y_dummy)s
-        """
-        del y
-        check_params(self.__dict__)
-
-        # Reset warning message
-        # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
-
-        self.clean_args_ = {} if self.clean_args is None else self.clean_args
-
-        self._fit_cache()
-
+    def _fit(self, imgs):
         # Load data (if filenames are given, load them)
         mask_logger("load_data", img=imgs, verbose=self.verbose)
-
-        self.mask_img_ = self._load_mask(imgs)
 
         # Compute the mask if not given by the user
         if self.mask_img_ is None:
@@ -680,17 +654,13 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         # Ignore the mask-computing params: they are not useful and will
         # just invalid the cache for no good reason
-        # target_shape and target_affine are conveyed implicitly in mask_img
-        params = get_params(
-            self.__class__,
-            self,
+        # target_shape and target_affine are conveyed implicitly in mask_img_
+        params = self._get_masker_params(
             ignore=[
                 "mask_img",
                 "mask_args",
                 "mask_strategy",
-                "_sample_mask",
-                "sample_mask",
-            ],
+            ]
         )
         params["clean_kwargs"] = self.clean_args_
 
