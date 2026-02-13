@@ -97,12 +97,12 @@ class CompareMask(Benchmark):
     param_names = ("implementation", "loader")
     params = (["nilearn", "numpy (ref)"], ["nilearn", "nibabel (ref)"])
 
-    def time_nifti_masker_compare_mask(self, implementation, loader):
+    def time_nifti_masker_fit_transform_compare(self, implementation, loader):
         """Time the loading and then masking."""
         mask, img = load(loader)
         apply_mask(mask, img, implementation)
 
-    def peakmem_nifti_masker_compare_mask(self, implementation, loader):
+    def peakmem_nifti_masker_fit_transform_compare(self, implementation, loader):
         """Peak memory of loading and then masking."""
         mask, img = load(loader)
         apply_mask(mask, img, implementation)

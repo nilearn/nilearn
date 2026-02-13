@@ -58,11 +58,11 @@ class CompareLoad(Benchmark):
     param_names = ("loader",)
     params = ("nilearn", "nibabel (ref)")
 
-    def time_image_compare_load(self, loader):
+    def time_image_load_compare(self, loader):
         """Time the loading of images."""
         load(loader)
 
-    def peakmem_image_compare_load(self, loader):
+    def peakmem_image_load_compare(self, loader):
         """Peak memory of loading images."""
         load(loader)
 
@@ -103,7 +103,7 @@ class CompareSlice(Benchmark):
         img = load(loader)[1]
         img.dataobj[..., 0]
 
-    def peakmem_image_compare_slice(self, loader):
+    def peakmem_image_slice_compare(self, loader):
         """Peak memory of loading the image followed by extracting a
         slice of it.
         """
