@@ -630,6 +630,7 @@ def test_plot_surf_stat_map_with_background(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_with_title(plt, engine, in_memory_mesh, bg_map):
     """Test if nilearn.plotting.surface.surf_plotting.plot_surf_stat_map adds
     title when specified.
