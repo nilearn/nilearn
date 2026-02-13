@@ -1394,6 +1394,7 @@ def test_frem_decoder_fit_surface(
 # ------------------------ test decoder vs sklearn -------------------------- #
 
 
+@ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.thread_unsafe
 @pytest.mark.slow
 @pytest.mark.parametrize(
