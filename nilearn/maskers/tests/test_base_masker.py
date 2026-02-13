@@ -5,7 +5,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
 from nilearn import image
-from nilearn.maskers.nifti_masker import filter_and_mask
+from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
 
 
 def test_cropping_code_paths(rng):
@@ -47,3 +47,48 @@ def test_cropping_code_paths(rng):
     out_data_cropped = filter_and_mask(img, cropped_mask_img, parameters)
 
     assert_array_almost_equal(out_data_cropped, out_data_uncropped)
+
+
+def test_get_masker_params():
+    """Test for private method to return params of an instance as dict."""
+    masker = NiftiMasker()
+    assert masker._get_masker_params() == {
+        "clean_args": None,
+        "cmap": "gray",
+        "detrend": False,
+        "dtype": None,
+        "high_pass": None,
+        "high_variance_confounds": False,
+        "low_pass": None,
+        "mask_args": None,
+        "mask_img": None,
+        "mask_strategy": "background",
+        "reports": True,
+        "runs": None,
+        "smoothing_fwhm": None,
+        "standardize": False,
+        "standardize_confounds": True,
+        "t_r": None,
+        "target_affine": None,
+        "target_shape": None,
+    }
+
+    assert masker._get_masker_params(ignore=["t_r"]) == {
+        "clean_args": None,
+        "cmap": "gray",
+        "detrend": False,
+        "dtype": None,
+        "high_pass": None,
+        "high_variance_confounds": False,
+        "low_pass": None,
+        "mask_args": None,
+        "mask_img": None,
+        "mask_strategy": "background",
+        "reports": True,
+        "runs": None,
+        "smoothing_fwhm": None,
+        "standardize": False,
+        "standardize_confounds": True,
+        "target_affine": None,
+        "target_shape": None,
+    }

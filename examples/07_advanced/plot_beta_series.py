@@ -55,8 +55,6 @@ to build the LSS beta series.
     that LSA performs better than LSS when trial variability is greater
     than scan noise, even in fast designs.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 # sphinx_gallery_thumbnail_number = -2
 
