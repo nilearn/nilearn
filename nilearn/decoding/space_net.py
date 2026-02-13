@@ -954,7 +954,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
                 is_classif=is_classifier(self),
                 key=(cls, fold),
                 debias=self.debias,
-                verbose=max(self.verbose - 1, 0.0),
+                verbose=max(self.verbose - 1, 0),
                 screening_percentile=self.screening_percentile_,
             )
             for cls in range(n_problems)

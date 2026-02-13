@@ -166,9 +166,7 @@ def check_embedded_masker(
         new_masker_params["memory_level"] = 0
 
     if hasattr(estimator, "verbose"):
-        new_masker_params["verbose"] = int(
-            np.maximum(estimator.verbose - 1, 0)
-        )
+        new_masker_params["verbose"] = int(max(estimator.verbose - 1, 0))
     else:
         warnings.warn(
             warning_msg.substitute(attribute="verbose", default_value="0"),
