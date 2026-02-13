@@ -2,10 +2,11 @@
 
 import warnings
 from string import Template
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import is_glm
@@ -18,7 +19,13 @@ from nilearn.maskers import (
 from nilearn.maskers._mixin import _MultiMixin
 
 
-def get_params(cls, instance, ignore: None | list[str] = None):
+def get_params(
+    cls: type[
+        NiftiMasker | SurfaceMasker | MultiNiftiMasker | MultiSurfaceMasker
+    ],
+    instance: NilearnBaseEstimator,
+    ignore: None | list[str] = None,
+) -> dict[str, Any]:
     """Retrieve the initialization parameters corresponding to a class.
 
     This helper function retrieves the parameters of function __init__ for
