@@ -7,6 +7,12 @@ using a feature selection, followed by an SVM.
 
 """
 
+import warnings
+
+warnings.filterwarnings(
+    "ignore", message="The provided image has no sform in its header."
+)
+
 # %%
 # Retrieve the files of the Haxby dataset
 # ---------------------------------------
@@ -55,7 +61,7 @@ run_label = behavioral["chunks"][condition_mask]
 # on nested cross-validation.
 from nilearn.decoding import Decoder
 
-# Here screening_percentile is set to 5 percent
+# Here we select the best 500 voxels of each fold of the cross-validation
 screening_n_features = 500
 screening_percentile = None
 
@@ -98,7 +104,7 @@ decoder = Decoder(
     screening_n_features=screening_n_features,
     scoring="accuracy",
     cv=cv,
-    verbose=1,
+    verbose=2,
 )
 # Compute the prediction accuracy for the different folds (i.e. run)
 decoder.fit(func_img, conditions, groups=run_label)

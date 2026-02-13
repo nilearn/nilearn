@@ -44,7 +44,7 @@ from sklearn.utils.validation import check_is_fitted, check_X_y
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -366,6 +366,7 @@ def _parallel_fit(
     mask_img,
     class_index,
     clustering_percentile,
+    verbose,
 ):
     """Find the best estimator for a fold within a job.
 
@@ -401,6 +402,7 @@ def _parallel_fit(
     if do_screening:
         X_train = selector.fit_transform(X_train, y_train)
         X_test = selector.transform(X_test)
+        log((f" Selection kept {X_train.shape[1]} features."), verbose=verbose)
 
     # If there is no parameter grid, then we use a suitable grid (by default)
     param_grid = ParameterGrid(
@@ -750,6 +752,14 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
             warnings.warn(
                 warning_msg, UserWarning, stacklevel=find_stack_level()
             )
+        else:
+            log(
+                (
+                    "The decoding model will be trained "
+                    f"on {n_final_features} features."
+                ),
+                verbose=self.verbose,
+            )
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
@@ -766,6 +776,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
                 mask_img=self.mask_img_,
                 class_index=c,
                 clustering_percentile=self._clustering_percentile,
+                verbose=self.verbose - 1,
             )
             for c, (train, test) in itertools.product(
                 range(n_problems), self.cv_
