@@ -10,8 +10,7 @@ from scipy import linalg
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils.class_inspect import get_params
+from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     is_matplotlib_installed,
@@ -316,9 +315,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             get_data(self.mask_img_) if self.mask_img_ is not None else None
         )
 
-        parameters = get_params(self.__class__, self)
-        parameters["clean_args"] = self.clean_args_
-
         # apply mask if provided
         # and then extract signal via least square regression
         mask_logger("extracting", verbose=self.verbose)
@@ -333,27 +329,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 maps_data, img_data
             )[0].T
 
-        mask_logger("cleaning", verbose=self.verbose)
-
-        parameters = get_params(self.__class__, self)
-
-        parameters["clean_args"] = self.clean_args_
-
-        # signal cleaning here
-        region_signals = self._cache(signal.clean, func_memory_level=2)(
-            region_signals,
-            detrend=parameters["detrend"],
-            standardize=parameters["standardize"],
-            standardize_confounds=parameters["standardize_confounds"],
-            t_r=parameters["t_r"],
-            low_pass=parameters["low_pass"],
-            high_pass=parameters["high_pass"],
-            confounds=confounds,
-            sample_mask=sample_mask,
-            **parameters["clean_args"],
-        )
-
-        return region_signals
+        return self._clean(region_signals, confounds, sample_mask)
 
     @fill_doc
     def inverse_transform(self, region_signals):
