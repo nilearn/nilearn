@@ -18,6 +18,7 @@ BASE_TESTS = [
     "nilearn/tests/test_exceptions.py",
     "nilearn/tests/test_init.py",
     "nilearn/tests/test_package_import.py",
+    "nilearn/_utils/tests",
 ]
 
 HIGHEST_LAYER = ["nilearn/utils"]
