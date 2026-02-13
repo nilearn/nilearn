@@ -1049,7 +1049,7 @@ docdict[
 
         Given ``screening_n_features``
         is the number of features kept **for each fold** of a cross-validation,
-        the final modal can have
+        the final model can have
         more than ``screening_n_features`` non-zero weights.
 
     """
