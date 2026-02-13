@@ -600,13 +600,22 @@ class Parcellations(_MultiPCA):
         )
         # Required for special cases like extracting signals on list of
         # 3D images or SurfaceImages.
+
+        # TODO (nilearn > 0.15.0)
+        # remove casting to None or "zscore_sample"
+        standardize = self.standardize
+        if standardize is False:
+            standardize = None
+        elif standardize is True:
+            standardize = "zscore_sample"
+
         if isinstance(self.masker_.mask_img_, SurfaceImage):
             imgs_list = imgs.copy()
             masker = SurfaceLabelsMasker(
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
                 smoothing_fwhm=self.smoothing_fwhm,
-                standardize=self.standardize,
+                standardize=standardize,
                 detrend=self.detrend,
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,
@@ -621,7 +630,7 @@ class Parcellations(_MultiPCA):
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
                 smoothing_fwhm=self.smoothing_fwhm,
-                standardize=self.standardize,
+                standardize=standardize,
                 detrend=self.detrend,
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,

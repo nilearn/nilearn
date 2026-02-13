@@ -1168,16 +1168,6 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
       Timeseries are shifted to zero mean and scaled to unit variance.
       Uses sample std.
 
-    - ``'zscore'``: The signal is z-scored.
-      Timeseries are shifted to zero mean and scaled to unit variance.
-      Uses population std by calling default
-      :obj:`numpy.std` with N - ``ddof=0``.
-
-      .. nilearn_deprecated:: 0.10.1
-
-        This option will be removed in Nilearn version 0.14.0.
-        Use ``zscore_sample`` instead.
-
     - ``'psc'``:  Timeseries are shifted to zero mean value and scaled
       to percent signal change (as compared to original mean signal).
 
@@ -1196,16 +1186,6 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
         In nilearn version 0.15.0,
         ``False`` will be replaced by ``None``.
 
-
-"""
-# TODO (nilearn >= 0.14.0) update to ..versionchanged
-deprecation_notice = """
-
-    .. nilearn_deprecated:: 0.10.1
-
-        The default will be changed to ``'zscore_sample'``
-        and ``'zscore'`` will be removed in
-        in version 0.14.0.
 
 """
 
@@ -1235,13 +1215,9 @@ docdict["standardize_false"] = (
 # TODO (nilearn >= 0.14.0 and 0.15.0)
 # adapt the deprecation notices
 docdict["standardize_true"] = (
-    standardize.format("True")
-    + deprecation_notice
-    + deprecation_notice_true_to_zscore_sample
+    standardize.format("True") + deprecation_notice_true_to_zscore_sample
 )
-docdict["standardize_zscore"] = (
-    standardize.format("zscore") + deprecation_notice
-)
+docdict["standardize_zscore"] = standardize.format("zscore_sample")
 
 
 # standardize_confounds

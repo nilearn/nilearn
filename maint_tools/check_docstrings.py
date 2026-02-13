@@ -56,7 +56,7 @@ def main() -> None:
     print("\n[blue]Finding missing :obj:`` in doc string type.\n")
 
     filenames = list_modules(
-        skip_private=False, folders_to_skip=["data", "input_data", "tests"]
+        skip_private=False, folders_to_skip=["data", "tests"]
     )
 
     for filename in filenames:
