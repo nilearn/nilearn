@@ -973,8 +973,10 @@ def test_parameter_attributes_ignored_with_design_matrix(
     design_matrices = design_matrices[0]
 
     with warnings.catch_warnings(record=True) as warning_list:
-        FirstLevelModel().fit([fmri_data], design_matrices=[design_matrices])
-    assert not warning_list
+        FirstLevelModel(standardize=None).fit(
+            [fmri_data], design_matrices=[design_matrices]
+        )
+    assert not warning_list, [str(x) for x in warning_list]
 
     with pytest.warns(UserWarning, match="If design matrices are supplied"):
         FirstLevelModel().fit(
