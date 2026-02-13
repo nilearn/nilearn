@@ -1320,6 +1320,13 @@ class FirstLevelModel(BaseGLM):
 
             self.masker_ = self.mask_img
 
+            # TODO (nilearn >= 0.15.0) remove if and elif
+            # avoid some FutureWarning the user cannot affect
+            if self.masker_.standardize is False:
+                self.masker_.standardize = None
+            elif self.masker_.standardize is True:
+                self.masker_.standardize = "zscore_sample"
+
         self.n_elements_ = self.masker_.n_elements_
 
 

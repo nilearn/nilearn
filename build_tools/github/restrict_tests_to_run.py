@@ -18,6 +18,7 @@ BASE_TESTS = [
     "nilearn/tests/test_exceptions.py",
     "nilearn/tests/test_init.py",
     "nilearn/tests/test_package_import.py",
+    "nilearn/_utils/tests",
 ]
 
 HIGHEST_LAYER = ["nilearn/utils"]
@@ -32,7 +33,7 @@ MID_LAYER = [
     "nilearn/regions",
     "nilearn/surface",
 ]
-IGNORE = ["input_data", "__pycache__", "tests"]
+IGNORE = ["__pycache__", "tests"]
 
 
 def root_folder():

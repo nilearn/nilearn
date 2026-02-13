@@ -44,17 +44,6 @@ from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
 
-STANDARIZE_WARNING_MESSAGE = (
-    "The 'zscore' strategy incorrectly "
-    "uses population std to calculate sample zscores. "
-    "The new strategy 'zscore_sample' corrects this "
-    "behavior by using the sample std. "
-    "In release 0.14.0, the 'zscore' option will be removed "
-    "and using standardize=True will fall back "
-    "to 'zscore_sample'."
-    "To avoid this warning, please use 'zscore_sample' instead."
-)
-
 
 def filter_and_extract(
     imgs,
@@ -473,21 +462,23 @@ class BaseMasker(_BaseMasker):
         check_is_fitted(self)
         self._check_imgs(imgs)
 
-        if (self.standardize == "zscore") or (self.standardize is True):
-            # TODO (nilearn >= 0.14.0) remove or adapt warning
+        if self.standardize in [True, False]:
+            # TODO (nilearn >= 0.15.0) remove warning
             warnings.warn(
                 category=FutureWarning,
-                message=STANDARIZE_WARNING_MESSAGE,
+                message=(
+                    "boolean values for 'standardize' "
+                    "will be deprecated in nilearn 0.15.0.\n"
+                    "Use 'zscore_sample' instead of 'True' or "
+                    "use 'None' instead of 'False'."
+                ),
                 stacklevel=find_stack_level(),
             )
 
         if confounds is None and not self.high_variance_confounds:
-            # TODO (Nilearn >= 0.14.0) remove ignore FutureWarning
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", category=FutureWarning)
-                return self.transform_single_imgs(
-                    imgs, confounds=confounds, sample_mask=sample_mask
-                )
+            return self.transform_single_imgs(
+                imgs, confounds=confounds, sample_mask=sample_mask
+            )
 
         # Compute high variance confounds if requested
         all_confounds = []
@@ -500,12 +491,9 @@ class BaseMasker(_BaseMasker):
             else:
                 all_confounds.append(confounds)
 
-        # TODO (Nilearn >= 0.14.0) remove ignore FutureWarning
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=FutureWarning)
-            return self.transform_single_imgs(
-                imgs, confounds=all_confounds, sample_mask=sample_mask
-            )
+        return self.transform_single_imgs(
+            imgs, confounds=all_confounds, sample_mask=sample_mask
+        )
 
     @fill_doc
     def fit_transform(
@@ -719,11 +707,16 @@ class _BaseSurfaceMasker(_BaseMasker):
             )
             self.smoothing_fwhm = None
 
-        if (self.standardize == "zscore") or (self.standardize is True):
-            # TODO (nilearn >= 0.14.0) remove or adapt warning
+        if self.standardize in [True, False]:
+            # TODO (nilearn >= 0.15.0) remove warning
             warnings.warn(
                 category=FutureWarning,
-                message=STANDARIZE_WARNING_MESSAGE,
+                message=(
+                    "boolean values for 'standardize' "
+                    "will be deprecated in nilearn 0.15.0.\n"
+                    "Use 'zscore_sample' instead of 'True' or "
+                    "use 'None' instead of 'False'."
+                ),
                 stacklevel=find_stack_level(),
             )
 
@@ -751,12 +744,9 @@ class _BaseSurfaceMasker(_BaseMasker):
             else:
                 all_confounds.append(confounds)
 
-        # TODO (Nilearn >= 0.14.0) remove ignore FutureWarning
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=FutureWarning)
-            signals = self.transform_single_imgs(
-                imgs, confounds=all_confounds, sample_mask=sample_mask
-            )
+        signals = self.transform_single_imgs(
+            imgs, confounds=all_confounds, sample_mask=sample_mask
+        )
 
         sklearn_output_config = getattr(self, "_sklearn_output_config", None)
 

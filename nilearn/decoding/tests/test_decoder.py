@@ -24,6 +24,7 @@ from sklearn import clone
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import (
     LassoCV,
     LogisticRegressionCV,
@@ -45,6 +46,7 @@ from sklearn.model_selection import (
 )
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
+from sklearn.utils._testing import ignore_warnings
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
@@ -115,6 +117,7 @@ else:
 
 
 @pytest.mark.slow
+@ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -684,6 +687,7 @@ def test_decoder_binary_classification_clustering(
 
 
 @pytest.mark.thread_unsafe
+@ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, data",
@@ -881,6 +885,7 @@ def test_decoder_dummy_classifier_default_scoring():
     assert model.score(X, y) > 0.5
 
 
+@ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.slow
 def test_decoder_classification_string_label():
     iris = load_iris()
@@ -1159,6 +1164,7 @@ def test_decoder_multiclass_warnings_decoder(multiclass_data):
         model.fit(X, y, groups=groups)
 
 
+@ignore_warnings(category=ConvergenceWarning)
 def test_decoder_multiclass_warnings_frem(multiclass_data):
     """Check that warning is raised \
         when n_features is lower than 50 after \
@@ -1244,6 +1250,7 @@ def test_decoder_apply_mask_surface(_make_surface_class_data):
     assert type(model.mask_img_).__name__ == "SurfaceImage"
 
 
+@ignore_warnings(category=ConvergenceWarning)
 def test_decoder_screening_percentile_surface_default(
     _make_surface_class_data,
 ):
@@ -1255,6 +1262,7 @@ def test_decoder_screening_percentile_surface_default(
     assert model.screening_percentile_ == 20
 
 
+@ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("perc", [None, 100, 0])
 def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
@@ -1335,6 +1343,7 @@ def test_decoder_adjust_screening_greater_than_mask_surface(
     assert adjusted == 100
 
 
+@ignore_warnings(category=ConvergenceWarning)
 def test_decoder_predict_score_surface(_make_surface_class_data):
     """Test classification predict and scoring for surface image."""
     X, y = _make_surface_class_data
@@ -1349,6 +1358,7 @@ def test_decoder_predict_score_surface(_make_surface_class_data):
     assert 0.3 < acc < 0.7
 
 
+@ignore_warnings(category=ConvergenceWarning)
 def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
     """Test regression predict and scoring for surface image."""
     X, y = _make_surface_reg_data
@@ -1363,6 +1373,7 @@ def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
     assert r2 <= 0
 
 
+@ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.parametrize("frem", [FREMRegressor, FREMClassifier])
 def test_frem_decoder_fit_surface(
     frem,
@@ -1477,6 +1488,7 @@ def _set_best_hyperparameters(
 
 
 @pytest.mark.slow
+@ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.parametrize("regressor", ["svr", "lasso", "ridge"])
 def test_regressor_vs_sklearn(regressor):
     """Compare scores from nilearn DecoderRegressor with sklearn regressors."""
