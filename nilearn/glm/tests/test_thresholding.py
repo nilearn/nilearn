@@ -675,9 +675,9 @@ def test_deprecation_threshold(surf_img_1d, height_control, threshold):
         [x for x in warning_list if issubclass(x.category, FutureWarning)]
     )
     if height_control is None and threshold == 3.0:
-        assert n_warnings == 1
+        assert n_warnings == 1, [str(x) for x in warning_list]
     else:
-        assert n_warnings == 0
+        assert n_warnings == 0, [str(x) for x in warning_list]
 
 
 @pytest.mark.slow

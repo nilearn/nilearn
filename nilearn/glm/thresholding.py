@@ -210,7 +210,7 @@ def _cluster_level_inference_surface(
     stat_img.data._check_n_samples(1)
 
     if mask_img is None:
-        masker = SurfaceMasker().fit(stat_img)
+        masker = SurfaceMasker(standardize=None).fit(stat_img)
         mask_img = masker.mask_img_
         del masker
 
@@ -236,7 +236,7 @@ def _cluster_level_inference_surface(
         tmp_mask = new_img_like(
             stat_img, {"left": mask_left, "right": mask_right}
         )
-        masker = SurfaceMasker(mask_img=tmp_mask).fit()
+        masker = SurfaceMasker(mask_img=tmp_mask, standardize=None).fit()
 
         stats = np.ravel(masker.transform(stat_img))
         hommel_value = _compute_hommel_value(stats, alpha, verbose=verbose)
@@ -273,9 +273,11 @@ def _cluster_level_inference_volume(
 ):
     stat_img = check_niimg_3d(stat_img)
     if mask_img is None:
-        masker = NiftiMasker(mask_strategy="background").fit(stat_img)
+        masker = NiftiMasker(mask_strategy="background", standardize=None).fit(
+            stat_img
+        )
     else:
-        masker = NiftiMasker(mask_img=mask_img).fit()
+        masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
 
     stats = np.ravel(masker.transform(stat_img))
     hommel_value = _compute_hommel_value(stats, alpha, verbose=verbose)
@@ -458,15 +460,15 @@ def threshold_stats_img(
 
     if mask_img is None:
         if isinstance(stat_img, SurfaceImage):
-            masker = SurfaceMasker()
+            masker = SurfaceMasker(standardize=None)
         else:
-            masker = NiftiMasker(mask_strategy="background")
+            masker = NiftiMasker(mask_strategy="background", standardize=None)
         masker.fit(stat_img)
     else:
         if isinstance(stat_img, SurfaceImage):
-            masker = SurfaceMasker(mask_img=mask_img)
+            masker = SurfaceMasker(mask_img=mask_img, standardize=None)
         else:
-            masker = NiftiMasker(mask_img=mask_img)
+            masker = NiftiMasker(mask_img=mask_img, standardize=None)
         masker.fit()
 
     stats = np.ravel(masker.transform(stat_img))

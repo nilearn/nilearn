@@ -153,4 +153,11 @@ def check_embedded_masker(
         # Allow free fit of returned mask
         masker_instance.mask_img = mask.mask_img_
 
+    # TODO (nilearn >= 0.15.0) remove if and elif
+    # avoid some FutureWarning the user cannot affect
+    if masker_instance.standardize is False:
+        masker_instance.standardize = None
+    elif masker_instance.standardize is True:
+        masker_instance.standardize = "zscore_sample"
+
     return masker_instance
