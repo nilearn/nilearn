@@ -4,7 +4,7 @@
 #
 #    Run benchmarks and compare them to the main branch
 ###
-name: Run Nilearn benchmarks against main
+name: Run benchmarks against main
 
 on:
     pull_request:
