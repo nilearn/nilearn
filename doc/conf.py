@@ -14,12 +14,13 @@ values that are commented out serve to show the default.
 import os
 import re
 import sys
+import warnings
 from pathlib import Path
 
 from sphinx.domains import changeset
 from sphinx.locale import _
 
-from nilearn._version import __version__
+from nilearn._version import __version__  # noqa : I001, RUF100
 
 # ----------------------------------------------------------------------------
 
