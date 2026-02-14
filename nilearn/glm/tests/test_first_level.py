@@ -511,6 +511,7 @@ def test_high_level_glm_different_design_matrices():
     assert_almost_equal(get_data(z1) + get_data(z2), 2 * get_data(z_joint))
 
 
+@pytest.mark.slow
 def test_high_level_glm_different_design_matrices_formulas():
     """Test can estimate a contrast when design matrices are different."""
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
@@ -991,6 +992,7 @@ def test_parameter_attributes_ignored_with_design_matrix(
         )
 
 
+@pytest.mark.slow
 def test_fmri_inputs_errors_confounds(shape_4d_default):
     """Raise errors when incompatible inputs and confounds are passed."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
