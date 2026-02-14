@@ -127,7 +127,6 @@ def test_matrix_plotting_reorder(matplotlib_pyplot, mat, labels):  # noqa: ARG00
     ax = plot_matrix(mat, labels=labels, reorder="complete")
 
 
-@pytest.mark.thread_unsafe
 def test_plot_matrix_empty_labels():
     """When all labels are empty, they are turned to None.
 
@@ -161,7 +160,6 @@ def test_save_design_matrix(tmp_path):
     assert (tmp_path / "dmtx.pdf").exists()
 
 
-@pytest.mark.thread_safe
 @pytest.mark.parametrize("suffix, sep", [(".csv", ","), (".tsv", "\t")])
 def test_plot_design_matrix_path_str(tmp_path, suffix, sep):
     """Test plot_design_matrix directly from file."""

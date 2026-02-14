@@ -96,7 +96,6 @@ def test_plot_markers_threshold(matplotlib_pyplot, threshold, coords):
     )
 
 
-@pytest.mark.thread_safe
 def test_plot_markers_tuple_node_coords(matplotlib_pyplot, coords):
     """Smoke test for plot_markers with node coordinates passed \
        as a list of tuples.
@@ -183,7 +182,6 @@ def test_plot_markers_single_node_value(matplotlib_pyplot):
     plot_markers([1], [[1, 1, 1]])
 
 
-@pytest.mark.thread_unsafe
 def test_plot_markers_radiological_view(matplotlib_pyplot):
     """Smoke test for radiological view."""
     result = plot_markers([1], [[1, 1, 1]], radiological=True)

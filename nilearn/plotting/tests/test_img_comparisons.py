@@ -52,7 +52,6 @@ def test_plot_img_comparison_file(matplotlib_pyplot, img_3d_mni, tmp_path):
     )
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker",
     [

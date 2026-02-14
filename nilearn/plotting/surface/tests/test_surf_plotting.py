@@ -240,7 +240,6 @@ def test_plot_surf_tick_format_warning_matplotlib(
         )
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs", [{"symmetric_cmap": True}, {"title_font_size": 18}]
 )
@@ -301,7 +300,6 @@ def test_plot_surf_error_when_kaleido_missing(
         )
 
 
-@pytest.mark.thread_unsafe
 def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
     """Test nilearn.plotting.surface.surf_plotting.plot_surf for valid
     values of avg_method.
@@ -453,7 +451,6 @@ def test_plot_surf_contours(
     )
 
 
-@pytest.mark.thread_unsafe
 def test_plot_surf_contour_roi_map_as_surface_image(
     matplotlib_pyplot, surf_mesh, surf_mask_1d
 ):
@@ -500,7 +497,6 @@ def test_plot_surf_contours_colors(
     )
 
 
-@pytest.mark.thread_unsafe
 def test_plot_surf_contours_axis_title(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
@@ -540,7 +536,6 @@ def test_plot_surf_contours_axis_title(
         )
 
 
-@pytest.mark.thread_unsafe
 def test_plot_surf_contours_fig_axes(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
@@ -630,7 +625,6 @@ def test_plot_surf_stat_map_with_background(
     )
 
 
-@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_with_title(plt, engine, in_memory_mesh, bg_map):
     """Test if nilearn.plotting.surface.surf_plotting.plot_surf_stat_map adds
     title when specified.
@@ -641,7 +635,6 @@ def test_plot_surf_stat_map_with_title(plt, engine, in_memory_mesh, bg_map):
     assert display.axes[0].title._text == "Stat map title"
 
 
-@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_with_threshold(
     plt, engine, in_memory_mesh, bg_map
 ):
@@ -836,7 +829,6 @@ def test_plot_surf_stat_map_matplotlib_specific(
     )
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("colorbar", [True, False])
 def test_plot_surf_roi(plt, engine, surface_image_roi, colorbar):
     """Smoke test for nilearn.plotting.surface.surf_plotting.plot_surf_roi
@@ -969,7 +961,6 @@ def test_plot_surf_roi_matplotlib_specific(
     assert cbar_vmax == 8.9
 
 
-@pytest.mark.thread_unsafe
 def test_plot_surf_roi_matplotlib_specific_nan_handling(
     matplotlib_pyplot,
     surface_image_parcellation,
@@ -1101,7 +1092,6 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
     )
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "hemispheres, views",
     [
@@ -1125,7 +1115,6 @@ def test_plot_img_on_surf_hemispheres_and_orientations(
     plot_img_on_surf(img_3d_mni, hemispheres=hemispheres, views=views)
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs",
     [
@@ -1284,7 +1273,6 @@ def test_plot_img_on_surf_with_engine_kwarg(img_3d_mni):
         )
 
 
-@pytest.mark.thread_unsafe
 def test_plot_img_on_surf_title(matplotlib_pyplot, img_3d_mni):
     """Test nilearn.plotting.surface.plot_img_on_surf with and without title
     specified.
