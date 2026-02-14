@@ -2053,6 +2053,7 @@ def test_first_level_from_bids_too_many_bold_files(bids_dataset):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_first_level_from_bids_with_missing_events(tmp_path_factory):
     """All events.tsv files are missing, should raise an error."""
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_events"))
