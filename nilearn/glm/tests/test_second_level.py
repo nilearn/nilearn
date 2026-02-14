@@ -566,7 +566,7 @@ def test_mask_img_volume(n_subjects):
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     model = model.fit(Y, design_matrix=X)
 
-    assert isinstance(model._mask_img, Nifti1Image)
+    assert isinstance(model.mask_img_, Nifti1Image)
 
 
 @pytest.mark.slow
@@ -1344,6 +1344,7 @@ def test_second_level_contrast_computation_errors(rng, n_subjects):
         model.compute_contrast(None)
 
 
+@pytest.mark.slow
 def test_second_level_t_contrast_length_errors(n_subjects):
     func_img, mask = fake_fmri_data()
 
@@ -1514,6 +1515,7 @@ def test_second_lvl_dataframe_computation(tmp_path, shape_3d_default):
 # -----------------------surface tests----------------------- #
 
 
+@pytest.mark.thread_unsafe
 def test_second_level_input_as_surface_image(surf_img_1d, n_subjects):
     """Test slm with a list surface images as input."""
     second_level_input = [surf_img_1d for _ in range(n_subjects)]
@@ -1525,7 +1527,7 @@ def test_second_level_input_as_surface_image(surf_img_1d, n_subjects):
     model = SecondLevelModel()
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
-    assert isinstance(model._mask_img, SurfaceImage)
+    assert isinstance(model.mask_img_, SurfaceImage)
 
 
 def test_second_level_input_as_surface_image_3d(surf_img_2d, n_subjects):
@@ -1760,6 +1762,7 @@ def test_non_parametric_inference_with_surface_images_2d_mask(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_non_parametric_inference_with_surface_images_warnings(
     surf_img_1d, n_subjects
 ):

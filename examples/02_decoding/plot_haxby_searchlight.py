@@ -135,7 +135,6 @@ from nilearn.maskers import NiftiMasker
 nifti_masker = NiftiMasker(
     mask_img=mask_img,
     runs=run,
-    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
     verbose=1,

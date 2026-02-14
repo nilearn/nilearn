@@ -295,7 +295,6 @@ from nilearn.decoding import Decoder
 decoder = Decoder(
     estimator="logistic_l2",
     mask=mask_vt,
-    standardize="zscore_sample",
     n_jobs=n_labels,
     cv=logo_cv,
     screening_percentile=screening_percentile,

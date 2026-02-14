@@ -764,6 +764,7 @@ def test_decoder_dummy_classifier(binary_classification_data):
     assert np.sum(y_pred == 1.0) / n_samples - proportion < 0.05
 
 
+@pytest.mark.slow
 def test_decoder_dummy_classifier_with_callable(binary_classification_data):
     X, y, mask = binary_classification_data
 
@@ -946,6 +947,7 @@ def test_decoder_regression_clustering(
     assert model.score(X, y) == r2_score(y, y_pred)
 
 
+@pytest.mark.slow
 def test_decoder_dummy_regression(regression_data):
     X, y, mask = regression_data
 
@@ -983,6 +985,7 @@ def test_decoder_dummy_regression_default_scoring_metric_is_r2(
     assert model.score(X, y) == r2_score(y, y_pred)
 
 
+@pytest.mark.slow
 def test_decoder_dummy_regression_other_strategy(regression_data):
     """Chexk that decoder object use other strategy for dummy regressor."""
     X, y, mask = regression_data
@@ -1394,6 +1397,7 @@ def test_frem_decoder_fit_surface(
 # ------------------------ test decoder vs sklearn -------------------------- #
 
 
+@ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.thread_unsafe
 @pytest.mark.slow
 @pytest.mark.parametrize(

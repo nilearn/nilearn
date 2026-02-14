@@ -65,7 +65,6 @@ seed_masker = NiftiSpheresMasker(
     pcc_coords,
     radius=8,
     detrend=True,
-    standardize="zscore_sample",
     standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
@@ -92,7 +91,6 @@ from nilearn.maskers import NiftiMasker
 brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
-    standardize="zscore_sample",
     standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
