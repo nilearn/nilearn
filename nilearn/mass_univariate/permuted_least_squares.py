@@ -15,6 +15,7 @@ from sklearn.utils import check_random_state
 from nilearn import image
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import readable_time
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.masking import apply_mask
@@ -279,7 +280,7 @@ def _permuted_ols_on_chunk(
 
             logger.log(
                 f"Job #{thread_id}, processed {i_perm}/{n_perm_chunk} "
-                f"permutations ({percent:0.2f}%, {remaining:0.2f} seconds "
+                f"permutations ({percent:0.2f}%, {readable_time(remaining)} "
                 f"remaining){crlf}",
                 verbose=verbose,
             )

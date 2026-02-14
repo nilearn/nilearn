@@ -27,6 +27,7 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import readable_time
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -991,7 +992,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         # report time elapsed
         duration = time.time() - tic
         logger.log(
-            f"Time Elapsed: {duration:.3f} seconds.",
+            f"Time Elapsed: {readable_time(duration)} seconds.",
             self.verbose,
         )
 

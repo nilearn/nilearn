@@ -147,6 +147,7 @@ def test_glm_override_masker_param(shape_4d_default):
         )
 
 
+@pytest.mark.slow
 def test_flm_fit_verbose(shape_4d_default, capsys):
     """Check verbosity levels.
 

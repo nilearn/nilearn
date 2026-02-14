@@ -21,6 +21,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.helpers import readable_time
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -663,7 +664,7 @@ class FirstLevelModel(BaseGLM):
         elif step == "done":
             msg = (
                 f"Computation of {n_runs} runs done "
-                f"in {int(time_in_second)} seconds."
+                f"in {readable_time(time_in_second)}."
             )
 
         logger.log(
@@ -679,7 +680,7 @@ class FirstLevelModel(BaseGLM):
             dt = time.time() - t0
             # We use a max to avoid a division by zero
             remaining = (100.0 - percent) / max(0.01, percent) * dt
-            remaining = f"{int(remaining)} seconds remaining"
+            remaining = f"{readable_time(remaining)} remaining"
 
         return (
             f"Computing run {run_idx + 1} out of {n_runs} runs ({remaining})."
