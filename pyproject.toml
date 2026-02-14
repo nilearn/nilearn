@@ -63,6 +63,7 @@ doc = [
     "sphinxcontrib-bibtex>=2.6.3",
     "sphinxext-opengraph>=0.9.1",
     "sphinxcontrib-mermaid>=1.0.0",
+    "templateflow",
     "marimo"
 ]
 min = [
