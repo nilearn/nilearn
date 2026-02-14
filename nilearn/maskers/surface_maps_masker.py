@@ -233,6 +233,11 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         # check maps_img data is 2D
         self.maps_img.data._check_ndims(2, "maps_img")
+
+        maps_data = get_data(self.maps_img)
+        if np.all(maps_data == 0):
+            raise ValueError("maps_img contains no map.")
+
         self.maps_img_ = self.maps_img
 
         self.n_elements_ = self.maps_img.shape[1]
@@ -240,6 +245,13 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.mask_img_ = self._load_mask(imgs)
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
+
+            mask_data = get_data(self.mask_img_).astype(bool)
+            masked_map_data = maps_data[mask_data, ...]
+            if np.all(masked_map_data == 0):
+                raise ValueError(
+                    "No map left after applying mask to the maps image."
+                )
 
         self._report_content["reports_at_fit_time"] = self.reports
         # initialize reporting content and data
@@ -310,7 +322,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         ).astype(np.float32)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
-        maps_data = get_data(self.maps_img)
+        maps_data = get_data(self.maps_img_)
         mask_data = (
             get_data(self.mask_img_) if self.mask_img_ is not None else None
         )

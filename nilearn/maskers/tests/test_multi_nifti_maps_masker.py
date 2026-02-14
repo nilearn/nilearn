@@ -60,6 +60,7 @@ else:
             # pass less than the default number of regions
             # to speed up the tests
             MultiNiftiMapsMasker(_img_maps(n_regions=2), standardize=None),
+            MultiNiftiMapsMasker(_img_maps(n_regions=1), standardize=None),
         ]
     ),
 )
@@ -69,6 +70,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 
 
 @pytest.mark.slow
+@pytest.mark.parametrize("n_regions", [1, 3])
 def test_multi_nifti_maps_masker(
     affine_eye, length, n_regions, shape_3d_default, img_maps
 ):

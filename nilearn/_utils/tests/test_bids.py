@@ -65,3 +65,21 @@ def test_check_look_up_table_errors(shape_3d_default):
         check_look_up_table(
             lut=lut, atlas=mock_regions_with_missing_labels, strict=True
         )
+
+
+def test_check_look_up_table_empty_image_error(img_3d_zeros_eye):
+    with pytest.raises(ValueError, match="The image contains no label"):
+        generate_atlas_look_up_table(
+            function="unknown", index=img_3d_zeros_eye, background_label=0
+        )
+
+    with pytest.warns(
+        UserWarning,
+        match=(
+            "The image either contains no label "
+            "or a single label covering the whole image"
+        ),
+    ):
+        generate_atlas_look_up_table(
+            function="unknown", index=img_3d_zeros_eye
+        )

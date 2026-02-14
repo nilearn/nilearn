@@ -57,7 +57,10 @@ else:
     "estimator, check, name",
     nilearn_check_estimator(
         estimators=[
-            MultiNiftiLabelsMasker(labels_img=_img_labels(), standardize=None)
+            MultiNiftiLabelsMasker(labels_img=_img_labels(), standardize=None),
+            MultiNiftiLabelsMasker(
+                labels_img=_img_labels(n_regions=1), standardize=None
+            ),
         ]
     ),
 )

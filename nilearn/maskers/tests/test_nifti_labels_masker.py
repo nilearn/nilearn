@@ -64,7 +64,10 @@ else:
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
-        estimators=[NiftiLabelsMasker(labels_img=_img_labels())]
+        estimators=[
+            NiftiLabelsMasker(labels_img=_img_labels()),
+            NiftiLabelsMasker(labels_img=_img_labels(n_regions=1)),
+        ],
     ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
@@ -161,6 +164,75 @@ def test_nifti_labels_masker_errors(
         ValueError, match="Following field of view errors were detected"
     ):
         masker11.fit()
+
+
+def test_nifti_labels_masker_no_label_errors(img_3d_zeros_eye):
+    """Raise an error at fit time if the image has no label."""
+    masker = NiftiLabelsMasker(img_3d_zeros_eye)
+    with pytest.raises(ValueError, match="Image has no label"):
+        masker.fit()
+
+
+def test_nifti_labels_masker_mask_img_masks_all_labels_error(
+    affine_eye, shape_3d_default, img_4d_rand_eye
+):
+    """Raise error if mask_img excludes all voxels with label value.
+
+    For resampling target is
+    - "labels": raise error at fit time whether img is passed or not
+    - "data":
+      - When no data is passed at fit time
+        we cannot know for sure if the mask will include any label
+      - When data is passed at fit time
+        we can raise an error
+
+    """
+    mask = np.zeros(shape_3d_default)
+    mask[-1][-1][-1] = 1
+    mask_img = Nifti1Image(mask, affine_eye)
+
+    # generate label image with slightly different field of view
+    # to force resampling
+    labels = np.zeros(tuple(x + 1 for x in shape_3d_default))
+    labels[0][0][0] = 2
+    labels_img = Nifti1Image(labels, affine_eye)
+
+    masker = NiftiLabelsMasker(
+        labels_img, mask_img=mask_img, resampling_target="labels"
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="No label left after applying mask to the labels image",
+    ):
+        masker.fit()
+
+    with pytest.raises(
+        ValueError,
+        match="No label left after applying mask to the labels image",
+    ):
+        masker.fit(img_4d_rand_eye)
+
+    # by default we resample to data
+    # in this case if no img is passed at fit time
+    # we cannot know for sure if the mask will include any label
+    # but we can know this if some image is passed at fit time
+    # or we can for sure know it at transform time
+
+    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
+    with pytest.raises(
+        ValueError,
+        match="No label left after applying mask to the labels image",
+    ):
+        masker.fit(img_4d_rand_eye)
+
+    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
+    masker.fit()
+    with pytest.raises(
+        ValueError,
+        match="No label left after applying mask to the labels image",
+    ):
+        masker.transform(img_4d_rand_eye)
 
 
 def test_nifti_labels_masker_with_nans_and_infs(

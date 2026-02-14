@@ -68,7 +68,8 @@ else:
     nilearn_check_estimator(
         estimators=[  # pass less than the default number of regions
             # to speed up the tests
-            NiftiMapsMasker(maps_img=_img_maps(n_regions=2), standardize=None)
+            NiftiMapsMasker(maps_img=_img_maps(n_regions=2), standardize=None),
+            NiftiMapsMasker(maps_img=_img_maps(n_regions=1), standardize=None),
         ]
     ),
 )
@@ -108,8 +109,11 @@ def test_nifti_maps_masker_data_atlas_different_shape(
     assert_array_equal(masker.maps_img_.affine, affine2)
 
 
+@pytest.mark.parametrize("n_regions", [1, 3])
 def test_nifti_maps_masker_fit(n_regions, img_maps):
     """Check fitted attributes."""
+    assert img_maps.shape[3] == n_regions
+
     masker = NiftiMapsMasker(
         img_maps, resampling_target=None, standardize=None
     )
@@ -120,11 +124,80 @@ def test_nifti_maps_masker_fit(n_regions, img_maps):
     assert masker.n_elements_ == n_regions
 
 
-def test_nifti_maps_masker_errors():
-    """Check fitting errors."""
+def test_nifti_maps_masker_error():
+    """Raise error when fitting with no map image."""
     masker = NiftiMapsMasker()
     with pytest.raises(TypeError, match="input should be a NiftiLike object"):
         masker.fit()
+
+
+def test_nifti_maps_masker_empty_img_map_error(img_3d_zeros_eye):
+    """Raise error when image maps is empty."""
+    masker = NiftiMapsMasker(img_3d_zeros_eye)
+    with pytest.raises(ValueError, match="maps_img contains no map"):
+        masker.fit()
+
+
+def test_nifti_maps_masker_mask_img_masks_all_maps_error(
+    affine_eye, shape_3d_default, img_4d_rand_eye
+):
+    """Raise error if mask_img excludes all voxels with map value.
+
+    For resampling target is
+    - "maps" or "mask": raise error at fit time whether img is passed or not
+    - "data":
+      - When no data is passed at fit time
+        we cannot know for sure if the mask will include any label
+      - When data is passed at fit time
+        we can raise an error
+
+    """
+    mask = np.zeros(shape_3d_default)
+    mask[-1][-1][-1] = 1
+    mask_img = Nifti1Image(mask, affine_eye)
+
+    # generate label image with slightly different field of view
+    # to force resampling
+    maps = np.zeros((*tuple(x + 1 for x in shape_3d_default), 1))
+    maps[0][0][0][0] = 0.5
+    maps_img = Nifti1Image(maps, affine_eye)
+
+    for resampling_target in ["mask", "maps"]:
+        masker = NiftiMapsMasker(
+            maps_img, mask_img=mask_img, resampling_target=resampling_target
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="No map left after applying mask to the maps image",
+        ):
+            masker.fit()
+
+        with pytest.raises(
+            ValueError,
+            match="No map left after applying mask to the maps image",
+        ):
+            masker.fit(img_4d_rand_eye)
+
+    # by default we resample to data
+    # in this case if no img is passed at fit time
+    # we cannot know for sure if the mask will include any map
+    # but we can know this if some image is passed at fit time
+    # or we can for sure know it at transform time
+
+    masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
+
+    with pytest.raises(
+        ValueError, match="No map left after applying mask to the maps image"
+    ):
+        masker.fit(img_4d_rand_eye)
+
+    masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
+    masker.fit()
+    with pytest.raises(
+        ValueError, match="No map left after applying mask to the maps image"
+    ):
+        masker.transform(img_4d_rand_eye)
 
 
 @pytest.mark.thread_unsafe

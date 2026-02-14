@@ -269,6 +269,9 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
                 "but not both."
             )
 
+        if np.all(get_data(self.labels_img) == self.background_label):
+            raise ValueError("Image has no label.")
+
         self._fit_cache()
 
         mask_logger("load_regions", self.labels_img, verbose=self.verbose)
@@ -286,12 +289,16 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
                     self.background_label
                 )
 
-            labels_before_mask = {
-                int(x) for x in np.unique(get_data(self.labels_img))
-            }
             labels_after_mask = {
                 int(x) for x in np.unique(get_data(self.labels_img_))
             }
+            if labels_after_mask == {self.background_label}:
+                raise ValueError("Image has no label left after masking.")
+
+            labels_before_mask = {
+                int(x) for x in np.unique(get_data(self.labels_img))
+            }
+
             labels_diff = labels_before_mask - labels_after_mask
             if labels_diff:
                 warnings.warn(
