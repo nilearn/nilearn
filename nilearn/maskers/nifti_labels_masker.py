@@ -10,7 +10,6 @@ from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.bids import sanitize_look_up_table
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
@@ -723,11 +722,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             target_shape = labels_img_.shape[:3]
             target_affine = labels_img_.affine
 
-        params = get_params(
-            NiftiLabelsMasker,
-            self,
-            ignore=["resampling_target"],
-        )
+        params = self._get_masker_params(ignore=["resampling_target"])
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
         params["clean_kwargs"] = self.clean_args_

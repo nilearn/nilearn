@@ -55,7 +55,6 @@ masker = NiftiSpheresMasker(
     dmn_coords,
     radius=8,
     detrend=True,
-    standardize="zscore_sample",
     standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
@@ -112,7 +111,7 @@ plt.legend()
 from nilearn.connectome import ConnectivityMeasure
 
 connectivity_measure = ConnectivityMeasure(
-    kind="partial correlation", standardize="zscore_sample", verbose=1
+    kind="partial correlation", verbose=1
 )
 partial_correlation_matrix = connectivity_measure.fit_transform([time_series])[
     0
@@ -204,7 +203,6 @@ spheres_masker = NiftiSpheresMasker(
     smoothing_fwhm=6,
     radius=5.0,
     detrend=True,
-    standardize="zscore_sample",
     standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
@@ -345,7 +343,6 @@ spheres_masker = NiftiSpheresMasker(
     smoothing_fwhm=6,
     radius=4.5,
     detrend=True,
-    standardize="zscore_sample",
     standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,

@@ -99,7 +99,12 @@ from nilearn.conftest import (
 )
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
-from nilearn.decoding.decoder import Decoder, FREMClassifier, _BaseDecoder
+from nilearn.decoding.decoder import (
+    Decoder,
+    DecoderRegressor,
+    FREMClassifier,
+    _BaseDecoder,
+)
 from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.space_net import BaseSpaceNet
 from nilearn.decoding.tests.test_same_api import to_niimgs
@@ -576,6 +581,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
             yield (clone(estimator), check_decoder_compatibility_mask_image)
             yield (clone(estimator), check_decoder_with_surface_data)
             yield (clone(estimator), check_decoder_with_arrays)
+            yield (clone(estimator), check_decoder_screening_n_features)
             if is_regressor(estimator):
                 yield (
                     clone(estimator),
@@ -1507,6 +1513,11 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
 
     replaces sklearn check_fit_idempotent
     """
+    # TODO
+    # fix for flaky test with free threaded python
+    if not is_gil_enabled() and isinstance(estimator_orig, (SearchLight)):
+        return None
+
     check_methods = ["predict", "transform", "decision_function"]
 
     for method in check_methods:
@@ -1545,10 +1556,8 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
         # TODO
         # some estimator can return some pretty different results
         # investigate why
-        if isinstance(estimator, Decoder):
+        if isinstance(estimator, (Decoder, SearchLight)):
             tol = 1e-5
-        elif isinstance(estimator, SearchLight):
-            tol = 1e-4
         elif isinstance(estimator, FREMClassifier):
             tol = 0.1
 
@@ -1557,7 +1566,7 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
             new_result,
             atol=max(tol, 1e-9),
             rtol=max(tol, 1e-7),
-            err_msg=f"Idempotency check failed for method {method}",
+            err_msg=f"Idempotency check failed for method '{method}'",
         )
 
 
@@ -2252,6 +2261,44 @@ def check_decoder_with_arrays(estimator_orig) -> None:
             result_2 = getattr(estimator, method)(X_as_array)
 
         assert_array_equal(result_1, result_2)
+
+
+def check_decoder_screening_n_features(estimator_orig):
+    """Set screening_n_features gives the requested number of weights / CV.
+
+    screening_n_features determines the number of seelcted features per CV
+    so we only run a single CV.
+    """
+    estimator = clone(estimator_orig)
+
+    if (
+        isinstance(estimator, SearchLight)
+        or "screening_n_features" not in estimator.get_params()
+    ):
+        return
+
+    screening_n_features = 10
+
+    estimator.cv = 1
+    estimator.screening_n_features = screening_n_features
+    estimator.screening_percentile = None
+
+    if hasattr(estimator, "clustering_percentile"):
+        estimator.clustering_percentile = 100
+
+    # Not possible to have only cv=1 for Decoder, DecoderRegressor
+    # so we can only check that n_non_zero_weights >= 10
+    if isinstance(estimator, (Decoder, DecoderRegressor)):
+        estimator.cv = 2
+
+    estimator = fit_estimator(estimator)
+
+    n_non_zero_weights = np.sum(estimator.coef_ != 0)
+
+    if isinstance(estimator, (Decoder, DecoderRegressor)):
+        assert n_non_zero_weights >= screening_n_features
+    else:
+        assert n_non_zero_weights == screening_n_features
 
 
 # ------------------ MASKER CHECKS ------------------

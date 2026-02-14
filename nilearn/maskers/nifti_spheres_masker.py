@@ -13,7 +13,6 @@ from sklearn import neighbors
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
@@ -639,7 +638,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         check_is_fitted(self)
 
-        params = get_params(NiftiSpheresMasker, self)
+        params = self._get_masker_params()
         params["clean_kwargs"] = self.clean_args_
 
         sklearn_output_config = getattr(self, "_sklearn_output_config", None)

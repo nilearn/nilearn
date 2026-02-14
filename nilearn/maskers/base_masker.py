@@ -417,12 +417,45 @@ class BaseMasker(_BaseMasker):
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
 
+    def _get_masker_params(self, ignore: None | list[str] = None, deep=False):
+        """Get parameters for this masker.
+
+        Very similar to the BaseEstimator.get_params() from sklearn
+        but allows to avoid returning some keys.
+
+        Parameters
+        ----------
+        ignore : None or list of strings
+            Names of the parameters that are not returned.
+
+        deep : bool, default=True
+            If True, will return the parameters for this estimator
+            and contained subobjects that are estimators.
+
+        Returns
+        -------
+        params : dict
+            The dict of parameters.
+
+        """
+        _ignore = {"memory", "memory_level", "verbose", "copy", "n_jobs"}
+        if ignore is not None:
+            _ignore.update(ignore)
+
+        params = {
+            k: v
+            for k, v in super().get_params(deep=deep).items()
+            if k not in _ignore
+        }
+
+        return params
+
     @overload
     def _load_mask(self, imgs: None) -> None: ...
 
     @overload
-    def _load_mask(self, imgs: Nifti1Image) -> Nifti1Image: ...
-
+    def _load_mask(self, imgs: Nifti1Image) -> Nifti1Image: ...      
+      
     def _load_mask(self, imgs) -> None | Nifti1Image:
         """Load and validate mask if one passed at init.
 
@@ -901,3 +934,24 @@ class _BaseSurfaceMasker(_BaseMasker):
     def _set_contour_colors(self, hemi):
         """Set the colors for the contours in the report."""
         del hemi
+
+    def _clean(
+        self, region_signals: np.ndarray, confounds, sample_mask
+    ) -> np.ndarray:
+        """Clean extracted signal before \
+            returning it at the end of transform.
+        """
+        mask_logger("cleaning", verbose=self.verbose)
+        region_signals = self._cache(clean, func_memory_level=2)(
+            region_signals,
+            detrend=self.detrend,
+            standardize=self.standardize,
+            standardize_confounds=self.standardize_confounds,
+            t_r=self.t_r,
+            low_pass=self.low_pass,
+            high_pass=self.high_pass,
+            confounds=confounds,
+            sample_mask=sample_mask,
+            **self.clean_args_,
+        )
+        return region_signals

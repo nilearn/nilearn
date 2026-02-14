@@ -147,7 +147,6 @@ from nilearn.decoding import Decoder
 decoder = Decoder(
     estimator="svc",
     mask=mask_filename,
-    standardize="zscore_sample",
     screening_percentile=100,
     verbose=1,
 )
@@ -208,7 +207,6 @@ conditions_test = conditions[-30:]
 decoder = Decoder(
     estimator="svc",
     mask=mask_filename,
-    standardize="zscore_sample",
     screening_percentile=100,
     verbose=1,
 )
@@ -239,7 +237,6 @@ for fold, (train, test) in enumerate(cv.split(conditions), start=1):
     decoder = Decoder(
         estimator="svc",
         mask=mask_filename,
-        standardize="zscore_sample",
         screening_percentile=100,
         verbose=1,
     )
@@ -264,7 +261,6 @@ n_folds = 5
 decoder = Decoder(
     estimator="svc",
     mask=mask_filename,
-    standardize="zscore_sample",
     cv=n_folds,
     scoring="accuracy",
     screening_percentile=100,
@@ -307,7 +303,6 @@ cv = LeaveOneGroupOut()
 decoder = Decoder(
     estimator="svc",
     mask=mask_filename,
-    standardize="zscore_sample",
     cv=cv,
     screening_percentile=100,
     verbose=1,
@@ -379,7 +374,6 @@ dummy_decoder = Decoder(
     estimator="dummy_classifier",
     mask=mask_filename,
     cv=cv,
-    standardize="zscore_sample",
     screening_percentile=100,
     verbose=1,
 )
