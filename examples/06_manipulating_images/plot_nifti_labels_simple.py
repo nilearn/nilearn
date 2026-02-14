@@ -48,9 +48,7 @@ print(f"The atlas contains {len(atlas.labels) - 1} non-overlapping regions")
 #
 from nilearn.maskers import NiftiLabelsMasker
 
-masker = NiftiLabelsMasker(
-    atlas.maps, lut=atlas.lut, standardize="zscore_sample", verbose=1
-)
+masker = NiftiLabelsMasker(atlas.maps, lut=atlas.lut, verbose=1)
 
 # %%
 # Visualize the atlas

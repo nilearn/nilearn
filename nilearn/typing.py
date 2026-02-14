@@ -65,9 +65,7 @@ Resolution: TypeAlias = int | np.integer | None
 Resume: TypeAlias = bool
 ScreeningPercentile: TypeAlias = float | int | np.floating | np.integer | None
 SmoothingFwhm: TypeAlias = float | int | np.floating | np.integer | None
-Standardize: TypeAlias = Literal[
-    "zscore", "zscore_sample", "psc", True, False, None
-]
+Standardize: TypeAlias = Literal["zscore_sample", "psc", True, False, None]
 StandardizeConfounds: TypeAlias = bool
 TargetAffine: TypeAlias = ndarray | list | tuple | None
 
