@@ -1,6 +1,7 @@
 """Utilities and constants for version comparisons."""
 
 import operator
+from importlib.metadata import version as importlib_version
 from typing import Literal
 
 from packaging.version import parse
@@ -57,3 +58,22 @@ def compare_version(
 SKLEARN_LT_1_6 = compare_version(sklearn_version, "<", "1.6.0")
 SKLEARN_GTE_1_7 = compare_version(sklearn_version, ">=", "1.7.0")
 SKLEARN_GTE_1_8 = compare_version(sklearn_version, ">=", "1.8.0")
+
+
+# TODO remove this when min supported kaleido version is >= 1.0.0
+def is_kaleido_plotly_compatible():
+    """Check if installed versions of plotly and kaleido are compatible.
+
+    This function assumes that both plotly and kaleido are installed.
+    """
+    # minimum plotly compatible with kaleido >= 1.0.0
+    min_plotly = "6.1.1"
+    # max kaleido version compatible with versions of plotly less than 6.1.1
+    max_kaleido = "0.2.1"
+    plotly_version = importlib_version("plotly")
+    kaleido_version = importlib_version("kaleido")
+
+    return not (
+        compare_version(kaleido_version, ">", max_kaleido)
+        and compare_version(plotly_version, "<", min_plotly)
+    )

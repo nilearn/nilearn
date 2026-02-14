@@ -18,7 +18,6 @@ from nilearn._utils.bids import (
     generate_atlas_look_up_table,
 )
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.niimg import _get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -2130,10 +2129,6 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     )
 
 
-# TODO (nilearn >= 0.13.1)
-@rename_parameters(
-    replacement_params={"version": "atlas_type"}, end_version="0.13.1"
-)
 @fill_doc
 def fetch_atlas_pauli_2017(
     atlas_type="probabilistic", data_dir=None, verbose=1
