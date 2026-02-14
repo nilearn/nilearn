@@ -32,6 +32,12 @@ manually.
 
 """
 
+import warnings
+
+warnings.filterwarnings(
+    "ignore", message="The provided image has no sform in its header."
+)
+
 # %%
 # Load the Haxby dataset
 # ----------------------
@@ -144,6 +150,7 @@ cv_scores = []
 val_scores = []
 
 for sp in screening_percentile_range:
+    print("\n")
     decoder = Decoder(
         estimator="svc",
         mask=mask_img,
@@ -167,9 +174,13 @@ for sp in screening_percentile_range:
 # -----------------------
 # We are going to tune the parameter 'screening_percentile' in the
 # pipeline.
-import warnings
-
-from sklearn.exceptions import ConvergenceWarning
+#
+# .. note::
+#
+#   We increase the tolerance a bit
+#   to make it easier for the fitting to converge.
+#
+#
 from sklearn.model_selection import KFold
 
 cv = KFold(n_splits=3)
@@ -181,21 +192,17 @@ for train, test in cv.split(run):
     val_scores = []
 
     for sp in screening_percentile_range:
-        with warnings.catch_warnings():
-            # silence warnings about Liblinear not converging
-            # increase the number of iterations.
-            warnings.filterwarnings(
-                action="ignore", category=ConvergenceWarning
-            )
-            decoder = Decoder(
-                estimator="svc",
-                mask=mask_img,
-                smoothing_fwhm=4,
-                cv=3,
-                screening_percentile=sp,
-                param_grid=param_grid,
-                verbose=1,
-            )
+        decoder = Decoder(
+            estimator="svc",
+            mask=mask_img,
+            smoothing_fwhm=4,
+            cv=3,
+            standardize="zscore_sample",
+            screening_percentile=sp,
+            param_grid=param_grid,
+            verbose=1,
+            estimator_args={"tol": 0.0005},
+        )
         decoder.fit(index_img(fmri_niimgs, train), y_train)
         y_pred = decoder.predict(index_img(fmri_niimgs, test))
         val_scores.append(np.mean(y_pred == y_test))

@@ -115,7 +115,7 @@ def test_searchlight_small_radius():
         n_jobs=n_jobs,
         scoring="accuracy",
         cv=cv,
-        verbose=1,
+        verbose=0,
     )
     sl.fit(data_img, y=cond)
 
