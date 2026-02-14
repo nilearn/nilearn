@@ -45,6 +45,7 @@ from nilearn.exceptions import DimensionError
 from nilearn.image.image import (
     _crop_img_to,
     _fast_smooth_array,
+    _smooth_surface_img,
     binarize_img,
     check_niimg,
     check_niimg_3d,
@@ -67,12 +68,6 @@ from nilearn.image.image import (
     smooth_img,
     swap_img_hemispheres,
     threshold_img,
-)
-from nilearn.image.image import (
-    _crop_img_to,
-    _fast_smooth_array,
-    _smooth_surface_img,
-    smooth_array,
 )
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys

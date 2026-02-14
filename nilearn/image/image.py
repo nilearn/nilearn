@@ -447,13 +447,17 @@ def smooth_img(imgs, fwhm):
             )
 
     else:
-      for img in imgs:
-          img = check_niimg(img)
-          affine = img.affine
-          filtered = smooth_array(
-              _get_data(img), affine, fwhm=fwhm, ensure_finite=True, copy=True
-          )
-          ret.append(new_img_like(img, filtered, affine))
+        for img in imgs:
+            img = check_niimg(img)
+            affine = img.affine
+            filtered = smooth_array(
+                _get_data(img),
+                affine,
+                fwhm=fwhm,
+                ensure_finite=True,
+                copy=True,
+            )
+            ret.append(new_img_like(img, filtered, affine))
 
     return ret[0] if single_img else ret
 
