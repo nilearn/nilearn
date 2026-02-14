@@ -107,7 +107,7 @@ def test_transform():
     data_img, mask_img = generate_fake_fmri(
         shape=(10, 11, 12), length=n_samples
     )
-    masker = NiftiMasker(mask_img=mask_img).fit()
+    masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
     X = masker.transform(data_img)
     hkmeans = HierarchicalKMeans(n_clusters=n_clusters).fit(X)
     X_red = hkmeans.transform(X)
@@ -122,7 +122,7 @@ def test_inverse_transform():
     data_img, mask_img = generate_fake_fmri(
         shape=(10, 11, 12), length=n_samples
     )
-    masker = NiftiMasker(mask_img=mask_img).fit()
+    masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
     X = masker.transform(data_img)
     hkmeans = HierarchicalKMeans(n_clusters=n_clusters).fit(X)
     X_red = hkmeans.transform(X)
@@ -137,7 +137,7 @@ def test_error_n_clusters(n_clusters):
     data_img, mask_img = generate_fake_fmri(
         shape=(10, 11, 12), length=n_samples
     )
-    masker = NiftiMasker(mask_img=mask_img).fit()
+    masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
     X = masker.transform(data_img)
 
     with pytest.raises(
@@ -155,7 +155,7 @@ def test_scaling():
     data_img, mask_img = generate_fake_fmri(
         shape=(10, 11, 12), length=n_samples
     )
-    masker = NiftiMasker(mask_img=mask_img).fit()
+    masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
     X = masker.transform(data_img)
 
     hkmeans = HierarchicalKMeans(n_clusters=n_clusters)
@@ -186,7 +186,7 @@ def test_surface(
     n_samples = 100
     surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
     # create a surface masker
-    masker = SurfaceMasker(surf_mask).fit()
+    masker = SurfaceMasker(surf_mask, standardize=None).fit()
     # mask the surface image with 50 samples
     X = masker.transform(surf_img_2d(n_samples))
     # instantiate HierarchicalKMeans with n_clusters
@@ -222,10 +222,10 @@ def test_n_clusters_warning(img_type, rng):
             ),
         }
         img = SurfaceImage(mesh=mesh, data=data)
-        X = SurfaceMasker().fit_transform(img)
+        X = SurfaceMasker(standardize=None).fit_transform(img)
     else:
         img, _ = generate_fake_fmri(shape=(10, 11, 12), length=n_samples)
-        X = NiftiMasker().fit_transform(img)
+        X = NiftiMasker(standardize=None).fit_transform(img)
 
     with pytest.warns(
         match="n_clusters should be at most the number of features.",
