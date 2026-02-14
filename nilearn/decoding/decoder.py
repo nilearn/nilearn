@@ -14,6 +14,7 @@ import itertools
 import warnings
 from collections.abc import Iterable
 
+import cupy
 import numpy as np
 from joblib import Parallel, delayed
 from nibabel import Nifti1Image
@@ -664,6 +665,11 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
+
+        if "ridge" in self.estimator:
+            X = cupy.asarray(X)
+            y = cupy.asarray(y)
+            print("Using cupy arrays for ridge estimator.")
 
         self.n_outputs_ = 1 if y.ndim == 1 else y.shape[1]
 
