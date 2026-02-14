@@ -211,7 +211,7 @@ Contribution Guidelines
 
 When modifying the codebase, we ask every contributor to respect common
 guidelines.
-Those are inspired from :sklearn:`scikit-learn <developers/contributing.html#contributing-code>`
+Those are inspired from :sklearn:`scikit-learn <developers/contributing.html#contributing-code-and-documentation>`
 and ensure Nilearn remains simple to understand, efficient and maintainable.
 For example, code needs to be tested and those tests need to run quickly in order
 not to burden the development process.
@@ -503,14 +503,9 @@ Code inside ``maskers._validation.py``:
 Guidelines for HTML and CSS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We use `prettier <https://prettier.io/>`_ to format HTML and CSS.
+We use `prettier <https://prettier.io/>`_ and `djlint <https://github.com/djlint/djlint>`_ to format HTML and CSS.
 
-This is implemented via a pre-commit hook (see below)
-that can be run with
-
-.. code-block:: bash
-
-      pre-commit run --all-files prettier
+This is implemented via a pre-commit hook.
 
 Pre-commit
 ----------
@@ -655,6 +650,16 @@ main documentation and
 `sphinx-gallery <https://sphinx-gallery.github.io/stable/index.html>`_ for the
 example tutorials. If you want to work on those, check out next section to
 learn how to use those tools to build documentation.
+
+Reports
+-------
+
+Reports (for maskers and GLM) are generated using `Jinja templates <https://jinja.palletsprojects.com/en/stable/>`_.
+
+Reports HTML, CSS, javascript and templates are stored in ``nilearn/reporting/data``.
+
+All reports rely on the `pure CSS framework <https://pure-css.github.io/>`_.
+
 
 .. _git_repo:
 
@@ -886,7 +891,7 @@ An even quicker option is:
 
             PATTERN='examples/04_glm_first_level/plot_bids_features.py'
             export PATTERN
-            make -C doc html-modified-examples-only
+            make --directory doc html-modified-examples-only
 
 
 Additional cases
@@ -1001,14 +1006,13 @@ Then, change to the ``asv_benchmarks`` directory:
       cd asv_benchmarks
 
 To run a specific benchmark on the current HEAD of your clone of the
-repository, use the following command:
+repository, use command like the following:
 
 .. code-block:: bash
 
       asv run -b load_img
 
-This will measure both time taken and peak memory usage of the
-:func:`nilearn.image.load_img` function.
+This will run any benchmarck with ``load_img`` in the name.
 
 You can also track the performance of a specific benchmark over, say,
 5 commits, until release 0.10.0, like this:
@@ -1017,15 +1021,27 @@ You can also track the performance of a specific benchmark over, say,
 
       asv run 0.10.0..main -b load_img --steps 5
 
-You can also compare the performance of loading an image using
-:func:`nilearn.image.load_img` vs. :func:`nibabel.loadsave.load`:
-
-.. code-block:: bash
-
-      asv run -b compare_load
-
 For more information on how to use asv, please refer to the
 `asv documentation <https://asv.readthedocs.io/en/stable/>`_.
+
+Adding new benchmarks
+^^^^^^^^^^^^^^^^^^^^^
+
+Please see the `asv documentation writing tips <https://asv.readthedocs.io/en/stable/writing_benchmarks.html>`_
+to make sure you understand the basics about how to write benchmarks.
+
+For naming benchmarks, try to follow the following rules:
+
+- use snake_case instead of CamelCase
+
+- make sure that the name of the module the benchmark is in,
+  is duplicated in the name of the benchmark:
+  if you are adding a benchmark to the ``asv_benchmarks/benchmarks/maskers/nifti_masker.py``
+  make sure that the name of the benchmark contains ``nifti_masker``
+  is in the name of the benchmark (``def peakmem_nifti_masker_fit_transform``).
+  This makes is easier to systematically select the benchmarks to run
+  via the command line: ``asv run -b nifti_masker``
+  would run all the benchmarks for the NiftiMasker.
 
 
 Maintenance

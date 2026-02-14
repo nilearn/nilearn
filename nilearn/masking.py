@@ -12,12 +12,7 @@ from nilearn._utils.cache_mixin import cache
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import get_border_data, largest_connected_component
-from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import (
-    check_niimg,
-    check_niimg_3d,
-    check_same_fov,
-)
+from nilearn._utils.niimg import ensure_finite_data, safe_get_data
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets import (
@@ -26,10 +21,15 @@ from nilearn.datasets import (
     load_mni152_wm_template,
 )
 from nilearn.exceptions import MaskWarning, NotImplementedWarning
-from nilearn.image import get_data, new_img_like, resampling
-from nilearn.surface.surface import (
-    SurfaceImage,
+from nilearn.image.image import (
+    check_niimg,
+    check_niimg_3d,
+    check_same_fov,
+    get_data,
+    new_img_like,
 )
+from nilearn.image.resampling import resample_to_img
+from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import NiimgLike
@@ -156,7 +156,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
     extrapolation = np.nansum(extrapolation, axis=0) / np.sum(
         np.isfinite(extrapolation), axis=0
     )
-    extrapolation[np.logical_not(np.isfinite(extrapolation))] = 0
+    ensure_finite_data(extrapolation, raise_warning=False)
     new_data = np.zeros_like(masked_data)
     new_data[outer_shell] = extrapolation
     new_data[larger_mask] = masked_data[larger_mask]
@@ -358,7 +358,7 @@ def compute_epi_mask(
         # Get rid of memmapping
         mean_epi = as_ndarray(mean_epi)
         # SPM tends to put NaNs in the data outside the brain
-        mean_epi[np.logical_not(np.isfinite(mean_epi))] = 0
+        ensure_finite_data(mean_epi, raise_warning=False)
     sorted_input = np.sort(np.ravel(mean_epi))
     if exclude_zeros:
         sorted_input = sorted_input[sorted_input != 0]
@@ -714,9 +714,7 @@ def compute_brain_mask(
             "Only 'whole-brain', 'gm' or 'wm' are accepted."
         )
 
-    resampled_template = cache(resampling.resample_to_img, memory)(
-        template, target_img
-    )
+    resampled_template = cache(resample_to_img, memory)(template, target_img)
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")
 
@@ -865,6 +863,7 @@ def apply_mask(
     When using smoothing, ``ensure_finite`` is set to True, as non-finite
     values would spread across the image.
     """
+    check_params(locals())
     if not isinstance(imgs, SurfaceImage):
         mask_img = check_niimg_3d(mask_img)
         mask, mask_affine = load_mask_img(mask_img)
@@ -927,13 +926,13 @@ def apply_mask_fmri(
     if not np.allclose(mask_affine, imgs_img.affine):
         raise ValueError(
             f"Mask affine:\n{mask_affine}\n is different from img affine:"
-            "\n{imgs_img.affine}"
+            f"\n{imgs_img.affine}"
         )
 
     if mask_data.shape != imgs_img.shape[:3]:
         raise ValueError(
-            f"Mask shape: {mask_data.shape!s} is different "
-            f"from img shape:{imgs_img.shape[:3]!s}"
+            f"Mask shape: {mask_data.shape!s}\n is different from img shape:"
+            f"{imgs_img.shape[:3]!s}"
         )
 
     # All the following has been optimized for C order.

@@ -127,6 +127,7 @@ Some other past or present contributors are:
 * `Jon Haitz Legarreta Gorrono`_: Brigham and Women's Hospital, Mass General Brigham/Harvard Medical School, Boston, Massachusetts, USA
 * `Jona Sassenhagen`_
 * `Jordi Huguet`_: BarcelonaBeta Brain Research Center
+* `Joseph Paillard`_: Inria, Saclay, France
 * `Joshua Teves`_
 * `Julia Huntenburg`_: International Brain Laboratory, Berlin, Germany
 * `Julio A Peraza`_: Florida International University, Miami, Florida, USA
@@ -158,7 +159,9 @@ Some other past or present contributors are:
 * `Michael Notter`_: ams OSRAM, Martigny, Lausanne, Switzerland
 * `Michael Waskom`_: Flatiron health, New York, USA
 * `Michelle Wang`_: Origami lab, McGill University, Montréal, Canada
+* `Milton Camacho`_: University of Calgary, Calgary, Alberta, Canada
 * `Mohammad Torabi`_: Origami lab, McGill University, Montréal, Canada
+* `Mohammad Sadeghi Hardengi`_: IAUN, Iran (M.Sc. student, AI and robotics)
 * `Moritz Boos`_
 * `Mudassir Chapra`_
 * `Myeong Seop Song`_
@@ -194,6 +197,7 @@ Some other past or present contributors are:
 * `Salma Bougacha`_
 * `Sam Buck Johnson`_
 * `Sami Jawhar`_
+* `Sanjana Soni`_: Goverment Engineering College, Bilaspur, India
 * `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
 * `Sin Kim`_: Korea Advanced Institute of Science and Technology: Daejeon, KR
 * `Sourav Singh`_
@@ -210,6 +214,7 @@ Some other past or present contributors are:
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_
 * `Victoria Shevchenko`_: Inria Saclay, Université Paris Cité, France
+* `Victoria McCray`_: Northeastern University, USA
 * `Vincent Michel`_: https://www.logilab.fr/
 * `Virgile Fritsch`_: Inria, Saclay, France
 * `Yaroslav Halchenko`_: Dartmouth College, PBS, Hanover, New Hampshire, USA

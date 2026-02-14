@@ -1,38 +1,34 @@
 """Runs shorter version of several examples to generate their reports.
 
 Can be for GLM reports or masker reports.
-
-This should represent feature comprehensive examples
-to visualize, inspect, and test the functionality
-of nilearn.reporting.make_glm_reports().
 """
 
+import contextlib
 import sys
 import time
+from argparse import ArgumentParser
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn import clone
 
 from nilearn.datasets import (
     fetch_adhd,
     fetch_atlas_difumo,
-    fetch_atlas_msdl,
     fetch_atlas_schaefer_2018,
     fetch_atlas_surf_destrieux,
-    fetch_atlas_yeo_2011,
     fetch_development_fmri,
     fetch_ds000030_urls,
     fetch_fiac_first_level,
     fetch_icbm152_2009,
     fetch_icbm152_brain_gm_mask,
     fetch_localizer_first_level,
-    fetch_miyawaki2008,
     fetch_oasis_vbm,
     fetch_openneuro_dataset,
     load_fsaverage,
     load_fsaverage_data,
-    load_nki,
+    load_mni152_gm_template,
     load_sample_motor_activation_image,
     select_from_index,
 )
@@ -44,9 +40,6 @@ from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import mean_img, resample_to_img
 from nilearn.interfaces.fsl import get_design_from_fslmat
 from nilearn.maskers import (
-    MultiNiftiLabelsMasker,
-    MultiNiftiMapsMasker,
-    MultiNiftiMasker,
     NiftiLabelsMasker,
     NiftiMapsMasker,
     NiftiMasker,
@@ -55,11 +48,23 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
-from nilearn.reporting.glm_reporter import make_glm_report
+from nilearn.reporting.glm_reporter import HTMLReport
 from nilearn.surface import SurfaceImage
+
+with contextlib.suppress(Exception):
+    from rich import print
 
 REPORTS_DIR = Path(__file__).parent.parent / "modules" / "generated_reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def verbose_save(report, file: str) -> None:
+    """Save reportas html  and say where it was saved."""
+    report.save_as_html(REPORTS_DIR / file)
+    print(f"Report saved to {REPORTS_DIR / file}")
+
+
+# %%%%%%%%%% GLM REPORTS %%%%%%%%%%
 
 
 # %%
@@ -104,8 +109,7 @@ def report_flm_adhd_dmn(build_type):
         run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
     )
 
-    glm_report = make_glm_report(
-        first_level_model,
+    report = first_level_model.generate_report(
         contrasts=contrasts,
         title="ADHD DMN Report",
         cluster_threshold=15,
@@ -115,9 +119,10 @@ def report_flm_adhd_dmn(build_type):
         plot_type="glass",
         report_dims=(1200, "a"),
     )
-    glm_report.save_as_html(REPORTS_DIR / "flm_adhd_dmn.html")
 
-    return glm_report
+    verbose_save(report, "flm_adhd_dmn.html")
+
+    return report
 
 
 # %%
@@ -208,15 +213,14 @@ def report_flm_bids_features(build_type):
     model, _ = _make_flm(data_dir)
     title = "FLM Bids Features Stat maps"
 
-    report = make_glm_report(
-        model=model,
+    report = model.generate_report(
         contrasts="StopSuccess - Go",
         title=title,
         cluster_threshold=3,
         plot_type="glass",
     )
 
-    report.save_as_html(REPORTS_DIR / "flm_bids_features.html")
+    verbose_save(report, "flm_bids_features.html")
 
     return report
 
@@ -242,21 +246,16 @@ def report_flm_fiac(build_type):
 
     contrasts = {
         "SStSSp_minus_DStDSp": np.array([[1, 0, 0, -1]]),
-        "DStDSp_minus_SStSSp": np.array([[-1, 0, 0, 1]]),
-        "DSt_minus_SSt": np.array([[-1, -1, 1, 1]]),
-        "DSp_minus_SSp": np.array([[-1, 1, -1, 1]]),
-        "DSt_minus_SSt_for_DSp": np.array([[0, -1, 0, 1]]),
-        "DSp_minus_SSp_for_DSt": np.array([[0, 0, -1, 1]]),
         "Deactivation": np.array([[-1, -1, -1, -1, 4]]),
         "Effects_of_interest": np.eye(n_columns)[:5, :],  # An F-contrast
     }
-    report = make_glm_report(
-        fmri_glm,
+    report = fmri_glm.generate_report(
         contrasts,
         bg_img=mean_img_,
         height_control="fdr",
     )
-    report.save_as_html(REPORTS_DIR / "flm_fiac.html")
+
+    verbose_save(report, "flm_fiac.html")
 
     return report
 
@@ -298,36 +297,30 @@ def report_slm_oasis(build_type):
         oasis_dataset.gray_matter_maps, design_matrix=design_matrix
     )
 
-    # TODO the following crashes
-    # contrast = [np.array([1, 0]), np.array([0, 1])]
-    # contrast = [[1, 0, 0], [0, 1, 0]]
-
-    # The following are equivalent
-    # contrast = [np.array([1, 0, 0]), np.array([0, 1, 0])]
     contrast = ["age", "sex"]
 
-    report = make_glm_report(
-        model=second_level_model,
+    report = second_level_model.generate_report(
         contrasts=contrast,
         bg_img=fetch_icbm152_2009()["t1"],
         height_control=None,
         plot_type="glass",
     )
-    report.save_as_html(REPORTS_DIR / "slm_oasis.html")
+
+    verbose_save(report, "slm_oasis.html")
 
     return report
 
 
 def report_surface_flm(build_type):
     """FirstLevelGLM surface reports."""
-    if build_type == "partial":
-        _generate_dummy_html(filenames=["flm_surf_empty.html"])
-        _generate_dummy_html(filenames=["flm_surf.html"])
-        return None
-
     flm = FirstLevelModel(mask_img=SurfaceMasker())
     report_flm_empty = flm.generate_report(height_control=None)
-    report_flm_empty.save_as_html(REPORTS_DIR / "flm_surf_empty.html")
+
+    verbose_save(report_flm_empty, "flm_surf_empty.html")
+
+    if build_type == "partial":
+        _generate_dummy_html(filenames=["flm_surf.html"])
+        return report_flm_empty, None
 
     data = fetch_localizer_first_level()
 
@@ -372,271 +365,169 @@ def report_surface_flm(build_type):
         height_control=None,
     )
 
-    report_flm.save_as_html(REPORTS_DIR / "flm_surf.html")
+    verbose_save(report_flm, "flm_surf.html")
 
     return report_flm, report_flm_empty
 
 
-def report_surface_slm(build_type):
-    if build_type == "partial":
-        _generate_dummy_html(filenames=["slm_surf_empty.html"])
-        return None
-
+def report_surface_slm():
     slm = SecondLevelModel(mask_img=SurfaceMasker())
     report_slm_empty = slm.generate_report(height_control="bonferroni")
-    report_slm_empty.save_as_html(REPORTS_DIR / "slm_surf_empty.html")
+
+    verbose_save(report_slm_empty, "slm_surf_empty.html")
 
     return report_slm_empty
 
 
-# %%
-# Adapted from examples/03_connectivity/plot_probabilistic_atlas_extraction.py
-def report_nifti_maps_masker(build_type):
+# %%%%%%%%%% MASKER REPORTS %%%%%%%%%%
+
+
+def _generate_masker_report_files_partial(masker, **kwargs) -> HTMLReport:
+    """Generate masker report files for partial doc build.
+
+    Should generate reports for:
+    - unfitted masker
+    - unfitted masker with reports=False
+
+    Returns
+    -------
+    HTMLReport: First element is the unfitted masker report.
+    """
+    masker_class_name = masker.__class__.__name__
+
+    unfitted_report = masker.generate_report(
+        title=f"{masker_class_name} unfitted", **kwargs
+    )
+    verbose_save(unfitted_report, f"{masker_class_name}_unfitted.html")
+
+    masker.reports = False
+    unfitted_report_no_reporting = masker.generate_report(
+        title=f"{masker_class_name} unfitted - reports=False", **kwargs
+    )
+    verbose_save(
+        unfitted_report_no_reporting,
+        f"{masker_class_name}_unfitted_reports-False.html",
+    )
+
+    _generate_dummy_html(filenames=[f"{masker_class_name}_fitted.html"])
+
+    return unfitted_report
+
+
+def _generate_masker_report_files(
+    masker, data, **kwargs
+) -> tuple[HTMLReport, HTMLReport]:
+    """Generate masker report files.
+
+    Should generate reports for:
+    - unfitted masker
+    - unfitted masker with reports=False
+    - fitted masker
+
+    Returns
+    -------
+    tuple[HTMLReport, None]
+        First element is the unfitted masker report.
+        Second element is the fitted masker report.
+    """
+    masker_class_name = masker.__class__.__name__
+
+    unfitted_report = _generate_masker_report_files_partial(masker, **kwargs)
+
+    masker.reports = True
+    masker.fit(data)
+    report = masker.generate_report(**kwargs)
+    verbose_save(report, f"{masker_class_name}_fitted.html")
+
+    return unfitted_report, report
+
+
+def report_nifti_masker(build_type):
+    gm_template = load_mni152_gm_template()
+    masker = NiftiMasker(
+        mask_img=gm_template,
+        standardize="zscore_sample",
+        memory="nilearn_cache",
+        memory_level=1,
+        target_affine=gm_template.affine,
+        target_shape=gm_template.shape,
+    )
+
     if build_type == "partial":
-        _generate_dummy_html(filenames=["nifti_maps_masker.html"])
-        return None
+        return _generate_masker_report_files_partial(masker), None
+    else:
+        data = load_sample_motor_activation_image()
+        return _generate_masker_report_files(masker, data=data)
 
-    atlas = fetch_atlas_msdl()
+
+def report_nifti_labels_masker(build_type):
+    atlas = fetch_atlas_schaefer_2018()
+    masker = NiftiLabelsMasker(
+        atlas.maps, lut=atlas.lut, standardize="zscore_sample"
+    )
+
+    if build_type == "partial":
+        return _generate_masker_report_files_partial(masker), None
+    else:
+        data = fetch_development_fmri(n_subjects=1)
+        return _generate_masker_report_files(masker, data=data.func[0])
+
+
+def report_nifti_maps_masker(build_type):
+    atlas = fetch_atlas_difumo(dimension=64, resolution_mm=2)
     atlas_filename = atlas["maps"]
-
-    data = fetch_development_fmri(n_subjects=1)
 
     masker = NiftiMapsMasker(
         maps_img=atlas_filename,
         standardize="zscore_sample",
         standardize_confounds=True,
         memory="nilearn_cache",
-        cmap="gray",
-        memory_level=1,
-    )
-    masker.fit(data.func[0])
-
-    report = masker.generate_report(displayed_maps=[2, 6, 7, 16, 21])
-    report.save_as_html(REPORTS_DIR / "nifti_maps_masker.html")
-
-    return report
-
-
-#  %%
-# Adapted from examples/06_manipulating_images/plot_nifti_labels_simple.py
-def report_nifti_labels_masker(build_type):
-    if build_type == "partial":
-        _generate_dummy_html(
-            filenames=[
-                "nifti_labels_masker_atlas.html",
-                "nifti_labels_masker_fitted.html",
-            ]
-        )
-        return None
-
-    atlas = fetch_atlas_schaefer_2018()
-
-    masker = NiftiLabelsMasker(
-        atlas.maps,
-        lut=atlas.lut,
-        standardize="zscore_sample",
-    )
-    masker.fit()
-    report = masker.generate_report()
-    report.save_as_html(REPORTS_DIR / "nifti_labels_masker_atlas.html")
-
-    data = fetch_development_fmri(n_subjects=1)
-    masker.fit(data.func[0])
-    report = masker.generate_report()
-    report.save_as_html(REPORTS_DIR / "nifti_labels_masker_fitted.html")
-
-    return report
-
-
-#  %%
-# Adapted from examples/06_manipulating_images/plot_nifti_simple.py
-def report_nifti_masker(build_type):
-    if build_type == "partial":
-        _generate_dummy_html(filenames=["nifti_masker.html"])
-        return None
-
-    masker = NiftiMasker(
-        standardize="zscore_sample",
-        mask_strategy="epi",
-        memory="nilearn_cache",
-        memory_level=1,
-        smoothing_fwhm=8,
-        cmap="gray",
-    )
-
-    data = fetch_development_fmri(n_subjects=1)
-    masker.fit(data.func[0])
-    report = masker.generate_report()
-    report.save_as_html(REPORTS_DIR / "nifti_masker.html")
-    return report
-
-
-# %%
-# Adapted from examples/02_decoding/plot_miyawaki_encoding.py
-def report_multi_nifti_masker(build_type):
-    if build_type == "partial":
-        _generate_dummy_html(
-            filenames=[
-                "multi_nifti_masker.html",
-                "multi_nifti_masker_fitted.html",
-            ]
-        )
-        return None, None
-
-    data = fetch_miyawaki2008()
-
-    masker = MultiNiftiMasker(
-        mask_img=data.mask,
-        detrend=True,
-        standardize="zscore_sample",
-        n_jobs=2,
-        cmap="gray",
-    )
-    masker.fit()
-    empty_report = masker.generate_report()
-    empty_report.save_as_html(REPORTS_DIR / "multi_nifti_masker.html")
-
-    fmri_random_runs_filenames = data.func[12:]
-    masker.fit(fmri_random_runs_filenames)
-    report = masker.generate_report()
-    report.save_as_html(REPORTS_DIR / "multi_nifti_masker_fitted.html")
-
-    return empty_report, report
-
-
-#  %%
-#  Adapted from examples/03_connectivity/plot_atlas_comparison.py
-def report_multi_nifti_labels_masker(build_type):
-    if build_type == "partial":
-        _generate_dummy_html(
-            filenames=[
-                "multi_nifti_labels_masker_atlas.html",
-                "multi_nifti_labels_masker_fitted.html",
-            ]
-        )
-        return None
-
-    yeo = fetch_atlas_yeo_2011(n_networks=17)
-
-    data = fetch_development_fmri(n_subjects=2)
-
-    masker = MultiNiftiLabelsMasker(
-        labels_img=yeo["maps"],
-        standardize="zscore_sample",
-        standardize_confounds=True,
-        memory="nilearn_cache",
-        n_jobs=2,
         memory_level=1,
     )
 
-    masker.fit()
-    report = masker.generate_report()
-    report.save_as_html(REPORTS_DIR / "multi_nifti_labels_masker_atlas.html")
-
-    _ = masker.fit_transform(data.func, confounds=data.confounds)
-    report = masker.generate_report()
-    report.save_as_html(REPORTS_DIR / "multi_nifti_labels_masker_fitted.html")
-
-    return report
-
-
-#  %%
-#  Adapted from examples/03_connectivity/plot_atlas_comparison.py
-def report_multi_nifti_maps_masker(build_type):
     if build_type == "partial":
-        _generate_dummy_html(
-            filenames=[
-                "multi_nifti_maps_masker_atlas.html",
-                "multi_nifti_maps_masker_fitted.html",
-            ]
+        return _generate_masker_report_files_partial(masker), None
+    else:
+        data = fetch_development_fmri(n_subjects=1)
+        return _generate_masker_report_files(
+            masker, data=data.func[0], displayed_maps=[2, 6, 7]
         )
-        return None, None
-
-    difumo = fetch_atlas_difumo(dimension=64, resolution_mm=2)
-
-    data = fetch_development_fmri(n_subjects=2)
-
-    masker = MultiNiftiMapsMasker(
-        maps_img=difumo.maps,
-        standardize="zscore_sample",
-        standardize_confounds=True,
-        memory="nilearn_cache",
-        memory_level=1,
-        n_jobs=2,
-    )
-
-    masker.fit()
-    empty_report = masker.generate_report()
-    empty_report.save_as_html(
-        REPORTS_DIR / "multi_nifti_maps_masker_atlas.html"
-    )
-
-    _ = masker.fit_transform(data.func, confounds=data.confounds)
-    report = masker.generate_report()
-    report.save_as_html(REPORTS_DIR / "multi_nifti_maps_masker_fitted.html")
-
-    return empty_report, report
 
 
 def report_sphere_masker(build_type):
     """Generate masker with 3 spheres but only 2 in the report."""
-    if build_type == "partial":
-        _generate_dummy_html(
-            filenames=[
-                "nifti_sphere_masker.html",
-                "nifti_sphere_masker_fitted.html",
-            ]
-        )
-        return None
-
-    data = fetch_development_fmri(n_subjects=1)
-
-    t_r = data.t_r
-
-    pcc_coords = [(0, -53, 26), (5, 53, -26), (0, 0, 0)]
-
     masker = NiftiSpheresMasker(
-        pcc_coords,
+        seeds=[(0, -53, 26), (5, 53, -26), (0, 0, 0)],
         radius=10,
         detrend=True,
         standardize="zscore_sample",
         low_pass=0.1,
         high_pass=0.01,
-        t_r=t_r,
         memory="nilearn_cache",
         memory_level=1,
     )
 
-    report_unfitted = masker.generate_report([0, 2])
-    report_unfitted.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
+    if build_type == "partial":
+        return _generate_masker_report_files_partial(masker), None
+    else:
+        data = fetch_development_fmri(n_subjects=1)
+        masker.t_r = data.t_r
+        return _generate_masker_report_files(
+            masker, data.func[0], displayed_spheres=[0, 2]
+        )
 
-    masker.fit(data.func[0])
 
-    report = masker.generate_report([0, 2])
-    report.save_as_html(REPORTS_DIR / "nifti_sphere_masker_fitted.html")
-
-    return report_unfitted, report
+def load_sample_motor_activation_image_on_surface():
+    """Load sample motor activation image projected on fsaverage surface."""
+    stat_img = load_sample_motor_activation_image()
+    fsaverage_meshes = load_fsaverage()
+    return SurfaceImage.from_volume(
+        mesh=fsaverage_meshes["pial"],
+        volume_img=stat_img,
+    )
 
 
 def report_surface_masker(build_type):
-    if build_type == "partial":
-        _generate_dummy_html(
-            filenames=["surface_masker.html", "surface_masker_with_mask.html"]
-        )
-        return None, None
-
-    img = load_sample_motor_activation_image()
-    fsaverage_meshes = load_fsaverage()
-    surface_stat_image = SurfaceImage.from_volume(
-        mesh=fsaverage_meshes["pial"],
-        volume_img=img,
-    )
-
-    masker = SurfaceMasker()
-    masker.fit_transform(surface_stat_image)
-    surface_masker_report = masker.generate_report()
-    surface_masker_report.save_as_html(REPORTS_DIR / "surface_masker.html")
-
     fsaverage = load_fsaverage("fsaverage5")
     destrieux = fetch_atlas_surf_destrieux()
     destrieux_atlas = SurfaceImage(
@@ -646,34 +537,20 @@ def report_surface_masker(build_type):
             "right": destrieux["map_right"],
         },
     )
-
     mask = destrieux_atlas
     for part in mask.data.parts:
         mask.data.parts[part] = mask.data.parts[part] == 34
 
     masker = SurfaceMasker(mask)
-    masker.fit_transform(surface_stat_image)
-    surface_masker_with_mask_report = masker.generate_report()
-    surface_masker_with_mask_report.save_as_html(
-        REPORTS_DIR / "surface_masker_with_mask.html"
-    )
 
-    return (
-        surface_masker_report,
-        surface_masker_with_mask_report,
-    )
+    if build_type == "partial":
+        return _generate_masker_report_files_partial(masker), None
+    else:
+        surface_stat_image = load_sample_motor_activation_image_on_surface()
+        return _generate_masker_report_files(masker, surface_stat_image)
 
 
 def report_surface_label_masker(build_type):
-    if build_type == "partial":
-        _generate_dummy_html(
-            filenames=[
-                "surface_label_masker_unfitted.html",
-                "surface_label_masker.html",
-            ]
-        )
-        return None, None
-
     fsaverage = load_fsaverage("fsaverage5")
     destrieux = fetch_atlas_surf_destrieux()
     labels_img = SurfaceImage(
@@ -683,64 +560,59 @@ def report_surface_label_masker(build_type):
             "right": destrieux["map_right"],
         },
     )
+    masker = SurfaceLabelsMasker(labels_img, lut=destrieux.lut)
 
-    labels_masker = SurfaceLabelsMasker(labels_img, lut=destrieux.lut).fit()
-    labels_masker_report_unfitted = labels_masker.generate_report()
-    labels_masker_report_unfitted.save_as_html(
-        REPORTS_DIR / "surface_label_masker_unfitted.html"
-    )
-
-    stat_img = load_sample_motor_activation_image()
-    fsaverage_meshes = load_fsaverage()
-    surface_stat_image = SurfaceImage.from_volume(
-        mesh=fsaverage_meshes["pial"],
-        volume_img=stat_img,
-    )
-
-    labels_masker.fit_transform(surface_stat_image)
-    labels_masker_report = labels_masker.generate_report()
-    labels_masker_report.save_as_html(
-        REPORTS_DIR / "surface_label_masker.html"
-    )
-
-    return (
-        labels_masker_report_unfitted,
-        labels_masker_report,
-    )
+    if build_type == "partial":
+        return _generate_masker_report_files_partial(masker), None
+    else:
+        surface_stat_image = load_sample_motor_activation_image_on_surface()
+        return _generate_masker_report_files(masker, surface_stat_image)
 
 
 def report_surface_maps_masker(build_type):
-    if build_type == "partial":
-        _generate_dummy_html(
-            filenames=[
-                "surface_maps_masker_plotly.html",
-                "surface_maps_masker_matplotlib.html",
-            ]
-        )
-        return None, None
-
-    # Fetch a volumetric probabilistic atlas
-    atlas = fetch_atlas_msdl()
-    # Fetch the fsaverage5 mesh
+    atlas = fetch_atlas_difumo(dimension=64, resolution_mm=2)
     fsaverage5_mesh = load_fsaverage("fsaverage5")["pial"]
-    # project atlas to the surface
     surf_atlas = SurfaceImage.from_volume(
         volume_img=atlas.maps, mesh=fsaverage5_mesh
     )
-    # Fetch the NKI dataset
-    surf_img = load_nki()[0]
-    # Create a masker object
+
     masker = SurfaceMapsMasker(surf_atlas)
-    masker.fit_transform(surf_img)
-    # generate report with plotly engine
-    report_plotly = masker.generate_report(engine="plotly")
-    report_plotly.save_as_html(REPORTS_DIR / "surface_maps_masker_plotly.html")
-    # now with matplotlib
-    report_mpl = masker.generate_report(engine="matplotlib")
-    report_mpl.save_as_html(
-        REPORTS_DIR / "surface_maps_masker_matplotlib.html"
-    )
-    return report_plotly, report_mpl
+
+    if build_type == "partial":
+        _generate_dummy_html(
+            filenames=[
+                "SurfaceMapsMasker_fitted_plotly.html",
+                "SurfaceMapsMasker_fitted_matplotlib.html",
+            ]
+        )
+        return _generate_masker_report_files_partial(masker), None
+    else:
+        empty_report = _generate_masker_report_files_partial(masker)
+
+        surface_stat_image = load_sample_motor_activation_image_on_surface()
+
+        print("Use mpl")
+        _, matplotlib_reports = _generate_masker_report_files(
+            masker,
+            surface_stat_image,
+            engine="matplotlib",
+            displayed_maps=[6, 2],
+        )
+        verbose_save(
+            matplotlib_reports, "SurfaceMapsMasker_fitted_matplotlib.html"
+        )
+
+        print("Use plotly")
+        masker = clone(masker)
+        _, plotly_reports = _generate_masker_report_files(
+            masker,
+            surface_stat_image,
+            engine="plotly",
+            displayed_maps=[6, 2],
+        )
+        verbose_save(plotly_reports, "SurfaceMapsMasker_fitted_plotly.html")
+
+        return empty_report, matplotlib_reports, plotly_reports
 
 
 def _generate_dummy_html(filenames: list[str]):
@@ -758,29 +630,45 @@ def _generate_dummy_html(filenames: list[str]):
     />
 </head>
 <body>
-    <p>Not content displayed on partial doc build.</p>
+    <p>No content displayed on partial doc build.</p>
 </body>
 </html>""")
 
 
+def cli_parser():
+    parser = ArgumentParser(
+        description="Build all types of nilearn reports.",
+    )
+    parser.add_argument(
+        "--build_type",
+        help="""
+        build_type.
+        """,
+        choices=["full", "partial"],
+        default="partial",
+        type=str,
+        nargs=1,
+    )
+    return parser
+
+
 def main(args=sys.argv):
-    build_type = args[1] if len(args) > 1 else "partial"
+    parser = cli_parser()
+    args = parser.parse_args(args[1:])
+    build_type = args.build_type
 
     print(f"Generating reports for a build: {build_type}")
 
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 
-    report_surface_masker(build_type)
-    report_surface_label_masker(build_type)
-    report_surface_maps_masker(build_type)
     report_nifti_masker(build_type)
     report_nifti_maps_masker(build_type)
     report_nifti_labels_masker(build_type)
     report_sphere_masker(build_type)
-    report_multi_nifti_masker(build_type)
-    report_multi_nifti_labels_masker(build_type)
-    report_multi_nifti_maps_masker(build_type)
+    report_surface_masker(build_type)
+    report_surface_label_masker(build_type)
+    report_surface_maps_masker(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")
@@ -793,7 +681,7 @@ def main(args=sys.argv):
     report_flm_fiac(build_type)
     report_slm_oasis(build_type)
     report_surface_flm(build_type)
-    report_surface_slm(build_type)
+    report_surface_slm()
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")

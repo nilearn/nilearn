@@ -1,5 +1,6 @@
 """Test the mask-extracting utilities."""
 
+import re
 import warnings
 
 import numpy as np
@@ -31,12 +32,6 @@ from nilearn.masking import (
 )
 from nilearn.surface.surface import SurfaceImage
 
-np_version = (
-    np.version.full_version
-    if hasattr(np.version, "full_version")
-    else np.version.short_version
-)
-
 _TEST_DIM_ERROR_MSG = (
     "Input data has incompatible dimensionality: "
     "Expected dimension is 3D and you provided "
@@ -63,6 +58,7 @@ def _cov_conf(tseries, conf):
     return cov_mat
 
 
+@pytest.mark.thread_unsafe
 def test_load_mask_img_error_inputs(surf_img_2d, img_4d_ones_eye):
     """Check input validation of load_mask_img."""
     with pytest.raises(
@@ -82,6 +78,7 @@ def test_load_mask_img_error_inputs(surf_img_2d, img_4d_ones_eye):
         load_mask_img(surf_img_2d())
 
 
+@pytest.mark.thread_unsafe
 def test_load_mask_img_surface(surf_mask_1d):
     """Check load_mask_img returns a boolean surface image \
     when SurfaceImage is used as input.
@@ -92,6 +89,7 @@ def test_load_mask_img_surface(surf_mask_1d):
         assert hemi.dtype == "bool"
 
 
+@pytest.mark.slow
 def test_high_variance_confounds():
     """Test high_variance_confounds."""
     img, mask, conf = _simu_img()
@@ -401,7 +399,7 @@ def test_apply_mask_nan(affine_eye):
     assert np.all(np.isfinite(series))
 
 
-def test_apply_mask_errors(affine_eye):
+def test_apply_mask_errors(affine_eye, shape_3d_default):
     """Check errors for dimension."""
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
@@ -436,8 +434,23 @@ def test_apply_mask_errors(affine_eye):
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG % "2D"):
         apply_mask(data_img, Nifti1Image(mask[20, ...], affine_eye))
 
-    with pytest.raises(ValueError, match="is different from img affine"):
+    with pytest.raises(
+        ValueError, match=r"5\]\]\n is different from img affine:\n\[\[1"
+    ):
         apply_mask(data_img, Nifti1Image(mask, affine_eye / 2.0))
+
+    wrong_shape_mask_data = np.zeros(shape_3d_default)
+    wrong_shape_mask_data[1, 1, 0] = True
+    wrong_shape_mask_data[0, 1, 0] = True
+    wrong_shape_mask_data[0, 1, 1] = True
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Mask shape: (7, 8, 9)\n is different from img shape:(40, 40, 40)"
+        ),
+    ):
+        apply_mask(data_img, Nifti1Image(wrong_shape_mask_data, affine_eye))
 
     # Check that full masking raises error
     with pytest.raises(
@@ -629,6 +642,7 @@ def img_2d_mask_center(affine_eye):
     return Nifti1Image(mask_b.astype("int32"), affine_eye)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("create_files", (False, True))
 def test_intersect_masks_filename(
     tmp_path, img_2d_mask_bottom_right, img_2d_mask_center, create_files
@@ -671,6 +685,7 @@ def test_intersect_masks_f8(img_2d_mask_bottom_right, img_2d_mask_center):
     assert_array_equal(mask_ab, get_data(mask_ab_change_type))
 
 
+@pytest.mark.slow
 def test_intersect_masks(
     affine_eye, img_2d_mask_bottom_right, img_2d_mask_center
 ):
@@ -801,11 +816,12 @@ def test_compute_multi_epi_mask(affine_eye):
     assert_array_equal(mask_ab, get_data(mask_ab_))
 
 
+@pytest.mark.slow
 def test_compute_multi_brain_mask_error():
     """Check error raised if images with different shapes given as input."""
     imgs = [
-        data_gen.generate_mni_space_img(res=8, random_state=0)[0],
-        data_gen.generate_mni_space_img(res=12, random_state=0)[0],
+        data_gen.generate_mni_space_img(res=8)[0],
+        data_gen.generate_mni_space_img(res=12)[0],
     ]
     with pytest.raises(
         ValueError,
@@ -814,6 +830,7 @@ def test_compute_multi_brain_mask_error():
         compute_multi_brain_mask(imgs)
 
 
+@pytest.mark.slow
 def test_compute_multi_brain_mask():
     """Check results are the same if affine is the same."""
     imgs1 = [

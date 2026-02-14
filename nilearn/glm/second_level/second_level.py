@@ -2,7 +2,6 @@
 first level contrasts or directly on fitted first level models.
 """
 
-import inspect
 import operator
 import time
 from pathlib import Path
@@ -23,7 +22,6 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -39,8 +37,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
-from nilearn.glm.thresholding import warn_default_threshold
-from nilearn.image import concat_imgs, iter_img, mean_img
+from nilearn.image import check_niimg, concat_imgs, iter_img, mean_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.mass_univariate import permuted_ols
@@ -67,7 +64,7 @@ def _input_type_error_message(second_level_input):
 
 def _check_second_level_input(
     second_level_input, design_matrix, confounds=None
-):
+) -> None:
     """Check second_level_input type."""
     _check_design_matrix(design_matrix)
 
@@ -122,7 +119,7 @@ def _check_input_type_when_list(second_level_input):
     raise TypeError(_input_type_error_message(second_level_input))
 
 
-def _check_all_elements_of_same_type(data):
+def _check_all_elements_of_same_type(data) -> None:
     for idx, input in enumerate(data):
         if not isinstance(input, type(data[0])):
             raise TypeError(
@@ -133,7 +130,7 @@ def _check_all_elements_of_same_type(data):
 
 def _check_input_as_type(
     second_level_input, input_type, none_confounds, none_design_matrix
-):
+) -> None:
     if input_type == "flm_object":
         _check_input_as_first_level_model(second_level_input, none_confounds)
     elif input_type == "pd_series":
@@ -150,7 +147,9 @@ def _check_input_as_type(
 INF = 1000 * np.finfo(np.float32).eps
 
 
-def _check_input_as_first_level_model(second_level_input, none_confounds):
+def _check_input_as_first_level_model(
+    second_level_input, none_confounds
+) -> None:
     """Check that all all first level models are valid.
 
     - must have been fit
@@ -211,7 +210,7 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
             )
 
 
-def _check_input_as_dataframe(second_level_input):
+def _check_input_as_dataframe(second_level_input) -> None:
     for col in ("subject_label", "map_name", "effects_map_path"):
         if col not in second_level_input.columns:
             raise ValueError(
@@ -226,7 +225,9 @@ def _check_input_as_dataframe(second_level_input):
         raise ValueError("'subject_label' column must contain only strings.")
 
 
-def _check_input_as_nifti_images(second_level_input, none_design_matrix):
+def _check_input_as_nifti_images(
+    second_level_input, none_design_matrix
+) -> None:
     if isinstance(second_level_input, NiimgLike):
         second_level_input = [second_level_input]
     for niimg in second_level_input:
@@ -238,7 +239,9 @@ def _check_input_as_nifti_images(second_level_input, none_design_matrix):
         )
 
 
-def _check_input_as_surface_images(second_level_input, none_design_matrix):
+def _check_input_as_surface_images(
+    second_level_input, none_design_matrix
+) -> None:
     if isinstance(second_level_input, SurfaceImage) and (
         len(second_level_input.shape) == 1 or second_level_input.shape[1] == 1
     ):
@@ -258,7 +261,7 @@ def _check_input_as_surface_images(second_level_input, none_design_matrix):
             )
 
 
-def _check_confounds(confounds):
+def _check_confounds(confounds) -> None:
     """Check confounds type."""
     if confounds is not None:
         if not isinstance(confounds, pd.DataFrame):
@@ -280,7 +283,9 @@ def _check_confounds(confounds):
             raise ValueError("subject_label column must contain only strings")
 
 
-def _check_first_level_contrast(second_level_input, first_level_contrast):
+def _check_first_level_contrast(
+    second_level_input, first_level_contrast
+) -> None:
     if (
         isinstance(second_level_input, list)
         and isinstance(second_level_input[0], FirstLevelModel)
@@ -294,7 +299,7 @@ def _check_first_level_contrast(second_level_input, first_level_contrast):
         )
 
 
-def _check_design_matrix(design_matrix):
+def _check_design_matrix(design_matrix) -> None:
     """Check design_matrix type."""
     if design_matrix is not None and not isinstance(
         design_matrix, (str, Path, pd.DataFrame)
@@ -306,7 +311,7 @@ def _check_design_matrix(design_matrix):
         )
 
 
-def _check_n_rows_desmat_vs_n_effect_maps(effect_maps, design_matrix):
+def _check_n_rows_desmat_vs_n_effect_maps(effect_maps, design_matrix) -> None:
     """Check design matrix and effect maps agree on number of rows."""
     if len(effect_maps) != design_matrix.shape[0]:
         raise ValueError(
@@ -485,8 +490,9 @@ class SecondLevelModel(BaseGLM):
     %(memory_level1)s
 
     %(verbose0)s
-        If 0 prints nothing. If 1 prints final computation time.
-        If 2 prints masker computation details.
+        If 0, prints nothing.
+        If 1, prints final computation time.
+        If 2, prints masker computation details.
 
     %(n_jobs)s
 
@@ -661,7 +667,7 @@ class SecondLevelModel(BaseGLM):
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return (
             hasattr(self, "second_level_input_")
             and self.second_level_input_ is not None
@@ -889,81 +895,6 @@ class SecondLevelModel(BaseGLM):
                 self.results_[label_], attribute
             )
         return self.masker_.inverse_transform(voxelwise_attribute)
-
-    def generate_report(
-        self,
-        contrasts=None,
-        first_level_contrast=None,
-        title=None,
-        bg_img="MNI152TEMPLATE",
-        threshold=3.09,
-        alpha=0.001,
-        cluster_threshold=0,
-        height_control="fpr",
-        two_sided=False,
-        min_distance=8.0,
-        plot_type="slice",
-        cut_coords=None,
-        display_mode=None,
-        report_dims=(1600, 800),
-    ):
-        """Return a :class:`~nilearn.reporting.HTMLReport` \
-        which shows all important aspects of a fitted :term:`GLM`.
-
-        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
-        browser, displayed in a notebook, or saved to disk as a standalone
-        HTML file.
-
-        The :term:`GLM` must be fitted and have the computed design
-        matrix(ces).
-
-        .. note::
-
-            Refer to the documentation of
-            :func:`~nilearn.reporting.make_glm_report`
-            for details about the parameters
-
-        Returns
-        -------
-        report_text : :class:`~nilearn.reporting.HTMLReport`
-            Contains the HTML code for the :term:`GLM` report.
-
-        """
-        from nilearn.reporting.glm_reporter import make_glm_report
-
-        sig = inspect.signature(SecondLevelModel.generate_report).parameters
-        warn_default_threshold(
-            threshold,
-            sig["threshold"].default,
-            3.09,
-            height_control=height_control,
-        )
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = {
-                "trial_types": [],
-                "noise_model": getattr(self, "noise_model", None),
-                "hrf_model": getattr(self, "hrf_model", None),
-                "drift_model": None,
-            }
-
-        return make_glm_report(
-            self,
-            contrasts,
-            first_level_contrast=first_level_contrast,
-            title=title,
-            bg_img=bg_img,
-            threshold=threshold,
-            alpha=alpha,
-            cluster_threshold=cluster_threshold,
-            height_control=height_control,
-            two_sided=two_sided,
-            min_distance=min_distance,
-            plot_type=plot_type,
-            cut_coords=cut_coords,
-            display_mode=display_mode,
-            report_dims=report_dims,
-        )
 
 
 @fill_doc

@@ -60,7 +60,7 @@ design_matrix = pd.DataFrame(
 # Fit of the second-level model
 from nilearn.glm.second_level import SecondLevelModel
 
-model = SecondLevelModel(smoothing_fwhm=5.0, n_jobs=2)
+model = SecondLevelModel(smoothing_fwhm=5.0, n_jobs=2, verbose=1)
 model.fit(contrast_map_filenames, design_matrix=design_matrix)
 
 # %%
@@ -97,7 +97,7 @@ show()
 from nilearn.image import get_data, math_img
 
 p_val = model.compute_contrast("fluency", output_type="p_value")
-n_voxels = np.sum(get_data(model.masker_.mask_img_))
+n_voxels = np.sum(get_data(model.mask_img_))
 # Correcting the p-values for multiple testing and taking negative logarithm
 neg_log_pval = math_img(
     f"-np.log10(np.minimum(1, img * {n_voxels!s}))", img=p_val
@@ -141,6 +141,7 @@ neg_log_pvals_permuted_ols_unmasked = non_parametric_inference(
     mask=None,
     smoothing_fwhm=5.0,
     n_jobs=2,
+    verbose=1,
 )
 
 # %%

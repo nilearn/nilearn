@@ -17,6 +17,7 @@
 #    - ``[skip doc]`` skip build of the documentation.
 #    - ``[example] name_of_example.py`` trigger build of some specific examples.
 #    - ``[force download]`` do not rely of cached datasets and force to redownload them.
+#    - ``[reports]`` build estimators reports that are embedded in the documentation.
 #
 # On Pull Requests, "partial builds" are run by default which render all the rst files,
 # but only build examples modified in the Pull Request.
@@ -31,7 +32,7 @@
 #
 # .. code-block:: bash
 #
-#   $ git commit -m "[full doc] request full build"
+#   $ git commit --message "[full doc] request full build"
 #
 # Full builds are always run on "main".
 # This is done every time there is a push on "main" and every week.
@@ -46,7 +47,7 @@
 #
 # .. code-block:: bash
 #
-#   $ git commit -m "[example] plot_nilearn_101.py"
+#   $ git commit --message "[example] plot_nilearn_101.py"
 #
 # However for quick checks to do yourself
 # you should always opt for local builds following the instructions here:
@@ -72,7 +73,7 @@
 #
 # .. code-block:: bash
 #
-#   $ git commit -m "[full doc][force download] request full build"
+#   $ git commit --message "[full doc][force download] request full build"
 ###
 name: DocumentationBuilder
 
@@ -83,11 +84,24 @@ on:
     pull_request:
         branches:
         -   '*'
-    schedule:
-    # Run every Monday at 8am UTC
-    -   cron: 0 8 * * 1
 
-    # Allows you to run this workflow manually from the Actions tab
+    schedule:
+        # Uses the cron schedule for github actions
+        # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+        # Run every Monday at midnight UTC
+        #     ┌───────────── minute (0 - 59)
+        #     │ ┌───────────── hour (0 - 23)
+        #     │ │ ┌───────────── day of the month (1 - 31)
+        #     │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+        #     │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     * * * * *
+    -   cron: 0 0 * * 1
+
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
     workflow_dispatch:
 
     # This will run automatically when a release is published
@@ -108,14 +122,19 @@ env:
     HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
 jobs:
+    check_skip_flags:
+        uses: ./.github/workflows/check_skip_flags.yml
+        with:
+            skip_type: doc
 
     # Make citation metadata from CITATION.cff is valid.
     # as it is used in the documentation build.
     validate_cff:
         runs-on: ubuntu-latest
+        needs: [check_skip_flags]
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
 
         -   name: Check whether the citation metadata from CITATION.cff is valid
             uses: citation-file-format/cffconvert-github-action@2.0.0
@@ -125,9 +144,10 @@ jobs:
     quality_control:
         # run a couple of scripts to check quality of the docstrings
         runs-on: ubuntu-latest
+        needs: [check_skip_flags]
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v7
         -   uses: actions/setup-python@v6
@@ -144,38 +164,28 @@ jobs:
                     --list-dependencies \
                     -e doc_qc
 
-    check_skip_flags:
-        name: Check skip flags
-        runs-on: ubuntu-latest
-        steps:
-        -   name: Get repo
-            uses: actions/checkout@v5
-            with:
-                ref: ${{ github.event.pull_request.head.sha }}
-        -   name: Check head git commit message
-            run: |
-                headCommitMsg=$(git show -s --format=%s)
-                if [[ $headCommitMsg == *"[skip doc]"* ]]; then
-                    echo "skipping doc build"
-                    exit 1
-                fi
-
     # Check the build type and files examples to generate
     # Upload as an artifact for other jobs.
     build_type:
-        needs: [check_skip_flags, validate_cff]
+        needs: [validate_cff]
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
             with:
-                # If pull request, checkout HEAD commit with all commit history
+                  # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
+        -   name: Setup python
+            uses: actions/setup-python@v6
+            with:
+                python-version: ${{ env.MIN_PYTHON_VERSION }}
+        -   name: Install dependencies
+            run: python -m pip install --upgrade pip rich
         -   name: Merge with upstream
             run: ./build_tools/github/merge_upstream.sh
         -   name: Check if we are doing a full or partial build
-            run: ./build_tools/github/build_type.sh
+            run: python build_tools/github/build_type.py
             env:
                 COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         -   name: Verify build type
@@ -183,7 +193,7 @@ jobs:
                 echo "PATTERN = $(cat pattern.txt)"
                 echo "BUILD = $(cat build.txt)"
         -   name: Upload build.txt and pattern.txt
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v6
             with:
                 name: build_type
                 path: |
@@ -204,13 +214,13 @@ jobs:
 
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
             with:
-                # If pull request, checkout HEAD commit with all commit history
+                  # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
 
-        # Set up environment
+                      # Set up environment
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
@@ -222,7 +232,7 @@ jobs:
                 python -m pip install .
 
         -   name: Download build type
-            uses: actions/download-artifact@v5
+            uses: actions/download-artifact@v7
             with:
                 name: build_type
         -   name: Verify build type
@@ -244,7 +254,7 @@ jobs:
         -   name: Get cache from a previous attempts on this PR or branch
             if: steps.cache-key.outputs.restore == 'true'
             id: restore-previous-run
-            uses: actions/cache/restore@v4
+            uses: actions/cache/restore@v5
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
@@ -253,20 +263,20 @@ jobs:
                     data_cache-${{ github.workflow }}_ref-${{ github.ref }}
 
         -   name: Get data from a previous successful run for full builds
-            # only run it if we did not get the data from a previous attempt
+                  # only run it if we did not get the data from a previous attempt
             if: ${{ steps.build-type.outputs.build == 'html-strict' && steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit
                 != 'true' }}
             id: restore-previous-full-build
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
 
         -   name: Get data for reports from a previous successful run
-            # only run it if we did not get the data from a previous attempt
+                  # only run it if we did not get the data from a previous attempt
             if: ${{ steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit != 'true' && steps.restore-previous-full-build.outputs.cache-hit
                 != 'true' }}
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: |
                     nilearn_data/adhd
@@ -293,7 +303,7 @@ jobs:
                 python doc/get_data_examples.py $BUILD_TYPE
 
         -   name: Save cache to pass to build_docs job
-            uses: actions/cache/save@v4
+            uses: actions/cache/save@v5
             if: always()
             with:
                 path: nilearn_data
@@ -307,7 +317,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                py: ['3.13']
+                py: ['3.14']
                 env: [doc_latest]
                 include:
                 -   py: '3.10'
@@ -318,17 +328,30 @@ jobs:
                 shell: bash -el {0}
 
         steps:
-
-        -   name: Checkout nilearn
-            uses: actions/checkout@v5
+        -   name: Free Disk Space (Ubuntu)
+            uses: jlumbroso/free-disk-space@main
             with:
-                # If pull request, checkout HEAD commit with all commit history
+                  # this might remove tools that are actually needed,
+                  # if set to "true" but frees about 6 GB
+                tool-cache: false
+                  # all of these default to true, but feel free to set to
+                  # "false" if necessary for your workflow
+                android: true
+                dotnet: true
+                haskell: true
+                large-packages: true
+                docker-images: true
+                swap-storage: true
+        -   name: Checkout nilearn
+            uses: actions/checkout@v6
+            with:
+                  # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
         -   name: Merge with upstream
             run: ./build_tools/github/merge_upstream.sh
 
-        # Set up environment
+                  # Set up environment
         -   name: Install apt packages
             run: |
                 sudo -E apt-get -yq update
@@ -339,15 +362,15 @@ jobs:
             run: date +%m > month_num;
 
         -   name: Get data from the get_data job
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
                 restore-keys: |
                     data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}
 
-        # Set up and launch a virtual browser needed for one example to run
-        # without stalling the job. The example launches an html in the browser.
+                  # Set up and launch a virtual browser needed for one example to run
+                  # without stalling the job. The example launches an html in the browser.
         -   name: Set up display server for virtual browser
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
@@ -360,7 +383,7 @@ jobs:
                 python-version: ${{ matrix.py }}
 
         -   name: Download build type
-            uses: actions/download-artifact@v5
+            uses: actions/download-artifact@v7
             with:
                 name: build_type
 
@@ -370,13 +393,13 @@ jobs:
         -   name: Show tox config
             run: tox c
 
-        # Run the doc build
-        #
-        # We let tox handle creating virtual env and install dependencies.
-        # If no data is restored in previous steps,
-        # the data will be downloaded during the build
-        # (this only applies for full builds;
-        # no data is downloaded for partial builds).
+                  # Run the doc build
+                  #
+                  # We let tox handle creating virtual env and install dependencies.
+                  # If no data is restored in previous steps,
+                  # the data will be downloaded during the build
+                  # (this only applies for full builds;
+                  # no data is downloaded for partial builds).
         -   name: Build docs
             id: build-docs
             if: ${{ matrix.env == 'doc' ||  matrix.env == 'doc_latest' && contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) }}
@@ -401,17 +424,31 @@ jobs:
 
         -   name: Upload doc checks
             if: always()
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.env }}_checks
                 path: doc/tmp
 
+        -   name: Check doc size
+            if: always()
+            run: |
+                du -h -d 3 --exclude=".git"
+
+                mkdir -p doc/_build/html # ensure the folder exists
+                du -h doc/_build/html
+
         -   name: Upload documentation
             if: steps.build-docs.outcome == 'success'
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.env }}
                 path: doc/_build/html
+
+        -   name: Upload reports
+            uses: actions/upload-artifact@v6
+            with:
+                name: ${{ matrix.env }}_reports
+                path: doc/modules/generated_reports
 
     deploy_on_main:
         runs-on: ubuntu-latest
@@ -419,7 +456,7 @@ jobs:
         if: ${{ contains(fromJSON('["push", "workflow_dispatch", "schedule", "release"]'), github.event_name)}}
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
             with:
                 fetch-depth: 0
 
@@ -434,7 +471,7 @@ jobs:
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
 
-        -   uses: actions/download-artifact@v5
+        -   uses: actions/download-artifact@v7
             with:
                 name: doc
                 path: doc/_build/html

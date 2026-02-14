@@ -2,99 +2,98 @@
 
 .. only:: html
 
-Examples nifti masker reports
-=============================
+Examples of masker reports
+==========================
 
-Nifti masker
-------------
+Nifti masker reports
+--------------------
+
+NiftiMasker
+^^^^^^^^^^^
 
 Adapted from :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_nifti_simple.py`
 
 .. raw:: html
-   :file: nifti_masker.html
-
-Adapted from :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
+   :file: NiftiMasker_unfitted.html
 
 .. raw:: html
-   :file: multi_nifti_masker.html
+   :file: NiftiMasker_fitted.html
 
-.. raw:: html
-   :file: multi_nifti_masker_fitted.html
-
-
-Nifti labels masker
--------------------
+NiftiLabelsMasker
+^^^^^^^^^^^^^^^^^
 
 Adapted from :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_nifti_labels_simple.py`
 
 .. raw:: html
-   :file: nifti_labels_masker_fitted.html
+   :file: NiftiLabelsMasker_unfitted.html
 
 .. raw:: html
-   :file: nifti_labels_masker_atlas.html
+   :file: NiftiLabelsMasker_fitted.html
 
-Adapted from :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
-
-.. raw:: html
-   :file: multi_nifti_labels_masker_atlas.html
-
-.. raw:: html
-   :file: multi_nifti_labels_masker_fitted.html
-
-Nifti maps masker
------------------
+NiftiMapsMasker
+^^^^^^^^^^^^^^^
 
 Adapted from :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`
 
 .. raw:: html
-   :file: nifti_maps_masker.html
-
-Adapted from :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+   :file: NiftiMapsMasker_unfitted.html
 
 .. raw:: html
-   :file: multi_nifti_maps_masker_atlas.html
+   :file: NiftiMapsMasker_fitted.html
 
-.. raw:: html
-   :file: multi_nifti_maps_masker_fitted.html
-
-Nifti sphere masker
--------------------
+NiftiSpheresMasker
+^^^^^^^^^^^^^^^^^^
 
 Adapted from :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_adhd_dmn.py`
 
 .. raw:: html
-   :file: nifti_sphere_masker.html
+   :file: NiftiSpheresMasker_unfitted.html
 
 
 .. raw:: html
-   :file: nifti_sphere_masker_fitted.html
+   :file: NiftiSpheresMasker_fitted.html
 
-Examples surface masker reports
-===============================
+Surface masker reports
+----------------------
 
-Surface masker
---------------
-
-.. raw:: html
-   :file: surface_masker.html
+SurfaceMasker
+^^^^^^^^^^^^^
 
 .. raw:: html
-   :file: surface_masker_with_mask.html
-
-Surface labels masker
----------------------
+   :file: SurfaceMasker_unfitted.html
 
 .. raw:: html
-   :file: surface_label_masker_unfitted.html
+   :file: SurfaceMasker_fitted.html
+
+SurfaceLabelsMasker
+^^^^^^^^^^^^^^^^^^^
 
 .. raw:: html
-   :file: surface_label_masker.html
-
-Surface maps masker
--------------------
+   :file: SurfaceLabelsMasker_unfitted.html
 
 .. raw:: html
-   :file: surface_maps_masker_plotly.html
+   :file: SurfaceLabelsMasker_fitted.html
+
+SurfaceMapsMasker
+^^^^^^^^^^^^^^^^^
 
 .. raw:: html
-   :file: surface_maps_masker_matplotlib.html
+   :file: SurfaceMapsMasker_unfitted.html
+
+.. raw:: html
+   :file: SurfaceMapsMasker_fitted_plotly.html
+
+.. raw:: html
+   :file: SurfaceMapsMasker_fitted_matplotlib.html
+
+
+Masker reports in notebooks
+---------------------------
+
+.. warning::
+
+   The reports in this page may appear slightly different
+   than they would in a real report.
+   If you suspect a bug, double check by running in a local notebook.
+
+`View HERE. <../../_static/notebook_reports_maskers.html>`_

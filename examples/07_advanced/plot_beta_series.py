@@ -55,8 +55,6 @@ to build the LSS beta series.
     that LSA performs better than LSS when trial variability is greater
     than scan noise, even in fast designs.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 # sphinx_gallery_thumbnail_number = -2
 
@@ -318,19 +316,17 @@ seed_masker = NiftiSpheresMasker(
     coords,
     radius=8,
     detrend=True,
-    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
+    verbose=1,
 )
 
 brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
-    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
+    verbose=1,
 )
 
 # Perform the seed-to-voxel correlation for the LSS 'language' beta series

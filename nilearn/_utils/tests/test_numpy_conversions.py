@@ -1,9 +1,4 @@
-"""Test the numpy_conversions module.
-
-This test file is in nilearn/tests because Nosetest,
-which we historically used,
-ignores modules whose name starts with an underscore.
-"""
+"""Test the numpy_conversions module."""
 
 from pathlib import Path
 
@@ -149,6 +144,7 @@ def test_as_ndarray(
         assert arr2.flags["C_CONTIGUOUS"]
 
 
+@pytest.mark.thread_unsafe
 def test_as_ndarray_memmap():
     # memmap
     filename = Path(__file__).parent / "data" / "mmap.dat"

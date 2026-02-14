@@ -1,20 +1,18 @@
-"""
-Test the class_inspect module.
-
-This test file is in nilearn/tests because Nosetest,
-which we historically used,
-ignores modules whose name starts with an underscore.
-"""
+"""Test the class_inspect module."""
 
 import pytest
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.estimator_checks import (
     check_img_estimator_dict_unchanged,
     check_img_estimator_fit_check_is_fitted,
 )
+from nilearn._utils.helpers import is_gil_enabled
 from nilearn.maskers.base_masker import BaseMasker
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_check_estimator_has_sklearn_is_fitted():
     """Check errors are thrown for unfitted estimator.
 
@@ -23,7 +21,7 @@ def test_check_estimator_has_sklearn_is_fitted():
     - running sklearn check_is_fitted on masker throws an error
     """
 
-    class DummyEstimator:
+    class DummyEstimator(NilearnBaseEstimator):
         def __init__(self):
             pass
 
@@ -32,7 +30,7 @@ def test_check_estimator_has_sklearn_is_fitted():
     ):
         check_img_estimator_fit_check_is_fitted(DummyEstimator())
 
-    class DummyEstimator:
+    class DummyEstimator(NilearnBaseEstimator):
         def __init__(self):
             pass
 
@@ -61,7 +59,7 @@ def test_check_masker_dict_unchanged():
 
     with pytest.raises(
         ValueError,
-        match=r"Estimator changes '__dict__' keys during transform.",
+        match=r"Estimator changes '__dict__' keys during 'transform'.",
     ):
         check_img_estimator_dict_unchanged(estimator)
 

@@ -16,8 +16,6 @@ from a permutation test combined
 with a max-type procedure (:footcite:t:`Anderson2001`).
 Bonferroni correction is a bit conservative, as revealed by the presence of
 a few false negative.
-
-.. include:: ../../../examples/masker_note.rst
 """
 
 # %%
@@ -61,6 +59,7 @@ nifti_masker = NiftiMasker(
     mask_img=mask_filename,
     memory="nilearn_cache",  # cache options
     memory_level=1,
+    verbose=1,
 )
 func_filename = haxby_dataset.func[0]
 func_reduced = index_img(func_filename, condition_mask)

@@ -4,19 +4,47 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
 
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._base import NilearnBaseEstimator
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
-from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.maskers.masker_validation import check_embedded_masker, get_params
+
+
+class A(NilearnBaseEstimator):
+    """Dummy class A."""
+
+    def __init__(self, a=1):
+        self.a = a
+
+
+class B(A):
+    """Dummy class B derived from A."""
+
+    def __init__(self, a=1, b=2):
+        self.a = a
+        self.b = b
+
+
+def test_get_params():
+    """Ensure get_params returns parameters common to both class
+    unless ignored.
+    """
+    b = B()
+    assert get_params(A, b) == {"a": 1}
+    assert get_params(A, b, ignore=["a"]) == {}
+    assert get_params(A, b, ignore=["a", "b"]) == {}
 
 
 class OwningClass(BaseEstimator):
     """Dummy class that can have an embedded masker."""
 
+    _estimator_type = "home_made"  # TODO (sklearn  >= 1.8.0) remove
+
     def __init__(
         self,
         mask=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         detrend=False,
         low_pass=None,
         high_pass=None,
@@ -68,6 +96,8 @@ class OwningClass(BaseEstimator):
 class DummyEstimator:
     """Dummy class that checks embedded masker at fit time."""
 
+    _estimator_type = "home_made"  # TODO (sklearn  >= 1.8.0) remove
+
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -90,6 +120,7 @@ class DummyEstimator:
         self.masker = check_embedded_masker(self, masker_type="nii")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, warning_msg, expected_verbose, expected_memory_level",
     [
@@ -145,7 +176,14 @@ def test_check_embedded_masker(mask, masker_type):
             "n_jobs",
             "verbose",
         ]:
-            assert getattr(masker, param_key) == getattr(mask, param_key)
+            # TODO (nilearn >= 0.15) if not needed anymore
+            # as this assertion should be true for all attributes
+            if param_key != "standardize":
+                assert getattr(masker, param_key) == getattr(mask, param_key)
+            # TODO (nilearn >= 0.15) remove elif
+            elif getattr(mask, param_key) is False:
+                assert getattr(masker, param_key) is None
+
         else:
             assert getattr(masker, param_key) == getattr(owner, param_key)
 

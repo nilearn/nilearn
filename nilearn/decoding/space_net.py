@@ -17,13 +17,13 @@ from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
 from sklearn.base import is_classifier
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 from sklearn.linear_model import LinearRegression
-from sklearn.linear_model._base import _preprocess_data as center_data
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import check_cv
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
@@ -31,8 +31,9 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
+    sanitize_verbose,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.image import get_data
@@ -300,6 +301,48 @@ class _EarlyStoppingCallback:
             return pearson_score, spearman_score
 
 
+def _center_data(X, y):
+    """Center `X` and `y` and store the mean of `y` in `y_offset`.
+    Before centering perform standard input validation of `X`, `y`.
+
+    This function replaces `sklearn.linear_model._base._preprocess_data`. The
+    implementation is inspired from `_preprocess_data`.
+
+    Parameters
+    ----------
+    X : ndarray of shape (n_samples, n_features)
+
+    y : ndarray of shape (n_samples,) or (n_samples, n_targets)
+
+    Returns
+    -------
+    X : ndarray of shape (n_samples, n_features)
+        Centered version of X
+    y : ndarray of shape (n_samples,) or (n_samples, n_targets)
+        Centered version of y
+    y_offset : float or ndarray of shape (n_features,)
+        Mean of y
+    """
+    X = check_array(
+        X,
+        copy=False,
+        accept_sparse=False,
+        dtype=(np.float16, np.float32, np.float64, np.longdouble),
+    )
+    y = check_array(y, dtype=X.dtype, copy=False, ensure_2d=False)
+
+    X_offset = np.asarray(np.average(X, axis=0))
+
+    if X_offset.dtype != X.dtype:
+        X_offset = X_offset.astype(X.dtype, copy=False)
+    X -= X_offset
+
+    y_offset = np.asarray(np.average(y, axis=0))
+    y -= y_offset
+
+    return X, y, y_offset
+
+
 @fill_doc
 def path_scores(
     solver,
@@ -317,7 +360,7 @@ def path_scores(
     key=None,
     debias=False,
     screening_percentile=20,
-    verbose=1,
+    verbose=0,
 ):
     """Compute scores of different alphas in regression \
     and classification used by CV objects.
@@ -369,7 +412,7 @@ def path_scores(
 
     %(screening_percentile)s
 
-    %(verbose)s
+    %(verbose0)s
 
     """
     if l1_ratios is None:
@@ -377,7 +420,8 @@ def path_scores(
 
     # misc
     _, n_features = X.shape
-    verbose = int(verbose if verbose is not None else 0)
+
+    verbose = sanitize_verbose(verbose)
 
     # Univariate feature screening. Note that if we have only as few as 100
     # features in the mask's support, then we should use all of them to
@@ -396,9 +440,7 @@ def path_scores(
     X_test, y_test = X[test].copy(), y[test].copy()
 
     # it is essential to center the data in regression
-    X_train, y_train, _, y_train_mean, _ = center_data(
-        X_train, y_train, fit_intercept=True, copy=False
-    )
+    X_train, y_train, y_train_mean = _center_data(X_train, y_train)
 
     # misc
     if not isinstance(l1_ratios, collections.abc.Iterable):
@@ -453,7 +495,7 @@ def path_scores(
                     mask=mask,
                     init=init,
                     callback=early_stopper,
-                    verbose=max(verbose - 1, 0.0),
+                    verbose=max(verbose - 1, 0),
                     **path_solver_params,
                 )
 
@@ -539,7 +581,7 @@ def path_scores(
 
 
 @fill_doc
-class BaseSpaceNet(CacheMixin, LinearRegression):
+class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
     """Regression and classification learners with sparsity and spatial priors.
 
     `SpaceNet` implements Graph-Net and TV-L1 priors /
@@ -598,7 +640,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     tol : :obj:`float`, default=5e-4
         Defines the tolerance for convergence for the backend FISTA solver.
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -606,11 +648,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
     %(memory_level1)s
 
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+    %(cv8_5)s
 
     %(debias)s
 
@@ -643,7 +681,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,
@@ -711,11 +749,11 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         # when dropping sklearn>=1.5 and replaced by just:
         #   self.__sklearn_tags__().estimator_type == "classifier"
         if SKLEARN_LT_1_6:
-            # TODO remove for sklearn>=1.6
+            # TODO remove for sklearn>=1.8
             return self._estimator_type == "classifier"
         return self.__sklearn_tags__().estimator_type == "classifier"
 
-    def _check_params(self):
+    def _check_params(self) -> None:
         """Make sure parameters are sane."""
         if self.l1_ratios is not None:
             l1_ratios = self.l1_ratios
@@ -953,7 +991,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         # report time elapsed
         duration = time.time() - tic
         logger.log(
-            f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes.",
+            f"Time Elapsed: {duration:.3f} seconds.",
             self.verbose,
         )
 
@@ -962,7 +1000,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     def _adapt_weights_y_mean_all_coef(self, w):
         return w, self.ymean_, self.all_coef_
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "masker_")
 
     def predict(self, X):
@@ -1062,7 +1100,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     %(standardize_true)s
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -1070,11 +1108,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+    %(cv8_5)s
 
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
@@ -1123,7 +1157,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,
@@ -1162,7 +1196,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         # TODO (sklearn  >= 1.6.0) remove
         self._estimator_type = "classifier"
 
-    def _validate_loss(self, value):
+    def _validate_loss(self, value) -> None:
         if value is not None:
             check_parameter_in_allowed(value, self.SUPPORTED_LOSSES, "loss")
 
@@ -1180,7 +1214,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
             y_numeric=False,
         )
 
-    def _set_intercept(self):
+    def _set_intercept(self) -> None:
         self.intercept_ = self.w_[:, -1]
 
     def score(self, X, y):
@@ -1298,7 +1332,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
 
     %(standardize_true)s
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -1306,11 +1340,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+    %(cv8_5)s
 
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
@@ -1352,7 +1382,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,

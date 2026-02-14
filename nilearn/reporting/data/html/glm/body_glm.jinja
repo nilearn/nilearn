@@ -1,0 +1,235 @@
+{% extends "html/body_base.jinja" %}
+
+{% block navbar_css %}
+
+    {% include "css/partials/navbar.css" %}
+
+{% endblock navbar_css %}
+
+{% block navbar %}
+    {% if not is_notebook %}
+
+        {% include "html/glm/partials/navbar.jinja" %}
+
+    {% endif %}
+{% endblock navbar %}
+
+{% block report %}
+
+    {% set n_runs = run_wise_dict|length %}
+    {% set displayed_runs = range(n_runs)|list %}
+
+    <div class="report">
+        <section>
+            <h2>Description</h2>
+
+            {% include "html/glm/partials/method_section.jinja" %}
+
+        </section>
+        <section id="model-details-UUID-{{ unique_id }}">
+            <h2>Model details</h2>
+            <div class="table-container">{{ parameters|safe }}</div>
+        </section>
+        <div id="carousel-container-UUID-{{ unique_id }}"
+             {%- if n_runs > 1 -%}
+             class="border border-1 rounded-1"
+             {%- endif -%}>
+            {#
+                add a border when more than one run
+                to make it visually clear
+                what changes across runs
+                endcomment
+            #}
+            {% if n_runs > 1 %}
+                <div class="pure-g d-flex justify-content-center align-items-stretch mt-1"
+                     id="carousel-navbar">
+                    <button class="btn pure-u-1-3 text-center rounded-2 carousel-navbar-element"
+                            id="prev-btn-UUID-{{ unique_id }}">
+                        Previous Run
+                    </button>
+                    <!-- the content will be injected by javascript -->
+                    <h2 class="pure-u-1-4 py-3 text-center carousel-navbar-element"
+                        style="margin: 0px;
+                               padding: 0px">
+                        Run <span id="comp-UUID-{{ unique_id }}"></span>
+                    </h2>
+                    <button class="btn pure-u-1-3 text-center rounded-2 carousel-navbar-element"
+                            id="next-btn-UUID-{{ unique_id }}">
+                        Next Run
+                    </button>
+                </div>
+                <div class="d-flex justify-content-center align-items-stretch mt-2">
+                    <p>
+                        You can cycle through the different runs
+                        using your left and right arrow keys.
+                    </p>
+                </div>
+            {% endif %}
+            {#
+      when there is more than one run
+      all runs are set to display 'none',
+      but initialization of the carousel
+      will set the first one to be shown.
+    #}
+            {% for i_run, run_content in run_wise_dict.items() %}
+                <div {% if n_runs > 1 -%}style="display: none"{%- endif %}
+                     id="carousel-obj-UUID-{{ unique_id }}-{{ loop.index0 }}">
+                    <section id="design-matrix-UUID-{{ unique_id }}-{{ loop.index0 }}">
+                        <h3>Design Matrix</h3>
+                        {% if not has_plotting_engine %}
+
+                            {% include "html/partials/missing_plotting_engine.jinja" %}
+
+                        {% elif run_content.design_matrix_png %}
+                            <div class="scroll-y">
+
+                                {% set is_bytes = not run_content.design_matrix_png.endswith('.png') %}
+
+                                <img class="pure-img"
+                                     src="{%- if is_bytes -%}data:image/png;base64,{%- endif -%}{{ run_content.design_matrix_png }}"
+                                     title="Plot of design matrix for {{ loop.index0 }}."
+                                     alt="Plot of design matrix for {{ loop.index0 }}."
+                                     style="min-width: 600px" />
+                            </div>
+                            {% if run_content.correlation_matrix_png %}
+                                <h3>correlation matrix</h3>
+                                <div class="scroll-y">
+
+                                    {% set is_bytes = not run_content.correlation_matrix_png.endswith('.png') %}
+
+                                    <img class="pure-img"
+                                         src="{%- if is_bytes -%}data:image/png;base64,{%- endif -%}{{ run_content.correlation_matrix_png }}"
+                                         title="Plot of correlation of design matrix for run {{ loop.index0 }}."
+                                         alt="Plot of correlation of design matrix for run {{ loop.index0 }}."
+                                         style="min-width: 600px" />
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <p>No design matrix was provided.</p>
+                        {% endif %}
+                    </section>
+                    <section id="contrasts-UUID-{{ unique_id }}-{{ loop.index0 }}">
+                        <h3>Contrasts</h3>
+                        <div class="d-flex flex-column">
+                            {% if not has_plotting_engine %}
+
+                                {% include "html/partials/missing_plotting_engine.jinja" %}
+
+                            {% elif run_content.all_contrasts %}
+                                {% for contrast_name, contrast_plot in run_content.all_contrasts.items() %}
+                                    <div class="scroll-y">
+
+                                        {% set is_bytes = not contrast_plot.endswith('.png') %}
+
+                                        <img class="pure-img"
+                                             src="{%- if is_bytes -%}data:image/png;base64,{%- endif -%}{{ contrast_plot }}"
+                                             title="Plot of the contrast {{ contrast_name }} (run {{ loop.index0 }})."
+                                             alt="Plot of the contrast {{ contrast_name }} (run {{ loop.index0 }})."
+                                             style="min-width: 600px" />
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p>No contrast was provided.</p>
+                            {% endif %}
+                        </div>
+                    </section>
+                </div>
+            {% endfor %}
+        </div>
+        <section id="mask-UUID-{{ unique_id }}">
+            <h2>Mask</h2>
+            {% if not has_plotting_engine %}
+
+                {% include "html/partials/missing_plotting_engine.jinja" %}
+
+            {% elif mask_plot %}
+                <div class="scroll-y">
+                    <img class="pure-img"
+                         src="data:image/png;base64,{{ mask_plot }}"
+                         alt="Mask image"
+                         title="Mask image"
+                         style="min-width: 600px" />
+                </div>
+            {% else %}
+                <p>No mask was provided.</p>
+            {% endif %}
+            {% if n_elements %}
+                <div class="pure-u-1 pure-u-md-3-3">
+                    <p>
+                        The mask includes {{ n_elements }} voxels ({{ coverage }} %) of the image.
+                    </p>
+                </div>
+            {% endif %}
+        </section>
+        <section id="statistical-maps-UUID-{{ unique_id }}">
+            <h2>Statistical Maps</h2>
+            <div class="pure-g">
+                {% if results %}
+                    {% for contrast_name in results %}
+                        <div class="pure-u-1">
+                            <h3>{{ contrast_name }}</h3>
+                            <div class="d-flex flex-column">
+                                {% if not has_plotting_engine %}
+
+                                    {% include "html/partials/missing_plotting_engine.jinja" %}
+
+                                {% elif results[contrast_name].stat_map_img %}
+                                    <div class="scroll-y">
+                                        <img class="pure-img"
+                                             src="data:image/png;base64,{{ results[contrast_name].stat_map_img }}"
+                                             alt="Stat map plot for the contrast: {{ contrast_name }}"
+                                             title="Stat map plot for the contrast: {{ contrast_name }}"
+                                             style="min-width: 600px" />
+                                    </div>
+                                {% else %}
+                                    <p style="text-align: center; font-size: 200%; color: grey">
+                                        No suprathreshold cluster
+                                    </p>
+                                {% endif %}
+                                <details>
+                                    <summary class="pure-button button-small contrast-button">
+                                        Cluster Table
+                                    </summary>
+                                    {% if results[contrast_name].cluster_table_details %}
+                                        {{ results[contrast_name].cluster_table_details|safe }}
+                                    {% else %}
+                                        <p>No cluster table parameter provided</p>
+                                    {% endif %}
+                                    {% if results[contrast_name].cluster_table %}
+                                        {{ results[contrast_name].cluster_table|safe }}
+                                    {% else %}
+                                        <p style="text-align: center; font-size: 200%; color: grey">
+                                            No suprathreshold cluster
+                                        </p>
+                                    {% endif %}
+                                </details>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="d-flex flex-wrap justify-content-evenly">
+                        <p style="letter-spacing: normal">No statistical map was provided.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+        <section id="about-UUID-{{ unique_id }}" style="text-align: left">
+            <h2>About</h2>
+            <ul>
+                <li>
+                    Date preprocessed: <time>{{ date }}</time>
+                </li>
+            </ul>
+        </section>
+    </div>
+    {% if n_runs > 1 %}
+        {{ displayed_runs }}
+        <script>
+            {% include "js/carousel.js" %}
+            document.addEventListener("DOMContentLoaded", function () {
+                new Carousel("{{ unique_id }}", {{ displayed_runs }}, false);
+            }
+            );
+        </script>
+    {% endif %}
+{% endblock report %}

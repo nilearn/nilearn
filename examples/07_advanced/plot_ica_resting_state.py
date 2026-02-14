@@ -17,8 +17,6 @@ the data, as the scikit-learn API enables to exchange them as almost
 black box (though the relevant parameter for brain maps might no longer
 be given by a call to fit_transform).
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -45,7 +43,7 @@ masker = NiftiMasker(
     memory="nilearn_cache",
     memory_level=1,
     mask_strategy="epi",
-    standardize="zscore_sample",
+    verbose=1,
 )
 data_masked = masker.fit_transform(func_filename)
 

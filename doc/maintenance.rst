@@ -127,7 +127,7 @@ Pull Requests
 We welcome pull requests from all community members, if they follow the
 :ref:`contribution_guidelines` inspired from scikit learn conventions. (More
 details on their process are available
-:sklearn:`here <developers/contributing.html#contributing-code>`).
+:sklearn:`here <developers/contributing.html#contributing-code-and-documentation>`).
 
 Using tox
 =========
@@ -265,7 +265,11 @@ Finally, make sure the documentation can be built correctly.
 Prepare the documentation for the release
 -----------------------------------------
 
-In several places the user guide relies on figures generated in the examples for illustration.
+Check illustrations
+...................
+
+In several places the user guide relies
+on the code examples and the figures they generate.
 
 If the examples are modified, and an expected figure is not created anymore
 or the order of the generated figures is changed,
@@ -276,7 +280,11 @@ but care should be taken that at least the following have not been affected:
 
 - ``.rst`` files containing the string ``image:: ../auto_examples``,
 - the tables in the :ref:`plotting` section,
+- ``literalinclude`` sphinx-directives with a ``:start-after:``
 - ...
+
+Update links
+............
 
 Update the links for the new version of the documentation in ``doc/versions.rst``.
 For example:
@@ -288,6 +296,14 @@ For example:
     * `Nilearn latest - dev documentation <http://nilearn.github.io/dev/>`_
     * `Nilearn latest - stable documentation <http://nilearn.github.io/stable/>`_
     * `Nilearn x.y.z documentation <http://nilearn.github.io/x.y.z/>`_
+
+Update atlas figures
+....................
+
+The :ref:`datasets_ref <datasets_ref>` has tables with figures listing all the atlases
+that Nilearn provides.
+
+Run the script ``doc/make_atlas_table.py`` commit the new output to update the tables.
 
 Prepare the release
 -------------------
@@ -364,7 +380,7 @@ Add these changes and submit a PR:
 .. code:: bash
 
     git add doc/changes/
-    git commit -m "REL x.y.z"
+    git commit --message "REL x.y.z"
     git push origin REL-x.y.z
 
 

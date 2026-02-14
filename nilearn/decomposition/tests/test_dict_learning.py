@@ -11,6 +11,7 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface.surface import get_data as get_surface_data
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 @pytest.mark.parametrize("n_epochs", [1, 2, 10])
 def test_check_values_epoch_argument_smoke(
@@ -42,7 +43,7 @@ def test_check_values_epoch_argument_smoke(
     check_decomposition_estimator(dict_learning, data_type)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_dict_learning(
     decomposition_mask_img, canica_components, canica_data, data_type
@@ -104,6 +105,7 @@ def test_dict_learning(
         assert recovered_maps >= 2
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_component_sign(
     decomposition_mask_img, canica_data, data_type

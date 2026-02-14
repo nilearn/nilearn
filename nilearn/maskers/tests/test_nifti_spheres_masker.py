@@ -11,7 +11,8 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.helpers import is_windows_platform
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
 
@@ -47,7 +48,7 @@ else:
         check(estimator)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -158,7 +159,7 @@ def test_errors():
         masker.fit()
 
 
-def test_nifti_spheres_masker_overlap(rng, affine_eye):
+def test_overlap(rng, affine_eye):
     """Throw error when allow_overlap=False and some spheres overlap."""
     shape = (5, 5, 5)
 
@@ -190,6 +191,7 @@ def test_nifti_spheres_masker_overlap(rng, affine_eye):
         noverlapping_masker.fit_transform(fmri_img)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_small_radius(rng):
     """Check behavior when radius smaller than voxel size."""
     shape = (3, 3, 3)
@@ -260,7 +262,8 @@ def test_is_nifti_spheres_masker_give_nans(rng, affine_eye):
     assert not np.isnan(np.sum(masker.fit_transform(img)))
 
 
-def test_nifti_spheres_masker_inverse_transform(rng, affine_eye):
+@pytest.mark.slow
+def test_inverse_transform(rng, affine_eye):
     """Applying the sphere_extraction example from above backwards."""
     data = rng.random((3, 3, 3, 5))
 
@@ -307,7 +310,7 @@ def test_nifti_spheres_masker_inverse_transform(rng, affine_eye):
     assert_array_equal(inverse_map.shape[:3], mask_img.shape)
 
 
-def test_nifti_spheres_masker_inverse_overlap(rng, affine_eye):
+def test_inverse_overlap(rng, affine_eye):
     """Throw error when data to inverse_transform has overlapping data and \
         allow_overlap=False.
     """

@@ -11,9 +11,10 @@ import scipy.signal
 from nibabel import Nifti1Image, gifti
 from scipy.ndimage import binary_dilation
 
-from nilearn import datasets, image, maskers, masking
 from nilearn._utils import logger
 from nilearn._utils.numpy_conversions import as_ndarray
+from nilearn.datasets.struct import load_mni152_brain_mask
+from nilearn.image.image import get_data, new_img_like
 from nilearn.interfaces.bids.utils import (
     bids_entities,
     check_bids_label,
@@ -22,6 +23,8 @@ from nilearn.interfaces.bids.utils import (
 
 # TODO get legal_confounds out of private testing module
 from nilearn.interfaces.fmriprep.tests._testing import get_legal_confound
+from nilearn.maskers.nifti_masker import NiftiMasker
+from nilearn.masking import unmask
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
@@ -52,16 +55,14 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
 
     """
     rand_gen = np.random.default_rng(random_state)
-    mask_img = datasets.load_mni152_brain_mask(resolution=res)
-    masker = maskers.NiftiMasker(mask_img).fit()
-    n_voxels = image.get_data(mask_img).sum()
+    mask_img = load_mni152_brain_mask(resolution=res)
+    masker = NiftiMasker(mask_img).fit()
+    n_voxels = get_data(mask_img).sum()
     data = rand_gen.standard_normal((n_scans, n_voxels))
     if mask_dilation is not None and mask_dilation > 0:
-        mask_img = image.new_img_like(
+        mask_img = new_img_like(
             mask_img,
-            binary_dilation(
-                image.get_data(mask_img), iterations=mask_dilation
-            ),
+            binary_dilation(get_data(mask_img), iterations=mask_dilation),
         )
     inverse_img = masker.inverse_transform(data)
     return inverse_img, mask_img
@@ -222,7 +223,7 @@ def generate_maps(
         negative_regions=negative_regions,
     )
     mask_img = Nifti1Image(mask, affine)
-    return masking.unmask(ts, mask_img), mask_img
+    return unmask(ts, mask_img), mask_img
 
 
 def generate_labeled_regions(
@@ -247,7 +248,7 @@ def generate_labeled_regions(
     %(random_state)s
         default=0
 
-    labels : iterable, optional
+    labels : iterable or None, default=None
         Labels to use for each zone. If provided, n_regions is unused.
 
     affine : :obj:`numpy.ndarray`, default=None
@@ -976,7 +977,7 @@ def create_fake_bids_dataset(
     %(random_state)s
         default=0
 
-    entities : :obj:`dict`, optional
+    entities : :obj:`dict` or None, default=None
         Extra entity to add to the :term:`BIDS` filename with a list of values.
         For example, if you want to add an 'echo' entity
         with values '1' for some files and '1' for others,
@@ -991,7 +992,7 @@ def create_fake_bids_dataset(
     n_voxels : :obj:`int`, default = 4
         Number of voxels along x, y, z dimensions for volume data.
 
-    spaces : :obj:`list` of :obj:`str`, optional.
+    spaces : :obj:`list` of :obj:`str` or None, default=None
         Defaults to ``("MNI", "T1w")``
 
     Returns
@@ -1068,12 +1069,12 @@ def create_fake_bids_dataset(
     return bids_path
 
 
-def _check_entities_and_labels(entities):
+def _check_entities_and_labels(entities) -> None:
     """Check entities and labels are BIDS compliant.
 
     Parameters
     ----------
-    entities : :obj:`dict`, optional
+    entities : :obj:`dict`
         Extra entity to add to the BIDS filename with a list of values.
         For example, if you want to add an 'echo' entity
         with values '1' for some files and '1' for others,
@@ -1111,7 +1112,7 @@ def _mock_bids_dataset(
     entities,
     n_voxels,
     rand_gen,
-):
+) -> None:
     """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
 
     Parameters
@@ -1134,7 +1135,7 @@ def _mock_bids_dataset(
         number of runs for the corresponding task.
         No run entity will be used if a value is equal to 1 or less.
 
-    entities : :obj:`dict`, optional
+    entities : :obj:`dict`
         Extra entities to add to the BIDS filename with a list of values.
 
     n_voxels : :obj:`int`
@@ -1205,7 +1206,7 @@ def _mock_bids_derivatives(
     rand_gen,
     n_vertices,
     spaces,
-):
+) -> None:
     """Create a fake derivatives :term:`bids<BIDS>` dataset directory \
        with dummy files.
 
@@ -1249,7 +1250,7 @@ def _mock_bids_derivatives(
         Use n_vertices == 10242 to match the number of vertices
         in fsaverage5.
 
-    spaces : :obj:`list` of :obj:`str`, optional.
+    spaces : :obj:`list` of :obj:`str`
     """
     bids_path = bids_path / "derivatives"
     bids_path.mkdir(parents=True, exist_ok=True)
@@ -1388,7 +1389,7 @@ def _write_bids_raw_func(
     fields,
     n_voxels,
     rand_gen,
-):
+) -> None:
     """Create BIDS functional raw nifti, json sidecar and events files.
 
     Parameters
@@ -1435,7 +1436,7 @@ def _write_bids_derivative_func(
     confounds_tag,
     n_vertices=0,
     spaces=None,
-):
+) -> None:
     """Create BIDS functional derivative and confounds files.
 
     Nifti files created come with two spaces and descriptions.
@@ -1460,7 +1461,7 @@ def _write_bids_derivative_func(
     rand_gen : :obj:`numpy.random.RandomState` instance
         Random number generator.
 
-    confounds_tag : :obj:`str`, optional.
+    confounds_tag : :obj:`str`
         Filename "suffix":
         For example: `desc-confounds_timeseries`
         or "desc-confounds_regressors".
@@ -1471,7 +1472,7 @@ def _write_bids_derivative_func(
         Use n_vertices == 10242 to match the number of vertices
         in fsaverage5.
 
-    spaces : :obj:`list` of :obj:`str`, optional.
+    spaces : :obj:`list` of :obj:`str` or None, default=None
         Defaults to ``("MNI", "T1w")``
     """
     n_time_points = 30

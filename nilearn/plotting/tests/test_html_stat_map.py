@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 from nibabel import Nifti1Image
 
 from nilearn import datasets, image
+from nilearn._utils.helpers import is_gil_enabled
 from nilearn.image import get_data, new_img_like
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.html_stat_map import (
@@ -20,17 +21,17 @@ from nilearn.plotting.html_stat_map import (
     _json_view_params,
     _json_view_size,
     _json_view_to_html,
-    _load_bg_img,
     _mask_stat_map,
     _resample_stat_map,
     _save_cm,
     _save_sprite,
     _threshold_data,
+    load_bg_img,
     view_img,
 )
 
 
-def _check_html(html_view, title=None):
+def check_html_view_img(html_view, title=None):
     """Check the presence of some expected code in the html viewer."""
     assert isinstance(html_view, StatMapView)
     assert "var brain =" in str(html_view)
@@ -169,6 +170,7 @@ def test_save_cmap(cmap, n_colors):
     assert np.allclose(img, expected, atol=0.1)
 
 
+@pytest.mark.thread_unsafe
 def test_mask_stat_map():
     # Generate simple simulated data with one "spot"
     img, data = _simulate_img()
@@ -182,6 +184,7 @@ def test_mask_stat_map():
     assert np.min((data == 0) == get_data(mask_img))
 
 
+@pytest.mark.thread_unsafe
 def test_load_bg_img(affine_eye):
     # Generate simple simulated data with non-diagonal affine
     affine = affine_eye
@@ -190,12 +193,12 @@ def test_load_bg_img(affine_eye):
     img, _ = _simulate_img(affine)
 
     # use empty bg_img
-    bg_img, _, _, _ = _load_bg_img(img, bg_img=None)
+    bg_img, _, _, _ = load_bg_img(img, bg_img=None)
     # Check positive isotropic, near-diagonal affine
     _check_affine(bg_img.affine)
 
     # Try to load the default background
-    bg_img, _, _, _ = _load_bg_img(img)
+    bg_img, _, _, _ = load_bg_img(img)
 
     # Check positive isotropic, near-diagonal affine
     _check_affine(bg_img.affine)
@@ -340,7 +343,7 @@ def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
 
     # Create a viewer
     html_view = _json_view_to_html(json_view)
-    _check_html(html_view)
+    check_html_view_img(html_view)
 
 
 def test_get_cut_slices(affine_eye):
@@ -366,6 +369,9 @@ def test_get_cut_slices(affine_eye):
     assert (cut_slices == [4, 4, 4]).all()
 
 
+@pytest.mark.slow
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize(
     "params, warning_msg",
     [
@@ -394,9 +400,10 @@ def test_view_img_3d_warnings(params, warning_msg):
     with pytest.warns(UserWarning, match=warning_msg):
         html_view = view_img(img, **params)
 
-    _check_html(html_view)
+    check_html_view_img(html_view)
 
 
+@pytest.mark.slow
 def test_view_img_3d_warnings_more():
     """Test warning when viewing 3D images.
 
@@ -413,7 +420,7 @@ def test_view_img_3d_warnings_more():
     ):
         html_view = view_img(img)
 
-    _check_html(html_view, title="Slice viewer")
+    check_html_view_img(html_view, title="Slice viewer")
 
     with pytest.warns(
         UserWarning,
@@ -421,9 +428,10 @@ def test_view_img_3d_warnings_more():
     ):
         html_view = view_img(img, threshold="95%", title="SOME_TITLE")
 
-    _check_html(html_view, title="SOME_TITLE")
+    check_html_view_img(html_view, title="SOME_TITLE")
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "params",
     [
@@ -447,4 +455,4 @@ def test_view_img_4d_warnings(params):
     ):
         html_view = view_img(img_4d, **params)
 
-    _check_html(html_view)
+    check_html_view_img(html_view)

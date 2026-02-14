@@ -14,9 +14,10 @@ values that are commented out serve to show the default.
 import os
 import re
 import sys
+import warnings
 from pathlib import Path
 
-from nilearn._version import __version__
+from nilearn._version import __version__  # noqa : I001, RUF100
 from sphinx.domains import changeset
 from sphinx.locale import _
 
@@ -37,7 +38,30 @@ linkcode_resolve = make_linkcode_resolve
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, str(Path("..").absolute()))
 
+# -- Plotly Configuration ----------------------------------------------------
+
+try:
+    import plotly.io as pio
+
+    pio.renderers.default = "sphinx_gallery"
+except ImportError:
+    import warnings
+
+    warnings.warn(
+        stacklevel=2,
+        message="Plotly is not installed. Plotly figures will not be shown.",
+        category=UserWarning,
+    )
+
 # -- General configuration ---------------------------------------------------
+
+# avoid some warnings to show in the the sphinx gallery
+# https://sphinx-gallery.github.io/stable/configuration.html#removing-warnings
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message=".*matplotlib backend that is non-interactive.*",
+)
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -186,33 +210,44 @@ linkcheck_allowed_redirects = {
 linkcheck_ignore = [
     # ignore nilearn github issues mostly for the sake of speed
     # given that there many of those in our changelog
-    r"https://github.com/nilearn/nilearn/issues/.*",
-    # those are needed because figures cannot take sphinx gallery reference
-    # as target
+    r"https://github.com/nilearn/nilearn/issues.*",
+    # those are needed because figures
+    # cannot take sphinx gallery reference as target
     r"../auto_examples/.*html",
     r"auto_examples/.*html",
+    "https://github.com/nilearn/nilearn/issues/new/choose",
+    (
+        "https://www.info.gouv.fr/"
+        "organisation/"  # codespell:ignore organisation
+        "secretariat-general-pour-l-investissement-sgpi"
+    ),
     # give a 403 Client Error: Forbidden for url:
     r"https://sites.wustl.edu/oasisbrains/.*",
     # similarly below are publishers that do not like doi redirects:
     r"https://doi.org/.*",
     # do not check download links for OSF
     r"https://osf.io/.*/download",
+    # neurovault and some of our datasets websites can be flaky
+    r"https://neurovault.org.*",
     r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
-    r"https://fcon_1000.projects.nitrc.org/.*",
-    r"https://www.cambridge.org/be/universitypress/.*",
-    r"https://sites.wustl.edu/oasisbrains/.*",
+    r"https://fcon_1000.projects.nitrc.org.*",
+    r"https://pkgs.org/search.*",
+    r"https://pmc.ncbi.nlm.nih.gov/articles.*",
+    r"https://pubmed.ncbi.nlm.nih.gov.*",
+    r"https://rrid.site/data/record.*",
+    r"https://sites.wustl.edu/oasisbrains.*",
+    r"https://www.cambridge.org/be/universitypress.*",
+    r"../../_static/notebook_reports_.*",
     "http://brainomics.cea.fr/localizer/",
     "https://childmind.org/science/global-open-science/healthy-brain-network/",
+    "https://digicosme.cnrs.fr/en/digicosme-paris-saclay-english/",
     "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
-    "https://github.com/nilearn/nilearn/issues/new/choose",
+    "https://imaging.mrc-cbu.cam.ac.uk/imaging/DesignEfficiency",
+    "https://octave.org",
     "https://pages.saclay.inria.fr/bertrand.thirion/",
     "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
-    (
-        "https://www.info.gouv.fr/"
-        "organisation/"  # codespell:ignore organisation
-        "secretariat-general-pour-l-investissement-sgpi"
-    ),
-    "https://pkgs.org/search/.*",
+    "https://surfer.nmr.mgh.harvard.edu/",
+    "https://www.gin.cnrs.fr/en/tools/aal",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
@@ -331,7 +366,7 @@ html_favicon = "logos/favicon.ico"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["images", "themes"]
+html_static_path = ["images", "themes", "reports"]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

@@ -23,7 +23,10 @@ pip-log.txt
 
 tmp
 
-#  prettier and other JS
+# Generic python
+__pycache__
+
+#  JS
 node_modules
 
 # Mac OS X
@@ -48,8 +51,13 @@ venv/
 
 # testing
 .pytest_cache
+tests_to_run.txt
+# do not use report*.html below
+# otherwise some of the report*.html files used in masker reports
+# are ignored from package build
 report.html
 report_doc.html
+report_slow.html
 
 # CI benchmark
 maint_tools/*_runs_timing.*

@@ -62,8 +62,8 @@ decoder = SpaceNetRegressor(
     penalty="graph-net",
     screening_percentile=5.0,
     memory_level=2,
-    standardize="zscore_sample",
     n_jobs=2,
+    verbose=1,
 )
 decoder.fit(gm_imgs_train, age_train)  # fit
 coef_img = decoder.coef_img_
@@ -87,7 +87,6 @@ plot_stat_map(
     title="graph-net weights",
     display_mode="z",
     cut_coords=1,
-    cmap="cold_hot",
 )
 
 # Plot the prediction errors.

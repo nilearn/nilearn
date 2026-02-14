@@ -3,7 +3,6 @@ cluster-level in brain imaging: cluster-level thresholding, false \
 discovery rate control, false discovery proportion in clusters.
 """
 
-import inspect
 import warnings
 
 import numpy as np
@@ -17,35 +16,18 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.image import get_data, math_img, threshold_img
+from nilearn.image import (
+    check_niimg_3d,
+    get_data,
+    math_img,
+    new_img_like,
+    threshold_img,
+)
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.surface import SurfaceImage
+from nilearn.surface.surface import SurfaceImage, check_surf_img
+from nilearn.typing import ClusterThreshold, HeightControl
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
-
-
-def warn_default_threshold(
-    threshold, current_default, old_default, height_control=None
-):
-    """Throw deprecation warning Z threshold.
-
-    TODO (nilearn>=0.15)
-    Can be removed.
-    """
-    if height_control is None and threshold == current_default == old_default:
-        print(f"{threshold=} {current_default=} {old_default=}")
-        warnings.warn(
-            category=FutureWarning,
-            message=(
-                "From nilearn version>=0.15, "
-                "the default 'threshold' will be set to "
-                f"{DEFAULT_Z_THRESHOLD}."
-                "If you want to silence this warning, "
-                "set the threshold to "
-                "'nilearn.glm.thresholding.DEFAULT_Z_THRESHOLD'."
-            ),
-            stacklevel=find_stack_level(),
-        )
 
 
 def _compute_hommel_value(z_vals, alpha, verbose=0):
@@ -143,7 +125,11 @@ def fdr_threshold(z_vals, alpha):
 
 @fill_doc
 def cluster_level_inference(
-    stat_img, mask_img=None, threshold=3.0, alpha=0.05, verbose=0
+    stat_img,
+    mask_img=None,
+    threshold: float | int | list[float | int] = 3.0,
+    alpha=0.05,
+    verbose: int = 0,
 ):
     """Report the proportion of active voxels for all clusters \
     defined by the input threshold.
@@ -152,13 +138,17 @@ def cluster_level_inference(
 
     Parameters
     ----------
-    stat_img : Niimg-like object
+    stat_img : 3D Niimg-like object or \
+        :obj:`~nilearn.surface.SurfaceImage` with a single sample.
        statistical image (presumably in z scale)
 
-    mask_img : Niimg-like object, default=None
+    mask_img : Niimg-like object, or :obj:`~nilearn.surface.SurfaceImage` \
+        or None, default=None
         mask image
 
-    threshold : :obj:`list` of :obj:`float`, default=3.0
+    threshold : Non-negative :obj:`float`, :obj:`int`, \
+                 or :obj:`list` of \
+                 non-negative :obj:`float` or :obj:`int`, default=3.0
        Cluster-forming threshold in z-scale.
 
     alpha : :obj:`float` or :obj:`list`, default=0.05
@@ -169,7 +159,8 @@ def cluster_level_inference(
 
     Returns
     -------
-    proportion_true_discoveries_img : Nifti1Image
+    proportion_true_discoveries_img : Nifti1Image \
+          or :obj:`~nilearn.surface.SurfaceImage`
         The statistical map that gives the true positive.
 
     References
@@ -177,21 +168,117 @@ def cluster_level_inference(
     .. footbibliography::
 
     """
-    if verbose is False:
-        verbose = 0
-    if verbose is True:
-        verbose = 1
+    # TODO (nilearn >= 0.15.0) remove
+    if threshold == 3.0:
+        warnings.warn(
+            "\nFrom nilearn version>=0.15, "
+            "the default 'threshold' will be set to "
+            f"{DEFAULT_Z_THRESHOLD}.",
+            FutureWarning,
+            stacklevel=find_stack_level(),
+        )
 
-    parameters = dict(**inspect.signature(cluster_level_inference).parameters)
-    warn_default_threshold(threshold, parameters["threshold"].default, 3.0)
-
+    original_threshold = threshold
     if not isinstance(threshold, list):
         threshold = [threshold]
+    if any(x < 0 for x in threshold):
+        raise ValueError(
+            "'threshold' cannot be negative or "
+            "contain negative values. "
+            f"Got: 'threshold={original_threshold}'."
+        )
+
+    if isinstance(stat_img, SurfaceImage) or isinstance(
+        mask_img, SurfaceImage
+    ):
+        return _cluster_level_inference_surface(
+            stat_img, mask_img, threshold, alpha, verbose
+        )
+
+    return _cluster_level_inference_volume(
+        stat_img, mask_img, threshold, alpha, verbose
+    )
+
+
+def _cluster_level_inference_surface(
+    stat_img, mask_img, threshold, alpha, verbose
+):
+    """Run the inference on each hemisphere indendently
+    by creating a temporary mask that only includes one hemisphere.
+    """
+    check_surf_img(stat_img)
+    stat_img.data._check_n_samples(1)
 
     if mask_img is None:
-        masker = NiftiMasker(mask_strategy="background").fit(stat_img)
+        masker = SurfaceMasker(standardize=None).fit(stat_img)
+        mask_img = masker.mask_img_
+        del masker
+
+    data = {
+        "left": np.zeros(stat_img.data.parts["left"].shape),
+        "right": np.zeros(stat_img.data.parts["right"].shape),
+    }
+    for hemi in ["left", "right"]:
+        if hemi == "left":
+            mask_left = mask_img.data.parts["left"].astype(bool)
+            hemi_empty = not np.any(mask_left.ravel())
+            mask_right = np.zeros(
+                mask_img.data.parts["right"].shape, dtype=bool
+            )
+        else:
+            mask_left = np.zeros(mask_img.data.parts["left"].shape, dtype=bool)
+            mask_right = mask_img.data.parts["right"].astype(bool)
+            hemi_empty = not np.any(mask_right.ravel())
+
+        if hemi_empty:
+            continue
+
+        tmp_mask = new_img_like(
+            stat_img, {"left": mask_left, "right": mask_right}
+        )
+        masker = SurfaceMasker(mask_img=tmp_mask, standardize=None).fit()
+
+        stats = np.ravel(masker.transform(stat_img))
+        hommel_value = _compute_hommel_value(stats, alpha, verbose=verbose)
+
+        # embed it back to image
+        stat_map = masker.inverse_transform(stats).data.parts[hemi]
+
+        # Extract connected components above threshold
+        proportion_true_discoveries_img = math_img("0. * img", img=stat_img)
+        proportion_true_discoveries = masker.transform(
+            proportion_true_discoveries_img
+        ).ravel()
+
+        for threshold_ in sorted(threshold):
+            label_map, n_labels = label(stat_map > threshold_)
+            labels = label_map[masker.mask_img_.data.parts[hemi] > 0]
+
+            for label_ in range(1, n_labels + 1):
+                # get the z-vals in the cluster
+                cluster_vals = stats[labels == label_]
+                proportion = _true_positive_fraction(
+                    cluster_vals, hommel_value, alpha
+                )
+                proportion_true_discoveries[labels == label_] = proportion
+
+        tmp_img = masker.inverse_transform(proportion_true_discoveries)
+        data[hemi] = tmp_img.data.parts[hemi]
+
+    return new_img_like(stat_img, data)
+
+
+def _cluster_level_inference_volume(
+    stat_img, mask_img, threshold, alpha, verbose
+):
+    stat_img = check_niimg_3d(stat_img)
+    if mask_img is None:
+        masker = NiftiMasker(mask_strategy="background", standardize=None).fit(
+            stat_img
+        )
     else:
-        masker = NiftiMasker(mask_img=mask_img).fit()
+        masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
+
     stats = np.ravel(masker.transform(stat_img))
     hommel_value = _compute_hommel_value(stats, alpha, verbose=verbose)
 
@@ -216,10 +303,7 @@ def cluster_level_inference(
             )
             proportion_true_discoveries[labels == label_] = proportion
 
-    proportion_true_discoveries_img = masker.inverse_transform(
-        proportion_true_discoveries
-    )
-    return proportion_true_discoveries_img
+    return masker.inverse_transform(proportion_true_discoveries)
 
 
 @fill_doc
@@ -227,10 +311,10 @@ def threshold_stats_img(
     stat_img=None,
     mask_img=None,
     alpha=0.001,
-    threshold=3.0,
-    height_control="fpr",
-    cluster_threshold=0,
-    two_sided=True,
+    threshold: float | int | np.floating | np.integer | None = None,
+    height_control: HeightControl = "fpr",
+    cluster_threshold: ClusterThreshold = 0,
+    two_sided: bool = True,
 ):
     """Compute the required threshold level and return the thresholded map.
 
@@ -250,9 +334,11 @@ def threshold_stats_img(
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
 
-    threshold : :obj:`float`, default=3.0
+    threshold : :obj:`float` or :obj:`int` or None, default=None
        Desired threshold in z-scale.
-       This is used only if height_control is None.
+       This is used only if ``height_control`` is None.
+       If ``threshold`` is set to None when ``height_control`` is None,
+       ``threshold`` will be set to 3.0.
 
        .. note::
 
@@ -314,7 +400,31 @@ def threshold_stats_img(
         without correction.
 
     """
-    check_params(locals())
+    if height_control is None:
+        if threshold is None:
+            threshold = 3.0
+
+        # TODO (nilearn >= 0.15.0) remove
+        if threshold == 3.0:
+            warnings.warn(
+                "\nFrom nilearn version>=0.15, "
+                "the default 'threshold' will be set to "
+                f"{DEFAULT_Z_THRESHOLD}.",
+                FutureWarning,
+                stacklevel=find_stack_level(),
+            )
+
+    elif threshold is not None:
+        threshold = float(threshold)
+        warnings.warn(
+            f"\n'{threshold=}' is not used with '{height_control=}'."
+            "\n'threshold' is only used when 'height_control=None'. "
+            "\n'threshold' was set to 'None'. ",
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
+        threshold = None
+
     height_control_methods = [
         "fpr",
         "fdr",
@@ -324,27 +434,12 @@ def threshold_stats_img(
     check_parameter_in_allowed(
         height_control, height_control_methods, "height_control"
     )
+    check_params(locals())
 
-    parameters = dict(**inspect.signature(threshold_stats_img).parameters)
-    if height_control is not None and float(threshold) != float(
-        parameters["threshold"].default
-    ):
-        warnings.warn(
-            (
-                f"'{threshold=}' will not be used with '{height_control=}'. "
-                "'threshold' is only used when 'height_control=None'. "
-                f"Set 'threshold' to '{parameters['threshold'].default}' "
-                "to avoid this warning."
-            ),
-            UserWarning,
-            stacklevel=find_stack_level(),
+    if cluster_threshold < 0:
+        raise ValueError(
+            f"'cluster_threshold' must be > 0. Got {cluster_threshold=}"
         )
-    warn_default_threshold(
-        threshold,
-        parameters["threshold"].default,
-        3.0,
-        height_control=height_control,
-    )
 
     # if two-sided, correct alpha by a factor of 2
     alpha_ = alpha / 2 if two_sided else alpha
@@ -365,15 +460,15 @@ def threshold_stats_img(
 
     if mask_img is None:
         if isinstance(stat_img, SurfaceImage):
-            masker = SurfaceMasker()
+            masker = SurfaceMasker(standardize=None)
         else:
-            masker = NiftiMasker(mask_strategy="background")
+            masker = NiftiMasker(mask_strategy="background", standardize=None)
         masker.fit(stat_img)
     else:
         if isinstance(stat_img, SurfaceImage):
-            masker = SurfaceMasker(mask_img=mask_img)
+            masker = SurfaceMasker(mask_img=mask_img, standardize=None)
         else:
-            masker = NiftiMasker(mask_img=mask_img)
+            masker = NiftiMasker(mask_img=mask_img, standardize=None)
         masker.fit()
 
     stats = np.ravel(masker.transform(stat_img))

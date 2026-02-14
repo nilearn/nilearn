@@ -28,14 +28,14 @@ AuthorizedException = (
 class NotImplementedWarning(UserWarning):
     """Custom warning to warn about not implemented features.
 
-    .. nilearn_versionadded:: 0.13.0dev
+    .. nilearn_versionadded:: 0.13.0
     """
 
 
 class MaskWarning(UserWarning):
     """Custom warning related to masks.
 
-    .. nilearn_versionadded:: 0.13.0dev
+    .. nilearn_versionadded:: 0.13.0
     """
 
 
@@ -63,7 +63,7 @@ class DimensionError(TypeError):
 
         super().__init__()
 
-    def increment_stack_counter(self):
+    def increment_stack_counter(self) -> None:
         """Increments the counter of recursive calls.
 
         Called when the error is caught and re-raised to count the

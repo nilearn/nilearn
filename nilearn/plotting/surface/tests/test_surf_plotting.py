@@ -65,6 +65,7 @@ def test_check_surface_plotting_inputs_error_negative_threshold(
         fn(in_memory_mesh, threshold=-1)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "fn",
     [
@@ -112,7 +113,8 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
     """Test nilearn.plotting.surface.surf_plotting.plot_surf function with
     available engine backends.
@@ -152,6 +154,7 @@ def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("view", ["anterior", "posterior"])
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
 def test_plot_surf_hemi_views(plt, engine, in_memory_mesh, hemi, view, bg_map):
@@ -177,6 +180,7 @@ def test_plot_surf_swap_hemi(plt, engine, surf_img_1d, hemi, flip_surf_img):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_error(plt, engine, rng, in_memory_mesh):
     """Check error if invalid parameters values are specified to
     nilearn.plotting.surface.surf_plotting.plot_surf.
@@ -217,6 +221,7 @@ def test_plot_surf_error(plt, engine, rng, in_memory_mesh):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_tick_format_warning_matplotlib(
     matplotlib_pyplot, in_memory_mesh, bg_map
 ):
@@ -413,6 +418,7 @@ def test_plot_surf_avg_method_errors(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
     """Test if figure title is set correctly in
     nilearn.plotting.surface.surf_plotting.plot_surf.
@@ -466,6 +472,7 @@ def test_plot_surf_contours_legend(
     assert fig.legends is not None
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contours_colors(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
@@ -542,6 +549,7 @@ def test_plot_surf_contours_fig_axes(
     plot_surf_contours(in_memory_mesh, parcellation, figure=fig)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contours_error(
     matplotlib_pyplot, rng, in_memory_mesh, parcellation
 ):
@@ -598,6 +606,7 @@ def test_plot_surf_stat_map(plt, engine, in_memory_mesh, bg_map):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_with_background(
     plt, engine, in_memory_mesh, bg_map
 ):
@@ -647,6 +656,7 @@ def test_plot_surf_stat_map_vmax(plt, engine, in_memory_mesh, bg_map):
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, vmax=5, engine=engine)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("colorbar", [True, False])
 def test_plot_surf_stat_map_error_vmax_equal_vmin(
     plt, engine, in_memory_mesh, bg_map, colorbar
@@ -665,6 +675,7 @@ def test_plot_surf_stat_map_error_vmax_equal_vmin(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_colormap(plt, engine, in_memory_mesh, bg_map):
     """Smoke test when colormap is specified to
     nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
@@ -674,6 +685,7 @@ def test_plot_surf_stat_map_colormap(plt, engine, in_memory_mesh, bg_map):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_error(in_memory_mesh, bg_map):
     """Test if nilearn.plotting.surface.surf_plotting.plot_surf_stat_map
     raises error with wrong size of stat map data.
@@ -721,6 +733,7 @@ def test_plot_surf_stat_map_symmetric_cmap_plotly(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_symmetric_cmap_matplotlib(
     matplotlib_pyplot, in_memory_mesh, bg_map
 ):
@@ -735,6 +748,7 @@ def test_plot_surf_stat_map_symmetric_cmap_matplotlib(
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("symmetric_cmap", [True, False])
 def test_plot_surf_stat_map_symmetric_cmap_matplotlib_error(
     matplotlib_pyplot, in_memory_mesh, bg_map, symmetric_cmap
@@ -752,6 +766,7 @@ def test_plot_surf_stat_map_symmetric_cmap_matplotlib_error(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_matplotlib_specific(
     matplotlib_pyplot, in_memory_mesh, bg_map
 ):
@@ -827,12 +842,32 @@ def test_plot_surf_roi(plt, engine, surface_image_roi, colorbar):
     )
 
 
-def test_plot_surf_roi_cmap_as_lookup_table(surface_image_roi):
-    """Test colormap passed as BIDS lookup table."""
+@pytest.mark.thread_unsafe
+@pytest.mark.parametrize(
+    "cmap_source", ["pandas", "path", "str_path", "cmap_str"]
+)
+def test_plot_surf_roi_cmap_as_lookup_table(
+    surface_image_roi, tmp_path, cmap_source
+):
+    """Test colormap passed as BIDS lookup table. Supported formats are
+    pandas DataFrame, path to file, string path to file, and string colormap.
+    """
     lut = pd.DataFrame(
         {"index": [0, 1], "name": ["foo", "bar"], "color": ["#000", "#fff"]}
     )
-    plot_surf_roi(surface_image_roi.mesh, roi_map=surface_image_roi, cmap=lut)
+    lut.to_csv(tmp_path / "lut.tsv", sep="\t", index=False)
+    lut_sources = {
+        "pandas": lut,
+        "path": tmp_path / "lut.tsv",
+        "str_path": (tmp_path / "lut.tsv").as_posix(),
+        "cmap_str": "viridis",  # check that string colormaps also work
+    }
+
+    plot_surf_roi(
+        surface_image_roi.mesh,
+        roi_map=surface_image_roi,
+        cmap=lut_sources[cmap_source],
+    )
 
     lut = pd.DataFrame({"index": [0, 1], "name": ["foo", "bar"]})
     with pytest.warns(
@@ -843,6 +878,7 @@ def test_plot_surf_roi_cmap_as_lookup_table(surface_image_roi):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_roi_error(engine, rng, in_memory_mesh, surf_roi_data):
     """Test for nilearn.plotting.surface.surf_plotting.plot_surf_roi
     for invalid parameter values.
@@ -948,6 +984,7 @@ def test_plot_surf_roi_matplotlib_specific_nan_handling(
     assert n_faces == ((tmp._facecolors[:, 3]) != 0).sum()
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
     matplotlib_pyplot, surface_image_roi
 ):
@@ -1006,6 +1043,7 @@ def test_plot_surf_roi_parcellation_plotly(
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("avg_method", ["mean", "median"])
 @pytest.mark.parametrize("symmetric_cmap", [True, False, None])
 def test_plot_surf_roi_default_arguments(
@@ -1111,6 +1149,25 @@ def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni, kwargs):
     """
     plot_img_on_surf(
         img_3d_mni, hemispheres=["right"], views=["lateral"], **kwargs
+    )
+
+
+@pytest.mark.thread_unsafe
+@pytest.mark.parametrize(
+    "tick_format",
+    ["%i", "%.2g", "%.1f"],
+)
+def test_plot_img_on_surf_colorbar_tick_format(
+    matplotlib_pyplot, img_3d_mni, tick_format
+):
+    """Smoke test for nilearn.plotting.surface.plot_img_on_surf for
+    different tick_formats.
+    """
+    plot_img_on_surf(
+        img_3d_mni,
+        hemispheres=["right"],
+        views=["lateral"],
+        cbar_tick_format=tick_format,
     )
 
 
@@ -1246,12 +1303,14 @@ def test_plot_img_on_surf_output_file(matplotlib_pyplot, tmp_path, img_3d_mni):
     assert fname.is_file(), "Saved image file could not be found."
 
 
+@pytest.mark.thread_unsafe
 def test_plot_img_on_surf_input_as_file(matplotlib_pyplot, img_3d_mni_as_file):
     """Test nifti is supported when passed as string or path to a file."""
     plot_img_on_surf(stat_map=img_3d_mni_as_file)
     plot_img_on_surf(stat_map=str(img_3d_mni_as_file))
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "function",
     [plot_surf_roi, plot_surf_stat_map, plot_surf_contours, plot_surf],

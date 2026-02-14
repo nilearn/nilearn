@@ -7,13 +7,13 @@ from pathlib import Path
 from warnings import warn
 
 import numpy as np
-from nibabel import is_proxy, load, spatialimages
+from nibabel import Nifti1Image, is_proxy, load, spatialimages
 
-from nilearn._utils.helpers import stringify_path
+from nilearn._utils.helpers import is_gil_enabled, stringify_path
 from nilearn._utils.logger import find_stack_level
 
 
-def _get_data(img):
+def _get_data(img) -> np.ndarray:
     # copy-pasted from
     # https://github.com/nipy/nibabel/blob/de44a10/nibabel/dataobj_images.py#L204
     #
@@ -26,9 +26,20 @@ def _get_data(img):
     return data
 
 
-def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
+def safe_get_data(
+    img: Nifti1Image, ensure_finite: bool = False, copy_data: bool = False
+) -> np.ndarray:
     """Get the data in the image without having a side effect \
     on the Nifti1Image object.
+
+    This function will create a copy of the image and load data to new image's
+    cache, leaving image's state unchanged if:
+
+    - image data is not loaded to cache,
+    - ``copy_data`` is `True`,
+
+    If ``ensure_finite`` is set to `True`, this is no more guaranteed. If data
+    is not cached, it will be cached and infinite values are replaced with 0.
 
     Parameters
     ----------
@@ -47,24 +58,47 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
     data : numpy array
         nilearn.image.get_data return from Nifti image.
     """
-    if copy_data:
+    if not img.in_memory or copy_data:
         img = deepcopy(img)
 
-    # typically the line below can double memory usage
-    # that's why we invoke a forced call to the garbage collector
-    gc.collect()
+    if is_gil_enabled():
+        # typically the line below can double memory usage
+        # that's why we invoke a forced call to the garbage collector
+        gc.collect()
 
     data = _get_data(img)
+
     if ensure_finite:
-        non_finite_mask = np.logical_not(np.isfinite(data))
-        if non_finite_mask.sum() > 0:  # any non_finite_mask values?
+        ensure_finite_data(data)
+    return data
+
+
+def has_non_finite(data: np.ndarray) -> tuple[bool, np.ndarray]:
+    """Return True if data contains at least one NaN or inf value; False if
+    there are no NaN and inf values.
+
+    Besides boolean value, return the mask.
+    """
+    non_finite_mask = ~np.isfinite(data)
+    has_not_finite = non_finite_mask.any()
+    return has_not_finite, non_finite_mask
+
+
+def ensure_finite_data(
+    data: np.ndarray, raise_warning: bool = True
+) -> np.ndarray:
+    """Check if data contains NaN or inf values, set infinite values
+    to 0 inplace if exists and return data.
+    """
+    has_not_finite, non_finite_mask = has_non_finite(data)
+    if has_not_finite:
+        if raise_warning:
             warn(
                 "Non-finite values detected. "
                 "These values will be replaced with zeros.",
                 stacklevel=find_stack_level(),
             )
-            data[non_finite_mask] = 0
-
+        data[non_finite_mask] = 0
     return data
 
 
@@ -123,21 +157,27 @@ def load_niimg(niimg, dtype=None):
             + repr_niimgs(niimg, shorten=True)
         )
 
-    img_data = _get_data(niimg)
-    target_dtype = _get_target_dtype(img_data.dtype, dtype)
+    # avoid loading data if dtype is None
+    if dtype is not None:
+        img_data = _get_data(niimg)
+        target_dtype = _get_target_dtype(img_data.dtype, dtype)
 
-    if target_dtype is not None:
-        copy_header = niimg.header is not None
-        niimg = new_img_like(
-            niimg, img_data.astype(target_dtype), niimg.affine
-        )
-        if copy_header:
-            niimg.header.set_data_dtype(target_dtype)
+        if target_dtype is not None:
+            copy_header = niimg.header is not None
+            niimg = new_img_like(
+                niimg, img_data.astype(target_dtype), niimg.affine
+            )
+            if copy_header:
+                niimg.header.set_data_dtype(target_dtype)
 
     return niimg
 
 
-def is_binary_niimg(niimg):
+def is_binary_niimg(
+    niimg: Nifti1Image,
+    block_size: int = 1_000_000,
+    accept_non_finite: bool = True,
+) -> bool:
     """Return whether a given niimg is binary or not.
 
     Parameters
@@ -153,11 +193,38 @@ def is_binary_niimg(niimg):
 
     """
     niimg = load_niimg(niimg)
-    data = safe_get_data(niimg, ensure_finite=True)
-    unique_values = np.unique(data)
-    return (
-        False if len(unique_values) != 2 else sorted(unique_values) == [0, 1]
+    data = niimg.dataobj
+    return is_binary_data(data, block_size, accept_non_finite)
+
+
+def _binary_mask(block: np.ndarray) -> np.ndarray:
+    """Create a boolean mask for values equal to 0 or 1."""
+    return (block == 0) | (block == 1)
+
+
+def _binary_mask_with_nonfinite(block: np.ndarray) -> np.ndarray:
+    """Create a boolean mask for values equal to 0, 1, nan, or +-inf."""
+    return _binary_mask(block) | ~np.isfinite(block)
+
+
+def is_binary_data(data, block_size=1_000_000, accept_non_finite=True) -> bool:
+    """Return whether a given proxy array or ndarray is binary or not.
+    If accept_non_finite is True, NaN and inf values are ignored.
+    """
+    flat = np.ravel(data)
+
+    mask_func = (
+        _binary_mask_with_nonfinite if accept_non_finite else _binary_mask
     )
+
+    for i in range(0, flat.size, block_size):
+        block = flat[i : i + block_size]
+
+        mask = mask_func(block)
+        if not mask.all():
+            return False
+
+    return True
 
 
 def repr_niimgs(niimgs, shorten=True):
@@ -220,7 +287,7 @@ def repr_niimgs(niimgs, shorten=True):
     return _short_repr(repr(niimgs), shorten=shorten)
 
 
-def _short_repr(niimg_rep, shorten=True, truncate=20):
+def _short_repr(niimg_rep, shorten: bool = True, truncate: int = 20) -> str:
     """Give a shorter version of niimg representation."""
     # Make sure truncate has a reasonable value
     truncate = max(truncate, 10)

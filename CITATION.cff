@@ -400,6 +400,10 @@ authors:
     affiliation: BarcelonaBeta Brain Research Center
     email: jhuguetn@gmail.com
     orcid: https://orcid.org/0000-0001-8420-4833
+  - given-names: Joseph
+    family-names: Paillard
+    affiliation: Inria, Saclay, France
+    website: https://github.com/jpaillard
   - given-names: Joshua
     family-names: Teves
     website: https://github.com/jbteves
@@ -539,12 +543,21 @@ authors:
     family-names: Wang
     website: https://michellewang.github.io
     affiliation: Origami lab, McGill University, Montréal, Canada
+  - given-names: Milton
+    family-names: Camacho
+    website: https://github.com/miltoncamacho
+    affiliation: University of Calgary, Calgary, Alberta, Canada
+    email: miltoncamachoicc@gmail.com
   - given-names: Mohammad
     family-names: Torabi
     website: https://github.com/mtorabi59
     affiliation: Origami lab, McGill University, Montréal, Canada
     email: mohammad.torabi@mail.mcgill.ca
     orcid: https://orcid.org/0000-0002-4429-8481
+  - given-names: Mohammad
+    family-names: Sadeghi Hardengi
+    website: https://github.com/mohammedsadeghi
+    affiliation: IAUN, Iran (M.Sc. student, AI and robotics)
   - given-names: Moritz
     family-names: Boos
     website: https://github.com/mjboos
@@ -666,6 +679,7 @@ authors:
     family-names: Jepegnanam
     website: https://github.com/rohan3412
     affiliation: Cognitive Neuroscience & Clinical Phenomenology Lab, Christian Medical College, Vellore, India
+    orcid: https://orcid.org/0009-0000-6982-3038
   - given-names: Ronald
     family-names: Phlypo
     website: https://github.com/rphlypo
@@ -699,6 +713,10 @@ authors:
     website: https://github.com/sjawhar
     email: sami@thecybermonk.com
     orcid: https://orcid.org/0000-0002-9914-2193
+  - given-names: Sanjana
+    family-names: Soni
+    website: https://github.com/isha822
+    affiliation: Goverment Engineering College, Bilaspur, India
   - given-names: Simon
     family-names: Steinkamp
     website: https://github.com/SRSteinkamp
@@ -771,6 +789,11 @@ authors:
     family-names: Shevchenko
     website: https://github.com/victoris93
     affiliation: Inria Saclay, Université Paris Cité, France
+  - given-names: Victoria
+    family-names: McCray
+    website: https://github.com/victoriamccray
+    affiliation: Northeastern University, USA
+    orcid: https://orcid.org/0009-0004-9507-835X
   - given-names: Vincent
     family-names: Michel
     website: https://github.com/vmichel

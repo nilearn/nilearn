@@ -140,6 +140,7 @@ def data_butterworth_multiple_timeseries(
     return data
 
 
+@pytest.mark.thread_unsafe
 def test_butterworth(data_butterworth_single_timeseries):
     """Check butterworth onsingle timeseries."""
     sampling = 100
@@ -165,6 +166,7 @@ def test_butterworth(data_butterworth_single_timeseries):
     assert id(out_single) != id(data)
 
 
+@pytest.mark.thread_unsafe
 def test_butterworth_multiple_timeseries(
     data_butterworth_single_timeseries, data_butterworth_multiple_timeseries
 ):
@@ -332,11 +334,8 @@ def test_standardize_error(rng):
     with pytest.raises(ValueError, match="'standardize' must be one of"):
         standardize_signal(a, standardize="foo")
 
-    # test warning for strategy that will be removed
-    with pytest.warns(FutureWarning, match="default strategy for standardize"):
-        standardize_signal(a, standardize="zscore")
 
-
+@pytest.mark.thread_unsafe
 def test_standardize(rng):
     """Test starndardize_signal with several options."""
     n_features = 10
@@ -363,7 +362,7 @@ def test_standardize(rng):
 
     # With trend removal
     a = np.atleast_2d(np.linspace(0, 2.0, n_features)).T
-    b = standardize_signal(a, detrend=True, standardize=False)
+    b = standardize_signal(a, detrend=True, standardize=None)
 
     assert_almost_equal(b, np.zeros(b.shape))
 
@@ -488,14 +487,16 @@ def test_clean_detrending():
     assert_almost_equal(y_orig, y, decimal=13)
 
     # This should remove trends as detrend is True by default
-    x_detrended = clean(x, standardize=False)
+    match = "boolean values for 'standardize' will be deprecated"
+    with pytest.deprecated_call(match=match):
+        x_detrended = clean(x, standardize=False)
 
     assert_almost_equal(x_detrended, signals, decimal=13)
     # clean should not modify inputs
     assert array_equal(x_orig, x)
 
     # This should do nothing
-    x_undetrended = clean(x, standardize=False, detrend=False)
+    x_undetrended = clean(x, standardize=None, detrend=False)
 
     assert abs(x_undetrended - signals).max() >= 0.06
     # clean should not modify inputs
@@ -625,7 +626,7 @@ def test_clean_frequencies():
     sx = np.vstack((sx1, sx2)).T
 
     t_r = 2.5
-    standardize = False
+    standardize = None
 
     cleaned_signal = clean(
         sx, standardize=standardize, high_pass=0.002, low_pass=None, t_r=t_r
@@ -654,7 +655,7 @@ def test_clean_leaves_input_untouched():
     sx_orig = sx.copy()
 
     t_r = 2.5
-    standardize = False
+    standardize = None
 
     _ = clean(
         sx, standardize=standardize, detrend=False, low_pass=0.2, t_r=t_r
@@ -677,32 +678,28 @@ def test_clean_runs():
     runs = np.ones(n_samples)
     runs[: n_samples // 2] = 0
 
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        x_detrended = clean(
-            x,
-            confounds=confounds,
-            standardize=False,
-            detrend=True,
-            low_pass=None,
-            high_pass=None,
-            runs=runs,
-        )
+    x_detrended = clean(
+        x,
+        confounds=confounds,
+        standardize=None,
+        detrend=True,
+        low_pass=None,
+        high_pass=None,
+        runs=runs,
+    )
 
     # clean should not modify inputs
     assert array_equal(x_orig, x)
 
     # check the runs are individually cleaned
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        x_run1 = clean(
-            x[0 : n_samples // 2, :],
-            confounds=confounds[0 : n_samples // 2, :],
-            standardize=False,
-            detrend=True,
-            low_pass=None,
-            high_pass=None,
-        )
+    x_run1 = clean(
+        x[0 : n_samples // 2, :],
+        confounds=confounds[0 : n_samples // 2, :],
+        standardize=None,
+        detrend=True,
+        low_pass=None,
+        high_pass=None,
+    )
     assert array_equal(x_run1, x_detrended[0 : n_samples // 2, :])
 
 
@@ -774,6 +771,7 @@ def test_clean_errros(signals):
         clean(signals, high_pass=False)
 
 
+@pytest.mark.thread_unsafe
 def test_clean_confounds():
     """Check output of cleaning when counfoun is passed."""
     signals, noises, confounds = generate_signals(
@@ -781,19 +779,18 @@ def test_clean_confounds():
     )
     # No signal: output must be zero.
     noises1 = noises.copy()
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        cleaned_signals = clean(
-            noises, confounds=confounds, detrend=True, standardize=False
-        )
+
+    cleaned_signals = clean(
+        noises, confounds=confounds, detrend=True, standardize=None
+    )
 
     assert abs(cleaned_signals).max() < 100.0 * EPS
     # clean should not modify inputs
     assert array_equal(noises, noises1)
 
     # With signal: output must be orthogonal to confounds
-    # TODO (nilearn >= 0.14) remove catch FutureWarning, DeprecationWarning
-    with pytest.warns(FutureWarning), pytest.warns(DeprecationWarning):
+    # TODO (nilearn >= 0.14) remove catch FutureWarning
+    with pytest.warns(FutureWarning):
         cleaned_signals = clean(
             signals + noises,
             confounds=confounds,
@@ -805,8 +802,11 @@ def test_clean_confounds():
 
     # Same output when a constant confound is added
     confounds1 = np.hstack((np.ones((45, 1)), confounds))
-    # TODO (nilearn >= 0.14) remove catch FutureWarning, DeprecationWarning
-    with pytest.warns(FutureWarning), pytest.warns(DeprecationWarning):
+    # TODO (nilearn >= 0.15) remove catch_warnings
+    with pytest.warns(
+        FutureWarning,
+        match="boolean values for 'standardize' will be deprecated",
+    ):
         cleaned_signals1 = clean(
             signals + noises,
             confounds=confounds1,
@@ -828,27 +828,25 @@ def test_clean_confounds_detrending():
     # Use confounds with a trend.
     temp = confounds.T
     temp += np.arange(confounds.shape[0])
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        cleaned_signals = clean(
-            signals + noises,
-            confounds=confounds,
-            detrend=False,
-            standardize=False,
-        )
+
+    cleaned_signals = clean(
+        signals + noises,
+        confounds=confounds,
+        detrend=False,
+        standardize=None,
+    )
     coeffs = np.polyfit(
         np.arange(cleaned_signals.shape[0]), cleaned_signals, 1
     )
 
     assert (abs(coeffs) > 1e-3).any()  # trends remain
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        cleaned_signals = clean(
-            signals + noises,
-            confounds=confounds,
-            detrend=True,
-            standardize=False,
-        )
+
+    cleaned_signals = clean(
+        signals + noises,
+        confounds=confounds,
+        detrend=True,
+        standardize=None,
+    )
     coeffs = np.polyfit(
         np.arange(cleaned_signals.shape[0]), cleaned_signals, 1
     )
@@ -856,22 +854,22 @@ def test_clean_confounds_detrending():
     assert (abs(coeffs) < 1000.0 * EPS).all()  # trend removed
 
 
+@pytest.mark.thread_unsafe
 def test_clean_standardize_true_false():
     """Check difference between standardize False and True."""
     signals, _, _ = generate_signals(n_features=41, n_confounds=5, length=45)
 
     input_signals = 10 * signals
-    cleaned_signals = clean(input_signals, detrend=False, standardize=False)
+    cleaned_signals = clean(input_signals, detrend=False, standardize=None)
 
     assert_almost_equal(cleaned_signals, input_signals)
 
-    # TODO (nilearn >= 0.14) remove catch of FutureWarning
-    with pytest.warns(FutureWarning):
-        cleaned_signals = clean(input_signals, detrend=False, standardize=True)
-
-    assert_almost_equal(
-        cleaned_signals.var(axis=0), np.ones(cleaned_signals.shape[1])
-    )
+    # TODO (nilearn >= 0.15) remove catch_warnings
+    with pytest.warns(
+        FutureWarning,
+        match="boolean values for 'standardize' will be deprecated",
+    ):
+        clean(input_signals, detrend=False, standardize=True)
 
 
 def test_clean_confounds_inputs():
@@ -884,51 +882,44 @@ def test_clean_confounds_inputs():
     current_dir = Path(__file__).parent
     filename1 = current_dir / "data" / "spm_confounds.txt"
     filename2 = current_dir / "data" / "confounds_with_header.csv"
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        clean(signals, detrend=False, standardize=False, confounds=filename1)
-        clean(signals, detrend=False, standardize=False, confounds=filename2)
-        clean(
-            signals,
-            detrend=False,
-            standardize=False,
-            confounds=confounds[:, 1],
-        )
+
+    clean(signals, detrend=False, standardize=None, confounds=filename1)
+    clean(signals, detrend=False, standardize=None, confounds=filename2)
+    clean(
+        signals,
+        detrend=False,
+        standardize=None,
+        confounds=confounds[:, 1],
+    )
 
     # test with confounds as a pandas DataFrame
     confounds_df = read_csv(filename2, sep="\t")
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        clean(
-            signals,
-            detrend=False,
-            standardize=False,
-            confounds=confounds_df.values,
-        )
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        clean(
-            signals, detrend=False, standardize=False, confounds=confounds_df
-        )
+
+    clean(
+        signals,
+        detrend=False,
+        standardize=None,
+        confounds=confounds_df.values,
+    )
+
+    clean(signals, detrend=False, standardize=None, confounds=confounds_df)
 
     # test array-like signals
     list_signal = signals.tolist()
-    clean(list_signal, standardize=False)
+    clean(list_signal, standardize=None)
 
     # Use a list containing two filenames, a 2D array and a 1D array
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        clean(
-            signals,
-            detrend=False,
-            standardize=False,
-            confounds=[
-                filename1,
-                confounds[:, 0:2],
-                filename2,
-                confounds[:, 2],
-            ],
-        )
+    clean(
+        signals,
+        detrend=False,
+        standardize=None,
+        confounds=[
+            filename1,
+            confounds[:, 0:2],
+            filename2,
+            confounds[:, 2],
+        ],
+    )
 
 
 def test_clean_warning(signals):
@@ -952,7 +943,7 @@ def test_clean_warning(signals):
         assert_almost_equal(
             clean(
                 np.ones((20, 2)),
-                standardize=False,
+                standardize=None,
                 confounds=np.ones(20),
                 standardize_confounds=False,
                 detrend=False,
@@ -970,22 +961,20 @@ def test_clean_confounds_are_removed(signals, confounds):
     these operations were being applied to the data and confounders.
     see https://github.com/nilearn/nilearn/issues/2730
     """
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        signals_clean = clean(
-            signals,
-            detrend=True,
-            high_pass=0.01,
-            standardize_confounds=True,
-            standardize="zscore_sample",
-            confounds=confounds,
-        )
-        confounds_clean = clean(
-            confounds,
-            detrend=True,
-            high_pass=0.01,
-            standardize="zscore_sample",
-        )
+    signals_clean = clean(
+        signals,
+        detrend=True,
+        high_pass=0.01,
+        standardize_confounds=True,
+        standardize="zscore_sample",
+        confounds=confounds,
+    )
+    confounds_clean = clean(
+        confounds,
+        detrend=True,
+        high_pass=0.01,
+        standardize="zscore_sample",
+    )
     assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * EPS
 
 
@@ -1007,7 +996,7 @@ def test_clean_frequencies_using_power_spectrum_density():
     res_low = clean(
         sx,
         detrend=False,
-        standardize=False,
+        standardize=None,
         filter="butterworth",
         low_pass=low_pass,
         high_pass=None,
@@ -1016,7 +1005,7 @@ def test_clean_frequencies_using_power_spectrum_density():
     res_high = clean(
         sx,
         detrend=False,
-        standardize=False,
+        standardize=None,
         filter="butterworth",
         low_pass=None,
         high_pass=high_pass,
@@ -1024,17 +1013,15 @@ def test_clean_frequencies_using_power_spectrum_density():
     )
 
     # cosine high pass filter
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        res_cos = clean(
-            sx,
-            detrend=False,
-            standardize=False,
-            filter="cosine",
-            low_pass=None,
-            high_pass=high_pass,
-            t_r=t_r,
-        )
+    res_cos = clean(
+        sx,
+        detrend=False,
+        standardize=None,
+        filter="cosine",
+        low_pass=None,
+        high_pass=high_pass,
+        t_r=t_r,
+    )
 
     # Compute power spectrum density for both test
     f, Pxx_den_low = scipy.signal.welch(np.mean(res_low.T, axis=0), fs=t_r)
@@ -1063,17 +1050,15 @@ def test_clean_t_r_highpass_float_int(t_r, high_pass):
         ]
     ).T
 
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        clean(
-            sx,
-            detrend=False,
-            standardize=False,
-            filter="cosine",
-            low_pass=None,
-            high_pass=high_pass,
-            t_r=t_r,
-        )
+    clean(
+        sx,
+        detrend=False,
+        standardize=None,
+        filter="cosine",
+        low_pass=None,
+        high_pass=high_pass,
+        t_r=t_r,
+    )
 
 
 def test_clean_finite_no_inplace_mod():
@@ -1237,7 +1222,7 @@ def test_high_variance_confounds_nan():
     assert_almost_equal(out1, out2, decimal=13)
 
 
-def test_clean_standardize_false():
+def test_clean_standardize_none():
     """Check output cleaning butterworth filter and no standardization."""
     n_samples = 500
     n_features = 5
@@ -1245,7 +1230,7 @@ def test_clean_standardize_false():
 
     signals, _, _ = generate_signals(n_features=n_features, length=n_samples)
 
-    cleaned_signals = clean(signals, standardize=False, detrend=False)
+    cleaned_signals = clean(signals, standardize=None, detrend=False)
 
     assert_almost_equal(cleaned_signals, signals)
 
@@ -1253,7 +1238,7 @@ def test_clean_standardize_false():
     cleaned_butterworth_signals = clean(
         signals,
         detrend=False,
-        standardize=False,
+        standardize=None,
         filter="butterworth",
         high_pass=0.01,
         t_r=t_r,
@@ -1384,7 +1369,6 @@ def test_clean_zscore(rng):
 
     - mean of 0
     - std of 1
-    - difference between and sample and population z-scoring.
     """
     n_samples = 500
     n_features = 5
@@ -1393,22 +1377,10 @@ def test_clean_zscore(rng):
 
     signals += rng.standard_normal(size=(1, n_features))
 
-    # TODO (nilearn >= 0.14) remove catch of FutureWarning
-    with pytest.warns(FutureWarning):
-        cleaned_signals_ = clean(signals, standardize="zscore")
-
-    assert_almost_equal(cleaned_signals_.mean(0), 0)
-    assert_almost_equal(cleaned_signals_.std(0), 1)
-
-    # Repeating test above but for new correct strategy
     cleaned_signals = clean(signals, standardize="zscore_sample")
 
     assert_almost_equal(cleaned_signals.mean(0), 0)
     assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
-
-    # Show outcome from two zscore strategies is not equal
-    with pytest.raises(AssertionError):
-        assert_array_equal(cleaned_signals_, cleaned_signals)
 
 
 def test_clean_sample_mask():
@@ -1423,26 +1395,23 @@ def test_clean_sample_mask():
 
     sample_mask_binary = np.full(signals.shape[0], True)
     sample_mask_binary[scrub_index] = False
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        scrub_clean = clean(
-            signals,
-            confounds=confounds,
-            sample_mask=sample_mask,
-            standardize="zscore_sample",
-        )
+
+    scrub_clean = clean(
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask,
+        standardize="zscore_sample",
+    )
 
     assert scrub_clean.shape[0] == sample_mask.shape[0]
 
     # test the binary mask
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        scrub_clean_bin = clean(
-            signals,
-            confounds=confounds,
-            sample_mask=sample_mask_binary,
-            standardize="zscore_sample",
-        )
+    scrub_clean_bin = clean(
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask_binary,
+        standardize="zscore_sample",
+    )
     assert_equal(scrub_clean_bin, scrub_clean)
 
 
@@ -1459,15 +1428,14 @@ def test_sample_mask_across_runs():
     sample_mask_sep = [np.arange(20), np.arange(20)]
     scrub_index = [[6, 7, 8], [10, 11, 12]]
     sample_mask_sep = list(map(np.delete, sample_mask_sep, scrub_index))
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        scrub_sep_mask = clean(
-            signals,
-            confounds=confounds,
-            sample_mask=sample_mask_sep,
-            runs=runs,
-            standardize="zscore_sample",
-        )
+
+    scrub_sep_mask = clean(
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask_sep,
+        runs=runs,
+        standardize="zscore_sample",
+    )
 
     assert scrub_sep_mask.shape[0] == signals.shape[0] - 6
 
@@ -1478,15 +1446,14 @@ def test_sample_mask_across_runs():
     ]
     sample_mask_sep_binary[0][scrub_index[0]] = False
     sample_mask_sep_binary[1][scrub_index[1]] = False
-    # TODO (nilearn >= 0.14) remove catch DeprecationWarning
-    with pytest.warns(DeprecationWarning):
-        scrub_sep_mask = clean(
-            signals,
-            confounds=confounds,
-            sample_mask=sample_mask_sep_binary,
-            runs=runs,
-            standardize="zscore_sample",
-        )
+
+    scrub_sep_mask = clean(
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask_sep_binary,
+        runs=runs,
+        standardize="zscore_sample",
+    )
 
     assert scrub_sep_mask.shape[0] == signals.shape[0] - 6
 
@@ -1708,8 +1675,9 @@ full_path_design_matrix_file = my_path / "spm_dmtx.npz"
 DESIGN_MATRIX = np.load(full_path_design_matrix_file)
 
 
+@pytest.mark.thread_unsafe
 def test_cosine_drift():
-    """Check cosine drift created buy nilearn."""
+    """Check cosine drift created by nilearn."""
     spm_drifts = DESIGN_MATRIX["cosbf_dt_1_nt_20_hcut_0p1"]
     frame_times = np.arange(20)
     high_pass_frequency = 0.1

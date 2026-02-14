@@ -6,6 +6,7 @@ import pathlib
 import warnings
 from collections.abc import Iterable, Mapping
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -20,7 +21,7 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.niimg import ensure_finite_data, has_non_finite
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
     check_parameter_in_allowed,
@@ -236,7 +237,7 @@ def _line_sample_locations(
     n_points : :obj:`int`, default=10
         Number of samples to draw for each vertex.
 
-    depth : sequence of :obj:`float` or None, optional
+    depth : sequence of :obj:`float` or None, default=None
         Cortical depth, expressed as a fraction of segment_half_width.
         Overrides n_points.
 
@@ -326,7 +327,7 @@ def _masked_indices(sample_locations, img_shape, mask=None):
     img_shape : :obj:`tuple`
         The dimensions of the image to be sampled.
 
-    mask : :obj:`numpy.ndarray` of shape img_shape or `None`, optional
+    mask : :obj:`numpy.ndarray` of shape img_shape or `None`, default=None
         Part of the image to be masked. If `None`, don't apply any mask.
 
     Returns
@@ -402,10 +403,10 @@ def _projection_matrix(
         [10, 20, 40, 80, 160], because cached positions are
         available.
 
-    mask : :obj:`numpy.ndarray` of shape img_shape or `None`, optional
+    mask : :obj:`numpy.ndarray` of shape img_shape or `None`, default=None
         Part of the image to be masked. If `None`, don't apply any mask.
 
-    inner_mesh : :obj:`str` or :obj:`numpy.ndarray`, optional
+    inner_mesh : :obj:`str` or :obj:`numpy.ndarray`, default=None
         Either a file containing surface mesh or a pair of ndarrays
         (coordinates, triangles). If provided this is an inner surface that is
         nested inside the one represented by `mesh` -- e.g. `mesh` is a pial
@@ -415,7 +416,7 @@ def _projection_matrix(
         are then sampled along the line joining these two points (if `kind` is
         'auto' or 'depth').
 
-    depth : sequence of :obj:`float` or `None`, optional
+    depth : sequence of :obj:`float` or `None`, default=None
         Cortical depth, expressed as a fraction of segment_half_width.
         overrides n_points. Should be None if kind is 'ball'
 
@@ -799,8 +800,8 @@ def vol_to_surf(
 
     """
     # avoid circular import
+    from nilearn.image import check_niimg, load_img
     from nilearn.image.image import get_data as get_vol_data
-    from nilearn.image.image import load_img
     from nilearn.image.resampling import resample_to_img
 
     sampling_schemes = {
@@ -969,12 +970,12 @@ def load_surf_data(surf_data):
             else:
                 try:
                     data = np.concatenate((data, data_part), axis=1)
-                except ValueError:
+                except ValueError as e:
                     raise ValueError(
                         "When more than one file is input, "
                         "all files must contain data "
                         "with the same shape in axis=0."
-                    )
+                    ) from e
 
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
@@ -983,7 +984,9 @@ def load_surf_data(surf_data):
     return np.squeeze(data)
 
 
-def check_extensions(surf_data, data_extensions, freesurfer_data_extensions):
+def check_extensions(
+    surf_data, data_extensions, freesurfer_data_extensions
+) -> None:
     """Check the extension of the input file.
 
     Should either be one one of the supported data formats
@@ -1032,7 +1035,7 @@ def _gifti_img_to_mesh(gifti_img):
         coords = gifti_img.get_arrays_from_intent(
             nifti1.intent_codes["NIFTI_INTENT_POINTSET"]
         )[0].data
-    except IndexError:
+    except IndexError as e:
         raise ValueError(
             error_message.format(
                 "NIFTI_INTENT_POINTSET",
@@ -1040,12 +1043,12 @@ def _gifti_img_to_mesh(gifti_img):
                     nifti1.intent_codes["NIFTI_INTENT_POINTSET"]
                 ),
             )
-        )
+        ) from e
     try:
         faces = gifti_img.get_arrays_from_intent(
             nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"]
         )[0].data
-    except IndexError:
+    except IndexError as e:
         raise ValueError(
             error_message.format(
                 "NIFTI_INTENT_TRIANGLE",
@@ -1053,7 +1056,7 @@ def _gifti_img_to_mesh(gifti_img):
                     nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"]
                 ),
             )
-        )
+        ) from e
     return coords, faces
 
 
@@ -1168,7 +1171,7 @@ def check_mesh_and_data(mesh, data):
     return mesh, data
 
 
-def _validate_mesh(mesh):
+def _validate_mesh(mesh) -> None:
     """Check mesh coordinates and faces.
 
     Mesh coordinates and faces must be numpy arrays.
@@ -1181,8 +1184,8 @@ def _validate_mesh(mesh):
     - larger or equal to the length of the coordinates array
     - negative
     """
-    non_finite_mask = np.logical_not(np.isfinite(mesh.coordinates))
-    if non_finite_mask.any():
+    has_not_finite, _ = has_non_finite(mesh.coordinates)
+    if has_not_finite:
         raise ValueError(
             "Mesh coordinates must be finite. "
             "Current coordinates contains NaN or Inf values."
@@ -1266,7 +1269,7 @@ def load_surf_mesh(surf_mesh):
         try:
             coords, faces = surf_mesh
             mesh = InMemoryMesh(coordinates=coords, faces=faces)
-        except Exception:
+        except Exception as e:
             raise ValueError(
                 "\nIf a list or tuple is given as input, "
                 "it must have two elements,\n"
@@ -1276,7 +1279,7 @@ def load_surf_mesh(surf_mesh):
                 "containing the indices (into coords) of the mesh faces.\n"
                 f"The input was a {surf_mesh.__class__.__name__} with "
                 f"{len(surf_mesh)} elements: {[type(x) for x in surf_mesh]}."
-            )
+            ) from e
     elif hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates"):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
         mesh = InMemoryMesh(coordinates=coords, faces=faces)
@@ -1364,7 +1367,12 @@ class PolyData:
 
         self._check_parts()
 
-    def _check_parts(self):
+    def _check_parts(self) -> None:
+        """Ensure all parts have same shape and type.
+
+        This allows to get the shape of any part
+        and make sure they are the same for all.
+        """
         parts = self.parts
 
         if len(parts) == 1:
@@ -1391,6 +1399,7 @@ class PolyData:
     @property
     def shape(self):
         """Shape of the data."""
+        self._check_parts()
         if len(self.parts) == 1:
             return next(iter(self.parts.values())).shape
 
@@ -1402,6 +1411,16 @@ class PolyData:
             if len(tmp.shape) == 2
             else (sum_vertices,)
         )
+
+    @property
+    def _n_samples(self) -> int:
+        """Return number of sample / timepoints of the Polydata."""
+        self._check_parts()
+        shape = next(iter(self.parts.values())).shape
+        if len(shape) == 1:
+            return 1
+        else:
+            return shape[1]
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.shape}>"
@@ -1419,21 +1438,15 @@ class PolyData:
         vmax = max(x.max() for x in self.parts.values())
         return vmin, vmax
 
-    def _check_n_samples(self, samples: int, var_name="img"):
-        max_n_samples = []
-        for hemi in self.parts.values():
-            if hemi.ndim > 1:
-                max_n_samples.append(hemi.shape[1])
-            else:
-                max_n_samples.append(1)
-        max_n_samples = np.max(max_n_samples)
-        if max_n_samples > samples:
+    def _check_n_samples(self, n_samples: int, var_name="img") -> None:
+        """Check that the PolyData does not have more than n_samples."""
+        if self._n_samples > n_samples:
             raise ValueError(
-                f"Data for each part of {var_name} should be {samples}D. "
-                f"Found: {max_n_samples}."
+                f"Data for each part of {var_name} should be {n_samples}D. "
+                f"Found: {self._n_samples}."
             )
 
-    def _check_ndims(self, dim: int, var_name="img"):
+    def _check_ndims(self, dim: int, var_name="img") -> None:
         """Check if the data is of a given dimension.
 
         Raise error if not.
@@ -1443,7 +1456,7 @@ class PolyData:
         dim : int
             Dimensions the data should have.
 
-        var_name : str, optional
+        var_name : str, default="img"
             Name of the variable to include in the error message.
 
         Returns
@@ -1458,7 +1471,7 @@ class PolyData:
                 f"Found: {', '.join(msg)}."
             )
 
-    def to_filename(self, filename):
+    def to_filename(self, filename) -> None:
         """Save data to gifti.
 
         Parameters
@@ -1488,7 +1501,7 @@ class PolyData:
 
         _data_to_gifti(data, filename)
 
-    def _set_data_dtype(self, dtype):
+    def _set_data_dtype(self, dtype) -> None:
         if dtype is not None:
             for h, v in self.parts.items():
                 self.parts[h] = v.astype(dtype)
@@ -1537,7 +1550,7 @@ class SurfaceMesh(abc.ABC):
             f"{len(self.faces)} faces.>"
         )
 
-    def to_gifti(self, gifti_file):
+    def to_gifti(self, gifti_file) -> None:
         """Write surface mesh to a Gifti file on disk.
 
         Parameters
@@ -1749,7 +1762,7 @@ class PolyMesh:
         mesh.to_gifti(filename)
 
 
-def _check_data_and_mesh_compat(mesh, data):
+def _check_data_and_mesh_compat(mesh, data) -> None:
     """Check that mesh and data have the same keys and that shapes match.
 
     mesh : :obj:`nilearn.surface.PolyMesh`
@@ -1771,7 +1784,7 @@ def _check_data_and_mesh_compat(mesh, data):
             )
 
 
-def _mesh_to_gifti(coordinates, faces, gifti_file):
+def _mesh_to_gifti(coordinates, faces, gifti_file) -> None:
     """Write surface mesh to gifti file on disk.
 
     Parameters
@@ -1798,7 +1811,7 @@ def _mesh_to_gifti(coordinates, faces, gifti_file):
     gifti_img.to_filename(gifti_file)
 
 
-def _data_to_gifti(data, gifti_file):
+def _data_to_gifti(data, gifti_file) -> None:
     """Save data from Polydata to a gifti file.
 
     Parameters
@@ -1818,7 +1831,7 @@ def _data_to_gifti(data, gifti_file):
         data = data.astype(np.uint8)
     elif data.dtype in [np.int8, np.int16, np.int64]:
         data = data.astype(np.int32)
-    elif data.dtype in [np.float64]:
+    elif data.dtype == np.float64:
         data = data.astype(np.float32)
 
     if data.dtype == np.uint8:
@@ -1987,9 +2000,6 @@ class SurfaceImage:
         else:
             left_kwargs, right_kwargs = {}, {}
 
-        if isinstance(volume_img, (str, Path)):
-            volume_img = check_niimg(volume_img)
-
         texture_left = vol_to_surf(
             volume_img, mesh.parts["left"], **vol_to_surf_kwargs, **left_kwargs
         )
@@ -2021,7 +2031,7 @@ def check_surf_img(img: SurfaceImage | Iterable[SurfaceImage]) -> None:
             check_surf_img(x)
 
 
-def get_data(img, ensure_finite=False) -> np.ndarray:
+def get_data(img, ensure_finite: bool = False) -> np.ndarray:
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
 
@@ -2030,7 +2040,7 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
     img : :obj:`~surface.SurfaceImage` or :obj:`~surface.PolyData`
         SurfaceImage whose data to concatenate and extract.
 
-    ensure_finite : bool, Default=False
+    ensure_finite : :obj:`bool`, Default=False
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
@@ -2051,19 +2061,11 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
     data = np.concatenate(list(data.parts.values()), axis=0)
 
     if ensure_finite:
-        non_finite_mask = np.logical_not(np.isfinite(data))
-        if non_finite_mask.any():  # any non_finite_mask values?
-            warnings.warn(
-                "Non-finite values detected. "
-                "These values will be replaced with zeros.",
-                stacklevel=find_stack_level(),
-            )
-            data[non_finite_mask] = 0
-
+        return ensure_finite_data(data)
     return data
 
 
-def extract_data(img, index):
+def extract_data(img, index) -> dict[Any, np.ndarray]:
     """Extract data of a SurfaceImage a specified indices.
 
     Parameters
@@ -2081,8 +2083,20 @@ def extract_data(img, index):
     check_is_of_allowed_type(img, (SurfaceImage,), "img")
     mesh = img.mesh
     data = img.data
+    data._check_parts()
 
-    last_dim = 1 if isinstance(index, int) else len(index)
+    if isinstance(index, np.ndarray):
+        return {hemi: data.parts[hemi][:, index].copy() for hemi in data.parts}
+
+    if isinstance(index, int):
+        last_dim = 1
+    elif isinstance(index, slice):
+        start, stop, step = index.indices(data._n_samples)
+        last_dim = max(0, (stop - start + (step - 1)) // step)
+    elif all(isinstance(x, bool) for x in index):
+        last_dim = sum(index)
+    else:
+        last_dim = len(index)
 
     return {
         hemi: data.parts[hemi][:, index]
@@ -2177,7 +2191,9 @@ def compute_adjacency_matrix(mesh: InMemoryMesh, values="ones", dtype=None):
     return csr_matrix((ee, (uv, vu)), shape=(n, n))
 
 
-def find_surface_clusters(mesh, mask) -> tuple[pd.DataFrame, np.ndarray]:
+def find_surface_clusters(
+    mesh, mask, offset: int = 1
+) -> tuple[pd.DataFrame, np.ndarray]:
     """Find clusters of truthy vertices on a surface mesh.
 
     Parameters
@@ -2187,6 +2203,9 @@ def find_surface_clusters(mesh, mask) -> tuple[pd.DataFrame, np.ndarray]:
 
     mask : (n_vertices,) array_like of bool
         Boolean mask, True where vertex is part of a cluster.
+
+    offset: int, default=1
+        Base value to use to index the different clusters.
 
     Returns
     -------
@@ -2219,7 +2238,7 @@ def find_surface_clusters(mesh, mask) -> tuple[pd.DataFrame, np.ndarray]:
 
     # full label array (0 = background)
     labels = np.zeros(mesh.n_vertices, dtype=int)
-    labels[mask] = labels_sub + 1
+    labels[mask] = labels_sub + offset
 
     unique, counts = np.unique(labels[labels > 0], return_counts=True)
     clusters = pd.DataFrame(

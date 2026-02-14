@@ -93,9 +93,9 @@ for classifier_name in sorted(classifiers):
     decoder = Decoder(
         estimator=classifier_name,
         mask=mask_filename,
-        standardize="zscore_sample",
         cv=cv,
         screening_percentile=100,
+        verbose=1,
     )
     t0 = time.time()
     decoder.fit(
@@ -179,7 +179,6 @@ for classifier_name in sorted(classifiers):
     decoder = Decoder(
         estimator=classifier_name,
         mask=mask_filename,
-        standardize="zscore_sample",
         cv=cv,
         screening_percentile=100,
     )

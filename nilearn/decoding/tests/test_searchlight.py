@@ -14,7 +14,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _rng
 from nilearn.decoding import searchlight
 
@@ -50,6 +50,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
@@ -187,36 +188,14 @@ def test_searchlight_large_radius():
     assert sl.scores_[2, 2, 2] == 1.0
 
 
-def test_searchlight_group_cross_validation(rng):
-    frames = 30
+@pytest.mark.parametrize("frames", [10, 30])
+@pytest.mark.parametrize(
+    "cv", [5, LeaveOneGroupOut(), KFold(n_splits=4), None]
+)
+def test_searchlight_group_cross_validation(rng, frames, cv):
+    """Check several valid cv scheme."""
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
     _, n_jobs = define_cross_validation()
-
-    groups = rng.permutation(np.arange(frames, dtype=int) > (frames // 2))
-
-    sl = searchlight.SearchLight(
-        mask_img,
-        process_mask_img=mask_img,
-        radius=1,
-        n_jobs=n_jobs,
-        scoring="accuracy",
-        cv=LeaveOneGroupOut(),
-    )
-    sl.fit(data_img, y=cond, groups=groups)
-
-    assert np.where(sl.scores_ == 1)[0].size == 7
-    assert sl.scores_[2, 2, 2] == 1.0
-
-
-def test_searchlight_group_cross_validation_with_extra_group_variable(
-    rng,
-    affine_eye,
-):
-    frames = 30
-    data_img, cond, mask_img = _make_searchlight_test_data(frames)
-    cv, n_jobs = define_cross_validation()
-
-    groups = rng.permutation(np.arange(frames, dtype=int) > (frames // 2))
 
     sl = searchlight.SearchLight(
         mask_img,
@@ -226,12 +205,23 @@ def test_searchlight_group_cross_validation_with_extra_group_variable(
         scoring="accuracy",
         cv=cv,
     )
+    groups = rng.permutation(np.arange(frames, dtype=int) > (frames // 2))
+    if cv in [5, None]:
+        groups = None
     sl.fit(data_img, y=cond, groups=groups)
 
     assert np.where(sl.scores_ == 1)[0].size == 7
     assert sl.scores_[2, 2, 2] == 1.0
 
-    # Check whether searchlight works on list of 3D images
+
+def test_searchlight_list_3d_images(
+    rng,
+    affine_eye,
+):
+    """Check whether searchlight works on list of 3D images."""
+    frames = 30
+    data_img, _, mask_img = _make_searchlight_test_data(frames)
+
     data = rng.random((5, 5, 5))
     data_img = Nifti1Image(data, affine=affine_eye)
     imgs = [data_img] * 12
@@ -239,7 +229,6 @@ def test_searchlight_group_cross_validation_with_extra_group_variable(
     # labels
     y = [0, 1] * 6
 
-    # run searchlight on list of 3D images
     sl = searchlight.SearchLight(mask_img)
     sl.fit(imgs, y)
 
@@ -266,6 +255,7 @@ def test_mask_img_dimension_mismatch():
     assert sl.scores_.shape == invalid_mask_img.shape
 
 
+@pytest.mark.slow
 def test_transform_applies_mask_correctly():
     """Test if `transform()` applies the mask correctly."""
     frames = 20

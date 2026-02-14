@@ -10,13 +10,12 @@ import numpy as np
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import iter_check_niimg
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import sanitize_verbose
 from nilearn.image import resample_img
+from nilearn.image.image import iter_check_niimg
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
@@ -24,8 +23,8 @@ from nilearn.maskers.base_masker import (
 )
 from nilearn.maskers.nifti_masker import (
     NiftiMasker,
-    _make_brain_mask_func,
     filter_and_mask,
+    make_brain_mask_func,
 )
 from nilearn.masking import (
     compute_multi_background_mask,
@@ -41,18 +40,18 @@ def _get_mask_strategy(strategy: str):
     elif strategy == "epi":
         return compute_multi_epi_mask
     elif strategy == "whole-brain-template":
-        return _make_brain_mask_func("whole-brain", multi=True)
+        return make_brain_mask_func("whole-brain", multi=True)
     elif strategy == "gm-template":
-        return _make_brain_mask_func("gm", multi=True)
+        return make_brain_mask_func("gm", multi=True)
     elif strategy == "wm-template":
-        return _make_brain_mask_func("wm", multi=True)
+        return make_brain_mask_func("wm", multi=True)
     elif strategy == "template":
         warnings.warn(
             "Masking strategy 'template' is deprecated. "
             "Please use 'whole-brain-template' instead.",
             stacklevel=find_stack_level(),
         )
-        return _make_brain_mask_func("whole-brain")
+        return make_brain_mask_func("whole-brain")
     else:
         raise ValueError(
             f"Unknown value of mask_strategy '{strategy}'. "
@@ -81,7 +80,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         Optional parameters can be set using mask_args and mask_strategy to
         fine tune the mask extraction.
 
-    runs : :obj:`numpy.ndarray`, optional
+    runs : :obj:`numpy.ndarray` or None, default=None
         Add a run level to the preprocessing. Each run will be
         detrended independently. Must be a 1D array of n_samples elements.
 
@@ -124,7 +123,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
 
         Default='background'.
 
-    mask_args : :obj:`dict`, optional
+    mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`
@@ -231,41 +230,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         )
         self.n_jobs = n_jobs
 
-    @fill_doc
-    def fit(
-        self,
-        imgs=None,
-        y=None,
-    ):
-        """Compute the mask corresponding to the data.
-
-        Parameters
-        ----------
-        imgs : Niimg-like objects, :obj:`list` of Niimg-like objects or None, \
-            default=None
-            See :ref:`extracting_data`.
-            Data on which the mask must be calculated.
-            If this is a list, the affine is considered the same for all.
-
-        %(y_dummy)s
-
-        """
-        del y
-        check_params(self.__dict__)
-
-        self._init_report_content()
-
-        self._overlay_text = (
-            "\n To see the input Nifti image before resampling, "
-            "hover over the displayed image."
-        )
-
-        self.clean_args_ = {} if self.clean_args is None else self.clean_args
-
-        self.mask_img_ = self._load_mask(imgs)
-
-        self._fit_cache()
-
+    def _fit(self, imgs):
         mask_logger("load_data", img=imgs, verbose=self.verbose)
 
         # Compute the mask if not given by the user
@@ -314,10 +279,12 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                         stacklevel=find_stack_level(),
                     )
 
+            verbose = sanitize_verbose(self.verbose)
+
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs,
                 memory=self.memory_,
-                verbose=max(0, self.verbose - 1),
+                verbose=max(0, verbose - 1),
                 **mask_args,
             )
         elif imgs is not None:
@@ -329,6 +296,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                 stacklevel=find_stack_level(),
             )
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:  # save inputs for reporting
             self._reporting_data = {
                 "mask": self.mask_img_,
@@ -433,15 +401,8 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         # Ignore the mask-computing params: they are not useful and will
         # just invalidate the cache for no good reason
         # target_shape and target_affine are conveyed implicitly in mask_img
-        params = get_params(
-            self.__class__,
-            self,
-            ignore=[
-                "mask_img",
-                "mask_args",
-                "mask_strategy",
-                "copy",
-            ],
+        params = self._get_masker_params(
+            ignore=["mask_img", "mask_args", "mask_strategy"]
         )
         params["clean_kwargs"] = self.clean_args_
 

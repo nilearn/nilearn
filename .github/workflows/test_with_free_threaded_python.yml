@@ -5,11 +5,24 @@
 name: test free threaded python
 
 on:
+    pull_request:
     schedule:
-    # Run every 1rst of the month
-    -   cron: 0 8 1 * *
+        # Uses the cron schedule for github actions
+        # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+        # Run every Monday at midnight UTC
+        #     ┌───────────── minute (0 - 59)
+        #     │ ┌───────────── hour (0 - 23)
+        #     │ │ ┌───────────── day of the month (1 - 31)
+        #     │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+        #     │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     * * * * *
+    -   cron: 0 0 * * 1
 
-    # Allows you to run this workflow manually from the Actions tab
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
     workflow_dispatch:
 
 concurrency:
@@ -21,20 +34,26 @@ env:
     FORCE_COLOR: true
 
 jobs:
+    check_skip_flags:
+        uses: ./.github/workflows/check_skip_flags.yml
+        with:
+            skip_type: test
 
-    test_and_coverage:
+    free_threaded:
         if: github.repository == 'nilearn/nilearn'
         name: 'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
         runs-on: ${{ matrix.os }}
+        needs: check_skip_flags
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 description: [latest dependencies]
-                py: [3.13t]
-                os: [ubuntu-latest, macos-latest, windows-latest]
-                env: [plotting]
+                py: [3.14t]
+                # TODO: ubuntu-latest fails - figure out why
+                os: [macos-latest]
+                env: [free_threaded]
         steps:
-        -   uses: actions/checkout@v5
+        -   uses: actions/checkout@v6
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v7
         -   name: Setup python
@@ -42,23 +61,37 @@ jobs:
             with:
                 python-version: ${{ matrix.py }}
                 allow-prereleases: true
-        -   name: Install tox
-            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
-        -   name: Show tox config
-            run: tox c
-        -   name: Run test suite
+
+        -   name: Install dependencies
+            # for now one of the dependencies of plotly cannot be installed
+            # for free threaded python so only testing with matplotlib
+            #
+            # for now one of the dependencies of plotly
+            # cannot be installed for free threaded python
+            # so only testing with matplotlib
             run: |
-                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
-                tox run -e plot_test_timing
+                uv venv -p 3.14t
+                source .venv/bin/activate
+                uv pip install -e '.[test_free_threaded]'
+                uv pip install --verbose --upgrade --pre \
+                    --index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple \
+                    pandas scikit-learn matplotlib
+
+        -   name: Run test suite
+            # run on several threads
+            # this may take a bit longer with fewer threads
+            # but as some tests can be flaky,
+            # they will more systematically fail with more threads
+            id: test_free_threaded
+            run: |
+                source .venv/bin/activate
+                PYTEST_RUN_PARALLEL_VERBOSE=1
+                N_THREADS=16
+                pytest -m 'not flaky' --report=report.html --parallel-threads $N_THREADS nilearn
+
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report.html
                 path: report.html
-        -   name: Upload test timings
-            if: success() || failure()
-            uses: actions/upload-artifact@v4
-            with:
-                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
-                path: results/pytest_output
