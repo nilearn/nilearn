@@ -2334,8 +2334,8 @@ def check_decoder_estimator_args(estimator_orig):
         # TODO: something to fix?
         return
     assert estimator.estimator_.max_iter == 5000
-    
-    
+
+
 def check_decoder_screening_n_features(estimator_orig):
     """Set screening_n_features gives the requested number of weights / CV.
 
