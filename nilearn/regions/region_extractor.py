@@ -432,18 +432,9 @@ class RegionExtractor(NiftiMapsMasker):
         Array of list of indices where each index value is assigned to
         each separate region of its corresponding family of brain maps.
 
-    maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
-        The maps mask of the data.
-
     %(nifti_mask_img_)s
 
     memory_ : joblib memory cache
-
-    n_elements_ : :obj:`int`
-        The number of overlapping maps in the mask.
-        This is equivalent to the number of volumes in the mask image.
-
-        .. nilearn_versionadded:: 0.9.2
 
     regions_img_ : :class:`nibabel.nifti1.Nifti1Image`
         List of separated regions with each region lying on an
