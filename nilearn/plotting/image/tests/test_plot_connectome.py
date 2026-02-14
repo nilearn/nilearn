@@ -21,6 +21,7 @@ def non_symmetric_matrix():
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_connectome_masked_array_sparse_matrix(
     node_coords, adjacency, params_plot_connectome
 ):
@@ -39,6 +40,7 @@ def test_plot_connectome_masked_array_sparse_matrix(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_connectome_with_nans(
     adjacency, node_coords, params_plot_connectome
 ):
