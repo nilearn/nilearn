@@ -116,8 +116,8 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     check_params(locals())
 
     if url is None:
-        # The URL can be retrieved from the nilearn account on OSF (Open
-        # Science Framework), https://osf.io/4r3jt/quickfiles/
+        # The URL can be retrieved from the nilearn account on OSF
+        # (Open Science Framework), https://osf.io/hr36b/files/7pj92
         # Clicking on the "share" button gives the root of the URL.
         url = "https://osf.io/7pj92/download"
     opts = {"uncompress": True}
