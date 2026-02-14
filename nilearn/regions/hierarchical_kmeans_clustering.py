@@ -418,6 +418,7 @@ class HierarchicalKMeans(
         """
         check_is_fitted(self)
 
+        X_red = check_array(X_red, estimator=self)
         X_red = X_red.T
         inverse = self.labels_
         if self.scaling:

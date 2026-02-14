@@ -93,7 +93,7 @@ print(f"{signals.shape=}")
 # ----------------------------
 #
 # You can use 'set_output()' to decide the output format of 'transform'.
-# If you want to output to a DataFrame, you an choose pandas and polars.
+# If you want to output to a DataFrame, you an choose 'pandas' and 'polars'.
 #
 masker.set_output(transform="pandas")
 signals_df = masker.transform(func_filename)

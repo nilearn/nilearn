@@ -96,6 +96,7 @@ test = [
     "coverage",
     "lxml",
     "numpydoc>=1.8.0",
+    "polars",
     "pytest>=6.0.0",
     "pytest-cov",
     "pytest-csv",
@@ -110,6 +111,7 @@ test = [
 # requires fewer extensions
 test_free_threaded = [
     "numpydoc>=1.8.0",
+    "polars",
     "pytest>=6.0.0",
     "pytest-csv",
     "pytest-randomly",
@@ -306,6 +308,7 @@ module = [
     "numpydoc.*",
     "packaging.*",
     "plotly.*",
+    "polars.*",
     "pytest.*",
     "rich.*",
     "scipy.*",

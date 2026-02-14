@@ -31,6 +31,7 @@ from tempfile import TemporaryDirectory, mkdtemp
 
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from joblib import Memory, hash
 from nibabel import Nifti1Image
@@ -805,7 +806,17 @@ def check_verbose(estimator) -> None:
 
 
 def check_set_output(estimator_orig) -> None:
-    """Check that set_ouput can be used."""
+    """Check that set_ouput can be used.
+
+    Check that:
+    - by default we transform to numpy array
+    - can transform to polar or pandas dataframe
+    - can inverse_transform from numpy array, or pandas / polars dataframes
+    - check that estimators that work with surface can deal with 1D image
+
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5969
+    """
     if not hasattr(estimator_orig, "transform") or isinstance(
         estimator_orig, (SearchLight, ReNA)
     ):
@@ -814,38 +825,70 @@ def check_set_output(estimator_orig) -> None:
     if isinstance(
         estimator_orig, (_BaseDecomposition, ConnectivityMeasure, _MultiMixin)
     ):
-        with pytest.raises(NotImplementedError):
-            estimator_orig.set_output(transform="pandas")
+        for output in ["pandas", "polars"]:
+            with pytest.raises(NotImplementedError):
+                estimator_orig.set_output(transform=output)
         return
 
+    # default
     estimator = clone(estimator_orig)
+    img, _ = generate_data_to_fit(estimator)
+    if isinstance(estimator, NiftiSpheresMasker):
+        mask_img = new_img_like(img, np.ones(img.shape[:3]))
+        estimator.mask_img = mask_img
     estimator = fit_estimator(estimator)
 
-    img, _ = generate_data_to_fit(estimator)
-
     signal = estimator.transform(img)
+
     if isinstance(estimator, _BaseDecomposition):
-        assert isinstance(signal[0], np.ndarray)
-    else:
-        assert isinstance(signal, np.ndarray)
+        signal = signal[0]
 
-    estimator.set_output(transform="pandas")
-    signal = estimator.transform(img)
-    assert isinstance(signal, pd.DataFrame)
+    assert isinstance(signal, np.ndarray)
 
-    estimator.set_output(transform="polars")
-    # if user wants to output to polars,
-    # sklearn will raise error if it's not installed
-    with pytest.raises(ImportError, match="requires polars to be installed"):
+    to_inverse_transform = {
+        "default": signal,
+        "pandas": pd.DataFrame(signal),
+        "polars": pl.from_numpy(signal),
+    }
+
+    if hasattr(estimator, "inverse_transform"):
+        for v in to_inverse_transform.values():
+            estimator.inverse_transform(v)
+
+    # output to "pandas" or  "polars"
+    for output, expected_type in zip(
+        ["pandas", "polars"], [pd.DataFrame, pl.DataFrame], strict=False
+    ):
+        estimator.set_output(transform=output)
         signal = estimator.transform(img)
 
+        assert isinstance(signal, expected_type)
+
+        if hasattr(estimator, "inverse_transform"):
+            for v in to_inverse_transform.values():
+                estimator.inverse_transform(v)
+
     # check on 1D image for estimators that accepts surface
+    # TODO errors transforming 1D images
+    # when output set to "pandas" or "polars"
     if accept_surf_img_input(estimator_orig):
         estimator = clone(estimator_orig)
         estimator = fit_estimator(estimator)
-        estimator.set_output(transform="pandas")
-        signal = estimator.transform(img)
-        assert isinstance(signal, pd.DataFrame)
+
+        for output in ["default", "pandas", "polars"]:
+            estimator.set_output(transform=output)
+
+            if output in ["pandas", "polars"]:
+                with pytest.raises(
+                    ValueError,
+                    match=r"Length mismatch|must match data dimensions",
+                ):
+                    signal = estimator.transform(_surf_mask_1d())
+            else:
+                signal = estimator.transform(_surf_mask_1d())
+
+        if hasattr(estimator, "inverse_transform"):
+            estimator.inverse_transform(signal)
 
 
 def check_doc_attributes(estimator) -> None:
@@ -1224,50 +1267,6 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig) -> None:
                 atol=1e-9,
                 err_msg=msg,
             )
-
-
-def check_estimator_set_output(estimator_orig) -> None:
-    """Check that set_ouput can be used."""
-    if not hasattr(estimator_orig, "transform") or isinstance(
-        estimator_orig, (SearchLight, ReNA)
-    ):
-        return
-
-    if isinstance(
-        estimator_orig, (_BaseDecomposition, ConnectivityMeasure, _MultiMixin)
-    ):
-        with pytest.raises(NotImplementedError):
-            estimator_orig.set_output(transform="pandas")
-        return
-
-    estimator = clone(estimator_orig)
-    estimator = fit_estimator(estimator)
-
-    img, _ = generate_data_to_fit(estimator)
-
-    signal = estimator.transform(img)
-    if isinstance(estimator, _BaseDecomposition):
-        assert isinstance(signal[0], np.ndarray)
-    else:
-        assert isinstance(signal, np.ndarray)
-
-    estimator.set_output(transform="pandas")
-    signal = estimator.transform(img)
-    assert isinstance(signal, pd.DataFrame)
-
-    estimator.set_output(transform="polars")
-    # if user wants to output to polars,
-    # sklearn will raise error if it's not installed
-    with pytest.raises(ImportError, match="requires polars to be installed"):
-        signal = estimator.transform(img)
-
-    # check on 1D image for estimators that accepts surface
-    if accept_surf_img_input(estimator_orig):
-        estimator = clone(estimator_orig)
-        estimator = fit_estimator(estimator)
-        estimator.set_output(transform="pandas")
-        signal = estimator.transform(img)
-        assert isinstance(signal, pd.DataFrame)
 
 
 def check_fit_returns_self(estimator_orig) -> None:
