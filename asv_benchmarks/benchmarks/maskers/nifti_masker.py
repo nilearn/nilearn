@@ -102,7 +102,9 @@ class CompareMask(Benchmark):
         mask, img = load(loader)
         apply_mask(mask, img, implementation)
 
-    def peakmem_nifti_masker_fit_transform_compare(self, implementation, loader):
+    def peakmem_nifti_masker_fit_transform_compare(
+        self, implementation, loader
+    ):
         """Peak memory of loading and then masking."""
         mask, img = load(loader)
         apply_mask(mask, img, implementation)
