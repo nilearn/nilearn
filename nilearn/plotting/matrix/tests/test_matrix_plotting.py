@@ -161,6 +161,7 @@ def test_save_design_matrix(tmp_path):
     assert (tmp_path / "dmtx.pdf").exists()
 
 
+@pytest.mark.thread_safe
 @pytest.mark.parametrize("suffix, sep", [(".csv", ","), (".tsv", "\t")])
 def test_plot_design_matrix_path_str(tmp_path, suffix, sep):
     """Test plot_design_matrix directly from file."""

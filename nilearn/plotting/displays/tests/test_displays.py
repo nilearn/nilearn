@@ -468,6 +468,7 @@ def test_threshold(threshold, vmin, vmax, expected_results):
     )
 
 
+@pytest.mark.thread_safe
 @pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
 @pytest.mark.parametrize(
     "display,name", zip(SLICERS, SLICER_KEYS, strict=False)
