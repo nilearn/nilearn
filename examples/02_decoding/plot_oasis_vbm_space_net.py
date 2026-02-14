@@ -62,7 +62,6 @@ decoder = SpaceNetRegressor(
     penalty="graph-net",
     screening_percentile=5.0,
     memory_level=2,
-    standardize="zscore_sample",
     n_jobs=2,
     verbose=1,
 )

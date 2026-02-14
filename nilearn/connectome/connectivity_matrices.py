@@ -16,10 +16,10 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_parameter_in_allowed
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 
 
-def _check_square(matrix):
+def _check_square(matrix: np.ndarray) -> None:
     """Raise a ValueError if the input matrix is square.
 
     Parameters
@@ -34,7 +34,7 @@ def _check_square(matrix):
         )
 
 
-def _check_spd(matrix) -> None:
+def _check_spd(matrix: np.ndarray) -> None:
     """Raise a ValueError if the input matrix is not symmetric positive \
     definite.
 
@@ -48,7 +48,9 @@ def _check_spd(matrix) -> None:
         raise ValueError("Expected a symmetric positive definite matrix.")
 
 
-def _form_symmetric(function, eigenvalues, eigenvectors):
+def _form_symmetric(
+    function, eigenvalues: np.ndarray, eigenvectors: np.ndarray
+) -> np.ndarray:
     """Return the symmetric matrix with the given eigenvectors and \
     eigenvalues transformed by function.
 
@@ -214,7 +216,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     return gmean
 
 
-def sym_matrix_to_vec(symmetric, discard_diagonal=False):
+def sym_matrix_to_vec(symmetric, discard_diagonal: bool = False) -> np.ndarray:
     """Return the flattened lower triangular part of an array.
 
     If diagonal is kept, diagonal elements are divided by sqrt(2) to conserve
@@ -334,7 +336,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     return sym
 
 
-def cov_to_corr(covariance):
+def cov_to_corr(covariance: np.ndarray) -> np.ndarray:
     """Return correlation matrix for a given covariance matrix.
 
     Parameters
@@ -356,7 +358,7 @@ def cov_to_corr(covariance):
     return correlation
 
 
-def prec_to_partial(precision):
+def prec_to_partial(precision: np.ndarray) -> np.ndarray:
     """Return partial correlation matrix for a given precision matrix.
 
     Parameters
@@ -408,10 +410,9 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         .. note::
 
             Added to control passing value to `standardize` of ``signal.clean``
-            to call new behavior since passing "zscore" or True (default) is
+            to call new behavior since passing False or True (default) is
             deprecated.
-            This parameter will be changed to "zscore_sample"
-            in version 0.14 and removed in version 0.15.
+            This parameter will be removed in version 0.15.
 
     %(verbose0)s
 
@@ -538,8 +539,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
 
         # Compute all the matrices, stored in "connectivities"
         if self.kind == "correlation":
-            # TODO (nilearn 0.14: change to "zscore_sample")
-            standardize = "zscore" if self.standardize is True else None
+            standardize = "zscore_sample" if self.standardize is True else None
             covariances_std = [
                 self.cov_estimator_.fit(
                     signal.standardize_signal(

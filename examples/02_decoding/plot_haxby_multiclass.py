@@ -5,8 +5,6 @@ The haxby dataset: different multi-class strategies
 We compare one vs all and one vs one multi-class strategies: the overall
 cross-validated accuracy and the confusion matrix.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 import numpy as np
@@ -52,7 +50,6 @@ from nilearn.maskers import NiftiMasker
 # For decoding, standardizing is often very important
 nifti_masker = NiftiMasker(
     mask_img=mask_filename,
-    standardize="zscore_sample",
     runs=run,
     smoothing_fwhm=4,
     memory="nilearn_cache",

@@ -9,7 +9,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.maskers import SurfaceLabelsMasker
 from nilearn.maskers.tests.conftest import sklearn_surf_label_img
 from nilearn.surface import SurfaceImage
@@ -183,6 +183,7 @@ def test_fit_with_lut(surf_label_img, tmp_path):
         assert masker.lut_["name"].to_list() == ["Background", "bar"]
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "background_label, n_expected_regions", [(0, 3), (1, 2)]
 )
@@ -269,6 +270,7 @@ def test_fit_no_report(surf_label_img):
     assert masker._has_report_data() is False
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "strategy",
     (

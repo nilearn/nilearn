@@ -519,6 +519,7 @@ def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
     assert_almost_equal(get_data(img_r), get_data(imgs))
 
 
+@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_signal_extraction_with_maps_and_labels(
     labeled_regions, fmri_img, shape_3d_default
@@ -762,7 +763,7 @@ def test_trim_maps(shape_3d_default):
 
     assert maps_i.flags["F_CONTIGUOUS"]
     assert len(maps_i_indices) == maps_i.shape[-1]
-    assert maps_i.shape == (maps_data.shape[:3] + (4,))
+    assert maps_i.shape == ((*maps_data.shape[:3], 4))
     maps_i_correct = maps_data[..., :4].copy()
     maps_i_correct[np.logical_not(mask_data), :] = 0
     assert_almost_equal(maps_i_correct, maps_i)

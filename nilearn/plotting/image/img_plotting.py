@@ -23,7 +23,6 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
-from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.numpy_conversions import as_ndarray
@@ -32,6 +31,7 @@ from nilearn._utils.param_validation import (
     check_params,
     check_threshold,
 )
+from nilearn._utils.versions import compare_version
 from nilearn.image import (
     check_niimg_3d,
     check_niimg_4d,
@@ -1920,10 +1920,9 @@ def plot_carpet(
         .. note::
 
             Added to control passing value to `standardize` of ``signal.clean``
-            to call new behavior since passing "zscore" or True (default) is
+            to call new behavior since passing False or True (default) is
             deprecated.
-            This parameter will be changed to "zscore_sample"
-            in version 0.14 and removed in version 0.15.
+            This parameter will be removed in version 0.15.
 
     Returns
     -------
@@ -2107,45 +2106,3 @@ def plot_carpet(
         axes.set_ylabel("voxels")
 
     return save_figure_if_needed(figure, output_file)
-
-
-def plot_img_comparison(
-    ref_imgs,
-    src_imgs,
-    masker=None,
-    plot_hist=True,
-    log=True,
-    ref_label="image set 1",
-    src_label="image set 2",
-    output_dir=None,
-    axes=None,
-):
-    """Redirect to plot_img_comparison."""
-    from nilearn.plotting.img_comparison import plot_img_comparison
-
-    # TODO (nilearn >= 0.13.1)
-    warnings.warn(
-        (
-            "The 'plot_img_comparison' has been moved to  "
-            "'nilearn.plotting.img_comparison'.\n"
-            "It will be removed from 'nilearn.plotting.img_plotting' "
-            "in version >= 0.13.1.\n"
-            "Import 'plot_img_comparison' "
-            "from 'nilearn.plotting.img_comparison' "
-            "to silence this warning."
-        ),
-        FutureWarning,
-        stacklevel=find_stack_level(),
-    )
-
-    plot_img_comparison(
-        ref_imgs,
-        src_imgs,
-        masker,
-        plot_hist=plot_hist,
-        log=log,
-        ref_label=ref_label,
-        src_label=src_label,
-        output_dir=output_dir,
-        axes=axes,
-    )

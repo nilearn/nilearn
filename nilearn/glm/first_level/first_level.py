@@ -7,7 +7,6 @@ import csv
 import inspect
 import time
 import warnings
-from collections.abc import Iterable
 from pathlib import Path
 from warnings import warn
 
@@ -130,7 +129,7 @@ def _yule_walker(x, order):
     # section removed-ambiguity-when-broadcasting-in-np-solve
     rho = np.linalg.solve(rt, r[:, 1:, None])[..., 0]
 
-    rho = rho.reshape(x.shape[:-1] + (order,))
+    rho = rho.reshape((*x.shape[:-1], order))
 
     return rho
 
@@ -210,8 +209,8 @@ def run_glm(
         )
         try:
             ar_order = int(noise_model[2:])
-        except ValueError:
-            raise ValueError(err_msg)
+        except ValueError as e:
+            raise ValueError(err_msg) from e
 
         # compute the AR coefficients
         ar_coef_ = _yule_walker(ols_result.residuals.T, ar_order)
@@ -263,7 +262,7 @@ def run_glm(
     return labels, results
 
 
-def _check_trial_type(events) -> None:
+def _check_trial_type(events: list[str | Path]) -> None:
     """Check that the event files contain a "trial_type" column.
 
     Parameters
@@ -1261,10 +1260,7 @@ class FirstLevelModel(BaseGLM):
             Used for setting up the masker object.
         """
         masker_type = "nii"
-        # all elements of X should be of the similar type by now
-        # so we can only check the first one
-        to_check = run_img[0] if isinstance(run_img, Iterable) else run_img
-        if not self._is_volume_glm() or isinstance(to_check, SurfaceImage):
+        if not self._is_volume_glm() or isinstance(run_img, SurfaceImage):
             masker_type = "surface"
 
         # Learn the mask
@@ -1324,6 +1320,13 @@ class FirstLevelModel(BaseGLM):
             check_is_fitted(self.mask_img)
 
             self.masker_ = self.mask_img
+
+            # TODO (nilearn >= 0.15.0) remove if and elif
+            # avoid some FutureWarning the user cannot affect
+            if self.masker_.standardize is False:
+                self.masker_.standardize = None
+            elif self.masker_.standardize is True:
+                self.masker_.standardize = "zscore_sample"
 
         self.n_elements_ = self.masker_.n_elements_
 

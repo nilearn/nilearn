@@ -17,7 +17,6 @@ from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
 from sklearn.base import is_classifier
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 from sklearn.linear_model import LinearRegression
-from sklearn.linear_model._base import _preprocess_data as center_data
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import check_cv
 from sklearn.utils import check_array, check_X_y
@@ -34,7 +33,7 @@ from nilearn._utils.param_validation import (
     check_params,
     sanitize_verbose,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.image import get_data
@@ -302,6 +301,48 @@ class _EarlyStoppingCallback:
             return pearson_score, spearman_score
 
 
+def _center_data(X, y):
+    """Center `X` and `y` and store the mean of `y` in `y_offset`.
+    Before centering perform standard input validation of `X`, `y`.
+
+    This function replaces `sklearn.linear_model._base._preprocess_data`. The
+    implementation is inspired from `_preprocess_data`.
+
+    Parameters
+    ----------
+    X : ndarray of shape (n_samples, n_features)
+
+    y : ndarray of shape (n_samples,) or (n_samples, n_targets)
+
+    Returns
+    -------
+    X : ndarray of shape (n_samples, n_features)
+        Centered version of X
+    y : ndarray of shape (n_samples,) or (n_samples, n_targets)
+        Centered version of y
+    y_offset : float or ndarray of shape (n_features,)
+        Mean of y
+    """
+    X = check_array(
+        X,
+        copy=False,
+        accept_sparse=False,
+        dtype=(np.float16, np.float32, np.float64, np.longdouble),
+    )
+    y = check_array(y, dtype=X.dtype, copy=False, ensure_2d=False)
+
+    X_offset = np.asarray(np.average(X, axis=0))
+
+    if X_offset.dtype != X.dtype:
+        X_offset = X_offset.astype(X.dtype, copy=False)
+    X -= X_offset
+
+    y_offset = np.asarray(np.average(y, axis=0))
+    y -= y_offset
+
+    return X, y, y_offset
+
+
 @fill_doc
 def path_scores(
     solver,
@@ -399,14 +440,7 @@ def path_scores(
     X_test, y_test = X[test].copy(), y[test].copy()
 
     # it is essential to center the data in regression
-    # do not unpack tuple completely
-    # as it returns more values starting from sklearn 1.8
-    # TODO: try to find a public function in sklearn to do this
-    tmp = center_data(X_train, y_train, fit_intercept=True, copy=False)
-    X_train = tmp[0]
-    y_train = tmp[1]
-    y_train_mean = tmp[3]
-    del tmp
+    X_train, y_train, y_train_mean = _center_data(X_train, y_train)
 
     # misc
     if not isinstance(l1_ratios, collections.abc.Iterable):
