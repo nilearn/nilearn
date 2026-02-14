@@ -18,10 +18,7 @@ import numpy as np
 from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from sklearn import clone
-from sklearn.base import (
-    MultiOutputMixin,
-    is_classifier,
-)
+from sklearn.base import MultiOutputMixin, is_classifier
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
     LassoCV,
@@ -88,6 +85,8 @@ SUPPORTED_ESTIMATORS = {
     "dummy_classifier": DummyClassifier(strategy="stratified", random_state=0),
     "dummy_regressor": DummyRegressor(strategy="mean"),
 }
+
+MIN_N_FEATURES_FOR_SCREENING = 100
 
 
 @fill_doc
@@ -365,7 +364,7 @@ def _parallel_fit(
     scorer,
     mask_img,
     class_index,
-    clustering_percentile,
+    clustering_percentile: int,
     verbose=0,
 ):
     """Find the best estimator for a fold within a job.
@@ -395,9 +394,20 @@ def _parallel_fit(
         X_train = clustering.fit_transform(X_train)
         X_test = clustering.transform(X_test)
 
-    do_screening = (
-        X_train.shape[1] > _MIN_N_FEATURES_FOR_SCREENING
-    ) and selector is not None
+    do_screening: bool = False
+    if selector is not None:
+        if X_train.shape[1] > _MIN_N_FEATURES_FOR_SCREENING:
+            do_screening = True
+        else:
+            warnings.warn(
+                (
+                    f"number of features ({X_train.shape[1]}) "
+                    f"less than or equal to {MIN_N_FEATURES_FOR_SCREENING}: "
+                    "no feature selection will be performed."
+                ),
+                category=UserWarning,
+                stacklevel=find_stack_level(),
+            )
 
     if do_screening:
         X_train = selector.fit_transform(X_train, y_train)
@@ -715,6 +725,25 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
             verbose=self.verbose,
         )
 
+        # Ensure all CVs have enough features to do feature selection
+        if selector is not None:
+            for _, (train, _) in itertools.product(
+                range(n_problems), self.cv_
+            ):
+                if not X[train].shape[1] > MIN_N_FEATURES_FOR_SCREENING:
+                    warnings.warn(
+                        (
+                            f"number of features ({X[train].shape[1]}) "
+                            "less than or equal to "
+                            f"{MIN_N_FEATURES_FOR_SCREENING}: "
+                            "no feature selection will be performed."
+                        ),
+                        category=UserWarning,
+                        stacklevel=find_stack_level(),
+                    )
+                    selector = None
+                    break
+
         # Return a suitable screening percentile according to the mask image
         if hasattr(selector, "percentile"):
             self.screening_percentile_ = selector.percentile
@@ -744,10 +773,12 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
                     extra_msg += "and / or"
             if clustering_percentile_lt_100:
                 extra_msg += "'clustering_percentile'"
+            if extra_msg != "":
+                extra_msg += "."
             warning_msg = (
                 "The decoding model will be trained only "
                 f"on {n_final_features} features. "
-                f"{extra_msg}."
+                f"{extra_msg}"
             )
             warnings.warn(
                 warning_msg, UserWarning, stacklevel=find_stack_level()
