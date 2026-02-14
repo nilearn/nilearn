@@ -543,7 +543,7 @@ plt.show()
 from nilearn.datasets import fetch_icbm152_brain_gm_mask
 from nilearn.plotting import plot_roi
 
-data_mask = first_level_model.masker_.mask_img_
+data_mask = first_level_model.mask_img_
 
 icbm_mask = fetch_icbm152_brain_gm_mask()
 
