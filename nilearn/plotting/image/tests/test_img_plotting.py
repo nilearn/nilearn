@@ -80,6 +80,7 @@ def test_plot_functions_invalid_threshold(plot_func, img_3d_mni, tmp_path):
     plt.close()
 
 
+@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "plot_func", PLOTTING_FUNCS_3D.difference({plot_glass_brain})

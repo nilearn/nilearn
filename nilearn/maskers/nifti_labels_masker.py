@@ -475,8 +475,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         mask_logger("load_regions", self.labels_img, verbose=self.verbose)
 
-        self.labels_img_ = deepcopy(self.labels_img)
-        self.labels_img_ = check_niimg_3d(self.labels_img_)
+        labels_img_ = deepcopy(self.labels_img)
+        self.labels_img_ = check_niimg_3d(labels_img_)
 
         if self.labels:
             if self.lut is not None:
@@ -489,10 +489,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             if "background" in self.labels:
                 idx = self.labels.index("background")
                 self.labels[idx] = "Background"
-
-        self.lut_ = self._generate_lut()
-
-        self._original_region_ids = self.lut_["index"].to_list()
 
         if imgs is not None:
             imgs_ = check_niimg(imgs, atleast_4d=True)
@@ -542,6 +538,13 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
             # Just check that the mask is valid
             load_mask_img(self.mask_img_)
+
+        # generating the LUT must be done
+        # after masking and resampling
+        # as some labels may have been dropped
+        self.lut_ = self._generate_lut()
+
+        self._original_region_ids = self.lut_["index"].to_list()
 
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
@@ -647,12 +650,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         # from those passed at fit time.
         # So it may be needed to resample mask and labels,
         # if 'data' is the resampling target.
-        # We handle the resampling of labels and mask separately because the
-        # affine of the labels and mask images should not impact the extraction
-        # of the signal.
-        #
-        # Any resampling of the mask or labels is not 'kept' after transform,
-        # to avoid modifying the masker after fit.
         #
         # If the resampling target is different,
         # then resampling was already done at fit time
@@ -743,23 +740,24 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         )
 
         # Create a lut that may be different from the fitted lut_
-        # and whose rows are sorted according
-        # to the columns in the region_signals array.
-        self._lut_ = self.lut_.copy()
 
-        labels = set(np.unique(safe_get_data(self.labels_img_)))
+        labels = set(np.unique(safe_get_data(masked_atlas)))
+
         desired_order = [*ids]
         if self.background_label in labels:
-            desired_order = [self.background_label, *ids]
+            desired_order = [self.background_label, *desired_order]
 
         mask = self.lut_["index"].isin(desired_order)
-        self._lut_ = self._lut_[mask]
-        self._lut_ = sanitize_look_up_table(
-            self._lut_, atlas=np.array(desired_order)
-        )
-        self._lut_ = (
-            self._lut_.set_index("index").loc[desired_order].reset_index()
-        )
+
+        # Create a lut that may be different from the fitted lut_
+        # and whose rows are sorted according
+        # to the columns in the region_signals array.
+        _lut_ = self.lut_.copy()
+        _lut_ = _lut_[mask]
+        _lut_ = sanitize_look_up_table(_lut_, atlas=np.array(desired_order))
+        _lut_ = _lut_.set_index("index").loc[desired_order].reset_index()
+
+        self._lut_ = _lut_
 
         self.region_atlas_ = masked_atlas
 
@@ -819,9 +817,13 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         mask_logger("inverse_transform", verbose=self.verbose)
 
+        labels_img = self.labels_img_
+        if hasattr(self, "region_atlas_"):
+            labels_img = self.region_atlas_
+
         return signal_extraction.signals_to_img_labels(
             signals,
-            self.labels_img_,
+            labels_img,
             self.mask_img_,
             background_label=self.background_label,
         )
