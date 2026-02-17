@@ -10,7 +10,6 @@ from typing import Any, Literal
 import numpy as np
 import pandas as pd
 from nibabel import Nifti1Image
-from nibabel.onetime import auto_attr
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -184,10 +183,14 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
 
     # @auto_attr store the value as an object attribute after initial call
     # better performance than @property
-    @auto_attr
-    def residuals(self):
+    def residuals(self, Y):
         """Transform voxelwise residuals to the same shape \
         as the input Nifti1Image(s).
+
+        Parameters
+        ----------
+        Y : Niimg-like object
+            The data from which to compute the residuals.
 
         Returns
         -------
@@ -196,10 +199,9 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
 
         """
         return self._get_element_wise_model_attribute(
-            "residuals", result_as_time_series=True
+            "residuals", result_as_time_series=True, Y=Y
         )
 
-    @auto_attr
     def predicted(self):
         """Transform voxelwise predicted values to the same shape \
         as the input Nifti1Image(s).
@@ -214,7 +216,6 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             "predicted", result_as_time_series=True
         )
 
-    @auto_attr
     def r_square(self):
         """Transform voxelwise r-squared values to the same shape \
         as the input Nifti1Image(s).

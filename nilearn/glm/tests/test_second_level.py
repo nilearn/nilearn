@@ -1038,7 +1038,14 @@ def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
     model.fit(Y, design_matrix=X)
 
     with pytest.raises(ValueError, match=r"The model has no results."):
-        getattr(model, attribute)
+        if attribute == "residuals":
+            model.residuals(Y=None)
+        elif attribute == "predicted":
+            model.predicted()
+        elif attribute == "r_square":
+            model.r_square()
+        else:
+            getattr(model, attribute)
     with pytest.raises(ValueError, match="attribute must be one of"):
         model._get_element_wise_model_attribute("foo", True)
 
@@ -1063,7 +1070,14 @@ def test_second_level_voxelwise_attribute_errors_minimize_memory(
     model.compute_contrast()
 
     with pytest.raises(ValueError, match="To access voxelwise attributes"):
-        getattr(model, attribute)
+        if attribute == "residuals":
+            model.residuals(Y=None)
+        elif attribute == "predicted":
+            model.predicted()
+        elif attribute == "r_square":
+            model.r_square()
+        else:
+            getattr(model, attribute)
 
 
 @pytest.mark.slow
@@ -1076,7 +1090,14 @@ def test_second_level_voxelwise_attribute(attribute, n_subjects):
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     model.fit(Y, design_matrix=X)
     model.compute_contrast()
-    getattr(model, attribute)
+    if attribute == "residuals":
+        model.residuals(Y)
+    elif attribute == "predicted":
+        model.predicted()
+    elif attribute == "r_square":
+        model.r_square()
+    else:
+        getattr(model, attribute)
 
 
 @pytest.mark.slow
@@ -1089,9 +1110,9 @@ def test_second_level_residuals(n_subjects):
     model.fit(Y, design_matrix=X)
     model.compute_contrast()
 
-    assert isinstance(model.residuals, Nifti1Image)
-    assert model.residuals.shape == (*SHAPE[:3], n_subjects)
-    mean_residuals = model.masker_.transform(model.residuals).mean(0)
+    assert isinstance(model.residuals(Y), Nifti1Image)
+    assert model.residuals(Y).shape == (*SHAPE[:3], n_subjects)
+    mean_residuals = model.masker_.transform(model.residuals(Y)).mean(0)
     assert_array_almost_equal(mean_residuals, 0)
 
 

@@ -24,16 +24,16 @@ def test_ols(X, Y):
     model = OLSModel(design=X)
     results = model.fit(Y)
     assert results.df_residuals == 30
-    assert results.residuals.shape[0] == 40
-    assert results.predicted.shape[0] == 40
+    assert results.residuals(Y).shape[0] == 40
+    assert results.predicted().shape[0] == 40
 
 
 def test_ar(X, Y):
     model = ARModel(design=X, rho=0.4)
     results = model.fit(Y)
     assert results.df_residuals == 30
-    assert results.residuals.shape[0] == 40
-    assert results.predicted.shape[0] == 40
+    assert results.residuals(Y).shape[0] == 40
+    assert results.predicted().shape[0] == 40
 
 
 def test_residuals(X, Y):
@@ -43,8 +43,8 @@ def test_residuals(X, Y):
     X[:, 0] = 1
     model = OLSModel(design=X)
     results = model.fit(Y)
-    assert_almost_equal(results.residuals.mean(), 0)
-    assert len(results.whitened_residuals) == 40
+    assert_almost_equal(results.residuals(Y).mean(), 0)
+    assert len(results.residuals(Y)) == 40
 
 
 def test_predicted_r_square(X, Y):
@@ -56,8 +56,8 @@ def test_predicted_r_square(X, Y):
     # rounding errors)
     model = OLSModel(design=Xshort)
     results = model.fit(Yshort)
-    assert_almost_equal(results.residuals.sum(), 0)
-    assert_array_almost_equal(results.predicted, Yshort)
+    assert_almost_equal(results.residuals(Yshort).sum(), 0)
+    assert_array_almost_equal(results.predicted(), Yshort)
     assert_almost_equal(results.r_square, 1.0)
 
 
@@ -80,8 +80,9 @@ def test_simple_results(X, Y):
     results = model.fit(Y)
 
     simple_results = SimpleRegressionResults(results)
-    assert_array_equal(results.predicted, simple_results.predicted(X))
-    assert_array_equal(results.residuals, simple_results.residuals(Y, X))
+    assert_array_equal(results.predicted(), simple_results.predicted(X))
+    assert_array_equal(results.residuals(Y), simple_results.residuals(Y, X))
     assert_array_equal(
-        results.normalized_residuals, simple_results.normalized_residuals(Y, X)
+        results.normalized_residuals(Y),
+        simple_results.normalized_residuals(Y, X),
     )

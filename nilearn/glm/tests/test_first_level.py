@@ -1492,7 +1492,7 @@ def test_first_level_residuals(shape_4d_default):
 
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    residuals = model.residuals[0]
+    residuals = model.residuals(fmri_data)[0]
     mean_residuals = model.masker_.transform(residuals).mean(0)
 
     assert_array_almost_equal(mean_residuals, 0)
@@ -1516,7 +1516,7 @@ def test_first_level_residuals_errors(shape_4d_default):
     model.fit(fmri_data, design_matrices=design_matrices)
 
     with pytest.raises(ValueError, match="To access voxelwise attributes"):
-        model.residuals[0]
+        model.residuals(fmri_data)[0]
 
     # Check that trying to access residuals without fitting
     # raises an error
@@ -1556,7 +1556,7 @@ def test_get_element_wise_attributes_should_return_as_many_as_design_matrices(
     model.fit(fmri_data, design_matrices=design_matrices)
 
     assert len(
-        model._get_element_wise_model_attribute("residuals", True)
+        model._get_element_wise_model_attribute("residuals", True, Y=fmri_data)
     ) == len(shapes)
 
 
@@ -1578,9 +1578,9 @@ def test_first_level_predictions_r_square(shape_4d_default):
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    pred = model.predicted[0]
+    pred = model.predicted()[0]
     data = fmri_data[0]
-    r_square_3d = model.r_square[0]
+    r_square_3d = model.r_square()[0]
 
     y_predicted = model.masker_.transform(pred)
     y_measured = model.masker_.transform(data)
@@ -1643,7 +1643,7 @@ def test_glm_sample_mask(shape_4d_default):
     )
 
     assert model.design_matrices_[0].shape[0] == shape_4d_default[3] - 3
-    assert model.predicted[0].shape[-1] == shape_4d_default[3] - 3
+    assert model.predicted()[0].shape[-1] == shape_4d_default[3] - 3
 
 
 def _inputs_for_new_bids_dataset():
@@ -2621,12 +2621,12 @@ def test_flm_get_element_wise_model_attribute_with_surface_data(
     events = basic_paradigm()
     model.fit([img, img], events=[events, events])
 
-    assert len(model.residuals) == 2
-    assert model.residuals[0].shape == img.shape
-    assert len(model.predicted) == 2
-    assert model.predicted[0].shape == img.shape
-    assert len(model.r_square) == 2
-    assert model.r_square[0].shape == (img.mesh.n_vertices, 1)
+    assert len(model.residuals([img, img])) == 2
+    assert model.residuals([img, img])[0].shape == img.shape
+    assert len(model.predicted()) == 2
+    assert model.predicted()[0].shape == img.shape
+    assert len(model.r_square()) == 2
+    assert model.r_square()[0].shape == (img.mesh.n_vertices, 1)
 
 
 # -----------------------bids tests----------------------- #
