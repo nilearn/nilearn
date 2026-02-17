@@ -1,11 +1,14 @@
 """Visualizing 3D stat maps in a Brainsprite viewer."""
 
+from __future__ import annotations
+
 import copy
 import json
 import warnings
 from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import matplotlib
 import numpy as np
@@ -32,6 +35,9 @@ from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
 from nilearn.plotting.js_plotting_utils import get_html_template
+
+if TYPE_CHECKING:
+    from nibabel import Nifti1Image
 
 
 def _data_to_sprite(data, radiological=False):
@@ -274,16 +280,33 @@ def load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
         )
     bg_img = reorder_img(bg_img, resample="nearest")
 
-    # resample to isotropic if needed
-    diag = np.diag(bg_img.affine)[:3]
-    smallest_voxel_size = np.min(np.abs(diag))
-    if not np.allclose(np.abs(diag), smallest_voxel_size):
-        new_affine = bg_img.affine.copy()
-        np.fill_diagonal(
-            new_affine[:3, :3], smallest_voxel_size * np.sign(diag)
-        )
-        bg_img = resample_img(bg_img, target_affine=new_affine)
+    if not _is_isotropic(bg_img.affine):
+        bg_img = _resample_to_isotropic(bg_img)
+
     return bg_img, bg_min, bg_max, black_bg
+
+
+def _is_isotropic(affine: np.ndarray) -> bool:
+    """Check if the affine matrix has an isotropic voxel size."""
+    diag = np.diag(affine)[:3]
+    return np.allclose(np.abs(diag), np.abs(diag[0]))
+
+
+def _resample_to_isotropic(
+    img: Nifti1Image, voxel_size: float | None = None
+) -> Nifti1Image:
+    """
+    Resample an image to an isotropic resolution.
+
+    By default, the voxel size is set to the smallest dimension of the input
+    image.
+    """
+    diag = np.diag(img.affine)[:3]
+    if voxel_size is None:
+        voxel_size = np.min(np.abs(diag))
+    new_affine = img.affine.copy()
+    np.fill_diagonal(new_affine[:3, :3], voxel_size * np.sign(diag))
+    return resample_img(img, target_affine=new_affine)
 
 
 def _resample_stat_map(
