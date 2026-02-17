@@ -623,7 +623,9 @@ class BaseMasker(_BaseMasker):
         return signals
 
     def _get_summary_html(self):
-        """Convert summary part of the report content to html."""
+        """Convert summary part of the report content for nifti maskers to
+        html.
+        """
         summary = self._report_content.get("summary", None)
 
         if summary is None:
@@ -944,6 +946,9 @@ class _BaseSurfaceMasker(_BaseMasker):
         return region_signals
 
     def _get_summary_html(self):
+        """Convert summary part of the report content for surface maskers to
+        html.
+        """
         summary = self._report_content.get("summary", None)
 
         if summary is None:
