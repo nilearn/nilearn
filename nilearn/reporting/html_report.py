@@ -172,6 +172,43 @@ class ReportMixin:
         if not is_matplotlib_installed():
             self._append_warning(MISSING_ENGINE_MSG)
 
+    def _dataframe_to_html(
+        self,
+        df_cvrt,
+        precision: int = 2,
+        header: bool = True,
+        index: bool = False,
+        sparsify: bool = False,
+    ):
+        """Create html content from the specified dataframe content."""
+        return dataframe_to_html(
+            df_cvrt,
+            precision=precision,
+            header=header,
+            index=index,
+            sparsify=sparsify,
+        )
+
+    def _dict_to_html(
+        self,
+        dict_cvrt,
+        precision: int = 2,
+        header: bool = True,
+        index: bool = False,
+        sparsify: bool = False,
+    ):
+        """Create html content from the specified dictionary content. The
+        dictionary is expected to be key value pairs without depth.
+        """
+        df_cvrt = pd.DataFrame.from_dict(dict_cvrt)
+        return self._dataframe_to_html(
+            df_cvrt,
+            precision=precision,
+            header=header,
+            index=index,
+            sparsify=sparsify,
+        )
+
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for this estimator.
 
