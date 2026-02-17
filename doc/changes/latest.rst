@@ -11,6 +11,8 @@ NEW
 Fixes
 -----
 
+- :bdg-info:`Plotting` Fix ``nilearn.plotting.view_img`` resampling of non-isotropic images when no background image is used (:gh:`6031` by `Michelle Wang`_).
+
 Enhancements
 ------------
 
