@@ -431,3 +431,28 @@ def test_nifti_maps_masker_overlap(maps_img_fn, allow_overlap, img_fmri):
             masker.fit_transform(img_fmri)
     else:
         masker.fit_transform(img_fmri)
+
+
+def test_nifti_maps_masker_transform_resample_warning(img_fmri):
+    """Test warnings when images are resampled at transform."""
+    maps_img, _ = generate_maps((13, 11, 12), 2)
+    masker = NiftiMapsMasker(maps_img, resampling_target="data")
+
+    # Images have different fov between fit and transform
+    with warnings.catch_warnings(record=True) as warning_list:
+        masker.fit(maps_img)
+        masker.transform(img_fmri)
+        assert any(
+            "Resampling maps at transform time..." in str(x.message)
+            for x in warning_list
+        )
+
+    # Same fov between fit and transform, but resampling_target="maps"
+    masker = NiftiMapsMasker(maps_img, resampling_target="maps")
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        masker.fit_transform(img_fmri)
+        assert any(
+            "Resampling images at transform time..." in str(x.message)
+            for x in warning_list
+        )
