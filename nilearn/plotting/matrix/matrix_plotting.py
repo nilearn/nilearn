@@ -9,7 +9,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.plotting.displays._slicers import save_figure_if_needed
@@ -24,8 +27,8 @@ from nilearn.plotting.matrix._utils import (
 
 
 def _configure_axis(
-    axes, labels, label_size, x_label_rotation, y_label_rotation
-):
+    axes, labels, label_size: int, x_label_rotation, y_label_rotation
+) -> None:
     """Help for plot_matrix."""
     if not labels:
         axes.xaxis.set_major_formatter(plt.NullFormatter())
@@ -67,7 +70,7 @@ def _configure_grid(axes, tri, size):
             axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
 
 
-def _fit_axes(axes):
+def _fit_axes(axes) -> None:
     """Help for plot_matrix.
 
     This function redimensions the given axes to have
@@ -231,6 +234,7 @@ def plot_matrix(
         Axes image.
 
     """
+    check_params(locals())
     labels, reorder, fig, axes, _ = _sanitize_inputs_plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
@@ -304,6 +308,8 @@ def plot_contrast_matrix(
         Figure object.
 
     """
+    check_params(locals())
+
     contrast_def = pad_contrast_matrix(contrast_def, design_matrix)
     con_matrix = np.array(contrast_def, ndmin=2)
 
@@ -575,6 +581,8 @@ def plot_design_matrix_correlation(
     display : :class:`matplotlib.axes.Axes`
         Axes image.
     """
+    check_params(locals())
+
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     check_design_matrix(design_matrix)

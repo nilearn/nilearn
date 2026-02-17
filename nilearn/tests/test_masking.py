@@ -89,6 +89,7 @@ def test_load_mask_img_surface(surf_mask_1d):
         assert hemi.dtype == "bool"
 
 
+@pytest.mark.slow
 def test_high_variance_confounds():
     """Test high_variance_confounds."""
     img, mask, conf = _simu_img()
@@ -684,6 +685,7 @@ def test_intersect_masks_f8(img_2d_mask_bottom_right, img_2d_mask_center):
     assert_array_equal(mask_ab, get_data(mask_ab_change_type))
 
 
+@pytest.mark.slow
 def test_intersect_masks(
     affine_eye, img_2d_mask_bottom_right, img_2d_mask_center
 ):
@@ -814,6 +816,7 @@ def test_compute_multi_epi_mask(affine_eye):
     assert_array_equal(mask_ab, get_data(mask_ab_))
 
 
+@pytest.mark.slow
 def test_compute_multi_brain_mask_error():
     """Check error raised if images with different shapes given as input."""
     imgs = [

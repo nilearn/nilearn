@@ -10,9 +10,7 @@ from nilearn.plotting import (
     plot_design_matrix,
     plot_design_matrix_correlation,
 )
-from nilearn.reporting.utils import (
-    figure_to_png_base64,
-)
+from nilearn.reporting.utils import figure_to_png_base64
 
 
 def generate_design_matrices_figures(

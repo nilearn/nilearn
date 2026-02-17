@@ -17,8 +17,6 @@ More specifically:
    then contrast estimation).
 4. The Default Mode Network is displayed.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -49,7 +47,6 @@ seed_masker = NiftiSpheresMasker(
     [pcc_coords],
     radius=10,
     detrend=True,
-    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
     t_r=adhd_dataset.t_r,

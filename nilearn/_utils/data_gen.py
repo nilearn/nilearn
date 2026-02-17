@@ -1069,7 +1069,7 @@ def create_fake_bids_dataset(
     return bids_path
 
 
-def _check_entities_and_labels(entities):
+def _check_entities_and_labels(entities) -> None:
     """Check entities and labels are BIDS compliant.
 
     Parameters
@@ -1112,7 +1112,7 @@ def _mock_bids_dataset(
     entities,
     n_voxels,
     rand_gen,
-):
+) -> None:
     """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
 
     Parameters
@@ -1206,7 +1206,7 @@ def _mock_bids_derivatives(
     rand_gen,
     n_vertices,
     spaces,
-):
+) -> None:
     """Create a fake derivatives :term:`bids<BIDS>` dataset directory \
        with dummy files.
 
@@ -1389,7 +1389,7 @@ def _write_bids_raw_func(
     fields,
     n_voxels,
     rand_gen,
-):
+) -> None:
     """Create BIDS functional raw nifti, json sidecar and events files.
 
     Parameters
@@ -1436,7 +1436,7 @@ def _write_bids_derivative_func(
     confounds_tag,
     n_vertices=0,
     spaces=None,
-):
+) -> None:
     """Create BIDS functional derivative and confounds files.
 
     Nifti files created come with two spaces and descriptions.

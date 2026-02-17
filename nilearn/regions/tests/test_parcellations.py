@@ -12,7 +12,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
 )
 from nilearn._utils.helpers import is_windows_platform
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _affine_eye
 from nilearn.maskers import (
     MultiNiftiMasker,
@@ -100,6 +100,7 @@ def image_2():
     return Nifti1Image(data, affine=_affine_eye())
 
 
+@pytest.mark.slow
 def test_error_parcellation_method_none(image_1):
     with pytest.raises(
         ValueError, match=r"Parcellation method is specified as None. "
@@ -107,6 +108,7 @@ def test_error_parcellation_method_none(image_1):
         Parcellations(method=None).fit(image_1)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("method", ["kmens", "avg", "completed"])
 def test_errors_raised_in_check_parameters_fit(method, image_1):
     """Test whether an error is raised or not given a false method type."""
@@ -121,7 +123,7 @@ def test_errors_raised_in_check_parameters_fit(method, image_1):
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5, 10, 15])
-def test_parcellations_fit_on_single_nifti_image(method, n_parcel, image_1):
+def test_fit_on_single_nifti_image(method, n_parcel, image_1):
     """Test return attributes for each method."""
     parcellator = Parcellations(method=method, n_parcels=n_parcel)
 
@@ -159,7 +161,7 @@ def test_parcellations_fit_on_single_nifti_image(method, n_parcel, image_1):
 
 
 @pytest.mark.slow
-def test_parcellations_warnings(img_4d_zeros_eye):
+def test_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=7)
 
     with pytest.warns(UserWarning):
@@ -167,7 +169,7 @@ def test_parcellations_warnings(img_4d_zeros_eye):
 
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
-def test_parcellations_no_warnings(img_4d_zeros_eye):
+def test_no_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=1)
     with warnings.catch_warnings(record=True) as record:
         parcellator.fit(img_4d_zeros_eye)
@@ -175,7 +177,7 @@ def test_parcellations_no_warnings(img_4d_zeros_eye):
 
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
-def test_parcellations_no_int64_warnings(img_4d_zeros_eye):
+def test_no_int64_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=1)
     with warnings.catch_warnings(record=True) as record:
         parcellator.fit(img_4d_zeros_eye)
@@ -186,7 +188,7 @@ def test_parcellations_no_int64_warnings(img_4d_zeros_eye):
 
 @pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellations_fit_on_multi_nifti_images(method, image_1, affine_eye):
+def test_fit_on_multi_nifti_images(method, image_1, affine_eye):
     fmri_imgs = [image_1] * 3
 
     parcellator = Parcellations(method=method, n_parcels=5)
@@ -202,9 +204,10 @@ def test_parcellations_fit_on_multi_nifti_images(method, image_1, affine_eye):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
-def test_parcellations_transform_single_nifti_image(method, n_parcel, image_2):
+def test_transform_single_nifti_image(method, n_parcel, image_2):
     """Test with NiftiLabelsMasker extraction of timeseries data \
        after building a parcellations image.
     """
@@ -223,7 +226,7 @@ def test_parcellations_transform_single_nifti_image(method, n_parcel, image_2):
 
 @pytest.mark.slow
 @pytest.mark.parametrize("verbose", [True, False, -1, 0, 1, 2])
-def test_parcellations_transform_verbose(image_2, verbose):
+def test_transform_verbose(image_2, verbose):
     """Test verbose mostly for coverage purpose."""
     parcellator = Parcellations(method="kmeans", n_parcels=5, verbose=verbose)
     parcellator.fit(image_2)
@@ -231,9 +234,10 @@ def test_parcellations_transform_verbose(image_2, verbose):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
-def test_parcellations_transform_multi_nifti_images(method, n_parcel, image_2):
+def test_transform_multi_nifti_images(method, n_parcel, image_2):
     fmri_imgs = [image_2] * 3
 
     parcellator = Parcellations(method=method, n_parcels=n_parcel)
@@ -251,7 +255,7 @@ def test_parcellations_transform_multi_nifti_images(method, n_parcel, image_2):
 
 @pytest.mark.slow
 @pytest.mark.parametrize("masker", [NiftiMasker, MultiNiftiMasker])
-def test_parcellations_transform_nifti_masker(masker, image_2, affine_eye):
+def test_transform_nifti_masker(masker, image_2, affine_eye):
     """Smoke test that 'mask' can be (multi)NiftiMasker.
 
     Regression test for https://github.com/nilearn/nilearn/issues/5926
@@ -308,9 +312,10 @@ def test_check_parameters_transform(image_2, rng):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
-def test_parcellations_transform_with_multi_confounds_multi_images(
+def test_transform_with_multi_confounds_multi_images(
     method, n_parcel, image_2, rng
 ):
     fmri_imgs = [image_2] * 3
@@ -343,6 +348,7 @@ def test_fit_transform(method, n_parcel, image_2):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_fit_transform_with_confounds(method, n_parcel, image_2, rng):
@@ -358,6 +364,7 @@ def test_fit_transform_with_confounds(method, n_parcel, image_2, rng):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_inverse_transform_single_nifti_image(method, n_parcel, image_2):
@@ -534,9 +541,7 @@ def test_parcellation_with_surface_mask(
 
 @pytest.mark.slow
 @pytest.mark.parametrize("masker", [SurfaceMasker, MultiSurfaceMasker])
-def test_parcellations_transform_surface_masker(
-    masker, surface_img_for_parcellation
-):
+def test_transform_surface_masker(masker, surface_img_for_parcellation):
     """Smoke test that 'mask' can be (multi)SurfaceMasker.
 
     Regression test for https://github.com/nilearn/nilearn/issues/5926

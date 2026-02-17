@@ -130,7 +130,7 @@ for col in range(y_binary_.shape[1]):
 fig, (ax_binary, ax_multi) = plt.subplots(
     2, gridspec_kw={"height_ratios": [10, 1.5]}, figsize=(12, 2)
 )
-cmap = ListedColormap(["white"] + list(plt.cm.tab10.colors)[:n_labels])
+cmap = ListedColormap(["white", *list(plt.cm.tab10.colors)[:n_labels]])
 binary_plt = ax_binary.imshow(
     y_binary_.T,
     aspect="auto",
@@ -295,7 +295,6 @@ from nilearn.decoding import Decoder
 decoder = Decoder(
     estimator="logistic_l2",
     mask=mask_vt,
-    standardize="zscore_sample",
     n_jobs=n_labels,
     cv=logo_cv,
     screening_percentile=screening_percentile,

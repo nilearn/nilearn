@@ -396,6 +396,10 @@ authors:
     affiliation: BarcelonaBeta Brain Research Center
     email: jhuguetn@gmail.com
     orcid: https://orcid.org/0000-0001-8420-4833
+  - given-names: Joseph
+    family-names: Paillard
+    affiliation: Inria, Saclay, France
+    website: https://github.com/jpaillard
   - given-names: Joshua
     family-names: Teves
     website: https://github.com/jbteves
@@ -546,6 +550,10 @@ authors:
     affiliation: Origami lab, McGill University, Montréal, Canada
     email: mohammad.torabi@mail.mcgill.ca
     orcid: https://orcid.org/0000-0002-4429-8481
+  - given-names: Mohammad
+    family-names: Sadeghi Hardengi
+    website: https://github.com/mohammedsadeghi
+    affiliation: IAUN, Iran (M.Sc. student, AI and robotics)
   - given-names: Moritz
     family-names: Boos
     website: https://github.com/mjboos

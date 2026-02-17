@@ -14,9 +14,10 @@ values that are commented out serve to show the default.
 import os
 import re
 import sys
+import warnings
 from pathlib import Path
 
-from nilearn._version import __version__
+from nilearn._version import __version__  # noqa : I001, RUF100
 from sphinx.domains import changeset
 from sphinx.locale import _
 
@@ -37,7 +38,30 @@ linkcode_resolve = make_linkcode_resolve
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, str(Path("..").absolute()))
 
+# -- Plotly Configuration ----------------------------------------------------
+
+try:
+    import plotly.io as pio
+
+    pio.renderers.default = "sphinx_gallery"
+except ImportError:
+    import warnings
+
+    warnings.warn(
+        stacklevel=2,
+        message="Plotly is not installed. Plotly figures will not be shown.",
+        category=UserWarning,
+    )
+
 # -- General configuration ---------------------------------------------------
+
+# avoid some warnings to show in the the sphinx gallery
+# https://sphinx-gallery.github.io/stable/configuration.html#removing-warnings
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message=".*matplotlib backend that is non-interactive.*",
+)
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.

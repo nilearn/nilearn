@@ -10,7 +10,7 @@ from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _affine_eye, _img_4d_zeros, _shape_3d_large
 from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, threshold_img
@@ -293,7 +293,7 @@ def test_threshold_as_none_and_string_cases(dummy_map, threshold):
         to_check.fit()
 
 
-def test_region_extractor_fit_and_transform(maps_and_mask):
+def test_fit_and_transform(maps_and_mask):
     maps, mask_img = maps_and_mask
 
     # Test maps are zero in the mask
@@ -312,7 +312,7 @@ def test_region_extractor_fit_and_transform(maps_and_mask):
     )
 
 
-def test_region_extractor_strategy_ratio_n_voxels(maps):
+def test_strategy_ratio_n_voxels(maps):
     extract_ratio = RegionExtractor(
         maps, threshold=0.2, thresholding_strategy="ratio_n_voxels"
     )
@@ -323,7 +323,7 @@ def test_region_extractor_strategy_ratio_n_voxels(maps):
 
 
 @pytest.mark.parametrize("negative_regions", [True])
-def test_region_extractor_two_sided(maps):
+def test_two_sided(maps):
     threshold = 0.4
     thresholding_strategy = "img_value"
     min_region_size = 5
@@ -356,7 +356,7 @@ def test_region_extractor_two_sided(maps):
 
 
 @pytest.mark.slow
-def test_region_extractor_strategy_percentile(maps_and_mask):
+def test_strategy_percentile(maps_and_mask):
     maps, mask_img = maps_and_mask
 
     extractor = RegionExtractor(
@@ -383,9 +383,7 @@ def test_region_extractor_strategy_percentile(maps_and_mask):
         assert expected_signal_shape == signal.shape
 
 
-def test_region_extractor_high_resolution_image(
-    affine_eye, n_regions, shape_3d_large
-):
+def test_high_resolution_image(affine_eye, n_regions, shape_3d_large):
     maps, _ = generate_maps(
         shape=shape_3d_large, n_regions=n_regions, affine=0.2 * affine_eye
     )
@@ -402,7 +400,8 @@ def test_region_extractor_high_resolution_image(
     assert extract_ratio.regions_img_.shape[-1] >= n_regions
 
 
-def test_region_extractor_zeros_affine_diagonal(affine_eye, n_regions):
+@pytest.mark.thread_unsafe
+def test_zeros_affine_diagonal(affine_eye, n_regions):
     affine = affine_eye
     affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines
     maps, _ = generate_maps(

@@ -33,6 +33,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg import (
     _get_data,
+    ensure_finite_data,
     load_niimg,
     repr_niimgs,
     safe_get_data,
@@ -54,6 +55,122 @@ from nilearn.surface.surface import (
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
 from nilearn.typing import ClusterThreshold, NiimgLike
+
+
+def is_volume_image(imgs) -> bool:
+    """Return True if specified ``imgs`` is of type NiimgLike, SpatialImage, or
+    an iterable of those; False otherwise.
+
+    Parameters
+    ----------
+    imgs : object
+        object to check if volume image
+
+    Returns
+    -------
+    bool
+        True if volume object or iterable of volume objects, False otherwise
+
+    """
+    if not (
+        isinstance(imgs, (NiimgLike, SpatialImage))
+        or (hasattr(imgs, "__iter__"))
+    ):
+        return False
+
+    if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
+        for x in imgs:
+            if not is_volume_image(x):
+                return False
+    return True
+
+
+def is_empty_volume(img) -> bool:
+    """Check if the specified Nifti image ``img`` is empty.
+
+    Empty means any dimension of image data has length 0.
+
+    Parameters
+    ----------
+    img : :class:`nibabel.nifti1.Nifti1Image`
+        Should be a loaded nifti image.
+
+    Returns
+    -------
+    bool
+        True if the image is empty; False otherwise
+    """
+    return 0 in img.dataobj.shape
+
+
+def _get_imgs_as_filenames(imgs, wildcards=True):
+    if wildcards and EXPAND_PATH_WILDCARDS:
+        # Expand user path
+        expanded_niimg = str(Path(imgs).expanduser())
+        # Ascending sorting
+        filenames = sorted(glob.glob(expanded_niimg))
+
+        # processing filenames matching globbing expression
+        if len(filenames) >= 1 and glob.has_magic(imgs):
+            imgs = filenames  # iterable case
+        # niimg is an existing filename
+        elif [expanded_niimg] == filenames:
+            imgs = filenames[0]
+        # No files found by glob
+        elif glob.has_magic(imgs):
+            # No files matching the glob expression, warn the user
+            message = (
+                "No files matching the entered niimg expression: "
+                f"'{imgs}'.\n"
+                "You may have left wildcards usage activated: "
+                "please set the global constant "
+                "'nilearn.EXPAND_PATH_WILDCARDS' to False "
+                "to deactivate this behavior."
+            )
+            raise ValueError(message)
+        else:
+            raise ValueError(f"File not found: '{imgs}'")
+    elif not Path(imgs).exists():
+        raise ValueError(f"File not found: '{imgs}'")
+    return imgs
+
+
+def check_volume_for_fit(imgs) -> None:
+    """Check if specified ``imgs`` is a non-empty volume image or iterable of
+    non-empty volume images.
+
+    Parameters
+    ----------
+    imgs : object
+        object to check if volume image
+
+    Raises
+    ------
+    TypeError
+        If image or iterable of images are not NiftiLike objects.
+    ValueError
+        If image or iterable of images are filenames but not found or empty
+    image.
+    """
+    if not is_volume_image(imgs):
+        raise TypeError(
+            "input should be a NiftiLike object "
+            "or an iterable of NiftiLike object. "
+            f"Got: {imgs.__class__.__name__}"
+        )
+
+    imgs = stringify_path(imgs)
+    if isinstance(imgs, str):
+        imgs = _get_imgs_as_filenames(imgs)
+
+    if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
+        for img in imgs:
+            check_volume_for_fit(img)
+    else:
+        imgs = load_niimg(imgs)
+
+        if is_empty_volume(imgs):
+            raise ValueError("The image is empty.")
 
 
 def get_data(img):
@@ -143,7 +260,7 @@ def high_variance_confounds(
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
     else:
         imgs = check_niimg_4d(imgs)
-        sigs = as_ndarray(get_data(imgs))
+        sigs = as_ndarray(_get_data(imgs))
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
 
     del imgs  # help reduce memory consumption
@@ -256,7 +373,7 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         arr = arr.copy()
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
-        arr[np.logical_not(np.isfinite(arr))] = 0
+        ensure_finite_data(arr, raise_warning=False)
     if isinstance(fwhm, str) and (fwhm == "fast"):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
@@ -307,7 +424,7 @@ def smooth_img(imgs, fwhm):
         img = check_niimg(img)
         affine = img.affine
         filtered = smooth_array(
-            get_data(img), affine, fwhm=fwhm, ensure_finite=True, copy=True
+            _get_data(img), affine, fwhm=fwhm, ensure_finite=True, copy=True
         )
         ret.append(new_img_like(img, filtered, affine))
 
@@ -350,8 +467,8 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
 
     """
     img = check_niimg(img)
+    data = _get_data(img)
 
-    data = get_data(img)
     affine = img.affine
 
     cropped_data = data[tuple(slices)]
@@ -419,7 +536,7 @@ def crop_img(
     check_params(locals())
 
     img = check_niimg(img)
-    data = get_data(img)
+    data = _get_data(img)
     infinity_norm = max(-data.min(), data.max())
     passes_threshold = np.logical_or(
         data < -rtol * infinity_norm, data > rtol * infinity_norm
@@ -834,6 +951,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=True):
         as the reference image.
 
     """
+    check_params(locals())
+
     if isinstance(ref_niimg, SurfaceImage):
         mesh = ref_niimg.mesh
         return SurfaceImage(
@@ -1448,6 +1567,8 @@ def binarize_img(
      >>> img = binarize_img(anatomical_image)
 
     """
+    check_params(locals())
+
     return math_img(
         "img.astype(bool).astype('int8')",
         img=threshold_img(
@@ -1634,7 +1755,7 @@ def clean_img(
     if mask_img is not None:
         signals = masking.apply_mask(imgs_, mask_img)
     else:
-        signals = get_data(imgs_).reshape(-1, imgs_.shape[-1]).T
+        signals = _get_data(imgs_).reshape(-1, imgs_.shape[-1]).T
 
     # Clean signal
     data = signal.clean(
@@ -1805,8 +1926,8 @@ def concat_imgs(
     iterator, literator = itertools.tee(iter(niimgs))
     try:
         first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
-    except StopIteration:
-        raise TypeError("Cannot concatenate empty objects")
+    except StopIteration as e:
+        raise TypeError("Cannot concatenate empty objects") from e
     except DimensionError as exc:
         # Keep track of the additional dimension in the error
         exc.increment_stack_counter()
@@ -2037,6 +2158,8 @@ def iter_check_niimg(
         check_niimg, check_niimg_3d, check_niimg_4d
 
     """
+    check_params(locals())
+
     # avoid circular import
     from nilearn.image.resampling import resample_img
 
@@ -2226,59 +2349,17 @@ def check_niimg(
         check_niimg_3d, check_niimg_4d
 
     """
-    if not (
-        isinstance(niimg, (NiimgLike, SpatialImage))
-        or (hasattr(niimg, "__iter__"))
-    ):
+    if not is_volume_image(niimg):
         raise TypeError(
             "input should be a NiftiLike object "
             "or an iterable of NiftiLike object. "
             f"Got: {niimg.__class__.__name__}"
         )
 
-    if hasattr(niimg, "__iter__"):
-        for x in niimg:
-            if not (
-                isinstance(x, (NiimgLike, SpatialImage))
-                or hasattr(x, "__iter__")
-            ):
-                raise TypeError(
-                    "iterable inputs should contain "
-                    "NiftiLike objects or iterables. "
-                    f"Got: {x.__class__.__name__}"
-                )
-
     niimg = stringify_path(niimg)
 
     if isinstance(niimg, str):
-        if wildcards and EXPAND_PATH_WILDCARDS:
-            # Expand user path
-            expanded_niimg = str(Path(niimg).expanduser())
-            # Ascending sorting
-            filenames = sorted(glob.glob(expanded_niimg))
-
-            # processing filenames matching globbing expression
-            if len(filenames) >= 1 and glob.has_magic(niimg):
-                niimg = filenames  # iterable case
-            # niimg is an existing filename
-            elif [expanded_niimg] == filenames:
-                niimg = filenames[0]
-            # No files found by glob
-            elif glob.has_magic(niimg):
-                # No files matching the glob expression, warn the user
-                message = (
-                    "No files matching the entered niimg expression: "
-                    f"'{niimg}'.\n"
-                    "You may have left wildcards usage activated: "
-                    "please set the global constant "
-                    "'nilearn.EXPAND_PATH_WILDCARDS' to False "
-                    "to deactivate this behavior."
-                )
-                raise ValueError(message)
-            else:
-                raise ValueError(f"File not found: '{niimg}'")
-        elif not Path(niimg).exists():
-            raise ValueError(f"File not found: '{niimg}'")
+        niimg = _get_imgs_as_filenames(niimg, wildcards)
 
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, str):

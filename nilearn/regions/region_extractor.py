@@ -202,6 +202,8 @@ def connected_regions(
         region extraction on continuous type atlas images and
         also time series signals extraction from regions extracted.
     """
+    check_params(locals())
+
     all_regions_imgs = []
     index_of_each_map = []
     maps_img = check_niimg(maps_img, atleast_4d=True)

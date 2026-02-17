@@ -23,6 +23,9 @@ pip-log.txt
 
 tmp
 
+# Generic python
+__pycache__
+
 #  JS
 node_modules
 

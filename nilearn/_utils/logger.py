@@ -5,12 +5,12 @@ import traceback
 from pathlib import Path
 
 import numpy as np
-from sklearn.base import BaseEstimator
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn.typing import Verbose
 
 
-def _has_rich():
+def _has_rich() -> bool:
     """Check if rich is installed."""
     try:
         import rich  # noqa: F401
@@ -31,11 +31,11 @@ if _has_rich():
 def log(
     msg: str,
     verbose: Verbose,
-    object_classes=(BaseEstimator,),
+    object_classes=(NilearnBaseEstimator,),
     stack_level: int | np.integer | None = None,
     msg_level: int | np.integer = 1,
     with_traceback: bool = False,
-):
+) -> None:
     """Display a message to the user, depending on the verbosity level.
 
     This function allows to display some information that references an object
@@ -51,7 +51,7 @@ def log(
         Message is displayed if this value is greater
         or equal to msg_level.
 
-    object_classes : tuple of type, default=(BaseEstimator, )
+    object_classes : tuple of type, default=(NilearnBaseEstimator, )
         Classes that should appear to emit the message.
 
     stack_level : int or None, default=None
@@ -115,7 +115,7 @@ def log(
         traceback.print_exc()
 
 
-def compose_err_msg(msg, **kwargs):
+def compose_err_msg(msg: str, **kwargs) -> str:
     """Append key-value pairs to msg, for display. # noqa: D301.
 
     Parameters
@@ -192,7 +192,7 @@ def find_stack_level() -> int:
     return n
 
 
-def one_level_deeper():
+def one_level_deeper() -> int:
     """Use for testing find_stack_level.
 
     Needs to be in a module that does not start with 'test'
