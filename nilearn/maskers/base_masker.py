@@ -38,8 +38,8 @@ from nilearn.image.image import (
     smooth_img,
 )
 from nilearn.image.resampling import resample_img
-from nilearn.maskers._mixin import _ReportingMixin
 from nilearn.masking import load_mask_img, unmask
+from nilearn.reporting.mixin import ReportMixin
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
@@ -292,7 +292,7 @@ def sanitize_displayed_maps(
 
 @fill_doc
 class _BaseMasker(
-    _ReportingMixin,
+    ReportMixin,
     TransformerMixin,
     CacheMixin,
     NilearnBaseEstimator,
