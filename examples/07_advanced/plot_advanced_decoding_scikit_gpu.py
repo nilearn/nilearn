@@ -84,17 +84,17 @@ conditions_cp = cp.asarray(conditions)
 # ......................
 from sklearn import config_context
 from sklearn.linear_model import RidgeClassifier
-from sklearn.model_selection import cross_val_predict
+from sklearn.model_selection import cross_validate
 
 # %%
 # Fit the classifier on GPU
 # ......................
 with config_context(array_api_dispatch=True):
     ridge = RidgeClassifier(solver="svd")
-    cv_predict = cross_val_predict(ridge, fmri_masked_cp, conditions_cp, cv=5)
+    cv_results = cross_validate(ridge, fmri_masked_cp, conditions_cp, cv=5)
 
 # %%
 # Fit the classifier on CPU
 # ......................
 ridge = RidgeClassifier(solver="svd")
-cv_predict = cross_val_predict(ridge, fmri_masked, conditions, cv=5)
+cv_results = cross_validate(ridge, fmri_masked, conditions, cv=5)
