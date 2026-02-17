@@ -632,7 +632,7 @@ def clean(
 
     %(low_pass)s
 
-        .. note::
+        .. warning::
             `low_pass` is not implemented for filter='cosine'.
 
     %(high_pass)s
@@ -718,6 +718,11 @@ def clean(
         confounds = _create_cosine_drift_terms(
             signals, confounds, high_pass, t_r
         )
+        if low_pass is not None:
+            warnings.warn(
+                "low_pass is not implemented for filter='cosine'",
+                stacklevel=2,
+            )
 
     # Interpolation / censoring
     signals, confounds, sample_mask = _handle_scrubbed_volumes(

@@ -1023,6 +1023,20 @@ def test_clean_frequencies_using_power_spectrum_density():
         t_r=t_r,
     )
 
+    # check that user is warned about low-pass not applied with cosine
+    with pytest.warns(
+        UserWarning, match="low_pass is not implemented for filter='cosine'"
+    ):
+        res_cos = clean(
+            sx,
+            detrend=False,
+            standardize=None,
+            filter="cosine",
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
+        )
+
     # Compute power spectrum density for both test
     f, Pxx_den_low = scipy.signal.welch(np.mean(res_low.T, axis=0), fs=t_r)
     f, Pxx_den_high = scipy.signal.welch(np.mean(res_high.T, axis=0), fs=t_r)
