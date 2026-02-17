@@ -1,5 +1,6 @@
 """Mixin classes for maskers."""
 
+import abc
 import itertools
 from copy import deepcopy
 from pathlib import Path
@@ -410,3 +411,48 @@ class MaskerReportMixin(ReportMixin):
         report_info = self._report_info
         report_info["page_title"] = f"{report_content['title']} report"
         report_info["estimator_type"] = self._estimator_type
+
+    def _generate_report_data(self):
+        report_info = self._report_info
+        report_info["summary_html"] = self._get_summary_html()
+        figure, embeded_images = self._create_partial_figures()
+
+        report_info["figure"] = figure
+        report_info["content"] = embeded_images
+
+    def _create_partial_figures(self):
+        """Create partial image htmls Using partial template for masker
+        figures.
+        """
+        embeded_images = None
+        image = self._reporting()
+        if image is None:
+            embeded_images = None
+        elif not isinstance(image, list):
+            embeded_images = self._embed_img(image)
+        elif all(x is None for x in image):
+            embeded_images = None
+        else:
+            embeded_images = [self._embed_img(i) for i in image]
+
+        content = embeded_images
+        if not isinstance(content, list):
+            content = [content]
+
+        tpl = self._get_partial_template(self._estimator_type, "figure")
+        tpl_rendered = tpl.render(
+            engine=self._report_content["engine"],
+            content=content,
+            displayed_maps=self._report_content["displayed_maps"],
+            unique_id=self._report_content["unique_id"],
+        )
+        return tpl_rendered, embeded_images
+
+    @abc.abstractmethod
+    def _reporting(self):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def _get_summary_html(self):
+        """Convert summary part of the report content to html."""
+        raise NotImplementedError

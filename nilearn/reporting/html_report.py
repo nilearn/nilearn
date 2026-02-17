@@ -36,6 +36,67 @@ MISSING_ENGINE_MSG = (
 )
 
 
+class HTMLReport(HTMLDocument):
+    """A report written as HTML.
+
+    Methods such as ``save_as_html``, or ``open_in_browser``
+    are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
+
+    Parameters
+    ----------
+    head_tpl : str.Template or Jinja Template
+        This is meant for display as a full page, like writing on disk.
+        This is the Template object used to generate the HTML head
+        section of the report. The template should be filled with:
+
+            - title: The title of the HTML page.
+            - body: The full body of the HTML page. Provided through
+                the ``body`` input.
+
+    body : :obj:`str`
+        This parameter is used for embedding in the provided
+        ``head_tpl`` template. It contains the full body of the
+        HTML page.
+
+    head_values : :obj:`dict`, default=None
+        Additional substitutions in ``head_tpl``.
+        if ``None`` is passed, defaults to ``{}``
+
+        .. note::
+            This can be used to provide additional values
+            with custom templates.
+
+    """
+
+    def __init__(self, head_tpl, body, head_values=None):
+        """Construct the ``HTMLReport`` class."""
+        if head_values is None:
+            head_values = {}
+
+        if isinstance(head_tpl, Template):
+            html = head_tpl.safe_substitute(body=body, **head_values)
+            self.head_tpl = head_tpl.safe_substitute(**head_values)
+        else:
+            # in this case we are working with jinja template
+            html = head_tpl.render(body=body, **head_values)
+            self.head_tpl = head_tpl.render(**head_values)
+
+        self.body = body
+
+        super().__init__(html)
+
+    def _repr_html_(self):
+        """Return body of the report.
+
+        Method used by the Jupyter notebook.
+        Users normally won't call this method explicitly.
+        """
+        return self.body
+
+    def __str__(self):
+        return self.body
+
+
 class ReportMixin:
     """A mixin class to be used with classes that require reporting
     functionality.
@@ -309,7 +370,7 @@ class ReportMixin:
 
         report_info["version"] = __version__
 
-    def generate_report(self, title: str | None = None):
+    def generate_report(self, title: str | None = None) -> HTMLReport:
         """Generate an HTML report for this estimator.
 
         Parameters
@@ -324,75 +385,60 @@ class ReportMixin:
         """
         self._run_report_checks()
         self._set_report_basics(title)
-
+        self._generate_report_data()
         self._display_report_warnings()
 
-        return _create_report(self, self._report_content)
+        return self._assemble_report()
+
+    def _assemble_report(self) -> HTMLReport:
+        """Assemble report head and body acquiring body template corresponding
+        to estimator type and populating it with report data.
+
+        `estimator._report_info` should have `page_title` and `estimator_type`
+        fields.
+
+        This method will finally merge the dictionaries
+        `estimator._report_content` and `estimator._report_info` and feed body
+        template with fields in the obtained dictionary.
+
+        Finally, before assembling the report, estimator._report_info is set to
+        {}.
+
+        TODO
+        ----
+        estimator._report_info might not be necessary. However it should be
+        tested if estimator._report_content can safely be reset after report
+        generation is completed.
+        """
+        page_title = self._report_info.get(
+            "page_title", self.__class__.__name__
+        )
+
+        estimator_type = self._report_info.get("estimator_type", "")
+        body_tpl = self._get_body_template(estimator_type)
+
+        report = ReportMixin._update_defaults(
+            self._report_content, self._report_info
+        )
+        body = body_tpl.render(**report)
+
+        # clear report_info
+        self._report_info.clear()
+        return assemble_report(body, page_title)
+
+    @abc.abstractmethod
+    def _generate_report_data(self):
+        """Generate necessary data to be used in report template.
+
+        This method should be implemented in classes which inherit from
+        `ReportMixin` and does not override or call
+        `ReportMixin.generate_report`.
+        """
+        raise NotImplementedError()
 
     @abc.abstractmethod
     def _reporting(self):
         raise NotImplementedError()
-
-
-class HTMLReport(HTMLDocument):
-    """A report written as HTML.
-
-    Methods such as ``save_as_html``, or ``open_in_browser``
-    are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
-
-    Parameters
-    ----------
-    head_tpl : str.Template or Jinja Template
-        This is meant for display as a full page, like writing on disk.
-        This is the Template object used to generate the HTML head
-        section of the report. The template should be filled with:
-
-            - title: The title of the HTML page.
-            - body: The full body of the HTML page. Provided through
-                the ``body`` input.
-
-    body : :obj:`str`
-        This parameter is used for embedding in the provided
-        ``head_tpl`` template. It contains the full body of the
-        HTML page.
-
-    head_values : :obj:`dict`, default=None
-        Additional substitutions in ``head_tpl``.
-        if ``None`` is passed, defaults to ``{}``
-
-        .. note::
-            This can be used to provide additional values
-            with custom templates.
-
-    """
-
-    def __init__(self, head_tpl, body, head_values=None):
-        """Construct the ``HTMLReport`` class."""
-        if head_values is None:
-            head_values = {}
-
-        if isinstance(head_tpl, Template):
-            html = head_tpl.safe_substitute(body=body, **head_values)
-            self.head_tpl = head_tpl.safe_substitute(**head_values)
-        else:
-            # in this case we are working with jinja template
-            html = head_tpl.render(body=body, **head_values)
-            self.head_tpl = head_tpl.render(**head_values)
-
-        self.body = body
-
-        super().__init__(html)
-
-    def _repr_html_(self):
-        """Return body of the report.
-
-        Method used by the Jupyter notebook.
-        Users normally won't call this method explicitly.
-        """
-        return self.body
-
-    def __str__(self):
-        return self.body
 
 
 def return_jinja_env() -> Environment:
@@ -405,29 +451,7 @@ def return_jinja_env() -> Environment:
     )
 
 
-def embed_img(display):
-    """Embed an image or just return its instance if already embedded.
-
-    Parameters
-    ----------
-    display : obj
-        A Nilearn plotting object to display.
-
-    Returns
-    -------
-    embed : str
-        Binary image string.
-
-    """
-    if display is None:  # no image to display
-        return None
-    # If already embedded, simply return as is
-    if isinstance(display, str):
-        return display
-    return figure_to_svg_base64(display.frame_axes.figure)
-
-
-def assemble_report(body: str, title: str) -> HTMLReport:
+def assemble_report(body: str, page_title: str) -> HTMLReport:
     """Put together head and body of report."""
     env = return_jinja_env()
 
@@ -443,73 +467,10 @@ def assemble_report(body: str, title: str) -> HTMLReport:
         head_values={
             "head_css": head_css,
             "version": __version__,
-            "page_title": title,
+            "page_title": page_title,
             "display_footer": "style='display: none'" if is_notebook() else "",
         },
     )
-
-
-def _insert_figure_partial(
-    estimator, engine, content, displayed_maps, unique_id: str
-) -> str:
-    tpl = estimator._get_partial_template(
-        estimator._estimator_type, "figure.jinja", False
-    )
-
-    if not isinstance(content, list):
-        content = [content]
-    return tpl.render(
-        engine=engine,
-        content=content,
-        displayed_maps=displayed_maps,
-        unique_id=unique_id,
-    )
-
-
-def _create_report(
-    estimator,
-    data: dict[str, Any],
-) -> HTMLReport:
-    embeded_images = None
-    image = estimator._reporting()
-    if image is None:
-        embeded_images = None
-    elif not isinstance(image, list):
-        embeded_images = embed_img(image)
-    elif all(x is None for x in image):
-        embeded_images = None
-    else:
-        embeded_images = [embed_img(i) for i in image]
-
-    summary_html = estimator._get_summary_html()
-
-    body_tpl = estimator._get_body_template(estimator._estimator_type)
-
-    report = ReportMixin._update_defaults(
-        estimator._report_content, estimator._report_info
-    )
-    body = body_tpl.render(
-        content=embeded_images,
-        figure=(
-            _insert_figure_partial(
-                estimator,
-                data["engine"],
-                embeded_images,
-                data["displayed_maps"],
-                data["unique_id"],
-            )
-            if "engine" in data
-            else None
-        ),
-        summary_html=summary_html,
-        is_notebook=is_notebook(),
-        **report,
-    )
-
-    # clear report_info
-    estimator._report_info.clear()
-
-    return assemble_report(body, f"{data['title']} report")
 
 
 def is_notebook() -> bool:
