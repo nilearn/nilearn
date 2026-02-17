@@ -556,7 +556,7 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
     """Convert a desired FWHM to number of smoothing iterations for surface.
 
     Adapted from freesurfer
-    https://github.com/freesurfer/freesurfer/tree/main/utils/mrisutils.cpp#L1100
+    https://github.com/freesurfer/freesurfer/blob/dev/utils/mrisutils.cpp#L1102
 
     Parameters
     ----------
