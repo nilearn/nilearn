@@ -198,6 +198,26 @@ class ReportMixin:
                 )
         return parameters
 
+    def _get_body_template(self, estimator_type: str):
+        """Return body template for this estimator depending on the specified
+        `estimator_type` and `_template_name` attributes.
+        """
+        env = return_jinja_env()
+
+        body_tpl_path = f"html/{estimator_type}/{self._template_name}"
+        return env.get_template(body_tpl_path)
+
+    def _get_partial_template(
+        self, estimator_type: str, tpl_name: str, is_common: bool = False
+    ):
+        """Return a partial template for the specified `_estimator_type`.
+        If `is_common=True`, the template is not searched in estimator's
+        template directory but common `partials` directory.
+        """
+        env = return_jinja_env()
+        loc = f"/{estimator_type}" if not is_common else ""
+        return env.get_template(f"html{loc}/partials/{tpl_name}.jinja")
+
     def _run_report_checks(self):
         """Run standard checks before report is generated.
 
@@ -409,11 +429,11 @@ def assemble_report(body: str, title: str) -> HTMLReport:
 
 
 def _insert_figure_partial(
-    engine, content, displayed_maps, unique_id: str
+    estimator, engine, content, displayed_maps, unique_id: str
 ) -> str:
-    env = return_jinja_env()
-
-    tpl = env.get_template("html/maskers/partials/figure.jinja")
+    tpl = estimator._get_partial_template(
+        estimator._estimator_type, "figure.jinja", False
+    )
 
     if not isinstance(content, list):
         content = [content]
@@ -479,13 +499,10 @@ def _create_report(
     if "overlay" in data:
         data["overlay"] = embed_img(data["overlay"])
 
-    env = return_jinja_env()
-
     docstring = estimator._report_info["docstring"]
     parameters = estimator._report_info["parameters"]
 
-    body_tpl_path = f"html/masker/{estimator._template_name}"
-    body_tpl = env.get_template(body_tpl_path)
+    body_tpl = estimator._get_body_template(estimator._estimator_type)
 
     body = body_tpl.render(
         content=embeded_images,
@@ -493,6 +510,7 @@ def _create_report(
         parameters=parameters,
         figure=(
             _insert_figure_partial(
+                estimator,
                 data["engine"],
                 embeded_images,
                 data["displayed_maps"],
