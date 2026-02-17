@@ -25,6 +25,7 @@ from nilearn.image import (
     get_data,
     new_img_like,
     reorder_img,
+    resample_img,
     resample_to_img,
 )
 from nilearn.plotting._engine_utils import colorscale
@@ -272,6 +273,16 @@ def load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
             bg_img, dim=dim, black_bg=black_bg
         )
     bg_img = reorder_img(bg_img, resample="nearest")
+
+    # resample to isotropic if needed
+    diag = np.diag(bg_img.affine)[:3]
+    smallest_voxel_size = np.min(np.abs(diag))
+    if not np.allclose(np.abs(diag), smallest_voxel_size):
+        new_affine = bg_img.affine.copy()
+        np.fill_diagonal(
+            new_affine[:3, :3], smallest_voxel_size * np.sign(diag)
+        )
+        bg_img = resample_img(bg_img, target_affine=new_affine)
     return bg_img, bg_min, bg_max, black_bg
 
 
