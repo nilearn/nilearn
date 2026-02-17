@@ -416,6 +416,7 @@ max-complexity = 23
 "**/{doc}/*" = ["B018", "D103"]
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]
 "__init__.py" = ["D104", "E402"]
+"doc/conf.py" = ["I001"]  # ignore sorting because this leads to conflict when running pre-commit locally and in CI
 "nilearn/**/tests/test_*" = ["D100"]
 "nilearn/connectome/**/{tests}/*" = ["D103"]  # 35 errors to fix
 "nilearn/datasets/func.py" = ["PTH211"]  # 1 error
