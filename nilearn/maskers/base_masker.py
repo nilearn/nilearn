@@ -622,6 +622,15 @@ class BaseMasker(_BaseMasker):
 
         return signals
 
+    def _get_summary_html(self):
+        """Convert summary part of the report content to html."""
+        summary = self._report_content.get("summary", None)
+
+        if summary is None:
+            return None
+
+        return self._dict_to_html(summary)
+
 
 class _BaseSurfaceMasker(_BaseMasker):
     """Class from which all surface maskers should inherit."""
@@ -933,3 +942,20 @@ class _BaseSurfaceMasker(_BaseMasker):
             **self.clean_args_,
         )
         return region_signals
+
+    def _get_summary_html(self):
+        summary = self._report_content.get("summary", None)
+
+        if summary is None:
+            return None
+
+        summary_html = {}
+        for part in summary:
+            summary_html[part] = self._dict_to_html(
+                summary[part],
+                precision=2,
+                header=True,
+                index=False,
+                sparsify=False,
+            )
+        return summary_html
