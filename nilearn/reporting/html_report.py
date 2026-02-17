@@ -4,6 +4,7 @@ import abc
 import uuid
 import warnings
 from copy import deepcopy
+from datetime import datetime
 from string import Template
 from typing import Any, ClassVar
 
@@ -144,34 +145,6 @@ class ReportMixin:
                     category=UserWarning,
                 )
 
-    def _run_report_checks(self):
-        """Run standard checks before report is generated.
-
-        Checks if:
-        - reporting is enabled
-        - model is fitted
-        - reporting was enabled at the time of fit
-        - matplotlib is installed
-        """
-        if self.reports is False:
-            self._append_warning(
-                "\nReport generation not enabled!\nNo visual outputs created."
-            )
-
-        if not self.__sklearn_is_fitted__():
-            self._append_warning(UNFITTED_MSG)
-
-        report = self._report_content
-        if self.__sklearn_is_fitted__() and not report["reports_at_fit_time"]:
-            self._append_warning(
-                "\nReport generation was disabled when fit was run. "
-                "No reporting data is available.\n"
-                "Make sure to set self.reports=True before fit."
-            )
-
-        if not is_matplotlib_installed():
-            self._append_warning(MISSING_ENGINE_MSG)
-
     def _dataframe_to_html(
         self,
         df_cvrt,
@@ -209,6 +182,92 @@ class ReportMixin:
             sparsify=sparsify,
         )
 
+    def _model_params_to_html(self):
+        """List model attributes and values in html."""
+        if SKLEARN_GTE_1_7:
+            parameters = self._repr_html_()
+        else:
+            # TODO (sklearn > 1.6.2) remove else block
+            parameters = model_attributes_to_dataframe(self)
+            with pd.option_context("display.max_colwidth", 100):
+                parameters = dataframe_to_html(
+                    parameters,
+                    precision=2,
+                    header=True,
+                    sparsify=False,
+                )
+        return parameters
+
+    def _run_report_checks(self):
+        """Run standard checks before report is generated.
+
+        Checks if:
+        - reporting is enabled
+        - model is fitted
+        - reporting was enabled at the time of fit
+        - matplotlib is installed
+        """
+        if self.reports is False:
+            self._append_warning(
+                "\nReport generation not enabled!\nNo visual outputs created."
+            )
+
+        if not self.__sklearn_is_fitted__():
+            self._append_warning(UNFITTED_MSG)
+
+        report = self._report_content
+        if self.__sklearn_is_fitted__() and not report["reports_at_fit_time"]:
+            self._append_warning(
+                "\nReport generation was disabled when fit was run. "
+                "No reporting data is available.\n"
+                "Make sure to set self.reports=True before fit."
+            )
+
+        if not is_matplotlib_installed():
+            self._append_warning(MISSING_ENGINE_MSG)
+
+    def _set_report_basics(self, title: str | None = None):
+        """Populate `_report_content` and `report_info` fields with values that
+        will be used in report body template.
+
+        The fields are:
+        - unique_id
+        - title
+        - has_plotting_engine
+        - docstring
+        - parameters
+        - date
+        - version
+
+        TODO
+        ----
+        _report_content could be used instead of _report_info. However after
+        report_generation _report_info is reset to {}. If _report_content can
+        safely be reset after report generation, _report_info can be removed.
+        """
+        report_content = self._report_content
+        # Generate a unique ID for report
+        report_content["unique_id"] = str(uuid.uuid4()).replace("-", "")
+
+        # Set title for report
+        report_content["title"] = title or self.__class__.__name__
+
+        report_content["has_plotting_engine"] = is_matplotlib_installed()
+
+        report_info = self._report_info
+
+        # TODO clean up docstring from RST formatting
+        if self.__doc__ is not None:
+            report_info["docstring"] = self.__doc__.split("Parameters\n")[0]
+        else:
+            report_info["docstring"] = ""
+
+        report_info["parameters"] = self._model_params_to_html()
+
+        report_info["date"] = datetime.now().replace(microsecond=0).isoformat()
+
+        report_info["version"] = __version__
+
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for this estimator.
 
@@ -223,19 +282,11 @@ class ReportMixin:
             HTML report for the masker.
         """
         self._run_report_checks()
-
-        report_content = self._report_content
-        # Generate a unique ID for report
-        report_content["unique_id"] = str(uuid.uuid4()).replace("-", "")
-
-        # Set title for report
-        report_content["title"] = title or self.__class__.__name__
-
-        report_content["has_plotting_engine"] = is_matplotlib_installed()
+        self._set_report_basics(title)
 
         self._display_report_warnings()
 
-        return _create_report(self, report_content)
+        return _create_report(self, self._report_content)
 
     @abc.abstractmethod
     def _reporting(self):
@@ -417,19 +468,6 @@ def _create_report(
                 sparsify=False,
             )
 
-    if SKLEARN_GTE_1_7:
-        parameters = estimator._repr_html_()
-    else:
-        # TODO (sklearn > 1.6.2) remove else block
-        parameters = model_attributes_to_dataframe(estimator)
-        with pd.option_context("display.max_colwidth", 100):
-            parameters = dataframe_to_html(
-                parameters,
-                precision=2,
-                header=True,
-                sparsify=False,
-            )
-
     if "n_elements" not in data:
         data["n_elements"] = 0
 
@@ -441,10 +479,10 @@ def _create_report(
     if "overlay" in data:
         data["overlay"] = embed_img(data["overlay"])
 
-    # TODO clean up docstring from RST formatting
-    docstring = estimator.__doc__.split("Parameters\n")[0]
-
     env = return_jinja_env()
+
+    docstring = estimator._report_info["docstring"]
+    parameters = estimator._report_info["parameters"]
 
     body_tpl_path = f"html/maskers/{estimator._template_name}"
     body_tpl = env.get_template(body_tpl_path)
