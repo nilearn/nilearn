@@ -39,7 +39,7 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.masking import load_mask_img, unmask
-from nilearn.reporting.mixin import ReportMixin
+from nilearn.reporting.html_report import ReportMixin
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
