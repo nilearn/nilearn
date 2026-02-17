@@ -39,11 +39,11 @@ class ReportMixin:
     """A mixin class to be used with classes that require reporting
     functionality.
 
-    ReportingMixin uses one public attribute of type bool:
+    ReportMixin uses one public attribute of type bool:
 
     reports: The value to indicate if reporting is enabled.
 
-    ReportingMixin uses two private attributes of type dict:
+    ReportMixin uses two private attributes of type dict:
 
     _report_content : The content to enrich the report. Some fields can be
     initialized in estimator constructor. Others can be added after model fit.
@@ -55,7 +55,7 @@ class ReportMixin:
     _report_data : Contains data from model fit. If reporting is disabled, or
     the model is not fit, this attribute does not exist.
 
-    Classes inheriting from ReportingMixin should implement ``_get_displays``
+    Classes inheriting from ReportMixin should implement ``_get_displays``
     to return the displays to be embedded to the report.
     """
 
