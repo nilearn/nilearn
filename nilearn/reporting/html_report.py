@@ -198,6 +198,27 @@ class ReportMixin:
                 )
         return parameters
 
+    def _embed_img(self, display):
+        """Embed an image or just return its instance if already embedded.
+
+        Parameters
+        ----------
+        display : obj
+            A Nilearn plotting object to display.
+
+        Returns
+        -------
+        embed : str
+            Binary image string.
+
+        """
+        if display is None:  # no image to display
+            return None
+        # If already embedded, simply return as is
+        if isinstance(display, str):
+            return display
+        return figure_to_svg_base64(display.frame_axes.figure)
+
     def _get_body_template(self, estimator_type: str):
         """Return body template for this estimator depending on the specified
         `estimator_type` and `_template_name` attributes.
@@ -461,17 +482,6 @@ def _create_report(
         embeded_images = [embed_img(i) for i in image]
 
     summary_html = estimator._get_summary_html()
-
-    if "n_elements" not in data:
-        data["n_elements"] = 0
-
-    if "coverage" not in data:
-        data["coverage"] = ""
-    if not isinstance(data["coverage"], str):
-        data["coverage"] = f"{data['coverage']:0.1f}"
-
-    if "overlay" in data:
-        data["overlay"] = embed_img(data["overlay"])
 
     body_tpl = estimator._get_body_template(estimator._estimator_type)
 

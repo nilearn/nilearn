@@ -394,3 +394,19 @@ class MaskerReportMixin(ReportMixin):
         cls._REPORT_DEFAULTS = cls._update_defaults(
             MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
+
+    def _set_report_basics(self, title):
+        super()._set_report_basics(title)
+        report_content = self._report_content
+
+        if not isinstance(report_content["coverage"], str):
+            report_content["coverage"] = f"{report_content['coverage']:0.1f}"
+
+        if "overlay" in report_content:
+            report_content["overlay"] = self._embed_img(
+                report_content["overlay"]
+            )
+
+        report_info = self._report_info
+        report_info["page_title"] = f"{report_content['title']} report"
+        report_info["estimator_type"] = self._estimator_type
