@@ -499,15 +499,13 @@ def _create_report(
     if "overlay" in data:
         data["overlay"] = embed_img(data["overlay"])
 
-    docstring = estimator._report_info["docstring"]
-    parameters = estimator._report_info["parameters"]
-
     body_tpl = estimator._get_body_template(estimator._estimator_type)
 
+    report = ReportMixin._update_defaults(
+        estimator._report_content, estimator._report_info
+    )
     body = body_tpl.render(
         content=embeded_images,
-        docstring=docstring,
-        parameters=parameters,
         figure=(
             _insert_figure_partial(
                 estimator,
@@ -521,8 +519,11 @@ def _create_report(
         ),
         summary_html=summary_html,
         is_notebook=is_notebook(),
-        **data,
+        **report,
     )
+
+    # clear report_info
+    estimator._report_info.clear()
 
     return assemble_report(body, f"{data['title']} report")
 
