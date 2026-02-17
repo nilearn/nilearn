@@ -16,10 +16,12 @@ import re
 import sys
 import warnings
 from pathlib import Path
+import sklearn
 
 from nilearn._version import __version__  # noqa : I001, RUF100
 from sphinx.domains import changeset
 from sphinx.locale import _
+from sphinx_gallery.notebook import add_code_cell, add_markdown_cell
 
 # ----------------------------------------------------------------------------
 
@@ -93,6 +95,21 @@ autodoc_default_options = {
     "undoc-members": True,
     "member-order": "bysource",
 }
+
+try:
+    import jupyterlite_sphinx  # noqa: F401
+
+    extensions.append("jupyterlite_sphinx")
+    with_jupyterlite = True
+except ImportError:
+    # In some cases we don't want to require jupyterlite_sphinx to be installed,
+    # e.g. the doc-min-dependencies build
+    warnings.warn(
+        "jupyterlite_sphinx is not installed, you need to install it "
+        "if you want JupyterLite links to appear in each example"
+    )
+    with_jupyterlite = False
+
 
 # Get rid of spurious warnings due to some interaction between
 # autosummary and numpydoc. See
@@ -472,6 +489,74 @@ sphinx_gallery_conf = {
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
     "within_subsection_order": "ExampleTitleSortKey",
 }
+
+def notebook_modification_function(notebook_content, notebook_filename):
+    notebook_content_str = str(notebook_content)
+    warning_template = "\n".join(
+        [
+            "<div class='alert alert-{message_class}'>",
+            "",
+            "# JupyterLite warning",
+            "",
+            "{message}",
+            "</div>",
+        ]
+    )
+
+    message_class = "warning"
+    message = (
+        "Running the scikit-learn examples in JupyterLite is experimental and you may"
+        " encounter some unexpected behavior.\n\nThe main difference is that imports"
+        " will take a lot longer than usual, for example the first `import sklearn` can"
+        " take roughly 10-20s.\n\nIf you notice problems, feel free to open an"
+        " [issue](https://github.com/nilearn/nilearn/issues/new/choose)"
+        " about it."
+    )
+
+    markdown = warning_template.format(message_class=message_class, message=message)
+
+    dummy_notebook_content = {"cells": []}
+    add_markdown_cell(dummy_notebook_content, markdown)
+
+    code_lines = []
+
+    if "seaborn" in notebook_content_str:
+        code_lines.append("%pip install seaborn")
+    if "plotly.express" in notebook_content_str:
+        code_lines.append("%pip install plotly nbformat")
+    if "skimage" in notebook_content_str:
+        code_lines.append("%pip install scikit-image")
+    if "polars" in notebook_content_str:
+        code_lines.append("%pip install polars")
+    if "fetch_" in notebook_content_str:
+        code_lines.extend(
+            [
+                "%pip install pyodide-http",
+                "import pyodide_http",
+                "pyodide_http.patch_all()",
+            ]
+        )
+    # always import matplotlib and pandas to avoid Pyodide limitation with
+    # imports inside functions
+    code_lines.extend(["import matplotlib", "import pandas"])
+
+    # Work around https://github.com/jupyterlite/pyodide-kernel/issues/166
+    # and https://github.com/pyodide/micropip/issues/223 by installing the
+    # dependencies first, and then scikit-learn from Anaconda.org.
+
+    if code_lines:
+        code_lines = ["# JupyterLite-specific code"] + code_lines
+        code = "\n".join(code_lines)
+        add_code_cell(dummy_notebook_content, code)
+
+    notebook_content["cells"] = (
+        dummy_notebook_content["cells"] + notebook_content["cells"]
+    )
+
+if with_jupyterlite:
+    sphinx_gallery_conf["jupyterlite"] = {
+        "notebook_modification_function": notebook_modification_function
+    }
 
 mermaid_version = "11.4.0"
 

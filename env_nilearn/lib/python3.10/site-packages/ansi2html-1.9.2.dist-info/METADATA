@@ -1,0 +1,106 @@
+Metadata-Version: 2.1
+Name: ansi2html
+Version: 1.9.2
+Summary: Convert text with ANSI color codes to HTML or to LaTeX
+Author-email: Ralph Bean <rbean@redhat.com>
+Maintainer-email: Ralph Bean <rbean@redhat.com>
+License: LGPLv3+
+Project-URL: homepage, https://github.com/pycontribs/ansi2html
+Project-URL: documentation, https://ansi2html.readthedocs.io/
+Project-URL: repository, https://github.com/pycontribs/ansi2html
+Project-URL: changelog, https://github.com/pycontribs/ansi2html/releases
+Keywords: ansi,html,color
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: POSIX
+Classifier: License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Quality Assurance
+Classifier: Topic :: Software Development :: Testing
+Classifier: Topic :: System :: Systems Administration
+Classifier: Topic :: Text Processing :: Markup :: HTML
+Classifier: Topic :: Text Processing :: Markup
+Classifier: Topic :: Text Processing
+Classifier: Topic :: Utilities
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: importlib-metadata ; python_version < "3.8"
+Requires-Dist: typing-extensions ; python_version < "3.8"
+Provides-Extra: docs
+Requires-Dist: mkdocs ; extra == 'docs'
+Requires-Dist: mkdocs-material ; extra == 'docs'
+Requires-Dist: mkdocs-material-extensions ; extra == 'docs'
+Requires-Dist: mkdocstrings ; extra == 'docs'
+Requires-Dist: mkdocstrings-python ; extra == 'docs'
+Requires-Dist: pymdown-extensions ; extra == 'docs'
+Provides-Extra: test
+Requires-Dist: pytest ; extra == 'test'
+Requires-Dist: pytest-cov ; extra == 'test'
+
+[![Build Status - main branch](https://github.com/pycontribs/ansi2html/workflows/tox/badge.svg?branch=main)](https://github.com/pycontribs/ansi2html/actions?query=workflow%3Atox+branch%3Amain)
+
+# ansi2html
+
+Convert text with ANSI color codes to HTML or to LaTeX.
+
+Inspired by and developed off of the work of
+[pixelbeat](https://www.pixelbeat.org/docs/terminal_colours/) and
+[blackjack](https://web.archive.org/web/20100911103911/http://www.koders.com/python/fid5D57DD37184B558819D0EE22FCFD67F53078B2A3.aspx).
+
+[Read the docs](https://ansi2html.readthedocs.io/) for more
+informations.
+
+## Example - Python API
+
+```python
+from ansi2html import Ansi2HTMLConverter
+conv = Ansi2HTMLConverter()
+ansi = "".join(sys.stdin.readlines())
+html = conv.convert(ansi)
+```
+
+## Example - Shell Usage
+
+```shell
+$ ls --color=always | ansi2html > directories.html
+$ sudo tail /var/log/messages | ccze -A | ansi2html > logs.html
+$ task rc._forcecolor:yes limit:0 burndown | ansi2html > burndown.html
+```
+
+See the list of full options with:
+
+```shell
+$ ansi2html --help
+```
+
+## Get this project:
+
+```shell
+$ pip3 install ansi2html
+```
+
+Source: <https://github.com/pycontribs/ansi2html/>
+
+pypi: <https://pypi.org/project/ansi2html/>
+
+## License
+
+`ansi2html` is licensed LGPLv3+.
+
+# Credits
+
+- Author: [Ralph Bean](mailto:rbean@redhat.com)
+- Contributor: [Robin Schneider](mailto:ypid23@aol.de)

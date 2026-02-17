@@ -1,0 +1,27 @@
+Metadata-Version: 2.1
+Name: htmlmin2
+Version: 0.1.13
+Summary: An HTML Minifier
+Home-page: https://htmlmin.readthedocs.io/en/latest/
+Download-URL: https://github.com/mankyd/htmlmin
+Author: Dave Mankoff
+Author-email: mankyd@gmail.com
+License: BSD
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Topic :: Text Processing :: Markup :: HTML
+License-File: LICENSE
+
+> :warning: This is a fork of htmlmin. You can install this work with `pip install htmlmin2`.
+
+A configurable HTML Minifier with safety features.
+
+.. image:: https://travis-ci.org/mankyd/htmlmin.png?branch=master
+   :target: http://travis-ci.org/mankyd/htmlmin
+
+Documentation: https://htmlmin.readthedocs.io/en/latest/

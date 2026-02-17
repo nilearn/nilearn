@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE GIFTI SYSTEM "http://www.nitrc.org/frs/download.php/115/gifti.dtd">
+<GIFTI Version="1.0"  NumberOfDataArrays="2">
+<MetaData>
+<MD>
+	<Name><![CDATA[gifticlib-version]]></Name>
+	<Value><![CDATA[gifti library version 1.08, 8 March, 2010]]></Value>
+</MD>
+</MetaData>
+<LabelTable/>
+<DataArray Intent="NIFTI_INTENT_POINTSET"
+	DataType="NIFTI_TYPE_FLOAT32"
+	ArrayIndexingOrder="RowMajorOrder"
+	Dimensionality="2"
+	Dim0="10"
+	Dim1="3"
+	Encoding="GIFTI_ENCODING_B64BIN"
+	Endian="GIFTI_ENDIAN_LITTLE"
+	ExternalFileName=""
+	ExternalFileOffset="">
+<MetaData/>
+<CoordinateSystemTransformMatrix>
+	<DataSpace><![CDATA[NIFTI_XFORM_UNKNOWN]]></DataSpace>
+	<TransformedSpace><![CDATA[NIFTI_XFORM_UNKNOWN]]></TransformedSpace>
+<MatrixData>
+  1.000000   0.000000   0.000000   0.000000
+  0.000000   1.000000   0.000000   0.000000
+  0.000000   0.000000   1.000000   0.000000
+  0.000000   0.000000   0.000000   1.000000
+</MatrixData>
+</CoordinateSystemTransformMatrix>
+<Data>5ywbQ7+UB0NDncRC+VYMQ5QMPkPbfpJCIlwdQ836REPyUKdCNXYrQ8ZvCUMh8ZxCwosUQ5MiwkJv
+7YNC/un2QtTv3kLYtoRCFk8HQ4ZJSkOkhhFCFEgyQz6YIkNSARdCYhwyQ4+T5kIvuGRC2tAOQ26k
+pUIqLfhB
+</Data>
+</DataArray>
+<DataArray Intent="NIFTI_INTENT_TRIANGLE"
+	DataType="NIFTI_TYPE_INT32"
+	ArrayIndexingOrder="RowMajorOrder"
+	Dimensionality="2"
+	Dim0="10"
+	Dim1="3"
+	Encoding="GIFTI_ENCODING_B64BIN"
+	Endian="GIFTI_ENDIAN_LITTLE"
+	ExternalFileName=""
+	ExternalFileOffset="">
+<MetaData/>
+<CoordinateSystemTransformMatrix>
+	<DataSpace><![CDATA[NIFTI_XFORM_UNKNOWN]]></DataSpace>
+	<TransformedSpace><![CDATA[NIFTI_XFORM_UNKNOWN]]></TransformedSpace>
+<MatrixData>
+  1.000000   0.000000   0.000000   0.000000
+  0.000000   1.000000   0.000000   0.000000
+  0.000000   0.000000   1.000000   0.000000
+  0.000000   0.000000   0.000000   1.000000
+</MatrixData>
+</CoordinateSystemTransformMatrix>
+<Data>AhkAAANGAAACZAAABTcAAAJkAAADRgAAAmQAAAU3AACDEQAAA0YAAEIGAAAFNwAAgxEAAANkAAAC
+ZAAABGQAAAJkAAADZAAAAmQAAARkAAACGQAAA2QAAMUNAAAEZAAAYwQAAAJGAACILwAABGQAAIgv
+AAACRgAA
+</Data>
+</DataArray>
+</GIFTI>

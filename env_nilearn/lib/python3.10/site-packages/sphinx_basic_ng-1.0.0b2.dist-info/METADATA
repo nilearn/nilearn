@@ -1,0 +1,57 @@
+Metadata-Version: 2.1
+Name: sphinx-basic-ng
+Version: 1.0.0b2
+Summary: A modern skeleton for Sphinx themes.
+Home-page: https://github.com/pradyunsg/sphinx-basic-ng
+Author: Pradyun Gedam
+Author-email: mail@pradyunsg.me
+Project-URL: Documentation, https://rtfd.io/sphinx-basic-ng/
+Classifier: Framework :: Sphinx
+Classifier: Framework :: Sphinx :: Theme
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Documentation
+Classifier: Topic :: Software Development :: Documentation
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: sphinx (>=4.0)
+Provides-Extra: docs
+Requires-Dist: furo ; extra == 'docs'
+Requires-Dist: myst-parser ; extra == 'docs'
+Requires-Dist: sphinx-copybutton ; extra == 'docs'
+Requires-Dist: sphinx-inline-tabs ; extra == 'docs'
+Requires-Dist: ipython ; extra == 'docs'
+
+# sphinx-basic-ng
+
+A modernised skeleton for Sphinx themes.
+
+## To demo this theme
+
+1. Clone this repository
+
+   ```shell
+   git clone https://github.com/pradyunsg/sphinx-basic-ng
+   ```
+
+2. Install it locally
+
+   ```shell
+   pip install -e ./sphinx-basic-ng
+   ```
+
+3. Install `nox`
+
+   ```shell
+   pip install nox
+   ```
+
+4. Use `nox` to build a simple demo site
+
+   ```shell
+   nox -s docs-live -- ./tests/barebones
+   ```

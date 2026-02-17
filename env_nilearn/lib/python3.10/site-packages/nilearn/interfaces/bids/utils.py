@@ -1,0 +1,108 @@
+"""Public Utility functions for the nilearn.interfaces.bids module."""
+
+from typing import Any
+
+
+def bids_entities() -> dict[str, list[str]]:
+    """Return a dictionary of BIDS entities.
+
+    Entities are listed in the order they should appear in a filename.
+
+    https://bids-specification.readthedocs.io/en/stable/appendices/entities.html
+
+    Note that:
+
+    - this only contains the entities for functional data
+
+    https://github.com/bids-standard/bids-specification/blob/master/src/schema/rules/files/raw/func.yaml#L13
+    https://github.com/bids-standard/bids-specification/blob/master/src/schema/rules/files/deriv/imaging.yaml#L29
+
+    Returns
+    -------
+    Dictionary of raw and derivatives entities : dict[str, list[str]]
+
+    """
+    return {
+        "raw": [
+            "sub",
+            "ses",
+            "task",
+            "acq",
+            "ce",
+            "rec",
+            "dir",
+            "run",
+            "echo",
+            "part",
+        ],
+        "derivatives": ["hemi", "space", "res", "den", "desc"],
+    }
+
+
+def check_bids_label(label: Any) -> None:
+    """Validate a BIDS label.
+
+    https://bids-specification.readthedocs.io/en/stable/glossary.html#label-formats
+
+    Parameters
+    ----------
+    label : Any
+        Label to validate
+
+    """
+    if not isinstance(label, str):
+        raise TypeError(
+            f"All bids labels must be string. "
+            f"Got '{label.__class__.__name__}' for {label} instead."
+        )
+    if not all(char.isalnum() for char in label):
+        raise ValueError(
+            f"All bids labels must be alphanumeric. Got '{label}' instead."
+        )
+
+
+def create_bids_filename(
+    fields,
+    entities_to_include: list[str] | None = None,
+) -> str:
+    """Create BIDS filename from dictionary of entity-label pairs.
+
+    Parameters
+    ----------
+    fields : :obj:`dict` of :obj:`str`
+        Dictionary of entity-label pairs, for example:
+
+        {
+         "prefix": None, # can be useful to easily prefix filenames
+         "suffix": "T1w",
+         "extension": "nii.gz",
+         "entities": {"acq":  "ap",
+                      "desc": "preproc"}
+        }.
+
+    Returns
+    -------
+    BIDS filename : :obj:`str`
+
+    """
+    if entities_to_include is None:
+        entities_to_include = bids_entities()["raw"]
+
+    filename = ""
+
+    for key in entities_to_include:
+        if value := fields["entities"].get(key):
+            filename += f"{key}-{value}_"
+    if "suffix" in fields:
+        filename += f"{fields['suffix']}"
+    if "extension" in fields:
+        filename += f".{fields['extension']}"
+    if "prefix" in fields:
+        prefix = fields["prefix"]
+        if prefix is None:
+            prefix = ""
+        if prefix and prefix != "" and not prefix.endswith("_"):
+            prefix += "_"
+        filename = f"{prefix}{filename}"
+
+    return filename

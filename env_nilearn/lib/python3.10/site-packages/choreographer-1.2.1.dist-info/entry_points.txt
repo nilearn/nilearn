@@ -1,0 +1,3 @@
+[console_scripts]
+choreo_diagnose = choreographer.cli._cli_utils_no_qa:diagnose
+choreo_get_chrome = choreographer.cli._cli_utils:get_chrome_cli

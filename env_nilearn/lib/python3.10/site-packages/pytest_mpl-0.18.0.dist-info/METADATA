@@ -1,0 +1,98 @@
+Metadata-Version: 2.4
+Name: pytest-mpl
+Version: 0.18.0
+Summary: pytest plugin to help with testing figures output from Matplotlib
+Author-email: Thomas Robitaille <thomas.robitaille@gmail.com>
+License-Expression: BSD-2-Clause
+Project-URL: Homepage, https://github.com/matplotlib/pytest-mpl
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Framework :: Pytest
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Testing
+Classifier: Topic :: Scientific/Engineering :: Visualization
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/x-rst
+License-File: LICENSE
+Requires-Dist: pytest>=5.4.0
+Requires-Dist: matplotlib>=3.3.3
+Requires-Dist: packaging>=22.0.0
+Requires-Dist: Jinja2>=2.10.2
+Requires-Dist: Pillow>=8.1.1
+Provides-Extra: test
+Requires-Dist: pytest-cov>=6.0.0; extra == "test"
+Provides-Extra: docs
+Requires-Dist: sphinx>=7.0.0; extra == "docs"
+Requires-Dist: mpl_sphinx_theme>=3.9.0; extra == "docs"
+Requires-Dist: sphinx_design>=0.6.0; extra == "docs"
+Requires-Dist: matplotlib==3.9.*; extra == "docs"
+Dynamic: license-file
+
+``pytest-mpl``
+==============
+
+``pytest-mpl`` is a `pytest <https://docs.pytest.org>`__ plugin to facilitate image comparison for `Matplotlib <http://www.matplotlib.org>`__ figures.
+
+For each figure to test, an image is generated and then subtracted from an existing reference image.
+If the RMS of the residual is larger than a user-specified tolerance, the test will fail.
+Alternatively, the generated image can be hashed and compared to an expected value.
+
+For more information, see the `pytest-mpl documentation <https://pytest-mpl.readthedocs.io>`__.
+
+Installation
+------------
+.. code-block:: bash
+
+   pip install pytest-mpl
+
+For detailed instructions, see the `installation guide <https://pytest-mpl.readthedocs.io/en/latest/installing.html>`__ in the ``pytest-mpl`` docs.
+
+Usage
+-----
+First, write test functions that create a figure.
+These image comparison tests are decorated with ``@pytest.mark.mpl_image_compare`` and return the figure for testing:
+
+.. code-block:: python
+
+   import matplotlib.pyplot as plt
+   import pytest
+
+   @pytest.mark.mpl_image_compare
+   def test_plot():
+       fig, ax = plt.subplots()
+       ax.plot([1, 2])
+       return fig
+
+Then, generate reference images by running the test suite with the ``--mpl-generate-path`` option:
+
+.. code-block:: bash
+
+   pytest --mpl-generate-path=baseline
+
+Then, run the test suite as usual, but pass ``--mpl`` to compare the returned figures to the reference images:
+
+.. code-block:: bash
+
+   pytest --mpl
+
+By also passing ``--mpl-generate-summary=html``, a summary of the image comparison results will be generated in HTML format:
+
++---------------+---------------+---------------+
+| |html all|    | |html filter| | |html result| |
++---------------+---------------+---------------+
+
+For more information on how to configure and use ``pytest-mpl``, see the `pytest-mpl documentation <https://pytest-mpl.readthedocs.io>`__.
+
+Contributing
+------------
+``pytest-mpl`` is a community project maintained for and by its users.
+There are many ways you can help!
+
+- Report a bug or request a feature `on GitHub <https://github.com/matplotlib/pytest-mpl/issues>`__
+- Improve the documentation or code
+
+.. |html all| image:: docs/images/html_all.png
+.. |html filter| image:: docs/images/html_filter.png
+.. |html result| image:: docs/images/html_result.png

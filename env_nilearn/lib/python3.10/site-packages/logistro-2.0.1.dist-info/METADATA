@@ -1,0 +1,115 @@
+Metadata-Version: 2.1
+Name: logistro
+Version: 2.0.1
+Summary: Simple wrapper over logging for a couple basic features
+Author-email: Andrew Pikul <ajpikul@gmail.com>, Neyberson Atencio <neyberatencio@gmail.com>
+Maintainer-email: Andrew Pikul <ajpikul@gmail.com>
+License: MIT License
+        
+        Copyright (c) 2025 GeoPozo
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+Project-URL: Homepage, https://github.com/geopozo/logistro
+Project-URL: Repository, https://github.com/geopozo/logistro
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# **logistro (lo-hī-stro)**
+
+`logistro` is an extremely light addition to `logging`, providing sensible defaults.
+
+It also includes `getPipeLogger()` which can be passed to `Popen()` so that its
+`stderr` is piped to the already thread-safe `logging` library.
+
+## Which logger level should I use?
+
+`debug2` I use if I'm in a situation where it's okay to dump large amounts of
+information. I'm planning on scrolling.
+
+`info` I will maybe use at the beginning and end of functions called.
+
+`debug` Might print stuff from inside functions or it might print shortened
+versioning of `debug2`.
+
+Warning, Error, Critical, Exception, these are all more obvious.
+
+## Quickstart
+
+```python
+import logistro
+
+logger = logistro.getLogger(__name__)
+
+logger.debug2(...) # new!
+logger.debug(...) # or debug1()
+logger.info(...)
+logger.warning(...)
+logger.error(...)
+logger.critical(...)
+logger.exception(...) # always inside except:
+
+# For subprocesses:
+
+pipe, logger = logistro.getPipeLogger(__name__+"-subprocess")
+subprocess.Popen(cli_command, stderr=pipe)
+os.close(pipe) # eventually
+```
+
+## CLI Flags
+
+* `--logistro-level DEBUG|DEBUG2|INFO|WARNING|ERROR|CRITICAL`
+* `--logistro-human` (default)
+* `--logistro-structured` which outputs JSON
+
+The help for CLI commands can be included in your program:
+
+```
+parser = argparse.ArgumentParser(parents=[logistro.parser])
+```
+
+### Functions
+
+* `logistro.set_structured()`
+* `logistro.set_human()`
+
+*Generally, they must be called before any other logging call (See note below).*
+
+## Additionally
+
+
+`logistro.betterConfig(...)` applies our formats and levels. It accepts the same
+arguments as `logging.basicConfig(...)` except `format=`, which it ignores.
+**It is better to call this early in a multithread program.**
+
+`logistro.getLogger(...)` will ensure `betterConfig()`.
+
+You can use our two formatters manually instead:
+
+* `human_formatter`
+* `structured_formatter`
+
+
+## Changing Logger Formatter Mid-Execution
+
+With a typical setup, calling `set_structured()` or `set_human()`
+and then `logistro.coerce_logger(logistro.getLogger())` will change the format.
+
+See [the tech note](TECH_NOTE.md) for an intro into the complexities of `logging`.

@@ -1,0 +1,74 @@
+.. _icbm_152_template:
+
+ICBM 152 template
+=================
+
+.. admonition:: Nilearn MNI template
+   :class: important
+
+   The Nilearn template is asymmetrical ICBM152 2009, release a.
+
+   The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+   release c (MNI152NLin2009cSAsym).
+
+   If you wish to use the exact same release as :term:`fMRIPrep`,
+   please refer to `TemplateFlow <https://www.templateflow.org>`_.
+
+Access
+------
+See :func:`nilearn.datasets.fetch_icbm152_2009`,
+:func:`nilearn.datasets.fetch_icbm152_brain_gm_mask`,
+:func:`nilearn.datasets.load_mni152_template` to load MNI152 T1 template.
+
+See :func:`nilearn.datasets.load_mni152_gm_template` to load MNI152 gray matter template.
+
+See :func:`nilearn.datasets.load_mni152_wm_template` to load MNI152 white matter template.
+
+See :func:`nilearn.datasets.load_mni152_brain_mask` to load MNI152 whole brain mask.
+
+See :func:`nilearn.datasets.load_mni152_gm_mask` to load MNI152 gray matter mask.
+
+See :func:`nilearn.datasets.load_mni152_wm_mask`: to load MNI152 white matter mask.
+
+Content
+-------
+:'csf': probabilistic map for cerebrospinal fluid
+:'gm': probabilistic map for gray matter
+:'wm': probabilistic map for white matter
+:'pd': proton density-weighted anatomical templates (non-linear average)
+:'t1': T1-weighted anatomical template (non-linear average)
+:'t2': T2-weighted anatomical template (non-linear average)
+:'t2_relax': T2-weighted/relaxed anatomical template
+:'eye_mask': average mask for eyes
+:'face_mask': average mask for face
+:'mask': average mask for brain
+
+See Also
+--------
+For more information see:
+http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
+
+Notes
+-----
+References atlases intended for spatial normalization, registration, and
+segmentation of MRI data. These atlases were generated from large ensembles
+of MRI data in an unbiased fashion. MRI data from templates are derived from
+"a truly normal, well characterized population."
+
+The original download URL is
+https://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
+
+TemplateFlow repository for ICBM152 2009:
+
+- Symmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSym
+- Asymmetric: https://github.com/templateflow/tpl-MNI152NLin2009cAsym
+
+See :footcite:t:`Collins1999`, :footcite:t:`Fonov2009` and :footcite:t:`Fonov2011`.
+
+References
+----------
+.. footbibliography::
+
+License
+-------
+unknown

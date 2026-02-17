@@ -1,0 +1,146 @@
+Metadata-Version: 2.1
+Name: pytest-reporter
+Version: 0.5.3
+Summary: Generate Pytest reports with templates
+Home-page: https://github.com/christiansandberg/pytest-reporter
+Author: Christian Sandberg
+Author-email: christiansandberg@me.com
+Maintainer: Christian Sandberg
+Maintainer-email: christiansandberg@me.com
+License: MIT
+Classifier: Development Status :: 4 - Beta
+Classifier: Framework :: Pytest
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Testing
+Classifier: Programming Language :: Python
+Classifier: Operating System :: OS Independent
+Classifier: License :: OSI Approved :: MIT License
+Requires-Python: >=3.8
+License-File: LICENSE
+Requires-Dist: pytest
+
+===============
+pytest-reporter
+===============
+
+.. image:: https://img.shields.io/pypi/v/pytest-reporter.svg
+    :target: https://pypi.org/project/pytest-reporter
+    :alt: PyPI version
+
+Generate `Pytest`_ reports from templates. You may use one of the available
+templates on PyPI (like the reference template `pytest-reporter-html1`_),
+inherit them in your own template to tweak their content and appearence or
+make your own from scratch.
+
+Anything text based can be generated like HTML, LaTeX, CSV et.c.
+
+
+Installation
+------------
+
+You can install "pytest-reporter" via `pip`_ from `PyPI`_::
+
+    $ pip install pytest-reporter
+
+
+Usage
+-----
+
+Specify the template you want to use and the output path of the report::
+
+    $ pytest --template-dir=templates --template=report.html --report=report.html
+
+
+Writing templates
+-----------------
+
+This plugin does not come with built-in support for any template engines,
+it is up to each template to implement the rendering (or use another template
+plugin as base). A minimal template may just implement the
+``pytest_reporter_render`` hook.
+
+This is a very basic Jinja2 template implementation:
+
+.. code:: python
+
+    from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+
+    def pytest_reporter_render(template_name, dirs, context):
+        env = Environment(loader=FileSystemLoader(dirs))
+        try:
+            template = env.get_template(template_name)
+        except TemplateNotFound:
+            # Don't know about this name, may be provided by some other template
+            return
+        return template.render(context)
+
+See `pytest-reporter-html1`_ for a full reference implementation.
+
+
+The template context
+--------------------
+
+The standard context available for all templates include the following:
+
+* ``config``: `Config <https://docs.pytest.org/en/latest/reference.html#config>`_
+* ``session``: `Session <https://docs.pytest.org/en/latest/reference.html#session>`_
+* ``started``: Unix timestamp when session started
+* ``ended``: Unix timestamp when session was finished
+* ``warnings[]``: List of warnings.WarningMessage
+* ``items``: Dictionary of collected items with nodeid as keys
+* ``tests[]``: List of each test run as dictionaries with the following keys:
+
+  * ``item``: `Item <https://docs.pytest.org/en/latest/reference.html#item>`_
+  * ``phases[]``: List of each test phase (setup, call, teardown) as dictionaries
+    with the following keys:
+
+    * ``call`` (optional): `CallInfo <https://docs.pytest.org/en/latest/reference.html#callinfo>`_ if available.
+    * ``report``: `TestReport <https://docs.pytest.org/en/latest/reference.html#testreport>`_
+    * ``sections``: Same as ``report.sections`` but only the sections captured for this phase
+    * ``log_records[]``: List of `logging.LogRecord <https://docs.python.org/3/library/logging.html#logging.LogRecord>`_
+      recorded during the test phase
+    * ``status``: Status of this phase. Dictionary with the following keys:
+
+      * ``category``: Category of the status (e.g. ``"passed"``) or empty string
+      * ``letter``: Single letter version of status (e.g. ``"P"``) or empty string
+      * ``word``: Uppercase word version of status (e.g. ``"PASSED"``) or empty string
+      * ``style``: Dictionary with e.g. ``{"yellow": True}`` or empty dictionary
+
+  * ``status``: Status of whole test. Dictionary with the following keys:
+
+    * ``category``: Category of the test status (e.g. ``"passed"``)
+    * ``letter``: Single letter version of test status (e.g. ``"P"``)
+    * ``word``: Uppercase word version of test status (e.g. ``"PASSED"``)
+    * ``style``: Dictionary with e.g. ``{"yellow": True}`` or empty dictionary
+
+The context may be extended or modified using the following methods:
+
+* ``config.template_context``
+* The ``template_context`` fixture
+* The ``pytest_reporter_context()``  hook
+
+
+Hooks
+-----
+
+See `hooks.py`_ for a complete list of hooks available.
+
+
+License
+-------
+
+Distributed under the terms of the `MIT`_ license, "pytest-reporter" is free and open source software
+
+
+Issues
+------
+
+If you encounter any problems, please `file an issue`_ along with a detailed description.
+
+.. _`pytest-reporter-html1`: https://pypi.org/project/pytest-reporter-html1
+.. _`MIT`: http://opensource.org/licenses/MIT
+.. _`file an issue`: https://github.com/christiansandberg/pytest-reporter/issues
+.. _`pytest`: https://github.com/pytest-dev/pytest
+.. _`pip`: https://pypi.org/project/pip/
+.. _`PyPI`: https://pypi.org/project
+.. _`hooks.py`: https://github.com/christiansandberg/pytest-reporter/blob/master/pytest_reporter/hooks.py

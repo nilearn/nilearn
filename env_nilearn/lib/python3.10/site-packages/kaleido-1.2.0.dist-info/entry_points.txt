@@ -1,0 +1,3 @@
+[console_scripts]
+kaleido_get_chrome = choreographer.cli._cli_utils:get_chrome_cli
+kaleido_mocker = kaleido._mocker:build_mocks

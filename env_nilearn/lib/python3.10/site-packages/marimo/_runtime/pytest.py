@@ -1,0 +1,396 @@
+# Copyright 2026 Marimo. All rights reserved.
+from __future__ import annotations
+
+import os
+import re
+import sys
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Callable, Optional
+
+from marimo._ast.cell import Cell
+from marimo._ast.pytest import MARIMO_TEST_STUB_NAME
+from marimo._cli.print import bold, green
+from marimo._dependencies.dependencies import DependencyManager
+from marimo._runtime.capture import capture_stdout
+from marimo._runtime.context import safe_get_context
+from marimo._runtime.runtime import notebook_location
+
+MARIMO_TEST_BLOCK_REGEX = re.compile(rf"{MARIMO_TEST_STUB_NAME}_\d+[(?::)\.]+")
+
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    import _pytest.Item  # type: ignore
+
+
+@dataclass
+class MarimoPytestResult:
+    passed: int = 0
+    failed: int = 0
+    errors: int = 0
+    skipped: int = 0
+    xfailed: int = 0
+    xpassed: int = 0
+    output: Optional[str] = None
+
+    @property
+    def total(self) -> int:
+        return (
+            self.passed
+            + self.failed
+            + self.errors
+            + self.skipped
+            + self.xfailed
+            + self.xpassed
+        )
+
+    @property
+    def summary(self) -> str:
+        parts = [
+            f"Total: {self.total}",
+            f"Passed: {self.passed}",
+            f"Failed: {self.failed}",
+            f"Errors: {self.errors}",
+            f"Skipped: {self.skipped}",
+        ]
+        if self.xfailed:
+            parts.append(f"XFailed: {self.xfailed}")
+        if self.xpassed:
+            parts.append(f"XPassed: {self.xpassed}")
+        return ", ".join(parts)
+
+
+def _get_name(default: str = "notebook.py") -> str:
+    filename = default
+    ctx = safe_get_context()
+    if ctx and ctx.filename is not None:
+        filename = ctx.filename
+    return filename
+
+
+def _to_marimo_uri(uri: str) -> str:
+    """Convert a file path URI to a marimo URI if it matches the cell pattern."""
+    # Should be like
+    # /tmp/marimo_1234567/__marimo__cell_1234_.py
+    if "__marimo__cell_" not in uri:
+        return uri
+    cell_id = uri.split("_")[6]
+
+    notebook = os.path.relpath(_get_name(), notebook_location())
+    return f"marimo://{notebook}#cell_id={cell_id}"
+
+
+def _sub_function(
+    old_item: _pytest.Item, parent: Any, fn: Callable[..., Any]
+) -> _pytest.Item:
+    # Directly execute the cell, since this means it's a toplevel function with no deps.
+    # Or a cell where which we already wrapped in skip.
+    if isinstance(old_item.obj, Cell):
+        return old_item
+
+    import pytest  # type: ignore
+    from _pytest.fixtures import FuncFixtureInfo  # type: ignore
+
+    fixtureinfo = old_item._fixtureinfo
+    param_names: set[str] = set()
+
+    if hasattr(old_item, "callspec") and old_item.callspec:
+        params: dict[str, Any] = old_item.callspec.params
+        param_names = set(params.keys())
+
+        def make_test_func(
+            func_JYWB: Callable[..., Any], param_dict: dict[str, Any]
+        ) -> Callable[[], Any]:
+            # note _JYWB is a suffix to easily detect in stack trace for
+            # removal.
+            # Also no functools.wraps(func) because we need the empty
+            # call signature
+            def test_wrapper(*args: Any, **kwargs: Any) -> Any:
+                return func_JYWB(*args, **kwargs, **param_dict)
+
+            # but copy attributes from the original function
+            test_wrapper.__name__ = func_JYWB.__name__
+            test_wrapper.__module__ = func_JYWB.__module__
+            return test_wrapper
+
+        fn = make_test_func(fn, params)
+
+        # Filter out parametrized args from fixtureinfo since they're baked in
+        fixtureinfo = FuncFixtureInfo(
+            argnames=tuple(
+                a for a in fixtureinfo.argnames if a not in param_names
+            ),
+            initialnames=tuple(
+                a for a in fixtureinfo.initialnames if a not in param_names
+            ),
+            names_closure=[
+                a for a in fixtureinfo.names_closure if a not in param_names
+            ],
+            name2fixturedefs={
+                k: v
+                for k, v in fixtureinfo.name2fixturedefs.items()
+                if k not in param_names
+            },
+        )
+
+    pyfn = pytest.Function.from_parent(
+        parent,
+        name=old_item.name,
+        callobj=fn,
+        fixtureinfo=fixtureinfo,  # Preserve fixture metadata (minus params)
+    )
+    # Attributes that need to be carried over.
+    for attr in ["keywords", "own_markers"]:
+        if hasattr(old_item, attr):
+            setattr(pyfn, attr, getattr(old_item, attr))
+    return pyfn
+
+
+class ReplaceStubPlugin:
+    """Allows pytest to run in the runtime, by replacing the statically
+    collected stubs with the runtime relevant implementations."""
+
+    def __init__(
+        self,
+        defs: Optional[set[str]] = None,
+        lcls: Optional[dict[str, Any]] = None,
+    ) -> None:
+        if lcls is None:
+            lcls = globals()
+        if defs is None:
+            defs = set(lcls.keys())
+
+        self.lcls = lcls
+        self.defs = defs
+        self._result = MarimoPytestResult()
+
+    def pytest_collection_modifyitems(
+        self, items: list[Any], session: Any
+    ) -> None:
+        """Provided pytest has statically collected all the relevant tests:
+        - Filter based on the expected defs of the cell context.
+        - Sub in the function references in scope opposed to the pytest
+          determined stubs.
+        """
+        # Not official marimo dependencies
+        # So don't import at the top level.
+        import _pytest  # type: ignore
+
+        def is_fixture(obj: Any) -> bool:
+            """Check if object is a pytest fixture."""
+            return callable(obj) and hasattr(obj, "_pytestfixturefunction")
+
+        # Register cell-scoped fixtures before processing items
+        # Use names_closure (transitive deps) instead of just argnames
+        # to handle fixture dependency chains
+        fm = session._fixturemanager
+        registered_fixtures: set[str] = set()
+        for item in items:
+            if hasattr(item, "_fixtureinfo"):
+                for argname in item._fixtureinfo.names_closure:
+                    if (
+                        argname not in registered_fixtures
+                        and argname in self.lcls
+                        and is_fixture(self.lcls[argname])
+                    ):
+                        obj = self.lcls[argname]
+                        marker = obj._pytestfixturefunction
+                        fm._register_fixture(
+                            name=argname,
+                            func=obj,
+                            nodeid="",  # Global visibility
+                            scope=marker.scope,
+                            params=marker.params,
+                            ids=marker.ids,
+                            autouse=marker.autouse,
+                        )
+                        registered_fixtures.add(argname)
+
+        to_collect = []
+        # Filter tests, and create new "Functions" with the relevant references
+        # where needed.
+        for item in items:
+            head: Any = item
+            path: list[str] = []
+
+            while isinstance(head.parent.parent, _pytest.python.Class):
+                path.append(head.name)
+                head = head.parent
+
+            # Handle @app.class_definition classes (not wrapped in stub class)
+            # Check if head is a Function directly inside a Class whose name is in defs
+            if isinstance(head, _pytest.python.Function) and isinstance(
+                head.parent, _pytest.python.Class
+            ):
+                parent_name = getattr(
+                    head.parent, "originalname", head.parent.name
+                )
+                if parent_name in self.defs:
+                    path.append(head.name)
+                    head = head.parent
+
+            # For test name, helps keep names relative to the root.
+            parent: Any = item.parent
+            if not path:
+                parent = parent.parent
+
+            name: str = getattr(head, "originalname", head.name)
+            if name in self.defs:
+                value: Any = self.lcls[name]
+                for attr in reversed(path):
+                    if isinstance(value, type):
+                        value = value()
+                    value = getattr(value, attr)
+                to_collect.append(_sub_function(item, parent, value))
+        items[:] = to_collect
+
+    def pytest_terminal_summary(self, terminalreporter: Any) -> None:
+        """Provide a clean summary of test results. Gives something like:
+        =========== Overview ===========
+        Passed Tests:
+        ✓ testing.py::test_sanity
+        ✓ testing.py::test_parameterized_collected[3-4]
+        ✓ testing.py::test_parameterized_collected[4-5]
+        ✓ testing.py::TestWhatever::test_class_def
+
+        Summary:
+        Total: 9, Passed: 4, Failed: 4, Errors: 0, Skipped: 1
+        """
+
+        tr: Any = terminalreporter
+        tr.write_sep("=", "Overview")
+        stats: dict[str, Any] = tr.stats
+
+        # Failures and non passes are shown in summary.
+        # Display successes here manually since -v is a little too noisy.
+        if "passed" in stats:
+            tr.write_line("Passed Tests:")
+            for rep in stats["passed"]:
+                tr.write_line(f"{bold(green('✓'))} {rep.nodeid}")
+
+        tr.write_line("\nSummary:")
+        passed: int = len(stats.get("passed", []))
+        failed: int = len(stats.get("failed", []))
+        skipped: int = len(stats.get("skipped", []))
+        errors: int = len(stats.get("error", []))
+        xfailed: int = len(stats.get("xfailed", []))
+        xpassed: int = len(stats.get("xpassed", []))
+        self._result = MarimoPytestResult(
+            passed=passed,
+            failed=failed,
+            errors=errors,
+            skipped=skipped,
+            xfailed=xfailed,
+            xpassed=xpassed,
+        )
+
+        tr.write_line(self._result.summary)
+
+    def pytest_runtest_logreport(
+        self, report: _pytest.reports.TestReport
+    ) -> None:
+        """In place updates the report for some better formatting.
+        In particular:
+           - removes stub class reference for scoped tests
+           - removes extra frame from parameter workaround
+           - fixes test name/ paths to be more consistent with expectation
+        """
+        report.nodeid = MARIMO_TEST_BLOCK_REGEX.sub("", report.nodeid)
+        if report.location is not None:
+            fspath, lineno, domain = report.location
+            report.location = (
+                fspath,
+                lineno,
+                MARIMO_TEST_BLOCK_REGEX.sub("", domain),
+            )
+        # Signature from pytest for longrepr is:
+        # None | ExceptionInfo[BaseException] | tuple[str, int, str] | str | TerminalRepr
+        if not report.longrepr or isinstance(report.longrepr, str):
+            return
+
+        if isinstance(report.longrepr, tuple):
+            _, lineno, msg = report.longrepr
+            report.longrepr = (report.nodeid, lineno, f"({msg})")
+        # Not all TerminalRepr seem to have a reprtraceback
+        elif hasattr(report.longrepr, "reprtraceback"):
+            longrepr = str(report.longrepr)
+            if "func_JYWB" in longrepr:
+                # Strip the first call of traceback
+                report.longrepr.reprtraceback.reprentries = (
+                    report.longrepr.reprtraceback.reprentries[1:]
+                )
+            for entry in report.longrepr.reprtraceback.reprentries:
+                if entry.reprfileloc is not None:
+                    entry.reprfileloc.path = _to_marimo_uri(
+                        entry.reprfileloc.path
+                    )
+
+
+def run_pytest(
+    defs: set[str] | None = None,
+    lcls: dict[str, Any] | None = None,
+    notebook_path: Path | str | None = None,
+) -> MarimoPytestResult:
+    # Note, there does seem to be a bit of a race condition if the file hasn't
+    # saved yet...
+    # But I think this may only be noticeable with rapidly adding, renaming, and
+    # running tests.
+    DependencyManager.pytest.require(
+        "pytest is required for reactive "
+        "testing. Please report to github if you would like a different testing "
+        "suite supported."
+    )
+
+    import pytest  # type: ignore
+
+    if not notebook_path:
+        # Translate name to python module
+        notebook_path = _get_name()
+    notebook_path = str(notebook_path)
+
+    # Hold on to modules since we want to refresh them in order to enable
+    # repeated calls.
+    module_snapshot = dict(sys.modules)
+    # Paths may be altered by pytest. To prevent accumulation- we refresh the
+    # path to the original state.
+    # NB. refer to pytester the most native solution (not used here, since it
+    # seems reasonable to just hook in this way).
+    path_snapshot = sys.path.copy()
+
+    # qq and disable warnings suppress a fair bit of filler noise.
+    # color=yes seems to work nicely, but code-highlight is a bit much.
+    # Ideally, --import-mode=importlib would be a great flag- however the
+    # method is too brittle to handle absolute paths. As such, we default to
+    # the normal behavior (in which pytest alters the system path).
+    plugin = ReplaceStubPlugin(defs, lcls)
+    try:
+        # pytest in wasm doesn't seem to set environment variables correctly.
+        # This work around is to prevent collision with non-wasm testing.
+        os.environ["MARIMO_PYTEST_WASM"] = "1"
+        with capture_stdout() as stdout:
+            pytest.main(
+                [
+                    "-qq",
+                    "--disable-warnings",
+                    "--color=yes",
+                    "--code-highlight=no",
+                    "-p",
+                    "no:codecov",  # Disable codecov plugin to avoid duplicate reports
+                    "-p",
+                    "no:sugar",  # Disable sugar plugin to avoid duplicate reports
+                    notebook_path,
+                ],
+                plugins=[plugin],
+            )
+    finally:
+        del os.environ["MARIMO_PYTEST_WASM"]
+        # Note, in pytester, there are also exceptions for zope and readline.
+        # However, those deps should already be in module_snapshot, since
+        # dependencies are required before the given cell runs.
+        sys.modules.clear()
+        sys.modules.update(module_snapshot)
+        sys.path[:] = path_snapshot
+
+    plugin._result.output = stdout.getvalue()
+    return plugin._result

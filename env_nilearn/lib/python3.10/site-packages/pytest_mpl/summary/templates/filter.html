@@ -1,0 +1,66 @@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasFilter" aria-labelledby="offcanvasFilterLabel">
+    <div class="offcanvas-header">
+        <h6>Sort and filter results</h6>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <h5>Sort tests by...</h5>
+        <div class="btn-group m-2 pb-2" role="group" aria-label="Select sorting">
+            {% macro sort_option(id, name, order='', default=false) -%}
+            <input type="radio" class="btn-check sort" data-sort="{{ id }}"
+                   {% if order | length %}data-order="{{ order }}"{% endif %}
+                   name="sort" id="sort{{ name | lower }}"
+                   autocomplete="off"{% if default %} checked{% endif %}>
+            <label class="btn btn-outline-secondary" for="sort{{ name | lower }}">{{ name }}</label>
+            {%- endmacro -%}
+            {{ sort_option('status-sort', 'status', 'desc', default=true) }}
+            {{ sort_option('collected-sort', 'collected', 'asc') }}
+            {{ sort_option('test-name', 'name') }}
+            {% if results.image_comparison -%}
+            {{ sort_option('rms-sort', 'RMS', 'desc') }}
+            {%- endif %}
+        </div>
+        <form id="filterForm" onsubmit="return false;">
+            <h5>Show tests which have...</h5>
+            <div class="list-group m-2">
+                {% macro filter_option(id, name) -%}
+                <label class="list-group-item list-group-item-{{ id | status_class }}">
+                    <input class="form-check-input me-1 filter" type="checkbox" value="" id="{{ id }}"
+                           onclick="applyFilters()">
+                    {{ name }} <span class="badge bg-light text-dark">?</span>
+                </label>
+                {%- endmacro -%}
+                {{ filter_option('overall-passed', 'passed') }}
+                {{ filter_option('overall-failed', 'failed') }}
+                {{ filter_option('overall-skipped', 'skipped') }}
+            </div>
+            {% if results.image_comparison -%}
+            <div class="list-group m-2">
+                {{ filter_option('image-match', 'matching images') }}
+                {{ filter_option('image-diff', 'differing images') }}
+                {{ filter_option('image-missing', 'no baseline image') }}
+            </div>
+            {%- endif %}
+            {% if results.hash_comparison -%}
+            <div class="list-group m-2">
+                {{ filter_option('hash-match', 'matching hashes') }}
+                {{ filter_option('hash-diff', 'differing hashes') }}
+                {{ filter_option('hash-missing', 'no baseline hash') }}
+            </div>
+            {%- endif %}
+            <div class="d-flex">
+                <button type="submit" class="btn btn-primary m-2" data-bs-dismiss="offcanvas">Apply</button>
+                <button type="submit" class="btn btn-outline-secondary m-2" onclick="resetFilters()">Reset</button>
+                <div class="spacer"></div>
+                <div class="btn-group m-2" role="group" aria-label="Select condition">
+                    <input type="radio" class="btn-check" name="condition" id="conditionand" value="and"
+                           autocomplete="off" onclick="applyFilters()" checked>
+                    <label class="btn btn-outline-secondary" for="conditionand">AND</label>
+                    <input type="radio" class="btn-check" name="condition" id="conditionor" value="or"
+                           autocomplete="off" onclick="applyFilters()">
+                    <label class="btn btn-outline-secondary" for="conditionor">OR</label>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

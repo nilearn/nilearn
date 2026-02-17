@@ -1,0 +1,42 @@
+.highlight
+  &:hover button.copybtn
+    color: var(--color-code-foreground)
+
+  button.copybtn
+    // Align things correctly
+    align-items: center
+
+    height: 1.25em
+    width: 1.25em
+
+    top: 0.625rem // $code-spacing-vertical
+    right: 0.5rem
+
+    // Make it look better
+    color: var(--color-background-item)
+    background-color: var(--color-code-background)
+    border: none
+
+    // Change to cursor to make it obvious that you can click on it
+    cursor: pointer
+
+    // Transition smoothly, for aesthetics
+    transition: color 300ms, opacity 300ms
+
+    &:hover
+      color: var(--color-brand-content)
+      background-color: var(--color-code-background)
+
+    &::after
+      display: none
+      color: var(--color-code-foreground)
+      background-color: transparent
+
+    &.success
+      transition: color 0ms
+      color: #22863a
+      &::after
+        display: block
+
+    svg
+      padding: 0

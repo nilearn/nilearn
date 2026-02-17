@@ -1,0 +1,3 @@
+[pytest11]
+pytest_csv = pytest_csv._plugin
+

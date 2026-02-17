@@ -1,0 +1,32 @@
+{# Module: A single page of a multi-page index #}
+{% extends "page.html" %}
+
+{% block head_title -%}
+  {{ _("Index") }} - {{ docstitle|striptags|e }}
+{%- endblock head_title %}
+
+{% block content %}
+<div class="sb-article-container">
+  <article role="main">
+
+{% block content_inner %}
+<section class="genindex-section">
+  <h1 id="index">{{ _('Index') }}</h1>
+  <div class="genindex-jumpbox">
+    {% for key, dummy in genindexentries -%}
+    <a href="{{ pathto('genindex-' + key) }}"><strong>{{ key }}</strong></a>
+    {% if not loop.last %}| {% endif %}
+   {%- endfor %}
+  </div>
+
+  <p>
+    <a href="{{ pathto('genindex-all') }}">
+      <strong>{{ _('Full index on one page') }}</strong>
+      ({{ _('can be huge') }})
+    </a>
+  </p>
+</section>
+{% endblock content_inner %}
+
+</article></div>
+{% endblock %}

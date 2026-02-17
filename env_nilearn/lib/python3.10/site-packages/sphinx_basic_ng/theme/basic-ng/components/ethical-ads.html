@@ -1,0 +1,9 @@
+{% if READTHEDOCS or ethical_ad_publisher %}
+<div
+  id="ethical-ad-placement"
+  class="{{ ethical_ad_class|default('flat') }}"
+  data-ea-publisher="{{ ethical_ad_publisher|default('readthedocs-sidebar') }}"
+  data-ea-type="{{ ethical_ad_type|default('readthedocs-sidebar') }}"
+  data-ea-manual="true"
+></div>
+{% endif %}

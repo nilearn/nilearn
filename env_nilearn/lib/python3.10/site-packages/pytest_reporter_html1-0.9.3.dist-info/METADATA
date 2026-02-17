@@ -1,0 +1,144 @@
+Metadata-Version: 2.4
+Name: pytest-reporter-html1
+Version: 0.9.3
+Summary: A basic HTML report template for Pytest
+Home-page: https://github.com/christiansandberg/pytest-reporter-html1
+Author: Christian Sandberg
+Author-email: christiansandberg@me.com
+Maintainer: Christian Sandberg
+Maintainer-email: christiansandberg@me.com
+License: MIT
+Classifier: Development Status :: 4 - Beta
+Classifier: Framework :: Pytest
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Testing
+Classifier: Topic :: Text Processing :: Markup :: HTML
+Classifier: Programming Language :: Python
+Classifier: Operating System :: OS Independent
+Classifier: License :: OSI Approved :: MIT License
+Requires-Python: >=3.5
+License-File: LICENSE
+Requires-Dist: pytest-reporter>=0.4.0
+Requires-Dist: Jinja2
+Requires-Dist: ansi2html>=1.3.0
+Requires-Dist: htmlmin2
+Requires-Dist: docutils
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: home-page
+Dynamic: license
+Dynamic: license-file
+Dynamic: maintainer
+Dynamic: maintainer-email
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+=====================
+pytest-reporter-html1
+=====================
+
+.. image:: https://img.shields.io/pypi/v/pytest-reporter-html1.svg
+    :target: https://pypi.org/project/pytest-reporter-html1
+    :alt: PyPI version
+
+A basic HTML report for `pytest`_ using `Jinja2`_ template engine.
+Based on `pytest-reporter`_ which provides the data to the template.
+
+
+Features
+--------
+
+* Overview of files, tests, and phases with expandable sections
+* Includes information about tests such as documentation, markers, and fixtures
+* Fairly mobile friendly
+* Complies with Jenkins default CSP policy (with ``--split-report``)
+* Support for `pytest-metadata`_ and `pytest-rerunfailures`_
+* May be used as a base template for customization
+
+.. image:: https://raw.githubusercontent.com/christiansandberg/pytest-reporter-html1/master/screenshot.png
+    :alt: Screenshot
+
+
+Installation
+------------
+
+You can install "pytest-reporter-html1" via `pip`_ from `PyPI`_::
+
+    $ pip install pytest-reporter-html1
+
+
+Usage
+-----
+
+Specify the html1 template and the output path of the report::
+
+    $ pytest --template=html1/index.html --report=report.html
+
+By default the report is self-contained, but you can separate CSS, images,
+and JavaScript by specifying the ``--split-report`` option.
+
+
+Customization
+-------------
+
+You can inherit this template in your own to tailor parts of it to your own needs.
+It defines various blocks which you can override using `template inheritance`_.
+
+.. code:: html
+
+    {% extends "html1/index.html" %}
+    {% block style %}
+        {{ super() }}
+        header {
+            background-color: black;
+        }
+    {% endblock %}
+
+Some additional filters are available for templates to use:
+
+``asset(path_or_content, extension)``
+    Takes a path to a local file or a raw bytes object and either returns a
+    base64 encoded URL or a new relative URL to a copy depending on if the
+    report is self-contained or not.
+
+    .. code:: html
+
+        <img src="{{ 'path/to/image.png'|asset }}">
+        <img src="{{ raw_byte_data|asset('png') }}">
+
+``ansi(s)``
+    Convert ANSI color codes to HTML.
+
+``strftime(value, format)``
+    Format a Unix timestamp using `datetime.strftime`_.
+
+    .. code:: html
+
+        Started: {{ started|strftime('%Y-%m-%d %H:%M:%S') }}
+
+``timedelta(value)``
+    Convert a time in seconds to a `timedelta`_ object.
+
+``rst(s)``
+    Convert reStructuredText to HTML.
+
+
+Issues
+------
+
+If you encounter any problems, please `file an issue`_ along with a detailed description.
+
+.. _`Jinja2`: https://jinja.palletsprojects.com/
+.. _`template inheritance`: https://jinja.palletsprojects.com/en/master/templates/#template-inheritance
+.. _`file an issue`: https://github.com/christiansandberg/pytest-reporter-html1/issues
+.. _`pytest`: https://github.com/pytest-dev/pytest
+.. _`pytest-reporter`: https://github.com/christiansandberg/pytest-reporter
+.. _`pytest-metadata`: https://github.com/pytest-dev/pytest-metadata
+.. _`pytest-rerunfailures`: https://github.com/pytest-dev/pytest-rerunfailures
+.. _`pip`: https://pypi.org/project/pip/
+.. _`PyPI`: https://pypi.org/project
+.. _`datetime.strftime`: https://docs.python.org/3/library/datetime.html#datetime.datetime.strftime
+.. _`timedelta`: https://docs.python.org/3/library/datetime.html#timedelta-objects

@@ -1,0 +1,62 @@
+{%- macro sanitise_trailing_slash(s) -%}{{ s.rstrip("/") }}{%- endmacro -%}
+
+{%- macro determine_page_view_link() -%}
+  {%- if theme_source_view_link -%}
+    {{ theme_source_view_link.format(filename=pagename+page_source_suffix) }}
+  {%- elif theme_source_repository -%}
+    {#- First, sanitise the trailing slashes. -#}
+    {%- set repo = sanitise_trailing_slash(theme_source_repository) -%}
+    {%- set branch = theme_source_branch -%}
+    {%- set subdirectory = sanitise_trailing_slash(theme_source_directory) -%}
+
+    {#- Figure out the document's source file path. -#}
+    {%- set relative_path = pagename + page_source_suffix -%}
+    {%- if not subdirectory -%}
+      {%- set document_path = relative_path -%}
+    {%- else -%}
+      {%- set document_path = subdirectory + "/" + relative_path -%}
+    {%- endif -%}
+
+    {#- Don't allow http:// URLs -#}
+    {%- if repo.startswith(
+      (
+        "http://github.com/",
+        "http://gitlab.com/",
+        "http://bitbucket.org/",
+      )
+    ) -%}
+      {{ warning("Could not use `source_repository` provided. Please use https:// links in your `conf.py` file's `html_theme_options`.") }}
+    {#- Handle the relevant cases -#}
+    {%- elif repo.startswith("https://github.com/") -%}
+      {{ repo }}/blob/{{ branch }}/{{ document_path }}?plain=true
+    {%- elif repo.startswith("https://gitlab.com/") -%}
+      {{ repo }}/blob/{{ branch }}/{{ document_path }}
+    {%- elif repo.startswith("https://bitbucket.org/") -%}
+      {{ repo }}/src/{{ branch }}/{{ document_path }}
+    {#- Fail with a warning -#}
+    {%- else -%}
+      {{ warning(
+        "Could not understand `source_repository` provided: " + repo + "\n" +
+        "You should set `source_view_link`, so that the view link is presented."
+      ) }}
+    {%- endif -%}
+  {%- elif show_source and has_source -%}
+    {{ pathto('_sources/' + sourcename, true) }}
+  {%- endif -%}
+{%- endmacro -%}
+
+
+{%- if page_source_suffix -%}
+  {%- set can_find_view_link = (
+    (theme_source_view_link and pagename)
+    or (show_source and has_source and sourcename)
+    or (theme_source_repository and theme_source_branch)
+  ) -%}
+  {%- if can_find_view_link -%}
+    {%- block link_available -%}
+    <a href="{{ determine_page_view_link() }}">{{ _("View sources") }}</a>
+    {%- endblock link_available -%}
+  {%- else -%}
+    {%- block link_not_available -%}{%- endblock -%}
+  {%- endif -%}
+{%- endif -%}

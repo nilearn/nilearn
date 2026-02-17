@@ -1,0 +1,1170 @@
+# Copyright 2026 Marimo. All rights reserved.
+from __future__ import annotations
+
+import ast
+import sys
+from collections import defaultdict
+from copy import deepcopy
+from dataclasses import dataclass, field
+from functools import lru_cache
+from typing import Callable, Literal, Optional, Union
+from uuid import uuid4
+
+from marimo import _loggers
+from marimo._ast.errors import ImportStarError
+from marimo._ast.sql_visitor import (
+    SQLDefs,
+    SQLKind,
+    SQLRef,
+    find_sql_defs,
+    find_sql_refs,
+    normalize_sql_f_string,
+)
+from marimo._ast.variables import is_local
+from marimo._dependencies.dependencies import DependencyManager
+from marimo._sql.error_utils import log_sql_error
+from marimo._utils.strings import standardize_annotation_quotes
+
+LOGGER = _loggers.marimo_logger()
+
+
+Name = str
+
+
+Language = Literal["python", "sql"]
+
+
+@dataclass
+class ImportData:
+    # full module name
+    # e.g., a.b.c.
+    module: str
+    # variable name
+    definition: str
+    # fully qualified import symbol:
+    # import a.b => symbol == None
+    # from a.b import c => symbol == a.b.c
+    imported_symbol: Optional[str] = None
+    import_level: Optional[int] = None
+
+    def __post_init__(self) -> None:
+        self.namespace = self.module.split(".")[0]
+
+
+@dataclass
+class AnnotationData:
+    # How the annotation is set
+    repr: str
+    # Which references are related to the annotation.
+    refs: set[Name] = field(default_factory=set)
+
+
+@dataclass
+class VariableData:
+    # "table", "view", "schema", and "catalog" are SQL variables, not Python.
+    kind: Union[
+        Literal[
+            "function",
+            "class",
+            "import",
+            "variable",
+            # NB: only used when there's a need to stub. not generally carried
+            # on cell.
+            "temporary",
+        ],
+        SQLKind,
+    ] = "variable"
+
+    # If kind == function or class, it may be dependent on externally defined
+    # variables.
+    #
+    # NB: This is populated by `ScopedVisitor.ref_stack`. Ref stack holds the
+    # references required for the current context, it's more general than a
+    # "block", since it covers all variable level interactions.
+    # e.g.
+    # >> x = foo + bar
+    # x has the required refs foo and bar, and ref_stack holds that context
+    # while traversing the tree.
+    required_refs: set[Name] = field(default_factory=set)
+
+    # A reference needed for function/ class definition
+    unbounded_refs: set[Name] = field(default_factory=set)
+
+    # References used for annotation (typing)
+    annotation_data: Optional[AnnotationData] = None
+
+    # For kind == import
+    import_data: Optional[ImportData] = None
+
+    # In the sql case, the name may be qualified
+    qualified_name: Optional[str] = None
+
+    @property
+    def language(self) -> Language:
+        return (
+            "sql"
+            if (
+                self.kind == "table"
+                or self.kind == "schema"
+                or self.kind == "view"
+                or self.kind == "catalog"
+            )
+            else "python"
+        )
+
+
+@dataclass
+class Block:
+    """A scope in which names are declared."""
+
+    # Defined names
+    defs: set[Name] = field(default_factory=set)
+    # Names defined with the global keyword
+    global_names: set[Name] = field(default_factory=set)
+    # Map from defined names to metadata about their variables
+    variable_data: dict[Name, list[VariableData]] = field(
+        default_factory=lambda: defaultdict(list)
+    )
+    # Comprehensions have special scoping rules
+    is_comprehension: bool = False
+
+    def is_defined(self, name: str) -> bool:
+        return any(name == defn for defn in self.defs)
+
+
+@dataclass
+class ObscuredScope:
+    """The scope in which a name is hidden."""
+
+    # Variable id if this block hides a name
+    obscured: Optional[str] = None
+
+
+@dataclass
+class RefData:
+    """Metadata about variables referenced but not defined by a cell."""
+
+    # Whether the ref was deleted
+    deleted: bool
+    # Block in which this ref was referenced
+    block: Block
+    # Ancestors of the block in which this ref was used
+    parent_blocks: list[Block]
+    # Only applicable for SQL cells
+    sql_ref: Optional[SQLRef] = None
+
+
+NamedNode = Union[
+    ast.Name,
+    ast.ClassDef,
+    ast.FunctionDef,
+    ast.AsyncFunctionDef,
+    ast.arg,
+    ast.Global,
+    "ast.MatchAs",  # type: ignore
+    "ast.MatchMapping",  # type: ignore
+    "ast.MatchStar",  # type: ignore
+    "ast.TypeVar",  # type: ignore
+    "ast.ParamSpec",  # type: ignore
+    "ast.TypeVarTuple",  # type: ignore
+]
+
+
+# Cache SQL refs to avoid parsing the same SQL statement multiple times
+# since this can be called for each SQL cell on save.
+@lru_cache(maxsize=200)
+def find_sql_refs_cached(sql_statement: str) -> set[SQLRef]:
+    return find_sql_refs(sql_statement)
+
+
+class ScopedVisitor(ast.NodeVisitor):
+    def __init__(
+        self,
+        mangle_prefix: Optional[str] = None,
+        ignore_local: bool = False,
+        on_def: Callable[[NamedNode, str, list[Block]], None] | None = None,
+        on_ref: Callable[[NamedNode], None] | None = None,
+    ) -> None:
+        self.block_stack: list[Block] = [Block()]
+        # Names to be loaded into a variable required_refs
+        self.ref_stack: list[set[Name]] = [set()]
+        self.obscured_scope_stack: list[ObscuredScope] = []
+        # Mapping from referenced names to their metadata
+        # Each referenced name may be defined multiple blocks;
+        # ie, self._refs maps each name to RefData for each block it was
+        # defined in
+        self._refs: dict[Name, list[RefData]] = {}
+        # Function (node, name, block stack) -> None
+        self._on_def = on_def if on_def is not None else lambda *_: None
+        # Function (node) -> None
+        self._on_ref = on_ref if on_ref is not None else lambda *_: None
+        # Unique prefix used to mangle cell-local variable names
+        self.id = (
+            str(uuid4()).replace("-", "_")
+            if mangle_prefix is None
+            else mangle_prefix
+        )
+        self.is_local = (lambda _: False) if ignore_local else is_local
+        self.language: Language = "python"
+
+    @property
+    def defs(self) -> set[Name]:
+        """Get all global defs."""
+        return self.block_stack[0].defs
+
+    @property
+    def variable_data(self) -> dict[Name, list[VariableData]]:
+        """Get data accompanying globals."""
+        return self.block_stack[0].variable_data
+
+    @property
+    def refs(self) -> set[Name]:
+        """Names referenced but not defined."""
+        return set(self._refs.keys())
+
+    @property
+    def sql_refs(self) -> dict[Name, SQLRef]:
+        """Names and their SQLRefs"""
+        refs = {}
+        for name, ref_data in self._refs.items():
+            # Take the last ref data because it's the most recent ref?
+            sql_ref = ref_data[-1].sql_ref
+            if sql_ref is not None:
+                refs[name] = sql_ref
+        return refs
+
+    @property
+    def deleted_refs(self) -> set[Name]:
+        """Referenced names that were deleted with `del`."""
+
+        # This incorrectly treats `del` on unbound locals as deleted refs,
+        # but correctly treats `del` on a `global` ref as a deleted ref.
+        #
+        # For example,
+        #
+        #   def f():
+        #     del x
+        #
+        # In this code, `x` is technically an (unbound) local. But marimo treats
+        # any variable that has been seen but not defined in a parent block as
+        # a reference, causing it to think that this code deletes a reference.
+        #
+        # In practice, `del` on an unbound local is illegal (at runtime) anyway,
+        # so marking it as a deleted ref is in practice a big deal. For 100%
+        # correctness we would prune unbound locals from refs, not here but
+        # when variables added as defs and refs.
+        return set(
+            name
+            for name in self._refs
+            if any(ref.deleted for ref in self._refs[name])
+        )
+
+    def _if_local_then_mangle(
+        self, name: str, ignore_scope: bool = False
+    ) -> str:
+        """Mangle local variable name declared at top-level scope."""
+        if self.is_local(name) and (
+            len(self.block_stack) == 1 or ignore_scope
+        ):
+            return f"_{self.id}{name}"
+        else:
+            return name
+
+    def _get_alias_name(
+        self, node: ast.alias, import_node: ast.ImportFrom | None = None
+    ) -> str:
+        """Get the string name of an imported alias.
+
+        Mangles the "as" name if it's a local variable.
+
+        NB: We disallow `import *` because Python only allows
+        star imports at module-level, but we store cells as functions.
+        """
+        if node.asname is None:
+            # Imported name without an "as" clause. Examples:
+            #   import [a.b.c] - we define a
+            #   from foo import [a] - we define a
+            #   from foo import [*] - we don't define anything
+            #
+            # Note:
+            # Don't mangle - user has no control over package name
+            basename = node.name.split(".")[0]
+            if basename == "*":
+                # Use the ImportFrom node's line number for consistency
+                line_num = (
+                    import_node.lineno
+                    if import_node and hasattr(import_node, "lineno")
+                    else node.lineno
+                    if hasattr(node, "lineno")
+                    else None
+                )
+                line = f"line {line_num}" if line_num else "line ..."
+                raise ImportStarError(
+                    f"{line} SyntaxError: Importing symbols with `import *` "
+                    "is not allowed in marimo."
+                )
+            return basename
+        else:
+            node.asname = self._if_local_then_mangle(node.asname)
+            return node.asname
+
+    def _is_defined(self, identifier: str) -> bool:
+        """Check if `identifier` is defined in any block."""
+        return any(block.is_defined(identifier) for block in self.block_stack)
+
+    def _add_ref(
+        self,
+        node: NamedNode | None,
+        name: Name,
+        *,
+        deleted: bool,
+        sql_ref: Optional[SQLRef] = None,
+    ) -> None:
+        """Register a referenced name."""
+        if name not in self._refs:
+            self._refs[name] = []
+
+        # Register the ref if it doesn't already exist
+        current_block = self.block_stack[-1]
+        parents = self.block_stack[:-1]
+        found_ref: RefData | None = None
+
+        for ref in self._refs[name]:
+            if ref.block == current_block:
+                found_ref = ref
+
+        if found_ref is not None and deleted:
+            # The ref may have already existed, but perhaps it
+            # wasn't deleted
+            found_ref.deleted = True
+        elif found_ref is None:
+            # The reference does not yet exist in the current block, so
+            # we add it.
+            self._refs[name].append(
+                RefData(
+                    deleted=deleted,
+                    parent_blocks=parents,
+                    block=current_block,
+                    sql_ref=sql_ref,
+                )
+            )
+
+        self.ref_stack[-1].add(name)
+        if node is not None:
+            self._on_ref(node)
+
+    def _remove_ref(self, name: Name, block: Block) -> None:
+        """Remove references of name with block among its parents."""
+        refs = []
+        for ref in self._refs[name]:
+            if block not in ref.parent_blocks:
+                refs.append(ref)
+        self._refs[name] = refs
+        if not self._refs[name]:
+            del self._refs[name]
+
+    def _define_in_block(
+        self, name: Name, variable_data: VariableData, block_idx: int
+    ) -> None:
+        """Define a name in a given block."""
+
+        block = self.block_stack[block_idx]
+        block.defs.add(name)
+        block.variable_data[name].append(variable_data)
+        # If `name` is added to the top-level block, it is also evicted from
+        # any captured refs (if present) --- this handles cases where a name is
+        # encountered and captured before it is declared, such as in
+        #
+        # ```
+        # def f():
+        #   print(x)
+        # x = 0
+        # ```
+        if name in self._refs and any(
+            block in ref.parent_blocks for ref in self._refs[name]
+        ):
+            # `name` was used as a capture, not a reference
+            self._remove_ref(name, block)
+
+    def _define(
+        self, node: NamedNode | None, name: Name, variable_data: VariableData
+    ) -> None:
+        """Define a name in the current block.
+
+        Names created with the global keyword are added to the top-level
+        (global scope) block.
+        """
+        block_idx = 0 if name in self.block_stack[-1].global_names else -1
+        self._define_in_block(name, variable_data, block_idx=block_idx)
+        if node is not None:
+            self._on_def(node, name, self.block_stack)
+
+    def _push_block(self, is_comprehension: bool) -> None:
+        """Push a block onto the block stack."""
+        self.block_stack.append(Block(is_comprehension=is_comprehension))
+
+    def _pop_block(self) -> None:
+        """Pop a block from the block stack."""
+        self.block_stack.pop()
+
+    def _push_obscured_scope(self, obscured: Optional[str]) -> None:
+        """Push scope onto the stack."""
+        self.obscured_scope_stack.append(ObscuredScope(obscured=obscured))
+
+    def _pop_obscured_scope(self) -> None:
+        """Pop scope from the stack."""
+        self.obscured_scope_stack.pop()
+
+    def generic_visit(self, node: ast.AST) -> ast.AST:
+        """Visits the children of node and manages the block stack.
+
+        Note: visit calls visit_ClassName, or generic_visit() if the former
+        doesn't exist. That means that _this method should never call
+        visit on `node`_, as this could lead to unbounded recursion.
+        (Calling visit on `node`'s children is fine.) In summary:
+        call super().generic_visit on `node` and `visit()` on node's children.
+        """
+        if isinstance(node, (ast.ClassDef, ast.Lambda)):
+            # These AST nodes introduce a new scope, but otherwise do not
+            # require special treatment.
+            self._push_block(is_comprehension=False)
+            super().generic_visit(node)
+            self._pop_block()
+        elif isinstance(node, (ast.AsyncFunctionDef, ast.FunctionDef)):
+            self._push_block(is_comprehension=False)
+            if sys.version_info >= (3, 12):
+                # We need to visit generic type parameters before arguments
+                # to make sure type parameters don't get added as refs. eg, in
+                #
+                #   def foo[U](u: U) -> U: ...
+                #
+                # `U` should not be a ref
+                for child in node.type_params:
+                    self.visit(child)
+
+            # This will revisit the type_params, but that's okay because
+            # visiting is idempotent
+            super().generic_visit(node)
+            self._pop_block()
+        elif isinstance(node, (ast.ListComp, ast.SetComp, ast.GeneratorExp)):
+            # In comprehensions, generators must be visited before elements
+            # because generators define local targets that elements may use.
+            self._push_block(is_comprehension=True)
+            for generator in node.generators:
+                self.visit(generator)
+            self.visit(node.elt)
+            self._pop_block()
+        elif isinstance(node, ast.DictComp):
+            # Special-cased for the same reason that other comprehensions are
+            # special-cased.
+            self._push_block(is_comprehension=True)
+            for generator in node.generators:
+                self.visit(generator)
+            self.visit(node.value)
+            self.visit(node.key)
+            self._pop_block()
+        elif isinstance(node, ast.Try) or (
+            sys.version_info >= (3, 11) and isinstance(node, ast.TryStar)
+        ):
+            if sys.version_info < (3, 11):
+                assert isinstance(node, ast.Try)
+            # "Try" nodes have "handlers" that introduce exception context
+            # variables that are tied to the try block, and don't exist beyond
+            # it.
+            for stmt in node.body:
+                self.visit(stmt)
+            for handler in node.handlers:
+                self._push_obscured_scope(obscured=handler.name)
+                self.visit(handler)
+                self._pop_obscured_scope()
+            for stmt in node.orelse:
+                self.visit(stmt)
+            for stmt in node.finalbody:
+                self.visit(stmt)
+        elif sys.version_info >= (3, 12) and isinstance(node, ast.TypeAlias):
+            self.visit(node.name)
+            self._push_block(is_comprehension=False)
+            for t in node.type_params:
+                self.visit(t)
+            self.visit(node.value)
+            self._pop_block()
+        else:
+            # Other nodes that don't introduce a new scope
+            super().generic_visit(node)
+        return node
+
+    def _visit_and_get_refs(
+        self, node: Union[ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef]
+    ) -> tuple[set[Name], set[Name]]:
+        """Create a ref scope for the variable to be declared (e.g. function,
+        class), visit the children the node, propagate the refs to the higher
+        scope and then return the body refs and unbounded refs."""
+
+        self.ref_stack.append(set())
+
+        mock = deepcopy(node)
+        unbounded_refs = set()
+        if isinstance(mock, (ast.ClassDef)):
+            # The Class ast is surprising loose, and anything can be defined
+            # inside. Python runs the ClassDef body on definition and anything
+            # defined in the scope gets added to the class.
+            mock_module = ast.Module(body=mock.body, type_ignores=[])
+            mock_visitor = ScopedVisitor(self.id)
+            mock_visitor.visit(mock_module)
+            # The unbounded defs are carried from the recursive visitor
+            # excluding all references found in exclusively in scope.
+            ignore_refs = set()
+            class_def: set[Name] = set()
+            for var in mock_visitor.variable_data:
+                for data in mock_visitor.variable_data[var]:
+                    if data.kind in ("function", "class"):
+                        unbounded_refs |= data.unbounded_refs - class_def
+                        ignore_refs |= data.required_refs
+                        # class def is captured because the following is valid:
+                        # >>> class C:
+                        # >>>     A = 1
+                        # >>>     B = A + 1
+                        # >>>     @property
+                        # >>>     def prop(self): ...
+                        # >>>     @prop.setter
+                        # >>>     def prop(self, value): ...
+                        #
+                        # - even though these variables only live in scope of
+                        # the class definition.
+                        # Thus, if it has been declared, it's not "unbounded"
+                        class_def.add(var)
+                    else:
+                        # For non-function/non-class variables (e.g., class attributes),
+                        # exclude references to variables already defined in class scope
+                        # Also exclude self-references (e.g., TypeAlias can reference itself)
+                        unbounded_refs |= (
+                            data.required_refs - class_def - {var}
+                        )
+                        # Add the variable to class_def so that later references
+                        # to it don't create unbounded refs
+                        class_def.add(var)
+            unbounded_refs |= mock_visitor.refs - ignore_refs
+
+        # Handle function/class refs that are evaluated in the outer scope
+        # Remove the body, which keeps signature and non-scoped parts.
+        mock.body.clear()
+        self.generic_visit(mock)
+        # Collect the unbounded refs
+        unbounded_refs |= set(self.ref_stack[-1])
+
+        # Process the function body
+        self.generic_visit(node)
+        refs = self.ref_stack.pop()
+        # The scope a level up from the one just investigated also is dependent
+        # on these refs. Consider the case:
+        # >> def foo():
+        # >>   def bar(): <- current scope
+        # >>     print(x)
+        #
+        # the variable `foo` needs to be aware that it may require the ref `x`
+        # during execution.
+        self.ref_stack[-1].update(refs)
+
+        # Prune type_params
+        if sys.version_info >= (3, 12):
+            type_params = getattr(node, "type_params", [])
+            generics = {param.name for param in type_params}
+            refs -= generics
+            unbounded_refs -= generics
+
+        # Return both sets of refs
+        return refs, unbounded_refs
+
+    # ClassDef and FunctionDef nodes don't have ast.Name nodes as children
+    def visit_ClassDef(self, node: ast.ClassDef) -> ast.ClassDef:
+        node.name = self._if_local_then_mangle(node.name)
+        refs, unbounded_refs = self._visit_and_get_refs(node)
+        self._define(
+            node,
+            node.name,
+            VariableData(
+                kind="class", required_refs=refs, unbounded_refs=unbounded_refs
+            ),
+        )
+        return node
+
+    def visit_AsyncFunctionDef(
+        self, node: ast.AsyncFunctionDef
+    ) -> ast.AsyncFunctionDef:
+        node.name = self._if_local_then_mangle(node.name)
+        refs, unbounded_refs = self._visit_and_get_refs(node)
+        self._define(
+            node,
+            node.name,
+            VariableData(
+                kind="function",
+                required_refs=refs,
+                unbounded_refs=unbounded_refs,
+            ),
+        )
+        return node
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> ast.FunctionDef:
+        node.name = self._if_local_then_mangle(node.name)
+        refs, unbounded_refs = self._visit_and_get_refs(node)
+        self._define(
+            node,
+            node.name,
+            VariableData(
+                kind="function",
+                required_refs=refs,
+                unbounded_refs=unbounded_refs,
+            ),
+        )
+        return node
+
+    def visit_Call(self, node: ast.Call) -> ast.Call:
+        # If the call name is sql and has one argument, and the argument is
+        # a string literal, then it's likely to be a SQL query.
+        # It must also come from the `mo` or `duckdb` module.
+        #
+        # This check is brittle, since we can't detect at parse time whether
+        # 'mo'/'marimo' actually refer to the marimo library, but it gets
+        # the job done.
+        valid_sql_calls = [
+            "marimo.sql",
+            "mo.sql",
+            "duckdb.execute",
+            "duckdb.sql",
+        ]
+        if (
+            isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and f"{node.func.value.id}.{node.func.attr}" in valid_sql_calls
+            and len(node.args) == 1
+        ):
+            self.language = "sql"
+            first_arg = node.args[0]
+            sql: Optional[str] = None
+            if isinstance(first_arg, ast.Constant):
+                sql = first_arg.value
+            elif isinstance(first_arg, ast.JoinedStr):
+                sql = normalize_sql_f_string(first_arg)
+
+            if (
+                isinstance(sql, str)
+                and DependencyManager.duckdb.has_at_version(
+                    min_version="1.0.0"
+                )
+                and sql
+            ):
+                import duckdb  # type: ignore[import-not-found,import-untyped,unused-ignore] # noqa: E501
+
+                # Import ParseError outside try block so we can except it
+                # Use a Union approach to handle both cases
+                ParseErrorType: type[Exception]
+                if DependencyManager.sqlglot.has():
+                    from sqlglot.errors import ParseError as SQLGLOTParseError
+
+                    ParseErrorType = SQLGLOTParseError
+                else:
+                    # Fallback when sqlglot is not available
+                    ParseErrorType = Exception
+
+                # TODO: Handle other SQL languages
+                # TODO: Get the engine so we can differentiate tables in diff engines
+
+                # Add all tables in the query to the ref scope
+                try:
+                    # TODO: This function raises a CatalogError on CREATE VIEW
+                    # statements that reference tables that are not yet
+                    # defined, such
+                    #
+                    # as CREATE OR REPLACE VIEW my_view as SELECT * from my_df
+                    #
+                    # This breaks dependency parsing.
+                    statements = duckdb.extract_statements(sql)
+                except (duckdb.ProgrammingError, duckdb.IOException):
+                    # The user's sql query may have a syntax error,
+                    # or duckdb failed for an unknown reason; don't
+                    # break marimo.
+                    self.generic_visit(node)
+                    return node
+                except BaseException as e:
+                    # We catch base exceptions because we don't want to
+                    # fail due to bugs in duckdb -- users code should
+                    # be saveable no matter what
+                    log_sql_error(
+                        LOGGER.warning,
+                        message=f"Unexpected duckdb error {e}",
+                        exception=e,
+                        node=node,
+                        rule_code="MF005",
+                        sql_content=sql,
+                    )
+                    self.generic_visit(node)
+                    return node
+
+                # Try to process each statement individually
+                # For some SQL types (e.g., PIVOT with certain clauses),
+                # DuckDB's statement.query may fail, so we fall back to processing the full SQL
+                statement_queries: list[str] = []
+                use_full_sql = False
+                for statement in statements:
+                    try:
+                        statement_sql = statement.query
+                        # Skip empty statements
+                        if statement_sql.strip():
+                            statement_queries.append(statement_sql)
+                    except (IndexError, BaseException):
+                        # Fallback to full SQL if we can't extract any individual statement
+                        use_full_sql = True
+                        break
+
+                # If we couldn't extract individual statements, process the full SQL once
+                if use_full_sql or not statement_queries:
+                    statement_queries = [sql]
+
+                # Accumulate defined names across all statements in this SQL block
+                # so that later statements don't create refs to tables defined in earlier statements
+                defined_names: set[str] = set()
+
+                for statement_sql in statement_queries:
+                    # Parse the refs and defs of each statement
+                    # Add all tables/dbs created in the query to the defs
+                    try:
+                        sql_defs = find_sql_defs(statement_sql)
+                    except duckdb.ProgrammingError:
+                        sql_defs = SQLDefs()
+                    except BaseException as e:
+                        log_sql_error(
+                            LOGGER.warning,
+                            message=f"Unexpected duckdb error {e}",
+                            exception=e,
+                            node=node,
+                            rule_code="MF005",
+                            sql_content=statement_sql,
+                            context="sql_defs_extraction",
+                        )
+                        sql_defs = SQLDefs()
+
+                    for _table in sql_defs.tables:
+                        self._define(
+                            None,
+                            _table.table,
+                            VariableData(
+                                "table", qualified_name=_table.qualified_name
+                            ),
+                        )
+                        defined_names.add(_table.qualified_name)
+                    for _view in sql_defs.views:
+                        self._define(
+                            None,
+                            _view.table,
+                            VariableData(
+                                "view", qualified_name=_view.qualified_name
+                            ),
+                        )
+                        defined_names.add(_view.qualified_name)
+                    for _schema in sql_defs.schemas:
+                        self._define(None, _schema, VariableData("schema"))
+                        defined_names.add(_schema)
+                    for _catalog in sql_defs.catalogs:
+                        self._define(None, _catalog, VariableData("catalog"))
+                        defined_names.add(_catalog)
+
+                    sql_refs: set[SQLRef] = set()
+                    try:
+                        # Take results
+                        sql_refs = find_sql_refs_cached(statement_sql)
+                    except (
+                        duckdb.ProgrammingError,
+                        duckdb.IOException,
+                        ParseErrorType,
+                        BaseException,
+                    ) as e:
+                        # Use first_arg (SQL string node) for accurate positioning
+                        log_sql_error(
+                            LOGGER.error,
+                            message=f"Error parsing SQL statement: {e}",
+                            exception=e,
+                            node=first_arg,
+                            rule_code="MF005",
+                            sql_content=statement_sql,
+                        )
+
+                    for ref in sql_refs:
+                        name = ref.qualified_name
+                        # Cells that define the same name aren't cycles, so we skip them
+                        if name in defined_names:
+                            continue
+                        self._add_ref(None, name, deleted=False, sql_ref=ref)
+
+        # Visit arguments, keyword args, etc.
+        self.generic_visit(node)
+        return node
+
+    def visit_Lambda(self, node: ast.Lambda) -> ast.Lambda:
+        # Inject the dummy name `_lambda` into ref scope to denote there's a
+        # callable that might require additional refs.
+        self.ref_stack[-1].add("_lambda")
+        self.generic_visit(node)
+        return node
+
+    def visit_arg(self, node: ast.arg) -> ast.arg:
+        node.arg = self._if_local_then_mangle(node.arg)
+        self._define(node, node.arg, VariableData(kind="variable"))
+        if node.annotation is not None:
+            self.visit(node.annotation)
+        return node
+
+    def visit_arguments(self, node: ast.arguments) -> ast.arguments:
+        # process potential refs before defs, to handle patterns like
+        #
+        # def f(x=x):
+        #   ...
+        for v in node.kw_defaults:
+            if v is not None:
+                self.visit(v)
+        for v in node.defaults:
+            if v is not None:
+                self.visit(v)
+
+        for arg in node.posonlyargs:
+            self.visit(arg)
+        for arg in node.args:
+            self.visit(arg)
+        for arg in node.kwonlyargs:
+            self.visit(arg)
+        if node.vararg is not None:
+            self.visit(node.vararg)
+        if node.kwarg is not None:
+            self.visit(node.kwarg)
+        return node
+
+    def visit_Assign(self, node: ast.Assign) -> ast.Assign:
+        # Visit the value first, to handle cases like
+        #
+        # class A:
+        #   x = x
+        #
+        # Handling value first is required to register `x` as a ref.
+        self.ref_stack.append(set())
+        self.visit(node.value)
+        for target in node.targets:
+            self.visit(target)
+        refs = self.ref_stack.pop()
+        self.ref_stack[-1].update(refs)
+        return node
+
+    def visit_AugAssign(self, node: ast.AugAssign) -> ast.AugAssign:
+        # Augmented assign (has op)
+        # e.g., x += 1
+        self.ref_stack.append(set())
+        self.visit(node.value)
+        self.visit(node.target)
+        refs = self.ref_stack.pop()
+        self.ref_stack[-1].update(refs)
+        return node
+
+    def visit_AnnAssign(self, node: ast.AnnAssign) -> ast.AnnAssign:
+        # Annotated assign
+        # e.g., x: int = 0
+        #       ^   ^    ^
+        #      tar ann  val?
+        self.ref_stack.append(set())
+        if node.value is not None:
+            self.visit(node.value)
+
+        # Hold on to the annotation references in particular
+        self.ref_stack.append(set())
+        self.visit(node.annotation)
+        annotation_refs = self.ref_stack.pop()
+        self.ref_stack[-1].update(annotation_refs)
+        # But only if we are in global scope is it relevant.
+        # annotation data
+        record_annotation = False
+        name = ""
+        # Also possible for "var[subscript]:type"
+        # but we do not care about those.
+        if isinstance(node.target, ast.Name):
+            name = node.target.id
+            record_annotation = (
+                len(self.block_stack) == 1 and name not in self.variable_data
+            )
+        self.visit(node.target)
+
+        # Visit must have inserted the variable, attach the annotation data to
+        # it.
+        if record_annotation and name in self.variable_data:
+            annotation = ast.unparse(node.annotation)
+            # It's also possible for multiline types/ strings
+            annotation = annotation.replace("\n", "").strip()
+            # Standardize quotes to use double quotes consistently
+            annotation = standardize_annotation_quotes(annotation)
+
+            self.variable_data[name][0].annotation_data = AnnotationData(
+                annotation, annotation_refs
+            )
+
+        refs = self.ref_stack.pop()
+        self.ref_stack[-1].update(refs)
+        return node
+
+    def visit_comprehension(
+        self, node: ast.comprehension
+    ) -> ast.comprehension:
+        # process potential refs before defs, to handle patterns like
+        #
+        # [ ... for x in x]
+        #
+        # In defining scoping, Python parses iter first, then target, then ifs
+        self.visit(node.iter)
+        self.visit(node.target)
+        for _if in node.ifs:
+            self.visit(_if)
+        return node
+
+    def visit_NamedExpr(self, node: ast.NamedExpr) -> ast.NamedExpr:
+        self.visit(node.value)
+        if self.block_stack[-1].is_comprehension and isinstance(
+            node.target, ast.Name
+        ):
+            for block_idx, block in reversed(
+                list(enumerate(self.block_stack))
+            ):
+                # go up the block stack until we find the first
+                # non-comprehension block
+                if not block.is_comprehension:
+                    node.target.id = self._if_local_then_mangle(
+                        node.target.id,
+                        ignore_scope=(block == self.block_stack[0]),
+                    )
+                    self._define_in_block(
+                        node.target.id,
+                        VariableData(kind="variable"),
+                        block_idx=block_idx,
+                    )
+                    break
+        else:
+            self.generic_visit(node)
+        return node
+
+    def visit_Name(self, node: ast.Name) -> ast.Name:
+        # NB: AugAssign has a Store ctx; this means that mutating a var
+        # will create a def, which we can catch as an error later if
+        # that var was defined by another cell
+        #
+        # NB: Only mangle loaded or deleted names if they are local
+        # and found to be referring to a top-level variable. This prevents
+        # us from mangling references to variables names conforming to local
+        # spec but declared in a nested scope.
+        #
+        # NB: we don't implement visit_Attribute because refs and defs
+        # are not tracked at the attribute level. The default behavior
+        # with our implemented visitors does the right thing (foo.bar[.*]
+        # generates a ref to foo if foo has not been def'd).
+        #
+        # NB: Nodes like "Try" nodes introduce variable names that do not exist
+        # beyond their inner scope. We traverse blocks to see if the name is
+        # "obscured" in this way.
+
+        for scope in self.obscured_scope_stack:
+            if node.id == scope.obscured:
+                self.generic_visit(node)
+                return node
+
+        if isinstance(node.ctx, ast.Store):
+            node.id = self._if_local_then_mangle(node.id)
+            self._define(
+                node,
+                node.id,
+                VariableData(
+                    kind="variable", required_refs=self.ref_stack[-1]
+                ),
+            )
+        elif (
+            isinstance(node.ctx, ast.Load)
+            and not self._is_defined(node.id)
+            and not self.is_local(node.id)
+        ):
+            self._add_ref(node, node.id, deleted=False)
+        elif (
+            isinstance(node.ctx, ast.Del)
+            and not self._is_defined(node.id)
+            and not self.is_local(node.id)
+        ):
+            self._add_ref(node, node.id, deleted=True)
+        elif self.is_local(node.id):
+            mangled_name = self._if_local_then_mangle(
+                node.id, ignore_scope=True
+            )
+            for block in reversed(self.block_stack):
+                if block == self.block_stack[0] and block.is_defined(
+                    mangled_name
+                ):
+                    node.id = mangled_name
+                elif block.is_defined(node.id):
+                    break
+        else:
+            # Not a reference; ast.Load, ast.Del on a variable that's already
+            # defined; invoke the callback
+            if node is not None:
+                self._on_def(node, node.id, self.block_stack)
+
+        # Handle refs on the block scope level, or capture cell level
+        # references.
+        # Only add to ref_stack if the variable is not defined in any
+        # non-module ancestor block. This prevents function parameters from
+        # being incorrectly marked as refs when used in nested scopes like
+        # list comprehensions, while still capturing module-level references.
+        if (
+            isinstance(node.ctx, ast.Load)
+            and self._is_defined(node.id)
+            and node.id not in self.ref_stack[-1]
+            and (
+                # Check blocks[1:] - skip module block so module-level vars
+                # are still tracked as refs, but function params aren't
+                not any(
+                    node.id in block.defs for block in self.block_stack[1:]
+                )
+                or len(self.block_stack) == 1
+            )
+        ):
+            self.ref_stack[-1].add(node.id)
+
+        self.generic_visit(node)
+        return node
+
+    def visit_Global(self, node: ast.Global) -> ast.Global:
+        node.names = [
+            self._if_local_then_mangle(name, ignore_scope=True)
+            for name in node.names
+        ]
+        for name in node.names:
+            self.block_stack[-1].global_names.add(name)
+            # We only add a reference if the name is not
+            # already defined at the global scope
+            if not self.block_stack[0].is_defined(name):
+                self._add_ref(node, name, deleted=False)
+        return node
+
+    def visit_Import(self, node: ast.Import) -> ast.Import:
+        for alias_node in node.names:
+            variable_name = self._get_alias_name(alias_node)
+            self._define(
+                None,
+                variable_name,
+                VariableData(
+                    kind="import",
+                    import_data=ImportData(
+                        module=alias_node.name,
+                        definition=variable_name,
+                        imported_symbol=None,
+                    ),
+                ),
+            )
+        return node
+
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> ast.ImportFrom:
+        module = node.module if node.module is not None else ""
+        # we don't recurse into the alias nodes, since we define the
+        # aliases here
+        for alias_node in node.names:
+            variable_name = self._get_alias_name(alias_node, import_node=node)
+            original_name = alias_node.name
+            self._define(
+                None,
+                variable_name,
+                VariableData(
+                    kind="import",
+                    import_data=ImportData(
+                        module=module,
+                        definition=variable_name,
+                        imported_symbol=module + "." + original_name,
+                        import_level=node.level,
+                    ),
+                ),
+            )
+        return node
+
+    # Match statements were introduced in Python 3.10
+    #
+    # Top-level match statements are awkward in marimo --- at parse-time,
+    # we have to register all names in every case/pattern as globals (since
+    # we don't know the value of the match subject), even though only a
+    # subset of the names will be bound at runtime. For this reason, in
+    # marimo, match statements should really only be used in local scopes.
+    def visit_MatchAs(self, node: ast.MatchAs) -> ast.MatchAs:
+        if node.name is not None:
+            node.name = self._if_local_then_mangle(node.name)
+            self._define(
+                node,
+                node.name,
+                VariableData(kind="variable"),
+            )
+        if node.pattern is not None:
+            # pattern may contain additional MatchAs statements in it
+            self.visit(node.pattern)
+        return node
+
+    def visit_MatchMapping(self, node: ast.MatchMapping) -> ast.MatchMapping:
+        if node.rest is not None:
+            node.rest = self._if_local_then_mangle(node.rest)
+            self._define(
+                node,
+                node.rest,
+                VariableData(kind="variable"),
+            )
+        for key in node.keys:
+            self.visit(key)
+        for pattern in node.patterns:
+            self.visit(pattern)
+        return node
+
+    def visit_MatchStar(self, node: ast.MatchStar) -> ast.MatchStar:
+        if node.name is not None:
+            node.name = self._if_local_then_mangle(node.name)
+            self._define(
+                node,
+                node.name,
+                VariableData(kind="variable"),
+            )
+        return node
+
+    if sys.version_info >= (3, 12):
+
+        def visit_TypeVar(self, node: ast.TypeVar) -> ast.TypeVar:
+            # node.name is a str, not an ast.Name node
+            self._define(
+                node,
+                node.name,
+                VariableData(
+                    kind="variable", required_refs=self.ref_stack[-1]
+                ),
+            )
+            if isinstance(node.bound, tuple):
+                for name in node.bound:
+                    self.visit(name)
+            elif node.bound is not None:
+                self.visit(node.bound)
+            return node
+
+        def visit_ParamSpec(self, node: ast.ParamSpec) -> ast.ParamSpec:
+            # node.name is a str, not an ast.Name node
+            self._define(
+                node,
+                node.name,
+                VariableData(
+                    kind="variable", required_refs=self.ref_stack[-1]
+                ),
+            )
+            return node
+
+        def visit_TypeVarTuple(
+            self, node: ast.TypeVarTuple
+        ) -> ast.TypeVarTuple:
+            # node.name is a str, not an ast.Name node
+            self._define(
+                node,
+                node.name,
+                VariableData(
+                    kind="variable", required_refs=self.ref_stack[-1]
+                ),
+            )
+            return node

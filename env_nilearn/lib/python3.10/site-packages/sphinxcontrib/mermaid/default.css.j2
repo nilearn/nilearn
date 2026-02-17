@@ -1,0 +1,12 @@
+pre.mermaid {
+    /* Same as .mermaid-container > pre */
+    display: block;
+    width: {{ mermaid_width }};
+}
+
+pre.mermaid > svg {
+    /* Same as .mermaid-container > pre > svg */
+    height: {{ mermaid_height }};
+    width: 100%;
+    max-width: 100% !important;
+}

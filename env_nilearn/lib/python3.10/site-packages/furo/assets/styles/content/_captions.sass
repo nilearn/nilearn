@@ -1,0 +1,19 @@
+// Captions
+article p.caption,
+table > caption,
+.code-block-caption
+  font-size: var(--font-size--small)
+  text-align: center
+
+// Caption above a TOCTree
+.toctree-wrapper.compound
+  .caption, :not(.caption) > .caption-text
+    font-size: var(--font-size--small)
+    text-transform: uppercase
+
+    text-align: initial
+    margin-bottom: 0
+
+  > ul
+    margin-top: 0
+    margin-bottom: 0

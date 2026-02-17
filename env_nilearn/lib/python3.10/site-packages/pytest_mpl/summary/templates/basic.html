@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        td:first-child {
+            padding: 1em;
+        }
+
+        td div {
+            padding: 0.15em 0;
+            max-width: 20rem;
+            overflow-wrap: break-word;
+        }
+
+        .test-name {
+            font-size: 1.5em;
+        }
+
+        .status {
+            padding: 0.8em 0;
+        }
+
+        img {
+            width: 100%;
+        }
+    </style>
+    <title>{{ results.title }}</title>
+</head>
+<body>
+<h2>Image test comparison</h2>
+<p>
+    {{ results.statistics['passed'] }} passed
+    {% if results.statistics['failed_baseline'] > 0 -%}
+    hash comparison, although {{ results.statistics['failed_baseline'] }}
+    of those have a different baseline image
+    {%- endif %}
+</p>
+<p>
+    {{ results.statistics['failed'] }} failed
+    {% if results.statistics['passed_baseline'] > 0 -%}
+    hash comparison, although {{ results.statistics['passed_baseline'] }}
+    of those have a matching baseline image
+    {%- endif %}
+</p>
+{% if hash_library -%}
+<p>
+    <a href="{{ hash_library }}" download>Download generated hash library</a>
+</p>
+{%- endif %}
+<table>
+    <tr>
+        <th></th>
+        <th>Baseline</th>
+        <th>Diff</th>
+        <th>Result</th>
+    </tr>
+    {% for result in results.cards -%}
+    {% if result.result_image -%}
+    <tr>
+        <td>
+            <div>{{ result.module }}</div>
+            <div class="test-name">{{ result.name }}</div>
+            <div class="status">{{ result.status | upper }}</div>
+            <div>RMS: {{ result.rms_str }} ({{ result.image_status }})</div>
+            {% if result.result_hash -%}
+            <div>Result hash: {{ result.result_hash }} ({{ result.hash_status}})</div>
+            {%- endif %}
+        </td>
+        {% macro image(file) -%}
+        <td>{% if file %}<img src="{{ file | urlencode }}">{% endif %}</td>
+        {%- endmacro -%}
+        {{ image(result.baseline_image) }}
+        {{ image(result.diff_image) }}
+        {{ image(result.result_image) }}
+    </tr>
+    {%- endif %}
+    {%- endfor %}
+</table>
+</body>
+</html>

@@ -1,0 +1,8 @@
+#!/home/hugo/github/perso/nilearn_hackathon/nilearn/env_nilearn/bin/python3
+# -*- coding: utf-8 -*-
+import re
+import sys
+from jupytext.cli import jupytext
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    sys.exit(jupytext())

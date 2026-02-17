@@ -1,0 +1,51 @@
+Metadata-Version: 2.4
+Name: sphinxcontrib-mermaid
+Version: 2.0.0
+Summary: Mermaid diagrams in your Sphinx-powered docs
+Author-email: Martín Gaitán <gaitan@gmail.com>
+License: BSD
+Project-URL: Repository, https://github.com/mgaitan/sphinxcontrib-mermaid
+Project-URL: Homepage, https://github.com/mgaitan/sphinxcontrib-mermaid
+Project-URL: Changelog, https://github.com/mgaitan/sphinxcontrib-mermaid/blob/master/CHANGELOG.rst
+Keywords: sphinx,mermaid,diagrams,documentation
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Sphinx :: Extension
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Programming Language :: Python :: 3.14
+Classifier: Topic :: Documentation
+Classifier: Topic :: Utilities
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: jinja2
+Requires-Dist: sphinx
+Requires-Dist: pyyaml
+Provides-Extra: test
+Requires-Dist: defusedxml; extra == "test"
+Requires-Dist: myst-parser; extra == "test"
+Requires-Dist: pytest; extra == "test"
+Requires-Dist: ruff; extra == "test"
+Requires-Dist: sphinx; extra == "test"
+Dynamic: license-file
+
+# sphinxcontrib-mermaid
+
+[![](https://github.com/mgaitan/sphinxcontrib-mermaid/actions/workflows/test.yml/badge.svg)](https://github.com/mgaitan/sphinxcontrib-mermaid/actions/workflows/test.yml)
+[![](https://img.shields.io/pypi/v/sphinxcontrib-mermaid)](https://pypi.org/project/sphinxcontrib-mermaid/)
+[![](https://img.shields.io/pypi/dm/shbin)](https://libraries.io/pypi/sphinxcontrib-mermaid/)
+
+This extension allows you to embed [Mermaid](https://mermaid.js.org/) graphs in your
+documents, including general flowcharts, sequence diagrams, gantt diagrams and more.
+
+See the [official Documentation](http://sphinxcontrib-mermaid-demo.readthedocs.io/en/latest/) or [project repository](https://github.com/mgaitan/sphinxcontrib-mermaid) for more details!

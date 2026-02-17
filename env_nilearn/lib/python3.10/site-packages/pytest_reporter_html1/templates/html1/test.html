@@ -1,0 +1,122 @@
+{% block test_content scoped %}
+{% if test.item.function and test.item.function.__doc__ %}
+<div class="documentation">
+  {{ test.item.function.__doc__|cleandoc|rst|safe }}
+</div>
+{% endif %}
+<table class="metadata">
+{% block test_metadata scoped %}
+<tr>
+  <th>Started</th>
+  <td>{{ test.started|strftime(time_format) }}</td>
+</tr>
+<tr>
+  <th>Ended</th>
+  <td>{{ test.ended|strftime(time_format) }}</td>
+</tr>
+<tr>
+  <th>Duration</th>
+  <td>{{ test.phases|sum(attribute='report.duration')|timedelta }}</td>
+</tr>
+{% for name, value in test.phases|map(attribute='report.user_properties')|chain|unique %}
+  <tr>
+    <th>{{ name }}</th>
+    <td>{{ value|escape|urlize }}</td>
+  </tr>
+{% endfor %}
+{# TODO: Use keywords from TestReport to support dynamically added markers with xdist #}
+{% set markers = test.item.iter_markers()|rejectattr('name', '==', 'parametrize')|list|unique(attribute='name') %}
+{% if markers %}
+  <tr>
+    <th>Markers</th>
+    <td>
+      {% for marker in markers %}
+        <div class="marker">
+          <span class="marker-name badge">{{ marker.name }}</span>
+          <span class="marker-args">
+            {% for value in marker.args %}
+              {{ value|repr }}
+            {% endfor %}
+
+            {% for key, value in marker.kwargs.items() %}
+              {{ key }}={{ value|repr }}
+            {% endfor %}
+          </span>
+        </div>
+      {% endfor %}
+    </td>
+  </tr>
+{% endif %}
+{% if test.item.fixturenames %}
+  <tr>
+    <th>Fixtures</th>
+    <td>
+      {% for fixturename in test.item.fixturenames if not fixturename.startswith('_') %}
+        <span class="badge fixturename">
+          {{ fixturename }}
+        </span>
+      {% endfor %}
+    </td>
+  </tr>
+{% endif %}
+{% for phase in test.phases %}
+  {% for extra in phase.report.extras|default([]) %}
+    <tr class="extra extra-{{ extra.format }}">
+      <th>{{ extra.name|default(extra.format_type, true) }}</th>
+      <td>
+        {% if extra.format_type == 'image' %}
+          <img src="{{ extra.content|asset(extra.extension) }}" alt="{{ extra.name|default('', true) }}">
+        {% elif extra.format_type == 'video' %}
+          <video controls>
+            <source src="{{ extra.content|asset(extra.extension) }}" type="{{ extra.mime_type }}">
+          </video>
+        {% elif extra.format_type == 'html' %}
+          {{ extra.content|safe }}
+        {% elif extra.format_type == 'text' %}
+          <pre>{{ extra.content|escape }}</pre>
+        {% elif extra.format_type == 'json' %}
+          <pre>{{ extra.content|tojson(indent=2) }}</pre>
+        {% elif extra.format_type == 'url' %}
+          {{ extra.content|urlize }}
+        {% else %}
+          ?
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+{% endfor %}
+{% endblock %}
+</table>
+{% for phase in test.phases if phase.call and phase.call.excinfo %}
+  <div class="repr">
+    <pre><samp>{{ phase.call.excinfo.exconly(tryshort=True)|ansi|safe }}</samp></pre>
+  </div>
+{% endfor %}
+<div class="test-phases">
+{% for phase in test.phases %}
+  <details class="phase {{ phase.report.when }} {{ phase.status.category }}" {{ 'open' if phase.status.category }}>
+    <summary>
+      <h4 class="title">
+        {% if phase.status.category %}
+          <span class="status {{ phase.status.style|join(' ') }} {{ phase.status.category }}"></span>
+        {% endif %}
+        <span class="phase-name">{{ phase.report.when|title }}</span>
+      </h4>
+    </summary>
+    <div class="content">
+      {% if phase.report.longrepr %}
+        <div class="repr">
+          <pre><samp>{{ phase.report.longreprtext|ansi|safe }}</samp></pre>
+        </div>
+      {% endif %}
+      {% for section, content in phase.sections %}
+        <div class="section">
+          <h5 class="section-title">{{ section }}</h5>
+          <pre><samp>{{ content|escape|replace('\r\n', '\n')|ansi|safe }}</samp></pre>
+        </div>
+      {% endfor %}
+    </div>
+  </details>
+{% endfor %}
+</div>
+{% endblock %}

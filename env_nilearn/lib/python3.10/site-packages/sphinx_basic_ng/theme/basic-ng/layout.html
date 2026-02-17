@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html{% block html_tag_attrs %}{% endblock %}>
+<head>
+  {% block head_meta -%}
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% if not skip_ua_compatible -%}
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  {%- endif -%}
+
+  {{ metatags }}
+
+  {% endblock head_meta -%}
+
+  <title>{% block head_title %}{{ title|striptags|e }}{% endblock head_title %}</title>
+
+  {%- block head_links -%}
+
+  {% if favicon -%}
+    <link rel="shortcut icon" href="{{ pathto('_static/' + favicon, 1)|e }}"/>
+  {%- endif -%}
+  {% if hasdoc('about') -%}
+    <link rel="author" title="{{ _('About these documents') }}" href="{{ pathto('about') }}" />
+  {%- endif -%}
+  {% if hasdoc('genindex') -%}
+    <link rel="index" title="{{ _('Index') }}" href="{{ pathto('genindex') }}" />
+  {%- endif -%}
+  {% if hasdoc('search') -%}
+    <link rel="search" title="{{ _('Search') }}" href="{{ pathto('search') }}" />
+  {%- endif -%}
+  {% if hasdoc('copyright') -%}
+    <link rel="copyright" title="{{ _('Copyright') }}" href="{{ pathto('copyright') }}" />
+  {%- endif -%}
+  {% if next -%}
+    <link rel="next" title="{{ next.title|striptags|e }}" href="{{ next.link|e }}" />
+  {%- endif -%}
+  {% if prev -%}
+    <link rel="prev" title="{{ prev.title|striptags|e }}" href="{{ prev.link|e }}" />
+  {%- endif -%}
+
+  {% endblock head_links -%}
+
+  {% block head_stylesheets -%}
+  {% if not omit_skeleton_css -%}
+    <link rel="stylesheet" href="{{ pathto('_static/skeleton.css', 1) }}" type="text/css" />
+  {%- endif -%}
+
+  {% for css in css_files -%}
+    {%- if css|attr("filename") -%}
+      {{ css_tag(css) }}
+    {%- else -%}
+      <link rel="stylesheet" href="{{ pathto(css, 1)|e }}" type="text/css" />
+    {%- endif -%}
+  {% endfor -%}
+
+  {%- endblock head_stylesheets -%}
+
+  {% block head_javascript %}{% endblock %}
+  {% block head_extra %}{% endblock %}
+</head>
+<body{% block body_tag_attrs %}{% endblock %}>
+  {% block body %}{% endblock body -%}
+  {% block body_javascript -%}
+  {% for js in script_files -%}
+    {{ js_tag(js) }}
+  {% endfor -%}
+  {%- endblock body_javascript -%}
+</body>
+</html>

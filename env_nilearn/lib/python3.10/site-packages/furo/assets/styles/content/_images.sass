@@ -1,0 +1,37 @@
+//
+// Figures
+//
+img
+  box-sizing: border-box
+  max-width: 100%
+  height: auto
+
+article
+  figure, .figure
+    border-radius: 0.2rem
+
+    margin: 0
+    :last-child
+      margin-bottom: 0
+
+  .align-left
+    float: left
+    clear: left
+    margin: 0 1rem 1rem
+
+  .align-right
+    float: right
+    clear: right
+    margin: 0 1rem 1rem
+
+  .align-default,
+  .align-center
+    display: block
+    text-align: center
+    margin-left: auto
+    margin-right: auto
+
+  // WELL, table needs to be stylised like a table.
+  table.align-default
+    display: table
+    text-align: initial

@@ -1,0 +1,58 @@
+.navbar-brand span.repo {
+    font-weight: bold;
+}
+.nav-filtertools {
+    width: 100%;
+}
+.nav-filtertools div.spacer {
+    flex: 1;
+    display: none;
+}
+.nav-filtertools .nav-searchbar {
+    flex: 10;
+}
+.nav-filtertools svg {
+    vertical-align: text-bottom;
+}
+#filterForm .spacer {
+    flex: 1;
+}
+#filterForm span.badge {
+    float: right;
+    margin-top: 2px;
+}
+@media (min-width: 576px) {
+    .nav-filtertools div.spacer {
+        display: block;
+    }
+    .nav-filtertools .nav-searchbar {
+        max-width: 400px;
+    }
+}
+pre {
+    white-space: pre-line;
+}
+.tooltip-inner pre {
+    margin: 0;
+}
+div.result div.status-badge button img {
+    vertical-align: sub;
+}
+div.result div.status-badge button.btn-warning img {
+    filter: brightness(0);
+}
+div.mpl-images {
+    height: auto;
+}
+div.hover-image {
+    position: relative;
+    border: 3px solid #dc3545;
+    border-radius: .2rem;
+}
+div.hover-image div.result-image {
+    position: absolute;
+    top: 0;
+}
+div.hover-image div.result-image img {
+    filter: opacity(0.3);
+}

@@ -1,0 +1,53 @@
+// Abbreviations
+abbr[title]
+  cursor: help
+
+// "Problematic" content, as identified by Sphinx
+.problematic
+  color: var(--color-problematic)
+
+// Keyboard / Mouse "instructions"
+kbd:not(.compound)
+  margin: 0 0.2rem
+  padding: 0 0.2rem
+  border-radius: 0.2rem
+  border: 1px solid var(--color-foreground-border)
+  color: var(--color-foreground-primary)
+  vertical-align: text-bottom
+
+  font-size: var(--font-size--small--3)
+  display: inline-block
+
+  box-shadow: 0 0.0625rem 0 rgba(0, 0, 0, 0.2), inset 0 0 0 0.125rem var(--color-background-primary)
+
+  background-color: var(--color-background-secondary)
+
+// Blockquote
+blockquote
+  border-left: 4px solid var(--color-background-border)
+  background: var(--color-background-secondary)
+
+  margin-left: 0
+  margin-right: 0
+  padding: 0.5rem 1rem
+
+  .attribution
+    font-weight: 600
+    text-align: right
+
+  &.pull-quote,
+  &.highlights
+    font-size: 1.25em
+
+  &.epigraph,
+  &.pull-quote
+    border-left-width: 0
+    border-radius: 0.5rem
+
+  &.highlights
+    border-left-width: 0
+    background: transparent
+
+// Center align embedded-in-text images
+p .reference img
+  vertical-align: middle

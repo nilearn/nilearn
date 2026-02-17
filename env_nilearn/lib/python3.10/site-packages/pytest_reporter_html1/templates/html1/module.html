@@ -1,0 +1,27 @@
+{% block module_content scoped %}
+{% for test in tests %}
+  <details class="test {{ test.status.category }}">
+    <summary>
+      <h3 class="title test-title">
+        {% block test_title scoped %}
+        <span class="status badge {{ test.status.category }} {{ test.status.style|join(' ') }}">{{ test.status.word }}</span>
+        <span class="test-name">
+          {% block test_name scoped %}
+          {% set name = test.item.nodeid.split('::')[1:]|join('::') %}
+          {% set funcname, _, params = name.partition('[') %}
+          <span class="funcname">{{ funcname }}</span>
+          {%- if params -%}
+            <span class="params">[{{ params }}</span>
+          {% endif %}
+          {% endblock %}
+        </span>
+        <span class="duration">{{ test.phases|sum('report.duration')|timedelta }}</span>
+        {% endblock %}
+      </h3>
+    </summary>
+    <div class="content">
+      {% include "html1/test.html" %}
+    </div>
+  </details>
+{% endfor %}
+{% endblock %}

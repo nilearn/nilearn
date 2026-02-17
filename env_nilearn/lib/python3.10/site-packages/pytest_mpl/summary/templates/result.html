@@ -1,0 +1,57 @@
+{% for r in results.cards -%}
+<div class="py-2 col-sm-6 col-lg-4 col-xxl-3 result {{ r.classes | join(' ') }}">
+    <span class="collected-sort" style="display:none">{{ r.id }}</span>
+    <span class="test-name" style="display:none">{{ r.full_name }}</span>
+    <span class="status-sort" style="display:none">{{ r.indexes['status'] }}</span>
+    <span class="rms-sort" style="display:none">{{ r.indexes['rms'] }}</span>
+    <span class="filter-classes" style="display:none">{{ r.classes | join(' ') }}</span>
+    <div class="card">
+        <a class="btn" data-bs-toggle="offcanvas" href="#offcanvas{{ r.id }}" role="button"
+           aria-controls="offcanvas{{ r.id }}">
+            {% if r.image_status and r.image_status == "diff" -%}
+            <div class="hover-image">
+                {% if r.diff_image -%}
+                <div class="diff-image">
+                    <img src="{{ r.diff_image | urlencode }}" class="card-img-top" alt="diff image">
+                </div>
+                <div class="result-image">
+                    <img src="{{ r.result_image | urlencode }}" class="card-img-top" alt="result image">
+                </div>
+                {%- else -%}
+                <img src="{{ r.result_image | urlencode }}" class="card-img-top" alt="result image">
+                {%- endif %}
+            </div>
+            {%- elif r.result_image -%}
+            <img src="{{ r.result_image | urlencode }}" class="card-img-top" alt="result image">
+            {%- elif r.baseline_image -%}
+            <img src="{{ r.baseline_image | urlencode }}" class="card-img-top" alt="baseline image">
+            {%- endif %}
+        </a>
+        {% filter indent(width=8) -%}
+        {% include 'result_images.html' %}
+        {%- endfilter %}
+        <div class="card-body">
+            <h6><small class="text-muted">{{ r.module }}</small></h6>
+            <h5 class="card-title">{{ r.name }}</h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group status-badge" role="group" aria-label="status">
+                    <button class="btn btn-sm btn-{{ r.status | status_class }}" type="button"
+                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas{{ r.id }}"
+                            aria-controls="offcanvas{{ r.id }}">
+                        {{ r.status | upper }}
+                    </button>
+                    {% for badge in r.badges -%}
+                    <button class="btn btn-sm btn-{{ badge['status'] | status_class }}" type="button"
+                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas{{ r.id }}"
+                            aria-controls="offcanvas{{ r.id }}">
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ badge['tooltip'] }}">
+                            <img src="{{ badge['svg']}}.svg">
+                        </a>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{%- endfor %}

@@ -1,0 +1,29 @@
+{% extends "page.html" %}
+
+{% block head_title %}{{ _("Search") }} - {{ docstitle }}{% endblock head_title %}
+
+{% block content %}
+<div class="sb-article-container">
+  <article role="main">
+      {% block before_results -%}
+      <noscript>
+        <div class="admonition error">
+          <p class="admonition-title">{% trans %}Error{% endtrans %}</p>
+          <p>
+            {% trans %}Please activate JavaScript to enable the search functionality.{% endtrans %}
+          </p>
+        </div>
+      </noscript>
+      {%- endblock %}
+      <div id="search-results"></div>
+      {% block after_results %}{% endblock %}
+    </article>
+</div>
+{% endblock content %}
+
+{% block body_javascript -%}
+{{ super() }}
+<script src="{{ pathto('_static/language_data.js', 1) }}"></script>
+<script src="{{ pathto('_static/searchtools.js', 1) }}"></script>
+<script src="{{ pathto('searchindex.js', 1) }}"></script>
+{%- endblock body_javascript %}

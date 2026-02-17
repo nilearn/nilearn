@@ -1,0 +1,122 @@
+# === DATA DESCRIPTION FILE ======================================================
+#
+# CAUTION - Investigational device.
+# Limited by Federal Law to investigational use.
+#
+# Dataset name: H:\Export\05aug14_test_samples_9_1
+#
+# CLINICAL TRYOUT             Research image export tool     V4.2
+#
+# === GENERAL INFORMATION ========================================================
+#
+.    Patient name                       :   05aug14test
+.    Examination name                   :   test
+.    Protocol name                      :   T2* SENSE
+.    Examination date/time              :   2014.08.05 / 11:27:34
+.    Series Type                        :   Image   MRSERIES
+.    Acquisition nr                     :   9
+.    Reconstruction nr                  :   1
+.    Scan Duration [sec]                :   12
+.    Max. number of cardiac phases      :   1
+.    Max. number of echoes              :   1
+.    Max. number of slices/locations    :   10
+.    Max. number of dynamics            :   2
+.    Max. number of mixes               :   1
+.    Patient position                   :   Head First Supine
+.    Preparation direction              :   Right-Left
+.    Technique                          :   FEEPI
+.    Scan resolution  (x, y)            :   76  62
+.    Scan mode                          :   MS
+.    Repetition time [ms]               :   2000.000  
+.    FOV (ap,fh,rl) [mm]                :   130.000  120.970  154.375
+.    Water Fat shift [pixels]           :   8.014
+.    Angulation midslice(ap,fh,rl)[degr]:   -1.979  0.546  0.019
+.    Off Centre midslice(ap,fh,rl) [mm] :   -18.805  22.157  -17.977
+.    Flow compensation <0=no 1=yes> ?   :   0
+.    Presaturation     <0=no 1=yes> ?   :   0
+.    Phase encoding velocity [cm/sec]   :   0.000000  0.000000  0.000000
+.    MTC               <0=no 1=yes> ?   :   0
+.    SPIR              <0=no 1=yes> ?   :   1
+.    EPI factor        <0,1=no EPI>     :   27
+.    Dynamic scan      <0=no 1=yes> ?   :   1
+.    Diffusion         <0=no 1=yes> ?   :   0
+.    Diffusion echo time [ms]           :   0.0000
+.    Max. number of diffusion values    :   1
+.    Max. number of gradient orients    :   1
+.    Number of label types   <0=no ASL> :   0
+#
+# === PIXEL VALUES =============================================================
+#  PV = pixel value in REC file, FP = floating point value, DV = displayed value on console
+#  RS = rescale slope,           RI = rescale intercept,    SS = scale slope
+#  DV = PV * RS + RI             FP = DV / (RS * SS)
+#
+# === IMAGE INFORMATION DEFINITION =============================================
+#  The rest of this file contains ONE line per image, this line contains the following information:
+#
+#  slice number                             (integer)
+#  echo number                              (integer)
+#  dynamic scan number                      (integer)
+#  cardiac phase number                     (integer)
+#  image_type_mr                            (integer)
+#  scanning sequence                        (integer)
+#  index in REC file (in images)            (integer)
+#  image pixel size (in bits)               (integer)
+#  scan percentage                          (integer)
+#  recon resolution (x y)                   (2*integer)
+#  rescale intercept                        (float)
+#  rescale slope                            (float)
+#  scale slope                              (float)
+#  window center                            (integer)
+#  window width                             (integer)
+#  image angulation (ap,fh,rl in degrees )  (3*float)
+#  image offcentre (ap,fh,rl in mm )        (3*float)
+#  slice thickness (in mm )                 (float)
+#  slice gap (in mm )                       (float)
+#  image_display_orientation                (integer)
+#  slice orientation ( TRA/SAG/COR )        (integer)
+#  fmri_status_indication                   (integer)
+#  image_type_ed_es  (end diast/end syst)   (integer)
+#  pixel spacing (x,y) (in mm)              (2*float)
+#  echo_time                                (float)
+#  dyn_scan_begin_time                      (float)
+#  trigger_time                             (float)
+#  diffusion_b_factor                       (float)
+#  number of averages                       (integer)
+#  image_flip_angle (in degrees)            (float)
+#  cardiac frequency   (bpm)                (integer)
+#  minimum RR-interval (in ms)              (integer)
+#  maximum RR-interval (in ms)              (integer)
+#  TURBO factor  <0=no turbo>               (integer)
+#  Inversion delay (in ms)                  (float)
+#  diffusion b value number    (imagekey!)  (integer)
+#  gradient orientation number (imagekey!)  (integer)
+#  contrast type                            (string)
+#  diffusion anisotropy type                (string)
+#  diffusion (ap, fh, rl)                   (3*float)
+#  label type (ASL)            (imagekey!)  (integer)
+#
+# === IMAGE INFORMATION ==========================================================
+#  sl ec  dyn ph ty    idx pix scan% rec size                (re)scale              window        angulation              offcentre        thick   gap   info      spacing     echo     dtime   ttime    diff  avg  flip    freq   RR-int  turbo delay b grad cont anis         diffusion       L.ty
+
+  1   1    1  1 0 2     0  16    81   80   80     0.00000 251.05495 1.18150e-003  1070  1860  -1.98   0.55   0.02  -18.79  -33.29  -16.06 10.000  2.330 0 1 1 2  1.912  1.912  35.00    0.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  2   1    1  1 0 2     1  16    81   80   80     0.00000 251.05495 1.18150e-003  1697  2951  -1.98   0.55   0.02  -18.79  -20.97  -16.49 10.000  2.330 0 1 1 2  1.912  1.912  35.00    0.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  3   1    1  1 0 2     2  16    81   80   80     0.00000 251.05495 1.18150e-003  5912 10277  -1.98   0.55   0.02  -18.80   -8.65  -16.91 10.000  2.330 0 1 1 2  1.912  1.912  35.00    0.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  4   1    1  1 0 2     3  16    81   80   80     0.00000 251.05495 1.18150e-003 11675 20295  -1.98   0.55   0.02  -18.80    3.67  -17.34 10.000  2.330 0 1 1 2  1.912  1.912  35.00    0.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  5   1    1  1 0 2     4  16    81   80   80     0.00000 251.05495 1.18150e-003  3596  6251  -1.98   0.55   0.02  -18.80   16.00  -17.76 10.000  2.330 0 1 1 2  1.912  1.912  35.00    0.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  6   1    1  1 0 2     5  16    81   80   80     0.00000 251.05495 1.18150e-003  7385 12838  -1.98   0.55   0.02  -18.81   28.32  -18.19 10.000  2.330 0 1 1 2  1.912  1.912  35.00    0.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  7   1    1  1 0 2     6  16    81   80   80     0.00000 251.05495 1.18150e-003  1846  3209  -1.98   0.55   0.02  -18.81   40.64  -18.62 10.000  2.330 0 1 1 2  1.912  1.912  35.00    0.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  8   1    1  1 0 2     7  16    81   80   80     0.00000 251.05495 1.18150e-003  1121  1948  -1.98   0.55   0.02  -18.82   52.96  -19.04 10.000  2.330 0 1 1 2  1.912  1.912  35.00    0.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  9   1    1  1 0 2     8  16    81   80   80     0.00000 251.05495 1.18150e-003  1001  1741  -1.98   0.55   0.02  -18.82   65.29  -19.47 10.000  2.330 0 1 1 2  1.912  1.912  35.00    0.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+ 10   1    1  1 0 2     9  16    81   80   80     0.00000 251.05495 1.18150e-003   912  1586  -1.98   0.55   0.02  -18.82   77.61  -19.89 10.000  2.330 0 1 1 2  1.912  1.912  35.00    0.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  1   1    2  1 0 2    10  16    81   80   80     0.00000 251.05495 1.18150e-003  1129  1963  -1.98   0.55   0.02  -18.79  -33.29  -16.06 10.000  2.330 0 1 2 2  1.912  1.912  35.00    2.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  2   1    2  1 0 2    11  16    81   80   80     0.00000 251.05495 1.18150e-003  1682  2924  -1.98   0.55   0.02  -18.79  -20.97  -16.49 10.000  2.330 0 1 2 2  1.912  1.912  35.00    2.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  3   1    2  1 0 2    12  16    81   80   80     0.00000 251.05495 1.18150e-003  6115 10629  -1.98   0.55   0.02  -18.80   -8.65  -16.91 10.000  2.330 0 1 2 2  1.912  1.912  35.00    2.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  4   1    2  1 0 2    13  16    81   80   80     0.00000 251.05495 1.18150e-003 10693 18587  -1.98   0.55   0.02  -18.80    3.67  -17.34 10.000  2.330 0 1 2 2  1.912  1.912  35.00    2.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  5   1    2  1 0 2    14  16    81   80   80     0.00000 251.05495 1.18150e-003  3571  6208  -1.98   0.55   0.02  -18.80   16.00  -17.76 10.000  2.330 0 1 2 2  1.912  1.912  35.00    2.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  6   1    2  1 0 2    15  16    81   80   80     0.00000 251.05495 1.18150e-003  6788 11799  -1.98   0.55   0.02  -18.81   28.32  -18.19 10.000  2.330 0 1 2 2  1.912  1.912  35.00    2.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  7   1    2  1 0 2    16  16    81   80   80     0.00000 251.05495 1.18150e-003  1840  3198  -1.98   0.55   0.02  -18.81   40.64  -18.62 10.000  2.330 0 1 2 2  1.912  1.912  35.00    2.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  8   1    2  1 0 2    17  16    81   80   80     0.00000 251.05495 1.18150e-003  1095  1903  -1.98   0.55   0.02  -18.82   52.96  -19.04 10.000  2.330 0 1 2 2  1.912  1.912  35.00    2.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+  9   1    2  1 0 2    18  16    81   80   80     0.00000 251.05495 1.18150e-003  1092  1898  -1.98   0.55   0.02  -18.82   65.29  -19.47 10.000  2.330 0 1 2 2  1.912  1.912  35.00    2.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+ 10   1    2  1 0 2    19  16    81   80   80     0.00000 251.05495 1.18150e-003   957  1664  -1.98   0.55   0.02  -18.82   77.61  -19.89 10.000  2.330 0 1 2 2  1.912  1.912  35.00    2.00     0.00    0.00   1   90.00     0    0    0    27   0.0  1   1    8    0   0.000    0.000    0.000  1
+
+# === END OF DATA DESCRIPTION FILE ===============================================

@@ -1,0 +1,41 @@
+.. _yeo_2011_atlas:
+
+Yeo 2011 atlas
+==============
+
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_yeo_2011`.
+
+Notes
+-----
+This atlas provides a labeling of some cortical voxels in the fsaverage.
+
+Four versions of the atlas are available,
+according to the cortical model (thick or thin cortical surface)
+and to the number of networks considered (7 or 17).
+
+For more information on this dataset's structure,
+see :footcite:t:`CorticalParcellation_Yeo2011`,
+and :footcite:t:`Yeo2011`.
+
+Content
+-------
+:'anat': Background anatomical image for reference and visualization
+:'thin_7': Cortical parcelation into 7 networks, thin cortical model
+:'thin_17': Cortical parcelation into 17 networks, thin cortical model
+:'thick_7': Cortical parcelation into 17 networks, thick cortical model
+:'thick_17': Cortical parcelation into 17 networks, thick cortical model
+:'colors_7': Text file for the coloring of 7 networks parcellation
+:'colors_17': Text file for the coloring of 17 networks parcellation
+
+
+References
+----------
+
+.. footbibliography::
+
+
+License
+-------
+MIT; See https://github.com/ThomasYeoLab/CBIG/blob/master/LICENSE.md

@@ -1,0 +1,12 @@
+[console_scripts]
+nib-conform = nibabel.cmdline.conform:main
+nib-convert = nibabel.cmdline.convert:main
+nib-dicomfs = nibabel.cmdline.dicomfs:main
+nib-diff = nibabel.cmdline.diff:main
+nib-ls = nibabel.cmdline.ls:main
+nib-nifti-dx = nibabel.cmdline.nifti_dx:main
+nib-roi = nibabel.cmdline.roi:main
+nib-stats = nibabel.cmdline.stats:main
+nib-tck2trk = nibabel.cmdline.tck2trk:main
+nib-trk2tck = nibabel.cmdline.trk2tck:main
+parrec2nii = nibabel.cmdline.parrec2nii:main

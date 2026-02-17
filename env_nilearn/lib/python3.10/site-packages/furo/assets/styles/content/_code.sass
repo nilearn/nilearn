@@ -1,0 +1,137 @@
+// Inline code
+code.literal, .sig-inline
+  background: var(--color-inline-code-background)
+  border-radius: 0.2em
+  // Make the font smaller, and use padding to recover.
+  font-size: var(--font-size--small--2)
+  padding: 0.1em 0.2em
+
+  pre.literal-block &
+    font-size: inherit
+    padding: 0
+
+  p &
+    border: 1px solid var(--color-background-border)
+
+.sig-inline
+  font-family: var(--font-stack--monospace)
+
+// Code and Literal Blocks
+$code-spacing-vertical: 0.625rem
+$code-spacing-horizontal: 0.875rem
+
+// Wraps every literal block + line numbers.
+div[class*=" highlight-"],
+div[class^="highlight-"]
+  margin: 1em 0
+  display: flex
+
+  .table-wrapper
+    margin: 0
+    padding: 0
+
+pre
+  margin: 0
+  padding: 0
+  overflow: auto
+
+  // Needed to have more specificity than pygments' "pre" selector. :(
+  article[role="main"] .highlight &
+    line-height: 1.5
+
+  &.literal-block,
+  .highlight &
+    font-size: var(--code-font-size)
+    padding: $code-spacing-vertical $code-spacing-horizontal
+
+  // Make it look like all the other blocks.
+  &.literal-block
+    margin-top: 1rem
+    margin-bottom: 1rem
+
+    border-radius: 0.2rem
+    background-color: var(--color-code-background)
+    color: var(--color-code-foreground)
+
+// All code is always contained in this.
+.highlight
+  width: 100%
+  border-radius: 0.2rem
+
+  // Make line numbers and prompts un-selectable.
+  .gp, span.linenos
+    user-select: none
+    pointer-events: none
+
+  // Expand the line-highlighting.
+  .hll
+    display: block
+    margin-left: -$code-spacing-horizontal
+    margin-right: -$code-spacing-horizontal
+    padding-left: $code-spacing-horizontal
+    padding-right: $code-spacing-horizontal
+
+/* Make code block captions be nicely integrated */
+.code-block-caption
+  display: flex
+  padding: $code-spacing-vertical $code-spacing-horizontal
+
+  border-radius: 0.25rem
+  border-bottom-left-radius: 0
+  border-bottom-right-radius: 0
+  font-weight: 300
+  border-bottom: 1px solid
+
+  background-color: var(--color-code-background)
+  color: var(--color-code-foreground)
+  border-color: var(--color-background-border)
+
+  + div[class]
+    margin-top: 0
+    > .highlight
+      border-top-left-radius: 0
+      border-top-right-radius: 0
+
+// When `html_codeblock_linenos_style` is table.
+.highlighttable
+  width: 100%
+  display: block
+  tbody
+    display: block
+
+  tr
+    display: flex
+
+  // Line numbers
+  td.linenos
+    background-color: var(--color-code-background)
+    color: var(--color-code-foreground)
+    padding: $code-spacing-vertical $code-spacing-horizontal
+    padding-right: 0
+    border-top-left-radius: 0.2rem
+    border-bottom-left-radius: 0.2rem
+
+  .linenodiv
+    padding-right: $code-spacing-horizontal
+    font-size: var(--code-font-size)
+    box-shadow: -0.0625rem 0 var(--color-foreground-border) inset
+
+  // Actual code
+  td.code
+    padding: 0
+    display: block
+    flex: 1
+    overflow: hidden
+
+    .highlight
+      border-top-left-radius: 0
+      border-bottom-left-radius: 0
+
+// When `html_codeblock_linenos_style` is inline.
+.highlight
+  span.linenos
+    display: inline-block
+    padding-left: 0
+    padding-right: $code-spacing-horizontal
+    margin-right: $code-spacing-horizontal
+    box-shadow: -0.0625rem 0 var(--color-foreground-border) inset

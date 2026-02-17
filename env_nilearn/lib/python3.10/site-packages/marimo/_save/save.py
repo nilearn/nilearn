@@ -1,0 +1,1224 @@
+# Copyright 2026 Marimo. All rights reserved.
+from __future__ import annotations
+
+import ast
+import asyncio
+import functools
+import inspect
+import io
+import sys
+import threading
+import time
+import traceback
+import weakref
+from collections import abc
+
+# NB: maxsize follows functools.cache, but renamed max_size outside of drop-in
+# api.
+from sys import maxsize as MAXINT
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Optional,
+    Union,
+    cast,
+    overload,
+)
+
+from marimo._ast.cell_id import is_external_cell_id
+from marimo._ast.load import find_cell
+from marimo._ast.transformers import (
+    ARG_PREFIX,
+    CacheExtractWithBlock,
+    get_hashable_ast,
+)
+from marimo._ast.variables import is_mangled_local, unmangle_local
+from marimo._messaging.tracebacks import write_traceback
+from marimo._runtime.context import get_context, safe_get_context
+from marimo._runtime.side_effect import SideEffect
+from marimo._runtime.state import State
+from marimo._save.cache import (
+    UNEXPECTED_FAILURE_BOILERPLATE,
+    Cache,
+    CacheContext,
+    CacheException,
+)
+from marimo._save.hash import (
+    DEFAULT_HASH,
+    BlockHasher,
+    cache_attempt_from_hash,
+    content_cache_attempt_from_base,
+)
+from marimo._save.loaders import (
+    PERSISTENT_LOADERS,
+    Loader,
+    LoaderKey,
+    LoaderPartial,
+    LoaderType,
+    MemoryLoader,
+)
+from marimo._save.stores.file import FileStore
+from marimo._save.toplevel import get_cell_id_from_scope, graph_from_scope
+from marimo._types.ids import CellId_t
+from marimo._utils.with_skip import SkipContext
+
+if TYPE_CHECKING:
+    from types import FrameType, TracebackType
+
+    from marimo._runtime.dataflow import DirectedGraph
+    from marimo._save.stores import Store
+
+
+class _cache_call(CacheContext):
+    """Like functools.cache but notebook-aware. See `cache` docstring"""
+
+    __slots__ = (
+        "base_block",
+        "scope",
+        "scoped_refs",
+        "pin_modules",
+        "hash_type",
+        "_args",
+        "_kwonly_args",
+        "_defaults",
+        "_var_arg",
+        "_var_kwarg",
+        "_misses",
+        "_loader",
+        "_loader_partial",
+        "_bound",
+        "_last_hash",
+        "_frame_offset",
+        "_external",
+        "__wrapped__",
+    )
+
+    base_block: Optional[BlockHasher]
+    scope: dict[str, Any]
+    scoped_refs: set[str]
+    pin_modules: bool
+    hash_type: str
+    _args: list[str]
+    _kwonly_args: list[str]
+    _defaults: dict[str, Any]
+    _var_arg: Optional[str]
+    _var_kwarg: Optional[str]
+    _misses: int
+    _loader: Optional[State[Loader]]
+    _loader_partial: LoaderPartial
+    _bound: Optional[dict[str, Any]]
+    _last_hash: Optional[str]
+    _frame_offset: int
+    _external: bool
+    # Consistent with functools.cache
+    __wrapped__: Optional[Callable[..., Any]]
+
+    def __init__(
+        self,
+        _fn: Optional[Callable[..., Any]],
+        loader_partial: LoaderPartial,
+        *,
+        pin_modules: bool = False,
+        hash_type: str = DEFAULT_HASH,
+        # frame_offset is the number of frames the __init__ call is nested
+        # with respect to definition of _fn
+        frame_offset: int = 0,
+    ) -> None:
+        self.base_block = None
+        self.pin_modules = pin_modules
+        self.hash_type = hash_type
+        self._frame_offset = frame_offset
+        self._loader_partial = loader_partial
+        self._last_hash = None
+        self._args: list[str] = []
+        self._kwonly_args: list[str] = []
+        self._defaults: dict[str, Any] = {}
+        self._var_arg = None
+        self._var_kwarg = None
+        self._misses = 0
+        self._loader = None
+        self._bound = {}
+        self._external = False
+        if _fn is None:
+            self.__wrapped__ = None
+        else:
+            self._set_context(_fn)
+
+    def _set_context(self, fn: Callable[..., Any]) -> None:
+        ctx = safe_get_context()
+
+        # If we are loaded from a module, then we have no context.
+        # Default to this case for typing.
+        self._external = True
+        cell_id = CellId_t("")
+        graph: Optional[DirectedGraph] = None
+        glbls = {}
+        if ctx and ctx.execution_context is not None:
+            maybe_cell_id = (
+                ctx.cell_id or ctx.execution_context.cell_id or CellId_t("")
+            )
+            # If the cell ID is "external", that means it's not from the main
+            # graph but rather from an embedded graph.
+            self._external = is_external_cell_id(maybe_cell_id)
+            if not self._external:
+                graph = ctx.graph
+                glbls = ctx.globals
+                cell_id = maybe_cell_id
+
+        self.__wrapped__ = fn
+        sig = inspect.signature(fn)
+
+        self._args = []
+        self._kwonly_args = []
+        self._defaults = {}
+        self._var_arg = None
+        self._var_kwarg = None
+
+        for param in sig.parameters.values():
+            if param.kind in (
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                inspect.Parameter.POSITIONAL_ONLY,
+            ):
+                self._args.append(param.name)
+            elif param.kind == inspect.Parameter.KEYWORD_ONLY:
+                self._kwonly_args.append(param.name)
+            elif param.kind == inspect.Parameter.VAR_POSITIONAL:
+                self._var_arg = param.name
+            elif param.kind == inspect.Parameter.VAR_KEYWORD:
+                self._var_kwarg = param.name
+
+            if param.default is not inspect.Parameter.empty:
+                self._defaults[param.name] = param.default
+
+        # Retrieving frame from the stack: frame is
+        #
+        # 0  _set_context ->
+        # 1  __call__ (or init) -->
+        # ...
+        # 2 + self._frame_offset: fn
+        #
+        # Note, that deeply nested frames may cause issues, however
+        # checking a single frame- should be good enough.
+        f_locals = inspect.stack()[2 + self._frame_offset][0].f_locals
+        if glbls:
+            self.scope = {**glbls, **f_locals}
+        else:
+            # Direct assignment, because we need the reference for later
+            # lookups.
+            self.scope = f_locals
+
+        # Scoped refs are references particular to this block, that may not be
+        # defined out of the context of the block, or the cell.
+        # For instance, the args of the invoked function are restricted to the
+        # block. Include both positional and keyword-only args.
+        self.scoped_refs = {
+            f"{ARG_PREFIX}{k}" for k in self._args + self._kwonly_args
+        }
+        # As are the "locals" not in globals
+        self.scoped_refs |= set(f_locals.keys()) - set(glbls.keys())
+        # Defined in the cell, and currently available in scope
+        if graph is not None:
+            self.scoped_refs |= graph.cells[cell_id].defs & set(glbls.keys())
+            # The defined private variables of this cell, normalized
+            self.scoped_refs |= set(
+                unmangle_local(x).name
+                for x in glbls.keys()
+                if is_mangled_local(x, cell_id)
+            )
+
+        # Load global cache from state
+        name = self.__name__
+        # Note, that if the function name shadows a global variable, the
+        # lifetime of the cache will be tied to the global variable.
+        # We can invalidate that by making an invalid namespace.
+        if glbls != f_locals:
+            name = f"{name}*"
+
+        self._loader = self._loader_partial.create_or_reconfigure(name)
+
+        if graph is not None:
+            self.base_block = self._build_base_block(
+                self.__wrapped__, graph, cell_id
+            )
+
+    def _build_base_block(
+        self, fn: Callable[..., Any], graph: DirectedGraph, cell_id: CellId_t
+    ) -> BlockHasher:
+        module = get_hashable_ast(
+            fn, skip_decorators={"cache", "persistent_cache"}
+        )
+
+        return BlockHasher(
+            module=module,
+            graph=graph,
+            cell_id=cell_id,
+            scope=self.scope,
+            pin_modules=self.pin_modules,
+            hash_type=self.hash_type,
+            scoped_refs=self.scoped_refs,
+            apply_content_hash=False,
+            external=self._external,
+        )
+
+    def _prepare_call_execution(
+        self, args: tuple[Any, ...], kwargs: dict[str, Any]
+    ) -> tuple[dict[str, Any], Any, Any]:
+        """Prepare execution context and create cache attempt.
+
+        Returns tuple of (scope, ctx, attempt) needed for cache execution.
+        """
+        # Build base block if needed (for external/late binding)
+        if self.base_block is None:
+            assert self._external, UNEXPECTED_FAILURE_BOILERPLATE
+            assert self.__wrapped__ is not None, UNEXPECTED_FAILURE_BOILERPLATE
+            graph = graph_from_scope(self.scope)
+            cell_id = get_cell_id_from_scope(self.__wrapped__, self.scope)
+            self.base_block = self._build_base_block(
+                self.__wrapped__, graph, cell_id
+            )
+
+        # Rewrite scoped args to prevent shadowed variables
+        arg_dict = {f"{ARG_PREFIX}{k}": v for (k, v) in zip(self._args, args)}
+        kwargs_copy = {f"{ARG_PREFIX}{k}": v for (k, v) in kwargs.items()}
+        # Fill in default values for arguments not explicitly provided
+        # This ensures cache hashes are based on resolved argument values
+        for arg_name, default_value in self._defaults.items():
+            prefixed_name = f"{ARG_PREFIX}{arg_name}"
+            if (
+                prefixed_name not in arg_dict
+                and prefixed_name not in kwargs_copy
+            ):
+                arg_dict[prefixed_name] = default_value
+        # If the function has varargs, we need to capture them as well.
+        if self._var_arg is not None:
+            arg_dict[f"{ARG_PREFIX}{self._var_arg}"] = args[len(self._args) :]
+        if self._var_kwarg is not None:
+            # NB: kwargs are always a dict, so we can just copy them.
+            # Filter out keyword-only args since they're handled separately
+            filtered_kwargs = {
+                k: v for k, v in kwargs.items() if k not in self._kwonly_args
+            }
+            arg_dict[f"{ARG_PREFIX}{self._var_kwarg}"] = filtered_kwargs
+
+        # Capture the call case
+        ctx = safe_get_context()
+        glbls: dict[str, Any] = {}
+        if ctx is not None:
+            glbls = ctx.globals
+        # Typically, scope is overridden by globals (scope is just a snapshot of
+        # the current frame, which may have changed)- however in an external
+        # context, scope is the only source of glbls (the definition should be
+        # unaware of working memory).
+        scope = {
+            **self.scope,
+        }
+        if not self._external:
+            scope = {
+                **scope,
+                **glbls,
+            }
+        scope = {
+            **scope,
+            **arg_dict,
+            **kwargs_copy,
+            **(self._bound or {}),
+        }
+        assert self._loader is not None, UNEXPECTED_FAILURE_BOILERPLATE
+        attempt = content_cache_attempt_from_base(
+            self.base_block,
+            scope,
+            self.loader,
+            scoped_refs=self.scoped_refs,
+            required_refs={
+                f"{ARG_PREFIX}{k}" for k in self._args + self._kwonly_args
+            },
+            as_fn=True,
+        )
+
+        return scope, ctx, attempt
+
+    def _finalize_cache_update(
+        self,
+        attempt: Any,
+        response: Any,
+        runtime: float,
+        scope: dict[str, Any],
+    ) -> None:
+        """Update and save cache with execution results."""
+        # stateful variables may be global
+        scope = {k: v for k, v in scope.items() if k in attempt.stateful_refs}
+        attempt.update(scope, meta={"return": response, "runtime": runtime})
+        self.loader.save_cache(attempt)
+
+    @property
+    def misses(self) -> int:
+        if self._loader is None:
+            return 0
+        return self._misses
+
+    @property
+    def __name__(self) -> str:
+        """Return the name of the wrapped function."""
+        # NB. __name__ is expected on introspection in compiler.
+        if self.__wrapped__ is None:
+            return "<cache>"
+        return self.__wrapped__.__name__
+
+    @property
+    def last_hash(self) -> Optional[str]:
+        """Return the last computed hash for this cache call."""
+        return self._last_hash
+
+    def __get__(
+        self, instance: Any, _owner: Optional[type] = None
+    ) -> _cache_call:
+        """Enable @cache as a method decorator.
+
+        __get__ is invoked on instance access;
+            e.g. `obj.fn` (__get__ called on `fn`)
+        `instance` is the specific object, while owner is `type(instance)`.
+
+        We check if `bound` is unset as a recursion guard, then create a new
+        instance of _cache_call, copying over the inspection data we have
+        already computed. We notably do not memoize since copying is cheap-
+        additionally updating the parent itself would make the object
+        unpicklable.
+        """
+        if instance is not None and not bool(self._bound):
+            if not callable(self.__wrapped__):
+                raise TypeError(
+                    f"cache() expected a callable, got {type(self.__wrapped__)} "
+                    "(have you wrapped a function?)"
+                )
+            # Bind to the instance
+            copy = type(self)(
+                None,
+                self._loader_partial,
+                pin_modules=self.pin_modules,
+                hash_type=self.hash_type,
+            )
+            # Manually set context, since we have lost frame context.
+            # Safe to not copy because data is RO.
+            copy.__wrapped__ = functools.partial(self.__wrapped__, instance)
+            copy._var_arg = self._var_arg
+            copy._var_kwarg = self._var_kwarg
+            copy._loader = self._loader
+            copy.base_block = self.base_block
+            copy.scope = self.scope
+            copy.scoped_refs = self.scoped_refs
+            # Except _args, which is is different.
+            copy._args = self._args.copy()
+            # Remove the first arg, which is 'self' or otherwise bound.
+            copy._bound = {f"{ARG_PREFIX}{copy._args.pop(0)}": instance}
+            return copy
+        return self
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        # Capture the deferred call case
+        if self.__wrapped__ is None:
+            if len(args) != 1:
+                raise TypeError(
+                    "cache() takes at most 1 argument (expecting function)"
+                )
+            # Check if the function is async - if so, create async variant
+            if inspect.iscoroutinefunction(args[0]):
+                async_copy = _cache_call_async(
+                    None,
+                    self._loader_partial,
+                    pin_modules=self.pin_modules,
+                    hash_type=self.hash_type,
+                )
+                async_copy._frame_offset = self._frame_offset
+                async_copy._frame_offset -= 4
+                async_copy._set_context(args[0])
+                return async_copy
+            # Remove the additional frames from singledispatch, because invoking
+            # the function directly.
+            self._frame_offset -= 4
+            self._set_context(args[0])
+            return self
+
+        # Prepare execution context
+        scope, ctx, attempt = self._prepare_call_execution(args, kwargs)
+
+        failed = False
+        self._last_hash = attempt.hash
+        try:
+            if attempt.hit:
+                attempt.restore(scope)
+                return attempt.meta.get("return")
+
+            start_time = time.time()
+            response = self.__wrapped__(*args, **kwargs)
+            runtime = time.time() - start_time
+
+            self._finalize_cache_update(attempt, response, runtime, scope)
+        except Exception as e:
+            failed = True
+            raise e
+        finally:
+            # NB. Exceptions raise their own side effects.
+            if ctx and not failed:
+                ctx.cell_lifecycle_registry.add(SideEffect(attempt.hash))
+        self._misses += 1
+        return response
+
+
+class _cache_call_async(_cache_call):
+    """Async variant of _cache_call for async/await functions.
+
+    Inherits all caching logic from _cache_call but provides an async
+    __call__ method that properly awaits coroutines. Used automatically
+    when @cache decorates an async function.
+
+    Implements task deduplication: concurrent calls with the same arguments
+    will share the same execution, preventing duplicate work.
+    """
+
+    # Track pending executions per cache instance to prevent race conditions
+    # WeakKeyDictionary ensures instances are cleaned up when garbage collected
+    # Key: cache instance, Value: dict of {cache_key: Task}
+    _pending_executions: weakref.WeakKeyDictionary[
+        _cache_call_async, dict[str, asyncio.Task[Any]]
+    ] = weakref.WeakKeyDictionary()
+    _pending_lock = threading.Lock()
+
+    async def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        # Capture the deferred call case
+        if self.__wrapped__ is None:
+            if len(args) != 1:
+                raise TypeError(
+                    "cache() takes at most 1 argument (expecting function)"
+                )
+            # Remove the additional frames from singledispatch, because invoking
+            # the function directly.
+            self._frame_offset -= 4
+            self._set_context(args[0])
+            return self
+
+        # Prepare execution context to get cache key
+        scope, ctx, attempt = self._prepare_call_execution(args, kwargs)
+        cache_key = attempt.hash
+
+        # Check for pending execution (task deduplication)
+        existing_task = None
+        with self._pending_lock:
+            if self not in self._pending_executions:
+                self._pending_executions[self] = {}
+            pending = self._pending_executions[self]
+
+            if cache_key in pending:
+                # Another coroutine is already executing this - save the task
+                existing_task = pending[cache_key]
+
+        # Await the existing task AFTER releasing the lock to avoid deadlock
+        if existing_task is not None:
+            return await existing_task
+
+        # No pending execution - create a new task
+        task = asyncio.create_task(
+            self._execute_cached(scope, ctx, attempt, args, kwargs)
+        )
+
+        with self._pending_lock:
+            pending[cache_key] = task
+
+        try:
+            result = await task
+        finally:
+            # Clean up completed task
+            with self._pending_lock:
+                if cache_key in pending:
+                    del pending[cache_key]
+                # Clean up empty instance dict (WeakKeyDictionary handles instance cleanup)
+                if not pending and self in self._pending_executions:
+                    del self._pending_executions[self]
+
+        return result
+
+    async def _execute_cached(
+        self,
+        scope: dict[str, Any],
+        ctx: Any,
+        attempt: Any,
+        args: tuple[Any, ...],
+        kwargs: dict[str, Any],
+    ) -> Any:
+        """Execute the cached function and update cache.
+
+        This is called by a single task even when multiple concurrent
+        callers request the same computation.
+        """
+        assert self.__wrapped__ is not None, UNEXPECTED_FAILURE_BOILERPLATE
+        failed = False
+        self._last_hash = attempt.hash
+        try:
+            if attempt.hit:
+                attempt.restore(scope)
+                return attempt.meta["return"]
+
+            start_time = time.time()
+            # Await the coroutine to get the actual result
+            response = await self.__wrapped__(*args, **kwargs)
+            runtime = time.time() - start_time
+
+            self._finalize_cache_update(attempt, response, runtime, scope)
+        except Exception as e:
+            failed = True
+            raise e
+        finally:
+            # NB. Exceptions raise their own side effects.
+            if ctx and not failed:
+                ctx.cell_lifecycle_registry.add(SideEffect(attempt.hash))
+        self._misses += 1
+        return response
+
+
+class _cache_context(SkipContext, CacheContext):
+    def __init__(
+        self,
+        name: str,
+        loader: Loader,
+        *,
+        pin_modules: bool = False,
+        hash_type: str = DEFAULT_HASH,
+    ) -> None:
+        super().__init__()
+        self.name = name
+
+        self._cache: Optional[Cache] = None
+        self._body_start: int = MAXINT
+        # TODO: Consider having a user level setting.
+        self.pin_modules = pin_modules
+        self.hash_type = hash_type
+        # Wrap loader in State to match CacheContext's _loader type
+        if isinstance(loader, MemoryLoader):
+            self._loader = loader.partial().create_or_reconfigure(name)
+        else:
+            self._loader = State(loader, _name=name)
+        self._start_time: float = 0.0
+
+    @property
+    def hit(self) -> bool:
+        return self._cache is not None and self._cache.hit
+
+    def trace(self, with_frame: FrameType) -> None:
+        # General flow is as follows:
+        #   1) Follow the stack trace backwards to the first instance of a
+        # "<module>" function call, which corresponds to a cell level block.
+        #   2) Run static analysis to determine whether the call meets our
+        # criteria. The procedure is a little brittle as such, certain contexts
+        # are not allowed (e.g. called within a function or a loop).
+        #  3) Hash the execution and lookup the cache, and return!
+        #  otherwise) Set _skipped such that the block continues to execute.
+
+        # This is possible if `With` spans multiple lines.
+        # This behavior arguably a python bug.
+        # Note the behavior does subtly change in 3.14, but will still be
+        # captured by this check.
+        if self._cache and self._cache.hit:
+            self.skip()
+
+        stack = traceback.extract_stack()
+
+        # This only executes on the first line of code in the block. If the
+        # cache is hit, the block terminates early with a SkipWithBlock
+        # exception, if the block is not hit, self._skipped is set to False,
+        # causing this function to terminate before reaching this block.
+        self._frame = with_frame
+        for i, frame in enumerate(stack[::-1]):
+            filename, lineno, function_name, _code = frame
+            if function_name == "<module>":
+                ctx = get_context()
+                if ctx.execution_context is None:
+                    raise CacheException(
+                        (
+                            "Could not resolve context for cache."
+                            f"{UNEXPECTED_FAILURE_BOILERPLATE}"
+                        ),
+                    )
+                graph = ctx.graph
+                cell_id = ctx.cell_id or ctx.execution_context.cell_id
+
+                # We are calling from script mode, so our line number is
+                # absolute.
+                if "__marimo__" not in filename:
+                    cell = find_cell(filename, lineno)
+                    if cell is None:
+                        raise CacheException(
+                            "Could not resolve cell for cache."
+                            f"{UNEXPECTED_FAILURE_BOILERPLATE}"
+                        )
+                    lineno -= cell.lineno
+                    code = cell.code
+                elif cell_id in graph.cells:
+                    code = graph.cells[cell_id].code
+                else:
+                    raise CacheException(
+                        "Could not resolve cell for cache."
+                        f"{UNEXPECTED_FAILURE_BOILERPLATE}"
+                    )
+
+                pre_module, save_module = CacheExtractWithBlock(
+                    lineno - 1
+                ).visit(
+                    ast.parse(code).body  # type: ignore[arg-type]
+                )
+
+                self._cache = cache_attempt_from_hash(
+                    save_module,
+                    graph,
+                    cell_id,
+                    {**globals(), **with_frame.f_locals},
+                    loader=self.loader,
+                    context=pre_module,
+                    pin_modules=self.pin_modules,
+                    hash_type=self.hash_type,
+                )
+
+                self.cache_type = self._cache.cache_type
+                # Raising on the first valid line, prevents a discrepancy where
+                # whitespace in `With`, changes behavior.
+                self._body_start = save_module.body[0].lineno
+
+                # Start timing for runtime tracking
+                self._start_time = time.time()
+
+                if self._cache and self._cache.hit:
+                    if lineno >= self._body_start:
+                        self.skip()
+                return
+            # <module> -> _trace_wrapper -> _trace
+            elif i > 3:
+                raise CacheException(
+                    "`cache` must be invoked from cell level "
+                    "(cannot be in a function or class)"
+                )
+        raise CacheException(
+            "`persistent_cache` could not resolve block"
+            f"{UNEXPECTED_FAILURE_BOILERPLATE}"
+        )
+
+    def __exit__(
+        self,
+        exception: Optional[type[BaseException]],
+        instance: Optional[BaseException],
+        _tracebacktype: Optional[TracebackType],
+    ) -> bool:
+        self.teardown()
+        if not self.entered_trace:
+            raise CacheException(
+                f"Unexpected block format {UNEXPECTED_FAILURE_BOILERPLATE}"
+            )
+
+        # Cache hit is acceptable, because SkipWithBlock is raised.
+        # NB: exception is a type.
+        if exception and (self._cache is None or not self._cache.hit):
+            if isinstance(instance, BaseException):
+                raise instance from CacheException("Failure during save.")
+            raise exception
+
+        if self._cache is None or self._frame is None:
+            raise CacheException(
+                f"Cache was not correctly set {UNEXPECTED_FAILURE_BOILERPLATE}"
+            )
+
+        failed = False
+        try:
+            # Backfill the loaded values into global scope.
+            if self._cache.hit:
+                assert self._frame is not None, UNEXPECTED_FAILURE_BOILERPLATE
+                self._cache.restore(self._frame.f_locals)
+                # Return true to suppress the SkipWithBlock exception.
+                return True
+
+            # Fill the cache object and save.
+            runtime = time.time() - self._start_time
+            self._cache.update(self._frame.f_locals, meta={"runtime": runtime})
+
+            try:
+                self.loader.save_cache(self._cache)
+            except Exception as e:
+                sys.stderr.write(
+                    "An exception was raised when attempting to cache this code "
+                    "block with the following message:\n"
+                    f"{str(e)}\n"
+                    "NOTE: The cell has run, but cache has not been saved.\n"
+                )
+                tmpio = io.StringIO()
+                traceback.print_exc(file=tmpio)
+                tmpio.seek(0)
+                write_traceback(tmpio.read())
+        except Exception as e:
+            failed = True
+            raise e
+        finally:
+            if not failed:
+                # Conditional because pendantically, the side effect is on restore /
+                # save respectively, and exceptions should raise their own.
+                ctx = get_context()
+                ctx.cell_lifecycle_registry.add(SideEffect(self._cache.hash))
+
+        return False
+
+    @property
+    def last_hash(self) -> Optional[str]:
+        """Return the last computed hash for this cache context."""
+        if self._cache is None:
+            return None
+        return self._cache.hash
+
+
+# A note on overloading:
+# Single dispatch cues off only the first argument, and expects a similar
+# signature for every overload: https://peps.python.org/pep-0443/
+# However.
+# The context and call APIs are slightly different, so `*` expansions are used
+# to propagate that information down to the actually implementation.
+# As such, we also leverage the `@overload` decorator to provide the correct
+# signature and documentation for the singledispatch entry points.
+
+# mypy also seems to do pretty poorly with this overloading, so there is liberal
+# removal type rules.
+
+
+@functools.singledispatch
+def _cache_invocation(
+    arg: Any,
+    loader: Union[LoaderPartial, Loader, LoaderType],
+    *args: Any,
+    frame_offset: int = 1,
+    **kwargs: Any,
+) -> Union[_cache_call, _cache_context]:
+    del loader, args, kwargs, frame_offset
+    raise TypeError(f"Invalid type for cache: {type(arg)}")
+
+
+def _invoke_call(
+    _fn: Callable[..., Any] | None,
+    loader: Union[LoaderPartial, Loader, LoaderType],
+    *args: Any,
+    frame_offset: int = 1,
+    **kwargs: Any,
+) -> Union[_cache_call, _cache_call_async]:
+    if isinstance(loader, Loader):
+        raise TypeError(
+            "A loader instance cannot be passed to cache directly. "
+            f"Specify a loader type (e.g. `{loader.__class__}`) or a loader "
+            f"partial (e.g. `{loader.__class__}.partial(arg=value)`)."
+        )
+    elif isinstance(loader, type) and issubclass(loader, Loader):
+        cache_args = {
+            "pin_modules": kwargs.pop("pin_modules", False),
+            "hash_type": kwargs.pop("hash_type", DEFAULT_HASH),
+        }
+        loader = cast(Loader, loader).partial(**kwargs)
+        kwargs = cache_args
+
+    if not isinstance(loader, LoaderPartial):
+        raise TypeError(
+            "Invalid loader type. "
+            f"Expected a loader partial, got {type(loader)}."
+        )
+
+    # Check if the function is async
+    if _fn is not None and inspect.iscoroutinefunction(_fn):
+        return _cache_call_async(
+            _fn, loader, *args, frame_offset=frame_offset + 1, **kwargs
+        )
+
+    return _cache_call(
+        _fn, loader, *args, frame_offset=frame_offset + 1, **kwargs
+    )
+
+
+@_cache_invocation.register
+def _invoke_call_none(
+    _fn: None,
+    loader: Union[LoaderPartial, Loader, LoaderType],
+    *args: Any,
+    frame_offset: int = 1,
+    **kwargs: Any,
+) -> _cache_call:
+    return _invoke_call(
+        _fn, loader, *args, frame_offset=frame_offset + 1, **kwargs
+    )
+
+
+@_cache_invocation.register
+def _invoke_call_fn(
+    # mypy would like some generics, but this breaks the singledispatch
+    _fn: abc.Callable,  # type: ignore[type-arg]
+    loader: Union[LoaderPartial, Loader, LoaderType],
+    *args: Any,
+    frame_offset: int = 1,
+    **kwargs: Any,
+) -> Union[_cache_call, _cache_call_async]:
+    return _invoke_call(
+        _fn, loader, *args, frame_offset=frame_offset + 1, **kwargs
+    )
+
+
+@_cache_invocation.register
+def _invoke_context(
+    name: str,
+    loader: Union[LoaderPartial, Loader, LoaderType],
+    *args: Any,
+    frame_offset: int = 1,
+    **kwargs: Any,
+) -> _cache_context:
+    del frame_offset
+
+    if isinstance(loader, LoaderPartial):
+        loader = loader.create_or_reconfigure(name)()
+    elif isinstance(loader, type) and issubclass(loader, Loader):
+        cache_args = {
+            "pin_modules": kwargs.pop("pin_modules", False),
+            "hash_type": kwargs.pop("hash_type", DEFAULT_HASH),
+        }
+        # Create through partial for meaningful error message.
+        loader_state = (
+            cast(Loader, loader).partial(**kwargs).create_or_reconfigure(name)
+        )
+        loader = loader_state()
+        kwargs = cache_args
+    return _cache_context(name, loader, *args, **kwargs)
+
+
+@overload
+def cache(
+    fn: Optional[Callable[..., Any]] = None,
+    pin_modules: bool = False,
+    loader: LoaderPartial | LoaderType = MemoryLoader,
+) -> _cache_call: ...
+
+
+@overload
+def cache(
+    name: str,
+    pin_modules: bool = False,
+    loader: LoaderPartial | Loader | LoaderType = MemoryLoader,
+) -> _cache_context: ...
+
+
+def cache(  # type: ignore[misc]
+    name: Union[str, Optional[Callable[..., Any]]] = None,
+    *args: Any,
+    pin_modules: bool = False,
+    loader: Optional[Union[LoaderPartial, Loader]] = None,
+    _frame_offset: int = 1,
+    _internal_interface_not_for_external_use: None = None,
+    **kwargs: Any,
+) -> Union[_cache_call, _cache_context]:
+    """## Cache the value of a function based on args and closed-over variables.
+
+    Decorating a function with `@mo.cache` will cache its value based on
+    the function's arguments, closed-over values, and the notebook code.
+
+    Examples:
+    ```python
+    import marimo as mo
+
+
+    @mo.cache
+    def fib(n):
+        if n <= 1:
+            return n
+        return fib(n - 1) + fib(n - 2)
+    ```
+
+    `mo.cache` is similar to `functools.cache`, but with three key benefits:
+
+    1. `mo.cache` persists its cache even if the cell defining the cached
+        function is re-run, as long as the code defining the function and
+        ancestors (excluding comments and formatting) has not changed.
+    2. `mo.cache` keys on closed-over values in addition to function arguments,
+        preventing accumulation of hidden state associated with
+        `functools.cache`.
+    3. `mo.cache` does not require its arguments to be
+        hashable (only pickleable), meaning it can work with lists, sets, NumPy
+        arrays, PyTorch tensors, and more.
+
+    `mo.cache` obtains these benefits at the cost of slightly higher overhead
+    than `functools.cache`, so it is best used for expensive functions.
+
+    Like `functools.cache`, `mo.cache` is thread-safe.
+
+    The cache has an unlimited maximum size. To limit the cache size, use
+    `@mo.lru_cache`. `mo.cache` is slightly faster than `mo.lru_cache`, but in
+    most applications the difference is negligible.
+
+    Note, `mo.cache` can also be used as a drop in replacement for context block
+    caching like `mo.persistent_cache`.
+
+    Args:
+        pin_modules: if True, the cache will be invalidated if module versions
+            differ.
+
+    ## Context manager to cache the return value of a block of code.
+
+    The `mo.cache` context manager lets you delimit a block of code in which
+    variables will be cached to memory when they are first computed.
+
+    By default, the cache is stored in memory and is not persisted across kernel
+    runs, for that functionality, refer to `mo.persistent_cache`.
+
+    Examples:
+    ```python
+    with mo.cache("my_cache") as cache:
+        variable = expensive_function()
+    ```
+
+    Args:
+        name: the name of the cache, used to set saving path- to manually
+            invalidate the cache, change the name.
+        pin_modules: if True, the cache will be invalidated if module versions
+            differ.
+        loader: the loader to use for the cache, defaults to `MemoryLoader`.
+        **kwargs: keyword arguments
+        *args: positional arguments
+    """
+    arg = name
+    del name
+
+    if loader is None:
+        loader = MemoryLoader.partial(max_size=-1)
+
+    return _cache_invocation(
+        arg,
+        loader,
+        *args,
+        frame_offset=_frame_offset + 1,
+        pin_modules=pin_modules,
+        **kwargs,
+    )
+
+
+@overload
+def lru_cache(
+    fn: Optional[Callable[..., Any]] = None,
+    maxsize: int = 128,
+    pin_modules: bool = False,
+) -> _cache_call: ...
+
+
+@overload
+def lru_cache(
+    name: str,
+    maxsize: int = 128,
+    pin_modules: bool = False,
+) -> _cache_call: ...
+
+
+def lru_cache(  # type: ignore[misc]
+    name: Union[str, Optional[Callable[..., Any]]] = None,
+    maxsize: int = 128,
+    *args: Any,
+    pin_modules: bool = False,
+    _internal_interface_not_for_external_use: None = None,
+    **kwargs: Any,
+) -> Union[_cache_call, _cache_context]:
+    """Decorator for LRU caching the return value of a function.
+
+    `mo.lru_cache` is a version of `mo.cache` with a bounded cache size. As an
+    LRU (Least Recently Used) cache, only the last used `maxsize` values are
+    retained, with the oldest values being discarded. For more information,
+    see the documentation of `mo.cache`.
+
+    Examples:
+    ```python
+    import marimo as mo
+
+
+    @mo.lru_cache
+    def factorial(n):
+        return n * factorial(n - 1) if n else 1
+    ```
+
+    Args:
+        maxsize: the maximum number of entries in the cache; defaults to 128.
+            Setting to -1 disables cache limits.
+        pin_modules: if True, the cache will be invalidated if module versions
+            differ.
+
+    ## Context manager for LRU caching the return value of a block of code.
+
+    Args:
+        name: Namespace key for the cache.
+        maxsize: the maximum number of entries in the cache; defaults to 128.
+            Setting to -1 disables cache limits.
+        pin_modules: if True, the cache will be invalidated if module versions
+            differ.
+        **kwargs: keyword arguments passed to `cache()`
+        *args: positional arguments passed to `cache()`
+    """
+    arg = name
+    del name
+
+    if {"loader"} & set(kwargs.keys()):
+        raise ValueError(
+            "loader is not a valid argument "
+            "for lru_cache, use mo.cache instead."
+        )
+
+    return cast(
+        Union[_cache_call, _cache_context],
+        cache(  # type: ignore[call-overload]
+            arg,
+            *args,
+            pin_modules=pin_modules,
+            loader=MemoryLoader.partial(max_size=maxsize),
+            _frame_offset=2,
+            **kwargs,
+        ),
+    )
+
+
+@overload
+def persistent_cache(
+    name: str,
+    save_path: str | None = None,
+    method: LoaderKey = "pickle",
+    pin_modules: bool = False,
+) -> _cache_context: ...
+
+
+@overload
+def persistent_cache(
+    fn: Optional[Callable[..., Any]] = None,
+    save_path: str | None = None,
+    method: LoaderKey = "pickle",
+    pin_modules: bool = False,
+) -> _cache_call: ...
+
+
+def persistent_cache(  # type: ignore[misc]
+    name: Union[str, Optional[Callable[..., Any]]] = None,
+    save_path: str | None = None,
+    method: LoaderKey = "pickle",
+    store: Optional[Store] = None,
+    fn: Optional[Callable[..., Any]] = None,
+    *args: Any,
+    pin_modules: bool = False,
+    _internal_interface_not_for_external_use: None = None,
+    **kwargs: Any,
+) -> Union[_cache_call, _cache_context]:
+    """## Context manager to save variables to disk and restore them thereafter.
+
+    The `mo.persistent_cache` context manager lets you delimit a block of code
+    in which variables will be cached to disk when they are first computed. On
+    subsequent runs of the cell, if marimo determines that this block of code
+    hasn't changed and neither has its ancestors, it will restore the variables
+    from disk instead of re-computing them, skipping execution of the block
+    entirely.
+
+    Restoration happens even across notebook runs, meaning you can use
+    `mo.persistent_cache` to make notebooks start *instantly*, with variables
+    that would otherwise be expensive to compute already materialized in
+    memory.
+
+    Examples:
+    ```python
+    with persistent_cache(name="my_cache"):
+        variable = expensive_function()  # This will be cached to disk.
+        print("hello, cache")  # this will be skipped on cache hits
+    ```
+
+    In this example, `variable` will be cached the first time the block
+    is executed, and restored on subsequent runs of the block. If cache
+    conditions are hit, the contents of `with` block will be skipped on
+    execution. This means that side-effects such as writing to stdout and
+    stderr will be skipped on cache hits.
+
+    Note that `mo.state` and `UIElement` changes will also trigger cache
+    invalidation, and be accordingly updated.
+
+    **Warning.** Since context abuses sys frame trace, this may conflict with
+    debugging tools or libraries that also use `sys.settrace`.
+
+    ## Decorator for persistently caching the return value of a function.
+
+    `persistent_cache` can also be used as a drop in function-level memoization
+    for `@mo.cache` or `@mo.lru_cache`. This is much slower than cache, but
+    can be useful for saving function values between kernel restarts. For more
+    details, refer to `mo.cache`.
+
+    **Usage.**
+
+    ```python
+    import marimo as mo
+
+
+    @mo.persistent_cache
+    def my_expensive_function():
+        # Do expensive things
+
+    # or
+
+    @mo.persistent_cache(save_path="my/path/to/cache")
+    def my_expensive_function_cached_in_a_certain_location():
+        # Do expensive things
+    ```
+
+    Args:
+        name: the name of the cache, used to set saving path- to manually
+            invalidate the cache, change the name.
+        save_path: the folder in which to save the cache, defaults to
+            `__marimo__/cache` in the directory of the notebook file
+        method: the serialization method to use, current options are "json",
+            and "pickle" (default).
+        store: optional store.
+        fn: the wrapped function if no settings are passed.
+        *args: positional arguments passed to `cache()`
+        pin_modules: if True, the cache will be invalidated if module versions
+            differ between runs, defaults to False.
+        **kwargs: keyword arguments passed to `cache()`
+    """
+
+    arg = name
+    del name
+
+    if {"loader"} & set(kwargs.keys()):
+        raise ValueError(
+            "loader is not a valid argument "
+            "for persistent_cache, use mo.cache instead."
+        )
+    if method not in PERSISTENT_LOADERS:
+        raise ValueError(
+            f"Invalid method {method}, expected one of "
+            f"{PERSISTENT_LOADERS.keys()}"
+        )
+    if save_path is not None and store is not None:
+        raise ValueError(
+            "save_path and store cannot both be provided, "
+            "provide one or the other."
+        )
+
+    # Providing a save_path forces the store to be a FileStore
+    if save_path is not None:
+        store = FileStore(save_path)
+
+    partial_args: dict[str, Any] = {}
+    if store is not None:
+        partial_args["store"] = store
+
+    loader = PERSISTENT_LOADERS[method].partial(**partial_args)
+    # Injection hook for testing
+    if "_loader" in kwargs:
+        loader = kwargs.pop("_loader")
+
+    if fn is not None:
+        raise TypeError("Do not use fn directly, use positional arguments.")
+
+    return cast(
+        Union[_cache_call, _cache_context],
+        cache(  # type: ignore[call-overload]
+            arg,
+            *args,
+            loader=loader,
+            _frame_offset=2,
+            pin_modules=pin_modules,
+            **kwargs,
+        ),
+    )

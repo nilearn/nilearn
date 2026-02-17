@@ -1,0 +1,6 @@
+[console_scripts]
+marimo = marimo._cli.cli:main
+
+[docstring_to_markdown]
+marimo_converter = marimo._utils.docs:MarimoConverter
+

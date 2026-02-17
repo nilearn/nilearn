@@ -1,0 +1,98 @@
+# Copyright 2026 Marimo. All rights reserved.
+"""Functions associated with a graph."""
+
+from __future__ import annotations
+
+import dataclasses
+from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar
+
+from marimo._loggers import marimo_logger
+from marimo._types.ids import CellId_t
+from marimo._utils.parse_dataclass import parse_raw
+
+if TYPE_CHECKING:
+    from collections.abc import Coroutine
+
+LOGGER = marimo_logger()
+
+
+S = TypeVar("S")
+T = TypeVar("T")
+
+
+@dataclasses.dataclass
+class EmptyArgs:
+    """Utility type for functions that take no arguments."""
+
+    ...
+
+
+@dataclasses.dataclass
+class Function(Generic[S, T]):
+    name: str
+    arg_cls: type[S]
+    function: Callable[[S], T] | Callable[[S], Coroutine[Any, Any, T]]
+    cell_id: CellId_t | None
+
+    def __init__(
+        self,
+        name: str,
+        arg_cls: type[S],
+        function: Callable[[S], T],
+    ) -> None:
+        from marimo._runtime.context import safe_get_context
+
+        self.name = name
+        self.arg_cls = arg_cls
+        self.function = function
+
+        ctx = safe_get_context()
+
+        if ctx is not None and ctx.execution_context is not None:
+            self.cell_id = ctx.execution_context.cell_id
+        else:
+            self.cell_id = None
+
+    def __call__(self, args: dict[Any, Any]) -> T | Coroutine[Any, Any, T]:
+        try:
+            return self.function(parse_raw(args, self.arg_cls))
+        except Exception as e:
+            LOGGER.error(f"Error calling function {self.name}: {e}")
+            raise e
+
+
+@dataclasses.dataclass
+class FunctionNamespace:
+    namespace: str
+    functions: dict[str, Function[Any, Any]] = dataclasses.field(
+        default_factory=dict
+    )
+
+    def add(self, function: Function[Any, Any]) -> None:
+        self.functions[function.name] = function
+
+    def get(self, name: str) -> Function[Any, Any] | None:
+        if name in self.functions:
+            return self.functions[name]
+        return None
+
+
+class FunctionRegistry:
+    def __init__(self) -> None:
+        self.namespaces: dict[str, FunctionNamespace] = {}
+
+    def register(self, namespace: str, function: Function[Any, Any]) -> None:
+        if namespace not in self.namespaces:
+            self.namespaces[namespace] = FunctionNamespace(namespace=namespace)
+        self.namespaces[namespace].add(function)
+
+    def get_function(
+        self, namespace: str, function_name: str
+    ) -> Function[Any, Any] | None:
+        if namespace in self.namespaces:
+            return self.namespaces[namespace].get(function_name)
+        return None
+
+    def delete(self, namespace: str) -> None:
+        if namespace in self.namespaces:
+            del self.namespaces[namespace]
