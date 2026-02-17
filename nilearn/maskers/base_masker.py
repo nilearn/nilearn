@@ -38,8 +38,8 @@ from nilearn.image.image import (
     smooth_img,
 )
 from nilearn.image.resampling import resample_img
+from nilearn.maskers._mixin import MaskerReportMixin
 from nilearn.masking import load_mask_img, unmask
-from nilearn.reporting.html_report import ReportMixin
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
@@ -292,7 +292,7 @@ def sanitize_displayed_maps(
 
 @fill_doc
 class _BaseMasker(
-    ReportMixin,
+    MaskerReportMixin,
     TransformerMixin,
     CacheMixin,
     NilearnBaseEstimator,
@@ -339,9 +339,9 @@ class BaseMasker(_BaseMasker):
         if imgs is not None:
             self._check_imgs(imgs)
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 

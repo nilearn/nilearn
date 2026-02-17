@@ -3,6 +3,7 @@
 import itertools
 from copy import deepcopy
 from pathlib import Path
+from typing import Any, ClassVar
 
 import numpy as np
 import pandas as pd
@@ -17,6 +18,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn.image import high_variance_confounds
 from nilearn.image.image import get_indices_from_image, iter_check_niimg
+from nilearn.reporting.html_report import ReportMixin
 from nilearn.surface.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
@@ -371,4 +373,24 @@ class _LabelMaskerMixin:
             sanitize_look_up_table(lut, atlas=labels_img)
             .sort_values("index")
             .reset_index(drop=True)
+        )
+
+
+class MaskerReportMixin(ReportMixin):
+    """A mixin class to be used with masker classes that require reporting
+    functionality.
+    """
+
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "coverage": "",
+        "n_elements": 0,
+        "displayed_maps": [],
+    }
+
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+        # sets implementing class _REPORT_DEFAULTS
+        # updating the base class value with implementing class value
+        cls._REPORT_DEFAULTS = cls._update_defaults(
+            MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
