@@ -484,7 +484,7 @@ def _create_report(
     docstring = estimator._report_info["docstring"]
     parameters = estimator._report_info["parameters"]
 
-    body_tpl_path = f"html/maskers/{estimator._template_name}"
+    body_tpl_path = f"html/masker/{estimator._template_name}"
     body_tpl = env.get_template(body_tpl_path)
 
     body = body_tpl.render(
