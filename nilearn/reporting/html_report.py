@@ -60,6 +60,9 @@ class ReportMixin:
 
     _report_content: ClassVar[dict[str, Any]] = {}
 
+    # report body template name for the estimator
+    _template_name = ""
+
     def _has_report_data(self):
         """
         Check if the model is fitted and _reporting_data is populated.
