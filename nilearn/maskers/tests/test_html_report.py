@@ -557,6 +557,7 @@ def test_surface_maps_masker_generate_report_engine_no_plotly_warning(
     assert masker._report_content["engine"] == "matplotlib"
 
 
+@pytest.mark.thread_unsafe
 def test_surface_maps_masker_generate_report_before_transform_warn(
     matplotlib_pyplot,  # noqa: ARG001
     surf_maps_img,

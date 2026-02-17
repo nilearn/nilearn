@@ -159,6 +159,8 @@
 
 .. _Jordi Huguet: https://github.com/jhuguetn
 
+.. _Joseph Paillard: https://github.com/jpaillard
+
 .. _Joshua Teves: https://github.com/jbteves
 
 .. _Julia Huntenburg: https://github.com/juhuntenburg

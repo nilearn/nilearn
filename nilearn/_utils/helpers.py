@@ -238,7 +238,7 @@ def stringify_path(path):
     return path.__fspath__() if isinstance(path, os.PathLike) else path
 
 
-def is_matplotlib_installed():
+def is_matplotlib_installed() -> bool:
     """Check if matplotlib is installed."""
     try:
         import matplotlib  # noqa: F401
@@ -262,7 +262,7 @@ def check_matplotlib() -> None:
         )
 
 
-def is_plotly_installed():
+def is_plotly_installed() -> bool:
     """Check if plotly is installed."""
     try:
         import plotly.graph_objects as go  # noqa: F401
@@ -271,7 +271,7 @@ def is_plotly_installed():
     return True
 
 
-def is_kaleido_installed():
+def is_kaleido_installed() -> bool:
     """Check if kaleido is installed."""
     try:
         import kaleido  # noqa: F401
@@ -280,19 +280,19 @@ def is_kaleido_installed():
     return True
 
 
-def is_windows_platform():
+def is_windows_platform() -> bool:
     """Check if the current platform is Windows."""
     return os.name == "nt"
 
 
-def is_gil_enabled():
+def is_gil_enabled() -> bool:
     """Check if the Python GIL is enabled."""
     try:
-        sys._is_gil_enabled()
+        return sys._is_gil_enabled()  # type: ignore[attr-defined]
     except AttributeError:
         # sys._is_gil_enabled does not exist in standard Python builds
         return True
 
 
-def is_sphinx_build():
+def is_sphinx_build() -> bool:
     return any(module.startswith("sphinx.") for module in sys.modules)

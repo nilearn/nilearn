@@ -293,7 +293,7 @@ def test_nifti_maps_masker_resampling_to_mask(
     with warnings.catch_warnings(record=True) as warning_list:
         signals = masker.fit_transform(img_fmri)
         assert not any(
-            "consider using nearest interpolation instead" in x.message
+            "consider using nearest interpolation instead" in str(x)
             for x in warning_list
         )
 

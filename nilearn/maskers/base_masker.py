@@ -44,17 +44,6 @@ from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
 
-STANDARIZE_WARNING_MESSAGE = (
-    "The 'zscore' strategy incorrectly "
-    "uses population std to calculate sample zscores. "
-    "The new strategy 'zscore_sample' corrects this "
-    "behavior by using the sample std. "
-    "In release 0.14.0, the 'zscore' option will be removed "
-    "and using standardize=True will fall back "
-    "to 'zscore_sample'."
-    "To avoid this warning, please use 'zscore_sample' instead."
-)
-
 
 def filter_and_extract(
     imgs,
@@ -418,6 +407,39 @@ class BaseMasker(_BaseMasker):
         tags.estimator_type = "masker"
         return tags
 
+    def _get_masker_params(self, ignore: None | list[str] = None, deep=False):
+        """Get parameters for this masker.
+
+        Very similar to the BaseEstimator.get_params() from sklearn
+        but allows to avoid returning some keys.
+
+        Parameters
+        ----------
+        ignore : None or list of strings
+            Names of the parameters that are not returned.
+
+        deep : bool, default=True
+            If True, will return the parameters for this estimator
+            and contained subobjects that are estimators.
+
+        Returns
+        -------
+        params : dict
+            The dict of parameters.
+
+        """
+        _ignore = {"memory", "memory_level", "verbose", "copy", "n_jobs"}
+        if ignore is not None:
+            _ignore.update(ignore)
+
+        params = {
+            k: v
+            for k, v in super().get_params(deep=deep).items()
+            if k not in _ignore
+        }
+
+        return params
+
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
 
@@ -473,21 +495,23 @@ class BaseMasker(_BaseMasker):
         check_is_fitted(self)
         self._check_imgs(imgs)
 
-        if (self.standardize == "zscore") or (self.standardize is True):
-            # TODO (nilearn >= 0.14.0) remove or adapt warning
+        if self.standardize in [True, False]:
+            # TODO (nilearn >= 0.15.0) remove warning
             warnings.warn(
                 category=FutureWarning,
-                message=STANDARIZE_WARNING_MESSAGE,
+                message=(
+                    "boolean values for 'standardize' "
+                    "will be deprecated in nilearn 0.15.0.\n"
+                    "Use 'zscore_sample' instead of 'True' or "
+                    "use 'None' instead of 'False'."
+                ),
                 stacklevel=find_stack_level(),
             )
 
         if confounds is None and not self.high_variance_confounds:
-            # TODO (Nilearn >= 0.14.0) remove ignore FutureWarning
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", category=FutureWarning)
-                return self.transform_single_imgs(
-                    imgs, confounds=confounds, sample_mask=sample_mask
-                )
+            return self.transform_single_imgs(
+                imgs, confounds=confounds, sample_mask=sample_mask
+            )
 
         # Compute high variance confounds if requested
         all_confounds = []
@@ -500,12 +524,9 @@ class BaseMasker(_BaseMasker):
             else:
                 all_confounds.append(confounds)
 
-        # TODO (Nilearn >= 0.14.0) remove ignore FutureWarning
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=FutureWarning)
-            return self.transform_single_imgs(
-                imgs, confounds=all_confounds, sample_mask=sample_mask
-            )
+        return self.transform_single_imgs(
+            imgs, confounds=all_confounds, sample_mask=sample_mask
+        )
 
     @fill_doc
     def fit_transform(
@@ -719,11 +740,16 @@ class _BaseSurfaceMasker(_BaseMasker):
             )
             self.smoothing_fwhm = None
 
-        if (self.standardize == "zscore") or (self.standardize is True):
-            # TODO (nilearn >= 0.14.0) remove or adapt warning
+        if self.standardize in [True, False]:
+            # TODO (nilearn >= 0.15.0) remove warning
             warnings.warn(
                 category=FutureWarning,
-                message=STANDARIZE_WARNING_MESSAGE,
+                message=(
+                    "boolean values for 'standardize' "
+                    "will be deprecated in nilearn 0.15.0.\n"
+                    "Use 'zscore_sample' instead of 'True' or "
+                    "use 'None' instead of 'False'."
+                ),
                 stacklevel=find_stack_level(),
             )
 
@@ -751,12 +777,9 @@ class _BaseSurfaceMasker(_BaseMasker):
             else:
                 all_confounds.append(confounds)
 
-        # TODO (Nilearn >= 0.14.0) remove ignore FutureWarning
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=FutureWarning)
-            signals = self.transform_single_imgs(
-                imgs, confounds=all_confounds, sample_mask=sample_mask
-            )
+        signals = self.transform_single_imgs(
+            imgs, confounds=all_confounds, sample_mask=sample_mask
+        )
 
         sklearn_output_config = getattr(self, "_sklearn_output_config", None)
 
@@ -889,3 +912,24 @@ class _BaseSurfaceMasker(_BaseMasker):
     def _set_contour_colors(self, hemi):
         """Set the colors for the contours in the report."""
         del hemi
+
+    def _clean(
+        self, region_signals: np.ndarray, confounds, sample_mask
+    ) -> np.ndarray:
+        """Clean extracted signal before \
+            returning it at the end of transform.
+        """
+        mask_logger("cleaning", verbose=self.verbose)
+        region_signals = self._cache(clean, func_memory_level=2)(
+            region_signals,
+            detrend=self.detrend,
+            standardize=self.standardize,
+            standardize_confounds=self.standardize_confounds,
+            t_r=self.t_r,
+            low_pass=self.low_pass,
+            high_pass=self.high_pass,
+            confounds=confounds,
+            sample_mask=sample_mask,
+            **self.clean_args_,
+        )
+        return region_signals
