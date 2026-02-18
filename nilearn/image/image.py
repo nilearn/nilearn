@@ -434,14 +434,7 @@ def smooth_img(imgs, fwhm):
     if is_surface:
         for img in imgs:
             iterations = _mris_fwhm_to_niters(fwhm, img)
-            ret.append(
-                _smooth_surface_img(
-                    img,
-                    iterations,
-                    distance_weights=False,
-                    center_surround_knob=0,
-                )
-            )
+            ret.append(_smooth_surface_img(img,iterations))
 
     else:
         for img in imgs:
@@ -462,8 +455,6 @@ def smooth_img(imgs, fwhm):
 def _smooth_surface_img(
     img: SurfaceImage,
     iterations: list[int],
-    distance_weights: bool = False,
-    center_surround_knob=0,
 ):
     """Smooth values along the surface.
 
@@ -478,28 +469,6 @@ def _smooth_surface_img(
         (it must be a positive value).
         One value per mesh in the image.
 
-    distance_weights : :obj:`bool`, default = False
-        Whether to add distance-based weighting to the smoothing.
-        With such weights, the value calculated for each vertex
-        at each iteration is the weighted sum of neighboring vertices
-        where the weight on each neighbor is the inverse
-        of the distances to it.
-
-    center_surround_knob : :obj:`float`, default = 0
-        The relative weighting of the center and the surround
-        in each iteration of the smoothing.
-        If the value of the knob is `k`,
-        then the total weight of vertices that are neighbors
-        of a given vertex (the vertex's surround)
-        is `2**k` times the weight of the vertex itself (the center).
-        A value of 0 (the default) means that, in each smoothing iteration,
-        each vertex is updated with the average of its value
-        and the average value of its neighbors.
-        A value of `-inf` results in no smoothing because the entire
-        weight is on the center, so each vertex is updated with its own value.
-        A value of `inf` results in each vertex being updated
-        with the average of its neighbors without including its own value.
-
     Returns
     -------
     smoothed_imgs : SurfaceImage
@@ -508,16 +477,11 @@ def _smooth_surface_img(
     """
     # First, calculate the center and surround weights for the
     # center-surround knob.
-    center_weight = 1 / (1 + np.exp2(center_surround_knob))
+    center_weight = .5
     surround_weight = 1 - center_weight
-    if surround_weight == 0:
-        # There's nothing to do in this case.
-        return new_img_like(img, img.data)
 
     # Calculate the adjacency matrix either weighting
     # by inverse distance or not weighting (ones)
-    values = "invlen" if distance_weights else "ones"
-
     new_data = {}
     for hemi, n_iter in zip(img.mesh.parts, iterations, strict=False):
         mesh = img.mesh.parts[hemi]
@@ -527,7 +491,7 @@ def _smooth_surface_img(
             new_data[hemi] = data
             continue
 
-        matrix = compute_adjacency_matrix(mesh, values=values)
+        matrix = compute_adjacency_matrix(mesh, values="ones")
 
         # We need to normalize the matrix columns, and we can do this now by
         # normalizing everything but the diagonal to the surround weight, then
