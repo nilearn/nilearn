@@ -1,7 +1,6 @@
 """Neuroimaging file input and output."""
 
 import collections.abc
-import gc
 from copy import deepcopy
 from pathlib import Path
 from warnings import warn
@@ -9,7 +8,7 @@ from warnings import warn
 import numpy as np
 from nibabel import Nifti1Image, is_proxy, load, spatialimages
 
-from nilearn._utils.helpers import is_gil_enabled, stringify_path
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 
 
