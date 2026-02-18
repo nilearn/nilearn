@@ -7,7 +7,7 @@ Leverage GPUs for your neuroimaging machine-learning pipeline
 Nilearn is dependent on scikit-learn for its machine learning tools.
 With the recent developments in scikit-learn, there is now
 :sklearn:`a growing list of estimators <modules/array_api.html#support-for-array-api-compatible-inputs>`
-that support GPU acceleration via the Array API.
+that support GPU acceleration via the `Array API <https://data-apis.org/array-api>`.
 
 This means that you can now also use GPUs to speed up your neuroimaging
 machine-learning pipelines in nilearn.
