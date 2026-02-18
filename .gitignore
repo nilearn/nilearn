@@ -42,6 +42,7 @@ build
 dist/
 nilearn/_version.py
 
+
 # notebooks
 .ipynb_checkpoints
 
@@ -80,6 +81,8 @@ doc/modules/generated_reports/*.html
 doc/modules/description
 doc/sg_execution_times.rst
 doc/themes/nilearn/static/jquery.js
+doc/jupyterlite_contents/
+doc/tmp.html
 log.txt
 build.txt
 pattern.txt
