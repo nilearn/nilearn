@@ -411,9 +411,9 @@ def smooth_img(imgs, fwhm):
 
     Returns
     -------
-    smoothed input image or list of smoothed input image.
-        If `imgs` is an iterable then the output is a list.
-
+    Niimg-like object, :obj:~nilearn.surface.SurfaceImage.
+    Smoothed input image or surface.
+    
     """
     is_surface = False
     single_img = True
