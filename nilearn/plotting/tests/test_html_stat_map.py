@@ -461,6 +461,13 @@ def test_view_img_4d_warnings(params):
     check_html_view_img(html_view)
 
 
+def test_view_img_non_isotropic():
+    """Smoke test for non-isotropic images."""
+    img = _img_3d_rand(affine=np.diag([2, 3, 4, 1]))
+    html_view = view_img(img)
+    check_html_view_img(html_view)
+
+
 @pytest.mark.parametrize(
     "affine,is_isotropic",
     [
