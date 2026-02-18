@@ -24,11 +24,13 @@ run = labels["chunks"]
 # Define our own MVPA estimator for use in SearchLight
 from sklearn.base import BaseEstimator
 
+
 class CorrelationMVPA(BaseEstimator):
     """Haxby-style correlation MVPA score for a pair of labels.
 
     Computes (within - between)/2 using run splits provided in `groups`.
     """
+
     nilearn_searchlight_uses_cv = False
 
     def __init__(self, labels=("face", "house"), split="parity", fisher_z=True):
@@ -57,7 +59,7 @@ class CorrelationMVPA(BaseEstimator):
         groups = np.asarray(groups)
 
         if self.split == "parity":
-            g1 = (groups % 2 == 0)
+            g1 = groups % 2 == 0
             g2 = ~g1
         else:
             raise ValueError("Only split='parity' implemented here.")
@@ -68,8 +70,10 @@ class CorrelationMVPA(BaseEstimator):
                 return None
             return X[sel].mean(axis=0)
 
-        A1 = mean_pattern(a, g1); A2 = mean_pattern(a, g2)
-        B1 = mean_pattern(b, g1); B2 = mean_pattern(b, g2)
+        A1 = mean_pattern(a, g1)
+        A2 = mean_pattern(a, g2)
+        B1 = mean_pattern(b, g1)
+        B2 = mean_pattern(b, g2)
         if any(v is None for v in (A1, A2, B1, B2)):
             self.score_ = float("nan")
             return self
@@ -88,6 +92,7 @@ class CorrelationMVPA(BaseEstimator):
     def score(self, X, y=None, groups=None):
         # SearchLight can call this after fit
         return self.score_
+
 
 # %%
 # Restrict to faces and houses
