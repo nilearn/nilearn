@@ -434,7 +434,7 @@ def smooth_img(imgs, fwhm):
     if is_surface:
         for img in imgs:
             iterations = _mris_fwhm_to_niters(fwhm, img)
-            ret.append(_smooth_surface_img(img,iterations))
+            ret.append(_smooth_surface_img(img, iterations))
 
     else:
         for img in imgs:
@@ -477,7 +477,7 @@ def _smooth_surface_img(
     """
     # First, calculate the center and surround weights for the
     # center-surround knob.
-    center_weight = .5
+    center_weight = 0.5
     surround_weight = 1 - center_weight
 
     # Calculate the adjacency matrix either weighting

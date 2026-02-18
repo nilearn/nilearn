@@ -45,8 +45,8 @@ from nilearn.exceptions import DimensionError
 from nilearn.image.image import (
     _crop_img_to,
     _fast_smooth_array,
-    _smooth_surface_img,
     _mris_fwhm_to_niters,
+    _smooth_surface_img,
     binarize_img,
     check_niimg,
     check_niimg_3d,
@@ -438,7 +438,7 @@ def test_smooth_list_img_surface(surf_img_1d):
     assert isinstance(smoothed_img, list)
     assert all(isinstance(x, SurfaceImage) for x in smoothed_img)
     assert_array_almost_equal(
-        get_surface_data(smoothed_img[1]),get_surface_data(smooth_ref)
+        get_surface_data(smoothed_img[1]), get_surface_data(smooth_ref)
     )
 
 
@@ -460,7 +460,7 @@ def test_smooth_surface_img(surf_img_1d):
 
 
 def test_smooth_surface_niter(surf_img_1d):
-    """Control the number of iterations"""
+    """Control the number of iterations."""
     n5 = _mris_fwhm_to_niters(5, surf_img_1d)
     assert n5 == [16, 14]
 
