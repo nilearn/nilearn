@@ -16,7 +16,6 @@ import re
 import sys
 import warnings
 from pathlib import Path
-import sklearn
 
 from nilearn._version import __version__  # noqa : I001, RUF100
 from sphinx.domains import changeset
@@ -505,9 +504,9 @@ def notebook_modification_function(notebook_content, notebook_filename):
 
     message_class = "warning"
     message = (
-        "Running the scikit-learn examples in JupyterLite is experimental and you may"
+        "Running the nilearn examples in JupyterLite is experimental and you may"
         " encounter some unexpected behavior.\n\nThe main difference is that imports"
-        " will take a lot longer than usual, for example the first `import sklearn` can"
+        " will take a lot longer than usual, for example the first `import nilearn` can"
         " take roughly 10-20s.\n\nIf you notice problems, feel free to open an"
         " [issue](https://github.com/nilearn/nilearn/issues/new/choose)"
         " about it."
@@ -542,7 +541,7 @@ def notebook_modification_function(notebook_content, notebook_filename):
 
     # Work around https://github.com/jupyterlite/pyodide-kernel/issues/166
     # and https://github.com/pyodide/micropip/issues/223 by installing the
-    # dependencies first, and then scikit-learn from Anaconda.org.
+    # dependencies first, and then nilearn from Anaconda.org.
 
     if code_lines:
         code_lines = ["# JupyterLite-specific code"] + code_lines
