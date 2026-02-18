@@ -493,7 +493,7 @@ sphinx_gallery_conf = {
 }
 
 
-def notebook_modification_function(notebook_content):
+def notebook_modification_function(notebook_content, notebook_filename):  # noqa : ARG001
     notebook_content_str = str(notebook_content)
     warning_template = (
         "\n"
