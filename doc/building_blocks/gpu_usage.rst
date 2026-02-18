@@ -7,7 +7,7 @@ Leverage GPUs for your neuroimaging machine-learning pipeline
 Nilearn is dependent on scikit-learn for its machine learning tools.
 With the recent developments in scikit-learn, there is now
 :sklearn:`a growing list of estimators <modules/array_api.html#support-for-array-api-compatible-inputs>`
-that support GPU acceleration via the `Array API <https://data-apis.org/array-api>`.
+that support GPU acceleration via the `Array API <https://data-apis.org/array-api>`_.
 
 This means that you can now also use GPUs to speed up your neuroimaging
 machine-learning pipelines in nilearn.
@@ -45,16 +45,7 @@ you would also need to do the following:
 
 
 Now we can proceed to load and prepare the data just as in the original
-example. You must make sure that the shape of variables ``fmri_data`` and
-``stimuli`` is the same:
-
-.. literalinclude:: ../../examples/02_decoding/plot_miyawaki_encoding.py
-    :start-after: # fmri_data is a matrix of *samples* x *voxels*
-    :end-before: # %%
-
-.. literalinclude:: ../../examples/02_decoding/plot_miyawaki_encoding.py
-    :start-after: # Flatten the stimuli
-    :end-before: # %%
+example: :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`.
 
 Time the original CPU version of the code
 =========================================
