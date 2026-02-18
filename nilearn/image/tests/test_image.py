@@ -46,6 +46,7 @@ from nilearn.image.image import (
     _crop_img_to,
     _fast_smooth_array,
     _smooth_surface_img,
+    _mris_fwhm_to_niters,
     binarize_img,
     check_niimg,
     check_niimg_3d,
@@ -456,6 +457,12 @@ def test_smooth_surface_img(surf_img_1d):
         assert not np.array_equal(
             more_smoothed_imgs.data.parts[part], smoothed_imgs.data.parts[part]
         )
+
+
+def test_smooth_surface_niter(surf_img_1d):
+    """Control the number of iterations"""
+    n5 = _mris_fwhm_to_niters(5, surf_img_1d)
+    assert n5 == [16, 14]
 
 
 def test_smooth_surface_img_center_surround_knob_minus_inf(surf_img_1d):
