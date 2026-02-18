@@ -423,9 +423,6 @@ def smooth_img(imgs, fwhm):
     if isinstance(imgs, SurfaceImage):
         is_surface = True
     elif hasattr(imgs, "__iter__") and not isinstance(imgs, str):
-        # Use hasattr() instead of isinstance
-        # to workaround a Python 2.6/2.7 bug
-        # See http://bugs.python.org/issue7624
         single_img = False
         if all(isinstance(x, SurfaceImage) for x in imgs):
             is_surface = True

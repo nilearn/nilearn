@@ -427,13 +427,18 @@ def test_smooth_img_surface(surf_img_1d):
 
     assert data.max() > smoothed_data.max()
     assert data.min() < smoothed_data.min()
+    assert data.var() > smoothed_data.var()
 
 
 def test_smooth_list_img_surface(surf_img_1d):
     """Test smoothing list surface images."""
+    smooth_ref = smooth_img(surf_img_1d, fwhm=5)
     smoothed_img = smooth_img([surf_img_1d, surf_img_1d], fwhm=5)
     assert isinstance(smoothed_img, list)
     assert all(isinstance(x, SurfaceImage) for x in smoothed_img)
+    assert_array_almost_equal(
+        get_surface_data(smoothed_img[1]),get_surface_data(smooth_ref)
+    )
 
 
 def test_smooth_surface_img(surf_img_1d):
