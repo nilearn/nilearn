@@ -206,11 +206,18 @@ def _group_iter_search_light(
                 )  # Ensure the size matches X
                 par_scores[i] = np.mean(estimator.decision_function(X[:, row]))
             else:
-                par_scores[i] = np.mean(
-                    cross_val_score(
-                        estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs
+                use_cv = getattr(estimator, "nilearn_searchlight_uses_cv", True)
+
+                if not use_cv:
+                    estimator.fit(X[:, row], y, groups=groups)
+                    # either estimator.score(...) OR estimator.score_ attribute
+                    par_scores[i] = estimator.score(X[:, row], y, groups=groups)
+                else:
+                    par_scores[i] = np.mean(
+                        cross_val_score(
+                            estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs
+                        )
                     )
-                )
 
         if verbose > 0:
             # One can't print less than each 10 iterations
