@@ -61,11 +61,6 @@ def safe_get_data(
     if not img.in_memory or copy_data:
         img = deepcopy(img)
 
-    if is_gil_enabled():
-        # typically the line below can double memory usage
-        # that's why we invoke a forced call to the garbage collector
-        gc.collect()
-
     data = _get_data(img)
 
     if ensure_finite:
