@@ -498,7 +498,7 @@ def notebook_modification_function(notebook_content, notebook_filename):  # noqa
     warning_template = (
         "\n"
         "<div class='alert alert-{message_class}'>"
-        "# JupyterLite warning {message}</div>",
+        "# JupyterLite warning {message}</div>"
     )
 
     message_class = "warning"
