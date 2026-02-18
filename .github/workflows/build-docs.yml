@@ -307,7 +307,7 @@ jobs:
             if: always()
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
+                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
 
     # Steps to build the documentation.
     build_docs:
