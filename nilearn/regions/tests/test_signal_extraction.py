@@ -802,6 +802,7 @@ def test_img_to_signals_labels_non_float_type(target_dtype, rng):
     assert np.allclose(timeseries_int, timeseries_float)
 
 
+@pytest.mark.single_process
 def test_img_to_signals_labels_parallel_extraction():
     shape = (4, 5, 6)
     n_regions = 16
