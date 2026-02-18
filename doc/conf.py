@@ -17,7 +17,7 @@ import sys
 import warnings
 from pathlib import Path
 
-from nilearn._version import __version__  # noqa : I001, RUF100
+from nilearn._version import __version__
 from sphinx.domains import changeset
 from sphinx.locale import _
 
