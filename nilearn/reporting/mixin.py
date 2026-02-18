@@ -93,7 +93,6 @@ class ReportMixin:
 
     def _reset_report(self):
         self._report_content = deepcopy(self._REPORT_DEFAULTS)
-        self._report_info = {}
 
         if self._has_report_data():
             del self._reporting_data
@@ -290,19 +289,19 @@ class ReportMixin:
 
         report_content["has_plotting_engine"] = is_matplotlib_installed()
 
-        report_info = self._report_info
-
         # TODO clean up docstring from RST formatting
         if self.__doc__ is not None:
-            report_info["docstring"] = self.__doc__.split("Parameters\n")[0]
+            report_content["docstring"] = self.__doc__.split("Parameters\n")[0]
         else:
-            report_info["docstring"] = ""
+            report_content["docstring"] = ""
 
-        report_info["parameters"] = self._model_params_to_html()
+        report_content["parameters"] = self._model_params_to_html()
 
-        report_info["date"] = datetime.now().replace(microsecond=0).isoformat()
+        report_content["date"] = (
+            datetime.now().replace(microsecond=0).isoformat()
+        )
 
-        report_info["version"] = __version__
+        report_content["version"] = __version__
 
     def generate_report(self, title: str | None = None) -> HTMLReport:
         """Generate an HTML report for this estimator.
@@ -344,20 +343,15 @@ class ReportMixin:
         tested if estimator._report_content can safely be reset after report
         generation is completed.
         """
-        page_title = self._report_info.get(
+        page_title = self._report_content.get(
             "page_title", self.__class__.__name__
         )
 
-        estimator_type = self._report_info.get("estimator_type", "")
+        estimator_type = self._report_content.get("estimator_type", "")
         body_tpl = self._get_body_template(estimator_type)
 
-        report = ReportMixin._update_defaults(
-            self._report_content, self._report_info
-        )
-        body = body_tpl.render(**report)
+        body = body_tpl.render(**self._report_content)
 
-        # clear report_info
-        self._report_info.clear()
         return assemble_report(body, page_title)
 
     @abc.abstractmethod

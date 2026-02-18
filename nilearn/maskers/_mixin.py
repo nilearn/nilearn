@@ -408,17 +408,16 @@ class MaskerReportMixin(ReportMixin):
                 report_content["overlay"]
             )
 
-        report_info = self._report_info
-        report_info["page_title"] = f"{report_content['title']} report"
-        report_info["estimator_type"] = self._estimator_type
+        report_content["page_title"] = f"{report_content['title']} report"
+        report_content["estimator_type"] = self._estimator_type
 
     def _generate_report_data(self):
-        report_info = self._report_info
-        report_info["summary_html"] = self._get_summary_html()
+        report_content = self._report_content
+        report_content["summary_html"] = self._get_summary_html()
         figure, embeded_images = self._create_partial_figures()
 
-        report_info["figure"] = figure
-        report_info["content"] = embeded_images
+        report_content["figure"] = figure
+        report_content["content"] = embeded_images
 
     def _create_partial_figures(self):
         """Create partial image htmls Using partial template for masker
