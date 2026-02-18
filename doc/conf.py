@@ -521,14 +521,8 @@ def notebook_modification_function(notebook_content):
 
     code_lines = []
 
-    if "seaborn" in notebook_content_str:
-        code_lines.append("%pip install seaborn")
     if "plotly.express" in notebook_content_str:
         code_lines.append("%pip install plotly nbformat")
-    if "skimage" in notebook_content_str:
-        code_lines.append("%pip install scikit-image")
-    if "polars" in notebook_content_str:
-        code_lines.append("%pip install polars")
     if "fetch_" in notebook_content_str:
         code_lines.extend(
             [
