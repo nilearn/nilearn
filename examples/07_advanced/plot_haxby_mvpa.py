@@ -1,3 +1,20 @@
+"""
+SearchLight MVPA with a custom correlation estimator on Haxby data
+===================================================================
+
+This tutorial example shows how to use :class:`nilearn.decoding.SearchLight`
+with a user-defined scikit-learn compatible estimator.
+
+The workflow is:
+
+1. Load the Haxby dataset and keep only ``face`` and ``house`` trials.
+2. Define a custom ``CorrelationMVPA`` estimator that computes the
+   Haxby-style correlation contrast
+   ``(within-category similarity - between-category similarity) / 2``
+   across run splits.
+3. Run a whole-brain SearchLight with this estimator.
+4. Visualize the resulting score map.
+"""
 # %%
 # Load Haxby dataset
 # ------------------
@@ -33,7 +50,12 @@ class CorrelationMVPA(BaseEstimator):
 
     nilearn_searchlight_uses_cv = False
 
-    def __init__(self, labels=("face", "house"), split="parity", fisher_z=True):
+    def __init__(
+        self, 
+        labels=("face", "house"), 
+        split="parity", 
+        fisher_z=True
+    ):
         self.labels = labels
         self.split = split
         self.fisher_z = fisher_z
@@ -51,6 +73,29 @@ class CorrelationMVPA(BaseEstimator):
         return float(np.dot(a, b) / denom)
 
     def fit(self, X, y, groups=None):
+        """Fit the estimator and store a single correlation-based score.
+
+        Parameters
+        ----------
+        X : ndarray of shape (n_samples, n_features)
+            Input data matrix for one SearchLight sphere. Rows are samples
+            (volumes) and columns are voxel features in the sphere.
+
+        y : array-like of shape (n_samples,)
+            Condition labels for each sample. Must contain both labels
+            specified in ``self.labels``.
+
+        groups : array-like of shape (n_samples,), default=None
+            Run/chunk assignment per sample. Required to create two splits
+            (currently parity-based: even runs vs odd runs).
+
+        Returns
+        -------
+        self : CorrelationMVPA
+            Fitted estimator with ``score_`` set to the MVPA contrast.
+            If any required condition/split combination is missing,
+            ``score_`` is set to ``NaN``.
+        """
         if groups is None:
             raise ValueError("groups (runs/chunks) are required for CorrelationMVPA.")
 
