@@ -439,20 +439,12 @@ def test_nifti_maps_masker_transform_resample_warning(img_fmri):
     masker = NiftiMapsMasker(maps_img, resampling_target="data")
 
     # Images have different fov between fit and transform
-    with warnings.catch_warnings(record=True) as warning_list:
-        masker.fit(maps_img)
+    masker.fit(maps_img)
+    with pytest.warns(UserWarning, match="Resampling maps at transform time..."):
         masker.transform(img_fmri)
-        assert any(
-            "Resampling maps at transform time..." in str(x.message)
-            for x in warning_list
-        )
 
     # Same fov between fit and transform, but resampling_target="maps"
     masker = NiftiMapsMasker(maps_img, resampling_target="maps")
 
-    with warnings.catch_warnings(record=True) as warning_list:
+    with pytest.warns(UserWarning, match="Resampling maps at transform time..."):
         masker.fit_transform(img_fmri)
-        assert any(
-            "Resampling images at transform time..." in str(x.message)
-            for x in warning_list
-        )
