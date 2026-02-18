@@ -137,3 +137,8 @@ And then run the same grid search as before:
 
     # CPU times: user 38.2 s, sys: 46.5 ms, total: 38.3 s
     # Wall time: 38.5 s
+
+So overall we see about a 70-80% reduction in execution time when using GPU
+acceleration in this case. However note that the exact speedup you get may
+depend on the specific GPU you have, the size of your data and the kind of
+analysis you are doing.
