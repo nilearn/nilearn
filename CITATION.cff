@@ -819,3 +819,9 @@ authors:
     family-names: Nájera
     website: https://github.com/Titan-C
     affiliation: Checkmk
+  - given-names: Hugo
+    family-names: Delhaye
+    website: https://github.com/HugoDelhaye
+    affiliation: SIMEXP, Université de Montréal, Montréal, Canada
+    email : hugo.delhaye@umontreal.ca
+    orcid: https://orcid.org/0009-0002-8540-6394
