@@ -533,7 +533,7 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
     if fwhm is None:
         fwhm = 0
     # Convert FWHM to standard deviation of Gaussian kernel
-    G_STD = fwhm / math.sqrt(math.log(256.0))
+    std_kernel = fwhm / math.sqrt(math.log(256.0))
 
     niters = []
     for mesh in img.mesh.parts.values():
