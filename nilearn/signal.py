@@ -721,7 +721,7 @@ def clean(
         if low_pass is not None:
             warnings.warn(
                 "low_pass is not implemented for filter='cosine'",
-                stacklevel=2,
+                stacklevel=find_stack_level()
             )
 
     # Interpolation / censoring
