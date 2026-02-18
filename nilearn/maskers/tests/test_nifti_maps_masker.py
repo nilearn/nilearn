@@ -449,6 +449,6 @@ def test_nifti_maps_masker_transform_resample_warning(img_fmri):
     masker = NiftiMapsMasker(maps_img, resampling_target="maps")
 
     with pytest.warns(
-        UserWarning, match="Resampling maps at transform time..."
+        UserWarning, match="Resampling images at transform time..."
     ):
         masker.fit_transform(img_fmri)
