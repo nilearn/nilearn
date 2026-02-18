@@ -17,11 +17,11 @@ import sys
 import warnings
 from pathlib import Path
 
+from nilearn._version import __version__
 from sphinx.domains import changeset
 from sphinx.locale import _
 from sphinx_gallery.notebook import add_code_cell, add_markdown_cell
 
-from nilearn._version import __version__  # noqa : I001, RUF100
 
 # ----------------------------------------------------------------------------
 
