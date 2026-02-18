@@ -800,3 +800,29 @@ def test_img_to_signals_labels_non_float_type(target_dtype, rng):
 
     assert np.sum(timeseries_int) != 0
     assert np.allclose(timeseries_int, timeseries_float)
+
+
+def test_img_to_signals_labels_parallel_extraction():
+    shape = (4, 5, 6)
+    n_regions = 16
+    length = 8
+
+    # Generate labels
+    labels = list(range(n_regions + 1))  # 0 is background
+    labels_img = generate_labeled_regions(shape, n_regions, labels=labels)
+
+    # Generate fake data
+    fmri_img, _ = generate_fake_fmri(
+        shape=shape, length=length, affine=labels_img.affine
+    )
+
+    expected_labels_signals, expected_labels_labels, _ = img_to_signals_labels(
+        fmri_img, labels_img
+    )
+
+    # Test with n_jobs > 1
+    labels_signals, labels_labels, _ = img_to_signals_labels(
+        fmri_img, labels_img, n_jobs=2
+    )
+    np.testing.assert_almost_equal(labels_signals, expected_labels_signals)
+    assert np.allclose(labels_labels, expected_labels_labels)
