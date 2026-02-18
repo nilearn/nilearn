@@ -25,7 +25,7 @@ scikit-learn to run the code here:
 
 .. code-block:: bash
 
-    pip install -q -U --pre --extra-index https://pypi.anaconda.org/scientific-python-nightly-wheels/simple scikit-learn
+    pip install -U scikit-learn==1.8
 
 In addition, you need to either `install CuPy
 <https://docs.cupy.dev/en/stable/install.html>`_ or
