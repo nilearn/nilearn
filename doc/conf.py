@@ -17,10 +17,11 @@ import sys
 import warnings
 from pathlib import Path
 
-from nilearn._version import __version__  # noqa : I001, RUF100
 from sphinx.domains import changeset
 from sphinx.locale import _
 from sphinx_gallery.notebook import add_code_cell, add_markdown_cell
+
+from nilearn._version import __version__  # noqa : I001, RUF100
 
 # ----------------------------------------------------------------------------
 
@@ -101,11 +102,13 @@ try:
     extensions.append("jupyterlite_sphinx")
     with_jupyterlite = True
 except ImportError:
-    # In some cases we don't want to require jupyterlite_sphinx to be installed,
+    # In some cases we don't want to require jupyterlite_sphinx
+    # to be installed,
     # e.g. the doc-min-dependencies build
     warnings.warn(
         "jupyterlite_sphinx is not installed, you need to install it "
-        "if you want JupyterLite links to appear in each example"
+        "if you want JupyterLite links to appear in each example",
+        stacklevel=2,
     )
     with_jupyterlite = False
 
@@ -489,30 +492,29 @@ sphinx_gallery_conf = {
     "within_subsection_order": "ExampleTitleSortKey",
 }
 
-def notebook_modification_function(notebook_content, notebook_filename):
+
+def notebook_modification_function(notebook_content):
     notebook_content_str = str(notebook_content)
-    warning_template = "\n".join(
-        [
-            "<div class='alert alert-{message_class}'>",
-            "",
-            "# JupyterLite warning",
-            "",
-            "{message}",
-            "</div>",
-        ]
+    warning_template = (
+        "\n"
+        "<div class='alert alert-{message_class}'>"
+        "# JupyterLite warning {message}</div>",
     )
 
     message_class = "warning"
     message = (
-        "Running the nilearn examples in JupyterLite is experimental and you may"
-        " encounter some unexpected behavior.\n\nThe main difference is that imports"
-        " will take a lot longer than usual, for example the first `import nilearn` can"
-        " take roughly 10-20s.\n\nIf you notice problems, feel free to open an"
-        " [issue](https://github.com/nilearn/nilearn/issues/new/choose)"
-        " about it."
+        "Running the nilearn examples in JupyterLite is experimental"
+        " and you may encounter some unexpected behavior.\n\n"
+        " The main difference is that imports will take a lot longer"
+        " than usual, for example the first `import nilearn` can take"
+        " roughly 10-20s.\n\nIf you notice problems, feel free to open"
+        " an [issue](https://github.com/nilearn/nilearn/issues/new/choose)"
+        "about it."
     )
 
-    markdown = warning_template.format(message_class=message_class, message=message)
+    markdown = warning_template.format(
+        message_class=message_class, message=message
+    )
 
     dummy_notebook_content = {"cells": []}
     add_markdown_cell(dummy_notebook_content, markdown)
@@ -544,13 +546,14 @@ def notebook_modification_function(notebook_content, notebook_filename):
     # dependencies first, and then nilearn from Anaconda.org.
 
     if code_lines:
-        code_lines = ["# JupyterLite-specific code"] + code_lines
+        code_lines = ["# JupyterLite-specific code", *code_lines]
         code = "\n".join(code_lines)
         add_code_cell(dummy_notebook_content, code)
 
     notebook_content["cells"] = (
         dummy_notebook_content["cells"] + notebook_content["cells"]
     )
+
 
 if with_jupyterlite:
     sphinx_gallery_conf["jupyterlite"] = {
