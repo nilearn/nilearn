@@ -413,8 +413,8 @@ class MaskerReportMixin(ReportMixin):
 
     def _generate_report_data(self):
         report_content = self._report_content
-        report_content["summary_html"] = self._get_summary_html()
         figure, embeded_images = self._create_partial_figures()
+        report_content["summary_html"] = self._get_summary_html()
 
         report_content["figure"] = figure
         report_content["content"] = embeded_images
