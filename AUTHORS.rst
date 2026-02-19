@@ -70,6 +70,7 @@ Some other past or present contributors are:
 * `Arthur Mensch`_
 * `Aswin Vijayan`_
 * `Audrey Duran`_: TheraPanacea, France
+* `Basile Pinsard`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
 * `Ben Cipollini`_: Facebook, Hayward, California, USA
 * `Bertrand Thirion`_: Inria, Saclay, France
 * `Binh Nguyen`_
