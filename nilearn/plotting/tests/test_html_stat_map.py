@@ -7,7 +7,6 @@ from matplotlib import pyplot as plt
 from nibabel import Nifti1Image
 
 from nilearn import image
-from nilearn._utils.helpers import is_gil_enabled
 from nilearn.image import get_data, new_img_like
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.html_stat_map import (
@@ -393,8 +392,6 @@ def test_view_img_4d(img_3d_mni):
     check_html_view_img(html_view)
 
 
-@pytest.mark.thread_unsafe
-@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_view_img_warnings(img_3d_mni):
     """Test that warning about the threshold is emitted."""
     # expect warning otherwise
