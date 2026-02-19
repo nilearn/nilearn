@@ -15,6 +15,7 @@ The workflow is:
 3. Run a whole-brain SearchLight with this estimator.
 4. Visualize the resulting score map.
 """
+
 # %%
 # Load Haxby dataset
 # ------------------
@@ -22,7 +23,7 @@ import numpy as np
 import pandas as pd
 
 from nilearn.datasets import fetch_haxby
-from nilearn.image import get_data, load_img, new_img_like
+from nilearn.image import load_img
 
 # We fetch 2nd subject from haxby datasets (which is default)
 haxby_dataset = fetch_haxby()
@@ -42,35 +43,50 @@ run = labels["chunks"]
 from sklearn.base import BaseEstimator
 
 
+def fisher_z(r, eps=1e-12):
+    """Apply Fisher z-transform to correlation coefficient r."""
+    # clip to avoid inf at ±1
+    r = np.clip(r, -1 + eps, 1 - eps)
+    return np.arctanh(r)
+
+
+def pattern_corr(a, b):
+    """Compute correlation between two patterns, with mean-centering and norm.
+
+    This is a more stable and efficient way to compute correlation than
+    np.corrcoef for 1D patterns.
+    """
+    a = a - a.mean()
+    b = b - b.mean()
+    denom = (np.linalg.norm(a) * np.linalg.norm(b)) + 1e-12
+    return float(np.dot(a, b) / denom)
+
+
 class CorrelationMVPA(BaseEstimator):
     """Haxby-style correlation MVPA score for a pair of labels.
 
     Computes (within - between)/2 using run splits provided in `groups`.
+
+    Parameters
+    ----------
+    labels : tuple of str, default=("face", "house")
+        The two condition labels to contrast. Must be present in `y`.
+    split : str, default="parity"
+        How to split runs for cross-validation.
+        Only "parity" (even vs odd runs) is implemented here.
+    fisher_z : bool, default=True
+        Whether to apply Fisher z-transform to correlations before
+        computing the final score.
     """
 
     nilearn_searchlight_uses_cv = False
 
     def __init__(
-        self, 
-        labels=("face", "house"), 
-        split="parity", 
-        fisher_z=True
+        self, labels=("face", "house"), split="parity", fisher_z=True
     ):
         self.labels = labels
         self.split = split
-        self.fisher_z = fisher_z
-
-    def _fisher_z(self, r, eps=1e-12):
-        # clip to avoid inf at ±1
-        r = np.clip(r, -1 + eps, 1 - eps)
-        return np.arctanh(r)
-
-    def _pattern_corr(self, a, b):
-        # a, b are 1D voxel patterns
-        a = a - a.mean()
-        b = b - b.mean()
-        denom = (np.linalg.norm(a) * np.linalg.norm(b)) + 1e-12
-        return float(np.dot(a, b) / denom)
+        self.fisher_z_ = fisher_z
 
     def fit(self, X, y, groups=None):
         """Fit the estimator and store a single correlation-based score.
@@ -97,7 +113,9 @@ class CorrelationMVPA(BaseEstimator):
             ``score_`` is set to ``NaN``.
         """
         if groups is None:
-            raise ValueError("groups (runs/chunks) are required for CorrelationMVPA.")
+            raise ValueError(
+                "groups (runs/chunks) are required for CorrelationMVPA."
+            )
 
         a, b = self.labels
         y = np.asarray(y)
@@ -115,27 +133,37 @@ class CorrelationMVPA(BaseEstimator):
                 return None
             return X[sel].mean(axis=0)
 
-        A1 = mean_pattern(a, g1)
-        A2 = mean_pattern(a, g2)
-        B1 = mean_pattern(b, g1)
-        B2 = mean_pattern(b, g2)
-        if any(v is None for v in (A1, A2, B1, B2)):
+        a1 = mean_pattern(a, g1)
+        a2 = mean_pattern(a, g2)
+        b1 = mean_pattern(b, g1)
+        b2 = mean_pattern(b, g2)
+        if any(v is None for v in (a1, a2, b1, b2)):
             self.score_ = float("nan")
             return self
 
-        r_AA = self._pattern_corr(A1, A2)
-        r_BB = self._pattern_corr(B1, B2)
-        r_AB = self._pattern_corr(A1, B2)
-        r_BA = self._pattern_corr(B1, A2)
+        r_aa = pattern_corr(a1, a2)
+        r_bb = pattern_corr(b1, b2)
+        r_ab = pattern_corr(a1, b2)
+        r_ba = pattern_corr(b1, a2)
 
-        if self.fisher_z:
-            r_AA, r_BB, r_AB, r_BA = map(self._fisher_z, (r_AA, r_BB, r_AB, r_BA))
+        if self.fisher_z_:
+            r_aa, r_bb, r_ab, r_ba = map(fisher_z, (r_aa, r_bb, r_ab, r_ba))
 
-        self.score_ = 0.5 * ((r_AA + r_BB) - (r_AB + r_BA))
+        self.score_ = 0.5 * ((r_aa + r_bb) - (r_ab + r_ba))
         return self
 
     def score(self, X, y=None, groups=None):
+        """
+        Return the score computed during fitting.
+
+        Parameters
+        ----------
+        X, y, groups : ignored
+             These parameters are required by the sklearn API but are not used
+             here since the score is pre-computed in fit.
+        """
         # SearchLight can call this after fit
+        del X, y, groups  # unused, required by sklearn API
         return self.score_
 
 
@@ -150,7 +178,6 @@ fmri_img = index_img(fmri_filename, condition_mask)
 y, run = y[condition_mask], run[condition_mask]
 
 # Overview of the input data
-import numpy as np
 
 n_labels = len(np.unique(y))
 
@@ -159,7 +186,8 @@ print(f"fMRI data shape (X): {fmri_img.shape}")
 print(f"Runs (groups): {np.unique(run)}")
 
 # %%
-# Perform searchlight analysis, using the CorrelationMVPA estimator defined above
+# Perform searchlight analysis, using the CorrelationMVPA estimator
+# defined above
 from nilearn.decoding import SearchLight
 
 mask_img = load_img(haxby_dataset.mask)
@@ -167,10 +195,12 @@ mask_img = load_img(haxby_dataset.mask)
 searchlight = SearchLight(
     mask_img=mask_img,
     process_mask_img=None,
-    radius=3,
+    radius=5.6,
     n_jobs=2,
     verbose=1,
-    estimator=CorrelationMVPA(labels=("face", "house"), split="parity", fisher_z=True),
+    estimator=CorrelationMVPA(
+        labels=("face", "house"), split="parity", fisher_z=True
+    ),
 )
 searchlight.fit(imgs=fmri_img, y=y, groups=run)
 scores_img = searchlight.scores_img_
@@ -178,7 +208,6 @@ scores_img = searchlight.scores_img_
 # %%
 # Visualize the searchlight scores
 from nilearn.plotting import plot_img
-from nilearn.image import mean_img
 
 mean_fmri = mean_img(fmri_img)
 
@@ -193,3 +222,5 @@ plot_img(
     black_bg=True,
     colorbar=True,
 )
+
+# %%
