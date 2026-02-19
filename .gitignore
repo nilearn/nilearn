@@ -96,3 +96,7 @@ package-lock.json
 
 # pydeps output
 nilearn.svg
+
+# uv
+uv.lock
+.python-version

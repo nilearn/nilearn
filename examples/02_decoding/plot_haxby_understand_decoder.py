@@ -232,7 +232,6 @@ classifier = LogisticRegressionCV(
     solver="liblinear",
     Cs=np.geomspace(1e-3, 1e4, 8),
     refit=True,
-    verbose=1,
 )
 
 # %%

@@ -601,6 +601,7 @@ def test_crop_image_empty_image(affine_eye, pad):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.slow
 @pytest.mark.parametrize("images_to_mean", _images_to_mean())
 def test_mean_img(images_to_mean, tmp_path):
     affine = np.diag((4, 3, 2, 1))
@@ -2247,6 +2248,7 @@ def test_check_niimg_user_expand(img_in_home_folder, filename):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.single_process
 @pytest.mark.parametrize(
     "filename",
     [
