@@ -413,7 +413,7 @@ def smooth_img(imgs, fwhm):
     -------
     Niimg-like object, :obj:~nilearn.surface.SurfaceImage.
     Smoothed input image or surface.
-    
+
     """
     is_surface = False
     single_img = True
@@ -550,7 +550,8 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
         # Compute number of iterations using empirical formula
         niters.append(
             math.floor(
-                1.14 * (4 * math.pi * std_kernel**2) / (7 * avg_vertex_area) + 0.5
+                1.14 * (4 * math.pi * std_kernel**2) / (7 * avg_vertex_area)
+                + 0.5
             )
         )
 
