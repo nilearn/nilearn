@@ -369,7 +369,6 @@ def test_get_cut_slices(affine_eye):
     assert (cut_slices == [4, 4, 4]).all()
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize(
@@ -398,7 +397,6 @@ def test_view_img_3d_warnings(params, warning_msg, img_3d_mni):
     check_html_view_img(html_view)
 
 
-@pytest.mark.slow
 def test_view_img_3d_warnings_more(img_3d_mni):
     """Test warning when viewing 3D images.
 
@@ -421,7 +419,6 @@ def test_view_img_3d_warnings_more(img_3d_mni):
     check_html_view_img(html_view, title="SOME_TITLE")
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "params",
     [
