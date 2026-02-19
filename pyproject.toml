@@ -104,7 +104,8 @@ test = [
     "pytest-timeout",
     "pytest-xdist[psutil]",
     "pytest-mpl",
-    "pytest-rerunfailures"
+    "pytest-rerunfailures",
+    "tox"
 ]
 # Running test for free threaded python
 # requires fewer extensions
