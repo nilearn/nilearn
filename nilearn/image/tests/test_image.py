@@ -45,6 +45,8 @@ from nilearn.exceptions import DimensionError
 from nilearn.image.image import (
     _crop_img_to,
     _fast_smooth_array,
+    _mris_fwhm_to_niters,
+    _smooth_surface_img,
     binarize_img,
     check_niimg,
     check_niimg_3d,
@@ -417,6 +419,94 @@ def test_smooth_img_warning(img_3d_mni):
         UserWarning, match=r"specified as 0\.0\. Setting it to None"
     ):
         smooth_img(img_3d_mni, fwhm=0.0)
+
+
+def test_smooth_img_surface(surf_img_1d):
+    """Test smoothing surface images.
+
+    Test output equal when fwhm=None and fwhm=0.
+    Test smoothing changes input.
+    Test that min and max are less extreme after smoothing.
+    """
+    out_fwhm_none = smooth_img(surf_img_1d, fwhm=None)
+    out_fwhm_zero = smooth_img(surf_img_1d, fwhm=0)
+
+    assert_surface_image_equal(surf_img_1d, out_fwhm_zero)
+    assert_surface_image_equal(out_fwhm_none, out_fwhm_zero)
+
+    smoothed_img = smooth_img(surf_img_1d, fwhm=5)
+
+    with pytest.raises(
+        ValueError, match="Part 'left' of PolyData instances are not equal"
+    ):
+        assert_surface_image_equal(smoothed_img, surf_img_1d)
+
+    data = get_surface_data(surf_img_1d)
+    smoothed_data = get_surface_data(smoothed_img)
+
+    assert data.max() > smoothed_data.max()
+    assert data.min() < smoothed_data.min()
+    assert data.var() > smoothed_data.var()
+
+
+def test_smooth_list_img_surface(surf_img_1d):
+    """Test smoothing list surface images."""
+    smooth_ref = smooth_img(surf_img_1d, fwhm=5)
+    smoothed_img = smooth_img([surf_img_1d, surf_img_1d], fwhm=5)
+    assert isinstance(smoothed_img, list)
+    assert all(isinstance(x, SurfaceImage) for x in smoothed_img)
+    assert_array_equal(
+        get_surface_data(smoothed_img[1]), get_surface_data(smooth_ref)
+    )
+
+
+def test_smooth_img_surface_2d(surf_img_2d):
+    """Test smoothing surface images 2d.
+
+    Ensure we get equivalent result that smoothing a list of image.
+    """
+    img = surf_img_2d(3)
+
+    smoothed_img = smooth_img(img, fwhm=5)
+    assert isinstance(smoothed_img, SurfaceImage)
+
+    img_as_list = list(iter_img(img))
+    smoothed_img_as_list = smooth_img(img_as_list, fwhm=5)
+    for i, x in enumerate(smoothed_img_as_list):
+        assert_array_equal(
+            get_surface_data(x), get_surface_data(index_img(smoothed_img, i))
+        )
+
+
+def test_smooth_surface_img(surf_img_1d):
+    """Check smoothing changes data."""
+    smoothed_imgs = _smooth_surface_img(surf_img_1d, iterations=[1, 1])
+
+    assert isinstance(smoothed_imgs, SurfaceImage)
+    for part in surf_img_1d.data.parts:
+        assert not np.array_equal(
+            surf_img_1d.data.parts[part], smoothed_imgs.data.parts[part]
+        )
+
+    more_smoothed_imgs = _smooth_surface_img(surf_img_1d, iterations=[2, 2])
+    for part in surf_img_1d.data.parts:
+        assert not np.array_equal(
+            more_smoothed_imgs.data.parts[part], smoothed_imgs.data.parts[part]
+        )
+
+
+def test_smooth_surface_niter(surf_img_1d):
+    """Control the number of iterations."""
+    n5 = _mris_fwhm_to_niters(5, surf_img_1d)
+    assert n5 == [16, 14]
+
+
+def test_smooth_surface_img_errors(surf_img_1d):
+    with pytest.raises(TypeError, match="'vertex_weights'"):
+        _smooth_surface_img(
+            surf_img_1d,
+            vertex_weights="'vertex_weights' must be None or a SurfaceImage.",
+        )
 
 
 def test_crop_img_to():
