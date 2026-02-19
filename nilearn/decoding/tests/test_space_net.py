@@ -134,7 +134,7 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
     X_test = rng.standard_normal((n_samples, n_features))
     y_test = np.dot(X_test, np.ones(n_features))
     w = np.zeros(n_features)
-    escb = _EarlyStoppingCallback(X_test, y_test, False)
+    escb = _EarlyStoppingCallback(X_test, y_test, False, verbose=0)
     for counter in range(50):
         k = min(counter, n_features - 1)
         w[k] = 1
@@ -248,6 +248,7 @@ def test_logistic_path_scores():
         np.arange(len(X)),
         np.arange(len(X)),
         {},
+        verbose=0,
     )[:2]
     test_scores = test_scores[0]
 
@@ -272,6 +273,7 @@ def test_squared_loss_path_scores():
         np.arange(len(X)),
         np.arange(len(X)),
         {},
+        verbose=0,
     )[:2]
 
     test_scores = test_scores[0]

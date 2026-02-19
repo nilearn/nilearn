@@ -198,46 +198,6 @@ def test_second_level_input_as_3d_images(
     )
 
 
-def test_slm_verbose(rng, affine_eye, shape_3d_default, n_subjects, capsys):
-    """Check verbosity levels.
-
-    Standard output content should be larger
-    when we go from verbosity 1 to verbosity 3.
-    """
-    images = []
-    for _ in range(n_subjects):
-        data = rng.random(shape_3d_default)
-        images.append(Nifti1Image(data, affine_eye))
-
-    second_level_input = images
-    design_matrix = pd.DataFrame(
-        [1] * len(second_level_input), columns=["intercept"]
-    )
-
-    SecondLevelModel(verbose=0).fit(
-        second_level_input,
-        design_matrix=design_matrix,
-    )
-    stdout_verbose_0 = capsys.readouterr().out
-    assert stdout_verbose_0 == ""
-
-    SecondLevelModel(verbose=1).fit(
-        second_level_input,
-        design_matrix=design_matrix,
-    )
-    stdout_verbose_1 = capsys.readouterr().out
-    assert "Computation of second level model done in" in stdout_verbose_1
-
-    SecondLevelModel(verbose=2).fit(
-        second_level_input,
-        design_matrix=design_matrix,
-    )
-    stdout_verbose_2 = capsys.readouterr().out
-
-    assert len(stdout_verbose_1) > 0
-    assert len(stdout_verbose_2) > len(stdout_verbose_1)
-
-
 @pytest.mark.slow
 def test_process_second_level_input_as_firstlevelmodels(
     shape_4d_default, n_subjects

@@ -268,8 +268,13 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
 
     %(verbose0)s
 
+    %(estimator_args)s
+
     Attributes
     ----------
+    estimator_args_ : dict[str, Any] or None, default=None
+        Extra parameters to pass to the sklearn learn estimators.
+
     mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         Mask computed by the masker object.
 
@@ -325,6 +330,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         scoring=None,
         cv=None,
         verbose=0,
+        estimator_args=None,
     ):
         self.mask_img = mask_img
         self.process_mask_img = process_mask_img
@@ -334,6 +340,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         self.scoring = scoring
         self.cv = cv
         self.verbose = verbose
+        self.estimator_args = estimator_args
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -437,11 +444,19 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             mask_img=self.mask_img_,
         )
 
+        self.estimator_args_ = (
+            {} if self.estimator_args is None else self.estimator_args
+        )
+
         estimator = self.estimator
         if estimator == "svc":
-            estimator = ESTIMATOR_CATALOG[estimator](dual=True)
+            estimator = ESTIMATOR_CATALOG[estimator](
+                dual=True,
+                verbose=(self.verbose - 1) > 0,
+                **self.estimator_args_,
+            )
         elif isinstance(estimator, str):
-            estimator = ESTIMATOR_CATALOG[estimator]()
+            estimator = ESTIMATOR_CATALOG[estimator](**self.estimator_args_)
 
         scores = search_light(
             X,
@@ -501,7 +516,11 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
 
         estimator = self.estimator
         if estimator == "svc":
-            estimator = ESTIMATOR_CATALOG[estimator](dual=True)
+            estimator = ESTIMATOR_CATALOG[estimator](
+                dual=True, **self.estimator_args_
+            )
+        elif isinstance(estimator, str):
+            estimator = ESTIMATOR_CATALOG[estimator](**self.estimator_args_)
 
         # Use the modified `_group_iter_search_light` logic to avoid `y` issues
         result = search_light(

@@ -10,6 +10,7 @@ Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
 
+import inspect
 import itertools
 import warnings
 from collections.abc import Iterable
@@ -58,6 +59,7 @@ from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
 
+MAX_ITER = 10000
 _MIN_N_FEATURES_FOR_SCREENING = 100
 
 kwarg_logistic_regression_cv = {}
@@ -67,26 +69,82 @@ if SKLEARN_GTE_1_8:
     kwarg_logistic_regression_cv = {"use_legacy_attributes": False}
 
 SUPPORTED_ESTIMATORS = {
-    "svc_l1": LinearSVC(penalty="l1", dual=False, max_iter=10000),
-    "svc_l2": LinearSVC(penalty="l2", dual=True, max_iter=10000),
-    "svc": LinearSVC(penalty="l2", dual=True, max_iter=10000),
-    "logistic_l1": LogisticRegressionCV(
-        l1_ratios=(1,), solver="liblinear", **kwarg_logistic_regression_cv
-    ),
-    "logistic_l2": LogisticRegressionCV(
-        l1_ratios=(0,), solver="liblinear", **kwarg_logistic_regression_cv
-    ),
-    "logistic": LogisticRegressionCV(
-        l1_ratios=(0,), solver="liblinear", **kwarg_logistic_regression_cv
-    ),
-    "ridge_classifier": RidgeClassifierCV(),
-    "ridge_regressor": RidgeCV(),
-    "ridge": RidgeCV(),
-    "lasso": LassoCV(),
-    "lasso_regressor": LassoCV(),
-    "svr": SVR(kernel="linear", max_iter=10000),
-    "dummy_classifier": DummyClassifier(strategy="stratified", random_state=0),
-    "dummy_regressor": DummyRegressor(strategy="mean"),
+    # "params" cannot be overridden
+    # "extra_params" can be overridden by parameters passed by user
+    "svc_l1": {
+        "estimator": LinearSVC,
+        "params": {"penalty": "l1", "dual": False},
+        "extra_params": {"max_iter": MAX_ITER},
+    },
+    "svc_l2": {
+        "estimator": LinearSVC,
+        "params": {"penalty": "l2", "dual": False},
+        "extra_params": {"max_iter": MAX_ITER},
+    },
+    "svc": {
+        "estimator": LinearSVC,
+        "params": {"penalty": "l2", "dual": False},
+        "extra_params": {"max_iter": MAX_ITER},
+    },
+    "logistic_l1": {
+        "estimator": LogisticRegressionCV,
+        "params": {
+            "l1_ratios": (1,),
+            "solver": "liblinear",
+            **kwarg_logistic_regression_cv,
+        },
+        "extra_params": {},
+    },
+    "logistic_l2": {
+        "estimator": LogisticRegressionCV,
+        "params": {
+            "l1_ratios": (0,),
+            "solver": "liblinear",
+            **kwarg_logistic_regression_cv,
+        },
+        "extra_params": {},
+    },
+    "logistic": {
+        "estimator": LogisticRegressionCV,
+        "params": {
+            "l1_ratios": (0,),
+            "solver": "liblinear",
+            **kwarg_logistic_regression_cv,
+        },
+        "extra_params": {},
+    },
+    "ridge_classifier": {
+        "estimator": RidgeClassifierCV,
+        "params": {},
+        "extra_params": {},
+    },
+    "ridge_regressor": {
+        "estimator": RidgeCV,
+        "params": {},
+        "extra_params": {},
+    },
+    "ridge": {"estimator": RidgeCV, "params": {}, "extra_params": {}},
+    "lasso": {"estimator": LassoCV, "params": {}, "extra_params": {}},
+    "lasso_regressor": {
+        "estimator": LassoCV,
+        "params": {},
+        "extra_params": {},
+    },
+    "svr": {
+        "estimator": SVR,
+        "params": {"kernel": "linear"},
+        "extra_params": {"max_iter": MAX_ITER},
+    },
+    "dummy_classifier": {
+        "estimator": DummyClassifier,
+        "params": {"strategy": "stratified"},
+        "extra_params": {"random_state": 0},
+    },
+    "dummy_regressor": {
+        "estimator": DummyRegressor,
+        "params": {"strategy": "mean"},
+        "extra_params": {},
+    },
 }
 
 
@@ -336,20 +394,44 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
     return new_param_grid
 
 
-def _check_estimator(estimator):
+def _check_estimator(estimator, estimator_args=None, verbose=0):
+    """Check requested estimator.
+
+    If an actual estimator instance was passed, we allow it but warn the user.
+
+    Otherwise we instantiate one
+    from the config defined in SUPPORTED_ESTIMATORS.
+    """
     if not isinstance(estimator, str):
         warnings.warn(
             "Use a custom estimator at your own risk "
             "of the process not working as intended.",
             stacklevel=find_stack_level(),
         )
-    elif estimator in SUPPORTED_ESTIMATORS:
-        estimator = SUPPORTED_ESTIMATORS.get(estimator)
-    else:
+        return estimator
+
+    if estimator not in SUPPORTED_ESTIMATORS:
         raise ValueError(
             "Invalid estimator. Known estimators are: "
             f"{list(SUPPORTED_ESTIMATORS.keys())}"
         )
+
+    estimator_config = SUPPORTED_ESTIMATORS.get(estimator)
+
+    # "extra_params" can be overriddent by parameters passed by user
+    params = estimator_config["extra_params"]
+    if estimator_args is not None:
+        params |= estimator_args
+
+    # "params" cannot be overridden so we use them last
+    # to update the parameter of the estimator
+    params |= estimator_config["params"]
+
+    sig = inspect.signature(estimator_config["estimator"]).parameters
+    if "verbose" in sig:
+        params["verbose"] = (verbose - 1) > 0
+
+    estimator = estimator_config["estimator"](**params)
 
     return estimator
 
@@ -574,6 +656,8 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
     %(verbose0)s
 
+    %(estimator_args)s
+
     %(base_decoder_fit_attributes)s
 
     See Also
@@ -609,6 +693,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        estimator_args=None,
     ):
         self.estimator = estimator
         self.mask = mask
@@ -629,6 +714,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
+        self.estimator_args = estimator_args
 
     @property
     def _clustering_percentile(self) -> int:
@@ -658,7 +744,15 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         """
         check_params(self.__dict__)
-        self.estimator_ = _check_estimator(self.estimator)
+
+        self.estimator_args_ = (
+            {} if self.estimator_args is None else self.estimator_args
+        )
+        self.estimator_ = _check_estimator(
+            self.estimator,
+            estimator_args=self.estimator_args_,
+            verbose=self.verbose - 1,
+        )
 
         self._fit_cache()
 
@@ -760,6 +854,12 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
                 ),
                 verbose=self.verbose,
             )
+
+        log(
+            "The decoding model will be trained "
+            f"on {n_final_features} features. ",
+            verbose=self.verbose,
+        )
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
@@ -1223,6 +1323,8 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     %(verbose0)s
 
+    %(estimator_args)s
+
     %(base_decoder_fit_attributes)s
 
     classes_ : ndarray of labels (`n_classes_`)
@@ -1260,6 +1362,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        estimator_args=None,
     ):
         super().__init__(
             estimator=estimator,
@@ -1281,6 +1384,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
+            estimator_args=estimator_args,
         )
 
     def decision_function(self, X):
@@ -1398,6 +1502,8 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(verbose0)s
 
+    %(estimator_args)s
+
     %(base_decoder_fit_attributes)s
 
     See Also
@@ -1429,6 +1535,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        estimator_args=None,
     ):
         super().__init__(
             estimator=estimator,
@@ -1450,6 +1557,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
+            estimator_args=estimator_args,
         )
 
     def _more_tags(self):
@@ -1558,6 +1666,8 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
     %(n_jobs)s
     %(verbose0)s
 
+    %(estimator_args)s
+
     %(base_decoder_fit_attributes)s
 
     References
@@ -1593,6 +1703,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        estimator_args=None,
     ):
         super().__init__(
             estimator=estimator,
@@ -1614,6 +1725,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
+            estimator_args=estimator_args,
         )
 
         self.clustering_percentile = clustering_percentile
@@ -1731,6 +1843,8 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     %(n_jobs)s
     %(verbose0)s
 
+    %(estimator_args)s
+
     %(base_decoder_fit_attributes)s
 
     classes_ : ndarray of labels (`n_classes_`)
@@ -1773,6 +1887,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        estimator_args=None,
     ):
         super().__init__(
             estimator=estimator,
@@ -1794,6 +1909,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            estimator_args=estimator_args,
         )
 
         self.clustering_percentile = clustering_percentile
