@@ -336,7 +336,9 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         (4, 4) matrix, giving affine transformation for image. (3, 3) matrices
         are also accepted (only these coefficients are used).
         If `fwhm='fast'`, the affine is not used and can be None.
+
     %(fwhm)s
+
     ensure_finite : :obj:`bool`, default=True
         If True, replace every non-finite values (like NaNs) by zero before
         filtering.
@@ -401,6 +403,7 @@ def smooth_img(imgs, fwhm):
     imgs : Niimg-like object or iterable of Niimg-like objects
         Image(s) to smooth (see :ref:`extracting_data`
         for a detailed description of the valid input types).
+
     %(fwhm)s
 
     Returns
