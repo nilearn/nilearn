@@ -523,6 +523,8 @@ def notebook_modification_function(notebook_content, notebook_filename):  # noqa
 
     if "plotly.express" in notebook_content_str:
         code_lines.append("%pip install plotly nbformat")
+    if "nilearn" in notebook_content_str:
+        code_lines.append("%pip install -q nilearn")
     if "fetch_" in notebook_content_str:
         code_lines.extend(
             [
@@ -531,6 +533,7 @@ def notebook_modification_function(notebook_content, notebook_filename):  # noqa
                 "pyodide_http.patch_all()",
             ]
         )
+
     # always import matplotlib and pandas to avoid Pyodide limitation with
     # imports inside functions
     code_lines.extend(["import matplotlib", "import pandas"])
