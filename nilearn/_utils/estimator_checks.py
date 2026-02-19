@@ -3174,7 +3174,9 @@ def check_masker_transform_resampling(estimator_orig) -> None:
     input_shape = (28, 29, 30, n_sample)
     imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
 
-    imgs2 = Nifti1Image(_rng().random((20, 21, 22)), _affine_eye())
+    imgs_with_different_fov = Nifti1Image(
+        _rng().random((20, 21, 22)), _affine_eye()
+    )
 
     mask_shape = (15, 16, 17)
     mask_img = Nifti1Image(np.ones(mask_shape), _affine_eye())
@@ -3234,12 +3236,12 @@ def check_masker_transform_resampling(estimator_orig) -> None:
             # than the one used at fit time,
             # but there should be a resampling warning
             # we are resampling to data
-            if resampling_target in ["maps", "data"]:
+            if resampling_target in ["data", "maps"]:
                 with pytest.warns(UserWarning, match="at transform time"):
-                    estimator.transform(imgs)
+                    estimator.transform(imgs_with_different_fov)
             else:
                 with warnings.catch_warnings(record=True) as warning_list:
-                    estimator.transform(imgs2)
+                    estimator.transform(imgs_with_different_fov)
                 assert all(
                     "at transform time" not in str(x.message)
                     for x in warning_list
