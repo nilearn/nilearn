@@ -20,12 +20,12 @@ from visual stimuli.
 Initial setup to access GPU acceleration
 ========================================
 
-You would need to have a compatible GPU and the latest pre-release version of
-scikit-learn to run the code here:
+You would need to have a compatible GPU and scikit-learn >= 1.8 to run the
+code here:
 
 .. code-block:: bash
 
-    pip install -U scikit-learn==1.8
+    pip install -U scikit-learn>=1.8
 
 In addition, you need to either `install CuPy
 <https://docs.cupy.dev/en/stable/install.html>`_ or
