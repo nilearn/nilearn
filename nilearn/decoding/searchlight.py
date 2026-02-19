@@ -16,6 +16,7 @@ from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
 from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
+from sklearn.utils.validation import has_fit_parameter
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
@@ -28,6 +29,69 @@ from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 from nilearn.masking import load_mask_img
 
 ESTIMATOR_CATALOG = {"svc": svm.LinearSVC, "svr": svm.SVR}
+
+
+def _check_searchlight_estimator(estimator, *, scoring, y):
+    """Validate estimator for nilearn.decoding.SearchLight."""
+    uses_cv = getattr(estimator, "nilearn_searchlight_uses_cv", True)
+
+    # Must be an instance, not a class
+    if isinstance(estimator, type):
+        raise TypeError(
+            "SearchLight estimator must be an *instance*, "
+            f"got class {estimator.__name__}."
+        )
+
+    # Must look like a sklearn estimator
+    if not hasattr(estimator, "fit"):
+        raise TypeError("SearchLight estimator must implement a 'fit' method.")
+    # Must be cloneable if uses_cv is True, because we clone it for each fold
+    # in cross_val_score
+    if uses_cv and not hasattr(estimator, "get_params"):
+        raise TypeError(
+            "SearchLight estimator must be cloneable (implement get_params). "
+            "Tip: inherit from sklearn.base.BaseEstimator."
+        )
+
+    # We call fit(X, y) in the searchlight loop
+    if not has_fit_parameter(estimator, "y"):
+        raise TypeError(
+            "SearchLight estimator.fit must accept a 'y' parameter "
+            "(even if unused) because SearchLight calls fit(X, y)."
+        )
+
+    # If y is None, current implementation uses decision_function
+    if y is None and not hasattr(estimator, "decision_function"):
+        raise TypeError(
+            "When y=None, SearchLight expects the estimator to implement "
+            "'decision_function(X)'."
+        )
+
+    # If scoring is None, sklearn falls back to estimator.score
+    if scoring is None and not hasattr(estimator, "score"):
+        raise TypeError(
+            "SearchLight with scoring=None requires the estimator to "
+            "implement 'score(X, y)'."
+        )
+
+    # If not uses_cv, we call score(X, y) directly in the searchlight loop,
+    # so it must be implemented
+    if not uses_cv and not hasattr(estimator, "score"):
+        raise TypeError(
+            "SearchLight estimator must implement 'score(X, y)' method when "
+            "nilearn_searchlight_uses_cv is False."
+        )
+
+    # If not uses_cv, we call fit(X, y, groups=groups) in the searchlight loop,
+    # so it must accept a groups parameter, even if unused
+    if not uses_cv and not has_fit_parameter(estimator, "groups"):
+        raise TypeError(
+            "SearchLight estimator with nilearn_searchlight_uses_cv=False "
+            "must accept a 'groups' parameter in fit, because SearchLight "
+            "calls fit(X, y, groups=groups) in this case. Even if the "
+            "estimator does not use it, it must be accepted for "
+            "compatibility."
+        )
 
 
 @fill_doc
@@ -453,6 +517,8 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             estimator = ESTIMATOR_CATALOG[estimator](dual=True)
         elif isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator]()
+
+        _check_searchlight_estimator(estimator, scoring=self.scoring, y=y)
 
         scores = search_light(
             X,
