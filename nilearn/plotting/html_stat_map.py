@@ -288,8 +288,8 @@ def load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
 
 def _is_isotropic(affine: np.ndarray) -> bool:
     """Check if the affine matrix has an isotropic voxel size."""
-    diag = np.diag(affine)[:3]
-    return np.allclose(np.abs(diag), np.abs(diag[0]))
+    diag_abs = np.abs(np.diag(affine)[:3])
+    return (diag_abs == diag_abs[0]).all()
 
 
 def _resample_to_isotropic(
