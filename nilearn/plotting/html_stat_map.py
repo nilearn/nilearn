@@ -286,10 +286,16 @@ def load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
     return bg_img, bg_min, bg_max, black_bg
 
 
-def _is_isotropic(affine: np.ndarray) -> bool:
-    """Check if the affine matrix has an isotropic voxel size."""
-    diag_abs = np.abs(np.diag(affine)[:3])
-    return (diag_abs == diag_abs[0]).all()
+def _is_isotropic(diagonal_affine: np.ndarray) -> bool:
+    """
+    Check if the affine matrix has an isotropic voxel size.
+
+    The affine must be positive diagonal, which can be achieved by calling
+    ``nilearn.image.reorder_img`` on the image and specifying a ``resample``
+    parameter.
+    """
+    diag = np.diag(diagonal_affine)[:3]
+    return (diag == diag[0]).all()
 
 
 def _resample_to_isotropic(
