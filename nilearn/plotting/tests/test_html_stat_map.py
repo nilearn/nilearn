@@ -7,7 +7,7 @@ import pytest
 from matplotlib import pyplot as plt
 from nibabel import Nifti1Image
 
-from nilearn import datasets, image
+from nilearn import image
 from nilearn._utils.helpers import is_gil_enabled
 from nilearn.image import get_data, new_img_like
 from nilearn.plotting._engine_utils import colorscale
@@ -385,40 +385,30 @@ def test_get_cut_slices(affine_eye):
         ),
     ],
 )
-def test_view_img_3d_warnings(params, warning_msg):
+def test_view_img_3d_warnings(params, warning_msg, img_3d_mni):
     """Test warning when viewing 3D images."""
-    mni = datasets.load_mni152_template(resolution=2)
-
-    # Create a fake functional image by resample the template
-    img = image.resample_img(mni, target_affine=3 * np.eye(3))
-
     # Should not raise warnings
     with warnings.catch_warnings(record=True) as w:
-        html_view = view_img(img, bg_img=None)
+        html_view = view_img(img_3d_mni, bg_img=None)
     assert len(w) == 0
 
     with pytest.warns(UserWarning, match=warning_msg):
-        html_view = view_img(img, **params)
+        html_view = view_img(img_3d_mni, **params)
 
     check_html_view_img(html_view)
 
 
 @pytest.mark.slow
-def test_view_img_3d_warnings_more():
+def test_view_img_3d_warnings_more(img_3d_mni):
     """Test warning when viewing 3D images.
 
     Has more precise checks on the output.
     """
-    mni = datasets.load_mni152_template(resolution=2)
-
-    # Create a fake functional image by resample the template
-    img = image.resample_img(mni, target_affine=3 * np.eye(3))
-
     with pytest.warns(
         UserWarning,
         match="'partition' will ignore the 'mask' of the MaskedArray",
     ):
-        html_view = view_img(img)
+        html_view = view_img(img_3d_mni)
 
     check_html_view_img(html_view, title="Slice viewer")
 
@@ -426,7 +416,7 @@ def test_view_img_3d_warnings_more():
         UserWarning,
         match="'partition' will ignore the 'mask' of the MaskedArray",
     ):
-        html_view = view_img(img, threshold="95%", title="SOME_TITLE")
+        html_view = view_img(img_3d_mni, threshold="95%", title="SOME_TITLE")
 
     check_html_view_img(html_view, title="SOME_TITLE")
 
@@ -440,19 +430,12 @@ def test_view_img_3d_warnings_more():
         {"width_view": 1000},
     ],
 )
-def test_view_img_4d_warnings(params):
+def test_view_img_4d_warnings(params, img_4d_mni):
     """Test warning when viewing 4D images."""
-    mni = datasets.load_mni152_template(resolution=2)
-
-    # Create a fake functional image by resample the template
-    img = image.resample_img(mni, target_affine=3 * np.eye(3))
-    img_4d = image.new_img_like(img, get_data(img)[:, :, :, np.newaxis])
-    assert len(img_4d.shape) == 4
-
     with pytest.warns(
         UserWarning,
         match="'partition' will ignore the 'mask' of the MaskedArray",
     ):
-        html_view = view_img(img_4d, **params)
+        html_view = view_img(img_4d_mni, **params)
 
     check_html_view_img(html_view)
