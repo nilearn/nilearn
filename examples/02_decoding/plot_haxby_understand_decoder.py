@@ -232,8 +232,25 @@ classifier = LogisticRegressionCV(
     solver="liblinear",
     Cs=np.geomspace(1e-3, 1e4, 8),
     refit=True,
-    verbose=1,
 )
+
+# %%
+# Leave out a test set for final evaluation
+# -----------------------------------------
+#
+# Before we train and cross-validate, let's leave out one run as a final test
+# set to evaluate the performance of the trained decoder on unseen data.
+
+test_run = 6
+test_mask = run == test_run
+fmri_img_test = index_img(fmri_img, test_mask)
+y_test = y_binary[test_mask]
+run_test = run[test_mask]
+
+fmri_img = index_img(fmri_img, ~test_mask)
+y = y[~test_mask]
+y_binary = y_binary[~test_mask]
+run = run[~test_mask]
 
 # %%
 # Train and cross-validate via an Scikit-Learn pipeline
@@ -260,8 +277,10 @@ print(f"fMRI data shape after masking: {X.shape}")
 # Loop over each CV split and each class vs. rest binary classification
 # problems (number of classification problems = n_labels)
 scores_sklearn = []
+coefs_sklearn = []
+intercepts_sklearn = []
 for klass in range(n_labels):
-    for train, test in logo_cv.split(X, y, groups=run):
+    for train, test in logo_cv.split(X, groups=run):
         # separate train and test events in the data
         X_train, X_test = X[train], X[test]
         # separate labels for train and test events for a given class vs. rest
@@ -281,6 +300,9 @@ for klass in range(n_labels):
         # calculate the ROC AUC score
         score = roc_auc_score(y_test, pred[:, 1])
         scores_sklearn.append(score)
+
+        coefs_sklearn.append(classifier.coef_)
+        intercepts_sklearn.append(classifier.intercept_)
 
 # %%
 # Decode via the :class:`~nilearn.decoding.Decoder`
@@ -303,6 +325,8 @@ decoder = Decoder(
 )
 decoder.fit(fmri_img, y, groups=run)
 scores_nilearn = np.concatenate(list(decoder.cv_scores_.values()))
+coefs_nilearn = decoder.coef_
+intercepts_nilearn = decoder.intercept_
 
 # %%
 # Compare the results
@@ -323,3 +347,78 @@ print("Scikit-Learn mean AU-ROC score", np.mean(scores_sklearn))
 # to train, cross-validate and predict on new data, while also parallelizing
 # the computations to make the cross-validation faster. It also organizes the
 # results in a structured way that can be easily accessed and analyzed.
+
+# %%
+# Compare the coefficients and intercepts
+# ---------------------------------------
+#
+# The decoder object also provides access to the coefficients and intercepts of
+# the trained classifiers for each class vs. rest problem. These are stored in
+# the ``coef_`` and ``intercept_`` attributes of the decoder object,
+# respectively. These coefficients and intercepts are averaged across the CV
+# splits for each class vs. rest problem.
+#
+# So we can aggregate the coefficients and intercepts from the Scikit-Learn
+# pipeline by taking their mean across CV splits for each class vs. rest
+# problem to check if they are comparable to the coefficients and intercepts
+# from the Nilearn decoder.
+
+increment = len(np.unique(run))
+start_index_of_last_cv_split = (
+    increment * label_binarizer.classes_.shape[0] - increment
+) + 1
+
+av_sklearn_coef = np.vstack(
+    [
+        np.mean(coefs_sklearn[i : i + increment], axis=0)
+        for i in range(0, start_index_of_last_cv_split, increment)
+    ]
+)
+av_sklearn_intercept = np.squeeze(
+    np.vstack(
+        [
+            np.mean(intercepts_sklearn[i : i + increment], axis=0)
+            for i in range(0, start_index_of_last_cv_split, increment)
+        ]
+    )
+)
+
+# compare the values of the coefficients and intercepts from both approaches
+
+print(
+    "Coefficients are close:",
+    np.allclose(coefs_nilearn, av_sklearn_coef, atol=1e-2),
+)
+print(
+    "Intercepts are close:",
+    np.allclose(intercepts_nilearn, av_sklearn_intercept, atol=1e-2),
+)
+
+
+# %%
+# Compare the predicted labels on the left-out test set
+# -----------------------------------------------------
+#
+# Finally, the decoder object also uses these aggregated coefficients and
+# intercepts to predict the labels on new data via its ``predict``
+# method. So if we also compare the predicted labels from the decoder and
+# the Scikit-Learn pipeline on the left-out test set, we should see that they
+# are also identical.
+
+from sklearn.utils.extmath import safe_sparse_dot
+
+pred_nilearn = decoder.predict(X_test)
+decision_function_sklearn = (
+    safe_sparse_dot(X_test, av_sklearn_coef.T, dense_output=True)
+    + av_sklearn_intercept
+)
+indices = decision_function_sklearn.argmax(axis=1)
+pred_sklearn = decoder.classes_[indices]
+
+
+print(
+    "Predicted labels are identical:",
+    (pred_nilearn == pred_sklearn).all(),
+)
+
+# %%
