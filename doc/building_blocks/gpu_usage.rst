@@ -10,7 +10,7 @@ With the recent developments in scikit-learn, there is now
 that support GPU acceleration via the `Array API <https://data-apis.org/array-api>`_.
 
 This means that you can now also use GPUs to speed up your neuroimaging
-machine-learning pipelines in nilearn.
+machine-learning pipelines in Nilearn.
 
 We will demonstrate this speedup using the :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py` example,
 which implements an encoding model using
