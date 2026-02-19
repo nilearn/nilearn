@@ -244,6 +244,7 @@ classifier = LogisticRegressionCV(
 test_run = 6
 test_mask = run == test_run
 fmri_img_test = index_img(fmri_img, test_mask)
+X_test = masker.fit_transform(fmri_img_test)
 y_test = y_binary[test_mask]
 run_test = run[test_mask]
 
@@ -280,25 +281,25 @@ scores_sklearn = []
 coefs_sklearn = []
 intercepts_sklearn = []
 for klass in range(n_labels):
-    for train, test in logo_cv.split(X, groups=run):
-        # separate train and test events in the data
-        X_train, X_test = X[train], X[test]
-        # separate labels for train and test events for a given class vs. rest
+    for train, val in logo_cv.split(X, groups=run):
+        # separate train and val events in the data
+        X_train, X_val = X[train], X[val]
+        # separate labels for train and val events for a given class vs. rest
         # problem
-        y_train, y_test = y_binary[train, klass], y_binary[test, klass]
+        y_train, y_val = y_binary[train, klass], y_binary[val, klass]
 
         # select the voxels by fitting feature selector on training data
         X_train = feature_selector.fit_transform(X_train, y_train)
-        # pick the same voxels in the test data
-        X_test = feature_selector.transform(X_test)
+        # pick the same voxels in the val data
+        X_val = feature_selector.transform(X_val)
 
         # fit the classifier on the training data
         classifier.fit(X_train, y_train)
-        # predict the labels on the test data
-        pred = classifier.predict_proba(X_test)
+        # predict the labels on the val data
+        pred = classifier.predict_proba(X_val)
 
         # calculate the ROC AUC score
-        score = roc_auc_score(y_test, pred[:, 1])
+        score = roc_auc_score(y_val, pred[:, 1])
         scores_sklearn.append(score)
 
         coefs_sklearn.append(classifier.coef_)
