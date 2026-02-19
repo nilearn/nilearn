@@ -14,7 +14,7 @@ machine-learning pipelines in Nilearn.
 
 We will demonstrate this speedup using the :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py` example,
 which implements an encoding model using
-:sklearn:`Ridge regression <linear_model/ridge.html>` to predict fMRI data
+:class:`sklearn.linear_model.Ridge` to predict fMRI data
 from visual stimuli.
 
 Initial setup to access GPU acceleration
@@ -51,8 +51,8 @@ Time the original CPU version of the code
 =========================================
 
 The first important difference from the original example is that, at the time
-of writing, the GPU-acceleration in the
-:sklearn:`Ridge regression <linear_model/ridge.html>` is only available
+of writing, the GPU-acceleration in
+:class:`sklearn.linear_model.Ridge` is only available
 when the ``solver`` parameter is set to ``"svd"`` as mentioned in the
 :sklearn:`scikit-learn documentation. <modules/array_api.html#support-for-array-api-compatible-inputs>`
 
