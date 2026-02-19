@@ -394,6 +394,8 @@ print(
     np.allclose(intercepts_nilearn, av_sklearn_intercept, atol=1e-2),
 )
 
+print("Nilearn coefficients:\n", coefs_nilearn)
+print("\nScikit-Learn coefficients:\n", av_sklearn_coef)
 
 # %%
 # Compare the predicted labels on the left-out test set
