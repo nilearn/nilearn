@@ -388,23 +388,21 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                     default=LedoitWolf(store_precision=False)
         The covariance estimator.
         This implies that correlations are slightly shrunk
-        towards zero compared to a maximum-likelihood estimate
-        (
+        towards zero compared to a maximum-likelihood estimate.
         When passing a customized estimator, the covariance estimator must
         have a ``fit`` method that takes as input a 2D array of shape
         (n_samples, n_features) and has an attribute ``covariance_`` of shape
         (n_features, n_features) after fitting. If a custom covariance
-        estimator is used, the ``kind`` parameter will be ignored and the
-        output will be the covariance matrices estimated by the provided
-        covariance estimator.
+        estimator is used and ``kind`` is set to "customized", the function
+        ``get_custom_connectivity`` must be defined in the estimator.
 
     kind : {"covariance", "correlation", "partial correlation",\
-            "tangent", "precision"}, default='covariance'
+            "tangent", "precision", "customized"}, default='covariance'
         The matrix kind.
         For the use of "tangent" see :footcite:t:`Varoquaux2010b`.
-        If a customized covariance estimator is used, this argument will
-        be ignored and the output will be the covariance matrices estimated by
-        the provided covariance estimator.
+        If a customized covariance estimator is used and ``kind`` is set
+        to "customized", the function``get_custom_connectivity`` must
+        be defined in the estimator.
 
     vectorize : :obj:`bool`, default=False
         If True, connectivity matrices are reshaped into 1D arrays and only
@@ -530,15 +528,13 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         """Avoid duplication of computation."""
         if self.cov_estimator is None:
             self.cov_estimator = LedoitWolf(store_precision=False)
-        elif self.cov_estimator is not LedoitWolf(store_precision=False):
-            warnings.warn(
-                "You are using a custom covariance estimator. The 'kind' "
-                "parameter will be ignored and the output will be the "
-                "covariance matrices estimated by the provided covariance "
-                "estimator.",
-                stacklevel=find_stack_level(),
+        elif self.kind == "customized" and not hasattr(
+            self.cov_estimator, "get_custom_connectivity"
+        ):
+            raise ValueError(
+                "When kind is set to 'customized', the covariance estimator "
+                "must have a method 'get_custom_connectivity'."
             )
-            self.kind = None
 
         if not hasattr(X, "__iter__"):
             raise TypeError(
@@ -580,11 +576,11 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                 "tangent",
                 "covariance",
                 "precision",
-                None,
+                "customized",
             )
             check_parameter_in_allowed(self.kind, allowed_kinds, "kind")
 
-            if self.kind in ("covariance", "tangent", None):
+            if self.kind in ("covariance", "tangent", "customized"):
                 connectivities = covariances
             elif self.kind == "precision":
                 connectivities = [linalg.inv(cov) for cov in covariances]
