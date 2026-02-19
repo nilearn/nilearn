@@ -437,9 +437,27 @@ def test_smooth_list_img_surface(surf_img_1d):
     smoothed_img = smooth_img([surf_img_1d, surf_img_1d], fwhm=5)
     assert isinstance(smoothed_img, list)
     assert all(isinstance(x, SurfaceImage) for x in smoothed_img)
-    assert_array_almost_equal(
+    assert_array_equal(
         get_surface_data(smoothed_img[1]), get_surface_data(smooth_ref)
     )
+
+
+def test_smooth_img_surface_2d(surf_img_2d):
+    """Test smoothing surface images 2d.
+
+    Ensure we get equivalent result that smoothing a list of image.
+    """
+    img = surf_img_2d(3)
+
+    smoothed_img = smooth_img(img, fwhm=5)
+    assert isinstance(smoothed_img, SurfaceImage)
+
+    img_as_list = list(iter_img(img))
+    smoothed_img_as_list = smooth_img(img_as_list, fwhm=5)
+    for i, x in enumerate(smoothed_img_as_list):
+        assert_array_equal(
+            get_surface_data(x), get_surface_data(index_img(smoothed_img, i))
+        )
 
 
 def test_smooth_surface_img(surf_img_1d):
