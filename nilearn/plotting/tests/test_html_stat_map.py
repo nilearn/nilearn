@@ -9,6 +9,7 @@ from nibabel import Nifti1Image
 
 from nilearn import datasets, image
 from nilearn._utils.helpers import is_gil_enabled
+from nilearn.conftest import _img_3d_rand
 from nilearn.image import get_data, new_img_like
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.html_stat_map import (
@@ -17,12 +18,14 @@ from nilearn.plotting.html_stat_map import (
     _data_to_sprite,
     _get_bg_mask_and_cmap,
     _get_cut_slices,
+    _is_isotropic,
     _json_view_data,
     _json_view_params,
     _json_view_size,
     _json_view_to_html,
     _mask_stat_map,
     _resample_stat_map,
+    _resample_to_isotropic,
     _save_cm,
     _save_sprite,
     _threshold_data,
@@ -456,3 +459,59 @@ def test_view_img_4d_warnings(params):
         html_view = view_img(img_4d, **params)
 
     check_html_view_img(html_view)
+
+
+def test_view_img_non_isotropic():
+    """Smoke test for non-isotropic images."""
+    img = _img_3d_rand(affine=np.diag([2, 3, 4, 1]))
+    html_view = view_img(img)
+    check_html_view_img(html_view)
+
+
+@pytest.mark.parametrize(
+    "affine,is_isotropic",
+    [
+        (np.diag([2, 2, 2, 1]), True),
+        (np.diag([2, 3, 2, 1]), False),
+        (
+            np.array(
+                [
+                    [2, 0, 0, 1],
+                    [0, 2, 0, 3],
+                    [0, 0, 2, 5],
+                    [0, 0, 0, 1],
+                ]
+            ),
+            True,
+        ),
+        (
+            np.array(
+                [
+                    [2, 0, 0, 1],
+                    [0, 3, 0, 3],
+                    [0, 0, 2, 5],
+                    [0, 0, 0, 1],
+                ]
+            ),
+            False,
+        ),
+    ],
+)
+def test_is_isotropic(affine, is_isotropic):
+    assert _is_isotropic(affine) == is_isotropic
+
+
+@pytest.mark.parametrize(
+    "voxel_size,expected_affine",
+    [
+        (None, np.diag([-0.5, 0.5, 0.5, 1])),
+        (2, np.diag([-2, 2, 2, 1])),
+        (3, np.diag([-3, 3, 3, 1])),
+    ],
+)
+def test_resample_to_isotropic(voxel_size, expected_affine):
+    affine = np.diag([-0.5, 1, 2, 1])
+    img = _img_3d_rand(affine=affine)
+
+    resample_img = _resample_to_isotropic(img, voxel_size=voxel_size)
+    assert np.allclose(resample_img.affine, expected_affine)
