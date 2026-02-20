@@ -124,6 +124,7 @@ Some other past or present contributors are:
 * `Jeremy Lefort-Besnard`_: Inria Rennes, France
 * `Jerome Dockes`_: Origami lab, McGill University, Montréal, Canada
 * `Jerome-Alexis Chevalier`_: Emerton Data
+* `Johanna Bayer`_: McGill University, Montréal, Canada
 * `Johannes Wiesner`_: Central Institute of Mental Health, Mannheim, Germany
 * `John T. Johnson`_: Neurogram, USA
 * `Jon Haitz Legarreta Gorrono`_: Brigham and Women's Hospital, Mass General Brigham/Harvard Medical School, Boston, Massachusetts, USA

@@ -153,6 +153,8 @@
 
 .. _Jerome-Alexis Chevalier: https://github.com/ja-che
 
+.. _Johanna Bayer: https://opencodereview.netlify.app/
+
 .. _Johannes Wiesner: https://github.com/JohannesWiesner
 
 .. _John T. Johnson: https://github.com/JohnAtl
