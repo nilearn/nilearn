@@ -3157,6 +3157,11 @@ def check_masker_transform_resampling(estimator_orig) -> None:
 
     Check that running transform on images with different fov
     than those used at fit is possible.
+
+    Check that no warning is thrown when passing the same image
+    at fit and transform time, the resampling target is "data".
+    If the resampling target is "maps" or "labels"
+    then a warning should be thrown.
     """
     estimator = clone(estimator_orig)
 
@@ -3169,7 +3174,9 @@ def check_masker_transform_resampling(estimator_orig) -> None:
     input_shape = (28, 29, 30, n_sample)
     imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
 
-    imgs2 = Nifti1Image(_rng().random((20, 21, 22)), _affine_eye())
+    imgs_with_different_fov = Nifti1Image(
+        _rng().random((20, 21, 22)), _affine_eye()
+    )
 
     mask_shape = (15, 16, 17)
     mask_img = Nifti1Image(np.ones(mask_shape), _affine_eye())
@@ -3208,12 +3215,17 @@ def check_masker_transform_resampling(estimator_orig) -> None:
             actual_shape = new_imgs.shape
             assert actual_shape == expected_shape
 
-            # no resampling warning when using same imgs as for fit()
-            with warnings.catch_warnings(record=True) as warning_list:
-                estimator.transform(imgs)
-            assert all(
-                "at transform time" not in str(x.message) for x in warning_list
-            )
+            if resampling_target == "maps":
+                with pytest.warns(UserWarning, match="at transform time"):
+                    estimator.transform(imgs)
+            else:
+                # no resampling warning when using same imgs as for fit()
+                with warnings.catch_warnings(record=True) as warning_list:
+                    estimator.transform(imgs)
+                assert all(
+                    "at transform time" not in str(x.message)
+                    for x in warning_list
+                )
 
             # same result before and after running transform()
             new_imgs_2 = estimator.inverse_transform(signals)
@@ -3224,14 +3236,12 @@ def check_masker_transform_resampling(estimator_orig) -> None:
             # than the one used at fit time,
             # but there should be a resampling warning
             # we are resampling to data
-            with warnings.catch_warnings(record=True) as warning_list:
-                estimator.transform(imgs2)
-
-            if resampling_target == "data":
-                assert any(
-                    "at transform time" in str(x.message) for x in warning_list
-                )
+            if resampling_target in ["data", "maps"]:
+                with pytest.warns(UserWarning, match="at transform time"):
+                    estimator.transform(imgs_with_different_fov)
             else:
+                with warnings.catch_warnings(record=True) as warning_list:
+                    estimator.transform(imgs_with_different_fov)
                 assert all(
                     "at transform time" not in str(x.message)
                     for x in warning_list

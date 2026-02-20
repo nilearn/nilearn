@@ -70,6 +70,7 @@ Some other past or present contributors are:
 * `Arthur Mensch`_
 * `Aswin Vijayan`_
 * `Audrey Duran`_: TheraPanacea, France
+* `Basile Pinsard`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
 * `Ben Cipollini`_: Facebook, Hayward, California, USA
 * `Bertrand Thirion`_: Inria, Saclay, France
 * `Binh Nguyen`_
@@ -115,6 +116,7 @@ Some other past or present contributors are:
 * `Jaques Grobler`_: Anyline GmbH, Vienna, Austria
 * `Jason Gors`_: Insight Data Science, Mountain View, California, USA
 * `Jason Kai`_: Child Mind Institute
+* `Jason D. Yeatman`_: Stanford University, Stanford, California, USA
 * `Javier Rasero`_: School of Data Science, University of Virginia, Viginia, USA
 * `Jean Kossaifi`_: Imperial College London, London, UK
 * `Jean-Rémi King`_: Meta AI, CNRS, Paris
@@ -122,6 +124,7 @@ Some other past or present contributors are:
 * `Jeremy Lefort-Besnard`_: Inria Rennes, France
 * `Jerome Dockes`_: Origami lab, McGill University, Montréal, Canada
 * `Jerome-Alexis Chevalier`_: Emerton Data
+* `Johanna Bayer`_: McGill University, Montréal, Canada
 * `Johannes Wiesner`_: Central Institute of Mental Health, Mannheim, Germany
 * `John T. Johnson`_: Neurogram, USA
 * `Jon Haitz Legarreta Gorrono`_: Brigham and Women's Hospital, Mass General Brigham/Harvard Medical School, Boston, Massachusetts, USA
@@ -169,6 +172,7 @@ Some other past or present contributors are:
 * `Neelay Shah`_: Max Planck Institute for Intelligent Systems, Germany
 * `Nicolas Gensollen`_: Inria, Paris, France
 * `Nikhil Krish`_: University of Texas, Austin
+* `Noah C. Benson`_: University of Washington, Seattle, Washington, USA
 * `Oliver Warrington`_: Wellcome Centre for Human Neuroimaging, UCL, London, UK
 * `Oscar Esteban`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
 * `Patrick Sadil`_: Department of Biostatistics, Johns Hopkins Bloomberg School of Public Health, USA

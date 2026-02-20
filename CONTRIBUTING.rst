@@ -507,6 +507,8 @@ We use `prettier <https://prettier.io/>`_ and `djlint <https://github.com/djlint
 
 This is implemented via a pre-commit hook.
 
+.. _pre_commit:
+
 Pre-commit
 ----------
 
@@ -518,6 +520,18 @@ To install pre-commit, run:
 .. code-block:: bash
 
       pip install pre-commit
+
+.. note::
+
+      Pre-commit will already be installed if you installed
+      the ``dev`` or ``style`` dependencies of nilearn
+      with::
+
+            pip install -e '.[dev]'
+
+      or::
+
+            pip install -e '.[style]'
 
 Then run the following to install the pre-commit hooks:
 
@@ -741,7 +755,6 @@ This installs your local version of Nilearn,
 along with all dependencies necessary for developers (hence the ``[dev]`` tag).
 For more information about the dependency installation options, see ``pyproject.toml``.
 The installed version will also reflect any changes you make to your code.
-
 
 4. check that all tests pass with (this can take a while):
 
