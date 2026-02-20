@@ -7,8 +7,6 @@ from matplotlib import pyplot as plt
 from nibabel import Nifti1Image
 
 from nilearn import image
-from nilearn import datasets, image
-from nilearn._utils.helpers import is_gil_enabled
 from nilearn.conftest import _img_3d_rand
 from nilearn.image import get_data, new_img_like
 from nilearn.plotting._engine_utils import colorscale
