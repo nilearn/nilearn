@@ -606,6 +606,37 @@ You can also use the ``rng`` fixture.
 
           # the rest of the test
 
+
+Running the tests with several python versions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you want to easily check that a test pass
+with several versions of python,
+you can use `Tox <https://tox.wiki>`_ to do this.
+
+.. code-block:: bash
+
+      pip install tox
+
+Then simply running
+
+.. code-block:: bash
+
+      tox
+
+will let tox run all the tests on all the python versions
+it can find on your system.
+
+You can specify which tests to run
+by passing extra command line arguments to pytest after a ``--``.
+
+For example, the following would run all the tests in ``nilearn/image``
+that contain the word ``smooth``.
+
+.. code-block:: python
+
+      tox -- nilearn/image -k smooth
+
 Plotting
 --------
 
