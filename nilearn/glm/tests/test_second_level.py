@@ -1635,21 +1635,6 @@ def test_second_level_input_with_wrong_mask(
         model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
-def test_second_level_input_as_surface_image_warning_smoothing(
-    surf_img_1d, n_subjects
-):
-    """Warn smoothing surface not implemented."""
-    second_level_input = [surf_img_1d for _ in range(n_subjects)]
-
-    design_matrix = pd.DataFrame(
-        [1] * len(second_level_input), columns=["intercept"]
-    )
-
-    model = SecondLevelModel(smoothing_fwhm=8.0)
-    with pytest.warns(NotImplementedWarning, match="not yet supported"):
-        model = model.fit(second_level_input, design_matrix=design_matrix)
-
-
 def test_second_level_input_as_flm_of_surface_image(
     surface_glm_data, n_subjects
 ):

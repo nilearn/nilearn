@@ -257,10 +257,12 @@ jobs:
             uses: actions/cache/restore@v5
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
+                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{
+                    github.run_attempt }}
                 restore-keys: |
-                    data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}
-                    data_cache-${{ github.workflow }}_ref-${{ github.ref }}
+                    data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}_run-${{ github.run_number }}
+                    data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}
+                    data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
 
         -   name: Get data from a previous successful run for full builds
                   # only run it if we did not get the data from a previous attempt
@@ -307,7 +309,8 @@ jobs:
             if: always()
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
+                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{
+                    github.run_attempt }}
 
     # Steps to build the documentation.
     build_docs:
@@ -365,9 +368,10 @@ jobs:
             uses: actions/cache@v5
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
+                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{
+                    github.run_attempt }}
                 restore-keys: |
-                    data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}
+                    data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}_run-${{ github.run_number }}
 
                   # Set up and launch a virtual browser needed for one example to run
                   # without stalling the job. The example launches an html in the browser.
