@@ -349,11 +349,14 @@ def test_fast_smooth_array_give_same_result_as_smooth_array(
 def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
     """See https://github.com/nilearn/nilearn/issues/1537."""
     affine = AFFINE_TO_TEST[2]
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning, match=r"specified as 0\.0\. Setting it to None"
+    ):
         smooth_array(smooth_array_data, affine, fwhm=0.0)
 
 
-def test_smooth_img(affine_eye, tmp_path):
+@pytest.mark.parametrize("create_files", (False, True))
+def test_smooth_img(tmp_path, create_files):
     """Checks added functionalities compared to image._smooth_array()."""
     shapes = ((10, 11, 12), (13, 14, 15))
     lengths = (17, 18)
@@ -362,45 +365,60 @@ def test_smooth_img(affine_eye, tmp_path):
     img1, _ = generate_fake_fmri(shape=shapes[0], length=lengths[0])
     img2, _ = generate_fake_fmri(shape=shapes[1], length=lengths[1])
 
-    for create_files in (False, True):
-        imgs = testing.write_imgs_to_path(
-            img1, img2, file_path=tmp_path, create_files=create_files
-        )
-        # List of images as input
-        out = smooth_img(imgs, fwhm)
+    imgs = testing.write_imgs_to_path(
+        img1, img2, file_path=tmp_path, create_files=create_files
+    )
+    # List of images as input
+    out = smooth_img(imgs, fwhm)
 
-        assert isinstance(out, list)
-        assert len(out) == 2
-        for o, s, l in zip(out, shapes, lengths, strict=False):
-            assert o.shape == (*s, l)
+    assert isinstance(out, list)
+    assert len(out) == 2
+    for o, s, l in zip(out, shapes, lengths, strict=False):
+        assert o.shape == (*s, l)
 
-        # Single image as input
-        out = smooth_img(imgs[0], fwhm)
+    # Single image as input
+    out = smooth_img(imgs[0], fwhm)
 
-        assert isinstance(out, Nifti1Image)
-        assert out.shape == (shapes[0] + (lengths[0],))
+    assert isinstance(out, Nifti1Image)
+    assert out.shape == (shapes[0] + (lengths[0],))
 
-    # Check corner case situations when fwhm=0, See issue #1537
-    # Test whether function smooth_img raises a warning when fwhm=0.
-    with pytest.warns(
-        UserWarning,
-        match="The parameter 'fwhm' for smoothing is specified as 0.0.",
-    ):
-        smooth_img(img1, fwhm=0.0)
 
-    # Test output equal when fwhm=None and fwhm=0
-    out_fwhm_none = smooth_img(img1, fwhm=None)
-    out_fwhm_zero = smooth_img(img1, fwhm=0.0)
+@pytest.mark.parametrize(
+    "fwhm", [[1.0, 1.0, 1.0], (1.0, 1.0, 1.0), np.asarray([1.0, 1.0, 1.0])]
+)
+def test_smooth_img_scalar_array(affine_eye, fwhm):
+    """Ensure that fwhm=1 and fwhm=[1, 1, 1] give same result."""
+    data1 = np.zeros((10, 11, 12))
+    data1[2:4, 1:5, 3:6] = 1
+    img1_nifti2 = Nifti2Image(data1, affine=affine_eye)
+
+    data2 = np.zeros((13, 14, 15))
+    data2[2:4, 1:5, 3:6] = 9
+    img2_nifti2 = Nifti2Image(data2, affine=affine_eye)
+
+    out1 = smooth_img([img1_nifti2, img2_nifti2], fwhm=1.0)
+    out2 = smooth_img([img1_nifti2, img2_nifti2], fwhm=fwhm)
+    for o1, o2 in zip(out1, out2, strict=False):
+        assert_array_equal(get_data(o1), get_data(o2))
+
+
+def test_smooth_img_fwhm_0_or_none(img_3d_mni):
+    """Test output equal when fwhm=None and fwhm=0."""
+    out_fwhm_none = smooth_img(img_3d_mni, fwhm=None)
+    out_fwhm_zero = smooth_img(img_3d_mni, fwhm=0.0)
 
     assert_array_equal(get_data(out_fwhm_none), get_data(out_fwhm_zero))
 
-    data1 = np.zeros((10, 11, 12))
-    data1[2:4, 1:5, 3:6] = 1
-    data2 = np.zeros((13, 14, 15))
-    data2[2:4, 1:5, 3:6] = 9
-    img1_nifti2 = Nifti2Image(data1, affine=affine_eye)
-    img2_nifti2 = Nifti2Image(data2, affine=affine_eye)
-    out = smooth_img([img1_nifti2, img2_nifti2], fwhm=1.0)
+
+def test_smooth_img_warning(img_3d_mni):
+    """Check corner case situations when fwhm=0, ee issue #1537.
+
+    Test whether function smooth_img raises a warning when fwhm=0.
+    """
+    with pytest.warns(
+        UserWarning, match=r"specified as 0\.0\. Setting it to None"
+    ):
+        smooth_img(img_3d_mni, fwhm=0.0)
 
 
 def test_smooth_img_surface(surf_img_1d):
