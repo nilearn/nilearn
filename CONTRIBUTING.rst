@@ -621,18 +621,54 @@ You can also use the ``rng`` fixture.
           # the rest of the test
 
 
-Running the tests with several python versions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using tox
+^^^^^^^^^
 
-If you want to easily check that a test pass
-with several versions of python,
-you can use `Tox <https://tox.wiki>`_ to do this.
+`Tox <https://tox.wiki>`_ is set
+to facilitate testing and managing environments during development
+and ensure that the same commands can easily be run locally and in CI.
+
+It should already be installed if you ran:
 
 .. code-block:: bash
 
-      pip install tox
+    pip install -e '.[dev]'
 
-Then simply running
+You can set up certain environment or run certain command by calling ``tox``.
+
+Calling ``tox`` with no extra argument will simply run
+all the default commands defined in the tox configuration (``tox.ini``).
+
+Use ``tox list`` to view all environment descriptions.
+
+Use ``tox run`` to run a specific environment.
+
+Example
+
+.. code-block:: bash
+
+    tox run -e lint
+
+Some environments allow passing extra argument:
+
+.. code-block:: bash
+
+    # only run ruff
+    tox run -e lint -- ruff
+
+    # only run some tests
+    tox -e plotting -- nilearn/glm/tests/test_contrasts.py
+
+You can also run any arbitrary command in a given environment with ``tox exec``:
+
+.. code-block:: bash
+
+    tox exec -e latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
+
+Running the tests with several python versions
+""""""""""""""""""""""""""""""""""""""""""""""
+
+Running
 
 .. code-block:: bash
 
