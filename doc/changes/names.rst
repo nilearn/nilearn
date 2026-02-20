@@ -137,6 +137,8 @@
 
 .. _Jason Kai: https://github.com/kaitj
 
+.. _Jason D. Yeatman: https://edneuro.stanford.edu/
+
 .. _Javier Rasero: https://jrasero.github.io/
 
 .. _Jean Kossaifi: https://jeankossaifi.com/
@@ -244,6 +246,8 @@
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
 
 .. _Nikhil Krish: https://github.com/NIkhilgKrish
+
+.. _Noah C. Benson: https://nben.net/
 
 .. _Oliver Warrington: https://github.com/OliverWarrington
 

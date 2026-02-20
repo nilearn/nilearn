@@ -25,9 +25,12 @@ Fixes
 -----
 
 - :bdg-secondary:`Maint` Allow local installation with ```uv sync`` (:gh:`6024` by `Mathieu Dugré`_)
+- :bdg-info:`Plotting` Fix ``nilearn.plotting.view_img`` resampling of non-isotropic images when no background image is used (:gh:`6031` by `Michelle Wang`_).
 
 Enhancements
 ------------
+
+- :bdg-dark:`Code` Add surface support to :func:`~nilearn.image.smooth_img` (:gh:`3267` by `Jason D. Yeatman`_ and `Noah C. Benson`_ ).
 
 - :bdg-success:`API` Add a public method to access the fitted mask of GLM instances (:gh:`5981` by `Rémi Gau`_).
 

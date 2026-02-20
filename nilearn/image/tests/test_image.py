@@ -45,6 +45,8 @@ from nilearn.exceptions import DimensionError
 from nilearn.image.image import (
     _crop_img_to,
     _fast_smooth_array,
+    _mris_fwhm_to_niters,
+    _smooth_surface_img,
     binarize_img,
     check_niimg,
     check_niimg_3d,
@@ -347,11 +349,14 @@ def test_fast_smooth_array_give_same_result_as_smooth_array(
 def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
     """See https://github.com/nilearn/nilearn/issues/1537."""
     affine = AFFINE_TO_TEST[2]
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning, match=r"specified as 0\.0\. Setting it to None"
+    ):
         smooth_array(smooth_array_data, affine, fwhm=0.0)
 
 
-def test_smooth_img(affine_eye, tmp_path):
+@pytest.mark.parametrize("create_files", (False, True))
+def test_smooth_img(tmp_path, create_files):
     """Checks added functionalities compared to image._smooth_array()."""
     shapes = ((10, 11, 12), (13, 14, 15))
     lengths = (17, 18)
@@ -360,42 +365,148 @@ def test_smooth_img(affine_eye, tmp_path):
     img1, _ = generate_fake_fmri(shape=shapes[0], length=lengths[0])
     img2, _ = generate_fake_fmri(shape=shapes[1], length=lengths[1])
 
-    for create_files in (False, True):
-        imgs = testing.write_imgs_to_path(
-            img1, img2, file_path=tmp_path, create_files=create_files
-        )
-        # List of images as input
-        out = smooth_img(imgs, fwhm)
+    imgs = testing.write_imgs_to_path(
+        img1, img2, file_path=tmp_path, create_files=create_files
+    )
+    # List of images as input
+    out = smooth_img(imgs, fwhm)
 
-        assert isinstance(out, list)
-        assert len(out) == 2
-        for o, s, l in zip(out, shapes, lengths, strict=False):
-            assert o.shape == (*s, l)
+    assert isinstance(out, list)
+    assert len(out) == 2
+    for o, s, l in zip(out, shapes, lengths, strict=False):
+        assert o.shape == (*s, l)
 
-        # Single image as input
-        out = smooth_img(imgs[0], fwhm)
+    # Single image as input
+    out = smooth_img(imgs[0], fwhm)
 
-        assert isinstance(out, Nifti1Image)
-        assert out.shape == (shapes[0] + (lengths[0],))
+    assert isinstance(out, Nifti1Image)
+    assert out.shape == (shapes[0] + (lengths[0],))
 
-    # Check corner case situations when fwhm=0, See issue #1537
-    # Test whether function smooth_img raises a warning when fwhm=0.
-    with pytest.warns(UserWarning):
-        smooth_img(img1, fwhm=0.0)
 
-    # Test output equal when fwhm=None and fwhm=0
-    out_fwhm_none = smooth_img(img1, fwhm=None)
-    out_fwhm_zero = smooth_img(img1, fwhm=0.0)
+@pytest.mark.parametrize(
+    "fwhm", [[1.0, 1.0, 1.0], (1.0, 1.0, 1.0), np.asarray([1.0, 1.0, 1.0])]
+)
+def test_smooth_img_scalar_array(affine_eye, fwhm):
+    """Ensure that fwhm=1 and fwhm=[1, 1, 1] give same result."""
+    data1 = np.zeros((10, 11, 12))
+    data1[2:4, 1:5, 3:6] = 1
+    img1_nifti2 = Nifti2Image(data1, affine=affine_eye)
+
+    data2 = np.zeros((13, 14, 15))
+    data2[2:4, 1:5, 3:6] = 9
+    img2_nifti2 = Nifti2Image(data2, affine=affine_eye)
+
+    out1 = smooth_img([img1_nifti2, img2_nifti2], fwhm=1.0)
+    out2 = smooth_img([img1_nifti2, img2_nifti2], fwhm=fwhm)
+    for o1, o2 in zip(out1, out2, strict=False):
+        assert_array_equal(get_data(o1), get_data(o2))
+
+
+def test_smooth_img_fwhm_0_or_none(img_3d_mni):
+    """Test output equal when fwhm=None and fwhm=0."""
+    out_fwhm_none = smooth_img(img_3d_mni, fwhm=None)
+    out_fwhm_zero = smooth_img(img_3d_mni, fwhm=0.0)
 
     assert_array_equal(get_data(out_fwhm_none), get_data(out_fwhm_zero))
 
-    data1 = np.zeros((10, 11, 12))
-    data1[2:4, 1:5, 3:6] = 1
-    data2 = np.zeros((13, 14, 15))
-    data2[2:4, 1:5, 3:6] = 9
-    img1_nifti2 = Nifti2Image(data1, affine=affine_eye)
-    img2_nifti2 = Nifti2Image(data2, affine=affine_eye)
-    out = smooth_img([img1_nifti2, img2_nifti2], fwhm=1.0)
+
+def test_smooth_img_warning(img_3d_mni):
+    """Check corner case situations when fwhm=0, ee issue #1537.
+
+    Test whether function smooth_img raises a warning when fwhm=0.
+    """
+    with pytest.warns(
+        UserWarning, match=r"specified as 0\.0\. Setting it to None"
+    ):
+        smooth_img(img_3d_mni, fwhm=0.0)
+
+
+def test_smooth_img_surface(surf_img_1d):
+    """Test smoothing surface images.
+
+    Test output equal when fwhm=None and fwhm=0.
+    Test smoothing changes input.
+    Test that min and max are less extreme after smoothing.
+    """
+    out_fwhm_none = smooth_img(surf_img_1d, fwhm=None)
+    out_fwhm_zero = smooth_img(surf_img_1d, fwhm=0)
+
+    assert_surface_image_equal(surf_img_1d, out_fwhm_zero)
+    assert_surface_image_equal(out_fwhm_none, out_fwhm_zero)
+
+    smoothed_img = smooth_img(surf_img_1d, fwhm=5)
+
+    with pytest.raises(
+        ValueError, match="Part 'left' of PolyData instances are not equal"
+    ):
+        assert_surface_image_equal(smoothed_img, surf_img_1d)
+
+    data = get_surface_data(surf_img_1d)
+    smoothed_data = get_surface_data(smoothed_img)
+
+    assert data.max() > smoothed_data.max()
+    assert data.min() < smoothed_data.min()
+    assert data.var() > smoothed_data.var()
+
+
+def test_smooth_list_img_surface(surf_img_1d):
+    """Test smoothing list surface images."""
+    smooth_ref = smooth_img(surf_img_1d, fwhm=5)
+    smoothed_img = smooth_img([surf_img_1d, surf_img_1d], fwhm=5)
+    assert isinstance(smoothed_img, list)
+    assert all(isinstance(x, SurfaceImage) for x in smoothed_img)
+    assert_array_equal(
+        get_surface_data(smoothed_img[1]), get_surface_data(smooth_ref)
+    )
+
+
+def test_smooth_img_surface_2d(surf_img_2d):
+    """Test smoothing surface images 2d.
+
+    Ensure we get equivalent result that smoothing a list of image.
+    """
+    img = surf_img_2d(3)
+
+    smoothed_img = smooth_img(img, fwhm=5)
+    assert isinstance(smoothed_img, SurfaceImage)
+
+    img_as_list = list(iter_img(img))
+    smoothed_img_as_list = smooth_img(img_as_list, fwhm=5)
+    for i, x in enumerate(smoothed_img_as_list):
+        assert_array_equal(
+            get_surface_data(x), get_surface_data(index_img(smoothed_img, i))
+        )
+
+
+def test_smooth_surface_img(surf_img_1d):
+    """Check smoothing changes data."""
+    smoothed_imgs = _smooth_surface_img(surf_img_1d, iterations=[1, 1])
+
+    assert isinstance(smoothed_imgs, SurfaceImage)
+    for part in surf_img_1d.data.parts:
+        assert not np.array_equal(
+            surf_img_1d.data.parts[part], smoothed_imgs.data.parts[part]
+        )
+
+    more_smoothed_imgs = _smooth_surface_img(surf_img_1d, iterations=[2, 2])
+    for part in surf_img_1d.data.parts:
+        assert not np.array_equal(
+            more_smoothed_imgs.data.parts[part], smoothed_imgs.data.parts[part]
+        )
+
+
+def test_smooth_surface_niter(surf_img_1d):
+    """Control the number of iterations."""
+    n5 = _mris_fwhm_to_niters(5, surf_img_1d)
+    assert n5 == [16, 14]
+
+
+def test_smooth_surface_img_errors(surf_img_1d):
+    with pytest.raises(TypeError, match="'vertex_weights'"):
+        _smooth_surface_img(
+            surf_img_1d,
+            vertex_weights="'vertex_weights' must be None or a SurfaceImage.",
+        )
 
 
 def test_crop_img_to():
