@@ -668,14 +668,12 @@ You can also run any arbitrary command in a given environment with ``tox exec``:
 Running the tests with several python versions
 """"""""""""""""""""""""""""""""""""""""""""""
 
-Running
+Running the following should let tox run all the tests on all the python versions
+it can find on your system.
 
 .. code-block:: bash
 
       tox
-
-will let tox run all the tests on all the python versions
-it can find on your system.
 
 You can specify which tests to run
 by passing extra command line arguments to pytest after a ``--``.
