@@ -403,3 +403,18 @@ def test_multi_nifti_labels_masker_resampling_target():
         compressed_img2 = masker.inverse_transform(signals2)
 
         assert_array_equal(get_data(compressed_img), get_data(compressed_img2))
+
+
+@pytest.mark.single_process
+def test_nested_parallel(img_labels, img_fmri):
+    """Test MultiNiftiLabelsMasker with n_jobs > 1."""
+    masker = MultiNiftiLabelsMasker(labels_img=img_labels, standardize=None)
+    masker_parallel = MultiNiftiLabelsMasker(
+        labels_img=img_labels, n_jobs=2, standardize=None
+    )
+
+    signals = masker.fit_transform([img_fmri] * 5)
+    signals_parallel = masker_parallel.fit_transform([img_fmri] * 5)
+
+    for s, s_p in zip(signals, signals_parallel, strict=False):
+        assert np.allclose(s, s_p)
