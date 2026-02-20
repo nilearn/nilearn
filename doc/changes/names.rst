@@ -45,6 +45,8 @@
 
 .. _Audrey Duran: https://github.com/AudreyDuran
 
+.. _Basile Pinsard: https://github.com/bpinsard
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -134,6 +136,8 @@
 .. _Jason Gors: http://jgors.com/
 
 .. _Jason Kai: https://github.com/kaitj
+
+.. _Jason D. Yeatman: https://edneuro.stanford.edu/
 
 .. _Javier Rasero: https://jrasero.github.io/
 
@@ -242,6 +246,8 @@
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
 
 .. _Nikhil Krish: https://github.com/NIkhilgKrish
+
+.. _Noah C. Benson: https://nben.net/
 
 .. _Oliver Warrington: https://github.com/OliverWarrington
 
