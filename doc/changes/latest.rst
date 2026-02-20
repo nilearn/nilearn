@@ -57,4 +57,4 @@ Changes
 
 - :bdg-dark:`Code` Remove aggressive garbage collection in safe_get_data for performance, mainly in CI. (:gh:`6039` by `Basile Pinsard`_).
 
-- :bdg-secondary:`Maint` Refactor and speed up tests for :func:``~plotting.view_img`` (:gh:`6072` by `Michelle Wang`_)
+- :bdg-secondary:`Maint` Refactor and speed up tests for :func:`~plotting.view_img` (:gh:`6072` by `Michelle Wang`_)
