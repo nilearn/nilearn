@@ -37,13 +37,12 @@ def generate_and_check_glm_report(
     """
     if warnings_msg_to_check is None:
         warnings_msg_to_check = []
-    includes = []
     excludes = []
 
-    # check the navbar and its css is there
-    includes.append('<nav class="navbar pure-g fw-bold" id="menu"')
-    includes.append("Adapted from Pure CSS navbar")  # css
-
+    includes = [
+        '<nav class="navbar pure-g fw-bold" id="menu"',
+        "Adapted from Pure CSS navbar",
+    ]
     # 'Contrasts' and 'Statistical maps' should appear
     # as section and in navbar
     # if report was generated with contrasts.

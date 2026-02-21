@@ -4050,9 +4050,8 @@ def _generate_report_with_no_warning(estimator) -> None:
         unknown_warnings = []
         for x in warning_list:
             message = str(x.message)
-            if any(y in message for y in warnings_to_ignore):
-                continue
-            unknown_warnings.append(message)
+            if all(y not in message for y in warnings_to_ignore):
+                unknown_warnings.append(message)
 
         if not isinstance(estimator, (RegionExtractor, SurfaceMapsMasker)):
             assert not unknown_warnings, unknown_warnings
