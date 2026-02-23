@@ -325,8 +325,6 @@ decoder = Decoder(
 )
 decoder.fit(fmri_img, y, groups=run)
 scores_nilearn = np.concatenate(list(decoder.cv_scores_.values()))
-coefs_nilearn = decoder.coef_
-intercepts_nilearn = decoder.intercept_
 
 # %%
 # Compare the results
@@ -363,6 +361,8 @@ print("Scikit-Learn mean AU-ROC score", np.mean(scores_sklearn))
 # problem to check if they are comparable to the coefficients and intercepts
 # from the Nilearn decoder.
 
+from nilearn.plotting import plot_img_comparison, plot_stat_map
+
 increment = len(np.unique(run))
 start_index_of_last_cv_split = (
     increment * label_binarizer.classes_.shape[0] - increment
@@ -383,19 +383,36 @@ av_sklearn_intercept = np.squeeze(
     )
 )
 
-# compare the values of the coefficients and intercepts from both approaches
-
-print(
-    "Coefficients are close:",
-    np.allclose(coefs_nilearn, av_sklearn_coef, atol=1e-2),
-)
-print(
-    "Intercepts are close:",
-    np.allclose(intercepts_nilearn, av_sklearn_intercept, atol=1e-2),
+fig, (ax_nilearn, ax_sklearn) = plt.subplots(1, 2, figsize=(12, 5))
+plot_stat_map(
+    decoder.coef_img_["bottle"],
+    axes=ax_nilearn,
+    display_mode="z",
+    cut_coords=[-9],
+    title="Nilearn",
 )
 
-print("Nilearn coefficients:\n", coefs_nilearn)
-print("\nScikit-Learn coefficients:\n", av_sklearn_coef)
+plot_stat_map(
+    masker.inverse_transform(av_sklearn_coef[0]),
+    axes=ax_sklearn,
+    display_mode="z",
+    cut_coords=[-9],
+    title="Scikit-Learn",
+)
+
+plot_img_comparison(
+    decoder.coef_img_["bottle"],
+    masker.inverse_transform(av_sklearn_coef[0]),
+    decoder.masker_,
+    ref_label="Nilearn",
+    src_label="Scikit-Learn",
+)
+
+# The coefficients and intercepts from the Scikit-Learn pipeline and the
+# Nilearn decoder are actually similar but not identical. The differences
+# seem to depend on OS -- they are bigger on Linux than on Mac. However they
+# are not big enough to cause a difference in the predicted labels on the test
+# set.
 
 # %%
 # Compare the predicted labels on the left-out test set
