@@ -81,10 +81,10 @@ ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 
 ESTIMATORS_TO_CHECK = [
-    Decoder(standardize="zscore_sample", screening_percentile=100),
-    DecoderRegressor(standardize="zscore_sample", screening_percentile=100),
-    FREMClassifier(standardize="zscore_sample", screening_percentile=100),
-    FREMRegressor(standardize="zscore_sample", screening_percentile=100),
+    Decoder(screening_percentile=100),
+    DecoderRegressor(screening_percentile=100),
+    FREMClassifier(screening_percentile=100),
+    FREMRegressor(screening_percentile=100),
 ]
 
 if SKLEARN_LT_1_6:

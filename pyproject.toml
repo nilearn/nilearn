@@ -46,7 +46,10 @@ requires-python = ">=3.10"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
-dev = ["nilearn[plotting,doc,style,test]"]
+dev = [
+    "nilearn[plotting,doc,style,test]",
+    "tox"
+]
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
@@ -104,8 +107,7 @@ test = [
     "pytest-timeout",
     "pytest-xdist[psutil]",
     "pytest-mpl",
-    "pytest-rerunfailures",
-    "tox"
+    "pytest-rerunfailures"
 ]
 # Running test for free threaded python
 # requires fewer extensions
