@@ -244,14 +244,14 @@ classifier = LogisticRegressionCV(
 test_run = 6
 test_mask = run == test_run
 
-# training data
-fmri_img = index_img(fmri_img, ~test_mask)
-y = y[~test_mask]
-y_binary = y_binary[~test_mask]
-run = run[~test_mask]
+# training data for cross-validation
+fmri_img_cv = index_img(fmri_img, ~test_mask)
+y_cv = y[~test_mask]
+y_binary_cv = y_binary[~test_mask]
+run_cv = run[~test_mask]
 
 # Transform fMRI data into a 2D numpy array and standardize it with the masker
-X = masker.fit_transform(fmri_img)
+X_cv = masker.fit_transform(fmri_img_cv)
 
 # test data
 fmri_img_test = index_img(fmri_img, test_mask)
@@ -273,7 +273,7 @@ from sklearn.model_selection import LeaveOneGroupOut
 
 logo_cv = LeaveOneGroupOut()
 
-print(f"fMRI data shape after masking: {X.shape}")
+print(f"fMRI data shape after masking: {X_cv.shape}")
 # So now we have a 2D numpy array where each row corresponds to a trial and
 # each column corresponds to a feature (voxel in the Ventral Temporal cortex).
 
@@ -283,12 +283,15 @@ scores_sklearn = []
 coefs_sklearn = []
 intercepts_sklearn = []
 for klass in range(n_labels):
-    for train, val in logo_cv.split(X, groups=run):
+    for train, val in logo_cv.split(X_cv, groups=run_cv):
         # separate train and val events in the data
-        X_train, X_val = X[train], X[val]
+        X_train, X_val = X_cv[train], X_cv[val]
         # separate labels for train and val events for a given class vs. rest
         # problem
-        y_train, y_val = y_binary[train, klass], y_binary[val, klass]
+        y_train, y_val = (
+            y_binary_cv[train, klass],
+            y_binary_cv[val, klass],
+        )
 
         # select the voxels by fitting feature selector on training data
         X_train = feature_selector.fit_transform(X_train, y_train)
@@ -325,7 +328,7 @@ decoder = Decoder(
     screening_percentile=screening_percentile,
     scoring="roc_auc_ovr",
 )
-decoder.fit(fmri_img, y, groups=run)
+decoder.fit(fmri_img_cv, y_cv, groups=run_cv)
 scores_nilearn = np.concatenate(list(decoder.cv_scores_.values()))
 
 # %%
@@ -363,24 +366,21 @@ print("Scikit-Learn mean AU-ROC score", np.mean(scores_sklearn))
 # problem to check if they are comparable to the coefficients and intercepts
 # from the Nilearn decoder.
 
-from nilearn.plotting import plot_img_comparison, plot_stat_map
+from nilearn.plotting import plot_img_comparison, plot_stat_map, show
 
-increment = len(np.unique(run))
-start_index_of_last_cv_split = (
-    increment * label_binarizer.classes_.shape[0] - increment
-) + 1
+increment = len(np.unique(run_cv))
 
 av_sklearn_coef = np.vstack(
     [
         np.mean(coefs_sklearn[i : i + increment], axis=0)
-        for i in range(0, start_index_of_last_cv_split, increment)
+        for i in range(0, len(coefs_sklearn), increment)
     ]
 )
 av_sklearn_intercept = np.squeeze(
     np.vstack(
         [
             np.mean(intercepts_sklearn[i : i + increment], axis=0)
-            for i in range(0, start_index_of_last_cv_split, increment)
+            for i in range(0, len(intercepts_sklearn), increment)
         ]
     )
 )
@@ -401,6 +401,7 @@ plot_stat_map(
     cut_coords=[-9],
     title="Scikit-Learn",
 )
+show()
 
 plot_img_comparison(
     decoder.coef_img_["bottle"],
@@ -409,6 +410,7 @@ plot_img_comparison(
     ref_label="Nilearn",
     src_label="Scikit-Learn",
 )
+show()
 
 # The coefficients and intercepts from the Scikit-Learn pipeline and the
 # Nilearn decoder are actually similar but not identical. The differences
