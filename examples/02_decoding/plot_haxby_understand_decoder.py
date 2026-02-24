@@ -243,16 +243,21 @@ classifier = LogisticRegressionCV(
 
 test_run = 6
 test_mask = run == test_run
-fmri_img_test = index_img(fmri_img, test_mask)
-X_test = masker.fit_transform(fmri_img_test)
-y_test = y_binary[test_mask]
-run_test = run[test_mask]
 
+# training data
 fmri_img = index_img(fmri_img, ~test_mask)
 y = y[~test_mask]
 y_binary = y_binary[~test_mask]
 run = run[~test_mask]
 
+# Transform fMRI data into a 2D numpy array and standardize it with the masker
+X = masker.fit_transform(fmri_img)
+
+# test data
+fmri_img_test = index_img(fmri_img, test_mask)
+X_test = masker.transform(fmri_img_test)
+y_test = y_binary[test_mask]
+run_test = run[test_mask]
 # %%
 # Train and cross-validate via an Scikit-Learn pipeline
 # -----------------------------------------------------
@@ -268,12 +273,9 @@ from sklearn.model_selection import LeaveOneGroupOut
 
 logo_cv = LeaveOneGroupOut()
 
-# Transform fMRI data into a 2D numpy array and standardize it with the masker
-X = masker.fit_transform(fmri_img)
 print(f"fMRI data shape after masking: {X.shape}")
-# So now we have a 2D numpy array of shape (864, 464) where each row
-# corresponds to a trial and each column corresponds to a feature
-# (voxel in the Ventral Temporal cortex).
+# So now we have a 2D numpy array where each row corresponds to a trial and
+# each column corresponds to a feature (voxel in the Ventral Temporal cortex).
 
 # Loop over each CV split and each class vs. rest binary classification
 # problems (number of classification problems = n_labels)
