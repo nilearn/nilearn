@@ -430,6 +430,9 @@ show()
 
 from sklearn.utils.extmath import safe_sparse_dot
 
+# select the same voxels in the test data as selected in the training data
+X_test = feature_selector.transform(X_test)
+
 pred_nilearn = decoder.predict(X_test)
 decision_function_sklearn = (
     safe_sparse_dot(X_test, av_sklearn_coef.T, dense_output=True)
