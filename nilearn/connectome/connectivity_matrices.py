@@ -410,10 +410,9 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         .. note::
 
             Added to control passing value to `standardize` of ``signal.clean``
-            to call new behavior since passing "zscore" or True (default) is
+            to call new behavior since passing False or True (default) is
             deprecated.
-            This parameter will be changed to "zscore_sample"
-            in version 0.14 and removed in version 0.15.
+            This parameter will be removed in version 0.15.
 
     %(verbose0)s
 
@@ -540,8 +539,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
 
         # Compute all the matrices, stored in "connectivities"
         if self.kind == "correlation":
-            # TODO (nilearn 0.14: change to "zscore_sample")
-            standardize = "zscore" if self.standardize is True else None
+            standardize = "zscore_sample" if self.standardize is True else None
             covariances_std = [
                 self.cov_estimator_.fit(
                     signal.standardize_signal(

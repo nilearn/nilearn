@@ -232,7 +232,6 @@ classifier = LogisticRegressionCV(
     solver="liblinear",
     Cs=np.geomspace(1e-3, 1e4, 8),
     refit=True,
-    verbose=1,
 )
 
 # %%
@@ -295,7 +294,6 @@ from nilearn.decoding import Decoder
 decoder = Decoder(
     estimator="logistic_l2",
     mask=mask_vt,
-    standardize="zscore_sample",
     n_jobs=n_labels,
     cv=logo_cv,
     screening_percentile=screening_percentile,

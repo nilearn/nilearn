@@ -14,7 +14,7 @@ import numpy as np
 import pytest
 import requests
 
-from nilearn.datasets import _utils, utils
+from nilearn.datasets import _utils
 from nilearn.datasets.tests.conftest import Response
 
 datadir = _utils.PACKAGE_DIRECTORY / "data"
@@ -617,15 +617,3 @@ def test_naive_ftp_adapter():
         resp = sender.send(
             requests.Request("GET", "ftp://example.com").prepare()
         )
-
-
-def test_load_sample_motor_activation_image():
-    """Test deprecation utils.load_sample_motor_activation_image.
-
-    # TODO (nilearn >= 0.14.0) remove
-    """
-    with pytest.warns(
-        FutureWarning,
-        match="Please import this function from 'nilearn.datasets.func'",
-    ):
-        utils.load_sample_motor_activation_image()

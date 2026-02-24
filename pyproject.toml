@@ -46,7 +46,10 @@ requires-python = ">=3.10"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
-dev = ["nilearn[plotting,doc,style,test]"]
+dev = [
+    "nilearn[plotting,doc,style,test]",
+    "tox"
+]
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
@@ -69,11 +72,11 @@ doc = [
 min = [
     "joblib==1.2.0",
     "nibabel==5.2.0",
-    "numpy==1.22.4",
-    "pandas==2.2.0",
+    "numpy==1.26.0",
+    "pandas==2.3.0",
     "requests==2.30.0",
     "scikit-learn==1.5.0",
-    "scipy==1.9.0",
+    "scipy==1.11.0",
     "jinja2==3.1.2"
 ]
 min_plotting = ["nilearn[min]", "matplotlib==3.8.0", "plotly==5.0.0", "kaleido"]
@@ -84,12 +87,14 @@ plotly = ["nilearn[plotting]"]
 # See https://github.com/plotly/Kaleido/issues/134 for more detail
 plotting = [
     "matplotlib>=3.8.0",
+    # plotly 6.1.0 cannot save images
+    # https://github.com/plotly/plotly.py/issues/5187
     "plotly>=5.0.0,!=6.1.0 ; platform_system != 'Windows'",
     "kaleido ; platform_system != 'Windows'",
     "plotly>=5.0.0,<6.1.0 ; platform_system == 'Windows'",
     "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
 ]
-style = ['tox']
+style = ['pre-commit']
 # For running unit and docstring tests
 test = [
     "coverage",
@@ -415,6 +420,7 @@ max-complexity = 23
 "**/{doc}/*" = ["B018", "D103"]
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]
 "__init__.py" = ["D104", "E402"]
+"doc/conf.py" = ["I001"]  # ignore sorting because this leads to conflict when running pre-commit locally and in CI
 "nilearn/**/tests/test_*" = ["D100"]
 "nilearn/connectome/**/{tests}/*" = ["D103"]  # 35 errors to fix
 "nilearn/datasets/func.py" = ["PTH211"]  # 1 error
@@ -451,7 +457,6 @@ max-complexity = 23
 "nilearn/plotting/image/tests/test_img_plotting.py" = ["D103"]
 "nilearn/plotting/matrix/tests/test_matrix_plotting.py" = ["D103"]
 "nilearn/plotting/matrix/tests/test_utils.py" = ["D103"]
-"nilearn/plotting/surface/tests/conftest.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_html_surface.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_surf_plotting.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_utils.py" = ["D103"]
@@ -462,7 +467,7 @@ max-complexity = 23
 "nilearn/plotting/tests/test_html_stat_map.py" = ["D103"]
 "nilearn/plotting/tests/test_img_comparisons.py" = ["D103"]
 "nilearn/regions/**/{tests}/*" = ["D103"]  # 64 errors to fix
-"nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
+"nilearn/surface/tests/test_surface.py" = ["D103"]  # 43 errors to fix
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

@@ -188,7 +188,7 @@ Functions
    fetch_mixed_gambles
    fetch_oasis_vbm
    fetch_neurovault_auditory_computation_task
-   fetch_neurovault_motor_task
+
 
 Statistical maps/derivatives descriptions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
