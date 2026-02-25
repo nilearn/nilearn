@@ -414,12 +414,11 @@ show()
 
 # %%
 # .. note::
-#
-# The coefficients and intercepts from the Scikit-Learn pipeline and the
-# Nilearn decoder are actually similar but not identical. The differences
-# seem to depend on OS -- they are bigger on Linux than on Mac. However they
-# are not big enough to cause a difference in the predicted labels on the test
-# set.
+#   The coefficients and intercepts from the Scikit-Learn pipeline and the
+#   Nilearn decoder are not identical. We're unsure about the exact reason
+#   for this but the differences seem to depend on OS -- they are bigger on
+#   Linux than on Mac. However they are not big enough to cause a difference
+#   in the predicted labels on the test set.
 
 # %%
 # Compare the predicted labels on the left-out test set
