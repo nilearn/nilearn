@@ -412,6 +412,8 @@ plot_img_comparison(
 )
 show()
 
+# %%
+# .. note::
 # The coefficients and intercepts from the Scikit-Learn pipeline and the
 # Nilearn decoder are actually similar but not identical. The differences
 # seem to depend on OS -- they are bigger on Linux than on Mac. However they
