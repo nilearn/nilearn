@@ -65,28 +65,18 @@ def pattern_corr(a, b):
 class CorrelationMVPA(BaseEstimator):
     """Haxby-style correlation MVPA score for a pair of labels.
 
-    Computes (within - between)/2 using run splits provided in `groups`.
+    Computes (within - between)/2 using parity run splits.
 
     Parameters
     ----------
     labels : tuple of str, default=("face", "house")
         The two condition labels to contrast. Must be present in `y`.
-    split : str, default="parity"
-        How to split runs for cross-validation.
-        Only "parity" (even vs odd runs) is implemented here.
-    fisher_z : bool, default=True
-        Whether to apply Fisher z-transform to correlations before
-        computing the final score.
     """
 
     nilearn_searchlight_uses_cv = False
 
-    def __init__(
-        self, labels=("face", "house"), split="parity", fisher_z=True
-    ):
+    def __init__(self, labels=("face", "house")):
         self.labels = labels
-        self.split = split
-        self.fisher_z_ = fisher_z
 
     def fit(self, X, y, groups=None):
         """Fit the estimator and store a single correlation-based score.
@@ -121,11 +111,9 @@ class CorrelationMVPA(BaseEstimator):
         y = np.asarray(y)
         groups = np.asarray(groups)
 
-        if self.split == "parity":
-            g1 = groups % 2 == 0
-            g2 = ~g1
-        else:
-            raise ValueError("Only split='parity' implemented here.")
+        # Create two splits based on parity of run numbers
+        g1 = groups % 2 == 0
+        g2 = ~g1
 
         def mean_pattern(lbl, mask):
             sel = (y == lbl) & mask
@@ -146,8 +134,7 @@ class CorrelationMVPA(BaseEstimator):
         r_ab = pattern_corr(a1, b2)
         r_ba = pattern_corr(b1, a2)
 
-        if self.fisher_z_:
-            r_aa, r_bb, r_ab, r_ba = map(fisher_z, (r_aa, r_bb, r_ab, r_ba))
+        r_aa, r_bb, r_ab, r_ba = map(fisher_z, (r_aa, r_bb, r_ab, r_ba))
 
         self.score_ = 0.5 * ((r_aa + r_bb) - (r_ab + r_ba))
         return self
@@ -198,9 +185,7 @@ searchlight = SearchLight(
     radius=5.6,
     n_jobs=2,
     verbose=1,
-    estimator=CorrelationMVPA(
-        labels=("face", "house"), split="parity", fisher_z=True
-    ),
+    estimator=CorrelationMVPA(labels=("face", "house")),
 )
 searchlight.fit(imgs=fmri_img, y=y, groups=run)
 scores_img = searchlight.scores_img_
@@ -218,6 +203,7 @@ plot_img(
     display_mode="z",
     cut_coords=[-9],
     vmin=0.0,
+    threshold=0.15,
     cmap="inferno",
     black_bg=True,
     colorbar=True,

@@ -11,7 +11,7 @@ from copy import deepcopy
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
 from sklearn import svm
-from sklearn.base import TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
 from sklearn.utils import check_array
@@ -43,21 +43,9 @@ def _check_searchlight_estimator(estimator, *, scoring, y):
         )
 
     # Must look like a sklearn estimator
-    if not hasattr(estimator, "fit"):
-        raise TypeError("SearchLight estimator must implement a 'fit' method.")
-    # Must be cloneable if uses_cv is True, because we clone it for each fold
-    # in cross_val_score
-    if uses_cv and not hasattr(estimator, "get_params"):
+    if not isinstance(estimator, BaseEstimator):
         raise TypeError(
-            "SearchLight estimator must be cloneable (implement get_params). "
-            "Tip: inherit from sklearn.base.BaseEstimator."
-        )
-
-    # We call fit(X, y) in the searchlight loop
-    if not has_fit_parameter(estimator, "y"):
-        raise TypeError(
-            "SearchLight estimator.fit must accept a 'y' parameter "
-            "(even if unused) because SearchLight calls fit(X, y)."
+            "estimator must derive from sklearn.base.BaseEstimator."
         )
 
     # If y is None, current implementation uses decision_function
