@@ -800,3 +800,21 @@ def test_img_to_signals_labels_non_float_type(target_dtype, rng):
 
     assert np.sum(timeseries_int) != 0
     assert np.allclose(timeseries_int, timeseries_float)
+
+
+@pytest.mark.single_process
+def test_img_to_signals_labels_parallel_extraction(fmri_img, labeled_regions):
+
+    expected_labels_signals, expected_labels_labels, _ = img_to_signals_labels(
+        imgs=fmri_img,
+        labels_img=labeled_regions,
+    )
+
+    # Test with n_jobs > 1
+    labels_signals, labels_labels, _ = img_to_signals_labels(
+        imgs=fmri_img,
+        labels_img=labeled_regions,
+        n_jobs=2,
+    )
+    np.testing.assert_almost_equal(labels_signals, expected_labels_signals)
+    assert np.allclose(labels_labels, expected_labels_labels)

@@ -6,8 +6,10 @@ or as weights in one image per region (maps).
 """
 
 import warnings
+from functools import partial
 
 import numpy as np
+from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from scipy import linalg, ndimage
 
@@ -225,6 +227,7 @@ def img_to_signals_labels(
     strategy="mean",
     keep_masked_labels=False,
     return_masked_atlas=True,
+    n_jobs=1,
 ):
     """Extract region signals from image.
 
@@ -258,6 +261,8 @@ def img_to_signals_labels(
     %(strategy)s
 
     %(keep_masked_labels)s
+
+    %(n_jobs)s
 
     return_masked_atlas : :obj:`bool`, default=True
         If True, the masked atlas is returned.
@@ -314,14 +319,14 @@ def img_to_signals_labels(
     data = safe_get_data(imgs, ensure_finite=True)
     target_datatype = np.float32 if data.dtype == np.float32 else np.float64
     # Nilearn issue: 2135, PR: 2195 for why this is necessary.
-    signals = np.ndarray(
-        (data.shape[-1], len(labels)), order=order, dtype=target_datatype
+    reduction_function = partial(
+        getattr(ndimage, strategy), labels=labels_data, index=labels
     )
-    reduction_function = getattr(ndimage, strategy)
-    for n, img in enumerate(np.rollaxis(data, -1)):
-        signals[n] = np.asarray(
-            reduction_function(img, labels=labels_data, index=labels)
-        )
+    # Parallel reduction across samples
+    signals = Parallel(n_jobs=n_jobs, backend="threading")(
+        delayed(reduction_function)(img) for img in np.rollaxis(data, -1)
+    )
+    signals = np.asarray(signals, dtype=target_datatype, order=order)
     # Set to zero signals for missing labels. Workaround for Scipy behavior
     if keep_masked_labels:
         missing_labels = set(labels) - set(np.unique(labels_data))
