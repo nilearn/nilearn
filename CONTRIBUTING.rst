@@ -102,7 +102,7 @@ It is not suitable for automatic processing by AI tools.
 Instead, we value authentic engagement in our community.
 
 - Do not post output from Large Language Models or similar generative AI as comments on
-   our GitHub or our discourse server,
+   our GitHub or our Discord server,
    as such comments tend to be formulaic and low content.
 
 - If you use generative AI tools as an aid in developing code or documentation changes,
