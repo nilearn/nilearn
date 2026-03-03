@@ -789,30 +789,24 @@ def test_clean_confounds():
     assert array_equal(noises, noises1)
 
     # With signal: output must be orthogonal to confounds
-    # TODO (nilearn >= 0.14) remove catch FutureWarning
-    with pytest.warns(FutureWarning):
-        cleaned_signals = clean(
-            signals + noises,
-            confounds=confounds,
-            detrend=False,
-            standardize=True,
-        )
+    cleaned_signals = clean(
+        signals + noises,
+        confounds=confounds,
+        detrend=False,
+        standardize="zscore_sample",
+    )
 
     assert abs(np.dot(confounds.T, cleaned_signals)).max() < 1000.0 * EPS
 
     # Same output when a constant confound is added
     confounds1 = np.hstack((np.ones((45, 1)), confounds))
-    # TODO (nilearn >= 0.15) remove catch_warnings
-    with pytest.warns(
-        FutureWarning,
-        match="boolean values for 'standardize' will be deprecated",
-    ):
-        cleaned_signals1 = clean(
-            signals + noises,
-            confounds=confounds1,
-            detrend=False,
-            standardize=True,
-        )
+
+    cleaned_signals1 = clean(
+        signals + noises,
+        confounds=confounds1,
+        detrend=False,
+        standardize="zscore_sample",
+    )
 
     assert_almost_equal(cleaned_signals1, cleaned_signals)
 

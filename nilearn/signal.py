@@ -64,46 +64,47 @@ def standardize_signal(
 
     signals = _detrend(signals, inplace=False) if detrend else signals.copy()
 
-    assert not isinstance(standardize, bool)
+    if standardize is None:
+        return signals
 
-    if standardize is not None:
-        check_parameter_in_allowed(
-            standardize,
-            allowed=["psc", "zscore_sample"],
-            parameter_name="standardize",
+    check_parameter_in_allowed(
+        standardize,
+        allowed=["psc", "zscore_sample"],
+        parameter_name="standardize",
+    )
+    if signals.shape[0] == 1:
+        warnings.warn(
+            "Standardization of 3D signal has been requested but "
+            "would lead to zero values. Skipping.",
+            stacklevel=find_stack_level(),
         )
-        if signals.shape[0] == 1:
+        return signals
+
+    # Standardize
+    if standardize == "zscore_sample":
+        if not detrend:
+            # remove mean if not already detrended
+            signals = signals - signals.mean(axis=0)
+
+        std = signals.std(axis=0, ddof=1)
+        # avoid numerical problems
+        std[std < np.finfo(np.float64).eps] = 1.0
+        signals /= std
+
+    elif standardize == "psc":
+        mean_signals = signals.mean(axis=0)
+        invalid_ix = np.absolute(mean_signals) < np.finfo(np.float64).eps
+        signals = (signals - mean_signals) / np.absolute(mean_signals)
+        signals *= 100
+
+        if np.any(invalid_ix):
             warnings.warn(
-                "Standardization of 3D signal has been requested but "
-                "would lead to zero values. Skipping.",
+                "psc standardization strategy is meaningless "
+                "for features that have a mean of 0. "
+                "These time series are set to 0.",
                 stacklevel=find_stack_level(),
             )
-            return signals
-
-        elif standardize == "zscore_sample":
-            if not detrend:
-                # remove mean if not already detrended
-                signals = signals - signals.mean(axis=0)
-
-            std = signals.std(axis=0, ddof=1)
-            # avoid numerical problems
-            std[std < np.finfo(np.float64).eps] = 1.0
-            signals /= std
-
-        elif standardize == "psc":
-            mean_signals = signals.mean(axis=0)
-            invalid_ix = np.absolute(mean_signals) < np.finfo(np.float64).eps
-            signals = (signals - mean_signals) / np.absolute(mean_signals)
-            signals *= 100
-
-            if np.any(invalid_ix):
-                warnings.warn(
-                    "psc standardization strategy is meaningless "
-                    "for features that have a mean of 0. "
-                    "These time series are set to 0.",
-                    stacklevel=find_stack_level(),
-                )
-                signals[:, invalid_ix] = 0
+            signals[:, invalid_ix] = 0
 
     return signals
 

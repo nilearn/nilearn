@@ -44,9 +44,7 @@ N_SUBJECTS = 5
 
 
 ESTIMATORS_TO_CHECK = [
-    ConnectivityMeasure(
-        cov_estimator=EmpiricalCovariance(), standardize="zscore_sample"
-    )
+    ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
 ]
 
 if SKLEARN_LT_1_6:
