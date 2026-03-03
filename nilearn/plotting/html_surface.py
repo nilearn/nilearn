@@ -160,8 +160,9 @@ def _matplotlib_cm_to_niivue_cm(cmap):
 
     Returns
     -------
-    cmap : dict of list
-        Converted colormap, with keys "R", "G", "B", "A", "I".
+    cmap : dict of dict of list
+        Converted positive "pos" and negative "neg" colormaps,
+        with keys "R", "G", "B", "A".
     """
     if not isinstance(cmap, (mpl.colors.Colormap, str)):
         warn(
@@ -186,20 +187,22 @@ def _matplotlib_cm_to_niivue_cm(cmap):
         reverse = True
 
     n_nodes = 255
-    colors = spec(np.linspace(0, 1, 255))
+    colors = spec(np.linspace(0, 1, 2 * n_nodes))
 
-    js = {"R": [], "G": [], "B": [], "A": [], "I": []}
+    js = {"R": [], "G": [], "B": [], "A": []}
     js["R"] = (255 * colors[..., 0]).astype(int).tolist()
     js["G"] = (255 * colors[..., 1]).astype(int).tolist()
     js["B"] = (255 * colors[..., 2]).astype(int).tolist()
-    js["A"] = [64 for _ in range(n_nodes)]
-    js["I"] = list(range(n_nodes))
+    js["A"] = [64 for _ in range(2 * n_nodes)]
 
     if reverse:
         for k in js:
             js[k] = js[k][::-1]
 
-    return js
+    js_pos = {k: v[n_nodes:] for k, v in js.items()}
+    js_neg = {k: v[:n_nodes][::-1] for k, v in js.items()}
+
+    return {"pos": js_pos, "neg": js_neg}
 
 
 def _one_mesh_info_niivue(
@@ -238,8 +241,11 @@ def _one_mesh_info_niivue(
     if bg_map is not None:
         gii = _data_to_gifti(bg_map)
         info["bg_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
+    else:
+        info["bg_map"] = "null"
 
-    info["back_color"] = [0, 0, 0, 1] if black_bg else [250, 250, 250, 1]
+    info["bg_color"] = "[0, 0, 0, 1]" if black_bg else "[1, 1, 1, 1]"
+    info["bg_theme"] = "black" if black_bg else "white"
 
     return info
 
@@ -456,8 +462,10 @@ def _fill_html_template_niivue(info, embed_js=True):
             "INSERT_COLORBAR_HERE": info["colorbar"],
             "INSERT_THRESHOLD_HERE": json.dumps(info["threshold"]),
             "INSERT_VMAX_HERE": json.dumps(info["vmax"]),
-            "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
-            "BACK_COLOR": info["back_color"],
+            "INSERT_PAGE_TITLE_HERE": info["title"] or "",
+            "INSERT_FONT_SIZE_HERE": str(info["title_fontsize"]) + "px",
+            "INSERT_COLOR_THEME_HERE": info["bg_theme"],
+            "INSERT_BG_COLOR_HERE": info["bg_color"],
         }
     )
     as_html = add_js_lib(as_html, libraries=["niivue"], embed_js=embed_js)
@@ -776,6 +784,7 @@ def view_surf(
         info = _one_mesh_info_niivue(
             surf_map=surf_map,
             surf_mesh=surf_mesh,
+            black_bg=black_bg,
             bg_map=bg_map,
             cmap=cmap,
             colorbar=colorbar,
@@ -783,4 +792,5 @@ def view_surf(
             vmax=vmax,
         )
         info["title"] = title
+        info["title_fontsize"] = title_fontsize
         return _fill_html_template_niivue(info, embed_js=True)
