@@ -2,6 +2,57 @@
 build-backend = "hatchling.build"
 requires = ["hatchling", "hatch-vcs", "setuptools-scm!=9.0.0"]
 
+[dependency-groups]
+# A combination of dependencies useful for developers
+dev = [
+    {include-group = "test"},
+    {include-group = "doc"},
+    {include-group = "style"},
+    "tox",
+    "tox-uv"
+]
+# Requirements necessary for building the documentation
+doc = [
+    "docutils>=0.17",
+    "furo>=2024.8.6",
+    "memory_profiler>=0.61.0",  # measuring memory during docs building
+    "myst-parser>=3.0.1",
+    "numpydoc>=1.8.0",
+    "ruamel.yaml>=0.18.6",
+    "sphinx>=7.4.7",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-design>=0.6.1",
+    "sphinx-gallery>=0.18.0",
+    "sphinxcontrib-bibtex>=2.6.3",
+    "sphinxext-opengraph>=0.9.1",
+    "sphinxcontrib-mermaid>=1.0.0",
+    "marimo"
+]
+# Applying style guide
+style = ['pre-commit']
+# For running unit and docstring tests
+test = [
+    {include-group = "test_free_threaded"},
+    "coverage",
+    "lxml",
+    "pytest-cov",
+    "pytest-timeout",
+    "pytest-xdist[psutil]"
+]
+# Running test for free threaded python
+# requires fewer extensions
+test_free_threaded = [
+    "numpydoc>=1.8.0",
+    "pytest>=6.0.0",
+    "pytest-csv",
+    "pytest-randomly",
+    "pytest-reporter-html1>=0.9.2,<0.9.4",
+    "pytest-mpl",
+    "pytest-rerunfailures",
+    "pytest-run-parallel",
+    "rich"
+]
+
 [project]
 authors = [{name = "Nilearn developers"}]
 classifiers = [
@@ -45,29 +96,6 @@ readme = "README.rst"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
-# A combination of dependencies useful for developers
-dev = [
-    "nilearn[plotting,doc,style,test]",
-    "tox"
-]
-# Requirements necessary for building the documentation
-doc = [
-    "nilearn[plotting]",
-    "docutils>=0.17",
-    "furo>=2024.8.6",
-    "memory_profiler>=0.61.0",  # measuring memory during docs building
-    "myst-parser>=3.0.1",
-    "numpydoc>=1.8.0",
-    "ruamel.yaml>=0.18.6",
-    "sphinx>=7.4.7",
-    "sphinx-copybutton>=0.5.2",
-    "sphinx-design>=0.6.1",
-    "sphinx-gallery>=0.18.0",
-    "sphinxcontrib-bibtex>=2.6.3",
-    "sphinxext-opengraph>=0.9.1",
-    "sphinxcontrib-mermaid>=1.0.0",
-    "marimo"
-]
 min = [
     "joblib==1.2.0",
     "nibabel==5.2.0",
@@ -92,35 +120,6 @@ plotting = [
     "kaleido ; platform_system != 'Windows'",
     "plotly>=5.0.0,<6.1.0 ; platform_system == 'Windows'",
     "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
-]
-style = ['pre-commit']
-# For running unit and docstring tests
-test = [
-    "coverage",
-    "lxml",
-    "numpydoc>=1.8.0",
-    "pytest>=6.0.0",
-    "pytest-cov",
-    "pytest-csv",
-    "pytest-randomly",
-    "pytest-reporter-html1>=0.9.2,<0.9.4",
-    "pytest-timeout",
-    "pytest-xdist[psutil]",
-    "pytest-mpl",
-    "pytest-rerunfailures"
-]
-# Running test for free threaded python
-# requires fewer extensions
-test_free_threaded = [
-    "numpydoc>=1.8.0",
-    "pytest>=6.0.0",
-    "pytest-csv",
-    "pytest-randomly",
-    "pytest-reporter-html1>=0.9.2,<0.9.4",
-    "pytest-mpl",
-    "pytest-rerunfailures",
-    "pytest-run-parallel",
-    "rich"
 ]
 
 [project.urls]
