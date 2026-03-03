@@ -24,15 +24,29 @@
                      src="data:image/png;base64,$stat_map_base64"
                      alt="overlay" />
             </canvas>
+            <p>
+                Opacity: <span id="demo"></span>
+            </p>
+            <input type="range" min="1" max="100" value="" class="slider" id="opacity">
         </div>
         <script>$js_jquery;</script>
         <script>$js_brainsprite;</script>
         <script>
+        var brain
+
       // On load: build all figures
       $(window).on("load", function () {
-        // Create brain slices
-        var brain = brainsprite($params);
+        brain = brainsprite($params);
       });
+
+        var slider = document.getElementById("opacity");
+        var output = document.getElementById("demo");
+      slider.oninput = function() {
+        output.innerHTML = this.value;
+        brain.overlay.opacity = this.value / 100;
+        brain.init();
+        brain.drawAll();
+      }
         </script>
     </body>
 </html>
