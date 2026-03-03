@@ -410,7 +410,7 @@ def test_nifti_labels_masker_resampling_to_labels(
     fmri11_img_r = masker.inverse_transform(signals)
 
     assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
-    assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
+    assert fmri11_img_r.shape == ((*masker.labels_img_.shape[:3], length))
 
 
 @pytest.mark.slow
@@ -464,7 +464,7 @@ def test_nifti_labels_masker_resampling_to_clipped_labels(
     fmri11_img_r = masker.inverse_transform(signals)
 
     assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
-    assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
+    assert fmri11_img_r.shape == ((*masker.labels_img_.shape[:3], length))
 
 
 def test_nifti_labels_masker_resampling_to_none(

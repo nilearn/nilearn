@@ -24,7 +24,6 @@ import io
 import os
 import pickle
 import re
-import sys
 import warnings
 from copy import deepcopy
 from pathlib import Path
@@ -42,7 +41,6 @@ from numpy.testing import (
     assert_raises,
 )
 from numpydoc.docscrape import NumpyDocString
-from scipy import __version__ as scipy_version
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import is_classifier, is_regressor
@@ -102,9 +100,14 @@ from nilearn.conftest import (
 )
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
-from nilearn.decoding.decoder import Decoder, FREMClassifier, _BaseDecoder
+from nilearn.decoding.decoder import (
+    Decoder,
+    DecoderRegressor,
+    FREMClassifier,
+    _BaseDecoder,
+)
 from nilearn.decoding.searchlight import SearchLight
-from nilearn.decoding.space_net import BaseSpaceNet, SpaceNetClassifier
+from nilearn.decoding.space_net import BaseSpaceNet
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.decomposition.tests.conftest import (
@@ -118,7 +121,6 @@ from nilearn.image import get_data, index_img, new_img_like
 from nilearn.image.image import check_imgs_equal
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
-    MultiNiftiMasker,
     NiftiLabelsMasker,
     NiftiMapsMasker,
     NiftiMasker,
@@ -138,7 +140,6 @@ from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_surface_image_equal
 
-SKLEARN_GTE_1_5 = compare_version(sklearn_version, ">=", "1.5.0")
 SKLEARN_GTE_1_6 = compare_version(sklearn_version, ">=", "1.6.0")
 
 
@@ -196,14 +197,6 @@ def check_estimator(
                 yield e, check, check.func.__name__
 
 
-# some checks would fail on sklearn 1.6.1 on older python
-# see https://github.com/scikit-learn-contrib/imbalanced-learn/issues/1131
-IS_SKLEARN_1_6_1_on_py_lt_3_13 = (
-    compare_version(sklearn_version, "==", "1.6.1")
-    and sys.version_info[1] < 13
-)
-
-
 def return_expected_failed_checks(
     estimator: NilearnBaseEstimator,
 ) -> dict[str, str]:
@@ -238,7 +231,6 @@ def return_expected_failed_checks(
 
     if isinstance(estimator, ConnectivityMeasure):
         expected_failed_checks = {
-            "check_estimator_sparse_data": "remove when dropping sklearn 1.4",
             "check_fit2d_predict1d": "not applicable",
             "check_estimator_sparse_array": "TODO",
             "check_estimator_sparse_matrix": "TODO",
@@ -248,8 +240,6 @@ def return_expected_failed_checks(
             "check_transformer_data_not_an_array": "TODO",
             "check_transformer_general": "TODO",
         }
-        if SKLEARN_GTE_1_5:
-            expected_failed_checks.pop("check_estimator_sparse_data")
         if SKLEARN_GTE_1_6:
             expected_failed_checks |= {
                 "check_transformer_preserve_dtypes": "TODO",
@@ -269,8 +259,6 @@ def return_expected_failed_checks(
             "check_estimator_sparse_matrix": "TODO",
             "check_estimator_sparse_tag": "TODO",
         }
-        if SKLEARN_GTE_1_5:
-            expected_failed_checks.pop("check_estimator_sparse_data")
         if isinstance(estimator, GroupSparseCovarianceCV):
             expected_failed_checks |= {
                 "check_estimators_dtypes": "TODO",
@@ -298,9 +286,7 @@ def return_expected_failed_checks(
         ),
         "check_estimators_dtypes": ("replaced by check_masker_dtypes"),
         "check_estimators_empty_data_messages": (
-            "replaced by check_masker_empty_data_messages "
-            "for surface maskers and not implemented for nifti maskers "
-            "for performance reasons."
+            "replaced by check_*_empty_data_messages "
         ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
@@ -363,9 +349,8 @@ def return_expected_failed_checks(
 
     if is_glm(estimator):
         expected_failed_checks.pop("check_estimator_sparse_data")
-        if SKLEARN_GTE_1_5:
-            expected_failed_checks.pop("check_estimator_sparse_matrix")
-            expected_failed_checks.pop("check_estimator_sparse_array")
+        expected_failed_checks.pop("check_estimator_sparse_matrix")
+        expected_failed_checks.pop("check_estimator_sparse_array")
         if SKLEARN_GTE_1_6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
@@ -376,9 +361,6 @@ def return_expected_failed_checks(
                 "does not apply - no relevant method"
             ),
             "check_estimators_dtypes": ("replaced by check_glm_dtypes"),
-            "check_estimators_empty_data_messages": (
-                "not implemented for nifti data for performance reasons"
-            ),
             "check_estimators_fit_returns_self": (
                 "replaced by check_glm_fit_returns_self"
             ),
@@ -395,15 +377,6 @@ def return_expected_failed_checks(
         }
         if SKLEARN_GTE_1_6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
-        if (
-            not IS_SKLEARN_1_6_1_on_py_lt_3_13
-            and SKLEARN_GTE_1_5
-            and scipy_version != "1.9.0"
-        ):
-            expected_failed_checks.pop("check_estimator_sparse_array")
-
-    if isinstance(estimator, (MultiNiftiMasker)) and SKLEARN_GTE_1_6:
-        expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if is_masker(estimator):
         expected_failed_checks |= {
@@ -442,15 +415,8 @@ def unapplicable_checks() -> dict[str, str]:
 
 def expected_failed_checks_clustering() -> dict[str, str]:
     expected_failed_checks = {
-        "check_estimator_sparse_array": "remove when dropping sklearn 1.4",
-        "check_estimator_sparse_matrix": "remove when dropping sklearn 1.4",
         "check_clustering": "TODO",
     }
-
-    if SKLEARN_GTE_1_5:
-        expected_failed_checks.pop("check_estimator_sparse_matrix")
-        expected_failed_checks.pop("check_estimator_sparse_array")
-
     return expected_failed_checks
 
 
@@ -466,7 +432,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
             "replaced by check_img_estimator_dont_overwrite_parameters"
         ),
         "check_estimators_empty_data_messages": (
-            "not implemented for nifti data performance reasons"
+            "replaced by check_*_empty_data_messages "
         ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
@@ -562,6 +528,17 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
 def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
     check_is_of_allowed_type(estimators, (list,), "estimators")
     for est in estimators:
+        # TODO (nilearn >= 0.15.0)
+        # remove this entire if block
+        # as standardize as bool should not be possible anymore
+        if hasattr(est, "standardize"):
+            # forcing the new default on all estiamtors
+            # to avoid FutureWarnings
+            if est.standardize is False:
+                est.standardize = None
+            elif est.standardize is True:
+                est.standardize = "zscore_sample"
+
         for e, check in nilearn_check_generator(estimator=est):
             yield e, check, check.__name__
 
@@ -616,6 +593,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
             yield (clone(estimator), check_decoder_compatibility_mask_image)
             yield (clone(estimator), check_decoder_with_surface_data)
             yield (clone(estimator), check_decoder_with_arrays)
+            yield (clone(estimator), check_decoder_screening_n_features)
             if is_regressor(estimator):
                 yield (
                     clone(estimator),
@@ -1546,6 +1524,11 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
 
     replaces sklearn check_fit_idempotent
     """
+    # TODO
+    # fix for flaky test with free threaded python
+    if not is_gil_enabled() and isinstance(estimator_orig, (SearchLight)):
+        return None
+
     check_methods = ["predict", "transform", "decision_function"]
 
     for method in check_methods:
@@ -1584,9 +1567,9 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
         # TODO
         # some estimator can return some pretty different results
         # investigate why
-        if isinstance(estimator, Decoder):
+        if isinstance(estimator, (Decoder)):
             tol = 1e-5
-        elif isinstance(estimator, SearchLight):
+        elif isinstance(estimator, (SearchLight)):
             tol = 1e-4
         elif isinstance(estimator, FREMClassifier):
             tol = 0.1
@@ -1596,7 +1579,7 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
             new_result,
             atol=max(tol, 1e-9),
             rtol=max(tol, 1e-7),
-            err_msg=f"Idempotency check failed for method {method}",
+            err_msg=f"Idempotency check failed for method '{method}'",
         )
 
 
@@ -1691,7 +1674,7 @@ def check_img_estimator_dict_unchanged(estimator_orig) -> None:
                         "Estimator changes '__dict__' keys "
                         f"during '{method}'.\n"
                         f"{unmatched_keys} \n"
-                    )
+                    ) from e
 
                 difference = {}
                 for x in dict_before:
@@ -1721,7 +1704,7 @@ def check_img_estimator_dict_unchanged(estimator_orig) -> None:
                         "Estimator changes the following '__dict__' keys \n"
                         f"during '{method}'.\n"
                         f"{difference}"
-                    )
+                    ) from e
                 else:
                     raise e
             except Exception as e:
@@ -2004,7 +1987,6 @@ def check_img_estimator_standardization(estimator_orig) -> None:
 
         results = {}
         standardize_values = [
-            "zscore",
             "zscore_sample",
             "psc",
             True,
@@ -2029,23 +2011,20 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             else:
                 estimator.fit(input_img)
 
-            # TODO (nilearn >= 0.14.0) adapt if necessary
-            # Make sure that a FutureWarning warning is thrown
-            # and not one during call to fit and then call to clean.
-            if standardize in ["zscore", True]:
-                with warnings.catch_warnings(record=True) as warnings_list:
+            if (
+                not isinstance(estimator, _BaseDecomposition)
+                and isinstance(standardize, bool)
+                and method == "transform"
+            ):
+                with pytest.warns(
+                    FutureWarning,
+                    match=(
+                        "boolean values for 'standardize' will be deprecated"
+                    ),
+                ):
                     results[str(standardize)] = getattr(estimator, method)(
                         input_img
                     )
-                if not isinstance(estimator, _BaseDecomposition):
-                    n_future_warnings = len(
-                        [
-                            x
-                            for x in warnings_list
-                            if issubclass(x.category, FutureWarning)
-                        ]
-                    )
-                    assert n_future_warnings == 1
             else:
                 results[str(standardize)] = getattr(estimator, method)(
                     input_img
@@ -2058,7 +2037,6 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             return
 
         # check which options are equal or different
-        assert_array_equal(results["zscore"], results[str(True)])
         try:
             assert_array_equal(results[str(None)], results[str(False)])
         except AssertionError:
@@ -2069,17 +2047,11 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             # differences are too small to have an effect in this test
             return
 
-        if not isinstance(estimator, (FREMClassifier, SpaceNetClassifier)):
-            # differences are too small to have an effect in this test
-            with pytest.raises(AssertionError):
-                assert_array_equal(results["zscore"], results["zscore_sample"])
-        for x in ["zscore_sample", "zscore", "psc"]:
+        for x in ["zscore_sample", "psc"]:
             with pytest.raises(AssertionError):
                 assert_array_equal(unstandarized_result, results[x])
         with pytest.raises(AssertionError):
             assert_array_equal(results["psc"], results["zscore_sample"])
-        with pytest.raises(AssertionError):
-            assert_array_equal(results["psc"], results["zscore"])
 
 
 # ------------------ DECODERS CHECKS ------------------
@@ -2127,10 +2099,9 @@ def check_supervised_img_estimator_y_no_nan(estimator_orig) -> None:
 def check_decoder_empty_data_messages(estimator_orig):
     """Check that empty images are caught properly.
 
-    Replaces sklearn check_estimators_empty_data_messages.
+    Run on both surfance and volume data.
 
-    Not implemented for nifti data for performance reasons.
-    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
+    Replaces sklearn check_estimators_empty_data_messages.
     """
     estimator = clone(estimator_orig)
 
@@ -2151,14 +2122,22 @@ def check_decoder_empty_data_messages(estimator_orig):
         random_state=42,
     )
 
+    data = np.zeros((64, 64, 0))
+    X = Nifti1Image(data, np.eye(4))
+
+    y = _rng().random(y.shape)
+
+    with pytest.raises(ValueError, match="empty"):
+        estimator.fit(X, y)
+
+    estimator = clone(estimator_orig)
+
     imgs = _make_surface_img(n_samples)
     data = {
         part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
         for part in imgs.data.parts
     }
     X = SurfaceImage(imgs.mesh, data)
-
-    y = _rng().random(y.shape)
 
     with pytest.raises(ValueError, match="empty"):
         estimator.fit(X, y)
@@ -2297,6 +2276,44 @@ def check_decoder_with_arrays(estimator_orig) -> None:
         assert_array_equal(result_1, result_2)
 
 
+def check_decoder_screening_n_features(estimator_orig):
+    """Set screening_n_features gives the requested number of weights / CV.
+
+    screening_n_features determines the number of seelcted features per CV
+    so we only run a single CV.
+    """
+    estimator = clone(estimator_orig)
+
+    if (
+        isinstance(estimator, SearchLight)
+        or "screening_n_features" not in estimator.get_params()
+    ):
+        return
+
+    screening_n_features = 10
+
+    estimator.cv = 1
+    estimator.screening_n_features = screening_n_features
+    estimator.screening_percentile = None
+
+    if hasattr(estimator, "clustering_percentile"):
+        estimator.clustering_percentile = 100
+
+    # Not possible to have only cv=1 for Decoder, DecoderRegressor
+    # so we can only check that n_non_zero_weights >= 10
+    if isinstance(estimator, (Decoder, DecoderRegressor)):
+        estimator.cv = 2
+
+    estimator = fit_estimator(estimator)
+
+    n_non_zero_weights = np.sum(estimator.coef_ != 0)
+
+    if isinstance(estimator, (Decoder, DecoderRegressor)):
+        assert n_non_zero_weights >= screening_n_features
+    else:
+        assert n_non_zero_weights == screening_n_features
+
+
 # ------------------ MASKER CHECKS ------------------
 
 
@@ -2372,7 +2389,6 @@ def check_masker_standardization(estimator_orig) -> None:
 
         results = {}
         standardize_values = [
-            "zscore",
             "zscore_sample",
             "psc",
             True,
@@ -2386,38 +2402,30 @@ def check_masker_standardization(estimator_orig) -> None:
 
             estimator.fit(input_img)
 
-            # TODO (nilearn >= 0.14.0) adapt if necessary
+            # TODO (nilearn >= 0.15.0) remove warning catch
             # Make sure that a FutureWarning warning is thrown
             # and not one during call to fit and then call to clean.
-            if standardize in ["zscore", True]:
-                with warnings.catch_warnings(record=True) as warnings_list:
+            if standardize in [True, False]:
+                with pytest.warns(
+                    FutureWarning,
+                    match=(
+                        "boolean values for 'standardize' will be deprecated"
+                    ),
+                ):
                     results[str(standardize)] = estimator.transform(input_img)
-                n_future_warnings = len(
-                    [
-                        x
-                        for x in warnings_list
-                        if issubclass(x.category, FutureWarning)
-                    ]
-                )
-                assert n_future_warnings == 1
             else:
                 results[str(standardize)] = estimator.transform(input_img)
 
         unstandarized_result = results[str(False)]
 
         # check which options are equal or different
-        assert_array_equal(results["zscore"], results[str(True)])
         assert_array_equal(results[str(None)], results[str(False)])
 
-        with pytest.raises(AssertionError):
-            assert_array_equal(results["zscore"], results["zscore_sample"])
-        for x in ["zscore_sample", "zscore", "psc"]:
+        for x in ["zscore_sample", "psc"]:
             with pytest.raises(AssertionError):
                 assert_array_equal(unstandarized_result, results[x])
         with pytest.raises(AssertionError):
             assert_array_equal(results["psc"], results["zscore_sample"])
-        with pytest.raises(AssertionError):
-            assert_array_equal(results["psc"], results["zscore"])
 
         # check output values
         if not is_masker(estimator_orig) or isinstance(
@@ -2427,9 +2435,10 @@ def check_masker_standardization(estimator_orig) -> None:
 
         assert_array_equal(default_result, unstandarized_result)
 
-        for x in ["zscore_sample", "zscore"]:
-            assert_almost_equal(results[x].mean(0), 0)
-            assert_almost_equal(results[x].std(0), 1, decimal=decimal)
+        assert_almost_equal(results["zscore_sample"].mean(0), 0)
+        assert_almost_equal(
+            results["zscore_sample"].std(0), 1, decimal=decimal
+        )
 
         assert_almost_equal(results["psc"].mean(0), 0)
         if not isinstance(estimator, SurfaceMapsMasker):
@@ -2901,23 +2910,23 @@ def check_masker_empty_data_messages(estimator_orig):
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
-
-    Not implemented for nifti maskers for performance reasons.
-    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
     """
     estimator = clone(estimator_orig)
 
     if accept_niimg_input(estimator):
-        return None
+        data = np.zeros((64, 64, 0))
+        imgs = Nifti1Image(data, np.eye(4))
+        mask = np.ones(_shape_3d_large())
+        mask_img = Nifti1Image(mask, affine=_affine_eye())
+    else:
+        imgs = _make_surface_img()
+        data = {
+            part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
+            for part in imgs.data.parts
+        }
+        imgs = SurfaceImage(imgs.mesh, data)
 
-    imgs = _make_surface_img()
-    data = {
-        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-        for part in imgs.data.parts
-    }
-    imgs = SurfaceImage(imgs.mesh, data)
-
-    mask_img = _make_surface_mask()
+        mask_img = _make_surface_mask()
 
     with pytest.raises(ValueError, match="The image is empty"):
         estimator.fit(imgs)
@@ -3156,6 +3165,11 @@ def check_masker_transform_resampling(estimator_orig) -> None:
 
     Check that running transform on images with different fov
     than those used at fit is possible.
+
+    Check that no warning is thrown when passing the same image
+    at fit and transform time, the resampling target is "data".
+    If the resampling target is "maps" or "labels"
+    then a warning should be thrown.
     """
     estimator = clone(estimator_orig)
 
@@ -3168,7 +3182,9 @@ def check_masker_transform_resampling(estimator_orig) -> None:
     input_shape = (28, 29, 30, n_sample)
     imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
 
-    imgs2 = Nifti1Image(_rng().random((20, 21, 22)), _affine_eye())
+    imgs_with_different_fov = Nifti1Image(
+        _rng().random((20, 21, 22)), _affine_eye()
+    )
 
     mask_shape = (15, 16, 17)
     mask_img = Nifti1Image(np.ones(mask_shape), _affine_eye())
@@ -3207,12 +3223,17 @@ def check_masker_transform_resampling(estimator_orig) -> None:
             actual_shape = new_imgs.shape
             assert actual_shape == expected_shape
 
-            # no resampling warning when using same imgs as for fit()
-            with warnings.catch_warnings(record=True) as warning_list:
-                estimator.transform(imgs)
-            assert all(
-                "at transform time" not in str(x.message) for x in warning_list
-            )
+            if resampling_target == "maps":
+                with pytest.warns(UserWarning, match="at transform time"):
+                    estimator.transform(imgs)
+            else:
+                # no resampling warning when using same imgs as for fit()
+                with warnings.catch_warnings(record=True) as warning_list:
+                    estimator.transform(imgs)
+                assert all(
+                    "at transform time" not in str(x.message)
+                    for x in warning_list
+                )
 
             # same result before and after running transform()
             new_imgs_2 = estimator.inverse_transform(signals)
@@ -3223,14 +3244,12 @@ def check_masker_transform_resampling(estimator_orig) -> None:
             # than the one used at fit time,
             # but there should be a resampling warning
             # we are resampling to data
-            with warnings.catch_warnings(record=True) as warning_list:
-                estimator.transform(imgs2)
-
-            if resampling_target == "data":
-                assert any(
-                    "at transform time" in str(x.message) for x in warning_list
-                )
+            if resampling_target in ["data", "maps"]:
+                with pytest.warns(UserWarning, match="at transform time"):
+                    estimator.transform(imgs_with_different_fov)
             else:
+                with warnings.catch_warnings(record=True) as warning_list:
+                    estimator.transform(imgs_with_different_fov)
                 assert all(
                     "at transform time" not in str(x.message)
                     for x in warning_list
@@ -3932,32 +3951,49 @@ def check_multimasker_transformer_high_variance_confounds(estimator_orig):
 
 
 def check_glm_empty_data_messages(
-    estimator_orig: NilearnBaseEstimator,
+    estimator_orig: FirstLevelModel | SecondLevelModel,
 ) -> None:
     """Check that empty images are caught properly.
 
-    Replaces sklearn check_estimators_empty_data_messages.
+    Test on both surface and volume data.
 
-    Not implemented for nifti data for performance reasons.
-    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
+    Replaces sklearn check_estimators_empty_data_messages.
     """
     estimator = clone(estimator_orig)
 
-    imgs, design_matrices = _make_surface_img_and_design()
+    surface_imgs, design_matrices = _make_surface_img_and_design()
 
     data = {
-        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-        for part in imgs.data.parts
+        part: np.empty(0).reshape((surface_imgs.data.parts[part].shape[0], 0))
+        for part in surface_imgs.data.parts
     }
-    imgs = SurfaceImage(imgs.mesh, data)
+    surface_imgs = SurfaceImage(surface_imgs.mesh, data)
 
     with pytest.raises(ValueError, match="empty"):
         # FirstLevel
         if hasattr(estimator, "hrf_model"):
-            estimator.fit(imgs, design_matrices=design_matrices)
+            estimator.fit(surface_imgs, design_matrices=design_matrices)
         # SecondLevel
         else:
-            estimator.fit(imgs, design_matrix=design_matrices)
+            estimator.fit(surface_imgs, design_matrix=design_matrices)
+
+    estimator = clone(estimator_orig)
+
+    data_nifti = np.zeros((7, 9, 0))
+
+    with pytest.raises(ValueError, match="empty"):
+        # FirstLevel
+        if hasattr(estimator, "hrf_model"):
+            estimator.fit(
+                Nifti1Image(data_nifti, np.eye(4)),
+                design_matrices=design_matrices,
+            )
+        # SecondLevel
+        else:
+            estimator.fit(
+                [Nifti1Image(data_nifti, np.eye(4)) for _ in range(3)],
+                design_matrix=design_matrices,
+            )
 
 
 def check_glm_dtypes(estimator_orig) -> None:

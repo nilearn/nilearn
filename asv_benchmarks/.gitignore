@@ -1,6 +1,3 @@
-*__pycache_*
-.DS_Store
-env
 nilearn
 results
 html

@@ -569,6 +569,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         # Create and fit appropriate MapsMasker for transform
         # and inverse_transform
         maps_masker_kwargs = {
+            "standardize": None,
             "memory": self.memory,
             "memory_level": self.memory_level,
         }
