@@ -80,7 +80,7 @@ def check_embedded_masker(
 
     - If instance contains a mask image in mask parameter,
     we use this image as new masker mask_img, forwarding instance parameters to
-    new masker : smoothing_fwhm, standardize, detrend, low_pass= high_pass,
+    new masker : smoothing_fwhm, standardize, detrend, low_pass, high_pass,
     t_r, target_affine, target_shape, mask_strategy, mask_args...
 
     - If instance contains a masker in mask parameter, we use a copy of

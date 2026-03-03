@@ -132,6 +132,10 @@ authors:
     family-names: Duran
     website: https://github.com/AudreyDuran
     affiliation: TheraPanacea, France
+  - given-names: Basile
+    family-names: Pinsard
+    website: https://github.com/bpinsard
+    affiliation: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
   - given-names: Ben
     family-names: Cipollini
     website: https://github.com/bcipolli
@@ -343,6 +347,10 @@ authors:
     family-names: Kai
     website: https://github.com/kaitj
     affiliation: Child Mind Institute
+  - given-names: Jason D.
+    family-names: Yeatman
+    website: https://edneuro.stanford.edu/
+    affiliation: Stanford University, Stanford, California, USA
   - given-names: Javier
     family-names: Rasero
     website: https://jrasero.github.io/
@@ -374,6 +382,12 @@ authors:
     website: https://github.com/ja-che
     affiliation: Emerton Data
     orcid: https://orcid.org/0000-0003-1959-3056
+  - given-names: Johanna
+    family-names: Bayer
+    website: https://opencodereview.netlify.app/
+    affiliation: McGill University, Montréal, Canada
+    email: hannabayer.89@gmail.com
+    orcid: https://orcid.org/0000-0003-4891-6256
   - given-names: Johannes
     family-names: Wiesner
     website: https://github.com/JohannesWiesner
@@ -581,6 +595,10 @@ authors:
     family-names: Krish
     website: https://github.com/NIkhilgKrish
     affiliation: University of Texas, Austin
+  - given-names: Noah C.
+    family-names: Benson
+    website: https://nben.net/
+    affiliation: University of Washington, Seattle, Washington, USA
   - given-names: Oliver
     family-names: Warrington
     website: https://github.com/OliverWarrington

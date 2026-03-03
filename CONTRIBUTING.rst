@@ -507,6 +507,8 @@ We use `prettier <https://prettier.io/>`_ and `djlint <https://github.com/djlint
 
 This is implemented via a pre-commit hook.
 
+.. _pre_commit:
+
 Pre-commit
 ----------
 
@@ -518,6 +520,18 @@ To install pre-commit, run:
 .. code-block:: bash
 
       pip install pre-commit
+
+.. note::
+
+      Pre-commit will already be installed if you installed
+      the ``dev`` or ``style`` dependencies of nilearn
+      with::
+
+            pip install -e '.[dev]'
+
+      or::
+
+            pip install -e '.[style]'
 
 Then run the following to install the pre-commit hooks:
 
@@ -605,6 +619,71 @@ You can also use the ``rng`` fixture.
           my_number = rng.normal()
 
           # the rest of the test
+
+
+Using tox
+^^^^^^^^^
+
+`Tox <https://tox.wiki>`_ is set
+to facilitate testing and managing environments during development
+and ensure that the same commands can easily be run locally and in CI.
+
+It should already be installed if you ran:
+
+.. code-block:: bash
+
+    pip install -e '.[dev]'
+
+You can set up certain environment or run certain command by calling ``tox``.
+
+Calling ``tox`` with no extra argument will simply run
+all the default commands defined in the tox configuration (``tox.ini``).
+
+Use ``tox list`` to view all environment descriptions.
+
+Use ``tox run`` to run a specific environment.
+
+Example
+
+.. code-block:: bash
+
+    tox run -e lint
+
+Some environments allow passing extra argument:
+
+.. code-block:: bash
+
+    # only run ruff
+    tox run -e lint -- ruff
+
+    # only run some tests
+    tox -e plotting -- nilearn/glm/tests/test_contrasts.py
+
+You can also run any arbitrary command in a given environment with ``tox exec``:
+
+.. code-block:: bash
+
+    tox exec -e latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
+
+Running the tests with several python versions
+""""""""""""""""""""""""""""""""""""""""""""""
+
+Running the following should let tox run all the tests on all the python versions
+it can find on your system.
+
+.. code-block:: bash
+
+      tox
+
+You can specify which tests to run
+by passing extra command line arguments to pytest after a ``--``.
+
+For example, the following would run all the tests in ``nilearn/image``
+that contain the word ``smooth``.
+
+.. code-block:: python
+
+      tox -- nilearn/image -k smooth
 
 Plotting
 --------
@@ -741,7 +820,6 @@ This installs your local version of Nilearn,
 along with all dependencies necessary for developers (hence the ``[dev]`` tag).
 For more information about the dependency installation options, see ``pyproject.toml``.
 The installed version will also reflect any changes you make to your code.
-
 
 4. check that all tests pass with (this can take a while):
 
