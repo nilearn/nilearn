@@ -22,6 +22,7 @@ from nilearn.glm.thresholding import threshold_stats_img
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 @pytest.mark.parametrize(
@@ -75,6 +76,7 @@ def test_stat_map_to_png_volume(
     return fig
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.mpl_image_compare
 @mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize(

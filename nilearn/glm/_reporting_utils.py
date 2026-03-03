@@ -10,7 +10,7 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import load_niimg, safe_get_data
+from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -28,7 +28,7 @@ from nilearn.surface.surface import get_data as get_surface_data
 
 def check_generate_report_input(
     height_control, cluster_threshold, min_distance, plot_type
-):
+) -> None:
     height_control_methods = [
         "fpr",
         "fdr",
@@ -125,7 +125,7 @@ def turn_into_full_path(bunch, dir: Path) -> str | Bunch:
     return tmp
 
 
-def glm_model_attributes_to_dataframe(model):
+def glm_model_attributes_to_dataframe(model) -> pd.DataFrame:
     """Return a pandas dataframe with pertinent model attributes & information.
 
     Parameters
@@ -178,6 +178,7 @@ def load_bg_img(bg_img, is_volume_glm):
             "'bg_img' must a SurfaceImage instance. "
             f"Got {bg_img.__class__.__name__}"
         )
+    return bg_img
 
 
 def mask_to_plot(model, bg_img):
@@ -508,7 +509,6 @@ def _stat_map_to_png(
         if isinstance(stat_img, SurfaceImage):
             data = get_surface_data(stat_img)
         else:
-            stat_img = load_niimg(stat_img)
             data = safe_get_data(stat_img, ensure_finite=True)
 
         vmin = np.nanmin(data)

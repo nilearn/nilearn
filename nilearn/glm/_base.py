@@ -14,7 +14,7 @@ from nibabel.onetime import auto_attr
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._base import SKLEARN_GTE_1_7, NilearnBaseEstimator
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
@@ -22,7 +22,7 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_7, SKLEARN_LT_1_6
 from nilearn._version import __version__
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
@@ -79,7 +79,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             "estimator_name": estimator_name,
         }
 
-    def _is_volume_glm(self):
+    def _is_volume_glm(self) -> bool:
         """Return if model is run on volume data or not."""
         return not (
             (
@@ -93,7 +93,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             )
         )
 
-    def _is_first_level_glm(self):
+    def _is_first_level_glm(self) -> bool:
         """Return True if this estimator is of type FirstLevelModel; False
         otherwise.
         """
@@ -103,7 +103,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
     def _mask_img(self) -> Nifti1Image | SurfaceImage | None:
         """Return mask image using during fit or mask image passed at init."""
         if self.__sklearn_is_fitted__():
-            return self.masker_.mask_img_
+            return self.mask_img_
         else:
             if self.mask_img is None:
                 return None
@@ -112,6 +112,12 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
                 return check_niimg(self.mask_img)
             except Exception:
                 return self.mask_img
+
+    @property
+    def mask_img_(self) -> Nifti1Image | SurfaceImage:
+        """Return mask image using during fit."""
+        check_is_fitted(self)
+        return self.masker_.mask_img_
 
     def _attributes_to_dict(self):
         """Return dict with pertinent model attributes & information.

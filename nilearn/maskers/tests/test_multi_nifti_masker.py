@@ -13,11 +13,11 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
 
-ESTIMATORS_TO_CHECK = [MultiNiftiMasker(standardize=None)]
+ESTIMATORS_TO_CHECK = [MultiNiftiMasker()]
 
 if SKLEARN_LT_1_6:
 

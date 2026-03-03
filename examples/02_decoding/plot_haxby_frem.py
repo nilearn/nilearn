@@ -65,9 +65,7 @@ from nilearn.decoding import FREMClassifier
 # Restrict analysis to within the brain mask
 mask = data_files.mask
 
-decoder = FREMClassifier(
-    mask=mask, cv=10, standardize="zscore_sample", n_jobs=2, verbose=1
-)
+decoder = FREMClassifier(mask=mask, cv=10, n_jobs=2, verbose=1)
 
 # %%
 # Fit model on train data and predict on test data

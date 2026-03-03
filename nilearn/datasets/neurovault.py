@@ -1646,10 +1646,10 @@ def _download_image_terms(image_info, collection, download_params):
             verbose=download_params["verbose"],
         )
         assert _check_has_words(image_info["ns_words_absolute_path"])
-    except Exception:
+    except Exception as e:
         message = f"Could not fetch words for image {image_info['id']}"
         if not download_params.get("allow_neurosynth_failure", True):
-            raise RuntimeError(message)
+            raise RuntimeError(message) from e
         logger.log(
             message,
             msg_level=_ERROR,
@@ -2084,7 +2084,7 @@ def _scroll_explicit(download_params):
     yield from _scroll_image_ids(download_params)
 
 
-def _print_progress(found, download_params, level=_INFO):
+def _print_progress(found, download_params, level: int = _INFO) -> None:
     """Print number of images fetched so far."""
     logger.log(
         f"Already fetched {found} image{'s' if found > 1 else ''}",
@@ -2869,70 +2869,6 @@ def fetch_neurovault_ids(
         timeout=timeout,
         verbose=verbose,
     )
-
-
-@fill_doc
-def fetch_neurovault_motor_task(
-    data_dir=None, timeout=_DEFAULT_TIME_OUT, verbose=1
-):
-    """Fetch left vs right button press \
-       group :term:`contrast` map from :term:`Neurovault`.
-
-    .. nilearn_deprecated:: 0.12.0
-
-        This fetcher function will be removed in version>0.13.1.
-
-        Please use
-        :func:`nilearn.datasets.load_sample_motor_activation_image`
-        instead.
-
-    Parameters
-    ----------
-    %(data_dir)s
-
-    %(verbose)s
-
-    Returns
-    -------
-    data : Bunch
-        A dict-like object which exposes its items as attributes. It contains:
-            - 'images', the paths to downloaded files.
-            - 'images_meta', the metadata for the images in a list of
-              dictionaries.
-            - 'collections_meta', the metadata for the
-              collections.
-            - 'description', a short description
-              of the :term:`Neurovault` dataset.
-
-    Notes
-    -----
-    The 'left vs right button press' contrast is used:
-    https://neurovault.org/images/10426/
-
-    See Also
-    --------
-    nilearn.datasets.fetch_neurovault_ids
-    nilearn.datasets.fetch_neurovault
-    nilearn.datasets.fetch_neurovault_auditory_computation_task
-
-    """
-    check_params(locals())
-
-    # TODO (nilearn >= 0.13.1)
-    warnings.warn(
-        (
-            "The 'fetch_neurovault_motor_task' function will be removed "
-            "in version>0.13.1. \n"
-            "Please use 'load_sample_motor_activation_image' instead.'"
-        ),
-        FutureWarning,
-        stacklevel=find_stack_level(),
-    )
-
-    data = fetch_neurovault_ids(
-        image_ids=[10426], data_dir=data_dir, verbose=verbose, timeout=timeout
-    )
-    return data
 
 
 @fill_doc

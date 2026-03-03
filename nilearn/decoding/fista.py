@@ -17,7 +17,7 @@ from nilearn._utils.param_validation import check_params
 
 def _check_lipschitz_continuous(
     f, ndim, lipschitz_constant, n_trials=10, random_state=42
-):
+) -> None:
     """Empirically check Lipschitz continuity of a function.
 
     If this test is passed, then we are empirically confident in the

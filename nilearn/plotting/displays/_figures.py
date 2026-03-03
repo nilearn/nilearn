@@ -1,11 +1,16 @@
 import warnings
+from importlib.util import find_spec
 
 import numpy as np
 from scipy import linalg
 from scipy.spatial import distance_matrix
 
-from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn._utils.helpers import (
+    is_plotly_installed,
+    is_sphinx_build,
+)
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.versions import is_kaleido_plotly_compatible
 from nilearn.plotting.surface._utils import DEFAULT_HEMI, get_faces_on_edge
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data, load_surf_data
@@ -104,20 +109,26 @@ class PlotlySurfaceFigure(SurfaceFigure):
             )
         super().__init__(figure=figure, output_file=output_file, hemi=hemi)
 
-    def show(self, renderer="browser"):
+    def show(self, renderer=None):
         """Show the figure.
 
         Parameters
         ----------
-        renderer : :obj:`str`, default='browser'
+        renderer : :obj:`str`, default=None
             Plotly renderer to be used.
 
         """
         if self.figure is not None:
-            self.figure.show(renderer=renderer)
-            return self.figure
+            # Figure should be returned for sphinx-gallery to be able to
+            # display it in the docs.
+            if is_sphinx_build():
+                return self.figure
+            # When run in notebook, if both figure is returned and show
+            # is called, the figure is displayed twice.
+            else:
+                self.figure.show(renderer=renderer)
 
-    def savefig(self, output_file=None, **savefig_kwargs):  # noqa: ARG002
+    def savefig(self, output_file=None, **savefig_kwargs) -> None:  # noqa: ARG002
         """Save the figure to file.
 
         Parameters
@@ -127,15 +138,45 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         savefig_kwargs:
         """
-        if not is_kaleido_installed():
-            raise ImportError(
-                "`kaleido` is required to save plotly figures to disk."
-            )
         self._check_output_file(output_file=output_file)
         if self.figure is not None:
             if output_file is not None:
                 self.output_file = output_file
-            self.figure.write_image(self.output_file)
+
+            try:
+                self.figure.write_image(self.output_file)
+            except RuntimeError as e:
+                kaleido_spec = find_spec("kaleido")
+                if "Kaleido requires Google Chrome" in str(e) or kaleido_spec:
+                    raise RuntimeError(
+                        "As of version 1.0.0, Google Chrome is no more "
+                        "bundled with Kaleido.\n"
+                        "To be able to save images with plotly, make sure "
+                        "that Google Chrome is installed!\n"
+                        "You can install a compatible Chrome version using "
+                        "the `kaleido_get_chrome` command in command line or "
+                        "`kaleido.get_chrome_sync()` function "
+                        "in Python."
+                    ) from None
+                else:
+                    raise e
+            except ValueError as e:
+                kaleido_spec = find_spec("kaleido")
+                if not kaleido_spec:
+                    raise RuntimeError(
+                        "Kaleido and Google Chrome are required to save "
+                        "plotly figures to disk."
+                    ) from None
+                # TODO remove this check when min supported kaleido version is
+                # >= 1.0.0
+                elif not is_kaleido_plotly_compatible():
+                    raise RuntimeError(
+                        "Incompatible Plotly/Kaleido versions detected:\n "
+                        "Please upgrade Plotly to version 6.1.1 or greater, "
+                        "or downgrade Kaleido to version 0.2.1."
+                    ) from None
+                else:
+                    raise e
 
     def add_contours(
         self,
