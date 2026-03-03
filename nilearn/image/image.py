@@ -819,7 +819,6 @@ def mean_img(
     Examples
     --------
     >>> import numpy as np
-    >>> from numpy.testing import assert_array_equal
     >>> from nibabel import Nifti1Image
     >>> # Create a 4D image with one volume of ones and one of zeros
     >>> shape = (2, 2, 2, 1)
