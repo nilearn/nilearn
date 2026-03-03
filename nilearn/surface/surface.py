@@ -1607,6 +1607,27 @@ class InMemoryMesh(SurfaceMesh):
                 "Index out of range. Use 0 for coordinates and 1 for faces."
             )
 
+    @property
+    def _area(self):
+        """Compute area of mesh.
+
+        Get the vertex coordinates for each face
+        Compute vectors for two edges of the triangle
+        Compute the cross product of the two edge vectors
+        Area of triangle = 0.5 * norm of cross product
+        """
+        (idx0, idx1, idx2) = self.faces.T
+        (v0, v1, v2) = (
+            self.coordinates[idx0],
+            self.coordinates[idx1],
+            self.coordinates[idx2],
+        )
+        edge1 = v1 - v0
+        edge2 = v2 - v0
+        cross_prod = np.cross(edge1, edge2)
+        area = 0.5 * np.sqrt(np.sum(cross_prod**2, axis=1))
+        return np.sum(area)
+
     def __iter__(self):
         return iter([self.coordinates, self.faces])
 
@@ -2085,7 +2106,7 @@ def extract_data(img, index) -> dict[Any, np.ndarray]:
     }
 
 
-def compute_adjacency_matrix(mesh: InMemoryMesh, dtype=None):
+def compute_adjacency_matrix(mesh: InMemoryMesh, values="ones", dtype=None):
     """Compute the adjacency matrix for a surface.
 
     The adjacency matrix is a matrix
@@ -2096,6 +2117,12 @@ def compute_adjacency_matrix(mesh: InMemoryMesh, dtype=None):
     Parameters
     ----------
     mesh : InMemoryMesh
+
+    values : {'invlen', 'ones'}, default="ones"
+        If `values` is `'ones'` (the default), then the returned matrix
+        contains uniform values in the cells representing edges.
+        If the value is `'invlen'`, then the the inverse of the distances
+        are returned.
 
     dtype : numpy dtype-like or None, default=None
         The dtype that should be used for the returned sparse matrix.
@@ -2139,7 +2166,18 @@ def compute_adjacency_matrix(mesh: InMemoryMesh, dtype=None):
     # Decode back to pairs of vertices (u, v).
     (u, v) = (edges // n, edges % n)
 
-    if dtype is None:
+    # Calculate distances between pairs.
+    # We use this as a weighting to make sure that
+    # smoothing takes into account the distance between each vertex neighbor
+    if values == "invlen":
+        coords = mesh.coordinates
+        edge_lens = np.sqrt(np.sum((coords[u, :] - coords[v, :]) ** 2, axis=1))
+        if dtype is None:
+            dtype = edge_lens.dtype
+        else:
+            edge_lens = edge_lens.astype(dtype)
+        edge_lens = 1 / edge_lens
+    elif dtype is None:
         edge_lens = np.ones_like(edges)
     else:
         edge_lens = np.ones(edges.shape, dtype=dtype)
