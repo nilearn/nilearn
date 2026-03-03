@@ -403,8 +403,8 @@ def plot_img(
         :mod:`nilearn.plotting`
             See API reference for other options
 
-    Example:
-    ------
+    Example
+    -------
 
     >>> from nilearn.plotting.image.img_plotting import plot_img
     >>> from nilearn.datasets import load_sample_motor_activation_image
@@ -413,6 +413,7 @@ def plot_img(
     >>> data = load_sample_motor_activation_image()
 
     >>> display = plot_img(data, title="Plotting a 3D image with plot_img")
+    >>> display.show()
 
     """
     check_params(locals())
