@@ -35,7 +35,7 @@ from nilearn.plotting.html_stat_map import (
 def check_html_view_img(html_view, title=None):
     """Check the presence of some expected code in the html viewer."""
     assert isinstance(html_view, StatMapView)
-    assert "var brain =" in str(html_view)
+    assert "brain = brainsprite(" in str(html_view)
     assert "overlayImg" in str(html_view)
     if title is not None:
         assert f"<title>{title}</title>" in str(html_view)
