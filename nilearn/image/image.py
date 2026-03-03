@@ -176,7 +176,7 @@ def check_volume_for_fit(imgs) -> None:
             raise ValueError("The image is empty.")
 
 
-def get_data(img)-> np.ndarray:
+def get_data(img) -> np.ndarray:
     """Get the image data as a :class:`numpy.ndarray`.
 
     Parameters
@@ -187,14 +187,19 @@ def get_data(img)-> np.ndarray:
     Examples
     --------
     >>> import numpy as np
-    >>> from numpy.testing import assert_array_equal
     >>> from nibabel import Nifti1Image
     >>> from nilearn.image import get_data
     >>> img = Nifti1Image(
     ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
     ... )
     >>> data = get_data(img)
-    >>> assert_array_equal(data, np.arange(24).reshape((2, 3, 4)))
+    >>> data
+    array([[[ 0,  1,  2,  3],
+            [ 4,  5,  6,  7],
+            [ 8,  9, 10, 11]],
+           [[12, 13, 14, 15],
+            [16, 17, 18, 19],
+            [20, 21, 22, 23]]])
 
     Returns
     -------
