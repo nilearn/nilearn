@@ -412,7 +412,7 @@ def plot_img(
     # just to have a 3D image with some structure
     >>> data = load_sample_motor_activation_image()
 
-    >>> plot_img(data, title="Plotting a 3D image with plot_img")
+    >>> display = plot_img(data, title="Plotting a 3D image with plot_img")
     >>> show()
 
     """
