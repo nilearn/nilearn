@@ -102,6 +102,13 @@ readme = "README.rst"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
+# Necessary req to use nilearn's plotting module
+# Kaleido version is pinned for windows due to bug
+# See https://github.com/plotly/Kaleido/issues/134 for more detail
+kaleido = [
+    "kaleido ; platform_system != 'Windows'",
+    "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
+]
 min = [
     "joblib==1.2.0",
     "nibabel==5.2.0",
@@ -113,25 +120,17 @@ min = [
     "jinja2==3.1.2"
 ]
 min_plotting = [
-    "nilearn[min]",
+    "nilearn[min,kaleido]",
     "matplotlib==3.8.0",
-    "plotly==5.0.0",
-    "kaleido ; platform_system != 'Windows'",
-    "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
+    "plotly==5.0.0"
 ]
-# the following is kept for "backward compatibility"
-plotly = ["nilearn[plotting]"]
-# Necessary req to use nilearn's plotting module
-# Kaleido version is pinned for windows due to bug
-# See https://github.com/plotly/Kaleido/issues/134 for more detail
 plotting = [
+    "nilearn[kaleido]",
     "matplotlib>=3.8.0",
     # plotly 6.1.0 cannot save images
     # https://github.com/plotly/plotly.py/issues/5187
     "plotly>=5.0.0,!=6.1.0 ; platform_system != 'Windows'",
-    "kaleido ; platform_system != 'Windows'",
-    "plotly>=5.0.0,<6.1.0 ; platform_system == 'Windows'",
-    "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
+    "plotly>=5.0.0,<6.1.0 ; platform_system == 'Windows'"
 ]
 
 [project.urls]
