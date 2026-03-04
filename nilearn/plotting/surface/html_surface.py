@@ -2,6 +2,7 @@
 
 import base64
 import json
+from typing import Any
 from warnings import warn
 
 import matplotlib as mpl
@@ -50,14 +51,13 @@ class SurfaceView(HTMLDocument):  # noqa: D101
     pass
 
 
-def _check_engine(engine):
+def _check_engine(engine) -> None:
     """Check engine is valid."""
     valid_engines = ["plotly", "niivue"]
     if engine not in valid_engines:
         raise ValueError(
             f"Invalid engine {engine}. Valid engines are {valid_engines}."
         )
-    return engine
 
 
 def _one_mesh_info(
@@ -71,7 +71,7 @@ def _one_mesh_info(
     bg_on_data=False,
     vmax=None,
     vmin=None,
-):
+) -> dict[str, Any]:
     """Prepare info for plotting one surface map on a single mesh.
 
     This computes the dictionary that gets inserted in the web page,
@@ -101,6 +101,51 @@ def _one_mesh_info(
     info["black_bg"] = black_bg
     info["full_brain_mesh"] = False
     info["colorscale"] = colors["colors"]
+    return info
+
+
+def _one_mesh_info_niivue(
+    surf_map,
+    surf_mesh,
+    vmax=None,
+    threshold=None,
+    bg_map=None,
+    cmap=None,
+    colorbar=None,
+    black_bg=False,
+) -> dict[str, Any]:
+    """Build dict for plotting one surface map on a single mesh."""
+    info = {}
+
+    # Handle mesh
+    surf_mesh_gifti = _mesh_to_gifti(surf_mesh.coordinates, surf_mesh.faces)
+    info["surf_mesh"] = base64.b64encode(surf_mesh_gifti.to_bytes()).decode(
+        "UTF-8"
+    )
+
+    # Handle surface data
+    gii = _data_to_gifti(surf_map)
+    info["surf_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
+
+    info["cmap"] = _matplotlib_cm_to_niivue_cm(cmap)
+
+    if isinstance(colorbar, bool):
+        info["colorbar"] = str(colorbar).lower()
+
+    vmax, threshold = colorscale_niivue(surf_map, vmax, threshold)
+    info["threshold"] = threshold
+    info["vmax"] = vmax
+
+    # Handle background map
+    if bg_map is not None:
+        gii = _data_to_gifti(bg_map)
+        info["bg_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
+    else:
+        info["bg_map"] = "null"
+
+    info["bg_color"] = "[0, 0, 0, 1]" if black_bg else "[1, 1, 1, 1]"
+    info["bg_theme"] = "black" if black_bg else "white"
+
     return info
 
 
@@ -159,51 +204,6 @@ def _matplotlib_cm_to_niivue_cm(cmap):
     return {"pos": js_pos, "neg": js_neg}
 
 
-def _one_mesh_info_niivue(
-    surf_map,
-    surf_mesh,
-    vmax=None,
-    threshold=None,
-    bg_map=None,
-    cmap=None,
-    colorbar=None,
-    black_bg=False,
-):
-    """Build dict for plotting one surface map on a single mesh."""
-    info = {}
-
-    # Handle mesh
-    surf_mesh_gifti = _mesh_to_gifti(surf_mesh.coordinates, surf_mesh.faces)
-    info["surf_mesh"] = base64.b64encode(surf_mesh_gifti.to_bytes()).decode(
-        "UTF-8"
-    )
-
-    # Handle surface data
-    gii = _data_to_gifti(surf_map)
-    info["surf_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
-
-    info["cmap"] = _matplotlib_cm_to_niivue_cm(cmap)
-
-    if isinstance(colorbar, bool):
-        info["colorbar"] = str(colorbar).lower()
-
-    vmax, threshold = colorscale_niivue(surf_map, vmax, threshold)
-    info["threshold"] = threshold
-    info["vmax"] = vmax
-
-    # Handle background map
-    if bg_map is not None:
-        gii = _data_to_gifti(bg_map)
-        info["bg_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
-    else:
-        info["bg_map"] = "null"
-
-    info["bg_color"] = "[0, 0, 0, 1]" if black_bg else "[1, 1, 1, 1]"
-    info["bg_theme"] = "black" if black_bg else "white"
-
-    return info
-
-
 def _get_combined_curvature_map(mesh_left, mesh_right):
     """Get combined curvature map from left and right hemisphere maps.
     Only used in _full_brain_info.
@@ -229,7 +229,7 @@ def _full_brain_info(
     vmax=None,
     vmin=None,
     vol_to_surf_kwargs=None,
-):
+) -> dict[str, Any]:
     """Project 3D map on cortex; prepare info to plot both hemispheres.
 
     This computes the dictionary that gets inserted in the web page,
@@ -317,7 +317,7 @@ def _full_brain_info(
     return info
 
 
-def _fill_html_template(info, embed_js=True):
+def _fill_html_template(info, embed_js=True) -> SurfaceView:
     as_json = json.dumps(info)
     as_html = get_html_template("surface_plot_template.html").safe_substitute(
         {
@@ -331,7 +331,7 @@ def _fill_html_template(info, embed_js=True):
     return SurfaceView(as_html)
 
 
-def _fill_html_template_niivue(info, embed_js=True):
+def _fill_html_template_niivue(info, embed_js=True) -> SurfaceView:
     as_html = get_html_template(
         "surface_plot_template_niivue.html"
     ).safe_substitute(

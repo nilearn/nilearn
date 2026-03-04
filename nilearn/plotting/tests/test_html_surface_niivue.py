@@ -1,18 +1,17 @@
 import pytest
 
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.plotting import html_surface
-from nilearn.plotting.html_surface import (
-    _matplotlib_cm_to_niivue_cm,
-)
+from nilearn.plotting import view_surf
+from nilearn.plotting.surface.html_surface import _matplotlib_cm_to_niivue_cm
 from nilearn.surface.surface import load_surf_mesh
 
 
 def test_niivue_smoke():
+    """Make sure niivue engine works."""
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
     surf_map = mesh[0][:, 0]
-    html_surface.view_surf(
+    view_surf(
         fsaverage["pial_right"],
         surf_map,
         fsaverage["sulc_right"],
@@ -23,16 +22,15 @@ def test_niivue_smoke():
 
 
 def test_view_surf_errors():
+    """Make sure view_surf raises errors appropriately."""
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
 
-    with pytest.raises(ValueError):
-        html_surface.view_surf(
-            mesh, mesh.coordinates[::2, 0], engine="niivue", hemi="left"
-        )
+    with pytest.raises(ValueError, match="foo"):
+        view_surf(mesh, mesh.coordinates[::2, 0], engine="niivue", hemi="left")
 
-    with pytest.raises(ValueError):
-        html_surface.view_surf(
+    with pytest.raises(ValueError, match="foo"):
+        view_surf(
             mesh,
             mesh.coordinates[:, 0],
             bg_map=mesh.coordinates[::2, 0],
@@ -42,6 +40,7 @@ def test_view_surf_errors():
 
 
 def test_matplotlib_cm_to_niivue_cm():
+    """Make sure _matplotlib_cm_to_niivue_cm raises errors appropriately."""
     with pytest.warns(
         UserWarning, match="'cmap' must be a str or a Colormap. Got"
     ):
