@@ -111,8 +111,7 @@ def _one_mesh_info_niivue(
     threshold=None,
     bg_map=None,
     cmap=None,
-    colorbar=None,
-    black_bg=False,
+    black_bg: bool = False,
 ) -> dict[str, Any]:
     """Build dict for plotting one surface map on a single mesh."""
     info = {}
@@ -128,9 +127,6 @@ def _one_mesh_info_niivue(
     info["surf_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
 
     info["cmap"] = _matplotlib_cm_to_niivue_cm(cmap)
-
-    if isinstance(colorbar, bool):
-        info["colorbar"] = str(colorbar).lower()
 
     vmax, threshold = colorscale_niivue(surf_map, vmax, threshold)
     info["threshold"] = threshold
@@ -223,9 +219,9 @@ def _full_brain_info(
     mesh="fsaverage5",
     threshold=None,
     cmap=DEFAULT_DIVERGING_CMAP,
-    black_bg=False,
-    symmetric_cmap=True,
-    bg_on_data=False,
+    black_bg: bool = False,
+    symmetric_cmap: bool = True,
+    bg_on_data: bool = False,
     vmax=None,
     vmin=None,
     vol_to_surf_kwargs=None,
@@ -331,7 +327,9 @@ def _fill_html_template(info, embed_js=True) -> SurfaceView:
     return SurfaceView(as_html)
 
 
-def _fill_html_template_niivue(info, embed_js=True) -> SurfaceView:
+def _fill_html_template_niivue(
+    info: dict[str, Any], embed_js: bool = True
+) -> SurfaceView:
     as_html = get_html_template(
         "surface_plot_template_niivue.html"
     ).safe_substitute(
@@ -588,8 +586,8 @@ def view_surf(
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
-    engine : {'plotly', 'niivue'}, optional
-        Engine to use for plotting. Default='plotly'.
+    engine : {'plotly', 'niivue'}, default='plotly'
+        Engine to use for plotting.
 
     view : one of {"left", "right", "front", "back", "top", "bottom"}, \
       default="left"
@@ -632,12 +630,12 @@ def view_surf(
             black_bg=black_bg,
             bg_map=bg_map,
             cmap=cmap,
-            colorbar=colorbar,
             threshold=threshold,
             vmax=vmax,
         )
         info["title"] = title
         info["title_fontsize"] = title_fontsize
+        info["colorbar"] = str(colorbar).lower()
         return _fill_html_template_niivue(info, embed_js=True)
 
     info = _one_mesh_info(
