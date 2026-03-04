@@ -1,74 +1,68 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-theme="$INSERT_COLOR_THEME_HERE">
-  <head>
-    <title>$INSERT_PAGE_TITLE_HERE</title>
+    <head>
+        <title>$INSERT_PAGE_TITLE_HERE</title>
+        <meta charset="UTF-8" />
+        <link rel="icon"
+              type="image/x-icon"
+              href="https://raw.githubusercontent.com/nilearn/nilearn/main/doc/logos/favicon.ico" />
+    </head>
+    <style>
+         :root[data-theme="black"] {
+              color-scheme: dark;
+              background-color: black !important;
+              color: white;
+         }
 
-    <meta charset="UTF-8" />
+         :root[data-theme="white"] {
+              color-scheme: light;
+              background-color: white !important;
+              color: black;
+         }
 
-    <link
-      rel="icon"
-      type="image/x-icon"
-      href="https://raw.githubusercontent.com/nilearn/nilearn/main/doc/logos/favicon.ico"
-    />
-  </head>
+         body {
+              margin: 0;
+              height: 100vh;
+              display: flex;
+              flex-direction: column;
+         }
 
-  <style>
-    :root[data-theme="black"] {
-      color-scheme: dark;
-      background-color: black !important;
-      color: white;
-    }
+         #gl {
+              flex: 1;
+              min-height: 0;
+              width: 100%;
+         }
 
-    :root[data-theme="white"] {
-      color-scheme: light;
-      background-color: white !important;
-      color: black;
-    }
+         #page-title {
+              text-align: center;
+              font-size: $INSERT_FONT_SIZE_HERE;
+              font-family: Arial, sans-serif;
+         }
 
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    #gl {
-      flex: 1;
-      min-height: 0;
-      width: 100%;
-    }
-    #page-title {
-      text-align: center;
-      font-size: $INSERT_FONT_SIZE_HERE;
-      font-family: Arial, sans-serif;
-    }
-
-    #toolbar {
-      flex-shrink: 0;
-      background: transparent;
-    }
-  </style>
-
-  <body>
-    <div id="page-title">$INSERT_PAGE_TITLE_HERE</div>
-    <canvas id="gl"></canvas>
-  </body>
-  <footer>
-    <div id="toolbar">
-      <select id="select-view">
-        <option value="left">view: Left</option>
-        <option value="right">view: Right</option>
-        <option value="front">view: Front</option>
-        <option value="back">view: Back</option>
-        <option value="top">view: Top</option>
-        <option value="bottom">view: Bottom</option>
-        <option value="custom">view: -</option>
-      </select>
-    </div>
-  </footer>
-
-  $INSERT_JS_LIBRARIES_HERE
-
-  <script type="module" async>
+         #toolbar {
+              flex-shrink: 0;
+              background: transparent;
+         }
+    </style>
+    <body>
+        <div id="page-title">$INSERT_PAGE_TITLE_HERE</div>
+        <canvas id="gl"></canvas>
+    </body>
+    <footer>
+        <div id="toolbar">
+            <select id="select-view">
+                <option value="left">view: Left</option>
+                <option value="right">view: Right</option>
+                <option value="front">view: Front</option>
+                <option value="back">view: Back</option>
+                <option value="top">view: Top</option>
+                <option value="bottom">view: Bottom</option>
+                <option value="custom">view: -</option>
+            </select>
+        </div>
+    </footer>
+    $INSERT_JS_LIBRARIES_HERE
+    <script type="module" async>
     var nv = new niivue.Niivue({
       show3Dcrosshair: false,
       backColor: $INSERT_BG_COLOR_HERE,
@@ -160,10 +154,10 @@
       const [az, el] = plotlyViews[view];
       nv.setRenderAzimuthElevation(az, el, true);
     };
-  </script>
-  <script>
+    </script>
+    <script>
     document.getElementById("gl").addEventListener("mouseup", () => {
       document.getElementById("select-view").value = "custom";
     });
-  </script>
+    </script>
 </html>
