@@ -44,7 +44,7 @@ References
    For more technical details about predicting the measures, refer to:
    Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
    April 2015 "HCP500-MegaTrawl" release.
-   https://db.humanconnectome.org/megatrawl/
+   https://balsa.wustl.edu
 
 Disclaimer
 ----------
@@ -54,7 +54,7 @@ Disclaimer
 
    This is open access data. You must agree to Terms and conditions
    of using this data before using it, available at:
-   http://humanconnectome.org/data/data-use-terms/open-access.html
+   https://www.humanconnectome.org/study/hcp-young-adult/document/wu-minn-hcp-consortium-open-access-data-use-terms
 
 Open Access Data (all imaging data and most of the behavioral data)
 is available to those who register an account at ConnectomeDB and agree to
@@ -74,4 +74,4 @@ please advice your co-researchers that they must register with ConnectomeDB
 and agree to these terms.
 
 Register and sign the Open Access Data Use Terms at
-ConnectomeDB: https://db.humanconnectome.org/
+ConnectomeDB: https://balsa.wustl.edu

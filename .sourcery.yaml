@@ -1,0 +1,45 @@
+---
+# Configuration file for sourcery
+#
+# To run sourcery refactoring suggestions (may require authentification):
+#
+# pip install sourcery
+# sourcery review nilearn
+#
+# 📚 For a complete reference to this file, see the documentation at
+# https://docs.sourcery.ai/Configuration/Project-Settings/
+#
+
+version: '1'
+
+ignore: # A list of paths or files which Sourcery will ignore.
+-   doc
+-   examples
+-   maint_tools
+-   nilearn/_version.py
+-   nilearn/plotting/data/js/*.js
+
+rule_settings:
+    enable:
+    -   default
+    disable:
+    -   no-loop-in-tests
+    -   no-conditionals-in-tests
+    -   low-code-quality
+    -   inline-immediately-returned-variable
+    # --------------------
+    -   raise-from-previous-error   # │    21 │
+    -   use-named-expression        # │    16 │
+    -   avoid-builtin-shadow        # │     9 │
+    -   assign-if-exp               # │     5 │
+    -   dict-assign-update-to-union # │     4 │
+    -   use-or-for-fallback         # │     4 │
+    -   raise-specific-error        # │     3 │
+    -   switch                      # │     1 │
+
+    rule_types:
+    -   refactoring
+    python_version: '3.10'
+
+metrics:
+    quality_threshold: 25.0

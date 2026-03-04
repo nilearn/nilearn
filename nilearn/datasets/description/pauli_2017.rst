@@ -1,4 +1,4 @@
-.. _pauli_atlas:
+.. _pauli_2017_atlas:
 
 Pauli 2007 atlas
 ================

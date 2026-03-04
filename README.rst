@@ -29,10 +29,6 @@
     :target: https://www.youtube.com/@nilearnevents5116
     :alt: YouTube Channel Subscribers
 
-.. image:: https://img.shields.io/twitter/follow/nilearn.svg
-    :target: https://x.com/nilearn
-    :alt: Twitter
-
 .. image:: https://img.shields.io/mastodon/follow/109669703955432270?domain=https%3A%2F%2Ffosstodon.org%2F
     :target: https://fosstodon.org/@nilearn
     :alt: Mastodon
@@ -44,7 +40,7 @@
 nilearn
 =======
 
-Nilearn enables approachable and versatile analyses of brain volumes.
+Nilearn enables approachable and versatile analyses of brain volumes and surfaces.
 It provides statistical and machine-learning tools, with instructive documentation & friendly community.
 
 It supports general linear model (GLM) based analysis
@@ -85,7 +81,7 @@ With ``conda``:
 
 .. code-block:: bash
 
-    conda create -n nilearn python=3.9
+    conda create -n nilearn python=3.10
     conda activate nilearn
 
 **2. Install nilearn with pip**
@@ -132,7 +128,7 @@ Dependencies
 The required dependencies to use the software are listed
 in the file `pyproject.toml <https://github.com/nilearn/nilearn/blob/main/pyproject.toml>`_.
 
-If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.3.0 is required.
+If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.8.0 is required.
 
 Some plotting functions in Nilearn support both matplotlib and plotly as plotting engines.
 In order to use the plotly engine in these functions,

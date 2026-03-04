@@ -1,3 +1,4 @@
+# %%
 """
 Making a surface plot of a 3D statistical map
 =============================================
@@ -70,7 +71,6 @@ fig = plot_surf_stat_map(
     surf_mesh=fsaverage_meshes["inflated"],
     hemi=hemi,
     title="Surface with matplotlib",
-    colorbar=True,
     threshold=1.0,
     bg_map=curv_sign,
 )
@@ -82,12 +82,10 @@ fig.show()
 # you can easily configure :func:`~nilearn.plotting.plot_surf_stat_map`
 # to use ``plotly`` instead of ``matplotlib``:
 
-engine = "matplotlib"
+# If plotly is not installed, use matplotlib
+from nilearn._utils.helpers import is_plotly_installed
 
-# uncomment the following line if you use plotly
-# in the rest of this example
-
-# engine = "plotly"
+engine = "plotly" if is_plotly_installed() else "matplotlib"
 
 print(f"Using plotting engine {engine}.")
 
@@ -96,16 +94,16 @@ figure = plot_surf_stat_map(
     surf_mesh=fsaverage_meshes["inflated"],
     hemi=hemi,
     title=f"Surface with {engine}",
-    colorbar=True,
     threshold=1.0,
     bg_map=curv_sign,
     bg_on_data=True,
     engine=engine,  # Specify the plotting engine here
 )
-
-# Uncomment the line below
-# to view the figure in browser.
 figure.show()
+
+# Uncomment the line below to have interactive
+# visualization in the browser
+# figure.show(renderer="browser")
 
 # %%
 # When using ``matplolib`` as the plotting engine, a standard
@@ -138,7 +136,7 @@ plot_stat_map(
     stat_map_img=stat_img,
     display_mode="x",
     threshold=1.0,
-    cut_coords=range(0, 51, 10),
+    cut_coords=list(range(0, 51, 10)),
     title="Slices",
 )
 
@@ -183,13 +181,12 @@ figure = plot_surf_stat_map(
     surf_mesh=fsaverage_meshes["inflated"],
     hemi=hemi,
     title="ROI outlines on surface",
-    colorbar=True,
     threshold=1.0,
     bg_map=fsaverage_sulcal,
     engine=engine,
 )
 if engine == "matplotlib":
-    plot_surf_contours(
+    figure = plot_surf_contours(
         roi_map=destrieux_atlas,
         hemi=hemi,
         labels=labels,
@@ -198,7 +195,6 @@ if engine == "matplotlib":
         legend=True,
         colors=["g", "k"],
     )
-    show()
 elif engine == "plotly":
     figure.add_contours(
         roi_map=destrieux_atlas,
@@ -206,8 +202,11 @@ elif engine == "plotly":
         labels=labels,
         lines=[{"width": 5}],
     )
-    # view the contours in a browser
-    figure.show()
+    # Uncomment the line below to have interactive
+    # visualization in the browser
+    # figure.show(renderer="browser")
+
+figure.show()
 
 # %%
 # Plot with higher-resolution mesh
@@ -240,7 +239,6 @@ plot_surf_stat_map(
     stat_map=big_img,
     surf_mesh=big_fsaverage_meshes["inflated"],
     hemi=hemi,
-    colorbar=True,
     title="Surface fine mesh",
     threshold=1.0,
     bg_map=big_fsaverage_sulcal,
@@ -264,9 +262,9 @@ plot_img_on_surf(
     stat_map=stat_img,
     views=["lateral", "medial"],
     hemispheres=["left", "right"],
-    colorbar=True,
     title="multiple views of the 3D volume",
     bg_on_data=True,
+    symmetric_cmap=None,
 )
 show()
 
@@ -291,11 +289,16 @@ view = view_surf(
     engine=engine,
 )
 
-# In a Jupyter notebook, if ``view`` is the output of a cell,
+# In a notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
 view
+
+# If plotly is not installed or the code is run in script mode,
+# it is still possible to have interactive visualization in the
+# browser by uncommenting the below line.
 # view.open_in_browser()
 
+# %%
 # We don't need to do the projection ourselves, we can use
 # :func:`~nilearn.plotting.view_img_on_surf`:
 from nilearn.plotting import view_img_on_surf
@@ -303,6 +306,10 @@ from nilearn.plotting import view_img_on_surf
 view = view_img_on_surf(stat_img, threshold="90%")
 
 view
+
+# If plotly is not installed or the code is run in script mode,
+# it is still possible to have interactive visualization in the
+# browser by uncommenting the below line.
 # view.open_in_browser()
 
 # %%
@@ -326,13 +333,17 @@ view = view_img_on_surf(
     vol_to_surf_kwargs={
         "n_samples": 1,
         "radius": 0.0,
-        "interpolation": "nearest",
+        "interpolation": "nearest_most_frequent",
     },
     symmetric_cmap=False,
     colorbar=False,
 )
 
 view
+
+# If plotly is not installed or the code is run in script mode,
+# it is still possible to have interactive visualization in the
+# browser by uncommenting the below line.
 # view.open_in_browser()
 
 # sphinx_gallery_dummy_images=1

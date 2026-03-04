@@ -16,10 +16,11 @@ from scipy import ndimage as ndi
 from scipy.sparse.linalg import cg
 from sklearn.utils import as_float_array
 
-from nilearn._utils.helpers import compare_version
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.versions import compare_version
 
 
-def _make_graph_edges_3d(n_x, n_y, n_z):
+def _make_graph_edges_3d(n_x: int, n_y: int, n_z: int) -> np.ndarray:
     """Return a list of edges for a 3D image.
 
     Parameters
@@ -100,7 +101,7 @@ def _make_laplacian_sparse(edges, weights):
     return lap.tocsr()
 
 
-def _clean_labels_ar(X, labels):
+def _clean_labels_ar(X: np.ndarray, labels: np.ndarray) -> np.ndarray:
     X = X.astype(labels.dtype)
     labels = np.ravel(labels)
     labels[labels == 0] = X
@@ -161,7 +162,14 @@ def _build_laplacian(data, spacing, mask=None, beta=50):
     return lap
 
 
-def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
+def random_walker(
+    data,
+    labels: np.ndarray,
+    beta: float = 130.0,
+    tol: float = 1.0e-3,
+    copy: bool = True,
+    spacing=None,
+):
     """Random walker algorithm for segmentation from markers.
 
     Parameters
@@ -192,7 +200,7 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
         the result of the segmentation. Use copy=False if you want to
         save on memory.
 
-    spacing : iterable of floats, optional
+    spacing : iterable of floats, default=None
         Spacing between voxels in each spatial dimension. If `None`, then
         the spacing between pixels/voxels in each dimension is assumed 1.
 
@@ -255,13 +263,15 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
         warnings.warn(
             "Random walker only segments unlabeled areas, where "
             "labels == 0. No zero valued areas in labels were "
-            "found. Returning provided labels."
+            "found. Returning provided labels.",
+            stacklevel=find_stack_level(),
         )
         return out_labels
 
     if (labels == 0).all():
         warnings.warn(
-            "Random walker received no seed label. Returning provided labels."
+            "Random walker received no seed label. Returning provided labels.",
+            stacklevel=find_stack_level(),
         )
         return out_labels
 
@@ -324,7 +334,8 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
         warnings.warn(
             "Random walker only segments unlabeled areas, where "
             "labels == 0. Data provided only contains isolated seeds "
-            "and isolated pixels. Returning provided labels."
+            "and isolated pixels. Returning provided labels.",
+            stacklevel=find_stack_level(),
         )
         return out_labels
 
@@ -358,8 +369,7 @@ def _solve_cg(lap_sparse, B, tol):
     lap_sparse = lap_sparse.tocsc()
     X = [
         cg(lap_sparse, -b_i.todense(), rtol=tol, atol=0)[0]
-        # TODO
-        # when support scipy to >= 1.12
+        # TODO (scipy to >= 1.12.0)
         # See https://github.com/nilearn/nilearn/pull/4394
         if compare_version(__version__, ">=", "1.12")
         else cg(lap_sparse, -b_i.todense(), tol=tol, atol="legacy")[0]

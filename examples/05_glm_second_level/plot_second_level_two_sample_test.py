@@ -106,11 +106,11 @@ show()
 # We specify the analysis models and fit them.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model_unpaired = SecondLevelModel(n_jobs=2).fit(
+second_level_model_unpaired = SecondLevelModel(n_jobs=2, verbose=1).fit(
     second_level_input, design_matrix=unpaired_design_matrix
 )
 
-second_level_model_paired = SecondLevelModel(n_jobs=2).fit(
+second_level_model_paired = SecondLevelModel(n_jobs=2, verbose=1).fit(
     second_level_input, design_matrix=paired_design_matrix
 )
 
@@ -141,7 +141,6 @@ stat_maps_paired = second_level_model_paired.compute_contrast(
 # But the variance in the unpaired image is larger.
 plot_glass_brain(
     stat_maps_unpaired["effect_variance"],
-    colorbar=True,
     vmin=0,
     vmax=6,
     cmap="inferno",
@@ -150,7 +149,6 @@ plot_glass_brain(
 
 plot_glass_brain(
     stat_maps_paired["effect_variance"],
-    colorbar=True,
     vmin=0,
     vmax=6,
     cmap="inferno",
@@ -166,7 +164,6 @@ threshold = 3.1  # corresponds to  p < .001, uncorrected
 plot_glass_brain(
     stat_maps_unpaired["z_score"],
     threshold=threshold,
-    colorbar=True,
     plot_abs=False,
     vmax=5.8,
     title="vertical vs horizontal (unc p<0.001), unpaired",
@@ -175,7 +172,6 @@ plot_glass_brain(
 plot_glass_brain(
     stat_maps_paired["z_score"],
     threshold=threshold,
-    colorbar=True,
     plot_abs=False,
     vmax=5.8,
     title="vertical vs horizontal (unc p<0.001), paired",

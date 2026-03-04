@@ -60,20 +60,6 @@ def set_up_glm():
     return _set_up_glm
 
 
-def test_deprecation_contrast_type(rng, set_up_glm):
-    """Throw deprecation warning when using contrast_type as parameter."""
-    labels, results, q = set_up_glm(rng, "ar1")
-    con_val = np.eye(q)[0]
-
-    with pytest.deprecated_call(match="0.13.0"):
-        compute_contrast(
-            labels=labels,
-            regression_result=results,
-            con_val=con_val,
-            contrast_type="t",
-        )
-
-
 def test_t_contrast(rng, set_up_glm):
     labels, results, q = set_up_glm(rng, "ar1")
     con_val = np.eye(q)[0]
@@ -256,17 +242,6 @@ def test_one_minus_pvalue():
     assert np.allclose(contrast.stat_, 1.0, 1)
 
 
-def test_deprecation_contrast_type_attribute():
-    effect = np.ones((1, 3))
-    variance = effect[0]
-
-    with pytest.deprecated_call(match="0.13.0"):
-        contrast = Contrast(effect, variance, contrast_type="t")
-
-    with pytest.deprecated_call(match="0.13.0"):
-        contrast.contrast_type  # noqa: B018
-
-
 @pytest.mark.parametrize(
     "effect, variance, match",
     [
@@ -297,7 +272,7 @@ def test_automatic_t2f_conversion():
 def test_invalid_contrast_type():
     effect = np.ones((1, 3))
     variance = np.ones(1)
-    with pytest.raises(ValueError, match="is not a valid stat_type."):
+    with pytest.raises(ValueError, match="'stat_type' must be one of"):
         Contrast(effect, variance, stat_type="foo")
 
 

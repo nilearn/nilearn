@@ -1,14 +1,10 @@
 """Matplotlib colormaps useful for neuroimaging."""
 
-import contextlib
-
-import matplotlib
 import numpy as _np
 from matplotlib import cm as _cm
+from matplotlib import colormaps as _colormaps
 from matplotlib import colors as _colors
 from matplotlib import rcParams as _rcParams
-
-from nilearn._utils.helpers import compare_version
 
 ###############################################################################
 # Custom colormaps for two-tailed symmetric statistics
@@ -98,7 +94,7 @@ def _concat_cmap(cmap1, cmap2):
             cdict[c] = []
         ps = _np.linspace(0, 1, 10)
         colors = cmap1(ps)
-        for p, (r, g, b, _) in zip(ps, colors):
+        for p, (r, g, b, _) in zip(ps, colors, strict=False):
             cdict["red"].append((0.5 * p, r, r))
             cdict["green"].append((0.5 * p, g, g))
             cdict["blue"].append((0.5 * p, b, b))
@@ -110,7 +106,7 @@ def _concat_cmap(cmap1, cmap2):
     else:
         ps = _np.linspace(0, 1, 10)
         colors = cmap2(ps)
-        for p, (r, g, b, _) in zip(ps, colors):
+        for p, (r, g, b, _) in zip(ps, colors, strict=False):
             cdict["red"].append((0.5 * (1 + p), r, r))
             cdict["green"].append((0.5 * (1 + p), g, g))
             cdict["blue"].append((0.5 * (1 + p), b, b))
@@ -182,13 +178,6 @@ _cmaps_data["ocean_hot"] = _concat_cmap(_cm.ocean, _cm.hot_r)
 _cmaps_data["hot_white_bone"] = _concat_cmap(_cm.afmhot, _cm.bone_r)
 
 _cmaps_data["hot_black_bone"] = _concat_cmap(_cm.afmhot_r, _cm.bone)
-
-
-# Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
-_bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
-_cmaps_data["bwr"] = _colors.LinearSegmentedColormap.from_list(
-    "bwr", _bwr_data
-)._segmentdata.copy()
 
 
 ###############################################################################
@@ -292,16 +281,7 @@ _cmap_d["videen_style"] = _colors.LinearSegmentedColormap.from_list(
 globals().update(_cmap_d)
 # Register cmaps in matplotlib too
 for k, v in _cmap_d.items():
-    if compare_version(matplotlib.__version__, ">=", "3.5.0"):
-        from matplotlib import colormaps as _colormaps
-
-        _register_cmap = _colormaps.register
-    else:
-        _register_cmap = _cm.register_cmap
-
-    # "bwr" is already registered in latest matplotlib
-    with contextlib.suppress(ValueError):
-        _register_cmap(name=k, cmap=v)
+    _colormaps.register(name=k, cmap=v)
 
 
 ###############################################################################
@@ -357,7 +337,7 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
             this_cdict["red"] = []
             this_cdict["green"] = []
             this_cdict["blue"] = []
-            for p, (r, g, b, _) in zip(ps, colors):
+            for p, (r, g, b, _) in zip(ps, colors, strict=False):
                 this_cdict["red"].append((p, r, r))
                 this_cdict["green"].append((p, g, g))
                 this_cdict["blue"].append((p, b, b))
@@ -385,11 +365,11 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
             (vmax, inner_cmap(vmax)[c_index], outer_cmap(vmax)[c_index])
         )
 
-        for value, c1, c2 in outer_cdict[color]:
-            if value <= vmax:
-                continue
-            color_lst.append((value, c1, c2))
-
+        color_lst.extend(
+            (value, c1, c2)
+            for value, c1, c2 in outer_cdict[color]
+            if value > vmax
+        )
         cdict[color] = color_lst
 
     return _colors.LinearSegmentedColormap(

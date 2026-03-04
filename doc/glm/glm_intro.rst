@@ -249,7 +249,7 @@ This means that after statistical inference, one can trust the proportionate ``1
 The number ``q`` is the expected proportion of false discoveries and is known as the *false discovery rate*.
 Controlling the false discovery rate is a reasonable compromise in practice.
 The thresholding that yields this level of control is typically obtained
-using the so-called `Benjamini-Hochberg <http://www.math.tau.ac.il/~ybenja/MyPapers/benjamini_hochberg1995.pdf>`_ procedure.
+using the so-called `Benjamini-Hochberg <https://doi.org/10.1111/j.2517-6161.1995.tb02031.x>`_ procedure.
 
 .. note::
 

@@ -13,8 +13,8 @@ See :ref:`plotting` for more plotting functionalities and
 :ref:`Section 4.3 <display_modules>` for more details about display objects
 in Nilearn.
 
-Also, see :func:`~nilearn.datasets.fetch_neurovault_motor_task` for details
-about the plotting data and associated meta-data.
+Also, see :func:`~nilearn.datasets.load_sample_motor_activation_image`
+for details about the plotting data and associated meta-data.
 """
 
 # %%
@@ -48,10 +48,10 @@ plot_glass_brain(stat_img, threshold=3)
 
 
 # %%
-# The same figure, with a colorbar,
-# can be produced by setting ``colorbar=True``.
+# The same figure, without a colorbar,
+# can be produced by setting ``colorbar=False``.
 
-plot_glass_brain(stat_img, threshold=3, colorbar=True)
+plot_glass_brain(stat_img, threshold=3, colorbar=False)
 
 
 # %%
@@ -74,18 +74,14 @@ plot_glass_brain(
 # ``display_mode='yz'`` which returns a
 # :class:`~nilearn.plotting.displays.YZProjector`.
 
-plot_glass_brain(
-    stat_img, threshold=0, colorbar=True, plot_abs=False, display_mode="yz"
-)
+plot_glass_brain(stat_img, threshold=0, plot_abs=False, display_mode="yz")
 
 
 # %%
 # Setting ``plot_abs=True`` and ``display_mode='yx'`` (returns a
 # :class:`~nilearn.plotting.displays.YXProjector`).
 
-plot_glass_brain(
-    stat_img, threshold=3, colorbar=True, plot_abs=True, display_mode="yx"
-)
+plot_glass_brain(stat_img, threshold=3, plot_abs=True, display_mode="yx")
 
 # %%
 # We can control the limits of the colormap and colorbar by setting ``vmin``
@@ -96,7 +92,6 @@ plot_glass_brain(
 # only plot positive values
 plot_glass_brain(
     stat_img,
-    colorbar=True,
     plot_abs=False,
     display_mode="yz",
     vmin=0,
@@ -111,7 +106,6 @@ plot_glass_brain(
 # losing colors due to the thresholding.
 plot_glass_brain(
     stat_img,
-    colorbar=True,
     plot_abs=False,
     display_mode="yz",
     vmin=2,
@@ -148,7 +142,6 @@ plot_glass_brain(
 plot_glass_brain(
     stat_img,
     threshold=0,
-    colorbar=True,
     title='plot_glass_brain with display_mode="lyrz"',
     plot_abs=False,
     display_mode="lyrz",
@@ -167,7 +160,6 @@ plot_glass_brain(
 plot_glass_brain(
     stat_img,
     threshold=0,
-    colorbar=True,
     title='display_mode="x"',
     plot_abs=True,
     display_mode="x",

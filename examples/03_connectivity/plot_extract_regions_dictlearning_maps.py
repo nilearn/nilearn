@@ -49,9 +49,8 @@ dict_learn = DictLearning(
     n_components=8,
     smoothing_fwhm=6.0,
     memory="nilearn_cache",
-    memory_level=2,
+    memory_level=1,
     random_state=0,
-    standardize="zscore_sample",
     verbose=1,
 )
 # Fit to the data
@@ -67,6 +66,7 @@ plot_prob_atlas(
     components_img,
     view_type="filled_contours",
     title="Dictionary Learning maps",
+    draw_cross=False,
 )
 
 show()
@@ -87,7 +87,6 @@ extractor = RegionExtractor(
     threshold=0.5,
     thresholding_strategy="ratio_n_voxels",
     extractor="local_regions",
-    standardize="zscore_sample",
     standardize_confounds=True,
     min_region_size=1350,
     verbose=1,
@@ -107,7 +106,10 @@ title = (
     "Each separate color of region indicates extracted region"
 )
 plot_prob_atlas(
-    regions_extracted_img, view_type="filled_contours", title=title
+    regions_extracted_img,
+    view_type="filled_contours",
+    title=title,
+    draw_cross=False,
 )
 
 show()
@@ -126,11 +128,8 @@ from nilearn.connectome import ConnectivityMeasure
 
 correlations = []
 # Initializing ConnectivityMeasure object with kind='correlation'
-connectome_measure = ConnectivityMeasure(
-    kind="correlation",
-    standardize="zscore_sample",
-)
-for filename, confound in zip(func_filenames, confounds):
+connectome_measure = ConnectivityMeasure(kind="correlation", verbose=1)
+for filename, confound in zip(func_filenames, confounds, strict=False):
     # call transform from RegionExtractor object to extract timeseries signals
     timeseries_each_subject = extractor.transform(filename, confounds=confound)
     # call fit_transform from ConnectivityMeasure object
@@ -164,7 +163,7 @@ from nilearn.plotting import (
 title = f"Correlation between {int(n_regions_extracted)} regions"
 
 # First plot the matrix
-plot_matrix(mean_correlations, vmax=1, vmin=-1, colorbar=True, title=title)
+plot_matrix(mean_correlations, vmax=1, vmin=-1, title=title)
 
 # Then find the center of the regions and plot a connectome
 regions_img = regions_extracted_img
@@ -190,7 +189,6 @@ coords = find_xyz_cut_coords(img)
 plot_stat_map(
     img,
     cut_coords=coords,
-    colorbar=True,
     title="Showing one specific network",
 )
 
@@ -208,11 +206,15 @@ from nilearn.plotting import cm, plot_anat
 
 regions_indices_of_map3 = np.where(np.array(regions_index) == 4)
 
-display = plot_anat(cut_coords=coords, title="Regions from this network")
+display = plot_anat(
+    cut_coords=coords, title="Regions from this network", colorbar=False
+)
 
 # Add as an overlay all the regions of index 4
 colors = "rgbcmyk"
-for each_index_of_map3, color in zip(regions_indices_of_map3[0], colors):
+for each_index_of_map3, color in zip(
+    regions_indices_of_map3[0], colors, strict=False
+):
     display.add_overlay(
         image.index_img(regions_extracted_img, each_index_of_map3),
         cmap=cm.alpha_cmap(color),

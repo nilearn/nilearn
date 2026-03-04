@@ -147,18 +147,12 @@ from nilearn.plotting import view_surf
 
 # %%
 # Plot the left part
-view_surf(
-    surf_map=surface_image,
-    hemi="left",
-)
+view_surf(surf_map=surface_image, hemi="left")
 
 
 # %%
 # Plot the right part
-view_surf(
-    surf_map=surface_image,
-    hemi="right",
-)
+view_surf(surf_map=surface_image, hemi="right")
 
 # %%
 # Data format
@@ -209,10 +203,7 @@ surface_image_loaded = SurfaceImage(
 
 # %%
 # You can now plot the loaded surface image:
-view_surf(
-    surf_map=surface_image_loaded,
-    hemi="left",
-)
+view_surf(surf_map=surface_image_loaded, hemi="left")
 
 # %%
 # And that's it! Now you know how to create, plot, save and load surface images

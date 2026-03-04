@@ -65,7 +65,7 @@ fmri_img = data.epi_img
 #
 import pandas as pd
 
-t_r = 2.4
+t_r = data.t_r
 events_file = data["events"]
 events = pd.read_table(events_file)
 events
@@ -543,7 +543,7 @@ plt.show()
 from nilearn.datasets import fetch_icbm152_brain_gm_mask
 from nilearn.plotting import plot_roi
 
-data_mask = first_level_model.masker_.mask_img_
+data_mask = first_level_model.mask_img_
 
 icbm_mask = fetch_icbm152_brain_gm_mask()
 
@@ -564,8 +564,6 @@ resampled_icbm_mask = resample_to_img(
     icbm_mask,
     data_mask,
     interpolation="nearest",
-    copy_header=True,
-    force_resample=True,
 )
 
 # %%

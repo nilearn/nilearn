@@ -27,7 +27,7 @@ We use the Yeo atlas as an example for labeling regions,
 from nilearn.datasets import fetch_atlas_yeo_2011
 from nilearn.plotting import plot_roi, show
 
-atlas_yeo_2011 = fetch_atlas_yeo_2011(thickness="thick", n_networks=7)
+atlas_yeo_2011 = fetch_atlas_yeo_2011()
 
 atlas_yeo = atlas_yeo_2011.maps
 
@@ -36,7 +36,6 @@ plot_roi(
     atlas_yeo,
     title="Original Yeo atlas",
     cut_coords=(8, -4, 9),
-    colorbar=True,
     cmap="Paired",
 )
 
@@ -65,7 +64,6 @@ plot_roi(
     region_labels,
     title="Relabeled Yeo atlas",
     cut_coords=(8, -4, 9),
-    colorbar=True,
     cmap="Paired",
 )
 
@@ -107,7 +105,6 @@ plot_roi(
     region_labels_not_diag,
     title="Relabeling and connect_diag=False",
     cut_coords=(8, -4, 9),
-    colorbar=True,
     cmap="Paired",
 )
 
@@ -135,7 +132,6 @@ plot_roi(
     region_labels_min_size,
     title="Relabeling and min_size",
     cut_coords=(8, -4, 9),
-    colorbar=True,
     cmap="Paired",
 )
 

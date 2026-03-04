@@ -11,21 +11,20 @@ discriminate children from adults.In general, the tangent space embedding
 **outperforms** the standard correlations: see :footcite:t:`Dadi2019`
 for a careful study.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
 # We study only 30 subjects from the dataset, to save computation time.
-from nilearn import datasets, plotting
+from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
+from nilearn.plotting import plot_connectome, plot_matrix, show
 
-development_dataset = datasets.fetch_development_fmri(n_subjects=30)
+development_dataset = fetch_development_fmri(n_subjects=30)
 
 # %%
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
-msdl_data = datasets.fetch_atlas_msdl()
+msdl_data = fetch_atlas_msdl()
 msdl_coords = msdl_data.region_coords
 n_regions = len(msdl_coords)
 print(
@@ -44,15 +43,15 @@ from nilearn.maskers import NiftiMapsMasker
 masker = NiftiMapsMasker(
     msdl_data.maps,
     resampling_target="data",
-    t_r=2,
+    t_r=development_dataset.t_r,
     detrend=True,
     low_pass=0.1,
     high_pass=0.01,
     memory="nilearn_cache",
     memory_level=1,
-    standardize="zscore_sample",
     standardize_confounds=True,
-).fit()
+    verbose=1,
+)
 
 # %%
 # Then we compute region signals and extract useful phenotypic information.
@@ -63,8 +62,9 @@ for func_file, confound_file, phenotype in zip(
     development_dataset.func,
     development_dataset.confounds,
     development_dataset.phenotypic["Child_Adult"],
+    strict=False,
 ):
-    time_series = masker.transform(func_file, confounds=confound_file)
+    time_series = masker.fit_transform(func_file, confounds=confound_file)
     pooled_subjects.append(time_series)
     if phenotype == "child":
         children.append(time_series)
@@ -80,10 +80,7 @@ print(f"Data has {len(children)} children.")
 # estimate it using :class:`~nilearn.connectome.ConnectivityMeasure`.
 from nilearn.connectome import ConnectivityMeasure
 
-correlation_measure = ConnectivityMeasure(
-    kind="correlation",
-    standardize="zscore_sample",
-)
+correlation_measure = ConnectivityMeasure(kind="correlation", verbose=1)
 
 # %%
 # From the list of ROIs time-series for children, the
@@ -109,11 +106,12 @@ from matplotlib import pyplot as plt
 
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 vmax = np.absolute(correlation_matrices).max()
-for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
-    plotting.plot_matrix(
+for i, (matrix, ax) in enumerate(
+    zip(correlation_matrices, axes, strict=False)
+):
+    plot_matrix(
         matrix,
         tri="lower",
-        colorbar=True,
         axes=ax,
         title=f"correlation, child {i}",
         vmax=vmax,
@@ -124,7 +122,7 @@ for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
 
 # %%
 # Now we display as a connectome the mean correlation matrix over all children.
-plotting.plot_connectome(
+plot_connectome(
     mean_correlation_matrix,
     msdl_coords,
     title="mean correlation over all children",
@@ -136,8 +134,7 @@ plotting.plot_connectome(
 # We can also study **direct connections**, revealed by partial correlation
 # coefficients. We just change the `ConnectivityMeasure` kind
 partial_correlation_measure = ConnectivityMeasure(
-    kind="partial correlation",
-    standardize="zscore_sample",
+    kind="partial correlation", verbose=1
 )
 partial_correlation_matrices = partial_correlation_measure.fit_transform(
     children
@@ -148,18 +145,19 @@ partial_correlation_matrices = partial_correlation_measure.fit_transform(
 
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 vmax = np.absolute(partial_correlation_matrices).max()
-for i, (matrix, ax) in enumerate(zip(partial_correlation_matrices, axes)):
-    plotting.plot_matrix(
+for i, (matrix, ax) in enumerate(
+    zip(partial_correlation_matrices, axes, strict=False)
+):
+    plot_matrix(
         matrix,
         tri="lower",
-        colorbar=True,
         axes=ax,
         title=f"partial correlation, child {i}",
         vmax=vmax,
         vmin=-vmax,
     )
 # %%
-plotting.plot_connectome(
+plot_connectome(
     partial_correlation_measure.mean_,
     msdl_coords,
     title="mean partial correlation over all children",
@@ -171,10 +169,7 @@ plotting.plot_connectome(
 # We can use **both** correlations and partial correlations to capture
 # reproducible connectivity patterns at the group-level.
 # This is done by the tangent space embedding.
-tangent_measure = ConnectivityMeasure(
-    kind="tangent",
-    standardize="zscore_sample",
-)
+tangent_measure = ConnectivityMeasure(kind="tangent", verbose=1)
 
 # %%
 # We fit our children group and get the group connectivity matrix stored as
@@ -189,11 +184,10 @@ tangent_matrices = tangent_measure.fit_transform(children)
 # directly reflect individual brain connections. For instance negative
 # coefficients can not be interpreted as anticorrelated regions.
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
-for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
-    plotting.plot_matrix(
+for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes, strict=False)):
+    plot_matrix(
         matrix,
         tri="lower",
-        colorbar=True,
         axes=ax,
         title=f"tangent offset, child {i}",
     )
@@ -228,9 +222,7 @@ for kind in kinds:
         # *ConnectivityMeasure* can output the estimated subjects coefficients
         # as a 1D arrays through the parameter *vectorize*.
         connectivity = ConnectivityMeasure(
-            kind=kind,
-            vectorize=True,
-            standardize="zscore_sample",
+            kind=kind, vectorize=True, verbose=1
         )
         # build vectorized connectomes for subjects in the train set
         connectomes = connectivity.fit_transform(pooled_subjects[train])
@@ -270,7 +262,7 @@ plt.xlabel("Classification accuracy\n(red line = chance level)")
 # across many cohorts and clinical questions,
 # the tangent kind should be preferred.
 
-plotting.show()
+show()
 
 # %%
 # References

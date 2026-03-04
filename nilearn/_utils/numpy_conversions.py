@@ -1,14 +1,19 @@
 """Validation and conversion utilities for numpy."""
 
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-
 import csv
 from pathlib import Path
 
 import numpy as np
 
+from nilearn._utils.param_validation import check_is_of_allowed_type
 
-def as_ndarray(arr, copy=False, dtype=None, order="K"):
+
+def as_ndarray(
+    arr,
+    copy: bool = False,
+    dtype=None,
+    order="K",
+) -> np.ndarray:
     """Convert to numpy.ndarray starting with an arbitrary array.
 
     In the case of a memmap array, a copy is automatically made to break the
@@ -66,8 +71,7 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
     if order not in ("C", "F", "A", "K", None):
         raise ValueError(f"Invalid value for 'order': {order!s}")
 
-    if not isinstance(arr, (np.memmap, np.ndarray, list, tuple)):
-        raise ValueError(f"Type not handled: {arr.__class__}")
+    check_is_of_allowed_type(arr, (np.memmap, np.ndarray, list, tuple), "arr")
 
     # the cases where we have to create a copy of the underlying array
     if isinstance(arr, (np.memmap, list, tuple)) or (
@@ -125,7 +129,7 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
         except csv.Error as e:
             raise TypeError(
                 f"Could not read CSV file [{csv_path}]: {e.args[0]}"
-            )
+            ) from e
 
         array = np.genfromtxt(
             csv_path, delimiter=dialect.delimiter, encoding=None, **kwargs

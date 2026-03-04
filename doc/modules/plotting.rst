@@ -3,6 +3,9 @@
 :mod:`nilearn.plotting`: Plotting Brain Data
 ============================================
 
+Plotting
+--------
+
 .. automodule:: nilearn.plotting
    :no-members:
    :no-inherited-members:
@@ -10,7 +13,7 @@
 .. No relevant user manual section yet.
 
 Functions
----------
+^^^^^^^^^
 
 .. currentmodule:: nilearn.plotting
 
@@ -49,20 +52,15 @@ Functions
    view_markers
    view_img
 
-
-:mod:`nilearn.plotting`: Comparing images
-=========================================
-
-.. automodule:: nilearn.plotting.img_comparison
-   :no-members:
-   :no-inherited-members:
+Comparing images
+----------------
 
 .. No relevant user manual section yet.
 
 Functions
----------
+^^^^^^^^^
 
-.. currentmodule:: nilearn.plotting.img_comparison
+.. currentmodule:: nilearn.plotting
 
 .. autosummary::
    :toctree: generated/
@@ -72,8 +70,8 @@ Functions
    plot_img_comparison
 
 
-:mod:`nilearn.plotting.displays`: Interacting with figures
-----------------------------------------------------------
+Interacting with figures
+------------------------
 
 .. automodule:: nilearn.plotting.displays
    :no-members:

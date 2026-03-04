@@ -21,11 +21,6 @@ concatenated and given directly to
 correlation matrices for each atlas across all subjects.
 
 Mean correlation matrix is displayed on glass brain on extracted coordinates.
-
-# author: Amadeus Kanaan
-
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -33,7 +28,7 @@ Mean correlation matrix is displayed on glass brain on extracted coordinates.
 # ------------
 from nilearn.datasets import fetch_atlas_yeo_2011, fetch_development_fmri
 
-yeo = fetch_atlas_yeo_2011(thickness="thick", n_networks=17)
+yeo = fetch_atlas_yeo_2011(n_networks=17)
 print(
     "Yeo atlas nifti image (3D) with 17 parcels and liberal mask "
     f" is located at: {yeo['maps']}"
@@ -60,22 +55,19 @@ print(
 from nilearn.connectome import ConnectivityMeasure
 from nilearn.maskers import MultiNiftiLabelsMasker
 
-# ConenctivityMeasure from Nilearn uses simple 'correlation' to compute
+# ConnectivityMeasure from Nilearn uses simple 'correlation' to compute
 # connectivity matrices for all subjects in a list
-connectome_measure = ConnectivityMeasure(
-    kind="correlation",
-    standardize="zscore_sample",
-)
+connectome_measure = ConnectivityMeasure(kind="correlation", verbose=1)
 
 # create masker using MultiNiftiLabelsMasker to extract functional data within
 # atlas parcels from multiple subjects using parallelization to speed up the
 # computation
 masker = MultiNiftiLabelsMasker(
     labels_img=yeo["maps"],  # Both hemispheres
-    standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
     n_jobs=2,
+    verbose=1,
 )
 
 # extract time series from all subjects
@@ -147,11 +139,13 @@ label_image_right = new_img_like(label_image, right_hemi, labels_affine)
 # Then, create a masker object, compute a connectivity matrix and
 # plot the results for each hemisphere:
 
-for hemi, img in zip(["right", "left"], [label_image_right, label_image_left]):
+for hemi, img in zip(
+    ["right", "left"], [label_image_right, label_image_left], strict=False
+):
     masker = MultiNiftiLabelsMasker(
         labels_img=img,
-        standardize="zscore_sample",
         standardize_confounds=True,
+        verbose=1,
     )
 
     time_series = masker.fit_transform(data.func, confounds=data.confounds)
@@ -229,11 +223,11 @@ from nilearn.maskers import MultiNiftiMapsMasker
 # computation.
 masker = MultiNiftiMapsMasker(
     maps_img=difumo.maps,
-    standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
     memory_level=1,
     n_jobs=2,
+    verbose=1,
 )
 
 # extract time series from all subjects

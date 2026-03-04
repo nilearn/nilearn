@@ -25,9 +25,7 @@ stat_img = load_sample_motor_activation_image()
 # to the :term:`MNI` template image.
 from nilearn.image import resample_to_img
 
-resampled_stat_img = resample_to_img(
-    stat_img, template, copy_header=True, force_resample=True
-)
+resampled_stat_img = resample_to_img(stat_img, template)
 
 # %%
 # Let's check the shape and affine have been correctly updated.
@@ -75,6 +73,7 @@ plotting.plot_stat_map(
     cut_coords=(36, -27, 66),
     threshold=3,
     title="t-map in original resolution",
+    vmax=8,
 )
 plotting.plot_stat_map(
     resampled_stat_img,
@@ -82,6 +81,7 @@ plotting.plot_stat_map(
     cut_coords=(36, -27, 66),
     threshold=3,
     title="Resampled t-map",
+    vmax=8,
 )
 plotting.show()
 

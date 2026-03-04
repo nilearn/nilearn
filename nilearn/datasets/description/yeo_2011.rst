@@ -1,4 +1,4 @@
-.. _yeo_atlas:
+.. _yeo_2011_atlas:
 
 Yeo 2011 atlas
 ==============
@@ -38,4 +38,4 @@ References
 
 License
 -------
-unknown
+MIT; See https://github.com/ThomasYeoLab/CBIG/blob/master/LICENSE.md

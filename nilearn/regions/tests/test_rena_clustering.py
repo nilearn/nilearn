@@ -2,11 +2,15 @@ import numpy as np
 import pytest
 from joblib import Memory
 from numpy.testing import assert_array_equal
-from sklearn import __version__ as sklearn_version
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils import compare_version
-from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+    return_expected_failed_checks,
+)
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _img_3d_mni, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker, SurfaceMasker
@@ -17,57 +21,56 @@ from nilearn.regions.rena_clustering import (
 )
 from nilearn.surface import SurfaceImage
 
-extra_valid_checks = [
-    "check_clusterer_compute_labels_predict",
-    "check_complex_data",
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_empty_data_messages",
-    "check_estimator_sparse_array",
-    "check_estimator_sparse_matrix",
-    "check_fit2d_1sample",
-    "check_fit2d_1feature",
-    "check_fit1d",
-    "check_no_attributes_set_in_init",
-]
+ESTIMATORS_TO_CHECK = [ReNA()]
+
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
-# TODO remove when dropping support for sklearn_version < 1.5.0
-if compare_version(sklearn_version, "<", "1.5.0"):
-    extra_valid_checks.append("check_estimator_sparse_data")
-
-
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=ReNA(mask_img=_img_3d_mni(), n_clusters=2),
-        extra_valid_checks=extra_valid_checks,
+    nilearn_check_estimator(
+        estimators=[ReNA(mask_img=_img_3d_mni(), n_clusters=2)]
     ),
 )
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
     check(estimator)
 
 
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=ReNA(_img_3d_mni(), n_clusters=2),
-        valid=False,
-        extra_valid_checks=extra_valid_checks,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-def test_rena_clustering_mask_error():
-    """Check an error is raised if no mask is provided before fit."""
+def test_mask_error():
+    """Check an error is raised if invalid mask is provided before fit."""
     data_img, mask_img = generate_fake_fmri(
         shape=_shape_3d_default(), length=5
     )
-    rena = ReNA(n_clusters=10)
+    rena = ReNA(n_clusters=10, mask_img=1)
 
     data = get_data(data_img)
     mask = get_data(mask_img)
@@ -191,7 +194,7 @@ def test_make_edges_and_weights_surface(surf_mesh, surf_img_2d):
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.parametrize("mask_as", ["surface_image", "surface_masker"])
 @pytest.mark.parametrize("n_clusters", [2, 4, 5])
-def test_rena_clustering_input_mask_surface(
+def test_input_mask_surface(
     surf_img_2d, surf_mask_dim, surf_mask_1d, surf_mask_2d, mask_as, n_clusters
 ):
     """Test if ReNA clustering works in both cases when mask_img is either a

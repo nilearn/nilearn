@@ -6,17 +6,17 @@ import numpy as np
 from matplotlib import cm as mpl_cm
 from scipy import sparse
 
-from nilearn.plotting.html_document import HTMLDocument
-
-from .. import datasets
-from . import cm
-from .js_plotting_utils import (
+from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.param_validation import check_params
+from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.plotting._engine_utils import colorscale, to_color_strings
+from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
-    colorscale,
     encode,
     get_html_template,
     mesh_to_plotly,
-    to_color_strings,
 )
 
 
@@ -41,15 +41,12 @@ def _encode_coordinates(coords, prefix):
     coordinates : :obj:`dict`
         Dictionary containing base64 values for each axis
     """
-    coordinates = {}
-
     coords = np.asarray(coords, dtype="<f4")
     marker_x, marker_y, marker_z = coords.T
-    for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]:
-        coordinates[f"{prefix}{cname}"] = encode(
-            np.asarray(coord, dtype="<f4")
-        )
-
+    coordinates = {
+        f"{prefix}{cname}": encode(np.asarray(coord, dtype="<f4"))
+        for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]
+    }
     return coordinates
 
 
@@ -126,7 +123,7 @@ def _prepare_lines_metadata(
     coords : :class:`np.ndarray`, shape=(n_nodes, 3)
         The coordinates of the nodes in MNI space.
 
-    threshold : :obj:`str`, number or None, optional
+    threshold : :obj:`str`, number or None
         If None, no thresholding.
         If it is a number only connections of amplitude greater
         than threshold will be shown.
@@ -135,7 +132,6 @@ def _prepare_lines_metadata(
         given percentile will be shown.
 
     %(cmap)s
-        default=cm.bwr
 
     symmetric_cmap : :obj:`bool`, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
@@ -202,7 +198,7 @@ def _get_connectome(
     threshold=None,
     marker_size=None,
     marker_color="auto",
-    cmap=cm.cold_hot,
+    cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cmap=True,
 ):
     lines_metadata = _prepare_lines_metadata(
@@ -228,7 +224,7 @@ def _get_connectome(
 
 def _make_connectome_html(connectome_info, embed_js=True):
     plot_info = {"connectome": connectome_info}
-    mesh = datasets.fetch_surf_fsaverage()
+    mesh = fetch_surf_fsaverage()
     for hemi in ["pial_left", "pial_right"]:
         plot_info[hemi] = mesh_to_plotly(mesh[hemi])
     as_json = json.dumps(plot_info)
@@ -246,11 +242,12 @@ def _make_connectome_html(connectome_info, embed_js=True):
     return ConnectomeView(as_html)
 
 
+@fill_doc
 def view_connectome(
     adjacency_matrix,
     node_coords,
     edge_threshold=None,
-    edge_cmap=cm.bwr,
+    edge_cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cmap=True,
     linewidth=6.0,
     node_color="auto",
@@ -279,10 +276,10 @@ def view_connectome(
         If it is a number only connections of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%", and only connections of amplitude above the
+        e.g. "25.3%%", and only connections of amplitude above the
         given percentile will be shown.
 
-    edge_cmap : :obj:`str` or matplotlib colormap, default=cm.bwr
+    edge_cmap : :obj:`str` or matplotlib colormap, default="RdBu_r"
         Colormap to use.
 
     symmetric_cmap : :obj:`bool`, default=True
@@ -294,8 +291,8 @@ def view_connectome(
     node_size : :obj:`float`, default=3.0
         Size of the markers showing the seeds in pixels.
 
-    colorbar : :obj:`bool`, default=True
-        Add a colorbar.
+    %(colorbar)s
+        default=True
 
     colorbar_height : :obj:`float`, default=0.5
         Height of the colorbar, relative to the figure height.
@@ -303,8 +300,7 @@ def view_connectome(
     colorbar_fontsize : :obj:`int`, default=25
         Fontsize of the colorbar tick labels.
 
-    title : :obj:`str` or None, default=None
-        Title for the plot.
+    %(title)s
 
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
@@ -332,6 +328,7 @@ def view_connectome(
         surface.
 
     """
+    check_params(locals())
     node_coords = np.asarray(node_coords)
 
     connectome_info = _get_connectome(
@@ -352,6 +349,7 @@ def view_connectome(
     return _make_connectome_html(connectome_info)
 
 
+@fill_doc
 def view_markers(
     marker_coords,
     marker_color="auto",
@@ -380,8 +378,7 @@ def view_markers(
                      or None, default=None
         Labels for the markers: list of strings
 
-    title : :obj:`str` or None, default=None
-        Title for the plot.
+    %(title)s
 
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
@@ -409,6 +406,8 @@ def view_markers(
         surface.
 
     """
+    check_params(locals())
+
     marker_coords = np.asarray(marker_coords)
     if marker_color is None:
         marker_color = ["red" for _ in range(len(marker_coords))]

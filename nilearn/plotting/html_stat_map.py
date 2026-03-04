@@ -1,32 +1,46 @@
 """Visualizing 3D stat maps in a Brainsprite viewer."""
 
+from __future__ import annotations
+
 import copy
 import json
 import warnings
 from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import matplotlib
 import numpy as np
 from matplotlib.image import imsave
 from nibabel.affines import apply_affine
 
-from nilearn.plotting.html_document import HTMLDocument
+from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.param_validation import check_params, check_threshold
+from nilearn.datasets import load_mni152_template
+from nilearn.image import (
+    check_niimg_3d,
+    get_data,
+    new_img_like,
+    reorder_img,
+    resample_img,
+    resample_to_img,
+)
+from nilearn.plotting._engine_utils import colorscale
+from nilearn.plotting.find_cuts import find_xyz_cut_coords
+from nilearn.plotting.image.utils import load_anat
+from nilearn.plotting.js_plotting_utils import get_html_template
 
-from .._utils import fill_doc
-from .._utils.extmath import fast_abs_percentile
-from .._utils.niimg import safe_get_data
-from .._utils.niimg_conversions import check_niimg_3d
-from .._utils.param_validation import check_threshold
-from ..datasets import load_mni152_template
-from ..image import get_data, new_img_like, reorder_img, resample_to_img
-from ..plotting.find_cuts import find_xyz_cut_coords
-from ..plotting.img_plotting import load_anat
-from .js_plotting_utils import colorscale, get_html_template
+if TYPE_CHECKING:
+    from nibabel import Nifti1Image
 
 
-def _data_to_sprite(data):
+def _data_to_sprite(data, radiological=False):
     """Convert a 3D array into a sprite of sagittal slices.
 
     Parameters
@@ -50,12 +64,19 @@ def _data_to_sprite(data):
     sprite = np.zeros((nrows * nz, ncolumns * ny))
     indrow, indcol = np.where(np.ones((nrows, ncolumns)))
 
-    for xx in range(nx):
-        # we need to flip the image in the x axis
-        sprite[
-            (indrow[xx] * nz) : ((indrow[xx] + 1) * nz),
-            (indcol[xx] * ny) : ((indcol[xx] + 1) * ny),
-        ] = data[xx, :, ::-1].transpose()
+    if radiological:
+        for xx in range(nx):
+            sprite[
+                (indrow[xx] * nz) : ((indrow[xx] + 1) * nz),
+                (indcol[xx] * ny) : ((indcol[xx] + 1) * ny),
+            ] = data[nx - xx - 1, :, ::-1].transpose()
+
+    else:
+        for xx in range(nx):
+            sprite[
+                (indrow[xx] * nz) : ((indrow[xx] + 1) * nz),
+                (indcol[xx] * ny) : ((indcol[xx] + 1) * ny),
+            ] = data[xx, :, ::-1].transpose()
 
     return sprite
 
@@ -68,7 +89,7 @@ def _threshold_data(data, threshold=None):
     data : :class:`numpy.ndarray`
         Data to apply threshold on.
 
-    threshold : :obj:`float`, optional
+    threshold : :obj:`float` or None, default=None
         Threshold to apply to data.
 
     Returns
@@ -107,13 +128,21 @@ def _threshold_data(data, threshold=None):
     if not np.any(mask):
         warnings.warn(
             f"Threshold given was {threshold}, "
-            f"but the data has no values below {data.min()}. "
+            f"but the data has no values below {data.min()}. ",
+            stacklevel=find_stack_level(),
         )
     return data, mask, threshold
 
 
 def _save_sprite(
-    data, output_sprite, vmax, vmin, mask=None, cmap="Greys", format="png"
+    data,
+    output_sprite,
+    vmax,
+    vmin,
+    mask=None,
+    cmap="Greys",
+    format="png",
+    radiological=False,
 ):
     """Generate a sprite from a 3D Niimg-like object.
 
@@ -128,12 +157,11 @@ def _save_sprite(
     vmax, vmin : :obj:`float`
         ???
 
-    mask : :class:`numpy.ndarray`, optional
+    mask : :class:`numpy.ndarray` or None, default=None
         Mask to use.
 
     %(cmap)s
         default='Greys'
-
 
     format : :obj:`str`, default='png'
         Format to use for output image.
@@ -145,11 +173,11 @@ def _save_sprite(
 
     """
     # Create sprite
-    sprite = _data_to_sprite(data)
+    sprite = _data_to_sprite(data, radiological)
 
     # Mask the sprite
     if mask is not None:
-        mask = _data_to_sprite(mask)
+        mask = _data_to_sprite(mask, radiological)
         sprite = np.ma.array(sprite, mask=mask)
 
     # Save the sprite
@@ -175,7 +203,9 @@ def _bytes_io_to_base64(handle_io):
     return data
 
 
-def _save_cm(output_cmap, cmap, format="png", n_colors=256):
+def _save_cm(
+    output_cmap, cmap, format: str = "png", n_colors: int = 256
+) -> None:
     """Save the colormap of an image as an image file."""
     # save the colormap
     data = np.arange(0.0, n_colors) / (n_colors - 1.0)
@@ -215,7 +245,7 @@ def _mask_stat_map(stat_map_img, threshold=None):
     return mask_img, stat_map_img, data, threshold
 
 
-def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
+def load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
     """Load and resample bg_img in an isotropic resolution, \
     with a positive diagonal affine matrix.
 
@@ -248,8 +278,41 @@ def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
         bg_img, black_bg, bg_min, bg_max = load_anat(
             bg_img, dim=dim, black_bg=black_bg
         )
-    bg_img = reorder_img(bg_img, resample="nearest", copy_header=True)
+    bg_img = reorder_img(bg_img, resample="nearest")
+
+    if not _is_isotropic(bg_img.affine):
+        bg_img = _resample_to_isotropic(bg_img)
+
     return bg_img, bg_min, bg_max, black_bg
+
+
+def _is_isotropic(diagonal_affine: np.ndarray) -> bool:
+    """
+    Check if the affine matrix has an isotropic voxel size.
+
+    The affine must be positive diagonal, which can be achieved by calling
+    ``nilearn.image.reorder_img`` on the image and specifying a ``resample``
+    parameter.
+    """
+    diag = np.diag(diagonal_affine)[:3]
+    return (diag == diag[0]).all()
+
+
+def _resample_to_isotropic(
+    img: Nifti1Image, voxel_size: float | None = None
+) -> Nifti1Image:
+    """
+    Resample an image to an isotropic resolution.
+
+    By default, the voxel size is set to the smallest dimension of the input
+    image.
+    """
+    diag = np.diag(img.affine)[:3]
+    if voxel_size is None:
+        voxel_size = np.min(np.abs(diag))
+    new_affine = img.affine.copy()
+    np.fill_diagonal(new_affine[:3, :3], voxel_size * np.sign(diag))
+    return resample_img(img, target_affine=new_affine)
 
 
 def _resample_stat_map(
@@ -264,19 +327,10 @@ def _resample_stat_map(
     mask_img
     """
     stat_map_img = resample_to_img(
-        stat_map_img,
-        bg_img,
-        interpolation=resampling_interpolation,
-        copy_header=True,
-        force_resample=False,  # TODO set to True in 0.13.0
+        stat_map_img, bg_img, interpolation=resampling_interpolation
     )
     mask_img = resample_to_img(
-        mask_img,
-        bg_img,
-        fill_value=1,
-        interpolation="nearest",
-        copy_header=True,
-        force_resample=False,  # TODO set to True in 0.13.0
+        mask_img, bg_img, fill_value=1, interpolation="nearest"
     )
 
     return stat_map_img, mask_img
@@ -295,6 +349,8 @@ def _json_view_params(
     title=None,
     colorbar=True,
     value=True,
+    radiological=False,
+    show_lr=True,
 ):
     """Create a dictionary with all the brainsprite parameters.
 
@@ -337,6 +393,8 @@ def _json_view_params(
             "Y": cut_slices[1] - 1,
             "Z": cut_slices[2] - 1,
         },
+        "radiological": radiological,
+        "showLR": show_lr,
     }
 
     if colorbar:
@@ -390,6 +448,7 @@ def _json_view_data(
     colors,
     cmap,
     colorbar,
+    radiological,
 ):
     """Create a json-like viewer object, and populate with base64 data.
 
@@ -413,7 +472,16 @@ def _json_view_data(
     bg_sprite = BytesIO()
     bg_data = safe_get_data(bg_img, ensure_finite=True).astype(float)
     bg_mask, bg_cmap = _get_bg_mask_and_cmap(bg_img, black_bg)
-    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, "png")
+    _save_sprite(
+        bg_data,
+        bg_sprite,
+        bg_max,
+        bg_min,
+        bg_mask,
+        bg_cmap,
+        "png",
+        radiological,
+    )
     json_view["bg_base64"] = _bytes_io_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
@@ -428,6 +496,7 @@ def _json_view_data(
         mask,
         cmap,
         "png",
+        radiological,
     )
     json_view["stat_map_base64"] = _bytes_io_to_base64(stat_map_sprite)
 
@@ -487,18 +556,18 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
         cut_slices = apply_affine(
             np.linalg.inv(stat_map_img.affine), cut_coords
         )
-    except ValueError:
+    except ValueError as e:
         raise ValueError(
             "The input given for display_mode='ortho' "
             "needs to be a list of 3d world coordinates in (x, y, z). "
             f"You provided cut_coords={cut_coords}"
-        )
-    except IndexError:
+        ) from e
+    except IndexError as e:
         raise ValueError(
             "The input given for display_mode='ortho' "
             "needs to be a list of 3d world coordinates in (x, y, z). "
             f"You provided single cut, cut_coords={cut_coords}"
-        )
+        ) from e
 
     return cut_slices
 
@@ -514,7 +583,7 @@ def view_img(
     annotate=True,
     draw_cross=True,
     black_bg="auto",
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cmap=True,
     dim="auto",
     vmax=None,
@@ -522,6 +591,8 @@ def view_img(
     resampling_interpolation="continuous",
     width_view=600,
     opacity=1,
+    radiological=False,
+    show_lr=True,
 ):
     """Interactive html viewer of a statistical map, with optional background.
 
@@ -531,6 +602,7 @@ def view_img(
         See :ref:`extracting_data`.
         The statistical map image. Can be either a 3D volume or a 4D volume
         with exactly one time point.
+
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
@@ -541,9 +613,11 @@ def view_img(
         as a 3-tuple: (x, y, z). If None is given, the cuts are calculated
         automatically.
 
-    colorbar : :obj:`bool`, default=True
-        If True, display a colorbar on top of the plots.
+    %(colorbar)s
+        default=True
+
     %(title)s
+
     threshold : :obj:`str`, number or None, default=1e-06
         If None is given, the image is not thresholded.
         If a string of the form "90%%" is given, use the 90-th percentile of
@@ -553,23 +627,28 @@ def view_img(
         as transparent. If auto is given, the threshold is determined
         automatically.
 
-    annotate : :obj:`bool`, default=True
-        If annotate is True, current cuts are added to the viewer.
+    %(annotate)s
+
     %(draw_cross)s
+
     black_bg : :obj:`bool` or 'auto', default='auto'
         If True, the background of the image is set to be black.
         Otherwise, a white background is used.
         If set to auto, an educated guess is made to find if the background
         is white or black.
+
     %(cmap)s
         default="RdBu_r"
+
     symmetric_cmap : :obj:`bool`, default=True
         True: make colormap symmetric (ranging from -vmax to vmax).
         False: the colormap will go from the minimum of the volume to vmax.
         Set it to False if you are plotting a positive volume, e.g. an atlas
         or an anatomical image.
+
     %(dim)s
         Default='auto'.
+
     vmax : :obj:`float`, or None, default=None
         max value for mapping colors.
         If vmax is None and symmetric_cmap is True, vmax is the max
@@ -583,6 +662,7 @@ def view_img(
         cannot be chosen.
         If `symmetric_cmap` is `False`, `vmin` is equal to the min of the
         image, or 0 when a threshold is used.
+
     %(resampling_interpolation)s
         Default='continuous'.
 
@@ -591,6 +671,11 @@ def view_img(
 
     opacity : :obj:`float` in [0,1], default=1
         The level of opacity of the overlay (0: transparent, 1: opaque).
+
+    %(radiological)s
+
+    show_lr : :obj:`bool`, default=True
+        Show left and right labels on the figure
 
     Returns
     -------
@@ -613,6 +698,8 @@ def view_img(
         surface.
 
     """
+    check_params(locals())
+
     # Prepare the color map and thresholding
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
         stat_map_img, threshold
@@ -627,7 +714,7 @@ def view_img(
     )
 
     # Prepare the data for the cuts
-    bg_img, bg_min, bg_max, black_bg = _load_bg_img(
+    bg_img, bg_min, bg_max, black_bg = load_bg_img(
         stat_map_img, bg_img, black_bg, dim
     )
     stat_map_img, mask_img = _resample_stat_map(
@@ -646,6 +733,7 @@ def view_img(
         colors,
         cmap,
         colorbar,
+        radiological,
     )
 
     json_view["params"] = _json_view_params(
@@ -661,6 +749,8 @@ def view_img(
         title,
         colorbar,
         value=False,
+        radiological=radiological,
+        show_lr=show_lr,
     )
 
     html_view = _json_view_to_html(json_view, width_view)

@@ -1,0 +1,70 @@
+---
+# Runs Sourcery refactoring on the entire codebase.
+#
+# If some potential refactoring are found it opens a pull-request.
+#
+# Requires a ``SOURCERY_TOKEN`` that can be obtained from
+# logging into `the sourcery website <https://sourcery.ai/>`_
+# with your github account.
+#
+###
+name: Check codebase using Sourcery
+
+on:
+    schedule:
+        # Uses the cron schedule for github actions
+        # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+        # Run every Monday at midnight UTC
+        #     ┌───────────── minute (0 - 59)
+        #     │ ┌───────────── hour (0 - 23)
+        #     │ │ ┌───────────── day of the month (1 - 31)
+        #     │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+        #     │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     * * * * *
+    -   cron: 0 0 * * 1
+
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    review-with-sourcery:
+        if: github.repository == 'nilearn/nilearn'
+        runs-on: ubuntu-latest
+        steps:
+        -   uses: actions/checkout@v6
+
+        -   uses: actions/setup-python@v6
+            with:
+                python-version: '3.10'
+
+        -   uses: sourcery-ai/action@v1
+            id: sourcery
+            with:
+                token: ${{ secrets.SOURCERY_TOKEN }}
+                in_place: true
+
+
+        -   name: Create issue
+            if: ${{ steps.sourcery.outcome != 'success' }}
+            uses: JasonEtco/create-an-issue@v2.9.2
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run_id: ${{ github.run_id }}
+                repository: ${{ github.repository }}
+                workflow_name: SOURCERY CHECK
+            with:
+                filename: .github/workflow_failure.md
+                update_existing: true
+                search_existing: open
+
+        -   name: Return failure
+            if: ${{ steps.sourcery.outcome != 'success' }}
+            run: exit 1

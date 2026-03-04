@@ -35,14 +35,14 @@ networks_444 = parcellations[2]["maps"]
 # -------------------------------
 
 # import plotting module and use `plot_roi` function, since the maps are in 3D
-from nilearn.plotting import cm, plot_roi, show
+from nilearn.plotting import plot_roi, show
 
 # The coordinates of all plots are selected automatically by itself
 # We manually change the colormap of our choice
-plot_roi(networks_64, cmap=cm.bwr, title="64 regions of brain clusters")
+plot_roi(networks_64, cmap="bwr", title="64 regions of brain clusters")
 
-plot_roi(networks_197, cmap=cm.bwr, title="197 regions of brain clusters")
+plot_roi(networks_197, cmap="bwr", title="197 regions of brain clusters")
 
-plot_roi(networks_444, cmap=cm.bwr_r, title="444 regions of brain clusters")
+plot_roi(networks_444, cmap="bwr_r", title="444 regions of brain clusters")
 
 show()

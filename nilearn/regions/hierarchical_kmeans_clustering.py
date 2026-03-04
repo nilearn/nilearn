@@ -3,13 +3,20 @@
 import warnings
 
 import numpy as np
-from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
+from sklearn.base import (
+    ClassNamePrefixFeaturesOutMixin,
+    ClusterMixin,
+    TransformerMixin,
+)
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from nilearn._utils import fill_doc
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._base import NilearnBaseEstimator
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_params
+from nilearn._utils.versions import SKLEARN_LT_1_6
 
 
 def _remove_empty_labels(labels):
@@ -83,7 +90,7 @@ def hierarchical_k_means(
         If an ndarray is passed, it should be of shape (n_clusters, n_features)
         and gives the initial centers.
 
-    batch_size : :obj:`int`, default: 1000
+    batch_size : :obj:`int`, default=1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
     n_init : :obj:`int`, default=10
@@ -91,7 +98,7 @@ def hierarchical_k_means(
         In contrast to KMeans, the algorithm is only run once, using the
         best of the ``n_init`` initializations as measured by inertia.
 
-    max_no_improvement : :obj:`int`, default: 10
+    max_no_improvement : :obj:`int`, default=10
         Control early stopping based on the consecutive number of mini
         batches that does not yield an improvement on the smoothed inertia.
         To disable convergence detection based on inertia, set
@@ -108,6 +115,8 @@ def hierarchical_k_means(
     labels : list of ints (len n_features)
         Parcellation of features in clusters
     """
+    check_params(locals())
+
     n_big_clusters = int(np.sqrt(n_clusters))
     mbk = MiniBatchKMeans(
         init=init,
@@ -147,7 +156,12 @@ def hierarchical_k_means(
 
 
 @fill_doc
-class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
+class HierarchicalKMeans(
+    ClassNamePrefixFeaturesOutMixin,
+    ClusterMixin,
+    TransformerMixin,
+    NilearnBaseEstimator,
+):
     """Hierarchical KMeans.
 
     First clusterize the samples into big clusters. Then clusterize the samples
@@ -171,7 +185,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         * If an ndarray is passed, it should be of shape (n_clusters,
           n_features) and gives the initial centers.
 
-    batch_size : :obj:`int`, optional, default: 1000
+    batch_size : :obj:`int`, default=1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
     n_init : :obj:`int`, default=10
@@ -179,11 +193,13 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         In contrast to KMeans, the algorithm is only run once, using the
         best of the ``n_init`` initializations as measured by inertia.
 
-    max_no_improvement : :obj:`int`, default: 10
+    max_no_improvement : :obj:`int`, default=10
         Control early stopping based on the consecutive number of mini
         batches that does not yield an improvement on the smoothed inertia.
         To disable convergence detection based on inertia, set
         max_no_improvement to None.
+
+    %(verbose0)s
 
     random_state : :obj:`int`, RandomState instance or None, default=0
         Determines random number generation for centroid initialization and
@@ -195,12 +211,13 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         inverse_transform() will apply inversed scaling to yield an image with
         same l2-norm as input.
 
-    %(verbose0)s
-
     Attributes
     ----------
     labels_ : ndarray, shape = [n_features]
         cluster labels for each feature.
+
+    n_features_in_ : :obj:`int`
+        Number of features seen during fit.
 
     sizes_ : ndarray, shape = [n_features]
         It contains the size of each cluster.
@@ -230,7 +247,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -240,45 +257,57 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags()
+            return tags(niimg_like=False)
 
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags()
+        tags.input_tags = InputTags(niimg_like=False)
         return tags
 
-    def fit(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-    ):
+    @fill_doc
+    def fit(self, X, y=None):
         """Compute clustering of the data.
 
         Parameters
         ----------
         X : ndarray, shape = [n_samples, n_features]
             Training data.
-        y : Ignored
+
+        %(y_dummy)s
 
         Returns
         -------
         self
         """
-        X = check_array(
-            X, ensure_min_features=2, ensure_min_samples=2, estimator=self
-        )
+        del y
+        if SKLEARN_LT_1_6:
+            X = check_array(
+                X, ensure_min_features=2, ensure_min_samples=2, estimator=self
+            )
+            self.n_features_in_ = X.shape[1]
+
+        else:
+            from sklearn.utils.validation import validate_data
+
+            X = validate_data(
+                self,
+                X=X,
+                ensure_min_features=2,
+                ensure_min_samples=2,
+                reset=True,
+            )
+
         # Transpose the data so that we can cluster features (voxels)
         # and input them as samples to the sklearn's clustering algorithm
         # This is because sklearn's clustering algorithm does clustering
         # on samples and not on features
         X = X.T
+
         # n_features for the sklearn's clustering algorithm would be the
         # number of samples in the input data
         n_features = X.shape[1]
@@ -294,7 +323,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
             warnings.warn(
                 "n_clusters should be at most the number of "
                 f"features. Taking n_clusters = {n_features} instead.",
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
         self.labels_ = hierarchical_k_means(
             X,
@@ -312,9 +341,10 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         self.n_clusters = len(sizes)
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "labels_")
 
+    @fill_doc
     def transform(
         self,
         X,
@@ -327,12 +357,29 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         X : ndarray, shape = [n_samples, n_features]
             Data to transform with the fitted clustering.
 
+        %(y_dummy)s
+
         Returns
         -------
-        X_red : ndarray, shape = [n_samples, n_clusters]
-            Data reduced with agglomerated signal for each cluster
+        X_red : : :obj:`numpy.ndarray`, \
+            :obj:`pandas.DataFrame` or \
+            `polars.DataFrame`
+            Data reduced with agglomerated signal for each cluster.
+
+        The type of the output is determined by ``set_output()``:
+        see `the scikit-learn documentation <https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html>`_.
         """
         check_is_fitted(self)
+
+        # TODO (sklearn >= 1.6.0) simplify
+        if SKLEARN_LT_1_6:
+            X = check_array(
+                X, estimator=self, ensure_min_features=self.n_features_in_
+            )
+        else:
+            from sklearn.utils.validation import validate_data
+
+            X = validate_data(self, X=X, reset=False)
 
         # Transpose the data so that we can cluster features (voxels)
         # and input them as samples to the sklearn's clustering algorithm

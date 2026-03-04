@@ -127,52 +127,36 @@ Pull Requests
 We welcome pull requests from all community members, if they follow the
 :ref:`contribution_guidelines` inspired from scikit learn conventions. (More
 details on their process are available
-:sklearn:`here <developers/contributing.html#contributing-code>`).
+:sklearn:`here <developers/contributing.html#contributing-code-and-documentation>`).
 
-Using tox
-=========
+Generating new baseline figures for plotting tests
+==================================================
 
-`Tox <https://tox.wiki/en/4.23.2/>`_ is set
-to facilitate testing and managing environments during development
-and ensure that the same commands can easily be run locally and in CI.
+We use the ``pytest-mpl`` pytest plugin to run several regression tests on our Matplotlib figures.
 
-Install it with:
+Sometimes, the output of a plotting function may unintentionally change
+as a side effect of changing another function or piece of code
+that it depends on.
+These tests ensure that the outputs are not accidentally changed.
+
+For each figure to test,
+an image is generated and then subtracted from an existing reference image.
+If the root mean square of the residual is larger than a user-specified tolerance,
+the test will fail.
+
+Failures are expected at times when the output is changed intentionally
+(for example when fixing a bug,  adding features, bumping the python or Matplotlib version...)
+for a particular function.
+In such cases, the output needs to be manually updated and visually checked
+as part of the PR review process and to set a new baseline for comparison.
+
+You can set a new 'baseline' (set of reference images) by running the following
+with the oldest supported Python and Matplotlib:
 
 .. code-block:: bash
 
     pip install tox
-
-You can set up certain environment or run certain command by calling ``tox``.
-
-Calling ``tox`` with no extra argument will simply run
-all the default commands defined in the tox configuration (``tox.ini``).
-
-Use ``tox list`` to view all environment descriptions.
-
-Use ``tox run`` to run a specific environment.
-
-Example
-
-.. code-block:: bash
-
-    tox run -e lint
-
-Some environments allow passing extra argument:
-
-.. code-block:: bash
-
-    # only run ruff
-    tox run -e lint -- ruff
-
-    # only run some tests
-    tox -e plotting -- nilearn/glm/tests/test_contrasts.py
-
-You can also run any arbitrary command in a given environment with ``tox exec``:
-
-.. code-block:: bash
-
-    tox exec -e latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
-
+    tox run -e pytest_mpl_generate
 
 How to make a release?
 ======================
@@ -203,7 +187,8 @@ from the current ``[x.y.z].dev`` tag to the new version number.
 These directives are added in a function's docstring to indicate the version number,
 when, say, a new parameter is added or deprecated.
 
-For example, if a parameter ``param2`` was added in version ``x.y.z``, the docstring should be updated to:
+For example, if a parameter ``param2`` was added in version ``x.y.z``,
+the docstring should be updated to:
 
 .. code-block:: python
 
@@ -217,7 +202,7 @@ For example, if a parameter ``param2`` was added in version ``x.y.z``, the docst
         param2 : type
             Description of param2.
 
-        .. versionadded:: x.y.z
+        .. nilearn_versionadded:: x.y.z
 
         Returns
         -------
@@ -232,6 +217,49 @@ If this new release comes with dependency version bumps (Python, Numpy...),
 make sure to implement and test these changes beforehand.
 Ideally, these would have been done before such as to update the code base if necessary.
 Finally, make sure the documentation can be built correctly.
+
+Prepare the documentation for the release
+-----------------------------------------
+
+Check illustrations
+...................
+
+In several places the user guide relies
+on the code examples and the figures they generate.
+
+If the examples are modified, and an expected figure is not created anymore
+or the order of the generated figures is changed,
+this may silently (without causing warnings or errors) "break" the documentation.
+
+It is not possible to list all the places to check,
+but care should be taken that at least the following have not been affected:
+
+- ``.rst`` files containing the string ``image:: ../auto_examples``,
+- the tables in the :ref:`plotting` section,
+- ``literalinclude`` sphinx-directives with a ``:start-after:``
+- ...
+
+Update links
+............
+
+Update the links for the new version of the documentation in ``doc/versions.rst``.
+For example:
+
+.. code-block:: rst
+
+    Web-based documentation is available for versions listed below:
+
+    * `Nilearn latest - dev documentation <http://nilearn.github.io/dev/>`_
+    * `Nilearn latest - stable documentation <http://nilearn.github.io/stable/>`_
+    * `Nilearn x.y.z documentation <http://nilearn.github.io/x.y.z/>`_
+
+Update atlas figures
+....................
+
+The :ref:`datasets_ref <datasets_ref>` has tables with figures listing all the atlases
+that Nilearn provides.
+
+Run the script ``doc/make_atlas_table.py`` commit the new output to update the tables.
 
 Prepare the release
 -------------------
@@ -308,7 +336,7 @@ Add these changes and submit a PR:
 .. code:: bash
 
     git add doc/changes/
-    git commit -m "REL x.y.z"
+    git commit --message "REL x.y.z"
     git push origin REL-x.y.z
 
 
@@ -486,6 +514,16 @@ sections for the version currently under development:
 
    x.y.z+1.dev
    =========
+
+   ..
+    Each changelog entry should begin with one of the following badges:
+    - :bdg-primary:`Doc`
+    - :bdg-secondary:`Maint`
+    - :bdg-success:`API`
+    - :bdg-info:`Plotting`
+    - :bdg-warning:`Test`
+    - :bdg-danger:`Deprecation`
+    - :bdg-dark:`Code`
 
    NEW
    ---
