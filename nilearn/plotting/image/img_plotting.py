@@ -406,14 +406,14 @@ def plot_img(
     Example
     -------
 
-    >>> from nilearn.plotting.image.img_plotting import plot_img
+    >>> from nilearn.plotting.image.img_plotting import plot_img, show
     >>> from nilearn.datasets import load_sample_motor_activation_image
 
     # just to have a 3D image with some structure
     >>> data = load_sample_motor_activation_image()
 
-    >>> display = plot_img(data, title="Plotting a 3D image with plot_img")
-    >>> display.show()
+    >>> plot_img(data, title="Plotting a 3D image with plot_img")
+    >>> show()
 
     """
     check_params(locals())
