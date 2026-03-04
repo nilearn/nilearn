@@ -24,10 +24,11 @@
                      src="data:image/png;base64,$stat_map_base64"
                      alt="overlay" />
             </canvas>
-            <p>
-                Opacity: <span id="demo"></span>
-            </p>
-            <input type="range" min="1" max="100" value="" class="slider" id="opacity">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <p>Opacity</p>
+                <input type="range" min="1" max="100" value="" class="slider" id="opacity">
+                <span id="demo"></span>
+            </div>
         </div>
         <script>$js_jquery;</script>
         <script>$js_brainsprite;</script>

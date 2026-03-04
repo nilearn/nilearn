@@ -272,8 +272,8 @@ def test_json_view_size():
     width, height = _json_view_size(sprite_params)
 
     # This is a simple case: height is 4 pixels, width 3 x 4 = 12 pixels
-    # with an additional 120% height factor for annotations and margins
-    ratio = 1.2 * 4 / 12
+    # with an additional 150% height factor for annotations and margins
+    ratio = 1.5 * 4 / 12
 
     # check we received the expected width and height
     width_exp = 600
