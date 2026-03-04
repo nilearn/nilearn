@@ -387,8 +387,6 @@ def generate_fake_fmri(
     if n_blocks is None:
         return (Nifti1Image(fmri, affine), Nifti1Image(mask, affine))
 
-    assert n_blocks is not None
-
     flat_fmri = fmri[mask.astype(bool)]
     flat_fmri /= np.abs(flat_fmri).max()
     target = np.zeros(length, dtype=int)
