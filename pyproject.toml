@@ -30,6 +30,23 @@ doc = [
     "rich>=3.0.0",
     "pyarrow>=13.0.0"  # mostly to avoid some warnings in pandas
 ]
+min = [
+    "joblib==1.2.0",
+    "nibabel==5.2.0",
+    "numpy==1.26.0",
+    "pandas==2.3.0",
+    "requests==2.30.0",
+    "scikit-learn==1.5.0",
+    "scipy==1.11.1",
+    "jinja2==3.1.2"
+]
+min_plotting = [
+    {include-group = "min"},
+    "kaleido==0.2.1 ; platform_system != 'Windows'",
+    "kaleido==0.1.0.post1 ; platform_system == 'Windows'",
+    "matplotlib==3.8.0",
+    "plotly==5.0.0"
+]
 # Applying style guide
 style = ['pre-commit']
 test = [
@@ -108,21 +125,6 @@ requires-python = ">=3.10"
 kaleido = [
     "kaleido ; platform_system != 'Windows'",
     "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
-]
-min = [
-    "joblib==1.2.0",
-    "nibabel==5.2.0",
-    "numpy==1.26.0",
-    "pandas==2.3.0",
-    "requests==2.30.0",
-    "scikit-learn==1.5.0",
-    "scipy==1.11.1",
-    "jinja2==3.1.2"
-]
-min_plotting = [
-    "nilearn[min,kaleido]",
-    "matplotlib==3.8.0",
-    "plotly==5.0.0"
 ]
 plotting = [
     "nilearn[kaleido]",
