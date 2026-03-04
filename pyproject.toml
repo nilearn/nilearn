@@ -112,7 +112,13 @@ min = [
     "scipy==1.11.0",
     "jinja2==3.1.2"
 ]
-min_plotting = ["nilearn[min]", "matplotlib==3.8.0", "plotly==5.0.0", "kaleido==0.1.0.post1"]
+min_plotting = [
+    "nilearn[min]",
+    "matplotlib==3.8.0",
+    "plotly==5.0.0",
+    "kaleido ; platform_system != 'Windows'",
+    "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
+]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
 # Necessary req to use nilearn's plotting module
