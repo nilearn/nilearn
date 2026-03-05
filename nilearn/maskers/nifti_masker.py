@@ -373,8 +373,8 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._report_content = {
             "description": (
                 "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (in green). We "
-                "recommend to inspect the report for the overlap "
+                "with the outlines of the mask. "
+                "We recommend to inspect the report for the overlap "
                 "between the mask and its input image. "
             ),
             "n_elements": 0,
@@ -448,9 +448,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         elif self._report_content["engine"] == "brainsprite":
             bg_img = self._reporting_data["images"]
             stat_map_img = self._reporting_data["mask"]
-            self._create_brainsprite(
-                bg_img=bg_img, stat_map_img=stat_map_img, opacity=0.9
-            )
+            self._create_brainsprite(bg_img=bg_img, stat_map_img=stat_map_img)
             return None
 
     def _create_figure_for_report(self):

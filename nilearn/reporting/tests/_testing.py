@@ -96,6 +96,10 @@ def generate_and_check_report(
     if len(warnings_msg_to_check) > 0:
         includes.extend(['id="warnings"', *warnings_msg_to_check])
 
+    if (engine := kwargs.get("engine")) and engine == "brainsprite":
+        excludes.append('<div class="image">')
+        includes.append('<div id="div_viewer">')
+
     if title is None:
         title = estimator.__class__.__name__
     includes.append(title)

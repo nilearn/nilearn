@@ -434,6 +434,31 @@ def test_nifti_masker_overlaid_report(
     )
 
 
+def test_nifti_masker_brainsprite(
+    matplotlib_pyplot,  # noqa: ARG001
+    img_fmri,
+    img_labels,
+):
+    """Check that nifti maskers work with brainsprite engine."""
+    masker = NiftiMasker()
+    generate_and_check_masker_report(
+        masker, extra_warnings_allowed=True, engine="brainsprite"
+    )
+    masker.fit(img_fmri)
+    generate_and_check_masker_report(
+        masker, extra_warnings_allowed=True, engine="brainsprite"
+    )
+
+    masker = NiftiLabelsMasker(img_labels)
+    generate_and_check_masker_report(
+        masker, extra_warnings_allowed=True, engine="brainsprite"
+    )
+    masker.fit()
+    generate_and_check_masker_report(
+        masker, extra_warnings_allowed=True, engine="brainsprite"
+    )
+
+
 @pytest.mark.thread_unsafe
 @pytest.mark.slow
 def test_multi_nifti_masker_generate_report_mask(

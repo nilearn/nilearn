@@ -17,4 +17,16 @@
              src="data:image/png;base64,{{ stat_map_base64 }}"
              alt="overlay">
     </canvas>
+    {% if stat_map_base64 %}
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <p>Opacity</p>
+            <input type="range"
+                   min="1"
+                   max="100"
+                   value="100"
+                   class="slider"
+                   id="opacity">
+            <span id="demo"></span>
+        </div>
+    {% endif %}
 </div>

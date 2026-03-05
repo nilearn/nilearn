@@ -51,11 +51,8 @@
         <script> {{ js_query_code }} </script>
         <script> {{ brainsprite_code }} </script>
         <script>
-      // On load: build all figures
-      $(window).on("load", function () {
-        // Create brain slices
-        var brain = brainsprite({{params}});
-      });
+       {% include "html/maskers/partials/brainsprite_opacity.jinja" %}
+
         </script>
     {% endif %}
 {% endblock report %}

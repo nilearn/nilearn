@@ -628,7 +628,6 @@ class BaseMasker(_BaseMasker):
         self,
         bg_img: Nifti1Image | None,
         stat_map_img: Nifti1Image,
-        opacity: float,
         cmap=None,
     ) -> None:
 
@@ -695,7 +694,6 @@ class BaseMasker(_BaseMasker):
             vmax=colors["vmax"],
             cut_slices=cut_slices,
             black_bg=black_bg_as_bool,
-            opacity=opacity,
             value=False,
         )
 

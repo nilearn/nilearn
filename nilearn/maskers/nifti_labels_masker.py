@@ -427,9 +427,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         elif self._report_content["engine"] == "brainsprite":
             bg_img = self._reporting_data["images"]
             stat_map_img = self._reporting_data["labels_image"]
-            self._create_brainsprite(
-                bg_img=bg_img, stat_map_img=stat_map_img, opacity=0.9
-            )
+            self._create_brainsprite(bg_img=bg_img, stat_map_img=stat_map_img)
             return None
 
     def _create_figure_for_report(self, labels_image):

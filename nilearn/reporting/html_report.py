@@ -304,16 +304,20 @@ def _create_report(
 
     js_query_code = None
     brainsprite_code = None
+
     if data.get("engine") == "brainsprite":
         with (OTHER_JS / "jquery.min.js").open("r") as f:
             js_query_code = f.read()
         with (OTHER_JS / "brainsprite.min.js").open("r") as f:
             brainsprite_code = f.read()
 
-        data["bg_base64"] = estimator._reporting_data["bg_base64"]
-        data["cm_base64"] = estimator._reporting_data["cm_base64"]
-        data["params"] = estimator._reporting_data["params"]
-        data["stat_map_base64"] = estimator._reporting_data["stat_map_base64"]
+        if estimator._has_report_data():
+            data["bg_base64"] = estimator._reporting_data["bg_base64"]
+            data["cm_base64"] = estimator._reporting_data["cm_base64"]
+            data["params"] = estimator._reporting_data["params"]
+            data["stat_map_base64"] = estimator._reporting_data[
+                "stat_map_base64"
+            ]
 
     body = body_tpl.render(
         content=embeded_images,
