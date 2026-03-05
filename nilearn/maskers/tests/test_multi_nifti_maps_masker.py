@@ -17,7 +17,7 @@ from nilearn.conftest import _img_maps
 from nilearn.exceptions import DimensionError
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
-ESTIMATORS_TO_CHECK = [MultiNiftiMapsMasker(standardize=None)]
+ESTIMATORS_TO_CHECK = [MultiNiftiMapsMasker()]
 
 if SKLEARN_LT_1_6:
 

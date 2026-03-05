@@ -30,7 +30,7 @@ from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
 
-ESTIMATORS_TO_CHECK = [NiftiMapsMasker(standardize=None)]
+ESTIMATORS_TO_CHECK = [NiftiMapsMasker()]
 
 if SKLEARN_LT_1_6:
 

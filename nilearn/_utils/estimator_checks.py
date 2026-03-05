@@ -528,6 +528,17 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
 def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
     check_is_of_allowed_type(estimators, (list,), "estimators")
     for est in estimators:
+        # TODO (nilearn >= 0.15.0)
+        # remove this entire if block
+        # as standardize as bool should not be possible anymore
+        if hasattr(est, "standardize"):
+            # forcing the new default on all estiamtors
+            # to avoid FutureWarnings
+            if est.standardize is False:
+                est.standardize = None
+            elif est.standardize is True:
+                est.standardize = "zscore_sample"
+
         for e, check in nilearn_check_generator(estimator=est):
             yield e, check, check.__name__
 
@@ -2394,17 +2405,14 @@ def check_masker_standardization(estimator_orig) -> None:
             # TODO (nilearn >= 0.15.0) remove warning catch
             # Make sure that a FutureWarning warning is thrown
             # and not one during call to fit and then call to clean.
-            if standardize is True:
-                with warnings.catch_warnings(record=True) as warnings_list:
+            if standardize in [True, False]:
+                with pytest.warns(
+                    FutureWarning,
+                    match=(
+                        "boolean values for 'standardize' will be deprecated"
+                    ),
+                ):
                     results[str(standardize)] = estimator.transform(input_img)
-                n_future_warnings = len(
-                    [
-                        x
-                        for x in warnings_list
-                        if issubclass(x.category, FutureWarning)
-                    ]
-                )
-                assert n_future_warnings == 1
             else:
                 results[str(standardize)] = estimator.transform(input_img)
 
