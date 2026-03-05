@@ -402,6 +402,19 @@ def plot_img(
             To simply plot probabilistic atlases (4D images)
         :mod:`nilearn.plotting`
             See API reference for other options
+
+    Example
+    -------
+
+    >>> from nilearn.plotting.image.img_plotting import plot_img, show
+    >>> from nilearn.datasets import load_sample_motor_activation_image
+
+    # just to have a 3D image with some structure
+    >>> data = load_sample_motor_activation_image()
+
+    >>> display = plot_img(data, title="Plotting a 3D image with plot_img")
+    >>> show()
+
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -1920,10 +1933,9 @@ def plot_carpet(
         .. note::
 
             Added to control passing value to `standardize` of ``signal.clean``
-            to call new behavior since passing "zscore" or True (default) is
+            to call new behavior since passing False or True (default) is
             deprecated.
-            This parameter will be changed to "zscore_sample"
-            in version 0.14 and removed in version 0.15.
+            This parameter will be removed in version 0.15.
 
     Returns
     -------
@@ -1936,6 +1948,29 @@ def plot_carpet(
 
     In cases of long acquisitions (>800 volumes), the data will be downsampled
     to have fewer than 800 volumes before being plotted.
+
+    Examples
+    --------
+    >>> from nilearn.plotting import plot_carpet
+    >>> import matplotlib.pyplot as plt
+    >>> from nibabel import Nifti1Image
+    >>> import numpy as np
+
+    >>> rng = np.random.default_rng(seed=42)
+    >>> data = rng.integers(low=0, high=100,
+    ...                     size=(12, 12, 12, 100), dtype=np.int32)
+    >>> mask = np.ones((12, 12, 12), dtype=bool)
+    >>> img = Nifti1Image(data, affine=np.eye(4))
+    >>> mask_img = Nifti1Image(mask.astype(np.int8), affine=np.eye(4))
+
+    >>> display = plot_carpet(
+    ...     img,
+    ...     mask_img=mask_img,
+    ...     title="global patterns over time",
+    ... )
+
+    >>> display.show()
+
 
     References
     ----------
@@ -2107,45 +2142,3 @@ def plot_carpet(
         axes.set_ylabel("voxels")
 
     return save_figure_if_needed(figure, output_file)
-
-
-def plot_img_comparison(
-    ref_imgs,
-    src_imgs,
-    masker=None,
-    plot_hist=True,
-    log=True,
-    ref_label="image set 1",
-    src_label="image set 2",
-    output_dir=None,
-    axes=None,
-):
-    """Redirect to plot_img_comparison."""
-    from nilearn.plotting.img_comparison import plot_img_comparison
-
-    # TODO (nilearn >= 0.13.1)
-    warnings.warn(
-        (
-            "The 'plot_img_comparison' has been moved to  "
-            "'nilearn.plotting.img_comparison'.\n"
-            "It will be removed from 'nilearn.plotting.img_plotting' "
-            "in version >= 0.13.1.\n"
-            "Import 'plot_img_comparison' "
-            "from 'nilearn.plotting.img_comparison' "
-            "to silence this warning."
-        ),
-        FutureWarning,
-        stacklevel=find_stack_level(),
-    )
-
-    plot_img_comparison(
-        ref_imgs,
-        src_imgs,
-        masker,
-        plot_hist=plot_hist,
-        log=log,
-        ref_label=ref_label,
-        src_label=src_label,
-        output_dir=output_dir,
-        axes=axes,
-    )

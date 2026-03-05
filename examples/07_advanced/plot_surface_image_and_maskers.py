@@ -146,9 +146,7 @@ print(f"Masked data shape: {masked_data.shape}")
 # %%
 # Plot connectivity matrix
 # ------------------------
-connectome_measure = ConnectivityMeasure(
-    kind="correlation", standardize="zscore_sample"
-)
+connectome_measure = ConnectivityMeasure(kind="correlation")
 connectome = connectome_measure.fit([masked_data])
 
 vmax = np.absolute(connectome.mean_).max()

@@ -28,11 +28,6 @@ from nilearn.surface.surface import (
 )
 
 
-@pytest.fixture(scope="session")
-def mni152_template_res_2():
-    return datasets.load_mni152_template(resolution=2)
-
-
 def test_check_mesh():
     mesh = check_mesh_is_fsaverage("fsaverage5")
     assert mesh is check_mesh_is_fsaverage(mesh)

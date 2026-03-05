@@ -94,12 +94,12 @@ SHAPE = (*_shape_3d_default(), 1)
 
 
 @pytest.fixture()
-def n_subjects():
+def n_subjects() -> int:
     return 3
 
 
 @pytest.fixture
-def input_df():
+def input_df() -> pd.DataFrame:
     """Input DataFrame for testing."""
     return pd.DataFrame(
         {
@@ -567,7 +567,7 @@ def test_mask_img_volume(n_subjects):
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     model = model.fit(Y, design_matrix=X)
 
-    assert isinstance(model._mask_img, Nifti1Image)
+    assert isinstance(model.mask_img_, Nifti1Image)
 
 
 @pytest.mark.slow
@@ -705,7 +705,7 @@ def test_high_level_non_parametric_inference_with_paths_warning(n_subjects):
         )
 
 
-def _confounds():
+def _confounds() -> pd.DataFrame:
     return pd.DataFrame(
         [["01", 1], ["02", 2], ["03", 3]],
         columns=["subject_label", "conf1"],
@@ -713,7 +713,8 @@ def _confounds():
 
 
 @pytest.fixture
-def confounds():
+def confounds() -> pd.DataFrame:
+    """Confound DataFrame for testing."""
     return _confounds()
 
 
@@ -1345,6 +1346,7 @@ def test_second_level_contrast_computation_errors(rng, n_subjects):
         model.compute_contrast(None)
 
 
+@pytest.mark.slow
 def test_second_level_t_contrast_length_errors(n_subjects):
     func_img, mask = fake_fmri_data()
 
@@ -1515,6 +1517,7 @@ def test_second_lvl_dataframe_computation(tmp_path, shape_3d_default):
 # -----------------------surface tests----------------------- #
 
 
+@pytest.mark.thread_unsafe
 def test_second_level_input_as_surface_image(surf_img_1d, n_subjects):
     """Test slm with a list surface images as input."""
     second_level_input = [surf_img_1d for _ in range(n_subjects)]
@@ -1526,7 +1529,7 @@ def test_second_level_input_as_surface_image(surf_img_1d, n_subjects):
     model = SecondLevelModel()
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
-    assert isinstance(model._mask_img, SurfaceImage)
+    assert isinstance(model.mask_img_, SurfaceImage)
 
 
 def test_second_level_input_as_surface_image_3d(surf_img_2d, n_subjects):
@@ -1631,21 +1634,6 @@ def test_second_level_input_with_wrong_mask(
     with pytest.raises(
         TypeError, match=r"Mask and input images must be of compatible types."
     ):
-        model = model.fit(second_level_input, design_matrix=design_matrix)
-
-
-def test_second_level_input_as_surface_image_warning_smoothing(
-    surf_img_1d, n_subjects
-):
-    """Warn smoothing surface not implemented."""
-    second_level_input = [surf_img_1d for _ in range(n_subjects)]
-
-    design_matrix = pd.DataFrame(
-        [1] * len(second_level_input), columns=["intercept"]
-    )
-
-    model = SecondLevelModel(smoothing_fwhm=8.0)
-    with pytest.warns(NotImplementedWarning, match="not yet supported"):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
@@ -1761,6 +1749,7 @@ def test_non_parametric_inference_with_surface_images_2d_mask(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_non_parametric_inference_with_surface_images_warnings(
     surf_img_1d, n_subjects
 ):
