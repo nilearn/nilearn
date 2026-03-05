@@ -1038,6 +1038,21 @@ screening_percentile : int, float, \
             may be included even for very small ``screening_percentile``.
 
 """
+docdict[
+    "screening_n_features"
+] = """screening_n_features : :obj:`int`, default=None
+    The number of features to keep for a single cross-validation.
+    If both ``screening_percentile`` and ``screening_n_features`` are set,
+    ``screening_percentile`` takes priority.
+
+    .. admonition:: Important
+
+        Given ``screening_n_features``
+        is the number of features kept **for each fold** of a cross-validation,
+        the final model can have
+        more than ``screening_n_features`` non-zero weights.
+
+    """
 
 # second_level_contrast
 docdict["second_level_contrast"] = """
@@ -1190,7 +1205,7 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
 # TODO (nilearn >= 0.15.0) update to ..versionchanged
 deprecation_notice_false_to_none = """
 
-    .. nilearn_deprecated:: 0.15.0dev
+    .. nilearn_deprecated:: 0.13.0
 
         The default will be changed to ``None``
         in version 0.15.0.
@@ -1200,7 +1215,7 @@ deprecation_notice_false_to_none = """
 # TODO (nilearn >= 0.15.0) update to ..versionchanged
 deprecation_notice_true_to_zscore_sample = """
 
-    .. nilearn_deprecated:: 0.15.0dev
+    .. nilearn_deprecated:: 0.13.0
 
         The default will be changed to ``'zscore_sample'``
         in version 0.15.0.
@@ -1210,7 +1225,7 @@ deprecation_notice_true_to_zscore_sample = """
 docdict["standardize_false"] = (
     standardize.format("False") + deprecation_notice_false_to_none
 )
-# TODO (nilearn >= 0.14.0 and 0.15.0)
+# TODO (nilearn >= 0.15.0)
 # adapt the deprecation notices
 docdict["standardize_true"] = (
     standardize.format("True") + deprecation_notice_true_to_zscore_sample

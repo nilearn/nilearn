@@ -19,13 +19,13 @@ from nilearn.surface.surface import get_data as get_surface_data
 
 
 @pytest.fixture
-def shape():
+def shape() -> tuple[int, int, int]:
     """Return a shape."""
     return (9, 10, 11)
 
 
 @pytest.fixture
-def simple_stat_img(shape, affine_eye):
+def simple_stat_img(shape, affine_eye) -> Nifti1Image:
     """Create a simple stat image for more tests.
 
     Contains both positive and negative clusters.
@@ -33,8 +33,7 @@ def simple_stat_img(shape, affine_eye):
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[4:6, 7:9, 8:10] = -5.0
-    stat_img = Nifti1Image(data, affine_eye)
-    return stat_img
+    return Nifti1Image(data, affine_eye)
 
 
 def validate_clusters_table(

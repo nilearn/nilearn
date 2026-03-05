@@ -32,7 +32,6 @@ print(f"First functional nifti image (4D) is at: {func_filename}")
 from nilearn.maskers import NiftiMasker
 
 masker = NiftiMasker(
-    standardize="zscore_sample",
     mask_strategy="epi",
     memory="nilearn_cache",
     memory_level=1,

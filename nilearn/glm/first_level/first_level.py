@@ -414,8 +414,8 @@ class FirstLevelModel(BaseGLM):
         1 refers to mean scaling each time point with respect to all voxels &
         (0, 1) refers to scaling with respect to voxels and time,
         which is known as grand mean scaling.
-        Incompatible with standardize (standardize=False is enforced when
-        signal_scaling is not False).
+        Incompatible with standardize (``standardize=None`` is enforced when
+        ``signal_scaling`` is not False).
 
     noise_model : {'ar1', 'ols'}, default='ar1'
         The temporal variance model.
@@ -478,6 +478,10 @@ class FirstLevelModel(BaseGLM):
         Values are SimpleRegressionResults corresponding to the voxels,
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
+
+    standardize_ :  any of: 'zscore_sample', 'zscore', 'psc', or None
+        This value may differ from the ``standardize`` parameters
+        as it is set to ``None`` when ``signal_scaling`` is not False.
     """
 
     def __str__(self):
@@ -950,11 +954,20 @@ class FirstLevelModel(BaseGLM):
 
         self._fit_cache()
 
+        self.standardize_ = self.standardize
+
+        # TODO (nilearn >= 0.15.0) remove if and elif
+        # avoid some FutureWarning the user cannot affect
+        if self.standardize is False:
+            self.standardize_ = None
+        elif self.standardize is True:
+            self.standardize_ = "zscore_sample"
+
         check_parameter_in_allowed(
             self.signal_scaling, {False, 1, (0, 1)}, "signal_scaling"
         )
         if self.signal_scaling in [0, 1, (0, 1)]:
-            self.standardize = False
+            self.standardize_ = None
 
         self.labels_ = None
         self.results_ = None
@@ -1321,12 +1334,10 @@ class FirstLevelModel(BaseGLM):
 
             self.masker_ = self.mask_img
 
-            # TODO (nilearn >= 0.15.0) remove if and elif
-            # avoid some FutureWarning the user cannot affect
-            if self.masker_.standardize is False:
-                self.masker_.standardize = None
-            elif self.masker_.standardize is True:
-                self.masker_.standardize = "zscore_sample"
+        # override value of the masker standardize
+        # with standardize_ that takes into account
+        # whether to do signal_scaling or not
+        self.masker_.standardize = self.standardize_
 
         self.n_elements_ = self.masker_.n_elements_
 

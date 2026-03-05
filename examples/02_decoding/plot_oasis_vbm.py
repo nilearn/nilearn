@@ -120,7 +120,6 @@ decoder = DecoderRegressor(
     scoring="neg_mean_absolute_error",
     screening_percentile=1,
     n_jobs=2,
-    standardize="zscore_sample",
     verbose=1,
 )
 # Fit and predict with the decoder

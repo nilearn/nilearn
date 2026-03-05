@@ -69,7 +69,6 @@ masker = NiftiMapsMasker(
     low_pass=None,
     high_pass=0.01,
     t_r=rest_dataset.t_r,
-    standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
     memory_level=1,

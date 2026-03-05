@@ -23,10 +23,7 @@ from nilearn.decomposition.tests.conftest import (
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 
-ESTIMATORS_TO_CHECK = [
-    DictLearning(standardize="zscore_sample"),
-    CanICA(standardize="zscore_sample"),
-]
+ESTIMATORS_TO_CHECK = [DictLearning(), CanICA()]
 
 if SKLEARN_LT_1_6:
 
@@ -303,6 +300,7 @@ def test_transform_errors(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_pass_masker_arg_to_estimator(

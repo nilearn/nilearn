@@ -45,7 +45,6 @@ from nilearn.maskers import NiftiMapsMasker
 
 masker = NiftiMapsMasker(
     maps_img=atlas_filename,
-    standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
     memory_level=1,

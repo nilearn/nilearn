@@ -49,7 +49,6 @@ masker = NiftiMapsMasker(
     high_pass=0.01,
     memory="nilearn_cache",
     memory_level=1,
-    standardize="zscore_sample",
     standardize_confounds=True,
     verbose=1,
 )
@@ -81,9 +80,7 @@ print(f"Data has {len(children)} children.")
 # estimate it using :class:`~nilearn.connectome.ConnectivityMeasure`.
 from nilearn.connectome import ConnectivityMeasure
 
-correlation_measure = ConnectivityMeasure(
-    kind="correlation", standardize="zscore_sample", verbose=1
-)
+correlation_measure = ConnectivityMeasure(kind="correlation", verbose=1)
 
 # %%
 # From the list of ROIs time-series for children, the
@@ -137,7 +134,7 @@ plot_connectome(
 # We can also study **direct connections**, revealed by partial correlation
 # coefficients. We just change the `ConnectivityMeasure` kind
 partial_correlation_measure = ConnectivityMeasure(
-    kind="partial correlation", standardize="zscore_sample", verbose=1
+    kind="partial correlation", verbose=1
 )
 partial_correlation_matrices = partial_correlation_measure.fit_transform(
     children
@@ -172,9 +169,7 @@ plot_connectome(
 # We can use **both** correlations and partial correlations to capture
 # reproducible connectivity patterns at the group-level.
 # This is done by the tangent space embedding.
-tangent_measure = ConnectivityMeasure(
-    kind="tangent", standardize="zscore_sample", verbose=1
-)
+tangent_measure = ConnectivityMeasure(kind="tangent", verbose=1)
 
 # %%
 # We fit our children group and get the group connectivity matrix stored as
@@ -227,7 +222,7 @@ for kind in kinds:
         # *ConnectivityMeasure* can output the estimated subjects coefficients
         # as a 1D arrays through the parameter *vectorize*.
         connectivity = ConnectivityMeasure(
-            kind=kind, vectorize=True, standardize="zscore_sample", verbose=1
+            kind=kind, vectorize=True, verbose=1
         )
         # build vectorized connectomes for subjects in the train set
         connectomes = connectivity.fit_transform(pooled_subjects[train])

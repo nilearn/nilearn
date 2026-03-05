@@ -18,7 +18,7 @@ import warnings
 
 import numpy as np
 import pytest
-from nibabel import save
+from nibabel import Nifti1Image, save
 from numpy.testing import assert_array_almost_equal
 from sklearn import clone
 from sklearn.datasets import load_iris, make_classification, make_regression
@@ -81,10 +81,10 @@ ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 
 ESTIMATORS_TO_CHECK = [
-    Decoder(standardize="zscore_sample", screening_percentile=100),
-    DecoderRegressor(standardize="zscore_sample", screening_percentile=100),
-    FREMClassifier(standardize="zscore_sample", screening_percentile=100),
-    FREMRegressor(standardize="zscore_sample", screening_percentile=100),
+    Decoder(screening_percentile=100),
+    DecoderRegressor(screening_percentile=100),
+    FREMClassifier(screening_percentile=100),
+    FREMRegressor(screening_percentile=100),
 ]
 
 if SKLEARN_LT_1_6:
@@ -128,7 +128,10 @@ def test_check_estimator_nilearn(estimator, check, name):
     check(estimator)
 
 
-def _make_binary_classification_test_data(n_samples=N_SAMPLES, dim=5):
+def _make_binary_classification_test_data(
+    n_samples: int = N_SAMPLES, dim: int = 5
+) -> tuple[Nifti1Image, np.ndarray, Nifti1Image]:
+    """Generate a random 2-class classification problem with nifti images."""
     X, y = make_classification(
         n_samples=n_samples,
         n_features=dim**3,
@@ -142,13 +145,17 @@ def _make_binary_classification_test_data(n_samples=N_SAMPLES, dim=5):
 
 
 @pytest.fixture()
-def rand_x_y(rng):
+def rand_x_y(rng) -> tuple[np.ndarray, np.ndarray]:
+    """Generate random X and Y for classification."""
     X = rng.random((100, 10))
     Y = np.hstack([[-1] * 50, [1] * 50])
     return X, Y
 
 
-def _make_multiclass_classification_test_data(n_samples=40, dim=5):
+def _make_multiclass_classification_test_data(
+    n_samples: int = 40, dim: int = 5
+) -> tuple[Nifti1Image, np.ndarray, Nifti1Image]:
+    """Generate a random n-class classification problem with nifti images."""
     X, y = make_classification(
         n_samples=n_samples,
         n_features=dim**3,
@@ -162,8 +169,12 @@ def _make_multiclass_classification_test_data(n_samples=40, dim=5):
 
 
 @pytest.fixture(scope="session")
-def tiny_binary_classification_data():
-    """Use for testing errors.
+def tiny_binary_classification_data() -> tuple[
+    Nifti1Image, np.ndarray, Nifti1Image
+]:
+    """Generate a random 2-class classification problem with nifti images.
+
+    Use for testing errors.
 
     This fixture aims to return a very small data set
     because it will only be used for the tests
@@ -173,12 +184,20 @@ def tiny_binary_classification_data():
 
 
 @pytest.fixture
-def binary_classification_data():
-    """Use for test where classification is actually performed."""
+def binary_classification_data() -> tuple[
+    Nifti1Image, np.ndarray, Nifti1Image
+]:
+    """Generate a random 2-class classification problem with nifti images.
+
+    Use for test where classification is actually performed.
+    """
     return _make_binary_classification_test_data(n_samples=N_SAMPLES)
 
 
-def _make_regression_test_data(n_samples=N_SAMPLES, dim=5):
+def _make_regression_test_data(
+    n_samples: int = N_SAMPLES, dim: int = 5
+) -> tuple[Nifti1Image, np.ndarray, Nifti1Image]:
+    """Generate a random regression problem with nifti images."""
     X, y = make_regression(
         n_samples=n_samples,
         n_features=dim**3,
@@ -193,12 +212,14 @@ def _make_regression_test_data(n_samples=N_SAMPLES, dim=5):
 
 
 @pytest.fixture
-def regression_data():
+def regression_data() -> tuple[Nifti1Image, np.ndarray, Nifti1Image]:
+    """Generate a random regression problem with nifti images."""
     return _make_regression_test_data(n_samples=N_SAMPLES, dim=5)
 
 
 @pytest.fixture
-def multiclass_data():
+def multiclass_data() -> tuple[Nifti1Image, np.ndarray, Nifti1Image]:
+    """Generate a random n-class classification problem with nifti images."""
     return _make_multiclass_classification_test_data(n_samples=N_SAMPLES)
 
 
@@ -764,6 +785,7 @@ def test_decoder_dummy_classifier(binary_classification_data):
     assert np.sum(y_pred == 1.0) / n_samples - proportion < 0.05
 
 
+@pytest.mark.slow
 def test_decoder_dummy_classifier_with_callable(binary_classification_data):
     X, y, mask = binary_classification_data
 
@@ -946,6 +968,7 @@ def test_decoder_regression_clustering(
     assert model.score(X, y) == r2_score(y, y_pred)
 
 
+@pytest.mark.slow
 def test_decoder_dummy_regression(regression_data):
     X, y, mask = regression_data
 
@@ -983,6 +1006,7 @@ def test_decoder_dummy_regression_default_scoring_metric_is_r2(
     assert model.score(X, y) == r2_score(y, y_pred)
 
 
+@pytest.mark.slow
 def test_decoder_dummy_regression_other_strategy(regression_data):
     """Chexk that decoder object use other strategy for dummy regressor."""
     X, y, mask = regression_data
@@ -1394,6 +1418,7 @@ def test_frem_decoder_fit_surface(
 # ------------------------ test decoder vs sklearn -------------------------- #
 
 
+@ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.thread_unsafe
 @pytest.mark.slow
 @pytest.mark.parametrize(
