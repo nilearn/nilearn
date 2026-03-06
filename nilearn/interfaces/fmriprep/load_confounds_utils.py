@@ -179,13 +179,10 @@ def _generate_confounds_file_candidates(nii_file, flag_tedana=False):
     parsed_file = parse_bids_filename(nii_file)
     entities = parsed_file["entities"]
 
-    variants = []
-
     # Standard confounds
     entities_fmriprep = deepcopy(entities)
     entities_fmriprep["desc"] = "confounds"
-    variants.append(entities_fmriprep)
-
+    variants = [entities_fmriprep]
     if flag_tedana:
         # ICA  mixing and tedana
         entities_tedana = deepcopy(entities)
@@ -393,17 +390,16 @@ def load_confounds_file_as_dataframe(confounds_raw_path, flag_tedana=False):
         Raw confounds loaded from the confounds file.
     """
     if flag_tedana:
-        # TEDANA outputs are not camel case, but they have a different
-        # header format.
-        confounds_tedana_raw = {}
-        for tedana_conf in ["mixing", "metrics"]:
-            confounds_tedana_raw[tedana_conf] = pd.read_csv(
+        confounds_tedana_raw = {
+            tedana_conf: pd.read_csv(
                 next(
                     file for file in confounds_raw_path if tedana_conf in file
                 ),
                 delimiter="\t",
                 encoding="utf-8",
             )
+            for tedana_conf in ["mixing", "metrics"]
+        }
         if any(
             col.startswith("ICA_")
             for confounds_raw in confounds_tedana_raw.values()

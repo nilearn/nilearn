@@ -104,14 +104,13 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
         """Return mask image using during fit or mask image passed at init."""
         if self.__sklearn_is_fitted__():
             return self.mask_img_
-        else:
-            if self.mask_img is None:
-                return None
-            try:
-                # load mask_img if is a niiimg-like object
-                return check_niimg(self.mask_img)
-            except Exception:
-                return self.mask_img
+        if self.mask_img is None:
+            return None
+        try:
+            # load mask_img if is a niiimg-like object
+            return check_niimg(self.mask_img)
+        except Exception:
+            return self.mask_img
 
     @property
     def mask_img_(self) -> Nifti1Image | SurfaceImage:
