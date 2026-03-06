@@ -163,8 +163,17 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         If set to True, data is saved in order to produce a report.
 
     %(cmap)s
-        default="tab20"
+        default=None
         Only relevant for the report figures.
+
+        When using ``"matplotlib"`` as an engire to create reports,
+        ``cmap`` will be used for the background image:
+        in this case if ``None`` is passed then the ``"CMRmap_r"`` colormap
+        will be used for the background image.
+        When using ``"brainsprite"`` as an engire to create reports,
+        ``cmap`` will be used for the label image:
+        in this case if ``None`` is passed then the ``"tab20"`` colormap
+        will be used for the label image.
 
     %(clean_args)s
 
@@ -219,7 +228,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         strategy="mean",
         keep_masked_labels=False,
         reports=True,
-        cmap="tab20",
+        cmap=None,
         clean_args=None,
     ):
         self.labels_img = labels_img
@@ -427,6 +436,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         elif self._report_content["engine"] == "brainsprite":
             bg_img = self._reporting_data["images"]
             stat_map_img = self._reporting_data["labels_image"]
+            cmap = self.cmap
+            if cmap is None:
+                cmap = "tab20"
             self._create_brainsprite(bg_img=bg_img, stat_map_img=stat_map_img)
             return None
 
@@ -452,13 +464,17 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         img = self._reporting_data["images"]
 
+        cmap = self.cmap
+        if cmap is None:
+            cmap = "CMRmap_r"
+
         # If we have a func image to show in the report, use it
         if img is not None:
             display = plot_img(
                 img,
                 cut_coords=cut_coords,
                 black_bg=False,
-                cmap="gray",
+                cmap=cmap,
             )
             plt.close()
             display.add_contours(labels_image, filled=False, linewidths=3)
