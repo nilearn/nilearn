@@ -2,7 +2,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any, Literal
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -330,7 +330,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
     def generate_report(
         self,
         title: str | None = None,
-        engine: Literal["matplotlib", "brainsprite"] = "matplotlib",
+        engine: str = "matplotlib",
     ):
         """Generate an HTML report for the current object.
 

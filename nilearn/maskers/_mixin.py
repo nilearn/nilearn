@@ -4,7 +4,7 @@ import abc
 import itertools
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, ClassVar, Literal
+from typing import Any, ClassVar
 
 import numpy as np
 import pandas as pd
@@ -417,7 +417,7 @@ class _ReportingMixin:
     def generate_report(
         self,
         title: str | None = None,
-        engine: Literal["matplotlib", "brainsprite"] = "matplotlib",
+        engine: str = "matplotlib",
     ):
         """Generate an HTML report for the current object.
 

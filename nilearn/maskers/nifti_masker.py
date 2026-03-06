@@ -3,7 +3,6 @@
 import inspect
 import warnings
 from copy import copy as copy_object
-from typing import Literal
 
 import numpy as np
 from joblib import Memory
@@ -386,7 +385,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     def generate_report(
         self,
         title: str | None = None,
-        engine: Literal["matplotlib", "brainsprite"] = "matplotlib",
+        engine: str = "matplotlib",
     ):
         """Generate an HTML report for the current object.
 
