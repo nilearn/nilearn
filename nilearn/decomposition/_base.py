@@ -540,7 +540,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         elif any(isinstance(x, SurfaceImage) for x in imgs):
             masker_type = "multi_surface"
 
-        if masker_type in {"surface", "multi_surface"}:
+        if masker_type in ["surface", "multi_surface"]:
             _warn_ignored_surface_masker_params(self)
 
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
