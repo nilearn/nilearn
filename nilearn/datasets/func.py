@@ -2637,7 +2637,8 @@ def fetch_openneuro_dataset(
             )
 
         data_prefix = (
-            f"{DATASET_VERSION.split('_')[0]}/{DATASET_VERSION}/uncompressed"
+            f"{DATASET_VERSION.split('_', maxsplit=1)[0]}/"
+            f"{DATASET_VERSION}/uncompressed"
         )
         orig_data_dir = data_dir
         data_dir = get_dataset_dir(

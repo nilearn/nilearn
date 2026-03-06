@@ -826,7 +826,8 @@ datadir = PACKAGE_DIRECTORY / "data"
 def test_select_from_index():
     dataset_version = "ds000030_R1.0.4"
     data_prefix = (
-        f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
+        f"{dataset_version.split('_', maxsplit=1)[0]}"
+        f"/{dataset_version}/uncompressed"
     )
     # Prepare url files for subject and filter tests
     urls = [
@@ -906,7 +907,8 @@ def test_fetch_ds000030_urls():
 def test_fetch_openneuro_dataset(tmp_path):
     dataset_version = "ds000030_R1.0.4"
     data_prefix = (
-        f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
+        f"{dataset_version.split('_', maxsplit=1)[0]}"
+        f"/{dataset_version}/uncompressed"
     )
     data_dir = get_dataset_dir(data_prefix, data_dir=tmp_path)
     url_file = data_dir / "urls.json"

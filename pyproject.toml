@@ -369,6 +369,12 @@ ignore = [
     "N806",
     "PERF203",
     "PLR2004",
+    "PLC0206",
+    "PLC0415",
+    "PLW0603",
+    # "PLW0642",  # Reassigned `self` variable in instance method
+    "PLW1641",
+    # "PLW2901",  # `for` loop variable `param` overwritten by assignment target
     "PTH207",
     # Avoid linter rules conflicting with the formatter
     # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
@@ -399,6 +405,7 @@ select = [
     "I",
     "N",
     "NPY",
+    "PL",
     "PERF",
     "PIE",
     "PTH",
