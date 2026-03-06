@@ -19,7 +19,7 @@ behavior.
 # We will first load the dataset and display the image without manipulation.
 
 from nilearn import datasets
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 image = datasets.load_sample_motor_activation_image()
 
@@ -30,6 +30,8 @@ plot_param = {
 }
 
 plot_stat_map(image, title="image without threshold", **plot_param)
+
+show()
 
 # %%
 # Image thresholded at 2 when two_sided=True
@@ -55,12 +57,7 @@ import matplotlib.pyplot as plt
 from nilearn.image import threshold_img
 
 thresholded_img = threshold_img(
-    image,
-    threshold=2,
-    cluster_threshold=0,
-    two_sided=True,
-    copy=True,
-    copy_header=True,
+    image, threshold=2, cluster_threshold=0, two_sided=True, copy=True
 )
 
 figure_width = 8
@@ -90,6 +87,8 @@ plot_stat_map(
     **plot_param,
 )
 
+show()
+
 # %%
 # Image thresholded at 2 when two_sided=False
 # -------------------------------------------
@@ -100,12 +99,7 @@ plot_stat_map(
 # This will set all image values below 2 to 0.
 
 thresholded_img = threshold_img(
-    image,
-    threshold=2,
-    cluster_threshold=0,
-    two_sided=False,
-    copy=True,
-    copy_header=True,
+    image, threshold=2, cluster_threshold=0, two_sided=False, copy=True
 )
 
 
@@ -128,6 +122,8 @@ plot_stat_map(
     **plot_param,
 )
 
+show()
+
 # %%
 # Image thresholded at -2 when two_sided=False
 # --------------------------------------------
@@ -138,12 +134,7 @@ plot_stat_map(
 # This will set all image values above -2 to 0.
 
 thresholded_img = threshold_img(
-    image,
-    threshold=-2,
-    cluster_threshold=0,
-    two_sided=False,
-    copy=True,
-    copy_header=True,
+    image, threshold=-2, cluster_threshold=0, two_sided=False, copy=True
 )
 
 
@@ -164,3 +155,5 @@ plot_stat_map(
     axes=axes[1],
     **plot_param,
 )
+
+show()

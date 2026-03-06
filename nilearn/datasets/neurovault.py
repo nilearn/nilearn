@@ -22,7 +22,10 @@ from sklearn.utils import Bunch
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image import resample_img
 
 from ._utils import (
@@ -720,7 +723,7 @@ class ResultFilter:
 
     Parameters
     ----------
-    query_terms : dict, optional
+    query_terms : :obj:`dict`, default=None
         A ``metadata`` dictionary will be blocked by the filter if it
         does not respect ``metadata[key] == value`` for all
         ``key``, ``value`` pairs in `query_terms`. If ``None``, the
@@ -1035,15 +1038,15 @@ def _scroll_server_results(
         must return True if the result is to be kept and False otherwise.
         Is called with the dict containing the metadata as sole argument.
 
-    query_terms : dict, sequence of pairs or None, optional
+    query_terms : dict, sequence of pairs  or None, default=None
         Key-value pairs to add to the base url in order to form query.
         If ``None``, nothing is added to the url.
 
-    max_results : int or None, optional
+    max_results : int  or None, default=None
         Maximum number of results to fetch; if ``None``, all available data
         that matches the query is fetched.
 
-    batch_size : int or None, optional
+    batch_size : int  or None, default=None
         Neurovault returns the metadata for hits corresponding to a query
         in batches. batch_size is used to choose the (maximum) number of
         elements in a batch. If None, ``_DEFAULT_BATCH_SIZE`` is used.
@@ -1234,6 +1237,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     sklearn.feature_extraction.DictVectorizer
 
     """
+    check_params(locals())
+
     logger.log("Computing word features.", msg_level=_INFO, verbose=verbose)
     words = []
     voc_empty = True
@@ -1556,16 +1561,11 @@ def _download_image_nii_file(image_info, collection, download_params):
         )
 
         # Resample here
-        logger.log(
-            "Resampling...",
-        )
-        # TODO (nilearn >= 0.13.0) force_resample=True
+        logger.log("Resampling...", verbose=1)
         im_resampled = resample_img(
             img=tmp_path,
             target_affine=STD_AFFINE,
             interpolation=download_params["interpolation"],
-            copy_header=True,
-            force_resample=False,
         )
         im_resampled.to_filename(resampled_image_absolute_path)
 
@@ -1646,10 +1646,10 @@ def _download_image_terms(image_info, collection, download_params):
             verbose=download_params["verbose"],
         )
         assert _check_has_words(image_info["ns_words_absolute_path"])
-    except Exception:
+    except Exception as e:
         message = f"Could not fetch words for image {image_info['id']}"
         if not download_params.get("allow_neurosynth_failure", True):
-            raise RuntimeError(message)
+            raise RuntimeError(message) from e
         logger.log(
             message,
             msg_level=_ERROR,
@@ -1799,13 +1799,10 @@ def _scroll_local(download_params):
             image, collection = _update(image, collection, download_params)
             if download_params["resample"]:
                 if not Path(image["resampled_absolute_path"]).is_file():
-                    # TODO (nilearn  >= 0.13.0) force_resample=True
                     im_resampled = resample_img(
                         img=image["absolute_path"],
                         target_affine=STD_AFFINE,
                         interpolation=download_params["interpolation"],
-                        copy_header=True,
-                        force_resample=False,
                     )
                     im_resampled.to_filename(image["resampled_absolute_path"])
                 download_params["visited_images"].add(image["id"])
@@ -2087,7 +2084,7 @@ def _scroll_explicit(download_params):
     yield from _scroll_image_ids(download_params)
 
 
-def _print_progress(found, download_params, level=_INFO):
+def _print_progress(found, download_params, level: int = _INFO) -> None:
     """Print number of images fetched so far."""
     logger.log(
         f"Already fetched {found} image{'s' if found > 1 else ''}",
@@ -2275,11 +2272,11 @@ def _read_download_params(
     """Create a dictionary containing download information."""
     download_params = {"verbose": verbose}
     download_mode = download_mode.lower()
-    if download_mode not in ["overwrite", "download_new", "offline"]:
-        raise ValueError(
-            "Supported download modes are: overwrite, download_new, offline. "
-            f"Got {download_mode}."
-        )
+    check_parameter_in_allowed(
+        download_mode,
+        ["overwrite", "download_new", "offline"],
+        "mode",
+    )
     download_params["download_mode"] = download_mode
     if collection_terms is None:
         collection_terms = {}
@@ -2591,12 +2588,12 @@ def fetch_neurovault(
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
-    interpolation : str, default='continuous'
+    interpolation : {'continuous', 'linear', 'nearest'}, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
         method.
         Argument passed to nilearn.image.resample_img.
 
-    timeout : float, default=_DEFAULT_TIME_OUT
+    timeout : :obj:`float`, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
     %(verbose3)s
@@ -2811,7 +2808,7 @@ def fetch_neurovault_ids(
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
 
-    timeout : float, default=_DEFAULT_TIME_OUT
+    timeout : :obj:`float`, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
     %(verbose3)s
@@ -2872,70 +2869,6 @@ def fetch_neurovault_ids(
         timeout=timeout,
         verbose=verbose,
     )
-
-
-@fill_doc
-def fetch_neurovault_motor_task(
-    data_dir=None, timeout=_DEFAULT_TIME_OUT, verbose=1
-):
-    """Fetch left vs right button press \
-       group :term:`contrast` map from :term:`Neurovault`.
-
-    .. deprecated:: 0.12.0
-
-        This fetcher function will be removed in version>0.13.1.
-
-        Please use
-        :func:`nilearn.datasets.load_sample_motor_activation_image`
-        instead.
-
-    Parameters
-    ----------
-    %(data_dir)s
-
-    %(verbose)s
-
-    Returns
-    -------
-    data : Bunch
-        A dict-like object which exposes its items as attributes. It contains:
-            - 'images', the paths to downloaded files.
-            - 'images_meta', the metadata for the images in a list of
-              dictionaries.
-            - 'collections_meta', the metadata for the
-              collections.
-            - 'description', a short description
-              of the :term:`Neurovault` dataset.
-
-    Notes
-    -----
-    The 'left vs right button press' contrast is used:
-    https://neurovault.org/images/10426/
-
-    See Also
-    --------
-    nilearn.datasets.fetch_neurovault_ids
-    nilearn.datasets.fetch_neurovault
-    nilearn.datasets.fetch_neurovault_auditory_computation_task
-
-    """
-    check_params(locals())
-
-    # TODO (nilearn >= 0.13.1)
-    warnings.warn(
-        (
-            "The 'fetch_neurovault_motor_task' function will be removed "
-            "in version>0.13.1. \n"
-            "Please use 'load_sample_motor_activation_image' instead.'"
-        ),
-        DeprecationWarning,
-        stacklevel=find_stack_level(),
-    )
-
-    data = fetch_neurovault_ids(
-        image_ids=[10426], data_dir=data_dir, verbose=verbose, timeout=timeout
-    )
-    return data
 
 
 @fill_doc

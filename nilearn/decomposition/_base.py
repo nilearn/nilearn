@@ -15,29 +15,41 @@ import numpy as np
 from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from scipy import linalg
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import TransformerMixin
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.maskers import NiftiMapsMasker, SurfaceMapsMasker, SurfaceMasker
+from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn.image import check_niimg
+from nilearn.maskers import (
+    MultiNiftiMasker,
+    MultiSurfaceMasker,
+    NiftiMapsMasker,
+    NiftiMasker,
+    SurfaceMapsMasker,
+    SurfaceMasker,
+)
+from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
+from nilearn.typing import NiimgLike
 
 
-def _warn_ignored_surface_masker_params(estimator):
+def _warn_ignored_surface_masker_params(estimator) -> None:
     """Warn about parameters that are ignored by SurfaceMasker.
 
     Only raise warning if parameters are different
@@ -164,17 +176,18 @@ def _mask_and_reduce(
         See :ref:`extracting_data`.
         List of subject data to mask, reduce and stack.
 
-    confounds : CSV file path or numpy ndarray, or pandas DataFrame, optional
+    confounds : CSV file path, numpy ndarray, pandas DataFrame, or None \
+            default=None
         This parameter is passed to signal.clean. Please see the
         corresponding documentation for details.
 
-    reduction_ratio : 'auto' or float between 0. and 1., default='auto'
-        - Between 0. or 1. : controls data reduction in the temporal domain
-        , 1. means no reduction, < 1. calls for an SVD based reduction.
-        - if set to 'auto', estimator will set the number of components per
-          reduced session to be n_components.
+    reduction_ratio : 'auto' or float between 0.0 and 1.0, default='auto'
+        - Between 0.0 or 1.0 : controls data reduction in the temporal domain,
+          1.0 means no reduction, < 1.0 calls for an SVD based reduction.
+        - if set to ``'auto'``, estimator will set the number of components per
+          reduced session to be ``n_components``.
 
-    n_components : integer, optional
+    n_components : integer or None, default=None
         Number of components per subject to be extracted by dimension reduction
 
     %(random_state)s
@@ -279,7 +292,7 @@ def _mask_and_reduce_single(
     else:
         n_samples = ceil(data_n_samples * reduction_ratio)
 
-    U, S, V = masker._cache(_fast_svd, func_memory_level=3)(
+    U, S, _ = masker._cache(_fast_svd, func_memory_level=3)(
         this_data.T, n_samples, random_state=random_state
     )
     U = U.T.copy()
@@ -288,12 +301,12 @@ def _mask_and_reduce_single(
 
 
 @fill_doc
-class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
+class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
     """Base class for matrix factorization based decomposition estimators.
 
     Handles mask logic, provides transform and inverse_transform methods
 
-     .. versionadded:: 0.2
+     .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
@@ -303,19 +316,11 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     %(random_state)s
 
-    mask : Niimg-like object,  :obj:`~nilearn.maskers.MultiNiftiMasker` or
-           :obj:`~nilearn.surface.SurfaceImage` or
-           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given, for Nifti images,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters; for surface images, all the vertices will be used.
+    %(mask_decomposition)s
 
     %(smoothing_fwhm)s
 
-    standardize : boolean, default=True
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+    %(standardize_true)s
 
     standardize_confounds : boolean, default=True
         If standardize_confounds is True, the confounds are z-scored:
@@ -358,7 +363,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
           These strategies are only relevant for Nifti images and the parameter
           is ignored for SurfaceImage objects.
 
-    mask_args : dict, optional
+    mask_args : dict, or None, default=None
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`
@@ -425,13 +430,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 
@@ -450,6 +448,19 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         tags.input_tags = InputTags(surf_img=True, niimg_like=True)
         return tags
 
+    def _validate_mask(self) -> None:
+        if self.mask is not None:
+            check_is_of_allowed_type(
+                self.mask,
+                (
+                    SurfaceMasker,
+                    SurfaceImage,
+                    NiftiMasker,
+                    *NiimgLike,
+                ),
+                "mask",
+            )
+
     @fill_doc
     def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the components across subjects.
@@ -465,8 +476,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         %(y_dummy)s
 
-        confounds : list of CSV file paths, numpy.ndarrays
-            or pandas DataFrames, optional.
+        confounds : list of CSV file paths, numpy.ndarrays \
+                or pandas DataFrames or None, default=None.
             This parameter is passed to nilearn.signal.clean.
             Please see the related documentation for details.
             Should match with the list of imgs given.
@@ -514,15 +525,26 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         self._fit_cache()
 
+        self._validate_mask()
+
         masker_type = "multi_nii"
-        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
-            isinstance(x, SurfaceImage) for x in imgs
-        ):
-            masker_type = "surface"
+        if self.mask is not None:
+            if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)):
+                masker_type = "multi_surface"
+            if isinstance(self.mask, (MultiNiftiMasker, *NiimgLike)):
+                masker_type = "multi_nii"
+            elif isinstance(self.mask, SurfaceMasker):
+                masker_type = "surface"
+            elif isinstance(self.mask, NiftiMasker):
+                masker_type = "nii"
+        elif any(isinstance(x, SurfaceImage) for x in imgs):
+            masker_type = "multi_surface"
+
+        if masker_type in ["surface", "multi_surface"]:
             _warn_ignored_surface_masker_params(self)
+
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         self.masker_.memory_level = self.memory_level
-
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
         if self.masker_.mask_img is None:
@@ -546,23 +568,33 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         # Create and fit appropriate MapsMasker for transform
         # and inverse_transform
+        maps_masker_kwargs = {
+            "standardize": None,
+            "memory": self.memory,
+            "memory_level": self.memory_level,
+        }
         if isinstance(self.masker_, SurfaceMasker):
             self.maps_masker_ = SurfaceMapsMasker(
-                self.components_img_, self.masker_.mask_img_
+                self.components_img_,
+                self.masker_.mask_img_,
+                **maps_masker_kwargs,
             )
         else:
             self.maps_masker_ = NiftiMapsMasker(
                 self.components_img_,
                 self.masker_.mask_img_,
                 resampling_target="maps",
+                **maps_masker_kwargs,
             )
         self.maps_masker_.fit()
 
-        self.n_elements_ = self.maps_masker_.n_elements_
-
         return self
 
-    def __sklearn_is_fitted__(self):
+    @property
+    def n_elements_(self) -> int:
+        return self.maps_masker_.n_elements_
+
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "components_")
 
     def transform(self, imgs, confounds=None):
@@ -575,8 +607,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             See :ref:`extracting_data`.
             Data to be projected
 
-        confounds : CSV file path or numpy.ndarray
-            or pandas DataFrame, optional
+        confounds : CSV file path or numpy.ndarray \
+                or pandas DataFrame or None, default=None
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 
@@ -669,8 +701,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         %(y_dummy)s
 
-        confounds : CSV file path or numpy.ndarray
-            or pandas DataFrame, optional
+        confounds : CSV file path or numpy.ndarray \
+                or pandas DataFrame or None, default=None
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 

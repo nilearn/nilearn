@@ -47,7 +47,7 @@ fmri_imgs = [data["func1"], data["func2"]]
 # Create a mean image for plotting purpose.
 from nilearn.image import mean_img
 
-mean_img_ = mean_img(fmri_imgs[0], copy_header=True)
+mean_img_ = mean_img(fmri_imgs[0])
 
 # %%
 # The design matrices were pre-computed,
@@ -67,9 +67,7 @@ design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 from nilearn.glm.first_level import FirstLevelModel
 
 fmri_glm = FirstLevelModel(
-    mask_img=data["mask"],
-    smoothing_fwhm=5,
-    minimize_memory=True,
+    mask_img=data["mask"], smoothing_fwhm=5, minimize_memory=True, verbose=1
 )
 
 # %%
@@ -151,7 +149,7 @@ variance_imgs = [
 ]
 
 fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _ = compute_fixed_effects(
-    contrast_imgs, variance_imgs, data["mask"], return_z_score=True
+    contrast_imgs, variance_imgs, data["mask"]
 )
 plot_stat_map(
     fixed_fx_stat,
@@ -260,15 +258,7 @@ report = fmri_glm_multirun.generate_report(
 )
 
 # %%
-# We have several ways to access the report:
 #
-# This report can be viewed in a notebook.
+# .. include:: ../../../examples/report_note.rst
+#
 report
-
-# %%
-# Or in a separate browser window
-# report.open_in_browser()
-
-# %%
-# Or we can save as an html file.
-report.save_as_html(output_dir / "report.html")

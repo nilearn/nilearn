@@ -23,8 +23,6 @@ visualization & results checking be possible at each step.
     for automatic ROI extraction of brain connected networks
     given in 4D image.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -112,7 +110,7 @@ from nilearn.plotting import plot_epi
 
 # First, compute the voxel-wise mean of smooth EPI image
 # (first argument) using image processing module `image`
-mean_img = image.mean_img(fmri_img, copy_header=True)
+mean_img = image.mean_img(fmri_img)
 # Second, we visualize the mean image with coordinates positioned manually
 plot_epi(mean_img, title="Smoothed mean EPI", cut_coords=cut_coords)
 
@@ -348,7 +346,11 @@ labels_img = new_img_like(fmri_img, labels)
 # for all the data used here, time series signal processing parameters
 # standardize and detrend are set to False
 masker = NiftiLabelsMasker(
-    labels_img, resampling_target=None, standardize=False, detrend=False
+    labels_img,
+    resampling_target=None,
+    standardize=False,
+    detrend=False,
+    verbose=1,
 )
 
 # %%

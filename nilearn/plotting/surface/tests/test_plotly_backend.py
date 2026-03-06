@@ -169,7 +169,7 @@ def test_get_camera_view_from_string_view(full_view):
     nilearn.plotting.surface._plotly_backend._get_camera_view_from_string_view
     returns expected values.
     """
-    hemi, view_name, (elev, azim), expected_camera_view = full_view
+    hemi, view_name, (_, _), expected_camera_view = full_view
     camera_view_string = _get_camera_view_from_string_view(hemi, view_name)
 
     # Check each camera view parameter
@@ -187,7 +187,7 @@ def test_get_camera_view_from_elev_azim(full_view):
     nilearn.plotting.surface._plotly_backend._get_camera_view_from_elevation_and_azimut
     returns expected values.
     """
-    hemi, view_name, (elev, azim), expected_camera_view = full_view
+    _, _, (elev, azim), expected_camera_view = full_view
     camera_view_elev_azim = _get_camera_view_from_elevation_and_azimut(
         (elev, azim)
     )

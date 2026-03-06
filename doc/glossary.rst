@@ -129,6 +129,23 @@ If you wish to add a missing term, please
         or resting-state :term:`fMRI`, graph theory measures, surface or
         volume-based statistics, etc.
 
+    Tedana
+        `Tedana` is a multi-echo :term:`fMRI` data denoising pipeline.
+        `Tedana` originally came about as a part of the ME-ICA pipeline,
+        although it has since diverged. An important distinction is that
+        the ME-ICA pipeline was written for python v2.7,
+        and was not designed in a way that others could easily
+        examine and improve the underlying algorithms for
+        TE-dependent analysis of multi-echo :term:`fMRI` data, tedana now assumes
+        that you are working with data which has been previously preprocessed.
+        `Tedana` works by decomposing multi-echo BOLD data via principal
+        component analysis (PCA) and independent component analysis (ICA). The
+        resulting components are then analyzed to determine whether they are
+        TE-dependent or -independent. TE-dependent components are classified
+        as BOLD, while TE-independent components are classified as non-BOLD,
+        and are discarded as part of data cleaning. For more information,
+        visit `Tedanas' documentation <https://me-ica.github.io/multi-echo-data-analysis/content/intro.html>`_.
+
     FPR correction
         False positive rate correction. This refers to the methods employed to
         correct false positive rates such as the Bonferroni correction which

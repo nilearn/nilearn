@@ -1,16 +1,16 @@
 import functools
-import operator
 import os
+import sys
 import warnings
 
-from packaging.version import parse
-
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.versions import (
+    OPTIONAL_MATPLOTLIB_MIN_VERSION,
+    compare_version,
+)
 
-OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
 
-
-def set_mpl_backend(message=None):
+def set_mpl_backend(message: str | None = None) -> None:
     """Check if matplotlib is installed.
 
     If not installed, raise error and display warning to install necessary
@@ -112,7 +112,9 @@ def rename_parameters(
     return _replace_params
 
 
-def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
+def _warn_deprecated_params(
+    replacement_params, end_version, lib_name, kwargs
+) -> None:
     """Raise warnings about deprecated parameters, \
     for the decorator replace_parameters().
 
@@ -142,7 +144,7 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
             f'Please use the parameter "{replacement_param}" instead.'
         )
         warnings.warn(
-            category=DeprecationWarning,
+            category=FutureWarning,
             message=param_deprecation_msg,
             stacklevel=find_stack_level(),
         )
@@ -207,7 +209,7 @@ def remove_parameters(removed_params, reason, end_version="future"):
                     f"{reason}"
                 )
                 warnings.warn(
-                    category=DeprecationWarning,
+                    category=FutureWarning,
                     message=message,
                     stacklevel=find_stack_level(),
                 )
@@ -236,49 +238,7 @@ def stringify_path(path):
     return path.__fspath__() if isinstance(path, os.PathLike) else path
 
 
-VERSION_OPERATORS = {
-    "==": operator.eq,
-    "!=": operator.ne,
-    ">": operator.gt,
-    ">=": operator.ge,
-    "<": operator.lt,
-    "<=": operator.le,
-}
-
-
-def compare_version(version_a, operator, version_b):
-    """Compare two version strings via a user-specified operator.
-
-    .. note::
-
-        This function is inspired from MNE-Python.
-        See https://github.com/mne-tools/mne-python/blob/main/mne/fixes.py
-
-    Parameters
-    ----------
-    version_a : :obj:`str`
-        First version string.
-
-    operator : {'==', '!=','>', '<', '>=', '<='}
-        Operator to compare ``version_a`` and ``version_b`` in the form of
-        ``version_a operator version_b``.
-
-    version_b : :obj:`str`
-        Second version string.
-
-    Returns
-    -------
-    result : :obj:`bool`
-        The result of the version comparison.
-
-    """
-    if operator not in VERSION_OPERATORS:
-        error_msg = "'compare_version' received an unexpected operator "
-        raise ValueError(error_msg + operator + ".")
-    return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))
-
-
-def is_matplotlib_installed():
+def is_matplotlib_installed() -> bool:
     """Check if matplotlib is installed."""
     try:
         import matplotlib  # noqa: F401
@@ -288,7 +248,7 @@ def is_matplotlib_installed():
         return True
 
 
-def check_matplotlib():
+def check_matplotlib() -> None:
     """Check if matplotlib is installed, raise an error if not.
 
     Used in examples that require matplolib.
@@ -302,7 +262,7 @@ def check_matplotlib():
         )
 
 
-def is_plotly_installed():
+def is_plotly_installed() -> bool:
     """Check if plotly is installed."""
     try:
         import plotly.graph_objects as go  # noqa: F401
@@ -311,7 +271,7 @@ def is_plotly_installed():
     return True
 
 
-def is_kaleido_installed():
+def is_kaleido_installed() -> bool:
     """Check if kaleido is installed."""
     try:
         import kaleido  # noqa: F401
@@ -320,40 +280,19 @@ def is_kaleido_installed():
     return True
 
 
-# TODO (nilearn >= 0.13.0) remove
-def check_copy_header(copy_header):
-    """Check the value of the `copy_header` parameter.
-
-    Only being used with `nilearn.image` and resampling functions to warn
-    users that `copy_header` will default to `True` from release 0.13.0
-    onwards.
-
-    Parameters
-    ----------
-    copy_header : :obj:`bool"
-
-    """
-    if not copy_header:
-        # TODO (nilearn 0.13.0)
-        copy_header_default = (
-            "From release 0.13.0 onwards, this function will, by default, "
-            "copy the header of the input image to the output. "
-            "Currently, the header is reset to the default Nifti1Header. "
-            "To suppress this warning and use the new behavior, set "
-            "`copy_header=True`."
-        )
-        warnings.warn(
-            category=FutureWarning,
-            message=copy_header_default,
-            stacklevel=find_stack_level(),
-        )
+def is_windows_platform() -> bool:
+    """Check if the current platform is Windows."""
+    return os.name == "nt"
 
 
-# TODO (matplotlib >= 3.5.0) This can be removed
-def constrained_layout_kwargs():
-    import matplotlib
+def is_gil_enabled() -> bool:
+    """Check if the Python GIL is enabled."""
+    try:
+        return sys._is_gil_enabled()  # type: ignore[attr-defined]
+    except AttributeError:
+        # sys._is_gil_enabled does not exist in standard Python builds
+        return True
 
-    if compare_version(matplotlib.__version__, ">=", "3.5"):
-        return {"layout": "constrained"}
-    else:
-        return {"constrained_layout": True}
+
+def is_sphinx_build() -> bool:
+    return any(module.startswith("sphinx.") for module in sys.modules)

@@ -4,13 +4,14 @@
 
 ci:
     autoupdate_commit_msg: 'chore: update pre-commit hooks'
+    autoupdate_schedule: monthly
+    autofix_commit_msg: 'style: pre-commit fixes'
     autofix_prs: false
 
 #  Files that should not be checked
 exclude: |
     (?x)^(
         nilearn/datasets/tests/data/localizer_behavioural.tsv
-        | nilearn/externals/.*
         | nilearn/plotting/data/js/.*js
         | nilearn/_version.py
         | asv_benchmarks/asv.conf.json
@@ -28,18 +29,16 @@ repos:
     -   id: check-yaml
     -   id: end-of-file-fixer
     -   id: mixed-line-ending
+        args: [--fix=lf]
     -   id: trailing-whitespace
 
     # Checks for .rst files
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
+    -   id: rst-backticks
     -   id: rst-directive-colons
     -   id: rst-inline-touching-normal
--   repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
-    hooks:
-    -   id: rst-backticks
 
     # Checks for spelling errors
 -   repo: https://github.com/codespell-project/codespell
@@ -58,40 +57,64 @@ repos:
 
     # Format TOML files
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.15.0
+    rev: v2.16.0
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
 
-    # Check formatting of CSS and HTML
+    # Check formatting of CSS
     # prettier: https://prettier.io/
 -   repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.6.2
+    rev: v3.8.1
     hooks:
     -   id: prettier
-        types_or: [css, html]
+        types_or: [css]
+
+-   repo: https://github.com/djlint/djLint
+    rev: v1.36.4
+    hooks:
+    -   id: djlint
+    -   id: djlint-reformat
+    -   id: djlint-jinja
+    -   id: djlint-reformat-jinja
         exclude: |
             (?x)^(
-                maint_tools/templates/index.html
+                doc/ci.jinja
             )$
 
+    # Lint and format Python code
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.10
+    rev: v0.15.4
     hooks:
-    # Run the linter.
     -   id: ruff-check
         # args: [--statistics]
-        args: [--fix, --show-fixes]
-    # Run the formatter.
+        args: [--fix, --show-fixes, --unsafe-fixes]
     -   id: ruff-format
         # args: [--diff]
 
-    # check imports contracts
+-   repo: https://github.com/adamchainz/blacken-docs
+    rev: 1.20.0    # replace with latest tag on GitHub
+    hooks:
+    -   id: blacken-docs
+        additional_dependencies:
+        -   black
+        # ignoring certain files
+        # to avoid generating lines that are too long
+        # or do not comply with some of the requirements
+        # of other linting / formaating tools (doc8, ruff...)
+        exclude: |
+            (?x)^(
+                doc/building_blocks/gpu_usage.rst
+                | nilearn/_utils/param_validation.py
+            )$
+
+    # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter
-    rev: v2.3
+    rev: v2.10
     hooks:
     -   id: import-linter
         args: [--verbose]
+        language: python
 
 -   repo: https://github.com/PyCQA/doc8
     rev: v2.0.0
@@ -100,7 +123,7 @@ repos:
         args: [--config=pyproject.toml, nilearn]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.17.1
+    rev: v1.19.1
     hooks:
     -   id: mypy
         files: nilearn

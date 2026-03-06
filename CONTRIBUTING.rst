@@ -211,7 +211,7 @@ Contribution Guidelines
 
 When modifying the codebase, we ask every contributor to respect common
 guidelines.
-Those are inspired from :sklearn:`scikit-learn <developers/contributing.html#contributing-code>`
+Those are inspired from :sklearn:`scikit-learn <developers/contributing.html#contributing-code-and-documentation>`
 and ensure Nilearn remains simple to understand, efficient and maintainable.
 For example, code needs to be tested and those tests need to run quickly in order
 not to burden the development process.
@@ -239,8 +239,10 @@ with the tools we use for development and deployment.
 |   `Coding Style`_  |    Any        | - No new dependency                                 |
 |                    |               | - Backward compatibility                            |
 |                    |               | - All internal imports are absolute, not relative   |
-|                    |               | - Impacted docstrings have versionadded and/or      |
-|                    |               |   versionchanged directives as needed.              |
+|                    |               | - Impacted docstrings have                          |
+|                    |               |   ``.. nilearn_versionadded`` and/or                |
+|                    |               |   ``.. nilearn_versionchanged`` directives          |
+|                    |               |   as needed.                                        |
 |                    |               |   These should use the current dev version.         |
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Test type is adapted to function behavior         |
@@ -501,14 +503,11 @@ Code inside ``maskers._validation.py``:
 Guidelines for HTML and CSS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We use `prettier <https://prettier.io/>`_ to format HTML and CSS.
+We use `prettier <https://prettier.io/>`_ and `djlint <https://github.com/djlint/djlint>`_ to format HTML and CSS.
 
-This is implemented via a pre-commit hook (see below)
-that can be run with
+This is implemented via a pre-commit hook.
 
-.. code-block:: bash
-
-      pre-commit run --all-files prettier
+.. _pre_commit:
 
 Pre-commit
 ----------
@@ -521,6 +520,18 @@ To install pre-commit, run:
 .. code-block:: bash
 
       pip install pre-commit
+
+.. note::
+
+      Pre-commit will already be installed if you installed
+      the ``dev`` or ``style`` dependencies of nilearn
+      with::
+
+            pip install -e '.[dev]'
+
+      or::
+
+            pip install -e '.[style]'
 
 Then run the following to install the pre-commit hooks:
 
@@ -582,6 +593,15 @@ but some fixures specific to certain modules can also be kept in that testing mo
 Before adding new fixtures, first check those that exist
 in the test modules you are working in or in ``nilearn/conftest.py``.
 
+You can also run the following command to let pytest list
+all the available fixtures with their description,
+though this will also list fixtures provided
+by any of the pytest plugins or extensions that may also be installed.
+
+.. code-block:: bash
+
+      pytest nilearn --fixtures
+
 Seeding
 ^^^^^^^
 
@@ -609,6 +629,92 @@ You can also use the ``rng`` fixture.
 
           # the rest of the test
 
+
+Using tox
+^^^^^^^^^
+
+`Tox <https://tox.wiki>`_ is set
+to facilitate testing and managing environments during development
+and ensure that the same commands can easily be run locally and in CI.
+
+It should already be installed if you ran:
+
+.. code-block:: bash
+
+    pip install -e '.[dev]'
+
+You can set up certain environment or run certain command by calling ``tox``.
+
+Calling ``tox`` with no extra argument will simply run
+all the default commands defined in the tox configuration (``tox.ini``).
+
+Use ``tox list`` to view all environment descriptions.
+
+Use ``tox run`` to run a specific environment.
+
+Example
+
+.. code-block:: bash
+
+    tox run -e lint
+
+Some environments allow passing extra argument:
+
+.. code-block:: bash
+
+    # only run ruff
+    tox run -e lint -- ruff
+
+    # only run some tests
+    tox -e plotting -- nilearn/glm/tests/test_contrasts.py
+
+You can also run any arbitrary command in a given environment with ``tox exec``:
+
+.. code-block:: bash
+
+    tox exec -e latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
+
+Running the tests with several python versions
+""""""""""""""""""""""""""""""""""""""""""""""
+
+Running the following should let tox run all the tests on all the python versions
+it can find on your system.
+
+.. code-block:: bash
+
+      tox
+
+You can specify which tests to run
+by passing extra command line arguments to pytest after a ``--``.
+
+For example, the following would run all the tests in ``nilearn/image``
+that contain the word ``smooth``.
+
+.. code-block:: bash
+
+      tox -- nilearn/image -k smooth
+
+Plotting
+--------
+
+Glass brains
+^^^^^^^^^^^^
+
+The background images for the glass brains are stored in
+``nilearn/plotting/glass_brain_files``.
+Once the SVG file have been modified (or added) make sure
+to regenerate the associated JSON file
+(this will require to make sure that the svg module
+from https://github.com/cjlano/svg
+is in the python path).
+
+.. code-block:: bash
+
+      python maint_tools/svg_to_json_converter.py \
+            nilearn/plotting/glass_brain_files/input.svg \
+            nilearn/plotting/glass_brain_files/output.json
+
+
 Documentation
 -------------
 
@@ -632,6 +738,16 @@ main documentation and
 `sphinx-gallery <https://sphinx-gallery.github.io/stable/index.html>`_ for the
 example tutorials. If you want to work on those, check out next section to
 learn how to use those tools to build documentation.
+
+Reports
+-------
+
+Reports (for maskers and GLM) are generated using `Jinja templates <https://jinja.palletsprojects.com/en/stable/>`_.
+
+Reports HTML, CSS, javascript and templates are stored in ``nilearn/reporting/data``.
+
+All reports rely on the `pure CSS framework <https://pure-css.github.io/>`_.
+
 
 .. _git_repo:
 
@@ -713,7 +829,6 @@ This installs your local version of Nilearn,
 along with all dependencies necessary for developers (hence the ``[dev]`` tag).
 For more information about the dependency installation options, see ``pyproject.toml``.
 The installed version will also reflect any changes you make to your code.
-
 
 4. check that all tests pass with (this can take a while):
 
@@ -863,7 +978,7 @@ An even quicker option is:
 
             PATTERN='examples/04_glm_first_level/plot_bids_features.py'
             export PATTERN
-            make -C doc html-modified-examples-only
+            make --directory doc html-modified-examples-only
 
 
 Additional cases
@@ -978,14 +1093,13 @@ Then, change to the ``asv_benchmarks`` directory:
       cd asv_benchmarks
 
 To run a specific benchmark on the current HEAD of your clone of the
-repository, use the following command:
+repository, use command like the following:
 
 .. code-block:: bash
 
       asv run -b load_img
 
-This will measure both time taken and peak memory usage of the
-:func:`nilearn.image.load_img` function.
+This will run any benchmarck with ``load_img`` in the name.
 
 You can also track the performance of a specific benchmark over, say,
 5 commits, until release 0.10.0, like this:
@@ -994,15 +1108,27 @@ You can also track the performance of a specific benchmark over, say,
 
       asv run 0.10.0..main -b load_img --steps 5
 
-You can also compare the performance of loading an image using
-:func:`nilearn.image.load_img` vs. :func:`nibabel.loadsave.load`:
-
-.. code-block:: bash
-
-      asv run -b compare_load
-
 For more information on how to use asv, please refer to the
 `asv documentation <https://asv.readthedocs.io/en/stable/>`_.
+
+Adding new benchmarks
+^^^^^^^^^^^^^^^^^^^^^
+
+Please see the `asv documentation writing tips <https://asv.readthedocs.io/en/stable/writing_benchmarks.html>`_
+to make sure you understand the basics about how to write benchmarks.
+
+For naming benchmarks, try to follow the following rules:
+
+- use snake_case instead of CamelCase
+
+- make sure that the name of the module the benchmark is in,
+  is duplicated in the name of the benchmark:
+  if you are adding a benchmark to the ``asv_benchmarks/benchmarks/maskers/nifti_masker.py``
+  make sure that the name of the benchmark contains ``nifti_masker``
+  is in the name of the benchmark (``def peakmem_nifti_masker_fit_transform``).
+  This makes is easier to systematically select the benchmarks to run
+  via the command line: ``asv run -b nifti_masker``
+  would run all the benchmarks for the NiftiMasker.
 
 
 Maintenance

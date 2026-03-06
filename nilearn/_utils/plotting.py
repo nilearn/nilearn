@@ -3,21 +3,19 @@ import warnings
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from sklearn.utils import Bunch
 
-from nilearn.externals import tempita
 from nilearn.plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
     plot_design_matrix_correlation,
 )
-from nilearn.reporting.utils import (
-    figure_to_png_base64,
-)
+from nilearn.reporting.utils import figure_to_png_base64
 
 
 def generate_design_matrices_figures(
     design_matrices, design_matrices_dict=None, output=None
-):
+) -> Bunch:
     """Generate plot for design matrices and their correlation matrices.
 
     After generating the figure it can either :
@@ -25,22 +23,22 @@ def generate_design_matrices_figures(
     - convert it to bytes for insertion into HTML report
     - save it to disk if the appropriate "output" was passed
 
-    design_matrices_dict is a dict-like (tempita.bunc)
+    design_matrices_dict is a dict-like (sklearn Bunch)
     that contains the figure (as bytes or relative path).
-    A tempita bunch is used to facilitate injecting its content
+    A sklearn Bunch is used to facilitate injecting its content
     into HTML templates.
     If a design_matrices_dict is passed its content will be updated.
 
     Returns
     -------
-    design_matrices_dict : tempita.bunch
+    design_matrices_dict : Bunch
 
         design_matrices_dict[i_run].design_matrix
         design_matrices_dict[i_run].correlation_matrix
 
     """
     if design_matrices_dict is None:
-        design_matrices_dict = tempita.bunch()
+        design_matrices_dict = Bunch()
 
     if design_matrices is None:
         return design_matrices_dict
@@ -96,7 +94,7 @@ def generate_design_matrices_figures(
             plt.close("all")
 
         if i_run not in design_matrices_dict:
-            design_matrices_dict[i_run] = tempita.bunch(
+            design_matrices_dict[i_run] = Bunch(
                 design_matrix=None, correlation_matrix=None
             )
 
@@ -108,7 +106,7 @@ def generate_design_matrices_figures(
 
 def generate_contrast_matrices_figures(
     design_matrices, contrasts=None, contrasts_dict=None, output=None
-):
+) -> Bunch:
     """Generate plot for contrasts matrices.
 
     After generating the figure it can either :
@@ -116,22 +114,22 @@ def generate_contrast_matrices_figures(
     - convert it to bytes for insertion into HTML report
     - save it to disk if the appropriate "output" was passed
 
-    contrasts_dict is a dict-like (tempita.bunc)
+    contrasts_dict is a dict-like (sklearn Bunch)
     that contains the figure (as bytes or relative path).
-    A tempita bunch is used to facilitate injecting its content
+    A sklearn Bunch is used to facilitate injecting its content
     into HTML templates.
     If a contrasts_dict is passed its content will be updated.
 
     Returns
     -------
-    contrasts_dict : tempita.bunch
+    contrasts_dict : sklearn Bunch
 
         contrasts_dict[contrast_name]
 
 
     """
     if contrasts_dict is None:
-        contrasts_dict = tempita.bunch()
+        contrasts_dict = Bunch()
 
     if design_matrices is None or not contrasts:
         return contrasts_dict
@@ -169,7 +167,7 @@ def generate_contrast_matrices_figures(
 
             tmp[contrast_name] = contrast_fig
 
-        contrasts_dict[i_run] = tempita.bunch(**tmp)
+        contrasts_dict[i_run] = Bunch(**tmp)
 
     return contrasts_dict
 

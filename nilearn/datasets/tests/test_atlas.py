@@ -34,7 +34,11 @@ from nilearn.datasets.atlas import (
     fetch_atlas_talairach,
     fetch_atlas_yeo_2011,
 )
-from nilearn.datasets.tests._testing import check_type_fetcher, dict_to_archive
+from nilearn.datasets.tests._testing import (
+    check_fetcher_verbosity,
+    check_type_fetcher,
+    dict_to_archive,
+)
 from nilearn.image import get_data
 
 
@@ -124,7 +128,7 @@ def test_downloader(tmp_path, request_mocker):
 
 def test_fetch_atlas_source():
     # specify non-existing atlas source
-    with pytest.raises(ValueError, match="Atlas source"):
+    with pytest.raises(ValueError, match="'atlas_source' must be one of"):
         atlas._get_atlas_data_and_labels("new_source", "not_inside")
 
 
@@ -189,8 +193,8 @@ def fsl_fetcher(name):
 )
 def test_fetch_atlas_fsl_errors(prob, fsl_fetcher, tmp_path):
     # specify non-existing atlas item
-    with pytest.raises(ValueError, match="Invalid atlas name"):
-        fsl_fetcher("not_inside")
+    with pytest.raises(ValueError, match="'atlas_name' must be one of"):
+        fsl_fetcher(atlas_name="not_inside")
     # Choose a probabilistic atlas with symmetric split
     with pytest.raises(ValueError, match="Region splitting"):
         fsl_fetcher(prob, data_dir=str(tmp_path), symmetric_split=True)
@@ -213,7 +217,7 @@ def atlas_data():
 
 
 @pytest.mark.parametrize(
-    "name,label_fname,fname,is_symm,split",
+    "name, label_fname, fname, is_symm, split",
     [
         ("HarvardOxford", "-Cortical", "cort-prob-1mm", False, False),
         ("HarvardOxford", "-Subcortical", "sub-maxprob-thr0-1mm", False, True),
@@ -280,7 +284,7 @@ def test_fetch_atlas_fsl(
     ],
 )
 def test_fetch_atlas_craddock_2012(
-    tmp_path, request_mocker, homogeneity, grp_mean, expected
+    tmp_path, request_mocker, homogeneity, grp_mean, expected, capsys
 ):
     local_archive = (
         Path(__file__).parent / "data" / "craddock_2011_parcellations.tar.gz"
@@ -299,58 +303,16 @@ def test_fetch_atlas_craddock_2012(
 
     assert request_mocker.url_count == 1
 
-
-def test_fetch_atlas_craddock_2012_legacy(tmp_path, request_mocker):
-    """Check legacy format that return all maps at once."""
-    local_archive = (
-        Path(__file__).parent / "data" / "craddock_2011_parcellations.tar.gz"
+    check_fetcher_verbosity(
+        fetch_atlas_craddock_2012, capsys, data_dir=tmp_path
     )
-    request_mocker.url_mapping["*craddock*"] = local_archive
-
-    bunch = fetch_atlas_craddock_2012(data_dir=tmp_path, verbose=0)
-
-    keys = (
-        "scorr_mean",
-        "tcorr_mean",
-        "scorr_2level",
-        "tcorr_2level",
-        "random",
-    )
-    filenames = [
-        "scorr05_mean_all.nii.gz",
-        "tcorr05_mean_all.nii.gz",
-        "scorr05_2level_all.nii.gz",
-        "tcorr05_2level_all.nii.gz",
-        "random_all.nii.gz",
-    ]
-
-    assert request_mocker.url_count == 1
-    for key, fn in zip(keys, filenames, strict=False):
-        assert bunch[key] == str(tmp_path / "craddock_2012" / fn)
 
 
-def test_fetch_atlas_smith_2009(tmp_path, request_mocker):
+def test_fetch_atlas_smith_2009(tmp_path):
     bunch = fetch_atlas_smith_2009(data_dir=tmp_path, verbose=0, dimension=20)
 
     validate_atlas(bunch)
     assert bunch["maps"] == str(tmp_path / "smith_2009" / "rsn20.nii.gz")
-
-    # Old code
-    bunch = fetch_atlas_smith_2009(data_dir=tmp_path, verbose=0)
-
-    keys = ("rsn20", "rsn10", "rsn70", "bm20", "bm10", "bm70")
-    filenames = [
-        "rsn20.nii.gz",
-        "PNAS_Smith09_rsn10.nii.gz",
-        "rsn70.nii.gz",
-        "bm20.nii.gz",
-        "PNAS_Smith09_bm10.nii.gz",
-        "bm70.nii.gz",
-    ]
-
-    assert request_mocker.url_count == 6
-    for key, fn in zip(keys, filenames, strict=False):
-        assert bunch[key] == str(tmp_path / "smith_2009" / fn)
 
 
 def test_fetch_coords_power_2011():
@@ -393,7 +355,9 @@ def _destrieux_data():
 
 
 @pytest.mark.parametrize("lateralized", [True, False])
-def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
+def test_fetch_atlas_destrieux_2009(
+    tmp_path, request_mocker, lateralized, capsys
+):
     """Tests for function `fetch_atlas_destrieux_2009`.
 
     The atlas is fetched with different values for `lateralized`.
@@ -413,8 +377,15 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
         tmp_path / "destrieux_2009" / f"destrieux2009_rois{name}.nii.gz"
     )
 
+    check_fetcher_verbosity(
+        fetch_atlas_destrieux_2009,
+        capsys,
+        lateralized=lateralized,
+        data_dir=tmp_path,
+    )
 
-def test_fetch_atlas_msdl(tmp_path, request_mocker):
+
+def test_fetch_atlas_msdl(tmp_path, request_mocker, capsys):
     labels = pd.DataFrame(
         {
             "x": [1.5, 1.2],
@@ -440,6 +411,8 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
     assert isinstance(dataset.networks, list)
     assert isinstance(dataset.maps, str)
     assert request_mocker.url_count == 1
+
+    check_fetcher_verbosity(fetch_atlas_msdl, capsys, data_dir=tmp_path)
 
 
 def _generate_yeo_data(tmp_path):
@@ -490,7 +463,7 @@ def _generate_yeo_data(tmp_path):
     return dict_to_archive(to_archive, archive_format="zip")
 
 
-def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
+def test_fetch_atlas_yeo_2011(tmp_path, request_mocker, capsys):
     """Check fetcher for the Yeo atlas.
 
     Mocks data for each deterministic atlas and their look up tables.
@@ -499,41 +472,29 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
 
     request_mocker.url_mapping["*Yeo_JNeurophysiol11_MNI152*"] = yeo_data
 
-    with pytest.warns(
-        DeprecationWarning, match="the parameters 'n_networks' and 'thickness'"
-    ):
-        dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
-
-    assert isinstance(dataset.anat, str)
-    assert isinstance(dataset.colors_17, str)
-    assert isinstance(dataset.colors_7, str)
-    assert isinstance(dataset.thick_17, str)
-    assert isinstance(dataset.thick_7, str)
-    assert isinstance(dataset.thin_17, str)
-    assert isinstance(dataset.thin_7, str)
-
-    dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0, n_networks=7)
+    dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
+    dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0, n_networks=17)
     dataset = fetch_atlas_yeo_2011(
-        data_dir=tmp_path, verbose=0, thickness="thick"
+        data_dir=tmp_path, verbose=0, thickness="thin"
     )
 
     validate_atlas(dataset)
 
+    check_fetcher_verbosity(fetch_atlas_yeo_2011, capsys, data_dir=tmp_path)
+
 
 def test_fetch_atlas_yeo_2011_error(tmp_path):
     """Raise errors when the wrong values are passed."""
-    with pytest.raises(ValueError, match="'n_networks' must be 7 or 17."):
+    with pytest.raises(ValueError, match="'n_networks' must be one of"):
         fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0, n_networks=10)
 
-    with pytest.raises(
-        ValueError, match="'thickness' must be 'thin' or 'thick'."
-    ):
+    with pytest.raises(ValueError, match="'thickness' must be one of"):
         fetch_atlas_yeo_2011(
             data_dir=tmp_path, verbose=0, thickness="dead_parot"
         )
 
 
-def test_fetch_atlas_difumo(tmp_path, request_mocker):
+def test_fetch_atlas_difumo(tmp_path, request_mocker, capsys):
     resolutions = [2, 3]  # Valid resolution values
     dimensions = [64, 128, 256, 512, 1024]  # Valid dimension values
     dimension_urls = ["pqu9r", "wjvd5", "3vrct", "9b76y", "34792"]
@@ -574,6 +535,8 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
         fetch_atlas_difumo(
             data_dir=tmp_path, dimension=128, resolution_mm=3.14
         )
+
+    check_fetcher_verbosity(fetch_atlas_difumo, capsys, data_dir=tmp_path)
 
 
 @pytest.fixture
@@ -634,13 +597,11 @@ def test_fetch_atlas_aal(
 
 
 def test_fetch_atlas_aal_version_error(tmp_path):
-    with pytest.raises(
-        ValueError, match="The version of AAL requested 'FLS33'"
-    ):
+    with pytest.raises(ValueError, match="'version' must be one of"):
         fetch_atlas_aal(version="FLS33", data_dir=tmp_path, verbose=0)
 
 
-def test_fetch_atlas_basc_multiscale_2015(tmp_path):
+def test_fetch_atlas_basc_multiscale_2015(tmp_path, capsys):
     resolution = 7
 
     dataset_name = "basc_multiscale_2015"
@@ -679,57 +640,16 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path):
         tmp_path / dataset_name / name_asym / basename_asym
     )
 
+    check_fetcher_verbosity(
+        fetch_atlas_basc_multiscale_2015, capsys, data_dir=tmp_path
+    )
+
 
 def test_fetch_atlas_basc_multiscale_2015_error(tmp_path):
-    with pytest.raises(
-        ValueError, match="The version of Brain parcellations requested 'aym'"
-    ):
+    with pytest.raises(ValueError, match="'version' must be one of"):
         fetch_atlas_basc_multiscale_2015(
             version="aym", data_dir=tmp_path, verbose=0
         )
-
-
-@pytest.mark.parametrize(
-    "key",
-    [
-        "scale007",
-        "scale012",
-        "scale020",
-        "scale036",
-        "scale064",
-        "scale122",
-        "scale197",
-        "scale325",
-        "scale444",
-    ],
-)
-def test_fetch_atlas_basc_multiscale_2015_old_code(
-    key, tmp_path, request_mocker
-):
-    # Old code
-    # default version='sym',
-    data_sym = fetch_atlas_basc_multiscale_2015(data_dir=tmp_path, verbose=0)
-    # version='asym'
-    data_asym = fetch_atlas_basc_multiscale_2015(
-        version="asym", verbose=0, data_dir=tmp_path
-    )
-
-    dataset_name = "basc_multiscale_2015"
-    name_sym = "template_cambridge_basc_multiscale_nii_sym"
-    basename_sym = f"template_cambridge_basc_multiscale_sym_{key}.nii.gz"
-
-    assert data_sym[key] == str(
-        tmp_path / dataset_name / name_sym / basename_sym
-    )
-
-    name_asym = "template_cambridge_basc_multiscale_nii_asym"
-    basename_asym = f"template_cambridge_basc_multiscale_asym_{key}.nii.gz"
-
-    assert data_asym[key] == str(
-        tmp_path / dataset_name / name_asym / basename_asym
-    )
-
-    assert request_mocker.url_count == 2
 
 
 def test_fetch_coords_dosenbach_2010():
@@ -745,7 +665,7 @@ def test_fetch_coords_dosenbach_2010():
     assert np.any(bunch.networks != np.sort(bunch.networks))
 
 
-def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
+def test_fetch_atlas_allen_2011(tmp_path, request_mocker, capsys):
     """Fetch allen atlas and checks filenames are those expected."""
     bunch = fetch_atlas_allen_2011(data_dir=tmp_path, verbose=0)
     keys = ("maps", "rsn28", "comps")
@@ -763,8 +683,10 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
             tmp_path / "allen_rsn_2011" / "allen_rsn_2011" / fn
         )
 
+    check_fetcher_verbosity(fetch_atlas_allen_2011, capsys, data_dir=tmp_path)
 
-def test_fetch_atlas_surf_destrieux(tmp_path):
+
+def test_fetch_atlas_surf_destrieux(tmp_path, capsys):
     data_dir = tmp_path / "destrieux_surface"
     data_dir.mkdir()
 
@@ -788,6 +710,10 @@ def test_fetch_atlas_surf_destrieux(tmp_path):
     assert bunch.map_left.shape == (4,)
     assert bunch.map_right.shape == (4,)
 
+    check_fetcher_verbosity(
+        fetch_atlas_surf_destrieux, capsys, data_dir=tmp_path
+    )
+
 
 def _get_small_fake_talairach():
     labels = ["*", "b", "a"]
@@ -804,8 +730,8 @@ def _get_small_fake_talairach():
     return serialize_niimg(img, gzipped=False)
 
 
-@pytest.mark.timeout(0)
-def test_fetch_atlas_talairach(tmp_path, request_mocker):
+@pytest.mark.slow
+def test_fetch_atlas_talairach(tmp_path, request_mocker, capsys):
     request_mocker.url_mapping["*talairach.nii"] = _get_small_fake_talairach()
     level_values = np.ones((81, 3)) * [0, 1, 2]
     talairach = fetch_atlas_talairach("hemisphere", data_dir=tmp_path)
@@ -823,6 +749,13 @@ def test_fetch_atlas_talairach(tmp_path, request_mocker):
 
     with pytest.raises(ValueError):
         fetch_atlas_talairach("bad_level")
+
+    check_fetcher_verbosity(
+        fetch_atlas_talairach,
+        capsys,
+        level_name="hemisphere",
+        data_dir=tmp_path,
+    )
 
 
 def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
@@ -850,46 +783,10 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
     validate_atlas(data)
     assert load(data.maps).shape[-1] == 16
 
-    with pytest.raises(NotImplementedError):
-        fetch_atlas_pauli_2017("junk for testing", data_dir)
-
-
-# TODO (nilearn >= 0.13.0) remove this test
-def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
-    """Tests nilearn.datasets.atlas.fetch_atlas_pauli_2017 to receive
-    DepricationWarning upon use of deprecated version parameter and its
-    possible values "prob" and "det".
-    """
-    labels = pd.DataFrame({"label": [f"label_{i}" for i in range(16)]}).to_csv(
-        sep="\t", header=False
-    )
-    det_atlas = data_gen.generate_labeled_regions((7, 6, 5), 16)
-    prob_atlas, _ = data_gen.generate_maps((7, 6, 5), 16)
-    request_mocker.url_mapping["*osf.io/6qrcb/*"] = labels
-    request_mocker.url_mapping["*osf.io/5mqfx/*"] = det_atlas
-    request_mocker.url_mapping["*osf.io/w8zq2/*"] = prob_atlas
-    data_dir = str(tmp_path / "pauli_2017")
-
-    with pytest.warns(DeprecationWarning, match='The parameter "version"'):
-        data = fetch_atlas_pauli_2017(
-            version="probabilistic", data_dir=data_dir
+    with pytest.raises(ValueError, match="'atlas_type' must be one of"):
+        fetch_atlas_pauli_2017(
+            atlas_type="junk for testing", data_dir=data_dir
         )
-
-        assert load(data.maps).shape[-1] == 16
-
-    with pytest.warns(
-        DeprecationWarning, match="The possible values for atlas_type"
-    ):
-        data = fetch_atlas_pauli_2017("det", data_dir)
-
-        assert len(data.labels) == 17
-
-    with pytest.warns(
-        DeprecationWarning, match="The possible values for atlas_type"
-    ):
-        data = fetch_atlas_pauli_2017("prob", data_dir)
-
-        assert load(data.maps).shape[-1] == 16
 
 
 def _schaefer_labels(match, requests):  # noqa: ARG001
@@ -925,7 +822,7 @@ def test_fetch_atlas_schaefer_2018_errors():
 @pytest.mark.parametrize("yeo_networks", [7, 17])
 @pytest.mark.parametrize("resolution_mm", [1, 2])
 def test_fetch_atlas_schaefer_2018(
-    tmp_path, request_mocker, n_rois, yeo_networks, resolution_mm
+    tmp_path, request_mocker, n_rois, yeo_networks, resolution_mm, capsys
 ):
     labels_pattern = re.compile(
         r".*2018_(?P<n_rois>\d+)Parcels_(?P<network>\d+)Networks_order.txt"
@@ -973,6 +870,15 @@ def test_fetch_atlas_schaefer_2018(
     assert img.header.get_zooms()[0] == resolution_mm
     assert np.array_equal(np.unique(img.dataobj), np.arange(n_rois + 1))
 
+    check_fetcher_verbosity(
+        fetch_atlas_schaefer_2018,
+        capsys,
+        n_rois=n_rois,
+        yeo_networks=yeo_networks,
+        resolution_mm=resolution_mm,
+        data_dir=tmp_path,
+    )
+
 
 @pytest.fixture
 def aal_xml():
@@ -986,26 +892,3 @@ def aal_xml():
 
     # Convert the XML tree to a string with proper encoding and declaration
     return ET.ElementTree(atlas)
-
-
-def test_aal_version_deprecation(
-    tmp_path, shape_3d_default, affine_eye, aal_xml
-):
-    img = data_gen.generate_labeled_regions(
-        shape_3d_default, 15, affine=affine_eye
-    )
-    output_path = tmp_path / "aal_SPM12/aal/atlas/AAL.nii"
-    output_path.parent.mkdir(parents=True)
-    img.to_filename(output_path)
-
-    with (tmp_path / "aal_SPM12" / "aal" / "atlas" / "AAL.xml").open(
-        "wb"
-    ) as file:
-        aal_xml.write(file, encoding="ISO-8859-1", xml_declaration=True)
-
-    with pytest.deprecated_call(
-        match=r"Starting in version 0\.13, the default fetched mask"
-    ):
-        fetch_atlas_aal(
-            data_dir=tmp_path,
-        )

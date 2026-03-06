@@ -47,7 +47,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-success:`API` The fitted attribute ``n_elements_`` was added to following estimators: :class:`~nilearn.glm.first_level.FirstLevelModel`, :class:`~nilearn.glm.second_level.SecondLevelModel`, :class:`~nilearn.decoding.Decoder`, :class:`~nilearn.decoding.DecoderRegressor`, :class:`~nilearn.decoding.FREMClassifier`, :class:`~nilearn.decoding.FREMRegressor`, :class:`~nilearn.decoding.SearchLight`. This attribute is equivalent to the `n_features_in_ <https://scikit-learn.org/stable/developers/develop.html#universal-attribute>`_ of scikit-learn estimators.
+- :bdg-success:`API` The fitted attribute ``n_elements_`` was added to following estimators: :class:`~nilearn.glm.first_level.FirstLevelModel`, :class:`~nilearn.glm.second_level.SecondLevelModel`, :class:`~nilearn.decoding.Decoder`, :class:`~nilearn.decoding.DecoderRegressor`, :class:`~nilearn.decoding.FREMClassifier`, :class:`~nilearn.decoding.FREMRegressor`, :class:`~nilearn.decoding.SearchLight`. This attribute is equivalent to the `n_features_in_ <https://scikit-learn.org/stable/developers/develop.html#universal-attributes>`_ of scikit-learn estimators.
 
 - :bdg-dark:`Code` Enforce consistent ``dtype`` for all parts of :class:`~nilearn.surface.SurfaceImage` and :class:`~nilearn.surface.PolyData` (:gh:`5530` by `Rémi Gau`_).
 

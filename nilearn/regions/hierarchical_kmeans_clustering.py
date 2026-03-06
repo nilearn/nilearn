@@ -3,14 +3,20 @@
 import warnings
 
 import numpy as np
-from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
+from sklearn.base import (
+    ClassNamePrefixFeaturesOutMixin,
+    ClusterMixin,
+    TransformerMixin,
+)
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.param_validation import check_params
+from nilearn._utils.versions import SKLEARN_LT_1_6
 
 
 def _remove_empty_labels(labels):
@@ -84,7 +90,7 @@ def hierarchical_k_means(
         If an ndarray is passed, it should be of shape (n_clusters, n_features)
         and gives the initial centers.
 
-    batch_size : :obj:`int`, default: 1000
+    batch_size : :obj:`int`, default=1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
     n_init : :obj:`int`, default=10
@@ -92,7 +98,7 @@ def hierarchical_k_means(
         In contrast to KMeans, the algorithm is only run once, using the
         best of the ``n_init`` initializations as measured by inertia.
 
-    max_no_improvement : :obj:`int`, default: 10
+    max_no_improvement : :obj:`int`, default=10
         Control early stopping based on the consecutive number of mini
         batches that does not yield an improvement on the smoothed inertia.
         To disable convergence detection based on inertia, set
@@ -109,6 +115,8 @@ def hierarchical_k_means(
     labels : list of ints (len n_features)
         Parcellation of features in clusters
     """
+    check_params(locals())
+
     n_big_clusters = int(np.sqrt(n_clusters))
     mbk = MiniBatchKMeans(
         init=init,
@@ -148,7 +156,12 @@ def hierarchical_k_means(
 
 
 @fill_doc
-class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
+class HierarchicalKMeans(
+    ClassNamePrefixFeaturesOutMixin,
+    ClusterMixin,
+    TransformerMixin,
+    NilearnBaseEstimator,
+):
     """Hierarchical KMeans.
 
     First clusterize the samples into big clusters. Then clusterize the samples
@@ -172,7 +185,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         * If an ndarray is passed, it should be of shape (n_clusters,
           n_features) and gives the initial centers.
 
-    batch_size : :obj:`int`, optional, default: 1000
+    batch_size : :obj:`int`, default=1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
     n_init : :obj:`int`, default=10
@@ -180,7 +193,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         In contrast to KMeans, the algorithm is only run once, using the
         best of the ``n_init`` initializations as measured by inertia.
 
-    max_no_improvement : :obj:`int`, default: 10
+    max_no_improvement : :obj:`int`, default=10
         Control early stopping based on the consecutive number of mini
         batches that does not yield an improvement on the smoothed inertia.
         To disable convergence detection based on inertia, set
@@ -328,7 +341,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         self.n_clusters = len(sizes)
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "labels_")
 
     @fill_doc
@@ -348,8 +361,13 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        X_red : ndarray, shape = [n_samples, n_clusters]
-            Data reduced with agglomerated signal for each cluster
+        X_red : : :obj:`numpy.ndarray`, \
+            :obj:`pandas.DataFrame` or \
+            `polars.DataFrame`
+            Data reduced with agglomerated signal for each cluster.
+
+        The type of the output is determined by ``set_output()``:
+        see `the scikit-learn documentation <https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html>`_.
         """
         check_is_fitted(self)
 
@@ -407,12 +425,3 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         X_inv = X_red[inverse, ...]
         X_inv = X_inv.T
         return X_inv
-
-    def set_output(self, *, transform=None):
-        """Set the output container when ``"transform"`` is called.
-
-        .. warning::
-
-            This has not been implemented yet.
-        """
-        raise NotImplementedError()

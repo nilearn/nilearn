@@ -40,7 +40,8 @@ def test_fast_svd(n_features):
     )
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 @pytest.mark.parametrize(
     "n_components,reduction_ratio,expected_shape_0",
@@ -79,6 +80,8 @@ def test_mask_reducer_multiple_image(
     assert data.shape == expected_shape
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.single_process
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_mask_reducer_single_image_same_with_multiple_jobs(
     data_type, decomposition_masker, decomposition_img
@@ -125,6 +128,7 @@ def test_mask_reducer_single_image_same_with_multiple_jobs(
     assert_array_almost_equal(data_single, data)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_mask_reducer_reduced_data_is_orthogonal(
     data_type, decomposition_masker, decomposition_img
@@ -157,6 +161,7 @@ def test_mask_reducer_reduced_data_is_orthogonal(
     assert_array_almost_equal(cov, cov_diag)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_mask_reducer_reduced_reproducible(
     data_type,

@@ -11,7 +11,6 @@ from queue import Empty, Queue
 from socketserver import TCPServer
 from threading import Thread
 
-from nilearn._utils.helpers import remove_parameters
 from nilearn._utils.logger import find_stack_level
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
@@ -21,7 +20,7 @@ WIDTH_DEFAULT = 800
 HEIGHT_DEFAULT = 800
 
 
-def set_max_img_views_before_warning(new_value):
+def set_max_img_views_before_warning(new_value) -> None:
     """Set the number of open views which triggers a warning.
 
     If `None` or a negative number, disable the memory warning.
@@ -63,10 +62,10 @@ def _open_in_browser(content):
     webbrowser.open(url)
     try:
         queue.get(timeout=BROWSER_TIMEOUT_SECONDS)
-    except Empty:
+    except Empty as e:
         raise RuntimeError(
             "Failed to open nilearn plot or report in a web browser."
-        )
+        ) from e
     server.shutdown()
     server_thread.join()
 
@@ -228,7 +227,7 @@ class HTMLDocument:
     def __str__(self):
         return self.html
 
-    def save_as_html(self, file_name):
+    def save_as_html(self, file_name: str | Path) -> None:
         """Save the plot in an HTML file, that can later be opened \
         in a browser.
 
@@ -241,33 +240,13 @@ class HTMLDocument:
         with Path(file_name).open("wb") as f:
             f.write(self.get_standalone().encode("utf-8"))
 
-    # (nilearn >= 0.13.0) remove temp_file_lifetime
-    @remove_parameters(
-        removed_params=["temp_file_lifetime"],
-        reason=(
-            "this function does not use a temporary file anymore "
-            "and 'temp_file_lifetime' has no effect."
-        ),
-        end_version="0.13.0",
-    )
-    def open_in_browser(
-        self,
-        file_name=None,
-        temp_file_lifetime="deprecated",  # noqa: ARG002
-    ):
+    def open_in_browser(self, file_name: str | None = None) -> None:
         """Save the plot to a temporary HTML file and open it in a browser.
 
         Parameters
         ----------
         file_name : :obj:`str` or ``None``, default=None
             HTML file to use as a temporary file.
-
-        temp_file_lifetime : :obj:`float`, default=30
-
-            .. deprecated:: 0.10.3
-
-                The parameter is kept for backward compatibility and will be
-                removed in a future version. It has no effect.
         """
         if file_name is None:
             _open_in_browser(self.get_standalone().encode("utf-8"))

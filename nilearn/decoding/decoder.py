@@ -19,8 +19,8 @@ from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from sklearn import clone
 from sklearn.base import (
-    BaseEstimator,
     MultiOutputMixin,
+    is_classifier,
 )
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
@@ -37,36 +37,48 @@ from sklearn.model_selection import (
     StratifiedShuffleSplit,
     check_cv,
 )
-from sklearn.preprocessing import LabelBinarizer
 from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
-    check_embedded_masker,
 )
-from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import (
-    check_feature_screening,
-    check_params,
-)
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.param_validation import check_params
+from nilearn._utils.versions import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
+from nilearn.decoding._utils import check_feature_screening
+from nilearn.image import check_niimg
 from nilearn.maskers import SurfaceMasker
+from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
+
+_MIN_N_FEATURES_FOR_SCREENING = 100
+
+kwarg_logistic_regression_cv = {}
+if SKLEARN_GTE_1_8:
+    # TODO (sklearn 1.8) remove if
+    # TODO (sklearn 1.10) remove 'use_legacy_attributes'
+    kwarg_logistic_regression_cv = {"use_legacy_attributes": False}
 
 SUPPORTED_ESTIMATORS = {
     "svc_l1": LinearSVC(penalty="l1", dual=False, max_iter=10000),
     "svc_l2": LinearSVC(penalty="l2", dual=True, max_iter=10000),
     "svc": LinearSVC(penalty="l2", dual=True, max_iter=10000),
-    "logistic_l1": LogisticRegressionCV(penalty="l1", solver="liblinear"),
-    "logistic_l2": LogisticRegressionCV(penalty="l2", solver="liblinear"),
-    "logistic": LogisticRegressionCV(penalty="l2", solver="liblinear"),
+    "logistic_l1": LogisticRegressionCV(
+        l1_ratios=(1,), solver="liblinear", **kwarg_logistic_regression_cv
+    ),
+    "logistic_l2": LogisticRegressionCV(
+        l1_ratios=(0,), solver="liblinear", **kwarg_logistic_regression_cv
+    ),
+    "logistic": LogisticRegressionCV(
+        l1_ratios=(0,), solver="liblinear", **kwarg_logistic_regression_cv
+    ),
     "ridge_classifier": RidgeClassifierCV(),
     "ridge_regressor": RidgeCV(),
     "ridge": RidgeCV(),
@@ -177,7 +189,7 @@ def _default_param_grid(estimator, X, y):
             LassoCV,
         ),
     ):
-        raise ValueError(
+        raise TypeError(
             "Invalid estimator. The supported estimators are:"
             f" {list(SUPPORTED_ESTIMATORS.keys())}"
         )
@@ -311,7 +323,7 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
                 f' being replaced by "{new_key}" due to a change in the'
                 " choice of underlying scikit-learn estimator. In a future"
                 " version, this will result in an error.",
-                DeprecationWarning,
+                FutureWarning,
                 stacklevel=find_stack_level(),
             )
             param_grid_item[new_key] = param_grid_item.pop(key_to_replace)
@@ -354,6 +366,7 @@ def _parallel_fit(
     mask_img,
     class_index,
     clustering_percentile,
+    verbose=0,
 ):
     """Find the best estimator for a fold within a job.
 
@@ -382,11 +395,14 @@ def _parallel_fit(
         X_train = clustering.fit_transform(X_train)
         X_test = clustering.transform(X_test)
 
-    do_screening = (X_train.shape[1] > 100) and selector is not None
+    do_screening = (
+        X_train.shape[1] > _MIN_N_FEATURES_FOR_SCREENING
+    ) and selector is not None
 
     if do_screening:
         X_train = selector.fit_transform(X_train, y_train)
         X_test = selector.transform(X_test)
+        log((f" Selection kept {X_train.shape[1]} features."), verbose=verbose)
 
     # If there is no parameter grid, then we use a suitable grid (by default)
     param_grid = ParameterGrid(
@@ -422,7 +438,13 @@ def _parallel_fit(
             if isinstance(estimator, (RidgeCV, RidgeClassifierCV, LassoCV)):
                 params["best_alpha"] = estimator.alpha_
             elif isinstance(estimator, LogisticRegressionCV):
-                params["best_C"] = estimator.C_.item()
+                if isinstance(estimator.C_, float):
+                    # TODO (sklearn >= 1.10)
+                    # estimator.C_ is always a float
+                    # so we can get rif of the else part
+                    params["best_C"] = estimator.C_
+                else:
+                    params["best_C"] = estimator.C_.item()
             best_params = params
 
             # fill in any missing param from param_grid
@@ -448,7 +470,7 @@ def _parallel_fit(
 
 
 @fill_doc
-class _BaseDecoder(CacheMixin, BaseEstimator):
+class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
     """A wrapper for popular classification/regression strategies in \
     neuroimaging.
 
@@ -476,9 +498,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         or SurfaceMasker to check for default parameters. For use with
         SurfaceImage data, a SurfaceMasker instance must be passed.
 
-    cv : cross-validation generator or int, default=10
-        A cross-validation generator.
-        See: https://scikit-learn.org/stable/modules/cross_validation.html
+    %(cv10)s
 
     param_grid : dict of str to sequence, or sequence of such, default=None
         The parameter grid to explore, as a dictionary mapping estimator
@@ -518,9 +538,10 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'. Defaults to 'roc_auc'.
 
+    %(screening_n_features)s
     %(smoothing_fwhm)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(target_affine)s
 
@@ -574,6 +595,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         cv=10,
         param_grid=None,
         screening_percentile=20,
+        screening_n_features=None,
         scoring=None,
         smoothing_fwhm=None,
         standardize=True,
@@ -593,6 +615,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.cv = cv
         self.param_grid = param_grid
         self.screening_percentile = screening_percentile
+        self.screening_n_features = screening_n_features
         self.scoring = scoring
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
@@ -606,17 +629,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
-
-    @property
-    def _is_classification(self) -> bool:
-        # TODO (sklearn  >= 1.6.0) remove
-        # this private method can probably be removed
-        # when dropping sklearn>=1.5 and replaced by just:
-        #   self.__sklearn_tags__().estimator_type == "classifier"
-        if SKLEARN_LT_1_6:
-            # TODO (sklearn  >= 1.6.0) remove
-            return self._estimator_type == "classifier"
-        return self.__sklearn_tags__().estimator_type == "classifier"
 
     @property
     def _clustering_percentile(self) -> int:
@@ -633,13 +645,14 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         ----------
         X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
             See :ref:`extracting_data`.
-            Data on which model is to be fitted. If this is a list,
+            Data on which model is to be fitted.
+            If this is a list,
             the affine is considered the same for all.
 
         y : numpy.ndarray of shape=(n_samples) or list of length n_samples
             The dependent variable (age, sex, IQ, yes/no, etc.).
-            Target variable to predict. Must have exactly as many elements as
-            3D images in niimg.
+            Target variable to predict.
+            Must have exactly as many samples as the input images.
 
         %(groups)s
 
@@ -662,6 +675,11 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         # a CV splitter object do check_cv regardless of groups parameter.
         cv = self.cv
 
+        if cv is None:
+            cv = (
+                30 if isinstance(self, (FREMClassifier, FREMRegressor)) else 10
+            )
+
         if isinstance(cv, int) and isinstance(self, FREMClassifier):
             cv_object = StratifiedShuffleSplit(cv, random_state=0)
 
@@ -678,29 +696,22 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             cv_object = LeaveOneGroupOut()
 
         else:
-            cv_object = check_cv(cv, y=y, classifier=self._is_classification)
+            cv_object = check_cv(cv, y=y, classifier=is_classifier(self))
 
         self.cv_ = list(cv_object.split(X, y, groups=groups))
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
-        y = (
-            self._binarize_y(y)
-            if self._is_classification
-            else y[:, np.newaxis]
-        )
-
-        if self._is_classification and self.n_classes_ > 2:
-            n_problems = self.n_classes_
-        else:
-            n_problems = 1
+        y = self._binarize_y(y)
+        n_problems = self._n_problems()
 
         # Check if the size of the mask image and the number of features allow
         # to perform feature screening.
         selector = check_feature_screening(
             self.screening_percentile,
             self.mask_img_,
-            self._is_classification,
+            is_classifier(self),
+            screening_n_features=self.screening_n_features,
             verbose=self.verbose,
         )
 
@@ -741,6 +752,14 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             warnings.warn(
                 warning_msg, UserWarning, stacklevel=find_stack_level()
             )
+        else:
+            log(
+                (
+                    "The decoding model will be trained "
+                    f"on {n_final_features} features."
+                ),
+                verbose=self.verbose,
+            )
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
@@ -757,6 +776,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 mask_img=self.mask_img_,
                 class_index=c,
                 clustering_percentile=self._clustering_percentile,
+                verbose=self.verbose - 1,
             )
             for c, (train, test) in itertools.product(
                 range(n_problems), self.cv_
@@ -767,7 +787,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             parallel_fit_outputs, y, n_problems
         )
 
-        classes_ = self.classes_ if self._is_classification else self._classes_
+        classes_ = self._get_classes()
 
         # Build the final model (the aggregated one)
         if not isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
@@ -794,7 +814,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 classes_, self.coef_, self.std_coef_
             )
 
-            if self._is_classification and (self.n_classes_ == 2):
+            # TODO try to extract
+            if is_classifier(self) and (self.n_classes_ == 2):
                 self.coef_ = self.coef_[0, :][np.newaxis, :]
                 self.intercept_ = self.intercept_[0]
 
@@ -809,12 +830,12 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                     for class_index in classes_
                 ]
             )
-            if self._is_classification and (self.n_classes_ == 2):
+            if is_classifier(self) and (self.n_classes_ == 2):
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "coef_") and hasattr(self, "masker_")
 
     def _prep_input_post_fit(self, X) -> np.ndarray:
@@ -928,7 +949,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         else:
             scores = self._decision_function(X)
 
-        if self._is_classification:
+        if is_classifier(self):
             if scores.ndim == 1:
                 indices = (scores > 0).astype(int)
             else:
@@ -986,7 +1007,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         cv_scores = {}
         self.cv_params_ = {}
         self.dummy_output_ = {}
-        classes = self.classes_ if self._is_classification else self._classes_
+        classes_ = self._get_classes()
 
         for (
             class_index,
@@ -996,28 +1017,28 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             scores,
             dummy_output,
         ) in parallel_fit_outputs:
-            coefs.setdefault(classes[class_index], []).append(coef)
-            intercepts.setdefault(classes[class_index], []).append(intercept)
+            coefs.setdefault(classes_[class_index], []).append(coef)
+            intercepts.setdefault(classes_[class_index], []).append(intercept)
 
-            cv_scores.setdefault(classes[class_index], []).append(scores)
+            cv_scores.setdefault(classes_[class_index], []).append(scores)
 
-            self.cv_params_.setdefault(classes[class_index], {})
+            self.cv_params_.setdefault(classes_[class_index], {})
             if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
-                self.dummy_output_.setdefault(classes[class_index], []).append(
-                    dummy_output
-                )
+                self.dummy_output_.setdefault(
+                    classes_[class_index], []
+                ).append(dummy_output)
             else:
-                self.dummy_output_.setdefault(classes[class_index], []).append(
-                    None
-                )
+                self.dummy_output_.setdefault(
+                    classes_[class_index], []
+                ).append(None)
             for k in params:
-                self.cv_params_[classes[class_index]].setdefault(k, []).append(
-                    params[k]
-                )
+                self.cv_params_[classes_[class_index]].setdefault(
+                    k, []
+                ).append(params[k])
 
-            if (n_problems <= 2) and self._is_classification:
+            if (n_problems <= 2) and is_classifier(self):
                 # Binary classification
-                other_class = np.setdiff1d(classes, classes[class_index])[0]
+                other_class = np.setdiff1d(classes_, classes_[class_index])[0]
                 if coef is not None:
                     coefs.setdefault(other_class, []).append(-coef)
                     intercepts.setdefault(other_class, []).append(-intercept)
@@ -1027,7 +1048,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
                 cv_scores.setdefault(other_class, []).append(scores)
                 self.cv_params_[other_class] = self.cv_params_[
-                    classes[class_index]
+                    classes_[class_index]
                 ]
                 if isinstance(
                     self.estimator_, (DummyClassifier, DummyRegressor)
@@ -1042,10 +1063,10 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         return coefs, intercepts
 
-    def _set_scorer(self):
+    def _set_scorer(self) -> None:
         if self.scoring is not None:
             self.scorer_ = check_scoring(self.estimator_, self.scoring)
-        elif self._is_classification:
+        elif is_classifier(self):
             self.scorer_ = get_scorer("accuracy")
         else:
             self.scorer_ = get_scorer("r2")
@@ -1060,19 +1081,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             std_coef_img[class_index] = self.masker_.inverse_transform(std)
 
         return coef_img, std_coef_img
-
-    def _binarize_y(self, y):
-        """Encode target classes as -1 and 1.
-
-        Helper function invoked just before fitting a classifier.
-        """
-        y = np.array(y)
-
-        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
-        y = self._enc.fit_transform(y)
-        self.classes_ = self._enc.classes_
-        self.n_classes_ = len(self.classes_)
-        return y
 
     def _predict_dummy(self, n_samples):
         """Non-sparse scikit-learn based prediction steps for classification \
@@ -1097,13 +1105,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 dtype=np.array(self.dummy_output_).dtype,
             )
         return scores.ravel() if scores.shape[1] == 1 else scores
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -1154,14 +1155,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         :obj:`~nilearn.maskers.SurfaceMasker`
         to check for default parameters.
 
-    cv : cross-validation generator or :obj:`int`, default=10
-        A cross-validation generator.
-        See: https://scikit-learn.org/stable/modules/cross_validation.html.
-        The default 10 refers to K = 10 folds of
-        :class:`~sklearn.model_selection.StratifiedKFold` when groups is None
-        in the fit method for this class. If groups is specified but ``cv``
-        is not set to custom CV splitter, default is
-        :class:`~sklearn.model_selection.LeaveOneGroupOut`.
+    %(cv10)s
 
     param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such, \
         or None, default=None
@@ -1180,6 +1174,9 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
+    %(screening_n_features)s
+
+
     scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
@@ -1193,7 +1190,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(target_affine)s
 
@@ -1249,6 +1246,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         cv=10,
         param_grid=None,
         screening_percentile=20,
+        screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
         standardize=True,
@@ -1269,6 +1267,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1318,26 +1317,19 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, optional
+    estimator : :obj:`str`, default="svr"
         The estimator to choose among:
         %(regressor_options)s
-        Default 'svr'.
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+    mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
+            or None, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters. Default None
 
-    cv : cross-validation generator or :obj:`int`, default=10
-        A cross-validation generator.
-        See: https://scikit-learn.org/stable/modules/cross_validation.html.
-        The default 10 refers to K = 10 folds of
-        :class:`~sklearn.model_selection.StratifiedKFold` when groups is None
-        in the fit method for this class. If groups is specified but ``cv``
-        is not set to custom CV splitter, default is
-        :class:`~sklearn.model_selection.LeaveOneGroupOut`.
+    %(cv10)s
 
     param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such, \
                 or None, default=None
@@ -1356,7 +1348,10 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
-    scoring : :obj:`str`, callable or None, optional. default='r2'
+    %(screening_n_features)s
+
+
+    scoring : :obj:`str`, callable or None, default='r2'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1367,9 +1362,10 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
 
+
     %(smoothing_fwhm)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(target_affine)s
 
@@ -1419,6 +1415,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         cv=10,
         param_grid=None,
         screening_percentile=20,
+        screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
         standardize=True,
@@ -1439,6 +1436,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1469,29 +1467,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         """
         return super().__sklearn_tags__()
 
-    @fill_doc
-    def fit(self, X, y, groups=None):
-        """Fit the decoder (learner).
-
-        Parameters
-        ----------
-        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
-            See :ref:`extracting_data`.
-            Data on which model is to be fitted. If this is a list,
-            the affine is considered the same for all.
-
-        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
-            The dependent variable (age, sex, IQ, yes/no, etc.).
-            Target variable to predict. Must have exactly as many elements as
-            3D images in niimg.
-
-        %(groups)s
-
-        """
-        check_params(self.__dict__)
-        self._classes_ = ["beta"]
-        return super().fit(X, y, groups=groups)
-
 
 @fill_doc
 class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
@@ -1506,10 +1481,9 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, optional
+    estimator : :obj:`str`, default="svr"
         The estimator to choose among:
         %(regressor_options)s
-        Default 'svr'.
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, \
         default=None
@@ -1519,12 +1493,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters.
 
-    cv : :obj:`int` or cross-validation generator, default=30
-        If int, number of shuffled splits returned, which is usually the right
-        way to train many different classifiers. A good trade-off between
-        stability of the aggregated model and computation time is 50 splits.
-        Shuffled splits are seeded by default for reproducibility.
-        Can also be a cross-validation generator.
+    %(cv30)s
 
     param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such. \
         or None, default=None
@@ -1548,6 +1517,9 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
+    %(screening_n_features)s
+
+
     scoring : :obj:`str`, callable or None, default= 'r2'
 
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1559,8 +1531,11 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
+
     %(smoothing_fwhm)s
-    %(standardize)s
+
+    %(standardize_true)s
+
     %(target_affine)s
     %(target_shape)s
     %(mask_strategy)s
@@ -1604,6 +1579,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         param_grid=None,
         clustering_percentile=10,
         screening_percentile=20,
+        screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
         standardize=True,
@@ -1624,6 +1600,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1656,30 +1633,6 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         """
         return super().__sklearn_tags__()
 
-    @fill_doc
-    def fit(self, X, y, groups=None):
-        """Fit the decoder (learner).
-
-        Parameters
-        ----------
-        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
-            See :ref:`extracting_data`.
-            Data on which model is to be fitted. If this is a list,
-            the affine is considered the same for all.
-
-        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
-            The dependent variable (age, sex, IQ, yes/no, etc.).
-            Target variable to predict. Must have exactly as many elements as
-            3D images in niimg.
-
-        %(groups)s
-
-        """
-        check_params(self.__dict__)
-        self._classes_ = ["beta"]
-        super().fit(X, y, groups=groups)
-        return self
-
 
 @fill_doc
 class FREMClassifier(_ClassifierMixin, _BaseDecoder):
@@ -1698,7 +1651,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         %(classifier_options)s
 
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional,\
+    mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker or None,\
         default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
@@ -1706,12 +1659,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters.
 
-    cv : :obj:`int` or cross-validation generator, default=30
-        If int, number of stratified shuffled splits returned, which is usually
-        the right way to train many different classifiers. A good trade-off
-        between stability of the aggregated model and computation time is
-        50 splits. Shuffled splits are seeded by default for reproducibility.
-        Can also be a cross-validation generator.
+    %(cv30)s
 
     param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such. \
                  default=None
@@ -1742,7 +1690,10 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         performed. A float according to a percentile of the highest
         scores.
 
-    scoring : :obj:`str`, callable or None, optional. default='roc_auc'
+    %(screening_n_features)s
+
+
+    scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1753,7 +1704,9 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'; default='roc_auc'
     %(smoothing_fwhm)s
-    %(standardize)s
+
+    %(standardize_true)s
+
     %(target_affine)s
     %(target_shape)s
 
@@ -1806,6 +1759,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         param_grid=None,
         clustering_percentile=10,
         screening_percentile=20,
+        screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
         standardize=True,
@@ -1826,6 +1780,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,

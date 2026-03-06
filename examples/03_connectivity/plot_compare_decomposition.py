@@ -54,7 +54,6 @@ canica = CanICA(
     memory_level=1,
     verbose=1,
     random_state=0,
-    standardize="zscore_sample",
     mask_strategy="whole-brain-template",
     n_jobs=2,
 )
@@ -128,7 +127,6 @@ dict_learning = DictLearning(
     random_state=0,
     n_epochs=1,
     mask_strategy="whole-brain-template",
-    standardize="zscore_sample",
     n_jobs=2,
 )
 

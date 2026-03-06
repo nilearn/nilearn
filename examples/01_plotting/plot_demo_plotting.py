@@ -69,12 +69,12 @@ plotting.plot_stat_map(
 # `````````````````````````````````````````````
 # An alternative to :func:`~nilearn.plotting.plot_stat_map` is to use
 # :func:`~nilearn.plotting.view_img` that gives more interactive
-# visualizations in a web browser. See :ref:`interactive-stat-map-plotting`
-# for more details.
+# visualizations in a web browser.
+# See :ref:`interactive-stat-map-plotting` for more details.
 from nilearn.plotting import view_img
 
 view = view_img(stat_img, threshold=3)
-# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# In a notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 view
 
@@ -129,7 +129,7 @@ from nilearn import image
 
 # Compute the voxel_wise mean of functional images across time.
 # Basically reducing the functional image from 4D to 3D
-mean_haxby_img = image.mean_img(haxby_func_filename, copy_header=True)
+mean_haxby_img = image.mean_img(haxby_func_filename)
 
 # Visualizing mean image (3D)
 plotting.plot_epi(mean_haxby_img, title="plot_epi")

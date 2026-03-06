@@ -11,8 +11,8 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.decomposition import CanICA, DictLearning
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.decomposition.tests.conftest import (
@@ -21,11 +21,9 @@ from nilearn.decomposition.tests.conftest import (
     RANDOM_STATE,
     check_decomposition_estimator,
 )
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 
-ESTIMATORS_TO_CHECK = [
-    DictLearning(verbose=0),
-    CanICA(verbose=0),
-]
+ESTIMATORS_TO_CHECK = [DictLearning(), CanICA()]
 
 if SKLEARN_LT_1_6:
 
@@ -57,6 +55,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -66,28 +65,27 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_fit_errors(
     data_type, decomposition_images, estimator, decomposition_mask_img
 ):
     """Fit fail without the proper arguments."""
-    est = estimator(
-        smoothing_fwhm=None,
-    )
+    est = estimator(smoothing_fwhm=None, standardize="zscore_sample")
 
     # Test if raises an error when empty list of provided.
     with pytest.raises(
         ValueError,
-        match="Need one or more Niimg-like or SurfaceImage objects as input, "
-        "an empty list was given.",
+        match=(
+            r"Need one or more Niimg-like or SurfaceImage objects as input, "
+            r"an empty list was given."
+        ),
     ):
         est.fit([])
 
     # No mask provided
-    est = estimator(
-        smoothing_fwhm=None,
-    )
+    est = estimator(smoothing_fwhm=None, standardize="zscore_sample")
     # the default mask computation strategy 'epi' will result in an empty mask
     if data_type == "nifti":
         with pytest.raises(
@@ -109,6 +107,7 @@ def test_fit_errors(
         mask=decomposition_mask_img,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     confounds = (
@@ -118,39 +117,49 @@ def test_fit_errors(
     )
     with pytest.raises(
         ValueError,
-        match="Number of confounds .* must match number of images .*",
+        match=r"Number of confounds .* must match number of images .*",
     ):
         est.fit(decomposition_images, confounds=confounds)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
-def test_masker_attributes_with_fit(
+def test_masker_attributes_with_fit_mask(
     data_type,
     canica_data,
     decomposition_mask_img,
-    decomposition_masker,
     estimator,
 ):
-    """Test mask_img_ properly set when passing mask_img or masker."""
-    # Passing mask_img
+    """Test mask_img_ properly set when passing mask_img."""
     est = estimator(
         n_components=3,
         mask=decomposition_mask_img,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
     est.fit(canica_data)
 
     check_decomposition_estimator(est, data_type)
 
-    # Passing masker
+
+@pytest.mark.slow
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_masker_attributes_with_fit_masker(
+    data_type,
+    canica_data,
+    decomposition_masker,
+    estimator,
+):
+    """Test mask_img_ properly set when passing masker."""
     est = estimator(
         n_components=3,
         mask=decomposition_masker,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     with pytest.warns(UserWarning, match="overriding estimator parameter"):
@@ -159,7 +168,7 @@ def test_masker_attributes_with_fit(
     check_decomposition_estimator(est, data_type)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform(
@@ -172,6 +181,7 @@ def test_transform(
         n_components=3,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     est.fit(canica_data)
@@ -192,7 +202,7 @@ def test_transform(
     est.inverse_transform(signals)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform_confounds(
@@ -205,6 +215,7 @@ def test_transform_confounds(
         n_components=3,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
     if data_type == "surface" and isinstance(est, DictLearning):
         pytest.skip(
@@ -231,6 +242,7 @@ def test_transform_confounds(
     )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform_single_image(
@@ -247,6 +259,7 @@ def test_transform_single_image(
         n_components=3,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     assert not isinstance(canica_data_single_img, list)
@@ -258,6 +271,7 @@ def test_transform_single_image(
     assert isinstance(signals, list)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform_errors(
@@ -270,6 +284,7 @@ def test_transform_errors(
         n_components=3,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     est.fit(canica_data)
@@ -279,11 +294,13 @@ def test_transform_errors(
     )
     with pytest.raises(
         ValueError,
-        match="Number of confounds .* must match number of images .*",
+        match=r"Number of confounds .* must match number of images .*",
     ):
         est.transform(canica_data, confounds=confounds)
 
 
+@pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_pass_masker_arg_to_estimator(
@@ -302,6 +319,7 @@ def test_pass_masker_arg_to_estimator(
         mask_strategy="background",
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     # for surface we should get a warning about target_affine, target_shape
@@ -319,6 +337,7 @@ def test_pass_masker_arg_to_estimator(
 
 # TODO passing confounds does not affect output with CanICA, DictLearning
 # @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [_MultiPCA])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_with_confounds(
@@ -335,6 +354,7 @@ def test_with_confounds(
         random_state=RANDOM_STATE,
         mask=decomposition_mask_img,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     est.fit(decomposition_images)
@@ -355,6 +375,7 @@ def test_with_confounds(
     )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_single_subject_score(canica_data_single_img, data_type, estimator):
@@ -369,6 +390,7 @@ def test_single_subject_score(canica_data_single_img, data_type, estimator):
         n_components=n_components,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     est.fit(canica_data_single_img)
@@ -389,7 +411,8 @@ def test_single_subject_score(canica_data_single_img, data_type, estimator):
     assert np.all(scores >= 0)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_single_subject_file(
@@ -400,7 +423,11 @@ def test_single_subject_file(
     Only for nifti as we cannot read surface from file.
     """
     # globbing
-    est = estimator(n_components=4, random_state=RANDOM_STATE)
+    est = estimator(
+        n_components=4,
+        random_state=RANDOM_STATE,
+        standardize="zscore_sample",
+    )
     img = write_imgs_to_path(
         canica_data_single_img,
         file_path=tmp_path,
@@ -427,7 +454,8 @@ def test_single_subject_file(
     est.transform(tmp_file)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
 @pytest.mark.parametrize("n_subjects", [1, 3])
@@ -438,11 +466,11 @@ def test_with_globbing_patterns(
     estimator,
     n_subjects,  # noqa: ARG001
 ):
-    """Check DictLearning can work with files on disk.
+    """Check decomposition estimators can work with files on disk.
 
     Only for nifti as we cannot read surface from file.
     """
-    est = estimator(n_components=3)
+    est = estimator(n_components=3, standardize="zscore_sample")
 
     est.fit(canica_data)
 
@@ -456,3 +484,22 @@ def test_with_globbing_patterns(
 
     # smoke test transform and inverse transform
     est.transform(img)
+
+
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+@pytest.mark.parametrize("n_subjects", [1, 3])
+def test_error_non_multi_masker(
+    canica_data,
+    data_type,
+    estimator,
+    n_subjects,  # noqa: ARG001
+):
+    """Check decomposition estimators raise errors with non multi maskers."""
+    mask = SurfaceMasker()
+    if data_type == "nifti":
+        mask = NiftiMasker()
+    est = estimator(n_components=3, standardize="zscore_sample", mask=mask)
+
+    with pytest.raises(TypeError, match="'mask' must be of type"):
+        est.fit(canica_data)
