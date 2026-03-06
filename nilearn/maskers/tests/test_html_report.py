@@ -606,7 +606,7 @@ def test_surface_maps_masker_generate_report_plotly_out_figure_type(
     """Test that the report has a iframe tag when engine is plotly
     (default).
     """
-    masker = SurfaceMapsMasker(surf_maps_img)
+    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
     masker.fit_transform(surf_img_2d(10))
     report = masker.generate_report(engine="plotly", displayed_maps=2)
 
