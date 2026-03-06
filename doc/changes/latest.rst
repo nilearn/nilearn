@@ -26,7 +26,7 @@ HIGHLIGHTS
  | - numpy -- 1.26.0
  | - pandas -- 2.3.0
  | - scikit-learn -- 1.5.0
- | - scipy -- 1.11.0
+ | - scipy -- 1.11.1
 
 NEW
 ---
@@ -54,6 +54,8 @@ Enhancements
 - :bdg-primary:`Doc` Added a :ref:`user guide page <gpu_usage>` to demonstrate speedup using GPU (:gh:`5958` by `Himanshu Aggarwal`_ and `Elizabeth DuPre`_).
 
 - :bdg-secondary:`Maint` Add list of badges to changelog template on :ref:`maintenance_process` page (:gh:`6084` by `Michelle Wang`_).
+
+- :bdg-info:`Plotting`  Add opacity slider on :func:`~plotting.view_img` (:gh:`6107` by `Rémi Gau`_).
 
 Changes
 -------

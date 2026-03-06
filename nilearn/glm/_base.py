@@ -599,7 +599,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
         # we do not rely on filenames stored in the model.
         output = None
         if contrasts is None:
-            output = self._reporting_data.get("filenames", None)
+            output = self._reporting_data.get("filenames")
             if output is not None and output.get("use_absolute_path", True):
                 output = turn_into_full_path(output, output["dir"])
 
