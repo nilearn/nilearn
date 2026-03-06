@@ -30,7 +30,7 @@ from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
 
-ESTIMATORS_TO_CHECK = [NiftiMapsMasker(standardize=None)]
+ESTIMATORS_TO_CHECK = [NiftiMapsMasker()]
 
 if SKLEARN_LT_1_6:
 
@@ -100,8 +100,8 @@ def test_nifti_maps_masker_data_atlas_different_shape(
 
     with warnings.catch_warnings(record=True) as warning_list:
         masker.fit(fmri22_img)
-        assert not any(
-            "consider using nearest interpolation instead" in x.message
+        assert all(
+            "consider using nearest interpolation instead" not in x.message
             for x in warning_list
         )
 
@@ -292,8 +292,8 @@ def test_nifti_maps_masker_resampling_to_mask(
 
     with warnings.catch_warnings(record=True) as warning_list:
         signals = masker.fit_transform(img_fmri)
-        assert not any(
-            "consider using nearest interpolation instead" in str(x)
+        assert all(
+            "consider using nearest interpolation instead" not in str(x)
             for x in warning_list
         )
 

@@ -20,7 +20,7 @@ from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker
 
-ESTIMATORS_TO_CHECK = [MultiNiftiLabelsMasker(standardize=None)]
+ESTIMATORS_TO_CHECK = [MultiNiftiLabelsMasker()]
 
 if SKLEARN_LT_1_6:
 

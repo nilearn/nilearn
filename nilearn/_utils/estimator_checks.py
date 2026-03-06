@@ -528,6 +528,17 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
 def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
     check_is_of_allowed_type(estimators, (list,), "estimators")
     for est in estimators:
+        # TODO (nilearn >= 0.15.0)
+        # remove this entire if block
+        # as standardize as bool should not be possible anymore
+        if hasattr(est, "standardize"):
+            # forcing the new default on all estiamtors
+            # to avoid FutureWarnings
+            if est.standardize is False:
+                est.standardize = None
+            elif est.standardize is True:
+                est.standardize = "zscore_sample"
+
         for e, check in nilearn_check_generator(estimator=est):
             yield e, check, check.__name__
 
@@ -2394,17 +2405,14 @@ def check_masker_standardization(estimator_orig) -> None:
             # TODO (nilearn >= 0.15.0) remove warning catch
             # Make sure that a FutureWarning warning is thrown
             # and not one during call to fit and then call to clean.
-            if standardize is True:
-                with warnings.catch_warnings(record=True) as warnings_list:
+            if standardize in [True, False]:
+                with pytest.warns(
+                    FutureWarning,
+                    match=(
+                        "boolean values for 'standardize' will be deprecated"
+                    ),
+                ):
                     results[str(standardize)] = estimator.transform(input_img)
-                n_future_warnings = len(
-                    [
-                        x
-                        for x in warnings_list
-                        if issubclass(x.category, FutureWarning)
-                    ]
-                )
-                assert n_future_warnings == 1
             else:
                 results[str(standardize)] = estimator.transform(input_img)
 
@@ -3041,18 +3049,9 @@ def check_masker_smooth(estimator_orig) -> None:
     estimator.smoothing_fwhm = 3
     estimator.fit(imgs)
 
-    if accept_niimg_input(estimator):
-        smoothed_signal = estimator.transform(imgs)
+    smoothed_signal = estimator.transform(imgs)
 
-        assert_raises(
-            AssertionError, assert_array_equal, smoothed_signal, signal
-        )
-
-    else:
-        with pytest.warns(UserWarning, match="not yet supported"):
-            smoothed_signal = estimator.transform(imgs)
-
-        assert_array_equal(smoothed_signal, signal)
+    assert_raises(AssertionError, assert_array_equal, smoothed_signal, signal)
 
 
 def check_masker_inverse_transform(estimator_orig) -> None:
@@ -4050,9 +4049,8 @@ def _generate_report_with_no_warning(estimator) -> None:
         unknown_warnings = []
         for x in warning_list:
             message = str(x.message)
-            if any(y in message for y in warnings_to_ignore):
-                continue
-            unknown_warnings.append(message)
+            if all(y not in message for y in warnings_to_ignore):
+                unknown_warnings.append(message)
 
         if not isinstance(estimator, (RegionExtractor, SurfaceMapsMasker)):
             assert not unknown_warnings, unknown_warnings
