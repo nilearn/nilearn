@@ -450,12 +450,13 @@ def smooth_img(imgs, fwhm):
         imgs = [imgs]
 
     ret = []
-    for img in imgs:
-        if is_surface:
+    if is_surface:
+        for img in imgs:
             iterations = _mris_fwhm_to_niters(fwhm, img)
             ret.append(_smooth_surface_img(img, iterations))
 
-        else:
+    else:
+        for img in imgs:
             img = check_niimg(img)
             affine = img.affine
             filtered = smooth_array(
