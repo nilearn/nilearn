@@ -468,8 +468,23 @@ def test_with_surface_images_2d_mask(surf_img_2d, surf_mask_1d, n_subjects):
     )
 
 
+def test_with_surface_images_smoothing(surf_img_1d, n_subjects):
+    """Throw warnings for non implemented features for surface."""
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
+
+    design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
+
+    non_parametric_inference(
+        second_level_input=second_level_input,
+        design_matrix=design_matrix,
+        n_perm=N_PERM,
+        smoothing_fwhm=6,
+    )
+
+
 @pytest.mark.thread_unsafe
-def test_with_surface_images_warnings(surf_img_1d, n_subjects):
+@pytest.mark.parametrize("kwargs", [{"tfce": True}, {"threshold": 0.001}])
+def test_with_surface_images_warnings(surf_img_1d, n_subjects, kwargs):
     """Throw warnings for non implemented features for surface."""
     second_level_input = [surf_img_1d for _ in range(n_subjects)]
 
@@ -477,31 +492,11 @@ def test_with_surface_images_warnings(surf_img_1d, n_subjects):
 
     with pytest.warns(
         NotImplementedWarning,
-        match="'smoothing_fwhm' is not yet supported for surface data.",
-    ):
-        non_parametric_inference(
-            second_level_input=second_level_input,
-            design_matrix=design_matrix,
-            n_perm=N_PERM,
-            smoothing_fwhm=6,
-        )
-    with pytest.warns(
-        NotImplementedWarning,
         match="Cluster level inference not yet implemented for surface data.",
     ):
         non_parametric_inference(
             second_level_input=second_level_input,
             design_matrix=design_matrix,
             n_perm=N_PERM,
-            tfce=True,
-        )
-    with pytest.warns(
-        NotImplementedWarning,
-        match="Cluster level inference not yet implemented for surface data.",
-    ):
-        non_parametric_inference(
-            second_level_input=second_level_input,
-            design_matrix=design_matrix,
-            n_perm=N_PERM,
-            threshold=0.001,
+            **kwargs,
         )
