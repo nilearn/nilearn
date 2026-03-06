@@ -593,6 +593,15 @@ but some fixures specific to certain modules can also be kept in that testing mo
 Before adding new fixtures, first check those that exist
 in the test modules you are working in or in ``nilearn/conftest.py``.
 
+You can also run the following command to let pytest list
+all the available fixtures with their description,
+though this will also list fixtures provided
+by any of the pytest plugins or extensions that may also be installed.
+
+.. code-block:: bash
+
+      pytest nilearn --fixtures
+
 Seeding
 ^^^^^^^
 

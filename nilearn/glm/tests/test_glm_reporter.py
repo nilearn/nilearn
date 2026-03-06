@@ -136,7 +136,7 @@ def rk() -> int:
 
 
 @pytest.fixture
-def contrasts(rk):
+def contrasts(rk) -> np.ndarray:
     """Return a contrast vector."""
     c = np.zeros((1, rk))
     c[0][0] = 1
@@ -145,7 +145,7 @@ def contrasts(rk):
 
 @pytest.fixture()
 def flm(rk) -> FirstLevelModel:
-    """Generate first level model."""
+    """Generate a fitted first level model."""
     shapes = ((7, 7, 7, 5),)
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk

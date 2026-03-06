@@ -94,12 +94,12 @@ SHAPE = (*_shape_3d_default(), 1)
 
 
 @pytest.fixture()
-def n_subjects():
+def n_subjects() -> int:
     return 3
 
 
 @pytest.fixture
-def input_df():
+def input_df() -> pd.DataFrame:
     """Input DataFrame for testing."""
     return pd.DataFrame(
         {
@@ -704,7 +704,7 @@ def test_high_level_non_parametric_inference_with_paths_warning(n_subjects):
         )
 
 
-def _confounds():
+def _confounds() -> pd.DataFrame:
     return pd.DataFrame(
         [["01", 1], ["02", 2], ["03", 3]],
         columns=["subject_label", "conf1"],
@@ -712,7 +712,8 @@ def _confounds():
 
 
 @pytest.fixture
-def confounds():
+def confounds() -> pd.DataFrame:
+    """Confound DataFrame for testing."""
     return _confounds()
 
 
