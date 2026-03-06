@@ -98,6 +98,10 @@ repos:
     -   id: blacken-docs
         additional_dependencies:
         -   black
+        # ignoring certain files
+        # to avoid generating lines that are too long
+        # or do not comply with some of the requirements
+        # of other linting / formaating tools (doc8, ruff...)
         exclude: |
             (?x)^(
                 doc/building_blocks/gpu_usage.rst
