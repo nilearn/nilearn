@@ -2817,7 +2817,7 @@ def test_generate_report_threshold_unused(threshold):
         flm.generate_report(contrasts=contrasts, threshold=threshold)
         assert (
             sum(
-                bool("'threshold' was set to 'None'" in str(warning.message))
+                "'threshold' was set to 'None'" in str(warning.message)
                 for warning in warning_list
             )
             == 1

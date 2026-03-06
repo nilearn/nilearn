@@ -21,6 +21,7 @@ rule_settings:
     enable:
     -   default
     disable:
+    -   collection-into-set
     -   no-loop-in-tests
     -   no-conditionals-in-tests
     -   low-code-quality
@@ -32,7 +33,6 @@ rule_settings:
     -   assign-if-exp               # │     5 │
     -   dict-assign-update-to-union # │     4 │
     -   use-or-for-fallback         # │     4 │
-    -   raise-specific-error        # │     3 │
     -   switch                      # │     1 │
 
     rule_types:
