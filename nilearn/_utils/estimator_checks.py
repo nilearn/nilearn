@@ -3049,18 +3049,9 @@ def check_masker_smooth(estimator_orig) -> None:
     estimator.smoothing_fwhm = 3
     estimator.fit(imgs)
 
-    if accept_niimg_input(estimator):
-        smoothed_signal = estimator.transform(imgs)
+    smoothed_signal = estimator.transform(imgs)
 
-        assert_raises(
-            AssertionError, assert_array_equal, smoothed_signal, signal
-        )
-
-    else:
-        with pytest.warns(UserWarning, match="not yet supported"):
-            smoothed_signal = estimator.transform(imgs)
-
-        assert_array_equal(smoothed_signal, signal)
+    assert_raises(AssertionError, assert_array_equal, smoothed_signal, signal)
 
 
 def check_masker_inverse_transform(estimator_orig) -> None:
