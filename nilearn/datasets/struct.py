@@ -3,6 +3,7 @@
 import functools
 import warnings
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -29,6 +30,7 @@ from nilearn.surface import (
     FileMesh,
     PolyMesh,
     SurfaceImage,
+    surface,
 )
 
 MNI152_FILE_PATH = (
@@ -855,7 +857,9 @@ def fetch_oasis_vbm(
 
 
 @fill_doc
-def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
+def fetch_surf_fsaverage(
+    mesh: str = "fsaverage5", data_dir=None
+) -> Bunch[str, Any]:
     """Download a Freesurfer fsaverage surface.
 
     File names are subject to change and only attribute names
@@ -926,6 +930,8 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
             f"{mesh!r} was provided"
         )
 
+    bunch_fsaverage5 = _fetch_surf_fsaverage5()
+
     # Call a dataset loader depending on the value of mesh
     if mesh in (
         "fsaverage3",
@@ -940,12 +946,100 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
             mesh = "fsaverage"
         bunch = _fetch_surf_fsaverage(mesh, data_dir=data_dir)
     elif mesh == "fsaverage5":
-        bunch = _fetch_surf_fsaverage5()
+        return bunch_fsaverage5
+
+    bunch = _sanitize_vertices_order(bunch, bunch_fsaverage5, mesh, data_dir)
 
     return bunch
 
 
-def _fetch_surf_fsaverage5():
+def _sanitize_vertices_order(
+    bunch: Bunch,
+    bunch_fsaverage5: Bunch,
+    mesh: str,
+    data_dir,
+) -> Bunch:
+    """Check first vertices have roughly same coordinates \
+       as that of fs5 otherwise we resort them.
+
+    We only check pial_left and assume if it fails
+    all meshes have be sorted.
+    """
+    fs_coordinates, _ = surface.load_surf_data(bunch.pial_left)
+    fs5_coordinates, _ = surface.load_surf_data(bunch_fsaverage5.pial_left)
+    try:
+        np.testing.assert_array_almost_equal(
+            fs_coordinates[:200], fs5_coordinates[:200], decimal=-1
+        )
+    except AssertionError:
+        warnings.warn(
+            (
+                "\nUnsorted vertex coordinates detected.\n"
+                "You probably want "
+                "to clear the following data directory "
+                "and re-download the dataset:\n"
+                f"{get_dataset_dir(mesh, data_dir=data_dir)}\n"
+                "This warning will turn into an error "
+                "in Nilearn version >= 0.16."
+            ),
+            category=FutureWarning,
+            stacklevel=find_stack_level(),
+        )
+
+        bunch = _resort_vertices(bunch, bunch_fsaverage5)
+
+    return bunch
+
+
+def _resort_vertices(bunch, bunch_fsaverage5):
+
+    for mesh in [
+        "flat_left",
+        "flat_right",
+        "pial_left",
+        "pial_right",
+        "infl_left",
+        "infl_right",
+        "sphere_left",
+        "sphere_right",
+        "white_left",
+        "white_right",
+    ]:
+        print(mesh)
+        fs5_coordinates, _ = surface.load_surf_data(bunch_fsaverage5[mesh])
+        coordinates, faces = surface.load_surf_data(bunch[mesh])
+
+        # %%
+        fs_matches_in_fs5 = [
+            np.argwhere(
+                [
+                    np.allclose(vertex, fs5_coordinates[i, :], atol=1e-1)
+                    for vertex in coordinates
+                ]
+            )
+            for i in range(coordinates.shape[0])
+        ]
+
+        # %%
+        print(len(fs_matches_in_fs5))
+        fs_new_order = np.array(fs_matches_in_fs5).flatten()
+        fs_new_order_inverted = np.empty_like(fs_new_order)
+        fs_new_order_inverted[fs_new_order] = np.arange(fs_new_order.size)
+
+        coordinates_updated = coordinates[fs_new_order]
+        faces_updated = np.vectorize(lambda x: fs_new_order_inverted[x])(
+            faces
+        ).astype(np.int32)
+
+        bunch[mesh] = {
+            "coordinates": coordinates_updated,
+            "faces": faces_updated,
+        }
+
+    return bunch
+
+
+def _fetch_surf_fsaverage5() -> Bunch[str, str]:
     """Ship fsaverage5 surfaces and sulcal information with Nilearn.
 
     The source of the data is coming from nitrc based on this PR #1016.
@@ -976,7 +1070,7 @@ def _fetch_surf_fsaverage5():
     return Bunch(**data)
 
 
-def _fetch_surf_fsaverage(dataset_name, data_dir=None):
+def _fetch_surf_fsaverage(dataset_name, data_dir=None) -> Bunch[str, str]:
     """Ship fsaverage{3,4,6,7} meshes.
 
     These meshes can be used for visualization purposes, but also to run
@@ -1024,13 +1118,15 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
         attribute: dataset_dir / f"{attribute}.gii.gz"
         for attribute in dataset_attributes
     }
-    result["description"] = str(get_dataset_descr(dataset_name))
+    result["description"] = get_dataset_descr(dataset_name)
 
     return Bunch(**result)
 
 
 @fill_doc
-def load_fsaverage(mesh="fsaverage5", data_dir=None):
+def load_fsaverage(
+    mesh: str = "fsaverage5", data_dir=None
+) -> Bunch[str, PolyMesh]:
     """Load fsaverage for both hemispheres as PolyMesh objects.
 
     .. nilearn_versionadded:: 0.11.0
