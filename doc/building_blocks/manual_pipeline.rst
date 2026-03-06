@@ -34,6 +34,7 @@ example, we can download the data from the
 .. code-block:: python
 
      from nilearn import datasets
+
      dataset = datasets.fetch_haxby()
 
 ``dataset.func`` contains filenames referring to dataset files on the disk:
@@ -49,7 +50,7 @@ Access supplementary information on the dataset:
 
 .. code-block:: python
 
-     print(haxby_dataset['description'])
+     print(haxby_dataset["description"])
 
 The complete list of the data-downloading functions can be found in the
 :ref:`reference documentation for the datasets <datasets_ref>`.

@@ -1400,13 +1400,14 @@ class OrthoSlicer(_MultiDSlicer):
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
-        coords = {}
-        for direction in "xyz":
-            coords[direction] = (
+        coords = {
+            direction: (
                 cut_coords[self._cut_displayed.index(direction)]
                 if direction in self._cut_displayed
                 else None
             )
+            for direction in "xyz"
+        }
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()
@@ -1729,13 +1730,14 @@ class TiledSlicer(_MultiDSlicer):
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
-        coords = {}
-        for direction in "xyz":
-            coords[direction] = (
+        coords = {
+            direction: (
                 cut_coords[self._cut_displayed.index(direction)]
                 if direction in self._cut_displayed
                 else None
             )
+            for direction in "xyz"
+        }
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()

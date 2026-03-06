@@ -33,6 +33,7 @@ collection's webpage, you can click 'Details' to see its id
 .. code-block:: python
 
   from nilearn.datasets import fetch_neurovault_ids
+
   brainpedia = fetch_neurovault_ids(collection_ids=[1952])
 
 Or if you want some images in particular, rather than whole
@@ -66,7 +67,7 @@ We can ask for :term:`BOLD` images only :
 
 .. code-block:: python
 
-  bold = fetch_neurovault(image_terms={'modality': 'fMRI-BOLD'}, max_images=7)
+  bold = fetch_neurovault(image_terms={"modality": "fMRI-BOLD"}, max_images=7)
 
 Here we set the max_images parameter to 7, so that you can try this snippet
 without waiting for a long time. To get all the images which match your
@@ -89,7 +90,7 @@ be "fMRI-BOLD", we can write:
 
 .. code-block:: python
 
-  bold = fetch_neurovault(modality='fMRI-BOLD', max_images=7)
+  bold = fetch_neurovault(modality="fMRI-BOLD", max_images=7)
 
 Sometimes the selection criteria are more complex than a simple
 comparison to a single value. For example, we may also be interested
@@ -99,22 +100,24 @@ provides ``IsIn`` which makes this easy :
 .. code-block:: python
 
   from nilearn.datasets import neurovault
-  fmri = fetch_neurovault(modality=neurovault.IsIn('fMRI-BOLD', 'fMRI-CBF', 'fMRI-CBV'),
-                          max_images=100)
+
+  fmri = fetch_neurovault(
+      modality=neurovault.IsIn("fMRI-BOLD", "fMRI-CBF", "fMRI-CBV"), max_images=100
+  )
 
 We could also have used ``Contains`` :
 
 .. code-block:: python
 
-  fmri = fetch_neurovault(modality=neurovault.Contains('fMRI'), max_images=7)
+  fmri = fetch_neurovault(modality=neurovault.Contains("fMRI"), max_images=7)
 
 If we need regular expressions, we can also use ``Pattern`` :
 
 .. code-block:: python
 
   fmri = fetch_neurovault(
-    modality=neurovault.Pattern('fmri(-.*)?', neurovault.re.IGNORECASE),
-    max_images=7)
+      modality=neurovault.Pattern("fmri(-.*)?", neurovault.re.IGNORECASE), max_images=7
+  )
 
 The complete list of such special values available in
 ``nilearn.datasets.neurovault`` is:
@@ -138,8 +141,11 @@ Using a filter rather than a dictionary, the first example becomes:
 
 .. code-block:: python
 
-  bold = fetch_neurovault(image_filter=lambda meta: meta.get('modality') == 'fMRI-BOLD',
-                          image_terms={}, max_images=7)
+  bold = fetch_neurovault(
+      image_filter=lambda meta: meta.get("modality") == "fMRI-BOLD",
+      image_terms={},
+      max_images=7,
+  )
 
 .. note::
 
@@ -159,8 +165,9 @@ metadata dictionary to a required value, so we need to write our own filter:
 
 .. code-block:: python
 
-  small_meta_images = fetch_neurovault(image_filter=lambda meta: len(meta) < 50,
-                                       max_images=7)
+  small_meta_images = fetch_neurovault(
+      image_filter=lambda meta: len(meta) < 50, max_images=7
+  )
 
 
 Output

@@ -125,7 +125,7 @@ jobs:
         -   name: Create html with all results
             run: |
                 asv publish
-        -   uses: actions/upload-artifact@v6
+        -   uses: actions/upload-artifact@v7
             with:
                 name: Upload asv benchmark results as artifacts
                 path: |
