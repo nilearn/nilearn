@@ -32,7 +32,6 @@ from nilearn._utils.param_validation import (
     check_run_sample_masks,
 )
 from nilearn.datasets import load_fsaverage
-from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -1292,15 +1291,6 @@ class FirstLevelModel(BaseGLM):
                 self.mask_img = Nifti1Image(
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
-
-        if masker_type == "surface" and self.smoothing_fwhm is not None:
-            warn(
-                "Parameter smoothing_fwhm is not "
-                "yet supported for surface data",
-                NotImplementedWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = 0
 
         check_compatibility_mask_and_images(self.mask_img, run_img)
         if (  # deal with self.mask_img as image, str, path, none

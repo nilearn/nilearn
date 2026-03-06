@@ -538,15 +538,19 @@ docdict["fwhm"] = """
 fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\
 or 'fast' or None, optional
     Smoothing strength, as a :term:`full-width at half maximum<FWHM>`,
-    in millimeters:
+    in millimeters.
+
+    For surface data, only scalar and None are supported.
+
+    For volume data, several options are possible:
 
     - If a nonzero scalar is given, width is identical in all 3 directions.
 
     - If a :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` is given,
       it must have 3 elements, giving the :term:`FWHM` along each axis.
       If any of the elements is `0` or `None`,
-
       smoothing is not performed along that axis.
+
     - If `fwhm="fast"`, a fast smoothing will be performed with a filter
       [0.2, 1, 0.2] in each direction and a normalization to preserve the
       local average value.

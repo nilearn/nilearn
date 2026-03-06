@@ -206,6 +206,8 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
             for i, x in enumerate(imgs):
                 x.data._check_n_samples(1, f"imgs[{i}]")
 
+        imgs = self._smooth(imgs)
+
         if self.reports:
             self._reporting_data["images"] = imgs
 
