@@ -45,7 +45,7 @@ from nilearn.plotting import plot_matrix, plot_surf, show
 surf_img_nki = load_nki()[0]
 print(f"NKI image: {surf_img_nki}")
 
-masker = SurfaceMasker(verbose=1)
+masker = SurfaceMasker(verbose=1, smoothing_fwhm=3)
 masked_data = masker.fit_transform(surf_img_nki)
 print(f"Masked data shape: {masked_data.shape}")
 

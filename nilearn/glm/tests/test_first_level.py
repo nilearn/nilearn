@@ -36,7 +36,6 @@ from nilearn._utils.estimator_checks import (
 )
 from nilearn._utils.helpers import is_windows_platform
 from nilearn._utils.versions import SKLEARN_LT_1_6
-from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
     FirstLevelModel,
@@ -2481,17 +2480,6 @@ def test_flm_fit_surface_image(surface_glm_data):
     assert isinstance(model.mask_img_, SurfaceImage)
     assert model.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
-
-
-def test_warn_flm_smooth_surface_image(surface_glm_data):
-    """Test warning raised in FirstLevelModel with surface smoothing."""
-    mini_img, des = surface_glm_data(5)
-    model = FirstLevelModel(mask_img=False, smoothing_fwhm=5)
-    with pytest.warns(
-        NotImplementedWarning,
-        match="Parameter smoothing_fwhm is not yet supported for surface data",
-    ):
-        model.fit(mini_img, design_matrices=des)
 
 
 def test_flm_fit_surface_image_one_hemisphere(

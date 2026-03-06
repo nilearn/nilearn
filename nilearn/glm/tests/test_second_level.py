@@ -1759,16 +1759,6 @@ def test_non_parametric_inference_with_surface_images_warnings(
 
     with pytest.warns(
         NotImplementedWarning,
-        match="'smoothing_fwhm' is not yet supported for surface data.",
-    ):
-        non_parametric_inference(
-            second_level_input=second_level_input,
-            design_matrix=design_matrix,
-            n_perm=N_PERM,
-            smoothing_fwhm=6,
-        )
-    with pytest.warns(
-        NotImplementedWarning,
         match="Cluster level inference not yet implemented for surface data.",
     ):
         non_parametric_inference(
