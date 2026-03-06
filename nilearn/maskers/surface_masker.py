@@ -338,11 +338,11 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        return_1D = signals.ndim < 2
-
         # do not run sklearn_check as they may cause some failure
         # with some GLM inputs
         signals = self._check_array(signals, sklearn_check=False)
+
+        return_1D = signals.ndim < 2
 
         mask_logger("inverse_transform", verbose=self.verbose)
 

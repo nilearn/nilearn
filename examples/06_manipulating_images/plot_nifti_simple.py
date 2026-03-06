@@ -110,6 +110,18 @@ print(fmri_masked.shape)
 # ``fmri_masked`` is now a 2D numpy array, (n_voxels x n_time_points).
 
 # %%
+# Output to dataframe
+# -------------------
+#
+# You can also use 'set_output()' to decide the output format of 'transform'.
+# If you want to output to a DataFrame, you an choose 'pandas' and 'polars'.
+#
+masker.set_output(transform="pandas")
+fmri_masked = masker.transform(func_filename)
+print(fmri_masked.head)
+
+
+# %%
 # Run an algorithm and visualize the results
 # ------------------------------------------
 #
