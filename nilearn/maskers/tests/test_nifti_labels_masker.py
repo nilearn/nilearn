@@ -1244,7 +1244,7 @@ def test_lut_shift(lut):
 
 
 @pytest.mark.single_process
-def test_nifti_labels_masker_parallel(img_labels, img_fmri):
+def test_parallel(img_labels, img_fmri):
     """Test NiftiLabelsMasker with n_jobs > 1."""
     masker = NiftiLabelsMasker(labels_img=img_labels)
     masker_parallel = NiftiLabelsMasker(labels_img=img_labels, n_jobs=2)
