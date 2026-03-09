@@ -345,14 +345,14 @@ def _json_view_params(
     black_bg=False,
     opacity=1,
     draw_cross=True,
-    color_crosshair="#0000FF",
-    size_crosshair=0.9,
     annotate=True,
     title=None,
     colorbar=True,
     value=True,
     radiological=False,
     show_lr=True,
+    color_crosshair="#0000FF",
+    size_crosshair=0.9,
 ):
     """Create a dictionary with all the brainsprite parameters.
 
