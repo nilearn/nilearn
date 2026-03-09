@@ -439,7 +439,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
 
         estimator = self.estimator
         if estimator == "svc":
-            estimator = ESTIMATOR_CATALOG[estimator](dual=True)
+            estimator = ESTIMATOR_CATALOG[estimator](random_state=0)
         elif isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
@@ -501,7 +501,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
 
         estimator = self.estimator
         if estimator == "svc":
-            estimator = ESTIMATOR_CATALOG[estimator](dual=True)
+            estimator = ESTIMATOR_CATALOG[estimator](random_state=0)
 
         # Use the modified `_group_iter_search_light` logic to avoid `y` issues
         result = search_light(
