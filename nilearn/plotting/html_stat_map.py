@@ -751,14 +751,14 @@ def view_img(
         black_bg,
         opacity,
         draw_cross,
-        color_crosshair=color_crosshair,
-        size_crosshair=size_crosshair,
         annotate,
         title,
         colorbar,
         value=False,
         radiological=radiological,
         show_lr=show_lr,
+        color_crosshair=color_crosshair,
+        size_crosshair=size_crosshair,
     )
 
     html_view = _json_view_to_html(json_view, width_view)
