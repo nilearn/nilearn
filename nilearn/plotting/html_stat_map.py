@@ -352,7 +352,6 @@ def _json_view_params(
     radiological=False,
     show_lr=True,
     color_crosshair="#0000FF",
-    size_crosshair=0.9,
 ):
     """Create a dictionary with all the brainsprite parameters.
 
@@ -387,7 +386,6 @@ def _json_view_params(
         "colorFont": cfont,
         "crosshair": draw_cross,
         "colorCrosshair": color_crosshair,
-        "sizeCrosshair": size_crosshair,
         "affine": affine.tolist(),
         "flagCoordinates": annotate,
         "title": title,
@@ -587,7 +585,6 @@ def view_img(
     annotate=True,
     draw_cross=True,
     color_crosshair="#0000FF",
-    size_crosshair=0.9,
     black_bg="auto",
     cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cmap=True,
@@ -758,7 +755,6 @@ def view_img(
         radiological=radiological,
         show_lr=show_lr,
         color_crosshair=color_crosshair,
-        size_crosshair=size_crosshair,
     )
 
     html_view = _json_view_to_html(json_view, width_view)
