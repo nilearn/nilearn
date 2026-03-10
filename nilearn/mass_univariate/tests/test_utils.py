@@ -259,7 +259,7 @@ def test_calculate_cluster_measures_on_real_surface_image(
 
     Check that the max size / mass of image X with two_sided_test=True
     corresponds to the max size / mass with with two_sided_test=False
-    for eithr X of -X.
+    for either X of -X.
     """
     stat_img = at_least_2d(
         load_fsaverage_data(mesh_type="inflated", data_type="curvature")
