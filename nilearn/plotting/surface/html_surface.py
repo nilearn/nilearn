@@ -341,7 +341,7 @@ def _fill_html_template_niivue(
             "INSERT_COLORBAR_HERE": info["colorbar"],
             "INSERT_THRESHOLD_HERE": json.dumps(info["threshold"]),
             "INSERT_VMAX_HERE": json.dumps(info["vmax"]),
-            "INSERT_PAGE_TITLE_HERE": info["title"] or "",
+            "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
             "INSERT_FONT_SIZE_HERE": str(info["title_fontsize"]) + "px",
             "INSERT_COLOR_THEME_HERE": info["bg_theme"],
             "INSERT_BG_COLOR_HERE": info["bg_color"],

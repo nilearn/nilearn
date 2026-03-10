@@ -79,7 +79,12 @@ def test_mesh_to_plotly(hemi):
 
 
 def check_html_surface_plots(
-    tmp_path, html, check_selects=True, plot_div_id="surface-plot", title=None
+    tmp_path,
+    html,
+    check_selects=True,
+    plot_div_id="surface-plot",
+    title=None,
+    engine="plotly",
 ):
     """Perform several checks on raw HTML code.
 
@@ -126,26 +131,31 @@ def check_html_surface_plots(
         html.html.encode("utf-8"), parser=etree.HTMLParser(huge_tree=True)
     )
     head = root.find("head")
-    assert len(head.findall("script")) == 5
+    if engine == "plotly":
+        assert len(head.findall("script")) == 5
+    elif engine == "niivue":
+        assert len(head.findall("script")) == 0
 
     body = root.find("body")
     div = body.find("div")
-    assert ("id", plot_div_id) in div.items()
+    if engine == "plotly":
+        assert ("id", plot_div_id) in div.items()
 
     if not check_selects:
         return
 
-    selects = body.findall("select")
-    assert len(selects) == 3
+    if engine == "plotly":
+        selects = body.findall("select")
+        assert len(selects) == 3
 
-    hemi = selects[0]
-    assert ("id", "select-hemisphere") in hemi.items()
-    assert len(hemi.findall("option")) == 3
+        hemi = selects[0]
+        assert ("id", "select-hemisphere") in hemi.items()
+        assert len(hemi.findall("option")) == 3
 
-    kind = selects[1]
-    assert ("id", "select-kind") in kind.items()
-    assert len(kind.findall("option")) == 2
+        kind = selects[1]
+        assert ("id", "select-kind") in kind.items()
+        assert len(kind.findall("option")) == 2
 
-    view = selects[2]
-    assert ("id", "select-view") in view.items()
-    assert len(view.findall("option")) == 7
+        view = selects[2]
+        assert ("id", "select-view") in view.items()
+        assert len(view.findall("option")) == 7
