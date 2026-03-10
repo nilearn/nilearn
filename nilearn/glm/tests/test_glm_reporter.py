@@ -532,6 +532,7 @@ def test_flm_generate_report_surface_data(rng):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_flm_generate_report_surface_data_error(
     surf_mask_1d, surf_img_2d, img_3d_mni
 ):
