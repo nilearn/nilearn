@@ -460,6 +460,15 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         cut_coords = find_xyz_cut_coords(img)
         if mask is not None:
             cut_coords = find_xyz_cut_coords(mask)
+            if not check_same_fov(img, mask, raise_error=False):
+                cut_coords = find_xyz_cut_coords(
+                    resample_img(
+                        mask,
+                        target_affine=img.affine,
+                        target_shape=img.shape,
+                        interpolation="nearest",
+                    )
+                )
 
         # create display of retained input mask, image
         # for visual comparison
@@ -485,11 +494,13 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "\n To see the input Nifti image before resampling, "
                 "hover over the displayed image."
             )
-
-            # create display of resampled NiftiImage and mask
             resampled_img, resampled_mask = self._reporting_data["transform"]
+
             if resampled_img is None:  # images were not provided to fit
                 resampled_img = resampled_mask
+
+            # create display of resampled NiftiImage and mask
+            cut_coords = find_xyz_cut_coords(resampled_mask)
 
             overlay = plot_img(
                 resampled_img,
