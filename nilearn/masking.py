@@ -20,13 +20,14 @@ from nilearn.datasets import (
     load_mni152_template,
     load_mni152_wm_template,
 )
-from nilearn.exceptions import MaskWarning, NotImplementedWarning
+from nilearn.exceptions import MaskWarning
 from nilearn.image.image import (
     check_niimg,
     check_niimg_3d,
     check_same_fov,
     get_data,
     new_img_like,
+    smooth_img,
 )
 from nilearn.image.resampling import resample_to_img
 from nilearn.surface.surface import SurfaceImage
@@ -817,7 +818,7 @@ def compute_multi_brain_mask(
 @fill_doc
 def apply_mask(
     imgs, mask_img, dtype="f", smoothing_fwhm=None, ensure_finite=True
-):
+) -> np.ndarray:
     """Extract signals from images using specified mask.
 
     Read the time series from the given image object, using the mask.
@@ -842,11 +843,7 @@ def apply_mask(
 
         .. note::
 
-            Implies ensure_finite=True.
-
-        .. warning::
-
-            Not yet implemented for surface images
+            Implies ensure_finite=True when applied to volume data.
 
     ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and
@@ -893,14 +890,7 @@ def apply_mask_fmri(
     if isinstance(imgs, SurfaceImage) and isinstance(mask_img, SurfaceImage):
         check_polymesh_equal(mask_img.mesh, imgs.mesh)
 
-        if smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                NotImplementedWarning,
-                stacklevel=2,
-            )
-            smoothing_fwhm = True
+        imgs = smooth_img(imgs, fwhm=smoothing_fwhm)
 
         mask_data = as_ndarray(get_surface_data(mask_img), dtype=bool)
         series = get_surface_data(imgs)
