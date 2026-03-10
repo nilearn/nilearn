@@ -461,6 +461,8 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if mask is not None:
             cut_coords = find_xyz_cut_coords(mask)
             if not check_same_fov(img, mask, raise_error=False):
+                # in case images have different FOV
+                # the cut coords may be out of the image
                 cut_coords = find_xyz_cut_coords(
                     resample_img(
                         mask,
