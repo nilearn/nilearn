@@ -57,6 +57,8 @@ Enhancements
 
 - :bdg-info:`Plotting`  Add opacity slider on :func:`~plotting.view_img` (:gh:`6107` by `Rémi Gau`_).
 
+- :bdg-info:`Plotting`  Add support for `niivue <https://niivue.com/>`_ as a backend engine for :func:`~plotting.view_surf` (:gh:`3729` by  `Alexis Thual`_, `Himanshu Aggarwal`_, `Rémi Gau`_, `Pierre-Louis Barbarant`_).
+
 Changes
 -------
 
