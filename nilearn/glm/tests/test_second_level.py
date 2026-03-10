@@ -343,6 +343,7 @@ def test_check_second_level_input_unfit_model():
 
 
 def test_check_second_level_input_dataframe():
+    """Check _check_second_level_input errors with dataframes."""
     with pytest.raises(
         ValueError,
         match="'second_level_input' DataFrame must have columns "
@@ -368,6 +369,7 @@ def test_check_second_level_input_dataframe():
 
 
 def test_check_second_level_input_confounds(shape_4d_default):
+    """Raise error when passing FLM with no subject_label."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default]
     )
@@ -414,6 +416,7 @@ def test_check_second_level_input_design_matrix(shape_4d_default):
 
 
 def test_check_confounds():
+    """Test check_confounds."""
     _check_confounds(None)  # Should not do anything
     with pytest.raises(
         TypeError, match="confounds must be a pandas DataFrame"
@@ -438,6 +441,7 @@ def test_check_confounds():
 
 
 def test_check_first_level_contrast():
+    """Test _check_first_level_contrast."""
     _check_first_level_contrast(["foo"], None)  # Should not do anything
     _check_first_level_contrast([FirstLevelModel()], "foo")
     with pytest.raises(ValueError, match="If second_level_input was a list"):
@@ -445,6 +449,7 @@ def test_check_first_level_contrast():
 
 
 def test_check_n_rows_desmat_vs_n_effect_maps():
+    """Check _check_n_rows_desmat_vs_n_effect_maps raises expected error."""
     _check_n_rows_desmat_vs_n_effect_maps(
         [1, 2, 3], np.array([[1, 2], [3, 4], [5, 6]])
     )
