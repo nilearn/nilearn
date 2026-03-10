@@ -1492,7 +1492,7 @@ def plot_glass_brain(
     if cmap is None:
         cmap = cm.cold_white_hot
         if black_bg:
-            cmap = cm.cold_hot
+            cmap = cm.cold_hot  # type
         if not plot_abs:
             cmap = plt.cm.RdBu_r
         # use only positive half of colormap if plotting absolute values

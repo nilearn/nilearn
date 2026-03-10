@@ -64,7 +64,7 @@ def _one_mesh_info(
     surf_map,
     surf_mesh,
     threshold=None,
-    cmap=cm.cold_hot,
+    cmap=cm.cold_hot,  # type: ignore[attr-defined]
     black_bg=False,
     bg_map=None,
     symmetric_cmap=True,

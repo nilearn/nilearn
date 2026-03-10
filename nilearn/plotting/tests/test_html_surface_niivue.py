@@ -26,10 +26,14 @@ def test_view_surf_errors():
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
 
-    with pytest.raises(ValueError, match="foo"):
+    with pytest.raises(
+        ValueError, match="Mismatch between number of nodes in mesh"
+    ):
         view_surf(mesh, mesh.coordinates[::2, 0], engine="niivue", hemi="left")
 
-    with pytest.raises(ValueError, match="foo"):
+    with pytest.raises(
+        ValueError, match="Mismatch between number of nodes in mesh"
+    ):
         view_surf(
             mesh,
             mesh.coordinates[:, 0],
