@@ -293,9 +293,6 @@ type = 'protected'
 allow_redefinition = false
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 exclude = [
-    '.*/tests/test_.*',
-    'doc/.*',
-    'examples/.*',
     'nilearn_cache/.*',
     'nilearn/_version.py'
 ]
@@ -339,6 +336,7 @@ filterwarnings = [
 ]
 junit_family = "xunit2"
 log_cli_level = "INFO"
+log_level = "INFO"
 markers = [
     "slow",  # for tests that exceed the timeout allowed for each test
     "single_process",  # for test that require testing n_jobs>1 or that are flaky when used xdist testing parallelization
