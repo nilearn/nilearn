@@ -690,7 +690,7 @@ by passing extra command line arguments to pytest after a ``--``.
 For example, the following would run all the tests in ``nilearn/image``
 that contain the word ``smooth``.
 
-.. code-block:: python
+.. code-block:: bash
 
       tox -- nilearn/image -k smooth
 

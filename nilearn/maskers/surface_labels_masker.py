@@ -388,6 +388,9 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
                 x.data._check_n_samples(1, f"imgs[{i}]")
 
         imgs = at_least_2d(imgs)
+
+        imgs = self._smooth(imgs)
+
         img_data = get_data(imgs)
 
         target_datatype = (

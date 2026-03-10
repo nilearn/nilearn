@@ -1165,7 +1165,7 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
     """Check whether ValueError is raised when cv is not set correctly."""
     X, y, _ = multiclass_data
 
-    for cv in ["abc", LinearSVC(dual=True)]:
+    for cv in ["abc", LinearSVC(dual=True, random_state=0)]:
         model = Decoder(mask=NiftiMasker(), cv=cv, standardize="zscore_sample")
         with pytest.raises(ValueError, match=r"Expected .* as an integer"):
             model.fit(X, y)
