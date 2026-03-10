@@ -24,11 +24,10 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.exceptions import NotImplementedWarning
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.glm.first_level import FirstLevelModel, run_glm
-from nilearn.glm.second_level import SecondLevelModel
 from nilearn.glm.second_level.second_level import (
+    SecondLevelModel,
     _check_confounds,
     _check_first_level_contrast,
     _check_input_as_first_level_model,
@@ -39,10 +38,12 @@ from nilearn.glm.second_level.second_level import (
     _process_second_level_input_as_firstlevelmodels,
     _sort_input_dataframe,
 )
-from nilearn.glm.tests.conftest import SHAPE, _confounds, fake_fmri_data
 from nilearn.image import concat_imgs, get_data
 from nilearn.maskers import NiftiMasker
+from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_surface_image_equal
+
+from .conftest import SHAPE, _confounds, fake_fmri_data
 
 ESTIMATORS_TO_CHECK = [SecondLevelModel()]
 
@@ -86,17 +87,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-@pytest.fixture
-def input_df():
-    """Input DataFrame for testing."""
-    return pd.DataFrame(
-        {
-            "effects_map_path": ["foo.nii", "bar.nii", "baz.nii"],
-            "subject_label": ["foo", "bar", "baz"],
-        }
-    )
-
-
+@pytest.mark.thread_unsafe
 def test_process_second_level_input_as_dataframe(input_df):
     """Unit tests for function _process_second_level_input_as_dataframe()."""
     sample_map, subjects_label = _process_second_level_input_as_dataframe(
@@ -149,6 +140,46 @@ def test_second_level_input_as_3d_images(
         second_level_input,
         design_matrix=design_matrix,
     )
+
+
+def test_slm_verbose(rng, affine_eye, shape_3d_default, n_subjects, capsys):
+    """Check verbosity levels.
+
+    Standard output content should be larger
+    when we go from verbosity 1 to verbosity 3.
+    """
+    images = []
+    for _ in range(n_subjects):
+        data = rng.random(shape_3d_default)
+        images.append(Nifti1Image(data, affine_eye))
+
+    second_level_input = images
+    design_matrix = pd.DataFrame(
+        [1] * len(second_level_input), columns=["intercept"]
+    )
+
+    SecondLevelModel(verbose=0).fit(
+        second_level_input,
+        design_matrix=design_matrix,
+    )
+    stdout_verbose_0 = capsys.readouterr().out
+    assert stdout_verbose_0 == ""
+
+    SecondLevelModel(verbose=1).fit(
+        second_level_input,
+        design_matrix=design_matrix,
+    )
+    stdout_verbose_1 = capsys.readouterr().out
+    assert "Computation of second level model done in" in stdout_verbose_1
+
+    SecondLevelModel(verbose=2).fit(
+        second_level_input,
+        design_matrix=design_matrix,
+    )
+    stdout_verbose_2 = capsys.readouterr().out
+
+    assert len(stdout_verbose_1) > 0
+    assert len(stdout_verbose_2) > len(stdout_verbose_1)
 
 
 @pytest.mark.slow
@@ -253,7 +284,7 @@ def test_check_shape_first_level_models(shape_4d_default, n_subjects):
 
 def test_check_second_level_input(shape_4d_default):
     """Raise errors when wrong inputs are passed to SecondLevelModel."""
-    with pytest.raises(TypeError, match="'second_level_input' must be"):
+    with pytest.raises(TypeError, match="second_level_input must be"):
         _check_second_level_input(1, None)
 
     with pytest.raises(
@@ -296,12 +327,12 @@ def test_check_second_level_input_list_wrong_type():
     """
     model = SecondLevelModel()
     second_level_input = [1, 2]
-    with pytest.raises(TypeError, match="'second_level_input' must be"):
+    with pytest.raises(TypeError, match="second_level_input must be"):
         model.fit(second_level_input)
 
 
 def test_check_second_level_input_unfit_model():
-    """Test _check_second_level_input with unfitted first level models."""
+    """Check all first level models are fit."""
     with pytest.raises(
         ValueError, match="Model sub_1 at index 0 has not been fit yet"
     ):
@@ -312,7 +343,6 @@ def test_check_second_level_input_unfit_model():
 
 
 def test_check_second_level_input_dataframe():
-    """Test _check_second_level_input with DataFrame."""
     with pytest.raises(
         ValueError,
         match="'second_level_input' DataFrame must have columns "
@@ -338,7 +368,6 @@ def test_check_second_level_input_dataframe():
 
 
 def test_check_second_level_input_confounds(shape_4d_default):
-    """Test _check_second_level_input with confounds."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default]
     )
@@ -385,7 +414,6 @@ def test_check_second_level_input_design_matrix(shape_4d_default):
 
 
 def test_check_confounds():
-    """Test _check_confounds."""
     _check_confounds(None)  # Should not do anything
     with pytest.raises(
         TypeError, match="confounds must be a pandas DataFrame"
@@ -410,7 +438,6 @@ def test_check_confounds():
 
 
 def test_check_first_level_contrast():
-    """Test _check_first_level_contrast."""
     _check_first_level_contrast(["foo"], None)  # Should not do anything
     _check_first_level_contrast([FirstLevelModel()], "foo")
     with pytest.raises(ValueError, match="If second_level_input was a list"):
@@ -418,7 +445,6 @@ def test_check_first_level_contrast():
 
 
 def test_check_n_rows_desmat_vs_n_effect_maps():
-    """Check match dimension design matrix and number of input image."""
     _check_n_rows_desmat_vs_n_effect_maps(
         [1, 2, 3], np.array([[1, 2], [3, 4], [5, 6]])
     )
@@ -475,8 +501,22 @@ def test_infer_effect_maps_error(tmp_path, shape_3d_default):
         _infer_effect_maps(second_level_input, "b")
 
 
+def test_mask_img_volume(n_subjects):
+    """Check mask_img_ with volume data."""
+    func_img, mask = fake_fmri_data()
+
+    model = SecondLevelModel(mask_img=mask)
+
+    Y = [func_img] * n_subjects
+    X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+
+    assert isinstance(model.mask_img_, Nifti1Image)
+
+
+@pytest.mark.slow
 def test_affine_output_mask(n_subjects):
-    """Make sure output image matches that of mask."""
+    """Check that output has same affine as input mask."""
     func_img, mask = fake_fmri_data()
 
     model = SecondLevelModel(mask_img=mask)
@@ -491,6 +531,7 @@ def test_affine_output_mask(n_subjects):
     assert_array_equal(z_image.affine, mask.affine)
 
 
+@pytest.mark.slow
 def test_affine_shape_output_when_provided(affine_eye, n_subjects):
     """Check fov output corresponds to the one passed to model."""
     func_img, mask = fake_fmri_data()
@@ -530,7 +571,7 @@ def test_slm_4d_image(img_4d_mni):
 
 
 def test_warning_overriding_with_masker_parameter(n_subjects):
-    """Test over-riding slm default with masker params."""
+    """Check that masker passed at init overrides model param."""
     func_img, mask = fake_fmri_data()
 
     # fit model
@@ -581,14 +622,16 @@ def test_fmri_inputs_flms(rng, confounds, shape_4d_default):
 
 
 @pytest.mark.parametrize("confounds", [None, _confounds()])
-def test_fmri_inputs_images(rng, confounds):
+def test_fmri_inputs_images(rng, shape_3d_default, confounds):
     """Test second level model with image as inputs."""
     # prepare correct input dataframe and lists
     p, q = 80, 10
     X = rng.standard_normal(size=(p, q))
     design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
-    fmri_data, _ = fake_fmri_data()
+    shape_3d = [(*shape_3d_default, 1)]
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(shape_3d)
+    fmri_data = fmri_data[0]
 
     # niimgs as input
     niimgs = [fmri_data, fmri_data, fmri_data]
@@ -677,17 +720,19 @@ def test_fmri_inputs_pandas_errors():
 def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
     """Raise the proper errors when invalid inputs are passed to fit."""
     # prepare fake data
-    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        (shape_4d_default,)
-    )
+    shapes = (shape_4d_default,)
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
+    fmri_data = fmri_data[0]
+    n_samples = fmri_data.shape[-1]
+    design_matrices = pd.DataFrame(np.ones((n_samples, 1)), columns=["a"])
 
     # prepare correct input first level models
     flm = FirstLevelModel(subject_label="01").fit(
-        fmri_data[0], design_matrices=design_matrices[0]
+        fmri_data, design_matrices=design_matrices
     )
 
     # test first level model requirements
-    with pytest.raises(TypeError, match="'second_level_input' must be"):
+    with pytest.raises(TypeError, match="second_level_input must be"):
         SecondLevelModel().fit(second_level_input=flm)
     with pytest.raises(TypeError, match="at least two"):
         SecondLevelModel().fit(second_level_input=[flm])
@@ -714,10 +759,8 @@ def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
 @pytest.mark.parametrize(
     "filename, sep", [("design.csv", ","), ("design.tsv", "\t")]
 )
-def test_secondlevelmodel_design_matrix_path(
-    img_3d_mni, tmp_path, filename, sep
-):
-    """Test design matrix as file fit input requirements."""
+def test_design_matrix_path(img_3d_mni, tmp_path, filename, sep):
+    """Smoke test of design matrices paths."""
     second_level_input = [img_3d_mni, img_3d_mni]
     design_matrix = pd.DataFrame(
         np.ones((len(second_level_input), 1)), columns=["a"]
@@ -741,8 +784,8 @@ def test_secondlevelmodel_design_matrix_path(
 
 
 @pytest.mark.parametrize("design_matrix", ["foo", Path("foo")])
-def test_secondlevelmodel_design_matrix_error_path(img_3d_mni, design_matrix):
-    """Test error design matrix as file fit input requirements."""
+def test_design_matrix_error_path(img_3d_mni, design_matrix):
+    """Test invalid design matrices paths."""
     second_level_input = [img_3d_mni, img_3d_mni, img_3d_mni]
     with pytest.raises(
         ValueError, match=r"Tables to load can only be TSV or CSV."
@@ -753,8 +796,8 @@ def test_secondlevelmodel_design_matrix_error_path(img_3d_mni, design_matrix):
 
 
 @pytest.mark.parametrize("design_matrix", [1, ["foo"]])
-def test_secondlevelmodel_design_matrix_error_type(img_3d_mni, design_matrix):
-    """Test design matrix fit input requirements."""
+def test_design_matrix_error_type(img_3d_mni, design_matrix):
+    """Test invalid design matrices."""
     second_level_input = [img_3d_mni, img_3d_mni, img_3d_mni]
 
     with pytest.raises(TypeError, match="'design_matrix' must be "):
@@ -763,14 +806,15 @@ def test_secondlevelmodel_design_matrix_error_type(img_3d_mni, design_matrix):
         )
 
 
-def test_fmri_img_inputs_errors(confounds):
-    """Test niimgs fit input requirements."""
-    fmri_data, _ = fake_fmri_data()
+def test_fit_inputs_errors(confounds):
+    """Check errors raissed by fit when validating inputs."""
+    _, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
+    fmri_data = fmri_data[0]
 
+    # test niimgs requirements
     niimgs = [fmri_data, fmri_data, fmri_data]
     with pytest.raises(ValueError, match="require a design matrix"):
         SecondLevelModel().fit(niimgs)
-
     with pytest.raises(
         TypeError,
         match=r"Elements of second_level_input must be of the same type.",
@@ -778,8 +822,9 @@ def test_fmri_img_inputs_errors(confounds):
         SecondLevelModel().fit([*niimgs, []], confounds)
 
 
+@pytest.mark.slow
 def test_second_level_glm_computation(n_subjects):
-    """Compare output of compute_contrast and run_glm."""
+    """Compare compute_contrast with run_glm outputs."""
     func_img, mask = fake_fmri_data()
 
     model = SecondLevelModel(mask_img=mask)
@@ -803,11 +848,11 @@ def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
        voxelwise attributes before fitting the model, \
        before computing a contrast.
     """
-    fmri_data, mask = fake_fmri_data()
+    mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
 
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
 
-    Y = [fmri_data] * n_subjects
+    Y = fmri_data * n_subjects
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     model.fit(Y, design_matrix=X)
 
@@ -826,11 +871,11 @@ def test_second_level_voxelwise_attribute_errors_minimize_memory(
        voxelwise attributes before fitting the model, \
        when not setting ``minimize_memory`` to ``True``.
     """
-    fmri_data, mask = fake_fmri_data()
+    mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
 
     model = SecondLevelModel(mask_img=mask, minimize_memory=True)
 
-    Y = [fmri_data] * n_subjects
+    Y = fmri_data * n_subjects
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     model.fit(Y, design_matrix=X)
 
@@ -844,22 +889,21 @@ def test_second_level_voxelwise_attribute_errors_minimize_memory(
 @pytest.mark.parametrize("attribute", ["residuals", "predicted", "r_square"])
 def test_second_level_voxelwise_attribute(attribute, n_subjects):
     """Smoke test for voxelwise attributes for SecondLevelModel."""
-    fmri_data, mask = fake_fmri_data()
+    mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
-    Y = [fmri_data] * n_subjects
+    Y = fmri_data * n_subjects
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     model.fit(Y, design_matrix=X)
     model.compute_contrast()
-
     getattr(model, attribute)
 
 
 @pytest.mark.slow
 def test_second_level_residuals(n_subjects):
     """Tests residuals computation for SecondLevelModel."""
-    fmri_data, mask = fake_fmri_data()
+    mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
-    Y = [fmri_data] * n_subjects
+    Y = fmri_data * n_subjects
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     model.fit(Y, design_matrix=X)
     model.compute_contrast()
@@ -871,17 +915,24 @@ def test_second_level_residuals(n_subjects):
 
 
 @pytest.mark.slow
-def test_second_level_contrast_computation_smoke(fitted_slm):
+def test_second_level_contrast_computation_smoke(n_subjects):
     """Smoke test for different contrasts in fixed effects."""
-    ncol = len(fitted_slm.design_matrix_.columns)
-    c1 = np.eye(ncol)[0, :]
-    fitted_slm.compute_contrast(second_level_contrast=c1)
+    func_img, mask = fake_fmri_data()
+
+    model = SecondLevelModel(mask_img=mask)
+    Y = [func_img] * n_subjects
+    X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+
+    ncol = len(model.design_matrix_.columns)
+    c1, _ = np.eye(ncol)[0, :], np.zeros(ncol)
+    model.compute_contrast(second_level_contrast=c1)
 
     # formula should work (passing variable name directly)
-    fitted_slm.compute_contrast("intercept")
+    model.compute_contrast("intercept")
 
     # or simply pass nothing
-    fitted_slm.compute_contrast()
+    model.compute_contrast()
 
 
 @pytest.mark.slow
@@ -895,73 +946,68 @@ def test_second_level_contrast_computation_smoke(fitted_slm):
         "effect_variance",
     ],
 )
-def test_second_level_contrast_computation_all(fitted_slm, output_type):
+def test_second_level_contrast_computation_all(output_type, n_subjects):
     """Test output_type='all', and verify images are equivalent."""
-    ncol = len(fitted_slm.design_matrix_.columns)
-    c1 = np.eye(ncol)[0, :]
+    func_img, mask = fake_fmri_data()
 
-    all_images = fitted_slm.compute_contrast(
+    model = SecondLevelModel(mask_img=mask)
+    Y = [func_img] * n_subjects
+    X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+
+    ncol = len(model.design_matrix_.columns)
+    c1, _ = np.eye(ncol)[0, :], np.zeros(ncol)
+
+    all_images = model.compute_contrast(
         second_level_contrast=c1, output_type="all"
     )
 
     assert_array_equal(
         get_data(all_images[output_type]),
         get_data(
-            fitted_slm.compute_contrast(
+            model.compute_contrast(
                 second_level_contrast=c1, output_type=output_type
             )
         ),
     )
 
 
-def test_second_level_contrast_computation_unfitted_errors():
-    """Check error is raised when computing contrast on unfitted SLM.
-
-    # TODO
-    # do in estimator_checks
-    # asking for contrast before model fit gives error
-    """
-    model = SecondLevelModel()
-
-    with pytest.raises(ValueError, match="not fitted yet"):
-        model.compute_contrast(second_level_contrast="intercept")
-
-
-def test_second_level_contrast_computation_errors(fitted_slm):
-    """Check several errors during contrast computation."""
-    ncol = len(fitted_slm.design_matrix_.columns)
-    c1 = np.eye(ncol)[0, :]
-    cnull = np.zeros(ncol)
-
-    # passing null contrast should give back a value error
-    with pytest.raises(ValueError, match="Contrast is null"):
-        fitted_slm.compute_contrast(cnull)
-
-    # passing wrong parameters
-    with pytest.raises(ValueError, match="'stat_type' must be one of"):
-        fitted_slm.compute_contrast(
-            second_level_contrast=c1, second_level_stat_type=""
-        )
-    with pytest.raises(ValueError, match="'stat_type' must be one of"):
-        fitted_slm.compute_contrast(
-            second_level_contrast=c1, second_level_stat_type=[]
-        )
-    with pytest.raises(ValueError, match="'output_type' must be one of "):
-        fitted_slm.compute_contrast(second_level_contrast=c1, output_type="")
-
-
-def test_second_level_contrast_computation_none_errors(rng, n_subjects):
-    """Check that passing no explicit contrast when the design
-    matrix has more than one columns raises an error.
-    """
+@pytest.mark.slow
+def test_contrast_computation_errors(rng, n_subjects):
+    """Check several errors with contrast computation."""
     func_img, mask = fake_fmri_data()
 
     model = SecondLevelModel(mask_img=mask)
+
+    # asking for contrast before model fit gives error
+    with pytest.raises(ValueError, match="not fitted yet"):
+        model.compute_contrast(second_level_contrast="intercept")
 
     Y = [func_img] * n_subjects
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     model = model.fit(Y, design_matrix=X)
 
+    ncol = len(model.design_matrix_.columns)
+    c1, cnull = np.eye(ncol)[0, :], np.zeros(ncol)
+
+    # passing null contrast should give back a value error
+    with pytest.raises(ValueError, match="Contrast is null"):
+        model.compute_contrast(cnull)
+
+    # passing wrong parameters
+    with pytest.raises(ValueError, match="'stat_type' must be one of"):
+        model.compute_contrast(
+            second_level_contrast=c1, second_level_stat_type=""
+        )
+    with pytest.raises(ValueError, match="'stat_type' must be one of"):
+        model.compute_contrast(
+            second_level_contrast=c1, second_level_stat_type=[]
+        )
+    with pytest.raises(ValueError, match="'output_type' must be one of "):
+        model.compute_contrast(second_level_contrast=c1, output_type="")
+
+    # check that passing no explicit contrast when the design
+    # matrix has more than one columns raises an error
     X = pd.DataFrame(rng.uniform(size=(n_subjects, 2)), columns=["r1", "r2"])
     model = model.fit(Y, design_matrix=X)
     with pytest.raises(
@@ -970,28 +1016,47 @@ def test_second_level_contrast_computation_none_errors(rng, n_subjects):
         model.compute_contrast(None)
 
 
-def test_second_level_t_contrast_length_errors(fitted_slm):
-    """Check SLM error T-contrast computation shape."""
+@pytest.mark.slow
+def test_compute_contrast_t_contrast_length_errors(n_subjects):
+    """Check error with t contrast computation error."""
+    func_img, mask = fake_fmri_data()
+
+    model = SecondLevelModel(mask_img=mask)
+
+    func_img, mask = fake_fmri_data()
+    Y = [func_img] * n_subjects
+    X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+
     with pytest.raises(
         ValueError,
         match=(r"t contrasts should be of length P=1, but it has length 2."),
     ):
-        fitted_slm.compute_contrast(second_level_contrast=[1, 2])
+        model.compute_contrast(second_level_contrast=[1, 2])
 
 
 @pytest.mark.slow
-def test_second_level_f_contrast_length_errors(fitted_slm):
-    """Check SLM error F-contrast computation shape."""
+def test_compute_contrast_f_contrast_length_errors(n_subjects):
+    """Check error with F contrast computation error."""
+    func_img, mask = fake_fmri_data()
+
+    model = SecondLevelModel(mask_img=mask)
+
+    func_img, mask = fake_fmri_data()
+    Y = [func_img] * n_subjects
+    X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+
     with pytest.raises(
         ValueError,
         match=(r"F contrasts should have .* columns, but it has .*"),
     ):
-        fitted_slm.compute_contrast(second_level_contrast=np.eye(2))
+        model.compute_contrast(second_level_contrast=np.eye(2))
 
 
 @pytest.mark.slow
-def test_second_level_contrast_computation_with_memory_caching(n_subjects):
-    """Smoke test for caching of SLM."""
+def test_contrast_computation_with_memory_caching(n_subjects):
+    """Check compute_contrast with caching."""
     func_img, mask = fake_fmri_data()
 
     model = SecondLevelModel(mask_img=mask, memory="nilearn_cache")
@@ -1033,6 +1098,7 @@ def test_second_lvl_dataframe_computation(tmp_path, shape_3d_default):
 # -----------------------surface tests----------------------- #
 
 
+@pytest.mark.thread_unsafe
 def test_second_level_input_as_surface_image(surf_img_1d, n_subjects):
     """Test slm with a list surface images as input."""
     second_level_input = [surf_img_1d for _ in range(n_subjects)]
@@ -1043,6 +1109,8 @@ def test_second_level_input_as_surface_image(surf_img_1d, n_subjects):
 
     model = SecondLevelModel()
     model = model.fit(second_level_input, design_matrix=design_matrix)
+
+    assert isinstance(model.mask_img_, SurfaceImage)
 
 
 def test_second_level_input_as_surface_image_3d(surf_img_2d, n_subjects):
@@ -1069,6 +1137,7 @@ def test_second_level_input_error_surface_image_2d(surf_img_2d):
         model.fit(second_level_input, design_matrix=design_matrix)
 
 
+@pytest.mark.thread_unsafe
 def test_second_level_input_as_surface_image_3d_same_as_list_2d(
     surf_img_1d, n_subjects
 ):
@@ -1102,6 +1171,7 @@ def test_second_level_input_as_surface_no_design_matrix(
         model.fit(second_level_input, design_matrix=None)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 def test_second_level_input_as_surface_image_with_mask(
     surf_img_1d, surf_mask_dim, surf_mask_1d, surf_mask_2d, n_subjects
@@ -1118,6 +1188,7 @@ def test_second_level_input_as_surface_image_with_mask(
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
+@pytest.mark.thread_unsafe
 def test_second_level_input_with_wrong_mask(
     surf_img_1d, surf_mask_1d, img_mask_mni, n_subjects
 ):
@@ -1147,21 +1218,6 @@ def test_second_level_input_with_wrong_mask(
         model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
-def test_second_level_input_as_surface_image_warning_smoothing(
-    surf_img_1d, n_subjects
-):
-    """Warn smoothing surface not implemented."""
-    second_level_input = [surf_img_1d for _ in range(n_subjects)]
-
-    design_matrix = pd.DataFrame(
-        [1] * len(second_level_input), columns=["intercept"]
-    )
-
-    model = SecondLevelModel(smoothing_fwhm=8.0)
-    with pytest.warns(NotImplementedWarning, match="not yet supported"):
-        model = model.fit(second_level_input, design_matrix=design_matrix)
-
-
 def test_second_level_input_as_flm_of_surface_image(
     surface_glm_data, n_subjects
 ):
@@ -1181,10 +1237,9 @@ def test_second_level_input_as_flm_of_surface_image(
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
-def test_second_level_surface_image_contrast_computation(
-    surf_img_1d, n_subjects
-):
-    """Check several types of contrast computation with surface SLM."""
+@pytest.mark.thread_unsafe
+def test_surface_image_contrast_computation(surf_img_1d, n_subjects):
+    """Check compute_contrast on surface images."""
     second_level_input = [surf_img_1d for _ in range(n_subjects)]
 
     design_matrix = pd.DataFrame(
