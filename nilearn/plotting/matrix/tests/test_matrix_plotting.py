@@ -1,9 +1,13 @@
+from itertools import permutations
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
 
+from nilearn._utils.helpers import is_gil_enabled
+from nilearn.conftest import _n_regions
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
@@ -20,13 +24,15 @@ from nilearn.plotting.matrix.matrix_plotting import (
 
 
 @pytest.fixture
-def mat():
-    return np.zeros((10, 10))
+def mat(n_regions) -> np.ndarray:
+    """Return a dummy matrix for plotting."""
+    return np.zeros((n_regions, n_regions))
 
 
 @pytest.fixture
-def labels():
-    return [str(i) for i in range(10)]
+def labels(n_regions) -> list[str]:
+    """Return a list of dummy labels."""
+    return [str(i) for i in range(n_regions)]
 
 
 ##############################################################################
@@ -44,6 +50,7 @@ def test_sanitize_figure_and_axes_error(fig, axes):
         _sanitize_figure_and_axes(fig, axes)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "fig,axes,expected",
     [
@@ -61,19 +68,20 @@ def test_sanitize_figure_and_axes(fig, axes, expected):
 
 
 @pytest.mark.parametrize(
-    "matrix, labels, reorder",
+    "labels, reorder",
     [
-        (np.zeros((10, 10)), [0, 1, 2], False),
-        (np.zeros((10, 10)), None, True),
-        (np.zeros((10, 10)), [str(i) for i in range(10)], " "),
+        ([0, 1, 2], False),
+        (None, True),
+        ([str(i) for i in range(_n_regions())], " "),
     ],
 )
-def test_matrix_plotting_errors(matrix, labels, reorder):
+def test_matrix_plotting_errors(labels, reorder, mat):
     """Test invalid input values for plot_matrix."""
     with pytest.raises(ValueError):
-        plot_matrix(matrix, labels=labels, reorder=reorder)
+        plot_matrix(mat, labels=labels, reorder=reorder)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("tri", VALID_TRI_VALUES)
 def test_matrix_plotting_with_labels_and_different_tri(mat, labels, tri):
     """Test plot_matrix with labels on only part of the matrix."""
@@ -100,9 +108,7 @@ def test_matrix_plotting_set_title(mat, labels, title):
         assert ax._axes.title.get_text() == title
 
 
-def test_matrix_plotting_reorder(mat, labels):
-    from itertools import permutations
-
+def test_matrix_plotting_reorder(matplotlib_pyplot, mat, labels):  # noqa: ARG001
     # test if reordering with default linkage works
     idx = [2, 3, 5]
     # make symmetric matrix of similarities so we can get a block
@@ -120,8 +126,6 @@ def test_matrix_plotting_reorder(mat, labels):
         "Clustering does not find block structure."
     )
 
-    plt.close()
-
     # test if reordering with specific linkage works
     ax = plot_matrix(mat, labels=labels, reorder="complete")
 
@@ -138,7 +142,11 @@ def test_plot_matrix_empty_labels():
     plot_matrix(mat, labels=col_labels)
 
 
-def test_show_design_matrix(tmp_path):
+@pytest.mark.skipif(
+    not is_gil_enabled(),
+    reason="Saving figures is not supported when GIL is disabled.",
+)
+def test_save_design_matrix(tmp_path):
     """Test plot_design_matrix saving to file."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
@@ -207,6 +215,9 @@ def test_show_event_plot(tmp_path):
 
     assert fig is not None
 
+    if not is_gil_enabled():
+        pytest.skip("Saving figures is not supported when GIL is disabled.")
+
     # Test save
     fig = plot_event(model_event, output_file=tmp_path / "event.png")
 
@@ -218,6 +229,7 @@ def test_show_event_plot(tmp_path):
     assert (tmp_path / "event.pdf").exists()
 
 
+@pytest.mark.thread_unsafe
 def test_plot_event_error():
     """Test plot_event error with cmap."""
     onset = np.linspace(0, 19.0, 20)
@@ -249,6 +261,7 @@ def test_plot_event_error():
         plot_event(model_event, cmap="tab10")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("suffix, sep", [(".csv", ","), (".tsv", "\t")])
 def test_plot_event_path_tsv_csv(tmp_path, suffix, sep):
     """Test plot_events directly from file."""
@@ -260,8 +273,12 @@ def test_plot_event_path_tsv_csv(tmp_path, suffix, sep):
     plot_event([filename, str(filename)])
 
 
-def test_show_contrast_matrix(tmp_path):
-    """Test that the show code indeed (formally) runs."""
+@pytest.mark.skipif(
+    not is_gil_enabled(),
+    reason="Saving figures is not supported when GIL is disabled.",
+)
+def test_save_contrast_matrix(tmp_path):
+    """Check saving matrices to file."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
         frame_times, drift_model="polynomial", drift_order=3
@@ -293,10 +310,10 @@ def test_show_contrast_matrix_axes():
 
     # to actually check we need get_layout_engine, but even without it the
     # above allows us to test the kwargs are at least okay
-    pytest.importorskip("matplotlib", minversion="3.5.0")
     assert "constrained" in fig.get_layout_engine().__class__.__name__.lower()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("cmap", ["RdBu_r", "bwr", "seismic_r"])
 def test_plot_design_matrix_correlation(cmap, tmp_path):
     """Smoke test for valid cmaps and output file."""
@@ -312,6 +329,7 @@ def test_plot_design_matrix_correlation(cmap, tmp_path):
     assert (tmp_path / "corr_mat.png").exists()
 
 
+@pytest.mark.thread_unsafe
 def test_plot_design_matrix_correlation_smoke_path(tmp_path):
     """Check that plot_design_matrix_correlation works with paths."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
@@ -347,3 +365,15 @@ def test_plot_design_matrix_correlation_errors(mat):
     dmtx = pd.DataFrame({"constant": [1, 1], "drift_1": [0, 1]})
     with pytest.raises(ValueError, match="Nothing left to plot after "):
         plot_design_matrix_correlation(dmtx)
+
+
+def test_override_kwargs(mat):
+    """Ensure kwargs can contain value that won't raise duplicate error.
+
+    In this case the value passed in kwargs
+    override the defaults used by Nilearn internally.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5904
+    """
+    kwargs = {"interpolation": "none", "aspect": "equal"}
+    plot_matrix(mat, **kwargs)

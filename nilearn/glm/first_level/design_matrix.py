@@ -104,10 +104,10 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     frame_times : array of shape(n_scans),
         list of values representing the desired TRs
 
-    order : :obj:`int`, optional,
+    order : :obj:`int`,
         order of the drift model (in case it is polynomial)
 
-    high_pass : :obj:`float`, optional,
+    high_pass : :obj:`float`
         high-pass frequency in case of a cosine model (in Hz)
 
     Returns

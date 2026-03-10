@@ -1,5 +1,7 @@
 """Functions for surface visualization."""
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
@@ -373,6 +375,7 @@ def plot_surf_contours(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    check_params(locals())
     roi_map, surf_mesh, _ = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, map_var_name="roi_map"
     )
@@ -844,7 +847,7 @@ def plot_surf_roi(
         correct view, `hemi` should have a value corresponding to `roi_map`
         data.
 
-        .. nilearn_versionchanged :: nilearn 0.13.0dev
+        .. nilearn_versionchanged :: nilearn 0.13.0
 
             Negative or non-integer values are no longer allowed.
 
@@ -999,6 +1002,13 @@ def plot_surf_roi(
 
     if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
         raise ValueError("Non-integer values in roi_map are not allowed.")
+
+    if (isinstance(cmap, str) and Path(cmap).exists()) or isinstance(
+        cmap, Path
+    ):
+        cmap_path = Path(cmap)
+        sep = "\t" if cmap_path.suffix == ".tsv" else ","
+        cmap = pd.read_csv(cmap, sep=sep)
 
     if isinstance(cmap, pd.DataFrame):
         cmap = create_colormap_from_lut(cmap)

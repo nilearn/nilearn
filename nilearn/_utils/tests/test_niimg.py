@@ -9,8 +9,12 @@ import pytest
 from nibabel import Nifti1Header, Nifti1Image, load
 
 from nilearn._utils.niimg import (
+    _get_data,
     _get_target_dtype,
+    ensure_finite_data,
+    has_non_finite,
     img_data_dtype,
+    is_binary_niimg,
     load_niimg,
     repr_niimgs,
 )
@@ -24,6 +28,19 @@ def img1(affine_eye):
     return Nifti1Image(data, affine=affine_eye)
 
 
+@pytest.fixture
+def img_binary(affine_eye, has_inf, has_nan, non_bin):
+    data = np.ones((3, 3, 3, 3))
+
+    if has_inf:
+        data[0, 0, 0, 0] = np.inf
+    if has_nan:
+        data[1, 1, 1, 1] = np.nan
+    if non_bin:
+        data[2, 2, 2, 2] = 5
+    return Nifti1Image(data, affine=affine_eye)
+
+
 def test_new_img_like_side_effect(img1):
     hash1 = joblib.hash(img1)
     new_img_like(img1, np.ones((2, 2, 2, 2)), img1.affine.copy())
@@ -31,7 +48,6 @@ def test_new_img_like_side_effect(img1):
     assert hash1 == hash2
 
 
-@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_get_target_dtype(affine_eye):
     img = Nifti1Image(np.ones((2, 2, 2), dtype=np.float64), affine=affine_eye)
     assert get_data(img).dtype.kind == "f"
@@ -52,7 +68,6 @@ def test_get_target_dtype(affine_eye):
     assert dtype_kind_int == np.int32
 
 
-@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_img_data_dtype(rng, affine_eye, tmp_path):
     # Ignoring complex, binary, 128+ bit, RGBA
     nifti1_dtypes = (
@@ -90,6 +105,7 @@ def test_img_data_dtype(rng, affine_eye, tmp_path):
     assert not all(dtype_matches)
 
 
+@pytest.mark.thread_unsafe
 def test_load_niimg(img1, tmp_path):
     filename = write_imgs_to_path(img1, file_path=tmp_path, create_files=True)
     filename = Path(filename)
@@ -249,6 +265,7 @@ def test_repr_niimgs_with_niimg_pathlib():
     assert repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("shorten", [True, False])
 def test_repr_niimgs_with_niimg(
     shorten, tmp_path, affine_eye, img_3d_ones_eye, shape_3d_default
@@ -276,4 +293,57 @@ def test_repr_niimgs_with_niimg(
     assert (
         repr_niimgs(img_3d_ones_eye, shorten=True)
         == f"{class_name}('{Path(filename).name[:18]}...')"
+    )
+
+
+@pytest.mark.parametrize(
+    "has_inf,has_nan,non_bin,expected",
+    [
+        (False, False, False, False),
+        (True, False, False, True),
+        (False, True, False, True),
+        (False, False, True, False),
+        (True, True, True, True),
+    ],
+)
+def test_has_non_finite(img_binary, expected):
+    """Test nilearn._utils.niimg.has_non_finite."""
+    data = _get_data(img_binary)
+    has_not_finite, _ = has_non_finite(data)
+    assert has_not_finite == expected
+
+
+@pytest.mark.parametrize("has_inf,has_nan,non_bin", [(True, True, False)])
+def test_ensure_finite_data(img_binary):
+    data = _get_data(img_binary)
+    data_returned = ensure_finite_data(data)
+    expected_data = np.ones((3, 3, 3, 3))
+    expected_data[0, 0, 0, 0] = 0
+    expected_data[1, 1, 1, 1] = 0
+
+    assert np.array_equal(data_returned, expected_data)
+
+
+@pytest.mark.parametrize(
+    "has_inf,has_nan,non_bin,accept_non_finite,expected",
+    [
+        (False, False, False, True, True),
+        (False, False, False, False, True),
+        (True, False, False, True, True),
+        (True, False, False, False, False),
+        (False, True, False, True, True),
+        (False, True, False, False, False),
+        (True, True, False, True, True),
+        (True, True, False, False, False),
+        (False, False, True, True, False),
+        (False, False, True, False, False),
+        (True, True, True, True, False),
+        (True, True, True, False, False),
+    ],
+)
+def test_is_binary_niimg(img_binary, accept_non_finite, expected):
+    """Test nilearn._utils.niimg.is_binary_niimg."""
+    assert (
+        is_binary_niimg(img_binary, accept_non_finite=accept_non_finite)
+        == expected
     )

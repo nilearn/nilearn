@@ -9,17 +9,13 @@ from sklearn.utils import Bunch
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.niimg import load_niimg, safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn._utils.tags import (
-    accept_niimg_input,
-    is_masker,
-)
-from nilearn.glm.thresholding import threshold_stats_img
+from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD, threshold_stats_img
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
@@ -30,7 +26,90 @@ from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
 
-def _turn_into_full_path(bunch, dir: Path) -> str | Bunch:
+def check_generate_report_input(
+    height_control, cluster_threshold, min_distance, plot_type
+) -> None:
+    height_control_methods = [
+        "fpr",
+        "fdr",
+        "bonferroni",
+        None,
+    ]
+    check_parameter_in_allowed(
+        height_control,
+        height_control_methods,
+        "height_control",
+    )
+
+    if cluster_threshold < 0:
+        raise ValueError(
+            f"'cluster_threshold' must be > 0. Got {cluster_threshold=}"
+        )
+
+    if min_distance < 0:
+        raise ValueError(f"'min_distance' must be > 0. Got {min_distance=}")
+
+    if plot_type not in {"slice", "glass"}:
+        raise ValueError(
+            "'plot_type' must be one of {'slice', 'glass'}. "
+            f"Got {plot_type=}"
+        )
+
+
+def sanitize_generate_report_input(
+    height_control,
+    threshold,
+    cut_coords,
+    plot_type,
+    first_level_contrast,
+    is_first_level_glm: bool,
+):
+    warning_messages = []
+
+    if is_first_level_glm and first_level_contrast is not None:
+        warnings.warn(
+            "'first_level_contrast' is ignored for FirstLevelModel."
+            "Setting first_level_contrast=None.",
+            stacklevel=find_stack_level(),
+        )
+        first_level_contrast = None
+
+    if height_control is None:
+        # TODO (nilearn >= 0.15.0) update to DEFAULT_Z_THRESHOLD
+        if threshold is None:
+            threshold = 3.09
+
+        # TODO (nilearn >= 0.15.0) remove
+        if threshold == 3.09:
+            warnings.warn(
+                "\nFrom nilearn version>=0.15, "
+                "the default 'threshold' will be set to "
+                f"{DEFAULT_Z_THRESHOLD}.",
+                FutureWarning,
+                stacklevel=find_stack_level(),
+            )
+
+    elif threshold is not None:
+        threshold = float(threshold)
+        warning_messages.append(
+            f"\n'{threshold=}' is not used with '{height_control=}'."
+            "\n'threshold' is only used when 'height_control=None'. "
+            "\n'threshold' was set to 'None'. "
+        )
+        threshold = None
+
+    if cut_coords is not None and plot_type == "glass":
+        warning_messages.append(
+            f"\n'{cut_coords=}' is not used with '{plot_type=}'."
+            "\n'cut_coords' is only used when 'plot_type='slice''. "
+            "\n'cut_coords' was set to None. "
+        )
+        cut_coords = None
+
+    return threshold, cut_coords, first_level_contrast, warning_messages
+
+
+def turn_into_full_path(bunch, dir: Path) -> str | Bunch:
     """Recursively turns str values of a dict into path.
 
     Used to turn relative paths into full paths.
@@ -40,13 +119,13 @@ def _turn_into_full_path(bunch, dir: Path) -> str | Bunch:
     tmp = Bunch()
     for k in bunch:
         if isinstance(bunch[k], (dict, str, Bunch)):
-            tmp[k] = _turn_into_full_path(bunch[k], dir)
+            tmp[k] = turn_into_full_path(bunch[k], dir)
         else:
             tmp[k] = bunch[k]
     return tmp
 
 
-def _glm_model_attributes_to_dataframe(model):
+def glm_model_attributes_to_dataframe(model) -> pd.DataFrame:
     """Return a pandas dataframe with pertinent model attributes & information.
 
     Parameters
@@ -84,7 +163,7 @@ def _glm_model_attributes_to_dataframe(model):
     return model_attributes
 
 
-def _load_bg_img(bg_img, is_volume_glm):
+def load_bg_img(bg_img, is_volume_glm):
     if bg_img == "MNI152TEMPLATE":
         try:
             from nilearn.plotting.image.utils import (  # type: ignore[assignment]
@@ -99,9 +178,10 @@ def _load_bg_img(bg_img, is_volume_glm):
             "'bg_img' must a SurfaceImage instance. "
             f"Got {bg_img.__class__.__name__}"
         )
+    return bg_img
 
 
-def _mask_to_plot(model, bg_img, cut_coords):
+def mask_to_plot(model, bg_img):
     """Plot a mask image and creates PNG code of it.
 
     Parameters
@@ -112,8 +192,6 @@ def _mask_to_plot(model, bg_img, cut_coords):
         See :ref:`extracting_data`.
         The background image that the mask will be plotted on top of.
         To turn off background image, just pass "bg_img=None".
-
-    %(cut_coords)s
 
 
     Returns
@@ -127,9 +205,6 @@ def _mask_to_plot(model, bg_img, cut_coords):
 
     from matplotlib import pyplot as plt
 
-    from nilearn.plotting import plot_roi
-
-    # Select mask_img to use for plotting
     if not model._is_volume_glm():
         fig = model.masker_._create_figure_for_report()
         mask_plot = figure_to_png_base64(fig)
@@ -137,22 +212,13 @@ def _mask_to_plot(model, bg_img, cut_coords):
         plt.close()
         return mask_plot
 
-    if is_masker(model.mask_img) and accept_niimg_input(model.mask_img):
-        mask_img = model.masker_.mask_img_
-    else:
-        try:
-            # check that mask_img is a niiimg-like object
-            check_niimg(model.mask_img)
-            mask_img = model.mask_img
-        except Exception:
-            mask_img = model.masker_.mask_img_
+    from nilearn.plotting import plot_roi
 
     plot_roi(
-        roi_img=mask_img,
+        roi_img=model._mask_img,
         bg_img=bg_img,
         display_mode="z",
         cmap="Set1",
-        cut_coords=cut_coords,
         colorbar=False,
     )
     mask_plot = figure_to_png_base64(plt.gcf())
@@ -163,8 +229,9 @@ def _mask_to_plot(model, bg_img, cut_coords):
 
 
 @fill_doc
-def _make_stat_maps_contrast_clusters(
+def make_stat_maps_contrast_clusters(
     stat_img,
+    mask_img,
     threshold_orig,
     alpha,
     cluster_threshold,
@@ -192,6 +259,9 @@ def _make_stat_maps_contrast_clusters(
        stat_img=None is acceptable.
        If it is 'fdr' or 'bonferroni',
        an error is raised if stat_img is None.
+
+    mask_img: Nifti or Surface image
+        Mask used during the fit of the model.
 
     contrasts_plots : Dict[str, str]
         Contains contrast names & HTML code of the contrast's PNG plot.
@@ -264,20 +334,9 @@ def _make_stat_maps_contrast_clusters(
         # Necessary to avoid :
         # https://github.com/nilearn/nilearn/issues/4192
 
-        # We silence further warnings about threshold:
-        #   it would throw one per contrast and
-        #   and also because threshold_stats_img and make_glm_report
-        #   have different defaults.
-        # TODO (nilearn>=0.15)
-        # remove
-        warnings.filterwarnings(
-            "ignore",
-            category=FutureWarning,
-            message=".*default 'threshold' will be set.*",
-        )
-
         thresholded_img, threshold = threshold_stats_img(
             stat_img=stat_map_img,
+            mask_img=mask_img,
             threshold=threshold_orig,
             alpha=alpha,
             cluster_threshold=cluster_threshold,
@@ -450,7 +509,6 @@ def _stat_map_to_png(
         if isinstance(stat_img, SurfaceImage):
             data = get_surface_data(stat_img)
         else:
-            stat_img = load_niimg(stat_img)
             data = safe_get_data(stat_img, ensure_finite=True)
 
         vmin = np.nanmin(data)

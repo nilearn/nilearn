@@ -29,15 +29,15 @@ def main():
     n_issues = 0
 
     for filename in filenames:
-        for func_def in list_functions(filename):
+        for func_def in list_functions(filename, include="all"):
             if PUBLIC_API_ONLY and func_def.name not in public_api:
                 continue
             n_issues = check_def(func_def, n_issues, filename)
 
-        for class_def in list_classes(filename):
+        for class_def in list_classes(filename, include="all"):
             if PUBLIC_API_ONLY and class_def.name not in public_api:
                 continue
-            for meth_def in list_functions(class_def):
+            for meth_def in list_functions(class_def, include="all"):
                 n_issues = check_def(meth_def, n_issues, filename)
 
     print(f"{n_issues} issues detected\n\n")

@@ -38,7 +38,9 @@ def loaded_motor_activation_image():
     return load_img(load_sample_motor_activation_image())
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "mask_img, img",
     (
@@ -56,6 +58,7 @@ def test_nifti_masker_create_figure_for_report(src_masker, mask_img, img):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("mask_img", [load_mni152_gm_mask(), None])
 @pytest.mark.parametrize("img", [None, loaded_motor_activation_image()])
@@ -99,6 +102,7 @@ def test_nifti_labels_masker_create_figure_for_report(
 
 @pytest.mark.slow
 @pytest.mark.mpl_image_compare
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("mask_img", [load_mni152_gm_mask(), None])
 @pytest.mark.parametrize("img", [None, loaded_motor_activation_image()])
 @pytest.mark.parametrize("src_masker", [NiftiMapsMasker, MultiNiftiMapsMasker])
@@ -118,6 +122,7 @@ def test_nifti_maps_masker_create_figure_for_report(src_masker, mask_img, img):
     return masker._create_figure_for_report()[0]
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("mask_img", [load_mni152_gm_mask(), None])
 @pytest.mark.parametrize("img", [None, loaded_motor_activation_image()])
@@ -150,6 +155,7 @@ def _surface_mask_img():
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize(
     "mask_img, img",
@@ -189,6 +195,7 @@ def test_surface_masker_create_figure_for_report(src_masker, mask_img, img):
 
 
 @pytest.mark.mpl_image_compare
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("hemi", ["left", "right"])
 @pytest.mark.parametrize("mask_img", [_surface_mask_img(), None])
 @pytest.mark.parametrize("img", [None, _fs_inflated_sulcal()])

@@ -67,9 +67,7 @@ design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 from nilearn.glm.first_level import FirstLevelModel
 
 fmri_glm = FirstLevelModel(
-    mask_img=data["mask"],
-    smoothing_fwhm=5,
-    minimize_memory=True,
+    mask_img=data["mask"], smoothing_fwhm=5, minimize_memory=True, verbose=1
 )
 
 # %%

@@ -21,7 +21,7 @@ import sys
 #
 # Entries are listed in alphabetical order.
 #
-docdict = {}
+docdict: dict[str, str] = {}
 
 ##############################################################################
 #
@@ -40,7 +40,7 @@ alphas : :obj:`float` or :obj:`list` of :obj:`float` or None, default=None
 # annotate
 docdict["annotate"] = """
 annotate : :obj:`bool`, default=True
-    If `annotate` is `True`, positions and left/right annotation
+    If `annotate` is `True` (like positions and / or  left/right annotation)
     are added to the plot.
 """
 
@@ -144,6 +144,13 @@ border_size : :obj:`int`, optional
     the image to determine the value of the background.
 """
 
+# brain_color
+docdict["brain_color"] = """
+brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+    The brain color to use as the background color (e.g., for
+    transparent colorbars).
+"""
+
 # cbar_tick_format
 docdict["cbar_tick_format"] = """
 cbar_tick_format : :obj:`str`, optional
@@ -175,7 +182,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        svc_l1 = LinearSVC(penalty="l1", dual=False, max_iter=1e4)
+        svc_l1 = LinearSVC(penalty="l1", max_iter=1e4)
 
     - ``"logistic"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -256,15 +263,25 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
     or a matplotlib colormap object,
     or a BIDS compliant
     `look-up table <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
-    passed as a pandas dataframe.
+    passed as a pandas dataframe or a path to a tsv or csv file.
     If the look up table does not contain a ``color`` column,
     then the default colormap of this function will be used.
+
+    .. warning::
+
+        If the ``name`` column in the look up table
+        does not contain a ``background`` or ``Background`` value,
+        then the colormap will be shifted by one.
+
+        See `issue 5934 <https://github.com/nilearn/nilearn/issues/5934>`_.
+
+
 """
 
 # colorbar
 docdict["colorbar"] = """
 colorbar : :obj:`bool`, optional
-    If `True`, display a colorbar on the right of the plots.
+    If `True`, display a colorbar next to the plots.
 """
 
 # connected
@@ -301,28 +318,42 @@ copy_header : :obj:`bool`, default=True
 
 # cut_coords
 docdict["cut_coords"] = """
-cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
-    The MNI coordinates of the point where the cut is performed.
+cut_coords : None, allowed types depend on the ``display_mode``, optional
+    The world coordinates of the point where the cut is performed.
 
-    - If `display_mode` is `'ortho'` or `'tiled'`, this should
-      be a 3-tuple: `(x, y, z)`
+    - If ``display_mode`` is ``'ortho'`` or ``'tiled'``,
+      this must be a 3-sequence of :obj:`float` or :obj:`int`:
+      ``(x, y, z)``.
 
-    - For `display_mode == "x"`, "y", or "z", then these are
-      the coordinates of each cut in the corresponding direction.
+    - If ``display_mode`` is ``'xz'``, ``'yz'`` or ``'yx'``,
+      this must be a 2-sequence of :obj:`float` or :obj:`int`:
+      ``(x, z)``,  ``(y, z)`` or  ``(x, y)``.
 
-    - If `None` is given, the cuts are calculated automatically.
+    - If ``display_mode`` is ``"x"``, ``"y"``, or ``"z"``,
+      this can be:
 
-    - If `display_mode` is 'mosaic', and the number of cuts is the same
-      for all directions, `cut_coords` can be specified as an integer.
-      It can also be a length 3 :obj:`tuple`
-      specifying the number of cuts for
-      every direction if these are different.
+      - a sequence of :obj:`float` or :obj:`int`
+        representing the coordinates of each cut
+        in the corresponding direction,
 
-    .. note::
-
-        If `display_mode` is "x", "y" or "z",
-        `cut_coords` can be an integer,
+      - an :obj:`int`
         in which case it specifies the number of cuts to perform.
+
+    - If ``display_mode`` is ``'mosaic'``, this can be:
+
+      - an :obj:`int`
+        in which case it specifies the number of cuts to perform in each
+        direction ``"x"``, ``"y"``, ``"z"``.
+
+      - a 3-sequence of :obj:`float` or :obj:`int`
+        in which case it specifies the number of cuts to perform in each
+        direction ``"x"``, ``"y"``, ``"z"`` separately.
+
+      - :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`>
+        in which case keys are the directions ('x', 'y', 'z') and the values
+        are sequences holding the cut coordinates.
+
+    - If ``None`` is given, the cuts are calculated automatically.
 
 """
 
@@ -507,15 +538,19 @@ docdict["fwhm"] = """
 fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\
 or 'fast' or None, optional
     Smoothing strength, as a :term:`full-width at half maximum<FWHM>`,
-    in millimeters:
+    in millimeters.
+
+    For surface data, only scalar and None are supported.
+
+    For volume data, several options are possible:
 
     - If a nonzero scalar is given, width is identical in all 3 directions.
 
     - If a :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` is given,
       it must have 3 elements, giving the :term:`FWHM` along each axis.
       If any of the elements is `0` or `None`,
-
       smoothing is not performed along that axis.
+
     - If `fwhm="fast"`, a fast smoothing will be performed with a filter
       [0.2, 1, 0.2] in each direction and a normalization to preserve the
       local average value.
@@ -648,7 +683,7 @@ keep_masked_labels : :obj:`bool`, default=False
 
     .. nilearn_deprecated:: 0.10.2
 
-    .. nilearn_versionchanged:: 0.13.0dev
+    .. nilearn_versionchanged:: 0.13.0
 
         The ``keep_masked_labels`` parameter will be removed in 0.15.
 
@@ -665,7 +700,7 @@ keep_masked_maps : :obj:`bool`, optional
 
     .. nilearn_deprecated:: 0.10.2
 
-    .. nilearn_versionchanged:: 0.13.0dev
+    .. nilearn_versionchanged:: 0.13.0
 
         The ``keep_masked_maps`` parameter will be removed in 0.15.
 
@@ -856,7 +891,7 @@ opening : :obj:`bool` or :obj:`int`, optional
 
 # output_file
 docdict["output_file"] = """
-output_file : :obj:`str` or :obj:`pathlib.Path` or None, optional
+output_file : :obj:`str` or :obj:`pathlib.Path` or None, default=None
     The name of an image file to export the plot to.
     Valid extensions are .png, .pdf, .svg.
     If `output_file` is not `None`, the plot is saved to a file,
@@ -1007,6 +1042,21 @@ screening_percentile : int, float, \
             may be included even for very small ``screening_percentile``.
 
 """
+docdict[
+    "screening_n_features"
+] = """screening_n_features : :obj:`int`, default=None
+    The number of features to keep for a single cross-validation.
+    If both ``screening_percentile`` and ``screening_n_features`` are set,
+    ``screening_percentile`` takes priority.
+
+    .. admonition:: Important
+
+        Given ``screening_n_features``
+        is the number of features kept **for each fold** of a cross-validation,
+        the final model can have
+        more than ``screening_n_features`` non-zero weights.
+
+    """
 
 # second_level_contrast
 docdict["second_level_contrast"] = """
@@ -1024,7 +1074,7 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
 
 # second_level_confounds
 docdict["second_level_confounds"] = """
-confounds : :obj:`pandas.DataFrame` or None, default=None
+confounds : :obj:`pandas.DataFrame` or None, Default=None
     Must contain a ``subject_label`` column.
     All other columns are considered as confounds and included in the model.
     If ``design_matrix`` is provided then this argument is ignored.
@@ -1038,7 +1088,7 @@ confounds : :obj:`pandas.DataFrame` or None, default=None
 docdict["second_level_design_matrix"] = """
 design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
                 or :obj:`pathlib.Path` to a CSV or TSV file, \
-                or None, default=None
+                or None, Default=None
     Design matrix to fit the :term:`GLM`.
     The number of rows in the design matrix
     must agree with the number of maps
@@ -1135,51 +1185,31 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
       Timeseries are shifted to zero mean and scaled to unit variance.
       Uses sample std.
 
-    - ``'zscore'``: The signal is z-scored.
-      Timeseries are shifted to zero mean and scaled to unit variance.
-      Uses population std by calling default
-      :obj:`numpy.std` with N - ``ddof=0``.
-
-      .. nilearn_deprecated:: 0.10.1
-
-        This option will be removed in Nilearn version 0.14.0.
-        Use ``zscore_sample`` instead.
-
     - ``'psc'``:  Timeseries are shifted to zero mean value and scaled
       to percent signal change (as compared to original mean signal).
 
     - ``True``: The signal is z-scored (same as option `zscore`).
       Timeseries are shifted to zero mean and scaled to unit variance.
 
-      .. nilearn_deprecated:: 0.13.0dev
+      .. nilearn_deprecated:: 0.13.0
 
         In nilearn version 0.15.0,
         ``True`` will be replaced by  ``'zscore_sample'``.
 
     - ``False``: Do not standardize the data.
 
-      .. nilearn_deprecated:: 0.13.0dev
+      .. nilearn_deprecated:: 0.13.0
 
         In nilearn version 0.15.0,
         ``False`` will be replaced by ``None``.
 
 
 """
-# TODO (nilearn >= 0.14.0) update to ..versionchanged
-deprecation_notice = """
-
-    .. nilearn_deprecated:: 0.10.1
-
-        The default will be changed to ``'zscore_sample'``
-        and ``'zscore'`` will be removed in
-        in version 0.14.0.
-
-"""
 
 # TODO (nilearn >= 0.15.0) update to ..versionchanged
 deprecation_notice_false_to_none = """
 
-    .. nilearn_deprecated:: 0.15.0dev
+    .. nilearn_deprecated:: 0.13.0
 
         The default will be changed to ``None``
         in version 0.15.0.
@@ -1189,7 +1219,7 @@ deprecation_notice_false_to_none = """
 # TODO (nilearn >= 0.15.0) update to ..versionchanged
 deprecation_notice_true_to_zscore_sample = """
 
-    .. nilearn_deprecated:: 0.15.0dev
+    .. nilearn_deprecated:: 0.13.0
 
         The default will be changed to ``'zscore_sample'``
         in version 0.15.0.
@@ -1199,16 +1229,12 @@ deprecation_notice_true_to_zscore_sample = """
 docdict["standardize_false"] = (
     standardize.format("False") + deprecation_notice_false_to_none
 )
-# TODO (nilearn >= 0.14.0 and 0.15.0)
+# TODO (nilearn >= 0.15.0)
 # adapt the deprecation notices
 docdict["standardize_true"] = (
-    standardize.format("True")
-    + deprecation_notice
-    + deprecation_notice_true_to_zscore_sample
+    standardize.format("True") + deprecation_notice_true_to_zscore_sample
 )
-docdict["standardize_zscore"] = (
-    standardize.format("zscore") + deprecation_notice
-)
+docdict["standardize_zscore"] = standardize.format("zscore_sample")
 
 
 # standardize_confounds
@@ -1391,12 +1417,11 @@ url : :obj:`str` or None, default=None
 
 # verbose
 verbose = """
-verbose : :obj:`int`, default={}
-    Verbosity level (`0` means no message).
+verbose : :obj:`bool` or :obj:`int`, default={}
+    Verbosity level (``0`` or ``False`` means no message).
 """
 docdict["verbose"] = verbose.format(1)
 docdict["verbose0"] = verbose.format(0)
-docdict["verbose2"] = verbose.format(2)
 docdict["verbose3"] = verbose.format(3)
 
 # view
@@ -1423,7 +1448,7 @@ vmax : :obj:`float` or obj:`int` or None, optional
 
 # vmin
 docdict["vmin"] = """
-vmin : :obj:`float`  or obj:`int` or None, optional
+vmin : :obj:`float` or obj:`int` or None, optional
     Lower bound of the colormap. The values below vmin are masked.
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
@@ -1497,9 +1522,6 @@ masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
     related parameters as initialization.
 
 memory_ : joblib memory cache
-
-n_elements_ : :obj:`int`
-    The number of components.
 
 """
 
@@ -1681,6 +1703,39 @@ ymean_ : array, shape (n_samples,)
 
 """
 
+docdict["displays_partial_attributes"] = """
+frame_axes : :class:`~matplotlib.axes.Axes`
+    The axes framing the whole set of views.
+
+rect : 4- :obj:`tuple`
+    Position of axes within the figure.
+"""
+
+docdict["slicer_init_parameters_partial"] = f"""
+{docdict["axes"]}
+{docdict["black_bg"]}
+{docdict["brain_color"]}
+kwargs : :obj:`dict`
+    Extra keyword arguments are passed to
+    :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+    direction.
+"""
+
+docdict["projector_init_parameters"] = f"""
+Parameters
+----------
+cut_coords : sequence of :obj:`float` or :obj:`int`
+    The world coordinates of the point where the cut is performed. Not used
+    for projectors.
+{docdict["axes"]}
+{docdict["black_bg"]}
+{docdict["brain_color"]}
+kwargs : :obj:`dict`
+    Extra keyword arguments are passed to
+    :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+    each direction.
+"""
+
 # dataset description
 docdict["description"] = """'description' : :obj:`str`
         Description of the dataset."""
@@ -1754,7 +1809,7 @@ signals_transform = """signals : :obj:`numpy.ndarray`, \
 
         Signal for each element.
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
 
             Added ``set_output`` support.
 
@@ -1909,5 +1964,5 @@ def fill_doc(f):
         raise RuntimeError(
             f"Error documenting {funcname}:\n{exp!s}.\n"
             "Did you forget to escape a character with an extra '%'"
-        )
+        ) from exp
     return f

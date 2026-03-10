@@ -72,7 +72,7 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
     return backend
 
 
-def check_engine_params(params, engine):
+def check_engine_params(params, engine: str) -> None:
     """Check default values of the parameters that are not implemented for
     current engine and warn the user if the parameter has other value then
     None.

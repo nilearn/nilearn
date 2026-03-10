@@ -14,13 +14,12 @@ from numpy.testing import assert_array_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils import data_gen
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
@@ -174,6 +173,7 @@ def test_nan(affine_eye):
     assert not mask[:, :, -1].any()
 
 
+@pytest.mark.slow
 def test_matrix_orientation():
     """Test if processing is performed along the correct axis."""
     # the "step" kind generate heavyside-like signals for each voxel.
@@ -248,6 +248,7 @@ def test_mask_4d(shape_3d_default, affine_eye):
     assert_array_equal(data_trans3, data_trans_direct_diff)
 
 
+@pytest.mark.slow
 def test_4d_single_scan(rng, shape_3d_default, affine_eye):
     """Test that list of 4D images with last dim=1 is treated as 3D."""
     shape_3d = (10, 10, 10)
@@ -440,8 +441,7 @@ def test_filter_and_mask_error(affine_eye):
     data_img = Nifti1Image(data, affine_eye)
     mask_img = Nifti1Image(mask, affine_eye)
 
-    masker = NiftiMasker()
-    params = get_params(NiftiMasker, masker)
+    params = NiftiMasker().get_params()
 
     with pytest.raises(
         DimensionError,
@@ -464,8 +464,7 @@ def test_filter_and_mask(affine_eye):
     data_img = Nifti1Image(data, affine_eye)
     mask_img = Nifti1Image(mask, affine_eye)
 
-    masker = NiftiMasker(standardize=None)
-    params = get_params(NiftiMasker, masker)
+    params = NiftiMasker(standardize=None).get_params()
     params["clean_kwargs"] = {}
 
     # Test return_affine = False

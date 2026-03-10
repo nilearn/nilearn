@@ -123,6 +123,7 @@ def _regression(confounds, tmp_path):
     assert tseries_clean.shape[0] == confounds.shape[0]
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
 @pytest.mark.filterwarnings("ignore")
 @pytest.mark.parametrize(
@@ -247,7 +248,7 @@ def test_nilearn_standardize_false(tmp_path):
 
 @pytest.mark.slow
 @pytest.mark.filterwarnings("ignore")
-@pytest.mark.parametrize("standardize_signal", ["zscore", "psc"])
+@pytest.mark.parametrize("standardize_signal", ["zscore_sample", "psc"])
 @pytest.mark.parametrize(
     "standardize_confounds,detrend",
     [(True, False), (False, True), (True, True)],

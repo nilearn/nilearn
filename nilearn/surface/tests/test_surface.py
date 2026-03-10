@@ -461,6 +461,11 @@ def test_vertex_outer_normals():
     assert_array_almost_equal(computed_normals, true_normals)
 
 
+def test_mesh_area():
+    mesh = flat_mesh(5, 7)
+    assert mesh._area == 24
+
+
 @pytest.mark.parametrize("n_points", [10, 20, 40, 80, 160])
 def test_load_uniform_ball_cloud_no_warning(n_points):
     """Test that loading precomputed point clouds does not raise warnings.
@@ -596,6 +601,7 @@ def test_vol_to_surf_errors():
         vol_to_surf(img, mesh, interpolation="bad")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("kind", ["line", "ball"])
 @pytest.mark.parametrize("n_scans", [1, 20])
 @pytest.mark.parametrize("use_mask", [True, False])
@@ -1127,6 +1133,7 @@ def test_save_dtype(surf_img_1d, tmp_path, dtype):
     surf_img_1d.data.to_filename(tmp_path / "data.gii")
 
 
+@pytest.mark.thread_unsafe
 def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 3D Niftiimage object or file for data."""
     SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_3d_mni)
@@ -1139,6 +1146,7 @@ def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_load_from_volume_4d_nifti(img_4d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
     img = SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_4d_mni)

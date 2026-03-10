@@ -2,6 +2,7 @@
 
 import collections.abc
 import numbers
+import warnings
 from copy import deepcopy
 
 import numpy as np
@@ -10,6 +11,7 @@ from scipy.stats import scoreatpercentile
 
 from nilearn import masking
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import (
@@ -200,6 +202,8 @@ def connected_regions(
         region extraction on continuous type atlas images and
         also time series signals extraction from regions extracted.
     """
+    check_params(locals())
+
     all_regions_imgs = []
     index_of_each_map = []
     maps_img = check_niimg(maps_img, atleast_4d=True)
@@ -257,6 +261,13 @@ def connected_regions(
         index_of_each_map.extend([index] * len(regions))
         all_regions_imgs.extend(regions)
 
+    if not all_regions_imgs:
+        warnings.warn(
+            "No supra threshold regions was found",
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
+        return None, None
     regions_extracted_img = concat_imgs(all_regions_imgs)
 
     return regions_extracted_img, index_of_each_map
@@ -282,7 +293,7 @@ class RegionExtractor(NiftiMapsMasker):
         Image containing a set of whole brain atlas maps or statistically
         decomposed brain maps.
 
-    mask_img : Niimg-like object or None, optional
+    mask_img : Niimg-like object or None, default=None
         Mask to be applied to input data, passed to NiftiMapsMasker.
         If None, no masking is applied.
 

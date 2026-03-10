@@ -32,7 +32,7 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
         Set of continuous maps. One representative time course per map is
         extracted using least square regression.
 
-    mask_img : 3D niimg-like object, optional
+    mask_img : 3D niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 

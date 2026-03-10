@@ -29,16 +29,24 @@ from nilearn._utils.data_gen import (
     generate_labeled_regions,
     generate_maps,
 )
+from nilearn._utils.niimg import _get_data
 from nilearn._utils.testing import (
     assert_memory_less_than,
     with_memory_profiler,
     write_imgs_to_path,
 )
-from nilearn.conftest import _affine_eye, _img_3d_rand, _rng, _shape_4d_default
+from nilearn.conftest import (
+    _affine_eye,
+    _img_3d_rand,
+    _rng,
+    _shape_4d_default,
+)
 from nilearn.exceptions import DimensionError
 from nilearn.image.image import (
     _crop_img_to,
     _fast_smooth_array,
+    _mris_fwhm_to_niters,
+    _smooth_surface_img,
     binarize_img,
     check_niimg,
     check_niimg_3d,
@@ -341,11 +349,14 @@ def test_fast_smooth_array_give_same_result_as_smooth_array(
 def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
     """See https://github.com/nilearn/nilearn/issues/1537."""
     affine = AFFINE_TO_TEST[2]
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning, match=r"specified as 0\.0\. Setting it to None"
+    ):
         smooth_array(smooth_array_data, affine, fwhm=0.0)
 
 
-def test_smooth_img(affine_eye, tmp_path):
+@pytest.mark.parametrize("create_files", (False, True))
+def test_smooth_img(tmp_path, create_files):
     """Checks added functionalities compared to image._smooth_array()."""
     shapes = ((10, 11, 12), (13, 14, 15))
     lengths = (17, 18)
@@ -354,42 +365,155 @@ def test_smooth_img(affine_eye, tmp_path):
     img1, _ = generate_fake_fmri(shape=shapes[0], length=lengths[0])
     img2, _ = generate_fake_fmri(shape=shapes[1], length=lengths[1])
 
-    for create_files in (False, True):
-        imgs = testing.write_imgs_to_path(
-            img1, img2, file_path=tmp_path, create_files=create_files
-        )
-        # List of images as input
-        out = smooth_img(imgs, fwhm)
+    imgs = testing.write_imgs_to_path(
+        img1, img2, file_path=tmp_path, create_files=create_files
+    )
+    # List of images as input
+    out = smooth_img(imgs, fwhm)
 
-        assert isinstance(out, list)
-        assert len(out) == 2
-        for o, s, l in zip(out, shapes, lengths, strict=False):
-            assert o.shape == (*s, l)
+    assert isinstance(out, list)
+    assert len(out) == 2
+    for o, s, l in zip(out, shapes, lengths, strict=False):
+        assert o.shape == (*s, l)
 
-        # Single image as input
-        out = smooth_img(imgs[0], fwhm)
+    # Single image as input
+    out = smooth_img(imgs[0], fwhm)
 
-        assert isinstance(out, Nifti1Image)
-        assert out.shape == (shapes[0] + (lengths[0],))
+    assert isinstance(out, Nifti1Image)
+    assert out.shape == (shapes[0] + (lengths[0],))
 
-    # Check corner case situations when fwhm=0, See issue #1537
-    # Test whether function smooth_img raises a warning when fwhm=0.
-    with pytest.warns(UserWarning):
-        smooth_img(img1, fwhm=0.0)
 
-    # Test output equal when fwhm=None and fwhm=0
-    out_fwhm_none = smooth_img(img1, fwhm=None)
-    out_fwhm_zero = smooth_img(img1, fwhm=0.0)
+@pytest.mark.parametrize(
+    "fwhm", [[1.0, 1.0, 1.0], (1.0, 1.0, 1.0), np.asarray([1.0, 1.0, 1.0])]
+)
+def test_smooth_img_scalar_array(affine_eye, fwhm):
+    """Ensure that fwhm=1 and fwhm=[1, 1, 1] give same result."""
+    data1 = np.zeros((10, 11, 12))
+    data1[2:4, 1:5, 3:6] = 1
+    img1_nifti2 = Nifti2Image(data1, affine=affine_eye)
+
+    data2 = np.zeros((13, 14, 15))
+    data2[2:4, 1:5, 3:6] = 9
+    img2_nifti2 = Nifti2Image(data2, affine=affine_eye)
+
+    out1 = smooth_img([img1_nifti2, img2_nifti2], fwhm=1.0)
+    out2 = smooth_img([img1_nifti2, img2_nifti2], fwhm=fwhm)
+    for o1, o2 in zip(out1, out2, strict=False):
+        assert_array_equal(get_data(o1), get_data(o2))
+
+
+def test_smooth_img_fwhm_0_or_none(img_3d_mni):
+    """Test output equal when fwhm=None and fwhm=0."""
+    out_fwhm_none = smooth_img(img_3d_mni, fwhm=None)
+    out_fwhm_zero = smooth_img(img_3d_mni, fwhm=0.0)
 
     assert_array_equal(get_data(out_fwhm_none), get_data(out_fwhm_zero))
 
-    data1 = np.zeros((10, 11, 12))
-    data1[2:4, 1:5, 3:6] = 1
-    data2 = np.zeros((13, 14, 15))
-    data2[2:4, 1:5, 3:6] = 9
-    img1_nifti2 = Nifti2Image(data1, affine=affine_eye)
-    img2_nifti2 = Nifti2Image(data2, affine=affine_eye)
-    out = smooth_img([img1_nifti2, img2_nifti2], fwhm=1.0)
+
+def test_smooth_img_warning(img_3d_mni):
+    """Check corner case situations when fwhm=0, ee issue #1537.
+
+    Test whether function smooth_img raises a warning when fwhm=0.
+    """
+    with pytest.warns(
+        UserWarning, match=r"specified as 0\.0\. Setting it to None"
+    ):
+        smooth_img(img_3d_mni, fwhm=0.0)
+
+
+def test_smooth_img_surface(surf_img_1d):
+    """Test smoothing surface images.
+
+    Test output equal when fwhm=None and fwhm=0.
+    Test smoothing changes input.
+    Test that min and max are less extreme after smoothing.
+    """
+    out_fwhm_none = smooth_img(surf_img_1d, fwhm=None)
+    out_fwhm_zero = smooth_img(surf_img_1d, fwhm=0)
+
+    assert_surface_image_equal(surf_img_1d, out_fwhm_zero)
+    assert_surface_image_equal(out_fwhm_none, out_fwhm_zero)
+
+    smoothed_img = smooth_img(surf_img_1d, fwhm=5)
+
+    with pytest.raises(
+        ValueError, match="Part 'left' of PolyData instances are not equal"
+    ):
+        assert_surface_image_equal(smoothed_img, surf_img_1d)
+
+    data = get_surface_data(surf_img_1d)
+    smoothed_data = get_surface_data(smoothed_img)
+
+    assert data.max() > smoothed_data.max()
+    assert data.min() < smoothed_data.min()
+    assert data.var() > smoothed_data.var()
+
+
+def test_smooth_list_img_surface(surf_img_1d):
+    """Test smoothing list surface images."""
+    smooth_ref = smooth_img(surf_img_1d, fwhm=5)
+    smoothed_img = smooth_img([surf_img_1d, surf_img_1d], fwhm=5)
+    assert isinstance(smoothed_img, list)
+    assert all(isinstance(x, SurfaceImage) for x in smoothed_img)
+    assert_array_equal(
+        get_surface_data(smoothed_img[1]), get_surface_data(smooth_ref)
+    )
+
+
+def test_smooth_img_surface_2d(surf_img_2d):
+    """Test smoothing surface images 2d.
+
+    Ensure we get equivalent result that smoothing a list of image.
+    """
+    img = surf_img_2d(3)
+
+    smoothed_img = smooth_img(img, fwhm=5)
+    assert isinstance(smoothed_img, SurfaceImage)
+
+    img_as_list = list(iter_img(img))
+    smoothed_img_as_list = smooth_img(img_as_list, fwhm=5)
+    for i, x in enumerate(smoothed_img_as_list):
+        assert_array_equal(
+            get_surface_data(x), get_surface_data(index_img(smoothed_img, i))
+        )
+
+
+def test_smooth_surface_img(surf_img_1d):
+    """Check smoothing changes data."""
+    smoothed_imgs = _smooth_surface_img(surf_img_1d, iterations=[1, 1])
+
+    assert isinstance(smoothed_imgs, SurfaceImage)
+    for part in surf_img_1d.data.parts:
+        assert not np.array_equal(
+            surf_img_1d.data.parts[part], smoothed_imgs.data.parts[part]
+        )
+
+    more_smoothed_imgs = _smooth_surface_img(surf_img_1d, iterations=[2, 2])
+    for part in surf_img_1d.data.parts:
+        assert not np.array_equal(
+            more_smoothed_imgs.data.parts[part], smoothed_imgs.data.parts[part]
+        )
+
+
+def test_smooth_surface_niter(surf_img_1d):
+    """Control the number of iterations."""
+    n5 = _mris_fwhm_to_niters(5, surf_img_1d)
+    assert n5 == [16, 14]
+
+
+def test_smooth_surface_img_errors(surf_img_1d):
+    with pytest.raises(TypeError, match="'vertex_weights'"):
+        _smooth_surface_img(
+            surf_img_1d,
+            vertex_weights="'vertex_weights' must be None or a SurfaceImage.",
+        )
+
+
+@pytest.mark.parametrize("fwhm", [(0, 1, 2), [0, 1, 2], np.asarray([1])])
+def test_smooth_img_surface_errors_fwhm(surf_img_1d, fwhm):
+    """Error when using non-scalar for fwhm with surface."""
+    with pytest.raises(TypeError, match="'fwhm' must be a scalar"):
+        smooth_img(surf_img_1d, fwhm=fwhm)
 
 
 def test_crop_img_to():
@@ -501,6 +625,8 @@ def test_crop_image_empty_image(affine_eye, pad):
     assert_array_equal(get_data(img), get_data(cropped_img))
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.slow
 @pytest.mark.parametrize("images_to_mean", _images_to_mean())
 def test_mean_img(images_to_mean, tmp_path):
     affine = np.diag((4, 3, 2, 1))
@@ -691,7 +817,7 @@ def test_index_img_surface(surf_img_2d, length, index, expected_n_samples):
         assert_array_equal(value, expected_data_3d[hemi])
 
 
-def test_index_img_error_volumne_4d(affine_eye):
+def test_index_img_error_volume_4d(affine_eye):
     """Test impossible indices with volume data."""
     img_4d, _ = generate_fake_fmri(affine=affine_eye)
     fourth_dim_size = img_4d.shape[3]
@@ -703,7 +829,10 @@ def test_index_img_error_volumne_4d(affine_eye):
     ]:
         with pytest.raises(
             IndexError,
-            match=r"out of bounds|invalid index|out of range|boolean index",
+            match=(
+                r"too large|out of bounds|invalid index|out of range|"
+                "boolean index"
+            ),
         ):
             index_img(img_4d, i)
 
@@ -717,7 +846,7 @@ def test_index_img_error_surface_2d(surf_img_2d, length, index):
 
 
 def test_pd_index_img(rng, img_4d_rand_eye):
-    # confirm indices from pandas dataframes are handled correctly
+    """Confirm indices from pandas dataframes are handled correctly."""
     fourth_dim_size = img_4d_rand_eye.shape[3]
 
     arr = rng.uniform(size=fourth_dim_size) > 0.5
@@ -799,6 +928,7 @@ def test_iter_surface_img(surf_img_2d):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_iter_img_surface_2d(surf_img_1d, surf_img_2d):
     """Return as is if surface image is 2D."""
     input = surf_img_2d(1)
@@ -874,7 +1004,6 @@ def test_new_img_like_non_iterable_header(rng):
     assert new_img_like(fake_spatial_image, data=fake_fmri_data)
 
 
-@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_new_img_like_int64(shape_3d_default):
     img = generate_labeled_regions(shape=shape_3d_default, n_regions=2)
 
@@ -898,6 +1027,7 @@ def test_new_img_like_int64(shape_3d_default):
     assert get_data(new_img).dtype == "int64"
 
 
+@pytest.mark.thread_unsafe
 def test_input_in_threshold_img(
     shape_3d_default, surf_img_1d, surf_mask_1d, affine_eye
 ):
@@ -927,6 +1057,7 @@ def test_input_in_threshold_img(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_input_in_threshold_img_several_timepoints(
     img_4d_rand_eye, surf_img_2d
 ):
@@ -964,6 +1095,7 @@ def _check_thresholded_output(input, output, threshold):
     assert np.all(data[data_to_mask] == 0)
 
 
+@pytest.mark.thread_unsafe
 def test_input_in_threshold_img_errors(
     shape_3d_default, surf_img_1d, surf_mask_1d, affine_eye
 ):
@@ -991,11 +1123,13 @@ def test_input_in_threshold_img_errors(
         threshold_img(surf_img_1d, threshold=1, mask_img=vol_mask)
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_img_warning_smoke(surf_img_1d):
     """Check threshold_img with cluster."""
     threshold_img(surf_img_1d, threshold=1, cluster_threshold=10)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("two_sided", [True, False])
 def test_validity_threshold_value_in_threshold_img(
     shape_3d_default, two_sided
@@ -1034,6 +1168,7 @@ def test_validity_threshold_value_in_threshold_img(
             )
 
 
+@pytest.mark.thread_unsafe
 def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
     """Check that negative values to threshold_img's threshold parameter \
        raise Exceptions.
@@ -1054,6 +1189,8 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
         threshold_img(maps, threshold="-10%", two_sided=False)
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.slow
 def test_threshold_img(affine_eye):
     """Smoke test for threshold_img with valid threshold inputs."""
     shape = (10, 20, 30)
@@ -1071,6 +1208,7 @@ def test_threshold_img(affine_eye):
         threshold_img(img, threshold="2%")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "threshold, expected_n_non_zero",
     [
@@ -1092,6 +1230,7 @@ def test_threshold_surf_img_1d(surf_img_1d, threshold, expected_n_non_zero):
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "threshold, expected_n_non_zero",
     [
@@ -1119,6 +1258,7 @@ def test_threshold_surf_img_1d_with_mask(
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "threshold, expected_n_non_zero, two_sided",
     [
@@ -1154,6 +1294,7 @@ def test_threshold_surf_img_1d_negative_values(
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "threshold, two_sided, expected",
     [
@@ -1199,6 +1340,7 @@ def test_threshold_img_with_mask(
     assert len(img_data[np.nonzero(img_data)]) == expected
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "threshold,two_sided,cluster_threshold,expected",
     [
@@ -1226,6 +1368,7 @@ def test_threshold_img_with_cluster_threshold(
     assert np.array_equal(np.unique(thr_img.get_fdata()), np.array(expected))
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_img_threshold_n_clusters(stat_img_test_data):
     """With a cluster threshold of 5 we get 8 clusters with |values| > 2 \
        and cluster sizes > 5.
@@ -1240,6 +1383,7 @@ def test_threshold_img_threshold_n_clusters(stat_img_test_data):
     assert np.sum(thr_img.get_fdata() == 4) == 8
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_img_no_copy_surface(surf_img_1d):
     """Test copy=False on surface data.
 
@@ -1251,6 +1395,7 @@ def test_threshold_img_no_copy_surface(surf_img_1d):
     assert_surface_image_equal(result, surf_img_1d)
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_img_copy_surface(surf_img_1d):
     """Test copy=True on surface data.
 
@@ -1263,6 +1408,7 @@ def test_threshold_img_copy_surface(surf_img_1d):
         assert_surface_image_equal(result, surf_img_1d)
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_img_copy_volume(img_4d_ones_eye):
     """Test the behavior of threshold_img's copy parameter."""
     threshold = 1
@@ -1285,6 +1431,7 @@ def test_threshold_img_copy_volume(img_4d_ones_eye):
     assert_array_equal(get_data(img_to_mutate), get_data(thr_img))
 
 
+@pytest.mark.thread_unsafe
 def test_isnan_threshold_img_data(affine_eye, shape_3d_default):
     """Check threshold_img converges properly when input image has nans."""
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
@@ -1296,6 +1443,7 @@ def test_isnan_threshold_img_data(affine_eye, shape_3d_default):
     threshold_img(maps_img, threshold=0.8)
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_img_copied_header(img_4d_mni_tr2):
     # Test equality of header fields between input and output
     thr_img = threshold_img(img_4d_mni_tr2, threshold=0.5)
@@ -1309,6 +1457,7 @@ def test_threshold_img_copied_header(img_4d_mni_tr2):
     assert thr_img.header["cal_min"] == 0
 
 
+@pytest.mark.thread_unsafe
 def test_math_img_exceptions(affine_eye, img_4d_ones_eye, surf_img_2d):
     img1 = img_4d_ones_eye
     img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), affine_eye)
@@ -1348,6 +1497,7 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye, surf_img_2d):
         math_img(formula, img1=img1, img3=img3, copy_header_from="img2")
 
 
+@pytest.mark.thread_unsafe
 def test_math_img(
     affine_eye, img_4d_ones_eye, img_4d_zeros_eye, shape_3d_default, tmp_path
 ):
@@ -1366,6 +1516,7 @@ def test_math_img(
         assert result.shape == expected_result.shape
 
 
+@pytest.mark.thread_unsafe
 def test_math_img_surface(surf_img_2d):
     """Test math_img on surface data."""
     img1 = surf_img_2d(1)
@@ -1385,6 +1536,7 @@ def test_math_img_surface(surf_img_2d):
     assert_surface_image_equal(result, expected_result)
 
 
+@pytest.mark.thread_unsafe
 def test_math_img_copy_default_header(
     img_4d_ones_eye_default_header, img_4d_ones_eye_tr2
 ):
@@ -1401,6 +1553,7 @@ def test_math_img_copy_default_header(
     assert result.header != img_4d_ones_eye_default_header.header
 
 
+@pytest.mark.thread_unsafe
 def test_math_img_copied_header_from_img(img_4d_mni_tr2):
     # case where data values are not changed but header values are copied
     # the result should have the same header values as the given image
@@ -1412,6 +1565,7 @@ def test_math_img_copied_header_from_img(img_4d_mni_tr2):
     assert result.header == img_4d_mni_tr2.header
 
 
+@pytest.mark.thread_unsafe
 def test_math_img_copied_header_data_values_changed(
     img_4d_ones_eye_default_header, img_4d_ones_eye_tr2
 ):
@@ -1439,6 +1593,7 @@ def test_math_img_copied_header_data_values_changed(
             assert result.header[key] == img_4d_ones_eye_tr2.header[key]
 
 
+@pytest.mark.thread_unsafe
 def test_binarize_img(img_4d_rand_eye):
     # Test that all output values are 1.
     img1 = binarize_img(img_4d_rand_eye)
@@ -1457,6 +1612,7 @@ def test_binarize_img(img_4d_rand_eye):
     assert_array_equal(img2.dataobj, img3.dataobj)
 
 
+@pytest.mark.thread_unsafe
 def test_binarize_img_surface(surf_img_1d):
     """Test binarize_img on surface data."""
     img = surf_img_1d
@@ -1626,6 +1782,7 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
     assert cleaned_img.shape[-1] == length - 1
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("create_files", [True, False])
 def test_largest_cc_img(create_files, tmp_path):
     """Check the extraction of the largest connected component, for niftis.
@@ -1654,6 +1811,7 @@ def test_largest_cc_img(create_files, tmp_path):
     assert out.shape == (shapes[0])
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("create_files", [True, False])
 def test_largest_cc_img_non_native_endian_type(create_files, tmp_path):
     # Test whether dimension of 3Dimg and list of 3Dimgs are kept.
@@ -1694,6 +1852,7 @@ def test_largest_cc_img_non_native_endian_type(create_files, tmp_path):
     assert_equal(get_data(out_native), get_data(out_non_native))
 
 
+@pytest.mark.thread_unsafe
 def test_largest_cc_img_error(shape_3d_default):
     # Test whether 4D Nifti throws the right error.
     img_4D = generate_fake_fmri(shape_3d_default)
@@ -1792,6 +1951,10 @@ def test_concat_niimgs_errors(affine_eye, shape_3d_default):
     ):
         concat_imgs([img5d, img5d])
 
+    # check error when an empty list is specified
+    with pytest.raises(TypeError, match="empty objects"):
+        concat_imgs([])
+
 
 def test_concat_niimgs(affine_eye, tmp_path):
     # create images different in affine and 3D/4D shape
@@ -1872,12 +2035,17 @@ def test_iterator_generator(img_3d_rand_eye):
     assert len(b) == 10
 
 
+@pytest.mark.thread_unsafe
 def test_copy_img():
     with pytest.raises(TypeError, match="must be of type"):
         copy_img(3)
 
 
+@pytest.mark.thread_unsafe
 def test_copy_img_side_effect(img_4d_ones_eye):
+    # load data from proxy array to ndarray to make sure that
+    # data is not changed
+    _get_data(img_4d_ones_eye)
     hash1 = joblib.hash(img_4d_ones_eye)
     copy_img(img_4d_ones_eye)
     hash2 = joblib.hash(img_4d_ones_eye)
@@ -1929,6 +2097,7 @@ def test_check_same_fov(affine_eye):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
     """Check data dtype equal with dtype='auto'."""
     img_3d_check = check_niimg(img_3d_zeros_eye, dtype="auto")
@@ -1944,6 +2113,7 @@ def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_return_iterator_4d_input(
     img_3d_zeros_eye, img_4d_zeros_eye
 ):
@@ -1969,6 +2139,7 @@ def test_check_niimg_return_iterator_4d_input(
     assert len(next(img).shape) == 3
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_return_iterator_3d_input(img_3d_zeros_eye):
     """Check behavior return_iterator on 3D image."""
     # return a 3D image
@@ -1992,6 +2163,7 @@ def test_check_niimg_return_iterator_3d_input(img_3d_zeros_eye):
     assert len(next(img).shape) == 3
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_return_iterator_true_3d_input(img_3d_zeros_eye):
     """Check behavior return_iterator=True on 3D image."""
     expected_error_msg = (
@@ -2006,6 +2178,7 @@ def test_check_niimg_return_iterator_true_3d_input(img_3d_zeros_eye):
         check_niimg(img_3d_zeros_eye, return_iterator=True)
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_errors(img_3d_zeros_eye, img_4d_zeros_eye):
     """Check check_niimg errors."""
     with pytest.raises(TypeError, match="input should be a NiftiLike object"):
@@ -2034,6 +2207,7 @@ def test_check_niimg_errors(img_3d_zeros_eye, img_4d_zeros_eye):
         check_niimg(img_2_4d, ensure_ndim=4)
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_wildcards_errors():
     """Check bad filename."""
     # Non existing file (with no magic) raise a ValueError exception
@@ -2050,6 +2224,7 @@ def test_check_niimg_wildcards_errors():
         check_niimg(nofile_path_wildcards)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("shape", [(10, 10, 10), (10, 10, 10, 3)])
 @pytest.mark.parametrize(
     "wildcards", [True, False]
@@ -2083,6 +2258,7 @@ def img_in_home_folder(img_3d_mni):
     created_file.expanduser().unlink()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "filename", ["~/test.nii", r"~/test.nii", Path("~/test.nii")]
 )
@@ -2096,6 +2272,8 @@ def test_check_niimg_user_expand(img_in_home_folder, filename):
     )
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.single_process
 @pytest.mark.parametrize(
     "filename",
     [
@@ -2119,6 +2297,7 @@ def test_check_niimg_user_expand_4d(img_in_home_folder, filename):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
     """Test globbing behavior."""
     file_not_found_msg = "File not found: '%s'"
@@ -2164,6 +2343,7 @@ def set_expand_path_wildcards():
     ni.EXPAND_PATH_WILDCARDS = True
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_no_expand_wildcards_errors(
     set_expand_path_wildcards,  # noqa: ARG001
 ):
@@ -2183,6 +2363,7 @@ def test_check_niimg_no_expand_wildcards_errors(
         check_niimg(nofile_path, wildcards=False)
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_no_expand_wildcards(
     img_3d_zeros_eye,
     img_4d_zeros_eye,
@@ -2236,6 +2417,7 @@ def test_check_niimg_3d_datatype(img_3d_zeros_eye):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_3d_pathlike(img_3d_zeros_eye, tmp_path):
     """Test check_niimg_3d with file."""
     filename = write_imgs_to_path(
@@ -2265,11 +2447,8 @@ def test_check_niimg_4d_errors(affine_eye, img_3d_zeros_eye, shape_3d_default):
 
     a = img_3d_zeros_eye
     b = np.zeros(shape_3d_default)
-    c = check_niimg_4d([a, b], return_iterator=True)
-    with pytest.raises(
-        TypeError, match="Error encountered while loading image #1"
-    ):
-        list(c)
+    with pytest.raises(TypeError, match="input should be a NiftiLike object"):
+        c = check_niimg_4d([a, b], return_iterator=True)
 
     b = Nifti1Image(np.zeros((10, 20, 10)), affine_eye)
     c = check_niimg_4d([a, b], return_iterator=True)
@@ -2364,6 +2543,7 @@ def test_check_niimg_4d_phony_image():
     check_niimg_4d(phony_img)
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_4d_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
     """Testing with a glob matching multiple filenames."""
     img_4d = check_niimg_4d((img_3d_zeros_eye, img_3d_zeros_eye))
@@ -2390,6 +2570,7 @@ def test_iter_check_niimgs_error():
         list(iter_check_niimg(nofile_path))
 
 
+@pytest.mark.thread_unsafe
 def test_iter_check_niimgs(tmp_path, img_4d_zeros_eye):
     """Test iter_check_niimg on file on disk and regular 5D image."""
     # Create a test file

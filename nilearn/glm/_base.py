@@ -1,35 +1,39 @@
 import datetime
-import inspect
+import itertools
 import uuid
 import warnings
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
+from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
-from sklearn.base import BaseEstimator
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import logger  # TODO just import log
+from nilearn._base import NilearnBaseEstimator
+from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_7, SKLEARN_LT_1_6
 from nilearn._version import __version__
 from nilearn.glm._reporting_utils import (
-    _glm_model_attributes_to_dataframe,
-    _load_bg_img,
-    _make_stat_maps_contrast_clusters,
-    _mask_to_plot,
-    _turn_into_full_path,
+    check_generate_report_input,
+    glm_model_attributes_to_dataframe,
+    load_bg_img,
+    make_stat_maps_contrast_clusters,
+    mask_to_plot,
+    sanitize_generate_report_input,
+    turn_into_full_path,
 )
+from nilearn.image import check_niimg
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.reporting._utils import dataframe_to_html
@@ -42,18 +46,40 @@ from nilearn.reporting.html_report import (
     return_jinja_env,
 )
 from nilearn.surface import SurfaceImage
+from nilearn.typing import ClusterThreshold, HeightControl
 
 FIGURE_FORMAT = "png"
 
 
-class BaseGLM(CacheMixin, BaseEstimator):
+@fill_doc
+class BaseGLM(CacheMixin, NilearnBaseEstimator):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`.
     """
 
     _estimator_type = "glm"  # TODO (sklearn >= 1.8) remove
 
-    def _is_volume_glm(self):
+    def _doc_link_url_param_generator(self, *args):  # noqa : ARG002
+        """Return doc URL components for GLM estimators.
+
+        GLM doc URL is slightly different than that of other estimators.
+
+        # TODO (sklearn >= 1.7) remove *args from signature
+        """
+        estimator_name = self.__class__.__name__
+        tmp = list(
+            itertools.takewhile(
+                lambda part: not part.startswith("_"),
+                self.__class__.__module__.split("."),
+            )
+        )
+        estimator_module = ".".join([tmp[0], tmp[1], tmp[2]])
+        return {
+            "estimator_module": estimator_module,
+            "estimator_name": estimator_name,
+        }
+
+    def _is_volume_glm(self) -> bool:
         """Return if model is run on volume data or not."""
         return not (
             (
@@ -67,11 +93,30 @@ class BaseGLM(CacheMixin, BaseEstimator):
             )
         )
 
-    def _is_first_level_glm(self):
+    def _is_first_level_glm(self) -> bool:
         """Return True if this estimator is of type FirstLevelModel; False
         otherwise.
         """
         return False
+
+    @property
+    def _mask_img(self) -> Nifti1Image | SurfaceImage | None:
+        """Return mask image using during fit or mask image passed at init."""
+        if self.__sklearn_is_fitted__():
+            return self.mask_img_
+        if self.mask_img is None:
+            return None
+        try:
+            # load mask_img if is a niiimg-like object
+            return check_niimg(self.mask_img)
+        except Exception:
+            return self.mask_img
+
+    @property
+    def mask_img_(self) -> Nifti1Image | SurfaceImage:
+        """Return mask image using during fit."""
+        check_is_fitted(self)
+        return self.masker_.mask_img_
 
     def _attributes_to_dict(self):
         """Return dict with pertinent model attributes & information.
@@ -116,13 +161,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 model_param[k] = v.tolist()
 
         return model_param
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -257,12 +295,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
                     f"not {v.__class__.__name__}"
                 )
 
-        entities = {
-            "sub": None,
-            "ses": None,
-            "task": None,
-            "space": None,
-        }
+        entities = {"sub": None, "ses": None, "task": None, "space": None}
 
         if generate_bids_name:
             # try to figure out filename entities from input files
@@ -370,15 +403,15 @@ class BaseGLM(CacheMixin, BaseEstimator):
         self,
         contrasts=None,
         first_level_contrast=None,
-        title=None,
+        title: str | None = None,
         bg_img="MNI152TEMPLATE",
-        threshold=3.09,
+        threshold: float | int | np.floating | np.integer | None = None,
         alpha=0.001,
-        cluster_threshold=0,
-        height_control="fpr",
-        two_sided=False,
-        min_distance=8.0,
-        plot_type="slice",
+        cluster_threshold: ClusterThreshold = 0,
+        height_control: HeightControl = "fpr",
+        two_sided: bool = False,
+        min_distance: float | int | np.floating | np.integer = 8.0,
+        plot_type: Literal["slice", "glass"] = "slice",
         cut_coords=None,
         display_mode=None,
         report_dims=(1600, 800),
@@ -424,7 +457,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
             .. nilearn_versionadded:: 0.12.0
 
-        title : :obj:`str`, default=None
+        title : :obj:`str` or None, default=None
             If string, represents the web page's title and primary heading,
             model type is sub-heading.
             If None, page titles and headings are autogenerated
@@ -435,9 +468,11 @@ class BaseGLM(CacheMixin, BaseEstimator):
             The background image for mask and stat maps to be plotted on upon.
             To turn off background image, just pass "bg_img=None".
 
-        threshold : :obj:`float`, default=3.09
+        threshold : :obj:`float` or :obj:`int` or None, default=None
             Cluster forming threshold in same scale as `stat_img` (either a
             t-scale or z-scale value). Used only if height_control is None.
+            If ``threshold`` is set to None when ``height_control`` is None,
+            ``threshold`` will be set to 3.09.
 
             .. note::
 
@@ -475,7 +510,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         %(cluster_threshold)s
 
-        height_control :  :obj:`str`, default='fpr'
+        height_control :  :obj:`str` or None, default='fpr'
             false positive control meaning of cluster forming
             threshold: 'fpr' or 'fdr' or 'bonferroni' or None.
 
@@ -492,9 +527,13 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         %(cut_coords)s
 
+            .. note::
+                ``cut_coords`` will not be used when ``plot_type='glass'``.
+
+
         display_mode :  :obj:`str`, default=None
-            Default is 'z' if plot_type is 'slice'; '
-            ortho' if plot_type is 'glass'.
+            Default is 'z' if plot_type is 'slice';
+            'ortho' if plot_type is 'glass'.
 
             Choose the direction of the cuts:
             'x' - sagittal, 'y' - coronal, 'z' - axial,
@@ -519,15 +558,33 @@ class BaseGLM(CacheMixin, BaseEstimator):
             Contains the HTML code for the :term:`GLM` report.
 
         """
+        check_generate_report_input(
+            height_control, cluster_threshold, min_distance, plot_type
+        )
         check_params(locals())
 
-        if self._is_first_level_glm() and first_level_contrast is not None:
-            warnings.warn(
-                "'first_level_contrast' is ignored for FirstLevelModel."
-                "Setting first_level_contrast=None.",
-                stacklevel=find_stack_level(),
+        threshold, cut_coords, first_level_contrast, warning_messages = (
+            sanitize_generate_report_input(
+                height_control,
+                threshold,
+                cut_coords,
+                plot_type,
+                first_level_contrast,
+                self._is_first_level_glm(),
             )
-            first_level_contrast = None
+        )
+        if SKLEARN_GTE_1_7:
+            parameters = self._repr_html_()
+        else:
+            # TODO (sklearn > 1.6.2) remove else block
+            model_attributes = glm_model_attributes_to_dataframe(self)
+            with pd.option_context("display.max_colwidth", 100):
+                parameters = dataframe_to_html(
+                    model_attributes,
+                    precision=2,
+                    header=True,
+                    sparsify=False,
+                )
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data: dict[str, Any] = {
@@ -536,37 +593,15 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 "hrf_model": getattr(self, "hrf_model", None),
                 "drift_model": None,
             }
-        warning_messages = []
-
-        sig = inspect.signature(self.generate_report).parameters
-        parameters = dict(**sig)
-        if height_control is not None and float(threshold) != float(
-            parameters["threshold"].default
-        ):
-            warning_messages.append(
-                f"\n'{threshold=}' is not used with '{height_control=}'."
-                "\n'threshold' is only used when 'height_control=None'. "
-                f"\nSet 'threshold' to '{parameters['threshold'].default}' "
-                "to avoid this warning."
-            )
-        model_attributes = _glm_model_attributes_to_dataframe(self)
-        with pd.option_context("display.max_colwidth", 100):
-            model_attributes_html = dataframe_to_html(
-                model_attributes,
-                precision=2,
-                header=True,
-                sparsify=False,
-            )
-
         contrasts = coerce_to_dict(contrasts)
 
         # If some contrasts are passed
         # we do not rely on filenames stored in the model.
         output = None
         if contrasts is None:
-            output = self._reporting_data.get("filenames", None)
+            output = self._reporting_data.get("filenames")
             if output is not None and output.get("use_absolute_path", True):
-                output = _turn_into_full_path(output, output["dir"])
+                output = turn_into_full_path(output, output["dir"])
 
             warning_messages.append(
                 "No contrast passed during report generation."
@@ -587,8 +622,8 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 else self.design_matrices_
             )
 
-            bg_img = _load_bg_img(bg_img, self._is_volume_glm())
-            mask_plot = _mask_to_plot(self, bg_img, cut_coords)
+            bg_img = load_bg_img(bg_img, self._is_volume_glm())
+            mask_plot = mask_to_plot(self, bg_img)
 
             # We try to rely on the content of glm object only
             # by reading images from disk rarther than recomputing them
@@ -625,8 +660,9 @@ class BaseGLM(CacheMixin, BaseEstimator):
             logger.log(
                 "Generating contrast-level figures...", verbose=self.verbose
             )
-            results = _make_stat_maps_contrast_clusters(
+            results = make_stat_maps_contrast_clusters(
                 stat_img=statistical_maps,
+                mask_img=self._mask_img,
                 threshold_orig=threshold,
                 alpha=alpha,
                 cluster_threshold=cluster_threshold,
@@ -694,8 +730,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         title = f"Statistical Report - {self.__str__()}{title}"
 
         smoothing_fwhm = getattr(self, "smoothing_fwhm", None)
-        if smoothing_fwhm == 0:
-            smoothing_fwhm = None
+        smoothing_fwhm = None if smoothing_fwhm == 0 else smoothing_fwhm
 
         for msg in warning_messages:
             warnings.warn(
@@ -720,7 +755,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             date=datetime.datetime.now().replace(microsecond=0).isoformat(),
             mask_plot=mask_plot,
             model_type=self.__str__(),
-            parameters=model_attributes_html,
+            parameters=parameters,
             reporting_data=Bunch(**self._reporting_data),
             results=results,
             run_wise_dict=run_wise_dict,

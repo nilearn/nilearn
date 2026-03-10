@@ -10,8 +10,7 @@ from scipy import linalg
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils.class_inspect import get_params
+from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     is_matplotlib_installed,
@@ -55,7 +54,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         per map is extracted using least square regression. The data for \
         each hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
-    mask_img : :obj:`~nilearn.surface.SurfaceImage`, optional, default=None
+    mask_img : :obj:`~nilearn.surface.SurfaceImage` or None, default=None
         Mask to apply to regions before extracting signals. Defines the \
         overall area of the brain to consider. The data for each \
         hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
@@ -267,7 +266,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "n_elements_")
 
     @fill_doc
@@ -304,6 +303,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         imgs = at_least_2d(imgs)
 
+        imgs = self._smooth(imgs)
+
         self._reporting_data["images"] = imgs
 
         img_data = np.concatenate(
@@ -315,9 +316,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         mask_data = (
             get_data(self.mask_img_) if self.mask_img_ is not None else None
         )
-
-        parameters = get_params(self.__class__, self)
-        parameters["clean_args"] = self.clean_args_
 
         # apply mask if provided
         # and then extract signal via least square regression
@@ -333,27 +331,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 maps_data, img_data
             )[0].T
 
-        mask_logger("cleaning", verbose=self.verbose)
-
-        parameters = get_params(self.__class__, self)
-
-        parameters["clean_args"] = self.clean_args_
-
-        # signal cleaning here
-        region_signals = self._cache(signal.clean, func_memory_level=2)(
-            region_signals,
-            detrend=parameters["detrend"],
-            standardize=parameters["standardize"],
-            standardize_confounds=parameters["standardize_confounds"],
-            t_r=parameters["t_r"],
-            low_pass=parameters["low_pass"],
-            high_pass=parameters["high_pass"],
-            confounds=confounds,
-            sample_mask=sample_mask,
-            **parameters["clean_args"],
-        )
-
-        return region_signals
+        return self._clean(region_signals, confounds, sample_mask)
 
     @fill_doc
     def inverse_transform(self, region_signals):
@@ -479,7 +457,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
             if self._reporting_data.get("images") is None:
                 msg = (
-                    "SurfaceMapsMasker has not been transformed "
+                    f"{self.__class__.__name__} has not been transformed "
                     "(via transform() method) on any image yet. "
                     "Plotting only maps for reporting."
                 )

@@ -27,7 +27,6 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_contrast,
@@ -69,7 +68,7 @@ def _input_type_error_message(second_level_input):
 
 def _check_second_level_input(
     second_level_input, design_matrix, confounds=None
-):
+) -> None:
     """Check second_level_input type."""
     _check_design_matrix(design_matrix)
 
@@ -124,7 +123,7 @@ def _check_input_type_when_list(second_level_input):
     raise TypeError(_input_type_error_message(second_level_input))
 
 
-def _check_all_elements_of_same_type(data):
+def _check_all_elements_of_same_type(data) -> None:
     for idx, input in enumerate(data):
         if not isinstance(input, type(data[0])):
             raise TypeError(
@@ -135,7 +134,7 @@ def _check_all_elements_of_same_type(data):
 
 def _check_input_as_type(
     second_level_input, input_type, none_confounds, none_design_matrix
-):
+) -> None:
     if input_type == "flm_object":
         _check_input_as_first_level_model(second_level_input, none_confounds)
     elif input_type == "pd_series":
@@ -152,7 +151,9 @@ def _check_input_as_type(
 INF = 1000 * np.finfo(np.float32).eps
 
 
-def _check_input_as_first_level_model(second_level_input, none_confounds):
+def _check_input_as_first_level_model(
+    second_level_input, none_confounds
+) -> None:
     """Check that all all first level models are valid.
 
     - must have been fit
@@ -213,7 +214,7 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
             )
 
 
-def _check_input_as_dataframe(second_level_input):
+def _check_input_as_dataframe(second_level_input) -> None:
     for col in ("subject_label", "map_name", "effects_map_path"):
         if col not in second_level_input.columns:
             raise ValueError(
@@ -228,7 +229,9 @@ def _check_input_as_dataframe(second_level_input):
         raise ValueError("'subject_label' column must contain only strings.")
 
 
-def _check_input_as_nifti_images(second_level_input, none_design_matrix):
+def _check_input_as_nifti_images(
+    second_level_input, none_design_matrix
+) -> None:
     if isinstance(second_level_input, NiimgLike):
         second_level_input = [second_level_input]
     for niimg in second_level_input:
@@ -240,7 +243,9 @@ def _check_input_as_nifti_images(second_level_input, none_design_matrix):
         )
 
 
-def _check_input_as_surface_images(second_level_input, none_design_matrix):
+def _check_input_as_surface_images(
+    second_level_input, none_design_matrix
+) -> None:
     if isinstance(second_level_input, SurfaceImage) and (
         len(second_level_input.shape) == 1 or second_level_input.shape[1] == 1
     ):
@@ -260,7 +265,7 @@ def _check_input_as_surface_images(second_level_input, none_design_matrix):
             )
 
 
-def _check_confounds(confounds):
+def _check_confounds(confounds) -> None:
     """Check confounds type."""
     if confounds is not None:
         if not isinstance(confounds, pd.DataFrame):
@@ -282,7 +287,9 @@ def _check_confounds(confounds):
             raise ValueError("subject_label column must contain only strings")
 
 
-def _check_first_level_contrast(second_level_input, first_level_contrast):
+def _check_first_level_contrast(
+    second_level_input, first_level_contrast
+) -> None:
     if (
         isinstance(second_level_input, list)
         and isinstance(second_level_input[0], FirstLevelModel)
@@ -296,7 +303,7 @@ def _check_first_level_contrast(second_level_input, first_level_contrast):
         )
 
 
-def _check_design_matrix(design_matrix):
+def _check_design_matrix(design_matrix) -> None:
     """Check design_matrix type."""
     if design_matrix is not None and not isinstance(
         design_matrix, (str, Path, pd.DataFrame)
@@ -308,7 +315,7 @@ def _check_design_matrix(design_matrix):
         )
 
 
-def _check_n_rows_desmat_vs_n_effect_maps(effect_maps, design_matrix):
+def _check_n_rows_desmat_vs_n_effect_maps(effect_maps, design_matrix) -> None:
     """Check design matrix and effect maps agree on number of rows."""
     if len(effect_maps) != design_matrix.shape[0]:
         raise ValueError(
@@ -487,8 +494,9 @@ class SecondLevelModel(BaseGLM):
     %(memory_level1)s
 
     %(verbose0)s
-        If 0 prints nothing. If 1 prints final computation time.
-        If 2 prints masker computation details.
+        If 0, prints nothing.
+        If 1, prints final computation time.
+        If 2, prints masker computation details.
 
     %(n_jobs)s
 
@@ -635,15 +643,6 @@ class SecondLevelModel(BaseGLM):
         if not self._is_volume_glm() or isinstance(sample_map, SurfaceImage):
             masker_type = "surface"
 
-        if masker_type == "surface" and self.smoothing_fwhm is not None:
-            warn(
-                "Parameter 'smoothing_fwhm' is not "
-                "yet supported for surface data.",
-                NotImplementedWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = None
-
         check_compatibility_mask_and_images(self.mask_img, sample_map)
         self.masker_ = check_embedded_masker(self, masker_type)
         self.masker_.memory_level = self.memory_level
@@ -663,7 +662,7 @@ class SecondLevelModel(BaseGLM):
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return (
             hasattr(self, "second_level_input_")
             and self.second_level_input_ is not None
@@ -1072,15 +1071,6 @@ def non_parametric_inference(
         second_level_input = _sort_input_dataframe(second_level_input)
     sample_map, _ = _process_second_level_input(second_level_input)
 
-    if isinstance(sample_map, SurfaceImage) and smoothing_fwhm is not None:
-        warn(
-            "Parameter 'smoothing_fwhm' is not "
-            "yet supported for surface data.",
-            NotImplementedWarning,
-            stacklevel=find_stack_level(),
-        )
-        smoothing_fwhm = None
-
     # Report progress
     t0 = time.time()
     logger.log("Fitting second level model...", verbose=verbose)
@@ -1102,6 +1092,8 @@ def non_parametric_inference(
             memory=Memory(None),
             verbose=max(0, verbose - 1),
             memory_level=1,
+            # TODO (nilearn >= 0.15) remove standardize=None
+            standardize=None,
         )
     else:
         masker = NiftiMasker(
@@ -1110,6 +1102,8 @@ def non_parametric_inference(
             memory=Memory(None),
             verbose=max(0, verbose - 1),
             memory_level=1,
+            # TODO (nilearn >= 0.15) remove standardize=None
+            standardize=None,
         )
 
     masker.fit(sample_map)
