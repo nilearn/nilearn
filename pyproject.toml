@@ -47,6 +47,8 @@ min_plotting = [
     "matplotlib==3.8.0",
     "plotly==5.0.0"
 ]
+# For prettier printing
+rich = ["rich>=3.0.0"]
 # Applying style guide
 style = ['pre-commit']
 test = [
@@ -133,7 +135,6 @@ plotting = [
     "plotly>=5.0.0,!=6.1.0 ; platform_system != 'Windows'",
     "plotly>=5.0.0,<6.1.0 ; platform_system == 'Windows'"
 ]
-rich = ["rich>=3.0.0"]
 
 [project.urls]
 Changelog = "https://nilearn.github.io/stable/changes/whats_new.html"
