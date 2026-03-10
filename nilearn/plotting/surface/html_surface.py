@@ -21,10 +21,10 @@ from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
-    colorscale_niivue,
     get_html_template,
     mesh_to_plotly,
 )
+from nilearn.plotting.surface._niivue_backend import colorscale_niivue
 from nilearn.plotting.surface._utils import (
     DEFAULT_ENGINE,
     DEFAULT_HEMI,

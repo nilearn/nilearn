@@ -8,8 +8,6 @@ from string import Template
 
 import numpy as np
 
-from nilearn._utils.extmath import fast_abs_percentile
-from nilearn._utils.param_validation import check_threshold
 from nilearn.surface import load_surf_mesh
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
@@ -74,20 +72,6 @@ def get_html_template(template_name):
 
     with template_path.open("rb") as f:
         return Template(f.read().decode("utf-8"))
-
-
-def colorscale_niivue(values, vmax, threshold=None):
-    """Normalize a cmap, put it in plotly format, get threshold and range."""
-    if vmax is None:
-        abs_values = np.abs(values)
-        vmax = abs_values.max()
-    vmax = float(vmax)
-
-    if threshold is not None:
-        threshold = check_threshold(threshold, values, fast_abs_percentile)
-        return vmax, float(threshold)
-
-    return vmax, threshold
 
 
 def encode(a):
