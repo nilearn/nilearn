@@ -3,11 +3,8 @@
 import base64
 import json
 from typing import Any
-from warnings import warn
 
-import matplotlib as mpl
 import numpy as np
-from matplotlib import pyplot as plt
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
@@ -24,7 +21,10 @@ from nilearn.plotting.js_plotting_utils import (
     get_html_template,
     mesh_to_plotly,
 )
-from nilearn.plotting.surface._niivue_backend import colorscale_niivue
+from nilearn.plotting.surface._niivue_backend import (
+    colorscale_niivue,
+    matplotlib_cm_to_niivue_cm,
+)
 from nilearn.plotting.surface._utils import (
     DEFAULT_ENGINE,
     DEFAULT_HEMI,
@@ -126,7 +126,7 @@ def _one_mesh_info_niivue(
     gii = _data_to_gifti(surf_map)
     info["surf_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
 
-    info["cmap"] = _matplotlib_cm_to_niivue_cm(cmap)
+    info["cmap"] = matplotlib_cm_to_niivue_cm(cmap)
 
     vmax, threshold = colorscale_niivue(surf_map, vmax, threshold)
     info["threshold"] = threshold
@@ -143,61 +143,6 @@ def _one_mesh_info_niivue(
     info["bg_theme"] = "black" if black_bg else "white"
 
     return info
-
-
-def _matplotlib_cm_to_niivue_cm(cmap):
-    """Convert matplotlib colormap to niivue colormap.
-
-    Parameters
-    ----------
-    cmap_name : str or Colormap
-        Name of the colormap to convert.
-
-    Returns
-    -------
-    cmap : dict of dict of list
-        Converted positive "pos" and negative "neg" colormaps,
-        with keys "R", "G", "B", "A".
-    """
-    if not isinstance(cmap, (mpl.colors.Colormap, str)):
-        warn(
-            f"'cmap' must be a str or a Colormap. Got {type(cmap)}",
-            stacklevel=4,
-        )
-        return None
-
-    name = None
-    spec = None
-    reverse = False
-
-    if isinstance(cmap, str):
-        name = cmap
-        spec = plt.get_cmap(name)
-    else:
-        spec = cmap
-        name = cmap.name
-
-    if name.endswith("_r"):
-        name = name[:-2]
-        reverse = True
-
-    n_nodes = 255
-    colors = spec(np.linspace(0, 1, 2 * n_nodes))
-
-    js = {"R": [], "G": [], "B": [], "A": []}
-    js["R"] = (255 * colors[..., 0]).astype(int).tolist()
-    js["G"] = (255 * colors[..., 1]).astype(int).tolist()
-    js["B"] = (255 * colors[..., 2]).astype(int).tolist()
-    js["A"] = [64 for _ in range(2 * n_nodes)]
-
-    if reverse:
-        for k in js:
-            js[k] = js[k][::-1]
-
-    js_pos = {k: v[n_nodes:] for k, v in js.items()}
-    js_neg = {k: v[:n_nodes][::-1] for k, v in js.items()}
-
-    return {"pos": js_pos, "neg": js_neg}
 
 
 def _get_combined_curvature_map(mesh_left, mesh_right):

@@ -13,7 +13,6 @@ from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting.surface.html_surface import (
     _fill_html_template,
     _full_brain_info,
-    _matplotlib_cm_to_niivue_cm,
     _one_mesh_info,
     view_img_on_surf,
     view_surf,
@@ -249,21 +248,3 @@ def test_view_img_on_surf_view(tmp_path, mni152_template_res_2, view):
 
     assert f', "view": "{view}"' in str(html)
     check_html_surface_plots(tmp_path, html)
-
-
-def test_matplotlib_cm_to_niivue_cm():
-    """Make sure _matplotlib_cm_to_niivue_cm raises errors appropriately."""
-    with pytest.warns(
-        UserWarning, match="'cmap' must be a str or a Colormap. Got"
-    ):
-        niivue_cmap = _matplotlib_cm_to_niivue_cm(None)
-        assert niivue_cmap is None
-
-    with pytest.warns(
-        UserWarning, match="'cmap' must be a str or a Colormap. Got"
-    ):
-        niivue_cmap = _matplotlib_cm_to_niivue_cm(1)
-        assert niivue_cmap is None
-
-    with pytest.raises(ValueError, match="spec"):
-        _matplotlib_cm_to_niivue_cm("foo")
