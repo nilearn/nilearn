@@ -418,7 +418,7 @@ def _json_view_size(params, width_view=600):
     # axial_height (y).
     # Also add 20% extra height for annotation and margin
     slices_height = np.max([params["nbSlice"]["Y"], params["nbSlice"]["Z"]])
-    slices_height = 1.20 * slices_height
+    slices_height = 1.50 * slices_height
 
     # Get the final size of the viewer
     ratio = slices_height / slices_width

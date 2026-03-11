@@ -26,7 +26,8 @@ from nilearn.plotting import (
 
 
 @pytest.fixture
-def surf_roi_data(rng, in_memory_mesh):
+def surf_roi_data(rng, in_memory_mesh) -> np.ndarray:
+    """Return array to define ROIs on a surface."""
     roi_map = np.zeros((in_memory_mesh.n_vertices, 1))
     roi_idx = rng.integers(0, in_memory_mesh.n_vertices, size=10)
     roi_map[roi_idx] = 1

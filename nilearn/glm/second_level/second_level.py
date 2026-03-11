@@ -639,15 +639,6 @@ class SecondLevelModel(BaseGLM):
         if not self._is_volume_glm() or isinstance(sample_map, SurfaceImage):
             masker_type = "surface"
 
-        if masker_type == "surface" and self.smoothing_fwhm is not None:
-            warn(
-                "Parameter 'smoothing_fwhm' is not "
-                "yet supported for surface data.",
-                NotImplementedWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = None
-
         check_compatibility_mask_and_images(self.mask_img, sample_map)
         self.masker_ = check_embedded_masker(self, masker_type)
         self.masker_.memory_level = self.memory_level
@@ -1071,15 +1062,6 @@ def non_parametric_inference(
         second_level_input = _sort_input_dataframe(second_level_input)
     sample_map, _ = _process_second_level_input(second_level_input)
 
-    if isinstance(sample_map, SurfaceImage) and smoothing_fwhm is not None:
-        warn(
-            "Parameter 'smoothing_fwhm' is not "
-            "yet supported for surface data.",
-            NotImplementedWarning,
-            stacklevel=find_stack_level(),
-        )
-        smoothing_fwhm = None
-
     if (isinstance(sample_map, SurfaceImage)) and (tfce or threshold):
         tfce = False
         threshold = None
@@ -1114,6 +1096,8 @@ def non_parametric_inference(
             memory=Memory(None),
             verbose=max(0, verbose - 1),
             memory_level=1,
+            # TODO (nilearn >= 0.15) remove standardize=None
+            standardize=None,
         )
     else:
         masker = NiftiMasker(
@@ -1122,6 +1106,8 @@ def non_parametric_inference(
             memory=Memory(None),
             verbose=max(0, verbose - 1),
             memory_level=1,
+            # TODO (nilearn >= 0.15) remove standardize=None
+            standardize=None,
         )
 
     masker.fit(sample_map)

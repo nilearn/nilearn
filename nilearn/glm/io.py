@@ -147,7 +147,7 @@ def save_glm_to_bids(
 
             .. code-block:: python
 
-                contrasts=[
+                contrasts = [
                     np.asarray([1, 0, 0]),
                     np.asarray([0, 1, 0]),
                     np.asarray([1, -1, 0]),
@@ -164,7 +164,7 @@ def save_glm_to_bids(
 
             .. code-block:: python
 
-                contrasts=[
+                contrasts = [
                     "win",
                     "neutral",
                     "win - neutral",
@@ -181,7 +181,7 @@ def save_glm_to_bids(
 
             .. code-block:: python
 
-                contrasts={
+                contrasts = {
                     "WinMinusNeutral": "win - neutral",
                 }
 
@@ -194,7 +194,7 @@ def save_glm_to_bids(
 
             .. code-block:: python
 
-                contrasts={
+                contrasts = {
                     "Win - Neutral": "win - neutral",
                 }
 

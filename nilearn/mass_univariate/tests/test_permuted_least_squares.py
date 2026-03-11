@@ -63,7 +63,9 @@ def ref_score(tested_var, target_var, covars=None):
     return get_tvalue_with_alternative_library(tested_var, target_var, covars)
 
 
-def _create_design(rng, n_samples, n_descriptors, n_regressors):
+def _create_design(
+    rng, n_samples: int, n_descriptors: int, n_regressors: int
+) -> tuple[np.ndarray, np.ndarray, int, int]:
     target_var = rng.standard_normal((n_samples, n_descriptors))
     tested_var = rng.standard_normal((n_samples, n_regressors))
 
@@ -71,7 +73,7 @@ def _create_design(rng, n_samples, n_descriptors, n_regressors):
 
 
 @pytest.fixture
-def design(rng):
+def design(rng) -> tuple[np.ndarray, np.ndarray, int, int]:
     """Return a design to run tests on."""
     return _create_design(
         rng, n_samples=N_SAMPLES, n_descriptors=1, n_regressors=1
@@ -79,19 +81,19 @@ def design(rng):
 
 
 @pytest.fixture
-def dummy_design(rng):
+def dummy_design(rng) -> tuple[np.ndarray, np.ndarray, int, int]:
     """Use to test errors and warnings."""
     return _create_design(rng, n_samples=10, n_descriptors=1, n_regressors=1)
 
 
 @pytest.fixture
-def confounding_vars(rng):
+def confounding_vars(rng) -> np.ndarray:
     """Return normally distributed confounds."""
     return rng.standard_normal((N_SAMPLES, N_COVARS))
 
 
 @pytest.fixture()
-def masker(affine_eye):
+def masker(affine_eye) -> NiftiMasker:
     """Return a default masker."""
     mask_img = Nifti1Image(np.ones((5, 5, 5)), affine_eye)
     masker = NiftiMasker(mask_img)
@@ -100,7 +102,7 @@ def masker(affine_eye):
 
 
 @pytest.fixture()
-def cluster_level_design(rng):
+def cluster_level_design(rng) -> tuple[np.ndarray, np.ndarray]:
     """Create design for cluster level tests."""
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
     voxel_vars = np.hstack(

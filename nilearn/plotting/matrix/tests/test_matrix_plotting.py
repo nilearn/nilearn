@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from nilearn._utils.helpers import is_gil_enabled
+from nilearn.conftest import _n_regions
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
@@ -23,13 +24,15 @@ from nilearn.plotting.matrix.matrix_plotting import (
 
 
 @pytest.fixture
-def mat():
-    return np.zeros((10, 10))
+def mat(n_regions) -> np.ndarray:
+    """Return a dummy matrix for plotting."""
+    return np.zeros((n_regions, n_regions))
 
 
 @pytest.fixture
-def labels():
-    return [str(i) for i in range(10)]
+def labels(n_regions) -> list[str]:
+    """Return a list of dummy labels."""
+    return [str(i) for i in range(n_regions)]
 
 
 ##############################################################################
@@ -65,17 +68,17 @@ def test_sanitize_figure_and_axes(fig, axes, expected):
 
 
 @pytest.mark.parametrize(
-    "matrix, labels, reorder",
+    "labels, reorder",
     [
-        (np.zeros((10, 10)), [0, 1, 2], False),
-        (np.zeros((10, 10)), None, True),
-        (np.zeros((10, 10)), [str(i) for i in range(10)], " "),
+        ([0, 1, 2], False),
+        (None, True),
+        ([str(i) for i in range(_n_regions())], " "),
     ],
 )
-def test_matrix_plotting_errors(matrix, labels, reorder):
+def test_matrix_plotting_errors(labels, reorder, mat):
     """Test invalid input values for plot_matrix."""
     with pytest.raises(ValueError):
-        plot_matrix(matrix, labels=labels, reorder=reorder)
+        plot_matrix(mat, labels=labels, reorder=reorder)
 
 
 @pytest.mark.thread_unsafe

@@ -92,7 +92,7 @@ def mask_img():
 
 
 @pytest.fixture
-def signals():
+def signals() -> np.ndarray:
     return generate_timeseries(n_timepoints=N_TIMEPOINTS, n_features=N_REGIONS)
 
 

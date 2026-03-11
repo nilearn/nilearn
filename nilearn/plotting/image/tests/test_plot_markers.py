@@ -11,7 +11,7 @@ from nilearn.plotting import plot_markers
 
 
 @pytest.fixture
-def coords():
+def coords() -> np.ndarray:
     """Node coordinates for testing."""
     return np.array(
         [[39, 6, -32], [29, 40, 1], [-20, -74, 35], [-29, -59, -37]]
