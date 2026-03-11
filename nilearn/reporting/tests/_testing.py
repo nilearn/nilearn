@@ -111,7 +111,7 @@ def generate_and_check_report(
             report = estimator.generate_report(title=title, **kwargs)
             warnings_msg = [str(x.message) for x in all_warnings]
             if not extra_warnings_allowed:
-                assert len(warnings_msg) == 0, warnings_msg
+                assert not warnings_msg, warnings_msg
 
         if not duplicate_warnings_allowed:
             # make sure that warnings are not thrown several times

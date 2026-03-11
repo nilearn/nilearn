@@ -343,17 +343,13 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         embedded_images = []
 
-        if img is None:
-            for component in maps_to_be_displayed:
+        for component in maps_to_be_displayed:
+            if img is None:
                 display = plot_stat_map(
                     index_img(maps_image, component),
                     cmap=cm.black_blue,  # type: ignore[attr-defined]
                 )
-                embedded_images.append(display)
-                display.close()
-
-        else:
-            for component in maps_to_be_displayed:
+            else:
                 # Find the cut coordinates
                 cut_coords = find_xyz_cut_coords(
                     index_img(maps_image, component)
@@ -368,8 +364,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     index_img(maps_image, component),
                     cmap=cm.black_blue,  # type: ignore[attr-defined]
                 )
-                embedded_images.append(display)
-                display.close()
+            embedded_images.append(display)
+            display.close()
 
         return embedded_images
 

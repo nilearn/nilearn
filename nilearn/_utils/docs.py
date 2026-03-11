@@ -182,7 +182,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        svc_l1 = LinearSVC(penalty="l1", dual=False, max_iter=1e4)
+        svc_l1 = LinearSVC(penalty="l1", max_iter=1e4)
 
     - ``"logistic"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
