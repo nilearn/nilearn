@@ -273,7 +273,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         .. note::
 
             This parameter will be passed to the underlying
-            estimator.
+            ``"svc"`` estimator.
 
     %(estimator_args)s
 
