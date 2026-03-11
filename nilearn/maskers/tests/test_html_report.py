@@ -85,7 +85,7 @@ def generate_and_check_masker_report(
         if is_matplotlib_installed():
             if accept_surf_img_input(masker):
                 includes.append("data:image/png;base64,")
-            else:
+            elif kwargs.get("engine", "") != "brainsprite":
                 includes.append("data:image/svg+xml;base64,")
 
         else:
