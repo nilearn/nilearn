@@ -277,8 +277,8 @@ show()
 # more interactive visualizations in a web browser.
 #
 # For :func:`~nilearn.plotting.view_surf`,
-# there are 2 available plotting engines available:
-# plotlyt (the default) and niivue.
+# there are 2 available plotting engines:
+# plotly (the default) and niivue.
 #
 # See :ref:`interactive-surface-plotting` for more details.
 from nilearn.plotting import view_surf
