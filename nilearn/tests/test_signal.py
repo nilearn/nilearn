@@ -1,6 +1,7 @@
 """Test the signals module."""
 
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import pytest
@@ -29,8 +30,12 @@ EPS = np.finfo(np.float64).eps
 
 
 def generate_signals(
-    n_features=17, n_confounds=5, length=41, same_variance=True, order="C"
-):
+    n_features: int = 17,
+    n_confounds: int = 5,
+    length: int = 41,
+    same_variance: bool = True,
+    order: Literal["C", "F"] = "C",
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Generate test signals.
 
     All returned signals have no trends at all (to machine precision).
@@ -121,7 +126,7 @@ def generate_signals_plus_trends(n_features=17, n_samples=41):
 
 
 @pytest.fixture
-def data_butterworth_single_timeseries(rng):
+def data_butterworth_single_timeseries(rng) -> np.ndarray:
     """Generate single timeseries for butterworth tests."""
     n_samples = 100
     return rng.standard_normal(size=n_samples)
@@ -130,7 +135,7 @@ def data_butterworth_single_timeseries(rng):
 @pytest.fixture
 def data_butterworth_multiple_timeseries(
     rng, data_butterworth_single_timeseries
-):
+) -> np.ndarray:
     """Generate mutltiple timeseries for butterworth tests."""
     n_features = 20000
     n_samples = 100

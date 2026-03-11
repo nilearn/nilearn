@@ -28,7 +28,6 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn._utils.versions import SKLEARN_LT_1_6
-from nilearn.exceptions import NotImplementedWarning
 from nilearn.image.image import (
     check_niimg,
     check_volume_for_fit,
@@ -731,15 +730,6 @@ class _BaseSurfaceMasker(_BaseMasker):
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
 
-        if self.smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                NotImplementedWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = None
-
         if self.standardize in [True, False]:
             # TODO (nilearn >= 0.15.0) remove warning
             warnings.warn(
@@ -820,6 +810,19 @@ class _BaseSurfaceMasker(_BaseMasker):
         """
         del y
         return self.fit(imgs).transform(imgs, confounds, sample_mask)
+
+    def _smooth(self, imgs):
+        if self.smoothing_fwhm is not None:
+            logger.log("Smoothing images", verbose=self.verbose)
+
+            imgs = cache(
+                smooth_img,
+                self.memory,
+                func_memory_level=2,
+                memory_level=self.memory_level,
+            )(imgs, self.smoothing_fwhm)
+
+        return imgs
 
     def _check_array(
         self, signals: np.ndarray, sklearn_check: bool = True

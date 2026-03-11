@@ -67,9 +67,9 @@ if SKLEARN_GTE_1_8:
     kwarg_logistic_regression_cv = {"use_legacy_attributes": False}
 
 SUPPORTED_ESTIMATORS = {
-    "svc_l1": LinearSVC(penalty="l1", dual=False, max_iter=10000),
-    "svc_l2": LinearSVC(penalty="l2", dual=True, max_iter=10000),
-    "svc": LinearSVC(penalty="l2", dual=True, max_iter=10000),
+    "svc_l1": LinearSVC(penalty="l1", random_state=0, max_iter=10000),
+    "svc_l2": LinearSVC(penalty="l2", random_state=0, max_iter=10000),
+    "svc": LinearSVC(penalty="l2", random_state=0, max_iter=10000),
     "logistic_l1": LogisticRegressionCV(
         l1_ratios=(1,), solver="liblinear", **kwarg_logistic_regression_cv
     ),
