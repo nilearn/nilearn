@@ -75,15 +75,7 @@ n_jobs = 2
 # splitting the samples in 4 folds and make 4 runs using each fold as a test
 # set once and the others as learning sets
 #
-# The radius is the one of the Searchlight sphere that will scan the volume
-#
-# .. note::
-#
-#   We instantiate ``SearchLight``
-#   with extra argument (``random_state``) to pass
-#   to the underlying default estimator (LinearSVC),
-#   as it is used with ``dual=False``,
-#   which may lead to irreproducible output across multiple function calls.
+# The radius is the one of the Searchlight sphere that will scan the volume.
 #
 from sklearn.model_selection import KFold
 
@@ -98,7 +90,6 @@ searchlight = SearchLight(
     n_jobs=n_jobs,
     verbose=1,
     cv=cv,
-    estimator_args={"random_state": 0},
 )
 searchlight.fit(fmri_img, y)
 
