@@ -311,6 +311,7 @@ def test_nifti_labels_masker_report(
         labels=labels,
         mask_img=img_mask_eye,
         keep_masked_labels=True,
+        standardize=None,
     )
     masker.fit_transform(img_3d_rand_eye)
 
@@ -368,9 +369,11 @@ def test_nifti_labels_masker_report_cut_coords(
 ):
     """Test cut coordinate are equal with and without passing data to fit."""
     masker = masker_class(**input_parameters, reports=True)
+
     # Get display without data
     masker.fit()
     display = masker._reporting()
+
     # Get display with data
     masker.fit(img_3d_rand_eye)
     display_data = masker._reporting()
@@ -532,7 +535,7 @@ def test_surface_masker_minimal_report_fit(
 ):
     """Test minimal report generation with fit."""
     mask = None if empty_mask else surf_mask_1d
-    masker = SurfaceMasker(mask_img=mask, reports=reports)
+    masker = SurfaceMasker(mask_img=mask, reports=reports, standardize=None)
     masker.fit_transform(surf_img_1d)
 
     extend_includes = []
@@ -551,7 +554,7 @@ def test_surface_maps_masker_generate_report_engine_error(
     surf_img_2d,
 ):
     """Test error is raised when engine is not 'plotly' or 'matplotlib'."""
-    masker = SurfaceMapsMasker(surf_maps_img)
+    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
     masker.fit_transform(surf_img_2d(10))
     with pytest.raises(
         ValueError,
@@ -622,7 +625,7 @@ def test_surface_maps_masker_generate_report_matplotlib_out_figure_type(
     surf_img_2d,
 ):
     """Test that the report has a img tag when engine is matplotlib."""
-    masker = SurfaceMapsMasker(surf_maps_img)
+    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
     masker.fit_transform(surf_img_2d(10))
     report = masker.generate_report(engine="matplotlib", displayed_maps=2)
 

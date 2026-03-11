@@ -430,7 +430,10 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         self._report_content["summary"] = table
         self._report_content["number_of_regions"] = self.n_elements_
 
-        if self._report_content["engine"] == "matplotlib":
+        if (
+            self._report_content.get("engine") is None
+            or self._report_content["engine"] == "matplotlib"
+        ):
             return self._create_figure_for_report(labels_image)
 
         elif self._report_content["engine"] == "brainsprite":
