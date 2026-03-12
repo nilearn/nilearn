@@ -14,9 +14,9 @@ anatomy for a slice in each direction..
 This is only useful for internal purposes especially when the SVG is modified.
 """
 
+from nilearn.datasets.utils import load_anat
 from nilearn.plotting.glass_brain import plot_brain_schematics
 from nilearn.plotting.image import plot_anat, plot_glass_brain, show
-from nilearn.plotting.image.utils import load_anat
 
 if __name__ == "__main__":
     # plotting anat for coarse alignment

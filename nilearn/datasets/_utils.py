@@ -30,7 +30,7 @@ from nilearn._utils.param_validation import (
 from .utils import get_data_dirs
 
 _REQUESTS_TIMEOUT = (15.1, 61)
-PACKAGE_DIRECTORY = Path(__file__).absolute().parent
+PACKAGE_DIRECTORY: Path = Path(__file__).absolute().parent
 
 
 ALLOWED_DATA_TYPES = (
