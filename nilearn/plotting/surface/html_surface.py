@@ -260,6 +260,7 @@ def _fill_html_template(
 ) -> SurfaceView:
     if engine == "plotly":
         as_json = json.dumps(info)
+
         as_html = get_html_template(
             "surface_plot_template.html"
         ).safe_substitute(
@@ -271,6 +272,7 @@ def _fill_html_template(
         as_html = add_js_lib(
             as_html, libraries=["plotly", "jquery"], embed_js=embed_js
         )
+
     elif engine == "niivue":
         as_html = get_html_template(
             "surface_plot_template_niivue.html"
