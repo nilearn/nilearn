@@ -1698,7 +1698,7 @@ def test_generate_report_default(kwargs):
         shapes=[(30, 31, 32, 33)], rk=3
     )
 
-    flm = FirstLevelModel(mask_img=mask).fit(
+    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
 
@@ -1726,7 +1726,7 @@ def test_generate_report_height_none_future_default():
         shapes=[(30, 31, 32, 33)], rk=3
     )
 
-    flm = FirstLevelModel(mask_img=mask).fit(
+    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
 
@@ -1755,7 +1755,7 @@ def test_generate_report_threshold_unused(threshold):
         shapes=[(30, 31, 32, 33)], rk=3
     )
 
-    flm = FirstLevelModel(mask_img=mask).fit(
+    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
     
