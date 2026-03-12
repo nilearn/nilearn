@@ -243,11 +243,9 @@ def check_params(fn_dict) -> None:
 
         def some_function(param_1, param_2="a"):
             check_params(locals())
-            ...
 
         Class MyClass:
-            def __init__(param_1, param_2="a")
-            ...
+            def __init__()
 
             def fit(X):
                 # check attributes of the class instance

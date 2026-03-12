@@ -182,7 +182,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        svc_l1 = LinearSVC(penalty="l1", dual=False, max_iter=1e4)
+        svc_l1 = LinearSVC(penalty="l1", max_iter=1e4)
 
     - ``"logistic"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -538,15 +538,19 @@ docdict["fwhm"] = """
 fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\
 or 'fast' or None, optional
     Smoothing strength, as a :term:`full-width at half maximum<FWHM>`,
-    in millimeters:
+    in millimeters.
+
+    For surface data, only scalar and None are supported.
+
+    For volume data, several options are possible:
 
     - If a nonzero scalar is given, width is identical in all 3 directions.
 
     - If a :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` is given,
       it must have 3 elements, giving the :term:`FWHM` along each axis.
       If any of the elements is `0` or `None`,
-
       smoothing is not performed along that axis.
+
     - If `fwhm="fast"`, a fast smoothing will be performed with a filter
       [0.2, 1, 0.2] in each direction and a normalization to preserve the
       local average value.
@@ -1205,7 +1209,7 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
 # TODO (nilearn >= 0.15.0) update to ..versionchanged
 deprecation_notice_false_to_none = """
 
-    .. nilearn_deprecated:: 0.15.0dev
+    .. nilearn_deprecated:: 0.13.0
 
         The default will be changed to ``None``
         in version 0.15.0.
@@ -1215,7 +1219,7 @@ deprecation_notice_false_to_none = """
 # TODO (nilearn >= 0.15.0) update to ..versionchanged
 deprecation_notice_true_to_zscore_sample = """
 
-    .. nilearn_deprecated:: 0.15.0dev
+    .. nilearn_deprecated:: 0.13.0
 
         The default will be changed to ``'zscore_sample'``
         in version 0.15.0.
@@ -1225,7 +1229,7 @@ deprecation_notice_true_to_zscore_sample = """
 docdict["standardize_false"] = (
     standardize.format("False") + deprecation_notice_false_to_none
 )
-# TODO (nilearn >= 0.14.0 and 0.15.0)
+# TODO (nilearn >= 0.15.0)
 # adapt the deprecation notices
 docdict["standardize_true"] = (
     standardize.format("True") + deprecation_notice_true_to_zscore_sample

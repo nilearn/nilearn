@@ -461,6 +461,11 @@ def test_vertex_outer_normals():
     assert_array_almost_equal(computed_normals, true_normals)
 
 
+def test_mesh_area():
+    mesh = flat_mesh(5, 7)
+    assert mesh._area == 24
+
+
 @pytest.mark.parametrize("n_points", [10, 20, 40, 80, 160])
 def test_load_uniform_ball_cloud_no_warning(n_points):
     """Test that loading precomputed point clouds does not raise warnings.

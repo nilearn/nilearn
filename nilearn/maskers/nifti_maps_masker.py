@@ -339,17 +339,13 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         embedded_images = []
 
-        if img is None:
-            for component in maps_to_be_displayed:
+        for component in maps_to_be_displayed:
+            if img is None:
                 display = plot_stat_map(
                     index_img(maps_image, component),
                     cmap=cm.black_blue,  # type: ignore[attr-defined]
                 )
-                embedded_images.append(display)
-                display.close()
-
-        else:
-            for component in maps_to_be_displayed:
+            else:
                 # Find the cut coordinates
                 cut_coords = find_xyz_cut_coords(
                     index_img(maps_image, component)
@@ -364,8 +360,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     index_img(maps_image, component),
                     cmap=cm.black_blue,  # type: ignore[attr-defined]
                 )
-                embedded_images.append(display)
-                display.close()
+            embedded_images.append(display)
+            display.close()
 
         return embedded_images
 
@@ -568,6 +564,18 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             if mask_img_ is not None:
                 images["mask"] = mask_img_
             check_same_fov(raise_error=True, **images)
+        elif self.resampling_target == "maps":
+            ref_img = self.maps_img_
+            if not check_same_fov(ref_img, imgs_):
+                warnings.warn(
+                    (
+                        "Resampling images at transform time...\n"
+                        "To avoid this warning, make sure to resample the "
+                        "images you want to transform to the shape of the "
+                        "maps or set resampling_target to 'data'."
+                    ),
+                    stacklevel=find_stack_level(),
+                )
         elif self.resampling_target == "data":
             ref_img = imgs_
 
