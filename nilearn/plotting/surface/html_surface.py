@@ -253,41 +253,44 @@ def _full_brain_info(
     return info
 
 
-def _fill_html_template(info, embed_js=True) -> SurfaceView:
-    as_json = json.dumps(info)
-    as_html = get_html_template("surface_plot_template.html").safe_substitute(
-        {
-            "INSERT_STAT_MAP_JSON_HERE": as_json,
-            "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
-        }
-    )
-    as_html = add_js_lib(
-        as_html, libraries=["plotly", "jquery"], embed_js=embed_js
-    )
-    return SurfaceView(as_html)
-
-
-def _fill_html_template_niivue(
-    info: dict[str, Any], embed_js: bool = True
+def _fill_html_template(
+    info: dict[str, Any],
+    embed_js: bool = True,
+    engine: Literal["niivue", "plotly"] = "plotly",
 ) -> SurfaceView:
-    as_html = get_html_template(
-        "surface_plot_template_niivue.html"
-    ).safe_substitute(
-        {
-            "INSERT_SURF_MAP_BASE64_HERE": info["surf_map"],
-            "INSERT_SURF_COLORMAP_HERE": info["cmap"],
-            "INSERT_MESH_BASE64_HERE": info["surf_mesh"],
-            "INSERT_BG_MAP_BASE64_HERE": info["bg_map"],
-            "INSERT_COLORBAR_HERE": info["colorbar"],
-            "INSERT_THRESHOLD_HERE": json.dumps(info["threshold"]),
-            "INSERT_VMAX_HERE": json.dumps(info["vmax"]),
-            "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
-            "INSERT_FONT_SIZE_HERE": str(info["title_fontsize"]) + "px",
-            "INSERT_COLOR_THEME_HERE": info["bg_theme"],
-            "INSERT_BG_COLOR_HERE": info["bg_color"],
-        }
-    )
-    as_html = add_js_lib(as_html, libraries=["niivue"], embed_js=embed_js)
+    if engine == "plotly":
+        as_json = json.dumps(info)
+        as_html = get_html_template(
+            "surface_plot_template.html"
+        ).safe_substitute(
+            {
+                "INSERT_STAT_MAP_JSON_HERE": as_json,
+                "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
+            }
+        )
+        as_html = add_js_lib(
+            as_html, libraries=["plotly", "jquery"], embed_js=embed_js
+        )
+    elif engine == "niivue":
+        as_html = get_html_template(
+            "surface_plot_template_niivue.html"
+        ).safe_substitute(
+            {
+                "INSERT_SURF_MAP_BASE64_HERE": info["surf_map"],
+                "INSERT_SURF_COLORMAP_HERE": info["cmap"],
+                "INSERT_MESH_BASE64_HERE": info["surf_mesh"],
+                "INSERT_BG_MAP_BASE64_HERE": info["bg_map"],
+                "INSERT_COLORBAR_HERE": info["colorbar"],
+                "INSERT_THRESHOLD_HERE": json.dumps(info["threshold"]),
+                "INSERT_VMAX_HERE": json.dumps(info["vmax"]),
+                "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
+                "INSERT_FONT_SIZE_HERE": str(info["title_fontsize"]) + "px",
+                "INSERT_COLOR_THEME_HERE": info["bg_theme"],
+                "INSERT_BG_COLOR_HERE": info["bg_color"],
+            }
+        )
+        as_html = add_js_lib(as_html, libraries=["niivue"], embed_js=embed_js)
+
     return SurfaceView(as_html)
 
 
@@ -582,9 +585,9 @@ def view_surf(
 
     if engine == "niivue":
         info["colorbar"] = str(colorbar).lower()
-        return _fill_html_template_niivue(info, embed_js=True)
+    else:
+        info["colorbar"] = colorbar
+        info["cbar_height"] = colorbar_height
+        info["cbar_fontsize"] = colorbar_fontsize
 
-    info["colorbar"] = colorbar
-    info["cbar_height"] = colorbar_height
-    info["cbar_fontsize"] = colorbar_fontsize
-    return _fill_html_template(info, embed_js=True)
+    return _fill_html_template(info, embed_js=True, engine=engine)
