@@ -493,7 +493,7 @@ def test_clean_detrending():
 
     # This should remove trends as detrend is True by default
     match = "boolean values for 'standardize' will be deprecated"
-    with pytest.deprecated_call(match=match):
+    with pytest.warns(FutureWarning, match=match):
         x_detrended = clean(x, standardize=False)
 
     assert_almost_equal(x_detrended, signals, decimal=13)
