@@ -2,7 +2,7 @@
 
 import base64
 import json
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 
@@ -65,12 +65,13 @@ def _one_mesh_info(
     surf_mesh,
     threshold=None,
     cmap=cm.cold_hot,  # type: ignore[attr-defined]
-    black_bg=False,
+    black_bg: bool = False,
     bg_map=None,
-    symmetric_cmap=True,
-    bg_on_data=False,
+    symmetric_cmap: bool = True,
+    bg_on_data: bool = False,
     vmax=None,
     vmin=None,
+    engine: Literal["niivue", "plotly"] = "plotly",
 ) -> dict[str, Any]:
     """Prepare info for plotting one surface map on a single mesh.
 
@@ -79,6 +80,41 @@ def _one_mesh_info(
     background color.
 
     """
+    info: dict[str, Any] = {}
+
+    if engine == "niivue":
+        # Handle mesh
+        surf_mesh_gifti = _mesh_to_gifti(
+            surf_mesh.coordinates, surf_mesh.faces
+        )
+        info["surf_mesh"] = base64.b64encode(
+            surf_mesh_gifti.to_bytes()
+        ).decode("UTF-8")
+
+        # Handle surface data
+        gii = _data_to_gifti(surf_map)
+        info["surf_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
+
+        info["cmap"] = matplotlib_cm_to_niivue_cm(cmap)
+
+        vmax, threshold = colorscale_niivue(surf_map, vmax, threshold)
+        info["threshold"] = threshold
+        info["vmax"] = vmax
+
+        # Handle background map
+        if bg_map is not None:
+            gii = _data_to_gifti(bg_map)
+            info["bg_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
+        else:
+            info["bg_map"] = "null"
+
+        info["bg_color"] = "[0, 0, 0, 1]" if black_bg else "[1, 1, 1, 1]"
+        info["bg_theme"] = "black" if black_bg else "white"
+
+        return info
+
+    info["inflated_both"] = mesh_to_plotly(surf_mesh)
+
     colors = colorscale(
         cmap,
         surf_map,
@@ -87,7 +123,6 @@ def _one_mesh_info(
         vmax=vmax,
         vmin=vmin,
     )
-    info = {"inflated_both": mesh_to_plotly(surf_mesh)}
     backend = get_surface_backend(DEFAULT_ENGINE)
     info["vertexcolor_both"] = backend._get_vertexcolor(
         surf_map,
@@ -97,51 +132,11 @@ def _one_mesh_info(
         bg_map=bg_map,
         bg_on_data=bg_on_data,
     )
-    info["cmin"], info["cmax"] = float(colors["vmin"]), float(colors["vmax"])
+    info["cmin"] = float(colors["vmin"])
+    info["cmax"] = float(colors["vmax"])
     info["black_bg"] = black_bg
     info["full_brain_mesh"] = False
     info["colorscale"] = colors["colors"]
-    return info
-
-
-def _one_mesh_info_niivue(
-    surf_map,
-    surf_mesh,
-    vmax=None,
-    threshold=None,
-    bg_map=None,
-    cmap=None,
-    black_bg: bool = False,
-) -> dict[str, Any]:
-    """Build dict for plotting one surface map on a single mesh."""
-    info = {}
-
-    # Handle mesh
-    surf_mesh_gifti = _mesh_to_gifti(surf_mesh.coordinates, surf_mesh.faces)
-    info["surf_mesh"] = base64.b64encode(surf_mesh_gifti.to_bytes()).decode(
-        "UTF-8"
-    )
-
-    # Handle surface data
-    gii = _data_to_gifti(surf_map)
-    info["surf_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
-
-    info["cmap"] = matplotlib_cm_to_niivue_cm(cmap)
-
-    vmax, threshold = colorscale_niivue(surf_map, vmax, threshold)
-    info["threshold"] = threshold
-    info["vmax"] = vmax
-
-    # Handle background map
-    if bg_map is not None:
-        gii = _data_to_gifti(bg_map)
-        info["bg_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
-    else:
-        info["bg_map"] = "null"
-
-    info["bg_color"] = "[0, 0, 0, 1]" if black_bg else "[1, 1, 1, 1]"
-    info["bg_theme"] = "black" if black_bg else "white"
-
     return info
 
 
@@ -568,21 +563,6 @@ def view_surf(
 
     _check_engine(engine)
 
-    if engine == "niivue":
-        info = _one_mesh_info_niivue(
-            surf_map=surf_map,
-            surf_mesh=surf_mesh,
-            black_bg=black_bg,
-            bg_map=bg_map,
-            cmap=cmap,
-            threshold=threshold,
-            vmax=vmax,
-        )
-        info["title"] = title
-        info["title_fontsize"] = title_fontsize
-        info["colorbar"] = str(colorbar).lower()
-        return _fill_html_template_niivue(info, embed_js=True)
-
     info = _one_mesh_info(
         surf_map=surf_map,
         surf_mesh=surf_mesh,
@@ -595,10 +575,16 @@ def view_surf(
         vmax=vmax,
         vmin=vmin,
     )
+
+    info["title"] = title
+    info["view"] = view
+    info["title_fontsize"] = title_fontsize
+
+    if engine == "niivue":
+        info["colorbar"] = str(colorbar).lower()
+        return _fill_html_template_niivue(info, embed_js=True)
+
     info["colorbar"] = colorbar
     info["cbar_height"] = colorbar_height
     info["cbar_fontsize"] = colorbar_fontsize
-    info["title"] = title
-    info["title_fontsize"] = title_fontsize
-    info["view"] = view
     return _fill_html_template(info, embed_js=True)
