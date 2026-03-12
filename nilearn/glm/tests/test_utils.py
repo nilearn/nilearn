@@ -114,6 +114,7 @@ def test_z_score_f_values(rng):
         assert_array_almost_equal(z_score(p, one_minus_pvalue=cdf), z)
 
 
+@pytest.mark.slow
 def test_z_score_opposite_contrast(rng):
     fmri, mask = generate_fake_fmri(
         shape=(50, 20, 50), length=96, random_state=rng
@@ -200,6 +201,7 @@ def test_mahalanobis_errors():
         multiple_mahalanobis(effect, cov)
 
 
+@pytest.mark.thread_unsafe
 def test_multiple_fast_inv(rng):
     shape = (10, 20, 20)
     X = rng.standard_normal(size=shape)

@@ -8,6 +8,7 @@ from nibabel import Nifti1Image
 from nilearn.plotting import plot_prob_atlas
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "params",
     [
@@ -28,6 +29,8 @@ def test_plot_prob_atlas(matplotlib_pyplot, params, affine_eye, rng):
     plot_prob_atlas(Nifti1Image(data_rng, affine_eye), **params)
 
 
+@pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_plot_prob_atlas_radiological_view(matplotlib_pyplot, img_4d_rand_eye):
     """Smoke test for radiological view."""
     result = plot_prob_atlas(img_4d_rand_eye, radiological=True)

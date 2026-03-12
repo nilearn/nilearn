@@ -16,10 +16,9 @@ from nilearn._utils.bids import (
     sanitize_look_up_table,
 )
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn.image import high_variance_confounds
-from nilearn.image.utils import get_indices_from_image
+from nilearn.image.image import get_indices_from_image, iter_check_niimg
 from nilearn.surface.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
@@ -265,7 +264,11 @@ class _LabelMaskerMixin:
 
         sub_df = self.lut_[self.lut_["index"].isin(valid_ids)]
 
-        return sub_df["name"].reset_index(drop=True).to_dict()
+        return (
+            sub_df["name"]  # type: ignore[return-value]
+            .reset_index(drop=True)
+            .to_dict()
+        )
 
     @property
     def region_ids_(self) -> dict[str | int, int | float]:

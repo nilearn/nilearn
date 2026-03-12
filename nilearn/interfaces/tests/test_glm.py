@@ -7,6 +7,7 @@ from nilearn.interfaces.bids import save_glm_to_bids
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_deprecation_save_glm_to_bids(tmp_path):
     """Check deprecation about moved function."""
     shapes, rk = [(7, 8, 9, 15)], 3

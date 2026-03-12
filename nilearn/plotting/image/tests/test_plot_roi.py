@@ -8,7 +8,8 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn.conftest import _affine_mni
+from nilearn._utils.bids import generate_atlas_look_up_table
+from nilearn.conftest import _affine_mni, _img_labels
 from nilearn.image.resampling import coord_transform
 from nilearn.plotting import plot_roi
 
@@ -30,6 +31,8 @@ def demo_plot_roi(**kwargs):
     plot_roi(img, title="Broca's area", **kwargs)
 
 
+@pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("view_type", ["contours", "continuous"])
 @pytest.mark.parametrize("threshold", [0.5, 0.2])
 @pytest.mark.parametrize("alpha", [0.7, 0.1])
@@ -62,6 +65,7 @@ def test_plot_roi_view_types(
     )
 
 
+@pytest.mark.slow
 def test_plot_roi_no_int_64_warning(matplotlib_pyplot, recwarn):
     """Make sure that no int64 warning is thrown."""
     demo_plot_roi()
@@ -77,6 +81,7 @@ def test_plot_roi_view_type_error(matplotlib_pyplot):
         demo_plot_roi(view_type="flled")
 
 
+@pytest.mark.slow
 def test_demo_plot_roi_output_file(matplotlib_pyplot, tmp_path):
     """Tests plot_roi file saving capabilities."""
     filename = tmp_path / "test.png"
@@ -84,6 +89,7 @@ def test_demo_plot_roi_output_file(matplotlib_pyplot, tmp_path):
     assert out is None
 
 
+@pytest.mark.slow
 def test_cmap_with_one_level(matplotlib_pyplot, shape_3d_default, affine_eye):
     """Test we can handle cmap with only 1 level.
 
@@ -102,6 +108,7 @@ def test_cmap_with_one_level(matplotlib_pyplot, shape_3d_default, affine_eye):
     plot_roi(img, alpha=0.8, colorbar=True, cmap=cmap)
 
 
+@pytest.mark.slow
 def test_cmap_as_lookup_table(img_labels):
     """Test colormap passed as BIDS lookup table."""
     lut = pd.DataFrame(
@@ -114,3 +121,37 @@ def test_cmap_as_lookup_table(img_labels):
         UserWarning, match="No 'color' column found in the look-up table."
     ):
         plot_roi(img_labels, cmap=lut)
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("background_label", [None, 0])
+def test_cmap_as_lookup_table_with_background(background_label):
+    """Ensure that the background color is dropped from lut.
+
+    regression test for https://github.com/nilearn/nilearn/issues/5934
+    """
+    n_regions = 7
+
+    label_img = _img_labels(n_regions=n_regions)
+
+    lut = generate_atlas_look_up_table(
+        index=label_img, background_label=background_label
+    )
+    color = [
+        "#000000",  # 0
+        "#781286",  # 1
+        "#4682b4",  # 2
+        "#00760e",  # 3
+        "#c43afa",  # 4
+        "#dcf8a4",  # 5
+        "#e69422",  # 6
+        "#cd3e4e",  # 7
+    ]
+    lut["color"] = color
+
+    fig = plot_roi(label_img, cmap=lut)
+
+    if background_label is None:
+        assert n_regions + 2 == fig._cbar.cmap.N
+    else:
+        assert n_regions + 1 == fig._cbar.cmap.N

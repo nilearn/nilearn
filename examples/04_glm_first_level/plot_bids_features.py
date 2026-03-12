@@ -197,8 +197,12 @@ show()
 # Saving model outputs to disk
 # ----------------------------
 #
-# We can now easily save the main results,
-# the model metadata and an HTML report to the disk.
+# It can be useful to quickly generate a portable, ready-to-view report with
+# most of the pertinent information.
+# We can do this by saving the output of the GLM to disk
+# including an HTML report.
+# This is easy to do if you have a fitted model and the list of contrasts,
+# which we do here.
 #
 from nilearn.glm import save_glm_to_bids
 

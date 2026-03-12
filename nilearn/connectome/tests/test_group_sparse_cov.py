@@ -9,7 +9,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.group_sparse_cov import (
     group_sparse_covariance,
@@ -88,6 +88,7 @@ def test_group_sparse_covariance(rng):
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("duality_gap", [True, False])
 def test_group_sparse_covariance_with_probe_function(rng, duality_gap):
     signals, _, _ = generate_group_sparse_gaussian_graphs(

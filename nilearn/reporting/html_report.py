@@ -11,6 +11,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.versions import SKLEARN_GTE_1_7
 from nilearn._version import __version__
 from nilearn.reporting._utils import (
     dataframe_to_html,
@@ -21,21 +22,6 @@ from nilearn.reporting.utils import (
     TEMPLATE_ROOT_PATH,
     figure_to_svg_base64,
 )
-
-ESTIMATOR_TEMPLATES = {
-    "NiftiLabelsMasker": "body_nifti_labels_masker.jinja",
-    "MultiNiftiLabelsMasker": "body_nifti_labels_masker.jinja",
-    "NiftiMapsMasker": "body_nifti_maps_masker.jinja",
-    "MultiNiftiMapsMasker": "body_nifti_maps_masker.jinja",
-    "NiftiSpheresMasker": "body_nifti_spheres_masker.jinja",
-    "SurfaceMasker": "body_surface_masker.jinja",
-    "MultiSurfaceMasker": "body_surface_masker.jinja",
-    "SurfaceLabelsMasker": "body_surface_masker.jinja",
-    "MultiSurfaceLabelsMasker": "body_surface_masker.jinja",
-    "SurfaceMapsMasker": "body_surface_maps_masker.jinja",
-    "MultiSurfaceMapsMasker": "body_surface_maps_masker.jinja",
-}
-
 
 UNFITTED_MSG = (
     "\nThis estimator has not been fit yet.\n"
@@ -171,7 +157,7 @@ def generate_report(estimator) -> HTMLReport:
 
     Parameters
     ----------
-    estimator : Object instance of BaseEstimator.
+    estimator : Object instance of NilearnBaseEstimator.
         Object for which the report should be generated.
 
     Returns
@@ -241,10 +227,6 @@ def _create_report(
     estimator,
     data: dict[str, Any],
 ) -> HTMLReport:
-    template_name = ESTIMATOR_TEMPLATES.get(estimator.__class__.__name__, None)
-    if template_name is None:
-        template_name = "body_masker.jinja"
-
     embeded_images = None
     image = estimator._reporting()
     if image is None:
@@ -283,14 +265,19 @@ def _create_report(
                 index=False,
                 sparsify=False,
             )
-    parameters = model_attributes_to_dataframe(estimator)
-    with pd.option_context("display.max_colwidth", 100):
-        parameters = dataframe_to_html(
-            parameters,
-            precision=2,
-            header=True,
-            sparsify=False,
-        )
+
+    if SKLEARN_GTE_1_7:
+        parameters = estimator._repr_html_()
+    else:
+        # TODO (sklearn > 1.6.2) remove else block
+        parameters = model_attributes_to_dataframe(estimator)
+        with pd.option_context("display.max_colwidth", 100):
+            parameters = dataframe_to_html(
+                parameters,
+                precision=2,
+                header=True,
+                sparsify=False,
+            )
 
     if "n_elements" not in data:
         data["n_elements"] = 0
@@ -308,7 +295,7 @@ def _create_report(
 
     env = return_jinja_env()
 
-    body_tpl_path = f"html/maskers/{template_name}"
+    body_tpl_path = f"html/maskers/{estimator._template_name}"
     body_tpl = env.get_template(body_tpl_path)
 
     body = body_tpl.render(
@@ -326,6 +313,7 @@ def _create_report(
             else None
         ),
         summary_html=summary_html,
+        is_notebook=is_notebook(),
         **data,
     )
 
@@ -335,10 +323,29 @@ def _create_report(
 def is_notebook() -> bool:
     """Detect if we are running in a notebook.
 
-    From https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
+    Adapted from https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
     """
     try:
         shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
-        return shell == "ZMQInteractiveShell"
     except NameError:
-        return False  # Probably standard Python interpreter
+        shell = False
+
+    try:
+        import marimo as mo
+
+        is_marimo = mo.running_in_notebook()
+    except ImportError:
+        is_marimo = False
+
+    if shell:
+        if shell == "ZMQInteractiveShell":
+            return True  # Jupyter notebook or qtconsole
+        elif shell == "TerminalInteractiveShell":
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+
+    if is_marimo:
+        return is_marimo
+
+    return False

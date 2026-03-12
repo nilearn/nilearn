@@ -64,6 +64,7 @@ SURFACE_FUNCS = {
 }
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_black_bg(plot_func, img_3d_mni):
@@ -74,6 +75,7 @@ def test_plot_functions_black_bg(plot_func, img_3d_mni):
     return plot_func(img_3d_mni, black_bg=True)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_title(plot_func, img_3d_mni):
@@ -84,6 +86,7 @@ def test_plot_functions_title(plot_func, img_3d_mni):
     return plot_func(img_3d_mni, title="foo")
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_annotate(plot_func, img_3d_mni):
@@ -109,6 +112,7 @@ def test_plot_stat_map_display_mode(display_mode):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_no_colorbar(plot_func, img_3d_mni):
@@ -123,6 +127,7 @@ def test_plot_functions_no_colorbar(plot_func, img_3d_mni):
 
 
 @pytest.mark.mpl_image_compare
+@pytest.mark.slow
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_colorbar_ticks(plot_func, img_3d_mni):
     """Test parameter for colorbar."""
@@ -132,6 +137,7 @@ def test_plot_functions_colorbar_ticks(plot_func, img_3d_mni):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("vmin", [-1, 1])
@@ -140,6 +146,7 @@ def test_plot_functions_vmin(plot_func, vmin):
     return plot_func(load_sample_motor_activation_image(), vmin=vmin)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("vmax", [2, 3])
@@ -148,6 +155,7 @@ def test_plot_functions_vmax(plot_func, vmax):
     return plot_func(load_sample_motor_activation_image(), vmax=vmax)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plotting_func", PLOTTING_FUNCS_3D)
 def test_plotting_functions_radiological_view(plotting_func):
@@ -173,9 +181,6 @@ def test_plot_carpet_default_params(img_4d_mni, img_3d_ones_mni):
 @pytest.mark.mpl_image_compare
 def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
     """Smoke-test for plot_prob_atlas with default arguments."""
-    # TODO (nilearn >= 0.13.0)
-    # using only 2 regions to speed up the test
-    # maps = generate_maps(shape_3d_default, n_regions=2, affine=affine_mni)
     return plot_prob_atlas(img_4d_mni, bg_img=img_3d_mni)
 
 
@@ -572,6 +577,7 @@ def test_plot_with_transparency(fn):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("fn", [plot_stat_map, plot_img, plot_glass_brain])
 @pytest.mark.parametrize("transparency_range", [None, [0, 2], [2, 4]])
@@ -588,6 +594,7 @@ def test_plot_with_transparency_range(fn, transparency_range):
 IMG_COMPARISON_FUNCS = {plot_img_comparison, plot_bland_altman}
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
 def test_img_comparison_default(
@@ -599,6 +606,7 @@ def test_img_comparison_default(
     return plt.gcf()
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])

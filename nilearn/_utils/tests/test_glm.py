@@ -6,7 +6,7 @@ from nilearn._utils.glm import check_and_load_tables, coerce_to_dict
 
 
 def test_img_table_checks():
-    # check tables type and that can be loaded
+    """Check tables type and that can be loaded."""
     with pytest.raises(
         ValueError, match=r"Tables to load can only be TSV or CSV."
     ):

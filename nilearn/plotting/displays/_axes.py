@@ -46,7 +46,7 @@ class BaseAxes:
             "'transform_to_2d' needs to be implemented in derived classes'"
         )
 
-    def add_object_bounds(self, bounds):
+    def add_object_bounds(self, bounds) -> None:
         """Ensure that axes get rescaled when adding object bounds."""
         old_object_bounds = self.get_object_bounds()
         self._object_bounds.append(bounds)
@@ -121,12 +121,12 @@ class BaseAxes:
 
         return xmin, xmax, ymin, ymax
 
-    def draw_left_right(self, size, bg_color, **kwargs):
+    def draw_left_right(self, size, bg_color, **kwargs) -> None:
         """Draw the annotation "L" for left, and "R" for right.
 
         Parameters
         ----------
-        size : :obj:`float`, optional
+        size : :obj:`float`
             Size of the text areas.
 
         bg_color : matplotlib color: :obj:`str` or (r, g, b) value
@@ -186,7 +186,7 @@ class BaseAxes:
         color="black",
         fontsize=None,
         **kwargs,
-    ):
+    ) -> None:
         """Add a scale bar annotation to the display.
 
         Parameters
@@ -202,8 +202,8 @@ class BaseAxes:
             Physical units of the scale bar (`'cm'` or `'mm'`).
 
 
-        fontproperties : :class:`~matplotlib.font_manager.FontProperties`\
-        or :obj:`dict`, optional
+        fontproperties : :class:`~matplotlib.font_manager.FontProperties`, \
+                :obj:`dict` or None, default=None
             Font properties for the label text.
 
         frameon : :obj:`bool`, default=False
@@ -232,11 +232,10 @@ class BaseAxes:
         label_top : :obj:`bool`, default=False
             If ``True``, the label will be over the scale bar.
 
-
         color : :obj:`str`, default='black'
             Color for the scale bar and label.
 
-        fontsize : :obj:`int`, optional
+        fontsize : :obj:`int` or None, default=None
             Label font size (overwrites the size passed in through the
             ``fontproperties`` argument).
 
@@ -328,12 +327,12 @@ class CutAxes(BaseAxes):
             cut = np.rot90(data[:, :, z_map])
         return cut
 
-    def draw_position(self, size, bg_color, decimals=False, **kwargs):
+    def draw_position(self, size, bg_color, decimals=False, **kwargs) -> None:
         """Draw coordinates.
 
         Parameters
         ----------
-        size : :obj:`float`, optional
+        size : :obj:`float`
             Size of the text area.
 
         bg_color : matplotlib color: :obj:`str` or (r, g, b) value
@@ -532,7 +531,7 @@ class GlassBrainAxes(BaseAxes):
         %(cmap)s
             Colormap used to map ``line_values`` to a color.
 
-        vmin, vmax : :obj:`float`, optional
+        vmin, vmax : :obj:`float`, default=None
             If not ``None``, either or both of these values will be used to
             as the minimum and maximum values to color lines. If ``None`` are
             supplied the maximum absolute value within the given threshold

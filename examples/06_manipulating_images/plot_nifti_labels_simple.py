@@ -8,8 +8,6 @@ More precisely, this example shows how to use the
 :class:`~nilearn.maskers.NiftiLabelsMasker` object to perform this
 operation in just a few lines of code.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 from nilearn._utils.helpers import check_matplotlib
@@ -50,22 +48,17 @@ print(f"The atlas contains {len(atlas.labels) - 1} non-overlapping regions")
 #
 from nilearn.maskers import NiftiLabelsMasker
 
-masker = NiftiLabelsMasker(
-    atlas.maps, lut=atlas.lut, standardize="zscore_sample", verbose=1
-)
+masker = NiftiLabelsMasker(atlas.maps, lut=atlas.lut, verbose=1)
 
 # %%
 # Visualize the atlas
 # -------------------
 #
-# .. note::
+# We need to call fit prior to generating the mask.
+# We can then generate a report to visualize the atlas.
 #
-#   We need to call fit prior to generating the mask.
+# .. include:: ../../../examples/report_note.rst
 #
-# At this point, no functional image has been provided to the masker.
-# We can still generate a report which can be displayed in a Jupyter
-# Notebook, opened in a browser using the .open_in_browser() method,
-# or saved to a file using the .save_as_html(output_filepath) method.
 masker.fit()
 
 report = masker.generate_report()

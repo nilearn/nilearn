@@ -77,6 +77,7 @@ fmri_glm = FirstLevelModel(
     smoothing_fwhm=5,
     minimize_memory=False,
     design_only=True,
+    verbose=1
 )
 report = fmri_glm.generate_report()
 # report.open_in_browser()
@@ -94,6 +95,7 @@ fmri_glm = FirstLevelModel(
     mask_img=data["mask"],
     smoothing_fwhm=5,
     minimize_memory=True,
+    verbose=1
 )
 
 # %%
@@ -282,12 +284,9 @@ report = fmri_glm_multirun.generate_report(
     bg_img=mean_img_,
     title="two-runs fMRI model fitting",
 )
+
+# %%
+#
+# .. include:: ../../../examples/report_note.rst
+#
 report
-
-# %%
-# We can also access the report in a separate browser window.
-# report.open_in_browser()
-
-# %%
-# Or we can save as an html file.
-report.save_as_html(output_dir / "report.html")

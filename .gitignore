@@ -23,7 +23,10 @@ pip-log.txt
 
 tmp
 
-#  prettier and other JS
+# Generic python
+__pycache__
+
+#  JS
 node_modules
 
 # Mac OS X
@@ -93,3 +96,7 @@ package-lock.json
 
 # pydeps output
 nilearn.svg
+
+# uv
+uv.lock
+.python-version

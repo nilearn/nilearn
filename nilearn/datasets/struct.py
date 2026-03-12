@@ -6,12 +6,12 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from nibabel import Nifti1Image
 from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -24,7 +24,7 @@ from nilearn.datasets._utils import (
     get_dataset_descr,
     get_dataset_dir,
 )
-from nilearn.image import get_data, new_img_like, resampling
+from nilearn.image import check_niimg, get_data, new_img_like, resampling
 from nilearn.surface import (
     FileMesh,
     PolyMesh,
@@ -109,9 +109,10 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information
     see the :ref:`dataset description <icbm_152_template>`.
-
     """
     check_params(locals())
 
@@ -168,7 +169,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
 @functools.lru_cache(maxsize=3)
 @fill_doc
-def load_mni152_template(resolution=None):
+def load_mni152_template(resolution=None) -> Nifti1Image:
     """Load the MNI152 skullstripped T1 template.
 
     This function takes the skullstripped,
@@ -205,6 +206,8 @@ def load_mni152_template(resolution=None):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     brain_template = check_niimg(MNI152_FILE_PATH)
@@ -261,6 +264,8 @@ def load_mni152_gm_template(resolution=None):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     gm_template = check_niimg(GM_MNI152_FILE_PATH)
@@ -318,6 +323,8 @@ def load_mni152_wm_template(resolution=None):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     wm_template = check_niimg(WM_MNI152_FILE_PATH)
@@ -374,6 +381,8 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     # Load MNI template
@@ -423,6 +432,8 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     # Load MNI template
@@ -477,6 +488,8 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     # Load MNI template
@@ -536,6 +549,8 @@ def fetch_icbm152_brain_gm_mask(
 
     Notes
     -----
+    %(fetcher_note)s
+
     This function relies on ICBM152 templates where we particularly pick
     gray matter template and threshold the template at .2 to take one fifth
     of the values. Then, do a bit post processing such as binary closing
@@ -546,7 +561,6 @@ def fetch_icbm152_brain_gm_mask(
 
     For more information
     see the :ref:`dataset description <icbm_152_template>`.
-
     """
     check_params(locals())
 
@@ -662,9 +676,10 @@ def fetch_oasis_vbm(
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information
     see the :ref:`dataset description <oasis_maps>`.
-
     """
     check_params(locals())
 

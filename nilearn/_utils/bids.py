@@ -3,7 +3,7 @@ import warnings
 import pandas as pd
 
 from nilearn._utils.logger import find_stack_level
-from nilearn.image.utils import get_indices_from_image
+from nilearn.image.image import get_indices_from_image
 
 
 def generate_atlas_look_up_table(
@@ -73,7 +73,7 @@ def generate_atlas_look_up_table(
         index = list(range(len(name)))
     else:
         index = get_indices_from_image(index).tolist()
-    if fname in ["fetch_atlas_basc_multiscale_2015"]:
+    if fname == "fetch_atlas_basc_multiscale_2015":
         index = []
         for x in name:
             tmp = 0.0 if x in ["background", "Background"] else float(x)
@@ -115,9 +115,7 @@ def generate_atlas_look_up_table(
     # convert to dataframe and do some cleaning where required
     lut = pd.DataFrame({"index": index, "name": name})
 
-    if fname in [
-        "fetch_atlas_pauli_2017",
-    ]:
+    if fname == "fetch_atlas_pauli_2017":
         lut = pd.concat(
             [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
             ignore_index=True,
@@ -132,7 +130,9 @@ def generate_atlas_look_up_table(
     return lut
 
 
-def check_look_up_table(lut: pd.DataFrame, atlas, strict=False, verbose=1):
+def check_look_up_table(
+    lut: pd.DataFrame, atlas, strict: bool = False, verbose: int = 0
+) -> None:
     """Validate atlas look up table (LUT).
 
     Make sure it complies with BIDS requirements.
