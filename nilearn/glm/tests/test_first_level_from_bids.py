@@ -990,6 +990,7 @@ def test_subject_order(tmp_path):
     assert returned_subjects == expected_subjects
 
 
+@pytest.mark.single_process
 def test_subject_order_with_labels(tmp_path):
     """Make sure subjects are returned in order.
 
