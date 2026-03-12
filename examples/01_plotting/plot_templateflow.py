@@ -204,7 +204,7 @@ MNI152NLin6Asym_template_img = tflow.get(
     template,
     resolution=resolution,
     suffix="T1w",
-    desc="brain",
+    desc="brain",  # Set desc-brain to get the skull-stripped variant
     extension="nii.gz",
 )
 
