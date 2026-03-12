@@ -722,7 +722,8 @@ def test_fmri_inputs_pandas_errors():
         SecondLevelModel().fit(niidf)
 
 
-def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
+@pytest.mark.single_process
+def test_fit_inputs_errors(confounds, shape_4d_default):
     """Raise the proper errors when invalid inputs are passed to fit."""
     # prepare fake data
     shapes = (shape_4d_default,)
