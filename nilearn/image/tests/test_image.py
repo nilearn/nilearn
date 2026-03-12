@@ -509,6 +509,13 @@ def test_smooth_surface_img_errors(surf_img_1d):
         )
 
 
+@pytest.mark.parametrize("fwhm", [(0, 1, 2), [0, 1, 2], np.asarray([1])])
+def test_smooth_img_surface_errors_fwhm(surf_img_1d, fwhm):
+    """Error when using non-scalar for fwhm with surface."""
+    with pytest.raises(TypeError, match="'fwhm' must be a scalar"):
+        smooth_img(surf_img_1d, fwhm=fwhm)
+
+
 def test_crop_img_to():
     data = np.zeros((5, 6, 7))
     data[2:4, 1:5, 3:6] = 1

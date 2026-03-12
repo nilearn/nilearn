@@ -385,18 +385,18 @@ def _get_clusters_table_surface(
     For other parameters, see `get_clusters_table`.
 
     """
-    cols = [
-        "Cluster ID",
-        "Hemisphere",
-        "Peak Stat",
-        "Cluster Size (vertices)",
-    ]
-
     data = {}
     all_clusters = []
     label_maps = []
 
     if not two_sided:
+        cols = [
+            "Cluster ID",
+            "Hemisphere",
+            "Peak Stat",
+            "Cluster Size (vertices)",
+        ]
+
         for hemi in stat_img.data.parts:
             clusters, labels = find_surface_clusters(
                 stat_img.mesh.parts[hemi],

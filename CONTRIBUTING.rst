@@ -524,14 +524,14 @@ To install pre-commit, run:
 .. note::
 
       Pre-commit will already be installed if you installed
-      the ``dev`` or ``style`` dependencies of nilearn
+      the ``dev`` or ``style`` developers dependencies of nilearn
       with::
 
-            pip install -e '.[dev]'
+            pip install -e . --group dev
 
       or::
 
-            pip install -e '.[style]'
+            pip install -e . --group style
 
 Then run the following to install the pre-commit hooks:
 
@@ -641,7 +641,7 @@ It should already be installed if you ran:
 
 .. code-block:: bash
 
-    pip install -e '.[dev]'
+    pip install -e . --group dev
 
 You can set up certain environment or run certain command by calling ``tox``.
 
@@ -690,7 +690,7 @@ by passing extra command line arguments to pytest after a ``--``.
 For example, the following would run all the tests in ``nilearn/image``
 that contain the word ``smooth``.
 
-.. code-block:: python
+.. code-block:: bash
 
       tox -- nilearn/image -k smooth
 
@@ -823,10 +823,10 @@ You can then install nilearn in editable mode:
 
 .. code-block:: bash
 
-      pip install -e '.[dev]'
+      pip install -e . --group dev
 
 This installs your local version of Nilearn,
-along with all dependencies necessary for developers (hence the ``[dev]`` tag).
+along with all dependencies necessary for developers (hence the ``dev`` group).
 For more information about the dependency installation options, see ``pyproject.toml``.
 The installed version will also reflect any changes you make to your code.
 

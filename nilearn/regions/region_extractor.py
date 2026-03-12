@@ -261,7 +261,7 @@ def connected_regions(
         index_of_each_map.extend([index] * len(regions))
         all_regions_imgs.extend(regions)
 
-    if len(all_regions_imgs) == 0:
+    if not all_regions_imgs:
         warnings.warn(
             "No supra threshold regions was found",
             UserWarning,

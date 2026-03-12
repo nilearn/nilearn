@@ -104,14 +104,13 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
         """Return mask image using during fit or mask image passed at init."""
         if self.__sklearn_is_fitted__():
             return self.mask_img_
-        else:
-            if self.mask_img is None:
-                return None
-            try:
-                # load mask_img if is a niiimg-like object
-                return check_niimg(self.mask_img)
-            except Exception:
-                return self.mask_img
+        if self.mask_img is None:
+            return None
+        try:
+            # load mask_img if is a niiimg-like object
+            return check_niimg(self.mask_img)
+        except Exception:
+            return self.mask_img
 
     @property
     def mask_img_(self) -> Nifti1Image | SurfaceImage:
@@ -600,7 +599,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
         # we do not rely on filenames stored in the model.
         output = None
         if contrasts is None:
-            output = self._reporting_data.get("filenames", None)
+            output = self._reporting_data.get("filenames")
             if output is not None and output.get("use_absolute_path", True):
                 output = turn_into_full_path(output, output["dir"])
 
