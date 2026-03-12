@@ -79,7 +79,7 @@ jobs:
                 pip install kaleido==0.1.0.post1
 
         -   name: Install nilearn
-            run: pip install .[plotting,test]
+            run: pip install .[plotting] --group test
 
         -   name: Run tests
             id: test_minimum
