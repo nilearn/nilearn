@@ -16,7 +16,7 @@ for the Harvard-Oxford volumetric atlas.
 
     - :ref:`harvard_oxford_atlas`
 
-    - The Desikan-Killiany atlas (TODO add ref)
+    - The `Desikan-Killiany atlas <https://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation>`_
 
 """
 
