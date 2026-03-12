@@ -145,7 +145,6 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
         n_jobs=1,
         clean_args=None,
     ):
-        self.n_jobs = n_jobs
         super().__init__(
             labels_img,
             labels=labels,
@@ -170,4 +169,5 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
             cmap=cmap,
             clean_args=clean_args,
             keep_masked_labels=keep_masked_labels,
+            n_jobs=n_jobs,
         )

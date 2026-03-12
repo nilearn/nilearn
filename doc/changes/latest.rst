@@ -41,6 +41,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` Add an ``n_jobs`` parameter to :class:`~nilearn.maskers.NiftiLabelsMasker` to parallelize signal extraction across samples (:gh:`6052` by `Pierre-Louis Barbarant`_).
+
 - :bdg-success:`Doc` Add an example to the plot_carpet function (:gh:`6065` by `Johanna Bayer`_).
 
 - :bdg-dark:`Code` Add surface support to :func:`~nilearn.image.smooth_img` (:gh:`3267` by `Jason D. Yeatman`_ and `Noah C. Benson`_ ).

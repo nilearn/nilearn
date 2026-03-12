@@ -13,6 +13,7 @@ from nilearn._utils.tags import is_glm
 from nilearn.maskers import (
     MultiNiftiMasker,
     MultiSurfaceMasker,
+    NiftiLabelsMasker,
     NiftiMasker,
     SurfaceMasker,
 )
@@ -133,7 +134,9 @@ def check_embedded_masker(
         new_masker_params["mask_img"] = mask
 
     # Forwarding system parameters of instance to new masker in all case
-    if issubclass(masker, (_MultiMixin)) and hasattr(estimator, "n_jobs"):
+    if (
+        issubclass(masker, (_MultiMixin)) and hasattr(estimator, "n_jobs")
+    ) or isinstance(masker, NiftiLabelsMasker):
         # For MultiMaskers only
         new_masker_params["n_jobs"] = estimator.n_jobs
 

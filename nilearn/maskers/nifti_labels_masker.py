@@ -46,12 +46,14 @@ class _ExtractionFunctor:
         strategy,
         keep_masked_labels,
         mask_img,
+        n_jobs,
     ):
         self.labels_img = labels_img
         self.background_label = background_label
         self.strategy = strategy
         self.keep_masked_labels = keep_masked_labels
         self.mask_img = mask_img
+        self.n_jobs = n_jobs
 
     def __call__(self, imgs):
         from nilearn.regions.signal_extraction import img_to_signals_labels
@@ -63,6 +65,7 @@ class _ExtractionFunctor:
             strategy=self.strategy,
             keep_masked_labels=self.keep_masked_labels,
             mask_img=self.mask_img,
+            n_jobs=self.n_jobs,
         )
         return signals, (labels, masked_labels_img)
 
@@ -153,6 +156,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     %(memory_level1)s
 
+    %(n_jobs)s
+
     %(verbose0)s
 
     %(strategy)s
@@ -215,6 +220,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         resampling_target="data",
         memory=None,
         memory_level=1,
+        n_jobs=1,
         verbose=0,
         strategy="mean",
         keep_masked_labels=False,
@@ -251,6 +257,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         # Parameters for joblib
         self.memory = memory
         self.memory_level = memory_level
+        self.n_jobs = n_jobs
         self.verbose = verbose
 
         # Parameters for reports
@@ -729,6 +736,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 self.strategy,
                 self.keep_masked_labels,
                 mask_img_,
+                self.n_jobs,
             ),
             # Pre-processing
             params,
