@@ -9,7 +9,7 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_bold_img,
 )
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import is_gil_enabled, is_matplotlib_installed
 from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.datasets import load_fsaverage
 from nilearn.glm.first_level import FirstLevelModel
@@ -150,7 +150,7 @@ def flm(rk) -> FirstLevelModel:
         shapes, rk=rk
     )
     # generate_fake_fmri_data_and_design
-    return FirstLevelModel(standardize=None).fit(
+    return FirstLevelModel(standardize=None, minimize_memory=False).fit(
         fmri_data, design_matrices=design_matrices
     )
 
@@ -160,7 +160,7 @@ def slm() -> SecondLevelModel:
     """Generate a fitted second level model."""
     shapes = ((7, 7, 7, 1),)
     _, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
-    model = SecondLevelModel()
+    model = SecondLevelModel(minimize_memory=False)
     Y = [fmri_data[0]] * 2
     X = pd.DataFrame([[1]] * 2, columns=["intercept"])
     return model.fit(Y, design_matrix=X)
@@ -320,6 +320,7 @@ def test_generate_report_warning_glass_cut_coords(flm, contrasts):
 
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_slm_reporting_method(slm, height_control):
     """Test for the second level reporting."""
@@ -339,9 +340,10 @@ def test_slm_reporting_method(slm, height_control):
 
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_slm_with_flm_as_inputs(flm, contrasts):
     """Test second level reporting when inputs are first level models."""
-    model = SecondLevelModel()
+    model = SecondLevelModel(minimize_memory=False)
 
     Y = [flm] * 3
     X = pd.DataFrame([[1]] * 3, columns=["intercept"])
@@ -362,6 +364,7 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
 
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
     """Test second level reporting when input is a dataframe."""
     file_path = write_fake_bold_img(
@@ -376,7 +379,7 @@ def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
     ]
     niidf = pd.DataFrame(dfrows, columns=dfcols)
 
-    model = SecondLevelModel().fit(niidf)
+    model = SecondLevelModel(minimize_memory=False).fit(niidf)
 
     c1 = np.eye(len(model.design_matrix_.columns))[0]
 
@@ -443,7 +446,7 @@ def test_masking_first_level_model(contrasts):
     )
     masker = NiftiMasker(mask_img=mask, standardize=None)
     masker.fit(fmri_data)
-    flm = FirstLevelModel(mask_img=masker).fit(
+    flm = FirstLevelModel(mask_img=masker, minimize_memory=False).fit(
         fmri_data, design_matrices=design_matrices
     )
 
@@ -469,7 +472,10 @@ def test_fir_delays_in_params(contrasts):
         shapes, rk
     )
     model = FirstLevelModel(
-        hrf_model="fir", fir_delays=[1, 2, 3], standardize=None
+        hrf_model="fir",
+        fir_delays=[1, 2, 3],
+        standardize=None,
+        minimize_memory=False,
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
@@ -496,7 +502,9 @@ def test_drift_order_in_params(contrasts):
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
     )
-    model = FirstLevelModel(drift_model="polynomial", drift_order=3)
+    model = FirstLevelModel(
+        drift_model="polynomial", drift_order=3, minimize_memory=False
+    )
     model.fit(fmri_data, design_matrices=design_matrices)
 
     generate_and_check_glm_report(
@@ -528,7 +536,9 @@ def test_flm_generate_report_surface_data(rng):
     fmri_data = SurfaceImage(mesh, data)
 
     # using smoothing_fwhm for coverage
-    model = FirstLevelModel(t_r=t_r, smoothing_fwhm=None, standardize=None)
+    model = FirstLevelModel(
+        t_r=t_r, smoothing_fwhm=None, standardize=None, minimize_memory=False
+    )
 
     model.fit(fmri_data, events=events)
 
@@ -537,12 +547,16 @@ def test_flm_generate_report_surface_data(rng):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_flm_generate_report_surface_data_error(
     surf_mask_1d, surf_img_2d, img_3d_mni
 ):
     """Generate report from flm fitted surface."""
     model = FirstLevelModel(
-        mask_img=surf_mask_1d, t_r=2.0, smoothing_fwhm=None
+        mask_img=surf_mask_1d,
+        t_r=2.0,
+        smoothing_fwhm=None,
+        minimize_memory=False,
     )
     events = basic_paradigm()
     model.fit(surf_img_2d(9), events=events)
@@ -573,9 +587,9 @@ def test_carousel_several_runs(
     contrasts = np.zeros((1, rk))
     contrasts[0][1] = 1
 
-    flm_two_runs = FirstLevelModel(standardize=None).fit(
-        fmri_data, design_matrices=design_matrices
-    )
+    flm_two_runs = FirstLevelModel(
+        standardize=None, minimize_memory=False
+    ).fit(fmri_data, design_matrices=design_matrices)
 
     report = generate_and_check_glm_report(
         flm_two_runs,
