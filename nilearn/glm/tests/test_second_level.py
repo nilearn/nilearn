@@ -714,7 +714,8 @@ def test_fmri_inputs_pandas_errors():
         SecondLevelModel().fit(niidf)
 
 
-def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
+@pytest.mark.single_process
+def test_fit_inputs_errors(confounds, shape_4d_default):
     """Raise the proper errors when invalid inputs are passed to fit."""
     # prepare fake data
     shapes = (shape_4d_default,)
@@ -756,9 +757,7 @@ def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
 @pytest.mark.parametrize(
     "filename, sep", [("design.csv", ","), ("design.tsv", "\t")]
 )
-def test_secondlevelmodel_design_matrix_path(
-    img_3d_mni, tmp_path, filename, sep
-):
+def test_design_matrix_path(img_3d_mni, tmp_path, filename, sep):
     second_level_input = [img_3d_mni, img_3d_mni]
     design_matrix = pd.DataFrame(
         np.ones((len(second_level_input), 1)), columns=["a"]
@@ -782,7 +781,7 @@ def test_secondlevelmodel_design_matrix_path(
 
 
 @pytest.mark.parametrize("design_matrix", ["foo", Path("foo")])
-def test_secondlevelmodel_design_matrix_error_path(img_3d_mni, design_matrix):
+def test_design_matrix_error_path(img_3d_mni, design_matrix):
     second_level_input = [img_3d_mni, img_3d_mni, img_3d_mni]
     with pytest.raises(
         ValueError, match=r"Tables to load can only be TSV or CSV."
@@ -793,7 +792,7 @@ def test_secondlevelmodel_design_matrix_error_path(img_3d_mni, design_matrix):
 
 
 @pytest.mark.parametrize("design_matrix", [1, ["foo"]])
-def test_secondlevelmodel_design_matrix_error_type(img_3d_mni, design_matrix):
+def test_design_matrix_error_type(img_3d_mni, design_matrix):
     second_level_input = [img_3d_mni, img_3d_mni, img_3d_mni]
 
     with pytest.raises(TypeError, match="'design_matrix' must be "):
