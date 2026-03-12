@@ -76,7 +76,7 @@ min = [
     "pandas==2.3.0",
     "requests==2.30.0",
     "scikit-learn==1.5.0",
-    "scipy==1.11.0",
+    "scipy==1.11.1",
     "jinja2==3.1.2"
 ]
 min_plotting = ["nilearn[min]", "matplotlib==3.8.0", "plotly==5.0.0", "kaleido"]
@@ -282,9 +282,6 @@ type = 'protected'
 allow_redefinition = false
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 exclude = [
-    '.*/tests/test_.*',
-    'doc/.*',
-    'examples/.*',
     'nilearn_cache/.*',
     'nilearn/_version.py'
 ]
@@ -328,6 +325,7 @@ filterwarnings = [
 ]
 junit_family = "xunit2"
 log_cli_level = "INFO"
+log_level = "INFO"
 markers = [
     "slow",  # for tests that exceed the timeout allowed for each test
     "single_process",  # for test that require testing n_jobs>1 or that are flaky when used xdist testing parallelization

@@ -133,12 +133,9 @@ def test_fit_on_single_nifti_image(method, n_parcel, image_1):
     # The input image used for testing may not give the requested n_parcels.
     # So we check that the proper warning is thrown
     # and that n_elements is always 5
-    if not any(
-        (
-            "The number of generated labels does not "
-            "match the requested number of parcels."
-        )
-        in str(x)
+    if all(
+        "The number of generated labels does not "
+        "match the requested number of parcels." not in str(x)
         for x in warning_list
     ):
         assert parcellator.n_elements_ == n_parcel

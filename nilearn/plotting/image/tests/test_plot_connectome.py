@@ -265,12 +265,11 @@ def test_plot_connectome_wrong_shapes():
 
 
 @pytest.fixture
-def expected_error_node_kwargs(node_kwargs):
+def expected_error_node_kwargs(node_kwargs) -> str:
     """Return the expected error message depending on node_kwargs."""
     if "s" in node_kwargs:
         return "Please use 'node_size' and not 'node_kwargs'"
-    elif "c" in node_kwargs:
-        return "Please use 'node_color' and not 'node_kwargs'"
+    return "Please use 'node_color' and not 'node_kwargs'"
 
 
 @pytest.mark.thread_unsafe

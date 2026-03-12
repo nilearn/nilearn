@@ -37,13 +37,12 @@ def generate_and_check_glm_report(
     """
     if warnings_msg_to_check is None:
         warnings_msg_to_check = []
-    includes = []
     excludes = []
 
-    # check the navbar and its css is there
-    includes.append('<nav class="navbar pure-g fw-bold" id="menu"')
-    includes.append("Adapted from Pure CSS navbar")  # css
-
+    includes = [
+        '<nav class="navbar pure-g fw-bold" id="menu"',
+        "Adapted from Pure CSS navbar",
+    ]
     # 'Contrasts' and 'Statistical maps' should appear
     # as section and in navbar
     # if report was generated with contrasts.
@@ -136,7 +135,7 @@ def rk() -> int:
 
 
 @pytest.fixture
-def contrasts(rk):
+def contrasts(rk) -> np.ndarray:
     """Return a contrast vector."""
     c = np.zeros((1, rk))
     c[0][0] = 1
@@ -145,7 +144,7 @@ def contrasts(rk):
 
 @pytest.fixture()
 def flm(rk) -> FirstLevelModel:
-    """Generate first level model."""
+    """Generate a fitted first level model."""
     shapes = ((7, 7, 7, 5),)
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
