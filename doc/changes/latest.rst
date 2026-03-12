@@ -42,7 +42,7 @@ Enhancements
 ------------
 
 
-- :bdg-info:`Plotting` Allow string threshold in :func:`~plotting.plot_*` functions (:gh:`5982` by `Saeed Babadi`_).
+- :bdg-info:`Plotting` Allow string threshold in ``nilearn.plotting.plot_*`` functions (:gh:`5982` by `Saeed Babadi`_).
 
 - :bdg-success:`Doc` Add an example to the plot_carpet function (:gh:`6065` by `Johanna Bayer`_).
 
