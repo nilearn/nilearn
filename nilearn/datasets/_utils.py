@@ -21,6 +21,7 @@ import requests
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import readable_time
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -53,10 +54,6 @@ def md5_hash(string):
     m = hashlib.md5()
     m.update(string.encode("utf-8"))
     return m.hexdigest()
-
-
-def _format_time(t):
-    return f"{t / 60.0:4.1f}min" if t > 60 else f" {t:5.1f}s"
 
 
 def _md5_sum_file(path):
@@ -125,7 +122,7 @@ def _chunk_report_(
         logger.log(
             f"\rDownloaded {bytes_so_far} of {total_size} bytes "
             f"({total_percent * 100:.1f}%%, "
-            f"{_format_time(time_remaining)} remaining)",
+            f"{readable_time(time_remaining)} remaining)",
             verbose=verbose,
         )
 

@@ -220,6 +220,40 @@ def remove_parameters(removed_params, reason, end_version="future"):
     return _remove_params
 
 
+def readable_time(seconds):
+    """Convert a duration in seconds to a human-readable string.
+
+    The output includes hours, minutes, and seconds as needed, using
+    abbreviated units (HR/HRS, MIN, SEC). Zero-value units are omitted.
+
+    Parameters
+    ----------
+    seconds : int or float
+        Time duration in seconds.
+
+    Returns
+    -------
+    str
+        Human-readable time string.
+    """
+    seconds = round(seconds)
+    if seconds <= 0:
+        return "0 SEC"
+
+    hour, remainder = divmod(seconds, 3600)
+    minute, seconds = divmod(remainder, 60)
+
+    parts = []
+    if hour:
+        parts.append(f"{hour} HR" if hour == 1 else f"{hour} HRS")
+    if minute:
+        parts.append(f"{minute} MIN")
+    if seconds:
+        parts.append(f"{seconds} SEC")
+
+    return " ".join(parts)
+
+
 def stringify_path(path):
     """Convert path-like objects to string.
 
