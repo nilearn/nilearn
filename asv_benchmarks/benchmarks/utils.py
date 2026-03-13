@@ -242,6 +242,9 @@ class Benchmark:
         )
         img.to_filename(self.fmri_filename)
 
+        self.img = img
+        self.mask = mask
+
         # create a mask
         atlas = img_labels(shape=shape, affine=affine, n_regions=100)
         for idx in range(1, n_masks + 1):
