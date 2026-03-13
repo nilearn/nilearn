@@ -44,6 +44,7 @@ def expected_length(t_r):
     return int(32 / t_r * 50)
 
 
+@pytest.mark.single_process
 @pytest.mark.parametrize("hrf_model", HRF_MODELS)
 @pytest.mark.parametrize("t_r", [2, 3])
 def test_hrf_norm_and_length(
