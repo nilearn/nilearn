@@ -490,9 +490,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 idx = self.labels.index("background")
                 self.labels[idx] = "Background"
 
-        self.lut_ = self._generate_lut()
+        lut = self._generate_lut()
 
-        self._original_region_ids = self.lut_["index"].to_list()
+        self._original_region_ids = lut["index"].to_list()
 
         if imgs is not None:
             imgs_ = check_niimg(imgs, atleast_4d=True)
@@ -556,9 +556,44 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 self._reporting_data["images"] = imgs
                 self._reporting_data["dim"] = dims
 
+        self.lut_ = self._update_lut(lut, self.labels_img_)
+
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _update_lut(self, lut, labels_image):
+        """Compute several metrics for each region and add them to the lut."""
+        labels_image = load_img(labels_image, dtype="int32")
+        labels_image_data = get_data(labels_image)
+        labels_image_affine = labels_image.affine
+
+        voxel_volume = np.abs(np.linalg.det(labels_image_affine[:3, :3]))
+
+        new_columns: dict[str, Any] = {
+            "size (in mm^3)": [],
+            "relative size (in %)": [],
+        }
+        for label in lut["index"].to_list():
+            n_voxels = len(labels_image_data[labels_image_data == label])
+            new_columns["size (in mm^3)"].append(
+                round(n_voxels * voxel_volume)
+            )
+
+            tmp = len(
+                labels_image_data[labels_image_data != self.background_label]
+            )
+
+            new_columns["relative size (in %)"].append(
+                round(
+                    n_voxels / tmp * 100,
+                    2,
+                )
+            )
+
+        lut = pd.concat([lut, pd.DataFrame(new_columns)], axis=1)
+
+        return lut
 
     def _check_labels(self):
         """Check labels.
