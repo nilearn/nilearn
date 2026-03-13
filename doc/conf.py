@@ -401,7 +401,7 @@ html_show_sourcelink = False
 # html_use_opensearch = ''
 
 # variables to pass to HTML templating engine
-build_dev_html = bool(int(os.environ.get("BUILD_DEV_HTML", False)))
+build_dev_html = bool(int(os.environ.get("BUILD_DEV_HTML", "0")))
 
 html_context = {"build_dev_html": build_dev_html}
 

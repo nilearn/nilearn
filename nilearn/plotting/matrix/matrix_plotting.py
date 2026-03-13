@@ -615,7 +615,7 @@ def plot_design_matrix_correlation(
         # find the second-largest value in each row
         # to omit values on the diagonal that will always be == 1
         second_largest = np.partition(mat, -2, axis=1)[:, -2]
-        vmax = max(abs(mat.min().min()), max(second_largest))
+        vmax = max(abs(mat.min().min()), *second_largest)
 
     col_labels = design_matrix.columns
     display = plot_matrix(
