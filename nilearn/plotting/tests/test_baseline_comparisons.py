@@ -112,6 +112,14 @@ def test_plot_stat_map_display_mode(display_mode):
     )
 
 
+@pytest.mark.mpl_image_compare
+def test_plot_roi_single_value_data(img_mask_eye):
+    """Test `nilearn.plotting.image.img_plotting.plot_roi` to see that colorbar
+    does not appear in the plot when data displayed has single value.
+    """
+    return plot_roi(img_mask_eye, display_mode="y", cut_coords=3)
+
+
 @pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
