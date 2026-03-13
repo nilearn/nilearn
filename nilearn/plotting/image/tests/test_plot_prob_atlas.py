@@ -3,7 +3,6 @@
 # ruff: noqa: ARG001
 
 import pytest
-from nibabel import Nifti1Image
 
 from nilearn.plotting import plot_prob_atlas
 
@@ -15,18 +14,27 @@ from nilearn.plotting import plot_prob_atlas
         {"view_type": "contours"},
         {"view_type": "filled_contours", "threshold": 0.2},
         {"view_type": "continuous"},
-        {"view_type": "filled_contours", "colorbar": True},
+        {"view_type": "filled_contours"},
         {"threshold": None},
     ],
 )
-def test_plot_prob_atlas(matplotlib_pyplot, params, affine_eye, rng):
+@pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.parametrize("n_regions", [1, 3])
+def test_plot_prob_atlas(
+    matplotlib_pyplot, params, img_maps, colorbar, n_regions
+):
     """Smoke tests for plot_prob_atlas.
 
     Tests different combinations of parameters `view_type`, `threshold`,
     and `colorbar`.
     """
-    data_rng = rng.normal(size=(6, 8, 10, 2))
-    plot_prob_atlas(Nifti1Image(data_rng, affine_eye), **params)
+    if colorbar and n_regions == 1:
+        with pytest.warns(
+            RuntimeWarning, match="The image maps contains a single image"
+        ):
+            plot_prob_atlas(img_maps, colorbar=colorbar, **params)
+    else:
+        plot_prob_atlas(img_maps, colorbar=colorbar, **params)
 
 
 @pytest.mark.slow

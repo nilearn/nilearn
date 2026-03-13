@@ -504,9 +504,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             # these classes are meant for list of 4D images
             # (multi-subject), we want it to work also on a single
             # subject, so we hack it.
-            imgs = [
-                imgs,
-            ]
+            imgs = [imgs]
 
         if len(imgs) == 0:
             # Common error that arises from a null glob. Capture

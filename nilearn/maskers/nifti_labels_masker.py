@@ -490,6 +490,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 idx = self.labels.index("background")
                 self.labels[idx] = "Background"
 
+        if np.all(get_data(self.labels_img_) == self.background_label):
+            raise ValueError("Image has no label.")
+
         self.lut_ = self._generate_lut()
 
         self._original_region_ids = self.lut_["index"].to_list()
@@ -542,6 +545,15 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
             # Just check that the mask is valid
             load_mask_img(self.mask_img_)
+
+        if self.mask_img_ is not None and ref_img is not None:
+            labels_data = get_data(self.labels_img_)
+            mask_data = get_data(self.mask_img_).astype(bool)
+            masked_labels_data = labels_data[mask_data, ...]
+            if np.all(masked_labels_data == 0):
+                raise ValueError(
+                    "No label left after applying mask to the labels image."
+                )
 
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:

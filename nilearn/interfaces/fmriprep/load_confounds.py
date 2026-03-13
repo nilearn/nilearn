@@ -316,7 +316,7 @@ def load_confounds(
     -----
     The noise components implemented in this class are adapted from
     :footcite:t:`Ciric2017`. Band-pass filter is replaced by high-pass filter.
-    Low-pass filters can be implemented, e.g., through `NifitMaskers`.
+    Low-pass filters can be implemented, e.g., through `NiftiMaskers`.
     Other aspects of the preprocessing listed
     in :footcite:t:`Ciric2017` are controlled
     through :term:`fMRIPrep`, e.g. distortion correction.
