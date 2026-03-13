@@ -1520,6 +1520,9 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
 
     replaces sklearn check_fit_idempotent
     """
+    if isinstance(estimator_orig, SearchLight) and not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
+
     check_methods = ["predict", "transform", "decision_function"]
 
     for method in check_methods:
@@ -1705,6 +1708,9 @@ def check_img_estimator_pickle(estimator_orig) -> None:
 
     Adapted from sklearn's check_estimators_pickle
     """
+    if isinstance(estimator_orig, SearchLight) and not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
+
     estimator = clone(estimator_orig)
 
     X, y = generate_data_to_fit(estimator)
@@ -1771,6 +1777,9 @@ def check_img_estimator_pipeline_consistency(estimator_orig) -> None:
     Substitute for sklearn check_pipeline_consistency.
     """
     estimator = clone(estimator_orig)
+
+    if isinstance(estimator, SearchLight) and not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
 
     X, y = generate_data_to_fit(estimator)
 

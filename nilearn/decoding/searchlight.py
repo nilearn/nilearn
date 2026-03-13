@@ -293,15 +293,15 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
 
         .. nilearn_versionadded:: 0.12.1
 
-    scores_ : numpy.ndarray
-        3D array containing searchlight scores for each voxel, aligned
-         with the mask.
-
-         .. nilearn_versionadded:: 0.11.0
-
     process_mask_ : numpy.ndarray
         Boolean mask array representing the voxels included in the
          searchlight computation.
+
+         .. nilearn_versionadded:: 0.11.0
+
+    scores_ : numpy.ndarray
+        3D array containing searchlight scores for each voxel, aligned
+         with the mask.
 
          .. nilearn_versionadded:: 0.11.0
 
