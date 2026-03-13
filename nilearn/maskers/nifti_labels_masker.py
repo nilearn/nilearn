@@ -166,13 +166,13 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         default=None
         Only relevant for the report figures.
 
-        When using ``"matplotlib"`` as an engire to create reports,
+        When using ``"matplotlib"`` as an engine to create reports,
         ``cmap`` will be used for the background image:
-        in this case if ``None`` is passed then the ``"CMRmap_r"`` colormap
+        in this case, if ``None`` is passed, then the ``"CMRmap_r"`` colormap
         will be used for the background image.
-        When using ``"brainsprite"`` as an engire to create reports,
+        When using ``"brainsprite"`` as an engine to create reports,
         ``cmap`` will be used for the label image:
-        in this case if ``None`` is passed then the ``"tab20"`` colormap
+        in this case, if ``None`` is passed, then the ``"tab20"`` colormap
         will be used for the label image.
 
     %(clean_args)s
