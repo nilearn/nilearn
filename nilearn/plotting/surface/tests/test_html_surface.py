@@ -120,39 +120,55 @@ def test_fill_html_template(tmp_path, mni152_template_res_2):
     assert "* plotly.js (gl3d - minified) v1." in html.html
 
 
-def test_view_surf(tmp_path, rng):
+@pytest.mark.parametrize("backend_engine", ["plotly", "niivue"])
+def test_view_surf(tmp_path, rng, backend_engine):
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
     surf_map = mesh.coordinates[:, 0]
 
     html = view_surf(
-        fsaverage["pial_right"], surf_map, fsaverage["sulc_right"], "90%"
+        fsaverage["pial_right"],
+        surf_map,
+        fsaverage["sulc_right"],
+        threshold="90%",
+        engine=backend_engine,
     )
-    check_html_surface_plots(tmp_path, html, title="Surface plot")
+    check_html_surface_plots(
+        tmp_path, html, title="Surface plot", engine=backend_engine
+    )
 
     html = view_surf(
         fsaverage["pial_right"],
         surf_map,
         fsaverage["sulc_right"],
-        0.3,
+        threshold=0.3,
         title="SOME_TITLE",
+        engine=backend_engine,
     )
-    check_html_surface_plots(tmp_path, html, title="SOME_TITLE")
+    check_html_surface_plots(
+        tmp_path, html, title="SOME_TITLE", engine=backend_engine
+    )
 
-    html = view_surf(fsaverage["pial_right"])
-    check_html_surface_plots(tmp_path, html)
+    html = view_surf(fsaverage["pial_right"], engine=backend_engine)
+    check_html_surface_plots(tmp_path, html, engine=backend_engine)
 
     atlas = rng.integers(0, 10, size=len(mesh.coordinates))
-    html = view_surf(fsaverage["pial_left"], atlas, symmetric_cmap=False)
-    check_html_surface_plots(tmp_path, html)
+    html = view_surf(
+        fsaverage["pial_left"],
+        atlas,
+        symmetric_cmap=False,
+        engine=backend_engine,
+    )
+    check_html_surface_plots(tmp_path, html, engine=backend_engine)
 
     html = view_surf(
         fsaverage["pial_right"],
         fsaverage["sulc_right"],
         threshold=None,
         cmap="Greys",
+        engine=backend_engine,
     )
-    check_html_surface_plots(tmp_path, html)
+    check_html_surface_plots(tmp_path, html, engine=backend_engine)
 
 
 def test_view_surf_errors():
