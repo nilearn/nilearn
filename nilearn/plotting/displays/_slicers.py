@@ -7,7 +7,7 @@ from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import ListedColormap, Normalize
+from matplotlib.colors import ListedColormap
 from matplotlib.transforms import Bbox
 
 from nilearn._utils.docs import fill_doc
@@ -648,20 +648,14 @@ class BaseSlicer:
             data_2d_list.append(data_2d)
             transparency_list.append(transparency_2d)
 
-        vmin = np.ma.min([d.min() for d in data_2d_list if d is not None])
-        vmax = np.ma.max([d.max() for d in data_2d_list if d is not None])
         if kwargs.get("vmin") is None:
-            kwargs["vmin"] = vmin
+            kwargs["vmin"] = np.ma.min(
+                [d.min() for d in data_2d_list if d is not None]
+            )
         if kwargs.get("vmax") is None:
-            kwargs["vmax"] = vmax
-
-        kwargs_vmin = kwargs["vmin"]
-        kwargs_vmax = kwargs["vmax"]
-
-        del kwargs["vmin"]
-        del kwargs["vmax"]
-
-        norm = Normalize(vmin, vmax)
+            kwargs["vmax"] = np.ma.max(
+                [d.max() for d in data_2d_list if d is not None]
+            )
 
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
         ims = []
@@ -676,8 +670,8 @@ class BaseSlicer:
                 data_2d = self._threshold(
                     data_2d,
                     threshold,
-                    vmin=vmin,
-                    vmax=vmax,
+                    vmin=float(kwargs.get("vmin")),
+                    vmax=float(kwargs.get("vmax")),
                 )
 
                 im = display_ax.draw_2d(
@@ -685,14 +679,10 @@ class BaseSlicer:
                     data_bounds,
                     bounding_box,
                     type=type,
-                    norm=norm,
                     transparency=transparency_2d,
                     **kwargs,
                 )
                 ims.append(im)
-        kwargs["vmin"] = kwargs_vmin
-        kwargs["vmax"] = kwargs_vmax
-
         return ims
 
     def _sanitize_transparency(
@@ -851,7 +841,10 @@ class BaseSlicer:
             is computed based on the data.
 
         """
-        if norm.vmin == norm.vmin:
+        cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
+        cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
+
+        if cbar_vmin == cbar_vmax:
             return
 
         # create new  axis for the colorbar
