@@ -648,12 +648,8 @@ class BaseSlicer:
             data_2d_list.append(data_2d)
             transparency_list.append(transparency_2d)
 
-        vmin = float(
-            np.ma.min([d.min() for d in data_2d_list if d is not None])
-        )
-        vmax = float(
-            np.ma.max([d.max() for d in data_2d_list if d is not None])
-        )
+        vmin = np.ma.min([d.min() for d in data_2d_list if d is not None])
+        vmax = np.ma.max([d.max() for d in data_2d_list if d is not None])
         if kwargs.get("vmin") is None:
             kwargs["vmin"] = vmin
         if kwargs.get("vmax") is None:
