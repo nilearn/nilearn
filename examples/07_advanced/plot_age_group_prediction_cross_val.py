@@ -82,7 +82,11 @@ pipe = Pipeline(
         ),
         (
             "classifier",
-            GridSearchCV(LinearSVC(dual=True), {"C": [0.1, 1.0, 10.0]}, cv=5),
+            GridSearchCV(
+                LinearSVC(dual=True, random_state=0),
+                {"C": [0.1, 1.0, 10.0]},
+                cv=5,
+            ),
         ),
     ]
 )

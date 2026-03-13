@@ -182,7 +182,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        svc_l1 = LinearSVC(penalty="l1", dual=False, max_iter=1e4)
+        svc_l1 = LinearSVC(penalty="l1", max_iter=1e4)
 
     - ``"logistic"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -538,15 +538,19 @@ docdict["fwhm"] = """
 fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\
 or 'fast' or None, optional
     Smoothing strength, as a :term:`full-width at half maximum<FWHM>`,
-    in millimeters:
+    in millimeters.
+
+    For surface data, only scalar and None are supported.
+
+    For volume data, several options are possible:
 
     - If a nonzero scalar is given, width is identical in all 3 directions.
 
     - If a :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` is given,
       it must have 3 elements, giving the :term:`FWHM` along each axis.
       If any of the elements is `0` or `None`,
-
       smoothing is not performed along that axis.
+
     - If `fwhm="fast"`, a fast smoothing will be performed with a filter
       [0.2, 1, 0.2] in each direction and a normalization to preserve the
       local average value.
@@ -1333,6 +1337,9 @@ threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
     If number is given, it must be non-negative. The specified value is used to
     threshold the image: values below the threshold (in absolute value) are
     plotted as transparent.
+    If a string percentile is given, it should finish with percent sign e.g.,
+    “95%”. We threshold based on the score obtained using this percentile
+    on the image data.
     If "auto" is given, the threshold is determined based on the score obtained
     using percentile value "80%" on the absolute value of the image data.
 """
