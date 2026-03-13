@@ -414,7 +414,11 @@ class _ReportingMixin:
         """
         return hasattr(self, "_reporting_data")
 
-    def generate_report(self, title: str | None = None):
+    def generate_report(
+        self,
+        title: str | None = None,
+        engine: str = "matplotlib",
+    ):
         """Generate an HTML report for the current object.
 
         Parameters
@@ -430,6 +434,7 @@ class _ReportingMixin:
         from nilearn.reporting.html_report import generate_report
 
         self._report_content["title"] = title
+        self._report_content["engine"] = engine
 
         return generate_report(self)
 

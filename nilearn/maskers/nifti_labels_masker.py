@@ -163,8 +163,17 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         If set to True, data is saved in order to produce a report.
 
     %(cmap)s
-        default="CMRmap_r"
+        default=None
         Only relevant for the report figures.
+
+        When using ``"matplotlib"`` as an engine to create reports,
+        ``cmap`` will be used for the background image:
+        in this case, if ``None`` is passed, then the ``"CMRmap_r"`` colormap
+        will be used for the background image.
+        When using ``"brainsprite"`` as an engine to create reports,
+        ``cmap`` will be used for the label image:
+        in this case, if ``None`` is passed, then the ``"tab20"`` colormap
+        will be used for the label image.
 
     %(clean_args)s
 
@@ -219,7 +228,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         strategy="mean",
         keep_masked_labels=False,
         reports=True,
-        cmap="CMRmap_r",
+        cmap=None,
         clean_args=None,
     ):
         self.labels_img = labels_img
@@ -318,13 +327,20 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return masked_atlas, removed_region_ids, removed_region_names, display
 
-    def generate_report(self, title: str | None = None):
+    def generate_report(
+        self,
+        title: str | None = None,
+        engine: str = "matplotlib",
+    ):
         """Generate an HTML report for the current object.
 
         Parameters
         ----------
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
+
+        engine : {"matplotlib", "brainsprite"}, default="matplotlib"
+            Choice of engine to display the mask.
 
         Returns
         -------
@@ -334,6 +350,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         from nilearn.reporting.html_report import generate_report
 
         self._report_content["title"] = title
+        self._report_content["engine"] = engine
 
         if self._has_report_data():
             img = self._reporting_data["images"]
@@ -364,6 +381,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         """
         if not self._has_report_data():
             return None
+
+        from nilearn.plotting.image.utils import load_anat
 
         labels_image = self._reporting_data["labels_image"]
 
@@ -413,7 +432,27 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         self._report_content["summary"] = table
         self._report_content["number_of_regions"] = self.n_elements_
 
-        return self._create_figure_for_report(labels_image)
+        if (
+            self._report_content.get("engine") is None
+            or self._report_content["engine"] == "matplotlib"
+        ):
+            return self._create_figure_for_report(labels_image)
+
+        elif self._report_content["engine"] == "brainsprite":
+            bg_img = self._reporting_data["images"]
+            if bg_img is None:
+                bg_img, _, _, _ = load_anat()
+            stat_map_img = self._reporting_data["labels_image"]
+
+            cmap = self.cmap
+            if cmap is None:
+                cmap = "tab20"
+
+            self._create_brainsprite(
+                bg_img=bg_img, stat_map_img=stat_map_img, cmap=cmap
+            )
+
+            return None
 
     def _create_figure_for_report(self, labels_image):
         """Generate figure to include in the report.
@@ -437,13 +476,17 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         img = self._reporting_data["images"]
 
+        cmap = self.cmap
+        if cmap is None:
+            cmap = "CMRmap_r"
+
         # If we have a func image to show in the report, use it
         if img is not None:
             display = plot_img(
                 img,
                 cut_coords=cut_coords,
                 black_bg=False,
-                cmap=self.cmap,
+                cmap=cmap,
             )
             plt.close()
             display.add_contours(labels_image, filled=False, linewidths=3)
