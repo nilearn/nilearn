@@ -63,6 +63,11 @@ def test_display_methods_invalid_threshold(matplotlib_pyplot, img_3d_mni):
         )
 
 
+def test_check_string_threshold(matplotlib_pyplot, img_3d_mni):
+    """Checks threshold can be passed as string percentage value."""
+    plot_img(img_3d_mni, threshold="97%")
+
+
 @pytest.mark.thread_unsafe
 def test_plot_with_axes_or_figure(matplotlib_pyplot, img_3d_mni):
     """Smoke tests for plot_img with providing figure or Axes."""
