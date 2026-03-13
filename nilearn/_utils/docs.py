@@ -705,6 +705,12 @@ keep_masked_maps : :obj:`bool`, optional
         The ``keep_masked_maps`` parameter will be removed in 0.15.
 
 """
+# linewidth
+docdict["label_maps"] = """
+label_maps : iterable of :obj:`str` or None, default=None
+    Name of each map in the maps_img.
+    The length of the iterable must match that of the maps_img.
+"""
 
 # linewidth
 docdict["linewidths"] = """

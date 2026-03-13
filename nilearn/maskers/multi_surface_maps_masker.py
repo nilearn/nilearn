@@ -28,6 +28,8 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         overall area of the brain to consider. The data for each \
         hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
+    %(label_maps)s
+
     allow_overlap : :obj:`bool`, default=True
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
@@ -73,6 +75,9 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
     ----------
     %(clean_args_)s
 
+    label_maps_ : iterable of :obj:`str`
+        Name of each map in the maps_img_.
+
     maps_img_ : :obj:`~nilearn.surface.SurfaceImage`
         The same as the input `maps_img`, kept solely for consistency
         across maskers.
@@ -96,6 +101,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         self,
         maps_img=None,
         mask_img=None,
+        label_maps=None,
         allow_overlap=True,
         smoothing_fwhm=None,
         standardize=False,
@@ -113,26 +119,10 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         cmap=DEFAULT_SEQUENTIAL_CMAP,
         clean_args=None,
     ):
-        self.maps_img = maps_img
-        self.mask_img = mask_img
-        self.allow_overlap = allow_overlap
-        self.smoothing_fwhm = smoothing_fwhm
-        self.standardize = standardize
-        self.standardize_confounds = standardize_confounds
-        self.high_variance_confounds = high_variance_confounds
-        self.detrend = detrend
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.memory = memory
-        self.memory_level = memory_level
-        self.verbose = verbose
-        self.reports = reports
-        self.cmap = cmap
-        self.clean_args = clean_args
         super().__init__(
             maps_img=maps_img,
             mask_img=mask_img,
+            label_maps=label_maps,
             allow_overlap=allow_overlap,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,

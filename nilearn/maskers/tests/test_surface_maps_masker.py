@@ -138,3 +138,35 @@ def test_labels_img_none():
         match="provide a maps_img during initialization",
     ):
         SurfaceMapsMasker(maps_img=None).fit()
+
+
+def test_maps_labels(surf_maps_img, surf_img_1d):
+    """Test maps labels.
+
+    Check that maps labels can be used when extracting signals to dataframe.
+    """
+    label_maps = [f"map {x}" for x in range(6)]
+    masker = SurfaceMapsMasker(
+        surf_maps_img, label_maps=label_maps, standardize=None
+    )
+    masker.set_output(transform="pandas")
+    signals = masker.fit_transform(surf_img_1d)
+    assert signals.columns.to_list()[0] == "map 0"
+
+
+def test_maps_labels_errors(surf_maps_img, surf_img_1d):
+    """Test maps labels errors."""
+    label_maps = list(range(6))
+    masker = SurfaceMapsMasker(
+        surf_maps_img, label_maps=label_maps, standardize=None
+    )
+
+    with pytest.raises(TypeError, match="iterable of str"):
+        masker.fit(surf_img_1d)
+
+    label_maps = [str(x) for x in range(6)]
+    masker = SurfaceMapsMasker(
+        surf_maps_img, label_maps=label_maps, standardize=None
+    )
+    with pytest.raises(ValueError, match="same length"):
+        masker.fit(surf_img_1d)

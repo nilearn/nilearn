@@ -452,3 +452,29 @@ def test_nifti_maps_masker_transform_resample_warning(img_fmri):
         UserWarning, match="Resampling images at transform time..."
     ):
         masker.fit_transform(img_fmri)
+
+
+def test_maps_labels(img_maps, img_fmri, n_regions):
+    """Test maps labels.
+
+    Check that maps labels can be used when extracting signals to dataframe.
+    """
+    label_maps = [f"map {x}" for x in range(n_regions)]
+    masker = NiftiMapsMasker(img_maps, label_maps=label_maps, standardize=None)
+    masker.set_output(transform="pandas")
+    signals = masker.fit_transform(img_fmri)
+    assert signals.columns.to_list()[0] == "map 0"
+
+
+def test_maps_labels_errors(img_maps, img_fmri, n_regions):
+    """Test maps labels errors."""
+    label_maps = list(range(n_regions))
+    masker = NiftiMapsMasker(img_maps, label_maps=label_maps, standardize=None)
+
+    with pytest.raises(TypeError, match="iterable of str"):
+        masker.fit(img_fmri)
+
+    label_maps = [str(x) for x in range(n_regions - 1)]
+    masker = NiftiMapsMasker(img_maps, label_maps=label_maps, standardize=None)
+    with pytest.raises(ValueError, match="same length"):
+        masker.fit(img_fmri)

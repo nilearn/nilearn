@@ -82,6 +82,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
+    %(label_maps)s
+
     allow_overlap : :obj:`bool`, default=True
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
@@ -145,6 +147,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     ----------
     %(clean_args_)s
 
+    label_maps_ : iterable of :obj:`str`
+        Name of each map in the maps_img_.
+
     maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The maps mask of the data.
 
@@ -179,6 +184,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self,
         maps_img=None,
         mask_img=None,
+        label_maps=None,
         allow_overlap=True,
         smoothing_fwhm=None,
         standardize=False,
@@ -200,6 +206,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     ):
         self.maps_img = maps_img
         self.mask_img = mask_img
+        self.label_maps = label_maps
 
         # Maps Masker parameter
         self.allow_overlap = allow_overlap
@@ -394,6 +401,27 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.maps_img_ = check_niimg(
             self.maps_img_, dtype=self.dtype, atleast_4d=True
         )
+
+        if self.label_maps is not None:
+            if any(not isinstance(x, str) for x in self.label_maps):
+                types = {x.__class__.__name__ for x in self.label_maps}
+                raise TypeError(
+                    "'label_maps' must be an iterable of str. "
+                    f"Got an iterable of {types}"
+                )
+            if len(self.label_maps) != self.maps_img_.shape[3]:
+                raise ValueError(
+                    "'label_maps' must be of same length "
+                    "as the maps img. "
+                    "'maps_img' contains "
+                    f"{self.maps_img_.shape[3]} maps "
+                    "and 'label_maps' contains "
+                    f"{len(self.label_maps)} values."
+                )
+            self.label_maps_ = self.label_maps
+        else:
+            self.label_maps_ = [str(x) for x in range(self.maps_img_.shape[3])]
+
         self.maps_img_ = clean_img(
             self.maps_img_,
             detrend=False,
@@ -469,6 +497,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "mask": self.mask_img_,
                 "dim": None,
                 "images": imgs,
+                "label_maps": self.label_maps_,
             }
             if imgs is not None:
                 imgs, dims = compute_middle_image(imgs)
@@ -484,6 +513,17 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
+
+    def get_feature_names_out(self, input_features=None):
+        """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features :default=None
+            Only for sklearn API compatibility.
+        """
+        del input_features
+        return np.asarray(self.label_maps_, dtype=object)
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):

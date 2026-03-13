@@ -59,9 +59,11 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         overall area of the brain to consider. The data for each \
         hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
+    %(label_maps)s
+
     allow_overlap : :obj:`bool`, default=True
         If False, an error is raised if the maps overlaps (ie at least two
-        maps have a non-zero value for the same voxel).
+        maps have a non-zero value for the same vertex).
 
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
@@ -102,6 +104,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     ----------
     %(clean_args_)s
 
+    label_maps_ : iterable of :obj:`str`
+        Name of each map in the maps_img_.
+
     maps_img_ : :obj:`~nilearn.surface.SurfaceImage`
         The same as the input `maps_img`, kept solely for consistency
         across maskers.
@@ -132,6 +137,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self,
         maps_img=None,
         mask_img=None,
+        label_maps=None,
         allow_overlap=True,
         smoothing_fwhm=None,
         standardize=False,
@@ -150,6 +156,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     ):
         self.maps_img = maps_img
         self.mask_img = mask_img
+        self.label_maps = label_maps
         self.allow_overlap = allow_overlap
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
@@ -237,6 +244,26 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         self.n_elements_ = self.maps_img.shape[1]
 
+        if self.label_maps is not None:
+            if any(not isinstance(x, str) for x in self.label_maps):
+                types = {x.__class__.__name__ for x in self.label_maps}
+                raise TypeError(
+                    "'label_maps' must be an iterable of str. "
+                    f"Got an iterable of {types}"
+                )
+            if len(self.label_maps) != self.n_elements_:
+                raise ValueError(
+                    "'label_maps' must be of same length "
+                    "as the maps img. "
+                    "'maps_img' contains "
+                    f"{self.n_elements_} maps "
+                    "and 'label_maps' contains "
+                    f"{len(self.label_maps)} values."
+                )
+            self.label_maps_ = self.label_maps
+        else:
+            self.label_maps_ = [str(x) for x in range(self.n_elements_)]
+
         self.mask_img_ = self._load_mask(imgs)
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
@@ -268,6 +295,17 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "n_elements_")
+
+    def get_feature_names_out(self, input_features=None):
+        """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features :default=None
+            Only for sklearn API compatibility.
+        """
+        del input_features
+        return np.asarray(self.label_maps_, dtype=object)
 
     @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):

@@ -767,6 +767,8 @@ class _BaseSurfaceMasker(_BaseMasker):
             else:
                 all_confounds.append(confounds)
 
+        print(return_1D)
+
         signals = self.transform_single_imgs(
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
