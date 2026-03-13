@@ -1499,11 +1499,11 @@ def _apply_threshold(img_data, two_sided, cutoff_threshold):
         return img_data
 
     if two_sided:
-        mask = (-cutoff_threshold <= img_data) & (img_data <= cutoff_threshold)
+        mask = (-cutoff_threshold < img_data) & (img_data < cutoff_threshold)
     elif cutoff_threshold >= 0:
-        mask = img_data <= cutoff_threshold
+        mask = img_data < cutoff_threshold
     else:
-        mask = img_data >= cutoff_threshold
+        mask = img_data > cutoff_threshold
 
     img_data[mask] = 0.0
 
