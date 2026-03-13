@@ -8,6 +8,7 @@ dev = [
     {include-group = "test"},
     {include-group = "doc"},
     {include-group = "style"},
+    {include-group = "rich"},
     "tox>=4",
     "tox-uv"
 ]
@@ -27,8 +28,7 @@ doc = [
     "sphinxext-opengraph>=0.9.1",
     "sphinxcontrib-mermaid>=1.0.0",
     "marimo>=0.12.0",
-    "rich>=3.0.0",
-    "templateflow>=1.4.1",
+    "templateflow",
     "pyarrow>=13.0.0"  # mostly to avoid some warnings in pandas
 ]
 min = [
