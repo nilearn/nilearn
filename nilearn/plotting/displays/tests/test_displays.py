@@ -227,6 +227,7 @@ def test_slicer_save_to_file(slicer, mni152_template_res_2, tmp_path):
     slicer.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("cut_coords", [2, 4])
 def test_mosaic_slicer_integer_cut_coords(cut_coords, mni152_template_res_2):
     """Tests for MosaicSlicer with cut_coords provided as an integer."""
@@ -479,6 +480,7 @@ def test_threshold(threshold, vmin, vmax, expected_results):
     )
 
 
+@pytest.mark.thread_safe
 @pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
 @pytest.mark.parametrize(
     "display,name", zip(SLICERS, SLICER_KEYS, strict=False)
