@@ -823,7 +823,7 @@ def test_cluster_level_parameters_warnings(cluster_level_design, masker):
 
     # output_type is "legacy".
     # raise a deprecation warning, but get the standard output.
-    with pytest.deprecated_call():
+    with pytest.warns(FutureWarning, match="will be removed in version"):
         out = permuted_ols(
             tested_var,
             target_var,
@@ -917,7 +917,7 @@ def test_tfce_smoke_legacy_warnings():
 
     # output_type is "legacy".
     # raise a deprecation warning, but get the standard output.
-    with pytest.deprecated_call():
+    with pytest.warns(FutureWarning, match="will be removed in version"):
         out = permuted_ols(
             tested_var,
             target_var,
