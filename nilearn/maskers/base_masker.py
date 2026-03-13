@@ -37,7 +37,7 @@ from nilearn.image.image import (
     smooth_img,
 )
 from nilearn.image.resampling import resample_img
-from nilearn.maskers._mixin import _ReportingMixin
+from nilearn.maskers._mixin import MaskerReportMixin
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
@@ -291,7 +291,7 @@ def sanitize_displayed_maps(
 
 @fill_doc
 class _BaseMasker(
-    _ReportingMixin,
+    MaskerReportMixin,
     TransformerMixin,
     CacheMixin,
     NilearnBaseEstimator,
@@ -338,9 +338,9 @@ class BaseMasker(_BaseMasker):
         if imgs is not None:
             self._check_imgs(imgs)
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
@@ -620,6 +620,17 @@ class BaseMasker(_BaseMasker):
             )
 
         return signals
+
+    def _get_summary_html(self):
+        """Convert summary part of the report content for nifti maskers to
+        html.
+        """
+        summary = self._report_content.get("summary", None)
+
+        if summary is None:
+            return None
+
+        return self._dict_to_html(summary)
 
 
 class _BaseSurfaceMasker(_BaseMasker):
@@ -936,3 +947,23 @@ class _BaseSurfaceMasker(_BaseMasker):
             **self.clean_args_,
         )
         return region_signals
+
+    def _get_summary_html(self):
+        """Convert summary part of the report content for surface maskers to
+        html.
+        """
+        summary = self._report_content.get("summary", None)
+
+        if summary is None:
+            return None
+
+        summary_html = {}
+        for part in summary:
+            summary_html[part] = self._dict_to_html(
+                summary[part],
+                precision=2,
+                header=True,
+                index=False,
+                sparsify=False,
+            )
+        return summary_html

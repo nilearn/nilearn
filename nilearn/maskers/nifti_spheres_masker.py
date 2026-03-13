@@ -5,7 +5,7 @@ Mask nifti images by spherical volumes for seed-region analyses
 
 import contextlib
 import warnings
-from typing import Any, Literal
+from typing import Any, ClassVar, Literal
 
 import numpy as np
 from scipy import sparse
@@ -305,6 +305,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     """
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the regions defined "
+            "by the spheres of the masker."
+        ),
+    }
     _template_name = "body_nifti_spheres_masker.jinja"
 
     # memory and memory_level are used by CacheMixin.
@@ -356,14 +362,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.reports = reports
         self.verbose = verbose
 
-        self._report_content = {
-            "description": (
-                "This report shows the regions defined "
-                "by the spheres of the masker."
-            ),
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
     @fill_doc
     def generate_report(

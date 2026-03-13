@@ -688,6 +688,7 @@ def test_decoder_binary_classification_screening(
     assert accuracy_score(y, y_pred) > 0.95
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
 def test_decoder_binary_classification_clustering(
     binary_classification_data, clustering_percentile
