@@ -197,20 +197,18 @@ values for the suitable argument name. For example SVC has a parameter ``C``.
 By default, the values tried for ``C`` are [1,10,100].
 
 .. note::
-  Full code example on parameter setting can be found at :
-  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py`
+  ``param_grid`` can only be used for hyper-parameters related to the estimator
+  itself (e.g. ``C`` for SVC, ``alpha`` for Ridge, etc.). If you wish to tune
+  hyper-parameters related to data preprocessing or feature selection steps in
+  the :class:`nilearn.decoding.Decoder` and
+  :class:`nilearn.decoding.DecoderRegressor`, you will need to implement it
+  manually. An example is shown here:
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py`.
 
 Be careful about **overfitting**. Giving a grid containing too many parameter
 close to each other will be computationnaly costly to fit and may result in
 choosing a parameter that works best on your training set, but does not give
-as good performances on your data. You can see below an example in which the
-curve showing the score as a function of the parameter has bumps and peaks
-due to this noise.
-
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_grid_search_001.png
-   :target: ../auto_examples/02_decoding/plot_haxby_grid_search.html
-   :align: center
-   :scale: 60
+as good performances on your data.
 
 .. seealso::
 
