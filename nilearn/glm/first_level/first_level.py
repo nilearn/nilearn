@@ -212,7 +212,7 @@ def run_glm(
             raise ValueError(err_msg) from e
 
         # compute the AR coefficients
-        ar_coef_ = _yule_walker(ols_result.residuals.T, ar_order)
+        ar_coef_ = _yule_walker(ols_result.residuals(Y).T, ar_order)
         del ols_result
         if len(ar_coef_[0]) == 1:
             ar_coef_ = ar_coef_[:, 0]
@@ -1198,7 +1198,7 @@ class FirstLevelModel(BaseGLM):
         }
 
     def _get_element_wise_model_attribute(
-        self, attribute, result_as_time_series
+        self, attribute, result_as_time_series, Y=None
     ):
         """Transform RegressionResults instances within a dictionary \
         (whose keys represent the autoregressive coefficient under the 'ar1' \
@@ -1216,6 +1216,10 @@ class FirstLevelModel(BaseGLM):
             whether the RegressionResult attribute has a value
             per timepoint of the input nifti image.
 
+        Y : Niimg-like object, default=None
+            The data from which to compute the attribute.
+            Required for 'residuals' and 'normalized_residuals'.
+
         Returns
         -------
         output : :obj:`list`
@@ -1225,10 +1229,10 @@ class FirstLevelModel(BaseGLM):
         # check if valid attribute is being accessed.
         check_is_fitted(self)
 
-        all_attributes = dict(vars(RegressionResults)).keys()
         possible_attributes = [
-            prop for prop in all_attributes if "__" not in prop
+            prop for prop in dict(vars(RegressionResults)) if "__" not in prop
         ]
+        possible_attributes += RegressionResults.__static_attributes__
         check_parameter_in_allowed(attribute, possible_attributes, attribute)
 
         if self.minimize_memory:
@@ -1243,8 +1247,15 @@ class FirstLevelModel(BaseGLM):
 
         output = []
 
-        for design_matrix, labels, results in zip(
-            self.design_matrices_, self.labels_, self.results_, strict=False
+        Y = [Y] if Y is not None and not isinstance(Y, list) else Y
+
+        for i, (design_matrix, labels, results) in enumerate(
+            zip(
+                self.design_matrices_,
+                self.labels_,
+                self.results_,
+                strict=False,
+            )
         ):
             if result_as_time_series:
                 voxelwise_attribute = np.zeros(
@@ -1253,11 +1264,25 @@ class FirstLevelModel(BaseGLM):
             else:
                 voxelwise_attribute = np.zeros((1, len(labels)))
 
+            Y_matrix = self.masker_.transform(Y[i]) if Y is not None else None
+            if Y_matrix is not None and self.signal_scaling is not False:
+                Y_matrix, _ = mean_scaling(Y_matrix, self.signal_scaling)
+
             for label_ in results:
                 label_mask = labels == label_
-                voxelwise_attribute[:, label_mask] = getattr(
-                    results[label_], attribute
-                )
+                attr = getattr(results[label_], attribute)
+                if attribute in ["residuals", "normalized_residuals"]:
+                    if Y_matrix is None:
+                        raise ValueError(
+                            f"Attribute {attribute} requires data Y."
+                        )
+                    val = attr(Y_matrix[:, label_mask])
+                elif attribute == "predicted":
+                    val = attr()
+                else:
+                    val = attr
+
+                voxelwise_attribute[:, label_mask] = val
 
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
