@@ -579,6 +579,7 @@ def view_surf(
         symmetric_cmap=symmetric_cmap,
         vmax=vmax,
         vmin=vmin,
+        engine=engine,
     )
 
     info["title"] = title
