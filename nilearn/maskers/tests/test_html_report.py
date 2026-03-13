@@ -55,10 +55,8 @@ def generate_and_check_masker_report(
         warnings_msg_to_check = []
 
     includes = []
-    excludes = []
-
+    excludes = ["Adapted from Pure CSS navbar"]
     # navbar and its css is only for GLM reports
-    excludes.append("Adapted from Pure CSS navbar")
 
     report_at_fit_time = masker._report_content.get(
         "reports_at_fit_time", masker.reports
@@ -180,8 +178,7 @@ def test_displayed_maps_valid_inputs(
     # sphere masker display all spheres on index 0
     # so we must offset by 1
     if isinstance(masker, NiftiSpheresMasker):
-        tmp = [0]
-        tmp.extend([x + 1 for x in expected_displayed_maps])
+        tmp = [0, *[x + 1 for x in expected_displayed_maps]]
         expected_displayed_maps = tmp
 
     assert masker._report_content["displayed_maps"] == expected_displayed_maps

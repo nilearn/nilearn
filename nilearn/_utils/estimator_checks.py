@@ -1069,10 +1069,6 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     output = buffer.getvalue()
     assert output != ""
 
-    if isinstance(estimator, SearchLight):
-        # TODO
-        pytest.skip("Some failures with SearchLight.")
-
     # verbose True == verbose 1
     # should mostly be the same except for object reference
     estimator.verbose = True
@@ -1524,10 +1520,8 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
 
     replaces sklearn check_fit_idempotent
     """
-    # TODO
-    # fix for flaky test with free threaded python
-    if not is_gil_enabled() and isinstance(estimator_orig, (SearchLight)):
-        return None
+    if isinstance(estimator_orig, SearchLight) and not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
 
     check_methods = ["predict", "transform", "decision_function"]
 
@@ -1569,8 +1563,6 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
         # investigate why
         if isinstance(estimator, (Decoder)):
             tol = 1e-5
-        elif isinstance(estimator, (SearchLight)):
-            tol = 1e-4
         elif isinstance(estimator, FREMClassifier):
             tol = 0.1
 
@@ -1716,6 +1708,9 @@ def check_img_estimator_pickle(estimator_orig) -> None:
 
     Adapted from sklearn's check_estimators_pickle
     """
+    if isinstance(estimator_orig, SearchLight) and not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
+
     estimator = clone(estimator_orig)
 
     X, y = generate_data_to_fit(estimator)
@@ -1769,11 +1764,7 @@ def check_img_estimator_pickle(estimator_orig) -> None:
             unpickled_result = getattr(unpickled_estimator, method)(input)
 
         if isinstance(unpickled_result, np.ndarray):
-            if isinstance(estimator, SearchLight):
-                # TODO check why Searchlight has lower absolute tolerance
-                ...
-            else:
-                assert_allclose_dense_sparse(result[method], unpickled_result)
+            assert_allclose_dense_sparse(result[method], unpickled_result)
         elif isinstance(unpickled_result, SurfaceImage):
             assert_surface_image_equal(result[method], unpickled_result)
         elif isinstance(unpickled_result, Nifti1Image):
@@ -1786,6 +1777,9 @@ def check_img_estimator_pipeline_consistency(estimator_orig) -> None:
     Substitute for sklearn check_pipeline_consistency.
     """
     estimator = clone(estimator_orig)
+
+    if isinstance(estimator, SearchLight) and not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
 
     X, y = generate_data_to_fit(estimator)
 
@@ -1828,13 +1822,7 @@ def check_img_estimator_pipeline_consistency(estimator_orig) -> None:
             else:
                 result = func(X, y)
                 result_pipe = func_pipeline(X, y)
-            if isinstance(estimator, SearchLight) and func_name == "transform":
-                # TODO flaky test
-                # SearchLight transform seem to return
-                # slightly different results
-                ...
-            else:
-                assert_allclose_dense_sparse(result, result_pipe)
+            assert_allclose_dense_sparse(result, result_pipe)
 
 
 def check_img_estimator_requires_y_none(estimator_orig) -> None:
@@ -3049,18 +3037,9 @@ def check_masker_smooth(estimator_orig) -> None:
     estimator.smoothing_fwhm = 3
     estimator.fit(imgs)
 
-    if accept_niimg_input(estimator):
-        smoothed_signal = estimator.transform(imgs)
+    smoothed_signal = estimator.transform(imgs)
 
-        assert_raises(
-            AssertionError, assert_array_equal, smoothed_signal, signal
-        )
-
-    else:
-        with pytest.warns(UserWarning, match="not yet supported"):
-            smoothed_signal = estimator.transform(imgs)
-
-        assert_array_equal(smoothed_signal, signal)
+    assert_raises(AssertionError, assert_array_equal, smoothed_signal, signal)
 
 
 def check_masker_inverse_transform(estimator_orig) -> None:
@@ -4058,9 +4037,8 @@ def _generate_report_with_no_warning(estimator) -> None:
         unknown_warnings = []
         for x in warning_list:
             message = str(x.message)
-            if any(y in message for y in warnings_to_ignore):
-                continue
-            unknown_warnings.append(message)
+            if all(y not in message for y in warnings_to_ignore):
+                unknown_warnings.append(message)
 
         if not isinstance(estimator, (RegionExtractor, SurfaceMapsMasker)):
             assert not unknown_warnings, unknown_warnings

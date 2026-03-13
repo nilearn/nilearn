@@ -28,7 +28,7 @@ _MODULE_TO_IGNORE = {
 
 def _skip_module(module_name: str):
     module_parts = module_name.split(".")
-    return bool(
+    return (
         any(part in _MODULE_TO_IGNORE for part in module_parts)
         or "._" in module_name
     )
