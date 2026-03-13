@@ -60,6 +60,9 @@ Enhancements
 
 - :bdg-info:`Plotting`  Add opacity slider on :func:`~plotting.view_img` (:gh:`6107` by `Rémi Gau`_).
 
+- :bdg-success:`API` Add support for non-parametric cluster-level inference on :class:`~surface.SurfaceImage` in :func:`~glm.second_level.non_parametric_inference` (:gh:`5733` by `Rémi Gau`_).
+
+
 Changes
 -------
 
