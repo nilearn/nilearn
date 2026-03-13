@@ -100,3 +100,6 @@ nilearn.svg
 # uv
 uv.lock
 .python-version
+
+# complexipy
+.complexipy_cache
