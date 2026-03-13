@@ -443,7 +443,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         import matplotlib.pyplot as plt
 
-        from nilearn.plotting import plot_img
+        from nilearn.plotting import find_xyz_cut_coords, plot_img
 
         img = self._reporting_data["images"]
         mask = self._reporting_data["mask"]
@@ -451,12 +451,26 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if img is None:  # images were not provided to fit
             img = mask
 
+        # ensure that the crosshair will be in the mask
+        cut_coords = find_xyz_cut_coords(img)
+        if mask is not None:
+            cut_coords = find_xyz_cut_coords(mask)
+            if not check_same_fov(img, mask, raise_error=False):
+                # in case images have different FOV
+                # the cut coords may be out of the image
+                cut_coords = find_xyz_cut_coords(
+                    resample_img(
+                        mask,
+                        target_affine=img.affine,
+                        target_shape=img.shape,
+                        interpolation="nearest",
+                    )
+                )
+
         # create display of retained input mask, image
         # for visual comparison
         init_display = plot_img(
-            img,
-            black_bg=False,
-            cmap=self.cmap,
+            img, black_bg=False, cmap=self.cmap, cut_coords=cut_coords
         )
         plt.close()
 
@@ -477,16 +491,19 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "\n To see the input Nifti image before resampling, "
                 "hover over the displayed image."
             )
-
-            # create display of resampled NiftiImage and mask
             resampled_img, resampled_mask = self._reporting_data["transform"]
+
             if resampled_img is None:  # images were not provided to fit
                 resampled_img = resampled_mask
+
+            # create display of resampled NiftiImage and mask
+            cut_coords = find_xyz_cut_coords(resampled_mask)
 
             overlay = plot_img(
                 resampled_img,
                 black_bg=False,
                 cmap=self.cmap,
+                cut_coords=cut_coords,
             )
             plt.close()
             overlay.add_contours(
