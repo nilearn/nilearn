@@ -299,6 +299,8 @@
 
 .. _Sachin Patalasingh: https://github.com/sachin-bsai
 
+.. _Saeed Babadi: https://github.com/saeed-neuro
+
 .. _Sage Hahn: https://github.com/sahahn
 
 .. _Salma Bougacha: https://github.com/salma1601
