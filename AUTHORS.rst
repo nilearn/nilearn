@@ -197,6 +197,7 @@ Some other past or present contributors are:
 * `Ryan Hammonds`_: UC San Diego, San Diego, California, USA
 * `Rémi Gau`_: Origami lab, McGill University, Montréal, Canada
 * `Sachin Patalasingh`_
+* `Saeed Babadi`_
 * `Sage Hahn`_: deephealth
 * `Salma Bougacha`_
 * `Sam Buck Johnson`_
