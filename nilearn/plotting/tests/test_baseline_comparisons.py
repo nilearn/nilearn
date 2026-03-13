@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from matplotlib import pyplot as plt
+from nibabel import Nifti1Image
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.datasets import (
@@ -113,11 +114,16 @@ def test_plot_stat_map_display_mode(display_mode):
 
 
 @pytest.mark.mpl_image_compare
-def test_plot_roi_single_value_data(img_mask_eye):
+def test_plot_roi_single_value_data(affine_eye):
     """Test `nilearn.plotting.image.img_plotting.plot_roi` to see that colorbar
     does not appear in the plot when data displayed has single value.
     """
-    return plot_roi(img_mask_eye, display_mode="y", cut_coords=3)
+    mask = np.zeros((53, 63, 42), dtype=np.uint8)
+    mask[20:35, 25:40, 10:25] = 1
+
+    return plot_roi(
+        Nifti1Image(mask, affine_eye), display_mode="y", cut_coords=3
+    )
 
 
 @pytest.mark.slow
