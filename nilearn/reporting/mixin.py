@@ -118,7 +118,7 @@ class ReportMixin:
         """
         self._report_content["warning_messages"].append(warning)
 
-    def _get_warnings(self):
+    def _get_report_warnings(self):
         """Return the sorted list of report warnings.
 
         Returns
@@ -129,7 +129,7 @@ class ReportMixin:
         return sorted(set(self._report_content["warning_messages"]))
 
     def _display_report_warnings(self):
-        report_warnings = self._get_warnings()
+        report_warnings = self._get_report_warnings()
         if report_warnings:
             for msg in report_warnings:
                 warnings.warn(
