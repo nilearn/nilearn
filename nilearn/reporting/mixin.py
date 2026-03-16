@@ -302,25 +302,6 @@ class ReportMixin:
 
         report_content["version"] = __version__
 
-    def generate_report(self, title: str | None = None) -> HTMLReport:
-        """Generate an HTML report for this estimator.
-
-        This method should be implemented in classes which inherit from
-        `ReportMixin`.
-
-        Parameters
-        ----------
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        Returns
-        -------
-        report : `nilearn.reporting.HTMLReport`
-            HTML report for the masker.
-
-        """
-        raise NotImplementedError()
-
     def _assemble_report(self) -> HTMLReport:
         """Assemble report head and body acquiring body template corresponding
         to estimator type and populating it with report data.
@@ -353,11 +334,21 @@ class ReportMixin:
         return assemble_report(body, page_title)
 
     @abc.abstractmethod
-    def _generate_report_data(self):
-        """Generate necessary data to be used in report template.
+    def generate_report(self, title: str | None = None) -> HTMLReport:
+        """Generate an HTML report for this estimator.
 
         This method should be implemented in classes which inherit from
-        `ReportMixin` and does not override or call
-        `ReportMixin.generate_report`.
+        `ReportMixin`.
+
+        Parameters
+        ----------
+        title : :obj:`str` or None, default=None
+            title for the report. If None, title will be the class name.
+
+        Returns
+        -------
+        report : `nilearn.reporting.HTMLReport`
+            HTML report for the masker.
+
         """
         raise NotImplementedError()
