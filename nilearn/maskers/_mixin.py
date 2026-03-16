@@ -421,7 +421,7 @@ class MaskerReportMixin(ReportMixin):
 
         Returns
         -------
-        report : `nilearn.reporting.html_report.HTMLReport`
+        report : `nilearn.reporting.HTMLReport`
             HTML report for the masker.
         """
         self._run_report_checks()

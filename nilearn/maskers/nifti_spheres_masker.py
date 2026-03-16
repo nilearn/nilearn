@@ -387,7 +387,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        report : `nilearn.reporting.html_report.HTMLReport`
+        report : `nilearn.reporting.HTMLReport`
             HTML report for the masker.
         """
         check_displayed_maps(displayed_spheres, "displayed_spheres")

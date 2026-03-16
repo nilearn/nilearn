@@ -433,7 +433,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         Returns
         -------
-        report : `nilearn.reporting.html_report.HTMLReport`
+        report : `nilearn.reporting.HTMLReport`
             HTML report for the masker.
         """
         check_displayed_maps(displayed_maps)

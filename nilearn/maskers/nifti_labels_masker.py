@@ -326,7 +326,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         Returns
         -------
-        report : `nilearn.reporting.html_report.HTMLReport`
+        report : `nilearn.reporting.HTMLReport`
             HTML report for the masker.
         """
         if self._has_report_data():
