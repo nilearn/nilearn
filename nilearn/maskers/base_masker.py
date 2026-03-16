@@ -261,7 +261,7 @@ def sanitize_displayed_maps(
                 f"But masker only has {n_maps} {var_name}(s). "
                 f"'displayed_{var_name}s' was set to {n_maps}."
             )
-            estimator._report_content["warning_messages"].append(msg)
+            estimator.append_warning(msg)
 
             displayed_maps = n_maps
 
@@ -284,7 +284,7 @@ def sanitize_displayed_maps(
             f"{unavailable_maps} because "
             f"masker only has {n_maps} {var_name}(s)."
         )
-        estimator._report_content["warning_messages"].append(msg)
+        estimator._append_warning(msg)
 
     return estimator, displayed_maps
 

@@ -289,14 +289,14 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     f"No image provided to fit in {self.__class__.__name__}. "
                     "Plotting only spatial maps for reporting."
                 )
-                self._report_content["warning_messages"].append(msg)
+                self._append_warning(msg)
 
             elif self._reporting_data["dim"] == 5:
                 msg = (
                     "A list of 4D subject images were provided to fit. "
                     "Only first subject is shown in the report."
                 )
-                self._report_content["warning_messages"].append(msg)
+                self._append_warning(msg)
 
         return super().generate_report(title)
 

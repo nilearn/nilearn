@@ -420,7 +420,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     "No image provided to fit in NiftiSpheresMasker. "
                     "Spheres are plotted on top of the MNI152 template."
                 )
-                self._report_content["warning_messages"].append(msg)
+                self._append_warning(msg)
 
         return super().generate_report(title)
 
