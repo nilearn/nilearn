@@ -223,7 +223,7 @@ function brainsprite(params) {
   let updateCoordinates = function () {
     vec3FromVec4Mat4Mul(coordVoxel, brain.affine,
       [brain.numSlice.X + 1, brain.numSlice.Y + 1, brain.numSlice.Z + 1, 1])
-    brain.coordinatesSlice.X = brain.radiological ? -coordVoxel[0] : coordVoxel[0]
+    brain.coordinatesSlice.X = coordVoxel[0]
     brain.coordinatesSlice.Y = coordVoxel[1]
     brain.coordinatesSlice.Z = coordVoxel[2]
   }
