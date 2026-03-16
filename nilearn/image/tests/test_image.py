@@ -1224,8 +1224,6 @@ def test_threshold_surf_img_1d(surf_img_1d, threshold, expected_n_non_zero):
     For left hemisphere: 1 < values < 10
     For right hemisphere: 10 < values < 50
     """
-    print(surf_img_1d.data.parts["left"])
-    print(surf_img_1d.data.parts["right"])
     thr_img = threshold_img(surf_img_1d, threshold=threshold)
     for hemi in thr_img.data.parts:
         data = thr_img.data.parts[hemi]
