@@ -51,8 +51,7 @@ class ReportMixin:
     _report_data : Contains data from model fit. If reporting is disabled, or
     the model is not fit, this attribute does not exist.
 
-    Classes inheriting from ReportMixin should implement ``_get_displays``
-    to return the displays to be embedded to the report.
+    Classes inheriting from ReportMixin should implement ``generate_report``.
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
