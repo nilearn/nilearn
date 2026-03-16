@@ -4078,7 +4078,7 @@ def check_masker_generate_report(estimator_orig) -> None:
 
     assert estimator._has_report_data() is True
 
-    assert estimator._report_content["warning_messages"] == []
+    assert estimator._get_report_warnings() == []
 
     # TODO
     # SurfaceMapsMasker, RegionExtractor still throws a warning
@@ -4154,7 +4154,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(
 
     estimator.fit()
 
-    assert estimator._report_content["warning_messages"] == []
+    assert estimator._get_report_warnings() == []
 
     # TODO
     # fix for free threaded python
@@ -4169,7 +4169,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(
 
     estimator.fit(input_img)
 
-    assert estimator._report_content["warning_messages"] == []
+    assert estimator._get_report_warnings == []
 
     # TODO
     # NiftiSpheresMasker still throws a warning
