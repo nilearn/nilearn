@@ -222,7 +222,7 @@ function brainsprite(params) {
   let updateCoordinates = function () {
     vec3FromVec4Mat4Mul(coordVoxel, brain.affine,
       [brain.numSlice.X + 1, brain.numSlice.Y + 1, brain.numSlice.Z + 1, 1])
-    brain.coordinatesSlice.X = coordVoxel[0]
+    brain.coordinatesSlice.X = brain.radiological ? -coordVoxel[0] : coordVoxel[0]
     brain.coordinatesSlice.Y = coordVoxel[1]
     brain.coordinatesSlice.Z = coordVoxel[2]
   }
@@ -566,6 +566,17 @@ function brainsprite(params) {
     brain.draw(brain.numSlice.Y, 'Y')
     brain.draw(brain.numSlice.Z, 'Z')
   }
+
+  brain.setSlice = function (newSlice) {
+    if (newSlice) {
+      if (newSlice.X !== undefined) brain.numSlice.X = Math.round(newSlice.X);
+      if (newSlice.Y !== undefined) brain.numSlice.Y = Math.round(newSlice.Y);
+      if (newSlice.Z !== undefined) brain.numSlice.Z = Math.round(newSlice.Z);
+    }
+    updateValue()
+    updateCoordinates()
+    brain.drawAll()
+  }
 
   brain.canvas.addEventListener('click', brain.clickBrain, false)
 
