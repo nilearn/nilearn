@@ -621,15 +621,10 @@ class BaseMasker(_BaseMasker):
 
         return signals
 
-    def _get_summary_html(self):
+    def _get_summary_html(self, summary):
         """Convert summary part of the report content for nifti maskers to
         html.
         """
-        summary = self._report_content.get("summary", None)
-
-        if summary is None:
-            return None
-
         return self._dict_to_html(summary)
 
 
@@ -948,15 +943,10 @@ class _BaseSurfaceMasker(_BaseMasker):
         )
         return region_signals
 
-    def _get_summary_html(self):
+    def _get_summary_html(self, summary):
         """Convert summary part of the report content for surface maskers to
         html.
         """
-        summary = self._report_content.get("summary", None)
-
-        if summary is None:
-            return None
-
         summary_html = {}
         for part in summary:
             summary_html[part] = self._dict_to_html(
