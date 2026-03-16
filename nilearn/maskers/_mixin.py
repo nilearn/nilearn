@@ -19,7 +19,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn.image import high_variance_confounds
 from nilearn.image.image import get_indices_from_image, iter_check_niimg
-from nilearn.reporting.mixin import ReportMixin
+from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
@@ -410,6 +410,26 @@ class MaskerReportMixin(ReportMixin):
 
         report_content["page_title"] = f"{report_content['title']} report"
         report_content["estimator_type"] = self._estimator_type
+
+    def generate_report(self, title: str | None = None) -> HTMLReport:
+        """Generate an HTML report for this estimator.
+
+        Parameters
+        ----------
+        title : :obj:`str` or None, default=None
+            title for the report. If None, title will be the class name.
+
+        Returns
+        -------
+        report : `nilearn.reporting.html_report.HTMLReport`
+            HTML report for the masker.
+        """
+        self._run_report_checks()
+        self._set_report_basics(title)
+        self._generate_report_data()
+        self._display_report_warnings()
+
+        return self._assemble_report()
 
     def _generate_report_data(self):
         report_content = self._report_content

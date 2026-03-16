@@ -306,6 +306,9 @@ class ReportMixin:
     def generate_report(self, title: str | None = None) -> HTMLReport:
         """Generate an HTML report for this estimator.
 
+        This method should be implemented in classes which inherit from
+        `ReportMixin`.
+
         Parameters
         ----------
         title : :obj:`str` or None, default=None
@@ -315,13 +318,9 @@ class ReportMixin:
         -------
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
-        """
-        self._run_report_checks()
-        self._set_report_basics(title)
-        self._generate_report_data()
-        self._display_report_warnings()
 
-        return self._assemble_report()
+        """
+        raise NotImplementedError()
 
     def _assemble_report(self) -> HTMLReport:
         """Assemble report head and body acquiring body template corresponding
