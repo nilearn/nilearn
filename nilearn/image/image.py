@@ -1255,7 +1255,7 @@ def threshold_img(
 
         The given value should be within the range of minimum and maximum
         intensity of the input image.
-        All intensities in the interval ``[-threshold, threshold]`` will be
+        All intensities in the interval ``(-threshold, threshold)`` will be
         set to zero.
 
       - When ``two_sided`` is False:
@@ -1263,15 +1263,15 @@ def threshold_img(
         - If the threshold is negative:
 
           It should be greater than the minimum intensity of the input data.
-          All intensities greater than or equal to the specified threshold will
-          be set to zero.
+          All intensities greater than the specified threshold will be set to
+          zero.
           All other intensities keep their original values.
 
         - If the threshold is positive:
 
           then it should be less than the maximum intensity of the input data.
-          All intensities less than or equal to the specified threshold will be
-          set to zero.
+          All intensities less than the specified threshold will be set to
+          zero.
           All other intensities keep their original values.
 
     - If threshold is :obj:`str`:
