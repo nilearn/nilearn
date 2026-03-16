@@ -531,7 +531,7 @@ def _json_view_to_html(json_view, width_view=600):
     js_dir = Path(__file__).parent / "data" / "js"
     with (js_dir / "jquery.min.js").open() as f:
         json_view["js_jquery"] = f.read()
-    with (js_dir / "brainsprite.min.js").open() as f:
+    with (js_dir / "brainsprite.minified.js").open() as f:
         json_view["js_brainsprite"] = f.read()
 
     # Load the html template, and plug in all the data
