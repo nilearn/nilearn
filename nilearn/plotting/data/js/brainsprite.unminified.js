@@ -181,8 +181,9 @@ function brainsprite(params) {
     const pos = {}
     if (brain.overlay && !brain.nanValue) {
       try {
-        pos.XW = Math.round((brain.numSlice.X) % brain.nbCol)
-        pos.XH = Math.round((brain.numSlice.X - pos.XW) / brain.nbCol)
+        let drawXValue = toVisualX(brain.numSlice.X);
+        pos.XW = Math.round((drawXValue) % brain.nbCol)
+        pos.XH = Math.round((drawXValue - pos.XW) / brain.nbCol)
         brain.contextRead.clearRect(0, 0, 1, 1)
         brain.contextRead.drawImage(
           brain.overlay.sprite,
@@ -332,8 +333,9 @@ function brainsprite(params) {
 
     switch (type) {
       case 'X':
-        pos.XW = ((brain.numSlice.X) % brain.nbCol)
-        pos.XH = (brain.numSlice.X - pos.XW) / brain.nbCol
+        let drawX = toVisualX(brain.numSlice.X);
+        pos.XW = ((drawX) % brain.nbCol)
+        pos.XH = (drawX - pos.XW) / brain.nbCol
         brain.planes.contextX.drawImage(brain.planes.canvasMaster,
           pos.XW * nY, pos.XH * nZ, nY, nZ,
           0, 0, nY, nZ)
