@@ -345,6 +345,7 @@ markers = [
     "thread_unsafe"
 ]
 minversion = "6.0"
+testpaths = ["nilearn"]
 xfail_strict = true
 
 [tool.ruff]
