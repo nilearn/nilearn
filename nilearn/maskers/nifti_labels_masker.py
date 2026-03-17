@@ -382,8 +382,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         if not self._has_report_data():
             return None
 
-        from nilearn.plotting.image.utils import load_anat
-
         labels_image = self._reporting_data["labels_image"]
 
         table = self.lut_.copy()
@@ -432,27 +430,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         self._report_content["summary"] = table
         self._report_content["number_of_regions"] = self.n_elements_
 
-        if (
-            self._report_content.get("engine") is None
-            or self._report_content["engine"] == "matplotlib"
-        ):
-            return self._create_figure_for_report(labels_image)
-
-        elif self._report_content["engine"] == "brainsprite":
-            bg_img = self._reporting_data["images"]
-            if bg_img is None:
-                bg_img, _, _, _ = load_anat()
-            stat_map_img = self._reporting_data["labels_image"]
-
-            cmap = self.cmap
-            if cmap is None:
-                cmap = "tab20"
-
-            self._create_brainsprite(
-                bg_img=bg_img, stat_map_img=stat_map_img, cmap=cmap
-            )
-
-            return None
+        return self._create_figure_for_report(labels_image)
 
     def _create_figure_for_report(self, labels_image):
         """Generate figure to include in the report.
@@ -461,6 +439,27 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         -------
         list of :class:`~matplotlib.figure.Figure` or None
         """
+        cmap = self.cmap
+
+        if (
+            self._report_content.get("engine") is not None
+            and self._report_content["engine"] == "brainsprite"
+        ):
+            bg_img = self._reporting_data["images"]
+            if bg_img is None:
+                from nilearn.plotting.image.utils import load_anat
+
+                bg_img, _, _, _ = load_anat()
+            stat_map_img = self._reporting_data["labels_image"]
+
+            if cmap is None:
+                cmap = "tab20"
+
+            self._create_brainsprite(
+                bg_img=bg_img, stat_map_img=stat_map_img, cmap=cmap
+            )
+            return None
+
         if not is_matplotlib_installed():
             return None
 
@@ -476,7 +475,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         img = self._reporting_data["images"]
 
-        cmap = self.cmap
         if cmap is None:
             cmap = "CMRmap_r"
 
