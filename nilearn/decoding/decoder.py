@@ -418,7 +418,7 @@ def _check_estimator(estimator, estimator_args=None, verbose=0):
 
     estimator_config = SUPPORTED_ESTIMATORS.get(estimator)
 
-    # "extra_params" can be overriddent by parameters passed by user
+    # "extra_params" can be overridden by parameters passed by user
     params = estimator_config["extra_params"]
     if estimator_args is not None:
         params |= estimator_args
