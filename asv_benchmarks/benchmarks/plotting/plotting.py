@@ -44,7 +44,7 @@ class BenchMarkPlotting3D:
 
         Use affine and shape adapted from load_mni152_template()
         """
-        shape = (200, 230, 190)
+        shape = (100, 115, 85)
 
         affine = np.asarray(
             [

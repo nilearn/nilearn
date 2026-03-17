@@ -23,12 +23,12 @@ class BaseBenchMarkFLM:
         minimize_memory,
         memory=None,
         shape=(64, 64, 64),
-        length_n_runs=(200, 1),
+        length_n_runs=(100, 1),
     ):
         """Set up for all benchmarks."""
         (length, n_runs) = length_n_runs
 
-        shape = (200, 230, 190)
+        shape = (100, 115, 85)
 
         affine = np.asarray(
             [
@@ -71,7 +71,7 @@ class BenchMarkFirstLevelModel(BaseBenchMarkFLM):
     # try different combinations run length, n_runs, minimze_memory
     param_names = ("length_n_runs", "minimize_memory")
     params: ClassVar[tuple[list[tuple[int, int]], list[bool]]] = (
-        [(500, 2), (1000, 1)],
+        [(250, 2), (500, 1)],
         [True, False],
     )
 
