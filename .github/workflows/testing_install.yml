@@ -61,6 +61,32 @@ jobs:
                 pip install dist/nilearn-*-py3-none-any.whl
                 python -c "import nilearn"
 
+    test_uv_sync:
+        if: github.repository == 'nilearn/nilearn'
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, macos-latest, windows-latest]
+        name: check install on ${{ matrix.os }} with latest package versions
+        defaults:
+            run:
+                shell: bash
+        steps:
+        -   name: Install uv
+            uses: astral-sh/setup-uv@v7
+        -   name: Checkout nilearn
+            uses: actions/checkout@v6
+        -   name: Setup python
+            uses: actions/setup-python@v6
+            with:
+                python-version: '3.10'
+        -   name: Test uv sync
+            shell: bash {0}
+            run: |
+                set -e
+                uv sync
+
     check_wheel_size:
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest

@@ -46,10 +46,7 @@ IS_CLASSIF = [True, False]
 
 PENALTY = ["graph-net", "tv-l1"]
 
-ESTIMATORS_TO_CHECK = [
-    SpaceNetClassifier(standardize="zscore_sample"),
-    SpaceNetRegressor(standardize="zscore_sample"),
-]
+ESTIMATORS_TO_CHECK = [SpaceNetClassifier(), SpaceNetRegressor()]
 
 if SKLEARN_LT_1_6:
 

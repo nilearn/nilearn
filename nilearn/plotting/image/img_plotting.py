@@ -231,6 +231,13 @@ def _plot_img_with_bg(
             # voxels pass the threshold
             threshold = float(fast_abs_percentile(data)) - 1e-5
 
+        if isinstance(threshold, str):
+            threshold = check_threshold(
+                threshold,
+                data,
+                percentile_func=fast_abs_percentile,
+                name="threshold",
+            )
         img = new_img_like(img, as_ndarray(data), affine)
 
     display = display_factory(display_mode)(
@@ -402,6 +409,19 @@ def plot_img(
             To simply plot probabilistic atlases (4D images)
         :mod:`nilearn.plotting`
             See API reference for other options
+
+    Example
+    -------
+
+    >>> from nilearn.plotting.image.img_plotting import plot_img, show
+    >>> from nilearn.datasets import load_sample_motor_activation_image
+
+    # just to have a 3D image with some structure
+    >>> data = load_sample_motor_activation_image()
+
+    >>> display = plot_img(data, title="Plotting a 3D image with plot_img")
+    >>> show()
+
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -1935,6 +1955,29 @@ def plot_carpet(
 
     In cases of long acquisitions (>800 volumes), the data will be downsampled
     to have fewer than 800 volumes before being plotted.
+
+    Examples
+    --------
+    >>> from nilearn.plotting import plot_carpet
+    >>> import matplotlib.pyplot as plt
+    >>> from nibabel import Nifti1Image
+    >>> import numpy as np
+
+    >>> rng = np.random.default_rng(seed=42)
+    >>> data = rng.integers(low=0, high=100,
+    ...                     size=(12, 12, 12, 100), dtype=np.int32)
+    >>> mask = np.ones((12, 12, 12), dtype=bool)
+    >>> img = Nifti1Image(data, affine=np.eye(4))
+    >>> mask_img = Nifti1Image(mask.astype(np.int8), affine=np.eye(4))
+
+    >>> display = plot_carpet(
+    ...     img,
+    ...     mask_img=mask_img,
+    ...     title="global patterns over time",
+    ... )
+
+    >>> display.show()
+
 
     References
     ----------

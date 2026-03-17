@@ -2,6 +2,15 @@
 
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
+
+from nilearn.datasets import load_mni152_template
+
+
+@pytest.fixture(scope="session")
+def mni152_template_res_2() -> Nifti1Image:
+    """Return the mni152 template at 2 mm resolution."""
+    return load_mni152_template(resolution=2)
 
 
 @pytest.fixture

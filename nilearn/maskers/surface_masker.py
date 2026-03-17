@@ -313,6 +313,8 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if self.reports:
             self._reporting_data["images"] = imgs
 
+        imgs = self._smooth(imgs)
+
         mask_logger("extracting", verbose=self.verbose)
 
         output = np.empty((1, self.n_elements_))

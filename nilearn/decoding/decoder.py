@@ -73,17 +73,17 @@ SUPPORTED_ESTIMATORS = {
     # "extra_params" can be overridden by parameters passed by user
     "svc_l1": {
         "estimator": LinearSVC,
-        "params": {"penalty": "l1", "dual": False},
+        "params": {"penalty": "l1", "random_state": 0},
         "extra_params": {"max_iter": MAX_ITER},
     },
     "svc_l2": {
         "estimator": LinearSVC,
-        "params": {"penalty": "l2", "dual": False},
+        "params": {"penalty": "l2", "random_state": 0},
         "extra_params": {"max_iter": MAX_ITER},
     },
     "svc": {
         "estimator": LinearSVC,
-        "params": {"penalty": "l2", "dual": False},
+        "params": {"penalty": "l2", "random_state": 0},
         "extra_params": {"max_iter": MAX_ITER},
     },
     "logistic_l1": {

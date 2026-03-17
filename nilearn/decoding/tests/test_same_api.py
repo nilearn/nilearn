@@ -56,7 +56,7 @@ def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
     return X, y, w, mask
 
 
-def to_niimgs(X, dim):
+def to_niimgs(X, dim) -> tuple[Nifti1Image, Nifti1Image]:
     p = np.prod(dim)
 
     assert len(dim) == 3
