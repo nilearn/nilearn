@@ -25,7 +25,7 @@ from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask
 
-ESTIMATORS_TO_CHECK = [NiftiMasker()]
+ESTIMATORS_TO_CHECK = [NiftiMasker(standardize=None)]
 
 if SKLEARN_LT_1_6:
 
