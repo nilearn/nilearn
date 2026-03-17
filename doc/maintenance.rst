@@ -158,6 +158,21 @@ with the oldest supported Python and Matplotlib:
     pip install tox
     tox run -e pytest_mpl_generate
 
+Updating vendored dependencies
+==============================
+
+Some dependencies are vendored with Nilearn
+and need to be updated manually
+when the upstream source changes.
+
+To update ``niivue`` run:
+
+```bash
+bash maint_tools/update_niivue.sh
+```
+
+and commit the changes.
+
 How to make a release?
 ======================
 
