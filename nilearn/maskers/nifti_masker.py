@@ -450,7 +450,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         -------
         list of :class:`~matplotlib.figure.Figure` or None
         """
-        if self._report_content["engine"] == "brainsprite":
+        if self._report_content.get("engine") == "brainsprite":
             bg_img = self._reporting_data["images"]
             stat_map_img = self._reporting_data["mask"]
             self._create_brainsprite(bg_img=bg_img, stat_map_img=stat_map_img)
