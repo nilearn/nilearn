@@ -15,6 +15,9 @@ exclude: |
         | nilearn/plotting/data/js/.*js
         | nilearn/_version.py
         | asv_benchmarks/asv.conf.json
+        | asv_benchmarks/results
+        | asv_benchmarks/nilearn
+        | asv_benchmarks/env
     )$
 
 repos:
