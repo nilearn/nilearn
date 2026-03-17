@@ -331,7 +331,8 @@ class ReportMixin:
 
         body = body_tpl.render(**self._report_content)
 
-        return assemble_report(body, page_title)
+        html_report = assemble_report(body, page_title)
+        return html_report
 
     @abc.abstractmethod
     def generate_report(self, title: str | None = None) -> HTMLReport:

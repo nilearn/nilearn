@@ -428,8 +428,9 @@ class MaskerReportMixin(ReportMixin):
         self._set_report_basics(title)
         self._generate_report_data()
         self._display_report_warnings()
+        html_report = self._assemble_report()
 
-        return self._assemble_report()
+        return html_report
 
     def _generate_report_data(self):
         report_content = self._report_content
