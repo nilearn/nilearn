@@ -159,10 +159,11 @@ which are needed to demo and teach features.
 
 The following projects are dedicated to host atlases and accept contributions:
 
-* `templateflow <https://www.templateflow.org>`_
-* `neuromaps <https://netneurolab.github.io/neuromaps>`_
-* `neuroparc <https://github.com/neurodata/neuroparc>`_
+* `templateflow <https://www.templateflow.org>`_ : the example :ref:`sphx_glr_auto_examples_01_plotting_plot_templateflow.py` shows how to use templateflow with nilearn.
 
+* `neuromaps <https://netneurolab.github.io/neuromaps>`_
+
+* `neuroparc <https://github.com/neurodata/neuroparc>`_
 
 .. _nilearn_governance:
 
@@ -524,14 +525,14 @@ To install pre-commit, run:
 .. note::
 
       Pre-commit will already be installed if you installed
-      the ``dev`` or ``style`` dependencies of nilearn
+      the ``dev`` or ``style`` developers dependencies of nilearn
       with::
 
-            pip install -e '.[dev]'
+            pip install -e . --group dev
 
       or::
 
-            pip install -e '.[style]'
+            pip install -e . --group style
 
 Then run the following to install the pre-commit hooks:
 
@@ -641,7 +642,7 @@ It should already be installed if you ran:
 
 .. code-block:: bash
 
-    pip install -e '.[dev]'
+    pip install -e . --group dev
 
 You can set up certain environment or run certain command by calling ``tox``.
 
@@ -823,10 +824,10 @@ You can then install nilearn in editable mode:
 
 .. code-block:: bash
 
-      pip install -e '.[dev]'
+      pip install -e . --group dev
 
 This installs your local version of Nilearn,
-along with all dependencies necessary for developers (hence the ``[dev]`` tag).
+along with all dependencies necessary for developers (hence the ``dev`` group).
 For more information about the dependency installation options, see ``pyproject.toml``.
 The installed version will also reflect any changes you make to your code.
 
