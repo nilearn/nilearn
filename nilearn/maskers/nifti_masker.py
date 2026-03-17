@@ -466,10 +466,11 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         from nilearn.plotting import find_xyz_cut_coords, plot_img
 
         img = self._reporting_data["images"]
-        mask = self._reporting_data["mask"]
+        mask = check_niimg(self._reporting_data["mask"])
 
         if img is None:  # images were not provided to fit
             img = mask
+        img = check_niimg(img)
 
         # ensure that the crosshair will be in the mask
         cut_coords = find_xyz_cut_coords(img)
