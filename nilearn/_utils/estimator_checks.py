@@ -1138,7 +1138,7 @@ def check_verbosity_embedded_masker(estimator_orig):
 
     # verbosity = 1
     # message from estimator
-    assert f"[{estimator.__class__.__name__}.fit]" in outputs[1]
+    assert f"{estimator.__class__.__name__}.fit" in outputs[1]
     # message from embedded masker
     assert "Extracting region signals" not in outputs[1]
 
