@@ -426,6 +426,9 @@ class _ReportingMixin:
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
 
+        engine : :obj:`str`, default="matplotlib"
+            Choice of engine to display the mask.
+
         Returns
         -------
         report : `nilearn.reporting.html_report.HTMLReport`
