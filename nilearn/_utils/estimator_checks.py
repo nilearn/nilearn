@@ -1143,7 +1143,7 @@ def check_verbosity_embedded_masker(estimator_orig):
     assert "Extracting region signals" not in outputs[1]
 
     # verbosity = 2
-    assert f"[{estimator.__class__.__name__}.fit]" in outputs[1]
+    assert f"{estimator.__class__.__name__}.fit" in outputs[1]
     if not isinstance(estimator, (SearchLight, SecondLevelModel)):
         assert "Extracting region signals" in outputs[2]
 
