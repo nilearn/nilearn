@@ -713,6 +713,53 @@ def view_img(
     """
     check_params(locals())
 
+    json_view = create_brainsprite(
+        stat_map_img,
+        bg_img,
+        cut_coords,
+        colorbar,
+        title,
+        threshold,
+        annotate,
+        draw_cross,
+        black_bg,
+        cmap,
+        symmetric_cmap,
+        dim,
+        vmax,
+        vmin,
+        resampling_interpolation,
+        opacity,
+        radiological,
+        show_lr,
+    )
+
+    html_view = _json_view_to_html(json_view, width_view)
+
+    return html_view
+
+
+def create_brainsprite(
+    stat_map_img,
+    bg_img="MNI152",
+    cut_coords=None,
+    colorbar=True,
+    title=None,
+    threshold=1e-6,
+    annotate=True,
+    draw_cross=True,
+    black_bg="auto",
+    cmap=DEFAULT_DIVERGING_CMAP,
+    symmetric_cmap=True,
+    dim="auto",
+    vmax=None,
+    vmin=None,
+    resampling_interpolation="continuous",
+    opacity=1,
+    radiological=False,
+    show_lr=True,
+):
+    """Wrap most of view_img to reuse it in other places."""
     # Prepare the color map and thresholding
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
         stat_map_img, threshold
@@ -766,6 +813,4 @@ def view_img(
         show_lr=show_lr,
     )
 
-    html_view = _json_view_to_html(json_view, width_view)
-
-    return html_view
+    return json_view

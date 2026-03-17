@@ -6,7 +6,7 @@ import json
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
-from typing import Any, Literal
+from typing import Any
 
 import numpy as np
 from joblib import Memory
@@ -630,15 +630,7 @@ class BaseMasker(_BaseMasker):
         cmap=None,
     ) -> None:
 
-        from nilearn.plotting.html_stat_map import (
-            _get_cut_slices,
-            _json_view_data,
-            _json_view_params,
-            _mask_stat_map,
-            _resample_stat_map,
-            colorscale,
-            load_bg_img,
-        )
+        from nilearn.plotting.html_stat_map import create_brainsprite
 
         self._reporting_data["bg_base64"] = None
         self._reporting_data["cm_base64"] = None
@@ -651,49 +643,11 @@ class BaseMasker(_BaseMasker):
         if bg_img is None:  # images were not provided to fit
             bg_img = stat_map_img
 
-        black_bg: Literal["auto"] = "auto"
-        cmap = self.cmap if cmap is None else cmap
-        symmetric_cmap = False
-        dim = "auto"
-        threshold = 1e-6
-
-        mask_img, stat_map_img, data, _ = _mask_stat_map(
-            stat_map_img, threshold=threshold
-        )
-        colors = colorscale(
-            cmap,
-            data.ravel(),
-            symmetric_cmap=symmetric_cmap,
-            threshold=threshold,
-        )
-
-        bg_img, bg_min, bg_max, black_bg_as_bool = load_bg_img(
-            stat_map_img, bg_img, black_bg, dim
-        )
-        stat_map_img, mask_img = _resample_stat_map(
-            stat_map_img, bg_img, mask_img
-        )
-        cut_slices = _get_cut_slices(stat_map_img, threshold=threshold)
-
-        json_view = _json_view_data(
-            bg_img,
-            stat_map_img,
-            mask_img,
-            bg_min,
-            bg_max,
-            black_bg_as_bool,
-            colors,
-            cmap,
-        )
-
-        json_view["params"] = _json_view_params(
-            stat_map_img.shape,
-            stat_map_img.affine,
-            vmin=colors["vmin"],
-            vmax=colors["vmax"],
-            cut_slices=cut_slices,
-            black_bg=black_bg_as_bool,
-            value=False,
+        json_view = create_brainsprite(
+            stat_map_img=stat_map_img,
+            bg_img=bg_img,
+            cmap=self.cmap if cmap is None else cmap,
+            symmetric_cmap=False,
         )
 
         self._reporting_data["bg_base64"] = json_view["bg_base64"]
