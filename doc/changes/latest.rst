@@ -45,6 +45,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` The parameter ``estimator_args`` was added to all decoding estimators to allow to pass parameters directly to the underlying Scikit-Learn estimators (:gh:`5641` by `Rémi Gau`_).
+
 - :bdg-success:`API` :class:`~nilearn.decoding.SearchLight` now has a ``random_state`` and ``estimator_args`` to pass to the underlying estimator (:gh:`6020` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Allow string threshold in ``nilearn.plotting.plot_*`` functions (:gh:`5982` by `Saeed Babadi`_).
