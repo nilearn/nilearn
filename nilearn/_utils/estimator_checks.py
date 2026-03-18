@@ -4169,7 +4169,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(
 
     estimator.fit(input_img)
 
-    assert estimator._get_report_warnings == []
+    assert estimator._get_report_warnings() == []
 
     # TODO
     # NiftiSpheresMasker still throws a warning
