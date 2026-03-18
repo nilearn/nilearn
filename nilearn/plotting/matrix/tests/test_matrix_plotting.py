@@ -67,6 +67,7 @@ def test_sanitize_figure_and_axes(fig, axes, expected):
     assert own_fig == expected
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "labels, reorder",
     [
