@@ -459,7 +459,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                     "(via transform() method) on any image yet. "
                     "Plotting only maps for reporting."
                 )
-                self._append_warning(msg)
+                self._append_report_warning(msg)
 
         # need to have matplotlib installed to generate reports no matter what
         # engine is selected

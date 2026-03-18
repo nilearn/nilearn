@@ -354,14 +354,14 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                     "Plotting ROIs of label image on the "
                     "MNI152Template for reporting."
                 )
-                self._append_warning(msg)
+                self._append_report_warning(msg)
 
             elif self._reporting_data["dim"] == 5:
                 msg = (
                     "A list of 4D subject images were provided to fit. "
                     "Only first subject is shown in the report."
                 )
-                self._append_warning(msg)
+                self._append_report_warning(msg)
 
         return super().generate_report(title, engine)
 

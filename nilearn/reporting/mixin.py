@@ -111,7 +111,7 @@ class ReportMixin:
         """
         return hasattr(self, "_reporting_data")
 
-    def _append_warning(self, warning: str):
+    def _append_report_warning(self, warning: str):
         """Append the specified warning to the warning list of the report.
 
         Parameters
@@ -245,23 +245,23 @@ class ReportMixin:
         - matplotlib is installed
         """
         if self.reports is False:
-            self._append_warning(
+            self._append_report_warning(
                 "\nReport generation not enabled!\nNo visual outputs created."
             )
 
         if not self.__sklearn_is_fitted__():
-            self._append_warning(UNFITTED_MSG)
+            self._append_report_warning(UNFITTED_MSG)
 
         report = self._report_content
         if self.__sklearn_is_fitted__() and not report["reports_at_fit_time"]:
-            self._append_warning(
+            self._append_report_warning(
                 "\nReport generation was disabled when fit was run. "
                 "No reporting data is available.\n"
                 "Make sure to set self.reports=True before fit."
             )
 
         if not is_matplotlib_installed():
-            self._append_warning(MISSING_ENGINE_MSG)
+            self._append_report_warning(MISSING_ENGINE_MSG)
 
     def _set_report_basics(
         self, title: str | None = None, engine: str = "matplotlib"
