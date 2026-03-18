@@ -1121,6 +1121,7 @@ def check_verbosity_embedded_masker(estimator_orig):
     """
     if not is_gil_enabled():
         pytest.xfail("Fail without the GIL")
+
     outputs = {}
     for verbose in [1, 2, 3]:
         estimator = clone(estimator_orig)
@@ -1417,7 +1418,10 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
 
     replaces sklearn check_fit_idempotent
     """
-    if isinstance(estimator_orig, SearchLight) and not is_gil_enabled():
+    if (
+        isinstance(estimator_orig, (SearchLight, Decoder))
+        and not is_gil_enabled()
+    ):
         pytest.xfail("May fail without the GIL")
 
     check_methods = ["predict", "transform", "decision_function"]
