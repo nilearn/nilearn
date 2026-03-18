@@ -133,6 +133,7 @@ class ReportMixin:
 
     def _display_report_warnings(self):
         report_warnings = self._get_report_warnings()
+
         if report_warnings:
             for msg in report_warnings:
                 warnings.warn(
@@ -140,6 +141,75 @@ class ReportMixin:
                     stacklevel=find_stack_level(),
                     category=UserWarning,
                 )
+
+    def _set_report_basics(
+        self, title: str | None = None, engine: str = "matplotlib"
+    ):
+        """Populate `_report_content` with values that will be used in report
+        body template.
+
+        The fields are:
+        - unique_id
+        - title
+        - engine
+        - has_plotting_engine
+        - docstring
+        - parameters
+        - date
+        - version
+        """
+        report_content = self._report_content
+        # Generate a unique ID for report
+        report_content["unique_id"] = str(uuid.uuid4()).replace("-", "")
+
+        # Set title for report
+        report_content["title"] = title or self.__class__.__name__
+
+        report_content["engine"] = engine
+
+        report_content["has_plotting_engine"] = is_matplotlib_installed()
+
+        # TODO clean up docstring from RST formatting
+        if self.__doc__ is not None:
+            report_content["docstring"] = self.__doc__.split("Parameters\n")[0]
+        else:
+            report_content["docstring"] = ""
+
+        report_content["parameters"] = self._model_params_to_html()
+
+        report_content["date"] = (
+            datetime.now().replace(microsecond=0).isoformat()
+        )
+
+        report_content["version"] = __version__
+
+    def _run_report_checks(self):
+        """Run standard checks before report is generated.
+
+        Checks if:
+        - reporting is enabled
+        - model is fitted
+        - reporting was enabled at the time of fit
+        - matplotlib is installed
+        """
+        if self.reports is False:
+            self._append_report_warning(
+                "\nReport generation not enabled!\nNo visual outputs created."
+            )
+
+        if not self.__sklearn_is_fitted__():
+            self._append_report_warning(UNFITTED_MSG)
+
+        report = self._report_content
+        if self.__sklearn_is_fitted__() and not report["reports_at_fit_time"]:
+            self._append_report_warning(
+                "\nReport generation was disabled when fit was run. "
+                "No reporting data is available.\n"
+                "Make sure to set self.reports=True before fit."
+            )
+
+        if not is_matplotlib_installed():
+            self._append_report_warning(MISSING_ENGINE_MSG)
 
     def _dataframe_to_html(
         self,
@@ -235,75 +305,6 @@ class ReportMixin:
         loc = f"/{estimator_type}" if not is_common else ""
         return env.get_template(f"html{loc}/partials/{tpl_name}.jinja")
 
-    def _run_report_checks(self):
-        """Run standard checks before report is generated.
-
-        Checks if:
-        - reporting is enabled
-        - model is fitted
-        - reporting was enabled at the time of fit
-        - matplotlib is installed
-        """
-        if self.reports is False:
-            self._append_report_warning(
-                "\nReport generation not enabled!\nNo visual outputs created."
-            )
-
-        if not self.__sklearn_is_fitted__():
-            self._append_report_warning(UNFITTED_MSG)
-
-        report = self._report_content
-        if self.__sklearn_is_fitted__() and not report["reports_at_fit_time"]:
-            self._append_report_warning(
-                "\nReport generation was disabled when fit was run. "
-                "No reporting data is available.\n"
-                "Make sure to set self.reports=True before fit."
-            )
-
-        if not is_matplotlib_installed():
-            self._append_report_warning(MISSING_ENGINE_MSG)
-
-    def _set_report_basics(
-        self, title: str | None = None, engine: str = "matplotlib"
-    ):
-        """Populate `_report_content` with values that will be used in report
-        body template.
-
-        The fields are:
-        - unique_id
-        - title
-        - engine
-        - has_plotting_engine
-        - docstring
-        - parameters
-        - date
-        - version
-        """
-        report_content = self._report_content
-        # Generate a unique ID for report
-        report_content["unique_id"] = str(uuid.uuid4()).replace("-", "")
-
-        # Set title for report
-        report_content["title"] = title or self.__class__.__name__
-
-        report_content["engine"] = engine
-
-        report_content["has_plotting_engine"] = is_matplotlib_installed()
-
-        # TODO clean up docstring from RST formatting
-        if self.__doc__ is not None:
-            report_content["docstring"] = self.__doc__.split("Parameters\n")[0]
-        else:
-            report_content["docstring"] = ""
-
-        report_content["parameters"] = self._model_params_to_html()
-
-        report_content["date"] = (
-            datetime.now().replace(microsecond=0).isoformat()
-        )
-
-        report_content["version"] = __version__
-
     def _assemble_report(self) -> HTMLReport:
         """Assemble report head and body acquiring body template corresponding
         to estimator type and populating it with report data.
@@ -321,6 +322,7 @@ class ReportMixin:
         body = body_tpl.render(**self._report_content)
 
         html_report = assemble_report(body, page_title)
+
         return html_report
 
     def _set_brainsprite_data(self):
