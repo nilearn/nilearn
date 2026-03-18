@@ -36,7 +36,7 @@ OTHER_JS = Path(__file__).parents[1] / "plotting" / "data" / "js"
 
 class ReportMixin:
     """A mixin class to be used with classes that require reporting
-    functionality.
+    functionality. It provides generic methods for report generation.
 
     ReportMixin uses one public attribute of type bool:
 
