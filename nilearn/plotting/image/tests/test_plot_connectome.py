@@ -165,7 +165,7 @@ def test_plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
             ]
         ) == np.sum(
             np.abs(non_symmetric_matrix)
-            >= np.percentile(np.abs(non_symmetric_matrix.ravel()), thresh)
+            > np.percentile(np.abs(non_symmetric_matrix.ravel()), thresh)
         )
 
 
