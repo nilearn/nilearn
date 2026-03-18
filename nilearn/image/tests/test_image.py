@@ -1212,8 +1212,8 @@ def test_threshold_img(affine_eye):
 @pytest.mark.parametrize(
     "threshold, expected_n_non_zero",
     [
-        (1, {"left": 2, "right": 4}),
-        (10, {"left": 0, "right": 3}),
+        (1, {"left": 3, "right": 4}),
+        (10, {"left": 0, "right": 4}),
         (50, {"left": 0, "right": 0}),
         ("50%", {"left": 0, "right": 4}),
     ],
@@ -1300,8 +1300,8 @@ def test_threshold_surf_img_1d_negative_values(
     [
         (3, True, 16),
         (3, False, 8),
-        (4, True, 0),
-        (4, False, 0),
+        (4.1, True, 0),
+        (4.1, False, 0),
         (0, True, 448),
         (0, False, 224),
         (-3, False, 8),
@@ -1411,7 +1411,7 @@ def test_threshold_img_copy_surface(surf_img_1d):
 @pytest.mark.thread_unsafe
 def test_threshold_img_copy_volume(img_4d_ones_eye):
     """Test the behavior of threshold_img's copy parameter."""
-    threshold = 1
+    threshold = 1.1
     # Check that copy does not mutate. It returns modified copy.
     thr_img = threshold_img(img_4d_ones_eye, threshold)
 

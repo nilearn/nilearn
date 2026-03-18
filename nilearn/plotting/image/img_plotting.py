@@ -410,9 +410,8 @@ def plot_img(
         :mod:`nilearn.plotting`
             See API reference for other options
 
-    Example
-    -------
-
+    Examples
+    --------
     >>> from nilearn.plotting.image.img_plotting import plot_img, show
     >>> from nilearn.datasets import load_sample_motor_activation_image
 
