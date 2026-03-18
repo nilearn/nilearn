@@ -25,7 +25,7 @@
                     </div>
                 {% elif engine == "brainsprite" %}
 
-                    {% include "html/maskers/partials/brainsprite.jinja" %}
+                    {% include "html/masker/partials/brainsprite.jinja" %}
 
                 {% endif %}
             {% endif %}
@@ -47,7 +47,7 @@
         <script> {{ js_query_code }} </script>
         <script> {{ brainsprite_code }} </script>
         <script>
-       {% include "html/maskers/partials/brainsprite_opacity.jinja" %}
+       {% include "html/masker/partials/brainsprite_opacity.jinja" %}
 
         </script>
     {% endif %}
