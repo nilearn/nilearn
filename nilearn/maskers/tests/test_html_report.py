@@ -580,7 +580,7 @@ def test_surface_maps_masker_generate_report_engine_no_plotly_warning(
     """Test warning is raised when engine selected is plotly but it is not
     installed. Only run when plotly is not installed but matplotlib is.
     """
-    masker = SurfaceMapsMasker(surf_maps_img)
+    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
     masker.fit_transform(surf_img_2d(10))
     with pytest.warns(match="Plotly is not installed"):
         masker.generate_report(engine="plotly", displayed_maps=2)

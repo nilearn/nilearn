@@ -1065,13 +1065,16 @@ def test_region_names_ids_match_after_fit(
         standardize=None,
     )
 
-    with pytest.warns(
-        FutureWarning,
-        match=(
-            r"In version 0.15.0, "
-            '"keep_masked_labels" parameter will be removed'
-        ),
-    ):
+    if keep_masked_labels is True:
+        with pytest.warns(
+            FutureWarning,
+            match=(
+                r"In version 0.15.0, "
+                '"keep_masked_labels" parameter will be removed'
+            ),
+        ):
+            masker.fit_transform(fmri_img)
+    else:
         masker.fit_transform(fmri_img)
 
     tmp = generate_labels(n_regions, background=background)

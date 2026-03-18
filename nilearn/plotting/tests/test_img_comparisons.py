@@ -97,7 +97,7 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     target_images = list(iter_img(target_images))
     target_images[0] = query_images[0]
 
-    masker = NiftiMasker(mask_img).fit()
+    masker = NiftiMasker(mask_img, standardize=None).fit()
 
     correlations = plot_img_comparison(
         target_images,
@@ -149,7 +149,7 @@ def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     target_images = list(iter_img(target_images))
     target_images[0] = query_images[0]
 
-    masker = NiftiMasker(mask_img).fit()
+    masker = NiftiMasker(mask_img, standardize=None).fit()
 
     correlations = plot_img_comparison(
         target_images, query_images, masker, plot_hist=True, colorbar=False
