@@ -422,7 +422,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 )
                 self._append_warning(msg)
 
-        return super().generate_report(title)
+        return super().generate_report(title=title)
 
     def _reporting(self) -> list:
         """Return a list of all displays to be rendered.

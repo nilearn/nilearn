@@ -16,13 +16,13 @@
     // The Python project's subdirectory in your repo.  If missing or
     // the empty string, the project is assumed to be located at the root
     // of the repository.
-    // "repo_subdir": "",
+    //"repo_subdir": "",
 
     // Customizable commands for building, installing, and
     // uninstalling the project. See asv.conf.json documentation.
     "install_command": ["python -m pip install {wheel_file}"],
     "uninstall_command": ["return-code=any python -m pip uninstall -y {project}"],
-    "build_command": ["python -m build --wheel -o {build_cache_dir} {build_dir}"],
+    "build_command": ["python -m build -o {build_cache_dir} {build_dir}"],
 
     // List of branches to benchmark. If not provided, defaults to "master
     // (for git) or "default" (for mercurial).
@@ -32,7 +32,7 @@
     // determined from "repo" by looking at the protocol in the URL
     // (if remote), or by looking for special directories, such as
     // ".git" (if local).
-    // "dvcs": "git",
+    //"dvcs": "git",
 
     // The tool to use to create environments.  May be "conda",
     // "virtualenv" or other value depending on the plugins in use.
@@ -77,6 +77,8 @@
         "pandas": ["2.2.0"],
         "scikit-learn": ["1.5.0"],
         "nibabel": ["5.2.0"],
+        "matplotlib": ["3.8.0"],
+        "plotly": ["5.0.0"]
     }
 
     // Combinations of libraries/python versions can be excluded/included

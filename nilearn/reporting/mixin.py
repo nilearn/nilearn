@@ -7,6 +7,7 @@ import uuid
 import warnings
 from copy import deepcopy
 from datetime import datetime
+from pathlib import Path
 from typing import Any, ClassVar
 
 import pandas as pd
@@ -29,6 +30,8 @@ from nilearn.reporting.html_report import (
 from nilearn.reporting.utils import (
     figure_to_svg_base64,
 )
+
+OTHER_JS = Path(__file__).parents[1] / "plotting" / "data" / "js"
 
 
 class ReportMixin:
@@ -260,7 +263,9 @@ class ReportMixin:
         if not is_matplotlib_installed():
             self._append_warning(MISSING_ENGINE_MSG)
 
-    def _set_report_basics(self, title: str | None = None):
+    def _set_report_basics(
+        self, title: str | None = None, engine: str = "matplotlib"
+    ):
         """Populate `_report_content` and `report_info` fields with values that
         will be used in report body template.
 
@@ -285,6 +290,8 @@ class ReportMixin:
 
         # Set title for report
         report_content["title"] = title or self.__class__.__name__
+
+        report_content["engine"] = engine
 
         report_content["has_plotting_engine"] = is_matplotlib_installed()
 
@@ -326,6 +333,9 @@ class ReportMixin:
             "page_title", self.__class__.__name__
         )
 
+        if self._report_content["engine"] == "brainsprite":
+            self._set_brainsprite_data()
+
         estimator_type = self._report_content.get("estimator_type", "")
         body_tpl = self._get_body_template(estimator_type)
 
@@ -333,6 +343,22 @@ class ReportMixin:
 
         html_report = assemble_report(body, page_title)
         return html_report
+
+    def _set_brainsprite_data(self):
+        if self._has_report_data():
+            report_content = self._report_content
+
+            with (OTHER_JS / "jquery.min.js").open("r") as f:
+                report_content["js_query_code"] = f.read()
+            with (OTHER_JS / "brainsprite.min.js").open("r") as f:
+                report_content["brainsprite_code"] = f.read()
+
+            report_content["bg_base64"] = self._reporting_data["bg_base64"]
+            report_content["cm_base64"] = self._reporting_data["cm_base64"]
+            report_content["params"] = self._reporting_data["params"]
+            report_content["stat_map_base64"] = self._reporting_data[
+                "stat_map_base64"
+            ]
 
     @abc.abstractmethod
     def generate_report(self, title: str | None = None) -> HTMLReport:
