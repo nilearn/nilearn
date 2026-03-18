@@ -381,26 +381,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self._reset_report()
 
-    def generate_report(
-        self,
-        title: str | None = None,
-        engine: str = "matplotlib",
-    ):
-        """Generate an HTML report for this masker.
-
-        Parameters
-        ----------
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        engine : {"matplotlib", "brainsprite"}, default="matplotlib"
-            Choice of engine to display the mask.
-
-        Returns
-        -------
-        report : `nilearn.reporting.HTMLReport`
-            HTML report for the masker.
-        """
+    def _run_report_checks(self):
         if self._has_report_data():
             img = self._reporting_data["images"]
 
@@ -418,7 +399,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 )
                 self._append_report_warning(msg)
 
-        return super().generate_report(title, engine)
+        super()._run_report_checks()
 
     def _reporting(self):
         """Load displays needed for report.

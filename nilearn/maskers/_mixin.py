@@ -431,8 +431,8 @@ class MaskerReportMixin(ReportMixin):
         report : `nilearn.reporting.HTMLReport`
             HTML report for the masker.
         """
-        self._run_report_checks()
         self._set_report_basics(title, engine)
+        self._run_report_checks()
         self._generate_report_data()
         self._display_report_warnings()
         html_report = self._assemble_report()
@@ -442,13 +442,13 @@ class MaskerReportMixin(ReportMixin):
     def _generate_report_data(self):
         report_content = self._report_content
 
-        summary = self._report_content.get("summary", None)
-        if summary is not None:
-            report_content["summary_html"] = self._get_summary_html(summary)
-
         figure, embeded_images = self._create_partial_figures()
         report_content["figure"] = figure
         report_content["content"] = embeded_images
+
+        summary = self._report_content.get("summary", None)
+        if summary is not None:
+            report_content["summary_html"] = self._get_summary_html(summary)
 
     def _create_partial_figures(self):
         """Create partial image htmls Using partial template for masker
