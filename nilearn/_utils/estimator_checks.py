@@ -1119,6 +1119,8 @@ def check_verbosity_embedded_masker(estimator_orig):
     verbose = 3:
         - for decoders: also messages from sklearn estimator
     """
+    if not is_gil_enabled():
+        pytest.xfail("Fail without the GIL")
     outputs = {}
     for verbose in [1, 2, 3]:
         estimator = clone(estimator_orig)
