@@ -414,13 +414,20 @@ class _ReportingMixin:
         """
         return hasattr(self, "_reporting_data")
 
-    def generate_report(self, title: str | None = None):
+    def generate_report(
+        self,
+        title: str | None = None,
+        engine: str = "matplotlib",
+    ):
         """Generate an HTML report for the current object.
 
         Parameters
         ----------
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
+
+        engine : :obj:`str`, default="matplotlib"
+            Choice of engine to display the mask.
 
         Returns
         -------
@@ -430,6 +437,7 @@ class _ReportingMixin:
         from nilearn.reporting.html_report import generate_report
 
         self._report_content["title"] = title
+        self._report_content["engine"] = engine
 
         return generate_report(self)
 
