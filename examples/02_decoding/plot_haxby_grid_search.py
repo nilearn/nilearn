@@ -38,6 +38,9 @@ warnings.filterwarnings(
     "ignore", message="The provided image has no sform in its header."
 )
 
+# set overall verbosity for this example
+verbose = 2
+
 # %%
 # Load the Haxby dataset
 # ----------------------
@@ -107,7 +110,7 @@ decoder = Decoder(
     smoothing_fwhm=4,
     screening_percentile=2,
     param_grid=param_grid,
-    verbose=1,
+    verbose=verbose,
 )
 
 # %%
@@ -158,7 +161,7 @@ for sp in screening_percentile_range:
         cv=3,
         screening_percentile=sp,
         param_grid=param_grid,
-        verbose=1,
+        verbose=verbose,
     )
     decoder.fit(index_img(fmri_niimgs, run < 10), y[run < 10])
     cv_scores.append(np.mean(decoder.cv_scores_["bottle"]))
@@ -200,7 +203,7 @@ for train, test in cv.split(run):
             standardize="zscore_sample",
             screening_percentile=sp,
             param_grid=param_grid,
-            verbose=1,
+            verbose=verbose,
             estimator_args={"tol": 0.0005},
         )
         decoder.fit(index_img(fmri_niimgs, train), y_train)

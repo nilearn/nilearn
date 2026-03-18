@@ -73,18 +73,20 @@ SUPPORTED_ESTIMATORS = {
     # "extra_params" can be overridden by parameters passed by user
     "svc_l1": {
         "estimator": LinearSVC,
-        "params": {"penalty": "l1", "random_state": 0},
-        "extra_params": {"max_iter": MAX_ITER},
+        "params": {
+            "penalty": "l1",
+        },
+        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
     },
     "svc_l2": {
         "estimator": LinearSVC,
-        "params": {"penalty": "l2", "random_state": 0},
-        "extra_params": {"max_iter": MAX_ITER},
+        "params": {"penalty": "l2"},
+        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
     },
     "svc": {
         "estimator": LinearSVC,
-        "params": {"penalty": "l2", "random_state": 0},
-        "extra_params": {"max_iter": MAX_ITER},
+        "params": {"penalty": "l2"},
+        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
     },
     "logistic_l1": {
         "estimator": LogisticRegressionCV,
@@ -1322,6 +1324,11 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
     %(n_jobs)s
 
     %(verbose0)s
+        If 0, prints nothing
+        If 1, prints information about the estimator during fit.
+        If 2, also prints information about the embedded masker.
+        If 3, prints additional information about the embedded masker
+        and about the underlying sklearn estimator.
 
     %(estimator_args)s
 
@@ -1501,6 +1508,11 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
     %(n_jobs)s
 
     %(verbose0)s
+        If 0, prints nothing
+        If 1, prints information about the estimator during fit.
+        If 2, also prints information about the embedded masker.
+        If 3, prints additional information about the embedded masker
+        and about the underlying sklearn estimator.
 
     %(estimator_args)s
 
@@ -1664,7 +1676,13 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
+
     %(verbose0)s
+        If 0, prints nothing
+        If 1, prints information about the estimator during fit.
+        If 2, also prints information about the embedded masker.
+        If 3, prints additional information about the embedded masker
+        and about the underlying sklearn estimator.
 
     %(estimator_args)s
 
@@ -1841,7 +1859,13 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
+
     %(verbose0)s
+        If 0, prints nothing
+        If 1, prints information about the estimator during fit.
+        If 2, also prints information about the embedded masker.
+        If 3, prints additional information about the embedded masker
+        and about the underlying sklearn estimator.
 
     %(estimator_args)s
 
