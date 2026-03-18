@@ -313,7 +313,10 @@ def test_nifti_labels_masker_report(
         keep_masked_labels=True,
         standardize=None,
     )
-    masker.fit_transform(img_3d_rand_eye)
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_labels" parameter will be removed'
+    ):
+        masker.fit_transform(img_3d_rand_eye)
 
     assert masker._reporting_data is not None
 

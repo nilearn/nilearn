@@ -361,7 +361,9 @@ def test_nifti_labels_masker_resampling(
     fmri_img, _ = generate_random_img(shape, affine=affine)
 
     masker = NiftiLabelsMasker(
-        labels_img=img_labels, resampling_target=resampling_target
+        labels_img=img_labels,
+        resampling_target=resampling_target,
+        standardize=None,
     )
     if resampling_target == "data":
         with pytest.warns(
@@ -413,7 +415,10 @@ def test_nifti_labels_masker_resampling_to_labels(
     labels_img = generate_labeled_regions(shape3, n_regions, affine=affine_eye)
 
     masker = NiftiLabelsMasker(
-        labels_img, mask_img=mask_img, resampling_target="labels"
+        labels_img,
+        mask_img=mask_img,
+        resampling_target="labels",
+        standardize=None,
     )
 
     signals = masker.fit_transform(fmri_img)
@@ -461,9 +466,13 @@ def test_nifti_labels_masker_resampling_to_clipped_labels(
         mask_img=mask22_img,
         resampling_target="labels",
         keep_masked_labels=True,
+        standardize=None,
     )
 
-    signals = masker.fit_transform(fmri11_img)
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_labels" parameter will be removed'
+    ):
+        signals = masker.fit_transform(fmri11_img)
 
     assert_almost_equal(masker.labels_img_.affine, labels33_img.affine)
 
@@ -499,7 +508,7 @@ def test_nifti_labels_masker_resampling_to_none(
     )
 
     masker = NiftiLabelsMasker(
-        img_labels, mask_img=mask_img, resampling_target=None
+        img_labels, mask_img=mask_img, resampling_target=None, standardize=None
     )
     masker.fit_transform(fmri_img)
 
@@ -508,7 +517,7 @@ def test_nifti_labels_masker_resampling_to_none(
         affine=affine_eye * 2,
     )
     masker = NiftiLabelsMasker(
-        img_labels, mask_img=mask_img, resampling_target=None
+        img_labels, mask_img=mask_img, resampling_target=None, standardize=None
     )
     with pytest.raises(
         ValueError, match="Following field of view errors were detected"
@@ -525,16 +534,19 @@ def test_nifti_labels_masker_with_mask(
     fmri_img, mask_img = generate_random_img(shape, affine=affine_eye)
 
     masker = NiftiLabelsMasker(
-        img_labels, resampling_target=None, mask_img=mask_img
+        img_labels, resampling_target=None, mask_img=mask_img, standardize=None
     )
     signals = masker.fit_transform(fmri_img)
 
-    bg_masker = NiftiMasker(mask_img)
+    bg_masker = NiftiMasker(mask_img, standardize=None)
     tmp = bg_masker.fit_transform(img_labels)
     masked_labels = bg_masker.inverse_transform(tmp)
 
     masked_masker = NiftiLabelsMasker(
-        masked_labels, resampling_target=None, mask_img=mask_img
+        masked_labels,
+        resampling_target=None,
+        mask_img=mask_img,
+        standardize=None,
     )
     masked_signals = masked_masker.fit_transform(fmri_img)
 
@@ -1053,7 +1065,14 @@ def test_region_names_ids_match_after_fit(
         standardize=None,
     )
 
-    masker.fit_transform(fmri_img)
+    with pytest.warns(
+        FutureWarning,
+        match=(
+            r"In version 0.15.0, "
+            '"keep_masked_labels" parameter will be removed'
+        ),
+    ):
+        masker.fit_transform(fmri_img)
 
     tmp = generate_labels(n_regions, background=background)
     if background is None:

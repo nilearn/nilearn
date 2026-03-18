@@ -336,10 +336,14 @@ def test_nifti_maps_masker_resampling_to_maps(
         maps33_img,
         mask_img=mask22_img,
         resampling_target="maps",
+        keep_masked_maps=True,
         standardize=None,
     )
 
-    signals = masker.fit_transform(img_fmri)
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_maps" parameter will be removed'
+    ):
+        signals = masker.fit_transform(img_fmri)
 
     assert_array_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
@@ -374,10 +378,14 @@ def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
         maps33_img,
         mask_img=mask22_img,
         resampling_target="maps",
+        keep_masked_maps=True,
         standardize=None,
     )
 
-    signals = masker.fit_transform(fmri11_img)
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_maps" parameter will be removed'
+    ):
+        signals = masker.fit_transform(fmri11_img)
 
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape

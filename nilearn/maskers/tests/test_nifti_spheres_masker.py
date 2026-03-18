@@ -284,7 +284,7 @@ def test_inverse_transform(rng, affine_eye):
 
     img = Nifti1Image(data, affine_eye)
 
-    masker = NiftiSpheresMasker([(1, 1, 1)], radius=1)
+    masker = NiftiSpheresMasker([(1, 1, 1)], radius=1, standardize=None)
 
     # Test the fit
     masker.fit()
@@ -299,7 +299,9 @@ def test_inverse_transform(rng, affine_eye):
     mask_img[1, :, :] = 1
     mask_img = Nifti1Image(mask_img, affine_eye)
 
-    masker = NiftiSpheresMasker([(1, 1, 1)], radius=1, mask_img=mask_img)
+    masker = NiftiSpheresMasker(
+        [(1, 1, 1)], radius=1, mask_img=mask_img, standardize=None
+    )
     masker.fit()
     s = masker.transform(img)
 

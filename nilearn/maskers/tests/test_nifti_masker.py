@@ -193,7 +193,7 @@ def test_matrix_orientation():
     assert not np.any(std < 0.1)
 
     # Test inverse transform
-    masker = NiftiMasker(mask_img=mask)
+    masker = NiftiMasker(mask_img=mask, standardize=None)
     masker.fit()
     timeseries = masker.transform(fmri)
     recovered = masker.inverse_transform(timeseries)
@@ -224,7 +224,7 @@ def test_mask_4d(shape_3d_default, affine_eye):
 
     # check whether transform is indeed selecting niimgs subset
     sample_mask = np.array([0, 2])
-    masker = NiftiMasker(mask_img=mask_img)
+    masker = NiftiMasker(mask_img=mask_img, standardize=None)
     masker.fit()
     data_trans = masker.transform(data_imgs, sample_mask=sample_mask)
     data_trans_img = index_img(data_img_4d, sample_mask)
@@ -233,7 +233,7 @@ def test_mask_4d(shape_3d_default, affine_eye):
 
     assert_array_equal(data_trans, data_trans_direct)
 
-    masker = NiftiMasker(mask_img=mask_img)
+    masker = NiftiMasker(mask_img=mask_img, standardize=None)
     masker.fit()
     data_trans2 = masker.transform(data_img_4d, sample_mask=sample_mask)
 
@@ -243,7 +243,7 @@ def test_mask_4d(shape_3d_default, affine_eye):
     data_trans_img_diff = index_img(data_img_4d, diff_sample_mask)
     data_trans_direct_diff = get_data(data_trans_img_diff)[mask_bool, :]
     data_trans_direct_diff = np.swapaxes(data_trans_direct_diff, 0, 1)
-    masker = NiftiMasker(mask_img=mask_img)
+    masker = NiftiMasker(mask_img=mask_img, standardize=None)
     masker.fit()
     data_trans3 = masker.transform(data_img_4d, sample_mask=diff_sample_mask)
 
@@ -264,7 +264,7 @@ def test_4d_single_scan(rng, shape_3d_default, affine_eye):
     data_5d = [Nifti1Image(d, affine_eye) for d in data_5d]
     data_4d = [Nifti1Image(d, affine_eye) for d in data_4d]
 
-    masker = NiftiMasker(mask_img=mask_img)
+    masker = NiftiMasker(mask_img=mask_img, standardize=None)
 
     masker.fit()
 
