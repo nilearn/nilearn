@@ -398,6 +398,8 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     "Only first subject is shown in the report."
                 )
                 self._append_report_warning(msg)
+        else:
+            self._report_content["overlay"] = None
 
         super()._run_report_checks()
 
@@ -413,7 +415,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
         if not self._has_report_data():
-            self._report_content["overlay"] = None
             return None
 
         return self._create_figure_for_report()
