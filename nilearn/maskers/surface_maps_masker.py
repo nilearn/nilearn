@@ -480,7 +480,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 )
             self._report_content["engine"] = engine
 
-        return super().generate_report(title)
+        return super().generate_report(title=title, engine=engine)
 
     def _reporting(self) -> list:
         """Load displays needed for report.

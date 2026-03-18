@@ -1033,6 +1033,34 @@ def test_clean_frequencies_using_power_spectrum_density():
     assert np.sum(Pxx_den_cos[f <= high_pass / 2.0]) <= 1e-4
 
 
+def test_clean_warning_low_pass_not_implemented():
+    """Check that user is warned about low-pass not applied with cosine."""
+    sx = np.array(
+        [
+            np.sin(np.linspace(0, 100, 100) * 1.5),
+            np.sin(np.linspace(0, 100, 100) * 3.0),
+            np.sin(np.linspace(0, 100, 100) / 8.0),
+        ]
+    ).T
+
+    t_r = 1.0
+    low_pass = 0.1
+    high_pass = 0.4
+
+    with pytest.warns(
+        UserWarning, match="low_pass is not implemented for filter='cosine'"
+    ):
+        clean(
+            sx,
+            detrend=False,
+            standardize=None,
+            filter="cosine",
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
+        )
+
+
 @pytest.mark.parametrize("t_r", [1, 1.0])
 @pytest.mark.parametrize("high_pass", [1, 1.0])
 def test_clean_t_r_highpass_float_int(t_r, high_pass):

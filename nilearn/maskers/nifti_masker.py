@@ -372,8 +372,8 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._report_content = {
             "description": (
                 "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (in green). We "
-                "recommend to inspect the report for the overlap "
+                "with the outlines of the mask. "
+                "We recommend to inspect the report for the overlap "
                 "between the mask and its input image. "
             ),
             "n_elements": 0,
@@ -382,13 +382,20 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "warning_messages": [],
         }
 
-    def generate_report(self, title: str | None = None):
+    def generate_report(
+        self,
+        title: str | None = None,
+        engine: str = "matplotlib",
+    ):
         """Generate an HTML report for the current object.
 
         Parameters
         ----------
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
+
+        engine : {"matplotlib", "brainsprite"}, default="matplotlib"
+            Choice of engine to display the mask.
 
         Returns
         -------
@@ -398,6 +405,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         from nilearn.reporting.html_report import generate_report
 
         self._report_content["title"] = title
+        self._report_content["engine"] = engine
 
         if self._has_report_data():
             img = self._reporting_data["images"]
@@ -442,6 +450,12 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         -------
         list of :class:`~matplotlib.figure.Figure` or None
         """
+        if self._report_content.get("engine") == "brainsprite":
+            bg_img = self._reporting_data["images"]
+            stat_map_img = self._reporting_data["mask"]
+            self._create_brainsprite(bg_img=bg_img, stat_map_img=stat_map_img)
+            return None
+
         if not is_matplotlib_installed():
             self._report_content["overlay"] = None
             return None
@@ -451,10 +465,11 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         from nilearn.plotting import find_xyz_cut_coords, plot_img
 
         img = self._reporting_data["images"]
-        mask = self._reporting_data["mask"]
+        mask = check_niimg(self._reporting_data["mask"])
 
         if img is None:  # images were not provided to fit
             img = mask
+        img = check_niimg(img)
 
         # ensure that the crosshair will be in the mask
         cut_coords = find_xyz_cut_coords(img)
