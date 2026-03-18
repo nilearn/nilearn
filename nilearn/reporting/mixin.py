@@ -266,23 +266,18 @@ class ReportMixin:
     def _set_report_basics(
         self, title: str | None = None, engine: str = "matplotlib"
     ):
-        """Populate `_report_content` and `report_info` fields with values that
-        will be used in report body template.
+        """Populate `_report_content` with values that will be used in report
+        body template.
 
         The fields are:
         - unique_id
         - title
+        - engine
         - has_plotting_engine
         - docstring
         - parameters
         - date
         - version
-
-        TODO
-        ----
-        _report_content could be used instead of _report_info. However after
-        report_generation _report_info is reset to {}. If _report_content can
-        safely be reset after report generation, _report_info can be removed.
         """
         report_content = self._report_content
         # Generate a unique ID for report
@@ -312,22 +307,6 @@ class ReportMixin:
     def _assemble_report(self) -> HTMLReport:
         """Assemble report head and body acquiring body template corresponding
         to estimator type and populating it with report data.
-
-        `estimator._report_info` should have `page_title` and `estimator_type`
-        fields.
-
-        This method will finally merge the dictionaries
-        `estimator._report_content` and `estimator._report_info` and feed body
-        template with fields in the obtained dictionary.
-
-        Finally, before assembling the report, estimator._report_info is set to
-        {}.
-
-        TODO
-        ----
-        estimator._report_info might not be necessary. However it should be
-        tested if estimator._report_content can safely be reset after report
-        generation is completed.
         """
         page_title = self._report_content.get(
             "page_title", self.__class__.__name__
