@@ -8,6 +8,7 @@ dev = [
     {include-group = "test"},
     {include-group = "doc"},
     {include-group = "style"},
+    {include-group = "rich"},
     "tox>=4",
     "tox-uv"
 ]
@@ -27,7 +28,7 @@ doc = [
     "sphinxext-opengraph>=0.9.1",
     "sphinxcontrib-mermaid>=1.0.0",
     "marimo>=0.12.0",
-    "rich>=3.0.0",
+    "templateflow>=25.0.0",
     "pyarrow>=13.0.0"  # mostly to avoid some warnings in pandas
 ]
 min = [
@@ -342,6 +343,7 @@ markers = [
     "thread_unsafe"  # marker used by pytest-run-parallel: adding it here to avoid warning and not always install the extension
 ]
 minversion = "6.0"
+testpaths = ["nilearn"]
 xfail_strict = true
 
 [tool.ruff]

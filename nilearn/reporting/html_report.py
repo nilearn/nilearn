@@ -2,6 +2,7 @@
 
 import uuid
 import warnings
+from pathlib import Path
 from string import Template
 from typing import Any
 
@@ -31,6 +32,9 @@ UNFITTED_MSG = (
 MISSING_ENGINE_MSG = (
     "\nNo plotting back-end detected.\nReport will be missing figures."
 )
+
+
+OTHER_JS = Path(__file__).parents[1] / "plotting" / "data" / "js"
 
 
 class HTMLReport(HTMLDocument):
@@ -298,6 +302,23 @@ def _create_report(
     body_tpl_path = f"html/maskers/{estimator._template_name}"
     body_tpl = env.get_template(body_tpl_path)
 
+    js_query_code = None
+    brainsprite_code = None
+
+    if data.get("engine") == "brainsprite":
+        with (OTHER_JS / "jquery.min.js").open("r") as f:
+            js_query_code = f.read()
+        with (OTHER_JS / "brainsprite.min.js").open("r") as f:
+            brainsprite_code = f.read()
+
+        if estimator._has_report_data():
+            data["bg_base64"] = estimator._reporting_data["bg_base64"]
+            data["cm_base64"] = estimator._reporting_data["cm_base64"]
+            data["params"] = estimator._reporting_data["params"]
+            data["stat_map_base64"] = estimator._reporting_data[
+                "stat_map_base64"
+            ]
+
     body = body_tpl.render(
         content=embeded_images,
         docstring=docstring,
@@ -309,11 +330,13 @@ def _create_report(
                 data["displayed_maps"],
                 data["unique_id"],
             )
-            if "engine" in data
+            if "engine" in data and "displayed_maps" in data
             else None
         ),
         summary_html=summary_html,
         is_notebook=is_notebook(),
+        js_query_code=js_query_code,
+        brainsprite_code=brainsprite_code,
         **data,
     )
 

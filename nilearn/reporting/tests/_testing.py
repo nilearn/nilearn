@@ -84,8 +84,11 @@ def generate_and_check_report(
                 'grey">No plotting engine found</p>',
             ]
         )
-
         warnings_msg_to_check.append(MISSING_ENGINE_MSG)
+
+        if (engine := kwargs.get("engine")) and engine == "brainsprite":
+            excludes.append('<div class="image">')
+            includes.append('<div id="div_viewer">')
 
     if not estimator.__sklearn_is_fitted__():
         warnings_msg_to_check.append("This estimator has not been fit yet.")

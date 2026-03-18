@@ -179,6 +179,7 @@ def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
         extend_includes=["No suprathreshold cluster"],
         contrasts=contrasts,
         extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
 
@@ -400,6 +401,7 @@ def test_report_plot_type(flm, plot_type, contrasts):
         contrasts=contrasts,
         plot_type=plot_type,
         extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
 
@@ -416,6 +418,7 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
         display_mode="z",
         plot_type=plot_type,
         extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
 
@@ -485,6 +488,7 @@ def test_fir_delays_in_params(contrasts):
         contrasts=contrasts,
         extend_includes=["fir_delays"],
         extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
 
@@ -508,6 +512,7 @@ def test_drift_order_in_params(contrasts):
         contrasts=contrasts,
         extend_includes=["drift_order"],
         extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
 
@@ -587,7 +592,10 @@ def test_carousel_several_runs(
     ).fit(fmri_data, design_matrices=design_matrices)
 
     report = generate_and_check_glm_report(
-        flm_two_runs, contrasts=contrasts, extra_warnings_allowed=True
+        flm_two_runs,
+        contrasts=contrasts,
+        extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
     # 3 runs should be in the carousel
