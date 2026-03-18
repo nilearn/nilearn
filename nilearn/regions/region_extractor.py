@@ -492,7 +492,7 @@ class RegionExtractor(NiftiMapsMasker):
             maps_img=maps_img,
             mask_img=mask_img,
             smoothing_fwhm=smoothing_fwhm,
-            standardize=None if standardize is False else standardize,
+            standardize=standardize,
             standardize_confounds=standardize_confounds,
             high_variance_confounds=high_variance_confounds,
             detrend=detrend,
