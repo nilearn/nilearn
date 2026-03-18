@@ -1669,7 +1669,11 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
     effect = result["effect_size"]
     variance = result["effect_variance"]
     surf_mask_ = masker.mask_img_
-    for mask in [SurfaceMasker(mask_img=masker.mask_img_), surf_mask_, None]:
+    for mask in [
+        SurfaceMasker(mask_img=masker.mask_img_, standardize=None),
+        surf_mask_,
+        None,
+    ]:
         outputs = compute_fixed_effects(
             [effect, effect], [variance, variance], mask=mask
         )
