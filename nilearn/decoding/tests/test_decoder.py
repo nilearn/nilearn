@@ -54,7 +54,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_GTE_1_7, SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_7_0, SKLEARN_LT_1_6
 from nilearn.conftest import _rng
 from nilearn.decoding import (
     Decoder,
@@ -1542,7 +1542,7 @@ def test_regressor_vs_sklearn(regressor):
         scoring=scorer,
         screening_percentile=100,  # disable screening
     )
-    if regressor == "lasso" and SKLEARN_GTE_1_7:
+    if regressor == "lasso" and SKLEARN_GTE_1_7_0:
         # TODO
         # see https://github.com/nilearn/nilearn/issues/5452
         with pytest.warns(
@@ -1575,7 +1575,7 @@ def test_regressor_vs_sklearn(regressor):
             # LassoCV will select the best one using cross-validation
             tmp = nilearn_regressor.cv_params_["beta"]["n_alphas"][count]
             sklearn_regressor = clone(sklearn_regressor)
-            if SKLEARN_GTE_1_7:
+            if SKLEARN_GTE_1_7_0:
                 sklearn_regressor.set_params(alphas=tmp)
             else:
                 sklearn_regressor.set_params(n_alphas=tmp)

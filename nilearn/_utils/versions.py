@@ -56,7 +56,8 @@ def compare_version(
 
 
 SKLEARN_LT_1_6 = compare_version(sklearn_version, "<", "1.6.0")
-SKLEARN_GTE_1_7 = compare_version(sklearn_version, ">=", "1.7.0")
+SKLEARN_GTE_1_7_0 = compare_version(sklearn_version, ">=", "1.7.0")
+SKLEARN_GTE_1_7_1 = compare_version(sklearn_version, ">=", "1.7.1")
 SKLEARN_GTE_1_8 = compare_version(sklearn_version, ">=", "1.8.0")
 
 
