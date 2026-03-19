@@ -131,6 +131,9 @@ class ReportMixin:
         """
         return sorted(set(self._report_content["warning_messages"]))
 
+    def _reset_report_warnings(self):
+        self._report_content["warning_messages"] = []
+
     def _display_report_warnings(self):
         report_warnings = self._get_report_warnings()
 
