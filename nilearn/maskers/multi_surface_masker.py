@@ -103,21 +103,6 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         cmap=DEFAULT_SEQUENTIAL_CMAP,
         clean_args=None,
     ):
-        self.mask_img = mask_img
-        self.smoothing_fwhm = smoothing_fwhm
-        self.standardize = standardize
-        self.standardize_confounds = standardize_confounds
-        self.high_variance_confounds = high_variance_confounds
-        self.detrend = detrend
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.memory = memory
-        self.memory_level = memory_level
-        self.verbose = verbose
-        self.reports = reports
-        self.cmap = cmap
-        self.clean_args = clean_args
         super().__init__(
             # Mask is provided or computed
             mask_img=mask_img,
