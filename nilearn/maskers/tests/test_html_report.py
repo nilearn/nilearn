@@ -62,7 +62,7 @@ def generate_and_check_masker_report(
         "reports_at_fit_time", masker.reports
     )
 
-    if not report_at_fit_time:
+    if not masker.reports:
         warnings_msg_to_check.append(
             "\nReport generation not enabled!\nNo visual outputs created."
         )
@@ -70,6 +70,13 @@ def generate_and_check_masker_report(
         excludes.append(
             "\nReport generation not enabled!\nNo visual outputs created."
         )
+
+    if not report_at_fit_time and masker.__sklearn_is_fitted__():
+        warnings_msg_to_check.append(
+            "\nReport generation was disabled when fit was run."
+        )
+    else:
+        excludes.append("Report generation was disabled when fit was run")
 
     if not report_at_fit_time or not masker.__sklearn_is_fitted__():
         # no image present if reports not requested or masker is not fitted
