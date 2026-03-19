@@ -43,10 +43,9 @@ min = [
 ]
 min_plotting = [
     {include-group = "min"},
-    "kaleido==0.2.1 ; platform_system != 'Windows'",
-    "kaleido==0.1.0.post1 ; platform_system == 'Windows'",
+    "kaleido==1.1.0",
     "matplotlib==3.8.0",
-    "plotly==5.0.0"
+    "plotly==6.1.1"
 ]
 # For prettier printing
 rich = ["rich>=3.0.0"]
@@ -121,20 +120,10 @@ readme = "README.rst"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
-# Necessary req to use nilearn's plotting module
-# Kaleido version is pinned for windows due to bug
-# See https://github.com/plotly/Kaleido/issues/134 for more detail
-kaleido = [
-    "kaleido ; platform_system != 'Windows'",
-    "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
-]
 plotting = [
-    "nilearn[kaleido]",
+    "kaleido>=1.1.0",
     "matplotlib>=3.8.0",
-    # plotly 6.1.0 cannot save images
-    # https://github.com/plotly/plotly.py/issues/5187
-    "plotly>=5.0.0,!=6.1.0 ; platform_system != 'Windows'",
-    "plotly>=5.0.0,<6.1.0 ; platform_system == 'Windows'"
+    "plotly>=6.1.1"
 ]
 
 [project.urls]
