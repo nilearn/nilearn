@@ -394,47 +394,15 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return imgs
 
-    @fill_doc
-    def generate_report(
-        self,
-        displayed_maps: list[int]
-        | np.typing.NDArray[np.int_]
-        | int
-        | Literal["all"] = 10,
-        engine: str = "matplotlib",
-        title: str | None = None,
-    ):
-        """Generate an HTML report for the current ``SurfaceMapsMasker``
-        object.
+    def _run_report_checks(self, **kwargs):
+        super()._run_report_checks(**kwargs)
 
-        .. note::
-            This functionality requires to have ``Matplotlib`` installed.
-
-        Parameters
-        ----------
-        %(displayed_maps)s
-
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        engine : :obj:`str`, default="matplotlib"
-            The plotting engine to use for the report. Can be either
-            "matplotlib" or "plotly". If "matplotlib" is selected, the report
-            will be static. If "plotly" is selected, the report
-            will be interactive. If the selected engine is not installed, the
-            report will use the available plotting engine. If none of the
-            engines are installed, no report will be generated.
-
-        Returns
-        -------
-        report : `nilearn.reporting.HTMLReport`
-            HTML report for the masker.
-        """
+        displayed_maps = kwargs.get("displayed_maps")
         check_displayed_maps(displayed_maps)
 
-        if self._has_report_data():
-            self._report_content["number_of_regions"] = self.n_elements_
+        engine = self._report_content["engine"]
 
+        if self._has_report_data():
             for part in self.maps_img.data.parts:
                 self._report_content["n_vertices"][part] = (
                     self.maps_img.mesh.parts[part].n_vertices
@@ -443,12 +411,12 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             maps_image = self._reporting_data["maps_image"]
             n_maps = maps_image.shape[1]
 
-            self._report_content["number_of_maps"] = n_maps
-
             self, maps_to_be_displayed = sanitize_displayed_maps(
                 self, displayed_maps, n_maps
             )
 
+            self._report_content["number_of_regions"] = self.n_elements_
+            self._report_content["number_of_maps"] = n_maps
             self._report_content["displayed_maps"] = maps_to_be_displayed
 
             if self._reporting_data.get("images") is None:
@@ -476,7 +444,48 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 )
             self._report_content["engine"] = engine
 
-        return super().generate_report(title=title, engine=engine)
+    @fill_doc
+    def generate_report(
+        self,
+        displayed_maps: list[int]
+        | np.typing.NDArray[np.int_]
+        | int
+        | Literal["all"] = 10,
+        engine: str = "matplotlib",
+        title: str | None = None,
+    ):
+        """Generate an HTML report for the current ``SurfaceMapsMasker``
+        object.
+
+        .. note::
+            This functionality requires to have ``Matplotlib`` installed.
+
+        Parameters
+        ----------
+        title : :obj:`str` or None, default=None
+            title for the report. If None, title will be the class name.
+
+        engine : :obj:`str`, default="matplotlib"
+            The plotting engine to use for the report. Can be either
+            "matplotlib" or "plotly". If "matplotlib" is selected, the report
+            will be static. If "plotly" is selected, the report
+            will be interactive. If the selected engine is not installed, the
+            report will use the available plotting engine. If none of the
+            engines are installed, no report will be generated.
+
+            Dictionary of extra key-words arguments to pass
+            to `_run_report_checks`.
+
+        %(displayed_maps)s
+
+        Returns
+        -------
+        report : `nilearn.reporting.HTMLReport`
+            HTML report for the masker.
+        """
+        return super().generate_report(
+            title=title, engine=engine, displayed_maps=displayed_maps
+        )
 
     def _reporting(self) -> list:
         """Load displays needed for report.

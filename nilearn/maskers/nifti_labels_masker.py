@@ -325,26 +325,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return masked_atlas, removed_region_ids, removed_region_names, display
 
-    def generate_report(
-        self,
-        title: str | None = None,
-        engine: str = "matplotlib",
-    ):
-        """Generate an HTML report for this masker.
+    def _run_report_checks(self, **kwargs):
+        super()._run_report_checks(**kwargs)
 
-        Parameters
-        ----------
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        engine : {"matplotlib", "brainsprite"}, default="matplotlib"
-            Choice of engine to display the mask.
-
-        Returns
-        -------
-        report : `nilearn.reporting.HTMLReport`
-            HTML report for the masker.
-        """
         if self._has_report_data():
             img = self._reporting_data["images"]
 
@@ -362,8 +345,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                     "Only first subject is shown in the report."
                 )
                 self._append_report_warning(msg)
-
-        return super().generate_report(title, engine)
 
     def _reporting(self):
         """Return a figure to be rendered.

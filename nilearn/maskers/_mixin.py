@@ -396,8 +396,8 @@ class MaskerReportMixin(ReportMixin):
             MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
 
-    def _set_report_basics(self, title, engine):
-        super()._set_report_basics(title, engine)
+    def _set_report_basics(self, **kwargs):
+        super()._set_report_basics(kwargs)
         report_content = self._report_content
 
         if not isinstance(report_content["coverage"], str):
@@ -413,8 +413,7 @@ class MaskerReportMixin(ReportMixin):
 
     def generate_report(
         self,
-        title: str | None = None,
-        engine: str = "matplotlib",
+        **kwargs,
     ) -> HTMLReport:
         """Generate an HTML report for this masker.
 
@@ -426,14 +425,18 @@ class MaskerReportMixin(ReportMixin):
         engine : :obj:`str`, default="matplotlib"
             Choice of engine to display the mask.
 
+        kwargs : :obj:`dict` [ :obj:`str` , Any]
+            Dictionary of extra key-words arguments necessary for report
+            generation.
+
         Returns
         -------
         report : `nilearn.reporting.HTMLReport`
             HTML report for the masker.
         """
         self._reset_report_warnings()
-        self._set_report_basics(title, engine)
-        self._run_report_checks()
+        self._set_report_basics(**kwargs)
+        self._run_report_checks(**kwargs)
         self._generate_report_data()
         self._display_report_warnings()
         html_report = self._assemble_report()

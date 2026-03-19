@@ -381,7 +381,9 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self._reset_report()
 
-    def _run_report_checks(self):
+    def _run_report_checks(self, **kwargs):
+        super()._run_report_checks(**kwargs)
+
         if self._has_report_data():
             img = self._reporting_data["images"]
 
@@ -400,8 +402,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 self._append_report_warning(msg)
         else:
             self._report_content["overlay"] = None
-
-        super()._run_report_checks()
 
     def _reporting(self):
         """Load displays needed for report.

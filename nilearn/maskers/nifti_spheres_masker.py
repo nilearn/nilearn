@@ -310,6 +310,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "This report shows the regions defined "
             "by the spheres of the masker."
         ),
+        "number_of_maps": 0,
+        "displayed_maps": [0],
     }
     _template_name = "body_nifti_spheres_masker.jinja"
 
@@ -364,38 +366,11 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self._reset_report()
 
-    @fill_doc
-    def generate_report(
-        self,
-        displayed_spheres: list[int]
-        | np.typing.NDArray[np.int_]
-        | int
-        | Literal["all"] = "all",
-        title: str | None = None,
-    ):
-        """Generate an HTML report for current ``NiftiSpheresMasker`` object.
+    def _run_report_checks(self, **kwargs):
+        super()._run_report_checks(**kwargs)
 
-        .. note::
-            This functionality requires to have ``Matplotlib`` installed.
-
-        Parameters
-        ----------
-        %(displayed_spheres)s
-
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        Returns
-        -------
-        report : `nilearn.reporting.HTMLReport`
-            HTML report for the masker.
-        """
+        displayed_spheres = kwargs.get("displayed_spheres")
         check_displayed_maps(displayed_spheres, "displayed_spheres")
-
-        # using 'number_of_maps' and 'displayed_maps'
-        # by consistency with maps maskers
-        self._report_content["number_of_maps"] = 0
-        self._report_content["displayed_maps"] = [0]
 
         if self._has_report_data():
             seeds = self._reporting_data["seeds"]
@@ -422,7 +397,35 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 )
                 self._append_report_warning(msg)
 
-        return super().generate_report(title=title)
+    @fill_doc
+    def generate_report(
+        self,
+        displayed_spheres: list[int]
+        | np.typing.NDArray[np.int_]
+        | int
+        | Literal["all"] = "all",
+        title: str | None = None,
+    ):
+        """Generate an HTML report for current ``NiftiSpheresMasker`` object.
+
+        .. note::
+            This functionality requires to have ``Matplotlib`` installed.
+
+        Parameters
+        ----------
+        %(displayed_spheres)s
+
+        title : :obj:`str` or None, default=None
+            title for the report. If None, title will be the class name.
+
+        Returns
+        -------
+        report : `nilearn.reporting.HTMLReport`
+            HTML report for the masker.
+        """
+        return super().generate_report(
+            title=title, displayed_spheres=displayed_spheres
+        )
 
     def _reporting(self) -> list:
         """Return a list of all displays to be rendered.

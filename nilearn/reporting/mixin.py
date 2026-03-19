@@ -2,7 +2,6 @@
 functionality.
 """
 
-import abc
 import uuid
 import warnings
 from copy import deepcopy
@@ -54,7 +53,8 @@ class ReportMixin:
     _report_data : Contains data from model fit. If reporting is disabled, or
     the model is not fit, this attribute does not exist.
 
-    Classes inheriting from ReportMixin should implement ``generate_report``.
+    Classes inheriting from ReportMixin should implement ``generate_report``
+    method.
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
@@ -145,9 +145,7 @@ class ReportMixin:
                     category=UserWarning,
                 )
 
-    def _set_report_basics(
-        self, title: str | None = None, engine: str = "matplotlib"
-    ):
+    def _set_report_basics(self, **kwargs):
         """Populate `_report_content` with values that will be used in report
         body template.
 
@@ -166,9 +164,9 @@ class ReportMixin:
         report_content["unique_id"] = str(uuid.uuid4()).replace("-", "")
 
         # Set title for report
-        report_content["title"] = title or self.__class__.__name__
+        report_content["title"] = kwargs.get("title", self.__class__.__name__)
 
-        report_content["engine"] = engine
+        report_content["engine"] = kwargs.get("engine", "matplotlib")
 
         report_content["has_plotting_engine"] = is_matplotlib_installed()
 
@@ -186,7 +184,7 @@ class ReportMixin:
 
         report_content["version"] = __version__
 
-    def _run_report_checks(self):
+    def _run_report_checks(self, **kwargs):
         """Run standard checks before report is generated.
 
         Checks if:
@@ -195,6 +193,7 @@ class ReportMixin:
         - reporting was enabled at the time of fit
         - matplotlib is installed
         """
+        _ = kwargs
         if self.reports is False:
             self._append_report_warning(
                 "\nReport generation not enabled!\nNo visual outputs created."
@@ -344,8 +343,7 @@ class ReportMixin:
                 "stat_map_base64"
             ]
 
-    @abc.abstractmethod
-    def generate_report(self, title: str | None = None) -> HTMLReport:
+    def generate_report(self, **kwargs: object) -> HTMLReport:
         """Generate an HTML report for this estimator.
 
         This method should be implemented in classes which inherit from
@@ -353,13 +351,13 @@ class ReportMixin:
 
         Parameters
         ----------
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
+        kwargs : :obj:`dict` [ :obj:`str` , Any]
+            Dictionary of extra key-words arguments necessary for report
+            generation.
 
         Returns
         -------
         report : `nilearn.reporting.HTMLReport`
             HTML report for the masker.
-
         """
         raise NotImplementedError()

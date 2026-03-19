@@ -176,6 +176,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "This report shows the spatial maps provided to the mask."
         ),
         "number_of_maps": 0,
+        "displayed_maps": [],
     }
     _template_name = "body_nifti_maps_masker.jinja"
 
@@ -239,6 +240,39 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self._reset_report()
 
+    def _run_report_checks(self, **kwargs):
+        super()._run_report_checks(**kwargs)
+
+        displayed_maps = kwargs.get("displayed_maps")
+        check_displayed_maps(displayed_maps)
+
+        if self._has_report_data():
+            maps_image = self._reporting_data["maps_image"]
+            n_maps = get_data(maps_image).shape[-1]
+
+            self, maps_to_be_displayed = sanitize_displayed_maps(
+                self, displayed_maps, n_maps
+            )
+
+            self._report_content["number_of_maps"] = n_maps
+            self._report_content["displayed_maps"] = maps_to_be_displayed
+
+            img = self._reporting_data["images"]
+
+            if img is None:
+                msg = (
+                    f"No image provided to fit in {self.__class__.__name__}. "
+                    "Plotting only spatial maps for reporting."
+                )
+                self._append_report_warning(msg)
+
+            elif self._reporting_data["dim"] == 5:
+                msg = (
+                    "A list of 4D subject images were provided to fit. "
+                    "Only first subject is shown in the report."
+                )
+                self._append_report_warning(msg)
+
     @fill_doc
     def generate_report(
         self,
@@ -269,41 +303,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         report : `nilearn.reporting.HTMLReport`
             HTML report for the masker.
         """
-        check_displayed_maps(displayed_maps)
-
-        self._report_content["number_of_maps"] = 0
-        self._report_content["displayed_maps"] = []
-        self._report_content["engine"] = engine
-
-        if self._has_report_data():
-            maps_image = self._reporting_data["maps_image"]
-            n_maps = get_data(maps_image).shape[-1]
-
-            self._report_content["number_of_maps"] = n_maps
-
-            self, maps_to_be_displayed = sanitize_displayed_maps(
-                self, displayed_maps, n_maps
-            )
-
-            self._report_content["displayed_maps"] = maps_to_be_displayed
-
-            img = self._reporting_data["images"]
-
-            if img is None:
-                msg = (
-                    f"No image provided to fit in {self.__class__.__name__}. "
-                    "Plotting only spatial maps for reporting."
-                )
-                self._append_report_warning(msg)
-
-            elif self._reporting_data["dim"] == 5:
-                msg = (
-                    "A list of 4D subject images were provided to fit. "
-                    "Only first subject is shown in the report."
-                )
-                self._append_report_warning(msg)
-
-        return super().generate_report(title=title)
+        return super().generate_report(
+            title=title, engine=engine, displayed_maps=displayed_maps
+        )
 
     def _reporting(self) -> list:
         """Return a list of all displays to be rendered.
