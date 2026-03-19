@@ -17,7 +17,7 @@ from nilearn._utils.helpers import (
     is_plotly_installed,
 )
 from nilearn._utils.tags import accept_surf_img_input
-from nilearn._utils.versions import SKLEARN_GTE_1_7_1
+from nilearn._utils.versions import SKLEARN_GTE_1_7
 from nilearn.conftest import _img_maps, _surf_maps_img
 from nilearn.image import get_data
 from nilearn.maskers import (
@@ -76,8 +76,8 @@ def generate_and_check_masker_report(
         excludes.append('<div class="image">')
 
     else:
-        if not SKLEARN_GTE_1_7_1 and masker.__sklearn_is_fitted__():
-            # TODO (sklearn > 1.7.0) remove this if block
+        if not SKLEARN_GTE_1_7 and masker.__sklearn_is_fitted__():
+            # TODO (sklearn > 1.6.2) remove this if block
             includes.append("<th>Parameter</th>")
         else:
             includes.append('div id="sk-container-id')

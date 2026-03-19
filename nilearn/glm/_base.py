@@ -22,7 +22,7 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_GTE_1_7_1, SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_7, SKLEARN_LT_1_6
 from nilearn._version import __version__
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
@@ -573,7 +573,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
                 self._is_first_level_glm(),
             )
         )
-        if SKLEARN_GTE_1_7_1:
+        if SKLEARN_GTE_1_7:
             parameters = self._repr_html_()
         else:
             # TODO (sklearn > 1.6.2) remove else block
