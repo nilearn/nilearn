@@ -135,6 +135,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         "n_vertices": {},
         "number_of_regions": 0,
         "number_of_maps": 0,
+        "displayed_maps": [],
     }
     _template_name = "body_surface_maps_masker.jinja"
 
@@ -430,9 +431,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             HTML report for the masker.
         """
         check_displayed_maps(displayed_maps)
-
-        self._report_content["number_of_maps"] = 0
-        self._report_content["displayed_maps"] = []
 
         if self._has_report_data():
             self._report_content["number_of_regions"] = self.n_elements_
