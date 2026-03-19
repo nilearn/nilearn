@@ -1,3 +1,4 @@
+# %%
 """
 Making a surface plot of a 3D statistical map
 =============================================
@@ -81,12 +82,10 @@ fig.show()
 # you can easily configure :func:`~nilearn.plotting.plot_surf_stat_map`
 # to use ``plotly`` instead of ``matplotlib``:
 
-engine = "matplotlib"
+# If plotly is not installed, use matplotlib
+from nilearn._utils.helpers import is_plotly_installed
 
-# uncomment the following line if you use plotly
-# in the rest of this example
-
-# engine = "plotly"
+engine = "plotly" if is_plotly_installed() else "matplotlib"
 
 print(f"Using plotting engine {engine}.")
 
@@ -100,10 +99,11 @@ figure = plot_surf_stat_map(
     bg_on_data=True,
     engine=engine,  # Specify the plotting engine here
 )
-
-# Uncomment the line below
-# to view the figure in browser.
 figure.show()
+
+# Uncomment the line below to have interactive
+# visualization in the browser
+# figure.show(renderer="browser")
 
 # %%
 # When using ``matplolib`` as the plotting engine, a standard
@@ -186,7 +186,7 @@ figure = plot_surf_stat_map(
     engine=engine,
 )
 if engine == "matplotlib":
-    plot_surf_contours(
+    figure = plot_surf_contours(
         roi_map=destrieux_atlas,
         hemi=hemi,
         labels=labels,
@@ -195,7 +195,6 @@ if engine == "matplotlib":
         legend=True,
         colors=["g", "k"],
     )
-    show()
 elif engine == "plotly":
     figure.add_contours(
         roi_map=destrieux_atlas,
@@ -203,8 +202,11 @@ elif engine == "plotly":
         labels=labels,
         lines=[{"width": 5}],
     )
-    # view the contours in a browser
-    figure.show()
+    # Uncomment the line below to have interactive
+    # visualization in the browser
+    # figure.show(renderer="browser")
+
+figure.show()
 
 # %%
 # Plot with higher-resolution mesh
@@ -288,8 +290,13 @@ view = view_surf(
 # In a notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
 view
+
+# If plotly is not installed or the code is run in script mode,
+# it is still possible to have interactive visualization in the
+# browser by uncommenting the below line.
 # view.open_in_browser()
 
+# %%
 # We don't need to do the projection ourselves, we can use
 # :func:`~nilearn.plotting.view_img_on_surf`:
 from nilearn.plotting import view_img_on_surf
@@ -297,6 +304,10 @@ from nilearn.plotting import view_img_on_surf
 view = view_img_on_surf(stat_img, threshold="90%")
 
 view
+
+# If plotly is not installed or the code is run in script mode,
+# it is still possible to have interactive visualization in the
+# browser by uncommenting the below line.
 # view.open_in_browser()
 
 # %%
@@ -327,6 +338,10 @@ view = view_img_on_surf(
 )
 
 view
+
+# If plotly is not installed or the code is run in script mode,
+# it is still possible to have interactive visualization in the
+# browser by uncommenting the below line.
 # view.open_in_browser()
 
 # sphinx_gallery_dummy_images=1

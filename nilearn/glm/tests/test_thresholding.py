@@ -66,6 +66,7 @@ def data_norm_isf(shape_3d_default):
     return _data_norm_isf(shape_3d_default)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("height_control", [None, "fpr", "fdr", "bonferroni"])
 def test_threshold_stats_img_warn_threshold_unused(
     data_norm_isf, affine_eye, height_control
@@ -274,6 +275,7 @@ def test_hommel(alpha, expected):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, expected, expected_n_unique_values",
     [
@@ -301,6 +303,7 @@ def test_all_resolution_inference(
     assert len(np.unique(vals)) == expected_n_unique_values
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, expected_left, expected_right, expected_n_unique_values",
     [
@@ -514,6 +517,7 @@ def test_all_resolution_inference_height_control(
         assert_equal(np.sum(vals < 0), 0)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_threshold_stats_img_surface(surf_img_1d, height_control):
     """Smoke test threshold_stats_img works on surface."""
@@ -560,25 +564,25 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     Also check the user of cluster_threshold.
     """
     surf_img_1d.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
-    surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
+    surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 3.0])
 
     # two sided
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=2
+        surf_img_1d, height_control=None, threshold=2.1
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
     assert_equal(
-        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=2, cluster_threshold=2
+        surf_img_1d, height_control=None, threshold=2.1, cluster_threshold=2
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
     assert_equal(
-        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
     # one sided positive
@@ -586,21 +590,21 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
         surf_img_1d, height_control=None, two_sided=False
     )
 
-    assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 4.0]))
+    assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
     assert_equal(
-        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
     result, _ = threshold_stats_img(
         surf_img_1d,
         height_control=None,
         two_sided=False,
-        cluster_threshold=2,
+        cluster_threshold=3,
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 0.0]))
     assert_equal(
-        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
     # one sided negative
@@ -653,6 +657,7 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_deprecation_threshold(surf_img_1d, height_control, threshold):
@@ -670,12 +675,13 @@ def test_deprecation_threshold(surf_img_1d, height_control, threshold):
         [x for x in warning_list if issubclass(x.category, FutureWarning)]
     )
     if height_control is None and threshold == 3.0:
-        assert n_warnings == 1
+        assert n_warnings == 1, [str(x) for x in warning_list]
     else:
-        assert n_warnings == 0
+        assert n_warnings == 0, [str(x) for x in warning_list]
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", [3, 3.0, 2.9, DEFAULT_Z_THRESHOLD])
 def test_deprecation_threshold_cluster_level_inference(
     threshold, img_3d_rand_eye, surf_img_1d

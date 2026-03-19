@@ -179,13 +179,10 @@ def _generate_confounds_file_candidates(nii_file, flag_tedana=False):
     parsed_file = parse_bids_filename(nii_file)
     entities = parsed_file["entities"]
 
-    variants = []
-
     # Standard confounds
     entities_fmriprep = deepcopy(entities)
     entities_fmriprep["desc"] = "confounds"
-    variants.append(entities_fmriprep)
-
+    variants = [entities_fmriprep]
     if flag_tedana:
         # ICA  mixing and tedana
         entities_tedana = deepcopy(entities)
@@ -362,14 +359,14 @@ def load_confounds_json(confounds_json, flag_acompcor):
     try:
         with Path(confounds_json).open("rb") as f:
             confounds_json = json.load(f)
-    except OSError:
+    except OSError as e:
         if flag_acompcor:
             raise ValueError(
                 f"Could not find associated json file {confounds_json}."
                 "This is necessary for anatomical CompCor."
                 "The CompCor component is only supported for fMRIprep "
                 "version >= 1.4.0."
-            )
+            ) from e
     return confounds_json
 
 
@@ -393,17 +390,16 @@ def load_confounds_file_as_dataframe(confounds_raw_path, flag_tedana=False):
         Raw confounds loaded from the confounds file.
     """
     if flag_tedana:
-        # TEDANA outputs are not camel case, but they have a different
-        # header format.
-        confounds_tedana_raw = {}
-        for tedana_conf in ["mixing", "metrics"]:
-            confounds_tedana_raw[tedana_conf] = pd.read_csv(
+        confounds_tedana_raw = {
+            tedana_conf: pd.read_csv(
                 next(
                     file for file in confounds_raw_path if tedana_conf in file
                 ),
                 delimiter="\t",
                 encoding="utf-8",
             )
+            for tedana_conf in ["mixing", "metrics"]
+        }
         if any(
             col.startswith("ICA_")
             for confounds_raw in confounds_tedana_raw.values()
@@ -481,7 +477,7 @@ def _ext_validator(image_file, ext):
     return valid_img, error_message
 
 
-def _check_images(image_file, flag_full_aroma, flag_tedana):
+def _check_images(image_file, flag_full_aroma, flag_tedana: bool) -> None:
     """Validate input file and ICA AROMA related file.
 
     Parameters

@@ -202,6 +202,8 @@ def connected_regions(
         region extraction on continuous type atlas images and
         also time series signals extraction from regions extracted.
     """
+    check_params(locals())
+
     all_regions_imgs = []
     index_of_each_map = []
     maps_img = check_niimg(maps_img, atleast_4d=True)
@@ -259,7 +261,7 @@ def connected_regions(
         index_of_each_map.extend([index] * len(regions))
         all_regions_imgs.extend(regions)
 
-    if len(all_regions_imgs) == 0:
+    if not all_regions_imgs:
         warnings.warn(
             "No supra threshold regions was found",
             UserWarning,

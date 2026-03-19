@@ -28,11 +28,6 @@ from nilearn.surface.surface import (
 )
 
 
-@pytest.fixture(scope="session")
-def mni152_template_res_2():
-    return datasets.load_mni152_template(resolution=2)
-
-
 def test_check_mesh():
     mesh = check_mesh_is_fsaverage("fsaverage5")
     assert mesh is check_mesh_is_fsaverage(mesh)
@@ -219,6 +214,7 @@ def test_view_img_on_surf_clipped_image(tmp_path, mni152_template_res_2):
     check_html_surface_plots(tmp_path, html)
 
 
+@pytest.mark.thread_unsafe
 def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):
     view_img_on_surf(img_3d_mni_as_file)
     view_img_on_surf(str(img_3d_mni_as_file))

@@ -211,8 +211,8 @@ class BaseSlicer:
 
         %(cut_coords)s
 
-        Return
-        ------
+        Returns
+        -------
         list[bool]
             a list of boolean values corresponding to each coordinate
         indicating if it is within the bounds or not
@@ -409,7 +409,7 @@ class BaseSlicer:
         transparency=None,
         transparency_range=None,
         **kwargs,
-    ):
+    ) -> None:
         """Plot a 3D map in all the views.
 
         Parameters
@@ -488,7 +488,9 @@ class BaseSlicer:
         plt.draw_if_interactive()
 
     @fill_doc
-    def add_contours(self, img, threshold=1e-6, filled=False, **kwargs):
+    def add_contours(
+        self, img, threshold=1e-6, filled=False, **kwargs
+    ) -> None:
         """Contour a 3D map in all the views.
 
         Parameters
@@ -839,6 +841,12 @@ class BaseSlicer:
             is computed based on the data.
 
         """
+        cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
+        cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
+
+        if cbar_vmin == cbar_vmax:
+            return
+
         # create new  axis for the colorbar
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect
@@ -1085,7 +1093,7 @@ class BaseSlicer:
                     **kwargs,
                 )
 
-    def close(self):
+    def close(self) -> None:
         """Close the figure.
 
         This is necessary to avoid leaking memory.
@@ -1093,7 +1101,7 @@ class BaseSlicer:
         """
         plt.close(self.frame_axes.figure.number)
 
-    def savefig(self, filename, dpi=None, **kwargs):
+    def savefig(self, filename, dpi=None, **kwargs) -> None:
         """Save the figure to a file.
 
         Parameters
@@ -1379,7 +1387,7 @@ class OrthoSlicer(_MultiDSlicer):
             [[left_dict[axes], y0], [left_dict[axes] + width_dict[axes], y1]]
         )
 
-    def draw_cross(self, cut_coords=None, **kwargs):
+    def draw_cross(self, cut_coords=None, **kwargs) -> None:
         """Draw a crossbar on the plot to show where the cut is performed.
 
         Parameters
@@ -1398,13 +1406,14 @@ class OrthoSlicer(_MultiDSlicer):
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
-        coords = {}
-        for direction in "xyz":
-            coords[direction] = (
+        coords = {
+            direction: (
                 cut_coords[self._cut_displayed.index(direction)]
                 if direction in self._cut_displayed
                 else None
             )
+            for direction in "xyz"
+        }
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()
@@ -1707,7 +1716,7 @@ class TiledSlicer(_MultiDSlicer):
             [[coord1[axes], coord2[axes]], [coord3[axes], coord4[axes]]]
         )
 
-    def draw_cross(self, cut_coords=None, **kwargs):
+    def draw_cross(self, cut_coords=None, **kwargs) -> None:
         """Draw a crossbar on the plot to show where the cut is performed.
 
         Parameters
@@ -1727,13 +1736,14 @@ class TiledSlicer(_MultiDSlicer):
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
-        coords = {}
-        for direction in "xyz":
-            coords[direction] = (
+        coords = {
+            direction: (
                 cut_coords[self._cut_displayed.index(direction)]
                 if direction in self._cut_displayed
                 else None
             )
+            for direction in "xyz"
+        }
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()

@@ -2,6 +2,7 @@
 
 import uuid
 import warnings
+from pathlib import Path
 from string import Template
 from typing import Any
 
@@ -11,6 +12,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.versions import SKLEARN_GTE_1_7
 from nilearn._version import __version__
 from nilearn.reporting._utils import (
     dataframe_to_html,
@@ -30,6 +32,9 @@ UNFITTED_MSG = (
 MISSING_ENGINE_MSG = (
     "\nNo plotting back-end detected.\nReport will be missing figures."
 )
+
+
+OTHER_JS = Path(__file__).parents[1] / "plotting" / "data" / "js"
 
 
 class HTMLReport(HTMLDocument):
@@ -156,7 +161,7 @@ def generate_report(estimator) -> HTMLReport:
 
     Parameters
     ----------
-    estimator : Object instance of BaseEstimator.
+    estimator : Object instance of NilearnBaseEstimator.
         Object for which the report should be generated.
 
     Returns
@@ -264,14 +269,19 @@ def _create_report(
                 index=False,
                 sparsify=False,
             )
-    parameters = model_attributes_to_dataframe(estimator)
-    with pd.option_context("display.max_colwidth", 100):
-        parameters = dataframe_to_html(
-            parameters,
-            precision=2,
-            header=True,
-            sparsify=False,
-        )
+
+    if SKLEARN_GTE_1_7:
+        parameters = estimator._repr_html_()
+    else:
+        # TODO (sklearn > 1.6.2) remove else block
+        parameters = model_attributes_to_dataframe(estimator)
+        with pd.option_context("display.max_colwidth", 100):
+            parameters = dataframe_to_html(
+                parameters,
+                precision=2,
+                header=True,
+                sparsify=False,
+            )
 
     if "n_elements" not in data:
         data["n_elements"] = 0
@@ -292,6 +302,23 @@ def _create_report(
     body_tpl_path = f"html/maskers/{estimator._template_name}"
     body_tpl = env.get_template(body_tpl_path)
 
+    js_query_code = None
+    brainsprite_code = None
+
+    if data.get("engine") == "brainsprite":
+        with (OTHER_JS / "jquery.min.js").open("r") as f:
+            js_query_code = f.read()
+        with (OTHER_JS / "brainsprite.min.js").open("r") as f:
+            brainsprite_code = f.read()
+
+        if estimator._has_report_data():
+            data["bg_base64"] = estimator._reporting_data["bg_base64"]
+            data["cm_base64"] = estimator._reporting_data["cm_base64"]
+            data["params"] = estimator._reporting_data["params"]
+            data["stat_map_base64"] = estimator._reporting_data[
+                "stat_map_base64"
+            ]
+
     body = body_tpl.render(
         content=embeded_images,
         docstring=docstring,
@@ -303,11 +330,13 @@ def _create_report(
                 data["displayed_maps"],
                 data["unique_id"],
             )
-            if "engine" in data
+            if "engine" in data and "displayed_maps" in data
             else None
         ),
         summary_html=summary_html,
         is_notebook=is_notebook(),
+        js_query_code=js_query_code,
+        brainsprite_code=brainsprite_code,
         **data,
     )
 

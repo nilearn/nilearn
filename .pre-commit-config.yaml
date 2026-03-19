@@ -4,6 +4,8 @@
 
 ci:
     autoupdate_commit_msg: 'chore: update pre-commit hooks'
+    autoupdate_schedule: monthly
+    autofix_commit_msg: 'style: pre-commit fixes'
     autofix_prs: false
 
 #  Files that should not be checked
@@ -13,6 +15,9 @@ exclude: |
         | nilearn/plotting/data/js/.*js
         | nilearn/_version.py
         | asv_benchmarks/asv.conf.json
+        | asv_benchmarks/results
+        | asv_benchmarks/nilearn
+        | asv_benchmarks/env
     )$
 
 repos:
@@ -63,7 +68,7 @@ repos:
     # Check formatting of CSS
     # prettier: https://prettier.io/
 -   repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.7.4
+    rev: v3.8.1
     hooks:
     -   id: prettier
         types_or: [css]
@@ -82,7 +87,7 @@ repos:
 
     # Lint and format Python code
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.11
+    rev: v0.15.4
     hooks:
     -   id: ruff-check
         # args: [--statistics]
@@ -90,9 +95,25 @@ repos:
     -   id: ruff-format
         # args: [--diff]
 
+-   repo: https://github.com/adamchainz/blacken-docs
+    rev: 1.20.0    # replace with latest tag on GitHub
+    hooks:
+    -   id: blacken-docs
+        additional_dependencies:
+        -   black
+        # ignoring certain files
+        # to avoid generating lines that are too long
+        # or do not comply with some of the requirements
+        # of other linting / formaating tools (doc8, ruff...)
+        exclude: |
+            (?x)^(
+                doc/building_blocks/gpu_usage.rst
+                | nilearn/_utils/param_validation.py
+            )$
+
     # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter
-    rev: v2.9
+    rev: v2.10
     hooks:
     -   id: import-linter
         args: [--verbose]

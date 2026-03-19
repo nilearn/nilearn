@@ -2,6 +2,7 @@
 
 import pytest
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.estimator_checks import (
     check_img_estimator_dict_unchanged,
     check_img_estimator_fit_check_is_fitted,
@@ -20,7 +21,7 @@ def test_check_estimator_has_sklearn_is_fitted():
     - running sklearn check_is_fitted on masker throws an error
     """
 
-    class DummyEstimator:
+    class DummyEstimator(NilearnBaseEstimator):
         def __init__(self):
             pass
 
@@ -29,7 +30,7 @@ def test_check_estimator_has_sklearn_is_fitted():
     ):
         check_img_estimator_fit_check_is_fitted(DummyEstimator())
 
-    class DummyEstimator:
+    class DummyEstimator(NilearnBaseEstimator):
         def __init__(self):
             pass
 

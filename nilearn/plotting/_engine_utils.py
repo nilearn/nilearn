@@ -13,6 +13,7 @@ from matplotlib.colors import (
     Normalize,
 )
 
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
@@ -25,6 +26,7 @@ from nilearn.plotting._utils import (
 )
 
 
+@fill_doc
 def threshold_cmap(
     cmap, norm, threshold, threshold_color=(0.5, 0.5, 0.5, 1.0)
 ):

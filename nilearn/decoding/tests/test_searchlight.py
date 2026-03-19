@@ -14,7 +14,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _rng
 from nilearn.decoding import searchlight
 
@@ -115,7 +115,7 @@ def test_searchlight_small_radius():
         n_jobs=n_jobs,
         scoring="accuracy",
         cv=cv,
-        verbose=1,
+        verbose=0,
     )
     sl.fit(data_img, y=cond)
 

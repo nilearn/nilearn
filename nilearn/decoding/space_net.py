@@ -17,13 +17,13 @@ from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
 from sklearn.base import is_classifier
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 from sklearn.linear_model import LinearRegression
-from sklearn.linear_model._base import _preprocess_data as center_data
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import check_cv
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
@@ -33,7 +33,7 @@ from nilearn._utils.param_validation import (
     check_params,
     sanitize_verbose,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.image import get_data
@@ -216,7 +216,7 @@ class _EarlyStoppingCallback:
     for scoring.
     """
 
-    def __init__(self, X_test, y_test, is_classif, debias=False, verbose=0):
+    def __init__(self, X_test, y_test, is_classif, verbose, debias=False):
         self.X_test = X_test
         self.y_test = y_test
         self.is_classif = is_classif
@@ -301,6 +301,48 @@ class _EarlyStoppingCallback:
             return pearson_score, spearman_score
 
 
+def _center_data(X, y):
+    """Center `X` and `y` and store the mean of `y` in `y_offset`.
+    Before centering perform standard input validation of `X`, `y`.
+
+    This function replaces `sklearn.linear_model._base._preprocess_data`. The
+    implementation is inspired from `_preprocess_data`.
+
+    Parameters
+    ----------
+    X : ndarray of shape (n_samples, n_features)
+
+    y : ndarray of shape (n_samples,) or (n_samples, n_targets)
+
+    Returns
+    -------
+    X : ndarray of shape (n_samples, n_features)
+        Centered version of X
+    y : ndarray of shape (n_samples,) or (n_samples, n_targets)
+        Centered version of y
+    y_offset : float or ndarray of shape (n_features,)
+        Mean of y
+    """
+    X = check_array(
+        X,
+        copy=False,
+        accept_sparse=False,
+        dtype=(np.float16, np.float32, np.float64, np.longdouble),
+    )
+    y = check_array(y, dtype=X.dtype, copy=False, ensure_2d=False)
+
+    X_offset = np.asarray(np.average(X, axis=0))
+
+    if X_offset.dtype != X.dtype:
+        X_offset = X_offset.astype(X.dtype, copy=False)
+    X -= X_offset
+
+    y_offset = np.asarray(np.average(y, axis=0))
+    y -= y_offset
+
+    return X, y, y_offset
+
+
 @fill_doc
 def path_scores(
     solver,
@@ -312,13 +354,13 @@ def path_scores(
     train,
     test,
     solver_params,
+    verbose,
     is_classif=False,
     n_alphas=10,
     eps=1e-3,
     key=None,
     debias=False,
     screening_percentile=20,
-    verbose=0,
 ):
     """Compute scores of different alphas in regression \
     and classification used by CV objects.
@@ -398,14 +440,7 @@ def path_scores(
     X_test, y_test = X[test].copy(), y[test].copy()
 
     # it is essential to center the data in regression
-    # do not unpack tuple completely
-    # as it returns more values starting from sklearn 1.8
-    # TODO: try to find a public function in sklearn to do this
-    tmp = center_data(X_train, y_train, fit_intercept=True, copy=False)
-    X_train = tmp[0]
-    y_train = tmp[1]
-    y_train_mean = tmp[3]
-    del tmp
+    X_train, y_train, y_train_mean = _center_data(X_train, y_train)
 
     # misc
     if not isinstance(l1_ratios, collections.abc.Iterable):
@@ -460,7 +495,7 @@ def path_scores(
                     mask=mask,
                     init=init,
                     callback=early_stopper,
-                    verbose=max(verbose - 1, 0.0),
+                    verbose=verbose,
                     **path_solver_params,
                 )
 
@@ -513,7 +548,7 @@ def path_scores(
             y_test,
             is_classif=is_classif,
             debias=debias,
-            verbose=verbose,
+            verbose=max(verbose - 1, 0),
         )._debias(best_w)
 
     if len(test) == 0.0:
@@ -546,7 +581,7 @@ def path_scores(
 
 
 @fill_doc
-class BaseSpaceNet(CacheMixin, LinearRegression):
+class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
     """Regression and classification learners with sparsity and spatial priors.
 
     `SpaceNet` implements Graph-Net and TV-L1 priors /
@@ -718,7 +753,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             return self._estimator_type == "classifier"
         return self.__sklearn_tags__().estimator_type == "classifier"
 
-    def _check_params(self):
+    def _check_params(self) -> None:
         """Make sure parameters are sane."""
         if self.l1_ratios is not None:
             l1_ratios = self.l1_ratios
@@ -902,7 +937,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             alphas,
             y_train_mean,
             (cls, fold),
-        ) in Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)(
+        ) in Parallel(n_jobs=self.n_jobs)(
             delayed(self._cache(path_scores, func_memory_level=2))(
                 solver,
                 X,
@@ -919,7 +954,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 is_classif=is_classifier(self),
                 key=(cls, fold),
                 debias=self.debias,
-                verbose=self.verbose,
+                verbose=max(self.verbose - 1, 0),
                 screening_percentile=self.screening_percentile_,
             )
             for cls in range(n_problems)
@@ -965,7 +1000,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     def _adapt_weights_y_mean_all_coef(self, w):
         return w, self.ymean_, self.all_coef_
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "masker_")
 
     def predict(self, X):
@@ -1161,7 +1196,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         # TODO (sklearn  >= 1.6.0) remove
         self._estimator_type = "classifier"
 
-    def _validate_loss(self, value):
+    def _validate_loss(self, value) -> None:
         if value is not None:
             check_parameter_in_allowed(value, self.SUPPORTED_LOSSES, "loss")
 
@@ -1179,7 +1214,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
             y_numeric=False,
         )
 
-    def _set_intercept(self):
+    def _set_intercept(self) -> None:
         self.intercept_ = self.w_[:, -1]
 
     def score(self, X, y):

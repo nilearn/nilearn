@@ -210,7 +210,7 @@ def _cluster_level_inference_surface(
     stat_img.data._check_n_samples(1)
 
     if mask_img is None:
-        masker = SurfaceMasker().fit(stat_img)
+        masker = SurfaceMasker(standardize=None).fit(stat_img)
         mask_img = masker.mask_img_
         del masker
 
@@ -236,7 +236,7 @@ def _cluster_level_inference_surface(
         tmp_mask = new_img_like(
             stat_img, {"left": mask_left, "right": mask_right}
         )
-        masker = SurfaceMasker(mask_img=tmp_mask).fit()
+        masker = SurfaceMasker(mask_img=tmp_mask, standardize=None).fit()
 
         stats = np.ravel(masker.transform(stat_img))
         hommel_value = _compute_hommel_value(stats, alpha, verbose=verbose)
@@ -273,9 +273,11 @@ def _cluster_level_inference_volume(
 ):
     stat_img = check_niimg_3d(stat_img)
     if mask_img is None:
-        masker = NiftiMasker(mask_strategy="background").fit(stat_img)
+        masker = NiftiMasker(mask_strategy="background", standardize=None).fit(
+            stat_img
+        )
     else:
-        masker = NiftiMasker(mask_img=mask_img).fit()
+        masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
 
     stats = np.ravel(masker.transform(stat_img))
     hommel_value = _compute_hommel_value(stats, alpha, verbose=verbose)
@@ -346,7 +348,7 @@ def threshold_stats_img(
 
               The given value should be within the range of minimum and maximum
               intensity of the input image.
-              All intensities in the interval ``[-threshold, threshold]``
+              All intensities in the interval ``(-threshold, threshold)``
               will be set to zero.
 
             - When ``two_sided`` is False:
@@ -355,16 +357,16 @@ def threshold_stats_img(
 
                 It should be greater than the minimum intensity
                 of the input data.
-                All intensities greater than or equal
-                to the specified threshold will be set to zero.
+                All intensities greater than the specified threshold will be
+                set to zero.
                 All other intensities keep their original values.
 
               - If the threshold is positive:
 
                 It should be less than the maximum intensity
                 of the input data.
-                All intensities less than or equal
-                to the specified threshold will be set to zero.
+                All intensities less than the specified threshold will be set
+                to zero.
                 All other intensities keep their original values.
 
     height_control : :obj:`str`, or None, default='fpr'
@@ -458,15 +460,15 @@ def threshold_stats_img(
 
     if mask_img is None:
         if isinstance(stat_img, SurfaceImage):
-            masker = SurfaceMasker()
+            masker = SurfaceMasker(standardize=None)
         else:
-            masker = NiftiMasker(mask_strategy="background")
+            masker = NiftiMasker(mask_strategy="background", standardize=None)
         masker.fit(stat_img)
     else:
         if isinstance(stat_img, SurfaceImage):
-            masker = SurfaceMasker(mask_img=mask_img)
+            masker = SurfaceMasker(mask_img=mask_img, standardize=None)
         else:
-            masker = NiftiMasker(mask_img=mask_img)
+            masker = NiftiMasker(mask_img=mask_img, standardize=None)
         masker.fit()
 
     stats = np.ravel(masker.transform(stat_img))

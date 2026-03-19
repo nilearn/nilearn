@@ -57,20 +57,9 @@ env:
 jobs:
 
     check_skip_flags:
-        name: Check skip flags
-        runs-on: ubuntu-latest
-        steps:
-        -   name: Get repo
-            uses: actions/checkout@v6
-            with:
-                ref: ${{ github.event.pull_request.head.sha }}
-        -   name: Check head git commit message
-            run: |
-                headCommitMsg=$(git show -s --format=%s)
-                if [[ $headCommitMsg == *"[skip test]"* ]]; then
-                    echo "skipping tests"
-                    exit 1
-                fi
+        uses: ./.github/workflows/check_skip_flags.yml
+        with:
+            skip_type: test
 
     define-matrix:
         runs-on: ubuntu-latest
@@ -166,7 +155,7 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
                 path: |
@@ -176,14 +165,14 @@ jobs:
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
 
         -   name: Upload html coverage
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_htmlcov
                 path: htmlcov
@@ -254,7 +243,7 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
                 path: |
@@ -264,7 +253,7 @@ jobs:
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output

@@ -18,8 +18,6 @@ different regions, we can visualize the matrix as a graph of
 interaction in a brain. To avoid having too dense a graph, we represent
 only the 20% edges with the highest values.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -50,7 +48,6 @@ from nilearn.maskers import NiftiMapsMasker
 
 masker = NiftiMapsMasker(
     maps_img=atlas_filename,
-    standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
     memory_level=1,
@@ -77,9 +74,7 @@ print(time_series.shape)
 # --------------------------------------
 from nilearn.connectome import ConnectivityMeasure
 
-correlation_measure = ConnectivityMeasure(
-    kind="correlation", standardize="zscore_sample", verbose=1
-)
+correlation_measure = ConnectivityMeasure(kind="correlation", verbose=1)
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Display the correlation matrix

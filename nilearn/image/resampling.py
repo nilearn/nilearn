@@ -13,7 +13,7 @@ from scipy.ndimage import affine_transform, find_objects
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import _get_data
+from nilearn._utils.niimg import _get_data, has_non_finite, is_binary_data
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -276,8 +276,7 @@ def _resample_one_img(
         # Integers are always finite
         has_not_finite = False
     else:
-        not_finite = np.logical_not(np.isfinite(data))
-        has_not_finite = np.any(not_finite)
+        has_not_finite, non_finite_mask = has_non_finite(data)
     if has_not_finite:
         warnings.warn(
             "NaNs or infinite values are present in the data "
@@ -294,12 +293,14 @@ def _resample_one_img(
         from ..masking import extrapolate_out_mask
 
         data = extrapolate_out_mask(
-            data, np.logical_not(not_finite), iterations=2
+            data, np.logical_not(non_finite_mask), iterations=2
         )[0]
 
     # If data is binary and interpolation is continuous or linear,
     # warn the user as this might be unintentional
-    if interpolation_order != 0 and np.array_equal(np.unique(data), [0, 1]):
+    if interpolation_order != 0 and is_binary_data(
+        data, accept_non_finite=False
+    ):
         warnings.warn(
             "Resampling binary images with continuous or "
             "linear interpolation. This might lead to "
@@ -332,7 +333,7 @@ def _resample_one_img(
             )
             # We need to resample the mask of not_finite values
             not_finite = affine_transform(
-                not_finite,
+                non_finite_mask,
                 A,
                 offset=b,
                 output_shape=target_shape,
@@ -459,6 +460,11 @@ def resample_img(
     _check_resample_img_inputs(target_shape, target_affine, interpolation)
 
     img = stringify_path(img)
+    # If we have a string (filename), we won't need to copy, as
+    # there will be no side effect
+    if isinstance(img, str):
+        copy = False
+
     img = check_niimg(img)
 
     # If later on we want to impute sform using qform add this condition
@@ -474,9 +480,8 @@ def resample_img(
             )
 
     # noop cases
-    input_img_is_string = isinstance(img, str)
     if _resampling_not_needed(img, target_affine, target_shape):
-        if copy and not input_img_is_string:
+        if copy:
             img = copy_img(img)
         return img
 
@@ -621,7 +626,7 @@ def resample_img(
                 target_shape,
                 interpolation_order,
                 out=resampled_data[all_img + ind],
-                copy=not input_img_is_string,
+                copy=copy,
                 fill_value=fill_value,
             )
 
@@ -791,6 +796,8 @@ def resample_to_img(
     nilearn.image.resample_img
 
     """
+    check_params(locals())
+
     target = check_niimg(target_img)
     target_shape = target.shape
 

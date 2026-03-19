@@ -13,11 +13,11 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
 
-ESTIMATORS_TO_CHECK = [MultiNiftiMasker(standardize=None)]
+ESTIMATORS_TO_CHECK = [MultiNiftiMasker()]
 
 if SKLEARN_LT_1_6:
 
@@ -61,7 +61,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 
 
 @pytest.fixture
-def data_2(shape_3d_default):
+def data_2(shape_3d_default) -> np.ndarray:
     """Return 3D zeros with a few 10 in the center."""
     data = np.zeros(shape_3d_default)
     data[1:-2, 1:-2, 1:-2] = 10
@@ -69,13 +69,13 @@ def data_2(shape_3d_default):
 
 
 @pytest.fixture
-def img_1(data_1, affine_eye):
+def img_1(data_1, affine_eye) -> Nifti1Image:
     """Return Nifti image of 3D zeros with a few 10 in the center."""
     return Nifti1Image(data_1, affine_eye)
 
 
 @pytest.fixture
-def img_2(data_2, affine_eye):
+def img_2(data_2, affine_eye) -> Nifti1Image:
     """Return Nifti image of 3D zeros with a few 10 in the center."""
     return Nifti1Image(data_2, affine_eye)
 
@@ -127,6 +127,7 @@ def test_nan():
     assert not mask[:, :, -1].any()
 
 
+@pytest.mark.slow
 def test_different_affines():
     """Check mask and EIP files with different affines."""
     mask_img = Nifti1Image(
@@ -141,6 +142,7 @@ def test_different_affines():
         masker.inverse_transform(this_epi)
 
 
+@pytest.mark.slow
 def test_3d_images(rng):
     """Test that the MultiNiftiMasker works with 3D images.
 
@@ -157,7 +159,7 @@ def test_3d_images(rng):
 
 
 @pytest.fixture
-def list_random_imgs(img_3d_rand_eye):
+def list_random_imgs(img_3d_rand_eye) -> list[Nifti1Image]:
     """Create a list of random 3D nifti images."""
     return [img_3d_rand_eye] * 2
 
@@ -197,6 +199,7 @@ def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
     np.testing.assert_array_equal(get_data(masker2.mask_img_), mask_ref)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "strategy",
     ["background", *[f"{p}-template" for p in ["whole-brain", "gm", "wm"]]],

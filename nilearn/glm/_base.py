@@ -1,4 +1,5 @@
 import datetime
+import itertools
 import uuid
 import warnings
 from collections import OrderedDict
@@ -8,11 +9,12 @@ from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
+from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
-from sklearn.base import BaseEstimator
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
@@ -20,7 +22,7 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_7, SKLEARN_LT_1_6
 from nilearn._version import __version__
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
@@ -31,6 +33,7 @@ from nilearn.glm._reporting_utils import (
     sanitize_generate_report_input,
     turn_into_full_path,
 )
+from nilearn.image import check_niimg
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.reporting._utils import dataframe_to_html
@@ -48,14 +51,35 @@ from nilearn.typing import ClusterThreshold, HeightControl
 FIGURE_FORMAT = "png"
 
 
-class BaseGLM(CacheMixin, BaseEstimator):
+@fill_doc
+class BaseGLM(CacheMixin, NilearnBaseEstimator):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`.
     """
 
     _estimator_type = "glm"  # TODO (sklearn >= 1.8) remove
 
-    def _is_volume_glm(self):
+    def _doc_link_url_param_generator(self, *args):  # noqa : ARG002
+        """Return doc URL components for GLM estimators.
+
+        GLM doc URL is slightly different than that of other estimators.
+
+        # TODO (sklearn >= 1.7) remove *args from signature
+        """
+        estimator_name = self.__class__.__name__
+        tmp = list(
+            itertools.takewhile(
+                lambda part: not part.startswith("_"),
+                self.__class__.__module__.split("."),
+            )
+        )
+        estimator_module = ".".join([tmp[0], tmp[1], tmp[2]])
+        return {
+            "estimator_module": estimator_module,
+            "estimator_name": estimator_name,
+        }
+
+    def _is_volume_glm(self) -> bool:
         """Return if model is run on volume data or not."""
         return not (
             (
@@ -69,11 +93,30 @@ class BaseGLM(CacheMixin, BaseEstimator):
             )
         )
 
-    def _is_first_level_glm(self):
+    def _is_first_level_glm(self) -> bool:
         """Return True if this estimator is of type FirstLevelModel; False
         otherwise.
         """
         return False
+
+    @property
+    def _mask_img(self) -> Nifti1Image | SurfaceImage | None:
+        """Return mask image using during fit or mask image passed at init."""
+        if self.__sklearn_is_fitted__():
+            return self.mask_img_
+        if self.mask_img is None:
+            return None
+        try:
+            # load mask_img if is a niiimg-like object
+            return check_niimg(self.mask_img)
+        except Exception:
+            return self.mask_img
+
+    @property
+    def mask_img_(self) -> Nifti1Image | SurfaceImage:
+        """Return mask image using during fit."""
+        check_is_fitted(self)
+        return self.masker_.mask_img_
 
     def _attributes_to_dict(self):
         """Return dict with pertinent model attributes & information.
@@ -118,13 +161,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 model_param[k] = v.tolist()
 
         return model_param
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -446,7 +482,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
                   The given value should be within the range of minimum and
                   maximum intensity of the input image.
-                  All intensities in the interval ``[-threshold, threshold]``
+                  All intensities in the interval ``(-threshold, threshold)``
                   will be set to zero.
 
                 - When ``two_sided`` is False:
@@ -455,16 +491,16 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
                     It should be greater than the minimum intensity
                     of the input data.
-                    All intensities greater than or equal
-                    to the specified threshold will be set to zero.
+                    All intensities greater than the specified threshold will
+                    be set to zero.
                     All other intensities keep their original values.
 
                   - If the threshold is positive:
 
                     It should be less than the maximum intensity
                     of the input data.
-                    All intensities less than or equal
-                    to the specified threshold will be set to zero.
+                    All intensities less than the specified threshold will be
+                    set to zero.
                     All other intensities keep their original values.
 
         alpha : :obj:`float`, default=0.001
@@ -537,15 +573,18 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 self._is_first_level_glm(),
             )
         )
-
-        model_attributes = glm_model_attributes_to_dataframe(self)
-        with pd.option_context("display.max_colwidth", 100):
-            model_attributes_html = dataframe_to_html(
-                model_attributes,
-                precision=2,
-                header=True,
-                sparsify=False,
-            )
+        if SKLEARN_GTE_1_7:
+            parameters = self._repr_html_()
+        else:
+            # TODO (sklearn > 1.6.2) remove else block
+            model_attributes = glm_model_attributes_to_dataframe(self)
+            with pd.option_context("display.max_colwidth", 100):
+                parameters = dataframe_to_html(
+                    model_attributes,
+                    precision=2,
+                    header=True,
+                    sparsify=False,
+                )
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data: dict[str, Any] = {
@@ -560,7 +599,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         # we do not rely on filenames stored in the model.
         output = None
         if contrasts is None:
-            output = self._reporting_data.get("filenames", None)
+            output = self._reporting_data.get("filenames")
             if output is not None and output.get("use_absolute_path", True):
                 output = turn_into_full_path(output, output["dir"])
 
@@ -623,6 +662,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             )
             results = make_stat_maps_contrast_clusters(
                 stat_img=statistical_maps,
+                mask_img=self._mask_img,
                 threshold_orig=threshold,
                 alpha=alpha,
                 cluster_threshold=cluster_threshold,
@@ -715,7 +755,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             date=datetime.datetime.now().replace(microsecond=0).isoformat(),
             mask_plot=mask_plot,
             model_type=self.__str__(),
-            parameters=model_attributes_html,
+            parameters=parameters,
             reporting_data=Bunch(**self._reporting_data),
             results=results,
             run_wise_dict=run_wise_dict,

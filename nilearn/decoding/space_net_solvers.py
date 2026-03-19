@@ -5,7 +5,10 @@ from math import sqrt
 import numpy as np
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.masking import unmask_from_to_3d_array
 
 from ._objective_functions import (
@@ -334,7 +337,7 @@ def graph_net_squared_loss(
         callback=callback,
         tol=tol,
         max_iter=max_iter,
-        verbose=verbose,
+        verbose=max(verbose - 1, 0),
         init=init,
     )
 
@@ -420,7 +423,7 @@ def graph_net_logistic(
         callback=callback,
         tol=tol,
         max_iter=max_iter,
-        verbose=verbose,
+        verbose=max(verbose - 1, 0),
         init=init,
     )
 
@@ -546,6 +549,8 @@ def tvl1_solver(
         Solver information, for warm start.
 
     """
+    check_params(locals())
+
     check_parameter_in_allowed(loss, ["mse", "logistic"], "loss")
 
     # shape of image box
