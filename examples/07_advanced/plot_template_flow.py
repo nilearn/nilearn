@@ -15,7 +15,7 @@ from nilearn.datasets import (
 )
 from nilearn.image import mean_img
 from nilearn.maskers import NiftiLabelsMasker, NiftiMapsMasker
-from nilearn.plotting import plot_roi, plot_stat_map, plot_surf_roi, show
+from nilearn.plotting import plot_roi, plot_stat_map, show
 
 # %%
 # Surface template
@@ -24,45 +24,7 @@ from nilearn.plotting import plot_roi, plot_stat_map, plot_surf_roi, show
 # get surface template from templateflow
 #
 #
-from nilearn.surface import SurfaceImage
 
-template = "fsaverage"
-density = "41k"  # number of vertices per hemisphere
-
-mesh = {}
-data = {}
-
-for hemi in ["left", "right"]:
-    mesh[hemi] = tflow.get(
-        template,
-        extension="surf.gii",
-        suffix="pial",
-        density=density,
-        hemi=hemi[0].upper(),
-    )
-
-    data[hemi] = tflow.get(
-        template,
-        atlas="Desikan2006",
-        density=density,
-        hemi=hemi[0].upper(),
-        extension="label.gii",
-    )
-
-lut = tflow.get(
-    template,
-    atlas="Desikan2006",
-    suffix="dseg",
-    extension="tsv",
-)
-
-desikan = SurfaceImage(mesh=mesh, data=data)
-
-# TODO we should be able to pass lut as Path
-# bug to fix
-plot_surf_roi(roi_map=desikan, cmap=pd.read_csv(lut, sep="\t"))
-
-show()
 
 # %%
 # Let's have a look at the Harvard-Oxford deterministic atlas
@@ -72,83 +34,10 @@ harvard_oxford = fetch_atlas_harvard_oxford("cort-maxprob-thr25-1mm")
 
 black_bg = False
 
-plot_roi(
-    harvard_oxford.filename, title="Harvard-Oxford atlas", black_bg=black_bg
-)
-
-# %%
-# Looks fine, no?
-# Well actually,
-# if we plot only contours and
-# check the occipital regions on a few coronal slices,
-# you can see that a region seems to include some non-brain data.
-
-plotting_params = {
-    "view_type": "contours",
-    "display_mode": "x",
-    "cut_coords": [-4, -2, 0],
-    "black_bg": black_bg,
-}
-
-plot_roi(
-    harvard_oxford.filename,
-    title="Harvard-Oxford atlas - contour",
-    **plotting_params,
-)
-
-# %%
-# This is a bit more obvious with the sub-cortical Harvard-Oxford atlas.
-
-harvard_oxford_sub = fetch_atlas_harvard_oxford("sub-maxprob-thr25-1mm")
-
-
-plot_roi(
-    harvard_oxford_sub.filename,
-    title="Harvard-Oxford atlas - sub-cortical",
-    **plotting_params,
-)
-
-# This is because Nilearn, by default, plots images
-# on the MNI template ICBM152 2009 (release a asymmetrical) .
-# where as the template of the Harvard-Oxford atlas is...
-
-print(f"{harvard_oxford.template=}")
-print(f"{harvard_oxford_sub.template=}")
-
-#  %%
-# Getting a template
-# ------------------
-# If you want to visualize the Harvard-Oxford atlas on the proper template,
-# you can get it from templateFlow.
 
 template = "MNI152NLin6Asym"
 resolution = "01"
 
-MNI152NLin6Asym_template_img = tflow.get(
-    template,
-    resolution=resolution,
-    suffix="T1w",
-    desc="brain",
-    extension="nii.gz",
-)
-
-print(f"{MNI152NLin6Asym_template_img=}")
-
-plot_roi(
-    harvard_oxford.filename,
-    title="Harvard-Oxford atlas on MNI152NLin6Asym",
-    bg_img=MNI152NLin6Asym_template_img,
-    **plotting_params,
-)
-
-plot_roi(
-    harvard_oxford_sub.filename,
-    title="Harvard-Oxford atlas sub-cortical on MNI152NLin6Asym",
-    bg_img=MNI152NLin6Asym_template_img,
-    **plotting_params,
-)
-
-show()
 
 # %%
 # Using the wrong template
