@@ -242,13 +242,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._report_content["reports_at_fit_time"] = self.reports
         # initialize reporting content and data
         if self.reports:
-            for part in self.maps_img.data.parts:
-                self._report_content["n_vertices"][part] = (
-                    self.maps_img.mesh.parts[part].n_vertices
-                )
-
-            self._report_content["number_of_regions"] = self.n_elements_
-
             self._reporting_data = {
                 "maps_image": self.maps_img_,
                 "mask": self.mask_img_,
@@ -442,6 +435,13 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._report_content["displayed_maps"] = []
 
         if self._has_report_data():
+            self._report_content["number_of_regions"] = self.n_elements_
+
+            for part in self.maps_img.data.parts:
+                self._report_content["n_vertices"][part] = (
+                    self.maps_img.mesh.parts[part].n_vertices
+                )
+
             maps_image = self._reporting_data["maps_image"]
             n_maps = maps_image.shape[1]
 
