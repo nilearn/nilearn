@@ -397,7 +397,7 @@ class MaskerReportMixin(ReportMixin):
         )
 
     def _set_report_basics(self, **kwargs):
-        super()._set_report_basics(kwargs)
+        super()._set_report_basics(**kwargs)
         report_content = self._report_content
 
         if not isinstance(report_content["coverage"], str):
