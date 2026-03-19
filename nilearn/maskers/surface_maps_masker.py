@@ -135,7 +135,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         "n_vertices": {},
         "number_of_regions": 0,
         "number_of_maps": 0,
-        "displayed_maps": [],
     }
     _template_name = "body_surface_maps_masker.jinja"
 

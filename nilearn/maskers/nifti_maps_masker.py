@@ -176,7 +176,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "This report shows the spatial maps provided to the mask."
         ),
         "number_of_maps": 0,
-        "displayed_maps": [],
     }
     _template_name = "body_nifti_maps_masker.jinja"
 
