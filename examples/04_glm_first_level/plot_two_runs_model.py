@@ -81,7 +81,6 @@ fmri_glm = FirstLevelModel(
 )
 fmri_glm.fit(design_matrices=design_matrices)
 report = fmri_glm.generate_report(title="design only")
-report.open_in_browser()
 
 # This report can be viewed in a notebook.
 report
@@ -288,4 +287,3 @@ report = fmri_glm_multirun.generate_report(
 # .. include:: ../../../examples/report_note.rst
 #
 report
-report.open_in_browser()
