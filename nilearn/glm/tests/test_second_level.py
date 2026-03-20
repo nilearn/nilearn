@@ -523,7 +523,7 @@ def test_slm_4d_image_design_only(img_4d_mni):
     model = model.fit(Y, design_matrix=X)
     c1 = np.eye(len(model.design_matrix_.columns))[0]
     with pytest.raises(
-        RuntimeError, match="Cannot compute contrasts on 'design_only' models."
+        RuntimeError, match="Cannot compute contrasts on 'design_only' models"
     ):
         model.compute_contrast(c1, output_type="z_score")
 
@@ -789,7 +789,7 @@ def test_fmri_img_inputs_errors(confounds):
         TypeError,
         match=(
             "'second_level_input' and 'design_matrix' "
-            "cannot both be None for design only models."
+            "cannot both be None for design only models"
         ),
     ):
         SecondLevelModel(design_only=True).fit(
@@ -1107,7 +1107,7 @@ def test_second_level_input_as_surface_image_design_only(surf_img_1d):
         TypeError,
         match=(
             "'second_level_input' and 'design_matrix' "
-            "cannot both be None for design only models."
+            "cannot both be None for design only models"
         ),
     ):
         model.fit(second_level_input=None, design_matrix=None)
@@ -1116,7 +1116,7 @@ def test_second_level_input_as_surface_image_design_only(surf_img_1d):
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
     with pytest.raises(
-        RuntimeError, match="Cannot compute contrasts on 'design_only' models."
+        RuntimeError, match="Cannot compute contrasts on 'design_only' models"
     ):
         model.compute_contrast()
 

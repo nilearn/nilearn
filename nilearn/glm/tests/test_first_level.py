@@ -30,11 +30,9 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.conftest import _shape_4d_default
-from nilearn.exceptions import NotImplementedWarning
 from nilearn._utils.helpers import is_windows_platform
 from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn.conftest import _shape_4d_default
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import FirstLevelModel, mean_scaling, run_glm
 from nilearn.glm.first_level.design_matrix import (
@@ -1720,7 +1718,7 @@ def test_generate_report_threshold_unused(threshold):
     flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
-    
+
     contrasts = [
         np.asarray([1, 0, 0]),
         np.asarray([1, 1, 0]),
@@ -1735,9 +1733,7 @@ def test_generate_report_threshold_unused(threshold):
                 for warning in warning_list
             )
             == 1
-        )    
-
-    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+        )
 
 
 @pytest.mark.parametrize(
@@ -1801,7 +1797,7 @@ def test_first_level_design_only_compute_contrast_error(
     model.fit(run_imgs=None, design_matrices=design_matrices)
 
     with pytest.raises(
-        RuntimeError, match="Cannot compute contrasts on 'design_only' models."
+        RuntimeError, match="Cannot compute contrasts on 'design_only' models"
     ):
         model.compute_contrast(np.asarray([1, 0, 0]))
 
