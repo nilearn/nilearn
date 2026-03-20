@@ -37,7 +37,10 @@ min = [
     "numpy==1.26.0",
     "pandas==2.3.0",
     "requests==2.30.0",
-    "scikit-learn==1.5.0",
+    # scikit-learn version 1.7.0 has a bug that prevents _repr_html_ to run
+    # correctly
+    # https://scikit-learn.org/stable/whats_new/v1.7.html#sklearn-base
+    "scikit-learn==1.5.0,!=1.7.0",
     "scipy==1.11.1",
     "jinja2==3.1.2"
 ]
@@ -102,7 +105,10 @@ dependencies = [
     "numpy>=1.26.0",
     "pandas>=2.3.0",
     "requests>=2.30.0",
-    "scikit-learn>=1.5.0",
+    # scikit-learn version 1.7.0 has a bug that prevents _repr_html_ to run
+    # correctly
+    # https://scikit-learn.org/stable/whats_new/v1.7.html#sklearn-base
+    "scikit-learn>=1.5.0,!=1.7.0",
     "jinja2>=3.1.2",
     "scipy>=1.11.1",
     "packaging>=26.0.0"
