@@ -86,6 +86,8 @@ pattern.txt
 examples.txt
 gitlog.txt
 merge.txt
+__marimo__
+tmp.html
 
 # examples
 results/
@@ -96,3 +98,7 @@ package-lock.json
 
 # pydeps output
 nilearn.svg
+
+# uv
+uv.lock
+.python-version

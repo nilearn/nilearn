@@ -45,6 +45,8 @@
 
 .. _Audrey Duran: https://github.com/AudreyDuran
 
+.. _Basile Pinsard: https://github.com/bpinsard
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -135,6 +137,8 @@
 
 .. _Jason Kai: https://github.com/kaitj
 
+.. _Jason D. Yeatman: https://edneuro.stanford.edu/
+
 .. _Javier Rasero: https://jrasero.github.io/
 
 .. _Jean Kossaifi: https://jeankossaifi.com/
@@ -148,6 +152,8 @@
 .. _Jerome Dockes: https://jeromedockes.github.io/
 
 .. _Jerome-Alexis Chevalier: https://github.com/ja-che
+
+.. _Johanna Bayer: https://opencodereview.netlify.app/
 
 .. _Johannes Wiesner: https://github.com/JohannesWiesner
 
@@ -243,6 +249,8 @@
 
 .. _Nikhil Krish: https://github.com/NIkhilgKrish
 
+.. _Noah C. Benson: https://nben.net/
+
 .. _Oliver Warrington: https://github.com/OliverWarrington
 
 .. _Oscar Esteban: https://github.com/oesteban
@@ -290,6 +298,8 @@
 .. _Rémi Gau: https://github.com/Remi-Gau
 
 .. _Sachin Patalasingh: https://github.com/sachin-bsai
+
+.. _Saeed Babadi: https://github.com/saeed-neuro
 
 .. _Sage Hahn: https://github.com/sahahn
 

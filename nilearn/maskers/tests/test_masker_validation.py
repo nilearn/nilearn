@@ -125,7 +125,7 @@ class DummyEstimator:
     "kwargs, warning_msg, expected_verbose, expected_memory_level",
     [
         ({"memory": None, "memory_level": 1}, "verbose", 0, 0),
-        ({"verbose": 1}, "memory", 1, 0),
+        ({"verbose": 1}, "memory", 0, 0),
     ],
 )
 def test_check_embedded_masker_defaults(
@@ -170,22 +170,18 @@ def test_check_embedded_masker(mask, masker_type):
 
     assert isinstance(masker, type(mask))
     for param_key in masker.get_params():
-        if param_key not in [
+        if param_key in [
             "memory",
             "memory_level",
             "n_jobs",
             "verbose",
         ]:
-            # TODO (nilearn >= 0.15) if not needed anymore
-            # as this assertion should be true for all attributes
-            if param_key != "standardize":
-                assert getattr(masker, param_key) == getattr(mask, param_key)
-            # TODO (nilearn >= 0.15) remove elif
-            elif getattr(mask, param_key) is False:
-                assert getattr(masker, param_key) is None
-
-        else:
             assert getattr(masker, param_key) == getattr(owner, param_key)
+
+        elif param_key != "standardize":
+            assert getattr(masker, param_key) == getattr(mask, param_key)
+        elif getattr(mask, param_key) is False:
+            assert getattr(masker, param_key) is None
 
 
 def test_check_embedded_masker_with_mask():

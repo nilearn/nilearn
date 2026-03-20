@@ -268,6 +268,15 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
 
     %(verbose0)s
 
+    %(random_state)s
+
+        .. note::
+
+            This parameter will be passed to the underlying
+            ``"svc"`` estimator.
+
+    %(estimator_args)s
+
     Attributes
     ----------
     mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
@@ -284,15 +293,15 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
 
         .. nilearn_versionadded:: 0.12.1
 
-    scores_ : numpy.ndarray
-        3D array containing searchlight scores for each voxel, aligned
-         with the mask.
-
-         .. nilearn_versionadded:: 0.11.0
-
     process_mask_ : numpy.ndarray
         Boolean mask array representing the voxels included in the
          searchlight computation.
+
+         .. nilearn_versionadded:: 0.11.0
+
+    scores_ : numpy.ndarray
+        3D array containing searchlight scores for each voxel, aligned
+         with the mask.
 
          .. nilearn_versionadded:: 0.11.0
 
@@ -325,6 +334,8 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         scoring=None,
         cv=None,
         verbose=0,
+        random_state=0,
+        estimator_args=None,
     ):
         self.mask_img = mask_img
         self.process_mask_img = process_mask_img
@@ -334,6 +345,8 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         self.scoring = scoring
         self.cv = cv
         self.verbose = verbose
+        self.random_state = random_state
+        self.estimator_args = estimator_args
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -378,6 +391,22 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         elif self.estimator == "svc":
             return "classifier"
         return ""
+
+    def _get_estimator(self):
+        if not isinstance(self.estimator, str):
+            return self.estimator
+
+        estimator_args = (
+            {} if self.estimator_args is None else self.estimator_args
+        )
+        if "verbose" not in estimator_args:
+            estimator_args["verbose"] = (self.verbose - 1) > 0
+        if self.estimator == "svc" and "random_state" not in estimator_args:
+            estimator_args["random_state"] = self.random_state
+
+        estimator = ESTIMATOR_CATALOG[self.estimator](**estimator_args)
+
+        return estimator
 
     def fit(self, imgs, y, groups=None):
         """Fit the searchlight.
@@ -437,11 +466,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             mask_img=self.mask_img_,
         )
 
-        estimator = self.estimator
-        if estimator == "svc":
-            estimator = ESTIMATOR_CATALOG[estimator](dual=True)
-        elif isinstance(estimator, str):
-            estimator = ESTIMATOR_CATALOG[estimator]()
+        estimator = self._get_estimator()
 
         scores = search_light(
             X,
@@ -499,9 +524,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             mask_img=self.mask_img_,
         )
 
-        estimator = self.estimator
-        if estimator == "svc":
-            estimator = ESTIMATOR_CATALOG[estimator](dual=True)
+        estimator = self._get_estimator()
 
         # Use the modified `_group_iter_search_light` logic to avoid `y` issues
         result = search_light(

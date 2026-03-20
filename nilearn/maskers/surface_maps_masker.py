@@ -315,6 +315,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         imgs = at_least_2d(imgs)
 
+        imgs = self._smooth(imgs)
+
         self._reporting_data["images"] = imgs
 
         img_data = np.concatenate(
@@ -490,7 +492,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 )
             self._report_content["engine"] = engine
 
-        return super().generate_report(title)
+        return super().generate_report(title=title, engine=engine)
 
     def _reporting(self) -> list:
         """Load displays needed for report.

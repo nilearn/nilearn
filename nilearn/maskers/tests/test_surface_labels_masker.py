@@ -383,7 +383,7 @@ def test_transform_with_mask(surf_mesh, surf_img_2d):
 
 
 @pytest.fixture
-def polydata_labels():
+def polydata_labels() -> dict[str, np.ndarray]:
     """Return polydata with 4 regions."""
     return {
         "left": np.asarray([2, 0, 10, 1]),
@@ -392,7 +392,7 @@ def polydata_labels():
 
 
 @pytest.fixture
-def expected_mean_value():
+def expected_mean_value() -> dict[str, int]:
     """Return expected values for some specific labels."""
     return {
         "1": 5,
@@ -403,7 +403,7 @@ def expected_mean_value():
 
 
 @pytest.fixture
-def data_left_1d_with_expected_mean(rng, expected_mean_value):
+def data_left_1d_with_expected_mean(rng, expected_mean_value) -> np.ndarray:
     """Generate left data with given expected value for one sample."""
     return np.asarray(
         [
@@ -416,7 +416,7 @@ def data_left_1d_with_expected_mean(rng, expected_mean_value):
 
 
 @pytest.fixture
-def data_right_1d_with_expected_mean(rng, expected_mean_value):
+def data_right_1d_with_expected_mean(rng, expected_mean_value) -> np.ndarray:
     """Generate right data with given expected value for one sample."""
     return np.asarray(
         [
@@ -430,7 +430,7 @@ def data_right_1d_with_expected_mean(rng, expected_mean_value):
 
 
 @pytest.fixture
-def expected_signal(expected_mean_value):
+def expected_signal(expected_mean_value) -> np.ndarray:
     """Return signal extract from data with expected mean."""
     return np.asarray(
         [
@@ -443,7 +443,7 @@ def expected_signal(expected_mean_value):
 
 
 @pytest.fixture
-def inverse_data_left_1d_with_expected_mean(expected_mean_value):
+def inverse_data_left_1d_with_expected_mean(expected_mean_value) -> np.ndarray:
     """Return inversed left data with given expected value for one sample."""
     return np.asarray(
         [
@@ -456,7 +456,9 @@ def inverse_data_left_1d_with_expected_mean(expected_mean_value):
 
 
 @pytest.fixture
-def inverse_data_right_1d_with_expected_mean(expected_mean_value):
+def inverse_data_right_1d_with_expected_mean(
+    expected_mean_value,
+) -> np.ndarray:
     """Return inversed right data with given expected value for one sample."""
     return np.asarray(
         [

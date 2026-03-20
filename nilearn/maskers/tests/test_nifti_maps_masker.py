@@ -30,7 +30,7 @@ from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
 
-ESTIMATORS_TO_CHECK = [NiftiMapsMasker(standardize=None)]
+ESTIMATORS_TO_CHECK = [NiftiMapsMasker()]
 
 if SKLEARN_LT_1_6:
 
@@ -101,8 +101,8 @@ def test_nifti_maps_masker_data_atlas_different_shape(
 
     with warnings.catch_warnings(record=True) as warning_list:
         masker.fit(fmri22_img)
-        assert not any(
-            "consider using nearest interpolation instead" in x.message
+        assert all(
+            "consider using nearest interpolation instead" not in x.message
             for x in warning_list
         )
 
@@ -365,8 +365,8 @@ def test_nifti_maps_masker_resampling_to_mask(
 
     with warnings.catch_warnings(record=True) as warning_list:
         signals = masker.fit_transform(img_fmri)
-        assert not any(
-            "consider using nearest interpolation instead" in str(x)
+        assert all(
+            "consider using nearest interpolation instead" not in str(x)
             for x in warning_list
         )
 
@@ -503,4 +503,25 @@ def test_nifti_maps_masker_overlap(maps_img_fn, allow_overlap, img_fmri):
         with pytest.raises(ValueError, match="Overlap detected"):
             masker.fit_transform(img_fmri)
     else:
+        masker.fit_transform(img_fmri)
+
+
+def test_nifti_maps_masker_transform_resample_warning(img_fmri):
+    """Test warnings when images are resampled at transform."""
+    maps_img, _ = generate_maps((13, 11, 12), 2)
+    masker = NiftiMapsMasker(maps_img, resampling_target="data")
+
+    # Images have different fov between fit and transform
+    masker.fit(maps_img)
+    with pytest.warns(
+        UserWarning, match="Resampling maps at transform time..."
+    ):
+        masker.transform(img_fmri)
+
+    # Same fov between fit and transform, but resampling_target="maps"
+    masker = NiftiMapsMasker(maps_img, resampling_target="maps")
+
+    with pytest.warns(
+        UserWarning, match="Resampling images at transform time..."
+    ):
         masker.fit_transform(img_fmri)

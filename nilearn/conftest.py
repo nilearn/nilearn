@@ -935,9 +935,9 @@ def check_parameters_doctring(parameters, doc_dict):
     extras = [param for param in documented if param not in parameters]
 
     # no undocumented
-    assert len(undocumented) == 0
+    assert not undocumented
     # no extras
-    assert len(extras) == 0
+    assert not extras
     # no duplicates
     assert len(documented) == len(set(documented))
 
