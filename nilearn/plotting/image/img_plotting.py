@@ -231,6 +231,13 @@ def _plot_img_with_bg(
             # voxels pass the threshold
             threshold = float(fast_abs_percentile(data)) - 1e-5
 
+        if isinstance(threshold, str):
+            threshold = check_threshold(
+                threshold,
+                data,
+                percentile_func=fast_abs_percentile,
+                name="threshold",
+            )
         img = new_img_like(img, as_ndarray(data), affine)
 
     display = display_factory(display_mode)(
@@ -403,9 +410,8 @@ def plot_img(
         :mod:`nilearn.plotting`
             See API reference for other options
 
-    Example
-    -------
-
+    Examples
+    --------
     >>> from nilearn.plotting.image.img_plotting import plot_img, show
     >>> from nilearn.datasets import load_sample_motor_activation_image
 
