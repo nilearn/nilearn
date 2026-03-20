@@ -659,9 +659,7 @@ class FirstLevelModel(BaseGLM):
             design_matrices,
         )
 
-    def _log(
-        self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
-    ) -> None:
+    def _log(self, step, run_idx=None, t0=None, time_in_second=None) -> None:
         """Generate and log messages for different step of the model fit."""
         if step == "progress":
             msg = self._report_progress(run_idx, t0)
@@ -993,6 +991,11 @@ class FirstLevelModel(BaseGLM):
         self._n_runs_ = (
             len(run_imgs) if isinstance(run_imgs, (list, tuple)) else 1
         )
+        if self.design_only:
+            if isinstance(design_matrices, list):
+                self._n_runs_ = len(design_matrices)
+            if isinstance(events, list):
+                self._n_runs_ = len(events)
 
         run_imgs, events, confounds, sample_masks, design_matrices = (
             self._check_fit_inputs(
@@ -1007,6 +1010,9 @@ class FirstLevelModel(BaseGLM):
         # Initialize masker_ to None such that attribute exists
         self.masker_ = None
 
+        # Assumption: FIXME ?
+        # compute mask based on first run
+        # and apply to all others
         self._prepare_mask(run_imgs[0])
 
         # collect info that may be useful for report generation
@@ -1310,6 +1316,9 @@ class FirstLevelModel(BaseGLM):
 
         # Learn the mask
         if self.mask_img is False:
+            # TODO this changes the value of self.mask_img
+            # this should not happen as per sklearn rules about estimators
+            #
             # We create a dummy mask to preserve functionality of api
             if masker_type == "surface":
                 surf_data = {
@@ -1327,10 +1336,9 @@ class FirstLevelModel(BaseGLM):
 
         self.masker_ = None
         self.n_elements_ = 0
-        if self.design_only:
-            return
 
-        check_compatibility_mask_and_images(self.mask_img, run_img)
+        if not self.design_only or run_img is not None:
+            check_compatibility_mask_and_images(self.mask_img, run_img)
 
         if (  # deal with self.mask_img as image, str, path, none
             (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
@@ -1352,7 +1360,7 @@ class FirstLevelModel(BaseGLM):
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"
 
-            if not self.design_only:
+            if not self.design_only or run_img is not None:
                 with warnings.catch_warnings():
                     # ignore warning in case the masker
                     # was initialized with a mask image
@@ -1370,7 +1378,7 @@ class FirstLevelModel(BaseGLM):
         # whether to do signal_scaling or not
         self.masker_.standardize = self.standardize_
 
-        self.n_elements_ = self.masker_.n_elements_
+        self.n_elements_ = getattr(self.masker_, "n_elements_", 0)
 
 
 def _check_events_file_uses_tab_separators(events_files):

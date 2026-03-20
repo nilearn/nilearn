@@ -113,15 +113,20 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             return self.mask_img
 
     @property
-    def mask_img_(self) -> Nifti1Image | SurfaceImage:
-        """Return mask image using during fit."""
+    def mask_img_(self) -> Nifti1Image | SurfaceImage | None:
+        """Return mask image using during fit.
+
+        When fit happened with ``design_only = True``,
+        it is possible that implicit mask was computed,
+        in this case ``None`` will be returned.
+        """
         check_is_fitted(self)
-        return self.masker_.mask_img_
+        return getattr(self.masker_, "mask_img_", None)
 
     def _attributes_to_dict(self):
         """Return dict with pertinent model attributes & information.
 
-        Returns
+        Returns()
         -------
         dict
         """
