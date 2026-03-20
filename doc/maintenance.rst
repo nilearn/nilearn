@@ -140,7 +140,7 @@ If there is no way for the user to prevent the warning to be thrown,
 consider using a :class:`DeprecationWarning`.
 
 Tests are run via tox using ``-W error::FutureWarning``
-so that Any FutureWarning thrown by a test will raise an error.
+so that any FutureWarning thrown by a test will raise an error.
 To prevent this, any call that will throw a :class:`FutureWarning`
 must be handled with a ``pytest.warns`` context manager:
 
