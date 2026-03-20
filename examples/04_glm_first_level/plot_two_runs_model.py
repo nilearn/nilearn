@@ -77,10 +77,11 @@ fmri_glm = FirstLevelModel(
     smoothing_fwhm=5,
     minimize_memory=False,
     design_only=True,
-    verbose=1
+    verbose=1,
 )
+fmri_glm.fit()
 report = fmri_glm.generate_report()
-# report.open_in_browser()
+report.open_in_browser()
 
 # This report can be viewed in a notebook.
 report
@@ -92,10 +93,7 @@ report
 # we can fit it.
 
 fmri_glm = FirstLevelModel(
-    mask_img=data["mask"],
-    smoothing_fwhm=5,
-    minimize_memory=True,
-    verbose=1
+    mask_img=data["mask"], smoothing_fwhm=5, minimize_memory=True, verbose=1
 )
 
 # %%
