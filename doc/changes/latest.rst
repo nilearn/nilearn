@@ -27,6 +27,8 @@ HIGHLIGHTS
  | - pandas -- 2.3.0
  | - scikit-learn -- 1.5.0
  | - scipy -- 1.11.1
+ | - kaleido -- 1.1.0
+ | - plotly -- 6.1.1
 
 NEW
 ---
