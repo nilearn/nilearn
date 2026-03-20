@@ -721,6 +721,22 @@ def test_fit_inputs_errors(confounds, shape_4d_default):
         )
 
 
+def test_fit_inputs_errors_more(confounds):
+    """Check errors raissed by fit when validating inputs."""
+    _, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
+    fmri_data = fmri_data[0]
+
+    # test niimgs requirements
+    niimgs = [fmri_data, fmri_data, fmri_data]
+    with pytest.raises(ValueError, match="require a design matrix"):
+        SecondLevelModel().fit(niimgs)
+    with pytest.raises(
+        TypeError,
+        match=r"Elements of second_level_input must be of the same type.",
+    ):
+        SecondLevelModel().fit([*niimgs, []], confounds)
+
+
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "filename, sep", [("design.csv", ","), ("design.tsv", "\t")]
@@ -770,22 +786,6 @@ def test_design_matrix_error_type(img_3d_mni, design_matrix):
         SecondLevelModel().fit(
             second_level_input=second_level_input, design_matrix=design_matrix
         )
-
-
-def test_fit_inputs_errors(confounds):
-    """Check errors raissed by fit when validating inputs."""
-    _, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
-    fmri_data = fmri_data[0]
-
-    # test niimgs requirements
-    niimgs = [fmri_data, fmri_data, fmri_data]
-    with pytest.raises(ValueError, match="require a design matrix"):
-        SecondLevelModel().fit(niimgs)
-    with pytest.raises(
-        TypeError,
-        match=r"Elements of second_level_input must be of the same type.",
-    ):
-        SecondLevelModel().fit([*niimgs, []], confounds)
 
 
 @pytest.mark.slow
