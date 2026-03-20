@@ -321,7 +321,8 @@ def test_generate_report_warning_glass_cut_coords(flm, contrasts):
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
-@pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
+# TODO (nilearn >= 0.15) add None to height_control parametrization
+@pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni"])
 def test_slm_reporting_method(slm, height_control):
     """Test for the second level reporting."""
     c1 = np.eye(len(slm.design_matrix_.columns))[0]
