@@ -131,6 +131,7 @@ def test_inverse_transform():
     assert X_inv.shape == X.shape
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("n_clusters", [None, -2, 0, "2"])
 def test_error_n_clusters(n_clusters):
     n_samples = 15

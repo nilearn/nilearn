@@ -487,7 +487,7 @@ docdict["estimator_args"] = """
 estimator_args : dict[str, Any] or None, default=None
     Extra parameters to pass to the scikit-learn estimators.
 
-    .. nilearn_versionadded:: 0.13.1dev
+    .. nilearn_versionadded:: 0.14.0dev
 """
 
 # extractor / extract_type
@@ -1587,6 +1587,9 @@ dummy_output_ : ndarray, shape=(n_classes, 2) \
     Returns None if non-dummy estimators are provided.
 
 estimator_ : Estimator object used during decoding.
+
+estimator_args_ : dict[str, Any]
+    Extra parameters passed to the sklearn learn estimators.
 
 intercept_ : ndarray, shape (nclasses,)
     Intercept (also known as bias) added to the decision function.
