@@ -482,6 +482,14 @@ dtype : dtype like, "auto" or None, default=None
     If None, data will not be converted to a new data type.
 """
 
+# estimator_args
+docdict["estimator_args"] = """
+estimator_args : dict[str, Any] or None, default=None
+    Extra parameters to pass to the scikit-learn estimators.
+
+    .. nilearn_versionadded:: 0.14.0dev
+"""
+
 # extractor / extract_type
 docdict["extractor"] = """
 extractor : {"local_regions", "connected_components"}, default="local_regions"
@@ -1337,6 +1345,9 @@ threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
     If number is given, it must be non-negative. The specified value is used to
     threshold the image: values below the threshold (in absolute value) are
     plotted as transparent.
+    If a string percentile is given, it should finish with percent sign e.g.,
+    “95%”. We threshold based on the score obtained using this percentile
+    on the image data.
     If "auto" is given, the threshold is determined based on the score obtained
     using percentile value "80%" on the absolute value of the image data.
 """
@@ -1576,6 +1587,9 @@ dummy_output_ : ndarray, shape=(n_classes, 2) \
     Returns None if non-dummy estimators are provided.
 
 estimator_ : Estimator object used during decoding.
+
+estimator_args_ : dict[str, Any]
+    Extra parameters passed to the sklearn learn estimators.
 
 intercept_ : ndarray, shape (nclasses,)
     Intercept (also known as bias) added to the decision function.

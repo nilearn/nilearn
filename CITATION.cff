@@ -376,7 +376,7 @@ authors:
   - given-names: Jerome
     family-names: Dockes
     website: https://jeromedockes.github.io/
-    affiliation: Origami lab, McGill University, Montréal, Canada
+    affiliation: Probabl
   - given-names: Jerome-Alexis
     family-names: Chevalier
     website: https://github.com/ja-che
@@ -701,12 +701,15 @@ authors:
   - given-names: Rémi
     family-names: Gau
     website: https://github.com/Remi-Gau
-    affiliation: Origami lab, McGill University, Montréal, Canada
+    affiliation: Inria, Saclay, France
     orcid: https://orcid.org/0000-0002-1535-9767
     email: remi.gau2@mcgill.ca
   - given-names: Sachin
     family-names: Patalasingh
     website: https://github.com/sachin-bsai
+  - given-names: Saeed
+    family-names: Babadi
+    website: https://github.com/saeed-neuro
   - given-names: Sage
     family-names: Hahn
     website: https://github.com/sahahn

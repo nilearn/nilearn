@@ -81,6 +81,7 @@ def test_plot_roi_view_type_error(matplotlib_pyplot):
         demo_plot_roi(view_type="flled")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 def test_demo_plot_roi_output_file(matplotlib_pyplot, tmp_path):
     """Tests plot_roi file saving capabilities."""
