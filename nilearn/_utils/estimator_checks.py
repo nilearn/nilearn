@@ -593,6 +593,8 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
             yield (clone(estimator), check_decoder_compatibility_mask_image)
             yield (clone(estimator), check_decoder_with_surface_data)
             yield (clone(estimator), check_decoder_with_arrays)
+            yield (clone(estimator), check_decoder_estimator_args)
+            yield (clone(estimator), check_verbosity_embedded_masker)
             yield (clone(estimator), check_decoder_screening_n_features)
             if is_regressor(estimator):
                 yield (
@@ -683,6 +685,10 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
     if is_glm(estimator):
         yield (clone(estimator), check_glm_dtypes)
         yield (clone(estimator), check_glm_empty_data_messages)
+        yield (clone(estimator), check_verbosity_embedded_masker)
+
+    if isinstance(estimator, _BaseDecomposition):
+        yield (clone(estimator), check_verbosity_embedded_masker)
 
 
 def _not_fitted_error_message(estimator) -> str:
@@ -1103,7 +1109,55 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     assert len(output_2) >= len(output), f"\n{output=}\n{output_2=}"
 
 
+def check_verbosity_embedded_masker(estimator_orig):
+    """Check control of verbosity of embedded maskers / estimators.
+
+    Only for decoder and GLM
+
+    verbose = 1: only messages from the estimator
+    verbose = 2: also messages from embedded nilearn masker
+    verbose = 3:
+        - for decoders: also messages from sklearn estimator
+    """
+    if not is_gil_enabled():
+        pytest.xfail("Fail without the GIL")
+
+    outputs = {}
+    for verbose in [1, 2, 3]:
+        estimator = clone(estimator_orig)
+        estimator.verbose = verbose
+
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            estimator = fit_estimator(estimator)
+            outputs[verbose] = buffer.getvalue()
+
+    if not isinstance(estimator, _BaseDecomposition) or is_glm(estimator):
+        # no extra output at verbose=3 for decomposition / glm estimators
+        assert len(outputs[1]) > 0
+        assert len(outputs[1]) < len(outputs[2])
+        if not is_glm(estimator):
+            assert len(outputs[2]) < len(outputs[3])
+
+    # verbosity = 1
+    # message from estimator
+    assert f"{estimator.__class__.__name__}.fit" in outputs[1]
+    # message from embedded masker
+    assert "Extracting region signals" not in outputs[1]
+
+    # verbosity = 2
+    assert f"{estimator.__class__.__name__}.fit" in outputs[1]
+    if not isinstance(estimator, (SearchLight, SecondLevelModel)):
+        assert "Extracting region signals" in outputs[2]
+
+    # specific fo GLM
+    if is_glm(estimator):
+        for verbose in [1, 2, 3]:
+            assert re.search(r"Computation of .* done in", outputs[verbose])
+
+
 def _sanitize_standard_output(output):
+    """Clean standard output to facilitate comparison to another output."""
     output = re.sub(
         r"<nibabel.nifti1.Nifti1Image object at .*>", "Nifti1Image", output
     )
@@ -1233,50 +1287,6 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig) -> None:
             )
 
 
-def check_estimator_set_output(estimator_orig) -> None:
-    """Check that set_ouput can be used."""
-    if not hasattr(estimator_orig, "transform") or isinstance(
-        estimator_orig, (SearchLight, ReNA)
-    ):
-        return
-
-    if isinstance(
-        estimator_orig, (_BaseDecomposition, ConnectivityMeasure, _MultiMixin)
-    ):
-        with pytest.raises(NotImplementedError):
-            estimator_orig.set_output(transform="pandas")
-        return
-
-    estimator = clone(estimator_orig)
-    estimator = fit_estimator(estimator)
-
-    img, _ = generate_data_to_fit(estimator)
-
-    signal = estimator.transform(img)
-    if isinstance(estimator, _BaseDecomposition):
-        assert isinstance(signal[0], np.ndarray)
-    else:
-        assert isinstance(signal, np.ndarray)
-
-    estimator.set_output(transform="pandas")
-    signal = estimator.transform(img)
-    assert isinstance(signal, pd.DataFrame)
-
-    estimator.set_output(transform="polars")
-    # if user wants to output to polars,
-    # sklearn will raise error if it's not installed
-    with pytest.raises(ImportError, match="requires polars to be installed"):
-        signal = estimator.transform(img)
-
-    # check on 1D image for estimators that accepts surface
-    if accept_surf_img_input(estimator_orig):
-        estimator = clone(estimator_orig)
-        estimator = fit_estimator(estimator)
-        estimator.set_output(transform="pandas")
-        signal = estimator.transform(img)
-        assert isinstance(signal, pd.DataFrame)
-
-
 def check_fit_returns_self(estimator_orig) -> None:
     """Check maskers return itself after fit.
 
@@ -1286,118 +1296,6 @@ def check_fit_returns_self(estimator_orig) -> None:
 
     fitted_estimator = fit_estimator(estimator)
     assert fitted_estimator is estimator
-
-
-def check_img_estimator_doc_attributes(estimator_orig) -> None:
-    """Check that parameters and attributes are documented.
-
-    - Public parameters should be documented.
-    - Attributes should be in same order as in __init__()
-    - All documented parameters should exist after init.
-    - Fitted attributes (ending with a "_") should be documented.
-    - All documented fitted attributes should exist after fit.
-    """
-    estimator = clone(estimator_orig)
-
-    doc = NumpyDocString(estimator.__doc__)
-    for section in ["Parameters", "Attributes"]:
-        if section not in doc:
-            raise ValueError(
-                f"Estimator {estimator.__class__.__name__} "
-                f"has no '{section} section."
-            )
-
-    # check public attributes before fit
-    parameters = [x for x in estimator.__dict__ if not x.startswith("_")]
-    documented_parameters = {
-        param.name: param.type for param in doc["Parameters"]
-    }
-    undocumented_parameters = [
-        param for param in parameters if param not in documented_parameters
-    ]
-    if undocumented_parameters:
-        raise ValueError(
-            "Missing docstring for "
-            f"[{', '.join(undocumented_parameters)}] "
-            f"in estimator {estimator.__class__.__name__}."
-        )
-    extra_parameters = [
-        attr
-        for attr in documented_parameters
-        if attr not in parameters and attr != "kwargs"
-    ]
-    if extra_parameters:
-        raise ValueError(
-            "Extra docstring for "
-            f"[{', '.join(extra_parameters)}] "
-            f"in estimator {estimator.__class__.__name__}."
-        )
-
-    # avoid duplicates
-    assert len(documented_parameters) == len(set(documented_parameters))
-
-    # Attributes should be in same order as in __init__()
-    tmp = dict(**inspect.signature(estimator.__init__).parameters)
-
-    assert [str(x) for x in documented_parameters] == [str(x) for x in tmp], (
-        f"Parameters of {estimator.__class__.__name__} "
-        f"should be in order {list(tmp)}. "
-        f"Got {list(documented_parameters)}"
-    )
-
-    if isinstance(estimator, (ReNA, GroupSparseCovarianceCV)):
-        # TODO
-        # adapt fit_estimator to handle ReNA and GroupSparseCovarianceCV
-        return
-
-    # check fitted attributes after fit
-    fitted_estimator = fit_estimator(estimator)
-
-    fitted_attributes = [
-        x
-        for x in fitted_estimator.__dict__
-        if x.endswith("_") and not x.startswith("_")
-    ]
-
-    documented_attributes: dict[str, str] = {
-        attr.name: attr.type for attr in doc["Attributes"]
-    }
-    undocumented_attributes: list[str] = [
-        attr for attr in fitted_attributes if attr not in documented_attributes
-    ]
-    if undocumented_attributes:
-        raise ValueError(
-            "Missing docstring for "
-            f"[{', '.join(undocumented_attributes)}] "
-            f"in estimator {estimator.__class__.__name__}."
-        )
-
-    extra_attributes = [
-        attr for attr in documented_attributes if attr not in fitted_attributes
-    ]
-    if extra_attributes:
-        raise ValueError(
-            "Extra docstring for "
-            f"[{', '.join(extra_attributes)}] "
-            f"in estimator {estimator.__class__.__name__}."
-        )
-
-    # avoid duplicates
-    assert len(documented_attributes) == len(set(documented_attributes))
-
-    # nice to have
-    # if possible attributes should be in alphabetical order
-    # not always possible as sometimes doc string are composed from
-    # nilearn._utils.docs
-    if list(documented_attributes) != sorted(documented_attributes):
-        warnings.warn(
-            (
-                f"Attributes of {estimator.__class__.__name__} "
-                f"should be in order {sorted(documented_attributes)}. "
-                f"Got {list(documented_attributes)}"
-            ),
-            stacklevel=find_stack_level(),
-        )
 
 
 def check_img_estimator_dont_overwrite_parameters(estimator_orig) -> None:
@@ -1520,22 +1418,23 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
 
     replaces sklearn check_fit_idempotent
     """
-    if isinstance(estimator_orig, SearchLight) and not is_gil_enabled():
+    if (
+        isinstance(estimator_orig, (SearchLight, Decoder))
+        and not is_gil_enabled()
+    ):
         pytest.xfail("May fail without the GIL")
 
     check_methods = ["predict", "transform", "decision_function"]
 
     for method in check_methods:
-        if not hasattr(estimator_orig, method) or (
-            isinstance(estimator_orig, FREMClassifier)
-            and method == "decision_function"
-        ):
-            # TODO
-            # Fails for FREMClassifier
-            # mostly on Mac and sometimes linux
+        if not hasattr(estimator_orig, method):
             continue
 
         estimator = clone(estimator_orig)
+
+        if isinstance(estimator, FREMClassifier):
+            # relaxes convergence criterion
+            estimator.estimator_args = {"tol": 1e-3}
 
         X, _ = generate_data_to_fit(estimator)
 
@@ -2262,6 +2161,22 @@ def check_decoder_with_arrays(estimator_orig) -> None:
             result_2 = getattr(estimator, method)(X_as_array)
 
         assert_array_equal(result_1, result_2)
+
+
+def check_decoder_estimator_args(estimator_orig):
+    """Check extra_parameters can be passed to the sklearn estimator."""
+    if isinstance(estimator_orig, BaseSpaceNet):
+        # BaseSpaceNet do not have an embedded sklearn estimator
+        # to pass things to.
+        return
+    estimator = clone(estimator_orig)
+    assert hasattr(estimator, "estimator_args")
+    estimator.estimator_args = {"max_iter": 5000}
+    estimator = fit_estimator(estimator)
+
+    if isinstance(estimator_orig, SearchLight):
+        return
+    assert estimator.estimator_.max_iter == 5000
 
 
 def check_decoder_screening_n_features(estimator_orig):

@@ -40,8 +40,12 @@ Fixes
 
 - :bdg-info:`Plotting` Fix bug introduced in ``0.13.0`` while plotting single valued data with :func:`~nilearn.plotting.plot_roi`.  (:gh:`6122` by `Hande Gözükan`_).
 
+- :bdg-info:`Thresholding` Keep values equal to threshold while thresholding image with :func:`~nilearn.image.threshold_img`.  (:gh:`6130` by `Hande Gözükan`_).
+
 Enhancements
 ------------
+
+- :bdg-success:`API` The parameter ``estimator_args`` was added to all decoding estimators to allow to pass parameters directly to the underlying Scikit-Learn estimators (:gh:`5641` by `Rémi Gau`_).
 
 - :bdg-success:`API` :class:`~nilearn.decoding.SearchLight` now has a ``random_state`` and ``estimator_args`` to pass to the underlying estimator (:gh:`6020` by `Rémi Gau`_).
 
