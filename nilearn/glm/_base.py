@@ -662,23 +662,25 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
                     first_level_contrast=first_level_contrast,
                 )
 
-            logger.log(
-                "Generating contrast-level figures...", verbose=self.verbose
-            )
-            results = make_stat_maps_contrast_clusters(
-                stat_img=statistical_maps,
-                mask_img=self._mask_img,
-                threshold_orig=threshold,
-                alpha=alpha,
-                cluster_threshold=cluster_threshold,
-                height_control=height_control,
-                two_sided=two_sided,
-                min_distance=min_distance,
-                bg_img=bg_img,
-                cut_coords=cut_coords,
-                display_mode=display_mode,
-                plot_type=plot_type,
-            )
+            if not self.design_only:
+                logger.log(
+                    "Generating contrast-level figures...",
+                    verbose=self.verbose,
+                )
+                results = make_stat_maps_contrast_clusters(
+                    stat_img=statistical_maps,
+                    mask_img=self._mask_img,
+                    threshold_orig=threshold,
+                    alpha=alpha,
+                    cluster_threshold=cluster_threshold,
+                    height_control=height_control,
+                    two_sided=two_sided,
+                    min_distance=min_distance,
+                    bg_img=bg_img,
+                    cut_coords=cut_coords,
+                    display_mode=display_mode,
+                    plot_type=plot_type,
+                )
 
         design_matrices_dict = Bunch()
         contrasts_dict = Bunch()

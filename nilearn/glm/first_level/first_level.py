@@ -1110,10 +1110,6 @@ class FirstLevelModel(BaseGLM):
 
         """
         check_is_fitted(self)
-        if self.design_only:
-            raise RuntimeError(
-                "Cannot compute contrasts on 'design_only' models."
-            )
 
         if isinstance(contrast_def, (np.ndarray, str)):
             con_vals = [contrast_def]
@@ -1167,13 +1163,26 @@ class FirstLevelModel(BaseGLM):
             "all",  # must be the final entry!
         ]
         check_parameter_in_allowed(output_type, valid_types, "output_type")
-        contrast = compute_fixed_effect_contrast(
-            self.labels_, self.results_, con_vals, stat_type
-        )
         output_types = (
             valid_types[:-1] if output_type == "all" else [output_type]
         )
+
         outputs = {}
+        for output_type_ in output_types:
+            outputs[output_type_] = None
+
+        if self.design_only:
+            warnings.warn(
+                "Cannot compute contrasts on 'design_only' models.",
+                category=UserWarning,
+                stacklevel=find_stack_level(),
+            )
+            return outputs if output_type == "all" else None
+
+        contrast = compute_fixed_effect_contrast(
+            self.labels_, self.results_, con_vals, stat_type
+        )
+
         for output_type_ in output_types:
             estimate_ = getattr(contrast, output_type_)()
             # Prepare the returned images

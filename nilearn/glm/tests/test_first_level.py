@@ -1761,7 +1761,7 @@ def test_first_level_design_only(mask_img, run_imgs, shape_4d_default) -> None:
     model = FirstLevelModel(design_only=True)
 
     report = model.generate_report()
-    assert "The model has not been fit yet." in report.__str__()
+    assert "has not been fit yet." in report.__str__()
     assert "No mask was provided." in report.__str__()
     assert "No statistical map was provided." in report.__str__()
 
@@ -1776,14 +1776,10 @@ def test_first_level_design_only(mask_img, run_imgs, shape_4d_default) -> None:
         np.asarray([1, 0, 0]), title=f"{mask_img is None=}-{run_imgs is None=}"
     )
 
-    assert "The model has not been fit yet." not in report.__str__()
+    assert "has not been fit yet." not in report.__str__()
     assert "No contrast was provided." not in report.__str__()
     assert "No statistical map was provided." in report.__str__()
-
-    if mask_img is None:
-        assert "No mask was provided." in report.__str__()
-    else:
-        assert "No mask was provided." not in report.__str__()
+    assert "No mask was provided." not in report.__str__()
 
 
 def test_first_level_design_only_compute_contrast_error(
@@ -1796,8 +1792,8 @@ def test_first_level_design_only_compute_contrast_error(
     model = FirstLevelModel(design_only=True)
     model.fit(run_imgs=None, design_matrices=design_matrices)
 
-    with pytest.raises(
-        RuntimeError, match="Cannot compute contrasts on 'design_only' models"
+    with pytest.warns(
+        UserWarning, match="Cannot compute contrasts on 'design_only' models"
     ):
         model.compute_contrast(np.asarray([1, 0, 0]))
 
