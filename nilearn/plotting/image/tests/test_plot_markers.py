@@ -97,7 +97,7 @@ def test_plot_markers_threshold(matplotlib_pyplot, threshold, coords):
     )
 
 
-@pytest.mark.thread_safe
+@pytest.mark.thread_unsafe
 def test_plot_markers_tuple_node_coords(matplotlib_pyplot, coords):
     """Smoke test for plot_markers with node coordinates passed \
        as a list of tuples.
