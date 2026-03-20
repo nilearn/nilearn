@@ -518,7 +518,7 @@ class SecondLevelModel(BaseGLM):
     design_only : :obj:`bool`, default=False
         If True the model is specified but not estimated.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.14.0dev
 
     Attributes
     ----------
