@@ -413,10 +413,6 @@ class BaseMasker(_BaseMasker):
         """Needed by sklearn machinery for set_ouput."""
         return self.n_elements_
 
-    @abc.abstractmethod
-    def fit(self, imgs=None, y=None):
-        """Present only to comply with sklearn estimators checks."""
-
     def _get_masker_params(self, ignore: None | list[str] = None, deep=False):
         """Get parameters for this masker.
 
@@ -454,8 +450,8 @@ class BaseMasker(_BaseMasker):
     def _load_mask(self, imgs: None) -> None: ...
 
     @overload
-    def _load_mask(self, imgs: Nifti1Image) -> Nifti1Image: ...      
-      
+    def _load_mask(self, imgs: Nifti1Image) -> Nifti1Image: ...
+
     def _load_mask(self, imgs) -> None | Nifti1Image:
         """Load and validate mask if one passed at init.
 
