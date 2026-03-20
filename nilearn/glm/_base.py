@@ -126,7 +126,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
     def _attributes_to_dict(self):
         """Return dict with pertinent model attributes & information.
 
-        Returns()
+        Returns
         -------
         dict
         """
