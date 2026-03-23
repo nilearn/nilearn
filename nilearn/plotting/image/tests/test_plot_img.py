@@ -46,6 +46,7 @@ def test_display_methods(matplotlib_pyplot, img_3d_mni):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_display_methods_invalid_threshold(matplotlib_pyplot, img_3d_mni):
     """Tests display methods for negative threshold."""
     with pytest.raises(
@@ -145,6 +146,7 @@ def test_plot_img_transparency_range_error(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_img_transparency_binary_image(
     matplotlib_pyplot,
     shape_3d_default,
