@@ -472,9 +472,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             report will use the available plotting engine. If none of the
             engines are installed, no report will be generated.
 
-            Dictionary of extra key-words arguments to pass
-            to `_run_report_checks`.
-
         %(displayed_maps)s
 
         Returns
