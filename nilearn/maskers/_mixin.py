@@ -411,7 +411,7 @@ class MaskerReportMixin(ReportMixin):
         report_content["page_title"] = f"{report_content['title']} report"
         report_content["estimator_type"] = self._estimator_type
 
-    def generate_report(self, **kwargs) -> HTMLReport:
+    def _generate_report(self, **kwargs) -> HTMLReport:
         """Generate an HTML report for this masker.
 
         Parameters

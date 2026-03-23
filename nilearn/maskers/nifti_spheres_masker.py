@@ -423,7 +423,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         report : `nilearn.reporting.HTMLReport`
             HTML report for the masker.
         """
-        return super().generate_report(
+        return super()._generate_report(
             title=title, displayed_spheres=displayed_spheres
         )
 

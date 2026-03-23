@@ -480,7 +480,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         report : `nilearn.reporting.HTMLReport`
             HTML report for the masker.
         """
-        return super().generate_report(
+        return super()._generate_report(
             displayed_maps=displayed_maps, engine=engine, title=title
         )
 
