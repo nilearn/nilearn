@@ -455,7 +455,7 @@ class MaskerReportMixin(ReportMixin):
             report_content["summary_html"] = self._get_summary_html(summary)
 
     def _create_partial_figures(self):
-        """Create partial image htmls Using partial template for masker
+        """Create partial image htmls using partial template for masker
         figures.
         """
         embeded_images = None
