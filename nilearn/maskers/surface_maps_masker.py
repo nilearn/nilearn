@@ -462,6 +462,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         Parameters
         ----------
+        %(displayed_maps)s
+
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
 
@@ -472,8 +474,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             will be interactive. If the selected engine is not installed, the
             report will use the available plotting engine. If none of the
             engines are installed, no report will be generated.
-
-        %(displayed_maps)s
 
         Returns
         -------
