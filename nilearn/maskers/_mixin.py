@@ -411,23 +411,13 @@ class MaskerReportMixin(ReportMixin):
         report_content["page_title"] = f"{report_content['title']} report"
         report_content["estimator_type"] = self._estimator_type
 
-    def generate_report(
-        self,
-        **kwargs,
-    ) -> HTMLReport:
+    def generate_report(self, **kwargs) -> HTMLReport:
         """Generate an HTML report for this masker.
 
         Parameters
         ----------
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        engine : :obj:`str`, default="matplotlib"
-            Choice of engine to display the mask.
-
         kwargs : :obj:`dict` [ :obj:`str` , Any]
-            Dictionary of extra key-words arguments necessary for report
-            generation.
+            Dictionary of key-word arguments necessary for report generation.
 
         Returns
         -------
