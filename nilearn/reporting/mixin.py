@@ -4,7 +4,6 @@ functionality.
 
 import uuid
 import warnings
-from abc import ABC, abstractmethod
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
@@ -34,7 +33,7 @@ from nilearn.reporting.utils import (
 OTHER_JS = Path(__file__).parents[1] / "plotting" / "data" / "js"
 
 
-class ReportMixin(ABC):
+class ReportMixin:
     """A mixin class to be used with classes that require reporting
     functionality. It provides generic methods for report generation.
 
@@ -343,22 +342,3 @@ class ReportMixin(ABC):
             report_content["stat_map_base64"] = self._reporting_data[
                 "stat_map_base64"
             ]
-
-    @abstractmethod
-    def generate_report(self, **kwargs: object) -> HTMLReport:
-        """Generate an HTML report for this estimator.
-
-        This method should be implemented in classes which inherit from
-        `ReportMixin`.
-
-        Parameters
-        ----------
-        kwargs : :obj:`dict` [ :obj:`str` , Any]
-            Dictionary of key-word arguments necessary for report generation.
-
-        Returns
-        -------
-        report : `nilearn.reporting.HTMLReport`
-            HTML report for the masker.
-        """
-        raise NotImplementedError()
