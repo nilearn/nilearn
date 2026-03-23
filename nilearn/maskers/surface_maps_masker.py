@@ -31,6 +31,7 @@ from nilearn.maskers.base_masker import (
     mask_logger,
     sanitize_displayed_maps,
 )
+from nilearn.reporting.mixin import HTMLReport
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -452,7 +453,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         | Literal["all"] = 10,
         engine: str = "matplotlib",
         title: str | None = None,
-    ):
+    ) -> HTMLReport:
         """Generate an HTML report for the current ``SurfaceMapsMasker``
         object.
 
