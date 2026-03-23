@@ -687,6 +687,7 @@ def test_with_one_events_missing(tmp_path_factory):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_one_confound_missing(tmp_path_factory):
     """There must be only one confound file per image or none.
 
