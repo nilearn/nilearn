@@ -89,6 +89,7 @@ def test_plot_markers_cmap(matplotlib_pyplot, cmap, vmin, vmax, coords):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", [-100, 2.5])
 def test_plot_markers_threshold(matplotlib_pyplot, threshold, coords):
     """Smoke test for plot_markers with different threshold values."""
