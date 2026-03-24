@@ -427,6 +427,7 @@ class MaskerReportMixin(ReportMixin):
 
             - "brainsprite" for NiftiMasker, MultiNiftiMasker,
             NiftiLabelsMasker, MultiNiftiLabelsMasker
+
             - "plotly" for SurfaceMasker, MultiSurfaceMasker,
             SurfaceLabelsMasker, MultiSurfaceLabelsMasker, SurfaceMapsMasker,
             MultiSurfaceMapsMasker
@@ -465,6 +466,7 @@ class MaskerReportMixin(ReportMixin):
         report_content["figure"] = figure
         report_content["content"] = embeded_images
 
+        # _create_partial_figures should be called before setting summary_html
         summary = self._report_content.get("summary", None)
         if summary is not None:
             report_content["summary_html"] = self._get_summary_html(summary)
