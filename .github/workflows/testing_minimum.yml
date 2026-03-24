@@ -12,6 +12,7 @@
 name: test minimal version of each dependency
 
 on:
+    pull_request:
     schedule:
         # Uses the cron schedule for github actions
         # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
@@ -65,8 +66,7 @@ jobs:
 
         -   name: Install dependencies for building Nilearn
             run: |
-                python -m pip install --upgrade pip setuptools
-                pip install ${{ matrix.min_dep }}
+                python -m pip install --upgrade pip
 
         -   name: Install oldest kaleido if needed (not windows)
             if: ${{ matrix.os != 'windows-latest' && matrix.min_dep == 'plotly==5.0.0' }}
@@ -79,7 +79,9 @@ jobs:
                 pip install kaleido==0.1.0.post1
 
         -   name: Install nilearn
-            run: pip install .[plotting] --group test
+            run: |
+                pip install .[plotting] --group test
+                pip install ${{ matrix.min_dep }}
 
         -   name: Run tests
             id: test_minimum
