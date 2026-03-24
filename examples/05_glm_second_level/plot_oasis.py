@@ -102,6 +102,8 @@ fig.suptitle("Second level design matrix")
 # %%
 # Next, we specify and fit the second-level model when loading the data and
 # also smooth a little bit to improve statistical behavior.
+# We first specify the model in with ``design_only=True``
+# to inpect it in a report.
 from nilearn.glm.second_level import SecondLevelModel
 
 second_level_model = SecondLevelModel(
@@ -110,7 +112,25 @@ second_level_model = SecondLevelModel(
     n_jobs=2,
     minimize_memory=False,
     verbose=1,
+    design_only=True,
 )
+second_level_model.fit(
+    gray_matter_map_filenames,
+    design_matrix=design_matrix,
+)
+
+report = second_level_model.generate_report()
+
+# %%
+#
+# .. include:: ../../../examples/report_note.rst
+#
+report.open_in_browser()
+
+# %%
+# After this quality control,
+# we can fit the model for good.
+second_level_model.design_only = False
 second_level_model.fit(
     gray_matter_map_filenames,
     design_matrix=design_matrix,
@@ -169,8 +189,6 @@ show()
 # Generate a report for the GLM
 # -----------------------------
 #
-# Generate a report and view it.
-#
 
 icbm152_2009 = fetch_icbm152_2009()
 
@@ -185,4 +203,4 @@ report = second_level_model.generate_report(
 #
 # .. include:: ../../../examples/report_note.rst
 #
-report
+report.open_in_browser()

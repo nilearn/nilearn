@@ -68,11 +68,7 @@ def _check_second_level_input(
     """Check second_level_input type."""
     _check_design_matrix(design_matrix)
     if design_only:
-        if second_level_input is not None:
-            raise TypeError(
-                "'second_level_input' can only be None for design only models."
-            )
-        elif second_level_input is None and design_matrix is None:
+        if second_level_input is None and design_matrix is None:
             raise TypeError(
                 "'second_level_input' and 'design_matrix' "
                 "cannot both be None for design only models."
