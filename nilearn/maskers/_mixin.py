@@ -390,8 +390,7 @@ class MaskerReportMixin(ReportMixin):
 
     def __init_subclass__(cls):
         super().__init_subclass__()
-        # sets implementing class _REPORT_DEFAULTS
-        # updating the base class value with implementing class value
+        # update ReportMixin defaults with masker _REPORT_DEFAULTS
         cls._REPORT_DEFAULTS = cls._update_defaults(
             MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
@@ -424,10 +423,11 @@ class MaskerReportMixin(ReportMixin):
         engine : :obj:`str`, default="matplotlib"
             Choice of engine to display the mask.
 
-            Options are :
-            {"matplotlib", "brainsprite"} for NiftiMasker, MultiNiftiMasker,
+            "matplotlib" can be set for all maskers. Other options are :
+
+            - "brainsprite" for NiftiMasker, MultiNiftiMasker,
             NiftiLabelsMasker, MultiNiftiLabelsMasker
-            {"matplolib", "plotly"} for SurfaceMasker, MultiSurfaceMasker,
+            - "plotly" for SurfaceMasker, MultiSurfaceMasker,
             SurfaceLabelsMasker, MultiSurfaceLabelsMasker, SurfaceMapsMasker,
             MultiSurfaceMapsMasker
 
