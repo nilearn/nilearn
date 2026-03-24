@@ -819,7 +819,7 @@ class SecondLevelModel(BaseGLM):
         }
 
     def _get_element_wise_model_attribute(
-        self, attribute, result_as_time_series
+        self, attribute, result_as_time_series, Y=None
     ):
         """Transform RegressionResults instances within a dictionary \
         (whose keys represent the autoregressive coefficient under the 'ar1' \
@@ -837,6 +837,10 @@ class SecondLevelModel(BaseGLM):
             whether the RegressionResult attribute has a value
             per timepoint of the input nifti image.
 
+        Y : Niimg-like object, default=None
+            The data from which to compute the attribute.
+            Required for 'residuals' and 'normalized_residuals'.
+
         Returns
         -------
         output : :obj:`list`
@@ -845,10 +849,10 @@ class SecondLevelModel(BaseGLM):
         """
         check_is_fitted(self)
         # check if valid attribute is being accessed.
-        all_attributes = dict(vars(RegressionResults)).keys()
         possible_attributes = [
-            prop for prop in all_attributes if "__" not in prop
+            prop for prop in dict(vars(RegressionResults)) if "__" not in prop
         ]
+        possible_attributes += RegressionResults.__static_attributes__
         if attribute not in possible_attributes:
             msg = f"attribute must be one of: {possible_attributes}"
             raise ValueError(msg)
@@ -880,11 +884,22 @@ class SecondLevelModel(BaseGLM):
         else:
             voxelwise_attribute = np.zeros((1, len(self.labels_)))
 
+        Y_matrix = self.masker_.transform(Y) if Y is not None else None
+
         for label_ in self.results_:
             label_mask = self.labels_ == label_
-            voxelwise_attribute[:, label_mask] = getattr(
-                self.results_[label_], attribute
-            )
+            attr = getattr(self.results_[label_], attribute)
+            if attribute in ["residuals", "normalized_residuals"]:
+                if Y_matrix is None:
+                    raise ValueError(f"Attribute {attribute} requires data Y.")
+                val = attr(Y_matrix[:, label_mask])
+            elif attribute == "predicted":
+                val = attr()
+            else:
+                val = attr
+
+            voxelwise_attribute[:, label_mask] = val
+
         return self.masker_.inverse_transform(voxelwise_attribute)
 
 

@@ -1,7 +1,6 @@
 """Implement classes to handle statistical tests on likelihood models."""
 
 import numpy as np
-from nibabel.onetime import auto_attr
 from scipy.linalg import inv
 from scipy.stats import t as t_distribution
 
@@ -23,11 +22,11 @@ class LikelihoodModelResults:
     theta : ndarray
         Parameter estimates from estimated model.
 
-    Y : ndarray
-        Data.
-
     model : ``LikelihoodModel`` instance
         Model used to generate fit.
+
+    n_samples : int
+        Total number of observations (number of rows in the data Y).
 
     cov : None or ndarray, default=None
         Covariance of thetas.
@@ -52,14 +51,13 @@ class LikelihoodModelResults:
     def __init__(
         self,
         theta,
-        Y,
         model,
+        n_samples,
         cov=None,
         dispersion=1.0,
         nuisance=None,
     ):
         self.theta = theta
-        self.Y = Y
         self.model = model
         if cov is None:
             self.cov = self.model.information(
@@ -70,17 +68,25 @@ class LikelihoodModelResults:
         self.dispersion = dispersion
         self.nuisance = nuisance
 
-        self.df_total = Y.shape[0]
+        self.df_total = n_samples
         self.df_model = model.df_model
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
 
-    # @auto_attr store the value as an object attribute after initial call
-    # better performance than @property
-    @auto_attr
-    def logL(self):  # noqa: N802
-        """Return the maximized log-likelihood."""
-        return self.model.logL(self.theta, self.Y, nuisance=self.nuisance)
+    def logL(self, Y):  # noqa: N802
+        """Return the maximized log-likelihood.
+
+        Parameters
+        ----------
+        Y : ndarray
+            Data for which to compute the log-likelihood.
+
+        Returns
+        -------
+        float
+            The maximized log-likelihood.
+        """
+        return self.model.logL(self.theta, Y, nuisance=self.nuisance)
 
     def t(self, column=None):
         """
