@@ -50,7 +50,7 @@ from nilearn.typing import NiimgLike
 
 def _input_type_error_message(second_level_input):
     return (
-        "second_level_input must be either:\n"
+        "'second_level_input' must be either:\n"
         "- a pandas DataFrame,\n"
         "- a Niimg-like object\n"
         "- a pandas Series of Niimg-like object\n"
@@ -67,13 +67,12 @@ def _check_second_level_input(
 ) -> None:
     """Check second_level_input type."""
     _check_design_matrix(design_matrix)
-    if not design_only:
-        if second_level_input is None:
+    if design_only:
+        if second_level_input is not None:
             raise TypeError(
                 "'second_level_input' can only be None for design only models."
             )
-    elif second_level_input is None:
-        if design_matrix is None:
+        elif second_level_input is None and design_matrix is None:
             raise TypeError(
                 "'second_level_input' and 'design_matrix' "
                 "cannot both be None for design only models."

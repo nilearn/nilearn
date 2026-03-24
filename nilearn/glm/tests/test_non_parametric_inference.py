@@ -370,7 +370,7 @@ def test_contrast_computation_errors(rng, n_subjects):
     func_img, mask = fake_fmri_data()
 
     # asking for contrast before model fit gives error
-    with pytest.raises(TypeError, match="second_level_input must be either"):
+    with pytest.raises(TypeError, match="'second_level_input' must be either"):
         non_parametric_inference(
             second_level_input=None,
             second_level_contrast="intercept",
