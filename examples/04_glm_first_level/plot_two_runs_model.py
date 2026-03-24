@@ -88,7 +88,7 @@ report
 # %%
 # Run the GLM
 # -----------
-# Now that we are certain that this is model we want to run,
+# Now that we are certain that this is the model we want to run,
 # we can fit it.
 
 fmri_glm = FirstLevelModel(
