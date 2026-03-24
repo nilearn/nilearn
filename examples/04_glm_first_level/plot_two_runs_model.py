@@ -59,7 +59,8 @@ design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 # %%
 # Specify the model and inspect it
 # --------------------------------
-# First, we need to specify the model
+#
+# First, we need to specify the model for both runs
 # before fitting it to the data.
 #
 # We can specify the model without fitting it
@@ -85,78 +86,77 @@ report = fmri_glm.generate_report(title="design only")
 # This report can be viewed in a notebook.
 report
 
+
 # %%
 # Run the GLM
 # -----------
 # Now that we are certain that this is the model we want to run,
 # we can fit it.
+#
+# We can then compare run-specific and fixed effects.
+# Here, we compare the activation produced from each run separately
+# and then the fixed effects version.
+#
+# Run-specific contrasts
+# ^^^^^^^^^^^^^^^^^^^^^^
+#
+# First, we define the contrast of interest for the each run.
+#
+# This may differ across runs depending on the design matrices.
+#
+# We can just define the contrast array for one run and assume
+# that the design matrix is the same for the other.
+# However, if we want to be safe, we should define each contrast separately,
+# and provide it as a list.
+#
+
+contrast_id = "DSt_minus_SSt"
+
+contrast_val = [
+    np.array([[-1, -1, 1, 1]]),  # run 1
+    np.array([[-1, -1, 1, 1]]),  # run 2
+]
 
 fmri_glm = FirstLevelModel(
     mask_img=data["mask"], smoothing_fwhm=5, minimize_memory=True, verbose=1
 )
 
-# %%
-# Compare run-specific and fixed effects contrasts
-# ------------------------------------------------
-# We can then compare run-specific and fixed effects.
-# Here, we compare the activation produced from each run separately
-# and then the fixed effects version.
-contrast_id = "DSt_minus_SSt"
+# Let's use the same plotting range and slices for all plots.
+plotting_params = {
+    "threshold": 3,
+    "vmax": 6.0,
+    "cut_coords": [-129, -126, 49],
+    "bg_img": mean_img_,
+}
 
 # %%
-# Compute the statistics for the first run.
+# We can now fit the model, compute and plot each contrast.
 #
-# Here, we define the contrast of interest for the first run.
-# This may differ across runs depending on if the design matrices vary.
 from nilearn.plotting import plot_stat_map, show
 
-contrast_val = [[-1, -1, 1, 1]]
+summary_statistics_per_run = {}
 
-fmri_glm_run_1 = fmri_glm.fit(fmri_imgs[0], design_matrices=design_matrices[0])
-summary_statistics_run_1 = fmri_glm_run_1.compute_contrast(
-    contrast_val,
-    output_type="all",
-)
+for i_run in [0, 1]:
+    fmri_glm_per_run = fmri_glm.fit(
+        fmri_imgs[i_run], design_matrices=design_matrices[i_run]
+    )
 
-# Let's use the same plotting range and slices for all plots.
-threshold = 3
-vmax = 6.0
-cut_coords = [-129, -126, 49]
+    summary_statistics_per_run[i_run] = fmri_glm_per_run.compute_contrast(
+        contrast_val[i_run],
+        output_type="all",
+    )
 
-plot_stat_map(
-    summary_statistics_run_1["z_score"],
-    bg_img=mean_img_,
-    threshold=threshold,
-    cut_coords=cut_coords,
-    title=f"{contrast_id}, first run",
-    vmax=vmax,
-)
+    plot_stat_map(
+        summary_statistics_per_run[i_run]["z_score"],
+        title=f"{contrast_id}, first run",
+        **plotting_params,
+    )
 
 show()
 
-# %%
-# Compute the statistics for the second run.
-fmri_glm_run_2 = fmri_glm.fit(fmri_imgs[1], design_matrices=design_matrices[1])
-
-contrast_val = np.array([[-1, -1, 1, 1]])
-
-summary_statistics_run_2 = fmri_glm_run_2.compute_contrast(
-    contrast_val,
-    output_type="all",
-)
-plot_stat_map(
-    summary_statistics_run_2["z_score"],
-    bg_img=mean_img_,
-    threshold=threshold,
-    cut_coords=cut_coords,
-    title=f"{contrast_id}, second run",
-    vmax=vmax,
-)
-
-show()
 
 # %%
-# Compute the fixed effects statistics
+# We then compute the fixed effects statistics
 # using the statistical maps of both runs.
 #
 # We can use :func:`~nilearn.glm.compute_fixed_effects` to compute
@@ -165,24 +165,19 @@ show()
 from nilearn.glm.contrasts import compute_fixed_effects
 
 contrast_imgs = [
-    summary_statistics_run_1["effect_size"],
-    summary_statistics_run_2["effect_size"],
+    summary_statistics_per_run[0]["effect_size"],
+    summary_statistics_per_run[1]["effect_size"],
 ]
 variance_imgs = [
-    summary_statistics_run_1["effect_variance"],
-    summary_statistics_run_2["effect_variance"],
+    summary_statistics_per_run[0]["effect_variance"],
+    summary_statistics_per_run[1]["effect_variance"],
 ]
 
-fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _ = compute_fixed_effects(
+_, _, fixed_fx_stat, _ = compute_fixed_effects(
     contrast_imgs, variance_imgs, data["mask"]
 )
 plot_stat_map(
-    fixed_fx_stat,
-    bg_img=mean_img_,
-    threshold=threshold,
-    cut_coords=cut_coords,
-    title=f"{contrast_id}, fixed effects",
-    vmax=vmax,
+    fixed_fx_stat, title=f"{contrast_id}, fixed effects", **plotting_params
 )
 
 show()
@@ -196,7 +191,7 @@ show()
 
 # %%
 # Compute fixed effects statistics using preprocessed data of both runs
-# ---------------------------------------------------------------------
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # A more straightforward alternative to fitting run-specific GLMs,
 # than combining the results with :func:`~nilearn.glm.compute_fixed_effects`,
@@ -207,28 +202,11 @@ show()
 # we can again reuse the first run's contrast vector.
 fmri_glm_multirun = fmri_glm.fit(fmri_imgs, design_matrices=design_matrices)
 
-# %%
-# We can just define the contrast array for one run and assume
-# that the design matrix is the same for the other.
-# However, if we want to be safe, we should define each contrast separately,
-# and provide it as a list.
-contrast_val = [
-    np.array([[-1, -1, 1, 1]]),  # run 1
-    np.array([[-1, -1, 1, 1]]),  # run 2
-]
-
 z_map = fmri_glm_multirun.compute_contrast(
     contrast_val,
     output_type="z_score",
 )
-plot_stat_map(
-    z_map,
-    bg_img=mean_img_,
-    threshold=threshold,
-    cut_coords=cut_coords,
-    title=f"{contrast_id}, fixed effects",
-    vmax=vmax,
-)
+plot_stat_map(z_map, title=f"{contrast_id}, fixed effects", **plotting_params)
 
 show()
 
@@ -264,7 +242,9 @@ print("Computing contrasts...")
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print(f"  Contrast {index + 1:02g} out of {len(contrasts)}: {contrast_id}")
     # Estimate the contasts.
-    z_map = fmri_glm.compute_contrast(contrast_val, output_type="z_score")
+    z_map = fmri_glm_multirun.compute_contrast(
+        contrast_val, output_type="z_score"
+    )
 
     # Write the resulting stat images to file.
     z_image_path = output_dir / f"{contrast_id}_z_map.nii.gz"
