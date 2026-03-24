@@ -559,8 +559,7 @@ class FirstLevelModel(BaseGLM):
     ):
         """Run input validation and ensure inputs are compatible."""
         if self.design_only:
-            if design_matrices is not None:
-                run_imgs = [None] * self._n_runs_
+            run_imgs = [None] * self._n_runs_
 
         elif not isinstance(
             run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
@@ -595,8 +594,10 @@ class FirstLevelModel(BaseGLM):
             parameters_to_ignore = []
             if confounds is not None:
                 parameters_to_ignore.append("confounds")
+                confounds = None
             if events is not None:
                 parameters_to_ignore.append("events")
+                events = None
             if parameters_to_ignore:
                 warn(
                     "If design matrices are supplied, "
@@ -992,10 +993,14 @@ class FirstLevelModel(BaseGLM):
             len(run_imgs) if isinstance(run_imgs, (list, tuple)) else 1
         )
         if self.design_only:
-            if isinstance(design_matrices, list):
-                self._n_runs_ = len(design_matrices)
-            if isinstance(events, list):
-                self._n_runs_ = len(events)
+            if design_matrices is not None:
+                self._n_runs_ = (
+                    len(design_matrices)
+                    if isinstance(design_matrices, list)
+                    else 1
+                )
+            elif events is not None:
+                self._n_runs_ = len(events) if isinstance(events, list) else 1
 
         run_imgs, events, confounds, sample_masks, design_matrices = (
             self._check_fit_inputs(
