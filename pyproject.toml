@@ -137,8 +137,6 @@ kaleido = [
 plotting = [
     "nilearn[kaleido]",
     "matplotlib>=3.8.0",
-    # plotly 6.1.0 cannot save images
-    # https://github.com/plotly/plotly.py/issues/5187
     "plotly>=5.0.0,!=6.1.0 ; platform_system != 'Windows'",
     "plotly>=5.0.0,<6.1.0 ; platform_system == 'Windows'"
 ]
@@ -348,7 +346,7 @@ log_level = "INFO"
 markers = [
     "slow",  # for tests that exceed the timeout allowed for each test
     "single_process",  # for test that require testing n_jobs>1 or that are flaky when used xdist testing parallelization
-    "thread_unsafe"
+    "thread_unsafe"  # marker used by pytest-run-parallel: adding it here to avoid warning and not always install the extension
 ]
 minversion = "6.0"
 testpaths = ["nilearn"]
@@ -475,6 +473,7 @@ max-complexity = 23
 "nilearn/plotting/image/tests/test_img_plotting.py" = ["D103"]
 "nilearn/plotting/matrix/tests/test_matrix_plotting.py" = ["D103"]
 "nilearn/plotting/matrix/tests/test_utils.py" = ["D103"]
+"nilearn/plotting/surface/tests/conftest.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_html_surface.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_surf_plotting.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_utils.py" = ["D103"]
@@ -485,7 +484,7 @@ max-complexity = 23
 "nilearn/plotting/tests/test_html_stat_map.py" = ["D103"]
 "nilearn/plotting/tests/test_img_comparisons.py" = ["D103"]
 "nilearn/regions/**/{tests}/*" = ["D103"]  # 64 errors to fix
-"nilearn/surface/tests/test_surface.py" = ["D103"]  # 43 errors to fix
+"nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
