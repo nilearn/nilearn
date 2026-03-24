@@ -62,7 +62,7 @@ design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 # First, we need to specify the model
 # before fitting it to the data.
 #
-# We can specify the model with fitting it
+# We can specify the model without fitting it
 # by using the ``design_only=True`` parameter.
 #
 # Note that a brain mask was provided in the dataset,
