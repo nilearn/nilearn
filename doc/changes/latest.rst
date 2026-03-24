@@ -27,6 +27,25 @@ HIGHLIGHTS
  | - pandas -- 2.3.0
  | - scikit-learn -- 1.5.0
  | - scipy -- 1.11.1
+ | - kaleido -- 1.1.0
+ | - plotly -- 6.1.1
+ |
+
+.. admonition:: Google Chrome needed to save images with plotly / kaleido
+
+    To be able to save images with plotly,
+    make sure that Google Chrome is installed!
+    You can install a compatible Chrome version using
+    the ``kaleido_get_chrome`` command in command line or
+    ``kaleido.get_chrome_sync()`` function
+    in Python:
+
+    .. code-block:: python
+
+       import kaleido
+
+       kaleido.get_chrome_sync()
+
 
 NEW
 ---
