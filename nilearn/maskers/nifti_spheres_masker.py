@@ -400,11 +400,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     @fill_doc
     def generate_report(
         self,
+        engine="matplotlib",
+        title: str | None = None,
         displayed_spheres: list[int]
         | np.typing.NDArray[np.int_]
         | int
-        | Literal["all"] = "all",
-        title: str | None = None,
+        | Literal["all"] = 10,
     ):
         """Generate an HTML report for current ``NiftiSpheresMasker`` object.
 
@@ -413,18 +414,21 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Parameters
         ----------
-        %(displayed_spheres)s
+        engine : :obj:`str`, default="matplotlib"
+            Choice of engine to display the mask.
 
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
+
+        %(displayed_spheres)s
 
         Returns
         -------
         report : `nilearn.reporting.HTMLReport`
             HTML report for the masker.
         """
-        return super()._generate_report(
-            title=title, displayed_spheres=displayed_spheres
+        return super().generate_report(
+            engine=engine, title=title, displayed_spheres=displayed_spheres
         )
 
     def _reporting(self) -> list:

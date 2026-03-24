@@ -180,7 +180,10 @@ def test_displayed_maps_valid_inputs(
     masker = masker_class(**input_parameters)
     masker.fit()
 
-    html = masker.generate_report(displayed_maps)
+    if isinstance(masker, NiftiSpheresMasker):
+        html = masker.generate_report(displayed_spheres=displayed_maps)
+    else:
+        html = masker.generate_report(displayed_maps=displayed_maps)
 
     # sphere masker display all spheres on index 0
     # so we must offset by 1
@@ -211,7 +214,10 @@ def test_displayed_maps_error(masker_class, input_parameters, displayed_maps):
             "or a list/array of ints"
         ),
     ):
-        masker.generate_report(displayed_maps)
+        if isinstance(masker, NiftiSpheresMasker):
+            masker.generate_report(displayed_spheres=displayed_maps)
+        else:
+            masker.generate_report(displayed_maps=displayed_maps)
 
 
 @pytest.mark.slow
@@ -231,7 +237,10 @@ def test_displayed_maps_warning_too_many(
         UserWarning,
         match="Report cannot display the following",
     ):
-        masker.generate_report(displayed_maps)
+        if isinstance(masker, NiftiSpheresMasker):
+            masker.generate_report(displayed_spheres=displayed_maps)
+        else:
+            masker.generate_report(displayed_maps=displayed_maps)
 
 
 @pytest.mark.slow
@@ -245,7 +254,10 @@ def test_displayed_maps_warning_int_too_large(masker_class, input_parameters):
     masker = masker_class(**input_parameters)
     masker.fit()
     with pytest.warns(UserWarning, match="was set to 6"):
-        masker.generate_report(7)
+        if isinstance(masker, NiftiSpheresMasker):
+            masker.generate_report(displayed_spheres=7)
+        else:
+            masker.generate_report(displayed_maps=7)
 
 
 @pytest.mark.thread_unsafe

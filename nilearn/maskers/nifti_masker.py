@@ -31,7 +31,6 @@ from nilearn.masking import (
     compute_multi_brain_mask,
     load_mask_img,
 )
-from nilearn.reporting.html_report import HTMLReport
 
 
 class _ExtractionFunctor:
@@ -403,31 +402,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 self._append_report_warning(msg)
         else:
             self._report_content["overlay"] = None
-
-    def generate_report(
-        self,
-        engine: str = "matplotlib",
-        title: str | None = None,
-    ) -> HTMLReport:
-        """Generate an HTML report for the current ``NiftiMasker`` object.
-
-        .. note::
-            This functionality requires to have ``Matplotlib`` installed.
-
-        Parameters
-        ----------
-        engine : {"matplotlib", "brainsprite"}, default="matplotlib"
-            Choice of engine to display the mask.
-
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        Returns
-        -------
-        report : `nilearn.reporting.HTMLReport`
-            HTML report for the masker.
-        """
-        return super()._generate_report(engine=engine, title=title)
 
     def _reporting(self):
         """Load displays needed for report.

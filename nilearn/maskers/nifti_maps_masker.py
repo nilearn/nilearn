@@ -275,12 +275,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     @fill_doc
     def generate_report(
         self,
+        engine: Literal["matplotlib", "brainsprite"] = "matplotlib",
+        title: str | None = None,
         displayed_maps: list[int]
         | np.typing.NDArray[np.int_]
         | int
         | Literal["all"] = 10,
-        engine: Literal["matplotlib", "brainsprite"] = "matplotlib",
-        title: str | None = None,
     ):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 
@@ -289,20 +289,20 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Parameters
         ----------
-        %(displayed_maps)s
-
         engine : :obj:`str`, default="matplotlib"
             Choice of engine to display the mask.
 
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
 
+        %(displayed_maps)s
+
         Returns
         -------
         report : `nilearn.reporting.HTMLReport`
             HTML report for the masker.
         """
-        return super()._generate_report(
+        return super().generate_report(
             displayed_maps=displayed_maps, engine=engine, title=title
         )
 

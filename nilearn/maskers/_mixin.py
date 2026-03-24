@@ -396,8 +396,8 @@ class MaskerReportMixin(ReportMixin):
             MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
 
-    def _set_report_basics(self, **kwargs):
-        super()._set_report_basics(**kwargs)
+    def _set_report_basics(self, engine, title):
+        super()._set_report_basics(engine, title)
         report_content = self._report_content
 
         if not isinstance(report_content["coverage"], str):
@@ -411,13 +411,38 @@ class MaskerReportMixin(ReportMixin):
         report_content["page_title"] = f"{report_content['title']} report"
         report_content["estimator_type"] = self._estimator_type
 
-    def _generate_report(self, **kwargs) -> HTMLReport:
+    def generate_report(
+        self, engine="matplotlib", title: str | None = None, **kwargs
+    ) -> HTMLReport:
         """Generate an HTML report for this masker.
+
+        .. note::
+            This functionality requires to have ``Matplotlib`` installed.
 
         Parameters
         ----------
+        engine : :obj:`str`, default="matplotlib"
+            Choice of engine to display the mask.
+
+            Options are :
+            {"matplotlib", "brainsprite"} for NiftiMasker, MultiNiftiMasker,
+            NiftiLabelsMasker, MultiNiftiLabelsMasker
+            {"matplolib", "plotly"} for SurfaceMasker, MultiSurfaceMasker,
+            SurfaceLabelsMasker, MultiSurfaceLabelsMasker, SurfaceMapsMasker,
+            MultiSurfaceMapsMasker
+
+        title : :obj:`str` or None, default=None
+            title for the report. If None, title will be the class name.
+
         kwargs : :obj:`dict` [ :obj:`str` , Any]
             Dictionary of key-word arguments necessary for report generation.
+
+            Expected keys depending on masker type are:
+
+            - %(displayed_maps)s NiftiMapsMasker, MultiNiftiMapsMasker,
+            SurfaceMapsMasker, MultiSurfaceMapsMasker
+
+            - %(displayed_spheres)s NiftiSpheresMasker
 
         Returns
         -------
@@ -425,7 +450,7 @@ class MaskerReportMixin(ReportMixin):
             HTML report for the masker.
         """
         self._reset_report_warnings()
-        self._set_report_basics(**kwargs)
+        self._set_report_basics(engine, title)
         self._run_report_checks(**kwargs)
         self._generate_report_data()
         self._display_report_warnings()

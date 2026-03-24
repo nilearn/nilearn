@@ -447,12 +447,12 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     @fill_doc
     def generate_report(
         self,
+        engine: str = "matplotlib",
+        title: str | None = None,
         displayed_maps: list[int]
         | np.typing.NDArray[np.int_]
         | int
         | Literal["all"] = 10,
-        engine: str = "matplotlib",
-        title: str | None = None,
     ) -> HTMLReport:
         """Generate an HTML report for the current ``SurfaceMapsMasker``
         object.
@@ -462,8 +462,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         Parameters
         ----------
-        %(displayed_maps)s
-
         engine : :obj:`str`, default="matplotlib"
             The plotting engine to use for the report. Can be either
             "matplotlib" or "plotly". If "matplotlib" is selected, the report
@@ -475,13 +473,15 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
 
+        %(displayed_maps)s
+
         Returns
         -------
         report : `nilearn.reporting.HTMLReport`
             HTML report for the masker.
         """
-        return super()._generate_report(
-            displayed_maps=displayed_maps, engine=engine, title=title
+        return super().generate_report(
+            engine=engine, title=title, displayed_maps=displayed_maps
         )
 
     def _reporting(self) -> list:

@@ -3929,6 +3929,10 @@ def _extra_kwargs(estimator):
         (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),
     ) and hasattr(estimator, "n_elements_"):
         return {"displayed_maps": estimator.n_elements_}
+    elif isinstance(estimator, NiftiSpheresMasker) and hasattr(
+        estimator, "n_elements_"
+    ):
+        return {"displayed_spheres": estimator.n_elements_}
     else:
         return {}
 

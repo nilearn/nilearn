@@ -34,7 +34,6 @@ from nilearn.maskers.base_masker import (
     mask_logger,
 )
 from nilearn.masking import load_mask_img
-from nilearn.reporting.html_report import HTMLReport
 
 
 class _ExtractionFunctor:
@@ -346,32 +345,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                     "Only first subject is shown in the report."
                 )
                 self._append_report_warning(msg)
-
-    def generate_report(
-        self,
-        engine: str = "matplotlib",
-        title: str | None = None,
-    ) -> HTMLReport:
-        """Generate an HTML report for the current ``NiftiLabelsMasker``
-        object.
-
-        .. note::
-            This functionality requires to have ``Matplotlib`` installed.
-
-        Parameters
-        ----------
-        engine : {"matplotlib", "brainsprite"}, default="matplotlib"
-            Choice of engine to display the mask.
-
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        Returns
-        -------
-        report : `nilearn.reporting.HTMLReport`
-            HTML report for the masker.
-        """
-        return super()._generate_report(engine=engine, title=title)
 
     def _reporting(self):
         """Return a figure to be rendered.

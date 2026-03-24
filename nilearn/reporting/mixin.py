@@ -145,7 +145,7 @@ class ReportMixin:
                     category=UserWarning,
                 )
 
-    def _set_report_basics(self, **kwargs):
+    def _set_report_basics(self, engine, title):
         """Populate `_report_content` with values that will be used in report
         body template.
 
@@ -164,9 +164,11 @@ class ReportMixin:
         report_content["unique_id"] = str(uuid.uuid4()).replace("-", "")
 
         # Set title for report
-        report_content["title"] = kwargs.get("title", self.__class__.__name__)
+        report_content["title"] = (
+            title if title is not None else self.__class__.__name__
+        )
 
-        report_content["engine"] = kwargs.get("engine", "matplotlib")
+        report_content["engine"] = engine
 
         report_content["has_plotting_engine"] = is_matplotlib_installed()
 
@@ -342,3 +344,29 @@ class ReportMixin:
             report_content["stat_map_base64"] = self._reporting_data[
                 "stat_map_base64"
             ]
+
+    def generate_report(
+        self, engine="matplotlib", title: str | None = None, **kwargs
+    ) -> HTMLReport:
+        """Generate an HTML report for this object.
+
+        .. note::
+            This functionality requires to have ``Matplotlib`` installed.
+
+        Parameters
+        ----------
+        engine : :obj:`str`, default="matplotlib"
+            Choice of engine to generate plots.
+
+        title : :obj:`str` or None, default=None
+            title for the report. If None, title will be the class name.
+
+        kwargs : :obj:`dict` [ :obj:`str` , Any]
+            Dictionary of key-word arguments necessary for report generation.
+
+        Returns
+        -------
+        report : `nilearn.reporting.HTMLReport`
+            HTML report for the masker.
+        """
+        raise NotImplementedError()
