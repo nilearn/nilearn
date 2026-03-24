@@ -1631,7 +1631,11 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
     effect = result["effect_size"]
     variance = result["effect_variance"]
     surf_mask_ = masker.mask_img_
-    for mask in [SurfaceMasker(mask_img=masker.mask_img_), surf_mask_, None]:
+    for mask in [
+        SurfaceMasker(mask_img=masker.mask_img_, standardize=None),
+        surf_mask_,
+        None,
+    ]:
         outputs = compute_fixed_effects(
             [effect, effect], [variance, variance], mask=mask
         )
@@ -1695,12 +1699,10 @@ def test_generate_report_height_none_future_default():
         np.asarray([1, 1, 1]),
     ]
 
-    with warnings.catch_warnings(record=True) as warning_list:
+    with pytest.warns(
+        FutureWarning, match="the default 'threshold' will be set to"
+    ):
         flm.generate_report(contrasts=contrasts, height_control=None)
-        n_warnings = len(
-            [x for x in warning_list if issubclass(x.category, FutureWarning)]
-        )
-        assert n_warnings == 1
 
 
 @pytest.mark.slow
