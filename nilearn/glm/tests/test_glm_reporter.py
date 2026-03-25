@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.data_gen import (
     basic_paradigm,
@@ -14,13 +15,12 @@ from nilearn._utils.helpers import is_gil_enabled, is_matplotlib_installed
 from nilearn.conftest import (
     _img_mask_mni,
     _make_surface_mask,
-    _shape_4d_default,
 )
 from nilearn.datasets import load_fsaverage
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
-from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.reporting import HTMLReport, make_glm_report
 from nilearn.reporting.tests._testing import generate_and_check_report
 from nilearn.surface import SurfaceImage
@@ -41,6 +41,12 @@ def generate_and_check_glm_report(
 
     See check_report fo details about the parameters.
     """
+    check_is_fitted(model)
+
+    if model.design_only:
+        assert model.labels_ is None
+        assert model.results_ is None
+
     if warnings_msg_to_check is None:
         warnings_msg_to_check = []
     excludes = []
@@ -204,13 +210,14 @@ def test_flm_report_invalid_param(flm, contrasts):
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("model", [FirstLevelModel, SecondLevelModel])
 @pytest.mark.parametrize("bg_img", [_img_mask_mni(), _make_surface_mask()])
-def test_empty_reports(tmp_path, model, bg_img):
+@pytest.mark.parametrize("design_only", [True, False])
+def test_empty_reports(tmp_path, model, bg_img, design_only):
     """Test that empty reports on unfitted model can be generated.
 
     Both for volume and surface data.
     """
     generate_and_check_glm_report(
-        model=model(smoothing_fwhm=None),
+        model=model(smoothing_fwhm=None, design_only=design_only),
         pth=tmp_path,
         bg_img=bg_img,
     )
@@ -233,7 +240,7 @@ def test_flm_reporting_no_contrasts(flm, tmp_path):
 @pytest.mark.thread_unsafe
 @pytest.mark.slow
 def test_flm_reporting_several_contrasts(flm, tmp_path, rk):
-    """Test for model report can be generated with no contrasts."""
+    """Test for model report can be generated with several contrasts."""
     c0 = np.zeros((1, rk))
     c0[0][0] = 1
     c1 = np.zeros((1, rk))
@@ -345,9 +352,10 @@ def test_slm_reporting_method(slm, height_control):
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
-def test_slm_with_flm_as_inputs(flm, contrasts):
+@pytest.mark.parametrize("design_only", [True, False])
+def test_slm_with_flm_as_inputs(flm, contrasts, design_only):
     """Test second level reporting when inputs are first level models."""
-    model = SecondLevelModel(minimize_memory=False)
+    model = SecondLevelModel(minimize_memory=False, design_only=design_only)
 
     Y = [flm] * 3
     X = pd.DataFrame([[1]] * 3, columns=["intercept"])
@@ -369,7 +377,8 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
-def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
+@pytest.mark.parametrize("design_only", [True, False])
+def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default, design_only):
     """Test second level reporting when input is a dataframe."""
     file_path = write_fake_bold_img(
         file_path=tmp_path / "img.nii.gz", shape=shape_3d_default
@@ -383,7 +392,9 @@ def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
     ]
     niidf = pd.DataFrame(dfrows, columns=dfcols)
 
-    model = SecondLevelModel(minimize_memory=False).fit(niidf)
+    model = SecondLevelModel(
+        minimize_memory=False, design_only=design_only
+    ).fit(niidf)
 
     c1 = np.eye(len(model.design_matrix_.columns))[0]
 
@@ -439,7 +450,8 @@ def test_report_invalid_plot_type(flm, contrasts):
 
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
-def test_masking_first_level_model(contrasts):
+@pytest.mark.parametrize("design_only", [True, False])
+def test_masking_first_level_model(contrasts, design_only):
     """Check that using NiftiMasker when instantiating FirstLevelModel \
        doesn't raise Error when calling generate_report().
     """
@@ -450,9 +462,9 @@ def test_masking_first_level_model(contrasts):
     )
     masker = NiftiMasker(mask_img=mask, standardize=None)
     masker.fit(fmri_data)
-    flm = FirstLevelModel(mask_img=masker, minimize_memory=False).fit(
-        fmri_data, design_matrices=design_matrices
-    )
+    flm = FirstLevelModel(
+        mask_img=masker, minimize_memory=False, design_only=design_only
+    ).fit(fmri_data, design_matrices=design_matrices)
 
     generate_and_check_glm_report(
         flm,
@@ -522,7 +534,8 @@ def test_drift_order_in_params(contrasts):
 
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
-def test_flm_generate_report_surface_data(rng):
+@pytest.mark.parametrize("design_only", [True, False])
+def test_flm_generate_report_surface_data(rng, design_only):
     """Generate report from flm fitted surface.
 
     Need a larger image to avoid issues with colormap.
@@ -541,7 +554,11 @@ def test_flm_generate_report_surface_data(rng):
 
     # using smoothing_fwhm for coverage
     model = FirstLevelModel(
-        t_r=t_r, smoothing_fwhm=None, standardize=None, minimize_memory=False
+        t_r=t_r,
+        smoothing_fwhm=None,
+        standardize=None,
+        minimize_memory=False,
+        design_only=design_only,
     )
 
     model.fit(fmri_data, events=events)
@@ -573,9 +590,11 @@ def test_flm_generate_report_surface_data_error(
 
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
+@pytest.mark.parametrize("design_only", [True, False])
 def test_carousel_several_runs(
     matplotlib_pyplot,  # noqa: ARG001
     contrasts,
+    design_only,
 ):
     """Check that a carousel is present when there is more than 1 run."""
     # first level model with 3 runs : run carousel
@@ -592,7 +611,7 @@ def test_carousel_several_runs(
     contrasts[0][1] = 1
 
     flm_two_runs = FirstLevelModel(
-        standardize=None, minimize_memory=False
+        standardize=None, minimize_memory=False, design_only=design_only
     ).fit(fmri_data, design_matrices=design_matrices)
 
     report = generate_and_check_glm_report(
@@ -709,75 +728,3 @@ def test_generate_report_threshold_unused(threshold):
             )
             == 1
         )
-
-
-@pytest.mark.parametrize(
-    "mask_img",
-    [
-        None,
-        generate_fake_fmri_data_and_design(shapes=[_shape_4d_default()])[0],
-    ],
-)
-@pytest.mark.parametrize(
-    "run_imgs",
-    [
-        None,
-        generate_fake_fmri_data_and_design(shapes=[_shape_4d_default()])[1],
-    ],
-)
-def test_first_level_design_only(mask_img, run_imgs, shape_4d_default) -> None:
-    """Check design only GLM fit and generate_report.
-
-    Uses design matrices at fit time.
-    """
-    design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[shape_4d_default]
-    )[2]
-    model = FirstLevelModel(design_only=True)
-
-    report = model.generate_report()
-    assert "has not been fit yet." in report.__str__()
-    assert "No mask was provided." in report.__str__()
-    assert "No statistical map was provided." in report.__str__()
-
-    model.mask_img = mask_img
-
-    model.fit(run_imgs=run_imgs, design_matrices=design_matrices)
-
-    assert model.labels_ is None
-    assert model.results_ is None
-
-    report = model.generate_report(
-        np.asarray([1, 0, 0]), title=f"{mask_img is None=}-{run_imgs is None=}"
-    )
-
-    assert "has not been fit yet." not in report.__str__()
-    assert "No contrast was provided." not in report.__str__()
-    assert "No statistical map was provided." in report.__str__()
-    assert "No mask was provided." not in report.__str__()
-
-
-def test_first_level_design_only_surface(surface_glm_data) -> None:
-    """Check design only GLM fit and generate_report with surface data.
-
-    Uses events at fit time.
-    """
-    mini_img, _ = surface_glm_data(5)
-
-    masker = SurfaceMasker().fit(mini_img)
-    model = FirstLevelModel(mask_img=masker, t_r=2.0, design_only=True)
-
-    events = basic_paradigm()
-
-    model.fit([mini_img, mini_img], events=[events, events])
-
-    assert model.labels_ is None
-    assert model.results_ is None
-
-    report = model.generate_report("c0")
-
-    assert "The model has not been fit yet." not in report.__str__()
-    assert "No contrast was provided." not in report.__str__()
-    assert "No mask was provided." not in report.__str__()
-
-    assert "No statistical map was provided." in report.__str__()
