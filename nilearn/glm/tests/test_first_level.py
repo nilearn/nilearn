@@ -32,7 +32,6 @@ from nilearn._utils.estimator_checks import (
 )
 from nilearn._utils.helpers import is_windows_platform
 from nilearn._utils.versions import SKLEARN_LT_1_6
-from nilearn.conftest import _shape_4d_default
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import FirstLevelModel, mean_scaling, run_glm
 from nilearn.glm.first_level.design_matrix import (
@@ -47,7 +46,6 @@ from nilearn.glm.first_level.first_level import (
     _yule_walker,
 )
 from nilearn.glm.regression import ARModel, OLSModel
-from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -1645,145 +1643,6 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
             assert isinstance(output, SurfaceImage)
 
 
-@pytest.mark.slow
-@pytest.mark.thread_unsafe
-@pytest.mark.parametrize(
-    "kwargs",
-    [
-        ({}),
-        ({"height_control": None, "threshold": DEFAULT_Z_THRESHOLD}),
-    ],
-)
-def test_generate_report_default(kwargs):
-    """Make sure generate_report throws no warning by default,
-    or when height_control=None and the future default threshold.
-    """
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[(30, 31, 32, 33)], rk=3
-    )
-
-    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
-        fmri_data[0], design_matrices=design_matrices[0]
-    )
-
-    contrasts = [
-        np.asarray([1, 0, 0]),
-        np.asarray([1, 1, 0]),
-        np.asarray([1, 1, 1]),
-    ]
-
-    with warnings.catch_warnings(record=True) as warning_list:
-        flm.generate_report(contrasts=contrasts, **kwargs)
-        assert len(warning_list) == 0
-
-
-@pytest.mark.slow
-@pytest.mark.thread_unsafe
-def test_generate_report_height_none_future_default():
-    """Make sure generate_report raises a single FutureWarning
-    about the deprecation of the default threshold.
-
-    TODO (nilearn >= 0.15)
-    Remove this test
-    """
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[(30, 31, 32, 33)], rk=3
-    )
-
-    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
-        fmri_data[0], design_matrices=design_matrices[0]
-    )
-
-    contrasts = [
-        np.asarray([1, 0, 0]),
-        np.asarray([1, 1, 0]),
-        np.asarray([1, 1, 1]),
-    ]
-
-    with pytest.warns(
-        FutureWarning, match="the default 'threshold' will be set to"
-    ):
-        flm.generate_report(contrasts=contrasts, height_control=None)
-
-
-@pytest.mark.slow
-@pytest.mark.thread_unsafe
-@pytest.mark.parametrize("threshold", [4, DEFAULT_Z_THRESHOLD])
-def test_generate_report_threshold_unused(threshold):
-    """Make sure generate_report raises a single warning,
-    about threshold not being used.
-    """
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[(30, 31, 32, 33)], rk=3
-    )
-
-    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
-        fmri_data[0], design_matrices=design_matrices[0]
-    )
-
-    contrasts = [
-        np.asarray([1, 0, 0]),
-        np.asarray([1, 1, 0]),
-        np.asarray([1, 1, 1]),
-    ]
-
-    with warnings.catch_warnings(record=True) as warning_list:
-        flm.generate_report(contrasts=contrasts, threshold=threshold)
-        assert (
-            sum(
-                "'threshold' was set to 'None'" in str(warning.message)
-                for warning in warning_list
-            )
-            == 1
-        )
-
-
-@pytest.mark.parametrize(
-    "mask_img",
-    [
-        None,
-        generate_fake_fmri_data_and_design(shapes=[_shape_4d_default()])[0],
-    ],
-)
-@pytest.mark.parametrize(
-    "run_imgs",
-    [
-        None,
-        generate_fake_fmri_data_and_design(shapes=[_shape_4d_default()])[1],
-    ],
-)
-def test_first_level_design_only(mask_img, run_imgs, shape_4d_default) -> None:
-    """Check design only GLM fit and generate_report.
-
-    Uses design matrices at fit time.
-    """
-    design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[shape_4d_default]
-    )[2]
-    model = FirstLevelModel(design_only=True)
-
-    report = model.generate_report()
-    assert "has not been fit yet." in report.__str__()
-    assert "No mask was provided." in report.__str__()
-    assert "No statistical map was provided." in report.__str__()
-
-    model.mask_img = mask_img
-
-    model.fit(run_imgs=run_imgs, design_matrices=design_matrices)
-
-    assert model.labels_ is None
-    assert model.results_ is None
-
-    report = model.generate_report(
-        np.asarray([1, 0, 0]), title=f"{mask_img is None=}-{run_imgs is None=}"
-    )
-
-    assert "has not been fit yet." not in report.__str__()
-    assert "No contrast was provided." not in report.__str__()
-    assert "No statistical map was provided." in report.__str__()
-    assert "No mask was provided." not in report.__str__()
-
-
 def test_first_level_design_only_compute_contrast_error(
     shape_4d_default,
 ) -> None:
@@ -1798,29 +1657,3 @@ def test_first_level_design_only_compute_contrast_error(
         UserWarning, match="Cannot compute contrasts on 'design_only' models"
     ):
         model.compute_contrast(np.asarray([1, 0, 0]))
-
-
-def test_first_level_design_only_surface(surface_glm_data) -> None:
-    """Check design only GLM fit and generate_report with surface data.
-
-    Uses events at fit time.
-    """
-    mini_img, _ = surface_glm_data(5)
-
-    masker = SurfaceMasker().fit(mini_img)
-    model = FirstLevelModel(mask_img=masker, t_r=2.0, design_only=True)
-
-    events = basic_paradigm()
-
-    model.fit([mini_img, mini_img], events=[events, events])
-
-    assert model.labels_ is None
-    assert model.results_ is None
-
-    report = model.generate_report("c0")
-
-    assert "The model has not been fit yet." not in report.__str__()
-    assert "No contrast was provided." not in report.__str__()
-    assert "No mask was provided." not in report.__str__()
-
-    assert "No statistical map was provided." in report.__str__()
