@@ -1460,7 +1460,8 @@ def test_first_level_design_only_compute_contrast_warning(
     with pytest.warns(
         UserWarning, match="Cannot compute contrasts on 'design_only' models"
     ):
-        model.compute_contrast(np.asarray([1, 0, 0]))
+        output = model.compute_contrast(np.asarray([1, 0, 0]))
+    assert output is None
 
 
 # -----------------------surface tests--------------------------------------- #

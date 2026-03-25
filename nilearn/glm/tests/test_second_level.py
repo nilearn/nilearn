@@ -522,10 +522,11 @@ def test_slm_4d_image_design_only(img_4d_mni):
     X = pd.DataFrame([[1]] * img_4d_mni.shape[3], columns=["intercept"])
     model = model.fit(Y, design_matrix=X)
     c1 = np.eye(len(model.design_matrix_.columns))[0]
-    with pytest.raises(
-        RuntimeError, match="Cannot compute contrasts on 'design_only' models"
+    with pytest.warns(
+        UserWarning, match="Cannot compute contrasts on 'design_only' models"
     ):
-        model.compute_contrast(c1, output_type="z_score")
+        output = model.compute_contrast(c1, output_type="z_score")
+    assert output is None
 
 
 def test_slm_4d_image(img_4d_mni):
@@ -1109,10 +1110,11 @@ def test_second_level_input_as_surface_image_design_only(surf_img_1d):
     model = SecondLevelModel(design_only=True)
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
-    with pytest.raises(
-        RuntimeError, match="Cannot compute contrasts on 'design_only' models"
+    with pytest.warns(
+        UserWarning, match="Cannot compute contrasts on 'design_only' models"
     ):
-        model.compute_contrast()
+        output = model.compute_contrast()
+    assert output is None
 
 
 def test_second_level_input_as_surface_image_3d(surf_img_2d, n_subjects):

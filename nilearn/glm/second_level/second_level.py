@@ -717,10 +717,6 @@ class SecondLevelModel(BaseGLM):
 
         """
         check_is_fitted(self)
-        if self.design_only:
-            raise RuntimeError(
-                "Cannot compute contrasts on 'design_only' models."
-            )
 
         # check first_level_contrast
         _check_first_level_contrast(
@@ -742,6 +738,22 @@ class SecondLevelModel(BaseGLM):
             "all",
         ]
         check_parameter_in_allowed(output_type, valid_types, "output_type")
+
+        output_types = (
+            valid_types[:-1] if output_type == "all" else [output_type]
+        )
+
+        outputs = {}
+        for output_type_ in output_types:
+            outputs[output_type_] = None
+
+        if self.design_only:
+            warn(
+                "Cannot compute contrasts on 'design_only' models.",
+                category=UserWarning,
+                stacklevel=find_stack_level(),
+            )
+            return outputs if output_type == "all" else None
 
         # Get effect_maps appropriate for chosen contrast
         effect_maps = _infer_effect_maps(
@@ -779,11 +791,6 @@ class SecondLevelModel(BaseGLM):
             self.labels_, self.results_, con_val, second_level_stat_type
         )
 
-        output_types = (
-            valid_types[:-1] if output_type == "all" else [output_type]
-        )
-
-        outputs = {}
         for output_type_ in output_types:
             # We get desired output from contrast object
             estimate_ = getattr(contrast, output_type_)()

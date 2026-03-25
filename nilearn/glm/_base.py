@@ -633,13 +633,13 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
 
             # We try to rely on the content of glm object only
             # by reading images from disk rarther than recomputing them
-            mask_info = {
-                k: v
-                for k, v in self.masker_._report_content.items()
-                if k in ["n_elements", "coverage"]
-            }
-            if "coverage" in mask_info:
-                mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
+            if not self.design_only:
+                mask_info = {
+                    k: v
+                    for k, v in self.masker_._report_content.items()
+                    if k in ["n_elements", "coverage"]
+                }
+            mask_info["coverage"] = f"{float(mask_info['coverage']):0.1f}"
 
             statistical_maps = {}
             if self._is_volume_glm() and output is not None:

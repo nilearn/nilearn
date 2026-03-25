@@ -997,9 +997,6 @@ class FirstLevelModel(BaseGLM):
             )
         )
 
-        # Initialize masker_ to None such that attribute exists
-        self.masker_ = None
-
         # Assumption: FIXME ?
         # compute mask based on first run
         # and apply to all others
