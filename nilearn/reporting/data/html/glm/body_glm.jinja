@@ -136,32 +136,32 @@
                 </div>
             {% endfor %}
         </div>
-        <section id="mask-UUID-{{ unique_id }}">
-            <h2>Mask</h2>
-            {% if not has_plotting_engine %}
-
-                {% include "html/partials/missing_plotting_engine.jinja" %}
-
-            {% elif mask_plot %}
-                <div class="scroll-y">
-                    <img class="pure-img"
-                         src="data:image/png;base64,{{ mask_plot }}"
-                         alt="Mask image"
-                         title="Mask image"
-                         style="min-width: 600px" />
-                </div>
-            {% else %}
-                <p>No mask was provided.</p>
-            {% endif %}
-            {% if n_elements %}
-                <div class="pure-u-1 pure-u-md-3-3">
-                    <p>
-                        The mask includes {{ n_elements }} voxels ({{ coverage }} %) of the image.
-                    </p>
-                </div>
-            {% endif %}
-        </section>
         {% if not design_only %}
+            <section id="mask-UUID-{{ unique_id }}">
+                <h2>Mask</h2>
+                {% if not has_plotting_engine %}
+
+                    {% include "html/partials/missing_plotting_engine.jinja" %}
+
+                {% elif mask_plot %}
+                    <div class="scroll-y">
+                        <img class="pure-img"
+                             src="data:image/png;base64,{{ mask_plot }}"
+                             alt="Mask image"
+                             title="Mask image"
+                             style="min-width: 600px" />
+                    </div>
+                {% else %}
+                    <p>No mask was provided.</p>
+                {% endif %}
+                {% if n_elements %}
+                    <div class="pure-u-1 pure-u-md-3-3">
+                        <p>
+                            The mask includes {{ n_elements }} voxels ({{ coverage }} %) of the image.
+                        </p>
+                    </div>
+                {% endif %}
+            </section>
             <section id="statistical-maps-UUID-{{ unique_id }}">
                 <h2>Statistical Maps</h2>
                 <div class="pure-g">

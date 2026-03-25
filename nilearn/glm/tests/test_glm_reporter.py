@@ -83,12 +83,12 @@ def generate_and_check_glm_report(
                     "No statistical map was provided.",
                 ]
             )
-        if is_matplotlib_installed():
-            includes.extend(
-                [
-                    "No mask was provided.",
-                ]
-            )
+            if is_matplotlib_installed():
+                includes.extend(
+                    [
+                        "No mask was provided.",
+                    ]
+                )
 
         # no design matrix in navbar if model not fitted
         excludes.append('<a id="navbar-matrix-link')
@@ -105,11 +105,10 @@ def generate_and_check_glm_report(
             includes.extend(
                 [
                     'id="design-matrix-',
-                    'id="mask-',
                 ]
             )
             if not model.design_only:
-                includes.append('id="statistical-maps-')
+                includes.extend(['id="statistical-maps-', 'id="mask-'])
 
         if not has_contrasts:
             # the no contrast warning only appears for fitted models
