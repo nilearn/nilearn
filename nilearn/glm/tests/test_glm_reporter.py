@@ -4,7 +4,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.data_gen import (
     basic_paradigm,
@@ -41,11 +40,9 @@ def generate_and_check_glm_report(
 
     See check_report fo details about the parameters.
     """
-    check_is_fitted(model)
-
-    if model.design_only:
-        assert model.labels_ is None
+    if model.__sklearn_is_fitted__() and model.design_only:
         assert model.results_ is None
+        assert model.labels_ is None
 
     if warnings_msg_to_check is None:
         warnings_msg_to_check = []
@@ -60,8 +57,10 @@ def generate_and_check_glm_report(
     # if report was generated with contrasts.
     contrast_present_checks = [
         '<a id="navbar-contrasts-link',
-        '<a href="#statistical-maps',
     ]
+    if not model.design_only:
+        # statistiscal maps are not present in design_only
+        contrast_present_checks.append('<a href="#statistical-maps')
     # There should be a warning
     # that no contrast was passed
     # if that's the case
@@ -78,11 +77,12 @@ def generate_and_check_glm_report(
         excludes.extend(contrast_present_checks)
 
     if not model.__sklearn_is_fitted__():
-        includes.extend(
-            [
-                "No statistical map was provided.",
-            ]
-        )
+        if not model.design_only:
+            includes.extend(
+                [
+                    "No statistical map was provided.",
+                ]
+            )
         if is_matplotlib_installed():
             includes.extend(
                 [
@@ -94,19 +94,22 @@ def generate_and_check_glm_report(
         excludes.append('<a id="navbar-matrix-link')
 
     else:
-        includes.extend(
-            [
-                "The mask includes",  # check that mask coverage is there
-            ]
-        )
+        if not model.design_only:
+            # masker is only fitted in when design_only=False
+            includes.extend(
+                [
+                    "The mask includes",
+                ]
+            )
         if is_matplotlib_installed():
             includes.extend(
                 [
                     'id="design-matrix-',
                     'id="mask-',
-                    'id="statistical-maps-',
                 ]
             )
+            if not model.design_only:
+                includes.append('id="statistical-maps-')
 
         if not has_contrasts:
             # the no contrast warning only appears for fitted models
@@ -121,6 +124,9 @@ def generate_and_check_glm_report(
             excludes.append('id="carousel-navbar"')
         else:
             includes.append('id="carousel-navbar"')
+
+    if model.design_only:
+        excludes.append('id="statistical-maps-')
 
     if extend_includes is not None:
         includes.extend(extend_includes)
@@ -472,7 +478,7 @@ def test_masking_first_level_model(contrasts, design_only):
         plot_type="glass",
         min_distance=15,
         alpha=0.01,
-        extra_warnings_allowed=False,
+        extra_warnings_allowed=design_only,
     )
 
 

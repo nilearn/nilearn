@@ -161,7 +161,7 @@ def test_fmri_inputs_errors(
 
     # test wrong input errors
     # test first level model
-    with pytest.raises(TypeError, match="second_level_input must be"):
+    with pytest.raises(TypeError, match="'second_level_input' must be"):
         non_parametric_inference(flm)
 
     # test list of less than two niimgs

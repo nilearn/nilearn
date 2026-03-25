@@ -390,10 +390,8 @@ def _infer_effect_maps(second_level_input, contrast_def):
     return effect_maps
 
 
-def _process_second_level_input(second_level_input, design_only=False):
+def _process_second_level_input(second_level_input):
     """Process second_level_input."""
-    if design_only and second_level_input:
-        return None, None
     if isinstance(second_level_input, pd.DataFrame):
         return _process_second_level_input_as_dataframe(second_level_input)
     elif hasattr(second_level_input, "__iter__") and isinstance(
@@ -632,7 +630,7 @@ class SecondLevelModel(BaseGLM):
         self.confounds_ = confounds
 
         sample_map, subjects_label = _process_second_level_input(
-            second_level_input, self.design_only
+            second_level_input
         )
 
         # Create and set design matrix, if not given
@@ -682,10 +680,7 @@ class SecondLevelModel(BaseGLM):
         return self
 
     def __sklearn_is_fitted__(self) -> bool:
-        return hasattr(self, "second_level_input_") and (
-            (not self.design_only and self.second_level_input_ is not None)
-            or self.design_only
-        )
+        return hasattr(self, "second_level_input_")
 
     @fill_doc
     def compute_contrast(

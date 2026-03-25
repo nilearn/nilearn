@@ -384,8 +384,6 @@ class FirstLevelModel(BaseGLM):
         by a NiftiMasker
         or :obj:`~nilearn.maskers.SurfaceMasker` with default parameters.
         If False is given then the data will not be masked.
-        In the case of surface analysis, passing None or False will lead to
-        no masking.
 
     %(target_affine)s
 
@@ -836,14 +834,6 @@ class FirstLevelModel(BaseGLM):
             hasattr(self, "labels_")
             and hasattr(self, "results_")
             and hasattr(self, "fir_delays_")
-            and (
-                self.design_only
-                or (
-                    not self.design_only
-                    and self.labels_ is not None
-                    and self.results_ is not None
-                )
-            )
         )
 
     def fit(
@@ -1327,6 +1317,10 @@ class FirstLevelModel(BaseGLM):
         if self.mask_img is False:
             # TODO this changes the value of self.mask_img
             # this should not happen as per sklearn rules about estimators
+            #
+            # TODO SecondLevelModel does not have a mask_img=False option
+            # that leads to no implicit mask (all voxels / vertices
+            # are included): do we want to add it?
             #
             # We create a dummy mask to preserve functionality of api
             if masker_type == "surface":

@@ -1447,6 +1447,22 @@ def test_img_table_checks():
         _check_length_match([""] * 2, [""], "", "")
 
 
+def test_first_level_design_only_compute_contrast_warning(
+    shape_4d_default,
+) -> None:
+    """Check cannot compute contrast on design only GLM."""
+    design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )[2]
+    model = FirstLevelModel(design_only=True)
+    model.fit(run_imgs=None, design_matrices=design_matrices)
+
+    with pytest.warns(
+        UserWarning, match="Cannot compute contrasts on 'design_only' models"
+    ):
+        model.compute_contrast(np.asarray([1, 0, 0]))
+
+
 # -----------------------surface tests--------------------------------------- #
 
 
@@ -1612,9 +1628,6 @@ def test_flm_get_element_wise_model_attribute_with_surface_data(
     assert model.r_square[0].shape == (img.mesh.n_vertices, 1)
 
 
-# -----------------------bids tests----------------------- #
-
-
 def test_fixed_effect_contrast_surface(surface_glm_data):
     """Smoke test of compute_fixed_effects with surface data."""
     mini_img, _ = surface_glm_data(5)
@@ -1641,19 +1654,3 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
         assert len(outputs) == 4
         for output in outputs:
             assert isinstance(output, SurfaceImage)
-
-
-def test_first_level_design_only_compute_contrast_error(
-    shape_4d_default,
-) -> None:
-    """Check cannot compute contrast on design only GLM."""
-    design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[shape_4d_default]
-    )[2]
-    model = FirstLevelModel(design_only=True)
-    model.fit(run_imgs=None, design_matrices=design_matrices)
-
-    with pytest.warns(
-        UserWarning, match="Cannot compute contrasts on 'design_only' models"
-    ):
-        model.compute_contrast(np.asarray([1, 0, 0]))

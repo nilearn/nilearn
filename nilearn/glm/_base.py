@@ -58,6 +58,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
     """
 
     _estimator_type = "glm"  # TODO (sklearn >= 1.8) remove
+    design_only: bool
 
     def _doc_link_url_param_generator(self, *args):  # noqa : ARG002
         """Return doc URL components for GLM estimators.
@@ -731,7 +732,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
 
         # for methods writing, only keep the contrast expressed as strings
         if contrasts is not None:
-            contrasts = [x for x in contrasts.values() if isinstance(x, str)]
+            contrasts = [str(x) for x in contrasts if isinstance(x, str)]
 
         title = f"<br>{title}" if title else ""
         title = f"Statistical Report - {self.__str__()}{title}"
@@ -773,6 +774,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             unique_id=str(uuid.uuid4()).replace("-", ""),
             warning_messages=warning_messages,
             has_plotting_engine=is_matplotlib_installed(),
+            design_only=self.design_only,
             **mask_info,
         )
 
