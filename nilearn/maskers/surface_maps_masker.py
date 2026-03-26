@@ -484,7 +484,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             engine=engine, title=title, displayed_maps=displayed_maps
         )
 
-    def _reporting(self) -> list:
+    def _load_report_displays(self) -> list:
         """Load displays needed for report.
 
         Returns

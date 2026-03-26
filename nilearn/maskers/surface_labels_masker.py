@@ -458,7 +458,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         return imgs
 
-    def _reporting(self) -> None | str:
+    def _load_report_displays(self) -> None | str:
         """Load displays needed for report.
 
         Returns

@@ -403,7 +403,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         else:
             self._report_content["overlay"] = None
 
-    def _reporting(self):
+    def _load_report_displays(self):
         """Load displays needed for report.
 
         Returns
@@ -416,7 +416,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         # called with a masker having report capabilities disabled
         if not self._has_report_data():
             return None
-
         return self._create_figure_for_report()
 
     def _create_figure_for_report(self):

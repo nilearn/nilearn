@@ -431,7 +431,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             engine=engine, title=title, displayed_spheres=displayed_spheres
         )
 
-    def _reporting(self) -> list:
+    def _load_report_displays(self) -> list:
         """Return a list of all displays to be rendered.
 
         Returns

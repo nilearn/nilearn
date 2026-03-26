@@ -414,9 +414,6 @@ class MaskerReportMixin(ReportMixin):
                 report_content["overlay"]
             )
 
-        report_content["page_title"] = f"{report_content['title']} report"
-        report_content["estimator_type"] = self._estimator_type
-
     def generate_report(
         self, engine="matplotlib", title: str | None = None, **kwargs
     ) -> HTMLReport:
@@ -469,21 +466,19 @@ class MaskerReportMixin(ReportMixin):
     def _generate_report_data(self):
         report_content = self._report_content
 
-        figure, embeded_images = self._create_partial_figures()
+        figure, embeded_images = self._generate_figure_htmls()
         report_content["figure"] = figure
         report_content["content"] = embeded_images
 
-        # _create_partial_figures should be called before setting summary_html
+        # _generate_figure_htmls should be called before setting summary_html
         summary = self._report_content.get("summary", None)
         if summary is not None:
             report_content["summary_html"] = self._get_summary_html(summary)
 
-    def _create_partial_figures(self):
-        """Create partial image htmls using partial template for masker
-        figures.
-        """
+    def _generate_figure_htmls(self):
+        """Generate image htmls using partial template for masker figures."""
         embeded_images = None
-        image = self._reporting()
+        image = self._load_report_displays()
         if image is None:
             embeded_images = None
         elif not isinstance(image, list):
@@ -507,10 +502,20 @@ class MaskerReportMixin(ReportMixin):
         return tpl_rendered, embeded_images
 
     @abc.abstractmethod
-    def _reporting(self):
+    def _load_report_displays(self):
+        """Load displays needed for report.
+
+        Returns
+        -------
+        displays : :obj:`list` of :class:`~matplotlib.figure.Figure`, None or
+                   bytes
+            A list of all displays to be rendered, either as figures encoded as
+        bytes or Matplotlib figures.
+        When masker is not fitted, return a list with a single None element.
+        """
         raise NotImplementedError()
 
     @abc.abstractmethod
     def _get_summary_html(self):
-        """Convert summary part of the report content to html."""
-        raise NotImplementedError
+        """Convert summary part of the report content to html and return."""
+        raise NotImplementedError()

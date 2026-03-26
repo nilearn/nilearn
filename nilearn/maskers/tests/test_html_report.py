@@ -289,7 +289,7 @@ def test_nifti_labels_masker_report_no_image_for_fit(
 
     # No image was provided to fit, regions are plotted using
     # plot_roi such that no contour should be in the image
-    display = masker._reporting()
+    display = masker._load_report_displays()
 
     if not is_matplotlib_installed():
         assert display is None
@@ -300,7 +300,7 @@ def test_nifti_labels_masker_report_no_image_for_fit(
 
     masker.fit(img_3d_rand_eye)
 
-    display = masker._reporting()
+    display = masker._load_report_displays()
     for d in ["x", "y", "z"]:
         assert len(display.axes[d].ax.collections) > 0
         assert len(display.axes[d].ax.collections) <= n_regions
@@ -394,11 +394,11 @@ def test_nifti_labels_masker_report_cut_coords(
 
     # Get display without data
     masker.fit()
-    display = masker._reporting()
+    display = masker._load_report_displays()
 
     # Get display with data
     masker.fit(img_3d_rand_eye)
-    display_data = masker._reporting()
+    display_data = masker._load_report_displays()
     assert display.cut_coords == display_data.cut_coords
 
 

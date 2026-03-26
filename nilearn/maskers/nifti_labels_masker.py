@@ -346,7 +346,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 )
                 self._append_report_warning(msg)
 
-    def _reporting(self):
+    def _load_report_displays(self):
         """Return a figure to be rendered.
 
         Returns

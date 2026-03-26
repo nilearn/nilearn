@@ -306,7 +306,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             displayed_maps=displayed_maps, engine=engine, title=title
         )
 
-    def _reporting(self) -> list:
+    def _load_report_displays(self) -> list:
         """Return a list of all displays to be rendered.
 
         Returns
