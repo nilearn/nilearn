@@ -2,6 +2,7 @@
 functionality.
 """
 
+import abc
 import uuid
 import warnings
 from copy import deepcopy
@@ -345,6 +346,7 @@ class ReportMixin:
                 "stat_map_base64"
             ]
 
+    @abc.abstractmethod
     def generate_report(
         self, engine="matplotlib", title: str | None = None, **kwargs
     ) -> HTMLReport:
