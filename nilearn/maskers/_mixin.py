@@ -378,8 +378,11 @@ class _LabelMaskerMixin:
 
 
 class MaskerReportMixin(ReportMixin):
-    """A mixin class to be used with masker classes that require reporting
-    functionality.
+    """A mixin class that adapts ``ReportMixin`` to masker classes for
+    reporting functionality.
+
+    Inheriting classes should implement ``_load_report_displays`` and
+    ``_get_summary_html`` functions.
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
@@ -390,14 +393,18 @@ class MaskerReportMixin(ReportMixin):
 
     def __init_subclass__(cls):
         super().__init_subclass__()
-        # update ReportMixin defaults with masker _REPORT_DEFAULTS
+        # update ReportMixin defaults with masker classes' _REPORT_DEFAULTS
         cls._REPORT_DEFAULTS = cls._update_defaults(
             MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
 
     def _set_report_basics(self, engine, title):
+        """Set masker specific report attributes."""
         super()._set_report_basics(engine, title)
         report_content = self._report_content
+
+        report_content["page_title"] = f"{report_content['title']} report"
+        report_content["estimator_type"] = self._estimator_type
 
         if not isinstance(report_content["coverage"], str):
             report_content["coverage"] = f"{report_content['coverage']:0.1f}"
@@ -426,11 +433,11 @@ class MaskerReportMixin(ReportMixin):
             "matplotlib" can be set for all maskers. Other options are :
 
             - "brainsprite" for NiftiMasker, MultiNiftiMasker,
-            NiftiLabelsMasker, MultiNiftiLabelsMasker
+              NiftiLabelsMasker, MultiNiftiLabelsMasker
 
             - "plotly" for SurfaceMasker, MultiSurfaceMasker,
-            SurfaceLabelsMasker, MultiSurfaceLabelsMasker, SurfaceMapsMasker,
-            MultiSurfaceMapsMasker
+              SurfaceLabelsMasker, MultiSurfaceLabelsMasker, SurfaceMapsMasker,
+              MultiSurfaceMapsMasker
 
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
@@ -441,7 +448,7 @@ class MaskerReportMixin(ReportMixin):
             Expected keys depending on masker type are:
 
             - %(displayed_maps)s NiftiMapsMasker, MultiNiftiMapsMasker,
-            SurfaceMapsMasker, MultiSurfaceMapsMasker
+              SurfaceMapsMasker, MultiSurfaceMapsMasker
 
             - %(displayed_spheres)s NiftiSpheresMasker
 
