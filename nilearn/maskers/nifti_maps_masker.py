@@ -2,7 +2,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any, ClassVar, Literal
+from typing import Any, ClassVar
 
 import numpy as np
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
@@ -175,6 +175,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         "description": (
             "This report shows the spatial maps provided to the mask."
         ),
+        "displayed_maps": 10,
         "number_of_maps": 0,
     }
     _template_name = "body_nifti_maps_masker.jinja"
@@ -271,40 +272,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     "Only first subject is shown in the report."
                 )
                 self._append_report_warning(msg)
-
-    @fill_doc
-    def generate_report(
-        self,
-        engine: Literal["matplotlib", "brainsprite"] = "matplotlib",
-        title: str | None = None,
-        displayed_maps: list[int]
-        | np.typing.NDArray[np.int_]
-        | int
-        | Literal["all"] = 10,
-    ):
-        """Generate an HTML report for the current ``NiftiMapsMasker`` object.
-
-        .. note::
-            This functionality requires to have ``Matplotlib`` installed.
-
-        Parameters
-        ----------
-        engine : :obj:`str`, default="matplotlib"
-            Choice of engine to display the mask.
-
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        %(displayed_maps)s
-
-        Returns
-        -------
-        report : `nilearn.reporting.HTMLReport`
-            HTML report for the masker.
-        """
-        return super().generate_report(
-            engine=engine, title=title, displayed_maps=displayed_maps
-        )
 
     def _load_report_displays(self) -> list:
         """Return a list of all displays to be rendered.

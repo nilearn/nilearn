@@ -414,6 +414,7 @@ class MaskerReportMixin(ReportMixin):
                 report_content["overlay"]
             )
 
+    @fill_doc
     def generate_report(
         self, engine="matplotlib", title: str | None = None, **kwargs
     ) -> HTMLReport:
@@ -444,10 +445,14 @@ class MaskerReportMixin(ReportMixin):
 
             Expected keys depending on masker type are:
 
-            - %(displayed_maps)s NiftiMapsMasker, MultiNiftiMapsMasker,
-              SurfaceMapsMasker, MultiSurfaceMapsMasker
+            - NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker,
+              MultiSurfaceMapsMasker
 
-            - %(displayed_spheres)s NiftiSpheresMasker
+              %(displayed_maps)s
+
+            - NiftiSpheresMasker
+
+              %(displayed_spheres)s
 
         Returns
         -------

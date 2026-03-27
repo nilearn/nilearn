@@ -5,7 +5,7 @@ Mask nifti images by spherical volumes for seed-region analyses
 
 import contextlib
 import warnings
-from typing import Any, ClassVar, Literal
+from typing import Any, ClassVar
 
 import numpy as np
 from scipy import sparse
@@ -311,7 +311,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "by the spheres of the masker."
         ),
         "number_of_maps": 0,
-        "displayed_maps": [0],
+        "displayed_maps": 10,
     }
     _template_name = "body_nifti_spheres_masker.jinja"
 
@@ -396,40 +396,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     "Spheres are plotted on top of the MNI152 template."
                 )
                 self._append_report_warning(msg)
-
-    @fill_doc
-    def generate_report(
-        self,
-        engine="matplotlib",
-        title: str | None = None,
-        displayed_spheres: list[int]
-        | np.typing.NDArray[np.int_]
-        | int
-        | Literal["all"] = 10,
-    ):
-        """Generate an HTML report for current ``NiftiSpheresMasker`` object.
-
-        .. note::
-            This functionality requires to have ``Matplotlib`` installed.
-
-        Parameters
-        ----------
-        engine : :obj:`str`, default="matplotlib"
-            Choice of engine to display the mask.
-
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        %(displayed_spheres)s
-
-        Returns
-        -------
-        report : `nilearn.reporting.HTMLReport`
-            HTML report for the masker.
-        """
-        return super().generate_report(
-            engine=engine, title=title, displayed_spheres=displayed_spheres
-        )
 
     def _load_report_displays(self) -> list:
         """Return a list of all displays to be rendered.
