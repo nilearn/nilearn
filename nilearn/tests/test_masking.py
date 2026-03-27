@@ -561,6 +561,10 @@ def test_unmask_3d_with_files(
     assert t[0].flags["F_CONTIGUOUS"]
     assert_array_equal(t[0], unmasked3D)
 
+    # Check that the unmasked image retains the datatype of the data array
+    t = unmask([masked3D], filename, order="F")
+    assert t[0].get_data_dtype() == data3D.dtype
+
 
 def test_unmask_errors(rng, affine_eye, shape_3d_default):
     """Test unmask errors."""
