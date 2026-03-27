@@ -21,7 +21,7 @@ def test_plot_glass_brain_absolute(
     plot_glass_brain(img_3d_mni, plot_abs=plot_abs)
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on images on disk")
 def test_plot_glass_brain_file_output(matplotlib_pyplot, img_3d_mni, tmp_path):
     """Smoke-test for hemispheric glass brain with file output."""
     filename = tmp_path / "test.png"

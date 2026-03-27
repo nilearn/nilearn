@@ -1696,16 +1696,10 @@ def test_create_cosine_drift_terms():
     assert_array_equal(cosine_confounds, confounds)
 
 
-# load the spm file to test cosine basis
-my_path = Path(__file__).parents[1] / "glm" / "tests"
-full_path_design_matrix_file = my_path / "spm_dmtx.npz"
-DESIGN_MATRIX = np.load(full_path_design_matrix_file)
-
-
 @pytest.mark.thread_unsafe
-def test_cosine_drift():
+def test_cosine_drift(spm_design_matrix):
     """Check cosine drift created by nilearn."""
-    spm_drifts = DESIGN_MATRIX["cosbf_dt_1_nt_20_hcut_0p1"]
+    spm_drifts = spm_design_matrix["cosbf_dt_1_nt_20_hcut_0p1"]
     frame_times = np.arange(20)
     high_pass_frequency = 0.1
     nilearn_drifts = create_cosine_drift(high_pass_frequency, frame_times)

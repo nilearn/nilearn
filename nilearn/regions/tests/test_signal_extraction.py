@@ -340,7 +340,7 @@ def test_img_to_signals_maps_bad_masks(
         )
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on images on disk")
 def test_signals_extraction_with_labels_without_mask(
     signals, labels_data, labels_img, shape_3d_default, tmp_path
 ):
@@ -408,7 +408,7 @@ def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
     assert list(np.unique(labels_data_r)) == list(range(1, 9))
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on images on disk")
 def test_signals_extraction_with_labels_with_mask(
     signals, labels_img, labels_data, mask_img, shape_3d_default, tmp_path
 ):

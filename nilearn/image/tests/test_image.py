@@ -625,7 +625,7 @@ def test_crop_image_empty_image(affine_eye, pad):
     assert_array_equal(get_data(img), get_data(cropped_img))
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe()
 @pytest.mark.slow
 @pytest.mark.parametrize("images_to_mean", _images_to_mean())
 def test_mean_img(images_to_mean, tmp_path):
