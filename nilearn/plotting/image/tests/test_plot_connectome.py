@@ -69,7 +69,7 @@ def test_plot_connectome_tuple_node_coords(
     )
 
 
-@pytest.mark.thread_unsafe(reason="relies on images on disk")
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 def test_plot_connectome_to_file(
     adjacency, node_coords, params_plot_connectome, tmp_path
 ):

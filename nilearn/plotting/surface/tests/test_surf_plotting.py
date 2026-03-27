@@ -851,7 +851,7 @@ def test_plot_surf_roi(plt, engine, surface_image_roi, colorbar):
     )
 
 
-@pytest.mark.thread_unsafe(reason="relies on images on disk")
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 @pytest.mark.parametrize(
     "cmap_source", ["pandas", "path", "str_path", "cmap_str"]
 )
@@ -994,7 +994,7 @@ def test_plot_surf_roi_matplotlib_specific_nan_handling(
     assert n_faces == ((tmp._facecolors[:, 3]) != 0).sum()
 
 
-@pytest.mark.thread_unsafe(reason="relies on images on disk")
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
     matplotlib_pyplot, surface_image_roi
 ):

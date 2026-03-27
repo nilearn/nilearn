@@ -195,7 +195,7 @@ def test_display_basics_projectors(
     display.close()
 
 
-@pytest.mark.thread_unsafe(reason="relies on images on disk")
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 @pytest.mark.parametrize(
     "slicer", [XSlicer, YSlicer, ZSlicer, YXSlicer, YZSlicer, XZSlicer]
 )
@@ -211,7 +211,7 @@ def test_stacked_slicer(slicer, mni152_template_res_2, tmp_path):
     slicer.close()
 
 
-@pytest.mark.thread_unsafe(reason="relies on images on disk")
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 @pytest.mark.parametrize("slicer", [OrthoSlicer, TiledSlicer, MosaicSlicer])
 def test_slicer_save_to_file(slicer, mni152_template_res_2, tmp_path):
     """Tests for saving to file with Ortho/Tiled/Mosaic slicers."""
@@ -321,7 +321,7 @@ def test_demo_mosaic_slicer(cut_coords, mni152_template_res_2, expected_cuts):
     slicer.close()
 
 
-@pytest.mark.thread_unsafe(reason="relies on images on disk")
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 @pytest.mark.parametrize("projector", PROJECTORS)
 def test_projectors_basic(projector, mni152_template_res_2, tmp_path):
     """Basic tests for projectors."""
