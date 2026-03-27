@@ -301,9 +301,11 @@ def view_connectome(
     colorbar_fontsize : :obj:`int`, default=25
         Fontsize of the colorbar tick labels.
 
-    marker_labels : :obj:`list` of :obj:`str` of shape=(n_nodes)\
+    node_labels : :obj:`list` of :obj:`str` of shape=(n_nodes)\
         or None, default=None
-    Labels for the markers: list of strings
+    Labels for the nodes: list of strings
+
+     .. nilearn_versionadded:: 0.13.2
 
     %(title)s
 
