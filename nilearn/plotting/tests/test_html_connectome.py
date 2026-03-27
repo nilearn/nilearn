@@ -168,3 +168,16 @@ def test_view_markers_coords(tmp_path):
         coords, marker_size=list(range(len(coords)))
     )
     check_html_surface_plots(tmp_path, html, False, "connectome-plot")
+
+def test_view_connectome_node_labels(tmp_path):
+    """Check that node_labels are correctly passed to view_connectome."""
+    adj, coord = _make_connectome()
+    labels = [f"node_{i}" for i in range(len(coord))]
+
+    # test with labels provided
+    html = html_connectome.view_connectome(adj, coord, node_labels=labels)
+    assert "node_0" in html.html
+
+    # test default behavior (no labels) still works
+    html_no_labels = html_connectome.view_connectome(adj, coord)
+    assert html_no_labels is not None
