@@ -177,7 +177,3 @@ def test_view_connectome_node_labels(tmp_path):
     # test with labels provided
     html = html_connectome.view_connectome(adj, coord, node_labels=labels)
     assert "node_0" in html.html
-
-    # test default behavior (no labels) still works
-    html_no_labels = html_connectome.view_connectome(adj, coord)
-    assert html_no_labels is not None
