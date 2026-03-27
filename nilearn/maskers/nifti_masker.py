@@ -415,6 +415,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
         if not self._has_report_data():
+            self._report_content["overlay"] = None
             return None
         return self._create_figure_for_report()
 

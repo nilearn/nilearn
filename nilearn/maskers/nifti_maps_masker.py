@@ -303,7 +303,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             HTML report for the masker.
         """
         return super().generate_report(
-            displayed_maps=displayed_maps, engine=engine, title=title
+            engine=engine, title=title, displayed_maps=displayed_maps
         )
 
     def _load_report_displays(self) -> list:
