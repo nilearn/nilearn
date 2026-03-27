@@ -97,7 +97,7 @@ on:
         #     │ │ │ │ │
         #     │ │ │ │ │
         #     * * * * *
-    -   cron: 0 0 * * 1
+    -   cron: 0 0 1 */3 *
 
     # This enables manual triggering from GitHub UI
     # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
