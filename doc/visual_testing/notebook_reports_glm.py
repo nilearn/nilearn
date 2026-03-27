@@ -2,7 +2,7 @@
 
 import marimo
 
-__generated_with = "0.17.8"
+__generated_with = "0.21.1"
 app = marimo.App(width="medium")
 
 
@@ -51,7 +51,7 @@ def _(cli_parser):
     BUILD_TYPE = args.build_type
     if isinstance(BUILD_TYPE, list):
         BUILD_TYPE = BUILD_TYPE[0]
-    # BUILD_TYPE="full"
+    BUILD_TYPE = "full"
     print(f"{BUILD_TYPE=}")
     return (BUILD_TYPE,)
 
@@ -71,13 +71,28 @@ def _(time):
 
 @app.cell
 def _(BUILD_TYPE, report_flm_bids_features):
-    flm_bids_report = report_flm_bids_features(build_type=BUILD_TYPE)
+    flm_bids_report = report_flm_bids_features(
+        build_type=BUILD_TYPE, engine="matplotlib"
+    )
     return (flm_bids_report,)
 
 
 @app.cell
 def _(flm_bids_report):
     flm_bids_report
+
+
+@app.cell
+def _(BUILD_TYPE, report_flm_bids_features):
+    flm_bids_report_brainsprite = report_flm_bids_features(
+        build_type=BUILD_TYPE, engine="brainsprite"
+    )
+    return (flm_bids_report_brainsprite,)
+
+
+@app.cell
+def _(flm_bids_report_brainsprite):
+    flm_bids_report_brainsprite
 
 
 @app.cell

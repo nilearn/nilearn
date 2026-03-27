@@ -39,6 +39,7 @@ from nilearn.maskers import SurfaceMasker
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.html_report import (
     MISSING_ENGINE_MSG,
+    OTHER_JS,
     UNFITTED_MSG,
     HTMLReport,
     assemble_report,
@@ -415,6 +416,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
         cut_coords=None,
         display_mode=None,
         report_dims=(1600, 800),
+        engine: Literal["matplotlib", "brainsprite"] = "matplotlib",
     ) -> HTMLReport:
         """Return a :class:`~nilearn.reporting.HTMLReport` \
         which shows all important aspects of a fitted :term:`GLM`.
@@ -609,6 +611,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
 
         design_matrices = None
         mask_plot = None
+        mask_plot_brainsprite = {}
         mask_info = {"n_elements": 0, "coverage": "0"}
         results = None
 
@@ -623,7 +626,22 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             )
 
             bg_img = load_bg_img(bg_img, self._is_volume_glm())
-            mask_plot = mask_to_plot(self, bg_img)
+            if engine == "matplotlib":
+                mask_plot = mask_to_plot(self, bg_img)
+            else:
+                bg_img = self.masker_._reporting_data["images"]
+                stat_map_img = self.masker_._reporting_data["mask"]
+                self.masker_._create_brainsprite(
+                    bg_img=bg_img, stat_map_img=stat_map_img
+                )
+                mask_plot_brainsprite = {
+                    "bg_base64": self.masker_._reporting_data["bg_base64"],
+                    "cm_base64": self.masker_._reporting_data["cm_base64"],
+                    "params": self.masker_._reporting_data["params"],
+                    "stat_map_base64": self.masker_._reporting_data[
+                        "stat_map_base64"
+                    ],
+                }
 
             # We try to rely on the content of glm object only
             # by reading images from disk rarther than recomputing them
@@ -749,6 +767,14 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             else ""
         )
 
+        js_query_code = None
+        brainsprite_code = None
+        if engine == "brainsprite":
+            with (OTHER_JS / "jquery.min.js").open("r") as f:
+                js_query_code = f.read()
+            with (OTHER_JS / "brainsprite.min.js").open("r") as f:
+                brainsprite_code = f.read()
+
         body = body_tpl.render(
             docstring=docstring,
             contrasts=contrasts,
@@ -766,7 +792,11 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             unique_id=str(uuid.uuid4()).replace("-", ""),
             warning_messages=warning_messages,
             has_plotting_engine=is_matplotlib_installed(),
+            engine=engine,
+            js_query_code=js_query_code,
+            brainsprite_code=brainsprite_code,
             **mask_info,
+            **mask_plot_brainsprite,
         )
 
         report = assemble_report(body, title)
