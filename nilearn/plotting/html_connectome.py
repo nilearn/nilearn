@@ -305,7 +305,7 @@ def view_connectome(
         or None, default=None
     Labels for the nodes: list of strings
 
-     .. nilearn_versionadded:: 0.13.2
+     .. nilearn_versionadded:: 0.14.0dev
 
     %(title)s
 
