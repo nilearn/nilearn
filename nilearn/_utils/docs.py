@@ -1113,7 +1113,7 @@ second_level_input : :obj:`list` of \
     :obj:`list` of 3D Niimg-like objects or \
     4D Niimg-like objects or \
     :obj:`list` of :class:`~nilearn.surface.SurfaceImage` objects or \
-    :obj:`pandas.Series` of Niimg-like objects.
+    :obj:`pandas.Series` of Niimg-like objects, or None, default=None
 
     - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
       will allow to easily compute the second level contrast of arbitrary first
@@ -1137,6 +1137,8 @@ second_level_input : :obj:`list` of \
       or :class:`~nilearn.surface.SurfaceImage` objects
       then this is taken literally as Y for the model fit
       and `design_matrix` must be provided.
+
+    - ``None`` can only be used for models with ``design_only=True``.
 
 """
 

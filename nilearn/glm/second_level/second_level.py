@@ -68,12 +68,15 @@ def _check_second_level_input(
     """Check second_level_input type."""
     _check_design_matrix(design_matrix)
     if design_only:
-        if second_level_input is None and design_matrix is None:
+        if design_matrix is None:
             raise TypeError(
-                "'second_level_input' and 'design_matrix' "
-                "cannot both be None for design only models."
+                "'design_matrix' cannot be None when design_only is True."
             )
         return
+    elif second_level_input is None:
+        raise TypeError(
+            "'second_level_input' cannot be None when design_only is False."
+        )
 
     input_type = _check_input_type(second_level_input)
     _check_input_as_type(
@@ -136,7 +139,10 @@ def _check_all_elements_of_same_type(data) -> None:
 
 
 def _check_input_as_type(
-    second_level_input, input_type, none_confounds, none_design_matrix
+    second_level_input,
+    input_type,
+    none_confounds,
+    none_design_matrix,
 ) -> None:
     if input_type == "flm_object":
         _check_input_as_first_level_model(second_level_input, none_confounds)
@@ -629,9 +635,10 @@ class SecondLevelModel(BaseGLM):
 
         self.confounds_ = confounds
 
-        sample_map, subjects_label = _process_second_level_input(
-            second_level_input
-        )
+        if not self.design_only:
+            sample_map, subjects_label = _process_second_level_input(
+                second_level_input
+            )
 
         # Create and set design matrix, if not given
         if design_matrix is None:
@@ -647,6 +654,7 @@ class SecondLevelModel(BaseGLM):
         self.masker_ = None
         self.n_elements_ = 0
         self._reporting_data = {}
+
         if self.design_only:
             return self
 
@@ -709,11 +717,18 @@ class SecondLevelModel(BaseGLM):
 
         Returns
         -------
-        output_image : :class:`~nibabel.nifti1.Nifti1Image`
+        output_image : :class:`~nibabel.nifti1.Nifti1Image`, \
+                       :class:`~nilearn.surface.SurfaceImage`, None, or\
+                       a :obj:`dict` of  \
+                       :class:`~nibabel.nifti1.Nifti1Image`, \
+                       :class:`~nilearn.surface.SurfaceImage` or None
             The desired output image(s).
             If ``output_type == 'all'``,
             then the output is a dictionary of images,
             keyed by the type of image.
+
+            If the model has ``design_only=True``,
+            this will return None or a :obj:`dict` whose values are None.
 
         """
         check_is_fitted(self)

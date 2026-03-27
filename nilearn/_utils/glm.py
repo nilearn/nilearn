@@ -1,6 +1,5 @@
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -98,7 +97,7 @@ def _read_events_table(table_path):
     return loaded
 
 
-def coerce_to_dict(input_arg) -> None | dict[Any, Any]:
+def coerce_to_dict(input_arg):
     """Construct a dict from the provided arg.
 
     If input_arg is:

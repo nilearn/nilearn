@@ -615,7 +615,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
 
         design_matrices = None
         mask_plot = None
-        mask_info = {"n_elements": 0, "coverage": "0"}
+        mask_info: dict[str, Any] = {"n_elements": 0, "coverage": "0"}
         results = None
 
         if not self.__sklearn_is_fitted__():
