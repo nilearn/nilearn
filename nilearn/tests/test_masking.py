@@ -562,6 +562,9 @@ def test_unmask_3d_with_files(
     assert_array_equal(t[0], unmasked3D)
 
     # Check that the unmasked image retains the datatype of the data array
+    #
+    # see https://github.com/nilearn/nilearn/issues/6150
+    #
     t = unmask([masked3D], filename, order="F")
     assert t[0].get_data_dtype() == data3D.dtype
 
