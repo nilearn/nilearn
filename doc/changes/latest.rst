@@ -2,8 +2,50 @@
 
 .. include:: names.rst
 
-0.12.1.dev
+0.14.0.dev
 ==========
+
+..
+    Each changelog entry should begin with one of the following badges:
+    - :bdg-primary:`Doc`
+    - :bdg-secondary:`Maint`
+    - :bdg-success:`API`
+    - :bdg-info:`Plotting`
+    - :bdg-warning:`Test`
+    - :bdg-danger:`Deprecation`
+    - :bdg-dark:`Code`
+
+HIGHLIGHTS
+----------
+
+- Nilearn can leverage scikit-learn's Array API-supported estimators to speed up neuroimaging ML analyses using GPU acceleration. See :ref:`user guide page <gpu_usage>`.
+
+.. warning::
+
+ | **Minimum supported versions of the following packages have been bumped up:**
+ | - numpy -- 1.26.0
+ | - pandas -- 2.3.0
+ | - scikit-learn -- 1.5.0
+ | - scipy -- 1.11.1
+ | - kaleido -- 1.1.0
+ | - plotly -- 6.1.1
+ |
+
+.. admonition:: Google Chrome needed to save images with plotly / kaleido
+
+    To be able to save images with plotly,
+    make sure that Google Chrome is installed!
+    You can install a compatible Chrome version using
+    the ``kaleido_get_chrome`` command in command line or
+    ``kaleido.get_chrome_sync()`` function
+    in Python:
+
+    .. code-block:: python
+
+       import kaleido
+
+       kaleido.get_chrome_sync()
+
 
 NEW
 ---
@@ -11,31 +53,66 @@ NEW
 Fixes
 -----
 
-- :bdg-success:`API` Add a dummy ``y`` parameter to :meth:`~nilearn.decomposition.CanICA.score` and :meth:`~nilearn.decomposition.DictLearning.score` for compatibility with scikit-learn API (:gh:`5565` by `Rémi Gau`_).
+- :bdg-secondary:`Maint` Allow local installation with ``uv sync`` (:gh:`6024` by `Mathieu Dugré`_)
 
-
-- :bdg-dark:`Code` Fix several issues in :class:`~nilearn.maskers.NiftiLabelsMasker` and :class:`~nilearn.maskers.SurfaceLabelsMasker` that lead to invalid ``region_names_``, ``region_ids_`` or look-up-table content (:gh:`5492` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Align ``symmetric_cmap`` behavior for ``plotly`` backend in :func:`~nilearn.plotting.plot_surf` function with ``matplotlib`` backend (:gh:`5492` by `Hande Gözükan`_).
-
-- :bdg-dark:`Code` Fix type of ``t_r`` to support numpy dtypes for python < 3.10 (:gh:`5550` by `Rémi Gau`_).
+- :bdg-info:`Plotting` Fix ``nilearn.plotting.view_img`` resampling of non-isotropic images when no background image is used (:gh:`6031` by `Michelle Wang`_).
 
 - :bdg-dark:`Code` Ensure that estimators that accept images can work will several datatypes as input and that their methods can output arrays or images of the requested datatype (:gh:`5511` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Enforce consistent ``dtype`` for all parts of :class:`~nilearn.surface.SurfaceImage` and :class:`~nilearn.surface.PolyData` (:gh:`5530` by `Rémi Gau`_).
+- :bdg-info:`Plotting` Fix bug introduced in ``0.13.0`` while plotting single valued data with :func:`~nilearn.plotting.plot_roi`.  (:gh:`6122` by `Hande Gözükan`_).
 
+- :bdg-info:`Thresholding` Keep values equal to threshold while thresholding image with :func:`~nilearn.image.threshold_img`.  (:gh:`6130` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Do not copy mask image's header in ``masking.unmask`` (:gh:`6157` by `Taylor Salo`_).
 
 Enhancements
 ------------
 
-- :bdg-dark:`Code` Enforce consistent ``dtype`` for all parts of :class:`~nilearn.surface.SurfaceImage` and :class:`~nilearn.surface.PolyData` (:gh:`5530` by `Rémi Gau`_).
+- :bdg-success:`API` The parameter ``estimator_args`` was added to all decoding estimators to allow to pass parameters directly to the underlying Scikit-Learn estimators (:gh:`5641` by `Rémi Gau`_).
 
-- :bdg-success:`API` The fitted attribute ``n_elements_`` was added to following estimators: :class:`~nilearn.glm.first_level.FirstLevelModel`, :class:`~nilearn.glm.second_level.SecondLevelModel`, :class:`~nilearn.decoding.Decoder`, :class:`~nilearn.decoding.DecoderRegressor`, :class:`~nilearn.decoding.FREMClassifier`, :class:`~nilearn.decoding.FREMRegressor`, :class:`~nilearn.decoding.SearchLight`. This attribute is equivalent to the `n_features_in_ <https://scikit-learn.org/stable/developers/develop.html#universal-attribute>`_ of scikit-learn estimators.
+- :bdg-success:`API` :class:`~nilearn.decoding.SearchLight` now has a ``random_state`` and ``estimator_args`` to pass to the underlying estimator (:gh:`6020` by `Rémi Gau`_).
 
+- :bdg-info:`Plotting` Allow string threshold in ``nilearn.plotting.plot_*`` functions (:gh:`5982` by `Saeed Babadi`_).
+
+- :bdg-success:`Doc` Add an example to the plot_carpet function (:gh:`6065` by `Johanna Bayer`_).
+
+- :bdg-dark:`Code` Add surface support to :func:`~nilearn.image.smooth_img` (:gh:`3267` by `Jason D. Yeatman`_ and `Noah C. Benson`_ ).
+
+- :bdg-success:`API` Add a public method to access the fitted mask of GLM instances (:gh:`5981` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Added ``screening_n_features`` parameter to :class:`~nilearn.decoding.Decoder`,  :class:`~nilearn.decoding.DecoderRegressor`, :class:`~nilearn.decoding.FREMClassifier`,  and :class:`~nilearn.decoding.FREMRegressor`.
+
+- :bdg-success:`API` Support pathlike objects for ``cmap`` argument in :func:`~plotting.plot_surf_roi` (:gh:`5981` by `Joseph Paillard`_).
+
+- :bdg-info:`Plotting` Add example showing how to use TemplateFlow to make surface plots and change volume template (:gh:`5968` by `Joseph Paillard`_ and `Rémi Gau`_).
+
+- :bdg-primary:`Doc` Added a :ref:`user guide page <gpu_usage>` to demonstrate speedup using GPU (:gh:`5958` by `Himanshu Aggarwal`_ and `Elizabeth DuPre`_).
+
+- :bdg-secondary:`Maint` Add list of badges to changelog template on :ref:`maintenance_process` page (:gh:`6084` by `Michelle Wang`_).
+
+- :bdg-info:`Plotting`  Add opacity slider on :func:`~plotting.view_img` (:gh:`6107` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting`  Enable using brainsprite as a plotting engine to create interactive visualization in the reports generated by the :class:`~maskers.NiftiMasker` and the :class:`~maskers.NiftiLabelsMasker` (:gh:`6037` by `Rémi Gau`_).
 
 Changes
 -------
 
-- :bdg-dark:`Code` Resampling of maps by :class:`~nilearn.maskers.NiftiMapsMasker` is now done with a linear instead of a continuous interpolation  (:gh:`5519` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` The function ``nilearn.datasets.utils.load_sample_motor_activation_image`` and ``nilearn.datasets.fetch_neurovault_motor_task`` were removed. Use :func:`~datasets.load_sample_motor_activation_image` instead (:gh:`5995` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Move ``nilearn.plotting.img_plotting`` under ``nilearn.plotting.image`` (:gh:`5481` by `Hande Gözükan`_).
+- :bdg-danger:`Deprecation` The private functions ``nilearn._utils.niimg_conversions.check_niimg*`` have been removed, please use their public equivalent :func:`~image.check_niimg`, :func:`~image.check_niimg_3d` and :func:`~image.check_niimg_4d` (:gh:`5995` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` Accessing the maskers from ``nilearn.input_data`` is no longer possible, they now must be accessed via :mod:`nilearn.maskers` (:gh:`5995` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The ``version`` parameters of in :func:`~datasets.fetch_atlas_pauli_2017` has now permanently been replaced by ``atlas_type`` (:gh:`5995` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` ``plot_img_comparison`` is no longer accessible from ``nilearn.plotting.image.img_plotting``, access it from ``nilearn.plotting`` or from ``nilearn.plotting.img_comparison`` (:gh:`5995` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The ``"z_score"`` value for the ``standardize`` parameter is no longer supported. Use ``standardize="z_score_sample"`` instead (:gh:`5995` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Remove aggressive garbage collection in safe_get_data for performance, mainly in CI. (:gh:`6039` by `Basile Pinsard`_).
+
+- :bdg-secondary:`Maint` Refactor and speed up tests for :func:`~plotting.view_img` (:gh:`6072` by `Michelle Wang`_)
+
+- :bdg-secondary:`Maint` Several optional dependencies (``dev``, ``test``, ``doc``...) have been swapped in favor of `dependency groups <https://packaging.python.org/en/latest/specifications/dependency-groups>`_, so they will no longer work when installing Nilearn from pypi. When installing locally, instead of ``pip install '.[dev]'`` do ``pip install . --group dev`` (:gh:`6108` by `Rémi Gau`_).
+
+- :bdg-secondary:`Maint` The optional dependency ``plotly`` has been removed in favor of ``plotting`` when so instead of ``pip install 'nilearn[plotly]'`` do ``pip install 'nilearn[plotting]`` (:gh:`6108` by `Rémi Gau`_).

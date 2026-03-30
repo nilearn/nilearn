@@ -1,10 +1,14 @@
 import warnings
+from importlib.util import find_spec
 
 import numpy as np
 from scipy import linalg
 from scipy.spatial import distance_matrix
 
-from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn._utils.helpers import (
+    is_plotly_installed,
+    is_sphinx_build,
+)
 from nilearn._utils.logger import find_stack_level
 from nilearn.plotting.surface._utils import DEFAULT_HEMI, get_faces_on_edge
 from nilearn.surface import SurfaceImage
@@ -19,10 +23,10 @@ class SurfaceFigure:
 
     Parameters
     ----------
-    figure : Figure instance or ``None``, optional
+    figure : Figure instance  or None, default=None
         Figure to be wrapped.
 
-    output_file : :obj:`str` or ``None``, optional
+    output_file : :obj:`str` or None, default=None
         Path to output file.
     """
 
@@ -41,7 +45,7 @@ class SurfaceFigure:
 
         Parameters
         ----------
-        output_file : :obj:`str` or ``None``, optional
+        output_file : :obj:`str` or None, default=None
             Path to output file.
         """
         if output_file is None:
@@ -62,10 +66,10 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
     Parameters
     ----------
-    figure : Plotly figure instance or ``None``, optional
+    figure : Plotly figure instance or None, default=None
         Plotly figure instance to be used.
 
-    output_file : :obj:`str` or ``None``, optional
+    output_file : :obj:`str` or None, default=None
         Output file path.
 
     Attributes
@@ -95,43 +99,75 @@ class PlotlySurfaceFigure(SurfaceFigure):
     def __init__(self, figure=None, output_file=None, hemi=DEFAULT_HEMI):
         if not is_plotly_installed():
             raise ImportError(
-                "Plotly is required to use `PlotlySurfaceFigure`."
+                "Plotly is required to use 'PlotlySurfaceFigure'."
             )
 
         if figure is not None and not isinstance(figure, go.Figure):
             raise TypeError(
-                "`PlotlySurfaceFigure` accepts only plotly Figure objects."
+                "'PlotlySurfaceFigure' accepts only plotly Figure objects."
             )
         super().__init__(figure=figure, output_file=output_file, hemi=hemi)
 
-    def show(self, renderer="browser"):
+    def show(self, renderer=None):
         """Show the figure.
 
         Parameters
         ----------
-        renderer : :obj:`str`, default='browser'
+        renderer : :obj:`str`, default=None
             Plotly renderer to be used.
 
         """
         if self.figure is not None:
-            self.figure.show(renderer=renderer)
-            return self.figure
+            # Figure should be returned for sphinx-gallery to be able to
+            # display it in the docs.
+            if is_sphinx_build():
+                return self.figure
+            # When run in notebook, if both figure is returned and show
+            # is called, the figure is displayed twice.
+            else:
+                self.figure.show(renderer=renderer)
 
-    def savefig(self, output_file=None):
+    def savefig(self, output_file=None, **savefig_kwargs) -> None:  # noqa: ARG002
         """Save the figure to file.
 
         Parameters
         ----------
-        output_file : :obj:`str` or ``None``, optional
+        output_file : :obj:`str` or None, default=None
             Path to output file.
+
+        savefig_kwargs:
         """
-        if not is_kaleido_installed():
-            raise ImportError(
-                "`kaleido` is required to save plotly figures to disk."
-            )
         self._check_output_file(output_file=output_file)
         if self.figure is not None:
-            self.figure.write_image(self.output_file)
+            if output_file is not None:
+                self.output_file = output_file
+
+            try:
+                self.figure.write_image(self.output_file)
+            except RuntimeError as e:
+                kaleido_spec = find_spec("kaleido")
+                if "Kaleido requires Google Chrome" in str(e) or kaleido_spec:
+                    raise RuntimeError(
+                        "As of version 1.0.0, Google Chrome is no more "
+                        "bundled with Kaleido.\n"
+                        "To be able to save images with plotly, make sure "
+                        "that Google Chrome is installed!\n"
+                        "You can install a compatible Chrome version using "
+                        "the `kaleido_get_chrome` command in command line or "
+                        "`kaleido.get_chrome_sync()` function "
+                        "in Python."
+                    ) from e
+                else:
+                    raise e
+            except ValueError as e:
+                kaleido_spec = find_spec("kaleido")
+                if not kaleido_spec:
+                    raise RuntimeError(
+                        "Kaleido and Google Chrome are required to save "
+                        "plotly figures to disk."
+                    ) from e
+                else:
+                    raise e
 
     def add_contours(
         self,
@@ -214,7 +250,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         roi = load_surf_data(roi_map)
 
         traces = []
-        for level, label, line in zip(levels, labels, lines):
+        for level, label, line in zip(levels, labels, lines, strict=False):
             parc_idx = np.where(roi == level)[0]
 
             # warn when the edge faces exclude vertices in parcellation
@@ -286,7 +322,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         segments = []
         vs = []
         idxs = []
-        for e, face in zip(edge_faces, self._faces):
+        for e, face in zip(edge_faces, self._faces, strict=False):
             if e:
                 t0 = self._coords[face[0]]
                 t1 = self._coords[face[1]]

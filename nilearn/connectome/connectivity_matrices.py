@@ -5,19 +5,21 @@ from math import floor, sqrt
 
 import numpy as np
 from scipy import linalg
-from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.base import TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
 from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import signal
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
-from nilearn._utils.logger import find_stack_level
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.logger import find_stack_level, log
+from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.versions import SKLEARN_LT_1_6
 
 
-def _check_square(matrix):
+def _check_square(matrix: np.ndarray) -> None:
     """Raise a ValueError if the input matrix is square.
 
     Parameters
@@ -32,7 +34,7 @@ def _check_square(matrix):
         )
 
 
-def _check_spd(matrix):
+def _check_spd(matrix: np.ndarray) -> None:
     """Raise a ValueError if the input matrix is not symmetric positive \
     definite.
 
@@ -46,7 +48,9 @@ def _check_spd(matrix):
         raise ValueError("Expected a symmetric positive definite matrix.")
 
 
-def _form_symmetric(function, eigenvalues, eigenvectors):
+def _form_symmetric(
+    function, eigenvalues: np.ndarray, eigenvectors: np.ndarray
+) -> np.ndarray:
     """Return the symmetric matrix with the given eigenvectors and \
     eigenvalues transformed by function.
 
@@ -127,13 +131,13 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         List of matrices whose geometric mean to compute. Raise an error if the
         matrices are not all symmetric positive definite of the same shape.
 
-    init : numpy.ndarray, shape (n_features, n_features), optional
+    init : numpy.ndarray of shape (n_features, n_features) or None, \
+            default=None
         Initialization matrix, default to the arithmetic mean of matrices.
         Raise an error if the matrix is not symmetric positive definite of the
         same shape as the elements of matrices.
 
-    max_iter : int, default=10
-        Maximal number of iterations.
+    %(max_iter10)s
 
     tol : positive float or None, default=1e-7
         The tolerance to declare convergence: if the gradient norm goes below
@@ -212,7 +216,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     return gmean
 
 
-def sym_matrix_to_vec(symmetric, discard_diagonal=False):
+def sym_matrix_to_vec(symmetric, discard_diagonal: bool = False) -> np.ndarray:
     """Return the flattened lower triangular part of an array.
 
     If diagonal is kept, diagonal elements are divided by sqrt(2) to conserve
@@ -220,7 +224,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
 
     Acts on the last two dimensions of the array if not 2-dimensional.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -256,7 +260,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     Diagonal can be encompassed in vec or given separately. In both cases, note
     that diagonal elements are multiplied by sqrt(2).
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -332,7 +336,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     return sym
 
 
-def cov_to_corr(covariance):
+def cov_to_corr(covariance: np.ndarray) -> np.ndarray:
     """Return correlation matrix for a given covariance matrix.
 
     Parameters
@@ -354,7 +358,7 @@ def cov_to_corr(covariance):
     return correlation
 
 
-def prec_to_partial(precision):
+def prec_to_partial(precision: np.ndarray) -> np.ndarray:
     """Return partial correlation matrix for a given precision matrix.
 
     Parameters
@@ -374,11 +378,11 @@ def prec_to_partial(precision):
 
 
 @fill_doc
-class ConnectivityMeasure(TransformerMixin, BaseEstimator):
+class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
     """A class that computes different kinds of \
        :term:`functional connectivity` matrices.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
@@ -401,14 +405,16 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
 
-    %(standardize)s
+    %(standardize_true)s
 
         .. note::
 
             Added to control passing value to `standardize` of ``signal.clean``
-            to call new behavior since passing "zscore" or True (default) is
-            deprecated. This parameter will be deprecated in version 0.13 and
-            removed in version 0.15.
+            to call new behavior since passing False or True (default) is
+            deprecated.
+            This parameter will be removed in version 0.15.
+
+    %(verbose0)s
 
     Attributes
     ----------
@@ -444,40 +450,14 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         vectorize=False,
         discard_diagonal=False,
         standardize=True,
+        verbose=0,
     ):
         self.cov_estimator = cov_estimator
         self.kind = kind
         self.vectorize = vectorize
         self.discard_diagonal = discard_diagonal
         self.standardize = standardize
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(niimg_like=False)
-        return tags
+        self.verbose = verbose
 
     def _check_input(self, X, confounds=None):
         subjects_types = [type(s) for s in X]
@@ -559,12 +539,13 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         # Compute all the matrices, stored in "connectivities"
         if self.kind == "correlation":
+            standardize = "zscore_sample" if self.standardize is True else None
             covariances_std = [
                 self.cov_estimator_.fit(
                     signal.standardize_signal(
                         x,
                         detrend=False,
-                        standardize=self.standardize,
+                        standardize=standardize,
                     )
                 ).covariance_
                 for x in X
@@ -572,6 +553,16 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             connectivities = [cov_to_corr(cov) for cov in covariances_std]
         else:
             covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
+
+            allowed_kinds = (
+                "correlation",
+                "partial correlation",
+                "tangent",
+                "covariance",
+                "precision",
+            )
+            check_parameter_in_allowed(self.kind, allowed_kinds, "kind")
+
             if self.kind in ("covariance", "tangent"):
                 connectivities = covariances
             elif self.kind == "precision":
@@ -580,18 +571,6 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 connectivities = [
                     prec_to_partial(linalg.inv(cov)) for cov in covariances
                 ]
-            else:
-                allowed_kinds = (
-                    "correlation",
-                    "partial correlation",
-                    "tangent",
-                    "covariance",
-                    "precision",
-                )
-                raise ValueError(
-                    f"Allowed connectivity kinds are {allowed_kinds}. "
-                    f"Got kind {self.kind}."
-                )
 
         # Store the mean
         if do_fit:
@@ -609,9 +588,11 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 self.mean_ *= 0.5
                 self.whitening_ = None
 
+                log("Finished fit", verbose=self.verbose)
+
         # Compute the vector we return on transform
         if do_transform:
-            # TODO simplify when dropping sklearn 1.5
+            # TODO (sklearn >= 1.6.0) simplify
             if SKLEARN_LT_1_6:
                 for x in X:
                     check_array(
@@ -740,7 +721,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         check_is_fitted(self)
         return self._fit_transform(X, do_transform=True, confounds=confounds)
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "cov_estimator_")
 
     def inverse_transform(self, connectivities, diagonal=None):

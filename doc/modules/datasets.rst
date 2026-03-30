@@ -137,7 +137,6 @@ Functions
 
    fetch_abide_pcp
    fetch_adhd
-   fetch_bids_langloc_dataset
    fetch_development_fmri
    fetch_ds000030_urls
    fetch_fiac_first_level
@@ -189,7 +188,7 @@ Functions
    fetch_mixed_gambles
    fetch_oasis_vbm
    fetch_neurovault_auditory_computation_task
-   fetch_neurovault_motor_task
+
 
 Statistical maps/derivatives descriptions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -11,16 +11,17 @@ from pathlib import Path
 import numpy as np
 from nibabel import Nifti1Image
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
-from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
+from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -567,6 +568,8 @@ def recursive_neighbor_agglomeration(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     connectivity = _weighted_connectivity_graph(X, mask_img)
 
     # Initialization
@@ -594,7 +597,11 @@ def recursive_neighbor_agglomeration(
 
 
 @fill_doc
-class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
+class ReNA(
+    ClusterMixin,
+    TransformerMixin,
+    NilearnBaseEstimator,
+):
     """Recursive Neighbor Agglomeration (:term:`ReNA`).
 
     Recursively merges the pair of clusters according to 1-nearest neighbors
@@ -666,7 +673,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -676,9 +683,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -806,7 +811,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "labels_")
 
     @fill_doc
@@ -832,7 +837,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
-        # TODO simplify when dropping sklearn 1.5
+        # TODO (sklearn >= 1.6.0) simplify
         if SKLEARN_LT_1_6:
             X = check_array(
                 X,

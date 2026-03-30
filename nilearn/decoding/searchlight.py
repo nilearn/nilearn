@@ -11,22 +11,21 @@ from copy import deepcopy
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
 from sklearn import svm
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
 from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.image import new_img_like
+from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
+from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
-
-from .. import masking
-from ..image.resampling import coord_transform
+from nilearn.masking import load_mask_img
 
 ESTIMATOR_CATALOG = {"svc": svm.LinearSVC, "svr": svm.SVR}
 
@@ -70,10 +69,7 @@ def search_light(
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator, default=None
-        A cross-validation generator. If None, a 3-fold cross
-        validation is used or 3-fold stratified cross-validation
-        when y is supplied.
+    %(cvNone_3)s
 
     %(n_jobs_all)s
 
@@ -84,6 +80,8 @@ def search_light(
     scores : array-like of shape (number of rows in A)
         search_light scores
     """
+    check_params(locals())
+
     group_iter = GroupIterator(A.shape[0], n_jobs)
     scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(_group_iter_search_light)(
@@ -129,6 +127,7 @@ class GroupIterator:
         yield from np.array_split(np.arange(self.n_features), self.n_jobs)
 
 
+@fill_doc
 def _group_iter_search_light(
     list_rows,
     estimator,
@@ -165,18 +164,16 @@ def _group_iter_search_light(
         half labeled as `1`. This is useful during transformations
         where the model is applied without ground truth labels.
 
-    groups : array-like, optional
+    groups : array-like
         group label for each sample for cross validation.
 
-    scoring : string or callable, optional
+    scoring : string or callable
         Scoring strategy to use. See the scikit-learn documentation.
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator, optional
-        A cross-validation generator. If None, a 3-fold cross validation is
-        used or 3-fold stratified cross-validation when y is supplied.
+    %(cvNone_3)s
 
     thread_id : int
         process id, used for display.
@@ -195,7 +192,7 @@ def _group_iter_search_light(
     t0 = time.time()
     for i, row in enumerate(list_rows):
         kwargs = {"scoring": scoring, "groups": groups}
-        if isinstance(cv, KFold):
+        if isinstance(cv, (KFold)):
             kwargs = {"scoring": scoring}
 
         with warnings.catch_warnings():  # might not converge
@@ -230,6 +227,7 @@ def _group_iter_search_light(
                     f"Job #{thread_id}, processed {i}/{len(list_rows)} steps "
                     f"({percent:0.2f}%, "
                     f"{remaining:0.1f} seconds remaining){crlf}",
+                    verbose,
                 )
     return par_scores
 
@@ -238,7 +236,7 @@ def _group_iter_search_light(
 # Class for search_light #####################################################
 ##############################################################################
 @fill_doc
-class SearchLight(TransformerMixin, BaseEstimator):
+class SearchLight(TransformerMixin, NilearnBaseEstimator):
     """Implement search_light analysis using an arbitrary type of classifier.
 
     Parameters
@@ -247,7 +245,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         See :ref:`extracting_data`.
         Boolean image giving location of voxels containing usable signals.
 
-    process_mask_img : Niimg-like object, optional
+    process_mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Boolean image giving voxels on which searchlight should be
         computed.
@@ -260,18 +258,24 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     %(n_jobs)s
 
-    scoring : :obj:`str` or callable, optional
+    scoring : :obj:`str` or callable or None, default=None
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator, optional
-        A cross-validation generator. If None, a 3-fold cross
-        validation is used or 3-fold stratified cross-validation
-        when y is supplied.
+    %(cvNone_3)s
 
     %(verbose0)s
+
+    %(random_state)s
+
+        .. note::
+
+            This parameter will be passed to the underlying
+            ``"svc"`` estimator.
+
+    %(estimator_args)s
 
     Attributes
     ----------
@@ -282,24 +286,24 @@ class SearchLight(TransformerMixin, BaseEstimator):
         1D array containing the searchlight scores corresponding
         to the masked region only.
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
-        .. versionadded:: 0.12.1dev
-
-    scores_ : numpy.ndarray
-        3D array containing searchlight scores for each voxel, aligned
-         with the mask.
-
-         .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.12.1
 
     process_mask_ : numpy.ndarray
         Boolean mask array representing the voxels included in the
          searchlight computation.
 
-         .. versionadded:: 0.11.0
+         .. nilearn_versionadded:: 0.11.0
+
+    scores_ : numpy.ndarray
+        3D array containing searchlight scores for each voxel, aligned
+         with the mask.
+
+         .. nilearn_versionadded:: 0.11.0
 
     Notes
     -----
@@ -330,6 +334,8 @@ class SearchLight(TransformerMixin, BaseEstimator):
         scoring=None,
         cv=None,
         verbose=0,
+        random_state=0,
+        estimator_args=None,
     ):
         self.mask_img = mask_img
         self.process_mask_img = process_mask_img
@@ -339,13 +345,8 @@ class SearchLight(TransformerMixin, BaseEstimator):
         self.scoring = scoring
         self.cv = cv
         self.verbose = verbose
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
+        self.random_state = random_state
+        self.estimator_args = estimator_args
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -353,9 +354,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
 
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
@@ -386,12 +385,28 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     @property
     def _estimator_type(self):
-        # TODO rm sklearn>=1.6
+        # TODO (sklearn >= 1.8.0) remove
         if self.estimator == "svr":
             return "regressor"
         elif self.estimator == "svc":
             return "classifier"
         return ""
+
+    def _get_estimator(self):
+        if not isinstance(self.estimator, str):
+            return self.estimator
+
+        estimator_args = (
+            {} if self.estimator_args is None else self.estimator_args
+        )
+        if "verbose" not in estimator_args:
+            estimator_args["verbose"] = (self.verbose - 1) > 0
+        if self.estimator == "svc" and "random_state" not in estimator_args:
+            estimator_args["random_state"] = self.random_state
+
+        estimator = ESTIMATOR_CATALOG[self.estimator](**estimator_args)
+
+        return estimator
 
     def fit(self, imgs, y, groups=None):
         """Fit the searchlight.
@@ -428,9 +443,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         process_mask_img = self.process_mask_img or self.mask_img_
 
         # Compute world coordinates of the seeds
-        process_mask, process_mask_affine = masking.load_mask_img(
-            process_mask_img
-        )
+        process_mask, process_mask_affine = load_mask_img(process_mask_img)
 
         self.process_mask_ = process_mask
 
@@ -453,11 +466,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
             mask_img=self.mask_img_,
         )
 
-        estimator = self.estimator
-        if estimator == "svc":
-            estimator = ESTIMATOR_CATALOG[estimator](dual=True)
-        elif isinstance(estimator, str):
-            estimator = ESTIMATOR_CATALOG[estimator]()
+        estimator = self._get_estimator()
 
         scores = search_light(
             X,
@@ -475,7 +484,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         self.scores_[np.where(process_mask)] = scores
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return (
             hasattr(self, "scores_")
             and hasattr(self, "process_mask_")
@@ -515,9 +524,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
             mask_img=self.mask_img_,
         )
 
-        estimator = self.estimator
-        if estimator == "svc":
-            estimator = ESTIMATOR_CATALOG[estimator](dual=True)
+        estimator = self._get_estimator()
 
         # Use the modified `_group_iter_search_light` logic to avoid `y` issues
         result = search_light(

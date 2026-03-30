@@ -14,6 +14,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    datasets.rst
    decoding.rst
    decomposition.rst
+   exceptions.rst
    glm.rst
    image.rst
    interfaces.rst
@@ -25,3 +26,4 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    reporting.rst
    signal.rst
    surface.rst
+   utils.rst

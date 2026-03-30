@@ -13,7 +13,6 @@ from scipy.linalg import pinv
 from scipy.stats import gamma
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 
@@ -86,7 +85,6 @@ def _gamma_difference_hrf(
     return hrf
 
 
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the :term:`SPM` :term:`HRF` model.
 
@@ -97,7 +95,7 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -119,7 +117,6 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     return _gamma_difference_hrf(t_r, oversampling, time_length, onset)
 
 
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the Glover :term:`HRF` model.
 
@@ -130,7 +127,7 @@ def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -199,7 +196,6 @@ def _generic_time_derivative(
     )
 
 
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the :term:`SPM` time derivative :term:`HRF` (dhrf) model.
 
@@ -210,7 +206,7 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -238,7 +234,6 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     )
 
 
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the Glover time derivative :term:`HRF` (dhrf) model.
 
@@ -249,7 +244,7 @@ def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -319,7 +314,6 @@ def _generic_dispersion_derivative(
     )
 
 
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def spm_dispersion_derivative(
     t_r, oversampling=50, time_length=32.0, onset=0.0
 ):
@@ -332,7 +326,7 @@ def spm_dispersion_derivative(
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -356,7 +350,6 @@ def spm_dispersion_derivative(
     )
 
 
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def glover_dispersion_derivative(
     t_r, oversampling=50, time_length=32.0, onset=0.0
 ):
@@ -372,7 +365,7 @@ def glover_dispersion_derivative(
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -461,7 +454,7 @@ def _sample_condition(
     t_onset = np.minimum(
         np.searchsorted(frame_times_high_res, onsets), tmax - 1
     )
-    for t, v in zip(t_onset, values):
+    for t, v in zip(t_onset, values, strict=False):
         regressor[t] += v
     t_offset = np.minimum(
         np.searchsorted(frame_times_high_res, onsets + durations), tmax - 1
@@ -472,7 +465,7 @@ def _sample_condition(
         if t < (tmax - 1) and t == t_onset[i]:
             t_offset[i] += 1
 
-    for t, v in zip(t_offset, values):
+    for t, v in zip(t_offset, values, strict=False):
         regressor[t] -= v
     regressor = np.cumsum(regressor)
 
@@ -560,7 +553,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     con_name : :obj:`str`
         identifier of the condition
     %(hrf_model)s
-    fir_delays : 1D array_like, optional
+    fir_delays : 1D array_like or None, default=None
         Delays (in scans) used in case of an FIR model
 
     Returns
@@ -615,7 +608,7 @@ def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor to have a smooth hrf.
 
-    fir_delays : 1D-array-like, optional
+    fir_delays : 1D-array-like or None, default=None
         List of delays (in scans) for finite impulse response models.
 
     Returns
@@ -678,15 +671,15 @@ def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
     elif callable(hrf_model):
         try:
             hkernel = [hrf_model(t_r, oversampling)]
-        except TypeError:
-            raise ValueError(error_msg)
+        except TypeError as e:
+            raise ValueError(error_msg) from e
     elif isinstance(hrf_model, Iterable) and all(
         callable(_) for _ in hrf_model
     ):
         try:
             hkernel = [model(t_r, oversampling) for model in hrf_model]
-        except TypeError:
-            raise ValueError(error_msg)
+        except TypeError as e:
+            raise ValueError(error_msg) from e
     elif hrf_model is None:
         hkernel = [np.hstack((1, np.zeros(oversampling - 1)))]
     else:

@@ -1,0 +1,76 @@
+{% extends "html/body_base.jinja" %}
+
+{% block report %}
+    <div class="pure-g">
+        <div class="pure-u-1 pure-u-md-2-3">
+            {% if not has_plotting_engine %}
+
+                {% include "html/partials/missing_plotting_engine.jinja" %}
+
+            {% elif content %}
+                <div class="image">
+                    <img class="pure-img"
+                         width="100%"
+                         src="data:image/png;base64,{{ content }}"
+                         alt="image" />
+                </div>
+            {% endif %}
+        </div>
+        <div class="pure-u-1 pure-u-md-1-3">
+            <p>{{ description }}</p>
+            {% if n_elements %}
+                <div class="pure-u-1 pure-u-md-3-3">
+                    <p>
+                        The mask includes {{ n_elements }} vertices ({{ coverage }} %) of the
+                        image.
+                    </p>
+                </div>
+            {% endif %}
+            {% if n_vertices %}
+                <div>
+                    <table class="pure-table">
+                        <thead>
+                            <tr>
+                                <th>Hemisphere</th>
+                                <th>Number of vertices</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hemi in n_vertices %}
+                                <tr>
+                                    <td data-column="Hemisphere">{{ hemi }}</td>
+                                    <td data-column="Number of vertices">{{ n_vertices[hemi] }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+            {% if number_of_regions %}
+                <p>
+                    The masker has <b>{{ number_of_regions }}</b> different non-overlapping regions.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="pure-g">
+        <div class="pure-u-1 pure-u-md-3-3">
+            <div class="d-flex flex-column">
+                {% if summary %}
+                    <!--  tables listing each region for each part  -->
+                    <div style="display: flex; justify-content: space-around; flex-wrap: wrap">
+                        {% for region in summary_html %}
+                            <details>
+                                <summary class="pure-button">Regions summary - {{ region }}</summary>
+                                <div class="table-container">{{ summary_html[region]|safe }}</div>
+                            </details>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% include "html/maskers/partials/parameters.jinja" %}
+
+{% endblock report %}

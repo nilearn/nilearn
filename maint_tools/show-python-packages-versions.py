@@ -7,7 +7,6 @@ from rich import print
 
 DEPENDENCIES = [
     "joblib",
-    "lxml",
     "matplotlib",
     "nibabel",
     "numpy",

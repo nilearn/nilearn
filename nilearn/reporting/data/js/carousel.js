@@ -33,11 +33,15 @@ class Carousel {
     init() {
         this.showObj(0);
 
-        let prevButton = document.querySelector(`#prev-btn-${this.uid}`);
-        let nextButton = document.querySelector(`#next-btn-${this.uid}`);
+        let prevButton = document.querySelector(`#prev-btn-UUID-${this.uid}`);
+        let nextButton = document.querySelector(`#next-btn-UUID-${this.uid}`);
 
-        if (prevButton) prevButton.addEventListener("click", () => this.displayPrevious());
-        if (nextButton) nextButton.addEventListener("click", () => this.displayNext());
+        if (prevButton) {
+          prevButton.addEventListener("click", () => this.displayPrevious());
+        }
+        if (nextButton) {
+          nextButton.addEventListener("click", () => this.displayNext());
+        }
 
         this.bindKeyboardEvents();
     }
@@ -50,13 +54,13 @@ class Carousel {
      */
     showObj(index) {
         this.displayed_objects.forEach((_, i) => {
-            let mapElement = document.getElementById(`carousel-obj-${this.uid}-${i}`);
+            let mapElement = document.getElementById(`carousel-obj-UUID-${this.uid}-${i}`);
             if (mapElement) {
                 mapElement.style.display = i === index ? "block" : "none";
             }
         });
 
-        let compElement = document.getElementById(`comp-${this.uid}`);
+        let compElement = document.getElementById(`comp-UUID-${this.uid}`);
         if (compElement) {
             compElement.innerHTML = this.displayed_objects[index];
             if (this.is_sphere){
@@ -71,13 +75,13 @@ class Carousel {
 
         // For GLM only
         // Update the section the navbar links to.
-        let matrixNavBar = document.querySelector(`#navbar-matrix-link-${this.uid}`);
+        let matrixNavBar = document.querySelector(`#navbar-matrix-link-UUID-${this.uid}`);
         if (matrixNavBar) {
-            matrixNavBar.href = `#design-matrix-${this.uid}-${index}`;
+            matrixNavBar.href = `#design-matrix-UUID-${this.uid}-${index}`;
         }
-        let contrastNavBar = document.querySelector(`#navbar-contrasts-link-${this.uid}`);
+        let contrastNavBar = document.querySelector(`#navbar-contrasts-link-UUID-${this.uid}`);
         if (contrastNavBar) {
-            contrastNavBar.href = `#contrasts-${this.uid}-${index}`;
+            contrastNavBar.href = `#contrasts-UUID-${this.uid}-${index}`;
         }
     }
 

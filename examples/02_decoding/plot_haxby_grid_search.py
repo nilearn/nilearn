@@ -32,6 +32,15 @@ manually.
 
 """
 
+import warnings
+
+warnings.filterwarnings(
+    "ignore", message="The provided image has no sform in its header."
+)
+
+# set overall verbosity for this example
+verbose = 2
+
 # %%
 # Load the Haxby dataset
 # ----------------------
@@ -99,9 +108,9 @@ decoder = Decoder(
     cv=5,
     mask=mask_img,
     smoothing_fwhm=4,
-    standardize="zscore_sample",
     screening_percentile=2,
     param_grid=param_grid,
+    verbose=verbose,
 )
 
 # %%
@@ -123,6 +132,7 @@ for i, (best_c, best_penalty, best_dual, cv_score) in enumerate(
         decoder.cv_params_["shoe"]["penalty"],
         decoder.cv_params_["shoe"]["dual"],
         decoder.cv_scores_["shoe"],
+        strict=False,
     )
 ):
     print(
@@ -143,14 +153,15 @@ cv_scores = []
 val_scores = []
 
 for sp in screening_percentile_range:
+    print("\n")
     decoder = Decoder(
         estimator="svc",
         mask=mask_img,
         smoothing_fwhm=4,
         cv=3,
-        standardize="zscore_sample",
         screening_percentile=sp,
         param_grid=param_grid,
+        verbose=verbose,
     )
     decoder.fit(index_img(fmri_niimgs, run < 10), y[run < 10])
     cv_scores.append(np.mean(decoder.cv_scores_["bottle"]))
@@ -166,9 +177,13 @@ for sp in screening_percentile_range:
 # -----------------------
 # We are going to tune the parameter 'screening_percentile' in the
 # pipeline.
-import warnings
-
-from sklearn.exceptions import ConvergenceWarning
+#
+# .. note::
+#
+#   We increase the tolerance a bit
+#   to make it easier for the fitting to converge.
+#
+#
 from sklearn.model_selection import KFold
 
 cv = KFold(n_splits=3)
@@ -180,21 +195,17 @@ for train, test in cv.split(run):
     val_scores = []
 
     for sp in screening_percentile_range:
-        with warnings.catch_warnings():
-            # silence warnings about Liblinear not converging
-            # increase the number of iterations.
-            warnings.filterwarnings(
-                action="ignore", category=ConvergenceWarning
-            )
-            decoder = Decoder(
-                estimator="svc",
-                mask=mask_img,
-                smoothing_fwhm=4,
-                cv=3,
-                standardize="zscore_sample",
-                screening_percentile=sp,
-                param_grid=param_grid,
-            )
+        decoder = Decoder(
+            estimator="svc",
+            mask=mask_img,
+            smoothing_fwhm=4,
+            cv=3,
+            standardize="zscore_sample",
+            screening_percentile=sp,
+            param_grid=param_grid,
+            verbose=verbose,
+            estimator_args={"tol": 0.0005},
+        )
         decoder.fit(index_img(fmri_niimgs, train), y_train)
         y_pred = decoder.predict(index_img(fmri_niimgs, test))
         val_scores.append(np.mean(y_pred == y_test))

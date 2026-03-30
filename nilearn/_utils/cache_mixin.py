@@ -22,8 +22,7 @@ def check_memory(memory, verbose=0):
         Used to cache the masking process.
         If a str is given, it is the path to the caching directory.
 
-    verbose : int, default=0
-        Verbosity level.
+    %(verbose0)s
 
     Returns
     -------
@@ -57,7 +56,7 @@ def check_memory(memory, verbose=0):
                 error_msg = (
                     "Given cache path parent directory doesn't "
                     f"exists, you gave '{split_cache_dir[0]}' "
-                    "which was expanded as '{os.path.dirname(memory)}' "
+                    f"which was expanded as '{Path(memory).parent}' "
                     "but doesn't exist either. "
                     "Use nilearn.EXPAND_PATH_WILDCARDS to deactivate "
                     "auto expand user path (~) behavior."
@@ -66,7 +65,7 @@ def check_memory(memory, verbose=0):
                 # The given cache base path doesn't exist.
                 error_msg = (
                     "Given cache path parent directory doesn't "
-                    "exists, you gave '{split_cache_dir[0]}'."
+                    f"exists, you gave '{split_cache_dir[0]}'."
                 )
             raise ValueError(error_msg)
 
@@ -87,10 +86,10 @@ class _ShelvedFunc:
 
 def cache(
     func,
-    memory,
+    memory: Memory | Path,
     func_memory_level=None,
     memory_level=None,
-    shelve=False,
+    shelve: bool = False,
     **kwargs,
 ):
     """Return a joblib.Memory object.
@@ -109,11 +108,11 @@ def cache(
     memory : instance of joblib.Memory, string or pathlib.Path
         Used to cache the function call.
 
-    func_memory_level : int, optional
+    func_memory_level : int or None, default=None
         The memory_level from which caching must be enabled for the wrapped
         function.
 
-    memory_level : int, optional
+    memory_level : int or None, default=None
         The memory_level used to determine if function call must
         be cached or not (if user_memory_level is equal of greater than
         func_memory_level the function is cached).
@@ -157,7 +156,7 @@ def cache(
             raise TypeError(
                 "'memory' argument must be a string or a "
                 "joblib.Memory object. "
-                f"{memory} {type(memory)} was given."
+                f"{memory} {memory.__class__.__name__} was given."
             )
         if (
             memory.location is None
@@ -203,7 +202,7 @@ class CacheMixin:
             self._shelving = False
 
     def _cache(self, func, func_memory_level=1, shelve=False, **kwargs):
-        """Return a joblib.Memory object.
+        """Return a joblib.Memory object.nilearn/_utils/cache_mixin.py.
 
         The memory_level determines the level above which the wrapped
         function output is cached. By specifying a numeric value for

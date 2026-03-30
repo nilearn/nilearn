@@ -44,13 +44,7 @@ def expected_length(t_r):
     return int(32 / t_r * 50)
 
 
-@pytest.mark.parametrize("hrf_model", HRF_MODELS)
-def test_hrf_tr_deprecation(hrf_model):
-    """Test that using tr throws a warning."""
-    with pytest.deprecated_call(match='"tr" will be removed in'):
-        hrf_model(tr=2)
-
-
+@pytest.mark.single_process
 @pytest.mark.parametrize("hrf_model", HRF_MODELS)
 @pytest.mark.parametrize("t_r", [2, 3])
 def test_hrf_norm_and_length(
@@ -342,7 +336,7 @@ def test_hkernel():
     assert_almost_equal(h[0], np.hstack((1, np.zeros(49))))
 
     with pytest.raises(
-        ValueError, match="Could not process custom HRF model provided."
+        ValueError, match=r"Could not process custom HRF model provided."
     ):
         _hrf_kernel(lambda x: np.ones(int(x)), t_r)
         _hrf_kernel([lambda x, y, z: x + y + z], t_r)
@@ -353,7 +347,7 @@ def test_hkernel():
 
     h = _hrf_kernel([lambda t_r, ov: np.ones(int(t_r * ov))], t_r)
     assert_almost_equal(h[0], np.ones(100))
-    with pytest.raises(ValueError, match="is not a known hrf model."):
+    with pytest.raises(ValueError, match=r"is not a known hrf model."):
         _hrf_kernel("foo", t_r)
 
 

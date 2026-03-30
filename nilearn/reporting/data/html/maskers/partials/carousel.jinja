@@ -1,0 +1,7 @@
+<script>
+  {% include 'js/carousel.js' %}
+  document.addEventListener("DOMContentLoaded", function () {
+    new Carousel("{{ unique_id }}", {{ displayed_maps }}, false);
+}
+);
+</script>

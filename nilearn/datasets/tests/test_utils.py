@@ -14,8 +14,8 @@ import numpy as np
 import pytest
 import requests
 
-from nilearn.datasets import _utils, utils
-from nilearn.datasets.tests._testing import Response
+from nilearn.datasets import _utils
+from nilearn.datasets.tests.conftest import Response
 
 datadir = _utils.PACKAGE_DIRECTORY / "data"
 
@@ -310,7 +310,8 @@ def test_filter_columns():
     value2 = strings[value1 % 3]
 
     values = np.asarray(
-        list(zip(value1, value2)), dtype=[("INT", int), ("STR", "S1")]
+        list(zip(value1, value2, strict=False)),
+        dtype=[("INT", int), ("STR", "S1")],
     )
 
     f = _utils.filter_columns(values, {"INT": (23, 46)})
@@ -323,7 +324,8 @@ def test_filter_columns():
 
     value1 = value1 % 2
     values = np.asarray(
-        list(zip(value1, value2)), dtype=[("INT", int), ("STR", b"S1")]
+        list(zip(value1, value2, strict=False)),
+        dtype=[("INT", int), ("STR", b"S1")],
     )
 
     # No filter
@@ -455,9 +457,7 @@ def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
 
     request_mocker.url_mapping[url] = get_response
 
-    _utils.fetch_single_file(
-        url=url, data_dir=tmp_path, verbose=1, resume=True
-    )
+    _utils.fetch_single_file(url=url, data_dir=tmp_path, resume=True)
 
     assert file_full.exists()
     assert file_full.read_text() == "Dummy content"  # not overwritten
@@ -487,9 +487,7 @@ def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
     # the default Response from the mocker does not handle Range requests
     request_mocker.url_mapping[url] = "dummy content"
 
-    _utils.fetch_single_file(
-        url=url, data_dir=tmp_path, verbose=1, resume=True
-    )
+    _utils.fetch_single_file(url=url, data_dir=tmp_path, resume=True)
 
     assert (
         "Resuming failed, try to download the whole file."
@@ -619,15 +617,3 @@ def test_naive_ftp_adapter():
         resp = sender.send(
             requests.Request("GET", "ftp://example.com").prepare()
         )
-
-
-def test_load_sample_motor_activation_image():
-    """Test deprecation utils.load_sample_motor_activation_image.
-
-    Remove when when version >= 0.13.
-    """
-    with pytest.warns(
-        DeprecationWarning,
-        match="Please import this function from 'nilearn.datasets.func'",
-    ):
-        utils.load_sample_motor_activation_image()

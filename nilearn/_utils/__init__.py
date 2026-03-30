@@ -25,7 +25,7 @@ def all_modules(modules_to_ignore=None, modules_to_consider=None):
 
         .. note::
 
-            This function will ignore ``tests``, ``externals``, and ``data``
+            This function will ignore ``tests`` and ``data``
             by default.
 
     modules_to_consider : :obj:`list` or :obj:`set` of :obj:`str` or None,\
@@ -39,11 +39,11 @@ def all_modules(modules_to_ignore=None, modules_to_consider=None):
     """
     if modules_to_ignore is not None and modules_to_consider is not None:
         raise ValueError(
-            "`modules_to_ignore` and `modules_to_consider` "
+            "'modules_to_ignore' and 'modules_to_consider' "
             "cannot be both specified."
         )
     if modules_to_ignore is None:
-        modules_to_ignore = {"data", "tests", "externals", "conftest"}
+        modules_to_ignore = {"data", "tests", "conftest"}
     all_modules = []
     root = str(Path(__file__).parent.parent)
     with warnings.catch_warnings():
@@ -88,7 +88,7 @@ def all_functions(
         .. note::
 
             This function will not list functions
-            from ``tests``, ``externals``, and ``data`` by default.
+            from ``tests`` and ``data`` by default.
 
     modules_to_consider : :obj:`list` or :obj:`set` of :obj:`str` or None,\
                           default=None
@@ -148,7 +148,7 @@ def all_classes(
         .. note::
 
             This function will not list classes from
-            ``tests``, ``externals``, and ``data`` by default.
+            ``tests`` and ``data`` by default.
 
     modules_to_consider : :obj:`list` or :obj:`set` of :obj:`str` or None,\
                           default=None

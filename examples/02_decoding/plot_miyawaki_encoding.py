@@ -25,8 +25,6 @@ receptive fields for a set of voxels to see which pixel location a
     :doc:`plot_miyawaki_reconstruction` for a decoding approach
     for the same dataset.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 from nilearn._utils.helpers import check_matplotlib
@@ -62,8 +60,8 @@ from nilearn.maskers import MultiNiftiMasker
 masker = MultiNiftiMasker(
     mask_img=dataset.mask,
     detrend=True,
-    standardize="zscore_sample",
     n_jobs=2,
+    verbose=1,
 )
 masker.fit()
 fmri_data = masker.transform(fmri_random_runs_filenames)
@@ -166,7 +164,7 @@ cut_score[cut_score < 0] = 0
 score_map_img = masker.inverse_transform(cut_score)
 
 thresholded_score_map_img = threshold_img(
-    score_map_img, threshold=1e-6, copy=False, copy_header=True
+    score_map_img, threshold=1e-6, copy=False
 )
 
 

@@ -51,7 +51,6 @@ dict_learn = DictLearning(
     memory="nilearn_cache",
     memory_level=1,
     random_state=0,
-    standardize="zscore_sample",
     verbose=1,
 )
 # Fit to the data
@@ -88,7 +87,6 @@ extractor = RegionExtractor(
     threshold=0.5,
     thresholding_strategy="ratio_n_voxels",
     extractor="local_regions",
-    standardize="zscore_sample",
     standardize_confounds=True,
     min_region_size=1350,
     verbose=1,
@@ -130,11 +128,8 @@ from nilearn.connectome import ConnectivityMeasure
 
 correlations = []
 # Initializing ConnectivityMeasure object with kind='correlation'
-connectome_measure = ConnectivityMeasure(
-    kind="correlation",
-    standardize="zscore_sample",
-)
-for filename, confound in zip(func_filenames, confounds):
+connectome_measure = ConnectivityMeasure(kind="correlation", verbose=1)
+for filename, confound in zip(func_filenames, confounds, strict=False):
     # call transform from RegionExtractor object to extract timeseries signals
     timeseries_each_subject = extractor.transform(filename, confounds=confound)
     # call fit_transform from ConnectivityMeasure object
@@ -217,7 +212,9 @@ display = plot_anat(
 
 # Add as an overlay all the regions of index 4
 colors = "rgbcmyk"
-for each_index_of_map3, color in zip(regions_indices_of_map3[0], colors):
+for each_index_of_map3, color in zip(
+    regions_indices_of_map3[0], colors, strict=False
+):
     display.add_overlay(
         image.index_img(regions_extracted_img, each_index_of_map3),
         cmap=cm.alpha_cmap(color),
