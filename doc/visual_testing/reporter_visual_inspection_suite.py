@@ -144,7 +144,6 @@ def _fetch_bids_data():
         "*task-rest*",
         "*task-scap*",
         "*task-task*",
-        "*.feat*",
     ]
     urls = select_from_index(
         urls, exclusion_filters=exclusion_patterns, n_subjects=1

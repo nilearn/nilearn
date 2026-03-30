@@ -51,7 +51,7 @@ def _(cli_parser):
     BUILD_TYPE = args.build_type
     if isinstance(BUILD_TYPE, list):
         BUILD_TYPE = BUILD_TYPE[0]
-    BUILD_TYPE = "full"
+    # BUILD_TYPE = "full"
     print(f"{BUILD_TYPE=}")
     return (BUILD_TYPE,)
 
