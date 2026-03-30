@@ -147,15 +147,28 @@ from nilearn.decoding import Decoder
 decoder = Decoder(
     estimator="svc",
     mask=mask_filename,
-    standardize="zscore_sample",
     screening_percentile=100,
+    verbose=1,
 )
+
+# %%
+#
+# .. include:: ../../../examples/html_repr_note.rst
+#
+decoder
 
 # %%
 # The decoder object is an object that can be fit (or trained) on data with
 # labels, and then predict labels on data without.
 #
-# We first fit it on the data
+# We first fit it on the data.
+#
+# .. note ::
+#
+#   After fitting,
+#   the HTML representation of the estimator looks different
+#   than before before fitting.
+#
 decoder.fit(fmri_niimgs, conditions)
 
 # %%
@@ -194,8 +207,8 @@ conditions_test = conditions[-30:]
 decoder = Decoder(
     estimator="svc",
     mask=mask_filename,
-    standardize="zscore_sample",
     screening_percentile=100,
+    verbose=1,
 )
 decoder.fit(fmri_niimgs_train, conditions_train)
 
@@ -224,8 +237,8 @@ for fold, (train, test) in enumerate(cv.split(conditions), start=1):
     decoder = Decoder(
         estimator="svc",
         mask=mask_filename,
-        standardize="zscore_sample",
         screening_percentile=100,
+        verbose=1,
     )
     decoder.fit(index_img(fmri_niimgs, train), conditions[train])
     prediction = decoder.predict(index_img(fmri_niimgs, test))
@@ -248,10 +261,10 @@ n_folds = 5
 decoder = Decoder(
     estimator="svc",
     mask=mask_filename,
-    standardize="zscore_sample",
     cv=n_folds,
     scoring="accuracy",
     screening_percentile=100,
+    verbose=1,
 )
 decoder.fit(fmri_niimgs, conditions)
 
@@ -290,9 +303,9 @@ cv = LeaveOneGroupOut()
 decoder = Decoder(
     estimator="svc",
     mask=mask_filename,
-    standardize="zscore_sample",
     cv=cv,
     screening_percentile=100,
+    verbose=1,
 )
 decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
@@ -361,8 +374,8 @@ dummy_decoder = Decoder(
     estimator="dummy_classifier",
     mask=mask_filename,
     cv=cv,
-    standardize="zscore_sample",
     screening_percentile=100,
+    verbose=1,
 )
 dummy_decoder.fit(fmri_niimgs, conditions, groups=run_label)
 

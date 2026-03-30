@@ -44,13 +44,13 @@ def expression_to_contrast_vector(expression, design_columns):
         contrast_vector = eye_design.eval(
             expression, engine="python"
         ).to_numpy()
-    except Exception:
+    except Exception as e:
         raise ValueError(
             f"The expression ({expression}) is not valid. "
             "This could be due to "
             "defining the contrasts using design matrix columns that are "
             "invalid python identifiers."
-        )
+        ) from e
 
     return contrast_vector
 
@@ -182,7 +182,7 @@ class Contrast:
     variance : array of shape (n_voxels)
         The associated variance estimate.
 
-    dim : :obj:`int` or None, optional
+    dim : :obj:`int` or None, default=None
         The dimension of the :term:`contrast`.
 
     dof : scalar, default=DEF_DOFMAX
@@ -223,7 +223,8 @@ class Contrast:
 
         if self.dim > 1 and stat_type == "t":
             logger.log(
-                "Automatically converted multi-dimensional t to F contrast"
+                "Automatically converted multi-dimensional t to F contrast",
+                verbose=1,
             )
             stat_type = "F"
 
@@ -467,7 +468,7 @@ def compute_fixed_effects(
     fixed_fx_stat_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         The fixed effects stat computed within the mask.
 
-    fixed_fx_z_score_img : Nifti1Image, optional
+    fixed_fx_z_score_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         The fixed effects corresponding z-transform
 
     """
@@ -478,17 +479,20 @@ def compute_fixed_effects(
             f"from the number of variance images ({len(variance_imgs)})."
         )
 
+    # TODO (nilearn >=0.15) remove ALL standardize=None below
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = mask.fit()
     elif mask is None:
         if isinstance(contrast_imgs[0], SurfaceImage):
-            masker = SurfaceMasker().fit(contrast_imgs[0])
+            masker = SurfaceMasker(standardize=None).fit(contrast_imgs[0])
         else:
-            masker = NiftiMasker().fit(contrast_imgs)
+            masker = NiftiMasker(standardize=None).fit(contrast_imgs)
     elif isinstance(mask, SurfaceImage):
-        masker = SurfaceMasker(mask_img=mask).fit(contrast_imgs[0])
+        masker = SurfaceMasker(mask_img=mask, standardize=None).fit(
+            contrast_imgs[0]
+        )
     else:
-        masker = NiftiMasker(mask_img=mask).fit()
+        masker = NiftiMasker(mask_img=mask, standardize=None).fit()
 
     variances = np.array(
         [masker.transform(vi).squeeze() for vi in variance_imgs]

@@ -13,18 +13,17 @@ from sklearn import neighbors
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.niimg_conversions import (
+from nilearn.datasets import load_mni152_template
+from nilearn.image import resample_img
+from nilearn.image.image import (
     check_niimg_3d,
     check_niimg_4d,
     safe_get_data,
 )
-from nilearn.datasets import load_mni152_template
-from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
@@ -47,7 +46,7 @@ def apply_mask_and_get_affinity(
 
     Parameters
     ----------
-    seeds : List of triplets of coordinates in native space
+    seeds : :obj:`list` of triplets of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as target_affine.
 
@@ -63,7 +62,7 @@ def apply_mask_and_get_affinity(
     allow_overlap : boolean
         If False, a ValueError is raised if VOIs overlap
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object or None, default=None
         Mask to apply to regions before extracting signals. If niimg is None,
         mask_img is used as a reference space in which the spheres 'indices are
         placed.
@@ -183,7 +182,7 @@ def _iter_signals_from_spheres(
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
@@ -306,6 +305,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     """
 
+    _template_name = "body_nifti_spheres_masker.jinja"
+
     # memory and memory_level are used by CacheMixin.
     def __init__(
         self,
@@ -422,7 +423,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 )
                 self._report_content["warning_messages"].append(msg)
 
-        return super().generate_report(title)
+        return super().generate_report(title=title)
 
     def _reporting(self) -> list:
         """Return a list of all displays to be rendered.
@@ -521,32 +522,11 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return embedded_images
 
-    def fit(
-        self,
-        imgs=None,
-        y=None,
-    ):
-        """Prepare signal extraction from regions.
-
-        All parameters are unused; they are for scikit-learn compatibility.
-
-        """
-        del y
-
-        self.clean_args_ = {} if self.clean_args is None else self.clean_args
-
-        # Reset warning message
-        # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
-
+    def _fit(self, imgs):
         error = (
             "Seeds must be a list of triplets of coordinates in "
             "native space.\n"
         )
-
-        self.mask_img_ = self._load_mask(imgs)
-
-        self._fit_cache()
 
         if imgs is not None:
             if self.reports:
@@ -614,9 +594,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             See :ref:`extracting_data`.
             Images to process.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
+        %(y_dummy)s
 
         %(confounds)s
 
@@ -634,7 +612,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "seeds_") and hasattr(self, "n_elements_")
 
     @fill_doc
@@ -660,7 +638,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         check_is_fitted(self)
 
-        params = get_params(NiftiSpheresMasker, self)
+        params = self._get_masker_params()
         params["clean_kwargs"] = self.clean_args_
 
         signals, _ = self._cache(

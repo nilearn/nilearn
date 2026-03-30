@@ -1,6 +1,7 @@
 """Tests saving glm to bids."""
 
 import json
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -16,8 +17,12 @@ from nilearn.glm.io import save_glm_to_bids
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
 
+# generic parameters to reduce n warnings in tests
+KWARGS = {"height_control": None, "threshold": 1, "cut_coords": [0.5, 1, 1.5]}
+
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback", "task-nback"]
 )
@@ -67,13 +72,29 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
 
     contrasts = {"effects of interest": np.eye(rk)}
     contrast_types = {"effects of interest": "F"}
-    save_glm_to_bids(
-        model=single_run_model,
-        contrasts=contrasts,
-        contrast_types=contrast_types,
-        out_dir=tmpdir,
-        prefix=prefix,
-    )
+    with (
+        warnings.catch_warnings(record=True) as warning_list,
+        pytest.warns(
+            FutureWarning, match="the default 'threshold' will be set to"
+        ),
+    ):
+        save_glm_to_bids(
+            model=single_run_model,
+            contrasts=contrasts,
+            contrast_types=contrast_types,
+            out_dir=tmpdir,
+            prefix=prefix,
+            height_control=None,
+        )
+
+        n_no_contrasts_warnings = len(
+            [
+                x
+                for x in warning_list
+                if "No contrast passed during report generation." in str(x)
+            ]
+        )
+        assert n_no_contrasts_warnings == 0
 
     assert (tmpdir / "dataset_description.json").exists()
 
@@ -84,6 +105,45 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
+def test_save_glm_to_bids_reset_threshold_warning(tmp_path_factory):
+    """Get single warning threshold reset to None."""
+    tmpdir = tmp_path_factory.mktemp("test_save_glm_results")
+
+    shapes, rk = [(7, 8, 9, 15)], 3
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes,
+        rk,
+    )
+
+    single_run_model = FirstLevelModel(
+        mask_img=None,
+        minimize_memory=False,
+    ).fit(fmri_data[0], design_matrices=design_matrices[0])
+
+    contrasts = {"effects of interest": np.eye(rk)}
+    contrast_types = {"effects of interest": "F"}
+    with warnings.catch_warnings(record=True) as warning_list:
+        save_glm_to_bids(
+            model=single_run_model,
+            contrasts=contrasts,
+            contrast_types=contrast_types,
+            out_dir=tmpdir,
+            threshold=1.0,
+        )
+
+        reset_threshold_warnings = len(
+            [
+                x
+                for x in warning_list
+                if "'threshold' was set to 'None'" in str(x)
+            ]
+        )
+        assert reset_threshold_warnings == 1
+
+
+@pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_save_glm_to_bids_serialize_affine(tmp_path):
     """Test that affines are turned into a serializable type.
 
@@ -111,6 +171,7 @@ def test_save_glm_to_bids_serialize_affine(tmp_path):
         contrast_types={"effects of interest": "F"},
         out_dir=tmp_path,
         prefix="sub-01_ses-01_task-nback",
+        **KWARGS,
     )
 
 
@@ -187,6 +248,7 @@ def test_save_glm_to_bids_errors(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback_", 1]
 )
@@ -242,6 +304,7 @@ def test_save_glm_to_bids_contrast_definitions(
         contrast_types=None,
         out_dir=tmpdir,
         prefix=prefix,
+        **KWARGS,
     )
 
     assert (tmpdir / "dataset_description.json").exists()
@@ -259,6 +322,7 @@ def test_save_glm_to_bids_contrast_definitions(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("prefix", ["task-nback"])
 def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
     """Test save_glm_to_bids on a SecondLevelModel.
@@ -318,6 +382,7 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
         contrast_types=contrast_types,
         out_dir=tmpdir,
         prefix=prefix,
+        **KWARGS,
     )
 
     assert (tmpdir / "dataset_description.json").exists()
@@ -327,6 +392,7 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
     """Run generate_report with no contrasts after save_glm_to_bids.
 
@@ -350,6 +416,7 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmp_path,
+        **KWARGS,
     )
 
     assert model._reporting_data.get("filenames", None) is not None
@@ -366,7 +433,7 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
         for file in EXPECTED_FILENAMES:
             assert f'src="{file}"' in content
 
-    report = model.generate_report()
+    report = model.generate_report(**KWARGS)
 
     report.save_as_html(tmp_path / "new_report.html")
 
@@ -377,6 +444,7 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
     """Run generate_report after save_glm_to_bids with different contrasts.
 
@@ -391,6 +459,7 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmp_path,
+        **KWARGS,
     )
 
     EXPECTED_FILENAMES = [
@@ -400,7 +469,7 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
     ]
 
     # check content of a new report
-    report = model.generate_report(contrasts=["AAA-BBB"])
+    report = model.generate_report(contrasts=["AAA-BBB"], **KWARGS)
 
     assert "AAA-BBB" in report.__str__()
     assert "BBB-AAA" not in report.__str__()
@@ -409,7 +478,9 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
 
 
 @pytest.mark.slow
-def test_save_glm_to_bids_infer_filenames(tmp_path):
+@pytest.mark.thread_unsafe
+@pytest.mark.parametrize("kwargs", ([{}, {"height_control": None}]))
+def test_save_glm_to_bids_infer_filenames(tmp_path, kwargs):
     """Check that output filenames can be inferred from BIDS input."""
     n_sub = 1
 
@@ -440,9 +511,23 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
     # 2 sessions with 2 runs each
     assert len(model._reporting_data["run_imgs"]) == 4
 
-    model = save_glm_to_bids(
-        model=model, out_dir=tmp_path / "output", contrasts=["c0"]
-    )
+    if kwargs == {"height_control": None}:
+        with pytest.warns(
+            FutureWarning, match="the default 'threshold' will be set to"
+        ):
+            model = save_glm_to_bids(
+                model=model,
+                out_dir=tmp_path / "output",
+                contrasts=["c0"],
+                **kwargs,
+            )
+    else:
+        model = save_glm_to_bids(
+            model=model,
+            out_dir=tmp_path / "output",
+            contrasts=["c0"],
+            **kwargs,
+        )
 
     EXPECTED_FILENAME_ENDINGS = [
         "sub-01_task-main_space-MNI_contrast-c0_stat-z_statmap.nii.gz",
@@ -474,16 +559,32 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
     ).open("r") as f:
         metadata = json.load(f)
 
-    for key in [
-        "Height control",
-        "Threshold (computed)",
+    expected_keys = [
         "Cluster size threshold (voxels)",
         "Minimum distance (mm)",
-    ]:
+    ]
+
+    if "height_control" not in kwargs:
+        expected_keys.extend(
+            [
+                "Height control",
+                "Threshold (computed)",
+            ]
+        )
+    else:
+        expected_keys.extend(
+            [
+                "Height control",
+                "Threshold Z",
+            ]
+        )
+
+    for key in expected_keys:
         assert key in metadata
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_save_glm_to_bids_surface_prefix_override(tmp_path):
     """Save surface GLM results to disk with prefix."""
     n_sub = 1
@@ -518,6 +619,7 @@ def test_save_glm_to_bids_surface_prefix_override(tmp_path):
         out_dir=tmp_path / "output",
         contrasts=["c0"],
         prefix=prefix,
+        **KWARGS,
     )
 
     EXPECTED_FILENAME_ENDINGS = [
@@ -529,6 +631,8 @@ def test_save_glm_to_bids_surface_prefix_override(tmp_path):
         "hemi-R_den-10242_contrast-c0_stat-z_statmap.gii",
         "run-1_hemi-L_den-10242_stat-rsquared_statmap.gii",
         "run-1_hemi-R_den-10242_stat-rsquared_statmap.gii",
+        "contrast-c0_clusters.tsv",
+        "contrast-c0_clusters.json",
     ]
     if is_matplotlib_installed():
         EXPECTED_FILENAME_ENDINGS.extend(
@@ -547,19 +651,9 @@ def test_save_glm_to_bids_surface_prefix_override(tmp_path):
     for fname in EXPECTED_FILENAME_ENDINGS:
         assert (tmp_path / "output" / sub_prefix / f"{prefix}{fname}").exists()
 
-        # clusters cannot yet be computed on surface,
-        # so no TSV should be saved to disk
-        MISSING_FILENAME_ENDINGS = [
-            "contrast-c0_clusters.tsv",
-            "contrast-c0_clusters.json",
-        ]
-    for fname in MISSING_FILENAME_ENDINGS:
-        assert not (
-            tmp_path / "output" / sub_prefix / f"{prefix}{fname}"
-        ).exists()
-
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("prefix", ["", "sub-01", "foo_"])
 def test_save_glm_to_bids_infer_filenames_override(tmp_path, prefix):
     """Check that output filenames is not inferred when prefix is passed."""
@@ -594,6 +688,7 @@ def test_save_glm_to_bids_infer_filenames_override(tmp_path, prefix):
         out_dir=tmp_path / "output",
         contrasts=["c0"],
         prefix=prefix,
+        **KWARGS,
     )
 
     EXPECTED_FILENAME_ENDINGS = [

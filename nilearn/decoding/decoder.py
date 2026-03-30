@@ -10,6 +10,7 @@ Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
 
+import inspect
 import itertools
 import warnings
 from collections.abc import Iterable
@@ -19,7 +20,6 @@ from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from sklearn import clone
 from sklearn.base import (
-    BaseEstimator,
     MultiOutputMixin,
     is_classifier,
 )
@@ -42,37 +42,111 @@ from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import check_feature_screening
+from nilearn.image import check_niimg
 from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
 
+MAX_ITER = 10000
+_MIN_N_FEATURES_FOR_SCREENING = 100
+
+kwarg_logistic_regression_cv = {}
+if SKLEARN_GTE_1_8:
+    # TODO (sklearn 1.8) remove if
+    # TODO (sklearn 1.10) remove 'use_legacy_attributes'
+    kwarg_logistic_regression_cv = {"use_legacy_attributes": False}
+
 SUPPORTED_ESTIMATORS = {
-    "svc_l1": LinearSVC(penalty="l1", dual=False, max_iter=10000),
-    "svc_l2": LinearSVC(penalty="l2", dual=True, max_iter=10000),
-    "svc": LinearSVC(penalty="l2", dual=True, max_iter=10000),
-    "logistic_l1": LogisticRegressionCV(penalty="l1", solver="liblinear"),
-    "logistic_l2": LogisticRegressionCV(penalty="l2", solver="liblinear"),
-    "logistic": LogisticRegressionCV(penalty="l2", solver="liblinear"),
-    "ridge_classifier": RidgeClassifierCV(),
-    "ridge_regressor": RidgeCV(),
-    "ridge": RidgeCV(),
-    "lasso": LassoCV(),
-    "lasso_regressor": LassoCV(),
-    "svr": SVR(kernel="linear", max_iter=10000),
-    "dummy_classifier": DummyClassifier(strategy="stratified", random_state=0),
-    "dummy_regressor": DummyRegressor(strategy="mean"),
+    # "params" cannot be overridden
+    # "extra_params" can be overridden by parameters passed by user
+    "svc_l1": {
+        "estimator": LinearSVC,
+        "params": {
+            "penalty": "l1",
+        },
+        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
+    },
+    "svc_l2": {
+        "estimator": LinearSVC,
+        "params": {"penalty": "l2"},
+        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
+    },
+    "svc": {
+        "estimator": LinearSVC,
+        "params": {"penalty": "l2"},
+        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
+    },
+    "logistic_l1": {
+        "estimator": LogisticRegressionCV,
+        "params": {
+            "l1_ratios": (1,),
+            "solver": "liblinear",
+            **kwarg_logistic_regression_cv,
+        },
+        "extra_params": {},
+    },
+    "logistic_l2": {
+        "estimator": LogisticRegressionCV,
+        "params": {
+            "l1_ratios": (0,),
+            "solver": "liblinear",
+            **kwarg_logistic_regression_cv,
+        },
+        "extra_params": {},
+    },
+    "logistic": {
+        "estimator": LogisticRegressionCV,
+        "params": {
+            "l1_ratios": (0,),
+            "solver": "liblinear",
+            **kwarg_logistic_regression_cv,
+        },
+        "extra_params": {},
+    },
+    "ridge_classifier": {
+        "estimator": RidgeClassifierCV,
+        "params": {},
+        "extra_params": {},
+    },
+    "ridge_regressor": {
+        "estimator": RidgeCV,
+        "params": {},
+        "extra_params": {},
+    },
+    "ridge": {"estimator": RidgeCV, "params": {}, "extra_params": {}},
+    "lasso": {"estimator": LassoCV, "params": {}, "extra_params": {}},
+    "lasso_regressor": {
+        "estimator": LassoCV,
+        "params": {},
+        "extra_params": {},
+    },
+    "svr": {
+        "estimator": SVR,
+        "params": {"kernel": "linear"},
+        "extra_params": {"max_iter": MAX_ITER},
+    },
+    "dummy_classifier": {
+        "estimator": DummyClassifier,
+        "params": {"strategy": "stratified"},
+        "extra_params": {"random_state": 0},
+    },
+    "dummy_regressor": {
+        "estimator": DummyRegressor,
+        "params": {"strategy": "mean"},
+        "extra_params": {},
+    },
 }
 
 
@@ -322,20 +396,44 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
     return new_param_grid
 
 
-def _check_estimator(estimator):
+def _check_estimator(estimator, estimator_args=None, verbose=0):
+    """Check requested estimator.
+
+    If an actual estimator instance was passed, we allow it but warn the user.
+
+    Otherwise we instantiate one
+    from the config defined in SUPPORTED_ESTIMATORS.
+    """
     if not isinstance(estimator, str):
         warnings.warn(
             "Use a custom estimator at your own risk "
             "of the process not working as intended.",
             stacklevel=find_stack_level(),
         )
-    elif estimator in SUPPORTED_ESTIMATORS:
-        estimator = SUPPORTED_ESTIMATORS.get(estimator)
-    else:
+        return estimator
+
+    if estimator not in SUPPORTED_ESTIMATORS:
         raise ValueError(
             "Invalid estimator. Known estimators are: "
             f"{list(SUPPORTED_ESTIMATORS.keys())}"
         )
+
+    estimator_config = SUPPORTED_ESTIMATORS.get(estimator)
+
+    # "extra_params" can be overridden by parameters passed by user
+    params = estimator_config["extra_params"]
+    if estimator_args is not None:
+        params |= estimator_args
+
+    # "params" cannot be overridden so we use them last
+    # to update the parameter of the estimator
+    params |= estimator_config["params"]
+
+    sig = inspect.signature(estimator_config["estimator"]).parameters
+    if "verbose" in sig:
+        params["verbose"] = (verbose - 1) > 0
+
+    estimator = estimator_config["estimator"](**params)
 
     return estimator
 
@@ -352,6 +450,7 @@ def _parallel_fit(
     mask_img,
     class_index,
     clustering_percentile,
+    verbose=0,
 ):
     """Find the best estimator for a fold within a job.
 
@@ -380,11 +479,14 @@ def _parallel_fit(
         X_train = clustering.fit_transform(X_train)
         X_test = clustering.transform(X_test)
 
-    do_screening = (X_train.shape[1] > 100) and selector is not None
+    do_screening = (
+        X_train.shape[1] > _MIN_N_FEATURES_FOR_SCREENING
+    ) and selector is not None
 
     if do_screening:
         X_train = selector.fit_transform(X_train, y_train)
         X_test = selector.transform(X_test)
+        log((f" Selection kept {X_train.shape[1]} features."), verbose=verbose)
 
     # If there is no parameter grid, then we use a suitable grid (by default)
     param_grid = ParameterGrid(
@@ -420,7 +522,13 @@ def _parallel_fit(
             if isinstance(estimator, (RidgeCV, RidgeClassifierCV, LassoCV)):
                 params["best_alpha"] = estimator.alpha_
             elif isinstance(estimator, LogisticRegressionCV):
-                params["best_C"] = estimator.C_.item()
+                if isinstance(estimator.C_, float):
+                    # TODO (sklearn >= 1.10)
+                    # estimator.C_ is always a float
+                    # so we can get rif of the else part
+                    params["best_C"] = estimator.C_
+                else:
+                    params["best_C"] = estimator.C_.item()
             best_params = params
 
             # fill in any missing param from param_grid
@@ -446,7 +554,7 @@ def _parallel_fit(
 
 
 @fill_doc
-class _BaseDecoder(CacheMixin, BaseEstimator):
+class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
     """A wrapper for popular classification/regression strategies in \
     neuroimaging.
 
@@ -514,6 +622,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'. Defaults to 'roc_auc'.
 
+    %(screening_n_features)s
     %(smoothing_fwhm)s
 
     %(standardize_true)s
@@ -549,6 +658,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     %(verbose0)s
 
+    %(estimator_args)s
+
     %(base_decoder_fit_attributes)s
 
     See Also
@@ -570,6 +681,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         cv=10,
         param_grid=None,
         screening_percentile=20,
+        screening_n_features=None,
         scoring=None,
         smoothing_fwhm=None,
         standardize=True,
@@ -583,12 +695,14 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        estimator_args=None,
     ):
         self.estimator = estimator
         self.mask = mask
         self.cv = cv
         self.param_grid = param_grid
         self.screening_percentile = screening_percentile
+        self.screening_n_features = screening_n_features
         self.scoring = scoring
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
@@ -602,6 +716,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
+        self.estimator_args = estimator_args
 
     @property
     def _clustering_percentile(self) -> int:
@@ -631,7 +746,15 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         """
         check_params(self.__dict__)
-        self.estimator_ = _check_estimator(self.estimator)
+
+        self.estimator_args_ = (
+            {} if self.estimator_args is None else self.estimator_args
+        )
+        self.estimator_ = _check_estimator(
+            self.estimator,
+            estimator_args=self.estimator_args_,
+            verbose=self.verbose - 1,
+        )
 
         self._fit_cache()
 
@@ -684,6 +807,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             self.screening_percentile,
             self.mask_img_,
             is_classifier(self),
+            screening_n_features=self.screening_n_features,
             verbose=self.verbose,
         )
 
@@ -724,6 +848,20 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             warnings.warn(
                 warning_msg, UserWarning, stacklevel=find_stack_level()
             )
+        else:
+            log(
+                (
+                    "The decoding model will be trained "
+                    f"on {n_final_features} features."
+                ),
+                verbose=self.verbose,
+            )
+
+        log(
+            "The decoding model will be trained "
+            f"on {n_final_features} features. ",
+            verbose=self.verbose,
+        )
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
@@ -740,6 +878,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 mask_img=self.mask_img_,
                 class_index=c,
                 clustering_percentile=self._clustering_percentile,
+                verbose=self.verbose - 1,
             )
             for c, (train, test) in itertools.product(
                 range(n_problems), self.cv_
@@ -798,7 +937,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "coef_") and hasattr(self, "masker_")
 
     def _prep_input_post_fit(self, X) -> np.ndarray:
@@ -1026,7 +1165,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         return coefs, intercepts
 
-    def _set_scorer(self):
+    def _set_scorer(self) -> None:
         if self.scoring is not None:
             self.scorer_ = check_scoring(self.estimator_, self.scoring)
         elif is_classifier(self):
@@ -1068,13 +1207,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 dtype=np.array(self.dummy_output_).dtype,
             )
         return scores.ravel() if scores.shape[1] == 1 else scores
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -1144,6 +1276,9 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
+    %(screening_n_features)s
+
+
     scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
@@ -1189,6 +1324,13 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
     %(n_jobs)s
 
     %(verbose0)s
+        If 0, prints nothing
+        If 1, prints information about the estimator during fit.
+        If 2, also prints information about the embedded masker.
+        If 3, prints additional information about the embedded masker
+        and about the underlying sklearn estimator.
+
+    %(estimator_args)s
 
     %(base_decoder_fit_attributes)s
 
@@ -1213,6 +1355,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         cv=10,
         param_grid=None,
         screening_percentile=20,
+        screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
         standardize=True,
@@ -1226,6 +1369,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        estimator_args=None,
     ):
         super().__init__(
             estimator=estimator,
@@ -1233,6 +1377,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1246,6 +1391,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
+            estimator_args=estimator_args,
         )
 
     def decision_function(self, X):
@@ -1282,12 +1428,12 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, optional
+    estimator : :obj:`str`, default="svr"
         The estimator to choose among:
         %(regressor_options)s
-        Default 'svr'.
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+    mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
+            or None, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
@@ -1313,7 +1459,10 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
-    scoring : :obj:`str`, callable or None, optional. default='r2'
+    %(screening_n_features)s
+
+
+    scoring : :obj:`str`, callable or None, default='r2'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1323,6 +1472,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
+
 
     %(smoothing_fwhm)s
 
@@ -1358,6 +1508,13 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
     %(n_jobs)s
 
     %(verbose0)s
+        If 0, prints nothing
+        If 1, prints information about the estimator during fit.
+        If 2, also prints information about the embedded masker.
+        If 3, prints additional information about the embedded masker
+        and about the underlying sklearn estimator.
+
+    %(estimator_args)s
 
     %(base_decoder_fit_attributes)s
 
@@ -1376,6 +1533,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         cv=10,
         param_grid=None,
         screening_percentile=20,
+        screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
         standardize=True,
@@ -1389,6 +1547,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        estimator_args=None,
     ):
         super().__init__(
             estimator=estimator,
@@ -1396,6 +1555,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1409,6 +1569,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
+            estimator_args=estimator_args,
         )
 
     def _more_tags(self):
@@ -1440,10 +1601,9 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, optional
+    estimator : :obj:`str`, default="svr"
         The estimator to choose among:
         %(regressor_options)s
-        Default 'svr'.
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, \
         default=None
@@ -1477,6 +1637,9 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_percentile)s
 
+    %(screening_n_features)s
+
+
     scoring : :obj:`str`, callable or None, default= 'r2'
 
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1488,6 +1651,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
+
     %(smoothing_fwhm)s
 
     %(standardize_true)s
@@ -1512,7 +1676,15 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
+
     %(verbose0)s
+        If 0, prints nothing
+        If 1, prints information about the estimator during fit.
+        If 2, also prints information about the embedded masker.
+        If 3, prints additional information about the embedded masker
+        and about the underlying sklearn estimator.
+
+    %(estimator_args)s
 
     %(base_decoder_fit_attributes)s
 
@@ -1535,6 +1707,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         param_grid=None,
         clustering_percentile=10,
         screening_percentile=20,
+        screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
         standardize=True,
@@ -1548,6 +1721,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        estimator_args=None,
     ):
         super().__init__(
             estimator=estimator,
@@ -1555,6 +1729,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1568,6 +1743,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
+            estimator_args=estimator_args,
         )
 
         self.clustering_percentile = clustering_percentile
@@ -1605,7 +1781,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         %(classifier_options)s
 
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional,\
+    mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker or None,\
         default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
@@ -1644,7 +1820,10 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         performed. A float according to a percentile of the highest
         scores.
 
-    scoring : :obj:`str`, callable or None, optional. default='roc_auc'
+    %(screening_n_features)s
+
+
+    scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1680,7 +1859,15 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
+
     %(verbose0)s
+        If 0, prints nothing
+        If 1, prints information about the estimator during fit.
+        If 2, also prints information about the embedded masker.
+        If 3, prints additional information about the embedded masker
+        and about the underlying sklearn estimator.
+
+    %(estimator_args)s
 
     %(base_decoder_fit_attributes)s
 
@@ -1710,6 +1897,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         param_grid=None,
         clustering_percentile=10,
         screening_percentile=20,
+        screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
         standardize=True,
@@ -1723,6 +1911,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        estimator_args=None,
     ):
         super().__init__(
             estimator=estimator,
@@ -1730,6 +1919,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_features=screening_n_features,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1743,6 +1933,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            estimator_args=estimator_args,
         )
 
         self.clustering_percentile = clustering_percentile

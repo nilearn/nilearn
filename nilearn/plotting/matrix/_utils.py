@@ -77,11 +77,14 @@ def sanitize_labels(mat_shape, labels):
     # we need a list so an empty one will be cast to False
     if isinstance(labels, np.ndarray):
         labels = labels.tolist()
-    if labels and len(labels) != mat_shape[0]:
-        raise ValueError(
-            f"Length of labels ({len(labels)}) "
-            f"unequal to length of matrix ({mat_shape[0]})."
-        )
+    if labels:
+        if len(labels) != mat_shape[0]:
+            raise ValueError(
+                f"Length of labels ({len(labels)}) "
+                f"unequal to length of matrix ({mat_shape[0]})."
+            )
+        if all(x == "" for x in labels):
+            labels = None
     return labels
 
 
@@ -102,7 +105,7 @@ def sanitize_reorder(reorder):
     return reorder
 
 
-def sanitize_tri(tri, allowed_values=None):
+def sanitize_tri(tri, allowed_values=None) -> None:
     """Help for plot_matrix."""
     if allowed_values is None:
         allowed_values = VALID_TRI_VALUES

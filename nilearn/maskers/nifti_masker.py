@@ -9,14 +9,13 @@ from joblib import Memory
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
-from nilearn._utils.param_validation import check_params
-from nilearn.image import crop_img, resample_img
+from nilearn._utils.param_validation import sanitize_verbose
+from nilearn.image import check_niimg, crop_img, resample_img
+from nilearn.image.image import check_same_fov
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -57,11 +56,11 @@ def _get_mask_strategy(strategy: str):
     elif strategy == "epi":
         return compute_epi_mask
     elif strategy == "whole-brain-template":
-        return _make_brain_mask_func("whole-brain")
+        return make_brain_mask_func("whole-brain")
     elif strategy == "gm-template":
-        return _make_brain_mask_func("gm")
+        return make_brain_mask_func("gm")
     elif strategy == "wm-template":
-        return _make_brain_mask_func("wm")
+        return make_brain_mask_func("wm")
     else:
         raise ValueError(
             f"Unknown value of mask_strategy '{strategy}'. "
@@ -72,7 +71,7 @@ def _get_mask_strategy(strategy: str):
         )
 
 
-def _make_brain_mask_func(mask_type: str, multi: bool = False):
+def make_brain_mask_func(mask_type: str, multi: bool = False):
     """Generate a compute_brain_mask function adapted for each mask.
 
     This is done instead of using functools.partial because
@@ -215,7 +214,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     Parameters
     ----------
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask for the data. If not given, a mask is computed in the fit step.
         Optional parameters (mask_args and mask_strategy) can be set to
@@ -226,7 +225,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         resampled first. After this, the images are resampled to the
         resampled mask.
 
-    runs : :obj:`numpy.ndarray`, optional
+    runs : :obj:`numpy.ndarray` or None, default=None
         Add a run level to the preprocessing. Each run will be
         detrended independently. Must be a 1D array of n_samples elements.
 
@@ -269,7 +268,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Default='background'.
 
-    mask_args : :obj:`dict`, optional
+    mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`
@@ -373,8 +372,8 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._report_content = {
             "description": (
                 "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (in green). We "
-                "recommend to inspect the report for the overlap "
+                "with the outlines of the mask. "
+                "We recommend to inspect the report for the overlap "
                 "between the mask and its input image. "
             ),
             "n_elements": 0,
@@ -383,13 +382,20 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "warning_messages": [],
         }
 
-    def generate_report(self, title: str | None = None):
+    def generate_report(
+        self,
+        title: str | None = None,
+        engine: str = "matplotlib",
+    ):
         """Generate an HTML report for the current object.
 
         Parameters
         ----------
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
+
+        engine : {"matplotlib", "brainsprite"}, default="matplotlib"
+            Choice of engine to display the mask.
 
         Returns
         -------
@@ -399,13 +405,14 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         from nilearn.reporting.html_report import generate_report
 
         self._report_content["title"] = title
+        self._report_content["engine"] = engine
 
         if self._has_report_data():
             img = self._reporting_data["images"]
 
             if img is None:  # images were not provided to fit
                 msg = (
-                    "No image provided to fit in NiftiMasker. "
+                    f"No image provided to fit in {self.__class__.__name__}. "
                     "Setting image to mask for reporting."
                 )
                 self._report_content["warning_messages"].append(msg)
@@ -443,26 +450,47 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         -------
         list of :class:`~matplotlib.figure.Figure` or None
         """
+        if self._report_content.get("engine") == "brainsprite":
+            bg_img = self._reporting_data["images"]
+            stat_map_img = self._reporting_data["mask"]
+            self._create_brainsprite(bg_img=bg_img, stat_map_img=stat_map_img)
+            return None
+
         if not is_matplotlib_installed():
             self._report_content["overlay"] = None
             return None
 
         import matplotlib.pyplot as plt
 
-        from nilearn.plotting import plot_img
+        from nilearn.plotting import find_xyz_cut_coords, plot_img
 
         img = self._reporting_data["images"]
-        mask = self._reporting_data["mask"]
+        mask = check_niimg(self._reporting_data["mask"])
 
         if img is None:  # images were not provided to fit
             img = mask
+        img = check_niimg(img)
+
+        # ensure that the crosshair will be in the mask
+        cut_coords = find_xyz_cut_coords(img)
+        if mask is not None:
+            cut_coords = find_xyz_cut_coords(mask)
+            if not check_same_fov(img, mask, raise_error=False):
+                # in case images have different FOV
+                # the cut coords may be out of the image
+                cut_coords = find_xyz_cut_coords(
+                    resample_img(
+                        mask,
+                        target_affine=img.affine,
+                        target_shape=img.shape,
+                        interpolation="nearest",
+                    )
+                )
 
         # create display of retained input mask, image
         # for visual comparison
         init_display = plot_img(
-            img,
-            black_bg=False,
-            cmap=self.cmap,
+            img, black_bg=False, cmap=self.cmap, cut_coords=cut_coords
         )
         plt.close()
 
@@ -483,16 +511,19 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "\n To see the input Nifti image before resampling, "
                 "hover over the displayed image."
             )
-
-            # create display of resampled NiftiImage and mask
             resampled_img, resampled_mask = self._reporting_data["transform"]
+
             if resampled_img is None:  # images were not provided to fit
                 resampled_img = resampled_mask
+
+            # create display of resampled NiftiImage and mask
+            cut_coords = find_xyz_cut_coords(resampled_mask)
 
             overlay = plot_img(
                 resampled_img,
                 black_bg=False,
                 cmap=self.cmap,
+                cut_coords=cut_coords,
             )
             plt.close()
             overlay.add_contours(
@@ -506,37 +537,12 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return init_display
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "mask_img_")
 
-    @fill_doc
-    def fit(self, imgs=None, y=None):
-        """Compute the mask corresponding to the data.
-
-        Parameters
-        ----------
-        imgs : :obj:`list` of Niimg-like objects or None, default=None
-            See :ref:`extracting_data`.
-            Data on which the mask must be calculated. If this is a list,
-            the affine is considered the same for all.
-
-        %(y_dummy)s
-        """
-        del y
-        check_params(self.__dict__)
-
-        # Reset warning message
-        # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
-
-        self.clean_args_ = {} if self.clean_args is None else self.clean_args
-
-        self._fit_cache()
-
+    def _fit(self, imgs):
         # Load data (if filenames are given, load them)
         mask_logger("load_data", img=imgs, verbose=self.verbose)
-
-        self.mask_img_ = self._load_mask(imgs)
 
         # Compute the mask if not given by the user
         if self.mask_img_ is None:
@@ -575,7 +581,9 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     )
 
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
-                imgs, verbose=max(0, self.verbose - 1), **mask_args
+                imgs,
+                verbose=max(0, sanitize_verbose(self.verbose) - 1),
+                **mask_args,
             )
         elif imgs is not None:
             warnings.warn(
@@ -678,17 +686,13 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         # Ignore the mask-computing params: they are not useful and will
         # just invalid the cache for no good reason
-        # target_shape and target_affine are conveyed implicitly in mask_img
-        params = get_params(
-            self.__class__,
-            self,
+        # target_shape and target_affine are conveyed implicitly in mask_img_
+        params = self._get_masker_params(
             ignore=[
                 "mask_img",
                 "mask_args",
                 "mask_strategy",
-                "_sample_mask",
-                "sample_mask",
-            ],
+            ]
         )
         params["clean_kwargs"] = self.clean_args_
 

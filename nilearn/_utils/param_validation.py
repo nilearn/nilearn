@@ -12,7 +12,11 @@ from nilearn._utils.logger import find_stack_level
 
 
 def check_threshold(
-    threshold, data, percentile_func, name="threshold", two_sided=True
+    threshold,
+    data: np.ndarray,
+    percentile_func,
+    name: str = "threshold",
+    two_sided: bool = True,
 ):
     """Check if the given threshold is in correct format and within the limit.
 
@@ -87,7 +91,7 @@ def check_threshold(
         data = abs(data) if two_sided else np.extract(data >= 0, data)
 
         if percentile:
-            threshold = percentile_func(data, threshold)
+            threshold = percentile_func(data, threshold) + 1e-5
         else:
             value_check = data.max()
             if threshold > value_check:
@@ -120,7 +124,7 @@ def check_threshold(
     return threshold
 
 
-def check_run_sample_masks(n_runs, sample_masks):
+def check_run_sample_masks(n_runs: int, sample_masks: Any):
     """Check that number of sample_mask matches number of runs."""
     check_is_of_allowed_type(
         sample_masks, (list, tuple, np.ndarray), "sample_masks"
@@ -150,7 +154,7 @@ def _convert_bool2index(sample_mask):
     return sample_mask
 
 
-def _cast_to_int32(sample_mask):
+def _cast_to_int32(sample_mask: np.ndarray) -> np.ndarray:
     """Ensure the sample mask dtype is signed."""
     new_dtype = np.int32
     if np.min(sample_mask) < 0:
@@ -213,7 +217,7 @@ TYPE_MAPS = {
 }
 
 
-def check_params(fn_dict):
+def check_params(fn_dict) -> None:
     """Check types of inputs passed to a function / method / class.
 
     This function checks the types of function / method parameters or type_map
@@ -239,11 +243,9 @@ def check_params(fn_dict):
 
         def some_function(param_1, param_2="a"):
             check_params(locals())
-            ...
 
         Class MyClass:
-            def __init__(param_1, param_2="a")
-            ...
+            def __init__()
 
             def fit(X):
                 # check attributes of the class instance
@@ -274,7 +276,7 @@ def check_params(fn_dict):
 
 def check_is_of_allowed_type(
     value: Any, type_to_check: tuple[Any] | Any, parameter_name: str
-):
+) -> None:
     if not isinstance(type_to_check, tuple):
         type_to_check = (type_to_check,)
     if not isinstance(value, type_to_check):
@@ -286,7 +288,7 @@ def check_is_of_allowed_type(
         raise TypeError(error_msg)
 
 
-def check_reduction_strategy(strategy: str):
+def check_reduction_strategy(strategy: str) -> None:
     """Check that the provided strategy is supported.
 
     Parameters
@@ -309,9 +311,18 @@ def check_reduction_strategy(strategy: str):
 
 def check_parameter_in_allowed(
     parameter: Any, allowed: Iterable[Any], parameter_name: str
-):
+) -> None:
     if parameter not in allowed:
         raise ValueError(
             f"'{parameter_name}' must be one of {allowed}.\n"
             f"'{parameter}' was provided."
         )
+
+
+def sanitize_verbose(verbose: int | bool) -> int:
+    """Ensure that verbose is an int."""
+    if verbose is True:
+        verbose = 1
+    elif verbose is False:
+        verbose = 0
+    return verbose

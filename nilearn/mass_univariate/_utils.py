@@ -16,7 +16,7 @@ def calculate_tfce(
     E=0.5,
     H=2,
     dh="auto",
-    two_sided_test=True,
+    two_sided_test: bool = True,
 ):
     """Calculate threshold-free cluster enhancement values for scores maps.
 
@@ -414,7 +414,7 @@ def t_score_with_covars_and_normalized_design(
         Targets variates. F-ordered is better for efficient computation.
 
     covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None, \
-            optional
+            default=None
         Confounding variates.
 
     Returns

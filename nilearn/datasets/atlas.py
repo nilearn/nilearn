@@ -18,8 +18,7 @@ from nilearn._utils.bids import (
     generate_atlas_look_up_table,
 )
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import rename_parameters
-from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.niimg import _get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -30,8 +29,7 @@ from nilearn.datasets._utils import (
     get_dataset_descr,
     get_dataset_dir,
 )
-from nilearn.image import get_data as get_img_data
-from nilearn.image import new_img_like, reorder_img
+from nilearn.image import check_niimg, new_img_like, reorder_img
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -89,6 +87,8 @@ def fetch_atlas_difumo(
 
     Notes
     -----
+    %(fetcher_note)s
+
     Direct download links from OSF:
 
     - 64: https://osf.io/pqu9r/download
@@ -714,7 +714,7 @@ def fetch_atlas_juelich(
         verbose=verbose,
     )
     atlas_niimg = check_niimg(atlas_img)
-    atlas_data = get_img_data(atlas_niimg)
+    atlas_data = _get_data(atlas_niimg)
 
     if atlas_type == "probabilistic":
         new_atlas_data, new_names = _merge_probabilistic_maps_juelich(
@@ -869,7 +869,7 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     # should be positive. This is important to
     # correctly split left and right hemispheres.
     assert atlas_niimg.affine[0, 0] > 0
-    atlas_data = get_img_data(atlas_niimg)
+    atlas_data = _get_data(atlas_niimg)
     labels = np.unique(atlas_data)
     # Build a mask of both halves of the brain
     middle_ind = (atlas_data.shape[0]) // 2
@@ -1088,9 +1088,10 @@ def fetch_atlas_smith_2009(
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information about this dataset's structure:
     https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
-
     """
     check_params(locals())
 
@@ -1221,8 +1222,9 @@ def fetch_atlas_yeo_2011(
 
     Notes
     -----
-    License: unknown.
+    %(fetcher_note)s
 
+    License: unknown.
     """
     check_params(locals())
 
@@ -1352,7 +1354,7 @@ def fetch_atlas_aal(
         The version of the AAL atlas. Must be 'SPM5', 'SPM8', 'SPM12', or '3v2'
         for the latest SPM12 version of AAL3 software.
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
 
           The default was changed to '3v2'.
 
@@ -1407,8 +1409,9 @@ def fetch_atlas_aal(
 
     Notes
     -----
-    License: unknown.
+    %(fetcher_note)s
 
+    License: unknown.
     """
     check_params(locals())
 
@@ -1527,7 +1530,7 @@ def fetch_atlas_basc_multiscale_2015(
         Valid resolutions available are
         {7, 12, 20, 36, 64, 122, 197, 325, 444}
 
-        .. nilearn_versionchanged: 0.13.0dev
+        .. nilearn_versionchanged: 0.13.0
 
           Default changed to ``7``.
 
@@ -1560,9 +1563,10 @@ def fetch_atlas_basc_multiscale_2015(
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information on this dataset's structure, see
     https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615
-
     """
     check_params(locals())
 
@@ -1824,11 +1828,12 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     License: unknown
 
     See https://trendscenter.org/data/ for more information
     on this dataset.
-
     """
     check_params(locals())
 
@@ -1977,8 +1982,8 @@ def fetch_atlas_surf_destrieux(
     lut = generate_atlas_look_up_table(
         "fetch_atlas_surf_destrieux", name=labels
     )
-    check_look_up_table(lut=lut, atlas=annot_left[0])
-    check_look_up_table(lut=lut, atlas=annot_right[0])
+    check_look_up_table(lut=lut, atlas=annot_left[0], verbose=verbose)
+    check_look_up_table(lut=lut, atlas=annot_right[0], verbose=verbose)
 
     return Bunch(
         labels=labels,
@@ -2007,6 +2012,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         f"Separating talairach atlas levels: {_TALAIRACH_LEVELS}",
         verbose=verbose,
     )
+    atlas_data = _get_data(atlas_img)
     for level_name, old_level_labels in zip(
         _TALAIRACH_LEVELS, np.asarray(labels).T, strict=False
     ):
@@ -2016,9 +2022,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         level_labels = {"*": 0}
         for region_nb, region_name in enumerate(old_level_labels):
             level_labels.setdefault(region_name, len(level_labels))
-            level_data[get_img_data(atlas_img) == region_nb] = level_labels[
-                region_name
-            ]
+            level_data[atlas_data == region_nb] = level_labels[region_name]
         new_img_like(atlas_img, level_data).to_filename(
             output_dir / f"{level_name}.nii.gz"
         )
@@ -2031,7 +2035,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         )
 
 
-def _download_talairach(talairach_dir, verbose):
+def _download_talairach(talairach_dir, verbose) -> None:
     """Download the Talairach atlas and separate the different levels."""
     atlas_url = "https://www.talairach.org/talairach.nii"
     temp_dir = mkdtemp()
@@ -2041,14 +2045,14 @@ def _download_talairach(talairach_dir, verbose):
         )[0]
         atlas_img = load(temp_file, mmap=False)
         atlas_img = check_niimg(atlas_img)
+        labels_text = atlas_img.header.extensions[0].get_content()
+        multi_labels = labels_text.strip().decode("utf-8").split("\n")
+        labels = [lab.split(".") for lab in multi_labels]
+        _separate_talairach_levels(
+            atlas_img, labels, talairach_dir, verbose=verbose
+        )
     finally:
         shutil.rmtree(temp_dir)
-    labels_text = atlas_img.header.extensions[0].get_content()
-    multi_labels = labels_text.strip().decode("utf-8").split("\n")
-    labels = [lab.split(".") for lab in multi_labels]
-    _separate_talairach_levels(
-        atlas_img, labels, talairach_dir, verbose=verbose
-    )
 
 
 @fill_doc
@@ -2125,10 +2129,6 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     )
 
 
-# TODO (nilearn >= 0.13.1)
-@rename_parameters(
-    replacement_params={"version": "atlas_type"}, end_version="0.13.1"
-)
 @fill_doc
 def fetch_atlas_pauli_2017(
     atlas_type="probabilistic", data_dir=None, verbose=1
@@ -2284,13 +2284,14 @@ def fetch_atlas_schaefer_2018(
 
     Notes
     -----
+    %(fetcher_note)s
+
     Release v0.14.3 of the Schaefer 2018 parcellation is used by
     default. Versions prior to v0.14.3 are known to contain erroneous region
     label names. For more details, see
     https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/Updates/Update_20190916_README.md
 
     License: MIT.
-
     """
     check_params(locals())
 
@@ -2412,7 +2413,7 @@ class Atlas(Bunch):
 
             return None
 
-        check_look_up_table(lut=lut, atlas=maps)
+        check_look_up_table(lut=lut, atlas=maps, verbose=1)
 
         super().__init__(
             maps=maps,

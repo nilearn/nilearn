@@ -4,6 +4,7 @@ import re
 import numpy as np
 import pytest
 
+from nilearn._utils.helpers import is_gil_enabled
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
@@ -14,18 +15,12 @@ from nilearn.plotting.js_plotting_utils import (
 )
 from nilearn.surface import load_surf_mesh
 
-try:
-    from lxml import etree
-
-    LXML_INSTALLED = True
-except ImportError:
-    LXML_INSTALLED = False
-
 
 def _normalize_ws(text):
     return re.sub(r"\s+", " ", text)
 
 
+@pytest.mark.thread_unsafe
 def test_add_js_lib():
     """Tests for function add_js_lib.
 
@@ -82,15 +77,23 @@ def test_mesh_to_plotly(hemi):
         assert np.allclose(decode(plotly[key], "<i4"), triangles[:, i])
 
 
-def check_html(
+def check_html_surface_plots(
     tmp_path, html, check_selects=True, plot_div_id="surface-plot", title=None
 ):
-    """Perform several checks on raw HTML code."""
+    """Perform several checks on raw HTML code.
+
+    Used to check the output of
+    - ``view_connectome``
+    - ``view_surf``
+    -  ``view_markers``
+
+    """
     tmpfile = tmp_path / "test.html"
 
     html.save_as_html(tmpfile)
     with tmpfile.open() as f:
         saved = f.read()
+
     # If present, replace Windows line-end '\r\n' with Unix's '\n'
     saved = saved.replace("\r\n", "\n")
     standalone = html.get_standalone().replace("\r\n", "\n")
@@ -101,33 +104,47 @@ def check_html(
     assert html._repr_html_() == html.get_iframe()
     assert str(html) == html.get_standalone()
     assert '<meta charset="UTF-8" />' in str(html)
+
     resized = html.resize(3, 17)
     assert resized is html
     assert (html.width, html.height) == (3, 17)
     assert 'width="3" height="17"' in html.get_iframe()
     assert 'width="33" height="37"' in html.get_iframe(33, 37)
+
     if title is not None:
         assert f"<title>{title}</title>" in str(html)
-    if not LXML_INSTALLED:
+
+    # when testing without the GIL
+    # we cannot import lxml as it requires the GIL
+    if not is_gil_enabled():
         return
+
+    from lxml import etree
+
     root = etree.HTML(
         html.html.encode("utf-8"), parser=etree.HTMLParser(huge_tree=True)
     )
     head = root.find("head")
     assert len(head.findall("script")) == 5
+
     body = root.find("body")
     div = body.find("div")
     assert ("id", plot_div_id) in div.items()
+
     if not check_selects:
         return
+
     selects = body.findall("select")
     assert len(selects) == 3
+
     hemi = selects[0]
     assert ("id", "select-hemisphere") in hemi.items()
     assert len(hemi.findall("option")) == 3
+
     kind = selects[1]
     assert ("id", "select-kind") in kind.items()
     assert len(kind.findall("option")) == 2
+
     view = selects[2]
     assert ("id", "select-view") in view.items()
     assert len(view.findall("option")) == 7

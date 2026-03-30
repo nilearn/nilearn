@@ -3,7 +3,7 @@ This directory contains files required for nilearn reporting.
 ```
 ├── css                                  # css files
 │   ├── head.css
-│   └── report.css
+│   └── repor.css
 ├── html                                 # templates for HTML files
 │   ├── body_base.jinja
 │   ├── head.jinja

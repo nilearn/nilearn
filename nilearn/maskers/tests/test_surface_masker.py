@@ -7,7 +7,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import (
@@ -71,7 +71,7 @@ def test_transform_inverse_transform_no_mask(surf_mesh, n_timepoints):
         img_data[key] = data_part.T
 
     img = SurfaceImage(surf_mesh, img_data)
-    masker = SurfaceMasker().fit(img)
+    masker = SurfaceMasker(standardize=None).fit(img)
     signals = masker.transform(img)
 
     # make sure none of the data has been removed
@@ -102,7 +102,7 @@ def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
     }
     mask = SurfaceImage(surf_mesh, mask_data)
 
-    masker = SurfaceMasker(mask).fit(img)
+    masker = SurfaceMasker(mask, standardize=None).fit(img)
     signals = masker.transform(img)
 
     # check the data for first seven vertices is as expected

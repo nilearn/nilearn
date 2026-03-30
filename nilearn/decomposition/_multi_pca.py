@@ -41,7 +41,7 @@ class _MultiPCA(_BaseDecomposition):
           These strategies are only relevant for Nifti images and the parameter
           is ignored for SurfaceImage objects.
 
-    mask_args : dict, optional
+    mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`

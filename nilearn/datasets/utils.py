@@ -2,10 +2,11 @@
 
 import os
 from pathlib import Path
-from warnings import warn
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import (
+    check_params,
+)
 
 
 @fill_doc
@@ -36,6 +37,8 @@ def get_data_dirs(data_dir=None):
     5. nilearn_data in the user home folder
 
     """
+    check_params(locals())
+
     # We build an array of successive paths by priority
     # The boolean indicates if it is a pre_dir: in that case, we won't add the
     # dataset name to the path.
@@ -57,24 +60,3 @@ def get_data_dirs(data_dir=None):
 
         paths.append(str(Path("~/nilearn_data").expanduser()))
     return paths
-
-
-def load_sample_motor_activation_image():
-    """Load a single functional image showing motor activations.
-
-    Returns
-    -------
-    str
-        Path to the sample functional image.
-    """
-    from .func import load_sample_motor_activation_image as tmp
-
-    # TODO (nilearn >= 0.14.0)
-    warn(
-        "Import from 'nilearn.datasets.utils'\n"
-        "will be deprecated in version 0.14.0.\n"
-        "Please import this function from 'nilearn.datasets.func' instead.",
-        FutureWarning,
-        stacklevel=find_stack_level(),
-    )
-    return tmp()

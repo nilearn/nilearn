@@ -29,27 +29,27 @@ def main():
     n_issues = 0
 
     for filename in filenames:
-        for func_def in list_functions(filename):
+        for func_def in list_functions(filename, include="all"):
             if PUBLIC_API_ONLY and func_def.name not in public_api:
                 continue
             n_issues = check_def(func_def, n_issues, filename)
 
-        for class_def in list_classes(filename):
+        for class_def in list_classes(filename, include="all"):
             if PUBLIC_API_ONLY and class_def.name not in public_api:
                 continue
-            for meth_def in list_functions(class_def):
+            for meth_def in list_functions(class_def, include="all"):
                 n_issues = check_def(meth_def, n_issues, filename)
 
     print(f"{n_issues} issues detected\n\n")
 
 
-def check_def(ast_def, n_issues, filename):
+def check_def(ast_def, n_issues, filename) -> int:
     """Check AST definitions for missing default values in doc strings."""
     docstring = ast.get_docstring(ast_def, clean=False)
 
     if not docstring:
         print(f"{filename}:{ast_def.lineno} - No docstring detected")
-        return
+        return 0
 
     default_args = list_parameters_with_defaults(ast_def)
 
@@ -99,7 +99,9 @@ def list_parameters_with_defaults(ast_def):
     return default_args
 
 
-def get_missing(docstring, default_args):
+def get_missing(
+    docstring, default_args
+) -> tuple[list[str], list[str], list[str]]:
     """Return missing default values documentation.
 
     Returns

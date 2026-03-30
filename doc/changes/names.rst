@@ -45,6 +45,8 @@
 
 .. _Audrey Duran: https://github.com/AudreyDuran
 
+.. _Basile Pinsard: https://github.com/bpinsard
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -135,6 +137,8 @@
 
 .. _Jason Kai: https://github.com/kaitj
 
+.. _Jason D. Yeatman: https://edneuro.stanford.edu/
+
 .. _Javier Rasero: https://jrasero.github.io/
 
 .. _Jean Kossaifi: https://jeankossaifi.com/
@@ -149,6 +153,8 @@
 
 .. _Jerome-Alexis Chevalier: https://github.com/ja-che
 
+.. _Johanna Bayer: https://opencodereview.netlify.app/
+
 .. _Johannes Wiesner: https://github.com/JohannesWiesner
 
 .. _John T. Johnson: https://github.com/JohnAtl
@@ -158,6 +164,8 @@
 .. _Jona Sassenhagen: https://github.com/jona-sassenhagen
 
 .. _Jordi Huguet: https://github.com/jhuguetn
+
+.. _Joseph Paillard: https://github.com/jpaillard
 
 .. _Joshua Teves: https://github.com/jbteves
 
@@ -225,6 +233,8 @@
 
 .. _Mohammad Torabi: https://github.com/mtorabi59
 
+.. _Mohammad Sadeghi Hardengi: https://github.com/mohammedsadeghi
+
 .. _Moritz Boos: https://github.com/mjboos
 
 .. _Mudassir Chapra: https://github.com/muddi900
@@ -238,6 +248,8 @@
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
 
 .. _Nikhil Krish: https://github.com/NIkhilgKrish
+
+.. _Noah C. Benson: https://nben.net/
 
 .. _Oliver Warrington: https://github.com/OliverWarrington
 
@@ -287,6 +299,8 @@
 
 .. _Sachin Patalasingh: https://github.com/sachin-bsai
 
+.. _Saeed Babadi: https://github.com/saeed-neuro
+
 .. _Sage Hahn: https://github.com/sahahn
 
 .. _Salma Bougacha: https://github.com/salma1601
@@ -294,6 +308,8 @@
 .. _Sam Buck Johnson: https://github.com/sambjohnson
 
 .. _Sami Jawhar: https://github.com/sjawhar
+
+.. _Sanjana Soni: https://github.com/isha822
 
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
@@ -326,6 +342,8 @@
 .. _Vasco Diogo: https://github.com/vascosa
 
 .. _Victoria Shevchenko: https://github.com/victoris93
+
+.. _Victoria McCray: https://github.com/victoriamccray
 
 .. _Vincent Michel: https://github.com/vmichel
 

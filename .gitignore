@@ -23,7 +23,10 @@ pip-log.txt
 
 tmp
 
-#  prettier and other JS
+# Generic python
+__pycache__
+
+#  JS
 node_modules
 
 # Mac OS X
@@ -43,8 +46,8 @@ nilearn/_version.py
 .ipynb_checkpoints
 
 # virtual environment
-env/
-venv/
+env*/
+venv*/
 
 # testing
 .pytest_cache
@@ -83,6 +86,8 @@ pattern.txt
 examples.txt
 gitlog.txt
 merge.txt
+__marimo__
+tmp.html
 
 # examples
 results/
@@ -93,3 +98,7 @@ package-lock.json
 
 # pydeps output
 nilearn.svg
+
+# uv
+uv.lock
+.python-version

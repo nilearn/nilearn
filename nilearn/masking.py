@@ -12,12 +12,7 @@ from nilearn._utils.cache_mixin import cache
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import get_border_data, largest_connected_component
-from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import (
-    check_niimg,
-    check_niimg_3d,
-    check_same_fov,
-)
+from nilearn._utils.niimg import ensure_finite_data, safe_get_data
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets import (
@@ -25,11 +20,17 @@ from nilearn.datasets import (
     load_mni152_template,
     load_mni152_wm_template,
 )
-from nilearn.exceptions import MaskWarning, NotImplementedWarning
-from nilearn.image import get_data, new_img_like, resampling
-from nilearn.surface.surface import (
-    SurfaceImage,
+from nilearn.exceptions import MaskWarning
+from nilearn.image.image import (
+    check_niimg,
+    check_niimg_3d,
+    check_same_fov,
+    get_data,
+    new_img_like,
+    smooth_img,
 )
+from nilearn.image.resampling import resample_to_img
+from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import NiimgLike
@@ -156,7 +157,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
     extrapolation = np.nansum(extrapolation, axis=0) / np.sum(
         np.isfinite(extrapolation), axis=0
     )
-    extrapolation[np.logical_not(np.isfinite(extrapolation))] = 0
+    ensure_finite_data(extrapolation, raise_warning=False)
     new_data = np.zeros_like(masked_data)
     new_data[outer_shell] = extrapolation
     new_data[larger_mask] = masked_data[larger_mask]
@@ -358,7 +359,7 @@ def compute_epi_mask(
         # Get rid of memmapping
         mean_epi = as_ndarray(mean_epi)
         # SPM tends to put NaNs in the data outside the brain
-        mean_epi[np.logical_not(np.isfinite(mean_epi))] = 0
+        ensure_finite_data(mean_epi, raise_warning=False)
     sorted_input = np.sort(np.ravel(mean_epi))
     if exclude_zeros:
         sorted_input = sorted_input[sorted_input != 0]
@@ -714,9 +715,7 @@ def compute_brain_mask(
             "Only 'whole-brain', 'gm' or 'wm' are accepted."
         )
 
-    resampled_template = cache(resampling.resample_to_img, memory)(
-        template, target_img
-    )
+    resampled_template = cache(resample_to_img, memory)(template, target_img)
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")
 
@@ -819,7 +818,7 @@ def compute_multi_brain_mask(
 @fill_doc
 def apply_mask(
     imgs, mask_img, dtype="f", smoothing_fwhm=None, ensure_finite=True
-):
+) -> np.ndarray:
     """Extract signals from images using specified mask.
 
     Read the time series from the given image object, using the mask.
@@ -844,11 +843,7 @@ def apply_mask(
 
         .. note::
 
-            Implies ensure_finite=True.
-
-        .. warning::
-
-            Not yet implemented for surface images
+            Implies ensure_finite=True when applied to volume data.
 
     ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and
@@ -865,6 +860,7 @@ def apply_mask(
     When using smoothing, ``ensure_finite`` is set to True, as non-finite
     values would spread across the image.
     """
+    check_params(locals())
     if not isinstance(imgs, SurfaceImage):
         mask_img = check_niimg_3d(mask_img)
         mask, mask_affine = load_mask_img(mask_img)
@@ -894,14 +890,7 @@ def apply_mask_fmri(
     if isinstance(imgs, SurfaceImage) and isinstance(mask_img, SurfaceImage):
         check_polymesh_equal(mask_img.mesh, imgs.mesh)
 
-        if smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                NotImplementedWarning,
-                stacklevel=2,
-            )
-            smoothing_fwhm = True
+        imgs = smooth_img(imgs, fwhm=smoothing_fwhm)
 
         mask_data = as_ndarray(get_surface_data(mask_img), dtype=bool)
         series = get_surface_data(imgs)
@@ -1069,7 +1058,7 @@ def unmask(X, mask_img, order="F"):
             f"Masked data X must be 2D or 1D array; got shape: {X.shape!s}"
         )
 
-    return new_img_like(mask_img, unmasked, affine)
+    return new_img_like(mask_img, unmasked, affine, copy_header=False)
 
 
 def unmask_from_to_3d_array(w, mask):
