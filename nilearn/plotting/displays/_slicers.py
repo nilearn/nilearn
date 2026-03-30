@@ -841,6 +841,12 @@ class BaseSlicer:
             is computed based on the data.
 
         """
+        cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
+        cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
+
+        if cbar_vmin == cbar_vmax:
+            return
+
         # create new  axis for the colorbar
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect

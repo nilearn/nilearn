@@ -342,7 +342,7 @@ def test_standardize_error(rng):
 
 @pytest.mark.thread_unsafe
 def test_standardize(rng):
-    """Test starndardize_signal with several options."""
+    """Test standardize_signal with several options."""
     n_features = 10
     n_samples = 17
 
@@ -351,7 +351,8 @@ def test_standardize(rng):
     a += np.linspace(0, 2.0, n_features)
 
     # ensure PSC rescaled correctly, correlation should be 1
-    z = standardize_signal(a, standardize="zscore_sample")
+    # with standardize="zscore_sample" default
+    z = standardize_signal(a)
     psc = standardize_signal(a, standardize="psc")
     corr_coef_feature = np.corrcoef(z[:, 0], psc[:, 0])[0, 1]
 
@@ -359,7 +360,8 @@ def test_standardize(rng):
 
     # transpose array to fit standardize input.
     # Without trend removal
-    b = standardize_signal(a, standardize="zscore_sample")
+    # and default standardize="zscore_sample"
+    b = standardize_signal(a)
 
     stds = np.std(b)
     assert_almost_equal(stds, np.ones(n_features), decimal=1)
@@ -371,7 +373,8 @@ def test_standardize(rng):
 
     assert_almost_equal(b, np.zeros(b.shape))
 
-    b = standardize_signal(a, detrend=True, standardize="zscore_sample")
+    # with default standardize="zscore_sample"
+    b = standardize_signal(a, detrend=True)
 
     assert_almost_equal(b, np.zeros(b.shape))
 
@@ -379,7 +382,30 @@ def test_standardize(rng):
 
     assert_array_equal(
         length_1_signal,
-        standardize_signal(length_1_signal, standardize="zscore_sample"),
+        standardize_signal(
+            length_1_signal,
+        ),
+    )
+
+
+def test_standardize_boolean(rng):
+    """Test standardize_signal with standardize as boolean.
+
+    TODO (nilearn >= 0.15) remove this test
+    """
+    n_features = 10
+    n_samples = 17
+
+    # Create random signals with offsets and and negative mean
+    a = rng.random((n_samples, n_features))
+    a += np.linspace(0, 2.0, n_features)
+
+    assert_array_equal(
+        standardize_signal(a), standardize_signal(a, standardize=True)
+    )
+    assert_array_equal(
+        standardize_signal(a, standardize=None),
+        standardize_signal(a, standardize=False),
     )
 
 
@@ -484,7 +510,7 @@ def test_clean_detrending():
     y[15, 14] = np.inf
     y_orig = y.copy()
 
-    y_clean = clean(y, ensure_finite=True, standardize="zscore_sample")
+    y_clean = clean(y, ensure_finite=True)
 
     assert np.any(np.isfinite(y_clean))
     # clean should not modify inputs
@@ -529,14 +555,12 @@ def test_clean_t_r(rng):
                 t_r=tr1,
                 low_pass=low_cutoff,
                 high_pass=high_cutoff,
-                standardize="zscore_sample",
             )
             det_diff_tr = clean(
                 x_orig,
                 t_r=tr2,
                 low_pass=low_cutoff,
                 high_pass=high_cutoff,
-                standardize="zscore_sample",
             )
 
             if not np.isclose(tr1, tr2, atol=0.3):
@@ -586,7 +610,6 @@ def test_clean_kwargs(kwarg_set):
         t_r=t_r,
         low_pass=low_pass,
         high_pass=high_pass,
-        standardize="zscore_sample",
     )
 
     test_filtered = clean(
@@ -594,7 +617,6 @@ def test_clean_kwargs(kwarg_set):
         t_r=t_r,
         low_pass=low_pass,
         high_pass=high_pass,
-        standardize="zscore_sample",
         **kwarg_set,
     )
 
@@ -620,7 +642,6 @@ def test_clean_t_r_type(cast_to):
         t_r=t_r,
         low_pass=low_pass,
         high_pass=high_pass,
-        standardize="zscore_sample",
     )
 
 
@@ -798,7 +819,6 @@ def test_clean_confounds():
         signals + noises,
         confounds=confounds,
         detrend=False,
-        standardize="zscore_sample",
     )
 
     assert abs(np.dot(confounds.T, cleaned_signals)).max() < 1000.0 * EPS
@@ -810,7 +830,6 @@ def test_clean_confounds():
         signals + noises,
         confounds=confounds1,
         detrend=False,
-        standardize="zscore_sample",
     )
 
     assert_almost_equal(cleaned_signals1, cleaned_signals)
@@ -931,7 +950,6 @@ def test_clean_warning(signals):
             t_r=2.5,
             filter=False,
             low_pass=0.01,
-            standardize="zscore_sample",
         )
 
     # Test without standardizing that constant parts of confounds are
@@ -965,14 +983,12 @@ def test_clean_confounds_are_removed(signals, confounds):
         detrend=True,
         high_pass=0.01,
         standardize_confounds=True,
-        standardize="zscore_sample",
         confounds=confounds,
     )
     confounds_clean = clean(
         confounds,
         detrend=True,
         high_pass=0.01,
-        standardize="zscore_sample",
     )
     assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * EPS
 
@@ -1033,6 +1049,34 @@ def test_clean_frequencies_using_power_spectrum_density():
     assert np.sum(Pxx_den_cos[f <= high_pass / 2.0]) <= 1e-4
 
 
+def test_clean_warning_low_pass_not_implemented():
+    """Check that user is warned about low-pass not applied with cosine."""
+    sx = np.array(
+        [
+            np.sin(np.linspace(0, 100, 100) * 1.5),
+            np.sin(np.linspace(0, 100, 100) * 3.0),
+            np.sin(np.linspace(0, 100, 100) / 8.0),
+        ]
+    ).T
+
+    t_r = 1.0
+    low_pass = 0.1
+    high_pass = 0.4
+
+    with pytest.warns(
+        UserWarning, match="low_pass is not implemented for filter='cosine'"
+    ):
+        clean(
+            sx,
+            detrend=False,
+            standardize=None,
+            filter="cosine",
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
+        )
+
+
 @pytest.mark.parametrize("t_r", [1, 1.0])
 @pytest.mark.parametrize("high_pass", [1, 1.0])
 def test_clean_t_r_highpass_float_int(t_r, high_pass):
@@ -1075,12 +1119,10 @@ def test_clean_finite_no_inplace_mod():
     x_orig_with_nans[0, 0] = np.nan
     x_orig_with_nans_initial_copy = x_orig_with_nans.copy()
 
-    _ = clean(x_orig, standardize="zscore_sample")
+    _ = clean(x_orig)
     assert array_equal(x_orig, x_orig_inital_copy)
 
-    _ = clean(
-        x_orig_with_nans, ensure_finite=True, standardize="zscore_sample"
-    )
+    _ = clean(x_orig_with_nans, ensure_finite=True)
     assert np.isnan(x_orig_with_nans_initial_copy[0, 0])
     assert np.isnan(x_orig_with_nans[0, 0])
 
@@ -1277,12 +1319,12 @@ def test_clean_psc(rng):
 
         # psc signal should correlate with z score, since it's just difference
         # in scaling
-        z_signals = clean(s, standardize="zscore_sample", detrend=False)
+        z_signals = clean(s, detrend=False)
 
         _assert_correlation_almost_1(z_signals, cleaned_signals)
 
         cleaned_signals = clean(s, standardize="psc", detrend=True)
-        z_signals = clean(s, standardize="zscore_sample", detrend=True)
+        z_signals = clean(s, detrend=True)
 
         assert_almost_equal(cleaned_signals.mean(0), 0)
         _assert_correlation_almost_1(z_signals, cleaned_signals)
@@ -1315,12 +1357,7 @@ def test_clean_psc_butterworth(rng):
             standardize="psc",
         )
         z_butterworth_signals = clean(
-            s,
-            detrend=False,
-            filter="butterworth",
-            high_pass=0.01,
-            t_r=2,
-            standardize="zscore_sample",
+            s, detrend=False, filter="butterworth", high_pass=0.01, t_r=2
         )
 
         assert_almost_equal(hp_butterworth_signals.mean(0), 0)
@@ -1376,7 +1413,7 @@ def test_clean_zscore(rng):
 
     signals += rng.standard_normal(size=(1, n_features))
 
-    cleaned_signals = clean(signals, standardize="zscore_sample")
+    cleaned_signals = clean(signals)
 
     assert_almost_equal(cleaned_signals.mean(0), 0)
     assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
@@ -1395,21 +1432,13 @@ def test_clean_sample_mask():
     sample_mask_binary = np.full(signals.shape[0], True)
     sample_mask_binary[scrub_index] = False
 
-    scrub_clean = clean(
-        signals,
-        confounds=confounds,
-        sample_mask=sample_mask,
-        standardize="zscore_sample",
-    )
+    scrub_clean = clean(signals, confounds=confounds, sample_mask=sample_mask)
 
     assert scrub_clean.shape[0] == sample_mask.shape[0]
 
     # test the binary mask
     scrub_clean_bin = clean(
-        signals,
-        confounds=confounds,
-        sample_mask=sample_mask_binary,
-        standardize="zscore_sample",
+        signals, confounds=confounds, sample_mask=sample_mask_binary
     )
     assert_equal(scrub_clean_bin, scrub_clean)
 
@@ -1429,11 +1458,7 @@ def test_sample_mask_across_runs():
     sample_mask_sep = list(map(np.delete, sample_mask_sep, scrub_index))
 
     scrub_sep_mask = clean(
-        signals,
-        confounds=confounds,
-        sample_mask=sample_mask_sep,
-        runs=runs,
-        standardize="zscore_sample",
+        signals, confounds=confounds, sample_mask=sample_mask_sep, runs=runs
     )
 
     assert scrub_sep_mask.shape[0] == signals.shape[0] - 6
@@ -1451,7 +1476,6 @@ def test_sample_mask_across_runs():
         confounds=confounds,
         sample_mask=sample_mask_sep_binary,
         runs=runs,
-        standardize="zscore_sample",
     )
 
     assert scrub_sep_mask.shape[0] == signals.shape[0] - 6
