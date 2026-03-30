@@ -32,7 +32,6 @@ print(f"First functional nifti image (4D) is at: {func_filename}")
 from nilearn.maskers import NiftiMasker
 
 masker = NiftiMasker(
-    standardize="zscore_sample",
     mask_strategy="epi",
     memory="nilearn_cache",
     memory_level=1,
@@ -90,7 +89,11 @@ show()
 # by generating a masker report.
 # This can be done using
 # the :meth:`~nilearn.maskers.NiftiMasker.generate_report` method.
-report = masker.generate_report()
+# Here we use the 'brainsprite' engine
+# that gives an interactive visualization
+# instead of the static one generated
+# by the matplotlib engine.
+report = masker.generate_report(engine="brainsprite")
 
 # %%
 #

@@ -129,49 +129,25 @@ We welcome pull requests from all community members, if they follow the
 details on their process are available
 :sklearn:`here <developers/contributing.html#contributing-code-and-documentation>`).
 
-Using tox
-=========
+Deprecations
+============
 
-`Tox <https://tox.wiki/en/4.23.2/>`_ is set
-to facilitate testing and managing environments during development
-and ensure that the same commands can easily be run locally and in CI.
+Use :class:`FutureWarning` for deprecations that users should know about
+on which they can have some control,
+for example by making sure that the warning message mentions
+what action to take to prevent the warning to be thrown.
+If there is no way for the user to prevent the warning to be thrown,
+consider using a :class:`DeprecationWarning`.
 
-Install it with:
+Tests are run via tox using ``-W error::FutureWarning``
+so that any FutureWarning thrown by a test will raise an error.
+To prevent this, any call that will throw a :class:`FutureWarning`
+must be handled with a ``pytest.warns`` context manager:
 
-.. code-block:: bash
+.. code-block:: python
 
-    pip install tox
-
-You can set up certain environment or run certain command by calling ``tox``.
-
-Calling ``tox`` with no extra argument will simply run
-all the default commands defined in the tox configuration (``tox.ini``).
-
-Use ``tox list`` to view all environment descriptions.
-
-Use ``tox run`` to run a specific environment.
-
-Example
-
-.. code-block:: bash
-
-    tox run -e lint
-
-Some environments allow passing extra argument:
-
-.. code-block:: bash
-
-    # only run ruff
-    tox run -e lint -- ruff
-
-    # only run some tests
-    tox -e plotting -- nilearn/glm/tests/test_contrasts.py
-
-You can also run any arbitrary command in a given environment with ``tox exec``:
-
-.. code-block:: bash
-
-    tox exec -e latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
+    with pytest.warns(FutureWarning, match="message"):
+        ...
 
 Generating new baseline figures for plotting tests
 ==================================================
@@ -558,6 +534,16 @@ sections for the version currently under development:
 
    x.y.z+1.dev
    =========
+
+   ..
+    Each changelog entry should begin with one of the following badges:
+    - :bdg-primary:`Doc`
+    - :bdg-secondary:`Maint`
+    - :bdg-success:`API`
+    - :bdg-info:`Plotting`
+    - :bdg-warning:`Test`
+    - :bdg-danger:`Deprecation`
+    - :bdg-dark:`Code`
 
    NEW
    ---

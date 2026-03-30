@@ -2,6 +2,7 @@
 
 import abc
 import contextlib
+import json
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
@@ -9,6 +10,7 @@ from typing import Any
 
 import numpy as np
 from joblib import Memory
+from nibabel import Nifti1Image
 from sklearn.base import TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
@@ -17,7 +19,7 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import stringify_path
+from nilearn._utils.helpers import is_matplotlib_installed, stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -28,7 +30,6 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn._utils.versions import SKLEARN_LT_1_6
-from nilearn.exceptions import NotImplementedWarning
 from nilearn.image.image import (
     check_niimg,
     check_volume_for_fit,
@@ -622,6 +623,38 @@ class BaseMasker(_BaseMasker):
 
         return signals
 
+    def _create_brainsprite(
+        self,
+        bg_img: Nifti1Image | None,
+        stat_map_img: Nifti1Image,
+        cmap=None,
+    ) -> None:
+
+        from nilearn.plotting.html_stat_map import create_brainsprite
+
+        self._reporting_data["bg_base64"] = None
+        self._reporting_data["cm_base64"] = None
+        self._reporting_data["stat_map_base64"] = None
+        self._reporting_data["params"] = json.dumps({})
+
+        if not is_matplotlib_installed():
+            return
+
+        if bg_img is None:  # images were not provided to fit
+            bg_img = stat_map_img
+
+        json_view = create_brainsprite(
+            stat_map_img=stat_map_img,
+            bg_img=bg_img,
+            cmap=self.cmap if cmap is None else cmap,
+            symmetric_cmap=False,
+        )
+
+        self._reporting_data["bg_base64"] = json_view["bg_base64"]
+        self._reporting_data["cm_base64"] = json_view["cm_base64"]
+        self._reporting_data["stat_map_base64"] = json_view["stat_map_base64"]
+        self._reporting_data["params"] = json.dumps(json_view["params"])
+
 
 class _BaseSurfaceMasker(_BaseMasker):
     """Class from which all surface maskers should inherit."""
@@ -731,15 +764,6 @@ class _BaseSurfaceMasker(_BaseMasker):
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
 
-        if self.smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                NotImplementedWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = None
-
         if self.standardize in [True, False]:
             # TODO (nilearn >= 0.15.0) remove warning
             warnings.warn(
@@ -820,6 +844,19 @@ class _BaseSurfaceMasker(_BaseMasker):
         """
         del y
         return self.fit(imgs).transform(imgs, confounds, sample_mask)
+
+    def _smooth(self, imgs):
+        if self.smoothing_fwhm is not None:
+            logger.log("Smoothing images", verbose=self.verbose)
+
+            imgs = cache(
+                smooth_img,
+                self.memory,
+                func_memory_level=2,
+                memory_level=self.memory_level,
+            )(imgs, self.smoothing_fwhm)
+
+        return imgs
 
     def _check_array(
         self, signals: np.ndarray, sklearn_check: bool = True

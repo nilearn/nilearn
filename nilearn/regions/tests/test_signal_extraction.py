@@ -92,7 +92,7 @@ def mask_img():
 
 
 @pytest.fixture
-def signals():
+def signals() -> np.ndarray:
     return generate_timeseries(n_timepoints=N_TIMEPOINTS, n_features=N_REGIONS)
 
 
@@ -539,24 +539,33 @@ def test_signal_extraction_with_maps_and_labels(
     maps_signals, maps_labels = img_to_signals_maps(
         fmri_img, maps_img, keep_masked_maps=True
     )
-    labels_signals, labels_labels, _ = img_to_signals_labels(
-        imgs=fmri_img, labels_img=labeled_regions, keep_masked_labels=True
-    )
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_labels" parameter will be removed'
+    ):
+        labels_signals, labels_labels, _ = img_to_signals_labels(
+            imgs=fmri_img, labels_img=labeled_regions, keep_masked_labels=True
+        )
     assert_almost_equal(maps_signals, labels_signals)
 
     # Same thing with a mask, containing only 3 regions.
     mask_img = _create_mask_with_3_regions_from_labels_data(
         labels_data, labeled_regions.affine
     )
-    labels_signals, labels_labels, _ = img_to_signals_labels(
-        imgs=fmri_img,
-        labels_img=labeled_regions,
-        mask_img=mask_img,
-        keep_masked_labels=True,
-    )
-    maps_signals, maps_labels = img_to_signals_maps(
-        fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
-    )
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_labels" parameter will be removed'
+    ):
+        labels_signals, labels_labels, _ = img_to_signals_labels(
+            imgs=fmri_img,
+            labels_img=labeled_regions,
+            mask_img=mask_img,
+            keep_masked_labels=True,
+        )
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_maps" parameter will be removed'
+    ):
+        maps_signals, maps_labels = img_to_signals_maps(
+            fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
+        )
 
     assert_almost_equal(maps_signals, labels_signals)
     assert maps_signals.shape[1] == N_REGIONS
@@ -792,7 +801,7 @@ def test_img_to_signals_labels_non_float_type(target_dtype, rng):
     fake_mask_data[1:8, 1:8, 1:8] = 1
     fake_mask = Nifti1Image(fake_mask_data, fake_affine)
 
-    masker = NiftiLabelsMasker(fake_mask)
+    masker = NiftiLabelsMasker(fake_mask, standardize=None)
     masker.fit()
 
     timeseries_int = masker.transform(fake_fmri_img_target_dtype)
@@ -800,3 +809,21 @@ def test_img_to_signals_labels_non_float_type(target_dtype, rng):
 
     assert np.sum(timeseries_int) != 0
     assert np.allclose(timeseries_int, timeseries_float)
+
+
+@pytest.mark.single_process
+def test_img_to_signals_labels_parallel_extraction(fmri_img, labeled_regions):
+
+    expected_labels_signals, expected_labels_labels, _ = img_to_signals_labels(
+        imgs=fmri_img,
+        labels_img=labeled_regions,
+    )
+
+    # Test with n_jobs > 1
+    labels_signals, labels_labels, _ = img_to_signals_labels(
+        imgs=fmri_img,
+        labels_img=labeled_regions,
+        n_jobs=2,
+    )
+    np.testing.assert_almost_equal(labels_signals, expected_labels_signals)
+    assert np.allclose(labels_labels, expected_labels_labels)

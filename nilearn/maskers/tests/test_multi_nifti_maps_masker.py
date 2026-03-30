@@ -17,7 +17,7 @@ from nilearn.conftest import _img_maps
 from nilearn.exceptions import DimensionError
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
-ESTIMATORS_TO_CHECK = [MultiNiftiMapsMasker(standardize=None)]
+ESTIMATORS_TO_CHECK = [MultiNiftiMapsMasker()]
 
 if SKLEARN_LT_1_6:
 
@@ -89,7 +89,11 @@ def test_multi_nifti_maps_masker(
         standardize=None,
     )
 
-    signals11 = masker.fit_transform(fmri11_img)
+    with pytest.warns(
+        FutureWarning,
+        match=r'"keep_masked_maps" parameter will be removed in version 0\.15',
+    ):
+        signals11 = masker.fit_transform(fmri11_img)
 
     assert signals11.shape == (length, n_regions)
 
@@ -97,8 +101,10 @@ def test_multi_nifti_maps_masker(
 
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
-
-    signals11_list = masker.fit_transform(signals_input)
+    with pytest.warns(
+        FutureWarning, match=('"keep_masked_maps" parameter will be removed')
+    ):
+        signals11_list = masker.fit_transform(signals_input)
 
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)
@@ -272,7 +278,10 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
         standardize=None,
     )
 
-    signals = masker.fit_transform([img_fmri, img_fmri])
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_maps" parameter will be removed'
+    ):
+        signals = masker.fit_transform([img_fmri, img_fmri])
 
     assert_almost_equal(masker.mask_img_.affine, mask22_img.affine)
     assert masker.mask_img_.shape == mask22_img.shape
@@ -311,8 +320,10 @@ def test_multi_nifti_maps_masker_resampling_to_maps(
         keep_masked_maps=True,
         standardize=None,
     )
-
-    signals = masker.fit_transform([img_fmri, img_fmri])
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_maps" parameter will be removed'
+    ):
+        signals = masker.fit_transform([img_fmri, img_fmri])
 
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
@@ -349,8 +360,10 @@ def test_multi_nifti_maps_masker_resampling_clipped_mask(
         keep_masked_maps=True,
         standardize=None,
     )
-
-    signals = masker.fit_transform([img_fmri, img_fmri])
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_maps" parameter will be removed'
+    ):
+        signals = masker.fit_transform([img_fmri, img_fmri])
 
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape

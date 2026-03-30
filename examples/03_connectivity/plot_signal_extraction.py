@@ -49,7 +49,6 @@ from nilearn.maskers import NiftiLabelsMasker
 masker = NiftiLabelsMasker(
     labels_img=atlas_filename,
     lut=look_up_table,
-    standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
     verbose=1,
@@ -65,9 +64,7 @@ time_series = masker.fit_transform(fmri_filenames, confounds=reduced_confounds)
 # ----------------------------------------
 from nilearn.connectome import ConnectivityMeasure
 
-correlation_measure = ConnectivityMeasure(
-    kind="correlation", standardize="zscore_sample", verbose=1
-)
+correlation_measure = ConnectivityMeasure(kind="correlation", verbose=1)
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Plot the correlation matrix

@@ -141,7 +141,7 @@ def _confounds_regression(
     "standardize_signal, standardize_confounds, expected",
     [
         # Signal is not standardized
-        (False, True, 10.0 * 10e-10),
+        (None, True, 10.0 * 10e-10),
         # Signal is z-scored with string arg
         ("zscore_sample", True, 10e-10),
         # Signal is psc standardized
@@ -171,7 +171,7 @@ def test_confounds_standardization(
     "standardize_signal",
     [
         # Signal is not standardized
-        False,
+        None,
         # Signal is z-scored with string arg
         "zscore_sample",
         # Signal is psc standardized
@@ -375,13 +375,33 @@ def test_apply_mask(tmp_path, create_files, affine):
         assert_equal(proj.sum(), 9 / np.abs(affine[axis, axis]))
 
 
-def test_apply_mask_surface(surf_img_2d, surf_mask_1d):
-    """Test apply_mask on surface."""
-    length = 5
-    series = apply_mask(surf_img_2d(length), surf_mask_1d)
+def test_apply_mask_surface(surf_img_1d, surf_mask_1d):
+    """Test apply_mask on surface.
 
-    assert isinstance(series, np.ndarray)
-    assert series.shape[0] == length
+    0 and None should give the same results.
+    Otherwise we expect the data to be smoother.
+    """
+    img_none = apply_mask(surf_img_1d, surf_mask_1d, smoothing_fwhm=None)
+    img_zero = apply_mask(surf_img_1d, surf_mask_1d, smoothing_fwhm=0)
+
+    assert_array_equal(img_none, img_zero)
+
+    smoothed_img = apply_mask(surf_img_1d, surf_mask_1d, smoothing_fwhm=5)
+
+    assert img_zero.max() > smoothed_img.max()
+    assert img_zero.var() > smoothed_img.var()
+
+
+@pytest.mark.parametrize(
+    "smoothing_fwhm", [(0, 1, 2), [0, 1, 2], np.asarray([1])]
+)
+def test_apply_mask_surface_error(surf_img_2d, surf_mask_1d, smoothing_fwhm):
+    """Test error apply_mask on surface."""
+    length = 5
+    with pytest.raises(TypeError, match="must be of type"):
+        apply_mask(
+            surf_img_2d(length), surf_mask_1d, smoothing_fwhm=smoothing_fwhm
+        )
 
 
 def test_apply_mask_nan(affine_eye):
@@ -540,6 +560,22 @@ def test_unmask_3d_with_files(
     assert not t[0].flags["C_CONTIGUOUS"]
     assert t[0].flags["F_CONTIGUOUS"]
     assert_array_equal(t[0], unmasked3D)
+
+
+def test_unmask_retain_datatype(rng, affine_eye, shape_3d_default):
+    """Check that the unmasked image retains the datatype of the data array.
+
+    see https://github.com/nilearn/nilearn/issues/6150
+    """
+    data3D = rng.uniform(size=shape_3d_default)
+    mask = rng.integers(2, size=shape_3d_default, dtype="int32")
+    mask_img = Nifti1Image(mask, affine_eye)
+
+    mask = mask.astype(bool)
+    masked3D = data3D[mask]
+
+    t = unmask([masked3D], mask_img, order="F")
+    assert t[0].get_data_dtype() == data3D.dtype
 
 
 def test_unmask_errors(rng, affine_eye, shape_3d_default):

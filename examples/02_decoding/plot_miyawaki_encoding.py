@@ -60,7 +60,6 @@ from nilearn.maskers import MultiNiftiMasker
 masker = MultiNiftiMasker(
     mask_img=dataset.mask,
     detrend=True,
-    standardize="zscore_sample",
     n_jobs=2,
     verbose=1,
 )

@@ -15,7 +15,6 @@ on:
     schedule:
         # Uses the cron schedule for github actions
         # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
-        # Run every Monday at midnight UTC
         #     ┌───────────── minute (0 - 59)
         #     │ ┌───────────── hour (0 - 23)
         #     │ │ ┌───────────── day of the month (1 - 31)
@@ -25,7 +24,8 @@ on:
         #     │ │ │ │ │
         #     │ │ │ │ │
         #     * * * * *
-    -   cron: 0 0 * * 1
+        # Runs at 00:00, on day 1 of every 3rd month
+    -   cron: 0 0 1 */3 *
 
     # This enables manual triggering from GitHub UI
     # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
@@ -50,7 +50,7 @@ jobs:
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 python-version: ['3.10']
-                min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.22.4, pandas==2.2.0, scikit-learn==1.5.0, scipy==1.9.0, matplotlib==3.8.0, plotly==5.0.0]
+                min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.26.0, pandas==2.3.0, scikit-learn==1.5.0, scipy==1.11.1, matplotlib==3.8.0, plotly==6.1.1]
 
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}
 
@@ -65,28 +65,18 @@ jobs:
 
         -   name: Install dependencies for building Nilearn
             run: |
-                python -m pip install --upgrade pip setuptools
-                pip install ${{ matrix.min_dep }}
-
-        -   name: Install oldest kaleido if needed (not windows)
-            if: ${{ matrix.os != 'windows-latest' && matrix.min_dep == 'plotly==5.0.0' }}
-            run: |
-                pip install kaleido==0.2.1
-
-        -   name: Install oldest kaleido if needed (windows)
-            if: ${{ matrix.os == 'windows-latest' &&  matrix.min_dep == 'plotly==5.0.0' }}
-            run: |
-                pip install kaleido==0.1.0.post1
+                python -m pip install --upgrade pip
 
         -   name: Install nilearn
-            run: pip install .[plotting,test]
+            run: |
+                pip install .[plotting] --group test
+                pip install ${{ matrix.min_dep }}
 
         -   name: Run tests
             id: test_minimum
             # do not run flaky tests when testing minimum version of dependencies
             continue-on-error: true
             run: |
-                pip install pytest-mpl
                 pytest -m "not flaky" --pyargs nilearn --report=report.html --numprocesses auto --csv results/pytest_output/pytest_output.csv
 
         -   name: Generate plots tests timing
@@ -97,14 +87,14 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.min_dep }}_report.html
                 path: report.html
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.min_dep }}_pytest_output
                 path: results/pytest_output

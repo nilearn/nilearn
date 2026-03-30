@@ -18,7 +18,7 @@ import warnings
 
 import numpy as np
 import pytest
-from nibabel import save
+from nibabel import Nifti1Image, save
 from numpy.testing import assert_array_almost_equal
 from sklearn import clone
 from sklearn.datasets import load_iris, make_classification, make_regression
@@ -64,7 +64,6 @@ from nilearn.decoding import (
 )
 from nilearn.decoding._utils import _get_mask_extent, check_feature_screening
 from nilearn.decoding.decoder import (
-    SUPPORTED_ESTIMATORS,
     _BaseDecoder,
     _check_estimator,
     _check_param_grid,
@@ -81,9 +80,17 @@ ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 
 ESTIMATORS_TO_CHECK = [
-    Decoder(standardize="zscore_sample", screening_percentile=100),
+    Decoder(
+        standardize="zscore_sample",
+        screening_percentile=100,
+        estimator_args={"random_state": 0},
+    ),
     DecoderRegressor(standardize="zscore_sample", screening_percentile=100),
-    FREMClassifier(standardize="zscore_sample", screening_percentile=100),
+    FREMClassifier(
+        standardize="zscore_sample",
+        screening_percentile=100,
+        estimator_args={"random_state": 0},
+    ),
     FREMRegressor(standardize="zscore_sample", screening_percentile=100),
 ]
 
@@ -128,7 +135,10 @@ def test_check_estimator_nilearn(estimator, check, name):
     check(estimator)
 
 
-def _make_binary_classification_test_data(n_samples=N_SAMPLES, dim=5):
+def _make_binary_classification_test_data(
+    n_samples: int = N_SAMPLES, dim: int = 5
+) -> tuple[Nifti1Image, np.ndarray, Nifti1Image]:
+    """Generate a random 2-class classification problem with nifti images."""
     X, y = make_classification(
         n_samples=n_samples,
         n_features=dim**3,
@@ -142,13 +152,17 @@ def _make_binary_classification_test_data(n_samples=N_SAMPLES, dim=5):
 
 
 @pytest.fixture()
-def rand_x_y(rng):
+def rand_x_y(rng) -> tuple[np.ndarray, np.ndarray]:
+    """Generate random X and Y for classification."""
     X = rng.random((100, 10))
     Y = np.hstack([[-1] * 50, [1] * 50])
     return X, Y
 
 
-def _make_multiclass_classification_test_data(n_samples=40, dim=5):
+def _make_multiclass_classification_test_data(
+    n_samples: int = 40, dim: int = 5
+) -> tuple[Nifti1Image, np.ndarray, Nifti1Image]:
+    """Generate a random n-class classification problem with nifti images."""
     X, y = make_classification(
         n_samples=n_samples,
         n_features=dim**3,
@@ -162,8 +176,12 @@ def _make_multiclass_classification_test_data(n_samples=40, dim=5):
 
 
 @pytest.fixture(scope="session")
-def tiny_binary_classification_data():
-    """Use for testing errors.
+def tiny_binary_classification_data() -> tuple[
+    Nifti1Image, np.ndarray, Nifti1Image
+]:
+    """Generate a random 2-class classification problem with nifti images.
+
+    Use for testing errors.
 
     This fixture aims to return a very small data set
     because it will only be used for the tests
@@ -173,12 +191,20 @@ def tiny_binary_classification_data():
 
 
 @pytest.fixture
-def binary_classification_data():
-    """Use for test where classification is actually performed."""
+def binary_classification_data() -> tuple[
+    Nifti1Image, np.ndarray, Nifti1Image
+]:
+    """Generate a random 2-class classification problem with nifti images.
+
+    Use for test where classification is actually performed.
+    """
     return _make_binary_classification_test_data(n_samples=N_SAMPLES)
 
 
-def _make_regression_test_data(n_samples=N_SAMPLES, dim=5):
+def _make_regression_test_data(
+    n_samples: int = N_SAMPLES, dim: int = 5
+) -> tuple[Nifti1Image, np.ndarray, Nifti1Image]:
+    """Generate a random regression problem with nifti images."""
     X, y = make_regression(
         n_samples=n_samples,
         n_features=dim**3,
@@ -193,12 +219,14 @@ def _make_regression_test_data(n_samples=N_SAMPLES, dim=5):
 
 
 @pytest.fixture
-def regression_data():
+def regression_data() -> tuple[Nifti1Image, np.ndarray, Nifti1Image]:
+    """Generate a random regression problem with nifti images."""
     return _make_regression_test_data(n_samples=N_SAMPLES, dim=5)
 
 
 @pytest.fixture
-def multiclass_data():
+def multiclass_data() -> tuple[Nifti1Image, np.ndarray, Nifti1Image]:
+    """Generate a random n-class classification problem with nifti images."""
     return _make_multiclass_classification_test_data(n_samples=N_SAMPLES)
 
 
@@ -765,6 +793,7 @@ def test_decoder_dummy_classifier(binary_classification_data):
     assert np.sum(y_pred == 1.0) / n_samples - proportion < 0.05
 
 
+@pytest.mark.slow
 def test_decoder_dummy_classifier_with_callable(binary_classification_data):
     X, y, mask = binary_classification_data
 
@@ -948,6 +977,7 @@ def test_decoder_regression_clustering(
     assert model.score(X, y) == r2_score(y, y_pred)
 
 
+@pytest.mark.slow
 def test_decoder_dummy_regression(regression_data):
     X, y, mask = regression_data
 
@@ -985,6 +1015,7 @@ def test_decoder_dummy_regression_default_scoring_metric_is_r2(
     assert model.score(X, y) == r2_score(y, y_pred)
 
 
+@pytest.mark.slow
 def test_decoder_dummy_regression_other_strategy(regression_data):
     """Chexk that decoder object use other strategy for dummy regressor."""
     X, y, mask = regression_data
@@ -1143,7 +1174,7 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
     """Check whether ValueError is raised when cv is not set correctly."""
     X, y, _ = multiclass_data
 
-    for cv in ["abc", LinearSVC(dual=True)]:
+    for cv in ["abc", LinearSVC(dual=True, random_state=0)]:
         model = Decoder(mask=NiftiMasker(), cv=cv, standardize="zscore_sample")
         with pytest.raises(ValueError, match=r"Expected .* as an integer"):
             model.fit(X, y)
@@ -1414,15 +1445,14 @@ def test_frem_decoder_fit_surface(
 # ------------------------ test decoder vs sklearn -------------------------- #
 
 
+@ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.thread_unsafe
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "classifier_penalty",
     ["svc_l1", "svc_l2", "logistic_l1", "logistic_l2", "ridge_classifier"],
 )
-def test_decoder_vs_sklearn(
-    classifier_penalty, strings_to_sklearn=SUPPORTED_ESTIMATORS
-):
+def test_decoder_vs_sklearn(classifier_penalty):
     """Compare scores from nilearn Decoder with sklearn classifiers."""
     X, y, mask = _make_multiclass_classification_test_data(
         n_samples=100, dim=10
@@ -1432,7 +1462,7 @@ def test_decoder_vs_sklearn(
     # with 10 splits
     cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
     # default scoring is accuracy
-    scorer = check_scoring(strings_to_sklearn[classifier_penalty], "accuracy")
+    scorer = check_scoring(_check_estimator(classifier_penalty), "accuracy")
 
     # nilearn decoding
     nilearn_decoder = Decoder(
@@ -1450,7 +1480,7 @@ def test_decoder_vs_sklearn(
     masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 
-    sklearn_classifier = strings_to_sklearn[classifier_penalty]
+    sklearn_classifier = _check_estimator(classifier_penalty)
     scores_sklearn = {c: [] for c in range(n_classes)}
     # convert multiclass to n_classes binary classifications
     label_binarizer = LabelBinarizer()
@@ -1513,9 +1543,7 @@ def _set_best_hyperparameters(
 @pytest.mark.slow
 @ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.parametrize("regressor", ["svr", "lasso", "ridge"])
-def test_regressor_vs_sklearn(
-    regressor, strings_to_sklearn=SUPPORTED_ESTIMATORS
-):
+def test_regressor_vs_sklearn(regressor):
     """Compare scores from nilearn DecoderRegressor with sklearn regressors."""
     X, y, mask = _make_regression_test_data(n_samples=100, dim=10)
     # for regression default cv in nilearn is KFold with 10 splits
@@ -1523,7 +1551,7 @@ def test_regressor_vs_sklearn(
     # to reduce variability in the test
     cv = KFold(n_splits=10, shuffle=True, random_state=42)
     # r2 is the default scoring for regression
-    scorer = check_scoring(strings_to_sklearn[regressor], "r2")
+    scorer = check_scoring(_check_estimator(regressor), "r2")
 
     # nilearn decoding
     nilearn_regressor = DecoderRegressor(
@@ -1549,7 +1577,7 @@ def test_regressor_vs_sklearn(
     masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 
-    sklearn_regressor = strings_to_sklearn[regressor]
+    sklearn_regressor = _check_estimator(regressor)
     scores_sklearn = []
 
     for count, (train_idx, test_idx) in enumerate(cv.split(X_transformed, y)):
