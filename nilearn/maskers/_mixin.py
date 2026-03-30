@@ -430,12 +430,16 @@ class MaskerReportMixin(ReportMixin):
 
             "matplotlib" can be set for all maskers. Other options are :
 
-            - "brainsprite" for NiftiMasker, MultiNiftiMasker,
-              NiftiLabelsMasker, MultiNiftiLabelsMasker
+            - NiftiMasker, MultiNiftiMasker, NiftiLabelsMasker,
+              MultiNiftiLabelsMasker:
 
-            - "plotly" for SurfaceMasker, MultiSurfaceMasker,
-              SurfaceLabelsMasker, MultiSurfaceLabelsMasker, SurfaceMapsMasker,
-              MultiSurfaceMapsMasker
+              "brainsprite"
+
+            - SurfaceMasker, MultiSurfaceMasker, SurfaceLabelsMasker,
+              MultiSurfaceLabelsMasker, SurfaceMapsMasker,
+              MultiSurfaceMapsMasker:
+
+              "plotly"
 
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
