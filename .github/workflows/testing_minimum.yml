@@ -24,6 +24,7 @@ on:
         #     │ │ │ │ │
         #     │ │ │ │ │
         #     * * * * *
+        # Runs at 00:00, on day 1 of every 3rd month
     -   cron: 0 0 1 */3 *
 
     # This enables manual triggering from GitHub UI
