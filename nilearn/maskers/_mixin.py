@@ -462,13 +462,14 @@ class MaskerReportMixin(ReportMixin):
         self._reset_report_warnings()
         self._set_report_basics(engine, title)
         self._run_report_checks(**kwargs)
-        self._generate_report_data()
+        self._generate_report_htmls()
         self._display_report_warnings()
         html_report = self._assemble_report()
 
         return html_report
 
-    def _generate_report_data(self):
+    def _generate_report_htmls(self):
+        """Generate report figure htmls and summary htmls."""
         report_content = self._report_content
 
         figure, embeded_images = self._generate_figure_htmls()
