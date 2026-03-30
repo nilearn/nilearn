@@ -61,6 +61,8 @@ Fixes
 
 - :bdg-info:`Thresholding` Keep values equal to threshold while thresholding image with :func:`~nilearn.image.threshold_img`.  (:gh:`6130` by `Hande Gözükan`_).
 
+- :bdg-dark:`Code` Do not copy mask image's header in ``masking.unmask`` (:gh:`6157` by `Taylor Salo`_).
+
 Enhancements
 ------------
 
