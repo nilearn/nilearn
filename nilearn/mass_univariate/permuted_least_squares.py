@@ -1014,15 +1014,15 @@ def _intercept_in_confounding_vars(
 def _prepare_output_permuted_ols(
     outputs,
     vfwe_pvals,
-    scores_original_data: np.ndarray,
-    n_regressors: int,
+    scores_original_data,
+    n_regressors,
     threshold,
     csfwe_h0_parts,
     cmfwe_h0_parts,
     masker,
     threshold_t,
     bin_struct,
-    two_sided_test: bool,
+    two_sided_test,
 ):
     if threshold is None:
         return outputs

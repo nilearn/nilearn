@@ -283,12 +283,12 @@ def calculate_cluster_measures(
 
 
 def _calculate_cluster_measures_volume(
-    arr4d: np.ndarray,
+    arr4d,
     threshold,
     bin_struct,
-    two_sided_test: bool,
-    n_regressors: int,
-) -> tuple[np.ndarray, np.ndarray]:
+    two_sided_test,
+    n_regressors,
+):
     max_sizes = np.zeros(n_regressors, int)
     max_masses = np.zeros(n_regressors, float)
 

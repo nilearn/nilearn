@@ -2,7 +2,6 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -402,7 +401,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         voxel_volume = np.abs(np.linalg.det(labels_image_affine[:3, :3]))
 
-        new_columns: dict[str, Any] = {
+        new_columns = {
             "size (in mm^3)": [],
             "relative size (in %)": [],
         }
