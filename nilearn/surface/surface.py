@@ -1509,7 +1509,7 @@ class PolyData:
         """
         return next(iter(self.parts.values())).dtype
 
-    def _set_data_dtype(self, dtype) -> None:
+    def _set_dtype(self, dtype) -> None:
         """Set dtype for all parts."""
         if dtype is not None:
             for h, v in self.parts.items():
