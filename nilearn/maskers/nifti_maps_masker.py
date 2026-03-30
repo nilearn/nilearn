@@ -175,7 +175,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         "description": (
             "This report shows the spatial maps provided to the mask."
         ),
-        "displayed_maps": 10,
         "number_of_maps": 0,
     }
     _template_name = "body_nifti_maps_masker.jinja"
@@ -243,12 +242,10 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     def _run_report_checks(self, **kwargs):
         super()._run_report_checks(**kwargs)
 
-        displayed_maps = kwargs.get(
-            "displayed_maps", self._report_content["displayed_maps"]
-        )
-        check_displayed_maps(displayed_maps)
-
         if self._has_report_data():
+            displayed_maps = kwargs.get("displayed_maps", 10)
+            check_displayed_maps(displayed_maps)
+
             maps_image = self._reporting_data["maps_image"]
             n_maps = get_data(maps_image).shape[-1]
 

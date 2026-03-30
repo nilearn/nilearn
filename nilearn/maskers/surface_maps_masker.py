@@ -134,7 +134,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         ),
         "n_vertices": {},
         "number_of_regions": 0,
-        "displayed_maps": 10,
         "number_of_maps": 0,
     }
     _template_name = "body_surface_maps_masker.jinja"
@@ -397,14 +396,10 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     def _run_report_checks(self, **kwargs):
         super()._run_report_checks(**kwargs)
 
-        displayed_maps = kwargs.get(
-            "displayed_maps", self._report_content["displayed_maps"]
-        )
-        check_displayed_maps(displayed_maps)
-
-        engine = self._report_content["engine"]
-
         if self._has_report_data():
+            displayed_maps = kwargs.get("displayed_maps", 10)
+            check_displayed_maps(displayed_maps)
+
             for part in self.maps_img.data.parts:
                 self._report_content["n_vertices"][part] = (
                     self.maps_img.mesh.parts[part].n_vertices
@@ -432,6 +427,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         # need to have matplotlib installed to generate reports no matter what
         # engine is selected
         if is_matplotlib_installed():
+            engine = self._report_content["engine"]
+
             check_parameter_in_allowed(
                 engine, ["plotly", "matplotlib"], "engine"
             )

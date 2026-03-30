@@ -311,7 +311,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "by the spheres of the masker."
         ),
         "number_of_maps": 0,
-        "displayed_maps": 10,
     }
     _template_name = "body_nifti_spheres_masker.jinja"
 
@@ -369,12 +368,10 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     def _run_report_checks(self, **kwargs):
         super()._run_report_checks(**kwargs)
 
-        displayed_spheres = kwargs.get(
-            "displayed_spheres", self._report_content["displayed_maps"]
-        )
-        check_displayed_maps(displayed_spheres, "displayed_spheres")
-
         if self._has_report_data():
+            displayed_spheres = kwargs.get("displayed_spheres", 10)
+            check_displayed_maps(displayed_spheres, "displayed_spheres")
+
             seeds = self._reporting_data["seeds"]
             self._report_content["number_of_maps"] = len(seeds)
 
