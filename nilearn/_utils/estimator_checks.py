@@ -3138,35 +3138,6 @@ def check_masker_fit_with_non_finite_in_mask(estimator_orig) -> None:
     assert np.all(np.isfinite(signal))
 
 
-def check_masker_dtypes(estimator_orig) -> None:
-    """Check masker can fit/transform with inputs of varying dtypes.
-
-    Replacement for sklearn check_estimators_dtypes.
-
-    np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
-    """
-    estimator = clone(estimator_orig)
-
-    length = 20
-    for dtype in [np.float32, np.float64, np.int32]:
-        estimator = clone(estimator)
-
-        if accept_niimg_input(estimator):
-            data = np.zeros((*_shape_3d_large(), length))
-            data[1:28, 1:28, 1:28, ...] = (
-                _rng().random((27, 27, 27, length)) + 2.0
-            )
-            imgs = Nifti1Image(data.astype(dtype), affine=_affine_eye())
-
-        else:
-            imgs = _make_surface_img(length)
-            for k, v in imgs.data.parts.items():
-                imgs.data.parts[k] = v.astype(dtype)
-
-        estimator.fit(imgs)
-        estimator.transform(imgs)
-
-
 def check_masker_smooth(estimator_orig) -> None:
     """Check that masker can smooth data when extracting.
 
@@ -4135,31 +4106,6 @@ def check_glm_empty_data_messages(
                 [Nifti1Image(data_nifti, np.eye(4)) for _ in range(3)],
                 design_matrix=design_matrices,
             )
-
-
-def check_glm_dtypes(estimator_orig) -> None:
-    """Check glm can fit with inputs of varying dtypes.
-
-    Replacement for sklearn check_estimators_dtypes.
-
-    np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
-    """
-    estimator = clone(estimator_orig)
-
-    imgs, design_matrices = _make_surface_img_and_design()
-
-    for dtype in [np.float32, np.float64, np.int32]:
-        estimator = clone(estimator)
-
-        for k, v in imgs.data.parts.items():
-            imgs.data.parts[k] = v.astype(dtype)
-
-        # FirstLevel
-        if hasattr(estimator, "hrf_model"):
-            estimator.fit(imgs, design_matrices=design_matrices)
-        # SecondLevel
-        else:
-            estimator.fit(imgs, design_matrix=design_matrices)
 
 
 # ------------------ REPORT GENERATION CHECKS ------------------

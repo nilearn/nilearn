@@ -54,7 +54,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     %(dtype)s
 
-        ..versionadded:: 0.12.1dev
+        ..versionadded:: 0.14.0dev
 
     %(memory)s
 

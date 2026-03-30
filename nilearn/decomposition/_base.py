@@ -347,7 +347,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
     %(dtype)s
 
-        ..versionadded:: 0.12.1dev
+        ..versionadded:: 0.14.0dev
 
     %(target_affine)s
 
