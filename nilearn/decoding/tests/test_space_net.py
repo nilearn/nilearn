@@ -4,20 +4,13 @@ from functools import partial
 
 import numpy as np
 import pytest
-from numpy.testing import (
-    assert_almost_equal,
-    assert_array_equal,
-)
+from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy import linalg
 from sklearn.datasets import load_iris
-from sklearn.linear_model import (
-    Lasso,
-    LogisticRegression,
-)
+from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.linear_model._coordinate_descent import _alpha_grid
-from sklearn.metrics import (
-    accuracy_score,
-)
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import KFold
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
@@ -25,12 +18,9 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.param_validation import (
-    adjust_screening_percentile,
-)
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
+from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net import (
-    BaseSpaceNet,
     SpaceNetClassifier,
     SpaceNetRegressor,
     _crop_mask,
@@ -46,6 +36,7 @@ from nilearn.decoding.space_net_solvers import (
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.image import get_data
+from nilearn.maskers import NiftiMasker
 
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
@@ -55,10 +46,7 @@ IS_CLASSIF = [True, False]
 
 PENALTY = ["graph-net", "tv-l1"]
 
-ESTIMATORS_TO_CHECK = [
-    SpaceNetClassifier(verbose=0),
-    SpaceNetRegressor(verbose=0),
-]
+ESTIMATORS_TO_CHECK = [SpaceNetClassifier(), SpaceNetRegressor()]
 
 if SKLEARN_LT_1_6:
 
@@ -89,7 +77,7 @@ else:
         check(estimator)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -143,7 +131,7 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
     X_test = rng.standard_normal((n_samples, n_features))
     y_test = np.dot(X_test, np.ones(n_features))
     w = np.zeros(n_features)
-    escb = _EarlyStoppingCallback(X_test, y_test, False)
+    escb = _EarlyStoppingCallback(X_test, y_test, False, verbose=0)
     for counter in range(50):
         k = min(counter, n_features - 1)
         w[k] = 1
@@ -167,7 +155,7 @@ def test_screening_space_net():
     )
     _, mask = to_niimgs(X_, [size] * 3)
 
-    for verbose in [0, 2]:
+    for verbose in [0, 1]:
         with pytest.warns(UserWarning):
             screening_percentile = adjust_screening_percentile(
                 10, mask, verbose
@@ -197,6 +185,7 @@ def test_logistic_path_scores():
         np.arange(len(X)),
         np.arange(len(X)),
         {},
+        verbose=0,
     )[:2]
     test_scores = test_scores[0]
 
@@ -221,6 +210,7 @@ def test_squared_loss_path_scores():
         np.arange(len(X)),
         np.arange(len(X)),
         {},
+        verbose=0,
     )[:2]
 
     test_scores = test_scores[0]
@@ -243,19 +233,20 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
 
     alphas = [0.1, 1.0]
 
-    BaseSpaceNet(
+    SpaceNetRegressor(
         mask=mask,
         alphas=alphas,
         l1_ratios=l1_ratio,
         penalty="tv-l1",
-        is_classif=False,
         max_iter=10,
         debias=debias,
+        standardize="zscore_sample",
     ).fit(X, y)
 
 
 @pytest.mark.parametrize("l1_ratio", [-2, 2])
-def test_base_estimator_invalid_l1_ratio(rng, l1_ratio):
+@pytest.mark.parametrize("estimator", [SpaceNetClassifier, SpaceNetRegressor])
+def test_base_estimator_invalid_l1_ratio(rng, l1_ratio, estimator):
     """Check that 0 < L1 ratio < 1."""
     dim = (4, 4, 4)
     W_init = np.zeros(dim)
@@ -268,11 +259,50 @@ def test_base_estimator_invalid_l1_ratio(rng, l1_ratio):
     X, _ = to_niimgs(X, dim)
 
     with pytest.raises(ValueError, match="l1_ratio must be in the interval"):
-        BaseSpaceNet(l1_ratios=l1_ratio).fit(X, y)
+        estimator(l1_ratios=l1_ratio).fit(X, y)
+
+
+def test_space_net_classifier_invalid_loss(rng):
+    """Check invalid loss throw errors."""
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    y = 2 * (y > 0) - 1
+    X_, mask = to_niimgs(X, (2, 2, 2))
+
+    alphas = 1.0 / 0.01 / X.shape[0]
+
+    SpaceNetClassifier(
+        mask=mask,
+        alphas=alphas,
+        tol=1e-10,
+        standardize=False,
+        screening_percentile=100.0,
+        loss="logistic",
+    ).fit(X_, y)
+
+    SpaceNetClassifier(
+        mask=mask,
+        alphas=alphas,
+        tol=1e-10,
+        standardize=False,
+        screening_percentile=100.0,
+        loss="mse",
+    ).fit(X_, y)
+
+    with pytest.raises(ValueError, match="'loss' must be one of"):
+        SpaceNetClassifier(
+            mask=mask,
+            alphas=alphas,
+            tol=1e-10,
+            standardize=False,
+            screening_percentile=100.0,
+            loss="bar",
+        ).fit(X_, y)
 
 
 @pytest.mark.parametrize("penalty_wrong_case", ["Graph-Net", "TV-L1"])
-def test_string_params_case(rng, penalty_wrong_case):
+@pytest.mark.parametrize("estimator", [SpaceNetClassifier, SpaceNetRegressor])
+def test_string_params_case(rng, penalty_wrong_case, estimator):
     """Check value of penalty."""
     dim = (4, 4, 4)
     W_init = np.zeros(dim)
@@ -283,8 +313,8 @@ def test_string_params_case(rng, penalty_wrong_case):
     X += rng.standard_normal((n, p))
     y = np.dot(X, W_init.ravel())
     X, _ = to_niimgs(X, dim)
-    with pytest.raises(ValueError, match="'penalty' parameter .* be one of"):
-        BaseSpaceNet(penalty=penalty_wrong_case).fit(X, y)
+    with pytest.raises(ValueError, match="'penalty' must be one of"):
+        estimator(penalty=penalty_wrong_case).fit(X, y)
 
 
 @pytest.mark.parametrize("l1_ratio", [0.01, 0.5, 0.99])
@@ -301,16 +331,17 @@ def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
     alpha = 1.0
     X, mask = to_niimgs(X, dim)
 
-    BaseSpaceNet(
+    SpaceNetRegressor(
         mask=mask,
         alphas=alpha,
         l1_ratios=l1_ratio,
         penalty="tv-l1",
-        is_classif=False,
         max_iter=10,
+        standardize="zscore_sample",
     ).fit(X, y)
 
 
+@pytest.mark.slow
 def test_graph_net_classifier_score():
     iris = load_iris()
     X, y = iris.data, iris.target
@@ -344,9 +375,10 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
     X_, mask = to_niimgs(X, (2, 2, 2))
+    masker = NiftiMasker(mask_img=mask, standardize=None).fit()
 
     tvl1 = SpaceNetClassifier(
-        mask=mask,
+        mask=masker,
         alphas=1.0 / C / X.shape[0],
         l1_ratios=1.0,
         tol=tol,
@@ -356,9 +388,16 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         screening_percentile=100.0,
     ).fit(X_, y)
 
-    sklogreg = LogisticRegression(
-        penalty="l1", fit_intercept=True, solver="liblinear", tol=tol, C=C
-    ).fit(X, y)
+    # TODO (sklearn >= 1.8)
+    # drop the else block
+    if SKLEARN_GTE_1_8:
+        sklogreg = LogisticRegression(
+            l1_ratio=1, fit_intercept=True, solver="liblinear", tol=tol, C=C
+        ).fit(X, y)
+    else:
+        sklogreg = LogisticRegression(
+            penalty="l1", fit_intercept=True, solver="liblinear", tol=tol, C=C
+        ).fit(X, y)
 
     # compare supports
     assert_array_equal(
@@ -369,6 +408,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     assert_array_equal(tvl1.predict(X_), sklogreg.predict(X))
 
 
+@pytest.mark.slow
 def test_lasso_vs_graph_net():
     """Test for one of the extreme cases of Graph-Net.
 
@@ -382,13 +422,13 @@ def test_lasso_vs_graph_net():
     X, mask = to_niimgs(X_, [size] * 3)
 
     lasso = Lasso(max_iter=100, tol=1e-8)
-    graph_net = BaseSpaceNet(
+    graph_net = SpaceNetRegressor(
         mask=mask,
         alphas=1.0 * X_.shape[0],
         l1_ratios=1,
-        is_classif=False,
         penalty="graph-net",
         max_iter=100,
+        standardize="zscore_sample",
     )
     lasso.fit(X_, y)
     graph_net.fit(X, y)
@@ -453,10 +493,11 @@ def test_space_net_alpha_grid_pure_spatial(rng, is_classif):
 
 @pytest.mark.parametrize("mask_empty", [np.array([]), np.zeros((2, 2, 2))])
 def test_crop_mask_empty_mask(mask_empty):
-    with pytest.raises(ValueError, match="Empty mask:."):
+    with pytest.raises(ValueError, match=r"Empty mask:."):
         _crop_mask(mask_empty)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
 def test_space_net_one_alpha_no_crash(model):
     """Regression test."""
@@ -464,8 +505,13 @@ def test_space_net_one_alpha_no_crash(model):
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, [2, 2, 2])
 
-    model(n_alphas=1, mask=mask).fit(X, y)
-    model(n_alphas=2, mask=mask, alphas=None).fit(X, y)
+    model(n_alphas=1, mask=mask, standardize="zscore_sample").fit(X, y)
+    model(
+        n_alphas=2,
+        mask=mask,
+        alphas=None,
+        standardize="zscore_sample",
+    ).fit(X, y)
 
 
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
@@ -485,6 +531,7 @@ def test_checking_inputs_length(model):
             l1_ratios=1.0,
             tol=1e-10,
             screening_percentile=100.0,
+            standardize="zscore_sample",
         ).fit(
             X_,
             y,
@@ -498,7 +545,7 @@ def test_targets_in_y_space_net_regressor():
     y = np.ones(iris.target.shape)
 
     imgs, mask = to_niimgs(X, (2, 2, 2))
-    regressor = SpaceNetRegressor(mask=mask)
+    regressor = SpaceNetRegressor(mask=mask, standardize="zscore_sample")
 
     with pytest.raises(
         ValueError, match="The given input y must have at least 2 targets"
@@ -506,13 +553,36 @@ def test_targets_in_y_space_net_regressor():
         regressor.fit(imgs, y)
 
 
+@pytest.mark.parametrize("estimator", [SpaceNetRegressor, SpaceNetClassifier])
+# TODO
+# fails with cv=LeaveOneGroupOut()
+# ValueError: The 'groups' parameter should not be None.
+@pytest.mark.parametrize("cv", [8, KFold(n_splits=5), None])
+def test_cross_validation(estimator, cv):
+    """Check cross-validation scheme."""
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    X, mask = to_niimgs(X, [2, 2, 2])
+
+    model = estimator(mask=mask, cv=cv)
+
+    model.fit(X, y)
+
+    y_pred = model.predict(X)
+
+    if cv is None:
+        n_cv = len(model.cv_)
+        assert n_cv == 5
+
+    if isinstance(model, (SpaceNetClassifier)):
+        assert accuracy_score(y, y_pred) > 0.7
+
+
 # ------------------------ surface tests ------------------------------------ #
 
 
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
-@pytest.mark.parametrize(
-    "model", [BaseSpaceNet, SpaceNetRegressor, SpaceNetClassifier]
-)
+@pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
 def test_space_net_not_implemented_surface_objects(
     surf_mask_dim, surf_mask_1d, surf_mask_2d, surf_img_2d, model
 ):
