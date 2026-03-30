@@ -95,7 +95,7 @@ repos:
     -   id: ruff-format
         # args: [--diff]
     -   id: ruff-check
-        # addintional check to keep tests short
+        # additional check to keep tests short
         args: [--config, lint.pylint.max-statements=32]
         files: |
             (?x)^(
