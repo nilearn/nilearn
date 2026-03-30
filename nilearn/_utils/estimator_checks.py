@@ -1801,8 +1801,7 @@ def check_img_estimator_dtypes(estimator_orig):
                         dtype=input_dtype,
                     )
                 else:
-                    for k, v in X.data.parts.items():
-                        X.data.parts[k] = v.astype(input_dtype)
+                    X.data._set_dtype(input_dtype)
 
                 estimator = fit_estimator(estimator, X, y)
 
