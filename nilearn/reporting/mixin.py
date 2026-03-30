@@ -126,6 +126,17 @@ class ReportMixin:
         """
         return hasattr(self, "_reporting_data")
 
+    @property
+    def _report_warnings(self):
+        """Return the sorted list of report warnings without duplicates.
+
+        Returns
+        -------
+        list of str
+            the list of warnings, empty list if there are no warnings
+        """
+        return sorted(set(self._report_content["warning_messages"]))
+
     def _append_report_warning(self, warning: str):
         """Append the specified warning to the warning list of the report.
 
@@ -135,18 +146,6 @@ class ReportMixin:
             warning to be added to the list of warnings.
         """
         self._report_content["warning_messages"].append(warning)
-
-    @property
-    def _report_warnings(self):
-        """Remove duplicate warnings and return the sorted list of report
-        warnings.
-
-        Returns
-        -------
-        list of str
-            the list of warnings, empty list if there are no warnings
-        """
-        return sorted(set(self._report_content["warning_messages"]))
 
     def _reset_report_warnings(self):
         """Delete existing warnings."""
