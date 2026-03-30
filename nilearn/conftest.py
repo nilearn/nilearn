@@ -85,7 +85,7 @@ def close_all():
 def spm_design_matrix():
     """Load the spm file to test cosine basis."""
     full_path_design_matrix_file = (
-        Path(__file__).parents[1] / "glm" / "tests" / "spm_dmtx.npz"
+        Path(__file__).parent / "glm" / "tests" / "spm_dmtx.npz"
     )
     return np.load(full_path_design_matrix_file)
 
