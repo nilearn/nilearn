@@ -397,7 +397,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     def _run_report_checks(self, **kwargs):
         super()._run_report_checks(**kwargs)
 
-        displayed_maps = kwargs.get("displayed_maps")
+        displayed_maps = kwargs.get(
+            "displayed_maps", self._report_content["displayed_maps"]
+        )
         check_displayed_maps(displayed_maps)
 
         engine = self._report_content["engine"]
