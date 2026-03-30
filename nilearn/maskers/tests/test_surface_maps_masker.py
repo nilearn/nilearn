@@ -63,10 +63,12 @@ def test_fit_transform_mask_vs_no_mask(
     """Test that fit_transform returns the different results when a mask is
     used vs. when no mask is used.
     """
-    masker_with_mask = SurfaceMapsMasker(surf_maps_img, surf_mask_1d).fit()
+    masker_with_mask = SurfaceMapsMasker(
+        surf_maps_img, surf_mask_1d, standardize=None
+    ).fit()
     region_signals_with_mask = masker_with_mask.transform(surf_img_2d(50))
 
-    masker_no_mask = SurfaceMapsMasker(surf_maps_img).fit()
+    masker_no_mask = SurfaceMapsMasker(surf_maps_img, standardize=None).fit()
     region_signals_no_mask = masker_no_mask.transform(surf_img_2d(50))
 
     assert not (region_signals_with_mask == region_signals_no_mask).all()
@@ -91,7 +93,9 @@ def test_fit_transform_actual_output(surf_mesh, rng):
     surf_img = SurfaceImage(surf_mesh, img_data)
 
     # get the region signals x using the SurfaceMapsMasker
-    region_signals = SurfaceMapsMasker(surf_maps_img).fit_transform(surf_img)
+    region_signals = SurfaceMapsMasker(
+        surf_maps_img, standardize=None
+    ).fit_transform(surf_img)
 
     assert region_signals.shape == expected_region_signals.shape
     assert np.allclose(region_signals, expected_region_signals)
@@ -113,7 +117,7 @@ def test_inverse_transform_actual_output(surf_mesh, rng):
     surf_img = SurfaceImage(surf_mesh, img_data)
 
     # get the region signals x using the SurfaceMapsMasker
-    masker = SurfaceMapsMasker(surf_maps_img).fit()
+    masker = SurfaceMapsMasker(surf_maps_img, standardize=None).fit()
     region_signals = masker.fit_transform(surf_img)
     X_inverse_transformed = masker.inverse_transform(region_signals)
 

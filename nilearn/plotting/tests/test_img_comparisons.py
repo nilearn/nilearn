@@ -27,8 +27,8 @@ def _mask():
     [
         None,
         _mask(),
-        NiftiMasker(mask_img=_img_mask_mni()),
-        NiftiMasker(mask_img=_img_mask_mni()).fit(),
+        NiftiMasker(mask_img=_img_mask_mni(), standardize=None),
+        NiftiMasker(mask_img=_img_mask_mni(), standardize=None).fit(),
     ],
 )
 def test_plot_img_comparison_masker(matplotlib_pyplot, img_3d_mni, masker):
@@ -52,13 +52,14 @@ def test_plot_img_comparison_file(matplotlib_pyplot, img_3d_mni, tmp_path):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker",
     [
         None,
         _make_surface_mask(),
-        SurfaceMasker(mask_img=_make_surface_mask()),
-        SurfaceMasker(mask_img=_make_surface_mask()).fit(),
+        SurfaceMasker(mask_img=_make_surface_mask(), standardize=None),
+        SurfaceMasker(mask_img=_make_surface_mask(), standardize=None).fit(),
     ],
 )
 def test_plot_img_comparison_surface(matplotlib_pyplot, surf_img_1d, masker):
@@ -97,7 +98,7 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     target_images = list(iter_img(target_images))
     target_images[0] = query_images[0]
 
-    masker = NiftiMasker(mask_img).fit()
+    masker = NiftiMasker(mask_img, standardize=None).fit()
 
     correlations = plot_img_comparison(
         target_images,
@@ -149,7 +150,7 @@ def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     target_images = list(iter_img(target_images))
     target_images[0] = query_images[0]
 
-    masker = NiftiMasker(mask_img).fit()
+    masker = NiftiMasker(mask_img, standardize=None).fit()
 
     correlations = plot_img_comparison(
         target_images, query_images, masker, plot_hist=True, colorbar=False
@@ -168,8 +169,8 @@ def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     [
         None,
         _mask(),
-        NiftiMasker(mask_img=_img_mask_mni()),
-        NiftiMasker(mask_img=_img_mask_mni()).fit(),
+        NiftiMasker(mask_img=_img_mask_mni(), standardize=None),
+        NiftiMasker(mask_img=_img_mask_mni(), standardize=None).fit(),
     ],
 )
 def test_plot_bland_altman(
@@ -207,8 +208,8 @@ def test_plot_bland_altman(
     [
         None,
         _make_surface_mask(),
-        SurfaceMasker(mask_img=_make_surface_mask()),
-        SurfaceMasker(mask_img=_make_surface_mask()).fit(),
+        SurfaceMasker(mask_img=_make_surface_mask(), standardize=None),
+        SurfaceMasker(mask_img=_make_surface_mask(), standardize=None).fit(),
     ],
 )
 def test_plot_bland_altman_surface(matplotlib_pyplot, surf_img_1d, masker):

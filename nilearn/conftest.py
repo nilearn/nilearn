@@ -60,8 +60,6 @@ if not is_gil_enabled():
             # making the tests thread unsafe
             # therefore we skip them when testing without the GIL
             "datasets",
-            # TODO
-            "plotting",
         ]
     )
 

@@ -141,7 +141,7 @@ def _confounds_regression(
     "standardize_signal, standardize_confounds, expected",
     [
         # Signal is not standardized
-        (False, True, 10.0 * 10e-10),
+        (None, True, 10.0 * 10e-10),
         # Signal is z-scored with string arg
         ("zscore_sample", True, 10e-10),
         # Signal is psc standardized
@@ -171,7 +171,7 @@ def test_confounds_standardization(
     "standardize_signal",
     [
         # Signal is not standardized
-        False,
+        None,
         # Signal is z-scored with string arg
         "zscore_sample",
         # Signal is psc standardized
@@ -560,6 +560,22 @@ def test_unmask_3d_with_files(
     assert not t[0].flags["C_CONTIGUOUS"]
     assert t[0].flags["F_CONTIGUOUS"]
     assert_array_equal(t[0], unmasked3D)
+
+
+def test_unmask_retain_datatype(rng, affine_eye, shape_3d_default):
+    """Check that the unmasked image retains the datatype of the data array.
+
+    see https://github.com/nilearn/nilearn/issues/6150
+    """
+    data3D = rng.uniform(size=shape_3d_default)
+    mask = rng.integers(2, size=shape_3d_default, dtype="int32")
+    mask_img = Nifti1Image(mask, affine_eye)
+
+    mask = mask.astype(bool)
+    masked3D = data3D[mask]
+
+    t = unmask([masked3D], mask_img, order="F")
+    assert t[0].get_data_dtype() == data3D.dtype
 
 
 def test_unmask_errors(rng, affine_eye, shape_3d_default):

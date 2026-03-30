@@ -41,7 +41,9 @@ available_filters = ("butterworth", "cosine")
 def standardize_signal(
     signals,
     detrend: bool = False,
-    standardize: Literal["psc", "zscore_sample"] | None = "zscore_sample",
+    standardize: Literal["psc", "zscore_sample"]
+    | bool
+    | None = "zscore_sample",
 ) -> np.ndarray:
     """Center and standardize a given signal (time is along first axis).
 
@@ -63,6 +65,12 @@ def standardize_signal(
     check_params(locals())
 
     signals = _detrend(signals, inplace=False) if detrend else signals.copy()
+
+    # TODO (nilearn >= 0.15) remove casting from bool
+    if standardize is False:
+        standardize = None
+    elif standardize is True:
+        standardize = "zscore_sample"
 
     if standardize is None:
         return signals
