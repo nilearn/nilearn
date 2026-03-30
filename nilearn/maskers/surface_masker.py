@@ -343,7 +343,6 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return self._clean(output, confounds, sample_mask)
 
-
     @fill_doc
     def inverse_transform(self, signals):
         """Transform extracted signal back to surface object.

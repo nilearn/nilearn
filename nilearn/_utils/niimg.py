@@ -129,7 +129,7 @@ def load_niimg(niimg, dtype=None):
     # avoid loading data if dtype is None
     if dtype is not None:
         img_data = _get_data(niimg)
-        target_dtype = _get_target_dtype(img_data.dtype, dtype)
+        target_dtype = get_target_dtype(img_data.dtype, dtype)
 
         if target_dtype is not None:
             copy_header = niimg.header is not None

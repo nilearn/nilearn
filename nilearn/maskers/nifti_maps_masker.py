@@ -12,10 +12,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
 from nilearn._utils.numpy_conversions import get_target_dtype
-from nilearn._utils.param_validation import check_params
-from nilearn.image import clean_img, get_data, index_img, resample_img
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
 )

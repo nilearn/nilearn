@@ -11,7 +11,6 @@ from typing import Any
 import numpy as np
 from joblib import Memory
 from nibabel import Nifti1Image
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.base import TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
@@ -25,12 +24,8 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import repr_niimgs, safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.numpy_conversions import csv_to_array, get_target_dtype
-from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.image import (
 from nilearn._utils.niimg import ensure_finite_data, repr_niimgs, safe_get_data
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -663,8 +658,7 @@ class BaseMasker(_BaseMasker):
         self._reporting_data["cm_base64"] = json_view["cm_base64"]
         self._reporting_data["stat_map_base64"] = json_view["stat_map_base64"]
         self._reporting_data["params"] = json.dumps(json_view["params"])
-  
-  
+
     def _set_inverse_transform_output_dtype(
         self, input: np.ndarray, output: Nifti1Image
     ) -> Nifti1Image:

@@ -21,7 +21,6 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.numpy_conversions import get_target_dtype
-from nilearn._utils.param_validation import check_params
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,

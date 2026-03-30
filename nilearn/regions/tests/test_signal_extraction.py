@@ -15,10 +15,8 @@ from nilearn._utils.data_gen import (
 )
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _shape_3d_default
-from nilearn.image import get_data
 from nilearn.exceptions import DimensionError
-from nilearn.image import get_data, new_img_like
-from nilearn.maskers import NiftiLabelsMasker
+from nilearn.image import get_data
 from nilearn.regions.signal_extraction import (
     _check_shape_and_affine_compatibility,
     _trim_maps,
@@ -781,6 +779,7 @@ def test_trim_maps(shape_3d_default):
     assert_equal(mask_data, maps_i_mask)
     mask_data[1, 1, 1] = 1  # reset, just in case.
     assert_equal(np.asarray(list(range(4))), maps_i_indices)
+
 
 @pytest.mark.single_process
 def test_img_to_signals_labels_parallel_extraction(fmri_img, labeled_regions):

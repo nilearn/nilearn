@@ -69,9 +69,7 @@ from nilearn._utils.helpers import (
 )
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.niimg_conversions import check_imgs_equal
 from nilearn._utils.numpy_conversions import get_target_dtype
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn._utils.tags import (
     accept_niimg_input,
@@ -369,7 +367,6 @@ def return_expected_failed_checks(
             "check_estimators_empty_data_messages": (
                 "not implemented for nifti data for performance reasons"
             ),
-            "check_estimators_dtypes": ("replaced by check_glm_dtypes"),
             "check_estimators_fit_returns_self": (
                 "replaced by check_glm_fit_returns_self"
             ),
@@ -789,7 +786,9 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
         return imgs, None
 
 
-def fit_estimator(estimator: NilearnBaseEstimator, X=None, y=None) -> NilearnBaseEstimator:
+def fit_estimator(
+    estimator: NilearnBaseEstimator, X=None, y=None
+) -> NilearnBaseEstimator:
     """Fit on a nilearn estimator with appropriate input and return it."""
     if X is None and y is None:
         X, y = generate_data_to_fit(estimator)
@@ -886,66 +885,11 @@ def check_set_output(estimator_orig) -> None:
         assert isinstance(signal, pd.DataFrame)
 
 
-    n_samples = 30
-    idx = _rng().permutation(n_samples)
-
-    if isinstance(X, SurfaceImage):
-        data = {
-            x: _rng().random((v.shape[0], n_samples))
-            for x, v in X.data.parts.items()
-        }
-        new_X = new_img_like(X, data=data)
-
-    elif isinstance(X, Nifti1Image):
-        data = _rng().random((*X.shape[:3], n_samples))
-
-        new_X = new_img_like(X, data=data)
-
-    for method in [
-        "predict",
-        "transform",
-        "decision_function",
-        "score_samples",
-        "predict_proba",
-    ]:
-        if (
-            isinstance(estimator, (SearchLight, _BaseDecomposition))
-            and method == "transform"
-        ):
-            # TODO
-            continue
-
-        msg = (
-            f"'{method}' of {estimator.__class__.__name__} "
-            "is not invariant when applied to a dataset "
-            "with different sample order."
-        )
-
-        if hasattr(estimator, method):
-            assert_allclose_dense_sparse(
-                getattr(estimator, method)(index_img(new_X, idx)),
-                _safe_indexing(getattr(estimator, method)(new_X), idx),
-                atol=1e-9,
-                err_msg=msg,
-            )
-
-
 def check_transformer_set_output(estimator):
     """Check that set_ouput throws a not implemented error."""
     if hasattr(estimator, "transform"):
         with pytest.raises(NotImplementedError):
             estimator.set_output(transform="default")
-
-
-
-def check_fit_returns_self(estimator) -> None:
-    """Check nilearn estimator return itself after fit.
-
-    Replace sklearn check_estimators_fit_returns_self
-    """
-    fitted_estimator = fit_estimator(estimator)
-
-    assert fitted_estimator is estimator
 
 
 def check_doc_attributes(estimator) -> None:
@@ -1899,12 +1843,12 @@ def check_img_estimator_dtypes(estimator_orig):
                         output_dtype = s.dtype
                         try:
                             assert output_dtype == target_dtype
-                        except AssertionError:
+                        except AssertionError as e:
                             raise TypeError(
                                 "'transform' should have returned "
                                 f"an array of type '{target_dtype}'. "
                                 f"Got '{output_dtype}' instead."
-                            )
+                            ) from e
 
                     # when caching
                     # check transform results are the same
@@ -1912,7 +1856,7 @@ def check_img_estimator_dtypes(estimator_orig):
                         result_2 = getattr(estimator, method)(X)
                         if not isinstance(result, list):
                             result_2 = [result_2]
-                        for s1, s2 in zip(result, result_2):
+                        for s1, s2 in zip(result, result_2, strict=False):
                             assert s1.dtype == s2.dtype
                             assert_array_equal(s1, s2)
 
@@ -2013,12 +1957,12 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
                 else:
                     output_dtype = output_img.data._dtype
                     assert output_dtype == target_dtype
-            except AssertionError:
+            except AssertionError as e:
                 raise TypeError(
                     "'inverse_transform' should have returned "
                     f"an image of type '{target_dtype}'. "
                     f"Got '{output_dtype}' instead."
-                )
+                ) from e
 
 
 def check_img_estimator_requires_y_none(estimator_orig) -> None:
