@@ -40,6 +40,7 @@ if is_matplotlib_installed():
             [
                 "plotting/tests/test_baseline_comparisons.py",
                 "reporting/tests/test_baseline_comparisons.py",
+                "maskers/tests/test_baseline_comparisons.py",
             ]
         )
 
