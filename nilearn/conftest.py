@@ -49,6 +49,7 @@ else:
             "_utils/plotting.py",
             "plotting",
             "reporting/tests/test_baseline_comparisons.py",
+            "maskers/tests/test_baseline_comparisons.py",
         ]
     )
     matplotlib = None  # type: ignore[assignment]
