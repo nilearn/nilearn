@@ -576,7 +576,10 @@ def test_surface_maps_masker_generate_report_engine_error(
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(
     not is_matplotlib_installed() or is_plotly_installed(),
-    reason="Test requires plotly and matplotlib not to be installed.",
+    reason=(
+        "Test requires plotly not to be installed and matplotlib to be"
+        " installed."
+    ),
 )
 def test_surface_maps_masker_generate_report_engine_no_plotly_warning(
     surf_maps_img, surf_img_2d
