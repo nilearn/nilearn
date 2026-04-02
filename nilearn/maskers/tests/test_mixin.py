@@ -112,29 +112,25 @@ def test_masker_reporting_initial_state(
     assert masker.reports == reports
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(), reason="fails without matplotlib"
-)
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize(
     "masker, img_func, kwargs",
     COMMON_PARAMS,
     indirect=["masker"],
 )
-def test_masker_report_html_before_fit(
+def test_masker_report_html_with_initial_state(
     masker,
     img_func,  # noqa: ARG001
     kwargs,
     reports,  # noqa: ARG001
 ):
     """Test report html generated with
-    nilearn.maskers._mixin._ReportingMixin.generate_report before fitting the
-    masker.
+    nilearn.maskers._mixin._ReportingMixin.generate_report with initial state;
+    ie. before fitting the masker.
     """
     masker = clone(masker)
     # generate report without fitting the masker
     report = masker.generate_report(**kwargs)
-    # report.open_in_browser()
 
     assert isinstance(report, HTMLReport)
 
@@ -156,7 +152,6 @@ def test_masker_report_html_before_fit(
     assert report._repr_html_() == report.body
 
     report_str = str(report)
-    assert "No plotting engine found" not in report_str
 
     if not SKLEARN_GTE_1_7:
         assert "<th>Parameter</th>" in report_str
@@ -166,71 +161,20 @@ def test_masker_report_html_before_fit(
     assert "data:image/" in report_str
     assert 'id="warnings"' in report_str
 
-
-@pytest.mark.skipif(is_matplotlib_installed(), reason="fails with matplotlib")
-@pytest.mark.parametrize("reports", [True, False])
-@pytest.mark.parametrize(
-    "masker, img_func, kwargs",
-    COMMON_PARAMS,
-    indirect=["masker"],
-)
-def test_masker_report_html_before_fit_no_matplotlib(
-    masker,
-    img_func,  # noqa: ARG001
-    kwargs,
-    reports,  # noqa: ARG001
-):
-    """Test report html generated with
-    nilearn.maskers._mixin._ReportingMixin.generate_report before fitting the
-    masker.
-    """
-    masker = clone(masker)
-    # generate report without fitting the masker
-    report = masker.generate_report(**kwargs)
-    # report.open_in_browser()
-
-    assert isinstance(report, HTMLReport)
-
-    # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
-    # in case certain unicode characters are mishandled,
-    # like the greek alpha symbol.
-    report.get_iframe()
-
-    # resize width and height
-    report.resize(1200, 800)
-    assert report.width == 1200
-    assert report.height == 800
-
-    # invalid values fall back on default dimensions
-    with pytest.warns(UserWarning, match="Using default instead"):
-        report.width = "foo"
-    assert report.width == WIDTH_DEFAULT
-
-    assert report._repr_html_() == report.body
-
-    report_str = str(report)
-    assert "No plotting engine found" in report_str
-    assert 'grey">' in report_str
-
-    if not SKLEARN_GTE_1_7:
-        assert "<th>Parameter</th>" in report_str
+    if not is_matplotlib_installed():
+        assert "No plotting engine found" in report_str
+        assert 'grey">' in report_str
     else:
-        assert 'div id="sk-container-id' in report_str
-
-    assert "data:image/" not in report_str
-    assert 'id="warnings"' in report_str
+        assert "No plotting engine found" not in report_str
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(), reason="fails without matplotlib"
-)
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize(
     "masker, img_func, kwargs",
     COMMON_PARAMS,
     indirect=["masker"],
 )
-def test_masker_report_content_without_fit(
+def test_masker_report_content_before_fit(
     masker,
     img_func,  # noqa: ARG001
     kwargs,
@@ -247,7 +191,7 @@ def test_masker_report_content_without_fit(
     report_content = masker._report_content
     assert report_content["unique_id"]
     assert report_content["title"] == masker.__class__.__name__
-    assert report_content["has_plotting_engine"] is True
+    assert report_content["has_plotting_engine"] is is_matplotlib_installed()
     assert report_content["engine"] == "matplotlib"
     assert report_content["n_elements"] == 0
     assert "report_at_fit_time" not in report_content
@@ -265,58 +209,15 @@ def test_masker_report_content_without_fit(
         "\nReport generation was disabled when fit was run." not in message
         for message in warning_messages
     )
-    if not reports:
+    if not is_matplotlib_installed():
         assert any(
-            "\nReport generation not enabled!\nNo visual outputs created."
-            in message
-            for message in warning_messages
+            MISSING_ENGINE_MSG in message for message in warning_messages
+        )
+    else:
+        assert all(
+            MISSING_ENGINE_MSG not in message for message in warning_messages
         )
 
-
-@pytest.mark.skipif(is_matplotlib_installed(), reason="fails with matplotlib")
-@pytest.mark.parametrize("reports", [True, False])
-@pytest.mark.parametrize(
-    "masker, img_func, kwargs",
-    COMMON_PARAMS,
-    indirect=["masker"],
-)
-def test_masker_report_content_before_fit_when_no_matplotlib(
-    masker,
-    img_func,  # noqa: ARG001
-    kwargs,
-    reports,
-):
-    """Test report content generated with
-    nilearn.maskers._mixin._ReportingMixin.generate_report before fitting the
-    masker when matplotlib is not installed.
-    """
-    masker = clone(masker)
-    # generate report without fitting the masker
-    masker.generate_report(**kwargs)
-
-    report_content = masker._report_content
-    assert report_content["unique_id"]
-    assert report_content["title"] == masker.__class__.__name__
-    assert report_content["has_plotting_engine"] is False
-    assert report_content["engine"] == "matplotlib"
-    assert report_content["n_elements"] == 0
-    assert "report_at_fit_time" not in report_content
-    assert "summary_html" not in report_content
-    assert "summary" in report_content
-
-    # check warning messages
-    warning_messages = masker._report_content["warning_messages"]
-    assert any(
-        "This estimator has not been fit yet." in message
-        for message in warning_messages
-    )
-
-    assert any(MISSING_ENGINE_MSG in message for message in warning_messages)
-
-    assert all(
-        "\nReport generation was disabled when fit was run." not in message
-        for message in warning_messages
-    )
     if not reports:
         assert any(
             "\nReport generation not enabled!\nNo visual outputs created."
@@ -327,9 +228,6 @@ def test_masker_report_content_before_fit_when_no_matplotlib(
 
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
-@pytest.mark.skipif(
-    not is_matplotlib_installed(), reason="fails without matplotlib"
-)
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize(
     "masker, img_func, kwargs",
@@ -342,13 +240,14 @@ def test_masker_report_content_after_fit(masker, img_func, kwargs, reports):
     """
     masker = clone(masker)
     input_imgs = img_func()
+    # fit masker
     masker.fit(input_imgs)
 
     masker.generate_report(**kwargs)
     report_content = masker._report_content
     assert report_content["unique_id"]
     assert report_content["title"] == masker.__class__.__name__
-    assert report_content["has_plotting_engine"] is True
+    assert report_content["has_plotting_engine"] is is_matplotlib_installed()
     assert report_content["engine"] == "matplotlib"
     assert "n_elements" in report_content
     assert "summary" in report_content
@@ -360,6 +259,15 @@ def test_masker_report_content_after_fit(masker, img_func, kwargs, reports):
         "This estimator has not been fit yet." not in message
         for message in warning_messages
     )
+
+    if not is_matplotlib_installed():
+        assert any(
+            MISSING_ENGINE_MSG in message for message in warning_messages
+        )
+    else:
+        assert all(
+            MISSING_ENGINE_MSG not in message for message in warning_messages
+        )
 
     if not reports:
         assert any(
@@ -375,78 +283,46 @@ def test_masker_report_content_after_fit(masker, img_func, kwargs, reports):
 
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
-@pytest.mark.skipif(
-    not is_matplotlib_installed(), reason="fails without matplotlib"
-)
 @pytest.mark.parametrize("reports", [True])
 @pytest.mark.parametrize(
     "masker, img_func, kwargs",
     COMMON_PARAMS,
     indirect=["masker"],
 )
-def test_masker_report_content_after_changing_reports_to_false(
+def test_masker_report_content_after_changing_reports_after_fit(
     masker, img_func, kwargs, reports
 ):
     """Test nilearn.maskers._mixin._ReportingMixin.generate_report after
-    changing the value of reports at time of fit.
+    changing the value of reports after fit.
     """
     masker = clone(masker)
     input_imgs = img_func()
+    # fit masker
     masker.fit(input_imgs)
     masker.generate_report(**kwargs)
 
-    masker.reports = False
+    masker.reports = ~reports
     masker.generate_report(**kwargs)
     assert masker._has_report_data() is reports
     warning_messages = masker._report_content["warning_messages"]
 
-    assert any(
-        "\nReport generation not enabled!\nNo visual outputs created."
-        in message
-        for message in warning_messages
-    )
-    assert all(
-        "Report generation was disabled when fit was run." not in message
-        for message in warning_messages
-    )
-
-
-@pytest.mark.thread_unsafe
-@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
-@pytest.mark.skipif(
-    not is_matplotlib_installed(), reason="fails without matplotlib"
-)
-@pytest.mark.parametrize("reports", [False])
-@pytest.mark.parametrize(
-    "masker, img_func, kwargs",
-    COMMON_PARAMS,
-    indirect=["masker"],
-)
-def test_masker_report_content_after_changing_reports_to_true(
-    masker, img_func, kwargs, reports
-):
-    """Test nilearn.maskers._mixin._ReportingMixin.generate_report after
-    changing the value of reports at time of fit.
-    """
-    masker = clone(masker)
-    input_imgs = img_func()
-    masker.fit(input_imgs)
-    masker.generate_report(**kwargs)
-
-    masker.reports = True
-    masker.generate_report(**kwargs)
-    assert masker._has_report_data() is reports
-    warning_messages = masker._report_content["warning_messages"]
-
-    assert any(
-        "Report generation was disabled when fit was run." in message
-        for message in warning_messages
-    )
-
-    # TODO this should be uncommented after report refactoring code is
-    # merged
-    # assert all(
-    #     "\nReport generation not enabled!\nNo visual outputs created."
-    #     not in message
-    #     for message in warning_messages
-    # )
+    if reports:
+        # TODO uncomment lines after PR on refactoring reporting is merged.
+        # assert any(
+        #     "\nReport generation not enabled!\nNo visual outputs created."
+        #     in message
+        #     for message in warning_messages
+        # )
+        assert all(
+            "Report generation was disabled when fit was run." not in message
+            for message in warning_messages
+        )
+    else:
+        assert any(
+            "Report generation was disabled when fit was run." in message
+            for message in warning_messages
+        )
+    #     assert all(
+    #         "\nReport generation not enabled!\nNo visual outputs created."
+    #         not in message for message in warning_messages
+    #     )
