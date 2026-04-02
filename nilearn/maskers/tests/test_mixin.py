@@ -158,14 +158,15 @@ def test_masker_report_html_with_initial_state(
     else:
         assert 'div id="sk-container-id' in report_str
 
-    assert "data:image/" in report_str
     assert 'id="warnings"' in report_str
 
     if not is_matplotlib_installed():
         assert "No plotting engine found" in report_str
         assert 'grey">' in report_str
+        assert "data:image/" not in report_str
     else:
         assert "No plotting engine found" not in report_str
+        assert "data:image/" in report_str
 
 
 @pytest.mark.parametrize("reports", [True, False])
