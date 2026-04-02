@@ -204,19 +204,17 @@ def test_masker_report_content_before_fit(
         "This estimator has not been fit yet." in message
         for message in warning_messages
     )
-
-    assert all(
-        "\nReport generation was disabled when fit was run." not in message
-        for message in warning_messages
+    assert (
+        any(
+            "\nReport generation was disabled when fit was run." in message
+            for message in warning_messages
+        )
+        is False
     )
-    if not is_matplotlib_installed():
-        assert any(
-            MISSING_ENGINE_MSG in message for message in warning_messages
-        )
-    else:
-        assert all(
-            MISSING_ENGINE_MSG not in message for message in warning_messages
-        )
+    assert (
+        any(MISSING_ENGINE_MSG in message for message in warning_messages)
+        is not is_matplotlib_installed()
+    )
 
     if not reports:
         assert any(
@@ -255,19 +253,18 @@ def test_masker_report_content_after_fit(masker, img_func, kwargs, reports):
     assert masker._has_report_data() == reports
     warning_messages = masker._report_content["warning_messages"]
 
-    assert all(
-        "This estimator has not been fit yet." not in message
-        for message in warning_messages
+    assert (
+        any(
+            "This estimator has not been fit yet." in message
+            for message in warning_messages
+        )
+        is False
     )
 
-    if not is_matplotlib_installed():
-        assert any(
-            MISSING_ENGINE_MSG in message for message in warning_messages
-        )
-    else:
-        assert all(
-            MISSING_ENGINE_MSG not in message for message in warning_messages
-        )
+    assert (
+        any(MISSING_ENGINE_MSG in message for message in warning_messages)
+        is not is_matplotlib_installed()
+    )
 
     if not reports:
         assert any(
@@ -301,28 +298,20 @@ def test_masker_report_content_after_changing_reports_after_fit(
     masker.fit(input_imgs)
     masker.generate_report(**kwargs)
 
-    masker.reports = ~reports
+    masker.reports = not reports
     masker.generate_report(**kwargs)
     assert masker._has_report_data() is reports
     warning_messages = masker._report_content["warning_messages"]
 
-    if reports:
-        # TODO uncomment lines after PR on refactoring reporting is merged.
-        # assert any(
-        #     "\nReport generation not enabled!\nNo visual outputs created."
-        #     in message
-        #     for message in warning_messages
-        # )
-        assert all(
-            "Report generation was disabled when fit was run." not in message
-            for message in warning_messages
-        )
-    else:
-        assert any(
+    assert (
+        any(
             "Report generation was disabled when fit was run." in message
             for message in warning_messages
         )
-    #     assert all(
-    #         "\nReport generation not enabled!\nNo visual outputs created."
-    #         not in message for message in warning_messages
-    #     )
+        is not reports
+    )
+    # TODO uncomment lines after PR on refactoring reporting is merged.
+    # assert any(
+    #     "\nReport generation not enabled!\nNo visual outputs created."
+    #     in message for message in warning_messages
+    # ) is not reports
