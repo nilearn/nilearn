@@ -337,7 +337,7 @@ def test_masker_report_content_before_fit_when_no_matplotlib(
     indirect=["masker"],
 )
 def test_masker_report_content_after_fit(masker, img_func, kwargs, reports):
-    """Test nilearn.maskers._mixin._ReportingMixin.generate_report without
+    """Test nilearn.maskers._mixin._ReportingMixin.generate_report after
     fitting the masker.
     """
     masker = clone(masker)
