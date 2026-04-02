@@ -169,7 +169,8 @@ def test_view_markers_coords(tmp_path):
     )
     check_html_surface_plots(tmp_path, html, False, "connectome-plot")
 
-def test_view_connectome_node_labels(tmp_path):
+
+def test_view_connectome_node_labels():
     """Check that node_labels are correctly passed to view_connectome."""
     adj, coord = _make_connectome()
     labels = [f"node_{i}" for i in range(len(coord))]
