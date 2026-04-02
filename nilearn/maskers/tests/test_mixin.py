@@ -330,7 +330,7 @@ def test_masker_report_content_before_fit_when_no_matplotlib(
 @pytest.mark.skipif(
     not is_matplotlib_installed(), reason="fails without matplotlib"
 )
-@pytest.mark.parametrize("reports", [True])
+@pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize(
     "masker, img_func, kwargs",
     COMMON_PARAMS,
@@ -367,6 +367,24 @@ def test_masker_report_content_after_fit(masker, img_func, kwargs, reports):
             in message
             for message in warning_messages
         )
+        assert any(
+            "Report generation was disabled when fit was run." in message
+            for message in warning_messages
+        )
+
+        masker.reports = True
+
+        masker.generate_report(**kwargs)
+
+        assert masker._has_report_data() is False
+        warning_messages = masker._report_content["warning_messages"]
+        # TODO this should be uncommented after report refactoring code is
+        # merged
+        # assert all(
+        #     "\nReport generation not enabled!\nNo visual outputs created."
+        #     not in message
+        #     for message in warning_messages
+        # )
         assert any(
             "Report generation was disabled when fit was run." in message
             for message in warning_messages
