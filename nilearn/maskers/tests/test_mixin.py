@@ -372,20 +372,81 @@ def test_masker_report_content_after_fit(masker, img_func, kwargs, reports):
             for message in warning_messages
         )
 
-        masker.reports = True
 
-        masker.generate_report(**kwargs)
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
+@pytest.mark.skipif(
+    not is_matplotlib_installed(), reason="fails without matplotlib"
+)
+@pytest.mark.parametrize("reports", [True])
+@pytest.mark.parametrize(
+    "masker, img_func, kwargs",
+    COMMON_PARAMS,
+    indirect=["masker"],
+)
+def test_masker_report_content_after_changing_reports_to_false(
+    masker, img_func, kwargs, reports
+):
+    """Test nilearn.maskers._mixin._ReportingMixin.generate_report after
+    changing the value of reports at time of fit.
+    """
+    masker = clone(masker)
+    input_imgs = img_func()
+    masker.fit(input_imgs)
+    masker.generate_report(**kwargs)
 
-        assert masker._has_report_data() is False
-        warning_messages = masker._report_content["warning_messages"]
-        # TODO this should be uncommented after report refactoring code is
-        # merged
-        # assert all(
-        #     "\nReport generation not enabled!\nNo visual outputs created."
-        #     not in message
-        #     for message in warning_messages
-        # )
-        assert any(
-            "Report generation was disabled when fit was run." in message
-            for message in warning_messages
-        )
+    masker.reports = False
+    masker.generate_report(**kwargs)
+    assert masker._has_report_data() is reports
+    warning_messages = masker._report_content["warning_messages"]
+
+    assert any(
+        "\nReport generation not enabled!\nNo visual outputs created."
+        in message
+        for message in warning_messages
+    )
+    assert all(
+        "Report generation was disabled when fit was run." not in message
+        for message in warning_messages
+    )
+
+
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
+@pytest.mark.skipif(
+    not is_matplotlib_installed(), reason="fails without matplotlib"
+)
+@pytest.mark.parametrize("reports", [False])
+@pytest.mark.parametrize(
+    "masker, img_func, kwargs",
+    COMMON_PARAMS,
+    indirect=["masker"],
+)
+def test_masker_report_content_after_changing_reports_to_true(
+    masker, img_func, kwargs, reports
+):
+    """Test nilearn.maskers._mixin._ReportingMixin.generate_report after
+    changing the value of reports at time of fit.
+    """
+    masker = clone(masker)
+    input_imgs = img_func()
+    masker.fit(input_imgs)
+    masker.generate_report(**kwargs)
+
+    masker.reports = True
+    masker.generate_report(**kwargs)
+    assert masker._has_report_data() is reports
+    warning_messages = masker._report_content["warning_messages"]
+
+    assert any(
+        "Report generation was disabled when fit was run." in message
+        for message in warning_messages
+    )
+
+    # TODO this should be uncommented after report refactoring code is
+    # merged
+    # assert all(
+    #     "\nReport generation not enabled!\nNo visual outputs created."
+    #     not in message
+    #     for message in warning_messages
+    # )
