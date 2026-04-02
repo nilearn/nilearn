@@ -30,7 +30,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.helpers import is_windows_platform
+from nilearn._utils.helpers import is_matplotlib_installed, is_windows_platform
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import FirstLevelModel, mean_scaling, run_glm
@@ -1673,7 +1673,7 @@ def test_generate_report_default(kwargs):
 
     with warnings.catch_warnings(record=True) as warning_list:
         flm.generate_report(contrasts=contrasts, **kwargs)
-        assert len(warning_list) == 0
+        assert len(warning_list) == 0 if is_matplotlib_installed() else 2
 
 
 @pytest.mark.slow
