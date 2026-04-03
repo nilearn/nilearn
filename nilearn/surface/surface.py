@@ -10,7 +10,6 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-import sklearn.cluster
 import sklearn.preprocessing
 from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
@@ -34,6 +33,8 @@ def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
     rng = np.random.RandomState(0)
     mc_cube = rng.uniform(-1, 1, size=(n_monte_carlo, dim))
     mc_ball = mc_cube[(mc_cube**2).sum(axis=1) <= 1.0]
+    import sklearn.cluster
+
     centroids, *_ = sklearn.cluster.k_means(
         mc_ball, n_clusters=n_points, random_state=0
     )
