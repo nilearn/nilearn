@@ -4,10 +4,21 @@ import numpy as np
 import pytest
 
 from nilearn.plotting import html_connectome
+from nilearn.plotting.html_connectome import ConnectomeView
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting.tests.test_js_plotting_utils import (
     check_html_surface_plots,
 )
+
+
+def _make_connectome():
+    """Generate dummy connectome data for tests."""
+    adj = np.diag([1.5, 0.3, 2.5], 2)
+    adj += adj.T
+    adj += np.eye(5)
+    coord = np.arange(5)
+    coord = np.asarray([coord * 10, -coord, coord[::-1]]).T
+    return adj, coord
 
 
 def test_prepare_line():
@@ -36,7 +47,7 @@ def test_prepare_colors_for_markers(node_color, expected_marker_colors):
     assert marker_colors == expected_marker_colors
 
 
-def _make_connectome():
+def test_make_connectome():
     adj = np.diag([1.5, 0.3, 2.5], 2)
     adj += adj.T
     adj += np.eye(5)
@@ -178,3 +189,22 @@ def test_view_connectome_node_labels():
     # test with labels provided
     html = html_connectome.view_connectome(adj, coord, node_labels=labels)
     assert "node_0" in html.html
+
+
+def test_view_markers_custom_surf_mesh():
+    """Test view_markers accepts a custom whole-brain surf_mesh."""
+    import numpy as np
+
+    from nilearn.plotting import view_markers
+    from nilearn.surface import InMemoryMesh
+
+    # create a minimal valid mesh
+    coords = np.array(
+        [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float
+    )
+    faces = np.array([[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]])
+    mesh = InMemoryMesh(coords, faces)
+
+    marker_coords = np.array([[0.2, 0.2, 0.2]])
+    result = view_markers(marker_coords, surf_mesh=mesh)
+    assert isinstance(result, ConnectomeView)

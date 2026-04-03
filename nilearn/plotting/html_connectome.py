@@ -18,7 +18,7 @@ from nilearn.plotting.js_plotting_utils import (
     get_html_template,
     mesh_to_plotly,
 )
-from nilearn.surface import load_surf_mesh
+from nilearn.surface import InMemoryMesh, load_surf_mesh
 
 
 class ConnectomeView(HTMLDocument):  # noqa: D101
@@ -226,8 +226,21 @@ def _get_connectome(
 def _make_connectome_html(connectome_info, embed_js=True, surf_mesh=None):
     plot_info = {"connectome": connectome_info}
     mesh = surf_mesh if surf_mesh is not None else fetch_surf_fsaverage()
-    for hemi in ["pial_left", "pial_right"]:
-        plot_info[hemi] = mesh_to_plotly(mesh[hemi])
+
+    # Case 1: surf_mesh is a single whole-brain mesh
+    if isinstance(surf_mesh, InMemoryMesh):
+        plot_info["pial_whole"] = mesh_to_plotly(
+            surf_mesh
+        )  # ← "mesh" → "pial_whole"
+
+    # Case 2: surf_mesh is a dict of hemispheres (or None → fetched fsaverage)
+    else:
+        for hemi in ("pial_left", "pial_right"):
+            if hemi in mesh:  # ← surf_mesh → mesh (bug fix)
+                plot_info[hemi] = mesh_to_plotly(
+                    mesh[hemi]
+                )  # ← surf_mesh → mesh (bug fix)
+
     as_json = json.dumps(plot_info)
     as_html = get_html_template(
         "connectome_plot_template.html"
