@@ -1601,3 +1601,5 @@ def _set_hyperparameters(
         sklearn_regressor = clone(sklearn_regressor).set_params(
             alphas=nilearn_regressor.cv_params_["beta"]["alphas"][count]
         )
+
+    return sklearn_regressor
