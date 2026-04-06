@@ -40,7 +40,7 @@ def test_all_functions():
     if is_matplotlib_installed():
         assert len(fn) == 172
     else:
-        assert len(fn) == 136
+        assert len(fn) == 138
 
 
 @pytest.mark.parametrize(
