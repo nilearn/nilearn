@@ -2,50 +2,53 @@
 
 This file provides guidance to AI coding agents working with this repository.
 
-## Git
-
-Never commit directly to `main`. Always work on a feature branch.
-
 ## What is Nilearn
 
 Nilearn is a Python library for statistical learning on neuroimaging data. It provides tools for fMRI analysis, brain decoding, connectivity analysis, and visualization, built on top of scikit-learn.
 
+## Git
+
+Never commit directly to `main`. Always work on a feature branch.
+
+Fix any remaining issues flagged by pre-commit before committing again.
+
 ## Commands
 
 ### Setup
+
+Create a virtual environment before running any script, test, dod build...
+
 ```bash
-pip install -e ".[plotting]"   # Dev install with plotting dependencies
+uv sync
+```
+
+```bash
+pip install -e ".[plotting]" --group dev  # Dev install with plotting dependencies
 pre-commit install              # Install git hooks
 ```
 
 ### Testing
+
 ```bash
-pytest nilearn/                         # Run all tests
-pytest nilearn/glm/tests/              # Run a specific module's tests
-pytest nilearn/glm/tests/test_first_level_model.py  # Run a single test file
-pytest nilearn/glm/tests/test_first_level_model.py::test_name  # Run single test
+tox -e latest -- nilearn/                        # Run all tests
+tox -e latest -- nilearn/glm/tests/              # Run a specific module's tests
+tox -e latest -- nilearn/glm/tests/test_first_level_model.py  # Run a single test file
+tox -e latest -- nilearn/glm/tests/test_first_level_model.py::test_name  # Run single test
 tox -e latest                           # Full test suite (latest deps)
 tox -e plotting                         # With plotting dependencies
 tox -e min                              # Minimum supported dependencies
 ```
 
-### Linting & Formatting
+### Linting, Formatting & Architecture Validation
+
 ```bash
-ruff check nilearn/        # Lint
-ruff format nilearn/       # Format (79-char line length, double quotes)
-mypy nilearn/              # Type checking
 pre-commit run --all-files # Run all pre-commit hooks
 ```
 
-### Architecture Validation
-```bash
-lint-imports               # Validate import-layer contracts
-```
-
 ### Documentation
+
 ```bash
 tox -e doc                 # Build documentation
-make -C doc html           # Direct sphinx build
 ```
 
 ## Code Architecture
@@ -82,11 +85,12 @@ Violating these contracts will fail the `lint-imports` check.
 - **`nilearn.plotting`** — Static and interactive brain visualization (matplotlib + plotly)
 - **`nilearn.reporting`** — HTML analysis reports
 - **`nilearn.interfaces`** — fMRIPrep/BIDS pipeline integration
+- **`nilearn.utils`** — Utilities for nilearn users.
 - **`nilearn._utils`** — Internal utilities (not public API); `data_gen` for test fixtures
 
 ### Key Design Patterns
 
-**Scikit-learn API**: All estimators implement `fit()` and `transform()` (or `fit_transform()`). Fitted attributes have trailing underscores (e.g., `masker.mask_img_`). Use `nilearn._utils.estimator_checks` for sklearn compatibility checks.
+**Scikit-learn API**: All estimators implement `fit()`. Many implement `transform()` (or `fit_transform()`). Fitted attributes have trailing underscores (e.g., `masker.mask_img_`). See `nilearn._utils.estimator_checks` for sklearn compatibility checks and additional systematic checks to apply to all Nilearn estimators.
 
 **Maskers as transformers**: Maskers extract signals from brain images into 2D arrays (samples × features) suitable for sklearn pipelines.
 
@@ -106,18 +110,29 @@ Violating these contracts will fail the `lint-imports` check.
 
 ## Test Conventions
 
-- Test data generated with `nilearn._utils.data_gen` (no real data in tests)
-- Markers: `@pytest.mark.slow`, `@pytest.mark.single_process`, `@pytest.mark.thread_unsafe`
-- Keep tests fast (mocked/synthetic data); real-data tests go to integration/atlas workflows
+- Test data generated with `nilearn._utils.data_gen` (no real data in tests) or via fixtures most often stored in a `conftest.py` file: run `pytest nilearn --fixtures` to get a list of all available fixtures.
+- Markers:
+  - `@pytest.mark.slow`: for tests that exceed the timeout allowed for each test
+  - `@pytest.mark.single_process`: for test that require testing n_jobs>1
+  - `@pytest.mark.thread_unsafe`: marker used by pytest-run-parallel
+- Keep tests fast (mocked/synthetic data).
 - `xfail_strict = true` — unexpected passes are errors
 
 ## Changelog
 
-Each PR must add an entry to `doc/changes/latest.rst` with a badge, PR link, and author. Badge types: `:bdg-dark:` (breaking), `:bdg-primary:` (major), `:bdg-success:` (minor), `:bdg-info:` (bugfix), `:bdg-warning:` (deprecation), `:bdg-danger:` (removal), `:bdg-secondary:` (maintenance).
+Each PR must add an entry to `doc/changes/latest.rst` with a badge, PR link, and author. Badge types:
+
+- :bdg-primary:`Doc`
+- :bdg-secondary:`Maint`
+- :bdg-success:`API`
+- :bdg-info:`Plotting`
+- :bdg-warning:`Test`
+- :bdg-danger:`Deprecation`
+- :bdg-dark:`Code`
 
 ## PR Tags
 
-Prefix PR titles with: `[FIX]`, `[ENH]`, `[DOC]`, `[MAINT]`, `[WIP]` (draft).
+Prefix PR titles with: `[FIX]`, `[ENH]`, `[DOC]`, `[MAINT]`, `[WIP]`.
 
 ## CI Commit Message Controls
 
