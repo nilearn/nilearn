@@ -876,6 +876,71 @@ def transparency_image(rng, affine_mni):
     return Nifti1Image(data_positive, affine_mni)
 
 
+@pytest.fixture(scope="session")
+def mni152_template_res_2() -> Nifti1Image:
+    """Return the mni152 template at 2 mm resolution."""
+    from nilearn.datasets import load_mni152_template
+
+    return load_mni152_template(resolution=2)
+
+
+@pytest.fixture
+def adjacency():
+    """Adjacency matrix symmetric up to 1e-3 relative tolerance."""
+    return np.array(
+        [
+            [1.0, -2.0, 0.3, 0.0],
+            [-2.002, 1, 0.0, 0.0],
+            [0.3, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
+
+
+@pytest.fixture
+def node_coords():
+    """Array of node coordinates for testing."""
+    return np.arange(3 * 4).reshape(4, 3)
+
+
+@pytest.fixture
+def params_plot_connectome():
+    """Return basic set of parameters for testing plot_connectome."""
+    return {"edge_threshold": 0.38, "title": "threshold=0.38", "node_size": 10}
+
+
+@pytest.fixture
+def bg_map(rng, in_memory_mesh) -> np.ndarray:
+    """Return a background map with positive value."""
+    return np.abs(rng.standard_normal(size=in_memory_mesh.n_vertices))
+
+
+@pytest.fixture
+def surface_image_roi(surf_mask_1d) -> SurfaceImage:
+    """SurfaceImage for plotting."""
+    return surf_mask_1d
+
+
+@pytest.fixture
+def parcellation(in_memory_mesh) -> np.ndarray:
+    """Return array with parcellation with 2 regions."""
+    parcellation = np.zeros((in_memory_mesh.n_vertices,))
+    parcellation[in_memory_mesh.faces[3]] = 1
+    parcellation[in_memory_mesh.faces[5]] = 2
+    return parcellation
+
+
+@pytest.fixture
+def surface_image_parcellation(rng, in_memory_mesh) -> SurfaceImage:
+    """Return surface image with random parcellation."""
+    data = rng.integers(100, size=(in_memory_mesh.n_vertices, 1)).astype(float)
+    parcellation = SurfaceImage(
+        mesh={"left": in_memory_mesh, "right": in_memory_mesh},
+        data={"left": data, "right": data},
+    )
+    return parcellation
+
+
 # ------------------------ DOCSTRING ------------------------#
 
 
