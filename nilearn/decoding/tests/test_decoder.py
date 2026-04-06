@@ -1563,27 +1563,9 @@ def test_regressor_vs_sklearn(regressor):
     for count, (train_idx, test_idx) in enumerate(cv.split(X_transformed, y)):
         X_train, X_test = X_transformed[train_idx], X_transformed[test_idx]
         y_train, y_test = (y[train_idx], y[test_idx])
-        # set best hyperparameters for each fold
-        if regressor == "svr":
-            # SVR does not have a CV variant, so we use exactly the
-            # parameter selected by nilearn
-            sklearn_regressor = clone(sklearn_regressor).set_params(
-                C=nilearn_regressor.cv_params_["beta"]["C"][count]
-            )
-        elif regressor == "lasso":
-            # this sets n_alphas as coded within nilearn and
-            # LassoCV will select the best one using cross-validation
-            tmp = nilearn_regressor.cv_params_["beta"]["n_alphas"][count]
-            sklearn_regressor = clone(sklearn_regressor)
-            if SKLEARN_GTE_1_7:
-                sklearn_regressor.set_params(alphas=tmp)
-            else:
-                sklearn_regressor.set_params(n_alphas=tmp)
-        elif regressor == "ridge":
-            # same as lasso but with alphas
-            sklearn_regressor = clone(sklearn_regressor).set_params(
-                alphas=nilearn_regressor.cv_params_["beta"]["alphas"][count]
-            )
+        sklearn_regressor = _set_hyperparameters(
+            regressor, sklearn_regressor, nilearn_regressor, count
+        )
         sklearn_regressor.fit(X_train, y_train)
         score = scorer(sklearn_regressor, X_test, y_test)
         scores_sklearn.append(score)
@@ -1594,3 +1576,30 @@ def test_regressor_vs_sklearn(regressor):
     )
     # also check individual scores are within 1% of each other
     assert np.allclose(scores_sklearn, scores_nilearn, atol=0.01)
+
+
+def _set_hyperparameters(
+    regressor, sklearn_regressor, nilearn_regressor, count
+):
+    if regressor == "svr":
+        # SVR does not have a CV variant, so we use exactly the
+        # parameter selected by nilearn
+        sklearn_regressor = clone(sklearn_regressor).set_params(
+            C=nilearn_regressor.cv_params_["beta"]["C"][count]
+        )
+    elif regressor == "lasso":
+        # this sets n_alphas as coded within nilearn and
+        # LassoCV will select the best one using cross-validation
+        tmp = nilearn_regressor.cv_params_["beta"]["n_alphas"][count]
+        sklearn_regressor = clone(sklearn_regressor)
+        if SKLEARN_GTE_1_7:
+            sklearn_regressor.set_params(alphas=tmp)
+        else:
+            sklearn_regressor.set_params(n_alphas=tmp)
+    elif regressor == "ridge":
+        # same as lasso but with alphas
+        sklearn_regressor = clone(sklearn_regressor).set_params(
+            alphas=nilearn_regressor.cv_params_["beta"]["alphas"][count]
+        )
+
+    return sklearn_regressor
