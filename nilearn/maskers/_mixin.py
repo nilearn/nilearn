@@ -428,18 +428,20 @@ class MaskerReportMixin(ReportMixin):
         engine : :obj:`str`, default="matplotlib"
             Choice of engine to display the mask.
 
-            "matplotlib" can be set for all maskers. Other options are :
+            All maskers support ``"matplotlib"`` as engine.
 
-            - NiftiMasker, MultiNiftiMasker, NiftiLabelsMasker,
+            Other options are :
+
+            - ``"brainsprite"`` :
+
+              NiftiMasker, MultiNiftiMasker, NiftiLabelsMasker,
               MultiNiftiLabelsMasker:
 
-              "brainsprite"
+            - ``"plotly"``:
 
-            - SurfaceMasker, MultiSurfaceMasker, SurfaceLabelsMasker,
+              SurfaceMasker, MultiSurfaceMasker, SurfaceLabelsMasker,
               MultiSurfaceLabelsMasker, SurfaceMapsMasker,
               MultiSurfaceMapsMasker:
-
-              "plotly"
 
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
@@ -449,14 +451,14 @@ class MaskerReportMixin(ReportMixin):
 
             Expected keys depending on masker type are:
 
-            - NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker,
-              MultiSurfaceMapsMasker
+            - For NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker,
+              MultiSurfaceMapsMasker :
 
-              %(displayed_maps)s
+                  %(displayed_maps)s
 
-            - NiftiSpheresMasker
+            - For NiftiSpheresMasker :
 
-              %(displayed_spheres)s
+                  %(displayed_spheres)s
 
         Returns
         -------
