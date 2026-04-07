@@ -162,7 +162,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             "This report shows the input surface image overlaid "
             "with the outlines of the mask. "
             "We recommend to inspect the report for the overlap "
-            "between the mask and its input image. "
+            "between the mask and the input image. "
         ),
         "n_vertices": {},
         "number_of_regions": 0,

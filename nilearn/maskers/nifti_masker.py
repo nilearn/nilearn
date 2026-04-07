@@ -328,7 +328,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "This report shows the input Nifti image overlaid "
             "with the outlines of the mask. "
             "We recommend to inspect the report for the overlap "
-            "between the mask and its input image. "
+            "between the mask and the input image. "
         ),
     }
 
