@@ -1,3 +1,4 @@
+from typing import Literal
 from warnings import warn
 
 import numpy as np
@@ -88,7 +89,9 @@ def sanitize_labels(mat_shape, labels):
     return labels
 
 
-def sanitize_reorder(reorder):
+def sanitize_reorder(
+    reorder,
+) -> Literal[True, False, "single", "complete", "average"]:
     """Help for plot_matrix."""
     if reorder not in VALID_REORDER_VALUES:
         param_to_print = []

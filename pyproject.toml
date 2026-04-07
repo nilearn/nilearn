@@ -69,7 +69,6 @@ test_common = [
     "pytest-csv>=3.0.0",
     "pytest-randomly>=4.0.0",
     "pytest-reporter-html1>=0.9.2,<0.9.4",
-    "pytest-mpl>=0.18.0",
     "pytest-rerunfailures>=16.1",
     "pyarrow>=13.0.0"  # mostly to avoid some warnings in pandas
 ]
@@ -78,6 +77,9 @@ test_common = [
 test_free_threaded = [
     {include-group = "test_common"},
     "pytest-run-parallel>=0.8.2"
+]
+test_plotting = [
+    "pytest-mpl>=0.18.0"
 ]
 
 [project]
@@ -463,8 +465,6 @@ max-complexity = 23
 "nilearn/plotting/displays/tests/test_edge_detect.py" = ["D103"]
 "nilearn/plotting/image/tests/test_img_plotting.py" = ["D103"]
 "nilearn/plotting/matrix/tests/test_matrix_plotting.py" = ["D103"]
-"nilearn/plotting/matrix/tests/test_utils.py" = ["D103"]
-"nilearn/plotting/surface/tests/conftest.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_html_surface.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_surf_plotting.py" = ["D103"]
 "nilearn/plotting/surface/tests/test_utils.py" = ["D103"]

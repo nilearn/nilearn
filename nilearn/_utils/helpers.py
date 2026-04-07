@@ -40,7 +40,6 @@ def set_mpl_backend(message: str | None = None) -> None:
         if message is not None:
             warning = f"{message}\n{warning}"
         warnings.warn(warning, stacklevel=find_stack_level())
-        raise
     else:
         # When matplotlib was successfully imported we need to check
         # that the version is greater that the minimum required one

@@ -393,6 +393,10 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
 
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
+)
 def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
     """Run generate_report with no contrasts after save_glm_to_bids.
 

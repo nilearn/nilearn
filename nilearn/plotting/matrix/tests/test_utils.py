@@ -45,6 +45,7 @@ def test_pad_contrast_matrix():
 
 
 def test_sanitize_labels():
+    """Check sanitize_labels fails properly or returns the correct values."""
     labs = ["foo", "bar"]
     with pytest.raises(
         ValueError,
@@ -59,6 +60,7 @@ def test_sanitize_labels():
 
 @pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)
 def test_sanitize_reorder(reorder):
+    """Check sanitize_reorder returns proper value."""
     if reorder is not True:
         assert sanitize_reorder(reorder) == reorder
     else:
@@ -67,6 +69,7 @@ def test_sanitize_reorder(reorder):
 
 @pytest.mark.parametrize("reorder", [None, "foo", 2])
 def test_sanitize_reorder_error(reorder):
+    """Check sanitize_reorder fails when expected."""
     with pytest.raises(
         ValueError, match=("Parameter reorder needs to be one of")
     ):
@@ -75,10 +78,12 @@ def test_sanitize_reorder_error(reorder):
 
 @pytest.mark.parametrize("tri", VALID_TRI_VALUES)
 def test_sanitize_tri(tri):
+    """Smoke test sanitize_tri."""
     sanitize_tri(tri)
 
 
 @pytest.mark.parametrize("tri", [None, "foo", 2])
 def test_sanitize_tri_error(tri):
+    """Check sanitize_tri fails when expected."""
     with pytest.raises(ValueError, match="'tri' must be one of"):
         sanitize_tri(tri)
