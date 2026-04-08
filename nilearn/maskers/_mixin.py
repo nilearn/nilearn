@@ -2,6 +2,7 @@
 
 import abc
 import itertools
+from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, ClassVar
@@ -16,6 +17,7 @@ from nilearn._utils.bids import (
     sanitize_look_up_table,
 )
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.niimg import repr_niimgs
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn.image import high_variance_confounds
 from nilearn.image.image import get_indices_from_image, iter_check_niimg
@@ -413,6 +415,37 @@ class MaskerReportMixin(ReportMixin):
             report_content["overlay"] = self._embed_img(
                 report_content["overlay"]
             )
+
+    def _model_attributes_to_dataframe(self, model):
+        """Return dataframe with pertinent model attributes & information.
+
+        TODO (sklearn > 1.6.2) remove
+
+        Parameters
+        ----------
+        model : Any masker object.
+
+        Returns
+        -------
+        attributes_df: pandas.DataFrame
+            DataFrame with the pertinent attributes of the model.
+        """
+        attributes = []
+        for attr_name in model.get_params():
+            if isinstance(getattr(model, attr_name), dict):
+                attributes.append((attr_name, str(getattr(model, attr_name))))
+            elif getattr(model, attr_name) is not None:
+                attributes.append((attr_name, getattr(model, attr_name)))
+        attributes = OrderedDict(attributes)
+
+        for k, v in attributes.items():
+            if isinstance(v, NiimgLike):
+                attributes[k] = repr_niimgs(v, shorten=False)
+
+        attributes_df = pd.DataFrame.from_dict(attributes, orient="index")
+        attributes_df.index.names = ["Parameter"]
+        attributes_df.columns = ["Value"]
+        return attributes_df
 
     @fill_doc
     def generate_report(

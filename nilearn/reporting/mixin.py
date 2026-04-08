@@ -18,7 +18,6 @@ from nilearn._utils.versions import SKLEARN_GTE_1_7
 from nilearn._version import __version__
 from nilearn.reporting._utils import (
     dataframe_to_html,
-    model_attributes_to_dataframe,
 )
 from nilearn.reporting.html_report import (
     MISSING_ENGINE_MSG,
@@ -63,8 +62,8 @@ class ReportMixin:
     _report_data : Contains data from model fit. If reporting is disabled, or
     the model is not fit, this attribute does not exist.
 
-    Classes inheriting from ReportMixin should implement ``generate_report``
-    method.
+    Classes inheriting from ReportMixin should implement
+    ``_model_attributes_to_dataframe`` and ``generate_report`` methods.
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
@@ -276,7 +275,7 @@ class ReportMixin:
             parameters = self._repr_html_()
         else:
             # TODO (sklearn > 1.6.2) remove else block
-            parameters = model_attributes_to_dataframe(self)
+            parameters = self._model_attributes_to_dataframe(self)
             with pd.option_context("display.max_colwidth", 100):
                 parameters = dataframe_to_html(
                     parameters,
@@ -362,6 +361,10 @@ class ReportMixin:
             report_content["stat_map_base64"] = self._reporting_data[
                 "stat_map_base64"
             ]
+
+    @abc.abstractmethod
+    def _model_attributes_to_dataframe(self, model):
+        raise NotImplementedError()
 
     @abc.abstractmethod
     def generate_report(
