@@ -21,9 +21,52 @@ from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
     get_clusters_table,
 )
+from nilearn.reporting.mixin import ReportMixin
 from nilearn.reporting.utils import figure_to_png_base64
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
+
+
+class GLMReportMixin(ReportMixin):
+    _template_name = "body_glm.jinja"
+
+    def _model_attributes_to_dataframe(self, model) -> pd.DataFrame:
+        """Return a pandas dataframe with pertinent model attributes &
+        information.
+
+        Parameters
+        ----------
+        model : FirstLevelModel or SecondLevelModel object.
+
+        Returns
+        -------
+        pandas.DataFrame
+            DataFrame with the pertinent attributes of the model.
+        """
+        model_attributes = pd.DataFrame.from_dict(
+            model._attributes_to_dict(),
+            orient="index",
+        )
+
+        if len(model_attributes) == 0:
+            return model_attributes
+
+        attribute_units = {
+            "t_r": "seconds",
+            "high_pass": "Hertz",
+            "smoothing_fwhm": "mm",
+        }
+        attribute_names_with_units = {
+            attribute_name_: attribute_name_ + f" ({attribute_unit_})"
+            for attribute_name_, attribute_unit_ in attribute_units.items()
+        }
+        model_attributes = model_attributes.rename(
+            index=attribute_names_with_units
+        )
+        model_attributes.index.names = ["Parameter"]
+        model_attributes.columns = ["Value"]
+
+        return model_attributes
 
 
 def check_generate_report_input(
@@ -123,44 +166,6 @@ def turn_into_full_path(bunch, dir: Path) -> str | Bunch:
         else:
             tmp[k] = bunch[k]
     return tmp
-
-
-def glm_model_attributes_to_dataframe(model) -> pd.DataFrame:
-    """Return a pandas dataframe with pertinent model attributes & information.
-
-    Parameters
-    ----------
-    model : FirstLevelModel or SecondLevelModel object.
-
-    Returns
-    -------
-    pandas.DataFrame
-        DataFrame with the pertinent attributes of the model.
-    """
-    model_attributes = pd.DataFrame.from_dict(
-        model._attributes_to_dict(),
-        orient="index",
-    )
-
-    if len(model_attributes) == 0:
-        return model_attributes
-
-    attribute_units = {
-        "t_r": "seconds",
-        "high_pass": "Hertz",
-        "smoothing_fwhm": "mm",
-    }
-    attribute_names_with_units = {
-        attribute_name_: attribute_name_ + f" ({attribute_unit_})"
-        for attribute_name_, attribute_unit_ in attribute_units.items()
-    }
-    model_attributes = model_attributes.rename(
-        index=attribute_names_with_units
-    )
-    model_attributes.index.names = ["Parameter"]
-    model_attributes.columns = ["Value"]
-
-    return model_attributes
 
 
 def load_bg_img(bg_img, is_volume_glm):

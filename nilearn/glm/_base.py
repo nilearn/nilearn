@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
-import pandas as pd
 from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
 from sklearn.utils import Bunch
@@ -22,11 +21,11 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_GTE_1_7, SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn._version import __version__
 from nilearn.glm._reporting_utils import (
+    GLMReportMixin,
     check_generate_report_input,
-    glm_model_attributes_to_dataframe,
     load_bg_img,
     make_stat_maps_contrast_clusters,
     mask_to_plot,
@@ -36,7 +35,6 @@ from nilearn.glm._reporting_utils import (
 from nilearn.image import check_niimg
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
-from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.html_report import (
     MISSING_ENGINE_MSG,
     UNFITTED_MSG,
@@ -52,7 +50,7 @@ FIGURE_FORMAT = "png"
 
 
 @fill_doc
-class BaseGLM(CacheMixin, NilearnBaseEstimator):
+class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`.
     """
@@ -573,18 +571,8 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
                 self._is_first_level_glm(),
             )
         )
-        if SKLEARN_GTE_1_7:
-            parameters = self._repr_html_()
-        else:
-            # TODO (sklearn > 1.6.2) remove else block
-            model_attributes = glm_model_attributes_to_dataframe(self)
-            with pd.option_context("display.max_colwidth", 100):
-                parameters = dataframe_to_html(
-                    model_attributes,
-                    precision=2,
-                    header=True,
-                    sparsify=False,
-                )
+        self._set_report_basics(engine="matplotlib", title=title)
+        parameters = self._model_params_to_html()
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data: dict[str, Any] = {
