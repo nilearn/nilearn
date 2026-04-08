@@ -190,11 +190,11 @@ class ReportMixin:
         report_content["has_plotting_engine"] = is_matplotlib_installed()
 
         # TODO clean up docstring from RST formatting
-        if self.__doc__ is not None:
-            report_content["docstring"] = self.__doc__.split("Parameters\n")[0]
-        else:
-            report_content["docstring"] = ""
-
+        report_content["docstring"] = (
+            self.__doc__.split("Parameters\n")[0]
+            if self.__doc__ is not None
+            else ""
+        )
         report_content["parameters"] = self._model_params_to_html()
 
         report_content["date"] = (
@@ -312,7 +312,9 @@ class ReportMixin:
         """
         env = return_jinja_env()
 
-        body_tpl_path = f"html/{estimator_type}/{self._template_name}"
+        if estimator_type != "":
+            estimator_type = "/" + estimator_type
+        body_tpl_path = f"html{estimator_type}/{self._template_name}"
         return env.get_template(body_tpl_path)
 
     def _get_partial_template(
