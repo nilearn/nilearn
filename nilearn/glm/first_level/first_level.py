@@ -443,6 +443,11 @@ class FirstLevelModel(BaseGLM):
 
         .. nilearn_versionadded:: 0.9.1
 
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+        .. nilearn_versionadded:: 0.14.0
+
     Attributes
     ----------
     design_matrices_ : :obj:`list` of :obj:`pandas.DataFrame`
@@ -480,11 +485,6 @@ class FirstLevelModel(BaseGLM):
     standardize_ :  any of: 'zscore_sample', 'zscore', 'psc', or None
         This value may differ from the ``standardize`` parameters
         as it is set to ``None`` when ``signal_scaling`` is not False.
-
-    reports : :obj:`bool`, default=True
-        If set to True, data is saved in order to produce a report.
-
-        .. nilearn_versionadded:: 0.14.0
     """
 
     def __str__(self):

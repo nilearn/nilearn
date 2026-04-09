@@ -502,6 +502,11 @@ class SecondLevelModel(BaseGLM):
         further inspection of model details. This has an important impact
         on memory consumption.
 
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+        .. nilearn_versionadded:: 0.14.0
+
     Attributes
     ----------
     confounds_ : :obj:`pandas.DataFrame` or None
@@ -545,11 +550,6 @@ class SecondLevelModel(BaseGLM):
         :obj:`list` of :class:`~nilearn.surface.SurfaceImage` objects or \
         :obj:`pandas.Series` of Niimg-like objects.
         Input used to fit the GLM.
-
-    reports : :obj:`bool`, default=True
-        If set to True, data is saved in order to produce a report.
-
-        .. nilearn_versionadded:: 0.14.0
     """
 
     def __str__(self):
