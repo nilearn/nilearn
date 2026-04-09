@@ -8,7 +8,7 @@ import warnings
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Protocol
 
 import pandas as pd
 
@@ -33,7 +33,7 @@ from nilearn.reporting.utils import (
 OTHER_JS = Path(__file__).parents[1] / "plotting" / "data" / "js"
 
 
-class ReportMixin:
+class ReportMixin(Protocol):
     """A mixin class to be used with classes that require reporting
     functionality. It provides generic methods for report generation.
 
@@ -76,7 +76,8 @@ class ReportMixin:
     }
 
     # report body template name for the estimator
-    _template_name = ""
+    _template_name: str = ""
+    _report_content: ClassVar[dict[str, Any]] = {}
 
     def __init_subclass__(cls):
         super().__init_subclass__()
