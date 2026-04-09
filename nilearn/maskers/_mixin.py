@@ -453,6 +453,10 @@ class MaskerReportMixin(ReportMixin):
     ) -> HTMLReport:
         """Generate an HTML report for this masker.
 
+        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
+        browser, displayed in a notebook, or saved to disk as a standalone
+        HTML file.
+
         .. note::
             This functionality requires to have ``Matplotlib`` installed.
 
