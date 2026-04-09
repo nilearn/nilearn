@@ -8,7 +8,7 @@ import warnings
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from typing import Any, ClassVar, Protocol
+from typing import Any, ClassVar
 
 import pandas as pd
 
@@ -33,7 +33,7 @@ from nilearn.reporting.utils import (
 OTHER_JS = Path(__file__).parents[1] / "plotting" / "data" / "js"
 
 
-class ReportMixin(Protocol):
+class ReportMixin:
     """A mixin class to be used with classes that require reporting
     functionality. It provides generic methods for report generation.
 
@@ -185,6 +185,7 @@ class ReportMixin(Protocol):
         report_content["title"] = (
             title if title is not None else self.__class__.__name__
         )
+        report_content["page_title"] = report_content["title"]
 
         report_content["engine"] = engine
 
@@ -333,10 +334,6 @@ class ReportMixin(Protocol):
         """Assemble report head and body acquiring body template corresponding
         to estimator type and populating it with report data.
         """
-        page_title = self._report_content.get(
-            "page_title", self.__class__.__name__
-        )
-
         if self._report_content["engine"] == "brainsprite":
             self._set_brainsprite_data()
 
@@ -345,7 +342,7 @@ class ReportMixin(Protocol):
 
         body = body_tpl.render(**self._report_content)
 
-        html_report = assemble_report(body, page_title)
+        html_report = assemble_report(body, self._report_content["page_title"])
 
         return html_report
 
