@@ -116,6 +116,7 @@ repos:
             (?x)^(
                 doc/building_blocks/gpu_usage.rst
                 | nilearn/_utils/param_validation.py
+                | nilearn/image/image.py
             )$
 
     # Check imports contracts

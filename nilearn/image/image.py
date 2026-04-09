@@ -1510,7 +1510,7 @@ def _apply_threshold(img_data, two_sided, cutoff_threshold):
     return img_data
 
 
-def math_img(formula, copy_header_from=None, **imgs):
+def math_img(formula: str, copy_header_from: str | None = None, **imgs):
     """Interpret a numpy based string formula using niimg in named parameters.
 
     .. nilearn_versionadded:: 0.2.3
@@ -1522,12 +1522,25 @@ def math_img(formula, copy_header_from=None, **imgs):
         numpy imported as 'np'.
 
     copy_header_from : :obj:`str` or None, default=None
-        Takes the variable name of one of the images in the formula.
         The header of this image will be copied to the result of the formula.
         Note that the result image and the image to copy the header from,
         should have the same number of dimensions.
         If None, the default
         :class:`~nibabel.nifti1.Nifti1Header` is used.
+
+        .. note:
+
+            It is technically possible to pass an image
+            to copy the header from,
+            but that is unused in the formula.
+
+            .. code-block:: python
+
+                math_img("img1 + img2",
+                         copy_header_from="img3",
+                         img1=anat1,
+                         img2=anat2,
+                         img3=anat3)
 
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
@@ -1594,8 +1607,18 @@ def math_img(formula, copy_header_from=None, **imgs):
     """
     is_surface = all(isinstance(x, SurfaceImage) for x in imgs.values())
 
+    img_missing_from_formula = [x for x in imgs if x not in formula]
+    if img_missing_from_formula:
+        warnings.warn(
+            f"Some images ({img_missing_from_formula}) "
+            f"are not mentioned in the {formula=}.",
+            stacklevel=find_stack_level(),
+        )
+
+    data_dict: dict[str, Any | dict[str, Any]] = {}
+
     if is_surface:
-        first_img = next(iter(imgs.values()))
+        first_img: SurfaceImage = next(iter(imgs.values()))
         for image in imgs.values():
             assert_polymesh_equal(first_img.mesh, image.mesh)
 
@@ -1633,10 +1656,15 @@ def math_img(formula, copy_header_from=None, **imgs):
         )
         raise
 
+    if copy_header_from is not None and copy_header_from not in imgs:
+        raise ValueError(
+            f"{copy_header_from=} but '{copy_header_from}' "
+            "is missing from 'imgs' that contains: "
+            f"{imgs.keys()}"
+        )
+
     # Computing input data as a dictionary of numpy arrays. Keep a reference
     # niimg for building the result as a new niimg.
-    niimg = None
-    data_dict = {}
     for key, img in imgs.items():
         niimg = check_niimg(img)
         data_dict[key] = safe_get_data(niimg)
