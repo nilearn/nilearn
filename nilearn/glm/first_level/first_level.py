@@ -1459,7 +1459,7 @@ def first_level_from_bids(
     derivatives_folder="derivatives",
     **kwargs,
 ):
-    r"""Create FirstLevelModel objects and fit arguments \
+    """Create FirstLevelModel objects and fit arguments \
        from a :term:`BIDS` dataset.
 
     If ``t_r`` is ``None``, this function will attempt
@@ -1618,21 +1618,21 @@ def first_level_from_bids(
     models_run_imgs : :obj:`list` of :obj:`list` of Niimg-like objects
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
-        ``models_run_imgs[i][j]`` corresponds to the j\ :sup:`th` run
-        of the i\ :sup:`th` subject.
+        ``models_run_imgs[i][j]`` corresponds to the j\\ :sup:`th` run
+        of the i\\ :sup:`th` subject.
 
     models_events : :obj:`list` of :obj:`list` of pandas DataFrames
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
-        ``models_events[i][j]`` corresponds to the j\ :sup:`th` event file
-        of the i\ :sup:`th` subject.
+        ``models_events[i][j]`` corresponds to the j\\ :sup:`th` event file
+        of the i\\ :sup:`th` subject.
 
-    models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames \
-        or ``None``
+    models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
+        ``None``
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
-        ``models_confounds[i][j]`` corresponds to the j\ :sup:`th`
-        confound file of the i\ :sup:`th` subject.
+        ``models_confounds[i][j]`` corresponds to the j\\ :sup:`th`
+        confound file of the i\\ :sup:`th` subject.
 
         .. note::
 
