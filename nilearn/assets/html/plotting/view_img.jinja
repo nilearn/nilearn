@@ -31,28 +31,22 @@
             <span id="demo"></span>
         </div>
     </div>
+    <script> {% include "js/jquery.min.js" %} </script>
+    <script> {% include "js/brainsprite.min.js" %} </script>
     <script>
-  {% include "js/jquery.min.js" %}
+      var brain
 
-    </script>
-    <script>
-  {% include "js/brainsprite.min.js" %}
+      $(window).on("load", function () {
+        brain = brainsprite({{ params }});
+      });
 
-    </script>
-    <script>
-  var brain
-
-  $(window).on("load", function () {
-    brain = brainsprite({{ params }});
-  });
-
-  var slider = document.getElementById("opacity");
-  var output = document.getElementById("demo");
-  slider.oninput = function () {
-    output.innerHTML = this.value;
-    brain.overlay.opacity = this.value / 100;
-    brain.init();
-    brain.drawAll();
-  }
+      var slider = document.getElementById("opacity");
+      var output = document.getElementById("demo");
+      slider.oninput = function () {
+        output.innerHTML = this.value;
+        brain.overlay.opacity = this.value / 100;
+        brain.init();
+        brain.drawAll();
+      }
     </script>
 {% endblock main %}

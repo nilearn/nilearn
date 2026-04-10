@@ -15,7 +15,7 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.versions import SKLEARN_GTE_1_7
 from nilearn._version import __version__
-from nilearn.assets import NIL_ASSETS, return_jinja_env
+from nilearn.assets import return_jinja_env
 from nilearn.reporting._utils import (
     dataframe_to_html,
     model_attributes_to_dataframe,
@@ -27,8 +27,6 @@ from nilearn.reporting.html_report import (
     assemble_report,
 )
 from nilearn.reporting.utils import figure_to_svg_base64
-
-OTHER_JS = NIL_ASSETS / "js"
 
 
 class ReportMixin:
@@ -347,12 +345,6 @@ class ReportMixin:
     def _set_brainsprite_data(self):
         if self._has_report_data():
             report_content = self._report_content
-
-            with (OTHER_JS / "jquery.min.js").open("r") as f:
-                report_content["js_query_code"] = f.read()
-            with (OTHER_JS / "brainsprite.min.js").open("r") as f:
-                report_content["brainsprite_code"] = f.read()
-
             report_content["bg_base64"] = self._reporting_data["bg_base64"]
             report_content["cm_base64"] = self._reporting_data["cm_base64"]
             report_content["params"] = self._reporting_data["params"]

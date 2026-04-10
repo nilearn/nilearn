@@ -4,7 +4,7 @@ from string import Template
 
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._version import __version__
-from nilearn.assets import NIL_ASSETS, return_jinja_env
+from nilearn.assets import return_jinja_env
 
 UNFITTED_MSG = (
     "\nThis estimator has not been fit yet.\n"
@@ -83,15 +83,11 @@ def assemble_report(body: str, page_title: str) -> HTMLReport:
 
     head_tpl = env.get_template("html/head.jinja")
 
-    head_css_file_path = NIL_ASSETS / "css" / "head.css"
-    with head_css_file_path.open(encoding="utf-8") as head_css_file:
-        head_css = head_css_file.read()
-
     return HTMLReport(
         body=body,
         head_tpl=head_tpl,
         head_values={
-            "head_css": head_css,
+            "head_css": True,
             "version": __version__,
             "page_title": page_title,
             "display_footer": "style='display: none'" if is_notebook() else "",

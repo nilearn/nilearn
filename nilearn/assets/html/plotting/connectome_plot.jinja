@@ -1,9 +1,9 @@
 {% extends "html/head.jinja" %}
 
 {% block script %}
-    <script> {% include "js/jquery.min.js" %}</script>
-    <script> {% include "js/plotly-gl3d-latest.min.js" %}</script>
-    <script> {% include "js/common-surface-plot-utils.js" %}</script>
+    <script> {% include "js/jquery.min.js" %} </script>
+    <script> {% include "js/plotly-gl3d-latest.min.js" %} </script>
+    <script> {% include "js/common-surface-plot-utils.js" %} </script>
     <script>
       var connectomeInfo = {{  connectome_json }};
       {% include "js/connectome-plot-utils.js" %}
