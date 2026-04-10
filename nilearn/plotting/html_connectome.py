@@ -230,8 +230,9 @@ def _make_connectome_html(connectome_info):
     )
 
     html_view = connectome_plot_tpl.render(
-        title=connectome_info["title"] or "Connectome plot",
+        page_title=connectome_info["title"] or "Connectome plot",
         connectome_json=json.dumps(plot_info),
+        display_footer='style="display: none"',
     )
 
     return ConnectomeView(html_view)

@@ -531,11 +531,12 @@ def _json_view_to_html(
     view_img_tpl = env.get_template("html/plotting/view_img.jinja")
 
     html_view = view_img_tpl.render(
-        title=json_view["params"]["title"] or "Slice viewer",
+        page_title=json_view["params"]["title"] or "Slice viewer",
         params=json.dumps(json_view["params"]),
         bg_base64=json_view["bg_base64"],
         cm_base64=json_view["cm_base64"],
         stat_map_base64=json_view["stat_map_base64"],
+        display_footer='style="display: none"',
     )
 
     return StatMapView(html_view, width=width, height=height)
