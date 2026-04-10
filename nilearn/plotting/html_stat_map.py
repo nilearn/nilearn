@@ -22,7 +22,7 @@ from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params, check_threshold
-from nilearn.assets import NIL_ASSETS
+from nilearn.assets import return_jinja_env
 from nilearn.datasets import load_mni152_template
 from nilearn.image import (
     check_niimg_3d,
@@ -35,7 +35,6 @@ from nilearn.image import (
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
-from nilearn.plotting.js_plotting_utils import get_html_template
 from nilearn.typing import Threshold
 
 if TYPE_CHECKING:
@@ -469,14 +468,7 @@ def _json_view_data(
     """
     # Initialize brainsprite data structure
     json_view = dict.fromkeys(
-        [
-            "bg_base64",
-            "stat_map_base64",
-            "cm_base64",
-            "params",
-            "js_jquery",
-            "js_brainsprite",
-        ]
+        ["bg_base64", "stat_map_base64", "cm_base64", "params"]
     )
 
     # Create a base64 sprite for the background
@@ -535,19 +527,20 @@ def _json_view_to_html(
     width, height = _json_view_size(json_view["params"], width_view)
 
     # Populate all missing keys with html-ready data
-    json_view["INSERT_PAGE_TITLE_HERE"] = (
-        json_view["params"]["title"] or "Slice viewer"
-    )
-    json_view["params"] = json.dumps(json_view["params"])
-    js_dir = NIL_ASSETS / "js"
-    with (js_dir / "jquery.min.js").open() as f:
-        json_view["js_jquery"] = f.read()
-    with (js_dir / "brainsprite.min.js").open() as f:
-        json_view["js_brainsprite"] = f.read()
+    title = json_view["params"]["title"] or "Slice viewer"
+    params = json.dumps(json_view["params"])
 
     # Load the html template, and plug in all the data
-    html_view = get_html_template("stat_map_template.html")
-    html_view = html_view.safe_substitute(json_view)
+    env = return_jinja_env()
+    stat_map_template_tpl = env.get_template("html/view_img.jinja")
+
+    html_view = stat_map_template_tpl.render(
+        title=title,
+        params=params,
+        bg_base64=json_view["bg_base64"],
+        cm_base64=json_view["cm_base64"],
+        stat_map_base64=json_view["stat_map_base64"],
+    )
 
     return StatMapView(html_view, width=width, height=height)
 
