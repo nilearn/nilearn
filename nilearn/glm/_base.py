@@ -405,7 +405,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         display_mode,
         plot_type,
     ):
-        self._report_content.update(self._get_masker_info())
         contrasts = coerce_to_dict(contrasts)
 
         # If some contrasts are passed
