@@ -421,7 +421,7 @@ def sanitize_generate_report_input(
 ):
     warning_messages = []
 
-    if model.is_first_level_glm and first_level_contrast is not None:
+    if model._is_first_level_glm and first_level_contrast is not None:
         warnings.warn(
             "'first_level_contrast' is ignored for FirstLevelModel."
             "Setting first_level_contrast=None.",
