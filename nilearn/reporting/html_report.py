@@ -6,7 +6,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._version import __version__
-from nilearn.reporting.utils import (
+from nilearn.assets import (
     CSS_PATH,
     TEMPLATE_ROOT_PATH,
 )
