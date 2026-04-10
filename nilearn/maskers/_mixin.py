@@ -463,7 +463,7 @@ class MaskerReportMixin(ReportMixin):
         Parameters
         ----------
         engine : :obj:`str`, default="matplotlib"
-            Choice of engine to display the mask.
+            Choice of engine to display report figures.
 
             All maskers support ``"matplotlib"`` as engine.
 
