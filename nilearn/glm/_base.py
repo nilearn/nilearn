@@ -16,7 +16,13 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.versions import SKLEARN_LT_1_6
-from nilearn.glm._reporting_utils import GLMReportMixin
+from nilearn.glm._reporting_utils import (
+    GLMReportMixin,
+    get_runwise_dict,
+    make_stat_maps_contrast_clusters,
+    mask_to_plot,
+    turn_into_full_path,
+)
 from nilearn.image import check_niimg
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
@@ -402,12 +408,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         self._report_content.update(self._get_masker_info())
         contrasts = coerce_to_dict(contrasts)
 
-        from nilearn.glm._reporting_utils import (
-            make_stat_maps_contrast_clusters,
-            mask_to_plot,
-            turn_into_full_path,
-        )
-
         # If some contrasts are passed
         # we do not rely on filenames stored in the model.
         output = None
@@ -487,49 +487,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
                 else self.design_matrices_
             )
 
-        design_matrices_dict = Bunch()
-        contrasts_dict = Bunch()
-
-        if output is not None:
-            design_matrices_dict = output["design_matrices_dict"]
-            contrasts_dict = output["contrasts_dict"]
-
-        from nilearn._utils.helpers import is_matplotlib_installed
-
-        if is_matplotlib_installed():
-            from nilearn._utils.plotting import (
-                generate_contrast_matrices_figures,
-                generate_design_matrices_figures,
-            )
-
-            design_matrices_dict = generate_design_matrices_figures(
-                design_matrices,
-                design_matrices_dict=design_matrices_dict,
-                output=output,
-            )
-
-            contrasts_dict = generate_contrast_matrices_figures(
-                design_matrices,
-                contrasts,
-                contrasts_dict=contrasts_dict,
-                output=output,
-            )
-
-        run_wise_dict = Bunch()
-        for i_run in design_matrices_dict:
-            tmp = Bunch()
-            tmp["design_matrix_png"] = design_matrices_dict[i_run][
-                "design_matrix_png"
-            ]
-            tmp["correlation_matrix_png"] = design_matrices_dict[i_run][
-                "correlation_matrix_png"
-            ]
-            tmp["all_contrasts"] = None
-            if i_run in contrasts_dict:
-                tmp["all_contrasts"] = contrasts_dict[i_run]
-            run_wise_dict[i_run] = tmp
-
-        return run_wise_dict
+        return get_runwise_dict(contrasts, output, design_matrices)
 
 
 def _generate_mask(

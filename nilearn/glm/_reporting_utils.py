@@ -731,6 +731,52 @@ def make_stat_maps_contrast_clusters(
     return results
 
 
+def get_runwise_dict(contrasts, output, design_matrices):
+    design_matrices_dict = Bunch()
+    contrasts_dict = Bunch()
+
+    if output is not None:
+        design_matrices_dict = output["design_matrices_dict"]
+        contrasts_dict = output["contrasts_dict"]
+
+    from nilearn._utils.helpers import is_matplotlib_installed
+
+    if is_matplotlib_installed():
+        from nilearn._utils.plotting import (
+            generate_contrast_matrices_figures,
+            generate_design_matrices_figures,
+        )
+
+        design_matrices_dict = generate_design_matrices_figures(
+            design_matrices,
+            design_matrices_dict=design_matrices_dict,
+            output=output,
+        )
+
+        contrasts_dict = generate_contrast_matrices_figures(
+            design_matrices,
+            contrasts,
+            contrasts_dict=contrasts_dict,
+            output=output,
+        )
+
+    run_wise_dict = Bunch()
+    for i_run in design_matrices_dict:
+        tmp = Bunch()
+        tmp["design_matrix_png"] = design_matrices_dict[i_run][
+            "design_matrix_png"
+        ]
+        tmp["correlation_matrix_png"] = design_matrices_dict[i_run][
+            "correlation_matrix_png"
+        ]
+        tmp["all_contrasts"] = None
+        if i_run in contrasts_dict:
+            tmp["all_contrasts"] = contrasts_dict[i_run]
+        run_wise_dict[i_run] = tmp
+
+    return run_wise_dict
+
+
 @fill_doc
 def _stat_map_to_png(
     stat_img,
