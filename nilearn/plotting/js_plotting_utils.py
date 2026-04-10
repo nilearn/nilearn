@@ -3,59 +3,12 @@ html_connectome.
 """
 
 import base64
-from string import Template
 
 import numpy as np
 
-from nilearn.assets import NIL_ASSETS
 from nilearn.surface import load_surf_mesh
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
-
-
-def add_js_lib(html, embed_js=True):
-    """Add javascript libraries to html template.
-
-    If embed_js is True, jquery and plotly are embedded in resulting page.
-    otherwise, they are loaded via CDNs.
-
-    """
-    js_dir = NIL_ASSETS / "js"
-    with (js_dir / "surface-plot-utils.js").open() as f:
-        js_utils = f.read()
-    if not embed_js:
-        js_lib = f"""
-        <script
-        src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
-        </script>
-        <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
-        <script>
-        {js_utils}
-        </script>
-        """
-    else:
-        with (js_dir / "jquery.min.js").open() as f:
-            jquery = f.read()
-        with (js_dir / "plotly-gl3d-latest.min.js").open() as f:
-            plotly = f.read()
-        js_lib = f"""
-        <script>{jquery}</script>
-        <script>{plotly}</script>
-        <script>
-        {js_utils}
-        </script>
-        """
-    if not isinstance(html, Template):
-        html = Template(html)
-    return html.safe_substitute({"INSERT_JS_LIBRARIES_HERE": js_lib})
-
-
-def get_html_template(template_name):
-    """Get an HTML file from package data."""
-    template_path = NIL_ASSETS / "html" / template_name
-
-    with template_path.open("rb") as f:
-        return Template(f.read().decode("utf-8"))
 
 
 def encode(a):

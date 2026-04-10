@@ -10,14 +10,10 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.param_validation import check_params
+from nilearn.assets import return_jinja_env
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting._engine_utils import colorscale, to_color_strings
-from nilearn.plotting.js_plotting_utils import (
-    add_js_lib,
-    encode,
-    get_html_template,
-    mesh_to_plotly,
-)
+from nilearn.plotting.js_plotting_utils import encode, mesh_to_plotly
 
 
 class ConnectomeView(HTMLDocument):  # noqa: D101
@@ -222,24 +218,23 @@ def _get_connectome(
     }
 
 
-def _make_connectome_html(connectome_info, embed_js=True):
+def _make_connectome_html(connectome_info):
     plot_info = {"connectome": connectome_info}
     mesh = fetch_surf_fsaverage()
     for hemi in ["pial_left", "pial_right"]:
         plot_info[hemi] = mesh_to_plotly(mesh[hemi])
-    as_json = json.dumps(plot_info)
-    as_html = get_html_template(
-        "connectome_plot_template.html"
-    ).safe_substitute(
-        {
-            "INSERT_CONNECTOME_JSON_HERE": as_json,
-            "INSERT_PAGE_TITLE_HERE": (
-                connectome_info["title"] or "Connectome plot"
-            ),
-        }
+
+    env = return_jinja_env()
+    connectome_plot_tpl = env.get_template(
+        "html/plotting/connectome_plot.jinja"
     )
-    as_html = add_js_lib(as_html, embed_js=embed_js)
-    return ConnectomeView(as_html)
+
+    html_view = connectome_plot_tpl.render(
+        title=connectome_info["title"] or "Connectome plot",
+        connectome_json=json.dumps(plot_info),
+    )
+
+    return ConnectomeView(html_view)
 
 
 @fill_doc
