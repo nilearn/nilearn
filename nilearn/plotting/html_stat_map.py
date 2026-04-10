@@ -526,17 +526,13 @@ def _json_view_to_html(
     # Fix the size of the viewer
     width, height = _json_view_size(json_view["params"], width_view)
 
-    # Populate all missing keys with html-ready data
-    title = json_view["params"]["title"] or "Slice viewer"
-    params = json.dumps(json_view["params"])
-
     # Load the html template, and plug in all the data
     env = return_jinja_env()
-    stat_map_template_tpl = env.get_template("html/view_img.jinja")
+    view_img_tpl = env.get_template("html/plotting/view_img.jinja")
 
-    html_view = stat_map_template_tpl.render(
-        title=title,
-        params=params,
+    html_view = view_img_tpl.render(
+        title=json_view["params"]["title"] or "Slice viewer",
+        params=json.dumps(json_view["params"]),
         bg_base64=json_view["bg_base64"],
         cm_base64=json_view["cm_base64"],
         stat_map_base64=json_view["stat_map_base64"],

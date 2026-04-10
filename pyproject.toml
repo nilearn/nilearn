@@ -286,6 +286,18 @@ name = "only 'nilearn.glm' imports from 'nilearn.mass_univariate'"
 protected_modules = ["nilearn.mass_univariate"]
 type = 'protected'
 
+[[tool.importlinter.contracts]]
+allowed_importers = [
+    "nilearn.reporting",
+    "nilearn.plotting",
+    "nilearn.glm"  # TODO try to avoid
+]
+name = "assets only imported by reporting, plotting, glm"
+protected_modules = [
+    "nilearn.assets"
+]
+type = "protected"
+
 [tool.mypy]
 allow_redefinition = false
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]

@@ -11,12 +11,11 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
+from nilearn.assets import return_jinja_env
 from nilearn.image import check_niimg_3d
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import (
-    add_js_lib,
-    get_html_template,
     mesh_to_plotly,
 )
 from nilearn.plotting.surface._utils import (
@@ -202,16 +201,15 @@ def _full_brain_info(
     return info
 
 
-def _fill_html_template(info, embed_js=True):
-    as_json = json.dumps(info)
-    as_html = get_html_template("surface_plot_template.html").safe_substitute(
-        {
-            "INSERT_STAT_MAP_JSON_HERE": as_json,
-            "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
-        }
+def _fill_html_template(info):
+    env = return_jinja_env()
+    view_img_tpl = env.get_template("html/plotting/surface_plot.jinja")
+
+    html_view = view_img_tpl.render(
+        title=info["title"] or "Surface plot", stat_map_json=json.dumps(info)
     )
-    as_html = add_js_lib(as_html, embed_js=embed_js)
-    return SurfaceView(as_html)
+
+    return SurfaceView(html_view)
 
 
 @fill_doc
@@ -348,7 +346,7 @@ def view_img_on_surf(
     info["title"] = title
     info["title_fontsize"] = title_fontsize
     info["view"] = view
-    return _fill_html_template(info, embed_js=True)
+    return _fill_html_template(info)
 
 
 @fill_doc
@@ -497,4 +495,4 @@ def view_surf(
     info["title"] = title
     info["title_fontsize"] = title_fontsize
     info["view"] = view
-    return _fill_html_template(info, embed_js=True)
+    return _fill_html_template(info)
