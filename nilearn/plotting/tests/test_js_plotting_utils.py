@@ -73,7 +73,7 @@ def check_html_surface_plots(
     assert 'width="33" height="37"' in html.get_iframe(33, 37)
 
     if title is not None:
-        assert f"<title>{title}</title>" in str(html)
+        assert f"<title>Nilearn - {title}</title>" in str(html)
 
     # when testing without the GIL
     # we cannot import lxml as it requires the GIL
