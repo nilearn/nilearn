@@ -7,7 +7,6 @@ import json
 import warnings
 from base64 import b64encode
 from io import BytesIO
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 import matplotlib
@@ -23,6 +22,7 @@ from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params, check_threshold
+from nilearn.assets import NIL_ASSETS
 from nilearn.datasets import load_mni152_template
 from nilearn.image import (
     check_niimg_3d,
@@ -539,7 +539,7 @@ def _json_view_to_html(
         json_view["params"]["title"] or "Slice viewer"
     )
     json_view["params"] = json.dumps(json_view["params"])
-    js_dir = Path(__file__).parent / "data" / "js"
+    js_dir = NIL_ASSETS / "js"
     with (js_dir / "jquery.min.js").open() as f:
         json_view["js_jquery"] = f.read()
     with (js_dir / "brainsprite.min.js").open() as f:

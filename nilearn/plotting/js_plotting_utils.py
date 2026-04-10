@@ -3,11 +3,11 @@ html_connectome.
 """
 
 import base64
-from pathlib import Path
 from string import Template
 
 import numpy as np
 
+from nilearn.assets import NIL_ASSETS
 from nilearn.surface import load_surf_mesh
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
@@ -20,7 +20,7 @@ def add_js_lib(html, embed_js=True):
     otherwise, they are loaded via CDNs.
 
     """
-    js_dir = Path(__file__).parent / "data" / "js"
+    js_dir = NIL_ASSETS / "js"
     with (js_dir / "surface-plot-utils.js").open() as f:
         js_utils = f.read()
     if not embed_js:
@@ -52,7 +52,7 @@ def add_js_lib(html, embed_js=True):
 
 def get_html_template(template_name):
     """Get an HTML file from package data."""
-    template_path = Path(__file__).parent / "data" / "html" / template_name
+    template_path = NIL_ASSETS / "html" / template_name
 
     with template_path.open("rb") as f:
         return Template(f.read().decode("utf-8"))
