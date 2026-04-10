@@ -15,7 +15,7 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.versions import SKLEARN_GTE_1_7
 from nilearn._version import __version__
-from nilearn.assets import NIL_ASSETS
+from nilearn.assets import NIL_ASSETS, return_jinja_env
 from nilearn.reporting._utils import (
     dataframe_to_html,
     model_attributes_to_dataframe,
@@ -25,7 +25,6 @@ from nilearn.reporting.html_report import (
     UNFITTED_MSG,
     HTMLReport,
     assemble_report,
-    return_jinja_env,
 )
 from nilearn.reporting.utils import figure_to_svg_base64
 

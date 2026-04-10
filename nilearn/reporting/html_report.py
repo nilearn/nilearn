@@ -2,14 +2,9 @@
 
 from string import Template
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._version import __version__
-from nilearn.assets import (
-    CSS_PATH,
-    TEMPLATE_ROOT_PATH,
-)
+from nilearn.assets import NIL_ASSETS, return_jinja_env
 
 UNFITTED_MSG = (
     "\nThis estimator has not been fit yet.\n"
@@ -82,23 +77,13 @@ class HTMLReport(HTMLDocument):
         return self.body
 
 
-def return_jinja_env() -> Environment:
-    """Set up the jinja Environment."""
-    return Environment(
-        loader=FileSystemLoader(TEMPLATE_ROOT_PATH),
-        autoescape=select_autoescape(),
-        lstrip_blocks=True,
-        trim_blocks=True,
-    )
-
-
 def assemble_report(body: str, page_title: str) -> HTMLReport:
     """Put together head and body of report."""
     env = return_jinja_env()
 
     head_tpl = env.get_template("html/head.jinja")
 
-    head_css_file_path = CSS_PATH / "head.css"
+    head_css_file_path = NIL_ASSETS / "css" / "head.css"
     with head_css_file_path.open(encoding="utf-8") as head_css_file:
         head_css = head_css_file.read()
 

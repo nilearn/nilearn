@@ -1,7 +1,15 @@
 from pathlib import Path
 
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
 NIL_ASSETS = Path(__file__).parent
 
-TEMPLATE_ROOT_PATH = Path(__file__).parent
 
-CSS_PATH = TEMPLATE_ROOT_PATH / "css"
+def return_jinja_env() -> Environment:
+    """Set up the jinja Environment."""
+    return Environment(
+        loader=FileSystemLoader(NIL_ASSETS),
+        autoescape=select_autoescape(),
+        lstrip_blocks=True,
+        trim_blocks=True,
+    )

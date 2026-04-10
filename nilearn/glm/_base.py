@@ -24,6 +24,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.versions import SKLEARN_GTE_1_7, SKLEARN_LT_1_6
 from nilearn._version import __version__
+from nilearn.assets import return_jinja_env
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
     glm_model_attributes_to_dataframe,
@@ -43,7 +44,6 @@ from nilearn.reporting.html_report import (
     HTMLReport,
     assemble_report,
     is_notebook,
-    return_jinja_env,
 )
 from nilearn.surface import SurfaceImage
 from nilearn.typing import ClusterThreshold, HeightControl
