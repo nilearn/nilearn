@@ -206,7 +206,9 @@ def _fill_html_template(info):
     view_img_tpl = env.get_template("html/plotting/surface_plot.jinja")
 
     html_view = view_img_tpl.render(
-        title=info["title"] or "Surface plot", stat_map_json=json.dumps(info)
+        page_title=info["title"] or "Surface plot",
+        stat_map_json=json.dumps(info),
+        display_footer='style="display: none"',
     )
 
     return SurfaceView(html_view)
