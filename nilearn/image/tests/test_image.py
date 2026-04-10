@@ -1495,7 +1495,7 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye, surf_img_2d):
     # formula or an img* argument should raise a ValueError exception.
     with pytest.raises(
         ValueError,
-        match=("copy_header_from='img2' but 'img2' is missing from 'imgs'"),
+        match=("copy_header_from='img2' but 'img2' is missing in 'imgs'"),
     ):
         math_img(formula, img1=img1, img3=img3, copy_header_from="img2")
 
