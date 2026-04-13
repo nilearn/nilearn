@@ -7,10 +7,10 @@ from matplotlib import cm as mpl_cm
 from scipy import sparse
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._assets import return_jinja_env
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.param_validation import check_params
-from nilearn.assets import return_jinja_env
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting._engine_utils import colorscale, to_color_strings
 from nilearn.plotting.js_plotting_utils import encode, mesh_to_plotly

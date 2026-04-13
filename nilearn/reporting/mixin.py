@@ -11,11 +11,11 @@ from typing import Any, ClassVar
 
 import pandas as pd
 
+from nilearn._assets import return_jinja_env
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.versions import SKLEARN_GTE_1_7
 from nilearn._version import __version__
-from nilearn.assets import return_jinja_env
 from nilearn.reporting._utils import (
     dataframe_to_html,
     model_attributes_to_dataframe,

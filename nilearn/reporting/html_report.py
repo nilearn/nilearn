@@ -2,9 +2,9 @@
 
 from string import Template
 
+from nilearn._assets import return_jinja_env
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._version import __version__
-from nilearn.assets import return_jinja_env
 
 UNFITTED_MSG = (
     "\nThis estimator has not been fit yet.\n"

@@ -5,13 +5,13 @@ import json
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._assets import return_jinja_env
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.assets import return_jinja_env
 from nilearn.image import check_niimg_3d
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import colorscale

@@ -16,13 +16,13 @@ from nibabel import Nifti1Image
 from nibabel.affines import apply_affine
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._assets import return_jinja_env
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params, check_threshold
-from nilearn.assets import return_jinja_env
 from nilearn.datasets import load_mni152_template
 from nilearn.image import (
     check_niimg_3d,

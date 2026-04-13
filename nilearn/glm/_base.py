@@ -14,6 +14,7 @@ from nibabel.onetime import auto_attr
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn._assets import return_jinja_env
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
@@ -24,7 +25,6 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.versions import SKLEARN_GTE_1_7, SKLEARN_LT_1_6
 from nilearn._version import __version__
-from nilearn.assets import return_jinja_env
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
     glm_model_attributes_to_dataframe,
