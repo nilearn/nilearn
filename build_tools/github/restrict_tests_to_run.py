@@ -57,7 +57,7 @@ known_dirs = sorted(
         "nilearn/_utils",
         "nilearn/connectome",
         "nilearn/mass_univariate",
-        "nilearn/assets",
+        "nilearn/_assets",
     ]
 )
 assert known_dirs == all_folders, f"\n{known_dirs=}\n{all_folders=}"
@@ -139,10 +139,7 @@ def restrict_tests(changed_files: list[str]) -> list[str]:
             )
 
         # middle layers: all imported by top layers
-        if (
-            any(x == mid_level for mid_level in MID_LAYER)
-            or "nilearn/assets" in x
-        ):
+        if any(x == mid_level for mid_level in MID_LAYER):
             tests_to_run.extend(
                 [
                     "nilearn/tests/test_masking.py",
@@ -173,6 +170,7 @@ def restrict_tests(changed_files: list[str]) -> list[str]:
                 "nilearn/exceptions.py",
                 "nilearn/signal.py",
                 "nilearn/typing.py",
+                "nilearn/_assets",
             ]
         ):
             tests_to_run.extend(

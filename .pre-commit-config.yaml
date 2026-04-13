@@ -125,7 +125,7 @@ repos:
 #         # ignoring JS files that are not our own
 #         exclude: |
 #             (?x)^(
-#                 nilearn/assets/js/.*min.*
+#                 nilearn/_assets/js/.*min.*
 #             )$
 
     # Check imports contracts
