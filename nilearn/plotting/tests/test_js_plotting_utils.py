@@ -125,10 +125,10 @@ def check_html_surface_plots(
     if not is_gil_enabled():
         return
 
-    _check_lxml(html, check_selects, plot_div_id)
+    _check_lxml(html, check_selects, plot_div_id, engine)
 
 
-def _check_lxml(html, check_selects, plot_div_id):
+def _check_lxml(html, check_selects, plot_div_id, engine):
     from lxml import etree
 
     root = etree.HTML(
