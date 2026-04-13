@@ -62,7 +62,7 @@ def generate_and_check_masker_report(
         "reports_at_fit_time", masker.reports
     )
 
-    if not report_at_fit_time:
+    if not masker.reports:
         warnings_msg_to_check.append(
             "\nReport generation not enabled!\nNo visual outputs created."
         )
@@ -70,6 +70,13 @@ def generate_and_check_masker_report(
         excludes.append(
             "\nReport generation not enabled!\nNo visual outputs created."
         )
+
+    if not report_at_fit_time and masker.__sklearn_is_fitted__():
+        warnings_msg_to_check.append(
+            "\nReport generation was disabled when fit was run."
+        )
+    else:
+        excludes.append("Report generation was disabled when fit was run")
 
     if not report_at_fit_time or not masker.__sklearn_is_fitted__():
         # no image present if reports not requested or masker is not fitted
@@ -173,7 +180,10 @@ def test_displayed_maps_valid_inputs(
     masker = masker_class(**input_parameters)
     masker.fit()
 
-    html = masker.generate_report(displayed_maps)
+    if isinstance(masker, NiftiSpheresMasker):
+        html = masker.generate_report(displayed_spheres=displayed_maps)
+    else:
+        html = masker.generate_report(displayed_maps=displayed_maps)
 
     # sphere masker display all spheres on index 0
     # so we must offset by 1
@@ -204,7 +214,10 @@ def test_displayed_maps_error(masker_class, input_parameters, displayed_maps):
             "or a list/array of ints"
         ),
     ):
-        masker.generate_report(displayed_maps)
+        if isinstance(masker, NiftiSpheresMasker):
+            masker.generate_report(displayed_spheres=displayed_maps)
+        else:
+            masker.generate_report(displayed_maps=displayed_maps)
 
 
 @pytest.mark.slow
@@ -224,7 +237,10 @@ def test_displayed_maps_warning_too_many(
         UserWarning,
         match="Report cannot display the following",
     ):
-        masker.generate_report(displayed_maps)
+        if isinstance(masker, NiftiSpheresMasker):
+            masker.generate_report(displayed_spheres=displayed_maps)
+        else:
+            masker.generate_report(displayed_maps=displayed_maps)
 
 
 @pytest.mark.slow
@@ -238,7 +254,10 @@ def test_displayed_maps_warning_int_too_large(masker_class, input_parameters):
     masker = masker_class(**input_parameters)
     masker.fit()
     with pytest.warns(UserWarning, match="was set to 6"):
-        masker.generate_report(7)
+        if isinstance(masker, NiftiSpheresMasker):
+            masker.generate_report(displayed_spheres=7)
+        else:
+            masker.generate_report(displayed_maps=7)
 
 
 @pytest.mark.thread_unsafe
@@ -270,7 +289,7 @@ def test_nifti_labels_masker_report_no_image_for_fit(
 
     # No image was provided to fit, regions are plotted using
     # plot_roi such that no contour should be in the image
-    display = masker._reporting()
+    display = masker._load_report_displays()
 
     if not is_matplotlib_installed():
         assert display is None
@@ -281,7 +300,7 @@ def test_nifti_labels_masker_report_no_image_for_fit(
 
     masker.fit(img_3d_rand_eye)
 
-    display = masker._reporting()
+    display = masker._load_report_displays()
     for d in ["x", "y", "z"]:
         assert len(display.axes[d].ax.collections) > 0
         assert len(display.axes[d].ax.collections) <= n_regions
@@ -375,11 +394,11 @@ def test_nifti_labels_masker_report_cut_coords(
 
     # Get display without data
     masker.fit()
-    display = masker._reporting()
+    display = masker._load_report_displays()
 
     # Get display with data
     masker.fit(img_3d_rand_eye)
-    display_data = masker._reporting()
+    display_data = masker._load_report_displays()
     assert display.cut_coords == display_data.cut_coords
 
 
