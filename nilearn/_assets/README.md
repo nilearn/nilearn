@@ -7,23 +7,14 @@ as well as several interactive visualizations (see `view_img`, `view_connectome`
 ``` tree
 ├── css
 │   ├── partials
-│   │   └── navbar.css
 │   ├── head.css
 │   └── report.css
 ├── html
 │   ├── glm
 │   │   ├── partials
-│   │   │   ├── method_section.jinja
-│   │   │   └── navbar.jinja
 │   │   └── body_glm.jinja
 │   ├── masker
 │   │   ├── partials
-│   │   │   ├── brainsprite.jinja
-│   │   │   ├── brainsprite_opacity.jinja
-│   │   │   ├── carousel.jinja
-│   │   │   ├── figure.jinja
-│   │   │   ├── info_transfom.jinja
-│   │   │   └── parameters.jinja
 │   │   ├── body_masker.jinja
 │   │   ├── body_nifti_labels_masker.jinja
 │   │   ├── body_nifti_maps_masker.jinja
@@ -31,12 +22,7 @@ as well as several interactive visualizations (see `view_img`, `view_connectome`
 │   │   ├── body_surface_maps_masker.jinja
 │   │   └── body_surface_masker.jinja
 │   ├── partials
-│   │   ├── missing_plotting_engine.jinja
-│   │   └── warnings.jinja
 │   ├── plotting
-│   │   ├── connectome_plot.jinja
-│   │   ├── surface_plot.jinja
-│   │   └── view_img.jinja
 │   ├── body_base.jinja              # base template for body of estimator reports
 │   └── head.jinja                   # common base template for all HTML
 ├── js
