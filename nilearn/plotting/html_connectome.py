@@ -271,7 +271,6 @@ def view_connectome(
     colorbar_fontsize=25,
     title=None,
     title_fontsize=25,
-    node_labels=None,
 ):
     """Insert a 3d plot of a connectome into an HTML page.
 
@@ -361,9 +360,6 @@ def view_connectome(
     connectome_info["cbar_fontsize"] = colorbar_fontsize
     connectome_info["title"] = title
     connectome_info["title_fontsize"] = title_fontsize
-    if node_labels is None:
-        node_labels = ["" for _ in range(node_coords.shape[0])]
-    connectome_info["marker_labels"] = node_labels
     return _make_connectome_html(connectome_info)
 
 
