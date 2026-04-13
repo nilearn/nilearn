@@ -1,7 +1,6 @@
 """Neuroimaging file input and output."""
 
 import collections.abc
-import gc
 from copy import deepcopy
 from pathlib import Path
 from warnings import warn
@@ -9,7 +8,7 @@ from warnings import warn
 import numpy as np
 from nibabel import Nifti1Image, is_proxy, load, spatialimages
 
-from nilearn._utils.helpers import is_gil_enabled, stringify_path
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 
 
@@ -60,11 +59,6 @@ def safe_get_data(
     """
     if not img.in_memory or copy_data:
         img = deepcopy(img)
-
-    if is_gil_enabled():
-        # typically the line below can double memory usage
-        # that's why we invoke a forced call to the garbage collector
-        gc.collect()
 
     data = _get_data(img)
 
