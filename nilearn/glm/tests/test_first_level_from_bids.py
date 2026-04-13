@@ -670,6 +670,7 @@ def test_no_bold_file(tmp_path_factory):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_with_one_events_missing(tmp_path_factory):
     """Only one events.tsv file is missing, should raise an error."""
     bids_dataset = _new_bids_dataset(

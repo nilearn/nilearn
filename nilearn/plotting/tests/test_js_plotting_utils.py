@@ -125,6 +125,10 @@ def check_html_surface_plots(
     if not is_gil_enabled():
         return
 
+    _check_lxml(html, check_selects, plot_div_id)
+
+
+def _check_lxml(html, check_selects, plot_div_id):
     from lxml import etree
 
     root = etree.HTML(
@@ -148,14 +152,8 @@ def check_html_surface_plots(
         selects = body.findall("select")
         assert len(selects) == 3
 
-        hemi = selects[0]
-        assert ("id", "select-hemisphere") in hemi.items()
-        assert len(hemi.findall("option")) == 3
-
-        kind = selects[1]
-        assert ("id", "select-kind") in kind.items()
-        assert len(kind.findall("option")) == 2
-
-        view = selects[2]
-        assert ("id", "select-view") in view.items()
-        assert len(view.findall("option")) == 7
+    for idx, selector, expected_n in zip(
+        [0, 1, 2], ["hemisphere", "kind", "view"], [3, 2, 7], strict=False
+    ):
+        assert ("id", f"select-{selector}") in selects[idx].items()
+        assert len(selects[idx].findall("option")) == expected_n

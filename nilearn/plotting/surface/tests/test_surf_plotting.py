@@ -462,6 +462,7 @@ def test_plot_surf_contour_roi_map_as_surface_image(
     plot_surf_contours(surf_mesh, roi_map=surf_mask_1d, hemi="both")
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contours_legend(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
@@ -599,6 +600,7 @@ def test_plot_surf_contours_errors_with_plotly_figure(plotly, in_memory_mesh):
         plot_surf_contours(in_memory_mesh, np.ones((10,)), axes=figure)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map(plt, engine, in_memory_mesh, bg_map):
     """Smoke test when stat_map is specified to
     nilearn.plotting.surface.surf_plotting.plot_surf_stat_map together with
