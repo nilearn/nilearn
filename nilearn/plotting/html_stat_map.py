@@ -16,7 +16,7 @@ from nibabel import Nifti1Image
 from nibabel.affines import apply_affine
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._assets import return_jinja_env
+from nilearn._assets import get_template
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.html_document import HTMLDocument
@@ -527,8 +527,7 @@ def _json_view_to_html(
     width, height = _json_view_size(json_view["params"], width_view)
 
     # Load the html template, and plug in all the data
-    env = return_jinja_env()
-    view_img_tpl = env.get_template("html/plotting/view_img.jinja")
+    view_img_tpl = get_template("html/plotting/view_img.jinja")
 
     html_view = view_img_tpl.render(
         page_title=json_view["params"]["title"] or "Slice viewer",

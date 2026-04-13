@@ -2,7 +2,7 @@
 
 from string import Template
 
-from nilearn._assets import return_jinja_env
+from nilearn._assets import get_template
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._version import __version__
 
@@ -79,9 +79,7 @@ class HTMLReport(HTMLDocument):
 
 def assemble_report(body: str, page_title: str) -> HTMLReport:
     """Put together head and body of report."""
-    env = return_jinja_env()
-
-    head_tpl = env.get_template("html/head.jinja")
+    head_tpl = get_template("html/head.jinja")
 
     return HTMLReport(
         body=body,

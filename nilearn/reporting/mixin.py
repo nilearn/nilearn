@@ -11,7 +11,7 @@ from typing import Any, ClassVar
 
 import pandas as pd
 
-from nilearn._assets import return_jinja_env
+from nilearn._assets import get_template
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.versions import SKLEARN_GTE_1_7
@@ -306,10 +306,8 @@ class ReportMixin:
         """Return body template for this estimator depending on the specified
         `estimator_type`.
         """
-        env = return_jinja_env()
-
         body_tpl_path = f"html/{estimator_type}/{self._template_name}"
-        return env.get_template(body_tpl_path)
+        return get_template(body_tpl_path)
 
     def _get_partial_template(
         self, estimator_type: str, tpl_name: str, is_common: bool = False
@@ -318,9 +316,8 @@ class ReportMixin:
         If `is_common=True`, the template is not searched in estimator's
         template directory but common `partials` directory.
         """
-        env = return_jinja_env()
         loc = f"/{estimator_type}" if not is_common else ""
-        return env.get_template(f"html{loc}/partials/{tpl_name}.jinja")
+        return get_template(f"html{loc}/partials/{tpl_name}.jinja")
 
     def _assemble_report(self) -> HTMLReport:
         """Assemble report head and body acquiring body template corresponding

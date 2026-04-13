@@ -7,7 +7,7 @@ from matplotlib import cm as mpl_cm
 from scipy import sparse
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._assets import return_jinja_env
+from nilearn._assets import get_template
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.param_validation import check_params
@@ -224,10 +224,7 @@ def _make_connectome_html(connectome_info):
     for hemi in ["pial_left", "pial_right"]:
         plot_info[hemi] = mesh_to_plotly(mesh[hemi])
 
-    env = return_jinja_env()
-    connectome_plot_tpl = env.get_template(
-        "html/plotting/connectome_plot.jinja"
-    )
+    connectome_plot_tpl = get_template("html/plotting/connectome_plot.jinja")
 
     html_view = connectome_plot_tpl.render(
         page_title=connectome_info["title"] or "Connectome plot",

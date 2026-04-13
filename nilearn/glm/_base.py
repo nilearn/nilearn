@@ -14,7 +14,7 @@ from nibabel.onetime import auto_attr
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._assets import return_jinja_env
+from nilearn._assets import get_template
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
@@ -738,9 +738,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
                 stacklevel=find_stack_level(),
             )
 
-        env = return_jinja_env()
-
-        body_tpl = env.get_template("html/glm/body_glm.jinja")
+        body_tpl = get_template("html/glm/body_glm.jinja")
 
         # TODO clean up docstring from RST formatting
         docstring = (

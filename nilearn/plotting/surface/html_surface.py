@@ -5,7 +5,7 @@ import json
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._assets import return_jinja_env
+from nilearn._assets import get_template
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.param_validation import (
@@ -202,8 +202,7 @@ def _full_brain_info(
 
 
 def _fill_html_template(info):
-    env = return_jinja_env()
-    view_img_tpl = env.get_template("html/plotting/surface_plot.jinja")
+    view_img_tpl = get_template("html/plotting/surface_plot.jinja")
 
     html_view = view_img_tpl.render(
         page_title=info["title"] or "Surface plot",
