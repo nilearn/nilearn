@@ -7,13 +7,19 @@
 
                 {% include "html/partials/missing_plotting_engine.jinja" %}
 
-            {% elif content %}
-                <div class="image">
-                    <img class="pure-img"
-                         width="100%"
-                         src="data:image/svg+xml;base64,{{ content }}"
-                         alt="image" />
-                </div>
+            {% elif content or engine == "brainsprite" %}
+                {% if engine == "matplotlib" %}
+                    <div class="image">
+                        <img class="pure-img"
+                             width="100%"
+                             src="data:image/svg+xml;base64,{{ content }}"
+                             alt="image" />
+                    </div>
+                {% elif engine == "brainsprite" %}
+
+                    {% include "html/masker/partials/brainsprite.jinja" %}
+
+                {% endif %}
             {% endif %}
         </div>
         <div class="pure-u-1 pure-u-md-1-3">
@@ -38,7 +44,15 @@
         </div>
     </div>
 
-    {% include "html/maskers/partials/parameters.jinja" %}
-    {% include "html/maskers/partials/info_transfom.jinja" %}
+    {% include "html/masker/partials/parameters.jinja" %}
+    {% include "html/masker/partials/info_transfom.jinja" %}
 
+    {% if engine == "brainsprite" %}
+        <script> {{ js_query_code }} </script>
+        <script> {{ brainsprite_code }} </script>
+        <script>
+       {% include "html/masker/partials/brainsprite_opacity.jinja" %}
+
+        </script>
+    {% endif %}
 {% endblock report %}

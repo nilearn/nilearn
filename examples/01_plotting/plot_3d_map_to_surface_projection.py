@@ -113,11 +113,29 @@ figure.show()
 # is returned which provides a similar API
 # to the :class:`~matplotlib.figure.Figure`.
 # For example, you can save a static version of the figure to file
-# (this option requires to have ``kaleido`` installed):
+# (this option requires to have ``kaleido`` installed).
+# as we would do with a matplotlib figure.
+#
+# .. admonition:: Google Chrome needed
+#
+#     To be able to save images with plotly,
+#     make sure that Google Chrome is installed!
+#     You can install a compatible Chrome version using
+#     the ``kaleido_get_chrome`` command in command line or
+#     ``kaleido.get_chrome_sync()`` function
+#     in Python:
+#
+#       .. code-block:: python
+#
+#           import kaleido
+#           kaleido.get_chrome_sync()
+#
+from pathlib import Path
 
-# Save the figure as we would do with a matplotlib figure.
-# Uncomment the following line to save the previous figure to file
-# fig.savefig("both_hemisphere.png")
+output_dir = Path.cwd() / "results" / "plot_3d_map_to_surface_projection"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+fig.savefig(output_dir / "both_hemisphere.png")
 
 # %%
 # Plot 3D image for comparison

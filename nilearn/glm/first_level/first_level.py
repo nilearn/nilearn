@@ -33,7 +33,6 @@ from nilearn._utils.param_validation import (
     check_run_sample_masks,
 )
 from nilearn.datasets import load_fsaverage
-from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -425,7 +424,6 @@ class FirstLevelModel(BaseGLM):
         If 0, prints nothing
         If 1, prints progress by computation of each run.
         If 2, prints timing details of masker and GLM.
-        If 3, prints masker computation details.
 
     %(n_jobs)s
 
@@ -1294,15 +1292,6 @@ class FirstLevelModel(BaseGLM):
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
 
-        if masker_type == "surface" and self.smoothing_fwhm is not None:
-            warn(
-                "Parameter smoothing_fwhm is not "
-                "yet supported for surface data",
-                NotImplementedWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = 0
-
         check_compatibility_mask_and_images(self.mask_img, run_img)
         if (  # deal with self.mask_img as image, str, path, none
             (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
@@ -1627,17 +1616,24 @@ def first_level_from_bids(
         All runs from different sessions are considered together
         for the same subject to run a fixed effects analysis on them.
 
-    models_run_imgs : :obj:`list` of list of Niimg-like objects,
+    models_run_imgs : :obj:`list` of :obj:`list` of Niimg-like objects
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
+        ``models_run_imgs[i][j]`` corresponds to the j\\ :sup:`th` run
+        of the i\\ :sup:`th` subject.
 
-    models_events : :obj:`list` of list of pandas DataFrames,
+    models_events : :obj:`list` of :obj:`list` of pandas DataFrames
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
+        ``models_events[i][j]`` corresponds to the j\\ :sup:`th` event file
+        of the i\\ :sup:`th` subject.
 
-    models_confounds : :obj:`list` of list of pandas DataFrames or ``None``,
+    models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
+        ``None``
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
+        ``models_confounds[i][j]`` corresponds to the j\\ :sup:`th`
+        confound file of the i\\ :sup:`th` subject.
 
         .. note::
 

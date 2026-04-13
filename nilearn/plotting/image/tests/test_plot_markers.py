@@ -11,7 +11,7 @@ from nilearn.plotting import plot_markers
 
 
 @pytest.fixture
-def coords():
+def coords() -> np.ndarray:
     """Node coordinates for testing."""
     return np.array(
         [[39, 6, -32], [29, 40, 1], [-20, -74, 35], [-29, -59, -37]]
@@ -33,6 +33,7 @@ def test_plot_markers_node_values(matplotlib_pyplot, node_values, coords):
     plot_markers(node_values, coords, display_mode="x")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "node_size", [10, [10, 20, 30, 40], np.array([10, 20, 30, 40])]
 )
@@ -88,6 +89,7 @@ def test_plot_markers_cmap(matplotlib_pyplot, cmap, vmin, vmax, coords):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", [-100, 2.5])
 def test_plot_markers_threshold(matplotlib_pyplot, threshold, coords):
     """Smoke test for plot_markers with different threshold values."""
@@ -96,6 +98,7 @@ def test_plot_markers_threshold(matplotlib_pyplot, threshold, coords):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_markers_tuple_node_coords(matplotlib_pyplot, coords):
     """Smoke test for plot_markers with node coordinates passed \
        as a list of tuples.
@@ -182,6 +185,7 @@ def test_plot_markers_single_node_value(matplotlib_pyplot):
     plot_markers([1], [[1, 1, 1]])
 
 
+@pytest.mark.thread_unsafe
 def test_plot_markers_radiological_view(matplotlib_pyplot):
     """Smoke test for radiological view."""
     result = plot_markers([1], [[1, 1, 1]], radiological=True)
