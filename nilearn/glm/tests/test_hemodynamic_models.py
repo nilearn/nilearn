@@ -335,18 +335,30 @@ def test_hkernel():
     h = _hrf_kernel(None, t_r)
     assert_almost_equal(h[0], np.hstack((1, np.zeros(49))))
 
-    with pytest.raises(
-        ValueError, match=r"Could not process custom HRF model provided."
-    ):
-        _hrf_kernel(lambda x: np.ones(int(x)), t_r)
-        _hrf_kernel([lambda x, y, z: x + y + z], t_r)
-        _hrf_kernel([lambda x: np.ones(int(x))] * 2, t_r)
-
     h = _hrf_kernel(lambda t_r, ov: np.ones(int(t_r * ov)), t_r)
     assert_almost_equal(h[0], np.ones(100))
 
     h = _hrf_kernel([lambda t_r, ov: np.ones(int(t_r * ov))], t_r)
     assert_almost_equal(h[0], np.ones(100))
+
+
+def test_hkernel_errors():
+    """Test the hrf computation errors."""
+    t_r = 2.0
+
+    with pytest.raises(
+        ValueError, match=r"Could not process custom HRF model provided."
+    ):
+        _hrf_kernel(lambda x: np.ones(int(x)), t_r)
+    with pytest.raises(
+        ValueError, match=r"Could not process custom HRF model provided."
+    ):
+        _hrf_kernel([lambda x, y, z: x + y + z], t_r)
+    with pytest.raises(
+        ValueError, match=r"Could not process custom HRF model provided."
+    ):
+        _hrf_kernel([lambda x: np.ones(int(x))] * 2, t_r)
+
     with pytest.raises(ValueError, match=r"is not a known hrf model."):
         _hrf_kernel("foo", t_r)
 
