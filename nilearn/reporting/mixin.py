@@ -78,7 +78,7 @@ class ReportMixin:
 
     # report body template name for the estimator
     _template_name: str = ""
-    # inheriting estimator should have _stimator_type
+    # inheriting estimator should have _estimator_type
     _estimator_type: str = ""
     _report_content: ClassVar[dict[str, Any]] = {}
 
@@ -272,12 +272,12 @@ class ReportMixin:
             sparsify=sparsify,
         )
 
+    # TODO (sklearn > 1.6.2) replace this method with self._repr_html_()
     def _model_params_to_html(self):
         """List model attributes and values in html."""
         if SKLEARN_GTE_1_7:
             parameters = self._repr_html_()
         else:
-            # TODO (sklearn > 1.6.2) remove else block
             parameters = self._model_attributes_to_dataframe(self)
             with pd.option_context("display.max_colwidth", 100):
                 parameters = dataframe_to_html(
