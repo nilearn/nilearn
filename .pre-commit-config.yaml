@@ -118,6 +118,12 @@ repos:
                 | nilearn/_utils/param_validation.py
             )$
 
+-   repo: https://github.com/standard/standard
+    rev: v17.1.2
+    hooks:
+    -   id: standard
+        files: tests/js/.*js
+
     # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter
     rev: v2.11

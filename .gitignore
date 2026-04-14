@@ -28,6 +28,7 @@ __pycache__
 
 #  JS
 node_modules
+.nyc_output
 
 # Mac OS X
 .DS_Store
