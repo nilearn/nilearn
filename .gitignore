@@ -51,7 +51,9 @@ env*/
 venv*/
 
 # testing
+.puppeteerEndpoint
 .pytest_cache
+*diff.png
 tests_to_run.txt
 # do not use report*.html below
 # otherwise some of the report*.html files used in masker reports
@@ -59,6 +61,7 @@ tests_to_run.txt
 report.html
 report_doc.html
 report_slow.html
+tests/js/*.html
 
 # CI benchmark
 maint_tools/*_runs_timing.*
