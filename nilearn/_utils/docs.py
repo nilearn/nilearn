@@ -221,6 +221,10 @@ docdict["classifier_options"] = f"""
 
         dummy = DummyClassifier(strategy="stratified", random_state=0)
 
+    A custom scikit-learn compatible estimator (i.e., any object with a
+    ``fit`` method) can also be passed directly instead of a string.
+    Use at your own risk; the process may not work as intended.
+
 """
 
 # clean_args
@@ -963,6 +967,10 @@ docdict["regressor_options"] = """
     .. code-block:: python
 
         dummy = DummyRegressor(strategy="mean")
+
+    A custom scikit-learn compatible estimator (i.e., any object with a
+    ``fit`` method) can also be passed directly instead of a string.
+    Use at your own risk; the process may not work as intended.
 
 """
 
