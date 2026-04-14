@@ -1241,9 +1241,12 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, default='svc'
+    estimator : :obj:`str` or estimator object, default='svc'
         The estimator to choose among:
         %(classifier_options)s
+
+        Can also pass a custom sklearn-compatible estimator object
+        (use at your own risk).
 
     mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
            :obj:`~nilearn.surface.SurfaceImage` \
@@ -1428,9 +1431,12 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, default="svr"
+    estimator : :obj:`str` or estimator object, default="svr"
         The estimator to choose among:
         %(regressor_options)s
+
+        Can also pass a custom sklearn-compatible estimator object
+        (use at your own risk).
 
     mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
             or None, default=None
