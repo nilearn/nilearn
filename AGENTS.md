@@ -16,7 +16,7 @@ Fix any remaining issues flagged by pre-commit before committing again.
 
 ### Setup
 
-Create a virtual environment before running any script, test, dod build...
+Create a virtual environment before running any script, test, doc build...
 
 ```bash
 uv sync
