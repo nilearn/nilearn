@@ -15,15 +15,11 @@ module.exports.fullTest = (file, clip) => {
 
     beforeAll(async () => {
       page = await __BROWSER__.newPage()
-      await page.coverage.startJSCoverage()
+
       await page.goto('http://localhost:8080/' + file)
     }, 5000)
 
     afterAll(async () => {
-      const jsCoverage = await page.coverage.stopJSCoverage()
-      const pti = require('puppeteer-to-istanbul')
-      pti.write([...jsCoverage], { includeHostname: true, storagePath: './.nyc_output' })
-
       await page.close()
     })
 
