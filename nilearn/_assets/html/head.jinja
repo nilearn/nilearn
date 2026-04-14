@@ -8,11 +8,22 @@
         <meta name="viewport"
               content="width = device-width, initial-scale = 1"
               charset="UTF-8" />
-        <!-- djlint:off --><style type="text/css">{{ head_css }}</style><!-- djlint:on -->
+        {% if head_css %}
+            <!-- djlint:off --><style type="text/css">{% include "css/head.css" %}</style><!-- djlint:on -->
+        {% endif %}
+        {{ js_libraries }}
+
+        {% block script %}
+        {% endblock script %}
+
     </head>
     <body>
         <main>
             {{ body }}
+
+            {% block main %}
+            {% endblock main %}
+
         </main>
         <footer {{ display_footer }}>
             <address>

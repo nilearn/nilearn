@@ -12,7 +12,6 @@ ci:
 exclude: |
     (?x)^(
         nilearn/datasets/tests/data/localizer_behavioural.tsv
-        | nilearn/plotting/data/js/.*js
         | nilearn/_version.py
         | asv_benchmarks/asv.conf.json
         | asv_benchmarks/results
@@ -118,6 +117,17 @@ repos:
                 | nilearn/_utils/param_validation.py
                 | nilearn/image/image.py
             )$
+
+# TODO: apply in a follow up PR
+# -   repo: https://github.com/standard/standard
+#     rev: v17.1.2
+#     hooks:
+#     -   id: standard
+#         # ignoring JS files that are not our own
+#         exclude: |
+#             (?x)^(
+#                 nilearn/_assets/js/.*min.*
+#             )$
 
     # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter

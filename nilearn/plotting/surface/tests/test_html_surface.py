@@ -106,10 +106,9 @@ def test_fill_html_template(tmp_path, mni152_template_res_2):
     )
     info["title"] = None
 
-    html = _fill_html_template(info, embed_js=False)
+    html = _fill_html_template(info)
 
     check_html_surface_plots(tmp_path, html)
-    assert "jquery.min.js" in html.html
 
     info = _full_brain_info(mni152_template_res_2)
     info["title"] = None
@@ -117,7 +116,6 @@ def test_fill_html_template(tmp_path, mni152_template_res_2):
     html = _fill_html_template(info)
 
     check_html_surface_plots(tmp_path, html)
-    assert "* plotly.js (gl3d - minified) v1." in html.html
 
 
 def test_view_surf(tmp_path, rng):

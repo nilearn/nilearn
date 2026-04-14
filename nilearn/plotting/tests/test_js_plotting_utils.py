@@ -1,5 +1,4 @@
 import base64
-import re
 
 import numpy as np
 import pytest
@@ -7,51 +6,11 @@ import pytest
 from nilearn._utils.helpers import is_gil_enabled
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.js_plotting_utils import (
-    add_js_lib,
     decode,
     encode,
-    get_html_template,
     mesh_to_plotly,
 )
 from nilearn.surface import load_surf_mesh
-
-
-def _normalize_ws(text):
-    return re.sub(r"\s+", " ", text)
-
-
-@pytest.mark.thread_unsafe
-def test_add_js_lib():
-    """Tests for function add_js_lib.
-
-    Checks that the html page contains the javascript code.
-    """
-    html = get_html_template("surface_plot_template.html")
-    cdn = add_js_lib(html, embed_js=False)
-    assert "decodeBase64" in cdn
-    assert _normalize_ws(
-        """<script
-    src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
-    </script>
-    <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
-    """
-    ) in _normalize_ws(cdn)
-    inline = _normalize_ws(add_js_lib(html, embed_js=True))
-    assert (
-        _normalize_ws(
-            """/*! jQuery v3.6.0 | (c) OpenJS Foundation and other
-                            contributors | jquery.org/license */"""
-        )
-        in inline
-    )
-    assert (
-        _normalize_ws(
-            """**
-                            * plotly.js (gl3d - minified)"""
-        )
-        in inline
-    )
-    assert "decodeBase64" in inline
 
 
 @pytest.mark.parametrize("dtype", ["<f4", "<i4", ">f4", ">i4"])
@@ -90,6 +49,10 @@ def check_html_surface_plots(
     """
     tmpfile = tmp_path / "test.html"
 
+    assert "* plotly.js (gl3d - minified) v1." in html.html
+    assert "jQuery v3.6.0" in html.html
+    assert 'charset="UTF-8"' in html.html
+
     html.save_as_html(tmpfile)
     with tmpfile.open() as f:
         saved = f.read()
@@ -99,11 +62,9 @@ def check_html_surface_plots(
     standalone = html.get_standalone().replace("\r\n", "\n")
     assert saved == standalone
 
-    assert "INSERT" not in html.html
     assert html.get_standalone() == html.html
     assert html._repr_html_() == html.get_iframe()
     assert str(html) == html.get_standalone()
-    assert '<meta charset="UTF-8" />' in str(html)
 
     resized = html.resize(3, 17)
     assert resized is html
@@ -112,7 +73,7 @@ def check_html_surface_plots(
     assert 'width="33" height="37"' in html.get_iframe(33, 37)
 
     if title is not None:
-        assert f"<title>{title}</title>" in str(html)
+        assert f"<title>Nilearn - {title}</title>" in str(html)
 
     # when testing without the GIL
     # we cannot import lxml as it requires the GIL
@@ -131,14 +92,14 @@ def _check_lxml(html, check_selects, plot_div_id):
     head = root.find("head")
     assert len(head.findall("script")) == 5
 
-    body = root.find("body")
-    div = body.find("div")
+    main = root.find("body").find("main")
+    div = main.find("div")
     assert ("id", plot_div_id) in div.items()
 
     if not check_selects:
         return
 
-    selects = body.findall("select")
+    selects = main.findall("select")
     assert len(selects) == 3
 
     for idx, selector, expected_n in zip(
