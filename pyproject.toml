@@ -135,7 +135,7 @@ plotting = [
 [project.urls]
 Changelog = "https://nilearn.github.io/stable/changes/whats_new.html"
 Development = "https://github.com/nilearn/nilearn"
-Discussions = "https://neurostars.org/tag/nilearn"
+Discussions = "https://neurostars.org/tag/nilearn/19"
 Homepage = "https://nilearn.github.io"
 
 [tool.codespell]
