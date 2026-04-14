@@ -40,9 +40,16 @@
       }
 
       function addPlot() {
-        for (let hemisphere of ["left", "right"]) {
-          makePlot("pial", hemisphere, "connectome-plot");
-        }
+        for (let key of connectomeInfo["mesh_keys"]) {
+          // key is e.g. "pial_left", "pial_right", or "pial"
+          let info = connectomeInfo[key];
+          decodeKey(connectomeInfo, key);   // replaces decodeHemisphere
+          info["type"]    = "mesh3d";
+          info["color"]   = "#aaaaaa";
+          info["opacity"] = getOpacity();
+          info["lighting"] = getLighting();
+          data.push(info);
+    }
         if (connectomeInfo["connectome"]["markers_only"]) {
           return;
         }

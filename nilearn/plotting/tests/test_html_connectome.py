@@ -3,11 +3,13 @@ import json
 import numpy as np
 import pytest
 
-from nilearn.plotting import html_connectome
+from nilearn.plotting import html_connectome, view_markers
+from nilearn.plotting.html_connectome import ConnectomeView
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting.tests.test_js_plotting_utils import (
     check_html_surface_plots,
 )
+from nilearn.surface import InMemoryMesh
 
 
 def test_prepare_line():
@@ -168,3 +170,17 @@ def test_view_markers_coords(tmp_path):
         coords, marker_size=list(range(len(coords)))
     )
     check_html_surface_plots(tmp_path, html, False, "connectome-plot")
+
+
+def test_view_markers_custom_surf_mesh():
+    """Test view_markers accepts a custom whole-brain surf_mesh."""
+    # create a minimal valid mesh
+    coords = np.array(
+        [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float
+    )
+    faces = np.array([[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]])
+    mesh = InMemoryMesh(coords, faces)
+
+    marker_coords = np.array([[0.2, 0.2, 0.2]])
+    result = view_markers(marker_coords, surf_mesh=mesh)
+    assert isinstance(result, ConnectomeView)

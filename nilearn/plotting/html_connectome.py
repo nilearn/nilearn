@@ -6,7 +6,7 @@ import numpy as np
 from matplotlib import cm as mpl_cm
 from scipy import sparse
 
-from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn import DEFAULT_DIVERGING_CMAP, datasets
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.param_validation import check_params
@@ -18,6 +18,7 @@ from nilearn.plotting.js_plotting_utils import (
     get_html_template,
     mesh_to_plotly,
 )
+from nilearn.surface import InMemoryMesh, load_surf_mesh
 
 
 class ConnectomeView(HTMLDocument):  # noqa: D101
@@ -222,11 +223,24 @@ def _get_connectome(
     }
 
 
-def _make_connectome_html(connectome_info, embed_js=True):
+def _make_connectome_html(connectome_info, embed_js=True, surf_mesh=None):
     plot_info = {"connectome": connectome_info}
-    mesh = fetch_surf_fsaverage()
-    for hemi in ["pial_left", "pial_right"]:
-        plot_info[hemi] = mesh_to_plotly(mesh[hemi])
+    mesh = surf_mesh if surf_mesh is not None else fetch_surf_fsaverage()
+
+    # Case 1: surf_mesh is a single whole-brain mesh
+    if isinstance(surf_mesh, InMemoryMesh):
+        plot_info["pial_whole"] = mesh_to_plotly(
+            surf_mesh
+        )  # ← "mesh" → "pial_whole"
+
+    # Case 2: surf_mesh is a dict of hemispheres (or None → fetched fsaverage)
+    else:
+        for hemi in ("pial_left", "pial_right"):
+            if hemi in mesh:  # ← surf_mesh → mesh (bug fix)
+                plot_info[hemi] = mesh_to_plotly(
+                    mesh[hemi]
+                )  # ← surf_mesh → mesh (bug fix)
+
     as_json = json.dumps(plot_info)
     as_html = get_html_template(
         "connectome_plot_template.html"
@@ -349,6 +363,22 @@ def view_connectome(
     return _make_connectome_html(connectome_info)
 
 
+def _prepare_meshes(surf_mesh=None):
+    """Return a list of (surface_key , mesh) pairs to render.
+    If surf_mesh is None, fall back to default bilateral fsaverage
+    if a single mesh path/object is provided, treat it as whole-brain.
+    """
+    if surf_mesh is None:
+        fsaverage = datasets.fetch_surf_fsaverage()
+        return [
+            ("pial_left", load_surf_mesh(fsaverage["pial_left"])),
+            ("pial_right", load_surf_mesh(fsaverage["pial_right"])),
+        ]
+    else:
+        # whole brain mesh: single entry, key is just pial
+        return [("pial", load_surf_mesh(surf_mesh))]
+
+
 @fill_doc
 def view_markers(
     marker_coords,
@@ -357,6 +387,7 @@ def view_markers(
     marker_labels=None,
     title=None,
     title_fontsize=25,
+    surf_mesh=None,
 ):
     """Insert a 3d plot of markers in a brain into an HTML page.
 
@@ -383,6 +414,12 @@ def view_markers(
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
+    surf_mesh : :obj:`str`, :obj:`pathlib.Path`, \
+                or :obj:`~nilearn.surface.InMemoryMesh` or None, default=None
+        Surface mesh to use as the background. If None, the default
+        fsaverage bilateral mesh is used. A single whole-brain mesh
+        (e.g. one including the cerebellum) can be passed here.
+
     Returns
     -------
     ConnectomeView : plot of the markers.
@@ -402,8 +439,8 @@ def view_markers(
         interactive plot of a connectome.
 
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
-        interactive view of statistical maps or surface atlases on the cortical
-        surface.
+        interactive view of statistical maps or surface atlases on the
+        cortical surface.
 
     """
     check_params(locals())
@@ -422,4 +459,4 @@ def view_markers(
     connectome_info["marker_labels"] = marker_labels
     connectome_info["title"] = title
     connectome_info["title_fontsize"] = title_fontsize
-    return _make_connectome_html(connectome_info)
+    return _make_connectome_html(connectome_info, surf_mesh=surf_mesh)
