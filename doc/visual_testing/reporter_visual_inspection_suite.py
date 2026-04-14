@@ -204,7 +204,7 @@ def _make_design_matrix_for_bids_feature(data_dir, subject):
     return design_matrix
 
 
-def report_flm_bids_features(build_type):
+def report_flm_bids_features(build_type, engine="matplolib"):
     if build_type == "partial":
         _generate_dummy_html(filenames=["flm_bids_features.html"])
         return None
@@ -218,9 +218,10 @@ def report_flm_bids_features(build_type):
         title=title,
         cluster_threshold=3,
         plot_type="glass",
+        engine=engine,
     )
 
-    verbose_save(report, "flm_bids_features.html")
+    verbose_save(report, f"flm_bids_features-{engine}.html")
 
     return report
 
