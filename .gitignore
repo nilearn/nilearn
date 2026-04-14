@@ -54,12 +54,7 @@ venv*/
 .puppeteerEndpoint
 .pytest_cache
 *diff.png
-# do not use report*.html below
-# otherwise some of the report*.html files used in masker reports
-# are ignored from package build
-report.html
-report_doc.html
-report_slow.html
+report*.html
 tests_to_run.txt
 tests/js/*.html
 
