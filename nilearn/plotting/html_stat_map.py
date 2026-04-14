@@ -24,6 +24,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn.datasets import load_mni152_template
+from nilearn.datasets.utils import load_anat
 from nilearn.image import (
     check_niimg_3d,
     get_data,
@@ -34,7 +35,6 @@ from nilearn.image import (
 )
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
-from nilearn.plotting.image.utils import load_anat
 from nilearn.plotting.js_plotting_utils import get_html_template
 from nilearn.typing import Threshold
 

@@ -6,8 +6,7 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn.conftest import _affine_mni
-from nilearn.datasets import load_mni152_template
-from nilearn.image import get_data, reorder_img
+from nilearn.image import get_data
 from nilearn.plotting import (
     plot_anat,
     plot_carpet,
@@ -18,7 +17,6 @@ from nilearn.plotting import (
     plot_roi,
     plot_stat_map,
 )
-from nilearn.plotting.image.utils import MNI152TEMPLATE
 
 ALL_PLOTTING_FUNCS = {
     plot_img,
@@ -48,14 +46,6 @@ def _add_nans_to_img(img, affine_mni=None):
     data[1, 3, 2] = np.nan
     data[6, 5, 2] = np.inf
     return Nifti1Image(data, affine_mni)
-
-
-def test_mni152template_is_reordered():
-    """See issue #2550."""
-    reordered_mni = reorder_img(load_mni152_template(resolution=2))
-    assert np.allclose(get_data(reordered_mni), get_data(MNI152TEMPLATE))
-    assert np.allclose(reordered_mni.affine, MNI152TEMPLATE.affine)
-    assert np.allclose(reordered_mni.shape, MNI152TEMPLATE.shape)
 
 
 @pytest.mark.parametrize(

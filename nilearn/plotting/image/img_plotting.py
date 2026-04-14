@@ -32,6 +32,7 @@ from nilearn._utils.param_validation import (
     check_threshold,
 )
 from nilearn._utils.versions import compare_version
+from nilearn.datasets.utils import MNI152TEMPLATE, load_anat
 from nilearn.image import (
     check_niimg_3d,
     check_niimg_4d,
@@ -52,7 +53,6 @@ from nilearn.plotting._utils import (
 )
 from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import save_figure_if_needed
-from nilearn.plotting.image.utils import MNI152TEMPLATE, load_anat
 from nilearn.signal import clean
 
 
