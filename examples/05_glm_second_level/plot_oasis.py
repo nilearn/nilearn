@@ -37,7 +37,7 @@ from nilearn.datasets import (
     fetch_icbm152_brain_gm_mask,
     fetch_oasis_vbm,
 )
-from nilearn.plotting import plot_design_matrix, plot_stat_map
+from nilearn.plotting import plot_stat_map
 
 n_subjects = 100  # more subjects requires more memory
 
@@ -90,18 +90,13 @@ design_matrix = pd.DataFrame(
     columns=["age", "sex", "intercept"],
 )
 
-from matplotlib import pyplot as plt
-
-# %%
-# Let's plot the design matrix.
-fig, ax1 = plt.subplots(1, 1, figsize=(4, 8))
-ax = plot_design_matrix(design_matrix, axes=ax1)
-ax.set_ylabel("maps")
-fig.suptitle("Second level design matrix")
 
 # %%
 # Next, we specify and fit the second-level model when loading the data and
 # also smooth a little bit to improve statistical behavior.
+#
+# We first specify the model in with ``design_only=True``
+# to inpect its design matrix in a report.
 from nilearn.glm.second_level import SecondLevelModel
 
 second_level_model = SecondLevelModel(
@@ -110,7 +105,25 @@ second_level_model = SecondLevelModel(
     n_jobs=2,
     minimize_memory=False,
     verbose=1,
+    design_only=True,
 )
+second_level_model.fit(
+    gray_matter_map_filenames,
+    design_matrix=design_matrix,
+)
+
+report = second_level_model.generate_report(contrasts=np.asarray([1, 0, 0]))
+
+# %%
+#
+# .. include:: ../../../examples/report_note.rst
+#
+report
+
+# %%
+# After this quality control,
+# we can fit the model for good.
+second_level_model.design_only = False
 second_level_model.fit(
     gray_matter_map_filenames,
     design_matrix=design_matrix,
@@ -129,6 +142,8 @@ z_map = second_level_model.compute_contrast(
 # ------------
 # We threshold the second level :term:`contrast`
 # at FDR-corrected p < 0.05 and plot it.
+from matplotlib import pyplot as plt
+
 from nilearn.glm import threshold_stats_img
 from nilearn.plotting import show
 
@@ -169,12 +184,11 @@ show()
 # Generate a report for the GLM
 # -----------------------------
 #
-# Generate a report and view it.
-#
 
 icbm152_2009 = fetch_icbm152_2009()
 
 report = second_level_model.generate_report(
+    contrasts=np.asarray([1, 0, 0]),
     bg_img=icbm152_2009["t1"],
     plot_type="glass",
     alpha=0.05,

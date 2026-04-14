@@ -46,7 +46,6 @@ from nilearn.glm.first_level.first_level import (
     _yule_walker,
 )
 from nilearn.glm.regression import ARModel, OLSModel
-from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -1448,6 +1447,23 @@ def test_img_table_checks():
         _check_length_match([""] * 2, [""], "", "")
 
 
+def test_first_level_design_only_compute_contrast_warning(
+    shape_4d_default,
+) -> None:
+    """Check cannot compute contrast on design only GLM."""
+    design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )[2]
+    model = FirstLevelModel(design_only=True)
+    model.fit(run_imgs=None, design_matrices=design_matrices)
+
+    with pytest.warns(
+        UserWarning, match="Cannot compute contrasts on 'design_only' models"
+    ):
+        output = model.compute_contrast(np.asarray([1, 0, 0]))
+    assert output is None
+
+
 # -----------------------surface tests--------------------------------------- #
 
 
@@ -1613,9 +1629,6 @@ def test_flm_get_element_wise_model_attribute_with_surface_data(
     assert model.r_square[0].shape == (img.mesh.n_vertices, 1)
 
 
-# -----------------------bids tests----------------------- #
-
-
 def test_fixed_effect_contrast_surface(surface_glm_data):
     """Smoke test of compute_fixed_effects with surface data."""
     mini_img, _ = surface_glm_data(5)
@@ -1642,96 +1655,3 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
         assert len(outputs) == 4
         for output in outputs:
             assert isinstance(output, SurfaceImage)
-
-
-@pytest.mark.slow
-@pytest.mark.thread_unsafe
-@pytest.mark.parametrize(
-    "kwargs",
-    [
-        ({}),
-        ({"height_control": None, "threshold": DEFAULT_Z_THRESHOLD}),
-    ],
-)
-def test_generate_report_default(kwargs):
-    """Make sure generate_report throws no warning by default,
-    or when height_control=None and the future default threshold.
-    """
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[(30, 31, 32, 33)], rk=3
-    )
-
-    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
-        fmri_data[0], design_matrices=design_matrices[0]
-    )
-
-    contrasts = [
-        np.asarray([1, 0, 0]),
-        np.asarray([1, 1, 0]),
-        np.asarray([1, 1, 1]),
-    ]
-
-    with warnings.catch_warnings(record=True) as warning_list:
-        flm.generate_report(contrasts=contrasts, **kwargs)
-        assert len(warning_list) == 0
-
-
-@pytest.mark.slow
-@pytest.mark.thread_unsafe
-def test_generate_report_height_none_future_default():
-    """Make sure generate_report raises a single FutureWarning
-    about the deprecation of the default threshold.
-
-    TODO (nilearn >= 0.15)
-    Remove this test
-    """
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[(30, 31, 32, 33)], rk=3
-    )
-
-    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
-        fmri_data[0], design_matrices=design_matrices[0]
-    )
-
-    contrasts = [
-        np.asarray([1, 0, 0]),
-        np.asarray([1, 1, 0]),
-        np.asarray([1, 1, 1]),
-    ]
-
-    with pytest.warns(
-        FutureWarning, match="the default 'threshold' will be set to"
-    ):
-        flm.generate_report(contrasts=contrasts, height_control=None)
-
-
-@pytest.mark.slow
-@pytest.mark.thread_unsafe
-@pytest.mark.parametrize("threshold", [4, DEFAULT_Z_THRESHOLD])
-def test_generate_report_threshold_unused(threshold):
-    """Make sure generate_report raises a single warning,
-    about threshold not being used.
-    """
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[(30, 31, 32, 33)], rk=3
-    )
-
-    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
-        fmri_data[0], design_matrices=design_matrices[0]
-    )
-
-    contrasts = [
-        np.asarray([1, 0, 0]),
-        np.asarray([1, 1, 0]),
-        np.asarray([1, 1, 1]),
-    ]
-
-    with warnings.catch_warnings(record=True) as warning_list:
-        flm.generate_report(contrasts=contrasts, threshold=threshold)
-        assert (
-            sum(
-                "'threshold' was set to 'None'" in str(warning.message)
-                for warning in warning_list
-            )
-            == 1
-        )

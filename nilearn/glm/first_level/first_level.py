@@ -384,8 +384,6 @@ class FirstLevelModel(BaseGLM):
         by a NiftiMasker
         or :obj:`~nilearn.maskers.SurfaceMasker` with default parameters.
         If False is given then the data will not be masked.
-        In the case of surface analysis, passing None or False will lead to
-        no masking.
 
     %(target_affine)s
 
@@ -442,6 +440,11 @@ class FirstLevelModel(BaseGLM):
         of order at least 2 ('ar(N)' with n >= 2).
 
         .. nilearn_versionadded:: 0.9.1
+
+    design_only : :obj:`bool`, default=False
+        If True the model is specified but not estimated.
+
+        .. nilearn_versionadded:: 0.14.0dev
 
     Attributes
     ----------
@@ -509,6 +512,7 @@ class FirstLevelModel(BaseGLM):
         minimize_memory=True,
         subject_label=None,
         random_state=None,
+        design_only=False,
     ):
         # design matrix parameters
         self.t_r = t_r
@@ -538,6 +542,7 @@ class FirstLevelModel(BaseGLM):
         # attributes
         self.subject_label = subject_label
         self.random_state = random_state
+        self.design_only = design_only
 
     def _is_first_level_glm(self):
         return True
@@ -551,7 +556,11 @@ class FirstLevelModel(BaseGLM):
         design_matrices,
     ):
         """Run input validation and ensure inputs are compatible."""
-        if not isinstance(
+        if self.design_only:
+            if design_matrices is not None:
+                run_imgs = [None] * self._n_runs_
+
+        elif not isinstance(
             run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
         ) or (
             isinstance(run_imgs, (list, tuple))
@@ -648,12 +657,10 @@ class FirstLevelModel(BaseGLM):
             design_matrices,
         )
 
-    def _log(
-        self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
-    ) -> None:
+    def _log(self, step, run_idx=None, t0=None, time_in_second=None) -> None:
         """Generate and log messages for different step of the model fit."""
         if step == "progress":
-            msg = self._report_progress(run_idx, n_runs, t0)
+            msg = self._report_progress(run_idx, t0)
         elif step == "running":
             msg = "Performing GLM computation."
         elif step == "run_done":
@@ -664,7 +671,7 @@ class FirstLevelModel(BaseGLM):
             msg = f"Masking took {int(time_in_second)} seconds."
         elif step == "done":
             msg = (
-                f"Computation of {n_runs} runs done "
+                f"Computation of {self._n_runs_} runs done "
                 f"in {int(time_in_second)} seconds."
             )
 
@@ -673,10 +680,10 @@ class FirstLevelModel(BaseGLM):
             verbose=self.verbose,
         )
 
-    def _report_progress(self, run_idx, n_runs, t0):
+    def _report_progress(self, run_idx, t0):
         remaining = "go take a coffee, a big one"
         if run_idx != 0:
-            percent = float(run_idx) / n_runs
+            percent = float(run_idx) / self._n_runs_
             percent = round(percent * 100, 2)
             dt = time.time() - t0
             # We use a max to avoid a division by zero
@@ -684,7 +691,8 @@ class FirstLevelModel(BaseGLM):
             remaining = f"{int(remaining)} seconds remaining"
 
         return (
-            f"Computing run {run_idx + 1} out of {n_runs} runs ({remaining})."
+            f"Computing run {run_idx + 1} "
+            f"out of {self._n_runs_} runs ({remaining})."
         )
 
     def _fit_single_run(self, sample_masks, bins, run_img, run_idx) -> None:
@@ -826,13 +834,11 @@ class FirstLevelModel(BaseGLM):
             hasattr(self, "labels_")
             and hasattr(self, "results_")
             and hasattr(self, "fir_delays_")
-            and self.labels_ is not None
-            and self.results_ is not None
         )
 
     def fit(
         self,
-        run_imgs,
+        run_imgs=None,
         events=None,
         confounds=None,
         sample_masks=None,
@@ -859,9 +865,11 @@ class FirstLevelModel(BaseGLM):
                    :obj:`list` or :obj:`tuple` of Niimg-like objects, \
                    SurfaceImage object, \
                    or :obj:`list` or \
-                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
+                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`, \
+                   default=None
             Data on which the :term:`GLM` will be fitted.
             If this is a list, the affine is considered the same for all.
+            If ``design_only=True``, then ``run_imgs`` can be ``None``.
 
             .. warning::
 
@@ -871,14 +879,14 @@ class FirstLevelModel(BaseGLM):
                 For example, if ``mask_img`` is
                 a :class:`nilearn.maskers.NiftiMasker` instance
                 or a Niimng-like object, then ``run_imgs`` must be a
-                Niimg-like object, \
+                Niimg-like object,
                 a :obj:`list` or a :obj:`tuple` of Niimg-like objects.
                 If ``mask_img`` is
                 a :obj:`~nilearn.maskers.SurfaceMasker`
                 or :obj:`~nilearn.surface.SurfaceImage` instance,
                 then ``run_imgs`` must be a
-                :obj:`~nilearn.surface.SurfaceImage`, \
-                a :obj:`list` or \
+                :obj:`~nilearn.surface.SurfaceImage`,
+                a :obj:`list` or
                 a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`.
 
         events : :obj:`pandas.DataFrame` or :obj:`pandas.Series` \
@@ -897,7 +905,7 @@ class FirstLevelModel(BaseGLM):
 
             .. warning::
 
-                This parameter is ignored if design_matrices are passed.
+                This parameter is ignored if ``design_matrices`` are passed.
 
         confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
                     :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
@@ -911,7 +919,7 @@ class FirstLevelModel(BaseGLM):
 
             .. warning::
 
-                This parameter is ignored if design_matrices are passed.
+                This parameter is ignored if ``design_matrices`` are passed.
 
         sample_masks : array_like, or :obj:`list` of array_like, default=None
             shape of array: (number of scans - number of volumes remove)
@@ -928,7 +936,7 @@ class FirstLevelModel(BaseGLM):
                           :obj:`pathlib.Path` to a CSV or TSV file, \
                           or None, default=None
             Design matrices that will be used to fit the GLM.
-            If given it takes precedence over events and confounds.
+            If given it takes precedence over ``events`` and ``confounds``.
 
         bins : :obj:`int`, default=100
             Maximum number of discrete bins for the AR coef histogram.
@@ -970,6 +978,15 @@ class FirstLevelModel(BaseGLM):
         self.labels_ = None
         self.results_ = None
 
+        self._n_runs_ = (
+            len(run_imgs) if isinstance(run_imgs, (list, tuple)) else 1
+        )
+        if self.design_only:
+            if isinstance(design_matrices, list):
+                self._n_runs_ = len(design_matrices)
+            if isinstance(events, list):
+                self._n_runs_ = len(events)
+
         run_imgs, events, confounds, sample_masks, design_matrices = (
             self._check_fit_inputs(
                 run_imgs,
@@ -980,9 +997,9 @@ class FirstLevelModel(BaseGLM):
             )
         )
 
-        # Initialize masker_ to None such that attribute exists
-        self.masker_ = None
-
+        # Assumption: FIXME ?
+        # compute mask based on first run
+        # and apply to all others
         self._prepare_mask(run_imgs[0])
 
         # collect info that may be useful for report generation
@@ -1013,24 +1030,24 @@ class FirstLevelModel(BaseGLM):
         )
 
         # For each run fit the model and keep only the regression results.
-        self.labels_, self.results_ = [], []
-        self._reporting_data["run_imgs"] = {}
-        n_runs = len(run_imgs)
-        t0 = time.time()
-        for run_idx, run_img in enumerate(run_imgs):
-            self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
+        if not self.design_only:
+            self.labels_, self.results_ = [], []
+            self._reporting_data["run_imgs"] = {}
+            t0 = time.time()
+            for run_idx, run_img in enumerate(run_imgs):
+                self._log("progress", run_idx=run_idx, t0=t0)
 
-            # collect name of input files
-            # for eventual saving to disk later
-            self._reporting_data["run_imgs"][run_idx] = {}
-            if isinstance(run_img, (str, Path)):
-                self._reporting_data["run_imgs"][run_idx] = (
-                    parse_bids_filename(run_img)
-                )
+                # collect name of input files
+                # for eventual saving to disk later
+                self._reporting_data["run_imgs"][run_idx] = {}
+                if isinstance(run_img, (str, Path)):
+                    self._reporting_data["run_imgs"][run_idx] = (
+                        parse_bids_filename(run_img)
+                    )
 
-            self._fit_single_run(sample_masks, bins, run_img, run_idx)
+                self._fit_single_run(sample_masks, bins, run_img, run_idx)
 
-        self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
+            self._log("done", time_in_second=time.time() - t0)
 
         return self
 
@@ -1071,12 +1088,18 @@ class FirstLevelModel(BaseGLM):
 
         Returns
         -------
-        output : Nifti1Image, :obj:`~nilearn.surface.SurfaceImage`, \
-                 or :obj:`dict`
+        output_image : :class:`~nibabel.nifti1.Nifti1Image`, \
+                       :class:`~nilearn.surface.SurfaceImage`, None, or\
+                       a :obj:`dict` of  \
+                       :class:`~nibabel.nifti1.Nifti1Image`, \
+                       :class:`~nilearn.surface.SurfaceImage` or None
             The desired output image(s).
             If ``output_type == 'all'``,
             then the output is a dictionary of images,
             keyed by the type of image.
+
+            If the model has ``design_only=True``,
+            this will return None or a :obj:`dict` whose values are None.
 
         """
         check_is_fitted(self)
@@ -1091,12 +1114,12 @@ class FirstLevelModel(BaseGLM):
                 " (array or str)."
             )
 
-        n_runs = len(self.labels_)
         n_contrasts = len(con_vals)
-        if n_contrasts == 1 and n_runs > 1:
+        if n_contrasts == 1 and self._n_runs_ > 1:
             warn(
                 (
-                    f"The same contrast will be used for all {n_runs} runs. "
+                    "The same contrast will be used "
+                    f"for all {self._n_runs_} runs. "
                     "If the design matrices are not the same for all runs, "
                     "(for example with different column names "
                     "or column order across runs) "
@@ -1107,11 +1130,11 @@ class FirstLevelModel(BaseGLM):
                 category=RuntimeWarning,
                 stacklevel=find_stack_level(),
             )
-            con_vals = con_vals * n_runs
-        elif n_contrasts != n_runs:
+            con_vals = con_vals * self._n_runs_
+        elif n_contrasts != self._n_runs_:
             raise ValueError(
                 f"{n_contrasts} contrasts given, "
-                f"while there are {n_runs} runs."
+                f"while there are {self._n_runs_} runs."
             )
 
         # Translate formulas to vectors
@@ -1133,13 +1156,26 @@ class FirstLevelModel(BaseGLM):
             "all",  # must be the final entry!
         ]
         check_parameter_in_allowed(output_type, valid_types, "output_type")
-        contrast = compute_fixed_effect_contrast(
-            self.labels_, self.results_, con_vals, stat_type
-        )
         output_types = (
             valid_types[:-1] if output_type == "all" else [output_type]
         )
+
         outputs = {}
+        for output_type_ in output_types:
+            outputs[output_type_] = None
+
+        if self.design_only:
+            warnings.warn(
+                "Cannot compute contrasts on 'design_only' models.",
+                category=UserWarning,
+                stacklevel=find_stack_level(),
+            )
+            return outputs if output_type == "all" else None
+
+        contrast = compute_fixed_effect_contrast(
+            self.labels_, self.results_, con_vals, stat_type
+        )
+
         for output_type_ in output_types:
             estimate_ = getattr(contrast, output_type_)()
             # Prepare the returned images
@@ -1224,6 +1260,12 @@ class FirstLevelModel(BaseGLM):
         # check if valid attribute is being accessed.
         check_is_fitted(self)
 
+        if self.design_only:
+            raise RuntimeError(
+                "Cannot get_element_wise_model_attribute "
+                "on 'design_only' models."
+            )
+
         all_attributes = dict(vars(RegressionResults)).keys()
         possible_attributes = [
             prop for prop in all_attributes if "__" not in prop
@@ -1276,6 +1318,13 @@ class FirstLevelModel(BaseGLM):
 
         # Learn the mask
         if self.mask_img is False:
+            # TODO this changes the value of self.mask_img
+            # this should not happen as per sklearn rules about estimators
+            #
+            # TODO SecondLevelModel does not have a mask_img=False option
+            # that leads to no implicit mask (all voxels / vertices
+            # are included): do we want to add it?
+            #
             # We create a dummy mask to preserve functionality of api
             if masker_type == "surface":
                 surf_data = {
@@ -1291,7 +1340,12 @@ class FirstLevelModel(BaseGLM):
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
 
-        check_compatibility_mask_and_images(self.mask_img, run_img)
+        self.masker_ = None
+        self.n_elements_ = 0
+
+        if not self.design_only or run_img is not None:
+            check_compatibility_mask_and_images(self.mask_img, run_img)
+
         if (  # deal with self.mask_img as image, str, path, none
             (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
             or
@@ -1312,11 +1366,13 @@ class FirstLevelModel(BaseGLM):
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"
 
-            with warnings.catch_warnings():
-                # ignore warning in case the masker
-                # was initialized with a mask image
-                warnings.simplefilter("ignore")
-                self.masker_.fit(run_img)
+            if not self.design_only or run_img is not None:
+                with warnings.catch_warnings():
+                    # ignore warning in case the masker
+                    # was initialized with a mask image
+                    warnings.simplefilter("ignore")
+
+                    self.masker_.fit(run_img)
 
         else:
             check_is_fitted(self.mask_img)
@@ -1328,7 +1384,7 @@ class FirstLevelModel(BaseGLM):
         # whether to do signal_scaling or not
         self.masker_.standardize = self.standardize_
 
-        self.n_elements_ = self.masker_.n_elements_
+        self.n_elements_ = getattr(self.masker_, "n_elements_", 0)
 
 
 def _check_events_file_uses_tab_separators(events_files):

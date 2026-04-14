@@ -244,7 +244,7 @@ def test_check_shape_first_level_models(shape_4d_default, n_subjects):
 
 def test_check_second_level_input(shape_4d_default):
     """Raise errors when wrong inputs are passed to SecondLevelModel."""
-    with pytest.raises(TypeError, match="second_level_input must be"):
+    with pytest.raises(TypeError, match="'second_level_input' must be"):
         _check_second_level_input(1, None)
 
     with pytest.raises(
@@ -287,7 +287,7 @@ def test_check_second_level_input_list_wrong_type():
     """
     model = SecondLevelModel()
     second_level_input = [1, 2]
-    with pytest.raises(TypeError, match="second_level_input must be"):
+    with pytest.raises(TypeError, match="'second_level_input' must be"):
         model.fit(second_level_input)
 
 
@@ -515,6 +515,20 @@ def test_affine_shape_output_when_provided(affine_eye, n_subjects):
     assert_array_equal(z_image.affine, target_affine)
 
 
+def test_slm_4d_image_design_only(img_4d_mni):
+    """Check design only mode with volume data."""
+    model = SecondLevelModel(design_only=True)
+    Y = img_4d_mni
+    X = pd.DataFrame([[1]] * img_4d_mni.shape[3], columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+    c1 = np.eye(len(model.design_matrix_.columns))[0]
+    with pytest.warns(
+        UserWarning, match="Cannot compute contrasts on 'design_only' models"
+    ):
+        output = model.compute_contrast(c1, output_type="z_score")
+    assert output is None
+
+
 def test_slm_4d_image(img_4d_mni):
     """Compute contrast with 4D images as input.
 
@@ -549,7 +563,8 @@ def test_warning_overriding_with_masker_parameter(n_subjects):
 
 @pytest.mark.slow
 @pytest.mark.parametrize("confounds", [None, _confounds()])
-def test_fmri_inputs_flms(rng, confounds, shape_4d_default):
+@pytest.mark.parametrize("design_only", [True, False])
+def test_fmri_inputs_flms(rng, confounds, shape_4d_default, design_only):
     """Test second level model with first level model as inputs."""
     # prepare fake data
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -570,12 +585,22 @@ def test_fmri_inputs_flms(rng, confounds, shape_4d_default):
     flms = [flm, flm, flm]
 
     # First level models as input
-    SecondLevelModel(mask_img=mask).fit(flms)
-    SecondLevelModel().fit(flms)
+    if design_only:
+        SecondLevelModel(mask_img=mask, design_only=design_only).fit(flms)
+        SecondLevelModel(design_only=design_only).fit(flms)
 
-    # Note : the following one creates a singular design matrix
-    SecondLevelModel().fit(flms, confounds)
-    SecondLevelModel().fit(flms, confounds, design_matrix)
+        # Note : the following one creates a singular design matrix
+        SecondLevelModel(design_only=design_only).fit(flms, confounds)
+    else:
+        SecondLevelModel(mask_img=mask, design_only=design_only).fit(flms)
+        SecondLevelModel(design_only=design_only).fit(flms)
+
+        # Note : the following one creates a singular design matrix
+        SecondLevelModel(design_only=design_only).fit(flms, confounds)
+
+    SecondLevelModel(design_only=design_only).fit(
+        flms, confounds, design_matrix
+    )
 
 
 @pytest.mark.parametrize("confounds", [None, _confounds()])
@@ -600,7 +625,10 @@ def test_fmri_inputs_images(rng, shape_3d_default, confounds):
 
 
 @pytest.mark.parametrize("confounds", [None, _confounds()])
-def test_fmri_inputs_dataframes_as_input(tmp_path, rng, confounds):
+@pytest.mark.parametrize("design_only", [True, False])
+def test_fmri_inputs_dataframes_as_input(
+    tmp_path, rng, confounds, design_only
+):
     """Test second level model with dataframe as inputs."""
     # prepare fake data
     p, q = 80, 10
@@ -623,11 +651,14 @@ def test_fmri_inputs_dataframes_as_input(tmp_path, rng, confounds):
     ]
     niidf = pd.DataFrame(dfrows, columns=dfcols)
 
-    SecondLevelModel().fit(niidf, confounds)
-    SecondLevelModel().fit(niidf, confounds, design_matrix)
+    SecondLevelModel(design_only=design_only).fit(niidf, confounds)
+    SecondLevelModel(design_only=design_only).fit(
+        niidf, confounds, design_matrix
+    )
 
 
-def test_fmri_pandas_series_as_input(tmp_path, rng):
+@pytest.mark.parametrize("design_only", [True, False])
+def test_fmri_pandas_series_as_input(tmp_path, rng, design_only):
     """Use pandas series of file paths as inputs."""
     # prepare correct input dataframe and lists
     p, q = 80, 10
@@ -640,11 +671,17 @@ def test_fmri_pandas_series_as_input(tmp_path, rng):
     # dataframes as input
     design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
     niidf = pd.DataFrame({"filepaths": [fmri_files, fmri_files, fmri_files]})
-    SecondLevelModel().fit(
+    SecondLevelModel(design_only=design_only).fit(
         second_level_input=niidf["filepaths"],
         confounds=None,
         design_matrix=design_matrix,
     )
+    with pytest.raises(
+        ValueError, match="require a design matrix to be provided"
+    ):
+        SecondLevelModel(design_only=design_only).fit(
+            second_level_input=niidf["filepaths"], confounds=None
+        )
 
 
 def test_fmri_inputs_pandas_errors():
@@ -675,7 +712,7 @@ def test_fmri_inputs_pandas_errors():
 
 
 @pytest.mark.single_process
-def test_fit_inputs_errors(confounds, shape_4d_default):
+def test_fit_inputs_errors_flm(confounds, shape_4d_default):
     """Raise the proper errors when invalid inputs are passed to fit."""
     # prepare fake data
     shapes = (shape_4d_default,)
@@ -690,7 +727,7 @@ def test_fit_inputs_errors(confounds, shape_4d_default):
     )
 
     # test first level model requirements
-    with pytest.raises(TypeError, match="second_level_input must be"):
+    with pytest.raises(TypeError, match="'second_level_input' must be"):
         SecondLevelModel().fit(second_level_input=flm)
     with pytest.raises(TypeError, match="at least two"):
         SecondLevelModel().fit(second_level_input=[flm])
@@ -761,15 +798,30 @@ def test_design_matrix_error_type(img_3d_mni, design_matrix):
         )
 
 
-def test_fmri_img_inputs_errors(confounds):
+def test_fit_inputs_errors_fmri_img(confounds):
     # prepare correct input
     _, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
     fmri_data = fmri_data[0]
 
-    # test niimgs requirements
+    with pytest.raises(
+        TypeError,
+        match="'design_matrix' cannot None for design only models",
+    ):
+        SecondLevelModel(design_only=True).fit()
+
+    with pytest.raises(
+        TypeError,
+        match="'second_level_input' cannot be None when design_only is False",
+    ):
+        SecondLevelModel().fit()
+
+    with pytest.raises(TypeError, match=("foo")):
+        SecondLevelModel().fit(second_level_input=[None, None, fmri_data])
+
     niimgs = [fmri_data, fmri_data, fmri_data]
     with pytest.raises(ValueError, match="require a design matrix"):
         SecondLevelModel().fit(niimgs)
+
     with pytest.raises(
         TypeError,
         match=r"Elements of second_level_input must be of the same type.",
@@ -1063,6 +1115,27 @@ def test_second_level_input_as_surface_image(surf_img_1d, n_subjects):
     assert isinstance(model.mask_img_, SurfaceImage)
 
 
+def test_second_level_input_design_only(surf_img_1d):
+    """Test slm in design_only mode."""
+    n_subjects = 5
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
+
+    design_matrix = pd.DataFrame(
+        [1] * len(second_level_input), columns=["intercept"]
+    )
+
+    model = SecondLevelModel(design_only=True)
+    # both of those should work
+    model = model.fit(design_matrix=design_matrix)
+    model = model.fit(second_level_input, design_matrix=design_matrix)
+
+    with pytest.warns(
+        UserWarning, match="Cannot compute contrasts on 'design_only' models"
+    ):
+        output = model.compute_contrast()
+    assert output is None
+
+
 def test_second_level_input_as_surface_image_3d(surf_img_2d, n_subjects):
     """Fit with surface image with all subjects as timepoints."""
     second_level_input = surf_img_2d(n_subjects)
@@ -1118,7 +1191,7 @@ def test_second_level_input_as_surface_no_design_matrix(
     with pytest.raises(
         ValueError, match="require a design matrix to be provided"
     ):
-        model.fit(second_level_input, design_matrix=None)
+        model.fit(second_level_input)
 
 
 @pytest.mark.thread_unsafe

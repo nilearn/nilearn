@@ -50,7 +50,7 @@ from nilearn.typing import NiimgLike
 
 def _input_type_error_message(second_level_input):
     return (
-        "second_level_input must be either:\n"
+        "'second_level_input' must be either:\n"
         "- a pandas DataFrame,\n"
         "- a Niimg-like object\n"
         "- a pandas Series of Niimg-like object\n"
@@ -63,10 +63,20 @@ def _input_type_error_message(second_level_input):
 
 
 def _check_second_level_input(
-    second_level_input, design_matrix, confounds=None
+    second_level_input, design_matrix, design_only=False, confounds=None
 ) -> None:
     """Check second_level_input type."""
     _check_design_matrix(design_matrix)
+    if design_only:
+        if design_matrix is None:
+            raise TypeError(
+                "'design_matrix' cannot be None when design_only is True."
+            )
+        return
+    elif second_level_input is None:
+        raise TypeError(
+            "'second_level_input' cannot be None when design_only is False."
+        )
 
     input_type = _check_input_type(second_level_input)
     _check_input_as_type(
@@ -129,7 +139,10 @@ def _check_all_elements_of_same_type(data) -> None:
 
 
 def _check_input_as_type(
-    second_level_input, input_type, none_confounds, none_design_matrix
+    second_level_input,
+    input_type,
+    none_confounds,
+    none_design_matrix,
 ) -> None:
     if input_type == "flm_object":
         _check_input_as_first_level_model(second_level_input, none_confounds)
@@ -438,7 +451,6 @@ def _process_second_level_input_as_firstlevelmodels(second_level_input):
 
 def _process_second_level_input_as_surface_image(second_level_input):
     """Compute mean image across sample maps.
-
     All should have the same underlying meshes.
 
     Returns
@@ -502,6 +514,11 @@ class SecondLevelModel(BaseGLM):
         further inspection of model details. This has an important impact
         on memory consumption.
 
+    design_only : :obj:`bool`, default=False
+        If True the model is specified but not estimated.
+
+        .. versionadded:: 0.14.0dev
+
     Attributes
     ----------
     confounds_ : :obj:`pandas.DataFrame` or None
@@ -561,6 +578,7 @@ class SecondLevelModel(BaseGLM):
         verbose=0,
         n_jobs=1,
         minimize_memory=True,
+        design_only=False,
     ):
         self.mask_img = mask_img
         self.target_affine = target_affine
@@ -571,9 +589,10 @@ class SecondLevelModel(BaseGLM):
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
+        self.design_only = design_only
 
     @fill_doc
-    def fit(self, second_level_input, confounds=None, design_matrix=None):
+    def fit(self, second_level_input=None, confounds=None, design_matrix=None):
         """Fit the second-level :term:`GLM`.
 
         1. create design matrix
@@ -599,7 +618,10 @@ class SecondLevelModel(BaseGLM):
 
         # check second_level_input
         _check_second_level_input(
-            second_level_input, design_matrix, confounds=confounds
+            second_level_input,
+            design_matrix,
+            self.design_only,
+            confounds=confounds,
         )
 
         _check_confounds(confounds)
@@ -613,16 +635,10 @@ class SecondLevelModel(BaseGLM):
 
         self.confounds_ = confounds
 
-        sample_map, subjects_label = _process_second_level_input(
-            second_level_input
-        )
-
-        # Report progress
-        t0 = time.time()
-        logger.log(
-            "Fitting second level model. Take a deep breath.\r",
-            verbose=self.verbose,
-        )
+        if not self.design_only:
+            sample_map, subjects_label = _process_second_level_input(
+                second_level_input
+            )
 
         # Create and set design matrix, if not given
         if design_matrix is None:
@@ -635,6 +651,20 @@ class SecondLevelModel(BaseGLM):
             )[0]
         self.design_matrix_ = design_matrix
 
+        self.masker_ = None
+        self.n_elements_ = 0
+        self._reporting_data = {}
+
+        if self.design_only:
+            return self
+
+        # Report progress
+        t0 = time.time()
+        logger.log(
+            "Fitting second level model. Take a deep breath.\r",
+            verbose=self.verbose,
+        )
+
         masker_type = "nii"
         if not self._is_volume_glm() or isinstance(sample_map, SurfaceImage):
             masker_type = "surface"
@@ -643,7 +673,8 @@ class SecondLevelModel(BaseGLM):
         self.masker_ = check_embedded_masker(self, masker_type)
         self.masker_.memory_level = self.memory_level
 
-        self.masker_.fit(sample_map)
+        if sample_map is not None:
+            self.masker_.fit(sample_map)
 
         self.n_elements_ = self.masker_.n_elements_
 
@@ -654,15 +685,10 @@ class SecondLevelModel(BaseGLM):
             verbose=self.verbose,
         )
 
-        self._reporting_data = {}
-
         return self
 
     def __sklearn_is_fitted__(self) -> bool:
-        return (
-            hasattr(self, "second_level_input_")
-            and self.second_level_input_ is not None
-        )
+        return hasattr(self, "second_level_input_")
 
     @fill_doc
     def compute_contrast(
@@ -691,11 +717,18 @@ class SecondLevelModel(BaseGLM):
 
         Returns
         -------
-        output_image : :class:`~nibabel.nifti1.Nifti1Image`
+        output_image : :class:`~nibabel.nifti1.Nifti1Image`, \
+                       :class:`~nilearn.surface.SurfaceImage`, None, or\
+                       a :obj:`dict` of  \
+                       :class:`~nibabel.nifti1.Nifti1Image`, \
+                       :class:`~nilearn.surface.SurfaceImage` or None
             The desired output image(s).
             If ``output_type == 'all'``,
             then the output is a dictionary of images,
             keyed by the type of image.
+
+            If the model has ``design_only=True``,
+            this will return None or a :obj:`dict` whose values are None.
 
         """
         check_is_fitted(self)
@@ -720,6 +753,22 @@ class SecondLevelModel(BaseGLM):
             "all",
         ]
         check_parameter_in_allowed(output_type, valid_types, "output_type")
+
+        output_types = (
+            valid_types[:-1] if output_type == "all" else [output_type]
+        )
+
+        outputs = {}
+        for output_type_ in output_types:
+            outputs[output_type_] = None
+
+        if self.design_only:
+            warn(
+                "Cannot compute contrasts on 'design_only' models.",
+                category=UserWarning,
+                stacklevel=find_stack_level(),
+            )
+            return outputs if output_type == "all" else None
 
         # Get effect_maps appropriate for chosen contrast
         effect_maps = _infer_effect_maps(
@@ -757,11 +806,6 @@ class SecondLevelModel(BaseGLM):
             self.labels_, self.results_, con_val, second_level_stat_type
         )
 
-        output_types = (
-            valid_types[:-1] if output_type == "all" else [output_type]
-        )
-
-        outputs = {}
         for output_type_ in output_types:
             # We get desired output from contrast object
             estimate_ = getattr(contrast, output_type_)()
@@ -844,6 +888,11 @@ class SecondLevelModel(BaseGLM):
 
         """
         check_is_fitted(self)
+        if self.design_only:
+            raise RuntimeError(
+                "Cannot get_element_wise_model_attribute "
+                "on 'design_only' models."
+            )
         # check if valid attribute is being accessed.
         all_attributes = dict(vars(RegressionResults)).keys()
         possible_attributes = [
