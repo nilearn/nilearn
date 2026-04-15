@@ -3,8 +3,6 @@ html_connectome.
 """
 
 import base64
-from pathlib import Path
-from string import Template
 
 import numpy as np
 
@@ -13,65 +11,6 @@ from nilearn.surface import load_surf_mesh
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
 
 NIIVUE_VERSION = "0.68.1"
-
-LIBRARY_URL = {
-    "plotly": "https://cdn.plot.ly/plotly-gl3d-latest.min.js",
-    "jquery": (
-        "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
-    ),
-    "niivue": f"https://unpkg.com/@niivue/niivue@{NIIVUE_VERSION}/dist/index.js",
-}
-
-LIBRARY_FILE = {
-    "plotly": "plotly-gl3d-latest.min.js",
-    "jquery": "jquery.min.js",
-    "niivue": "niivue.umd.js",
-}
-
-
-def add_js_lib(html, libraries=None, embed_js=True):
-    """Add javascript libraries to html template.
-
-    If embed_js is True, jquery and plotly are embedded in resulting page.
-    otherwise, they are loaded via CDNs.
-
-    """
-    if libraries is None:
-        libraries = ["plotly", "jquery"]
-
-    js_dir = Path(__file__).parent / "data" / "js"
-
-    js_lib = ""
-
-    # Add each third-party js library
-    for library in libraries:
-        if library in LIBRARY_URL:
-            if not embed_js:
-                js_lib += f'<script src="{LIBRARY_URL[library]}"></script>\n'
-            else:
-                with (js_dir / LIBRARY_FILE[library]).open() as f:
-                    js_lib += f"<script>{f.read()}</script>\n"
-        else:
-            raise ValueError(
-                f"Unknown library {library}."
-                f"Valid libraries are {LIBRARY_URL.keys()}"
-            )
-
-    # Add our custom js library
-    with (js_dir / "surface-plot-utils.js").open() as f:
-        js_lib += f"<script>{f.read()}</script>\n"
-
-    if not isinstance(html, Template):
-        html = Template(html)
-    return html.safe_substitute({"INSERT_JS_LIBRARIES_HERE": js_lib})
-
-
-def get_html_template(template_name):
-    """Get an HTML file from package data."""
-    template_path = Path(__file__).parent / "data" / "html" / template_name
-
-    with template_path.open("rb") as f:
-        return Template(f.read().decode("utf-8"))
 
 
 def encode(a):

@@ -263,7 +263,7 @@ float frac2ndc(vec3 frac) {
 						if (min1 < (thresh * 0.5)) {
 							colAcc.rgb = mix(colAcc.rgb , clipPlaneColorX.rgb, abs(clipPlaneColor.a)*0.5);
 						}
-							
+
 					}
 				} else {
 					if (abs(firstHit1 - sampleRange.x) < thresh)
@@ -287,7 +287,7 @@ float frac2ndc(vec3 frac) {
 			float thresh = 1.2 * sliceSize;
 			if ((isClipCutaway) && (min2 < thresh) && (sampleRange.x > 0.0)) {
 				if ((abs(sampleRange.x - firstHit.a) > ( 2.0 * thresh)) && ((abs(sampleRange.y - firstHit.a) > (2.0 * thresh))))
-					min2 = thresh; 
+					min2 = thresh;
 			}
 			// if second is 0 -> factor 0 (black), if second >= sliceSize -> factor 1 (unchanged)
 			const float aoFrac = 0.5;
@@ -352,7 +352,7 @@ float frac2ndc(vec3 frac) {
 				sum += min(texture(drawing, center.xyz + cross(vec3(+dx,0.0,0.0), dir)).r, mn);
 				sum += min(texture(drawing, center.xyz + cross(vec3(-dx,0.0,0.0), dir)).r, mn);
 				//float proportion = (sum / mn) / 6.0;
-				
+
 				//12 neighbors that share an edge
 				dx = sliceSize * sampleRadius * sqrt(2.0) * 0.5;
 				sum += min(texture(drawing, center.xyz + cross(vec3(0.0,+dx,+dx), dir)).r, mn);
@@ -365,12 +365,12 @@ float frac2ndc(vec3 frac) {
 				sum += min(texture(drawing, center.xyz + cross(vec3(0.0,+dx,-dx), dir)).r, mn);
 				sum += min(texture(drawing, center.xyz + cross(vec3(+dx,0.0,-dx), dir)).r, mn);
 				sum += min(texture(drawing, center.xyz + cross(vec3(+dx,-dx,0.0), dir)).r, mn);
-				
+
 				sum += min(texture(drawing, center.xyz + cross(vec3(0.0,-dx,+dx), dir)).r, mn);
 				sum += min(texture(drawing, center.xyz + cross(vec3(-dx,0.0,+dx), dir)).r, mn);
 				sum += min(texture(drawing, center.xyz + cross(vec3(-dx,+dx,0.0), dir)).r, mn);
 				float proportion = (sum / mn) / 18.0; //proportion of six neighbors is non-zero
-				
+
 				//a high proportion of hits means crevice
 				//since the AO term adds shadows that darken most voxels, it will result in dark surfaces
 				//the term brighten adds a little illumination to balance this
@@ -959,7 +959,7 @@ void main() {
     if (isOutline) {
         color = lineColor;
     } else {
-        discard; 
+        discard;
     }
 }`,ae=`#version 300 es
 #line 490
@@ -1019,7 +1019,7 @@ uniform vec2 canvasWidthHeight;
 uniform float thickness;
 uniform vec2 startXY;
 uniform vec3 endXYZ; // transformed XYZ point
-void main(void) {	
+void main(void) {
 	vec2 posXY = mix(startXY.xy, endXYZ.xy, pos.x);
 	vec2 startDiff = endXYZ.xy - startXY.xy;
 	float startDistance = length(startDiff);
@@ -1028,8 +1028,8 @@ void main(void) {
 	vec2 dir = normalize(startXY.xy - endXYZ.xy);
 	posXY += vec2(-dir.y, dir.x) * thickness * (pos.y - 0.5);
 	posXY.x = (posXY.x) / canvasWidthHeight.x; //0..1
-	posXY.y = 1.0 - (posXY.y / canvasWidthHeight.y); //1..0	
-	float z = endXYZ.z * ( 1.0 - abs(currentDistance/startDistance)); 
+	posXY.y = 1.0 - (posXY.y / canvasWidthHeight.y); //1..0
+	float z = endXYZ.z * ( 1.0 - abs(currentDistance/startDistance));
 	gl_Position = vec4((posXY * 2.0) - 1.0, z, 1.0);
 }`,he=`#version 300 es
 #line 549
@@ -1110,11 +1110,11 @@ in vec2 vUV;
 out vec4 color;
 void main() {
 	/* Check if the pixel is inside the circle
-		 and color it with a gradient. Otherwise, color it 
+		 and color it with a gradient. Otherwise, color it
 		 transparent   */
 	float distance = length(vUV-vec2(0.5,0.5));
 	if ( distance < 0.5 && distance >= (1.0 - fillPercent) / 2.0){
-			color = vec4(circleColor.r,circleColor.g,circleColor.b,circleColor.a) ;			
+			color = vec4(circleColor.r,circleColor.g,circleColor.b,circleColor.a) ;
 	}else{
 			color = vec4(0.0,0.0,0.0,0.0);
 	}

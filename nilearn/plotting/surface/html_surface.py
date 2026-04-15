@@ -7,6 +7,7 @@ from typing import Any, Literal
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._assets import get_template
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.param_validation import (
@@ -17,8 +18,6 @@ from nilearn.image import check_niimg_3d
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import (
-    add_js_lib,
-    get_html_template,
     mesh_to_plotly,
 )
 from nilearn.plotting.surface._niivue_backend import (
@@ -254,46 +253,36 @@ def _full_brain_info(
 
 
 def _fill_html_template(
-    info: dict[str, Any],
-    embed_js: bool = True,
+    info,
     engine: Literal["niivue", "plotly"] = "plotly",
-) -> SurfaceView:
-    if engine == "plotly":
-        as_json = json.dumps(info)
+):
+    view_img_tpl = get_template("html/plotting/surface_plot.jinja")
 
-        as_html = get_html_template(
-            "surface_plot_template.html"
-        ).safe_substitute(
-            {
-                "INSERT_STAT_MAP_JSON_HERE": as_json,
-                "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
-            }
-        )
-        as_html = add_js_lib(
-            as_html, libraries=["plotly", "jquery"], embed_js=embed_js
-        )
+    kwargs = {}
+    if engine == "niivue":
+        kwargs = {
+            "INSERT_SURF_MAP_BASE64_HERE": info["surf_map"],
+            "INSERT_SURF_COLORMAP_HERE": info["cmap"],
+            "INSERT_MESH_BASE64_HERE": info["surf_mesh"],
+            "INSERT_BG_MAP_BASE64_HERE": info["bg_map"],
+            "INSERT_COLORBAR_HERE": info["colorbar"],
+            "INSERT_THRESHOLD_HERE": json.dumps(info["threshold"]),
+            "INSERT_VMAX_HERE": json.dumps(info["vmax"]),
+            "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
+            "INSERT_FONT_SIZE_HERE": str(info["title_fontsize"]) + "px",
+            "INSERT_COLOR_THEME_HERE": info["bg_theme"],
+            "INSERT_BG_COLOR_HERE": info["bg_color"],
+        }
 
-    elif engine == "niivue":
-        as_html = get_html_template(
-            "surface_plot_template_niivue.html"
-        ).safe_substitute(
-            {
-                "INSERT_SURF_MAP_BASE64_HERE": info["surf_map"],
-                "INSERT_SURF_COLORMAP_HERE": info["cmap"],
-                "INSERT_MESH_BASE64_HERE": info["surf_mesh"],
-                "INSERT_BG_MAP_BASE64_HERE": info["bg_map"],
-                "INSERT_COLORBAR_HERE": info["colorbar"],
-                "INSERT_THRESHOLD_HERE": json.dumps(info["threshold"]),
-                "INSERT_VMAX_HERE": json.dumps(info["vmax"]),
-                "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
-                "INSERT_FONT_SIZE_HERE": str(info["title_fontsize"]) + "px",
-                "INSERT_COLOR_THEME_HERE": info["bg_theme"],
-                "INSERT_BG_COLOR_HERE": info["bg_color"],
-            }
-        )
-        as_html = add_js_lib(as_html, libraries=["niivue"], embed_js=embed_js)
+    html_view = view_img_tpl.render(
+        page_title=info["title"] or "Surface plot",
+        stat_map_json=json.dumps(info),
+        display_footer='style="display: none"',
+        engine=engine,
+        **kwargs,
+    )
 
-    return SurfaceView(as_html)
+    return SurfaceView(html_view)
 
 
 @fill_doc
@@ -430,7 +419,7 @@ def view_img_on_surf(
     info["title"] = title
     info["title_fontsize"] = title_fontsize
     info["view"] = view
-    return _fill_html_template(info, embed_js=True)
+    return _fill_html_template(info)
 
 
 @fill_doc
@@ -584,6 +573,7 @@ def view_surf(
 
     info["title"] = title
     info["view"] = view
+
     info["title_fontsize"] = title_fontsize
 
     if engine == "niivue":
@@ -593,4 +583,4 @@ def view_surf(
         info["cbar_height"] = colorbar_height
         info["cbar_fontsize"] = colorbar_fontsize
 
-    return _fill_html_template(info, embed_js=True, engine=engine)
+    return _fill_html_template(info, engine=engine)

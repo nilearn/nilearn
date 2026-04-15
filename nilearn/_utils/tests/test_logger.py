@@ -12,6 +12,7 @@ from nilearn._utils.logger import (
     find_stack_level,
     log,
     one_level_deeper,
+    readable_time,
 )
 
 
@@ -124,3 +125,7 @@ with capture_output() as out:
             assert out[0].getvalue() == "[<module>] message from no function\n"
         else:
             assert out[0] == "[<module>] message from no function\n"
+
+
+def test_readable_time():
+    assert readable_time(56) == "00 HR 00 MIN 56 SEC"

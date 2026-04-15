@@ -634,7 +634,7 @@ You can also use the ``rng`` fixture.
 Using tox
 ^^^^^^^^^
 
-`Tox <https://tox.wiki>`_ is set
+`Tox <https://tox.wiki/en/stable/>`_ is set
 to facilitate testing and managing environments during development
 and ensure that the same commands can easily be run locally and in CI.
 
