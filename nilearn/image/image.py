@@ -12,7 +12,7 @@ import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Literal, overload
+from typing import Any, Literal, TypeGuard, overload
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -1510,7 +1510,33 @@ def _apply_threshold(img_data, two_sided, cutoff_threshold):
     return img_data
 
 
-def math_img(formula: str, copy_header_from: str | None = None, **imgs):
+def _are_all_surface_images(
+    imgs: dict[str, Any],
+) -> TypeGuard[dict[str, SurfaceImage]]:
+    return all(isinstance(x, SurfaceImage) for x in imgs.values())
+
+
+@overload
+def math_img(
+    formula: str,
+    copy_header_from: str | None = None,
+    **imgs: SurfaceImage,
+) -> SurfaceImage: ...
+
+
+@overload
+def math_img(
+    formula: str,
+    copy_header_from: str | None = None,
+    **imgs: Nifti1Image | str | Path,
+) -> Nifti1Image: ...
+
+
+def math_img(
+    formula: str,
+    copy_header_from: str | None = None,
+    **imgs: Nifti1Image | str | Path | SurfaceImage,
+) -> SurfaceImage | Nifti1Image:
     """Interpret a numpy based string formula using niimg in named parameters.
 
     .. nilearn_versionadded:: 0.2.3
@@ -1605,8 +1631,6 @@ def math_img(formula: str, copy_header_from: str | None = None, **imgs):
     in FSL.
 
     """
-    is_surface = all(isinstance(x, SurfaceImage) for x in imgs.values())
-
     img_missing_from_formula = [x for x in imgs if x not in formula]
     if img_missing_from_formula:
         warnings.warn(
@@ -1617,15 +1641,15 @@ def math_img(formula: str, copy_header_from: str | None = None, **imgs):
 
     data_dict: dict[str, Any | dict[str, Any]] = {}
 
-    if is_surface:
-        first_img: SurfaceImage = next(iter(imgs.values()))
+    if _are_all_surface_images(imgs):
+        first_img = next(iter(imgs.values()))
         for image in imgs.values():
             assert_polymesh_equal(first_img.mesh, image.mesh)
 
         # Computing input data as a dictionary of numpy arrays.
         data_dict = {k: {} for k in first_img.data.parts}
-        for key, img in imgs.items():
-            for k, v in img.data.parts.items():
+        for key, surf_img in imgs.items():
+            for k, v in surf_img.data.parts.items():
                 data_dict[k][key] = v
 
         # Add a reference to numpy in the kwargs of eval
@@ -1646,8 +1670,10 @@ def math_img(formula: str, copy_header_from: str | None = None, **imgs):
         return new_img_like(first_img, result)
 
     try:
-        niimgs = [check_niimg(image) for image in imgs.values()]
-        check_same_fov(*niimgs, raise_error=True)
+        niimgs: dict[str, Nifti1Image] = {
+            k: check_niimg(v) for k, v in imgs.items()
+        }
+        check_same_fov(*list(niimgs.values()), raise_error=True)
     except Exception as exc:
         exc.args = (
             "Input images cannot be compared, "
@@ -1665,9 +1691,8 @@ def math_img(formula: str, copy_header_from: str | None = None, **imgs):
 
     # Computing input data as a dictionary of numpy arrays. Keep a reference
     # niimg for building the result as a new niimg.
-    for key, img in imgs.items():
-        niimg = check_niimg(img)
-        data_dict[key] = safe_get_data(niimg)
+    for key, img in niimgs.items():
+        data_dict[key] = safe_get_data(img)
 
     # Add a reference to numpy in the kwargs of eval so that numpy functions
     # can be called from there.
@@ -1682,7 +1707,8 @@ def math_img(formula: str, copy_header_from: str | None = None, **imgs):
         raise
 
     if copy_header_from is None:
-        return new_img_like(niimg, result, niimg.affine, copy_header=False)
+        return new_img_like(img, result, img.affine, copy_header=False)
+
     niimg = check_niimg(imgs[copy_header_from])
     # only copy the header if the result and the input image to copy the
     # header from have the same shape

@@ -1495,7 +1495,7 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye, surf_img_2d):
     # formula or an img* argument should raise a ValueError exception.
     with pytest.raises(
         ValueError,
-        match=("copy_header_from='img2' but 'img2' is missing in 'imgs'"),
+        match=("copy_header_from='img2' but 'img2' is missing from 'imgs'"),
     ):
         math_img(formula, img1=img1, img3=img3, copy_header_from="img2")
 
@@ -2271,6 +2271,7 @@ def img_in_home_folder(img_3d_mni):
     created_file.expanduser().unlink()
 
 
+@pytest.mark.single_process
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "filename", ["~/test.nii", r"~/test.nii", Path("~/test.nii")]
