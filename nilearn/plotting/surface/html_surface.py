@@ -17,9 +17,7 @@ from nilearn._utils.param_validation import (
 from nilearn.image import check_niimg_3d
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import colorscale
-from nilearn.plotting.js_plotting_utils import (
-    mesh_to_plotly,
-)
+from nilearn.plotting.js_plotting_utils import mesh_to_plotly
 from nilearn.plotting.surface._niivue_backend import (
     colorscale_niivue,
     matplotlib_cm_to_niivue_cm,
@@ -257,21 +255,20 @@ def _fill_html_template(
     engine: Literal["niivue", "plotly"] = "plotly",
 ):
     view_img_tpl = get_template("html/plotting/surface_plot.jinja")
-
     kwargs = {}
+
     if engine == "niivue":
+        view_img_tpl = get_template("html/plotting/surface_plot_niivue.jinja")
         kwargs = {
-            "INSERT_SURF_MAP_BASE64_HERE": info["surf_map"],
-            "INSERT_SURF_COLORMAP_HERE": info["cmap"],
-            "INSERT_MESH_BASE64_HERE": info["surf_mesh"],
-            "INSERT_BG_MAP_BASE64_HERE": info["bg_map"],
-            "INSERT_COLORBAR_HERE": info["colorbar"],
-            "INSERT_THRESHOLD_HERE": json.dumps(info["threshold"]),
-            "INSERT_VMAX_HERE": json.dumps(info["vmax"]),
-            "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
-            "INSERT_FONT_SIZE_HERE": str(info["title_fontsize"]) + "px",
-            "INSERT_COLOR_THEME_HERE": info["bg_theme"],
-            "INSERT_BG_COLOR_HERE": info["bg_color"],
+            "surf_map": info["surf_map"],
+            "cmap": info["cmap"],
+            "surf_mesh": info["surf_mesh"],
+            "bg_map": info["bg_map"],
+            "colorbar": info["colorbar"],
+            "threshold": json.dumps(info["threshold"]),
+            "vmax": json.dumps(info["vmax"]),
+            "font_size": str(info["title_fontsize"]) + "px",
+            "bg_color": info["bg_color"],
         }
 
     html_view = view_img_tpl.render(

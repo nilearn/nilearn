@@ -1,0 +1,32 @@
+{% extends "html/head.jinja" %}
+
+{% block extra_css %}
+
+    {% include "css/niivue.jinja" %}
+
+{% endblock extra_css %}
+
+{% block script %}
+    <script> {% include "js/niivue.umd.js" %} </script>
+    <script> {% include "js/niivue.jinja" %} </script>
+    <script>
+    document.getElementById("gl").addEventListener("mouseup", () => {
+        document.getElementById("select-view").value = "custom";
+    });
+    </script>
+{% endblock script %}
+
+{% block main %}
+    <canvas id="gl"></canvas>
+    <div id="toolbar">
+        <select id="select-view">
+            <option value="left">view: Left</option>
+            <option value="right">view: Right</option>
+            <option value="front">view: Front</option>
+            <option value="back">view: Back</option>
+            <option value="top">view: Top</option>
+            <option value="bottom">view: Bottom</option>
+            <option value="custom">view: -</option>
+        </select>
+    </div>
+{% endblock main %}

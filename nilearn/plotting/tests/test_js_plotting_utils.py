@@ -52,10 +52,15 @@ def check_html_surface_plots(
     -  ``view_markers``
 
     """
+    if engine == "niivue" and plot_div_id == "surface-plot":
+        plot_div_id = "toolbar"
+
     tmpfile = tmp_path / "test.html"
 
-    assert "* plotly.js (gl3d - minified) v1." in html.html
-    assert "jQuery v3.6.0" in html.html
+    if engine == "plotly":
+        assert "* plotly.js (gl3d - minified) v1." in html.html
+        assert "jQuery v3.6.0" in html.html
+
     assert 'charset="UTF-8"' in html.html
 
     html.save_as_html(tmpfile)
@@ -98,7 +103,7 @@ def _check_lxml(html, check_selects, plot_div_id, engine):
     if engine == "plotly":
         assert len(head.findall("script")) == 5
     elif engine == "niivue":
-        assert len(head.findall("script")) == 0
+        assert len(head.findall("script")) == 3
 
     main = root.find("body").find("main")
     div = main.find("div")
@@ -107,11 +112,12 @@ def _check_lxml(html, check_selects, plot_div_id, engine):
     if not check_selects:
         return
 
-    selects = main.findall("select")
-    assert len(selects) == 3
+    if engine == "plotly":
+        selects = main.findall("select")
+        assert len(selects) == 3
 
-    for idx, selector, expected_n in zip(
-        [0, 1, 2], ["hemisphere", "kind", "view"], [3, 2, 7], strict=False
-    ):
-        assert ("id", f"select-{selector}") in selects[idx].items()
-        assert len(selects[idx].findall("option")) == expected_n
+        for idx, selector, expected_n in zip(
+            [0, 1, 2], ["hemisphere", "kind", "view"], [3, 2, 7], strict=False
+        ):
+            assert ("id", f"select-{selector}") in selects[idx].items()
+            assert len(selects[idx].findall("option")) == expected_n

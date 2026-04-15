@@ -132,7 +132,10 @@ def test_view_surf(tmp_path, rng, backend_engine):
         engine=backend_engine,
     )
     check_html_surface_plots(
-        tmp_path, html, title="Surface plot", engine=backend_engine
+        tmp_path,
+        html,
+        title="Surface plot",
+        engine=backend_engine,
     )
 
     html = view_surf(

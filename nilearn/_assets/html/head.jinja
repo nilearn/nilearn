@@ -12,6 +12,15 @@
             <!-- djlint:off --><style type="text/css">{% include "css/head.css" %}</style><!-- djlint:on -->
         {% endif %}
         {{ js_libraries }}
+        <style type="text/css">
+             {
+                  % block extra_css %
+             }
+
+                  {
+                  % endblock extra_css %
+             }
+        </style>
 
         {% block script %}
         {% endblock script %}
