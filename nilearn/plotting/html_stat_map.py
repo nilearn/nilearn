@@ -362,7 +362,6 @@ def _json_view_params(
     radiological=False,
     show_lr=True,
     color_crosshair="#0000FF",
-):
 ) -> dict[str, Any]:
     """Create a dictionary with all the brainsprite parameters.
 
@@ -751,6 +750,7 @@ def create_brainsprite(
     opacity=1,
     radiological=False,
     show_lr=True,
+    color_crosshair="#0000FF",
 ):
     """Wrap most of view_img to reuse it in other places."""
     # Prepare the color map and thresholding
