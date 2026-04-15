@@ -258,7 +258,9 @@ def _fill_html_template(
     kwargs = {}
 
     if engine == "niivue":
-        view_img_tpl = get_template("html/plotting/surface_plot_niivue.jinja")
+        view_img_tpl = get_template(
+            "html/plotting/surface_plot_template_niivue.jinja"
+        )
         kwargs = {
             "surf_map": info["surf_map"],
             "cmap": info["cmap"],

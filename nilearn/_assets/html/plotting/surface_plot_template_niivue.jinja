@@ -1,7 +1,7 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="$INSERT_COLOR_THEME_HERE">
+<!DOCTYPE html>E
+<html lang="en" data-theme="{{ bg_color }}">
     <head>
-        <title>{{page_title}}</title>
+        <title>{{ page_title }}</title>
         <meta charset="UTF-8" />
         <link rel="icon"
               type="image/x-icon"
@@ -35,8 +35,9 @@
 
          #page-title {
               text-align: center;
-              font-size: $INSERT_FONT_SIZE_HERE;
-              font-family: Arial, sans-serif;
+              font-size: {{font_size}};
+              font-family: Arial,
+              sans-serif;
          }
 
          #toolbar {
@@ -45,7 +46,7 @@
          }
     </style>
     <body>
-        <div id="page-title">$INSERT_PAGE_TITLE_HERE</div>
+        <div id="page-title">{{ page_title }}</div>
         <canvas id="gl"></canvas>
     </body>
     <footer>
@@ -61,24 +62,24 @@
             </select>
         </div>
     </footer>
-    $INSERT_JS_LIBRARIES_HERE
+    <script> {% include "js/niivue.umd.js" %} </script>
     <script type="module" async>
     var nv = new niivue.Niivue({
       show3Dcrosshair: false,
-      backColor: $INSERT_BG_COLOR_HERE,
+      backColor: {{ bg_color }},
     });
     nv.attachTo("gl");
     document.body.style.backgroundColor = "";
-    const bg_map_base64 = "$INSERT_BG_MAP_BASE64_HERE";
+    const bg_map_base64 = "{{ bg_map }}";
     let layers =
       bg_map_base64 === "null"
         ? [
             {
               name: "surf_map.gii",
               opacity: 1,
-              cal_min: $INSERT_THRESHOLD_HERE,
-              cal_max: $INSERT_VMAX_HERE,
-              base64: "$INSERT_SURF_MAP_BASE64_HERE",
+              cal_min: {{ threshold }},
+              cal_max: {{ vmax }},
+              base64: "{{ surf_map }}",
               useNegativeCmap: true,
             },
           ]
@@ -88,14 +89,14 @@
               useNegativeCmap: false,
               opacity: 0.7,
               colormap: "gray",
-              base64: "$INSERT_BG_MAP_BASE64_HERE",
+              base64: "{{bg_map}}",
             },
             {
               name: "surf_map.gii",
               opacity: 1,
-              cal_min: $INSERT_THRESHOLD_HERE,
-              cal_max: $INSERT_VMAX_HERE,
-              base64: "$INSERT_SURF_MAP_BASE64_HERE",
+              cal_min: {{threshold}},
+              cal_max: {{vmax}},
+              base64: "{{ surf_map }}",
               useNegativeCmap: true,
             },
           ];
@@ -114,7 +115,7 @@
       gl: nv.gl,
       name: "surf_mesh.gii",
       layers: layers,
-      file: base64ToFile("$INSERT_MESH_BASE64_HERE", "surf_mesh.gii"),
+      file: base64ToFile("{{ surf_mesh }}", "surf_mesh.gii"),
     });
     await nv.addMesh(m);
 
@@ -123,10 +124,10 @@
     if (surfLayers.length === 2) {
       surfLayers[0].colorbarVisible = false;
     }
-    nv.opts.isColorbar = $INSERT_COLORBAR_HERE;
+    nv.opts.isColorbar = {{colorbar}};
 
     // Customize colormap
-    let cmap = $INSERT_SURF_COLORMAP_HERE;
+    let cmap = {{cmap}};
     await nv.addColormap("CustomPos", cmap.pos);
     await nv.addColormap("CustomNeg", cmap.neg);
     surfLayers[surfLayers.length - 1].colormap = "CustomPos";
