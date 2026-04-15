@@ -10,8 +10,6 @@ from nilearn.surface import load_surf_mesh
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
 
-NIIVUE_VERSION = "0.68.1"
-
 
 def encode(a):
     """Base64 encode a numpy array."""
