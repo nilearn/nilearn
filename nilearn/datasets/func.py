@@ -199,9 +199,7 @@ def fetch_haxby(
 
     files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    if (isinstance(subjects, numbers.Number) and subjects == 6) or np.any(
-        subject_mask == 6
-    ):
+    if subjects == 6 or np.any(subject_mask == 6):
         files.append(None)  # None value because subject 6 has no anat
 
     kwargs = {}

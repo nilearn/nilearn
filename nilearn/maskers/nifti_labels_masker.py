@@ -2,6 +2,7 @@
 
 import warnings
 from copy import deepcopy
+from typing import Any, ClassVar
 
 import numpy as np
 import pandas as pd
@@ -200,6 +201,12 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     """
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the regions defined by the labels of the mask."
+        ),
+        "number_of_regions": 0,
+    }
     _template_name = "body_nifti_labels_masker.jinja"
 
     # memory and memory_level are used by _utils.CacheMixin.
@@ -267,15 +274,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         self.strategy = strategy
 
-        self._report_content = {
-            "description": (
-                "This report shows the regions "
-                "defined by the labels of the mask."
-            ),
-            "number_of_regions": 0,
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
     @property
     def _region_id_name(self):
@@ -326,30 +325,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return masked_atlas, removed_region_ids, removed_region_names, display
 
-    def generate_report(
-        self,
-        title: str | None = None,
-        engine: str = "matplotlib",
-    ):
-        """Generate an HTML report for the current object.
-
-        Parameters
-        ----------
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        engine : {"matplotlib", "brainsprite"}, default="matplotlib"
-            Choice of engine to display the mask.
-
-        Returns
-        -------
-        report : `nilearn.reporting.html_report.HTMLReport`
-            HTML report for the masker.
-        """
-        from nilearn.reporting.html_report import generate_report
-
-        self._report_content["title"] = title
-        self._report_content["engine"] = engine
+    def _run_report_checks(self, **kwargs):
+        super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
             img = self._reporting_data["images"]
@@ -360,18 +337,16 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                     "Plotting ROIs of label image on the "
                     "MNI152Template for reporting."
                 )
-                self._report_content["warning_messages"].append(msg)
+                self._append_report_warning(msg)
 
             elif self._reporting_data["dim"] == 5:
                 msg = (
                     "A list of 4D subject images were provided to fit. "
                     "Only first subject is shown in the report."
                 )
-                self._report_content["warning_messages"].append(msg)
+                self._append_report_warning(msg)
 
-        return generate_report(self)
-
-    def _reporting(self):
+    def _load_report_displays(self):
         """Return a figure to be rendered.
 
         Returns

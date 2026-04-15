@@ -4,7 +4,7 @@
 
 ci:
     autoupdate_commit_msg: 'chore: update pre-commit hooks'
-    autoupdate_schedule: monthly
+    autoupdate_schedule: quarterly
     autofix_commit_msg: 'style: pre-commit fixes'
     autofix_prs: false
 
@@ -12,7 +12,6 @@ ci:
 exclude: |
     (?x)^(
         nilearn/datasets/tests/data/localizer_behavioural.tsv
-        | nilearn/plotting/data/js/.*js
         | nilearn/_version.py
         | asv_benchmarks/asv.conf.json
         | asv_benchmarks/results
@@ -45,7 +44,7 @@ repos:
 
     # Checks for spelling errors
 -   repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.2
     hooks:
     -   id: codespell
         args: [--toml, pyproject.toml]
@@ -87,13 +86,20 @@ repos:
 
     # Lint and format Python code
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.4
+    rev: v0.15.9
     hooks:
     -   id: ruff-check
         # args: [--statistics]
         args: [--fix, --show-fixes, --unsafe-fixes]
     -   id: ruff-format
         # args: [--diff]
+    -   id: ruff-check
+        # additional check to keep tests short
+        args: [--config, lint.pylint.max-statements=32]
+        files: |
+            (?x)^(
+                nilearn/.*/test_.*py
+            )$
 
 -   repo: https://github.com/adamchainz/blacken-docs
     rev: 1.20.0    # replace with latest tag on GitHub
@@ -111,9 +117,20 @@ repos:
                 | nilearn/_utils/param_validation.py
             )$
 
+# TODO: apply in a follow up PR
+# -   repo: https://github.com/standard/standard
+#     rev: v17.1.2
+#     hooks:
+#     -   id: standard
+#         # ignoring JS files that are not our own
+#         exclude: |
+#             (?x)^(
+#                 nilearn/_assets/js/.*min.*
+#             )$
+
     # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter
-    rev: v2.10
+    rev: v2.11
     hooks:
     -   id: import-linter
         args: [--verbose]
@@ -126,7 +143,7 @@ repos:
         args: [--config=pyproject.toml, nilearn]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.1
+    rev: v1.20.0
     hooks:
     -   id: mypy
         files: nilearn
