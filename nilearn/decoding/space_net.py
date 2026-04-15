@@ -27,8 +27,7 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import readable_time
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, readable_time
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
