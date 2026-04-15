@@ -1,4 +1,4 @@
-<!DOCTYPE html>E
+<!DOCTYPE html>
 <html lang="en" data-theme="{{ bg_color }}">
     <head>
         <title>{{ page_title }}</title>
@@ -7,155 +7,26 @@
               type="image/x-icon"
               href="https://raw.githubusercontent.com/nilearn/nilearn/main/doc/logos/favicon.ico" />
     </head>
-    <style>
-         :root[data-theme="black"] {
-              color-scheme: dark;
-              background-color: black !important;
-              color: white;
-         }
-
-         :root[data-theme="white"] {
-              color-scheme: light;
-              background-color: white !important;
-              color: black;
-         }
-
-         body {
-              margin: 0;
-              height: 100vh;
-              display: flex;
-              flex-direction: column;
-         }
-
-         #gl {
-              flex: 1;
-              min-height: 0;
-              width: 100%;
-         }
-
-         #page-title {
-              text-align: center;
-              font-size: {{font_size}};
-              font-family: Arial,
-              sans-serif;
-         }
-
-         #toolbar {
-              flex-shrink: 0;
-              background: transparent;
-         }
-    </style>
+    <!-- djlint:off --><style>{% include "css/niivue.jinja" %}</style><!-- djlint:on -->
     <body>
         <div id="page-title">{{ page_title }}</div>
         <canvas id="gl"></canvas>
+        <footer>
+            <div id="toolbar">
+                <select id="select-view">
+                    <option value="left">view: Left</option>
+                    <option value="right">view: Right</option>
+                    <option value="front">view: Front</option>
+                    <option value="back">view: Back</option>
+                    <option value="top">view: Top</option>
+                    <option value="bottom">view: Bottom</option>
+                    <option value="custom">view: -</option>
+                </select>
+            </div>
+        </footer>
     </body>
-    <footer>
-        <div id="toolbar">
-            <select id="select-view">
-                <option value="left">view: Left</option>
-                <option value="right">view: Right</option>
-                <option value="front">view: Front</option>
-                <option value="back">view: Back</option>
-                <option value="top">view: Top</option>
-                <option value="bottom">view: Bottom</option>
-                <option value="custom">view: -</option>
-            </select>
-        </div>
-    </footer>
     <script> {% include "js/niivue.umd.js" %} </script>
-    <script type="module" async>
-    var nv = new niivue.Niivue({
-      show3Dcrosshair: false,
-      backColor: {{ bg_color }},
-    });
-    nv.attachTo("gl");
-    document.body.style.backgroundColor = "";
-    const bg_map_base64 = "{{ bg_map }}";
-    let layers =
-      bg_map_base64 === "null"
-        ? [
-            {
-              name: "surf_map.gii",
-              opacity: 1,
-              cal_min: {{ threshold }},
-              cal_max: {{ vmax }},
-              base64: "{{ surf_map }}",
-              useNegativeCmap: true,
-            },
-          ]
-        : [
-            {
-              name: "bg_map.gii",
-              useNegativeCmap: false,
-              opacity: 0.7,
-              colormap: "gray",
-              base64: "{{bg_map}}",
-            },
-            {
-              name: "surf_map.gii",
-              opacity: 1,
-              cal_min: {{threshold}},
-              cal_max: {{vmax}},
-              base64: "{{ surf_map }}",
-              useNegativeCmap: true,
-            },
-          ];
-
-    function base64ToFile(base64, filename) {
-      const binary = atob(base64);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-      }
-      return new File([bytes], filename);
-    }
-
-    // Load the surface mesh
-    let m = await niivue.NVMesh.loadFromFile({
-      gl: nv.gl,
-      name: "surf_mesh.gii",
-      layers: layers,
-      file: base64ToFile("{{ surf_mesh }}", "surf_mesh.gii"),
-    });
-    await nv.addMesh(m);
-
-    // Hide background map colorbar
-    const surfLayers = nv.meshes[0].layers;
-    if (surfLayers.length === 2) {
-      surfLayers[0].colorbarVisible = false;
-    }
-    nv.opts.isColorbar = {{colorbar}};
-
-    // Customize colormap
-    let cmap = {{cmap}};
-    await nv.addColormap("CustomPos", cmap.pos);
-    await nv.addColormap("CustomNeg", cmap.neg);
-    surfLayers[surfLayers.length - 1].colormap = "CustomPos";
-    surfLayers[surfLayers.length - 1].colormapNegative = "CustomNeg";
-
-    // Refresh scene to take colorbar changes into account
-    nv.meshes[0].updateMesh(nv.gl);
-    nv.updateGLVolume();
-
-    // Use Plotly-like views
-    const plotlyViews = {
-      left: [90, 0],
-      right: [270, 0],
-      front: [180, 0], // anterior
-      back: [0, 0], // posterior
-      top: [0, 90], // superior
-      bottom: [180, -90], // inferior
-    };
-
-    document.getElementById("select-view").onchange = (e) => {
-      const view = e.target.value;
-
-      if (view === "custom") return;
-
-      const [az, el] = plotlyViews[view];
-      nv.setRenderAzimuthElevation(az, el, true);
-    };
-    </script>
+    <script type="module" async> {% include "js/niivue.jinja" %} </script>
     <script>
     document.getElementById("gl").addEventListener("mouseup", () => {
       document.getElementById("select-view").value = "custom";
