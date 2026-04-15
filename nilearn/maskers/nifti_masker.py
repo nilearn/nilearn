@@ -3,6 +3,7 @@
 import inspect
 import warnings
 from copy import copy as copy_object
+from typing import Any, ClassVar
 
 import numpy as np
 from joblib import Memory
@@ -325,6 +326,15 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     """
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the input Nifti image overlaid "
+            "with the outlines of the mask. "
+            "We recommend to inspect the report for the overlap "
+            "between the mask and the input image. "
+        ),
+    }
+
     def __init__(
         self,
         mask_img=None,
@@ -372,43 +382,10 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        self._report_content = {
-            "description": (
-                "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_elements": 0,
-            "coverage": 0,
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
-    def generate_report(
-        self,
-        title: str | None = None,
-        engine: str = "matplotlib",
-    ):
-        """Generate an HTML report for the current object.
-
-        Parameters
-        ----------
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        engine : {"matplotlib", "brainsprite"}, default="matplotlib"
-            Choice of engine to display the mask.
-
-        Returns
-        -------
-        report : `nilearn.reporting.html_report.HTMLReport`
-            HTML report for the masker.
-        """
-        from nilearn.reporting.html_report import generate_report
-
-        self._report_content["title"] = title
-        self._report_content["engine"] = engine
+    def _run_report_checks(self, **kwargs):
+        super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
             img = self._reporting_data["images"]
@@ -418,18 +395,18 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     f"No image provided to fit in {self.__class__.__name__}. "
                     "Setting image to mask for reporting."
                 )
-                self._report_content["warning_messages"].append(msg)
+                self._append_report_warning(msg)
 
             elif self._reporting_data["dim"] == 5:
                 msg = (
                     "A list of 4D subject images were provided to fit. "
                     "Only first subject is shown in the report."
                 )
-                self._report_content["warning_messages"].append(msg)
+                self._append_report_warning(msg)
+        else:
+            self._report_content["overlay"] = None
 
-        return generate_report(self)
-
-    def _reporting(self):
+    def _load_report_displays(self):
         """Load displays needed for report.
 
         Returns
@@ -443,7 +420,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if not self._has_report_data():
             self._report_content["overlay"] = None
             return None
-
         return self._create_figure_for_report()
 
     def _create_figure_for_report(self):

@@ -148,26 +148,6 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         cmap=DEFAULT_SEQUENTIAL_CMAP,
         clean_args=None,
     ):
-        self.labels_img = labels_img
-        self.labels = labels
-        self.lut = lut
-        self.background_label = background_label
-        self.mask_img = mask_img
-        self.smoothing_fwhm = smoothing_fwhm
-        self.standardize = standardize
-        self.standardize_confounds = standardize_confounds
-        self.high_variance_confounds = high_variance_confounds
-        self.detrend = detrend
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.memory = memory
-        self.memory_level = memory_level
-        self.verbose = verbose
-        self.strategy = strategy
-        self.reports = reports
-        self.cmap = cmap
-        self.clean_args = clean_args
         super().__init__(
             labels_img=labels_img,
             labels=labels,
@@ -214,9 +194,9 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         del y
         check_params(self.__dict__)
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         if imgs is not None:
             self._check_imgs(imgs)

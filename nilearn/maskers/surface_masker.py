@@ -1,6 +1,7 @@
 """Masker for surface objects."""
 
 from copy import deepcopy
+from typing import Any, ClassVar
 from warnings import warn
 
 import numpy as np
@@ -89,6 +90,18 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     """
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the input surface image overlaid "
+            "with the outlines of the mask. "
+            "We recommend to inspect the report for the overlap "
+            "between the mask and its input image. "
+        ),
+        "n_vertices": {},
+        # unused but required in HTML template
+        "number_of_regions": None,
+    }
+
     def __init__(
         self,
         mask_img=None,
@@ -125,21 +138,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            # unused but required in HTML template
-            "number_of_regions": None,
-            "summary": {},
-            "warning_messages": [],
-            "n_elements": 0,
-            "coverage": 0,
-        }
+        self._reset_report()
 
     def __sklearn_is_fitted__(self) -> bool:
         return (
@@ -221,9 +220,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         del y
         check_params(self.__dict__)
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -375,7 +374,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return self._post_process_inverse_transform(signals, imgs, return_1D)
 
-    def _reporting(self) -> None | str:
+    def _load_report_displays(self) -> None | str:
         """Load displays needed for report.
 
         Returns
