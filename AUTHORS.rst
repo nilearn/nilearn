@@ -188,6 +188,7 @@ Some other past or present contributors are:
 * `Prakhar Jain`_: RV College of Engineering, Bangalore, India
 * `Rahul Brito`_
 * `Raphael Meudec`_: Inria, Saclay, France
+* `Rishika Kapil`_: Thapar Institute of Engineering and Technology
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
 * `Robert Williamson`_
 * `Roberto Guidotti`_: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
