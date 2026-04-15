@@ -118,6 +118,7 @@ def test_fill_html_template(tmp_path, mni152_template_res_2):
     check_html_surface_plots(tmp_path, html)
 
 
+@pytest.mark.single_process
 @pytest.mark.parametrize("backend_engine", ["plotly", "niivue"])
 def test_view_surf(tmp_path, rng, backend_engine):
     fsaverage = fetch_surf_fsaverage()
