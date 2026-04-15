@@ -181,17 +181,17 @@ with the oldest supported Python and Matplotlib:
 Updating vendored dependencies
 ==============================
 
-Some dependencies are vendored with Nilearn
+Some javascript dependencies are vendored with Nilearn
 and need to be updated manually
 when the upstream source changes.
 
-To update ``niivue`` run:
-
 ```bash
-bash maint_tools/update_niivue.sh
+tox run -e update_js
 ```
 
-and commit the changes.
+.. note::
+
+    This requires to have `npm <TODO>`_ installed.
 
 How to make a release?
 ======================
