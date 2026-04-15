@@ -701,9 +701,9 @@ float paqdEaseAlpha(float alpha) {
   if (alpha <= t0) {
     return y0;
   } else if (alpha <= t1) {
-    return mix(y0, y1, (alpha - t0) / (t1 - t0)); // LERP 0.0 → 1.0
+    return mix(y0, y1, (alpha - t0) / (t1 - t0)); // LERP 0.0 to 1.0
   } else if (alpha <= t2) {
-    return mix(y1, y2, (alpha - t1) / (t2 - t1)); // LERP 1.0 → 0.2
+    return mix(y1, y2, (alpha - t1) / (t2 - t1)); // LERP 1.0 to 0.2
   } else {
     return y2;
   }
