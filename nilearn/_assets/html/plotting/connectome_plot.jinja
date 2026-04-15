@@ -1,0 +1,38 @@
+{% extends "html/head.jinja" %}
+
+{% block script %}
+    <script> {% include "js/jquery.min.js" %} </script>
+    <script> {% include "js/plotly-gl3d-latest.min.js" %} </script>
+    <script> {% include "js/common-surface-plot-utils.js" %} </script>
+    <script>
+      var connectomeInfo = {{  connectome_json }};
+      {% include "js/connectome-plot-utils.js" %}
+
+    </script>
+    <script>
+      $(document).ready(function () {
+        addPlot();
+        addConnectome();
+        $("#select-view").change(surfaceRelayout);
+        $("#connectome-plot").mouseup(function () {
+          $("#select-view").val("custom");
+        });
+        $(window).resize(surfaceRelayout);
+        $("#opacity-range").change(updateOpacity);
+      });
+    </script>
+{% endblock script %}
+
+{% block main %}
+    <div id="connectome-plot"></div>
+    <select id="select-view">
+        <option value="left">view: Left</option>
+        <option value="right">view: Right</option>
+        <option value="front">view: Front</option>
+        <option value="back">view: Back</option>
+        <option value="top">view: Top</option>
+        <option value="bottom">view: Bottom</option>
+        <option value="custom">view: -</option>
+    </select>
+    <input id="opacity-range" type="range" min="0" max="100" value="30" />
+{% endblock main %}
