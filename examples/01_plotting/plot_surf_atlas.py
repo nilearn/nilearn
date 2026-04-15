@@ -171,8 +171,7 @@ view = view_surf(
 view
 
 # uncomment this to open the plot in a web browser:
-view.open_in_browser()
-view.save_as_html("tmp.html")
+# view.open_in_browser()
 
 # %%
 # you can also use :func:`~nilearn.plotting.view_connectome`
