@@ -359,7 +359,7 @@ def view_connectome(
     connectome_info["title_fontsize"] = title_fontsize
 
     if node_labels is None:
-        node_labels = ["" for _ in range(n_nodes)]
+        node_labels = [""] * n_nodes
     else:
         check_is_of_allowed_type(node_labels, (list), "node_labels")
         if len(node_labels) != n_nodes:
