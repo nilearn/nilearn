@@ -52,9 +52,6 @@ def check_html_surface_plots(
     -  ``view_markers``
 
     """
-    if engine == "niivue" and plot_div_id == "surface-plot":
-        plot_div_id = "toolbar"
-
     tmpfile = tmp_path / "test.html"
 
     if engine == "plotly":
@@ -90,20 +87,18 @@ def check_html_surface_plots(
     if not is_gil_enabled():
         return
 
-    _check_lxml(html, check_selects, plot_div_id, engine)
+    if engine == "plotly":
+        _check_lxml(html, check_selects, plot_div_id)
 
 
-def _check_lxml(html, check_selects, plot_div_id, engine):
+def _check_lxml(html, check_selects, plot_div_id):
     from lxml import etree
 
     root = etree.HTML(
         html.html.encode("utf-8"), parser=etree.HTMLParser(huge_tree=True)
     )
     head = root.find("head")
-    if engine == "plotly":
-        assert len(head.findall("script")) == 5
-    elif engine == "niivue":
-        assert len(head.findall("script")) == 3
+    assert len(head.findall("script")) == 5
 
     main = root.find("body").find("main")
     div = main.find("div")
@@ -112,12 +107,11 @@ def _check_lxml(html, check_selects, plot_div_id, engine):
     if not check_selects:
         return
 
-    if engine == "plotly":
-        selects = main.findall("select")
-        assert len(selects) == 3
+    selects = main.findall("select")
+    assert len(selects) == 3
 
-        for idx, selector, expected_n in zip(
-            [0, 1, 2], ["hemisphere", "kind", "view"], [3, 2, 7], strict=False
-        ):
-            assert ("id", f"select-{selector}") in selects[idx].items()
-            assert len(selects[idx].findall("option")) == expected_n
+    for idx, selector, expected_n in zip(
+        [0, 1, 2], ["hemisphere", "kind", "view"], [3, 2, 7], strict=False
+    ):
+        assert ("id", f"select-{selector}") in selects[idx].items()
+        assert len(selects[idx].findall("option")) == expected_n
