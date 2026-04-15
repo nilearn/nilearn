@@ -6,16 +6,6 @@
 
 {% endblock extra_css %}
 
-{% block script %}
-    <script> {% include "js/niivue.umd.js" %} </script>
-    <script> {% include "js/niivue.jinja" %} </script>
-    <script>
-    document.getElementById("gl").addEventListener("mouseup", () => {
-        document.getElementById("select-view").value = "custom";
-    });
-    </script>
-{% endblock script %}
-
 {% block main %}
     <canvas id="gl"></canvas>
     <div id="toolbar">
@@ -30,3 +20,14 @@
         </select>
     </div>
 {% endblock main %}
+
+
+{% block endscript %}
+<script> {% include "js/niivue.umd.js" %} </script>
+<script> {% include "js/niivue.jinja" %} </script>
+<script>
+document.getElementById("gl").addEventListener("mouseup", () => {
+document.getElementById("select-view").value = "custom";
+});
+</script>
+{% endblock endscript %}
