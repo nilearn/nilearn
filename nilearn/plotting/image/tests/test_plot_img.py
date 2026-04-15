@@ -46,6 +46,7 @@ def test_display_methods(matplotlib_pyplot, img_3d_mni):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_display_methods_invalid_threshold(matplotlib_pyplot, img_3d_mni):
     """Tests display methods for negative threshold."""
     with pytest.raises(
@@ -61,6 +62,11 @@ def test_display_methods_invalid_threshold(matplotlib_pyplot, img_3d_mni):
         display.add_contours(
             img_3d_mni, contours=2, linewidth=4, threshold=-1, filled=True
         )
+
+
+def test_check_string_threshold(matplotlib_pyplot, img_3d_mni):
+    """Checks threshold can be passed as string percentage value."""
+    plot_img(img_3d_mni, threshold="97%")
 
 
 @pytest.mark.thread_unsafe
@@ -140,6 +146,7 @@ def test_plot_img_transparency_range_error(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_img_transparency_binary_image(
     matplotlib_pyplot,
     shape_3d_default,

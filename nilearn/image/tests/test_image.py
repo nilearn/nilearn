@@ -1212,8 +1212,8 @@ def test_threshold_img(affine_eye):
 @pytest.mark.parametrize(
     "threshold, expected_n_non_zero",
     [
-        (1, {"left": 2, "right": 4}),
-        (10, {"left": 0, "right": 3}),
+        (1, {"left": 3, "right": 4}),
+        (10, {"left": 0, "right": 4}),
         (50, {"left": 0, "right": 0}),
         ("50%", {"left": 0, "right": 4}),
     ],
@@ -1300,8 +1300,8 @@ def test_threshold_surf_img_1d_negative_values(
     [
         (3, True, 16),
         (3, False, 8),
-        (4, True, 0),
-        (4, False, 0),
+        (4.1, True, 0),
+        (4.1, False, 0),
         (0, True, 448),
         (0, False, 224),
         (-3, False, 8),
@@ -1411,7 +1411,7 @@ def test_threshold_img_copy_surface(surf_img_1d):
 @pytest.mark.thread_unsafe
 def test_threshold_img_copy_volume(img_4d_ones_eye):
     """Test the behavior of threshold_img's copy parameter."""
-    threshold = 1
+    threshold = 1.1
     # Check that copy does not mutate. It returns modified copy.
     thr_img = threshold_img(img_4d_ones_eye, threshold)
 
@@ -1677,10 +1677,10 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
         clean_img(data_img, t_r=None, low_pass=0.1)
 
     data_img_ = clean_img(
-        data_img, detrend=True, standardize=False, low_pass=0.1, t_r=1.0
+        data_img, detrend=True, standardize=None, low_pass=0.1, t_r=1.0
     )
     data_flat_ = signal.clean(
-        data_flat, detrend=True, standardize=False, low_pass=0.1, t_r=1.0
+        data_flat, detrend=True, standardize=None, low_pass=0.1, t_r=1.0
     )
 
     assert_almost_equal(get_data(data_img_).T.reshape(100, -1), data_flat_)
@@ -1701,7 +1701,7 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     data_img_nifti2 = Nifti2Image(data, affine_eye)
 
     clean_img(
-        data_img_nifti2, detrend=True, standardize=False, low_pass=0.1, t_r=1.0
+        data_img_nifti2, detrend=True, standardize=None, low_pass=0.1, t_r=1.0
     )
 
     # if mask_img
@@ -1730,7 +1730,7 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
     imgs = surf_img_2d(length)
 
     cleaned_img = clean_img(
-        imgs, detrend=True, standardize=False, low_pass=0.1, t_r=1.0
+        imgs, detrend=True, standardize=None, low_pass=0.1, t_r=1.0
     )
 
     assert cleaned_img.shape == imgs.shape
@@ -1741,7 +1741,7 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
     cleaned_img_with_mask = clean_img(
         imgs,
         detrend=True,
-        standardize=False,
+        standardize=None,
         low_pass=0.1,
         t_r=1.0,
         mask_img=surf_mask_1d,
@@ -1757,7 +1757,7 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
     cleaned_img_with_full_mask = clean_img(
         imgs,
         detrend=True,
-        standardize=False,
+        standardize=None,
         low_pass=0.1,
         t_r=1.0,
         mask_img=full_mask,
@@ -1774,7 +1774,7 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
     cleaned_img = clean_img(
         imgs,
         detrend=True,
-        standardize=False,
+        standardize=None,
         low_pass=0.1,
         t_r=1.0,
         clean__sample_mask=sample_mask,

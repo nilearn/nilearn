@@ -1058,7 +1058,7 @@ def unmask(X, mask_img, order="F"):
             f"Masked data X must be 2D or 1D array; got shape: {X.shape!s}"
         )
 
-    return new_img_like(mask_img, unmasked, affine)
+    return new_img_like(mask_img, unmasked, affine, copy_header=False)
 
 
 def unmask_from_to_3d_array(w, mask):

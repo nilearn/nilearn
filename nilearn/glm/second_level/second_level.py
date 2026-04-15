@@ -18,7 +18,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, readable_time
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -650,7 +650,7 @@ class SecondLevelModel(BaseGLM):
         # Report progress
         logger.log(
             "\nComputation of second level model done in "
-            f"{time.time() - t0:0.2f} seconds.\n",
+            f"{readable_time(time.time() - t0)}.\n",
             verbose=self.verbose,
         )
 
@@ -1096,6 +1096,8 @@ def non_parametric_inference(
             memory=Memory(None),
             verbose=max(0, verbose - 1),
             memory_level=1,
+            # TODO (nilearn >= 0.15) remove standardize=None
+            standardize=None,
         )
     else:
         masker = NiftiMasker(
@@ -1104,6 +1106,8 @@ def non_parametric_inference(
             memory=Memory(None),
             verbose=max(0, verbose - 1),
             memory_level=1,
+            # TODO (nilearn >= 0.15) remove standardize=None
+            standardize=None,
         )
 
     masker.fit(sample_map)
@@ -1111,7 +1115,7 @@ def non_parametric_inference(
     # Report progress
     logger.log(
         "\nComputation of second level model done in "
-        f"{time.time() - t0} seconds\n",
+        f"{readable_time(time.time() - t0)}\n",
         verbose=verbose,
     )
 

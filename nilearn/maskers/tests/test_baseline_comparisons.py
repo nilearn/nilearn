@@ -92,7 +92,7 @@ def test_nifti_labels_masker_create_figure_for_report(
 
     labels_img = math_img("img1 + img2", img1=positive_img, img2=negative_img)
 
-    masker = src_masker(labels_img, mask_img=mask_img)
+    masker = src_masker(labels_img, mask_img=mask_img, cmap="RdBu_r")
     masker.fit(img)
 
     labels_image = masker._reporting_data["labels_image"]
