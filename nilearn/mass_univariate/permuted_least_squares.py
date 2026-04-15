@@ -15,7 +15,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, readable_time
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
     check_params,
@@ -23,8 +23,6 @@ from nilearn._utils.param_validation import (
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.image import new_img_like
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn._utils.logger import find_stack_level, readable_time
-from nilearn._utils.param_validation import check_params
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
