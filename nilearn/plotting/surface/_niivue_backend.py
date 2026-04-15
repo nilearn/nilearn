@@ -25,7 +25,9 @@ def colorscale_niivue(values, vmax, threshold=None):
     return vmax, threshold
 
 
-def matplotlib_cm_to_niivue_cm(cmap):
+def matplotlib_cm_to_niivue_cm(
+    cmap: str | mpl.colors.Colormap,
+) -> None | dict[str, dict[str, list[int]]]:
     """Convert matplotlib colormap to niivue colormap.
 
     Parameters
@@ -35,7 +37,7 @@ def matplotlib_cm_to_niivue_cm(cmap):
 
     Returns
     -------
-    cmap : dict of dict of list
+    cmap
         Converted positive "pos" and negative "neg" colormaps,
         with keys "R", "G", "B", "A".
     """
@@ -64,7 +66,7 @@ def matplotlib_cm_to_niivue_cm(cmap):
     n_nodes = 255
     colors = spec(np.linspace(0, 1, 2 * n_nodes))
 
-    js = {"R": [], "G": [], "B": [], "A": []}
+    js: dict[str, list[int]] = {"R": [], "G": [], "B": [], "A": []}
     js["R"] = (255 * colors[..., 0]).astype(int).tolist()
     js["G"] = (255 * colors[..., 1]).astype(int).tolist()
     js["B"] = (255 * colors[..., 2]).astype(int).tolist()
