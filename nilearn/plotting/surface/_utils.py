@@ -68,6 +68,8 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
             raise ImportError(
                 "Using engine='plotly' requires that ``plotly`` is installed."
             )
+    elif engine == "niivue":
+        import nilearn.plotting.surface._nivuee_backend as backend
 
     return backend
 

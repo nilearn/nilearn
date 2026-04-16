@@ -1,6 +1,5 @@
 """Handle plotting of surfaces for html rendering."""
 
-import base64
 import json
 from typing import Any, Literal
 
@@ -15,13 +14,8 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn.image import check_niimg_3d
-from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import mesh_to_plotly
-from nilearn.plotting.surface._niivue_backend import (
-    colorscale_niivue,
-    matplotlib_cm_to_niivue_cm,
-)
 from nilearn.plotting.surface._utils import (
     DEFAULT_ENGINE,
     DEFAULT_HEMI,
@@ -31,8 +25,6 @@ from nilearn.plotting.surface._utils import (
 from nilearn.surface.surface import (
     PolyMesh,
     SurfaceImage,
-    _data_to_gifti,
-    _mesh_to_gifti,
     check_mesh_and_data,
     check_mesh_is_fsaverage,
     combine_hemispheres_meshes,
@@ -46,86 +38,6 @@ ALLOWED_VIEWS = {"left", "right", "front", "back", "top", "bottom"}
 
 class SurfaceView(HTMLDocument):  # noqa: D101
     pass
-
-
-def _one_mesh_info(
-    surf_map,
-    surf_mesh,
-    threshold=None,
-    cmap=cm.cold_hot,  # type: ignore[attr-defined]
-    black_bg: bool = False,
-    bg_map=None,
-    symmetric_cmap: bool = True,
-    bg_on_data: bool = False,
-    vmax=None,
-    vmin=None,
-    engine: Literal["niivue", "plotly"] = "plotly",
-) -> dict[str, Any]:
-    """Prepare info for plotting one surface map on a single mesh.
-
-    This computes the dictionary that gets inserted in the web page,
-    which contains the encoded mesh, colors, min and max values, and
-    background color.
-
-    """
-    info: dict[str, Any] = {}
-
-    if engine == "niivue":
-        # Handle mesh
-        surf_mesh_gifti = _mesh_to_gifti(
-            surf_mesh.coordinates, surf_mesh.faces
-        )
-        info["surf_mesh"] = base64.b64encode(
-            surf_mesh_gifti.to_bytes()
-        ).decode("UTF-8")
-
-        # Handle surface data
-        gii = _data_to_gifti(surf_map)
-        info["surf_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
-
-        info["cmap"] = matplotlib_cm_to_niivue_cm(cmap)
-
-        vmax, threshold = colorscale_niivue(surf_map, vmax, threshold)
-        info["threshold"] = threshold
-        info["vmax"] = vmax
-
-        # Handle background map
-        if bg_map is not None:
-            gii = _data_to_gifti(bg_map)
-            info["bg_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
-        else:
-            info["bg_map"] = "null"
-
-        info["bg_color"] = "[0, 0, 0, 1]" if black_bg else "[1, 1, 1, 1]"
-        info["bg_theme"] = "black" if black_bg else "white"
-
-        return info
-
-    info["inflated_both"] = mesh_to_plotly(surf_mesh)
-
-    colors = colorscale(
-        cmap,
-        surf_map,
-        threshold,
-        symmetric_cmap=symmetric_cmap,
-        vmax=vmax,
-        vmin=vmin,
-    )
-    backend = get_surface_backend(DEFAULT_ENGINE)
-    info["vertexcolor_both"] = backend._get_vertexcolor(
-        surf_map,
-        colors["cmap"],
-        colors["norm"],
-        absolute_threshold=colors["abs_threshold"],
-        bg_map=bg_map,
-        bg_on_data=bg_on_data,
-    )
-    info["cmin"] = float(colors["vmin"])
-    info["cmax"] = float(colors["vmax"])
-    info["black_bg"] = black_bg
-    info["full_brain_mesh"] = False
-    info["colorscale"] = colors["colors"]
-    return info
 
 
 def _get_combined_curvature_map(mesh_left, mesh_right):
@@ -547,7 +459,9 @@ def view_surf(
         engine, allowed=["plotly", "niivue"], parameter_name="engine"
     )
 
-    info = _one_mesh_info(
+    backend = get_surface_backend(engine)
+
+    info = backend._one_mesh_info(
         surf_map=surf_map,
         surf_mesh=surf_mesh,
         threshold=threshold,
@@ -559,18 +473,14 @@ def view_surf(
         vmax=vmax,
         vmin=vmin,
         engine=engine,
+        colorbar=colorbar,
+        colorbar_height=colorbar_height,
+        colorbar_fontsize=colorbar_fontsize,
     )
 
     info["title"] = title
     info["view"] = view
 
     info["title_fontsize"] = title_fontsize
-
-    if engine == "niivue":
-        info["colorbar"] = str(colorbar).lower()
-    else:
-        info["colorbar"] = colorbar
-        info["cbar_height"] = colorbar_height
-        info["cbar_fontsize"] = colorbar_fontsize
 
     return _fill_html_template(info, engine=engine)
