@@ -1,6 +1,7 @@
 """Logging facility for nilearn."""
 
 import inspect
+import time
 import traceback
 from pathlib import Path
 
@@ -198,3 +199,24 @@ def one_level_deeper() -> int:
     Needs to be in a module that does not start with 'test'
     """
     return find_stack_level()
+
+
+def readable_time(seconds) -> str:
+    """Convert a duration in seconds to a human-readable string.
+
+    The output includes hours, minutes, and seconds as needed, using
+    abbreviated units (HR/HRS, MIN, SEC).
+
+    Parameters
+    ----------
+    seconds : int or float
+        Time duration in seconds.
+
+    Returns
+    -------
+    str
+        Human-readable time string.
+    """
+    seconds = round(seconds)
+
+    return time.strftime("%H HR %M MIN %S SEC", time.gmtime(seconds))
