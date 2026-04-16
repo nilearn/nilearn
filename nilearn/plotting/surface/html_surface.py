@@ -157,22 +157,10 @@ def _fill_html_template(
     info,
     engine: Literal["niivue", "plotly"] = "plotly",
 ):
-    view_img_tpl = get_template("html/plotting/surface_plot.jinja")
-    kwargs = {}
+    backend = get_surface_backend(engine)
+    view_img_tpl = get_template(backend.HTML_TEMPLATE_PATH)
 
-    if engine == "niivue":
-        view_img_tpl = get_template("html/plotting/surface_plot_niivue.jinja")
-        kwargs = {
-            "surf_map": info["surf_map"],
-            "cmap": info["cmap"],
-            "surf_mesh": info["surf_mesh"],
-            "bg_map": info["bg_map"],
-            "colorbar": info["colorbar"],
-            "threshold": json.dumps(info["threshold"]),
-            "vmax": json.dumps(info["vmax"]),
-            "font_size": str(info["title_fontsize"]) + "px",
-            "bg_color": info["bg_color"],
-        }
+    kwargs = backend._get_surface_plot_kwargs()
 
     html_view = view_img_tpl.render(
         page_title=info["title"] or "Surface plot",

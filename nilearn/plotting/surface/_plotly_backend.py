@@ -34,6 +34,8 @@ except ImportError:
 
     engine_warning("plotly")
 
+HTML_TEMPLATE_PATH = "html/plotting/surface_plot.jinja"
+
 CAMERAS = {
     "left": {
         "eye": {"x": -1.5, "y": 0, "z": 0},
@@ -419,3 +421,7 @@ def _one_mesh_info(
     info["cbar_fontsize"] = colorbar_kwargs.get("colorbar_fontsize", 25)
 
     return info
+
+
+def _get_surface_plot_kwargs(info):
+    return {}

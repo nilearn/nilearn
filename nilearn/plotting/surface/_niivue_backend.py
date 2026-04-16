@@ -1,19 +1,22 @@
 """Functions specific to "niivue" backend for surface visualization."""
 
 import base64
+import json
 import warnings
 from typing import Any, Literal
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
 from nilearn.plotting import cm
 
 from nilearn.surface.surface import _data_to_gifti, _mesh_to_gifti
+
+
+HTML_TEMPLATE_PATH = "html/plotting/surface_plot_niivue.jinja"
 
 
 def colorscale_niivue(values, vmax, threshold=None):
@@ -140,3 +143,18 @@ def _one_mesh_info(
     info["colorbar"] = str(colorbar_kwargs.get("colorbar", True)).lower()
 
     return info
+
+
+def _get_surface_plot_kwargs(info):
+    return {
+        "surf_map": info["surf_map"],
+        "cmap": info["cmap"],
+        "surf_mesh": info["surf_mesh"],
+        "bg_map": info["bg_map"],
+        "colorbar": info["colorbar"],
+        "threshold": json.dumps(info["threshold"]),
+        "vmax": json.dumps(info["vmax"]),
+        "font_size": str(info["title_fontsize"]) + "px",
+        "bg_color": info["bg_color"],
+    }
+
