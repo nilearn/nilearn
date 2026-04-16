@@ -157,7 +157,7 @@ view
 # view.open_in_browser()
 
 # %%
-# Note that you can also the niivue backend to visualize surfaces.
+# Note that you can also specify "niivue" as plotting engine to visualize surfaces.
 #
 view = view_surf(
     surf_mesh=fsaverage_meshes["inflated"],
