@@ -18,6 +18,7 @@ def coords() -> np.ndarray:
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "node_values",
     [
@@ -119,6 +120,7 @@ def test_plot_markers_saving_to_file(matplotlib_pyplot, coords, tmp_path):
     assert filename.is_file() and filename.stat().st_size > 0
 
 
+@pytest.mark.thread_unsafe
 def test_plot_markers_node_kwargs(matplotlib_pyplot, coords):
     """Smoke test for plot_markers testing that node_kwargs is working \
        and does not interfere with alpha.
@@ -171,6 +173,7 @@ def test_plot_markers_node_values_errors(matplotlib_pyplot, coords):
         plot_markers(["1", "2", "3", "4"], coords, display_mode="x")
 
 
+@pytest.mark.thread_unsafe
 def test_plot_markers_threshold_errors(matplotlib_pyplot, coords):
     """Tests that a ValueError is raised when node_threshold is \
        higher than the max node_value.

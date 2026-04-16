@@ -49,6 +49,7 @@ if SKLEARN_LT_1_6:
 else:
 
     @pytest.mark.single_process
+    @pytest.mark.thread_unsafe
     @parametrize_with_checks(
         estimators=ESTIMATORS_TO_CHECK,
         expected_failed_checks=return_expected_failed_checks,

@@ -1522,6 +1522,7 @@ def _set_best_hyperparameters(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.parametrize("regressor", ["svr", "lasso", "ridge"])
 def test_regressor_vs_sklearn(regressor):
