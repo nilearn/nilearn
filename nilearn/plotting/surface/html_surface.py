@@ -48,15 +48,6 @@ class SurfaceView(HTMLDocument):  # noqa: D101
     pass
 
 
-def _check_engine(engine) -> None:
-    """Check engine is valid."""
-    valid_engines = ["plotly", "niivue"]
-    if engine not in valid_engines:
-        raise ValueError(
-            f"Invalid engine {engine}. Valid engines are {valid_engines}."
-        )
-
-
 def _one_mesh_info(
     surf_map,
     surf_mesh,
@@ -552,7 +543,9 @@ def view_surf(
     if bg_map is not None:
         _, bg_map = check_mesh_and_data(surf_mesh, bg_map)
 
-    _check_engine(engine)
+    check_parameter_in_allowed(
+        engine, allowed=["plotly", "niivue"], parameter_name="engine"
+    )
 
     info = _one_mesh_info(
         surf_map=surf_map,

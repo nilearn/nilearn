@@ -20,7 +20,6 @@ def colorscale_niivue(values, vmax, threshold=None):
 
     if threshold is not None:
         threshold = check_threshold(threshold, values, fast_abs_percentile)
-        return vmax, float(threshold)
 
     return vmax, threshold
 
