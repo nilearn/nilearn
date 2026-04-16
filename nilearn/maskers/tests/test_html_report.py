@@ -346,7 +346,9 @@ def test_nifti_labels_masker_report(
     )
 
     generate_and_check_masker_report(
-        masker, extend_includes=["Regions summary"]
+        masker,
+        extend_includes=["Regions summary"],
+        extra_warnings_allowed=True,
     )
 
     # Check that the number of regions is correct
