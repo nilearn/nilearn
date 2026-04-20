@@ -10,10 +10,10 @@ from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.plotting.js_plotting_utils import decode
+from nilearn.plotting.surface._utils import get_surface_backend
 from nilearn.plotting.surface.html_surface import (
     _fill_html_template,
     _full_brain_info,
-    _one_mesh_info,
     view_img_on_surf,
     view_surf,
 )
@@ -42,12 +42,13 @@ def test_check_mesh():
     assert mesh is check_mesh_is_fsaverage(mesh)
 
 
-def test_one_mesh_info():
+def test_one_mesh_info_plotly():
     fsaverage = datasets.fetch_surf_fsaverage()
     mesh = fsaverage["pial_left"]
     surf_map = load_surf_data(fsaverage["sulc_left"])
     mesh = load_surf_mesh(mesh)
-    info = _one_mesh_info(
+    backend = get_surface_backend("plotly")
+    info = backend._one_mesh_info(
         surf_map, mesh, "90%", black_bg=True, bg_map=surf_map
     )
     assert {"_x", "_y", "_z", "_i", "_j", "_k"}.issubset(
@@ -97,7 +98,8 @@ def test_fill_html_template(tmp_path, mni152_template_res_2):
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
     surf_map = mesh.coordinates[:, 0]
-    info = _one_mesh_info(
+    backend = get_surface_backend("plotly")
+    info = backend._one_mesh_info(
         surf_map,
         fsaverage["pial_right"],
         "90%",
