@@ -3,7 +3,7 @@
 import base64
 import json
 import warnings
-from typing import Any, Literal
+from typing import Any
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -99,7 +99,7 @@ def _one_mesh_info(
     bg_on_data: bool = False,
     vmax=None,
     vmin=None,
-    engine: Literal["niivue", "plotly"] = "plotly",
+    title_fontsize=25,
     **colorbar_kwargs,
 ) -> dict[str, Any]:
     """Prepare info for plotting one surface map on a single mesh.
@@ -124,8 +124,8 @@ def _one_mesh_info(
     info["cmap"] = matplotlib_cm_to_niivue_cm(cmap)
 
     vmax, threshold = colorscale_niivue(surf_map, vmax, threshold)
-    info["threshold"] = threshold
-    info["vmax"] = vmax
+    info["threshold"] = json.dumps(threshold)
+    info["vmax"] = json.dumps(vmax)
 
     # Handle background map
     if bg_map is not None:
@@ -138,19 +138,6 @@ def _one_mesh_info(
     info["bg_theme"] = "black" if black_bg else "white"
 
     info["colorbar"] = str(colorbar_kwargs.get("colorbar", True)).lower()
+    info["font_size"] = str(title_fontsize) + "px"
 
     return info
-
-
-def _get_surface_plot_kwargs(info):
-    return {
-        "surf_map": info["surf_map"],
-        "cmap": info["cmap"],
-        "surf_mesh": info["surf_mesh"],
-        "bg_map": info["bg_map"],
-        "colorbar": info["colorbar"],
-        "threshold": json.dumps(info["threshold"]),
-        "vmax": json.dumps(info["vmax"]),
-        "font_size": str(info["title_fontsize"]) + "px",
-        "bg_color": info["bg_color"],
-    }

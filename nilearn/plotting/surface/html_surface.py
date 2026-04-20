@@ -160,14 +160,12 @@ def _fill_html_template(
     backend = get_surface_backend(engine)
     view_img_tpl = get_template(backend.HTML_TEMPLATE_PATH)
 
-    kwargs = backend._get_surface_plot_kwargs(info)
-
     html_view = view_img_tpl.render(
         page_title=info["title"] or "Surface plot",
         stat_map_json=json.dumps(info),
         display_footer='style="display: none"',
         engine=engine,
-        **kwargs,
+        **info,
     )
 
     return SurfaceView(html_view)
@@ -460,14 +458,13 @@ def view_surf(
         symmetric_cmap=symmetric_cmap,
         vmax=vmax,
         vmin=vmin,
-        engine=engine,
+        title_font_size=title_fontsize,
         colorbar=colorbar,
         colorbar_height=colorbar_height,
         colorbar_fontsize=colorbar_fontsize,
     )
 
     info["title"] = title
-    info["title_fontsize"] = title_fontsize
     info["view"] = view
 
     return _fill_html_template(info, engine=engine)

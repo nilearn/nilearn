@@ -6,7 +6,7 @@ functions in :obj:`~nilearn.plotting.surface` should be in this file.
 """
 
 import math
-from typing import Any, Literal
+from typing import Any
 
 import numpy as np
 
@@ -379,7 +379,7 @@ def _one_mesh_info(
     bg_on_data: bool = False,
     vmax=None,
     vmin=None,
-    engine: Literal["niivue", "plotly"] = "plotly",
+    title_fontsize=25,
     **colorbar_kwargs,
 ) -> dict[str, Any]:
     """Prepare info for plotting one surface map on a single mesh.
@@ -419,9 +419,6 @@ def _one_mesh_info(
     info["colorbar"] = colorbar_kwargs.get("colorbar", True)
     info["cbar_height"] = colorbar_kwargs.get("colorbar_height", 0.5)
     info["cbar_fontsize"] = colorbar_kwargs.get("colorbar_fontsize", 25)
+    info["title_fontsize"] = title_fontsize
 
     return info
-
-
-def _get_surface_plot_kwargs(info):
-    return {}
