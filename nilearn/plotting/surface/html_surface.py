@@ -160,7 +160,7 @@ def _fill_html_template(
     backend = get_surface_backend(engine)
     view_img_tpl = get_template(backend.HTML_TEMPLATE_PATH)
 
-    kwargs = backend._get_surface_plot_kwargs()
+    kwargs = backend._get_surface_plot_kwargs(info)
 
     html_view = view_img_tpl.render(
         page_title=info["title"] or "Surface plot",

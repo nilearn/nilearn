@@ -157,4 +157,3 @@ def _get_surface_plot_kwargs(info):
         "font_size": str(info["title_fontsize"]) + "px",
         "bg_color": info["bg_color"],
     }
-
