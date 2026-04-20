@@ -8,13 +8,12 @@ from typing import Any, Literal
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
 from nilearn.plotting import cm
-
 from nilearn.surface.surface import _data_to_gifti, _mesh_to_gifti
-
 
 HTML_TEMPLATE_PATH = "html/plotting/surface_plot_niivue.jinja"
 
@@ -113,12 +112,10 @@ def _one_mesh_info(
     info: dict[str, Any] = {}
 
     # Handle mesh
-    surf_mesh_gifti = _mesh_to_gifti(
-        surf_mesh.coordinates, surf_mesh.faces
+    surf_mesh_gifti = _mesh_to_gifti(surf_mesh.coordinates, surf_mesh.faces)
+    info["surf_mesh"] = base64.b64encode(surf_mesh_gifti.to_bytes()).decode(
+        "UTF-8"
     )
-    info["surf_mesh"] = base64.b64encode(
-        surf_mesh_gifti.to_bytes()
-    ).decode("UTF-8")
 
     # Handle surface data
     gii = _data_to_gifti(surf_map)
