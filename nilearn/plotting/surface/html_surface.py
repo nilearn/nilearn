@@ -467,8 +467,7 @@ def view_surf(
     )
 
     info["title"] = title
-    info["view"] = view
-
     info["title_fontsize"] = title_fontsize
+    info["view"] = view
 
     return _fill_html_template(info, engine=engine)
