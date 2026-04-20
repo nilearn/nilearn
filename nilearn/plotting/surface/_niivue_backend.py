@@ -95,10 +95,10 @@ def _one_mesh_info(
     cmap=cm.cold_hot,  # type: ignore[attr-defined]
     black_bg: bool = False,
     bg_map=None,
-    symmetric_cmap: bool = True,
-    bg_on_data: bool = False,
+    symmetric_cmap: bool = True,  # noqa: ARG001
+    bg_on_data: bool = False,  # noqa: ARG001
     vmax=None,
-    vmin=None,
+    vmin=None,  # noqa: ARG001
     title_fontsize=25,
     **colorbar_kwargs,
 ) -> dict[str, Any]:
