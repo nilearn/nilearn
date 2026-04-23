@@ -89,14 +89,14 @@ def test_fill_html_template(tmp_path, mni152_template_res_2, backend_engine):
     )
     info["title"] = None
 
-    html = _fill_html_template(info)
+    html = _fill_html_template(info, engine=backend_engine)
 
     check_html_surface_plots(tmp_path, html, engine=backend_engine)
 
     info = _full_brain_info(mni152_template_res_2)
     info["title"] = None
 
-    html = _fill_html_template(info)
+    html = _fill_html_template(info, engine=backend_engine)
 
     check_html_surface_plots(tmp_path, html, engine=backend_engine)
 
