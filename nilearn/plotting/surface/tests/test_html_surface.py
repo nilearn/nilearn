@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from nilearn import datasets, image
+from nilearn._utils.helpers import is_plotly_installed
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.exceptions import DimensionError
 from nilearn.image import get_data
@@ -42,29 +43,6 @@ def test_check_mesh():
     assert mesh is check_mesh_is_fsaverage(mesh)
 
 
-def test_one_mesh_info_plotly():
-    fsaverage = datasets.fetch_surf_fsaverage()
-    mesh = fsaverage["pial_left"]
-    surf_map = load_surf_data(fsaverage["sulc_left"])
-    mesh = load_surf_mesh(mesh)
-    backend = get_surface_backend("plotly")
-    info = backend._one_mesh_info(
-        surf_map, mesh, "90%", black_bg=True, bg_map=surf_map
-    )
-    assert {"_x", "_y", "_z", "_i", "_j", "_k"}.issubset(
-        info["inflated_both"].keys()
-    )
-    assert len(decode(info["inflated_both"]["_x"], "<f4")) == len(surf_map)
-    assert len(info["vertexcolor_both"]) == len(surf_map)
-    cmax = np.max(np.abs(surf_map))
-    assert (info["cmin"], info["cmax"]) == (-cmax, cmax)
-    assert isinstance(info["cmax"], float)
-    json.dumps(info)
-    assert info["black_bg"]
-    assert not info["full_brain_mesh"]
-    check_colors(info["colorscale"])
-
-
 def test_full_brain_info(mni152_template_res_2):
     surfaces = datasets.fetch_surf_fsaverage()
 
@@ -94,30 +72,34 @@ def test_full_brain_info(mni152_template_res_2):
         )
 
 
-def test_fill_html_template(tmp_path, mni152_template_res_2):
+@pytest.mark.parametrize("backend_engine", ["plotly", "niivue"])
+def test_fill_html_template(tmp_path, mni152_template_res_2, backend_engine):
     fsaverage = fetch_surf_fsaverage()
-    mesh = load_surf_mesh(fsaverage["pial_right"])
-    surf_map = mesh.coordinates[:, 0]
-    backend = get_surface_backend("plotly")
+    surf_mesh = load_surf_mesh(fsaverage["pial_right"])
+    surf_map = surf_mesh.coordinates[:, 0]
+    bg_map = load_surf_data(fsaverage["sulc_right"])
+
+    surf_mesh = load_surf_mesh(surf_mesh)
+    backend = get_surface_backend(backend_engine)
     info = backend._one_mesh_info(
-        surf_map,
-        fsaverage["pial_right"],
-        "90%",
+        surf_map=surf_map,
+        surf_mesh=surf_mesh,
+        threshold="90%",
         black_bg=True,
-        bg_map=fsaverage["sulc_right"],
+        bg_map=bg_map,
     )
     info["title"] = None
 
     html = _fill_html_template(info)
 
-    check_html_surface_plots(tmp_path, html)
+    check_html_surface_plots(tmp_path, html, engine=backend_engine)
 
     info = _full_brain_info(mni152_template_res_2)
     info["title"] = None
 
     html = _fill_html_template(info)
 
-    check_html_surface_plots(tmp_path, html)
+    check_html_surface_plots(tmp_path, html, engine=backend_engine)
 
 
 @pytest.mark.single_process
@@ -188,6 +170,10 @@ def test_view_surf_errors():
         )
 
 
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="This test requires plotly to be installed",
+)
 @pytest.mark.parametrize(
     "kwargs",
     [
@@ -204,6 +190,10 @@ def test_view_img_on_surf(tmp_path, mni152_template_res_2, kwargs):
     check_html_surface_plots(tmp_path, html, title=kwargs.get("title", None))
 
 
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="This test requires plotly to be installed",
+)
 def test_view_img_on_surf_clipped_image(tmp_path, mni152_template_res_2):
     """Check output of view_img_on_surf with clipped input."""
     img_4d = image.new_img_like(
@@ -234,17 +224,29 @@ def test_view_img_on_surf_clipped_image(tmp_path, mni152_template_res_2):
     check_html_surface_plots(tmp_path, html)
 
 
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="This test requires plotly to be installed",
+)
 @pytest.mark.thread_unsafe
 def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):
     view_img_on_surf(img_3d_mni_as_file)
     view_img_on_surf(str(img_3d_mni_as_file))
 
 
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="This test requires plotly to be installed",
+)
 def test_view_img_on_surf_errors(img_3d_mni):
     with pytest.raises(DimensionError):
         view_img_on_surf([img_3d_mni, img_3d_mni])
 
 
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="This test requires plotly to be installed",
+)
 @pytest.mark.parametrize("view", ["left", "right"])
 def test_view_img_on_surf_view(tmp_path, mni152_template_res_2, view):
     """Smoke test for different views of view_img_on_surf."""
