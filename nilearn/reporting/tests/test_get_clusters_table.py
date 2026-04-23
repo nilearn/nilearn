@@ -45,7 +45,7 @@ def validate_clusters_table(
     duplicated_ID = clusters_table.duplicated(subset=["Cluster ID"])
     assert not any(duplicated_ID.to_list()), clusters_table
 
-    assert not any(clusters_table["Peak Stat"].to_numpy() == np.nan)
+    assert not clusters_table["Peak Stat"].isna().to_numpy().any()
 
     # VERY unlikely that two different clusters have the same peak stat
     duplicated_stats = clusters_table.duplicated(subset=["Peak Stat"])
@@ -154,7 +154,7 @@ def test_get_clusters_table(
     "stat_threshold, cluster_threshold, expected_n_cluster",
     [
         (4, 0, 2),
-        (4, 2, 1),
+        (4, 2, 2),
         (6, 0, 0),
         (-4, 0, 2),
         (-4, 2, 0),
@@ -198,7 +198,7 @@ def test_get_clusters_table_surface(
     ),
     [
         (4, 0, 2, 2, True),
-        (4, 2, 1, 0, False),
+        (4, 2, 2, 0, False),
         (6, 0, 0, 0, False),
     ],
 )

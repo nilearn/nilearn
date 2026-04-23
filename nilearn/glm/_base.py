@@ -14,6 +14,7 @@ from nibabel.onetime import auto_attr
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn._assets import get_template
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
@@ -43,7 +44,6 @@ from nilearn.reporting.html_report import (
     HTMLReport,
     assemble_report,
     is_notebook,
-    return_jinja_env,
 )
 from nilearn.surface import SurfaceImage
 from nilearn.typing import ClusterThreshold, HeightControl
@@ -104,14 +104,13 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
         """Return mask image using during fit or mask image passed at init."""
         if self.__sklearn_is_fitted__():
             return self.mask_img_
-        else:
-            if self.mask_img is None:
-                return None
-            try:
-                # load mask_img if is a niiimg-like object
-                return check_niimg(self.mask_img)
-            except Exception:
-                return self.mask_img
+        if self.mask_img is None:
+            return None
+        try:
+            # load mask_img if is a niiimg-like object
+            return check_niimg(self.mask_img)
+        except Exception:
+            return self.mask_img
 
     @property
     def mask_img_(self) -> Nifti1Image | SurfaceImage:
@@ -483,7 +482,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
 
                   The given value should be within the range of minimum and
                   maximum intensity of the input image.
-                  All intensities in the interval ``[-threshold, threshold]``
+                  All intensities in the interval ``(-threshold, threshold)``
                   will be set to zero.
 
                 - When ``two_sided`` is False:
@@ -492,16 +491,16 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
 
                     It should be greater than the minimum intensity
                     of the input data.
-                    All intensities greater than or equal
-                    to the specified threshold will be set to zero.
+                    All intensities greater than the specified threshold will
+                    be set to zero.
                     All other intensities keep their original values.
 
                   - If the threshold is positive:
 
                     It should be less than the maximum intensity
                     of the input data.
-                    All intensities less than or equal
-                    to the specified threshold will be set to zero.
+                    All intensities less than the specified threshold will be
+                    set to zero.
                     All other intensities keep their original values.
 
         alpha : :obj:`float`, default=0.001
@@ -600,7 +599,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
         # we do not rely on filenames stored in the model.
         output = None
         if contrasts is None:
-            output = self._reporting_data.get("filenames", None)
+            output = self._reporting_data.get("filenames")
             if output is not None and output.get("use_absolute_path", True):
                 output = turn_into_full_path(output, output["dir"])
 
@@ -739,9 +738,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
                 stacklevel=find_stack_level(),
             )
 
-        env = return_jinja_env()
-
-        body_tpl = env.get_template("html/glm/body_glm.jinja")
+        body_tpl = get_template("html/glm/body_glm.jinja")
 
         # TODO clean up docstring from RST formatting
         docstring = (

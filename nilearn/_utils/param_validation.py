@@ -91,7 +91,7 @@ def check_threshold(
         data = abs(data) if two_sided else np.extract(data >= 0, data)
 
         if percentile:
-            threshold = percentile_func(data, threshold)
+            threshold = percentile_func(data, threshold) + 1e-5
         else:
             value_check = data.max()
             if threshold > value_check:
@@ -243,11 +243,9 @@ def check_params(fn_dict) -> None:
 
         def some_function(param_1, param_2="a"):
             check_params(locals())
-            ...
 
         Class MyClass:
-            def __init__(param_1, param_2="a")
-            ...
+            def __init__()
 
             def fit(X):
                 # check attributes of the class instance

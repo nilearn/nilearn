@@ -32,7 +32,6 @@ The nilearn core developers are:
 * `Hande Gözükan`_
 * `Hao-Ting Wang`_
 * `Himanshu Aggarwal`_
-* `Jerome Dockes`_
 * `Michelle Wang`_
 * `Mohammad Torabi`_
 * `Pierre-Louis Barbarant`_
@@ -122,7 +121,7 @@ Some other past or present contributors are:
 * `Jean-Rémi King`_: Meta AI, CNRS, Paris
 * `Jelle Roelof Dalenberg`_: University Medical Center Groningen, Groningen, The Netherlands
 * `Jeremy Lefort-Besnard`_: Inria Rennes, France
-* `Jerome Dockes`_: Origami lab, McGill University, Montréal, Canada
+* `Jerome Dockes`_: Probabl
 * `Jerome-Alexis Chevalier`_: Emerton Data
 * `Johanna Bayer`_: McGill University, Montréal, Canada
 * `Johannes Wiesner`_: Central Institute of Mental Health, Mannheim, Germany
@@ -189,14 +188,16 @@ Some other past or present contributors are:
 * `Prakhar Jain`_: RV College of Engineering, Bangalore, India
 * `Rahul Brito`_
 * `Raphael Meudec`_: Inria, Saclay, France
+* `Rishika Kapil`_: Thapar Institute of Engineering and Technology
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
 * `Robert Williamson`_
 * `Roberto Guidotti`_: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
 * `Rohan Thomas Jepegnanam`_: Cognitive Neuroscience & Clinical Phenomenology Lab, Christian Medical College, Vellore, India
 * `Ronald Phlypo`_: Lyon area, France
 * `Ryan Hammonds`_: UC San Diego, San Diego, California, USA
-* `Rémi Gau`_: Origami lab, McGill University, Montréal, Canada
+* `Rémi Gau`_: Inria, Saclay, France
 * `Sachin Patalasingh`_
+* `Saeed Babadi`_
 * `Sage Hahn`_: deephealth
 * `Salma Bougacha`_
 * `Sam Buck Johnson`_

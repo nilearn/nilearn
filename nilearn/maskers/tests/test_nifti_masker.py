@@ -25,7 +25,7 @@ from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask
 
-ESTIMATORS_TO_CHECK = [NiftiMasker()]
+ESTIMATORS_TO_CHECK = [NiftiMasker(standardize=None)]
 
 if SKLEARN_LT_1_6:
 
@@ -70,7 +70,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 def test_detrend(img_3d_rand_eye, mask_img_1):
     """Check that detrending doesn't do something stupid with 3D images."""
     # Smoke test the fit
-    masker = NiftiMasker(mask_img=mask_img_1, detrend=True)
+    masker = NiftiMasker(mask_img=mask_img_1, detrend=True, standardize=None)
     X = masker.fit_transform(img_3d_rand_eye)
     assert np.any(X != 0)
 
@@ -80,7 +80,7 @@ def test_fit_transform(y, img_3d_rand_eye, mask_img_1):
     """Check fit_transform of BaseMasker with several input args."""
     # Smoke test the fit
     for mask_img in [mask_img_1, None]:
-        masker = NiftiMasker(mask_img=mask_img)
+        masker = NiftiMasker(mask_img=mask_img, standardize=None)
         X = masker.fit_transform(X=img_3d_rand_eye, y=y)
         assert np.any(X != 0)
 
@@ -90,7 +90,7 @@ def test_fit_transform_warning(img_3d_rand_eye, mask_img_1):
         when mask was provided at instantiation.
     """
     y = np.ones((9, 9, 9))
-    masker = NiftiMasker(mask_img=mask_img_1)
+    masker = NiftiMasker(mask_img=mask_img_1, standardize=None)
     with pytest.warns(
         UserWarning,
         match="Generation of a mask has been requested .*"
@@ -108,7 +108,9 @@ def test_resample(img_3d_rand_eye, mask_img_1, target_affine):
 
     Also check that target affine can be passed as a list.
     """
-    masker = NiftiMasker(mask_img=mask_img_1, target_affine=target_affine)
+    masker = NiftiMasker(
+        mask_img=mask_img_1, target_affine=target_affine, standardize=None
+    )
     # Smoke test the fit
     X = masker.fit_transform(img_3d_rand_eye)
     assert np.any(X != 0)
@@ -138,7 +140,7 @@ def test_resample_to_mask_warning(img_3d_rand_eye, affine_eye):
     mask[3:-3, 3:-3, 3:-3] = 10
     mask = mask.astype("uint8")
     mask_img = Nifti1Image(mask, affine_eye)
-    masker = NiftiMasker(mask_img=mask_img)
+    masker = NiftiMasker(mask_img=mask_img, standardize=None)
     with pytest.warns(
         UserWarning,
         match="imgs are being resampled to the mask_img resolution. "
@@ -191,7 +193,7 @@ def test_matrix_orientation():
     assert not np.any(std < 0.1)
 
     # Test inverse transform
-    masker = NiftiMasker(mask_img=mask)
+    masker = NiftiMasker(mask_img=mask, standardize=None)
     masker.fit()
     timeseries = masker.transform(fmri)
     recovered = masker.inverse_transform(timeseries)
@@ -222,7 +224,7 @@ def test_mask_4d(shape_3d_default, affine_eye):
 
     # check whether transform is indeed selecting niimgs subset
     sample_mask = np.array([0, 2])
-    masker = NiftiMasker(mask_img=mask_img)
+    masker = NiftiMasker(mask_img=mask_img, standardize=None)
     masker.fit()
     data_trans = masker.transform(data_imgs, sample_mask=sample_mask)
     data_trans_img = index_img(data_img_4d, sample_mask)
@@ -231,7 +233,7 @@ def test_mask_4d(shape_3d_default, affine_eye):
 
     assert_array_equal(data_trans, data_trans_direct)
 
-    masker = NiftiMasker(mask_img=mask_img)
+    masker = NiftiMasker(mask_img=mask_img, standardize=None)
     masker.fit()
     data_trans2 = masker.transform(data_img_4d, sample_mask=sample_mask)
 
@@ -241,7 +243,7 @@ def test_mask_4d(shape_3d_default, affine_eye):
     data_trans_img_diff = index_img(data_img_4d, diff_sample_mask)
     data_trans_direct_diff = get_data(data_trans_img_diff)[mask_bool, :]
     data_trans_direct_diff = np.swapaxes(data_trans_direct_diff, 0, 1)
-    masker = NiftiMasker(mask_img=mask_img)
+    masker = NiftiMasker(mask_img=mask_img, standardize=None)
     masker.fit()
     data_trans3 = masker.transform(data_img_4d, sample_mask=diff_sample_mask)
 
@@ -262,7 +264,7 @@ def test_4d_single_scan(rng, shape_3d_default, affine_eye):
     data_5d = [Nifti1Image(d, affine_eye) for d in data_5d]
     data_4d = [Nifti1Image(d, affine_eye) for d in data_4d]
 
-    masker = NiftiMasker(mask_img=mask_img)
+    masker = NiftiMasker(mask_img=mask_img, standardize=None)
 
     masker.fit()
 
@@ -287,7 +289,7 @@ def test_sessions(affine_eye):
     data[..., 0] = 0
     data[20, 20, 20] = 1
     data_img = Nifti1Image(data, affine_eye)
-    masker = NiftiMasker(runs=np.ones(3, dtype=int))
+    masker = NiftiMasker(runs=np.ones(3, dtype=int), standardize=None)
     with pytest.raises(ValueError):
         masker.fit_transform(data_img)
 

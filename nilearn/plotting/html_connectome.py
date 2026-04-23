@@ -7,17 +7,16 @@ from matplotlib import cm as mpl_cm
 from scipy import sparse
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._assets import get_template
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting._engine_utils import colorscale, to_color_strings
-from nilearn.plotting.js_plotting_utils import (
-    add_js_lib,
-    encode,
-    get_html_template,
-    mesh_to_plotly,
-)
+from nilearn.plotting.js_plotting_utils import encode, mesh_to_plotly
 
 
 class ConnectomeView(HTMLDocument):  # noqa: D101
@@ -222,24 +221,21 @@ def _get_connectome(
     }
 
 
-def _make_connectome_html(connectome_info, embed_js=True):
+def _make_connectome_html(connectome_info):
     plot_info = {"connectome": connectome_info}
     mesh = fetch_surf_fsaverage()
     for hemi in ["pial_left", "pial_right"]:
         plot_info[hemi] = mesh_to_plotly(mesh[hemi])
-    as_json = json.dumps(plot_info)
-    as_html = get_html_template(
-        "connectome_plot_template.html"
-    ).safe_substitute(
-        {
-            "INSERT_CONNECTOME_JSON_HERE": as_json,
-            "INSERT_PAGE_TITLE_HERE": (
-                connectome_info["title"] or "Connectome plot"
-            ),
-        }
+
+    connectome_plot_tpl = get_template("html/plotting/connectome_plot.jinja")
+
+    html_view = connectome_plot_tpl.render(
+        page_title=connectome_info["title"] or "Connectome plot",
+        connectome_json=json.dumps(plot_info),
+        display_footer='style="display: none"',
     )
-    as_html = add_js_lib(as_html, embed_js=embed_js)
-    return ConnectomeView(as_html)
+
+    return ConnectomeView(html_view)
 
 
 @fill_doc
@@ -257,6 +253,7 @@ def view_connectome(
     colorbar_fontsize=25,
     title=None,
     title_fontsize=25,
+    node_labels=None,
 ):
     """Insert a 3d plot of a connectome into an HTML page.
 
@@ -305,6 +302,12 @@ def view_connectome(
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
+    node_labels : :obj:`list` of :obj:`str` of len=(n_nodes)\
+        or None, default=None
+        Labels for the nodes.
+
+        .. nilearn_versionadded:: 0.14.0dev
+
     Returns
     -------
     ConnectomeView : plot of the connectome.
@@ -330,6 +333,7 @@ def view_connectome(
     """
     check_params(locals())
     node_coords = np.asarray(node_coords)
+    n_nodes = node_coords.shape[0]
 
     connectome_info = _get_connectome(
         adjacency_matrix,
@@ -346,6 +350,18 @@ def view_connectome(
     connectome_info["cbar_fontsize"] = colorbar_fontsize
     connectome_info["title"] = title
     connectome_info["title_fontsize"] = title_fontsize
+
+    if node_labels is None:
+        node_labels = [""] * n_nodes
+    else:
+        check_is_of_allowed_type(node_labels, (list), "node_labels")
+        if len(node_labels) != n_nodes:
+            raise ValueError(
+                f"'node_labels' has {len(node_labels)} items, "
+                f"but {n_nodes} were expected."
+            )
+
+    connectome_info["marker_labels"] = node_labels
     return _make_connectome_html(connectome_info)
 
 

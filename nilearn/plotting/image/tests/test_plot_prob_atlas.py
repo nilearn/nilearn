@@ -9,6 +9,7 @@ from nilearn.plotting import plot_prob_atlas
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "params",
     [

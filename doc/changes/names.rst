@@ -283,6 +283,8 @@
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
+.. _Rishika Kapil: https://github.com/RishikaKaps
+
 .. _Robert Luke: https://github.com/rob-luke
 
 .. _Robert Williamson: https://github.com/RobWilliamson15
@@ -298,6 +300,8 @@
 .. _Rémi Gau: https://github.com/Remi-Gau
 
 .. _Sachin Patalasingh: https://github.com/sachin-bsai
+
+.. _Saeed Babadi: https://github.com/saeed-neuro
 
 .. _Sage Hahn: https://github.com/sahahn
 
