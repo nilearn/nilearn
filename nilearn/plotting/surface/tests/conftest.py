@@ -8,16 +8,35 @@ from nilearn.surface import SurfaceImage
 
 
 def pytest_generate_tests(metafunc):
-    """Check installed packages and set engines to be used for the tests.
+    """Check installed packages and possible engines defined by
+    ``@pytest.mark.engines`` for the test, and set engines to be used depending
+    on availability of the engine.
+
+    For example if the test should only be run for "niivue" and "plotly" (if
+    installed) engines, put the below line on top of test function:
+
+    @pytest.mark.engines(["plotly", "niivue"])
+
+    If plotly is installed, the tests will be run with plotly; test for plotly
+    will be skipped otherwise.
 
     https://docs.pytest.org/en/stable/example/parametrize.html#deferring-the-setup-of-parametrized-resources
     """
     if "engine" in metafunc.fixturenames:
+        marker = metafunc.definition.get_closest_marker("engines")
+        if marker:
+            engines = marker.args[0]
+        else:
+            engines = ["matplotlib", "plotly"]
+
         installed_engines = []
-        if is_matplotlib_installed():
+        if is_matplotlib_installed() and "matplotlib" in engines:
             installed_engines.append("matplotlib")
-        if is_plotly_installed():
+        if is_plotly_installed() and "plotly" in engines:
             installed_engines.append("plotly")
+        if "niivue" in engines:
+            installed_engines.append("niivue")
+
         metafunc.parametrize("engine", installed_engines, indirect=True)
 
 

@@ -71,15 +71,15 @@ def test_full_brain_info(mni152_template_res_2):
         )
 
 
-@pytest.mark.parametrize("backend_engine", ["plotly", "niivue"])
-def test_fill_html_template(tmp_path, mni152_template_res_2, backend_engine):
+@pytest.mark.engines(["plotly", "niivue"])
+def test_fill_html_template(tmp_path, mni152_template_res_2, engine):
     fsaverage = fetch_surf_fsaverage()
     surf_mesh = load_surf_mesh(fsaverage["pial_right"])
     surf_map = surf_mesh.coordinates[:, 0]
     bg_map = load_surf_data(fsaverage["sulc_right"])
 
     surf_mesh = load_surf_mesh(surf_mesh)
-    backend = get_surface_backend(backend_engine)
+    backend = get_surface_backend(engine)
     info = backend._one_mesh_info(
         surf_map=surf_map,
         surf_mesh=surf_mesh,
@@ -89,21 +89,21 @@ def test_fill_html_template(tmp_path, mni152_template_res_2, backend_engine):
     )
     info["title"] = None
 
-    html = _fill_html_template(info, engine=backend_engine)
+    html = _fill_html_template(info, engine=engine)
 
-    check_html_surface_plots(tmp_path, html, engine=backend_engine)
+    check_html_surface_plots(tmp_path, html, engine=engine)
 
     info = _full_brain_info(mni152_template_res_2)
     info["title"] = None
 
-    html = _fill_html_template(info, engine=backend_engine)
+    html = _fill_html_template(info, engine=engine)
 
-    check_html_surface_plots(tmp_path, html, engine=backend_engine)
+    check_html_surface_plots(tmp_path, html, engine=engine)
 
 
 @pytest.mark.single_process
-@pytest.mark.parametrize("backend_engine", ["plotly", "niivue"])
-def test_view_surf(tmp_path, rng, backend_engine):
+@pytest.mark.engines(["plotly", "niivue"])
+def test_view_surf(tmp_path, rng, engine):
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
     surf_map = mesh.coordinates[:, 0]
@@ -113,13 +113,13 @@ def test_view_surf(tmp_path, rng, backend_engine):
         surf_map,
         fsaverage["sulc_right"],
         threshold="90%",
-        engine=backend_engine,
+        engine=engine,
     )
     check_html_surface_plots(
         tmp_path,
         html,
         title="Surface plot",
-        engine=backend_engine,
+        engine=engine,
     )
 
     html = view_surf(
@@ -128,32 +128,32 @@ def test_view_surf(tmp_path, rng, backend_engine):
         fsaverage["sulc_right"],
         threshold=0.3,
         title="SOME_TITLE",
-        engine=backend_engine,
+        engine=engine,
     )
     check_html_surface_plots(
-        tmp_path, html, title="SOME_TITLE", engine=backend_engine
+        tmp_path, html, title="SOME_TITLE", engine=engine
     )
 
-    html = view_surf(fsaverage["pial_right"], engine=backend_engine)
-    check_html_surface_plots(tmp_path, html, engine=backend_engine)
+    html = view_surf(fsaverage["pial_right"], engine=engine)
+    check_html_surface_plots(tmp_path, html, engine=engine)
 
     atlas = rng.integers(0, 10, size=len(mesh.coordinates))
     html = view_surf(
         fsaverage["pial_left"],
         atlas,
         symmetric_cmap=False,
-        engine=backend_engine,
+        engine=engine,
     )
-    check_html_surface_plots(tmp_path, html, engine=backend_engine)
+    check_html_surface_plots(tmp_path, html, engine=engine)
 
     html = view_surf(
         fsaverage["pial_right"],
         fsaverage["sulc_right"],
         threshold=None,
         cmap="Greys",
-        engine=backend_engine,
+        engine=engine,
     )
-    check_html_surface_plots(tmp_path, html, engine=backend_engine)
+    check_html_surface_plots(tmp_path, html, engine=engine)
 
 
 def test_view_surf_errors():
