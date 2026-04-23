@@ -8,17 +8,16 @@ from nilearn.surface import SurfaceImage
 
 
 def pytest_generate_tests(metafunc):
-    """Check installed packages and possible engines defined by
-    ``@pytest.mark.engines`` for the test, and set engines to be used depending
-    on availability of the engine.
+    """Check availability of engines defined by ``@pytest.mark.engines`` and
+    remove from engines list if the necessary library is not installed.
 
-    For example if the test should only be run for "niivue" and "plotly" (if
-    installed) engines, put the below line on top of test function:
+    For example if the test should only be run for "niivue" and "plotly"
+    engines, put the below line on top of test function: 
 
     @pytest.mark.engines(["plotly", "niivue"])
 
-    If plotly is installed, the tests will be run with plotly; test for plotly
-    will be skipped otherwise.
+    If plotly is not installed, it will be removed from the list and tests will
+    not be run for plotly.
 
     https://docs.pytest.org/en/stable/example/parametrize.html#deferring-the-setup-of-parametrized-resources
     """
@@ -29,15 +28,12 @@ def pytest_generate_tests(metafunc):
         else:
             engines = ["matplotlib", "plotly"]
 
-        installed_engines = []
-        if is_matplotlib_installed() and "matplotlib" in engines:
-            installed_engines.append("matplotlib")
-        if is_plotly_installed() and "plotly" in engines:
-            installed_engines.append("plotly")
-        if "niivue" in engines:
-            installed_engines.append("niivue")
+        if "matplotlib" in engines and not is_matplotlib_installed():
+            engines.remove("matplotlib")
+        if "plotly" in engines and not is_plotly_installed():
+            engines.remove("plotly")
 
-        metafunc.parametrize("engine", installed_engines, indirect=True)
+        metafunc.parametrize("engine", engines, indirect=True)
 
 
 @pytest.fixture
