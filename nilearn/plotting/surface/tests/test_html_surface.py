@@ -5,11 +5,10 @@ import json
 import numpy as np
 import pytest
 
-from nilearn import datasets, image
 from nilearn._utils.helpers import is_plotly_installed
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.exceptions import DimensionError
-from nilearn.image import get_data
+from nilearn.image import get_data, new_img_like
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting.surface._utils import get_surface_backend
 from nilearn.plotting.surface.html_surface import (
@@ -39,12 +38,12 @@ def test_check_mesh():
         check_mesh_is_fsaverage(mesh)
     with pytest.raises(TypeError):
         check_mesh_is_fsaverage(load_surf_mesh(mesh["pial_right"]))
-    mesh = datasets.fetch_surf_fsaverage()
+    mesh = fetch_surf_fsaverage()
     assert mesh is check_mesh_is_fsaverage(mesh)
 
 
 def test_full_brain_info(mni152_template_res_2):
-    surfaces = datasets.fetch_surf_fsaverage()
+    surfaces = fetch_surf_fsaverage()
 
     info = _full_brain_info(mni152_template_res_2, surfaces)
     check_colors(info["colorscale"])
@@ -179,7 +178,7 @@ def test_view_surf_errors():
     [
         {},
         {"threshold": "92.3%"},
-        {"threshold": 0, "surf_mesh": datasets.fetch_surf_fsaverage()},
+        {"threshold": 0, "surf_mesh": fetch_surf_fsaverage()},
         {"threshold": 0.4, "title": "SOME_TITLE"},
         {"threshold": 0.4, "cmap": "hot", "black_bg": True},
     ],
@@ -196,7 +195,7 @@ def test_view_img_on_surf(tmp_path, mni152_template_res_2, kwargs):
 )
 def test_view_img_on_surf_clipped_image(tmp_path, mni152_template_res_2):
     """Check output of view_img_on_surf with clipped input."""
-    img_4d = image.new_img_like(
+    img_4d = new_img_like(
         mni152_template_res_2,
         get_data(mni152_template_res_2)[:, :, :, np.newaxis],
     )

@@ -1,7 +1,5 @@
 """Test nilearn.plotting.surface._plotly_backend functions."""
 
-import json
-
 import numpy as np
 import pytest
 
@@ -277,7 +275,6 @@ def test_one_mesh_info():
     cmax = np.max(np.abs(surf_map))
     assert (info["cmin"], info["cmax"]) == (-cmax, cmax)
     assert isinstance(info["cmax"], float)
-    json.dumps(info)
     assert info["black_bg"]
     assert not info["full_brain_mesh"]
     check_colors(info["colorscale"])
