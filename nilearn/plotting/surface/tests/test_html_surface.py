@@ -130,9 +130,7 @@ def test_view_surf(tmp_path, rng, engine):
         title="SOME_TITLE",
         engine=engine,
     )
-    check_html_surface_plots(
-        tmp_path, html, title="SOME_TITLE", engine=engine
-    )
+    check_html_surface_plots(tmp_path, html, title="SOME_TITLE", engine=engine)
 
     html = view_surf(fsaverage["pial_right"], engine=engine)
     check_html_surface_plots(tmp_path, html, engine=engine)

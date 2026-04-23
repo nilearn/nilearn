@@ -12,7 +12,7 @@ def pytest_generate_tests(metafunc):
     remove from engines list if the necessary library is not installed.
 
     For example if the test should only be run for "niivue" and "plotly"
-    engines, put the below line on top of test function: 
+    engines, put the below line on top of test function:
 
     @pytest.mark.engines(["plotly", "niivue"])
 
@@ -23,10 +23,7 @@ def pytest_generate_tests(metafunc):
     """
     if "engine" in metafunc.fixturenames:
         marker = metafunc.definition.get_closest_marker("engines")
-        if marker:
-            engines = marker.args[0]
-        else:
-            engines = ["matplotlib", "plotly"]
+        engines = marker.args[0] if marker else ["matplotlib", "plotly"]
 
         if "matplotlib" in engines and not is_matplotlib_installed():
             engines.remove("matplotlib")
