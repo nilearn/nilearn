@@ -349,7 +349,8 @@ log_level = "INFO"
 markers = [
     "slow",  # for tests that exceed the timeout allowed for each test
     "single_process",  # for test that require testing n_jobs>1 or that are flaky when used xdist testing parallelization
-    "thread_unsafe"  # marker used by pytest-run-parallel: adding it here to avoid warning and not always install the extension
+    "thread_unsafe",  # marker used by pytest-run-parallel: adding it here to avoid warning and not always install the extension
+    "engines" # marker used to specify engines for a test to be selected from available ones 
 ]
 minversion = "6.0"
 testpaths = ["nilearn"]
