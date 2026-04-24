@@ -149,7 +149,7 @@ def _group_iter_search_light(
         adjacency rows. For a voxel with index i in X, list_rows[i] is the list
         of neighboring voxels indices (in X).
 
-    estimator : estimator object implementing 'fit' and 'predict' methods
+    estimator : scikit-learn compatible estimator object
         object to use to fit the data.
 
     X : array-like of shape at least 2D
