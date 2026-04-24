@@ -53,8 +53,8 @@ def search_light(
     y : array-like
         target variable to predict.
 
-    estimator : estimator object implementing 'fit'
-        object to use to fit the data
+    estimator : scikit-learn compatible estimator object
+        Object to use to fit the data.
 
     A : scipy sparse matrix.
         adjacency matrix. Defines for each feature the neighboring features
@@ -149,8 +149,8 @@ def _group_iter_search_light(
         adjacency rows. For a voxel with index i in X, list_rows[i] is the list
         of neighboring voxels indices (in X).
 
-    estimator : estimator object implementing 'fit'
-        object to use to fit the data
+    estimator : estimator object implementing 'fit' and 'predict' methods
+        object to use to fit the data.
 
     X : array-like of shape at least 2D
         data to fit.
@@ -254,8 +254,10 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
     radius : :obj:`float`, default=2.
         radius of the searchlight ball, in millimeters.
 
-    estimator : 'svr', 'svc', or an estimator object implementing 'fit'
-        The object to use to fit the data
+    estimator : obj:`str` or estimator object, default='svc'
+        The object to use to fit the data. Besides the strings, a scikit-learn
+        compatible estimator object (any object implementing 'fit' and
+        'predict' methods) can be passed.
 
     %(n_jobs)s
 
