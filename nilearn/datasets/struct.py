@@ -999,7 +999,6 @@ def _sanitize_vertices_order(
 
 def _resort_vertices(bunch, bunch_fsaverage5):
     """Reorder vertices of bunch according to vertex order of fsaverage5."""
-
     for mesh in [
         "flat_left",
         "flat_right",
@@ -1017,7 +1016,7 @@ def _resort_vertices(bunch, bunch_fsaverage5):
 
         bunch[mesh] = np.asarray(
             _reorder_mesh_coordinates(fs5_coordinates, coords, faces),
-            dtype=object
+            dtype=object,
         ).T.squeeze()
 
     return bunch
