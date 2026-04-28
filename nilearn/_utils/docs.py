@@ -224,6 +224,9 @@ docdict["classifier_options"] = f"""
 
     Besides the strings, it is also possible to pass a scikit-learn compatible
     estimator object (any object implementing 'fit' and 'predict' methods).
+    See `scikit-learn's guide on developing your own estimator
+    <https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator>`_
+    for more details.
 """
 
 # clean_args
@@ -969,6 +972,9 @@ docdict["regressor_options"] = """
 
     Besides the strings, it is also possible to pass a scikit-learn compatible
     estimator object (any object implementing 'fit' and 'predict' methods).
+    See `scikit-learn's guide on developing your own estimator
+    <https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator>`_
+    for more details.
 """
 
 # resampling_interpolation
