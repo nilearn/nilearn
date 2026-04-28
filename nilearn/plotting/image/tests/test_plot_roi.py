@@ -124,6 +124,7 @@ def test_cmap_as_lookup_table(img_labels):
         plot_roi(img_labels, cmap=lut)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 @pytest.mark.parametrize("background_label", [None, 0])
 def test_cmap_as_lookup_table_with_background(background_label):

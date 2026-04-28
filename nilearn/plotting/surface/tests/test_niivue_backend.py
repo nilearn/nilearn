@@ -5,6 +5,7 @@ import pytest
 from nilearn.plotting.surface._niivue_backend import matplotlib_cm_to_niivue_cm
 
 
+@pytest.mark.thread_unsafe
 def test_matplotlib_cm_to_niivue_cm():
     """Make sure _matplotlib_cm_to_niivue_cm raises errors appropriately."""
     with pytest.warns(

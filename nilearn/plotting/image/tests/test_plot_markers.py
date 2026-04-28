@@ -119,6 +119,7 @@ def test_plot_markers_saving_to_file(matplotlib_pyplot, coords, tmp_path):
     assert filename.is_file() and filename.stat().st_size > 0
 
 
+@pytest.mark.thread_unsafe
 def test_plot_markers_node_kwargs(matplotlib_pyplot, coords):
     """Smoke test for plot_markers testing that node_kwargs is working \
        and does not interfere with alpha.

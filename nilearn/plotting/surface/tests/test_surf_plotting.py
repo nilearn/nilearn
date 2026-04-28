@@ -438,6 +438,7 @@ def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
     assert display.axes[0].title._text == "Test title"
 
 
+@pytest.mark.thread_unsafe
 def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
     """Test error msg for invalid axes."""
     _, axes = matplotlib_pyplot.subplots()
