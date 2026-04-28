@@ -1013,32 +1013,37 @@ def _resort_vertices(bunch, bunch_fsaverage5):
         "white_right",
     ]:
         fs5_coordinates, _ = surface.load_surf_data(bunch_fsaverage5[mesh])
-        coordinates, faces = surface.load_surf_data(bunch[mesh])
-
-        fs_matches_in_fs5 = [
-            np.argwhere(
-                [
-                    np.allclose(vertex, fs5_coordinates[i, :], atol=0.9)
-                    for vertex in coordinates
-                ]
-            )
-            for i in range(coordinates.shape[0])
-        ]
-
-        fs_new_order = np.array(fs_matches_in_fs5).flatten()
-        fs_new_order_inverted = np.empty_like(fs_new_order)
-        fs_new_order_inverted[fs_new_order] = np.arange(fs_new_order.size)
-
-        coordinates_updated = coordinates[fs_new_order]
-        faces_updated = np.vectorize(lambda x: fs_new_order_inverted[x])(
-            faces
-        ).astype(np.int32)
+        coords, faces = surface.load_surf_data(bunch[mesh])
 
         bunch[mesh] = np.asarray(
-            [coordinates_updated, faces_updated], dtype=object
+            _reorder_mesh_coordinates(fs5_coordinates, coords, faces),
+            dtype=object
         ).T.squeeze()
 
     return bunch
+
+
+def _reorder_mesh_coordinates(fs5_coords, coords, faces, atol=0.9):
+    fs_matches_in_fs5 = [
+        np.argwhere(
+            [
+                np.allclose(vertex, fs5_coords[i, :], atol=atol)
+                for vertex in coords
+            ]
+        )
+        for i in range(coords.shape[0])
+    ]
+
+    fs_new_order = np.array(fs_matches_in_fs5).flatten()
+    fs_new_order_inverted = np.empty_like(fs_new_order)
+    fs_new_order_inverted[fs_new_order] = np.arange(fs_new_order.size)
+
+    coords_updated = coords[fs_new_order]
+    faces_updated = np.vectorize(lambda x: fs_new_order_inverted[x])(
+        faces
+    ).astype(np.int32)
+
+    return [coords_updated, faces_updated]
 
 
 def _fetch_surf_fsaverage5() -> Bunch[str, str]:
