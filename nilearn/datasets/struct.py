@@ -930,25 +930,18 @@ def fetch_surf_fsaverage(
             f"{mesh!r} was provided"
         )
 
-    bunch_fsaverage5 = _fetch_surf_fsaverage5()
-
-    # Call a dataset loader depending on the value of mesh
-    if mesh in (
-        "fsaverage3",
-        "fsaverage4",
-        "fsaverage6",
-        "fsaverage7",
-        "fsaverage",
-    ):
+    if mesh == "fsaverage5":
+        return _fetch_surf_fsaverage5()
+    else:
         # rename mesh to "fsaverage" to download it once
         # regardless of whether mesh equals "fsaverage" or "fsaverage7"
         if mesh == "fsaverage7":
             mesh = "fsaverage"
-        bunch = _fetch_surf_fsaverage(mesh, data_dir=data_dir)
-    elif mesh == "fsaverage5":
-        return bunch_fsaverage5
 
-    bunch = _sanitize_vertices_order(bunch, bunch_fsaverage5, mesh, data_dir)
+        bunch = _fetch_surf_fsaverage(mesh, data_dir=data_dir)
+
+        if mesh in ("fsaverage3", "fsaverage4"):
+            bunch = _sanitize_vertices_order(bunch, mesh, data_dir)
 
     return bunch
 
@@ -971,7 +964,6 @@ def is_vertex_order_equal(mesh1_coords, mesh2_coords):
 
 def _sanitize_vertices_order(
     bunch: Bunch,
-    bunch_fsaverage5: Bunch,
     mesh: str,
     data_dir,
 ) -> Bunch:
@@ -981,8 +973,9 @@ def _sanitize_vertices_order(
     We only check pial_left and assume if it fails
     all meshes have be sorted.
     """
+    bunch_fs5 = _fetch_surf_fsaverage5()
     fs_coordinates, _ = surface.load_surf_data(bunch.pial_left)
-    fs5_coordinates, _ = surface.load_surf_data(bunch_fsaverage5.pial_left)
+    fs5_coordinates, _ = surface.load_surf_data(bunch_fs5.pial_left)
 
     if not is_vertex_order_equal(fs_coordinates, fs5_coordinates):
         warnings.warn(
@@ -999,12 +992,13 @@ def _sanitize_vertices_order(
             stacklevel=find_stack_level(),
         )
 
-        bunch = _resort_vertices(bunch, bunch_fsaverage5)
+        bunch = _resort_vertices(bunch, bunch_fs5)
 
     return bunch
 
 
 def _resort_vertices(bunch, bunch_fsaverage5):
+    """Reorder vertices of bunch according to vertex order of fsaverage5."""
 
     for mesh in [
         "flat_left",
@@ -1018,23 +1012,19 @@ def _resort_vertices(bunch, bunch_fsaverage5):
         "white_left",
         "white_right",
     ]:
-        print(mesh)
         fs5_coordinates, _ = surface.load_surf_data(bunch_fsaverage5[mesh])
         coordinates, faces = surface.load_surf_data(bunch[mesh])
 
-        # %%
         fs_matches_in_fs5 = [
             np.argwhere(
                 [
-                    np.allclose(vertex, fs5_coordinates[i, :], atol=1e-1)
+                    np.allclose(vertex, fs5_coordinates[i, :], atol=0.9)
                     for vertex in coordinates
                 ]
             )
             for i in range(coordinates.shape[0])
         ]
 
-        # %%
-        print(len(fs_matches_in_fs5))
         fs_new_order = np.array(fs_matches_in_fs5).flatten()
         fs_new_order_inverted = np.empty_like(fs_new_order)
         fs_new_order_inverted[fs_new_order] = np.arange(fs_new_order.size)
@@ -1044,10 +1034,9 @@ def _resort_vertices(bunch, bunch_fsaverage5):
             faces
         ).astype(np.int32)
 
-        bunch[mesh] = {
-            "coordinates": coordinates_updated,
-            "faces": faces_updated,
-        }
+        bunch[mesh] = np.asarray(
+            [coordinates_updated, faces_updated], dtype=object
+        ).T.squeeze()
 
     return bunch
 
