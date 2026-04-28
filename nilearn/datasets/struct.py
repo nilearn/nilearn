@@ -946,7 +946,7 @@ def fetch_surf_fsaverage(
     return bunch
 
 
-def is_vertex_order_equal(mesh1_coords, mesh2_coords):
+def _is_vertex_order_equal(mesh1_coords, mesh2_coords):
     """Check is the vertex order of two meshes comply for common number of
     vertices.
     """
@@ -977,7 +977,7 @@ def _sanitize_vertices_order(
     fs_coordinates, _ = surface.load_surf_data(bunch.pial_left)
     fs5_coordinates, _ = surface.load_surf_data(bunch_fs5.pial_left)
 
-    if not is_vertex_order_equal(fs_coordinates, fs5_coordinates):
+    if not _is_vertex_order_equal(fs_coordinates, fs5_coordinates):
         warnings.warn(
             (
                 "\nUnsorted vertex coordinates detected.\n"
