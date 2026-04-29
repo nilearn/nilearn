@@ -1001,6 +1001,11 @@ def _resort_vertices(bunch, bunch_fsaverage5):
     """Reorder vertices of each mesh in fsaverage bunch according to vertex
     order of fsaverage5.
     """
+    fs5_coordinates, _ = surface.load_surf_data(bunch_fsaverage5["flat_left"])
+    coords, faces = surface.load_surf_data(bunch["flat_left"])
+    # it is sufficient to get order for only one mesh and use the same order
+    # for all meshes
+    order = _get_order(fs5_coordinates, coords)
     for mesh in [
         "flat_left",
         "flat_right",
@@ -1017,11 +1022,38 @@ def _resort_vertices(bunch, bunch_fsaverage5):
         coords, faces = surface.load_surf_data(bunch[mesh])
 
         bunch[mesh] = np.asarray(
-            _reorder_mesh_coordinates(fs5_coordinates, coords, faces),
+            _apply_order(order, coords, faces),
             dtype=object,
         ).T.squeeze()
 
     return bunch
+
+
+def _get_order(fs_upper_coords, fs_coords):
+    fs_matches_in_fs_upper = [
+        np.argwhere(
+            [
+                np.allclose(vertex, fs_upper_coords[i, :], atol=0.5)
+                for vertex in fs_coords
+            ]
+        )
+        for i in range(fs_coords.shape[0])
+    ]
+
+    fs_new_order = np.array(fs_matches_in_fs_upper).flatten()
+    return fs_new_order
+
+
+def _apply_order(order, fs_coords, fs_faces):
+    fs_new_order_inverted = np.empty_like(order)
+    fs_new_order_inverted[order] = np.arange(order.size)
+
+    fs_coords_updated = fs_coords[order]
+    faces_updated = np.vectorize(lambda x: fs_new_order_inverted[x])(
+        fs_faces
+    ).astype(np.int32)
+
+    return [fs_coords_updated, faces_updated]
 
 
 def _reorder_mesh_coordinates(fs_upper_coords, fs_coords, fs_faces, atol=0.9):
