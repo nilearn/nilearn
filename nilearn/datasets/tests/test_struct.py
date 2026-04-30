@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
@@ -9,6 +10,7 @@ from sklearn.utils import Bunch
 
 from nilearn._utils.helpers import is_windows_platform
 from nilearn.datasets.struct import (
+    _get_mesh_mapping,
     _is_vertex_order_equal,
     fetch_icbm152_2009,
     fetch_icbm152_brain_gm_mask,
@@ -256,3 +258,96 @@ def test_load_fsaverage_data_errors():
         load_fsaverage_data(mesh_type="foo")
     with pytest.raises(ValueError, match="'data_type' must be one of"):
         load_fsaverage_data(data_type="foo")
+
+
+def test_get_mesh_mapping():
+    """Test nilearn.datasets.struct._get_mesh_mapping."""
+    arr = np.array(
+        [
+            [-38.7, -19.3, 67.2],
+            [-9.7, -9.2, 46.6],
+            [-24.0, 43.1, 23.9],
+            [-59.9, 0.0, 9.0],
+            [-50.6, -49.4, 47.8],
+            [-16.7, -69.1, 61.3],
+            [-20.2, -62.7, 6.2],
+            [-2.5, 9.4, -4.6],
+            [-29.0, 23.4, -6.7],
+            [-54.5, -22.9, -6.7],
+            [-36.6, -87.1, -1.8],
+            [-35.2, -25.0, -25.6],
+            [-49.8, -28.2, 53.7],
+            [-60.0, -25.2, 27.3],
+            [-55.2, -7.4, 38.7],
+            [-21.8, -35.5, 70.8],
+            [-29.1, -52.0, 40.0],
+            [-12.6, -11.4, 71.5],
+            [-14.8, -44.4, 55.4],
+            [-30.0, 11.1, 56.6],
+        ]
+    )
+
+    arr2 = np.array(
+        [
+            [-38.7, -19.3, 67.2],
+            [-16.7, -69.1, 61.3],
+            [-9.7, -9.2, 46.6],
+            [-24.0, 43.1, 23.9],
+            [-59.9, 0.0, 9.0],
+            [-50.6, -49.4, 47.8],
+            [-36.6, -87.1, -1.8],
+            [-20.2, -62.7, 6.2],
+            [-2.5, 9.4, -4.6],
+            [-29.0, 23.4, -6.7],
+            [-54.5, -22.9, -6.7],
+            [-35.2, -25.0, -25.6],
+            [-55.2, -7.4, 38.7],
+            [-38.6, 23.4, 24.3],
+            [-30.0, 11.1, 56.6],
+            [-49.8, -28.2, 53.7],
+            [-60.0, -25.2, 27.3],
+            [-21.8, -35.5, 70.8],
+            [-29.1, -52.0, 40.0],
+            [-12.6, -11.4, 71.5],
+            [-14.8, -44.4, 55.4],
+            [-3.5, 35.5, 51.8],
+            [-9.5, 53.1, 1.7],
+            [-3.1, 17.3, 24.5],
+            [-41.4, 52.1, -4.0],
+            [-11.7, 26.4, -24.2],
+            [-35.8, 16.0, 6.5],
+            [-34.5, -30.9, 17.5],
+            [-46.5, -8.2, -9.5],
+            [-64.8, -49.1, 15.4],
+        ]
+    )
+
+    mapping = _get_mesh_mapping(arr, arr2)
+
+    assert np.array_equal(
+        mapping,
+        np.array(
+            [
+                0,
+                5,
+                1,
+                2,
+                3,
+                4,
+                10,
+                6,
+                7,
+                8,
+                9,
+                11,
+                14,
+                19,
+                12,
+                13,
+                15,
+                16,
+                17,
+                18,
+            ]
+        ),
+    )
