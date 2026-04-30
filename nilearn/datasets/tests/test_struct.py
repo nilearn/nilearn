@@ -202,7 +202,7 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     "mesh",
     [
         "fsaverage3",
-#        "fsaverage4",
+        #        "fsaverage4",
     ],
 )
 def test_fetch_surf_fsaverage_wrong_order(mesh, monkeypatch):
