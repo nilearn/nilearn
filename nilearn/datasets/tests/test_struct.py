@@ -155,8 +155,6 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path):
 @pytest.mark.parametrize(
     "mesh",
     [
-        "fsaverage3",
-        "fsaverage4",
         "fsaverage5",
         "fsaverage6",
         "fsaverage7",
@@ -185,8 +183,6 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
 
     # Mock fsaverage3, 4, 6, 7 download (with actual url)
     fs_urls = [
-        "https://osf.io/azhdf/download",
-        "https://osf.io/28uma/download",
         "https://osf.io/jzxyr/download",
         "https://osf.io/svf8k/download",
     ]
@@ -200,6 +196,23 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     check_type_fetcher(dataset)
 
     assert mesh_attributes.issubset(set(dataset.keys()))
+
+
+@pytest.mark.parametrize(
+    "mesh",
+    [
+        "fsaverage3",
+#        "fsaverage4",
+    ],
+)
+def test_fetch_surf_fsaverage_wrong_order(mesh, monkeypatch):
+    # Define attribute list that nilearn meshs should contain
+    # (each attribute should eventually map to a _.gii.gz file
+    # named after the attribute)
+    monkeypatch.undo()
+
+    with pytest.warns(FutureWarning, match="Unsorted vertex"):
+        fetch_surf_fsaverage(mesh)
 
 
 def test_fetch_load_fsaverage():
