@@ -1040,7 +1040,7 @@ def _get_mesh_mapping(fs_coords, fs5_coords):
     dtype = np.dtype(
         (
             np.void,
-            fs_coords_rounded.dtype.itemsize * fs_coords_rounded.shape[1]
+            fs_coords_rounded.dtype.itemsize * fs_coords_rounded.shape[1],
         )
     )
 
@@ -1054,9 +1054,7 @@ def _get_mesh_mapping(fs_coords, fs5_coords):
     # indices of fs in fs5
     fs_idx_in_fs5 = fs5_sort_idx[
         # indices of fs in sorted fs5
-        np.searchsorted(
-            fs5_coords_view, fs_coords_view, sorter=fs5_sort_idx
-        )
+        np.searchsorted(fs5_coords_view, fs_coords_view, sorter=fs5_sort_idx)
     ]
 
     # get indices that would sort fs to match order in fs5
