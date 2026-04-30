@@ -946,11 +946,13 @@ def fetch_surf_fsaverage(
     return bunch
 
 
-def _is_vertex_order_equal(mesh1_coords, mesh2_coords):
+def _is_vertex_order_equal(mesh1_coords, mesh2_coords, check_len=None):
     """Check is the vertex order of two meshes comply for common number of
     vertices.
     """
     len_common = min(len(mesh1_coords), len(mesh2_coords))
+    if check_len is not None and check_len <= len_common:
+        len_common = check_len
 
     try:
         np.testing.assert_array_almost_equal(
@@ -977,7 +979,7 @@ def _sanitize_vertices_order(
     fs_coordinates, _ = surface.load_surf_data(bunch.pial_left)
     fs5_coordinates, _ = surface.load_surf_data(bunch_fs5.pial_left)
 
-    if not _is_vertex_order_equal(fs_coordinates, fs5_coordinates):
+    if not _is_vertex_order_equal(fs_coordinates, fs5_coordinates, 5):
         warnings.warn(
             (
                 "\nUnsorted vertex coordinates detected.\n"
