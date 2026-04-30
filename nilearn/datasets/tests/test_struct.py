@@ -9,6 +9,7 @@ from sklearn.utils import Bunch
 
 from nilearn._utils.helpers import is_windows_platform
 from nilearn.datasets.struct import (
+    _is_vertex_order_equal,
     fetch_icbm152_2009,
     fetch_icbm152_brain_gm_mask,
     fetch_oasis_vbm,
@@ -28,7 +29,7 @@ from nilearn.datasets.tests._testing import (
     dict_to_archive,
     list_to_archive,
 )
-from nilearn.surface import PolyMesh, SurfaceImage
+from nilearn.surface import PolyMesh, SurfaceImage, load_surf_data
 
 
 def test_fetch_icbm152_2009(tmp_path, request_mocker, capsys):
@@ -202,7 +203,7 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     "mesh",
     [
         "fsaverage3",
-        #        "fsaverage4",
+        "fsaverage4",
     ],
 )
 def test_fetch_surf_fsaverage_wrong_order(mesh, monkeypatch):
@@ -212,7 +213,26 @@ def test_fetch_surf_fsaverage_wrong_order(mesh, monkeypatch):
     monkeypatch.undo()
 
     with pytest.warns(FutureWarning, match="Unsorted vertex"):
-        fetch_surf_fsaverage(mesh)
+        fsx = fetch_surf_fsaverage(mesh)
+
+    fs7 = fetch_surf_fsaverage("fsaverage7")
+
+    for mesh in [
+        "flat_left",
+        "flat_right",
+        "pial_left",
+        "pial_right",
+        "infl_left",
+        "infl_right",
+        "sphere_left",
+        "sphere_right",
+        "white_left",
+        "white_right",
+    ]:
+        fs7_coordinates, _ = load_surf_data(fs7[mesh])
+        fsx_coordinates, _ = load_surf_data(fsx[mesh])
+
+        assert _is_vertex_order_equal(fs7_coordinates, fsx_coordinates)
 
 
 def test_fetch_load_fsaverage():
