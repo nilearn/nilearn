@@ -1005,9 +1005,10 @@ def _resort_vertices(bunch, bunch_fsaverage5):
     """
     fs5_coordinates, _ = surface.load_surf_data(bunch_fsaverage5["flat_left"])
     coords, faces = surface.load_surf_data(bunch["flat_left"])
-    # it is sufficient to get order for only one mesh and use the same order
-    # for all meshes
-    order = _get_order(fs5_coordinates, coords)
+
+    # it is sufficient to get mapping for only one mesh to align with
+    # fsaverage5 and use the same mapping for all meshes
+    order = _get_mesh_mapping(fs5_coordinates, coords)
     for mesh in [
         "flat_left",
         "flat_right",
@@ -1024,14 +1025,14 @@ def _resort_vertices(bunch, bunch_fsaverage5):
         coords, faces = surface.load_surf_data(bunch[mesh])
 
         bunch[mesh] = np.asarray(
-            _apply_order(order, coords, faces),
+            _apply_mesh_mapping(order, coords, faces),
             dtype=object,
         ).T.squeeze()
 
     return bunch
 
 
-def _get_order(fs_upper_coords, fs_coords):
+def _get_mesh_mapping(fs_upper_coords, fs_coords):
     fs_matches_in_fs_upper = [
         np.argwhere(
             [
@@ -1046,11 +1047,11 @@ def _get_order(fs_upper_coords, fs_coords):
     return fs_new_order
 
 
-def _apply_order(order, fs_coords, fs_faces):
-    fs_new_order_inverted = np.empty_like(order)
-    fs_new_order_inverted[order] = np.arange(order.size)
+def _apply_mesh_mapping(mapping, fs_coords, fs_faces):
+    fs_new_order_inverted = np.empty_like(mapping)
+    fs_new_order_inverted[mapping] = np.arange(mapping.size)
 
-    fs_coords_updated = fs_coords[order]
+    fs_coords_updated = fs_coords[mapping]
     faces_updated = np.vectorize(lambda x: fs_new_order_inverted[x])(
         fs_faces
     ).astype(np.int32)
