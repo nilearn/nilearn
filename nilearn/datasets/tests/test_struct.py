@@ -206,18 +206,18 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
         "fsaverage4",
     ],
 )
-def test_fetch_surf_fsaverage_wrong_order(mesh, monkeypatch):
+def test_fetch_surf_fsaverage_wrong_order(mesh, tmp_path, monkeypatch):
     # Define attribute list that nilearn meshs should contain
     # (each attribute should eventually map to a _.gii.gz file
     # named after the attribute)
     monkeypatch.undo()
 
     with pytest.warns(FutureWarning, match="Unsorted vertex"):
-        fsx = fetch_surf_fsaverage(mesh)
+        fsx = fetch_surf_fsaverage(mesh, data_dir=tmp_path)
 
-    fs7 = fetch_surf_fsaverage("fsaverage7")
+    fs7 = fetch_surf_fsaverage("fsaverage7", data_dir=tmp_path)
 
-    for mesh in [
+    for view in [
         "flat_left",
         "flat_right",
         "pial_left",
@@ -229,8 +229,8 @@ def test_fetch_surf_fsaverage_wrong_order(mesh, monkeypatch):
         "white_left",
         "white_right",
     ]:
-        fs7_coordinates, _ = load_surf_data(fs7[mesh])
-        fsx_coordinates, _ = load_surf_data(fsx[mesh])
+        fs7_coordinates, _ = load_surf_data(fs7[view])
+        fsx_coordinates, _ = load_surf_data(fsx[view])
 
         assert _is_vertex_order_equal(fs7_coordinates, fsx_coordinates)
 
