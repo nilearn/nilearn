@@ -1056,29 +1056,6 @@ def _apply_order(order, fs_coords, fs_faces):
     return [fs_coords_updated, faces_updated]
 
 
-def _reorder_mesh_coordinates(fs_upper_coords, fs_coords, fs_faces, atol=0.9):
-    fs_matches_in_fs_upper = [
-        np.argwhere(
-            [
-                np.allclose(vertex, fs_upper_coords[i, :], atol=atol)
-                for vertex in fs_coords
-            ]
-        )
-        for i in range(fs_coords.shape[0])
-    ]
-
-    fs_new_order = np.array(fs_matches_in_fs_upper).flatten()
-    fs_new_order_inverted = np.empty_like(fs_new_order)
-    fs_new_order_inverted[fs_new_order] = np.arange(fs_new_order.size)
-
-    fs_coords_updated = fs_coords[fs_new_order]
-    faces_updated = np.vectorize(lambda x: fs_new_order_inverted[x])(
-        fs_faces
-    ).astype(np.int32)
-
-    return [fs_coords_updated, faces_updated]
-
-
 def _fetch_surf_fsaverage5() -> Bunch[str, str]:
     """Ship fsaverage5 surfaces and sulcal information with Nilearn.
 
