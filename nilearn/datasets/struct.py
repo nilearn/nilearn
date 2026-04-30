@@ -1008,7 +1008,7 @@ def _resort_vertices(bunch, bunch_fsaverage5):
 
     # it is sufficient to get mapping for only one mesh to align with
     # fsaverage5 and use the same mapping for all meshes
-    order = _get_mesh_mapping(fs5_coordinates, coords)
+    order = _get_mesh_mapping(coords, fs5_coordinates)
     for mesh in [
         "flat_left",
         "flat_right",
@@ -1032,19 +1032,35 @@ def _resort_vertices(bunch, bunch_fsaverage5):
     return bunch
 
 
-def _get_mesh_mapping(fs_upper_coords, fs_coords):
-    fs_matches_in_fs_upper = [
-        np.argwhere(
-            [
-                np.allclose(vertex, fs_upper_coords[i, :], atol=0.5)
-                for vertex in fs_coords
-            ]
+def _get_mesh_mapping(fs_coords, fs5_coords):
+    fs_coords_rounded = np.round(fs_coords, 1)
+    fs5_coords_rounded = np.round(fs5_coords, 1)
+
+    # create a structured dtype: treat each row as one element
+    dtype = np.dtype(
+        (
+            np.void,
+            fs_coords_rounded.dtype.itemsize * fs_coords_rounded.shape[1]
         )
-        for i in range(fs_coords.shape[0])
+    )
+
+    # get contiguous flattened array
+    fs_coords_view = fs_coords_rounded.view(dtype).ravel()
+    fs5_coords_view = fs5_coords_rounded.view(dtype).ravel()
+
+    # get indices that would sort fs5
+    fs5_sort_idx = np.argsort(fs5_coords_view)
+
+    # indices of fs in fs5
+    fs_idx_in_fs5 = fs5_sort_idx[
+        # indices of fs in sorted fs5
+        np.searchsorted(
+            fs5_coords_view, fs_coords_view, sorter=fs5_sort_idx
+        )
     ]
 
-    fs_new_order = np.array(fs_matches_in_fs_upper).flatten()
-    return fs_new_order
+    # get indices that would sort fs to match order in fs5
+    return np.argsort(fs_idx_in_fs5)
 
 
 def _apply_mesh_mapping(mapping, fs_coords, fs_faces):
