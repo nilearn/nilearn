@@ -65,6 +65,7 @@ test = [
 # For running unit and docstring tests
 test_common = [
     "numpydoc>=1.8.0",
+    "polars",
     "pytest>=6.0.0",
     "pytest-csv>=3.0.0",
     "pytest-randomly>=4.0.0",
@@ -327,6 +328,7 @@ module = [
     "numpydoc.*",
     "packaging.*",
     "plotly.*",
+    "polars.*",
     "pytest.*",
     "rich.*",
     "scipy.*",
