@@ -963,9 +963,17 @@ def load_surf_data(surf_data):
                 gii = _load_surf_files_gifti_gzip(surf_data)
                 data_part = _gifti_img_to_data(gii)
 
+            print("#########")
+            print(surf_data)
+            print(data_part.shape)
+            print(data_part)
+
             if len(data_part.shape) == 1:
                 data_part = data_part[:, np.newaxis]
+            print(data_part.shape)
             if i == 0:
+                print("--")
+                print(surf_data)
                 data = data_part
             else:
                 try:
@@ -1558,7 +1566,7 @@ class SurfaceMesh(abc.ABC):
         gifti_file : :obj:`str` or :obj:`pathlib.Path`
             Filename to save the mesh to.
         """
-        _mesh_to_gifti(self.coordinates, self.faces, gifti_file)
+        mesh_to_gifti(self.coordinates, self.faces, gifti_file)
 
 
 class InMemoryMesh(SurfaceMesh):
@@ -1784,7 +1792,7 @@ def _check_data_and_mesh_compat(mesh, data) -> None:
             )
 
 
-def _mesh_to_gifti(coordinates, faces, gifti_file) -> None:
+def mesh_to_gifti(coordinates, faces, gifti_file) -> None:
     """Write surface mesh to gifti file on disk.
 
     Parameters

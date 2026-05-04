@@ -28,7 +28,6 @@ from nilearn.surface.surface import (
     _load_surf_files_gifti_gzip,
     _load_uniform_ball_cloud,
     _masked_indices,
-    _mesh_to_gifti,
     _nearest_voxel_sampling,
     _projection_matrix,
     _sample_locations,
@@ -44,6 +43,7 @@ from nilearn.surface.surface import (
     get_data,
     load_surf_data,
     load_surf_mesh,
+    mesh_to_gifti,
     vol_to_surf,
 )
 
@@ -898,10 +898,10 @@ def test_mesh_to_gifti(single_mesh, tmp_path):
     - make sure files can be loaded with nibabel
     """
     coordinates, faces = single_mesh
-    _mesh_to_gifti(
+    mesh_to_gifti(
         coordinates=coordinates, faces=faces, gifti_file=tmp_path / "mesh.gii"
     )
-    _mesh_to_gifti(
+    mesh_to_gifti(
         coordinates=coordinates,
         faces=faces,
         gifti_file=str(tmp_path / "mesh.gii"),
