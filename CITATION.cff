@@ -47,6 +47,17 @@ authors:
     affiliation: Inria, Saclay, France
     email: ahmad.chamma@inria.fr
     orcid: https://orcid.org/0000-0003-0975-133X
+
+  - given-names: Chris
+    family-names: Rorden
+    website: https://github.com/neurolabusc
+    affiliation: University of South Carolina, USA
+
+  - given-names: Taylor
+    family-names: Hanayik
+    website: https://github.com/hanayik
+    affiliation: QuantCo
+
   - given-names: Aina
     family-names: Frau-Pascual
     website: https://github.com/ainafp

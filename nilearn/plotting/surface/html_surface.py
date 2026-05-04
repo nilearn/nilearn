@@ -1,6 +1,7 @@
 """Handle plotting of surfaces for html rendering."""
 
 import json
+from typing import Any, Literal
 
 import numpy as np
 
@@ -13,28 +14,23 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn.image import check_niimg_3d
-from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import colorscale
-from nilearn.plotting.js_plotting_utils import (
-    mesh_to_plotly,
-)
+from nilearn.plotting.js_plotting_utils import mesh_to_plotly
 from nilearn.plotting.surface._utils import (
     DEFAULT_ENGINE,
     DEFAULT_HEMI,
     check_surface_plotting_inputs,
     get_surface_backend,
 )
-from nilearn.surface import (
+from nilearn.surface.surface import (
     PolyMesh,
     SurfaceImage,
-    load_surf_data,
-    load_surf_mesh,
-)
-from nilearn.surface.surface import (
     check_mesh_and_data,
     check_mesh_is_fsaverage,
     combine_hemispheres_meshes,
     get_data,
+    load_surf_data,
+    load_surf_mesh,
 )
 
 ALLOWED_VIEWS = {"left", "right", "front", "back", "top", "bottom"}
@@ -42,50 +38,6 @@ ALLOWED_VIEWS = {"left", "right", "front", "back", "top", "bottom"}
 
 class SurfaceView(HTMLDocument):  # noqa: D101
     pass
-
-
-def _one_mesh_info(
-    surf_map,
-    surf_mesh,
-    threshold=None,
-    cmap=cm.cold_hot,
-    black_bg=False,
-    bg_map=None,
-    symmetric_cmap=True,
-    bg_on_data=False,
-    vmax=None,
-    vmin=None,
-):
-    """Prepare info for plotting one surface map on a single mesh.
-
-    This computes the dictionary that gets inserted in the web page,
-    which contains the encoded mesh, colors, min and max values, and
-    background color.
-
-    """
-    colors = colorscale(
-        cmap,
-        surf_map,
-        threshold,
-        symmetric_cmap=symmetric_cmap,
-        vmax=vmax,
-        vmin=vmin,
-    )
-    info = {"inflated_both": mesh_to_plotly(surf_mesh)}
-    backend = get_surface_backend(DEFAULT_ENGINE)
-    info["vertexcolor_both"] = backend._get_vertexcolor(
-        surf_map,
-        colors["cmap"],
-        colors["norm"],
-        absolute_threshold=colors["abs_threshold"],
-        bg_map=bg_map,
-        bg_on_data=bg_on_data,
-    )
-    info["cmin"], info["cmax"] = float(colors["vmin"]), float(colors["vmax"])
-    info["black_bg"] = black_bg
-    info["full_brain_mesh"] = False
-    info["colorscale"] = colors["colors"]
-    return info
 
 
 def _get_combined_curvature_map(mesh_left, mesh_right):
@@ -107,13 +59,13 @@ def _full_brain_info(
     mesh="fsaverage5",
     threshold=None,
     cmap=DEFAULT_DIVERGING_CMAP,
-    black_bg=False,
-    symmetric_cmap=True,
-    bg_on_data=False,
+    black_bg: bool = False,
+    symmetric_cmap: bool = True,
+    bg_on_data: bool = False,
     vmax=None,
     vmin=None,
     vol_to_surf_kwargs=None,
-):
+) -> dict[str, Any]:
     """Project 3D map on cortex; prepare info to plot both hemispheres.
 
     This computes the dictionary that gets inserted in the web page,
@@ -201,13 +153,19 @@ def _full_brain_info(
     return info
 
 
-def _fill_html_template(info):
-    view_img_tpl = get_template("html/plotting/surface_plot.jinja")
+def _fill_html_template(
+    info,
+    engine: Literal["niivue", "plotly"] = "plotly",
+):
+    backend = get_surface_backend(engine)
+    view_img_tpl = get_template(backend.HTML_TEMPLATE_PATH)
 
     html_view = view_img_tpl.render(
         page_title=info["title"] or "Surface plot",
         stat_map_json=json.dumps(info),
         display_footer='style="display: none"',
+        engine=engine,
+        **info,
     )
 
     return SurfaceView(html_view)
@@ -368,6 +326,7 @@ def view_surf(
     colorbar_fontsize=25,
     title=None,
     title_fontsize=25,
+    engine="plotly",
     view="left",
 ):
     """Insert a surface plot of a surface map into an HTML page.
@@ -447,6 +406,9 @@ def view_surf(
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
+    engine : {'plotly', 'niivue'}, default='plotly'
+        Engine to use for plotting.
+
     view : one of {"left", "right", "front", "back", "top", "bottom"}, \
       default="left"
         Default view used for displaying the surface.
@@ -478,7 +440,14 @@ def view_surf(
         surf_mesh, surf_map = check_mesh_and_data(surf_mesh, surf_map)
     if bg_map is not None:
         _, bg_map = check_mesh_and_data(surf_mesh, bg_map)
-    info = _one_mesh_info(
+
+    check_parameter_in_allowed(
+        engine, allowed=["plotly", "niivue"], parameter_name="engine"
+    )
+
+    backend = get_surface_backend(engine)
+
+    info = backend._one_mesh_info(
         surf_map=surf_map,
         surf_mesh=surf_mesh,
         threshold=threshold,
@@ -489,11 +458,13 @@ def view_surf(
         symmetric_cmap=symmetric_cmap,
         vmax=vmax,
         vmin=vmin,
+        title_font_size=title_fontsize,
+        colorbar=colorbar,
+        colorbar_height=colorbar_height,
+        colorbar_fontsize=colorbar_fontsize,
     )
-    info["colorbar"] = colorbar
-    info["cbar_height"] = colorbar_height
-    info["cbar_fontsize"] = colorbar_fontsize
+
     info["title"] = title
-    info["title_fontsize"] = title_fontsize
     info["view"] = view
-    return _fill_html_template(info)
+
+    return _fill_html_template(info, engine=engine)

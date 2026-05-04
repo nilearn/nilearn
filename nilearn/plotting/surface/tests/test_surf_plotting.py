@@ -114,6 +114,10 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
+@pytest.mark.skipif(
+    not is_kaleido_installed(),
+    reason="This test is run only if kaleido is installed.",
+)
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
@@ -434,6 +438,7 @@ def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
     assert display.axes[0].title._text == "Test title"
 
 
+@pytest.mark.thread_unsafe
 def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
     """Test error msg for invalid axes."""
     _, axes = matplotlib_pyplot.subplots()

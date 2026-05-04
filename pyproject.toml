@@ -141,7 +141,7 @@ Homepage = "https://nilearn.github.io"
 [tool.codespell]
 builtin = "clear,rare,en-GB_to_en-US"
 ignore-words = ".github/codespell_ignore_words.txt"
-skip = "./.git,*.cff,*.bib,*/tmp,nilearn/_assets/js/plotly-gl3d-latest.min.js,nilearn/_assets/js/jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results,AUTHORS.rst"
+skip = "./.git,*.cff,*.bib,*/tmp,*.min.js,*.umd.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results,AUTHORS.rst"
 
 [tool.djlint]
 blank_line_after_tag = "load,extends,include,endblock,set"
@@ -349,7 +349,8 @@ log_level = "INFO"
 markers = [
     "slow",  # for tests that exceed the timeout allowed for each test
     "single_process",  # for test that require testing n_jobs>1 or that are flaky when used xdist testing parallelization
-    "thread_unsafe"  # marker used by pytest-run-parallel: adding it here to avoid warning and not always install the extension
+    "thread_unsafe",  # marker used by pytest-run-parallel: adding it here to avoid warning and not always install the extension
+    "engines"  # marker used to specify engines for a test to be selected from available ones
 ]
 minversion = "6.0"
 testpaths = ["nilearn"]

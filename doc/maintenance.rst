@@ -178,6 +178,21 @@ with the oldest supported Python and Matplotlib:
     pip install tox
     tox run -e pytest_mpl_generate
 
+Updating vendored dependencies
+==============================
+
+Some javascript dependencies are vendored with Nilearn
+and need to be updated manually
+when the upstream source changes.
+
+```bash
+tox run -e update_js
+```
+
+.. note::
+
+    This requires to have `node and npm <https://nodejs.org>`_ installed.
+
 How to make a release?
 ======================
 
