@@ -1021,7 +1021,6 @@ def _resort_vertices(bunch, bunch_fsaverage5):
         "white_left",
         "white_right",
     ]:
-        fs5_coordinates, _ = surface.load_surf_data(bunch_fsaverage5[mesh])
         coords, faces = surface.load_surf_data(bunch[mesh])
 
         bunch[mesh] = np.asarray(
