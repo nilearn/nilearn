@@ -132,6 +132,7 @@ def test_masker_reporting_true(masker, img_func, kwargs):
     assert match in str(report)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker, img_func",
     [
