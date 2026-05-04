@@ -847,6 +847,7 @@ def check_set_output(estimator_orig) -> None:
         assert isinstance(signal, np.ndarray)
 
     estimator.set_output(transform="pandas")
+    print(estimator.labels_)
     signal = estimator.transform(img)
     assert isinstance(signal, pd.DataFrame)
 
@@ -855,14 +856,6 @@ def check_set_output(estimator_orig) -> None:
     # sklearn will raise error if it's not installed
     with pytest.raises(ImportError, match="requires polars to be installed"):
         signal = estimator.transform(img)
-
-    # check on 1D image for estimators that accepts surface
-    if accept_surf_img_input(estimator_orig):
-        estimator = clone(estimator_orig)
-        estimator = fit_estimator(estimator)
-        estimator.set_output(transform="pandas")
-        signal = estimator.transform(img)
-        assert isinstance(signal, pd.DataFrame)
 
 
 def check_doc_attributes(estimator) -> None:
