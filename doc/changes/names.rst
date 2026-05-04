@@ -57,6 +57,8 @@
 
 .. _Chloe Hampson: https://github.com/chlohamp
 
+.. _Chris Rorden: https://github.com/neurolabusc
+
 .. _Chris Gorgolewski: https://chrisgorgolewski.org/
 
 .. _Chris Markiewicz: https://github.com/effigies
@@ -330,6 +332,8 @@
 .. _Tamer Gezici: https://github.com/TamerGezici
 
 .. _Tarun Samanta: https://github.com/SamantaTarun
+
+.. _Taylor Hanayik: https://github.com/hanayik
 
 .. _Taylor Salo: https://tsalo.github.io/
 
