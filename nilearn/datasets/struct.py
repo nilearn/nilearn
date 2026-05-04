@@ -26,11 +26,12 @@ from nilearn.datasets._utils import (
     get_dataset_dir,
 )
 from nilearn.image import check_niimg, get_data, new_img_like, resampling
-from nilearn.surface import (
+from nilearn.surface.surface import (
+    load_surf_data,
+    mesh_to_gifti,
     FileMesh,
     PolyMesh,
     SurfaceImage,
-    surface,
 )
 
 MNI152_FILE_PATH = (
@@ -941,7 +942,7 @@ def fetch_surf_fsaverage(
         bunch = _fetch_surf_fsaverage(mesh, data_dir=data_dir)
 
         if mesh in ("fsaverage3", "fsaverage4"):
-            bunch = _sanitize_vertices_order(bunch, mesh, data_dir)
+            _sanitize_vertices_order(bunch, mesh, data_dir)
 
     return bunch
 
@@ -976,8 +977,8 @@ def _sanitize_vertices_order(
     all meshes have be sorted.
     """
     bunch_fs5 = _fetch_surf_fsaverage5()
-    fs_coordinates, _ = surface.load_surf_data(bunch.pial_left)
-    fs5_coordinates, _ = surface.load_surf_data(bunch_fs5.pial_left)
+    fs_coordinates, _ = load_surf_data(bunch.pial_left)
+    fs5_coordinates, _ = load_surf_data(bunch_fs5.pial_left)
 
     if not _is_vertex_order_equal(fs_coordinates, fs5_coordinates, 5):
         warnings.warn(
@@ -994,21 +995,21 @@ def _sanitize_vertices_order(
             stacklevel=find_stack_level(),
         )
 
-        bunch = _resort_vertices(bunch, bunch_fs5)
+        data_dir = get_dataset_dir(mesh, data_dir=data_dir)
+        _resort_vertices(bunch, bunch_fs5, data_dir)
 
-    return bunch
 
-
-def _resort_vertices(bunch, bunch_fsaverage5):
+def _resort_vertices(bunch, bunch_fsaverage5, data_dir):
     """Reorder vertices of each mesh in fsaverage bunch according to vertex
     order of fsaverage5.
     """
-    fs5_coordinates, _ = surface.load_surf_data(bunch_fsaverage5["flat_left"])
-    coords, faces = surface.load_surf_data(bunch["flat_left"])
+    fs5_coordinates, _ = load_surf_data(bunch_fsaverage5["flat_left"])
+    coords, faces = load_surf_data(bunch["flat_left"])
 
     # it is sufficient to get mapping for only one mesh to align with
     # fsaverage5 and use the same mapping for all meshes
     order = _get_mesh_mapping(coords, fs5_coordinates)
+
     for mesh in [
         "flat_left",
         "flat_right",
@@ -1021,14 +1022,14 @@ def _resort_vertices(bunch, bunch_fsaverage5):
         "white_left",
         "white_right",
     ]:
-        coords, faces = surface.load_surf_data(bunch[mesh])
+        coords, faces = load_surf_data(bunch[mesh])
 
-        bunch[mesh] = np.asarray(
-            _apply_mesh_mapping(order, coords, faces),
-            dtype=object,
-        ).T.squeeze()
-
-    return bunch
+        coords_updated, faces_updated = _apply_mesh_mapping(
+            order, coords, faces
+        )
+        mesh_to_gifti(
+            coords_updated, faces_updated, f"{data_dir / mesh}.gii.gz"
+        )
 
 
 def _get_mesh_mapping(fs_coords, fs5_coords):
@@ -1069,7 +1070,7 @@ def _apply_mesh_mapping(mapping, fs_coords, fs_faces):
         fs_faces
     ).astype(np.int32)
 
-    return [fs_coords_updated, faces_updated]
+    return fs_coords_updated, faces_updated
 
 
 def _fetch_surf_fsaverage5() -> Bunch[str, str]:
