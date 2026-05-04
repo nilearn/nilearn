@@ -191,7 +191,7 @@ tox run -e update_js
 
 .. note::
 
-    This requires to have `npm <TODO>`_ installed.
+    This requires to have `node and npm <https://nodejs.org>`_ installed.
 
 How to make a release?
 ======================
