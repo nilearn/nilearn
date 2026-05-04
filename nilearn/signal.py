@@ -318,7 +318,7 @@ def butterworth(
     low_pass=None,
     high_pass=None,
     order=5,
-    padtype="odd",
+    padtype="constant",
     padlen=None,
     copy=False,
 ):
@@ -348,14 +348,14 @@ def butterworth(
         Increasing the order sharpens this decay. Be aware that very high
         orders can lead to numerical instability.
 
-    padtype : {"odd", "even", "constant", None}, default="odd"
+    padtype : {"odd", "even", "constant", None}, default="constant"
         Type of padding to use for the Butterworth filter.
-        For more information about this, see :func:`scipy.signal.filtfilt`.
+        For more information about this, see :func:`scipy.signal.sosfiltfilt`.
 
     padlen : :obj:`int` or None, default=None
         The size of the padding to add to the beginning and end of ``signals``.
-        If None, the default value from :func:`scipy.signal.filtfilt` will be
-        used.
+        If None, the default value from :func:`scipy.signal.sosfiltfilt` will
+        be used.
 
     copy : :obj:`bool`, default=False
         If False, `signals` is modified inplace, and memory consumption is
