@@ -109,6 +109,7 @@ def test_plot_markers_tuple_node_coords(matplotlib_pyplot, coords):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_markers_saving_to_file(matplotlib_pyplot, coords, tmp_path):
     """Smoke test for plot_markers and file saving."""
     filename = tmp_path / "test.png"

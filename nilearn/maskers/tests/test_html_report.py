@@ -13,6 +13,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
 from nilearn._utils.helpers import (
+    is_gil_enabled,
     is_matplotlib_installed,
     is_plotly_installed,
 )
@@ -315,6 +316,7 @@ EXPECTED_COLUMNS = [
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
 @pytest.mark.slow
 def test_nifti_labels_masker_report(
     img_3d_rand_eye,
@@ -460,12 +462,12 @@ def test_nifti_masker_overlaid_report(
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
 def test_nifti_masker_brainsprite(
     matplotlib_pyplot,  # noqa: ARG001
     img_fmri,
-    img_labels,
 ):
-    """Check that nifti maskers work with brainsprite engine."""
+    """Check that NiftiMasker work with brainsprite engine."""
     masker = NiftiMasker(standardize=None)
     generate_and_check_masker_report(
         masker, extra_warnings_allowed=True, engine="brainsprite"
@@ -475,6 +477,14 @@ def test_nifti_masker_brainsprite(
         masker, extra_warnings_allowed=True, engine="brainsprite"
     )
 
+
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
+def test_nifti_label_masker_brainsprite(
+    matplotlib_pyplot,  # noqa: ARG001
+    img_labels,
+):
+    """Check that NiftiLabelsMasker work with brainsprite engine."""
     masker = NiftiLabelsMasker(img_labels, standardize=None)
     generate_and_check_masker_report(
         masker, extra_warnings_allowed=True, engine="brainsprite"

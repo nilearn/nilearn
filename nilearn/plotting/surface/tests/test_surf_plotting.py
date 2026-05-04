@@ -1202,6 +1202,7 @@ def test_plot_img_on_surf_inflate(matplotlib_pyplot, img_3d_mni):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("surf_mesh", ["fsaverage5", fetch_surf_fsaverage()])
 def test_plot_img_on_surf_surf_mesh(matplotlib_pyplot, img_3d_mni, surf_mesh):
     """Smoke test for nilearn.plotting.surface.plot_img_on_surf for surf_mesh
