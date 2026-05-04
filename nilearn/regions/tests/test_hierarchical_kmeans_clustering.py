@@ -58,6 +58,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(

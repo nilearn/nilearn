@@ -459,6 +459,7 @@ def test_nifti_masker_overlaid_report(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_nifti_masker_brainsprite(
     matplotlib_pyplot,  # noqa: ARG001
     img_fmri,

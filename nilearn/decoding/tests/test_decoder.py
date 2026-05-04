@@ -1526,6 +1526,7 @@ def _set_best_hyperparameters(
     return sklearn_classifier
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(
