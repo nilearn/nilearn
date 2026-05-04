@@ -64,6 +64,7 @@ def test_display_methods_invalid_threshold(matplotlib_pyplot, img_3d_mni):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_check_string_threshold(matplotlib_pyplot, img_3d_mni):
     """Checks threshold can be passed as string percentage value."""
     plot_img(img_3d_mni, threshold="97%")
@@ -78,6 +79,7 @@ def test_plot_with_axes_or_figure(matplotlib_pyplot, img_3d_mni):
     plot_img(img_3d_mni, axes=ax)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_empty_slice(matplotlib_pyplot, affine_mni):
     """Test that things don't crash when we give a map \
        with nothing above threshold. This is only a smoke test.
@@ -119,6 +121,7 @@ def test_display_methods_with_display_mode_tiled(
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("transparency", [-1, 10])
 def test_plot_img_transparency_warning(
     matplotlib_pyplot, img_3d_ones_mni, transparency
