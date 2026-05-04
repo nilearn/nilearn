@@ -847,7 +847,6 @@ def check_set_output(estimator_orig) -> None:
         assert isinstance(signal, np.ndarray)
 
     estimator.set_output(transform="pandas")
-    print(estimator.labels_)
     signal = estimator.transform(img)
     assert isinstance(signal, pd.DataFrame)
 
