@@ -98,7 +98,7 @@ Automated contributions policy
 
 Contributing to Nilearn requires human judgment, contextual understanding,
 and familiarity with Nilearn's structure and goals.
-It is not suitable for automatic processing by AI tools.
+It is not suitable for automated AI coding agent driven contributions.
 Instead, we value authentic engagement in our community.
 
 - Do not post output from Large Language Models or similar generative AI
