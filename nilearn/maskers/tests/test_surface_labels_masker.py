@@ -14,7 +14,10 @@ from nilearn.maskers import SurfaceLabelsMasker
 from nilearn.maskers.tests.conftest import sklearn_surf_label_img
 from nilearn.surface import SurfaceImage
 
-ESTIMATORS_TO_CHECK = [SurfaceLabelsMasker(sklearn_surf_label_img())]
+ESTIMATORS_TO_CHECK = [
+    SurfaceLabelsMasker(sklearn_surf_label_img()),
+    SurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
+]
 
 if SKLEARN_LT_1_6:
 
@@ -79,6 +82,43 @@ def test_fit_transform(surf_label_img, surf_img_1d):
 
     assert masker.n_elements_ == 1
     assert signal.size == masker.n_elements_
+
+
+def test_surface_label_masker_no_label_error(surf_mesh):
+    """Raise an error at fit time if the image has no label."""
+    label_img = SurfaceImage(
+        mesh=surf_mesh,
+        data={
+            "left": np.asarray([0, 0, 0, 0]),
+            "right": np.asarray([0, 0, 0, 0, 0]),
+        },
+    )
+    masker = SurfaceLabelsMasker(label_img)
+    with pytest.raises(ValueError, match="Image has no label"):
+        masker.fit()
+
+
+def test_surface_label_masker_all_labels_masked_error(surf_mesh):
+    """Raise an error at fit time all labels are masked by mask_img."""
+    label_img = SurfaceImage(
+        mesh=surf_mesh,
+        data={
+            "left": np.asarray([1, 1, 0, 0]),
+            "right": np.asarray([1, 1, 0, 0, 0]),
+        },
+    )
+    mask_img = SurfaceImage(
+        mesh=surf_mesh,
+        data={
+            "left": np.asarray([0, 0, 1, 1]),
+            "right": np.asarray([0, 0, 1, 1, 1]),
+        },
+    )
+    masker = SurfaceLabelsMasker(label_img, mask_img=mask_img)
+    with pytest.raises(
+        ValueError, match="Image has no label left after masking"
+    ):
+        masker.fit()
 
 
 @pytest.mark.parametrize("labels", [["Background", "bar"], ["bar"]])
