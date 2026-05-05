@@ -15,6 +15,8 @@ from nibabel import Nifti1Image
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.datasets import (
     load_fsaverage_data,
+    load_mni152_gm_mask,
+    load_mni152_gm_template,
     load_mni152_template,
     load_sample_motor_activation_image,
 )
@@ -22,7 +24,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.tests._testing import modulated_event_paradigm
-from nilearn.image import math_img
+from nilearn.image import get_data, math_img, new_img_like
 from nilearn.plotting import (
     plot_anat,
     plot_bland_altman,
@@ -229,6 +231,28 @@ def test_add_contours_filled(mni152_template_res_2, kwargs):
     display = OrthoSlicer(cut_coords=(0, 0, 0))
     display.add_contours(mni152_template_res_2, filled=True, **kwargs)
     return display
+
+
+@pytest.fixture
+def mni152_gm_2_roi() -> Nifti1Image:
+    """Return image MNI grey matter with low and high GM probablities."""
+    img = load_mni152_gm_template()
+    mask = get_data(load_mni152_gm_mask())
+    data = get_data(img)
+    data[data > 0.75] = 2
+    data[data <= 0.75] = 1
+    data[np.logical_not(mask)] = 0
+    return new_img_like(img, data)
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.parametrize("view_type", ["contours", "continuous"])
+def test_plot_roi_contour_colorbar(mni152_gm_2_roi, colorbar, view_type):
+    """Test plot_roi with contours and colorbar."""
+    return plot_roi(
+        mni152_gm_2_roi, view_type=view_type, colorbar=colorbar, cmap="Accent"
+    )
 
 
 @pytest.mark.mpl_image_compare
