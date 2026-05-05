@@ -9,6 +9,8 @@ import collections.abc
 import functools
 import inspect
 import warnings
+from pathlib import Path
+from typing import overload
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -50,10 +52,18 @@ from nilearn.plotting._utils import (
     check_threshold_not_negative,
     get_colorbar_and_data_ranges,
 )
-from nilearn.plotting.displays import get_projector, get_slicer
+from nilearn.plotting.displays import OrthoSlicer, get_projector, get_slicer
 from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.image.utils import MNI152TEMPLATE, load_anat
 from nilearn.signal import clean
+from nilearn.typing import (
+    Annotate,
+    ColorBar,
+    DisplayMode,
+    DrawCross,
+    Radiological,
+    ResamplingInterpolation,
+)
 
 
 def show() -> None:
@@ -289,32 +299,86 @@ def _plot_img_with_bg(
     return save_figure_if_needed(display, output_file)
 
 
+@overload
+def plot_img(
+    img,
+    output_file: None = None,
+    cut_coords=...,
+    display_mode=...,
+    figure=...,
+    axes=...,
+    title=...,
+    threshold=...,
+    annotate=...,
+    draw_cross=...,
+    black_bg=...,
+    colorbar=...,
+    cbar_tick_format=...,
+    resampling_interpolation=...,
+    bg_img=...,
+    vmin=...,
+    vmax=...,
+    radiological=...,
+    decimals=...,
+    cmap=...,
+    transparency=...,
+    transparency_range=...,
+) -> OrthoSlicer: ...
+
+
+@overload
+def plot_img(
+    img,
+    output_file: str | Path,
+    cut_coords=...,
+    display_mode=...,
+    figure=...,
+    axes=...,
+    title=...,
+    threshold=...,
+    annotate=...,
+    draw_cross=...,
+    black_bg=...,
+    colorbar=...,
+    cbar_tick_format=...,
+    resampling_interpolation=...,
+    bg_img=...,
+    vmin=...,
+    vmax=...,
+    radiological=...,
+    decimals=...,
+    cmap=...,
+    transparency=...,
+    transparency_range=...,
+) -> None: ...
+
+
 @fill_doc
 def plot_img(
     img,
     cut_coords=None,
-    output_file=None,
-    display_mode="ortho",
+    output_file: str | Path | None = None,
+    display_mode: DisplayMode = "ortho",
     figure=None,
     axes=None,
-    title=None,
+    title: str | None = None,
     threshold=None,
-    annotate=True,
-    draw_cross=True,
-    black_bg=False,
-    colorbar=True,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
-    resampling_interpolation="continuous",
+    annotate: Annotate = True,
+    draw_cross: DrawCross = True,
+    black_bg: bool = False,
+    colorbar: ColorBar = True,
+    cbar_tick_format: str = DEFAULT_TICK_FORMAT,
+    resampling_interpolation: ResamplingInterpolation = "continuous",
     bg_img=None,
     vmin=None,
     vmax=None,
-    radiological=False,
-    decimals=False,
+    radiological: Radiological = False,
+    decimals: bool = False,
     cmap="gray",
     transparency=None,
     transparency_range=None,
     **kwargs,
-):
+) -> OrthoSlicer | None:
     """Plot cuts of a given image.
 
     By default Frontal, Axial, and Lateral.

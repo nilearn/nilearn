@@ -37,9 +37,28 @@ CopyHeader: TypeAlias = bool
 DType: TypeAlias = DTypeLike | None
 DataDir: TypeAlias = str | pathlib.Path | None
 Detrend: TypeAlias = bool
+DisplayMode: TypeAlias = Literal[
+    "ortho", "tiled", "mosaic", "x", "y", "z", "yx", "xz", "yz"
+]
+DisplayModeGlassBrain: TypeAlias = Literal[
+    "ortho",
+    "x",
+    "y",
+    "z",
+    "xz",
+    "yx",
+    "yz",
+    "l",
+    "r",
+    "lr",
+    "lzr",
+    "lyr",
+    "lzry",
+    "lyrz",
+]
 DrawCross: TypeAlias = bool
 ForceResample: TypeAlias = bool
-HeightControl = Literal[None, "fpr", "fdr", "bonferroni"]
+HeightControl: TypeAlias = Literal[None, "fpr", "fdr", "bonferroni"]
 # Note that for HrfModel
 # str is too generic here
 # and it should actually be Literal["spm", "glover", ...]
@@ -61,6 +80,7 @@ Radiological: TypeAlias = bool
 RandomState: TypeAlias = (
     int | np.floating | np.integer | np.random.RandomState | None
 )
+ResamplingInterpolation: TypeAlias = Literal["continuous", "nearest"]
 Resolution: TypeAlias = int | np.integer | None
 Resume: TypeAlias = bool
 ScreeningPercentile: TypeAlias = float | int | np.floating | np.integer | None
