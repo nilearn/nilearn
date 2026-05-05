@@ -1492,9 +1492,22 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye, surf_img_2d):
         math_img(formula, img1=img1, img3=img3, copy_header_from="img1")
 
     # Passing an 'img*' variable (to copy_header_from) that is not in the
-    # formula or an img* argument should raise a KeyError exception.
-    with pytest.raises(KeyError):
+    # formula or an img* argument should raise a ValueError exception.
+    with pytest.raises(
+        ValueError,
+        match=("copy_header_from='img2' but 'img2' is missing from 'imgs'"),
+    ):
         math_img(formula, img1=img1, img3=img3, copy_header_from="img2")
+
+
+def test_math_img_warnings(img_4d_ones_eye):
+    """Test warnings raised by math_img."""
+    img1 = img_4d_ones_eye
+    img3 = img_4d_ones_eye
+    with pytest.warns(
+        UserWarning, match=r"Some images .* are not mentioned in the formula"
+    ):
+        math_img("img1 + 1", img1=img1, img3=img3)
 
 
 @pytest.mark.thread_unsafe
@@ -2258,6 +2271,7 @@ def img_in_home_folder(img_3d_mni):
     created_file.expanduser().unlink()
 
 
+@pytest.mark.single_process
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "filename", ["~/test.nii", r"~/test.nii", Path("~/test.nii")]
