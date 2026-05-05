@@ -45,6 +45,7 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
+from nilearn.plotting.displays import OrthoSlicer
 from nilearn.plotting.image.utils import MNI152TEMPLATE
 
 PLOTTING_FUNCS_3D = {
@@ -176,11 +177,58 @@ def test_plotting_functions_radiological_view(plotting_func):
     radiological=False being the default it should be covered by other tests.
     """
     radiological = True
-    result = plotting_func(
+    display = plotting_func(
         load_sample_motor_activation_image(), radiological=radiological
     )
-    assert result.axes.get("y").radiological is radiological
-    return result
+    assert display.axes.get("y").radiological is radiological
+    return display
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize(
+    "levels, colors", [([0], ["limegreen"]), ([0, 1], ["limegreen", "yellow"])]
+)
+def test_add_contours(levels, colors):
+    """Test for add_contours."""
+    display = plot_img(
+        load_sample_motor_activation_image(),
+        title=f"contour {levels=} {colors=}",
+    )
+    display.add_contours(
+        load_sample_motor_activation_image(), levels=levels, colors=colors
+    )
+    return display
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        # levels should be at least 2
+        # If single levels are passed then we force upper level to be inf
+        {"colors": "r", "alpha": 0.2, "levels": [0.0]},
+        # If two levels are passed, it should be increasing from zero index
+        # In this case, we simply omit appending inf
+        {"colors": "limegreen", "alpha": 0.1, "levels": [0.0, 0.8]},
+        # without passing colors and alpha. In this case, default values are
+        # chosen from matplotlib
+        {"levels": [0.0, 0.4, 0.8]},
+        # levels with only one value
+        # vmin argument is not needed
+        # but added because of matplotlib 3.8.0rc1 bug
+        # see https://github.com/matplotlib/matplotlib/issues/26531
+        {"levels": [0.4], "vmin": 0.0},
+        # without passing levels, should work with default levels from
+        # matplotlib
+        {},
+    ],
+)
+def test_add_contours_filled(mni152_template_res_2, kwargs):
+    """Tests for add_contours with filled = true."""
+    display = OrthoSlicer(cut_coords=(0, 0, 0))
+    display.add_contours(mni152_template_res_2, filled=True, **kwargs)
+    return display
 
 
 @pytest.mark.mpl_image_compare

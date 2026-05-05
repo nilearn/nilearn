@@ -47,6 +47,7 @@ authors:
     affiliation: Inria, Saclay, France
     email: ahmad.chamma@inria.fr
     orcid: https://orcid.org/0000-0003-0975-133X
+
   - given-names: Aina
     family-names: Frau-Pascual
     website: https://github.com/ainafp
@@ -159,6 +160,11 @@ authors:
     website: https://github.com/chlohamp
     affiliation: Florida International University, Miami, United States
     orcid: https://orcid.org/0009-0005-1212-9324
+  - given-names: Chris
+    family-names: Rorden
+    website: https://github.com/neurolabusc
+    affiliation: University of South Carolina, USA
+
   - given-names: Chris
     family-names: Gorgolewski
     website: https://chrisgorgolewski.org/
@@ -776,6 +782,11 @@ authors:
     affiliation: Acharya Prafulla Chandra College
     email: tarunsamanta77@gmail.com
     orcid: https://orcid.org/0000-0003-1630-8993
+  - given-names: Taylor
+    family-names: Hanayik
+    website: https://github.com/hanayik
+    affiliation: QuantCo
+
   - given-names: Taylor
     family-names: Salo
     website: https://tsalo.github.io/
