@@ -6,7 +6,7 @@ import pytest
 from nilearn.plotting import plot_anat
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 def test_plot_anat_3d_img(img_3d_mni, tmp_path):
     """Smoke test for plot_anat."""
     filename = tmp_path / "test.png"
@@ -19,5 +19,5 @@ def test_plot_img_invalid():
     """Check that we get a meaningful error message \
        when we give a wrong display_mode argument.
     """
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="not a valid display_mode"):
         plot_anat(display_mode="zzz")

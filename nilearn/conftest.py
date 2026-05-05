@@ -1,6 +1,7 @@
 """Configuration and extra fixtures for pytest."""
 
 import inspect
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -78,6 +79,15 @@ def close_all():
         import matplotlib.pyplot as plt
 
         plt.close("all")  # takes < 1 us so just always do it
+
+
+@pytest.fixture()
+def spm_design_matrix():
+    """Load the spm file to test cosine basis."""
+    full_path_design_matrix_file = (
+        Path(__file__).parent / "glm" / "tests" / "spm_dmtx.npz"
+    )
+    return np.load(full_path_design_matrix_file)
 
 
 # ------------------------   RNG   ------------------------#

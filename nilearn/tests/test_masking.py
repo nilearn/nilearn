@@ -680,7 +680,7 @@ def img_2d_mask_center(affine_eye):
     return Nifti1Image(mask_b.astype("int32"), affine_eye)
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 @pytest.mark.parametrize("create_files", (False, True))
 def test_intersect_masks_filename(
     tmp_path, img_2d_mask_bottom_right, img_2d_mask_center, create_files

@@ -5,8 +5,6 @@ Note that the tests just looks whether the data produces has correct dimension,
 not whether it is exact
 """
 
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -23,19 +21,13 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
     make_second_level_design_matrix,
 )
-
-from ._testing import (
+from nilearn.glm.tests._testing import (
     block_paradigm,
     design_with_negative_onsets,
     modulated_block_paradigm,
     modulated_event_paradigm,
     spm_paradigm,
 )
-
-# load the spm file to test cosine basis
-my_path = Path(__file__).resolve().parent
-full_path_design_matrix_file = my_path / "spm_dmtx.npz"
-DESIGN_MATRIX = np.load(full_path_design_matrix_file)
 
 
 def design_matrix_light(
@@ -439,7 +431,9 @@ def test_csv_io(tmp_path, frame_times):
 @pytest.mark.parametrize(
     "block_duration, array", [(1, "arr_0"), (10, "arr_1")]
 )
-def test_compare_design_matrix_to_spm(block_duration, array):
+def test_compare_design_matrix_to_spm(
+    block_duration, array, spm_design_matrix
+):
     # Check that the nilearn design matrix is close enough to the SPM one
     # (it cannot be identical, because the hrf shape is different)
     events, frame_times = spm_paradigm(block_duration=block_duration)
@@ -448,10 +442,8 @@ def test_compare_design_matrix_to_spm(block_duration, array):
     )
     _, matrix, _ = check_design_matrix(X1)
 
-    spm_design_matrix = DESIGN_MATRIX[array]
-
-    assert ((spm_design_matrix - matrix) ** 2).sum() / (
-        spm_design_matrix**2
+    assert ((spm_design_matrix[array] - matrix) ** 2).sum() / (
+        spm_design_matrix[array] ** 2
     ).sum() < 0.1
 
 

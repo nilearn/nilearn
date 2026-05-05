@@ -15,7 +15,7 @@ from nilearn.plotting import plot_stat_map
 from nilearn.plotting.find_cuts import find_cut_slices
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 @pytest.mark.slow
 def test_plot_stat_map_bad_input(matplotlib_pyplot, img_3d_mni, tmp_path):
     """Test for bad input arguments (cf. #510)."""
@@ -33,7 +33,7 @@ def test_plot_stat_map_bad_input(matplotlib_pyplot, img_3d_mni, tmp_path):
 
 
 @pytest.mark.slow
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 @pytest.mark.parametrize(
     "params", [{}, {"display_mode": "x", "cut_coords": 3}]
 )

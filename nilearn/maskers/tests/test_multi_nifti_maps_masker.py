@@ -174,7 +174,7 @@ def test_multi_nifti_maps_masker_errors(
         masker.fit_transform(signals_input)
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 @pytest.mark.parametrize("create_files", [True, False])
 def test_multi_nifti_maps_masker_errors_field_of_view(
     tmp_path,
