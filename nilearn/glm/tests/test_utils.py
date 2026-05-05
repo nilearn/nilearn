@@ -120,7 +120,7 @@ def test_z_score_opposite_contrast(rng):
         shape=(50, 20, 50), length=96, random_state=rng
     )
 
-    nifti_masker = NiftiMasker(mask_img=mask)
+    nifti_masker = NiftiMasker(mask_img=mask, standardize=None)
     data = nifti_masker.fit_transform(fmri)
 
     frametimes = np.linspace(0, (96 - 1) * 2, 96)

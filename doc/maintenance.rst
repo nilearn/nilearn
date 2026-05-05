@@ -129,6 +129,26 @@ We welcome pull requests from all community members, if they follow the
 details on their process are available
 :sklearn:`here <developers/contributing.html#contributing-code-and-documentation>`).
 
+Deprecations
+============
+
+Use :class:`FutureWarning` for deprecations that users should know about
+on which they can have some control,
+for example by making sure that the warning message mentions
+what action to take to prevent the warning to be thrown.
+If there is no way for the user to prevent the warning to be thrown,
+consider using a :class:`DeprecationWarning`.
+
+Tests are run via tox using ``-W error::FutureWarning``
+so that any FutureWarning thrown by a test will raise an error.
+To prevent this, any call that will throw a :class:`FutureWarning`
+must be handled with a ``pytest.warns`` context manager:
+
+.. code-block:: python
+
+    with pytest.warns(FutureWarning, match="message"):
+        ...
+
 Generating new baseline figures for plotting tests
 ==================================================
 
@@ -158,6 +178,21 @@ with the oldest supported Python and Matplotlib:
     pip install tox
     tox run -e pytest_mpl_generate
 
+Updating vendored dependencies
+==============================
+
+Some javascript dependencies are vendored with Nilearn
+and need to be updated manually
+when the upstream source changes.
+
+```bash
+tox run -e update_js
+```
+
+.. note::
+
+    This requires to have `node and npm <https://nodejs.org>`_ installed.
+
 How to make a release?
 ======================
 
@@ -176,6 +211,31 @@ to build the sdist, wheel, and extract version number from the git tag.
 We assume that we are in a clean state where all the Pull Requests (PR)
 that we wish to include in the new release have been merged.
 
+Pre-release
+-----------
+
+If you are doing a `pre-release <https://peps.python.org/pep-0440/#pre-releases>`_,
+that users can install with the prerelease flag
+(``pip install --prerelease nilearn``),
+then the release protocol is simplified and only consists of:
+
+-   adding a git tag and updating the upstream repository
+
+    .. code-block:: bash
+
+        git checkout main
+        git pull upstream main
+        git tag X.Y.ZrcN
+        git push upstream --tags
+
+    Use the ``rcN`` (release candidate) in the version tag,
+    with ``N`` starting at 0 and incrementing
+    with each new release candidate for a specific version.
+
+-   :ref:`building and uploading the distributions to Pypi <build_distribution>`
+
+-   doing a :ref:`Github release`
+
 Prepare code for the release
 ----------------------------
 
@@ -183,11 +243,11 @@ The repository should be checked and updated in preparation for the release.
 
 One thing that **must** be done before the release is made is
 to update ``deprecated``, ``versionchanged`` and ``versionadded`` directives
-from the current ``[x.y.z].dev`` tag to the new version number.
+from the current ``[X.Y.Z].dev`` tag to the new version number.
 These directives are added in a function's docstring to indicate the version number,
 when, say, a new parameter is added or deprecated.
 
-For example, if a parameter ``param2`` was added in version ``x.y.z``,
+For example, if a parameter ``param2`` was added in version ``X.Y.Z``,
 the docstring should be updated to:
 
 .. code-block:: python
@@ -202,7 +262,7 @@ the docstring should be updated to:
         param2 : type
             Description of param2.
 
-        .. nilearn_versionadded:: x.y.z
+        .. nilearn_versionadded:: X.Y.Z
 
         Returns
         -------
@@ -251,7 +311,7 @@ For example:
 
     * `Nilearn latest - dev documentation <http://nilearn.github.io/dev/>`_
     * `Nilearn latest - stable documentation <http://nilearn.github.io/stable/>`_
-    * `Nilearn x.y.z documentation <http://nilearn.github.io/x.y.z/>`_
+    * `Nilearn X.Y.Z documentation <http://nilearn.github.io/X.Y.Z/>`_
 
 Update atlas figures
 ....................
@@ -268,7 +328,7 @@ Switch to a new branch locally:
 
 .. code-block:: bash
 
-    git checkout -b REL-x.y.z
+    git checkout -b REL-X.Y.Z
 
 
 First we need to prepare the release by updating the file ``nilearn/doc/changes/latest.rst``
@@ -290,7 +350,7 @@ For example::
     - :bdg-info:`Plotting` ...
 
 We also need to write a "Highlights" section promoting the most important additions that come with this new release.
-Finally, we need to change the title from ``x.y.z.dev`` to ``x.y.z``:
+Finally, we need to change the title from ``X.Y.Z.dev`` to ``X.Y.Z``:
 
 .. code-block:: RST
 
@@ -298,7 +358,7 @@ Finally, we need to change the title from ``x.y.z.dev`` to ``x.y.z``:
 
    .. include:: names.rst
 
-   x.y.z
+   X.Y.Z
    =====
 
    **Released MONTH YEAR**
@@ -313,8 +373,8 @@ We must also ensure that every entry in ``nilearn/doc/changes/latest.rst``
 starts with a "badge" (see the :ref:`changelog` section).
 
 Once we have made all the necessary changes to ``nilearn/doc/changes/latest.rst``,
-we should rename it into ``nilearn/doc/changes/x.y.z.rst``,
-where ``x.y.z`` is the corresponding version number.
+we should rename it into ``nilearn/doc/changes/X.Y.Z.rst``,
+where ``X.Y.Z`` is the corresponding version number.
 
 We then need to update ``nilearn/doc/changes/whats_new.rst`` and replace:
 
@@ -328,7 +388,7 @@ By:
 .. code-block:: RST
 
    .. _vx.y.z:
-   .. include:: x.y.z.rst
+   .. include:: X.Y.Z.rst
 
 
 Add these changes and submit a PR:
@@ -336,8 +396,8 @@ Add these changes and submit a PR:
 .. code:: bash
 
     git add doc/changes/
-    git commit --message "REL x.y.z"
-    git push origin REL-x.y.z
+    git commit --message "REL X.Y.Z"
+    git push origin REL-X.Y.Z
 
 
 Once the PR has been reviewed and merged, pull from master and tag the merge commit:
@@ -346,7 +406,7 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
 
     git checkout main
     git pull upstream main
-    git tag x.y.z
+    git tag X.Y.Z
     git push upstream --tags
 
 .. note::
@@ -354,6 +414,7 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
     When building the distribution as described below, ``hatch-vcs``, defined in ``pyproject.toml``,
     extracts the version number using this tag and writes it to a ``_version.py`` file.
 
+.. _build_distribution:
 
 Build the distributions and upload them to Pypi
 -----------------------------------------------
@@ -362,7 +423,7 @@ First of all we should make sure we don't include files that shouldn't be presen
 
 .. code-block:: bash
 
-    git checkout x.y.z
+    git checkout X.Y.Z
 
 
 If the workspace contains a ``dist`` folder, make sure to clean it:
@@ -417,13 +478,14 @@ We are now ready to upload to ``Pypi``. Note that you will need to have an `acco
 Once the upload is completed, make sure everything looks good on `Pypi <https://pypi.org/project/nilearn/>`_.
 Otherwise you will probably have to fix the issue and start over a new release with the patch number incremented.
 
+.. _Github release:
 
 Github release
 --------------
 
 At this point, we need to upload the binaries to GitHub and link them to the tag.
 To do so, go to the :nilearn-gh:`Nilearn GitHub page <tags>` under the "Releases" tab,
-and edit the ``x.y.z`` tag by providing a description,
+and edit the ``X.Y.Z`` tag by providing a description,
 and upload the distributions we just created (you can just drag and drop the files).
 
 
@@ -512,7 +574,7 @@ sections for the version currently under development:
 
    .. include:: names.rst
 
-   x.y.z+1.dev
+   X.Y.Z+1.dev
    =========
 
    ..

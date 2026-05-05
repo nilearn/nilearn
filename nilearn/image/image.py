@@ -176,13 +176,30 @@ def check_volume_for_fit(imgs) -> None:
             raise ValueError("The image is empty.")
 
 
-def get_data(img):
+def get_data(img) -> np.ndarray:
     """Get the image data as a :class:`numpy.ndarray`.
 
     Parameters
     ----------
     img : Niimg-like object or iterable of Niimg-like objects
         See :ref:`extracting_data`.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.image import get_data
+    >>> img = Nifti1Image(
+    ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
+    ... )
+    >>> data = get_data(img)
+    >>> data
+    array([[[ 0,  1,  2,  3],
+            [ 4,  5,  6,  7],
+            [ 8,  9, 10, 11]],
+           [[12, 13, 14, 15],
+            [16, 17, 18, 19],
+            [20, 21, 22, 23]]])
 
     Returns
     -------
@@ -434,6 +451,8 @@ def smooth_img(imgs, fwhm):
 
     ret = []
     if is_surface:
+        if fwhm is not None and hasattr(fwhm, "__iter__"):
+            raise TypeError("For surface data, 'fwhm' must be a scalar.")
         for img in imgs:
             iterations = _mris_fwhm_to_niters(fwhm, img)
             ret.append(_smooth_surface_img(img, iterations))
@@ -798,6 +817,26 @@ def mean_img(
     %(copy_header)s
 
         .. nilearn_versionadded:: 0.11.0
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> # Create a 4D image with one volume of ones and one of zeros
+    >>> shape = (2, 2, 2, 1)
+    >>> img = Nifti1Image(np.concatenate([np.ones(shape),
+    ...                                   np.zeros(shape)],
+    ...                                  axis=-1),
+    ...                   affine=np.eye(4),
+    ...                   dtype=np.int32)
+    >>> # Compute the mean image and get its content as a numpy array
+    >>> from nilearn.image import mean_img
+    >>> mean_image = mean_img(img)
+    >>> mean_image.get_fdata()
+    array([[[0.5, 0.5],
+            [0.5, 0.5]],
+           [[0.5, 0.5],
+            [0.5, 0.5]]])
 
     Returns
     -------
@@ -1216,7 +1255,7 @@ def threshold_img(
 
         The given value should be within the range of minimum and maximum
         intensity of the input image.
-        All intensities in the interval ``[-threshold, threshold]`` will be
+        All intensities in the interval ``(-threshold, threshold)`` will be
         set to zero.
 
       - When ``two_sided`` is False:
@@ -1224,15 +1263,15 @@ def threshold_img(
         - If the threshold is negative:
 
           It should be greater than the minimum intensity of the input data.
-          All intensities greater than or equal to the specified threshold will
-          be set to zero.
+          All intensities greater than the specified threshold will be set to
+          zero.
           All other intensities keep their original values.
 
         - If the threshold is positive:
 
           then it should be less than the maximum intensity of the input data.
-          All intensities less than or equal to the specified threshold will be
-          set to zero.
+          All intensities less than the specified threshold will be set to
+          zero.
           All other intensities keep their original values.
 
     - If threshold is :obj:`str`:
@@ -1460,11 +1499,11 @@ def _apply_threshold(img_data, two_sided, cutoff_threshold):
         return img_data
 
     if two_sided:
-        mask = (-cutoff_threshold <= img_data) & (img_data <= cutoff_threshold)
+        mask = (-cutoff_threshold < img_data) & (img_data < cutoff_threshold)
     elif cutoff_threshold >= 0:
-        mask = img_data <= cutoff_threshold
+        mask = img_data < cutoff_threshold
     else:
-        mask = img_data >= cutoff_threshold
+        mask = img_data > cutoff_threshold
 
     img_data[mask] = 0.0
 

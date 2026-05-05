@@ -231,6 +231,13 @@ def _plot_img_with_bg(
             # voxels pass the threshold
             threshold = float(fast_abs_percentile(data)) - 1e-5
 
+        if isinstance(threshold, str):
+            threshold = check_threshold(
+                threshold,
+                data,
+                percentile_func=fast_abs_percentile,
+                name="threshold",
+            )
         img = new_img_like(img, as_ndarray(data), affine)
 
     display = display_factory(display_mode)(
@@ -402,6 +409,18 @@ def plot_img(
             To simply plot probabilistic atlases (4D images)
         :mod:`nilearn.plotting`
             See API reference for other options
+
+    Examples
+    --------
+    >>> from nilearn.plotting.image.img_plotting import plot_img, show
+    >>> from nilearn.datasets import load_sample_motor_activation_image
+
+    # just to have a 3D image with some structure
+    >>> data = load_sample_motor_activation_image()
+
+    >>> display = plot_img(data, title="Plotting a 3D image with plot_img")
+    >>> show()
+
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -1967,6 +1986,13 @@ def plot_carpet(
     check_params(locals())
     img = check_niimg_4d(img, dtype="auto")
 
+    # TODO (nilearn >= 0.15) remove if and elif below
+    # and change default of function
+    if standardize is True:
+        standardize = "zscore_sample"
+    elif standardize is False:
+        standardize = None
+
     # Define TR and number of frames
     t_r = t_r or float(img.header.get_zooms()[-1])
     n_tsteps = img.shape[-1]
@@ -1985,7 +2011,10 @@ def plot_carpet(
             f"img != {background_label}",
             img=atlas_img_res,
         )
-        masker = NiftiMasker(atlas_bin, target_affine=img.affine)
+        # TODO (nilearn >= 0.15) remove standardize=None
+        masker = NiftiMasker(
+            atlas_bin, target_affine=img.affine, standardize=None
+        )
 
         data = masker.fit_transform(img)
         atlas_values = masker.transform(atlas_img_res)

@@ -18,7 +18,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, readable_time
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -639,15 +639,6 @@ class SecondLevelModel(BaseGLM):
         if not self._is_volume_glm() or isinstance(sample_map, SurfaceImage):
             masker_type = "surface"
 
-        if masker_type == "surface" and self.smoothing_fwhm is not None:
-            warn(
-                "Parameter 'smoothing_fwhm' is not "
-                "yet supported for surface data.",
-                NotImplementedWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = None
-
         check_compatibility_mask_and_images(self.mask_img, sample_map)
         self.masker_ = check_embedded_masker(self, masker_type)
         self.masker_.memory_level = self.memory_level
@@ -659,7 +650,7 @@ class SecondLevelModel(BaseGLM):
         # Report progress
         logger.log(
             "\nComputation of second level model done in "
-            f"{time.time() - t0:0.2f} seconds.\n",
+            f"{readable_time(time.time() - t0)}.\n",
             verbose=self.verbose,
         )
 
@@ -1071,15 +1062,6 @@ def non_parametric_inference(
         second_level_input = _sort_input_dataframe(second_level_input)
     sample_map, _ = _process_second_level_input(second_level_input)
 
-    if isinstance(sample_map, SurfaceImage) and smoothing_fwhm is not None:
-        warn(
-            "Parameter 'smoothing_fwhm' is not "
-            "yet supported for surface data.",
-            NotImplementedWarning,
-            stacklevel=find_stack_level(),
-        )
-        smoothing_fwhm = None
-
     if (isinstance(sample_map, SurfaceImage)) and (tfce or threshold):
         tfce = False
         threshold = None
@@ -1114,6 +1096,8 @@ def non_parametric_inference(
             memory=Memory(None),
             verbose=max(0, verbose - 1),
             memory_level=1,
+            # TODO (nilearn >= 0.15) remove standardize=None
+            standardize=None,
         )
     else:
         masker = NiftiMasker(
@@ -1122,6 +1106,8 @@ def non_parametric_inference(
             memory=Memory(None),
             verbose=max(0, verbose - 1),
             memory_level=1,
+            # TODO (nilearn >= 0.15) remove standardize=None
+            standardize=None,
         )
 
     masker.fit(sample_map)
@@ -1129,7 +1115,7 @@ def non_parametric_inference(
     # Report progress
     logger.log(
         "\nComputation of second level model done in "
-        f"{time.time() - t0} seconds\n",
+        f"{readable_time(time.time() - t0)}\n",
         verbose=verbose,
     )
 

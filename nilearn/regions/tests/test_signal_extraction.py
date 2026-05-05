@@ -92,7 +92,7 @@ def mask_img():
 
 
 @pytest.fixture
-def signals():
+def signals() -> np.ndarray:
     return generate_timeseries(n_timepoints=N_TIMEPOINTS, n_features=N_REGIONS)
 
 
@@ -539,24 +539,33 @@ def test_signal_extraction_with_maps_and_labels(
     maps_signals, maps_labels = img_to_signals_maps(
         fmri_img, maps_img, keep_masked_maps=True
     )
-    labels_signals, labels_labels, _ = img_to_signals_labels(
-        imgs=fmri_img, labels_img=labeled_regions, keep_masked_labels=True
-    )
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_labels" parameter will be removed'
+    ):
+        labels_signals, labels_labels, _ = img_to_signals_labels(
+            imgs=fmri_img, labels_img=labeled_regions, keep_masked_labels=True
+        )
     assert_almost_equal(maps_signals, labels_signals)
 
     # Same thing with a mask, containing only 3 regions.
     mask_img = _create_mask_with_3_regions_from_labels_data(
         labels_data, labeled_regions.affine
     )
-    labels_signals, labels_labels, _ = img_to_signals_labels(
-        imgs=fmri_img,
-        labels_img=labeled_regions,
-        mask_img=mask_img,
-        keep_masked_labels=True,
-    )
-    maps_signals, maps_labels = img_to_signals_maps(
-        fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
-    )
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_labels" parameter will be removed'
+    ):
+        labels_signals, labels_labels, _ = img_to_signals_labels(
+            imgs=fmri_img,
+            labels_img=labeled_regions,
+            mask_img=mask_img,
+            keep_masked_labels=True,
+        )
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_maps" parameter will be removed'
+    ):
+        maps_signals, maps_labels = img_to_signals_maps(
+            fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
+        )
 
     assert_almost_equal(maps_signals, labels_signals)
     assert maps_signals.shape[1] == N_REGIONS
@@ -726,8 +735,8 @@ def test_signal_extraction_nans_in_regions_are_replaced_with_zeros():
     assert np.all(labels_signals[:, labels_labels.index(2)] == 0.0)
 
 
-def test_trim_maps(shape_3d_default):
-    # maps
+def test_trim_maps_all_regions(shape_3d_default):
+    """Use mask intersecting all regions."""
     maps_data = np.zeros((*shape_3d_default, N_REGIONS), dtype=np.float32)
     h0, h1, h2 = (s // 2 for s in shape_3d_default)
     maps_data[:h0, :h1, :h2, 0] = 1
@@ -739,7 +748,6 @@ def test_trim_maps(shape_3d_default):
     maps_data[h0:, h1:, :h2, 6] = 1
     maps_data[h0:, h1:, h2:, 7] = 1
 
-    # mask intersecting all regions
     mask_data = np.zeros(shape_3d_default, dtype=np.int8)
     mask_data[1:-1, 1:-1, 1:-1] = 1
 
@@ -748,27 +756,46 @@ def test_trim_maps(shape_3d_default):
     assert maps_i.flags["F_CONTIGUOUS"]
     assert len(maps_i_indices) == maps_i.shape[-1]
     assert maps_i.shape == maps_data.shape
+
     maps_i_correct = maps_data.copy()
     maps_i_correct[np.logical_not(mask_data), :] = 0
     assert_almost_equal(maps_i_correct, maps_i)
+
     assert_equal(mask_data, maps_i_mask)
     assert_equal(np.asarray(list(range(8))), maps_i_indices)
 
-    # mask intersecting half of the regions
+
+def test_trim_maps_half_regions(shape_3d_default):
+    """Use mask intersecting half of the regions."""
+    # maps
+    maps_data = np.zeros((*shape_3d_default, N_REGIONS), dtype=np.float32)
+    h0, h1, h2 = (s // 2 for s in shape_3d_default)
+    maps_data[:h0, :h1, :h2, 0] = 1
+    maps_data[:h0, :h1, h2:, 1] = 1.1
+    maps_data[:h0, h1:, :h2, 2] = 1
+    maps_data[:h0, h1:, h2:, 3] = 0.5
+    maps_data[h0:, :h1, :h2, 4] = 1
+    maps_data[h0:, :h1, h2:, 5] = 1.4
+    maps_data[h0:, h1:, :h2, 6] = 1
+    maps_data[h0:, h1:, h2:, 7] = 1
+    maps_data[1, 1, 1, 0] = 0  # remove one point inside mask
+
     mask_data = np.zeros(shape_3d_default, dtype=np.int8)
     mask_data[1:2, 1:-1, 1:-1] = 1
-    maps_data[1, 1, 1, 0] = 0  # remove one point inside mask
 
     maps_i, maps_i_mask, maps_i_indices = _trim_maps(maps_data, mask_data)
 
     assert maps_i.flags["F_CONTIGUOUS"]
     assert len(maps_i_indices) == maps_i.shape[-1]
     assert maps_i.shape == ((*maps_data.shape[:3], 4))
+
     maps_i_correct = maps_data[..., :4].copy()
     maps_i_correct[np.logical_not(mask_data), :] = 0
     assert_almost_equal(maps_i_correct, maps_i)
+
     mask_data[1, 1, 1] = 0  # for test to succeed
     assert_equal(mask_data, maps_i_mask)
+
     mask_data[1, 1, 1] = 1  # reset, just in case.
     assert_equal(np.asarray(list(range(4))), maps_i_indices)
 
@@ -792,7 +819,7 @@ def test_img_to_signals_labels_non_float_type(target_dtype, rng):
     fake_mask_data[1:8, 1:8, 1:8] = 1
     fake_mask = Nifti1Image(fake_mask_data, fake_affine)
 
-    masker = NiftiLabelsMasker(fake_mask)
+    masker = NiftiLabelsMasker(fake_mask, standardize=None)
     masker.fit()
 
     timeseries_int = masker.transform(fake_fmri_img_target_dtype)

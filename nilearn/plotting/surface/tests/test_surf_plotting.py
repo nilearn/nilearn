@@ -26,7 +26,8 @@ from nilearn.plotting import (
 
 
 @pytest.fixture
-def surf_roi_data(rng, in_memory_mesh):
+def surf_roi_data(rng, in_memory_mesh) -> np.ndarray:
+    """Return array to define ROIs on a surface."""
     roi_map = np.zeros((in_memory_mesh.n_vertices, 1))
     roi_idx = rng.integers(0, in_memory_mesh.n_vertices, size=10)
     roi_map[roi_idx] = 1
@@ -113,6 +114,10 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
+@pytest.mark.skipif(
+    not is_kaleido_installed(),
+    reason="This test is run only if kaleido is installed.",
+)
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
@@ -240,6 +245,7 @@ def test_plot_surf_tick_format_warning_matplotlib(
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs", [{"symmetric_cmap": True}, {"title_font_size": 18}]
 )
@@ -300,6 +306,7 @@ def test_plot_surf_error_when_kaleido_missing(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
     """Test nilearn.plotting.surface.surf_plotting.plot_surf for valid
     values of avg_method.
@@ -348,6 +355,7 @@ def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_avg_method_errors(
     matplotlib_pyplot, in_memory_mesh, bg_map
 ):
@@ -431,6 +439,7 @@ def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
     assert display.axes[0].title._text == "Test title"
 
 
+@pytest.mark.thread_unsafe
 def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
     """Test error msg for invalid axes."""
     _, axes = matplotlib_pyplot.subplots()
@@ -438,6 +447,7 @@ def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
         plot_surf_stat_map(stat_map=surf_img_1d, axes=axes)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contours(
     matplotlib_pyplot, in_memory_mesh, parcellation, surf_mask_1d
 ):
@@ -451,6 +461,7 @@ def test_plot_surf_contours(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contour_roi_map_as_surface_image(
     matplotlib_pyplot, surf_mesh, surf_mask_1d
 ):
@@ -458,6 +469,7 @@ def test_plot_surf_contour_roi_map_as_surface_image(
     plot_surf_contours(surf_mesh, roi_map=surf_mask_1d, hemi="both")
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contours_legend(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
@@ -497,6 +509,7 @@ def test_plot_surf_contours_colors(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contours_axis_title(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
@@ -536,6 +549,7 @@ def test_plot_surf_contours_axis_title(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contours_fig_axes(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
@@ -593,6 +607,7 @@ def test_plot_surf_contours_errors_with_plotly_figure(plotly, in_memory_mesh):
         plot_surf_contours(in_memory_mesh, np.ones((10,)), axes=figure)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map(plt, engine, in_memory_mesh, bg_map):
     """Smoke test when stat_map is specified to
     nilearn.plotting.surface.surf_plotting.plot_surf_stat_map together with
@@ -625,6 +640,7 @@ def test_plot_surf_stat_map_with_background(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_with_title(plt, engine, in_memory_mesh, bg_map):
     """Test if nilearn.plotting.surface.surf_plotting.plot_surf_stat_map adds
     title when specified.
@@ -635,6 +651,7 @@ def test_plot_surf_stat_map_with_title(plt, engine, in_memory_mesh, bg_map):
     assert display.axes[0].title._text == "Stat map title"
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_with_threshold(
     plt, engine, in_memory_mesh, bg_map
 ):
@@ -829,6 +846,7 @@ def test_plot_surf_stat_map_matplotlib_specific(
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("colorbar", [True, False])
 def test_plot_surf_roi(plt, engine, surface_image_roi, colorbar):
     """Smoke test for nilearn.plotting.surface.surf_plotting.plot_surf_roi
@@ -917,6 +935,7 @@ def test_plot_surf_roi_error(engine, rng, in_memory_mesh, surf_roi_data):
         plot_surf_roi(in_memory_mesh, roi_map=surf_roi_data, engine=engine)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_roi_matplotlib_specific(
     matplotlib_pyplot, surface_image_roi
 ):
@@ -961,6 +980,7 @@ def test_plot_surf_roi_matplotlib_specific(
     assert cbar_vmax == 8.9
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_roi_matplotlib_specific_nan_handling(
     matplotlib_pyplot,
     surface_image_parcellation,
@@ -1092,6 +1112,7 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "hemispheres, views",
     [
@@ -1115,6 +1136,7 @@ def test_plot_img_on_surf_hemispheres_and_orientations(
     plot_img_on_surf(img_3d_mni, hemispheres=hemispheres, views=views)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs",
     [
@@ -1180,6 +1202,7 @@ def test_plot_img_on_surf_inflate(matplotlib_pyplot, img_3d_mni):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("surf_mesh", ["fsaverage5", fetch_surf_fsaverage()])
 def test_plot_img_on_surf_surf_mesh(matplotlib_pyplot, img_3d_mni, surf_mesh):
     """Smoke test for nilearn.plotting.surface.plot_img_on_surf for surf_mesh
@@ -1273,6 +1296,7 @@ def test_plot_img_on_surf_with_engine_kwarg(img_3d_mni):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_img_on_surf_title(matplotlib_pyplot, img_3d_mni):
     """Test nilearn.plotting.surface.plot_img_on_surf with and without title
     specified.

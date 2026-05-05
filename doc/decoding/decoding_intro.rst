@@ -188,7 +188,8 @@ performance of most estimators.
 .. code-block:: python
 
      from nilearn.decoding import Decoder
-     decoder = Decoder(estimator='svc', mask=mask_filename)
+
+     decoder = Decoder(estimator="svc", mask=mask_filename)
 
 Then we can fit it on the images and the conditions we chose before.
 

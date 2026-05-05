@@ -21,6 +21,7 @@ def non_symmetric_matrix():
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_connectome_masked_array_sparse_matrix(
     node_coords, adjacency, params_plot_connectome
 ):
@@ -39,6 +40,7 @@ def test_plot_connectome_masked_array_sparse_matrix(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_connectome_with_nans(
     adjacency, node_coords, params_plot_connectome
 ):
@@ -165,7 +167,7 @@ def test_plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
             ]
         ) == np.sum(
             np.abs(non_symmetric_matrix)
-            >= np.percentile(np.abs(non_symmetric_matrix.ravel()), thresh)
+            > np.percentile(np.abs(non_symmetric_matrix.ravel()), thresh)
         )
 
 
@@ -188,6 +190,7 @@ def test_plot_connectome_exceptions_non_symmetric_adjacency(matrix):
         plot_connectome(matrix, node_coords, display_mode="x")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "node_color",
     [
@@ -265,12 +268,11 @@ def test_plot_connectome_wrong_shapes():
 
 
 @pytest.fixture
-def expected_error_node_kwargs(node_kwargs):
+def expected_error_node_kwargs(node_kwargs) -> str:
     """Return the expected error message depending on node_kwargs."""
     if "s" in node_kwargs:
         return "Please use 'node_size' and not 'node_kwargs'"
-    elif "c" in node_kwargs:
-        return "Please use 'node_color' and not 'node_kwargs'"
+    return "Please use 'node_color' and not 'node_kwargs'"
 
 
 @pytest.mark.thread_unsafe

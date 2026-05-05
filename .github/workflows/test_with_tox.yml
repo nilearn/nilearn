@@ -155,7 +155,7 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
                 path: |
@@ -165,21 +165,21 @@ jobs:
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
 
         -   name: Upload html coverage
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_htmlcov
                 path: htmlcov
 
         -   name: Upload coverage to CodeCov
             if: success()
-            uses: codecov/codecov-action@v5
+            uses: codecov/codecov-action@v6
             with:
                 flags: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.env }}
                 token: ${{ secrets.CODECOV_TOKEN }}
@@ -243,7 +243,7 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
                 path: |
@@ -253,7 +253,7 @@ jobs:
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output

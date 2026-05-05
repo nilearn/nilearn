@@ -3,6 +3,7 @@
 import inspect
 import warnings
 from copy import copy as copy_object
+from typing import Any, ClassVar
 
 import numpy as np
 from joblib import Memory
@@ -322,6 +323,15 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     """
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the input Nifti image overlaid "
+            "with the outlines of the mask. "
+            "We recommend to inspect the report for the overlap "
+            "between the mask and the input image. "
+        ),
+    }
+
     def __init__(
         self,
         mask_img=None,
@@ -369,35 +379,10 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        self._report_content = {
-            "description": (
-                "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (in green). We "
-                "recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_elements": 0,
-            "coverage": 0,
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
-    def generate_report(self, title: str | None = None):
-        """Generate an HTML report for the current object.
-
-        Parameters
-        ----------
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        Returns
-        -------
-        report : `nilearn.reporting.html_report.HTMLReport`
-            HTML report for the masker.
-        """
-        from nilearn.reporting.html_report import generate_report
-
-        self._report_content["title"] = title
+    def _run_report_checks(self, **kwargs):
+        super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
             img = self._reporting_data["images"]
@@ -407,18 +392,18 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     f"No image provided to fit in {self.__class__.__name__}. "
                     "Setting image to mask for reporting."
                 )
-                self._report_content["warning_messages"].append(msg)
+                self._append_report_warning(msg)
 
             elif self._reporting_data["dim"] == 5:
                 msg = (
                     "A list of 4D subject images were provided to fit. "
                     "Only first subject is shown in the report."
                 )
-                self._report_content["warning_messages"].append(msg)
+                self._append_report_warning(msg)
+        else:
+            self._report_content["overlay"] = None
 
-        return generate_report(self)
-
-    def _reporting(self):
+    def _load_report_displays(self):
         """Load displays needed for report.
 
         Returns
@@ -432,7 +417,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if not self._has_report_data():
             self._report_content["overlay"] = None
             return None
-
         return self._create_figure_for_report()
 
     def _create_figure_for_report(self):
@@ -442,26 +426,47 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         -------
         list of :class:`~matplotlib.figure.Figure` or None
         """
+        if self._report_content.get("engine") == "brainsprite":
+            bg_img = self._reporting_data["images"]
+            stat_map_img = self._reporting_data["mask"]
+            self._create_brainsprite(bg_img=bg_img, stat_map_img=stat_map_img)
+            return None
+
         if not is_matplotlib_installed():
             self._report_content["overlay"] = None
             return None
 
         import matplotlib.pyplot as plt
 
-        from nilearn.plotting import plot_img
+        from nilearn.plotting import find_xyz_cut_coords, plot_img
 
         img = self._reporting_data["images"]
-        mask = self._reporting_data["mask"]
+        mask = check_niimg(self._reporting_data["mask"])
 
         if img is None:  # images were not provided to fit
             img = mask
+        img = check_niimg(img)
+
+        # ensure that the crosshair will be in the mask
+        cut_coords = find_xyz_cut_coords(img)
+        if mask is not None:
+            cut_coords = find_xyz_cut_coords(mask)
+            if not check_same_fov(img, mask, raise_error=False):
+                # in case images have different FOV
+                # the cut coords may be out of the image
+                cut_coords = find_xyz_cut_coords(
+                    resample_img(
+                        mask,
+                        target_affine=img.affine,
+                        target_shape=img.shape,
+                        interpolation="nearest",
+                    )
+                )
 
         # create display of retained input mask, image
         # for visual comparison
         init_display = plot_img(
-            img,
-            black_bg=False,
-            cmap=self.cmap,
+            img, black_bg=False, cmap=self.cmap, cut_coords=cut_coords
         )
         plt.close()
 
@@ -482,16 +487,19 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "\n To see the input Nifti image before resampling, "
                 "hover over the displayed image."
             )
-
-            # create display of resampled NiftiImage and mask
             resampled_img, resampled_mask = self._reporting_data["transform"]
+
             if resampled_img is None:  # images were not provided to fit
                 resampled_img = resampled_mask
+
+            # create display of resampled NiftiImage and mask
+            cut_coords = find_xyz_cut_coords(resampled_mask)
 
             overlay = plot_img(
                 resampled_img,
                 black_bg=False,
                 cmap=self.cmap,
+                cut_coords=cut_coords,
             )
             plt.close()
             overlay.add_contours(
