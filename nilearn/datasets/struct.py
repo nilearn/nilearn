@@ -1048,6 +1048,9 @@ def _resort_vertices(bunch, bunch_fsaverage5, data_dir):
 
 
 def _get_mesh_mapping(fs_coords, fs5_coords):
+    """Return mapping that can be applied to meshes and data of ``fs_coords``
+    so that it complies with the order of ``fs5_coords`.`
+    """
     fs_coords_rounded = np.round(fs_coords, 1)
     fs5_coords_rounded = np.round(fs5_coords, 1)
 
@@ -1077,6 +1080,9 @@ def _get_mesh_mapping(fs_coords, fs5_coords):
 
 
 def _apply_mesh_mapping(mapping, fs_coords, fs_faces):
+    """Apply the specified mapping to ``fs_coords`` and if not None to
+    ``fs_faces``.
+    """
     fs_coords_updated = fs_coords[mapping]
 
     if fs_faces is not None:
