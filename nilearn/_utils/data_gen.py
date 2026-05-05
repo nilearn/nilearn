@@ -10,6 +10,7 @@ import pandas as pd
 import scipy.signal
 from nibabel import Nifti1Image, gifti
 from scipy.ndimage import binary_dilation
+from sklearn.utils import check_random_state
 
 from nilearn._utils import logger
 from nilearn._utils.numpy_conversions import as_ndarray
@@ -1009,6 +1010,8 @@ def create_fake_bids_dataset(
         Creates a directory with dummy files.
 
     """
+    rand_gen = check_random_state(random_state)
+
     if base_dir is None:
         base_dir = Path()
     if tasks is None:
