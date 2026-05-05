@@ -1499,7 +1499,7 @@ class PolyData:
         if "hemi-R" in filename.stem:
             data = self.parts["right"]
 
-        _data_to_gifti(data, filename)
+        data_to_gifti(data, filename)
 
     def _set_data_dtype(self, dtype) -> None:
         if dtype is not None:
@@ -1814,7 +1814,7 @@ def mesh_to_gifti(coordinates, faces, gifti_file=None) -> gifti.GiftiImage:
     return gifti_img
 
 
-def _data_to_gifti(data, gifti_file=None) -> gifti.GiftiImage:
+def data_to_gifti(data, gifti_file=None) -> gifti.GiftiImage:
     """Save data from Polydata to a gifti file.
 
     Parameters

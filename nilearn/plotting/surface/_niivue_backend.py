@@ -13,7 +13,7 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
 from nilearn.plotting import cm
-from nilearn.surface.surface import _data_to_gifti, mesh_to_gifti
+from nilearn.surface.surface import data_to_gifti, mesh_to_gifti
 
 HTML_TEMPLATE_PATH = "html/plotting/surface_plot_niivue.jinja"
 
@@ -118,7 +118,7 @@ def _one_mesh_info(
     )
 
     # Handle surface data
-    gii = _data_to_gifti(surf_map)
+    gii = data_to_gifti(surf_map)
     info["surf_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
 
     info["cmap"] = matplotlib_cm_to_niivue_cm(cmap)
@@ -129,7 +129,7 @@ def _one_mesh_info(
 
     # Handle background map
     if bg_map is not None:
-        gii = _data_to_gifti(bg_map)
+        gii = data_to_gifti(bg_map)
         info["bg_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
     else:
         info["bg_map"] = "null"

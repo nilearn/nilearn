@@ -22,7 +22,6 @@ from nilearn.surface.surface import (
     PolyMesh,
     SurfaceImage,
     _choose_kind,
-    _data_to_gifti,
     _gifti_img_to_mesh,
     _interpolation_sampling,
     _load_surf_files_gifti_gzip,
@@ -38,6 +37,7 @@ from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
     check_surf_img,
     compute_adjacency_matrix,
+    data_to_gifti,
     extract_data,
     find_surface_clusters,
     get_data,
@@ -850,8 +850,8 @@ def test_data_to_gifti(rng, tmp_path, dtype):
     - make sure files can be loaded with nibabel
     """
     data = rng.random((5, 6)).astype(dtype)
-    _data_to_gifti(data=data, gifti_file=tmp_path / "data.gii")
-    _data_to_gifti(data=data, gifti_file=str(tmp_path / "data.gii"))
+    data_to_gifti(data=data, gifti_file=tmp_path / "data.gii")
+    data_to_gifti(data=data, gifti_file=str(tmp_path / "data.gii"))
     load(tmp_path / "data.gii")
 
 
@@ -860,7 +860,7 @@ def test_data_to_gifti_unsupported_dtype(rng, tmp_path, dtype):
     """Check saving unsupported data type raises an error."""
     data = rng.random((5, 6)).astype(dtype)
     with pytest.raises(ValueError, match="supports uint8, int32 and float32"):
-        _data_to_gifti(data=data, gifti_file=tmp_path / "data.gii")
+        data_to_gifti(data=data, gifti_file=tmp_path / "data.gii")
 
 
 @pytest.mark.parametrize("shape", [(5,), (5, 1), (5, 2)])
