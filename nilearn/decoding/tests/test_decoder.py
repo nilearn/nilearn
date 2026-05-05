@@ -20,6 +20,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image, save
 from numpy.testing import assert_array_almost_equal
+from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
@@ -54,7 +55,11 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_GTE_1_7, SKLEARN_LT_1_6
+from nilearn._utils.versions import (
+    SKLEARN_GTE_1_7,
+    SKLEARN_LT_1_6,
+    compare_version,
+)
 from nilearn.conftest import _rng
 from nilearn.decoding import (
     Decoder,
@@ -1523,6 +1528,11 @@ def _set_best_hyperparameters(
 
 @pytest.mark.thread_unsafe
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(
+    compare_version(sklearn_version, ">=", "1.8"),
+    reason="TODO https://github.com/nilearn/nilearn/issues/5452",
+)
 @ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.parametrize("regressor", ["svr", "lasso", "ridge"])
 def test_regressor_vs_sklearn(regressor):
