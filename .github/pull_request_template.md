@@ -16,10 +16,14 @@ If the pull request closes multiple issues, includes "closes" before each one is
 https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue -->
 - Closes #
 
-<!-- Please indicate whether AI tools were used for this pull request
-by adding a 'x' in one of the following check box. -->
-- [ ] AI tools were used to generate at least part of the content of this pull-request.
-- [ ] No AI tools were used to generate at least part of the content of this pull-request.
+<!-- Please indicate whether LLM tools were used for this pull request
+by adding a 'x' in one of the following check box.
+Work made with LLM tools has a very different set of typical failure modes
+than work done entirely by humans,
+it helps others to better trace eventual issues when reviewing the code.
+-->
+- [ ] LLM tools were used to generate at least part of the content of this pull-request.
+- [ ] No LLM tools were used to generate at least part of the content of this pull-request.
 
 <!-- Please give a brief overview of what has changed in the pull request.
 If you're not sure what to write, consider it a note to the maintainers to indicate
