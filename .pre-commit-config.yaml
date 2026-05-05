@@ -117,16 +117,17 @@ repos:
                 | nilearn/_utils/param_validation.py
             )$
 
-# TODO: apply in a follow up PR
-# -   repo: https://github.com/standard/standard
-#     rev: v17.1.2
-#     hooks:
-#     -   id: standard
-#         # ignoring JS files that are not our own
-#         exclude: |
-#             (?x)^(
-#                 nilearn/_assets/js/.*min.*
-#             )$
+
+-   repo: https://github.com/standard/standgstard
+    rev: v17.1.2
+    hooks:
+    -   id: standard
+        # ignoring JS files that are not our own
+        exclude: |
+            (?x)^(
+                nilearn/_assets/js/.*min.*
+                | nilearn/_assets/js/niivue.umd.js
+            )$
 
     # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter
