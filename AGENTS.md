@@ -116,7 +116,8 @@ Violating these contracts will fail the `lint-imports` check.
   - `@pytest.mark.single_process`: for test that require testing n_jobs>1
   - `@pytest.mark.thread_unsafe`: marker used by pytest-run-parallel
 - Keep tests fast (mocked/synthetic data).
-- `xfail_strict = true` — unexpected passes are errors
+
+Add the marker `@pytest.mark.ai_generated` to any test you generate or modify.
 
 ## Changelog
 
