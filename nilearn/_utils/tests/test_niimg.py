@@ -10,7 +10,6 @@ from nibabel import Nifti1Header, Nifti1Image, load
 
 from nilearn._utils.niimg import (
     _get_data,
-    _get_target_dtype,
     ensure_finite_data,
     has_non_finite,
     img_data_dtype,
@@ -18,6 +17,7 @@ from nilearn._utils.niimg import (
     load_niimg,
     repr_niimgs,
 )
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data, new_img_like
 
@@ -51,7 +51,7 @@ def test_new_img_like_side_effect(img1):
 def test_get_target_dtype(affine_eye):
     img = Nifti1Image(np.ones((2, 2, 2), dtype=np.float64), affine=affine_eye)
     assert get_data(img).dtype.kind == "f"
-    dtype_kind_float = _get_target_dtype(
+    dtype_kind_float = get_target_dtype(
         get_data(img).dtype, target_dtype="auto"
     )
     assert dtype_kind_float == np.float32
@@ -62,7 +62,7 @@ def test_get_target_dtype(affine_eye):
     data = np.ones((2, 2, 2), dtype=np.int64)
     img2 = Nifti1Image(data, affine=affine_eye, header=hdr)
     assert get_data(img2).dtype.kind == img2.get_data_dtype().kind == "i"
-    dtype_kind_int = _get_target_dtype(
+    dtype_kind_int = get_target_dtype(
         get_data(img2).dtype, target_dtype="auto"
     )
     assert dtype_kind_int == np.int32

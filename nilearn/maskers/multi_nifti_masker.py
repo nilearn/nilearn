@@ -425,7 +425,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                 verbose=self.verbose,
                 confounds=cfs,
                 copy=copy,
-                dtype=self.dtype,
                 sample_mask=sms,
             )
             for imgs, cfs, sms in zip(

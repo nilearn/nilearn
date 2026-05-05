@@ -345,6 +345,10 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
+    %(dtype)s
+
+        ..versionadded:: 0.14.0dev
+
     %(target_affine)s
 
         .. note::
@@ -401,6 +405,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -421,6 +426,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.mask_strategy = mask_strategy
@@ -545,6 +551,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         self.masker_.memory_level = self.memory_level
+        self.masker_.dtype = self.dtype
+
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
         if self.masker_.mask_img is None:
@@ -577,6 +585,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             self.maps_masker_ = SurfaceMapsMasker(
                 self.components_img_,
                 self.masker_.mask_img_,
+                dtype=self.dtype,
                 **maps_masker_kwargs,
             )
         else:
@@ -584,6 +593,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
                 self.components_img_,
                 self.masker_.mask_img_,
                 resampling_target="maps",
+                dtype=self.dtype,
                 **maps_masker_kwargs,
             )
         self.maps_masker_.fit()

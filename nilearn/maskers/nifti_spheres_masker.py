@@ -17,8 +17,9 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn.datasets import load_mni152_template
-from nilearn.image import resample_img
+from nilearn.image import load_img, resample_img
 from nilearn.image.image import (
     check_niimg_3d,
     check_niimg_4d,
@@ -634,7 +635,13 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             # kwargs
             verbose=self.verbose,
         )
-        return np.atleast_1d(signals)
+
+        imgs = load_img(imgs)
+        target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
+        if target_dtype is None:
+            target_dtype = img_data_dtype(imgs)
+
+        return np.atleast_1d(signals).astype(target_dtype)
 
     @fill_doc
     def inverse_transform(self, region_signals):
@@ -677,4 +684,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             adjacency = adjacency.dot(sparse.diags(scale))
 
         img = adjacency.T.dot(region_signals.T).T
-        return unmask(img, self.mask_img_)
+
+        img = unmask(img, self.mask_img_)
+
+        img = self._set_inverse_transform_output_dtype(region_signals, img)
+
+        return img

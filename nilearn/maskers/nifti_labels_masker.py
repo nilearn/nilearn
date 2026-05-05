@@ -13,7 +13,8 @@ from nilearn._utils.bids import sanitize_look_up_table
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg import img_data_dtype, safe_get_data
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_reduction_strategy,
@@ -749,7 +750,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             params,
             confounds=confounds,
             sample_mask=sample_mask,
-            dtype=self.dtype,
             # Caching
             memory=self.memory_,
             memory_level=self.memory_level,
@@ -778,7 +778,12 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         self.region_atlas_ = masked_atlas
 
-        return region_signals
+        imgs = load_img(imgs)
+        target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
+        if target_dtype is None:
+            target_dtype = img_data_dtype(imgs)
+
+        return region_signals.astype(target_dtype)
 
     def _resample_labels(self, imgs_):
         mask_logger("resample_regions", verbose=self.verbose)
@@ -834,9 +839,13 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         mask_logger("inverse_transform", verbose=self.verbose)
 
-        return signal_extraction.signals_to_img_labels(
+        img = signal_extraction.signals_to_img_labels(
             signals,
             self.labels_img_,
             self.mask_img_,
             background_label=self.background_label,
         )
+
+        img = self._set_inverse_transform_output_dtype(signals, img)
+
+        return img

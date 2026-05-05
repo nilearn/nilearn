@@ -14,8 +14,9 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import sanitize_verbose
-from nilearn.image import check_niimg, crop_img, resample_img
+from nilearn.image import check_niimg, crop_img, load_img, resample_img
 from nilearn.image.image import check_same_fov
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
@@ -44,7 +45,6 @@ class _ExtractionFunctor:
             apply_mask(
                 imgs,
                 self.mask_img_,
-                dtype=img_data_dtype(imgs),
             ),
             imgs.affine,
         )
@@ -188,7 +188,6 @@ def filter_and_mask(
         confounds=confounds,
         sample_mask=sample_mask,
         copy=copy,
-        dtype=dtype,
     )
     # For _later_: missing value removal or imputing of missing data
     # (i.e. we want to get rid of NaNs, if smoothing must be done
@@ -200,6 +199,10 @@ def filter_and_mask(
     # we return 1D array
     if temp_imgs.ndim == 3 and sklearn_output_config is None:
         data = data.squeeze()
+
+    # TODO implement
+    del dtype
+
     return data
 
 
@@ -697,4 +700,14 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             sklearn_output_config=sklearn_output_config,
         )
 
-        return data
+        if not isinstance(data, np.ndarray):
+            # in case data is a cached MemorizedResult
+            # only happens when _shelving is True
+            return data
+
+        imgs = load_img(imgs)
+        target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
+        if target_dtype is None:
+            target_dtype = img_data_dtype(imgs)
+
+        return data.astype(target_dtype)

@@ -20,6 +20,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -82,6 +83,10 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     %(high_pass)s
 
     %(t_r)s
+
+    %(dtype)s
+
+        ..versionadded:: 0.14.0dev
 
     %(memory)s
 
@@ -151,6 +156,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         verbose=0,
@@ -169,6 +175,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
@@ -322,6 +329,16 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 maps_data, img_data
             )[0].T
 
+        input_type = (
+            imgs.data._dtype
+            if isinstance(imgs, SurfaceImage)
+            else imgs[0].data._dtype
+        )
+        target_dtype = get_target_dtype(input_type, self.dtype)
+        if target_dtype is None:
+            target_dtype = imgs.data._dtype
+        region_signals = region_signals.astype(target_dtype)
+
         return self._clean(region_signals, confounds, sample_mask)
 
     @fill_doc
@@ -387,11 +404,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         imgs = SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
 
-        if return_1D:
-            for k, v in imgs.data.parts.items():
-                imgs.data.parts[k] = v.squeeze()
-
-        return imgs
+        return self._post_process_inverse_transform(
+            region_signals, imgs, return_1D
+        )
 
     def _run_report_checks(self, **kwargs):
         super()._run_report_checks(**kwargs)

@@ -25,6 +25,7 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.niimg import ensure_finite_data, repr_niimgs, safe_get_data
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -587,6 +588,9 @@ class BaseMasker(_BaseMasker):
         # internal structures of the header: remove the memmaped array
         with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
+
+        img = self._set_inverse_transform_output_dtype(X, img)
+
         return img
 
     def _check_array(
@@ -660,6 +664,17 @@ class BaseMasker(_BaseMasker):
         self._reporting_data["cm_base64"] = json_view["cm_base64"]
         self._reporting_data["stat_map_base64"] = json_view["stat_map_base64"]
         self._reporting_data["params"] = json.dumps(json_view["params"])
+
+    def _set_inverse_transform_output_dtype(
+        self, input: np.ndarray, output: Nifti1Image
+    ) -> Nifti1Image:
+        """Set dtype for data to return for inverse_transform."""
+        target_dtype = get_target_dtype(input.dtype, self.dtype)
+        if target_dtype is None:
+            target_dtype = input.dtype
+        output = new_img_like(output, output.get_fdata().astype(target_dtype))
+        output.set_data_dtype(target_dtype)
+        return output
 
 
 class _BaseSurfaceMasker(_BaseMasker):
@@ -818,6 +833,19 @@ class _BaseSurfaceMasker(_BaseMasker):
             if return_1D and sklearn_output_config is not None
             else signals
         )
+
+    def _post_process_inverse_transform(
+        self, input: np.ndarray, output: SurfaceImage, return_1D: bool
+    ) -> SurfaceImage:
+        """Set dtype and squeeze data to return for inverse_transform."""
+        target_dtype = get_target_dtype(input.dtype, self.dtype)
+        if target_dtype is None:
+            target_dtype = input.dtype
+        output.data._set_dtype(target_dtype)
+        if return_1D:
+            for k, v in output.data.parts.items():
+                output.data.parts[k] = v.squeeze()
+        return output
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):

@@ -11,6 +11,8 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg import img_data_dtype
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
 )
@@ -105,7 +107,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     %(t_r)s
 
-    %(dtype)s.
+    %(dtype)s
 
     resampling_target : {"data", "mask", "maps", None}, default="data"
         Defines which image gives the final shape/size.
@@ -361,9 +363,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_logger("load_regions", maps_img, verbose=self.verbose)
 
         self.maps_img_ = deepcopy(maps_img)
-        self.maps_img_ = check_niimg(
-            self.maps_img_, dtype=self.dtype, atleast_4d=True
-        )
+        self.maps_img_ = check_niimg(self.maps_img_, atleast_4d=True)
         self.maps_img_ = clean_img(
             self.maps_img_,
             detrend=False,
@@ -531,6 +531,10 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         imgs_ = check_niimg(imgs, atleast_4d=True)
 
+        target_dtype = get_target_dtype(img_data_dtype(imgs_), self.dtype)
+        if target_dtype is None:
+            target_dtype = img_data_dtype(imgs_)
+
         if self.resampling_target is None:
             images = {"maps": maps_img_, "data": imgs_}
             if mask_img_ is not None:
@@ -650,7 +654,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             params,
             confounds=confounds,
             sample_mask=sample_mask,
-            dtype=self.dtype,
             # Caching
             memory=self.memory_,
             memory_level=self.memory_level,
@@ -658,7 +661,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             verbose=self.verbose,
             sklearn_output_config=sklearn_output_config,
         )
-        return region_signals
+
+        return region_signals.astype(target_dtype)
 
     @fill_doc
     def inverse_transform(self, region_signals):
@@ -683,8 +687,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         mask_logger("inverse_transform", verbose=self.verbose)
 
-        return signal_extraction.signals_to_img_maps(
+        img = signal_extraction.signals_to_img_maps(
             region_signals,
             self.maps_img_,
             mask_img=self.mask_img_,
         )
+
+        img = self._set_inverse_transform_output_dtype(region_signals, img)
+
+        return img
