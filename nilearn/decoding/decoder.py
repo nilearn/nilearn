@@ -1245,9 +1245,6 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         default='svc'
         The estimator to choose among:
         %(classifier_options)s
-        Besides the strings, it is also possible to pass a scikit-learn
-        compatible estimator object (any object implementing 'fit'
-        and 'predict' methods).
 
     mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
            :obj:`~nilearn.surface.SurfaceImage` \
@@ -1436,9 +1433,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         default="svr"
         The estimator to choose among:
         %(regressor_options)s
-        Besides the strings, it is also possible to pass a scikit-learn
-        compatible estimator object (any object implementing 'fit'
-        and 'predict' methods).
 
     mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
             or None, default=None
@@ -1613,9 +1607,6 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         default="svr"
         The estimator to choose among:
         %(regressor_options)s
-        Besides the strings, it is also possible to pass a scikit-learn
-        compatible estimator object (any object implementing 'fit'
-        and 'predict' methods).
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, \
         default=None
@@ -1792,9 +1783,6 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         default='svc'
         The estimator to choose among:
         %(classifier_options)s
-        Besides the strings, it is also possible to pass a scikit-learn
-        compatible estimator object (any object implementing 'fit'
-        and 'predict' methods).
 
     mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker or None,\
         default=None
