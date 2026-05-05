@@ -530,9 +530,7 @@ class BaseMasker(_BaseMasker):
         )
 
     @fill_doc
-    def fit_transform(
-        self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
-    ):
+    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Fit to data, then transform it.
 
         Parameters
@@ -553,7 +551,7 @@ class BaseMasker(_BaseMasker):
         %(signals_transform_nifti)s
 
         """
-        return self.fit(imgs, y, **fit_params).transform(
+        return self.fit(imgs, y).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
