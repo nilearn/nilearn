@@ -12,6 +12,7 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 # sourcery skip: merge-dict-assign
 
 import sys
+from collections.abc import Callable
 
 ##############################################################################
 #
@@ -1937,7 +1938,7 @@ def _indentcount_lines(lines):
     return indentno
 
 
-def fill_doc(f):
+def fill_doc(f: Callable) -> Callable:
     """Fill a docstring with docdict entries.
 
     Parameters
@@ -1974,7 +1975,7 @@ def fill_doc(f):
         f.__doc__ = docstring % indented
     except (TypeError, ValueError, KeyError) as exp:
         funcname = f.__name__
-        funcname = docstring.split("\n")[0] if funcname is None else funcname
+        funcname = docstring.split("\n")[0]
         raise RuntimeError(
             f"Error documenting {funcname}:\n{exp!s}.\n"
             "Did you forget to escape a character with an extra '%'"

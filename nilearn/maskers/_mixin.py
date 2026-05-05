@@ -28,7 +28,9 @@ class _MultiMixin:
     """Mixin class to add common MultiMasker functionalities."""
 
     @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+    def fit_transform(
+        self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
+    ):
         """
         Fit to data, then transform it.
 
@@ -52,7 +54,7 @@ class _MultiMixin:
         -------
         %(signals_transform_multi_nifti)s
         """
-        return self.fit(imgs, y=y).transform(
+        return self.fit(imgs, y=y, **fit_params).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
