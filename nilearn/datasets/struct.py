@@ -30,6 +30,7 @@ from nilearn.surface.surface import (
     FileMesh,
     PolyMesh,
     SurfaceImage,
+    data_to_gifti,
     load_surf_data,
     mesh_to_gifti,
 )
@@ -1031,6 +1032,20 @@ def _resort_vertices(bunch, bunch_fsaverage5, data_dir):
             coords_updated, faces_updated, f"{data_dir / mesh}.gii.gz"
         )
 
+    for data_view in [
+        "area_left",
+        "area_right",
+        "curv_left",
+        "curv_right",
+        "sulc_left",
+        "sulc_right",
+        "thick_left",
+        "thick_right",
+    ]:
+        data = load_surf_data(bunch[data_view])
+        data_updated = _apply_mesh_mapping(order, data, None)
+        data_to_gifti(data_updated, f"{data_dir / data_view}.gii.gz")
+
 
 def _get_mesh_mapping(fs_coords, fs5_coords):
     fs_coords_rounded = np.round(fs_coords, 1)
@@ -1062,13 +1077,17 @@ def _get_mesh_mapping(fs_coords, fs5_coords):
 
 
 def _apply_mesh_mapping(mapping, fs_coords, fs_faces):
-    fs_new_order_inverted = np.empty_like(mapping)
-    fs_new_order_inverted[mapping] = np.arange(mapping.size)
-
     fs_coords_updated = fs_coords[mapping]
-    faces_updated = np.vectorize(lambda x: fs_new_order_inverted[x])(
-        fs_faces
-    ).astype(np.int32)
+
+    if fs_faces is not None:
+        fs_new_order_inverted = np.empty_like(mapping)
+        fs_new_order_inverted[mapping] = np.arange(mapping.size)
+
+        faces_updated = np.vectorize(lambda x: fs_new_order_inverted[x])(
+            fs_faces
+        ).astype(np.int32)
+    else:
+        faces_updated = None
 
     return fs_coords_updated, faces_updated
 
