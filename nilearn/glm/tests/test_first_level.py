@@ -32,14 +32,8 @@ from nilearn._utils.estimator_checks import (
 )
 from nilearn._utils.helpers import is_windows_platform
 from nilearn._utils.versions import SKLEARN_LT_1_6
-from nilearn.glm.contrasts import (
-    compute_fixed_effects,
-)
-from nilearn.glm.first_level import (
-    FirstLevelModel,
-    mean_scaling,
-    run_glm,
-)
+from nilearn.glm.contrasts import compute_fixed_effects
+from nilearn.glm.first_level import FirstLevelModel, mean_scaling, run_glm
 from nilearn.glm.first_level.design_matrix import (
     check_design_matrix,
     make_first_level_design_matrix,

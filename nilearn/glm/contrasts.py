@@ -90,8 +90,6 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
         (:term:`effects<Parameter Estimate>`, variance, p-values).
 
     """
-    if con_val is None:
-        return None
     con_val = np.asarray(con_val)
     dim = 1
     if con_val.ndim > 1:
@@ -163,8 +161,6 @@ def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
             )
             continue
         contrast_ = compute_contrast(lab, res, con_val, stat_type)
-        if contrast_ is None:
-            continue
 
         contrast = contrast_ if contrast is None else contrast + contrast_
         n_contrasts += 1

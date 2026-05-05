@@ -927,8 +927,8 @@ def create_fake_bids_dataset(
     confounds_tag="desc-confounds_timeseries",
     random_state=0,
     entities=None,
-    n_voxels=4,
     n_vertices=0,
+    n_voxels=4,
     spaces=None,
 ):
     """Create a fake :term:`BIDS` dataset directory with dummy files.
@@ -987,10 +987,6 @@ def create_fake_bids_dataset(
         For example, if you want to add an 'echo' entity
         with values '1' for some files and '1' for others,
         you would pass: ``entities={"echo": ['1', '2']}``.
-
-
-    n_voxels : :obj:`int`, default=4
-        number of voxels along a given axis in the generated image.
 
     n_vertices : :obj:`int`, default = 0
         Number of vertices for surface data.
