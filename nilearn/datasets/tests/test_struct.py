@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
@@ -9,6 +10,8 @@ from sklearn.utils import Bunch
 
 from nilearn._utils.helpers import is_windows_platform
 from nilearn.datasets.struct import (
+    _get_mesh_mapping,
+    _is_vertex_order_equal,
     fetch_icbm152_2009,
     fetch_icbm152_brain_gm_mask,
     fetch_oasis_vbm,
@@ -28,7 +31,7 @@ from nilearn.datasets.tests._testing import (
     dict_to_archive,
     list_to_archive,
 )
-from nilearn.surface import PolyMesh, SurfaceImage
+from nilearn.surface import PolyMesh, SurfaceImage, load_surf_data
 
 
 def test_fetch_icbm152_2009(tmp_path, request_mocker, capsys):
@@ -155,8 +158,6 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path):
 @pytest.mark.parametrize(
     "mesh",
     [
-        "fsaverage3",
-        "fsaverage4",
         "fsaverage5",
         "fsaverage6",
         "fsaverage7",
@@ -183,10 +184,8 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
         for side in ["left", "right"]
     }
 
-    # Mock fsaverage3, 4, 6, 7 download (with actual url)
+    # Mock fsaverage6 and 7 download (with actual url)
     fs_urls = [
-        "https://osf.io/azhdf/download",
-        "https://osf.io/28uma/download",
         "https://osf.io/jzxyr/download",
         "https://osf.io/svf8k/download",
     ]
@@ -200,6 +199,42 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     check_type_fetcher(dataset)
 
     assert mesh_attributes.issubset(set(dataset.keys()))
+
+
+@pytest.mark.parametrize(
+    "mesh",
+    [
+        "fsaverage3",
+        "fsaverage4",
+    ],
+)
+def test_fetch_surf_fsaverage_wrong_order(mesh, tmp_path, monkeypatch):
+    # Define attribute list that nilearn meshs should contain
+    # (each attribute should eventually map to a _.gii.gz file
+    # named after the attribute)
+    monkeypatch.undo()
+
+    with pytest.warns(FutureWarning, match="Unsorted vertex"):
+        fsx = fetch_surf_fsaverage(mesh, data_dir=tmp_path)
+
+    fs7 = fetch_surf_fsaverage("fsaverage7", data_dir=tmp_path)
+
+    for view in [
+        "flat_left",
+        "flat_right",
+        "pial_left",
+        "pial_right",
+        "infl_left",
+        "infl_right",
+        "sphere_left",
+        "sphere_right",
+        "white_left",
+        "white_right",
+    ]:
+        fs7_coordinates, _ = load_surf_data(fs7[view])
+        fsx_coordinates, _ = load_surf_data(fsx[view])
+
+        assert _is_vertex_order_equal(fs7_coordinates, fsx_coordinates)
 
 
 def test_fetch_load_fsaverage():
@@ -223,3 +258,96 @@ def test_load_fsaverage_data_errors():
         load_fsaverage_data(mesh_type="foo")
     with pytest.raises(ValueError, match="'data_type' must be one of"):
         load_fsaverage_data(data_type="foo")
+
+
+def test_get_mesh_mapping():
+    """Test nilearn.datasets.struct._get_mesh_mapping."""
+    arr = np.array(
+        [
+            [-38.7, -19.3, 67.2],
+            [-9.7, -9.2, 46.6],
+            [-24.0, 43.1, 23.9],
+            [-59.9, 0.0, 9.0],
+            [-50.6, -49.4, 47.8],
+            [-16.7, -69.1, 61.3],
+            [-20.2, -62.7, 6.2],
+            [-2.5, 9.4, -4.6],
+            [-29.0, 23.4, -6.7],
+            [-54.5, -22.9, -6.7],
+            [-36.6, -87.1, -1.8],
+            [-35.2, -25.0, -25.6],
+            [-49.8, -28.2, 53.7],
+            [-60.0, -25.2, 27.3],
+            [-55.2, -7.4, 38.7],
+            [-21.8, -35.5, 70.8],
+            [-29.1, -52.0, 40.0],
+            [-12.6, -11.4, 71.5],
+            [-14.8, -44.4, 55.4],
+            [-30.0, 11.1, 56.6],
+        ]
+    )
+
+    arr2 = np.array(
+        [
+            [-38.7, -19.3, 67.2],
+            [-16.7, -69.1, 61.3],
+            [-9.7, -9.2, 46.6],
+            [-24.0, 43.1, 23.9],
+            [-59.9, 0.0, 9.0],
+            [-50.6, -49.4, 47.8],
+            [-36.6, -87.1, -1.8],
+            [-20.2, -62.7, 6.2],
+            [-2.5, 9.4, -4.6],
+            [-29.0, 23.4, -6.7],
+            [-54.5, -22.9, -6.7],
+            [-35.2, -25.0, -25.6],
+            [-55.2, -7.4, 38.7],
+            [-38.6, 23.4, 24.3],
+            [-30.0, 11.1, 56.6],
+            [-49.8, -28.2, 53.7],
+            [-60.0, -25.2, 27.3],
+            [-21.8, -35.5, 70.8],
+            [-29.1, -52.0, 40.0],
+            [-12.6, -11.4, 71.5],
+            [-14.8, -44.4, 55.4],
+            [-3.5, 35.5, 51.8],
+            [-9.5, 53.1, 1.7],
+            [-3.1, 17.3, 24.5],
+            [-41.4, 52.1, -4.0],
+            [-11.7, 26.4, -24.2],
+            [-35.8, 16.0, 6.5],
+            [-34.5, -30.9, 17.5],
+            [-46.5, -8.2, -9.5],
+            [-64.8, -49.1, 15.4],
+        ]
+    )
+
+    mapping = _get_mesh_mapping(arr, arr2)
+
+    assert np.array_equal(
+        mapping,
+        np.array(
+            [
+                0,
+                5,
+                1,
+                2,
+                3,
+                4,
+                10,
+                6,
+                7,
+                8,
+                9,
+                11,
+                14,
+                19,
+                12,
+                13,
+                15,
+                16,
+                17,
+                18,
+            ]
+        ),
+    )

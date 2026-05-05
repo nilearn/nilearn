@@ -3,6 +3,7 @@
 import functools
 import warnings
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -25,10 +26,13 @@ from nilearn.datasets._utils import (
     get_dataset_dir,
 )
 from nilearn.image import check_niimg, get_data, new_img_like, resampling
-from nilearn.surface import (
+from nilearn.surface.surface import (
     FileMesh,
     PolyMesh,
     SurfaceImage,
+    data_to_gifti,
+    load_surf_data,
+    mesh_to_gifti,
 )
 
 MNI152_FILE_PATH = (
@@ -855,7 +859,9 @@ def fetch_oasis_vbm(
 
 
 @fill_doc
-def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
+def fetch_surf_fsaverage(
+    mesh: str = "fsaverage5", data_dir=None
+) -> Bunch[str, Any]:
     """Download a Freesurfer fsaverage surface.
 
     File names are subject to change and only attribute names
@@ -926,26 +932,173 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
             f"{mesh!r} was provided"
         )
 
-    # Call a dataset loader depending on the value of mesh
-    if mesh in (
-        "fsaverage3",
-        "fsaverage4",
-        "fsaverage6",
-        "fsaverage7",
-        "fsaverage",
-    ):
+    if mesh == "fsaverage5":
+        return _fetch_surf_fsaverage5()
+    else:
         # rename mesh to "fsaverage" to download it once
         # regardless of whether mesh equals "fsaverage" or "fsaverage7"
         if mesh == "fsaverage7":
             mesh = "fsaverage"
+
         bunch = _fetch_surf_fsaverage(mesh, data_dir=data_dir)
-    elif mesh == "fsaverage5":
-        bunch = _fetch_surf_fsaverage5()
+
+        if mesh in ("fsaverage3", "fsaverage4"):
+            _sanitize_vertices_order(bunch, mesh, data_dir)
 
     return bunch
 
 
-def _fetch_surf_fsaverage5():
+def _is_vertex_order_equal(mesh1_coords, mesh2_coords, check_len=None):
+    """Check is the vertex order of two meshes comply for common number of
+    vertices.
+    """
+    len_common = min(len(mesh1_coords), len(mesh2_coords))
+    if check_len is not None and check_len <= len_common:
+        len_common = check_len
+
+    try:
+        np.testing.assert_array_almost_equal(
+            mesh1_coords[:len_common], mesh2_coords[:len_common], decimal=-1
+        )
+        return True
+    except AssertionError as e:
+        print(e)
+        return False
+
+
+def _sanitize_vertices_order(
+    bunch: Bunch,
+    mesh: str,
+    data_dir,
+) -> Bunch:
+    """Check first vertices have roughly same coordinates \
+       as that of fs5 otherwise we resort them.
+
+    We only check pial_left and assume if it fails
+    all meshes have be sorted.
+    """
+    bunch_fs5 = _fetch_surf_fsaverage5()
+    fs_coordinates, _ = load_surf_data(bunch.pial_left)
+    fs5_coordinates, _ = load_surf_data(bunch_fs5.pial_left)
+
+    if not _is_vertex_order_equal(fs_coordinates, fs5_coordinates, 5):
+        warnings.warn(
+            (
+                "\nUnsorted vertex coordinates detected.\n"
+                "You probably want "
+                "to clear the following data directory "
+                "and re-download the dataset:\n"
+                f"{get_dataset_dir(mesh, data_dir=data_dir)}\n"
+                "This warning will turn into an error "
+                "in Nilearn version >= 0.16."
+            ),
+            category=FutureWarning,
+            stacklevel=find_stack_level(),
+        )
+
+        data_dir = get_dataset_dir(mesh, data_dir=data_dir)
+        _resort_vertices(bunch, bunch_fs5, data_dir)
+
+
+def _resort_vertices(bunch, bunch_fsaverage5, data_dir):
+    """Reorder vertices of each mesh in fsaverage bunch according to vertex
+    order of fsaverage5.
+    """
+    fs5_coordinates, _ = load_surf_data(bunch_fsaverage5["flat_left"])
+    coords, faces = load_surf_data(bunch["flat_left"])
+
+    # it is sufficient to get mapping for only one mesh to align with
+    # fsaverage5 and use the same mapping for all meshes
+    order = _get_mesh_mapping(coords, fs5_coordinates)
+
+    for mesh in [
+        "flat_left",
+        "flat_right",
+        "pial_left",
+        "pial_right",
+        "infl_left",
+        "infl_right",
+        "sphere_left",
+        "sphere_right",
+        "white_left",
+        "white_right",
+    ]:
+        coords, faces = load_surf_data(bunch[mesh])
+
+        coords_updated, faces_updated = _apply_mesh_mapping(
+            order, coords, faces
+        )
+        mesh_to_gifti(
+            coords_updated, faces_updated, f"{data_dir / mesh}.gii.gz"
+        )
+
+    for data_view in [
+        "area_left",
+        "area_right",
+        "curv_left",
+        "curv_right",
+        "sulc_left",
+        "sulc_right",
+        "thick_left",
+        "thick_right",
+    ]:
+        data = load_surf_data(bunch[data_view])
+        data_updated = _apply_mesh_mapping(order, data, None)
+        data_to_gifti(data_updated[0], f"{data_dir / data_view}.gii.gz")
+
+
+def _get_mesh_mapping(fs_coords, fs5_coords):
+    """Return mapping that can be applied to meshes and data of ``fs_coords``
+    so that it complies with the order of ``fs5_coords`.`.
+    """
+    fs_coords_rounded = np.round(fs_coords, 1)
+    fs5_coords_rounded = np.round(fs5_coords, 1)
+
+    # create a structured dtype: treat each row as one element
+    dtype = np.dtype(
+        (
+            np.void,
+            fs_coords_rounded.dtype.itemsize * fs_coords_rounded.shape[1],
+        )
+    )
+
+    # get contiguous flattened array
+    fs_coords_view = fs_coords_rounded.view(dtype).ravel()
+    fs5_coords_view = fs5_coords_rounded.view(dtype).ravel()
+
+    # get indices that would sort fs5
+    fs5_sort_idx = np.argsort(fs5_coords_view)
+
+    # indices of fs in fs5
+    fs_idx_in_fs5 = fs5_sort_idx[
+        # indices of fs in sorted fs5
+        np.searchsorted(fs5_coords_view, fs_coords_view, sorter=fs5_sort_idx)
+    ]
+
+    # get indices that would sort fs to match order in fs5
+    return np.argsort(fs_idx_in_fs5)
+
+
+def _apply_mesh_mapping(mapping, fs_coords, fs_faces):
+    """Apply the specified mapping to ``fs_coords`` and if not None to
+    ``fs_faces``.
+    """
+    fs_coords_updated = fs_coords[mapping]
+
+    if fs_faces is not None:
+        fs_new_order_inverted = np.empty_like(mapping)
+        fs_new_order_inverted[mapping] = np.arange(mapping.size)
+
+        faces_updated = np.vectorize(lambda x: fs_new_order_inverted[x])(
+            fs_faces
+        ).astype(np.int32)
+    else:
+        faces_updated = None
+
+    return fs_coords_updated, faces_updated
+
+
+def _fetch_surf_fsaverage5() -> Bunch[str, str]:
     """Ship fsaverage5 surfaces and sulcal information with Nilearn.
 
     The source of the data is coming from nitrc based on this PR #1016.
@@ -976,7 +1129,7 @@ def _fetch_surf_fsaverage5():
     return Bunch(**data)
 
 
-def _fetch_surf_fsaverage(dataset_name, data_dir=None):
+def _fetch_surf_fsaverage(dataset_name, data_dir=None) -> Bunch[str, str]:
     """Ship fsaverage{3,4,6,7} meshes.
 
     These meshes can be used for visualization purposes, but also to run
@@ -1024,13 +1177,15 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
         attribute: dataset_dir / f"{attribute}.gii.gz"
         for attribute in dataset_attributes
     }
-    result["description"] = str(get_dataset_descr(dataset_name))
+    result["description"] = get_dataset_descr(dataset_name)
 
     return Bunch(**result)
 
 
 @fill_doc
-def load_fsaverage(mesh="fsaverage5", data_dir=None):
+def load_fsaverage(
+    mesh: str = "fsaverage5", data_dir=None
+) -> Bunch[str, PolyMesh]:
     """Load fsaverage for both hemispheres as PolyMesh objects.
 
     .. nilearn_versionadded:: 0.11.0

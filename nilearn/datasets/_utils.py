@@ -700,13 +700,13 @@ def fetch_single_file(
     return full_name
 
 
-def get_dataset_descr(ds_name):
+def get_dataset_descr(ds_name: str) -> str:
     """Return the description of a dataset."""
     try:
         with (PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst").open(
             "rb"
         ) as rst_file:
-            descr = rst_file.read()
+            descr = rst_file.read().decode("utf-8")
     except OSError:
         descr = ""
 
@@ -716,10 +716,7 @@ def get_dataset_descr(ds_name):
             stacklevel=find_stack_level(),
         )
 
-    if isinstance(descr, bytes):
-        descr = descr.decode("utf-8")
-
-    return descr
+    return str(descr)
 
 
 def movetree(src, dst) -> None:

@@ -1499,7 +1499,7 @@ class PolyData:
         if "hemi-R" in filename.stem:
             data = self.parts["right"]
 
-        _data_to_gifti(data, filename)
+        data_to_gifti(data, filename)
 
     def _set_data_dtype(self, dtype) -> None:
         if dtype is not None:
@@ -1558,7 +1558,7 @@ class SurfaceMesh(abc.ABC):
         gifti_file : :obj:`str` or :obj:`pathlib.Path`
             Filename to save the mesh to.
         """
-        _mesh_to_gifti(self.coordinates, self.faces, gifti_file)
+        mesh_to_gifti(self.coordinates, self.faces, gifti_file)
 
 
 class InMemoryMesh(SurfaceMesh):
@@ -1784,7 +1784,7 @@ def _check_data_and_mesh_compat(mesh, data) -> None:
             )
 
 
-def _mesh_to_gifti(coordinates, faces, gifti_file=None) -> gifti.GiftiImage:
+def mesh_to_gifti(coordinates, faces, gifti_file=None) -> gifti.GiftiImage:
     """Write surface mesh to gifti file on disk.
 
     Parameters
@@ -1814,7 +1814,7 @@ def _mesh_to_gifti(coordinates, faces, gifti_file=None) -> gifti.GiftiImage:
     return gifti_img
 
 
-def _data_to_gifti(data, gifti_file=None) -> gifti.GiftiImage:
+def data_to_gifti(data, gifti_file=None) -> gifti.GiftiImage:
     """Save data from Polydata to a gifti file.
 
     Parameters
