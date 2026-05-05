@@ -42,7 +42,7 @@ def test_display_methods(matplotlib_pyplot, img_3d_mni):
     display.add_overlay(img_3d_mni, threshold=0)
     display.add_edges(img_3d_mni, color="c")
     display.add_contours(
-        img_3d_mni, contours=2, linewidth=4, colors=["limegreen", "yellow"]
+        img_3d_mni, levels=2, linewidth=4, colors=["limegreen", "yellow"]
     )
 
 
@@ -60,10 +60,11 @@ def test_display_methods_invalid_threshold(matplotlib_pyplot, img_3d_mni):
     ):
         display = plot_img(img_3d_mni)
         display.add_contours(
-            img_3d_mni, contours=2, linewidth=4, threshold=-1, filled=True
+            img_3d_mni, linewidth=4, threshold=-1, filled=True
         )
 
 
+@pytest.mark.thread_unsafe
 def test_check_string_threshold(matplotlib_pyplot, img_3d_mni):
     """Checks threshold can be passed as string percentage value."""
     plot_img(img_3d_mni, threshold="97%")
@@ -78,6 +79,7 @@ def test_plot_with_axes_or_figure(matplotlib_pyplot, img_3d_mni):
     plot_img(img_3d_mni, axes=ax)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_empty_slice(matplotlib_pyplot, affine_mni):
     """Test that things don't crash when we give a map \
        with nothing above threshold. This is only a smoke test.
@@ -99,7 +101,7 @@ def test_plot_img_with_resampling(matplotlib_pyplot, binary_img, img_3d_mni):
     display = plot_img(img)
     display.add_overlay(img)
     display.add_contours(
-        img, contours=2, linewidth=4, colors=["limegreen", "yellow"]
+        img, levels=2, linewidth=4, colors=["limegreen", "yellow"]
     )
     display.add_edges(img, color="c")
 
@@ -115,10 +117,11 @@ def test_display_methods_with_display_mode_tiled(
     display.add_overlay(img_3d_mni, threshold=0)
     display.add_edges(img_3d_mni, color="c")
     display.add_contours(
-        img_3d_mni, contours=2, linewidth=4, colors=["limegreen", "yellow"]
+        img_3d_mni, levels=2, linewidth=4, colors=["limegreen", "yellow"]
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("transparency", [-1, 10])
 def test_plot_img_transparency_warning(
     matplotlib_pyplot, img_3d_ones_mni, transparency

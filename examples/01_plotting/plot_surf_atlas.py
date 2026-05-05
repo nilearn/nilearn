@@ -157,6 +157,24 @@ view
 # view.open_in_browser()
 
 # %%
+# Note that you can also specify "niivue"
+# as plotting engine to visualize surfaces.
+#
+view = view_surf(
+    surf_mesh=fsaverage_meshes["inflated"],
+    surf_map=destrieux_atlas,
+    cmap="gist_ncar",
+    symmetric_cmap=False,
+    engine="niivue",
+)
+# In a notebook, if ``view`` is the output of a cell,
+# it will be displayed below the cell
+view
+
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
+
+# %%
 # you can also use :func:`~nilearn.plotting.view_connectome`
 # to open an interactive view of the connectome.
 view = view_connectome(
