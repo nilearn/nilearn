@@ -48,6 +48,7 @@ solution. To use it, you need to create an estimator object:
 .. code-block:: python
 
      from sklearn.covariance import GraphicalLassoCV
+
      estimator = GraphicalLassoCV()
 
 And then you can fit it on the activation time series, for instance
@@ -198,13 +199,10 @@ together.
 Finally, we use the
 :class:`nilearn.connectome.GroupSparseCovarianceCV` [#]_.
 
-
-
 The results are the following:
 
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_simulated_connectome_001.png
     :target: ../auto_examples/03_connectivity/plot_simulated_connectome.html
-    :scale: 60
 
 The group-sparse estimation outputs matrices with
 the same sparsity pattern, but different values for the non-zero
@@ -251,7 +249,7 @@ In nilearn, this is implemented in
 
 .. code-block:: python
 
-     measure = ConnectivityMeasure(kind='tangent')
+     measure = ConnectivityMeasure(kind="tangent")
 
 The group connectivity is computed using all the subjects timeseries.:
 

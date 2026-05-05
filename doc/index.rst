@@ -4,7 +4,7 @@ Nilearn
 .. container:: index-paragraph
 
     Nilearn enables **approachable and versatile analyses of brain
-    volumes**. It provides statistical and machine-learning tools, with
+    volumes and surfaces**. It provides statistical and machine-learning tools, with
     **instructive documentation & open community**.
 
     It supports general linear model (GLM) based analysis and leverages
@@ -312,6 +312,7 @@ Featured examples
    :caption: Development
 
    development.rst
+   ci.rst
    maintenance.rst
    changes/whats_new.rst
    authors.rst

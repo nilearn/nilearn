@@ -42,6 +42,14 @@
 	ABSTRACT={As the size of functional and structural MRI datasets expands, it becomes increasingly important to establish a baseline from which diagnostic relevance may be determined, a processing strategy that efficiently prepares data for analysis, and a statistical approach that identifies important effects in a manner that is both robust and reproducible. In this paper, we introduce a multivariate analytic approach that optimizes sensitivity and reduces unnecessary testing. We demonstrate the utility of this mega-analytic approach by identifying the effects of age and gender on the resting-state networks (RSNs) of 603 healthy adolescents and adults (mean age: 23.4 years, range: 12–71 years). Data were collected on the same scanner, preprocessed using an automated analysis pipeline based in SPM, and studied using group independent component analysis. RSNs were identified and evaluated in terms of three primary outcome measures: time course spectral power, spatial map intensity, and functional network connectivity. Results revealed robust effects of age on all three outcome measures, largely indicating decreases in network coherence and connectivity with increasing age. Gender effects were of smaller magnitude but suggested stronger intra-network connectivity in females and more inter-network connectivity in males, particularly with regard to sensorimotor networks. These findings, along with the analysis approach and statistical framework described here, provide a useful baseline for future investigations of brain networks in health and disease.}
 }
 
+@article{Allen2012,
+	AUTHOR={Allen, Elena A and Erhardt, Erik B and Calhoun, Vince D},
+	title={Data Visualization in the Neurosciences: overcoming the Curse of Dimensionality.},
+	journal={Neuron},
+	year={2011},
+	doi={10.1016/j.neuron.2012.05.001 },
+}
+
 @article{Amunts2020,
 	title = {Julich-{Brain}: {A} {3D} probabilistic atlas of the human brain’s cytoarchitecture},
 	volume = {369},
@@ -123,6 +131,25 @@
 	author = {Pierre Bellec and Pedro Rosa-Neto and Oliver C. Lyttelton and Habib Benali and Alan C. Evans},
 	keywords = {Bootstrap, Clustering, Functional MRI, Hierarchical clustering, -Means, Multi-level analysis, Resting-state networks, Stability analysis},
 	abstract = {A variety of methods have been developed to identify brain networks with spontaneous, coherent activity in resting-state functional magnetic resonance imaging (fMRI). We propose here a generic statistical framework to quantify the stability of such resting-state networks (RSNs), which was implemented with k-means clustering. The core of the method consists in bootstrapping the available datasets to replicate the clustering process a large number of times and quantify the stable features across all replications. This bootstrap analysis of stable clusters (BASC) has several benefits: (1) it can be implemented in a multi-level fashion to investigate stable RSNs at the level of individual subjects and at the level of a group; (2) it provides a principled measure of RSN stability; and (3) the maximization of the stability measure can be used as a natural criterion to select the number of RSNs. A simulation study validated the good performance of the multi-level BASC on purely synthetic data. Stable networks were also derived from a real resting-state study for 43 subjects. At the group level, seven RSNs were identified which exhibited a good agreement with the previous findings from the literature. The comparison between the individual and group-level stability maps demonstrated the capacity of BASC to establish successful correspondences between these two levels of analysis and at the same time retain some interesting subject-specific characteristics, e.g. the specific involvement of subcortical regions in the visual and fronto-parietal networks for some subjects.}
+}
+
+@article{Bowring2019,
+    title={Exploring the impact of analysis software on task fMRI results},
+    author={Bowring, Alexander and Maumet, Camille and Nichols, Thomas E},
+    journal={Human brain mapping},
+    volume={40},
+    number={11},
+    pages={3362--3384},
+    year={2019},
+    publisher={Wiley Online Library},
+}
+
+@article{Chen2022,
+	title = {Sources of information waste in neuroimaging: mishandling structures, thinking dichotomously, and over-reducing data.},
+	journal = {Aperture Neuro},
+	year = {2022},
+	doi = {10.52294/ApertureNeuro.2022.2.ZRJI8542},
+	author = {Chen, G. and Taylor, P. A. and Stoddard, J. and Cox, R. W. and Bandettini, P. A. and Pessoa, L.},
 }
 
 @article{Chen2011,
@@ -1337,6 +1364,22 @@
 	journal = {Proceedings of the National Academy of Sciences}
 }
 
+@article {Sundermann2024,
+	author = {Sundermann, B. and Pfleiderer, B. and McLeod, A. and Mathys, C.},
+	title = {Seeing more than the Tip of the Iceberg: Approaches to Subthreshold Effects in Functional Magnetic Resonance Imaging of the Brain},
+	year = {2023},
+	doi = {10.1007/s00062-024-01422-2},
+	journal = {Clinical Neuroradiology}
+}
+
+@article {Taylor2023,
+	author = {Taylor, P. A. and Reynolds, R. C. and Calhoun, V. and Gonzalez-Castillo, J. and Handwerker, D. A. and Bandettini, P. A. and Mejia, A. F. and Chen, G},
+	title = {Highlight Results, Don't Hide Them: Enhance interpretation, reduce biases and improve reproducibility},
+	year = {2023},
+	doi = {10.1016/j.neuroimage.2023.120138},
+	journal = {Neuroimage}
+}
+
 @article{Thirion2014,
 	author={Thirion, Bertrand and Varoquaux, Gaël and Dohmatob, Elvis and Poline, Jean-Baptiste},
 	title={Which fMRI clustering gives good brain parcellations?},
@@ -1411,6 +1454,15 @@
 	volume={23},
 	year={2010},
 	url={https://inria.hal.science/inria-00512451}
+}
+
+@article{DuPre2021,
+	title = {TE-dependent analysis of multi-echo fMRI with tedana},
+	author = {DuPre, E. M. and Salo, T. and Ahmed, Z. and Bandettini, P. A. and Bottenhorn, K. L. and Caballero-Gaudes, C. and Dowdle, L. T. and Gonzalez-Castillo, J. and Heunis, S. and Kundu, P. and Laird, A. R. and Markello, R. and Markiewicz, C. J. and Moia, S. and Staden, I. and Teves, J. B. and Uruñuela, E. and Vaziri-Pashkam, M. and Whitaker, K. and Handwerker, D. A.},
+	journal={Journal of Open Source Software},
+	doi={doi:10.21105/joss.03669},
+	volume={66},
+	year={2021}
 }
 
 @article{varoquaux2010brain,

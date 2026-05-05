@@ -45,15 +45,15 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
      :scale: 50
 
-.. |plot_anat| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_003.png
+.. |plot_anat| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_004.png
      :target: ../auto_examples/01_plotting/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_004.png
+.. |plot_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_005.png
      :target: ../auto_examples/01_plotting/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_epi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_005.png
+.. |plot_epi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_006.png
      :target: ../auto_examples/01_plotting/plot_demo_plotting.html
      :scale: 50
 
@@ -143,6 +143,7 @@ different heuristics to find cutting coordinates.
    .. code-block:: python
 
      from nilearn import plotting
+
      display = plotting.plot_stat_map(img)
      display.close()
 
@@ -170,27 +171,23 @@ Different display modes
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_z_small| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_005.png
+.. |plot_xz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_005.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_xz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_006.png
+.. |plot_yx| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_006.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_yx| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_007.png
+.. |plot_yz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_007.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_yz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_008.png
+.. |plot_tiled| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_008.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_tiled| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_009.png
-     :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
-     :scale: 50
-
-.. |plot_mosaic| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_010.png
+.. |plot_mosaic| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_009.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 30
 
@@ -224,11 +221,6 @@ Different display modes
 |plot_y_small|     ``display_mode="y", cut_coords=1``
                    |hack|
                    Cutting in the y direction, with only 1 cut, that is
-                   automatically positioned
-
-|plot_z_small|     ``display_mode="z", cut_coords=1, colorbar=False``
-                   |hack|
-                   Cutting in the z direction, with only 1 cut, that is
                    automatically positioned
 
 |plot_xz|          ``display_mode="xz", cut_coords=[36, 60]``
@@ -279,13 +271,11 @@ image below
 
 .. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_colormaps_001.png
      :target: ../auto_examples/01_plotting/plot_colormaps.html
-     :scale: 50
 
 These colormaps can be used as any other matplotlib colormap.
 
 .. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_colormaps_002.png
      :target: ../auto_examples/01_plotting/plot_colormaps.html
-     :scale: 50
 
 
 .. _display_modules:
@@ -302,19 +292,19 @@ plot, and has methods to add overlays, contours or edge maps:
 
         display = plotting.plot_epi(...)
 
-.. |plot_edges| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_013.png
+.. |plot_edges| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_012.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_contours| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_014.png
+.. |plot_contours| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_013.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_fill| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_015.png
+.. |plot_fill| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_014.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_markers| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_016.png
+.. |plot_markers| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_015.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
@@ -385,6 +375,7 @@ To display the figure when running a script, you need to call
 .. code-block:: python
 
      from nilearn import plotting
+
      plotting.show()
 
 The simplest way to output an image file from the plotting functions is
@@ -393,7 +384,8 @@ to specify the ``output_file`` argument:
 .. code-block:: python
 
      from nilearn import plotting
-     plotting.plot_stat_map(img, output_file='pretty_brain.png')
+
+     plotting.plot_stat_map(img, output_file="pretty_brain.png")
 
 In this case, the display is closed automatically and the plotting
 function returns None.
@@ -406,8 +398,9 @@ that can be used to save the plot to an image file:
 .. code-block:: python
 
      from nilearn import plotting
+
      display = plotting.plot_stat_map(img)
-     display.savefig('pretty_brain.png')
+     display.savefig("pretty_brain.png")
      # Remember to close the display
      display.close()
 
@@ -419,7 +412,7 @@ Surface plotting
 Plotting functions required to plot surface data or statistical maps
 on a brain surface.
 
-.. versionadded:: 0.3
+.. nilearn_versionadded:: 0.3
 
 .. |plot_surf_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_surf_atlas_001.png
      :target: ../auto_examples/01_plotting/plot_surf_atlas.html
@@ -462,11 +455,11 @@ interactive mode is available:
 - :ref:`interactive-surface-plotting`
 - :ref:`interactive-connectome-plotting`
 
-.. versionadded:: 0.5
+.. nilearn_versionadded:: 0.5
 
    Interactive plotting is new in nilearn 0.5
 
-.. versionadded:: 0.9.0
+.. nilearn_versionadded:: 0.9.0
 
     Nilearn offers the possibility to select different plotting engines
     (either `matplotlib`_ or `plotly`_) for most surface plotting functions.
@@ -517,8 +510,9 @@ cortical surface:
 .. code-block:: python
 
      from nilearn import plotting, datasets
-     img = datasets.fetch_localizer_button_task()['tmap']
-     view = plotting.view_img_on_surf(img, threshold='90%', surf_mesh='fsaverage')
+
+     img = datasets.fetch_localizer_button_task()["tmap"]
+     view = plotting.view_img_on_surf(img, threshold="90%", surf_mesh="fsaverage")
 
 If you are running a notebook, displaying ``view`` will embed an interactive
 plot (this is the case for all interactive plots produced by nilearn's "view"
@@ -553,10 +547,15 @@ a cortical mesh:
 .. code-block:: python
 
      from nilearn import plotting, datasets
+
      destrieux = datasets.fetch_atlas_surf_destrieux()
      fsaverage = datasets.fetch_surf_fsaverage()
-     view = plotting.view_surf(fsaverage['infl_left'], destrieux['map_left'],
-                               cmap='gist_ncar', symmetric_cmap=False)
+     view = plotting.view_surf(
+         fsaverage["infl_left"],
+         destrieux["map_left"],
+         cmap="gist_ncar",
+         symmetric_cmap=False,
+     )
      view.open_in_browser()
 
 
@@ -573,15 +572,21 @@ cortical mesh:
 .. code-block:: python
 
      from nilearn import plotting, datasets, surface
+
      fsaverage = datasets.fetch_surf_fsaverage()
-     motor_images = datasets.fetch_neurovault_motor_task()
+     motor_images = datasets.load_sample_motor_activation_image()
      mesh = surface.load_surf_mesh(fsaverage.pial_right)
      map = surface.vol_to_surf(motor_images.images[0], mesh)
-     fig = plotting.plot_surf_stat_map(mesh, map, hemi='right',
-                                       view='lateral', colorbar=True,
-                                       threshold=1.2,
-                                       bg_map=fsaverage.sulc_right,
-                                       engine='plotly')
+     fig = plotting.plot_surf_stat_map(
+         mesh,
+         map,
+         hemi="right",
+         view="lateral",
+         colorbar=True,
+         threshold=1.2,
+         bg_map=fsaverage.sulc_right,
+         engine="plotly",
+     )
      fig.show()
 
 .. image:: ../images/plotly_plot_surf_stat_map.png
@@ -598,7 +603,7 @@ use :func:`view_markers`.
 
 .. code-block:: python
 
-     view = plotting.view_connectome(correlation_matrix, coords, edge_threshold='90%')
+     view = plotting.view_connectome(correlation_matrix, coords, edge_threshold="90%")
      view.open_in_browser()
 
 
@@ -615,9 +620,11 @@ use :func:`view_markers`.
 .. code-block:: python
 
      from nilearn import plotting
+
      dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
-     view = plotting.view_markers(dmn_coords, ['red', 'cyan', 'magenta', 'orange'],
-                                  marker_size=10)
+     view = plotting.view_markers(
+         dmn_coords, ["red", "cyan", "magenta", "orange"], marker_size=10
+     )
      view.open_in_browser()
 
 
@@ -634,10 +641,11 @@ Interactive visualization of statistical map slices
 .. code-block:: python
 
      from nilearn import plotting, datasets
-     img = datasets.fetch_localizer_button_task()['tmap']
-     html_view = plotting.view_img(img, threshold=2, vmax=4,
-                                   cut_coords=[-42, -16, 52],
-                                   title="Motor contrast")
+
+     img = datasets.fetch_localizer_button_task()["tmap"]
+     html_view = plotting.view_img(
+         img, threshold=2, vmax=4, cut_coords=[-42, -16, 52], title="Motor contrast"
+     )
 
 in a Jupyter notebook, if ``html_view`` is not requested, the viewer will be inserted in the notebook:
 

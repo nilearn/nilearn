@@ -1,7 +1,5 @@
 ---
-# Documentation is built using Github Actions.
-# CircleCI is only used to download the artifacts in order to host
-# and deploy them.
+# See https://nilearn.github.io/dev/ci.html for details.
 
 version: 2.1
 

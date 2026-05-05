@@ -1,8 +1,13 @@
 """Utility functions for the permuted least squares method."""
 
+from warnings import warn
+
 import numpy as np
 from scipy import linalg
 from scipy.ndimage import label
+
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 
 
 def calculate_tfce(
@@ -11,7 +16,7 @@ def calculate_tfce(
     E=0.5,
     H=2,
     dh="auto",
-    two_sided_test=True,
+    two_sided_test: bool = True,
 ):
     """Calculate threshold-free cluster enhancement values for scores maps.
 
@@ -59,7 +64,7 @@ def calculate_tfce(
     ----------
     .. [1] Smith, S. M., & Nichols, T. E. (2009).
        Threshold-free cluster enhancement: addressing problems of smoothing,
-       threshold dependence and localisation in cluster inference.
+       threshold dependence and localization in cluster inference.
        Neuroimage, 44(1), 83-98.
     """
     tfce_4d = np.zeros_like(arr4d)
@@ -68,18 +73,8 @@ def calculate_tfce(
     for i_regressor in range(arr4d.shape[3]):
         arr3d = arr4d[..., i_regressor]
 
-        # Get signs / threshs
-        if two_sided_test:
-            signs = [-1, 1]
-            max_score = np.max(np.abs(arr3d))
-        else:
-            signs = [1]
-            max_score = np.max(arr3d)
-
-        step = max_score / 100 if dh == "auto" else dh
-
-        # Set based on determined step size
-        score_threshs = np.arange(step, max_score + step, step)
+        signs = [-1, 1] if two_sided_test else [1]
+        score_threshs = _return_score_threshs(arr3d, dh, two_sided_test)
 
         # If we apply the sign first...
         for sign in signs:
@@ -140,6 +135,31 @@ def calculate_tfce(
     return tfce_4d
 
 
+def _return_score_threshs(arr3d, dh, two_sided_test):
+    """Compute list of score threshold to use for TFCE."""
+    max_score = (
+        np.nanmax(np.abs(arr3d)) if two_sided_test else np.nanmax(arr3d)
+    )
+
+    number_steps = 100 if dh == "auto" else round(max_score / dh)
+    if number_steps < 10:
+        warn(
+            f"Not enough steps for TFCE. Got: {number_steps=}. "
+            "Setting it to 10.",
+            stacklevel=find_stack_level(),
+        )
+        number_steps = 10
+    if number_steps > 1000:
+        warn(
+            f"Too many steps for TFCE. Got: {number_steps=}. "
+            "Setting it to 1000.",
+            stacklevel=find_stack_level(),
+        )
+        number_steps = 1000
+
+    return np.linspace(0, max_score, number_steps + 1)[1:]
+
+
 def null_to_p(test_values, null_array, alternative="two-sided"):
     """Return p-value for test value(s) against null array.
 
@@ -171,11 +191,9 @@ def null_to_p(test_values, null_array, alternative="two-sided"):
     This function assumes that the null distribution for two-sided tests is
     symmetric around zero.
     """
-    if alternative not in {"two-sided", "larger", "smaller"}:
-        raise ValueError(
-            'Argument "alternative" must be one of '
-            '["two-sided", "larger", "smaller"]'
-        )
+    check_parameter_in_allowed(
+        alternative, {"two-sided", "larger", "smaller"}, "alternative"
+    )
 
     return_first = isinstance(test_values, (float, int))
     test_values = np.atleast_1d(test_values)
@@ -396,7 +414,7 @@ def t_score_with_covars_and_normalized_design(
         Targets variates. F-ordered is better for efficient computation.
 
     covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None, \
-            optional
+            default=None
         Confounding variates.
 
     Returns

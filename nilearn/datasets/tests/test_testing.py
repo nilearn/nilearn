@@ -8,7 +8,8 @@ import requests
 
 from nilearn import image
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn.datasets.tests import _testing
+from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
+from nilearn.datasets.tests.conftest import Response
 
 
 def test_sender_key_order(request_mocker):
@@ -135,7 +136,7 @@ def test_sender_img(request_mocker, tmp_path):
     assert img.shape == (10, 11, 12, 17)
 
 
-class _MyResponse(_testing.Response):
+class _MyResponse(Response):
     def json(self):
         return '{"count": 1}'
 
@@ -144,7 +145,7 @@ def test_sender_response(request_mocker):
     request_mocker.url_mapping["*example.org/a"] = _MyResponse("", "")
 
     def f(match, request):  # noqa: ARG001
-        resp = _testing.Response(b"hello", request.url)
+        resp = Response(b"hello", request.url)
         resp.headers["cookie"] = "abc"
         return resp
 
@@ -194,7 +195,7 @@ def test_dict_to_archive(tmp_path):
             length=1, byteorder="big", signed=False
         ),
     }
-    targz = _testing.dict_to_archive(archive_spec)
+    targz = dict_to_archive(archive_spec)
     extract_dir = tmp_path / "extract"
     extract_dir.mkdir()
     archive_path = tmp_path / "archive"
@@ -210,7 +211,7 @@ def test_dict_to_archive(tmp_path):
     with (extract_dir / "empty_data" / "labels.csv").open() as f:
         assert f.read() == ""
 
-    zip_archive = _testing.dict_to_archive(
+    zip_archive = dict_to_archive(
         {"readme.txt": "hello", "archive": targz}, "zip"
     )
     with archive_path.open("wb") as f:
@@ -222,7 +223,7 @@ def test_dict_to_archive(tmp_path):
     ):
         assert f.read() == targz
 
-    from_list = _testing.list_to_archive(archive_spec.keys())
+    from_list = list_to_archive(archive_spec.keys())
     with archive_path.open("wb") as f:
         f.write(from_list)
 

@@ -16,10 +16,6 @@ numpy array, corresponding to the data inside the mask.
     :ref:`for a similar example using cortical surface input data
     <sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
 
-Author: Franz Liem
-
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -69,14 +65,13 @@ seed_masker = NiftiSpheresMasker(
     pcc_coords,
     radius=8,
     detrend=True,
-    standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
-    t_r=2,
+    t_r=dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
+    verbose=1,
 )
 
 # %%
@@ -96,14 +91,13 @@ from nilearn.maskers import NiftiMasker
 brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
-    standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
-    t_r=2,
+    t_r=dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
+    verbose=1,
 )
 
 # %%
@@ -141,6 +135,7 @@ plt.plot(brain_time_series[:, [10, 45, 100, 5000, 10000]])
 plt.title("Time series from 5 random voxels")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
+plt.show()
 
 # %%
 # Performing the seed-to-voxel correlation analysis

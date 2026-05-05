@@ -19,6 +19,11 @@ Classes
    ReNA
    HierarchicalKMeans
 
+.. autoclasstree:: nilearn.regions
+   :full:
+
+
+
 Functions
 ---------
 

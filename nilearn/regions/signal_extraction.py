@@ -5,21 +5,29 @@ Two ways of defining regions are supported: as labels in a single 3D image,
 or as weights in one image per region (maps).
 """
 
-# Author: Philippe Gervais
 import warnings
+from functools import partial
 
 import numpy as np
+from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from scipy import linalg, ndimage
 
-from .. import _utils, masking
-from .._utils.niimg import safe_get_data
-from ..image import new_img_like
+from nilearn import masking
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.numpy_conversions import as_ndarray
+from nilearn._utils.param_validation import (
+    check_params,
+    check_reduction_strategy,
+)
+from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 
 INF = 1000 * np.finfo(np.float32).eps
 
 
-def _check_shape_compatibility(img1, img2, dim=None):
+def _check_shape_compatibility(img1, img2, dim=None) -> None:
     """Check that shapes match for dimensions going from 0 to dim-1.
 
     Parameters
@@ -28,23 +36,23 @@ def _check_shape_compatibility(img1, img2, dim=None):
         See :ref:`extracting_data`.
         Image to extract the data from.
 
-    img2 : Niimg-like object, optional
+    img2 : Niimg-like object
         See :ref:`extracting_data`.
         Contains map or mask.
 
-    dim : :obj:`int`, optional
+    dim : :obj:`int`, default=None
         Integer slices a mask for a specific dimension.
 
     """
     if dim is None:
-        img2 = _utils.check_niimg_3d(img2)
+        img2 = check_niimg_3d(img2)
         if img1.shape[:3] != img2.shape:
             raise ValueError("Images have incompatible shapes.")
     elif img1.shape[:dim] != img2.shape[:dim]:
         raise ValueError("Images have incompatible shapes.")
 
 
-def _check_affine_equality(img1, img2):
+def _check_affine_equality(img1: Nifti1Image, img2: Nifti1Image) -> None:
     """Validate affines of 2 images.
 
     Parameters
@@ -53,7 +61,7 @@ def _check_affine_equality(img1, img2):
         See :ref:`extracting_data`.
         Image to extract the data from.
 
-    img2 : Niimg-like object, optional
+    img2 : Niimg-like object
         See :ref:`extracting_data`.
         Contains map or mask.
 
@@ -78,11 +86,11 @@ def _check_shape_and_affine_compatibility(img1, img2=None, dim=None):
         See :ref:`extracting_data`.
         Image to extract the data from.
 
-    img2 : Niimg-like object, optional
+    img2 : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Contains map or mask.
 
-    dim : :obj:`int`, optional
+    dim : :obj:`int`, default=None
         Integer slices a mask for a specific dimension.
 
     Returns
@@ -97,7 +105,7 @@ def _check_shape_and_affine_compatibility(img1, img2=None, dim=None):
     _check_shape_compatibility(img1, img2, dim=dim)
 
     if dim is None:
-        img2 = _utils.check_niimg_3d(img2)
+        img2 = check_niimg_3d(img2)
     _check_affine_equality(img1, img2)
 
     return True
@@ -109,7 +117,7 @@ def _get_labels_data(
     mask_img=None,
     background_label=0,
     dim=None,
-    keep_masked_labels=True,
+    keep_masked_labels=False,
 ):
     """Get the label data.
 
@@ -128,7 +136,7 @@ def _get_labels_data(
         By default, the label zero is used to denote an absence of region.
         Use background_label to change it.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Mask to apply to labels before extracting signals.
         Every point outside the mask is considered as background
@@ -137,8 +145,9 @@ def _get_labels_data(
     background_label : number, default=0
         Number representing background in labels_img.
 
-    dim : :obj:`int`, optional
+    dim : :obj:`int`, default=None
         Integer slices mask for a specific dimension.
+
     %(keep_masked_labels)s
 
     Returns
@@ -164,23 +173,20 @@ def _get_labels_data(
 
     if keep_masked_labels:
         labels = list(np.unique(labels_data))
+        # TODO (nilearn >= 0.15.0)
         warnings.warn(
-            'Applying "mask_img" before '
-            "signal extraction may result in empty region signals in the "
-            "output. These are currently kept. "
-            "Starting from version 0.13, the default behavior will be "
-            "changed to remove them by setting "
-            '"keep_masked_labels=False". '
-            '"keep_masked_labels" parameter will be removed '
-            "in version 0.15.",
-            DeprecationWarning,
-            stacklevel=3,
+            (
+                "In version 0.15.0, "
+                '"keep_masked_labels" parameter will be removed.'
+            ),
+            FutureWarning,
+            stacklevel=find_stack_level(),
         )
 
     # Consider only data within the mask
     use_mask = _check_shape_and_affine_compatibility(target_img, mask_img, dim)
     if use_mask:
-        mask_img = _utils.check_niimg_3d(mask_img)
+        mask_img = check_niimg_3d(mask_img)
         mask_data = safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
         labels_before_mask = {int(label) for label in np.unique(labels_data)}
@@ -198,7 +204,7 @@ def _get_labels_data(
                 "masked labels image only contains "
                 f"{len(labels_after_mask)} labels "
                 "(including background).",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
     if not keep_masked_labels:
@@ -210,36 +216,8 @@ def _get_labels_data(
     return labels, labels_data
 
 
-def _check_reduction_strategy(strategy: str):
-    """Check that the provided strategy is supported.
-
-    Parameters
-    ----------
-    strategy : :obj:`str`
-        The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation.
-
-    """
-    available_reduction_strategies = {
-        "mean",
-        "median",
-        "sum",
-        "minimum",
-        "maximum",
-        "standard_deviation",
-        "variance",
-    }
-
-    if strategy not in available_reduction_strategies:
-        raise ValueError(
-            f"Invalid strategy '{strategy}'. "
-            f"Valid strategies are {available_reduction_strategies}."
-        )
-
-
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
-@_utils.fill_doc
+@fill_doc
 def img_to_signals_labels(
     imgs,
     labels_img,
@@ -247,8 +225,9 @@ def img_to_signals_labels(
     background_label=0,
     order="F",
     strategy="mean",
-    keep_masked_labels=True,
-    return_masked_atlas=False,
+    keep_masked_labels=False,
+    return_masked_atlas=True,
+    n_jobs=1,
 ):
     """Extract region signals from image.
 
@@ -279,16 +258,23 @@ def img_to_signals_labels(
     order : :obj:`str`, default='F'
         Ordering of output array ("C" or "F").
 
-    strategy : :obj:`str`, default="mean"
-        The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation.
+    %(strategy)s
+
     %(keep_masked_labels)s
 
-    return_masked_atlas : :obj:`bool`, default=False
+    %(n_jobs)s
+
+    return_masked_atlas : :obj:`bool`, default=True
         If True, the masked atlas is returned.
-        deprecated in version 0.13, to be removed in 0.15.
-        after 0.13, the masked atlas will always be returned.
+
+        .. nilearn_versionchanged :: 0.13.1
+
+            Default changed to True.
+
+        .. nilearn_deprecated:: 0.13.0
+
+            This parameter will be removed in versions >= 0.15.0
+            and the masked atlas will always be returned.
 
     Returns
     -------
@@ -304,7 +290,6 @@ def img_to_signals_labels(
 
     masked_atlas : Niimg-like object
         Regions definition as labels after applying the mask.
-        returned if `return_masked_atlas` is True.
 
     See Also
     --------
@@ -314,13 +299,15 @@ def img_to_signals_labels(
         e.g. clusters
 
     """
-    labels_img = _utils.check_niimg_3d(labels_img)
+    check_params(locals())
 
-    _check_reduction_strategy(strategy)
+    labels_img = check_niimg_3d(labels_img)
+
+    check_reduction_strategy(strategy)
 
     # TODO: Make a special case for list of strings
     # (load one image at a time).
-    imgs = _utils.check_niimg_4d(imgs)
+    imgs = check_niimg_4d(imgs)
     labels, labels_data = _get_labels_data(
         imgs,
         labels_img,
@@ -332,14 +319,14 @@ def img_to_signals_labels(
     data = safe_get_data(imgs, ensure_finite=True)
     target_datatype = np.float32 if data.dtype == np.float32 else np.float64
     # Nilearn issue: 2135, PR: 2195 for why this is necessary.
-    signals = np.ndarray(
-        (data.shape[-1], len(labels)), order=order, dtype=target_datatype
+    reduction_function = partial(
+        getattr(ndimage, strategy), labels=labels_data, index=labels
     )
-    reduction_function = getattr(ndimage, strategy)
-    for n, img in enumerate(np.rollaxis(data, -1)):
-        signals[n] = np.asarray(
-            reduction_function(img, labels=labels_data, index=labels)
-        )
+    # Parallel reduction across samples
+    signals = Parallel(n_jobs=n_jobs)(
+        delayed(reduction_function)(img) for img in np.rollaxis(data, -1)
+    )
+    signals = np.asarray(signals, dtype=target_datatype, order=order)
     # Set to zero signals for missing labels. Workaround for Scipy behavior
     if keep_masked_labels:
         missing_labels = set(labels) - set(np.unique(labels_data))
@@ -354,13 +341,16 @@ def img_to_signals_labels(
         )
         return signals, labels, masked_atlas
     else:
+        # TODO (nilearn >= 0.15.0)
         warnings.warn(
-            'After version 0.13. "img_to_signals_labels" will also return the '
-            '"masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
-            "used to toggle this behavior. In version 0.15, "
-            '"return_masked_atlas" parameter will be removed.',
-            DeprecationWarning,
-            stacklevel=1,
+            (
+                "In version 0.15, "
+                '"return_masked_atlas" parameter will be removed '
+                "and the masked atlas will always be returned. "
+                'Set "return_masked_atlas" to True to avoid this warning.'
+            ),
+            FutureWarning,
+            stacklevel=find_stack_level(),
         )
         return signals, labels
 
@@ -375,7 +365,7 @@ def signals_to_img_labels(
 
     labels_img, mask_img must have the same shapes and affines.
 
-    .. versionchanged:: 0.9.2
+    .. nilearn_versionchanged:: 0.9.2
         Support 1D signals.
 
     Parameters
@@ -416,10 +406,14 @@ def signals_to_img_labels(
         images e.g. clusters
 
     """
-    labels_img = _utils.check_niimg_3d(labels_img)
+    labels_img = check_niimg_3d(labels_img)
 
     labels, labels_data = _get_labels_data(
-        labels_img, labels_img, mask_img, background_label
+        labels_img,
+        labels_img,
+        mask_img,
+        background_label,
+        keep_masked_labels=False,
     )
 
     signals = np.asarray(signals)
@@ -449,8 +443,8 @@ def signals_to_img_labels(
     return new_img_like(labels_img, data, labels_img.affine)
 
 
-@_utils.fill_doc
-def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
+@fill_doc
+def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
     """Extract region signals from image.
 
     This function is applicable to regions defined by maps.
@@ -470,6 +464,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
         Mask to apply to regions before extracting signals.
         Every point outside the mask is considered
         as background (i.e. outside of any region).
+
     %(keep_masked_maps)s
 
     Returns
@@ -490,8 +485,10 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
         maps e.g. ICA
 
     """
-    maps_img = _utils.check_niimg_4d(maps_img)
-    imgs = _utils.check_niimg_4d(imgs)
+    check_params(locals())
+
+    maps_img = check_niimg_4d(maps_img)
+    imgs = check_niimg_4d(imgs)
 
     _check_shape_and_affine_compatibility(imgs, maps_img, 3)
 
@@ -501,26 +498,25 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
 
     use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
     if use_mask:
-        mask_img = _utils.check_niimg_3d(mask_img)
+        mask_img = check_niimg_3d(mask_img)
         labels_before_mask = {int(label) for label in labels}
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
             safe_get_data(mask_img, ensure_finite=True),
             keep_empty=keep_masked_maps,
         )
-        maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
+        maps_mask = as_ndarray(maps_mask, dtype=bool)
         if keep_masked_maps:
+            # TODO (nilearn >= 0.15.0)
             warnings.warn(
                 'Applying "mask_img" before '
                 "signal extraction may result in empty region signals in the "
-                "output. These are currently kept. "
-                "Starting from version 0.13, the default behavior will be "
-                "changed to remove them by setting "
-                '"keep_masked_maps=False". '
+                "output. These are currently kept.\n"
                 '"keep_masked_maps" parameter will be removed '
-                "in version 0.15.",
-                DeprecationWarning,
-                stacklevel=2,
+                "in version 0.15. "
+                'Set "keep_masked_maps=False" to silence this warning.',
+                FutureWarning,
+                stacklevel=find_stack_level(),
             )
         else:
             labels_after_mask = {int(label) for label in labels}
@@ -534,7 +530,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
                     f"Out of {len(labels_before_mask)} maps, the "
                     "masked map image only contains "
                     f"{len(labels_after_mask)} maps.",
-                    stacklevel=2,
+                    stacklevel=find_stack_level(),
                 )
 
     data = safe_get_data(imgs, ensure_finite=True)
@@ -581,20 +577,20 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     nilearn.maskers.NiftiMapsMasker
 
     """
-    maps_img = _utils.check_niimg_4d(maps_img)
+    maps_img = check_niimg_4d(maps_img)
     maps_data = safe_get_data(maps_img, ensure_finite=True)
 
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
 
     use_mask = _check_shape_and_affine_compatibility(maps_img, mask_img)
     if use_mask:
-        mask_img = _utils.check_niimg_3d(mask_img)
+        mask_img = check_niimg_3d(mask_img)
         maps_data, maps_mask, _ = _trim_maps(
             maps_data,
             safe_get_data(mask_img, ensure_finite=True),
             keep_empty=True,
         )
-        maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
+        maps_mask = as_ndarray(maps_mask, dtype=bool)
         assert maps_mask.shape == maps_data.shape[:3]
 
     data = np.dot(region_signals, maps_data[maps_mask, :].T)
@@ -646,18 +642,18 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
 
     """
     maps = maps.copy()
-    sums = abs(maps[_utils.as_ndarray(mask, dtype=bool), :]).sum(axis=0)
+    sums = abs(maps[as_ndarray(mask, dtype=bool), :]).sum(axis=0)
 
     n_regions = maps.shape[-1] if keep_empty else (sums > 0).sum()
     trimmed_maps = np.zeros(
-        maps.shape[:3] + (n_regions,), dtype=maps.dtype, order=order
+        (*maps.shape[:3], n_regions), dtype=maps.dtype, order=order
     )
     # use int8 instead of np.bool for Nifti1Image
     maps_mask = np.zeros(mask.shape, dtype=np.int8)
 
     # iterate on maps
     p = 0
-    mask = _utils.as_ndarray(mask, dtype=bool, order="C")
+    mask = as_ndarray(mask, dtype=bool, order="C")
     for n, _ in enumerate(np.rollaxis(maps, -1)):
         if not keep_empty and sums[n] == 0:
             continue

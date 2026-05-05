@@ -45,6 +45,8 @@
 
 .. _Audrey Duran: https://github.com/AudreyDuran
 
+.. _Basile Pinsard: https://github.com/bpinsard
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -52,6 +54,10 @@
 .. _Binh Nguyen: https://tbng.github.io/
 
 .. _Caglar Cakan: https://github.com/caglorithm
+
+.. _Chloe Hampson: https://github.com/chlohamp
+
+.. _Chris Rorden: https://github.com/neurolabusc
 
 .. _Chris Gorgolewski: https://chrisgorgolewski.org/
 
@@ -111,6 +117,8 @@
 
 .. _Guillaume Lemaitre: https://glemaitre.github.io/
 
+.. _Gustav Magnusson: https://github.com/gurraburra
+
 .. _Hande Gözükan: https://github.com/hndgzkn
 
 .. _Hao-Ting Wang: https://wanghaoting.com/
@@ -131,9 +139,11 @@
 
 .. _Jason Kai: https://github.com/kaitj
 
+.. _Jason D. Yeatman: https://edneuro.stanford.edu/
+
 .. _Javier Rasero: https://jrasero.github.io/
 
-.. _Jean Kossaifi: http://jeankossaifi.com/
+.. _Jean Kossaifi: https://jeankossaifi.com/
 
 .. _Jean-Rémi King: https://github.com/kingjr
 
@@ -145,13 +155,19 @@
 
 .. _Jerome-Alexis Chevalier: https://github.com/ja-che
 
+.. _Johanna Bayer: https://opencodereview.netlify.app/
+
 .. _Johannes Wiesner: https://github.com/JohannesWiesner
+
+.. _John T. Johnson: https://github.com/JohnAtl
 
 .. _Jon Haitz Legarreta Gorrono: https://github.com/jhlegarreta
 
 .. _Jona Sassenhagen: https://github.com/jona-sassenhagen
 
 .. _Jordi Huguet: https://github.com/jhuguetn
+
+.. _Joseph Paillard: https://github.com/jpaillard
 
 .. _Joshua Teves: https://github.com/jbteves
 
@@ -172,6 +188,8 @@
 .. _Kshitij Chawla: https://github.com/kchawla-pi
 
 .. _Kun CHEN: https://chenkun.me
+
+.. _Lee Newberg: https://github.com/Leengit
 
 .. _Leonard Sasse: https://github.com/LeSasse
 
@@ -211,9 +229,13 @@
 
 .. _Michael Waskom: https://mwaskom.github.io/
 
-.. _Michelle Wang: https://github.com/michellewang
+.. _Michelle Wang: https://michellewang.github.io
+
+.. _Milton Camacho: https://github.com/miltoncamacho
 
 .. _Mohammad Torabi: https://github.com/mtorabi59
+
+.. _Mohammad Sadeghi Hardengi: https://github.com/mohammedsadeghi
 
 .. _Moritz Boos: https://github.com/mjboos
 
@@ -228,6 +250,8 @@
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
 
 .. _Nikhil Krish: https://github.com/NIkhilgKrish
+
+.. _Noah C. Benson: https://nben.net/
 
 .. _Oliver Warrington: https://github.com/OliverWarrington
 
@@ -245,9 +269,11 @@
 
 .. _Philippe Gervais: https://github.com/pgervais
 
-.. _Pierre Bellec: https://github.com/pbellec
+.. _Pierre Bellec: https://github.com/lunebellec
 
 .. _Pierre Glaser: https://pierreglaser.github.io/
+
+.. _Pierre-Louis Barbarant: https://github.com/pbarbarant
 
 .. _Pierre-Olivier Quirion: https://github.com/poquirion
 
@@ -259,11 +285,15 @@
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
+.. _Rishika Kapil: https://github.com/RishikaKaps
+
 .. _Robert Luke: https://github.com/rob-luke
 
 .. _Robert Williamson: https://github.com/RobWilliamson15
 
 .. _Roberto Guidotti: https://github.com/robbisg
+
+.. _Rohan Thomas Jepegnanam: https://github.com/rohan3412
 
 .. _Ronald Phlypo: https://github.com/rphlypo
 
@@ -273,13 +303,17 @@
 
 .. _Sachin Patalasingh: https://github.com/sachin-bsai
 
-.. _Sage Hahn: https://sagehahn.com/
+.. _Saeed Babadi: https://github.com/saeed-neuro
+
+.. _Sage Hahn: https://github.com/sahahn
 
 .. _Salma Bougacha: https://github.com/salma1601
 
 .. _Sam Buck Johnson: https://github.com/sambjohnson
 
 .. _Sami Jawhar: https://github.com/sjawhar
+
+.. _Sanjana Soni: https://github.com/isha822
 
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
@@ -299,6 +333,8 @@
 
 .. _Tarun Samanta: https://github.com/SamantaTarun
 
+.. _Taylor Hanayik: https://github.com/hanayik
+
 .. _Taylor Salo: https://tsalo.github.io/
 
 .. _Tharun K: https://github.com/tharun634
@@ -312,6 +348,8 @@
 .. _Vasco Diogo: https://github.com/vascosa
 
 .. _Victoria Shevchenko: https://github.com/victoris93
+
+.. _Victoria McCray: https://github.com/victoriamccray
 
 .. _Vincent Michel: https://github.com/vmichel
 

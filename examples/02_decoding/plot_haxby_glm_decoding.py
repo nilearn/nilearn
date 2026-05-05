@@ -25,12 +25,9 @@ More specifically:
 import numpy as np
 import pandas as pd
 
-from nilearn import datasets
+from nilearn.datasets import fetch_haxby
 
-haxby_dataset = datasets.fetch_haxby()
-
-# repetition has to be known
-t_r = 2.5
+haxby_dataset = fetch_haxby()
 
 # %%
 # Load the behavioral data
@@ -59,9 +56,9 @@ for run in unique_runs:
     # get the number of scans per run, then the corresponding
     # vector of frame times
     n_scans = len(conditions_run)
-    frame_times = t_r * np.arange(n_scans)
+    frame_times = haxby_dataset.t_r * np.arange(n_scans)
     # each event last the full TR
-    duration = t_r * np.ones(n_scans)
+    duration = haxby_dataset.t_r * np.ones(n_scans)
     # Define the events object
     events_ = pd.DataFrame(
         {
@@ -87,11 +84,13 @@ run_label = []
 from nilearn.glm.first_level import FirstLevelModel
 
 glm = FirstLevelModel(
-    t_r=t_r,
+    t_r=haxby_dataset.t_r,
     mask_img=haxby_dataset.mask,
     high_pass=0.008,
     smoothing_fwhm=4,
     memory="nilearn_cache",
+    memory_level=1,
+    verbose=1,
 )
 
 # %%
@@ -121,28 +120,19 @@ for run in unique_runs:
 # and have the :term:`contrast`, we can quickly create a summary report.
 
 from nilearn.image import mean_img
-from nilearn.reporting import make_glm_report
 
-mean_img_ = mean_img(func_filename, copy_header=True)
-report = make_glm_report(
-    glm,
+mean_img_ = mean_img(func_filename)
+report = glm.generate_report(
     contrasts=conditions,
     bg_img=mean_img_,
 )
 
-report  # This report can be viewed in a notebook
-
 # %%
-# In a jupyter notebook, the report will be automatically inserted, as above.
+#
+# .. include:: ../../../examples/report_note.rst
+#
+report
 
-# We can access the report via a browser:
-# report.open_in_browser()
-
-# or we can save as an html file
-# from pathlib import Path
-# output_dir = Path.cwd() / "results" / "plot_haxby_glm_decoding"
-# output_dir.mkdir(exist_ok=True, parents=True)
-# report.save_as_html(output_dir / 'report.html')
 
 # %%
 # Build the decoding pipeline
@@ -179,6 +169,7 @@ decoder = Decoder(
     standardize=False,
     screening_percentile=5,
     cv=LeaveOneGroupOut(),
+    verbose=1,
 )
 decoder.fit(z_maps, conditions_label, groups=run_label)
 

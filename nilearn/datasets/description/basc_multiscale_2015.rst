@@ -1,4 +1,4 @@
-.. _basc_atlas:
+.. _basc_multiscale_2015_atlas:
 
 BASC multiscale atlas
 =====================

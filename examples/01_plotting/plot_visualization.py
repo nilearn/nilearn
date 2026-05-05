@@ -28,11 +28,11 @@ from nilearn.image.image import mean_img
 
 # Compute the mean EPI: we do the mean along the axis 3, which is time
 func_filename = haxby_dataset.func[0]
-mean_haxby = mean_img(func_filename, copy_header=True)
+mean_haxby = mean_img(func_filename)
 
 from nilearn.plotting import plot_epi, show
 
-plot_epi(mean_haxby, colorbar=True, cbar_tick_format="%i")
+plot_epi(mean_haxby, cbar_tick_format="%i")
 
 # %%
 # Extracting a brain mask
@@ -45,7 +45,7 @@ mask_img = compute_epi_mask(func_filename)
 # Visualize it as an ROI
 from nilearn.plotting import plot_roi
 
-plot_roi(mask_img, mean_haxby)
+plot_roi(mask_img, mean_haxby, colorbar=False)
 
 # %%
 # Applying the mask to extract the corresponding time series

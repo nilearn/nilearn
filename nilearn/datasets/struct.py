@@ -6,10 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from nibabel import Nifti1Image
 from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
-from nilearn._utils import check_niimg, fill_doc
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.datasets._utils import (
     ALLOWED_DATA_TYPES,
     ALLOWED_MESH_TYPES,
@@ -18,7 +24,7 @@ from nilearn.datasets._utils import (
     get_dataset_descr,
     get_dataset_dir,
 )
-from nilearn.image import get_data, new_img_like, resampling
+from nilearn.image import check_niimg, get_data, new_img_like, resampling
 from nilearn.surface import (
     FileMesh,
     PolyMesh,
@@ -103,10 +109,13 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information
     see the :ref:`dataset description <icbm_152_template>`.
-
     """
+    check_params(locals())
+
     if url is None:
         # The URL can be retrieved from the nilearn account on OSF (Open
         # Science Framework), https://osf.io/4r3jt/quickfiles/
@@ -152,13 +161,15 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = get_dataset_descr(dataset_name)
 
-    params = dict([("description", fdescr), *list(zip(keys, sub_files))])
+    params = dict(
+        [("description", fdescr), *list(zip(keys, sub_files, strict=False))]
+    )
     return Bunch(**params)
 
 
 @functools.lru_cache(maxsize=3)
 @fill_doc
-def load_mni152_template(resolution=None):
+def load_mni152_template(resolution=None) -> Nifti1Image:
     """Load the MNI152 skullstripped T1 template.
 
     This function takes the skullstripped,
@@ -171,7 +182,7 @@ def load_mni152_template(resolution=None):
     ----------
     %(resolution)s
 
-        .. versionadded:: 0.8.1
+        .. nilearn_versionadded:: 0.8.1
 
     Returns
     -------
@@ -195,6 +206,8 @@ def load_mni152_template(resolution=None):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     brain_template = check_niimg(MNI152_FILE_PATH)
@@ -209,13 +222,8 @@ def load_mni152_template(resolution=None):
     # Resample template according to the pre-specified resolution, if different
     # than 1
     if resolution != 1:
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
         new_brain_template = resampling.resample_img(
-            new_brain_template,
-            np.eye(3) * resolution,
-            copy_header=True,
-            force_resample=False,
+            new_brain_template, np.eye(3) * resolution
         )
 
     return new_brain_template
@@ -231,7 +239,7 @@ def load_mni152_gm_template(resolution=None):
 
     %(templateflow)s
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -256,6 +264,8 @@ def load_mni152_gm_template(resolution=None):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     gm_template = check_niimg(GM_MNI152_FILE_PATH)
@@ -270,13 +280,8 @@ def load_mni152_gm_template(resolution=None):
     # Resample template according to the pre-specified resolution, if different
     # than 1
     if resolution != 1:
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
         new_gm_template = resampling.resample_img(
-            new_gm_template,
-            np.eye(3) * resolution,
-            copy_header=True,
-            force_resample=False,
+            new_gm_template, np.eye(3) * resolution
         )
 
     return new_gm_template
@@ -293,7 +298,7 @@ def load_mni152_wm_template(resolution=None):
 
     %(templateflow)s
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -318,6 +323,8 @@ def load_mni152_wm_template(resolution=None):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     wm_template = check_niimg(WM_MNI152_FILE_PATH)
@@ -332,13 +339,8 @@ def load_mni152_wm_template(resolution=None):
     # Resample template according to the pre-specified resolution, if different
     # than 1
     if resolution != 1:
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
         new_wm_template = resampling.resample_img(
-            new_wm_template,
-            np.eye(3) * resolution,
-            copy_header=True,
-            force_resample=False,
+            new_wm_template, np.eye(3) * resolution
         )
 
     return new_wm_template
@@ -353,13 +355,13 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     %(templateflow)s
 
-    .. versionadded:: 0.2.5
+    .. nilearn_versionadded:: 0.2.5
 
     Parameters
     ----------
     %(resolution)s
 
-        .. versionadded:: 0.8.1
+        .. nilearn_versionadded:: 0.8.1
 
     threshold : :obj:`float`, default=0.2
         Values of the MNI152 T1 template above this threshold will be included.
@@ -379,6 +381,8 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     # Load MNI template
@@ -398,7 +402,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     %(templateflow)s
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -428,6 +432,8 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     # Load MNI template
@@ -452,7 +458,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     %(templateflow)s
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -482,6 +488,8 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     resolution = resolution or 1
 
     # Load MNI template
@@ -505,7 +513,7 @@ def fetch_icbm152_brain_gm_mask(
 
      %(templateflow)s
 
-    .. versionadded:: 0.2.5
+    .. nilearn_versionadded:: 0.2.5
 
     Parameters
     ----------
@@ -522,7 +530,7 @@ def fetch_icbm152_brain_gm_mask(
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
 
-        .. versionadded:: 0.8.1
+        .. nilearn_versionadded:: 0.8.1
 
     %(verbose)s
 
@@ -541,6 +549,8 @@ def fetch_icbm152_brain_gm_mask(
 
     Notes
     -----
+    %(fetcher_note)s
+
     This function relies on ICBM152 templates where we particularly pick
     gray matter template and threshold the template at .2 to take one fifth
     of the values. Then, do a bit post processing such as binary closing
@@ -551,8 +561,9 @@ def fetch_icbm152_brain_gm_mask(
 
     For more information
     see the :ref:`dataset description <icbm_152_template>`.
-
     """
+    check_params(locals())
+
     # Fetching ICBM152 gray matter mask image
     icbm = fetch_icbm152_2009(
         data_dir=data_dir, resume=resume, verbose=verbose
@@ -665,10 +676,13 @@ def fetch_oasis_vbm(
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information
     see the :ref:`dataset description <oasis_maps>`.
-
     """
+    check_params(locals())
+
     # check number of subjects
     if n_subjects is None:
         n_subjects = 403 if dartel_version else 415
@@ -677,14 +691,16 @@ def fetch_oasis_vbm(
             warnings.warn(
                 "Only 403 subjects are available in the "
                 "DARTEL-normalized version of the dataset. "
-                f"All of them will be used instead of the wanted {n_subjects}"
+                f"All of them will be used instead of the wanted {n_subjects}",
+                stacklevel=find_stack_level(),
             )
             n_subjects = 403
     elif n_subjects > 415:
         warnings.warn(
             "Only 415 subjects are available in the "
             "non-DARTEL-normalized version of the dataset. "
-            f"All of them will be used instead of the wanted {n_subjects}"
+            f"All of them will be used instead of the wanted {n_subjects}",
+            stacklevel=find_stack_level(),
         )
         n_subjects = 415
     if n_subjects < 1:
@@ -893,6 +909,8 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
     .. footbibliography::
 
     """
+    check_params(locals())
+
     available_meshes = (
         "fsaverage3",
         "fsaverage4",
@@ -1015,7 +1033,7 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
 def load_fsaverage(mesh="fsaverage5", data_dir=None):
     """Load fsaverage for both hemispheres as PolyMesh objects.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1041,6 +1059,8 @@ def load_fsaverage(mesh="fsaverage5", data_dir=None):
          - ``'flat'``: Polymesh for flattened surface
                        for left and right hemispheres
     """
+    check_params(locals())
+
     fsaverage = fetch_surf_fsaverage(mesh, data_dir=data_dir)
     renaming = {
         "pial": "pial",
@@ -1063,7 +1083,7 @@ def load_fsaverage_data(
 ):
     """Return freesurfer data on an fsaverage mesh as a SurfaceImage.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1093,16 +1113,9 @@ def load_fsaverage_data(
     img : :obj:`~nilearn.surface.SurfaceImage`
         SurfaceImage with the freesurfer mesh and data.
     """
-    if mesh_type not in ALLOWED_MESH_TYPES:
-        raise ValueError(
-            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
-            f"Got: {mesh_type=}."
-        )
-    if data_type not in ALLOWED_DATA_TYPES:
-        raise ValueError(
-            f"'data_type' must be one of {ALLOWED_DATA_TYPES}.\n"
-            f"Got: {data_type=}."
-        )
+    check_params(locals())
+    check_parameter_in_allowed(mesh_type, ALLOWED_MESH_TYPES, "mesh_type")
+    check_parameter_in_allowed(data_type, ALLOWED_DATA_TYPES, "data_type")
 
     fsaverage = load_fsaverage(mesh=mesh, data_dir=data_dir)
     fsaverage_data = fetch_surf_fsaverage(mesh=mesh, data_dir=data_dir)

@@ -8,13 +8,6 @@ We use the [left button press (auditory cue)] task from the Localizer
 dataset and seek association between the contrast values and a variate
 that measures the speed of pseudo-word reading. No confounding variate
 is included in the model.
-
-..
-    Original authors:
-
-    - Virgile Fritsch, Bertrand Thirion, 2014 -- 2018
-    - Jerome-Alexis Chevalier, 2019
-
 """
 
 # %%
@@ -67,7 +60,7 @@ design_matrix = pd.DataFrame(
 # Fit of the second-level model
 from nilearn.glm.second_level import SecondLevelModel
 
-model = SecondLevelModel(smoothing_fwhm=5.0, n_jobs=2)
+model = SecondLevelModel(smoothing_fwhm=5.0, n_jobs=2, verbose=1)
 model.fit(contrast_map_filenames, design_matrix=design_matrix)
 
 # %%
@@ -90,7 +83,6 @@ cut_coords = [10, -5, 10]
 plot_stat_map(
     z_map,
     threshold=threshold,
-    colorbar=True,
     title="Group-level association between motor activity \n"
     "and reading fluency (fdr=0.05)",
     cut_coords=cut_coords,
@@ -105,7 +97,7 @@ show()
 from nilearn.image import get_data, math_img
 
 p_val = model.compute_contrast("fluency", output_type="p_value")
-n_voxels = np.sum(get_data(model.masker_.mask_img_))
+n_voxels = np.sum(get_data(model.mask_img_))
 # Correcting the p-values for multiple testing and taking negative logarithm
 neg_log_pval = math_img(
     f"-np.log10(np.minimum(1, img * {n_voxels!s}))", img=p_val
@@ -126,7 +118,6 @@ title = (
 )
 plot_stat_map(
     neg_log_pval,
-    colorbar=True,
     cut_coords=cut_coords,
     threshold=threshold,
     title=title,
@@ -150,6 +141,7 @@ neg_log_pvals_permuted_ols_unmasked = non_parametric_inference(
     mask=None,
     smoothing_fwhm=5.0,
     n_jobs=2,
+    verbose=1,
 )
 
 # %%
@@ -160,7 +152,6 @@ title = (
 )
 plot_stat_map(
     neg_log_pvals_permuted_ols_unmasked,
-    colorbar=True,
     cut_coords=cut_coords,
     threshold=threshold,
     title=title,

@@ -1,4 +1,8 @@
 ---
+# Automatically comments on a newly open pull request to provide some guidelines, useful links and a checklist.
+#
+# The checklist is only editable by maintainers at the moment.
+###
 name: Auto Comment
 on: [pull_request_target]
 jobs:

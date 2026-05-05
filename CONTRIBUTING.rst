@@ -16,7 +16,7 @@ There are currently three ways to interact with the Nilearn team:
 through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues,
 and through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_,
 usually **every Wednesday from 4pm to 5pm UTC**.
-We post on our `X account <https://x.com/nilearn>`_ in advance to let you know
+We post on our `Bluesky account <https://bsky.app/profile/nilearn.bsky.social>`_ in advance to let you know
 if the drop-in hours are happening that week.
 
 If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn,
@@ -159,10 +159,11 @@ which are needed to demo and teach features.
 
 The following projects are dedicated to host atlases and accept contributions:
 
-* `templateflow <https://www.templateflow.org>`_
-* `neuromaps <https://netneurolab.github.io/neuromaps>`_
-* `neuroparc <https://github.com/neurodata/neuroparc>`_
+* `templateflow <https://www.templateflow.org>`_ : the example :ref:`sphx_glr_auto_examples_01_plotting_plot_templateflow.py` shows how to use templateflow with nilearn.
 
+* `neuromaps <https://netneurolab.github.io/neuromaps>`_
+
+* `neuroparc <https://github.com/neurodata/neuroparc>`_
 
 .. _nilearn_governance:
 
@@ -211,7 +212,7 @@ Contribution Guidelines
 
 When modifying the codebase, we ask every contributor to respect common
 guidelines.
-Those are inspired from :sklearn:`scikit-learn <developers/contributing.html#contributing-code>`
+Those are inspired from :sklearn:`scikit-learn <developers/contributing.html#contributing-code-and-documentation>`
 and ensure Nilearn remains simple to understand, efficient and maintainable.
 For example, code needs to be tested and those tests need to run quickly in order
 not to burden the development process.
@@ -239,8 +240,10 @@ with the tools we use for development and deployment.
 |   `Coding Style`_  |    Any        | - No new dependency                                 |
 |                    |               | - Backward compatibility                            |
 |                    |               | - All internal imports are absolute, not relative   |
-|                    |               | - Impacted docstrings have versionadded and/or      |
-|                    |               |   versionchanged directives as needed.              |
+|                    |               | - Impacted docstrings have                          |
+|                    |               |   ``.. nilearn_versionadded`` and/or                |
+|                    |               |   ``.. nilearn_versionchanged`` directives          |
+|                    |               |   as needed.                                        |
 |                    |               |   These should use the current dev version.         |
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Test type is adapted to function behavior         |
@@ -501,14 +504,11 @@ Code inside ``maskers._validation.py``:
 Guidelines for HTML and CSS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We use `prettier <https://prettier.io/>`_ to format HTML and CSS.
+We use `prettier <https://prettier.io/>`_ and `djlint <https://github.com/djlint/djlint>`_ to format HTML and CSS.
 
-This is implemented via a pre-commit hook (see below)
-that can be run with
+This is implemented via a pre-commit hook.
 
-.. code-block:: bash
-
-      pre-commit run --all-files prettier
+.. _pre_commit:
 
 Pre-commit
 ----------
@@ -521,6 +521,18 @@ To install pre-commit, run:
 .. code-block:: bash
 
       pip install pre-commit
+
+.. note::
+
+      Pre-commit will already be installed if you installed
+      the ``dev`` or ``style`` developers dependencies of nilearn
+      with::
+
+            pip install -e . --group dev
+
+      or::
+
+            pip install -e . --group style
 
 Then run the following to install the pre-commit hooks:
 
@@ -582,6 +594,15 @@ but some fixures specific to certain modules can also be kept in that testing mo
 Before adding new fixtures, first check those that exist
 in the test modules you are working in or in ``nilearn/conftest.py``.
 
+You can also run the following command to let pytest list
+all the available fixtures with their description,
+though this will also list fixtures provided
+by any of the pytest plugins or extensions that may also be installed.
+
+.. code-block:: bash
+
+      pytest nilearn --fixtures
+
 Seeding
 ^^^^^^^
 
@@ -609,6 +630,92 @@ You can also use the ``rng`` fixture.
 
           # the rest of the test
 
+
+Using tox
+^^^^^^^^^
+
+`Tox <https://tox.wiki/en/stable/>`_ is set
+to facilitate testing and managing environments during development
+and ensure that the same commands can easily be run locally and in CI.
+
+It should already be installed if you ran:
+
+.. code-block:: bash
+
+    pip install -e . --group dev
+
+You can set up certain environment or run certain command by calling ``tox``.
+
+Calling ``tox`` with no extra argument will simply run
+all the default commands defined in the tox configuration (``tox.ini``).
+
+Use ``tox list`` to view all environment descriptions.
+
+Use ``tox run`` to run a specific environment.
+
+Example
+
+.. code-block:: bash
+
+    tox run -e lint
+
+Some environments allow passing extra argument:
+
+.. code-block:: bash
+
+    # only run ruff
+    tox run -e lint -- ruff
+
+    # only run some tests
+    tox -e plotting -- nilearn/glm/tests/test_contrasts.py
+
+You can also run any arbitrary command in a given environment with ``tox exec``:
+
+.. code-block:: bash
+
+    tox exec -e latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
+
+Running the tests with several python versions
+""""""""""""""""""""""""""""""""""""""""""""""
+
+Running the following should let tox run all the tests on all the python versions
+it can find on your system.
+
+.. code-block:: bash
+
+      tox
+
+You can specify which tests to run
+by passing extra command line arguments to pytest after a ``--``.
+
+For example, the following would run all the tests in ``nilearn/image``
+that contain the word ``smooth``.
+
+.. code-block:: bash
+
+      tox -- nilearn/image -k smooth
+
+Plotting
+--------
+
+Glass brains
+^^^^^^^^^^^^
+
+The background images for the glass brains are stored in
+``nilearn/plotting/glass_brain_files``.
+Once the SVG file have been modified (or added) make sure
+to regenerate the associated JSON file
+(this will require to make sure that the svg module
+from https://github.com/cjlano/svg
+is in the python path).
+
+.. code-block:: bash
+
+      python maint_tools/svg_to_json_converter.py \
+            nilearn/plotting/glass_brain_files/input.svg \
+            nilearn/plotting/glass_brain_files/output.json
+
+
 Documentation
 -------------
 
@@ -633,25 +740,23 @@ main documentation and
 example tutorials. If you want to work on those, check out next section to
 learn how to use those tools to build documentation.
 
+Reports
+-------
+
+Reports (for maskers and GLM) are generated using `Jinja templates <https://jinja.palletsprojects.com/en/stable/>`_.
+
+Reports HTML, CSS, javascript and templates are stored in ``nilearn/reporting/data``.
+
+All reports rely on the `pure CSS framework <https://pure-css.github.io/>`_.
+
+
 .. _git_repo:
 
 
 Continuous integration
 ----------------------
 
-Please note that if one of the following markers appear in the latest commit message, the following actions are taken.
-
-============================ ===================
-Commit Message Marker        Action Taken by CI
-============================ ===================
-[skip ci]                    Gtihub CI is skipped completely. Several other options are also possible, see `github documentation <https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/skipping-workflow-runs>`_).
-[skip test]                  Skip running the tests.
-[skip doc]                   Skip building the doc.
-[test nightly]               Run tests on the nightly build of Nilearn's dependencies.
-[full doc]                   Run a full build of the documentation (meaning that all examples will be run).
-[example] name_of_example.py Run partial documentation build but will run the requested example.
-[force download]             Force a download of all the dataset required for the build of the documentation.
-============================ ===================
+See the :ref:`continuous integration` page.
 
 Setting up your environment
 ===========================
@@ -719,13 +824,12 @@ You can then install nilearn in editable mode:
 
 .. code-block:: bash
 
-      pip install -e '.[dev]'
+      pip install -e . --group dev
 
 This installs your local version of Nilearn,
-along with all dependencies necessary for developers (hence the ``[dev]`` tag).
+along with all dependencies necessary for developers (hence the ``dev`` group).
 For more information about the dependency installation options, see ``pyproject.toml``.
 The installed version will also reflect any changes you make to your code.
-
 
 4. check that all tests pass with (this can take a while):
 
@@ -799,6 +903,8 @@ For more details about the Fork Clone Push workflows,
 read `here <https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project#about-forking>`_.
 
 
+.. _building documentation:
+
 Building documentation
 ----------------------
 
@@ -833,8 +939,21 @@ So if you don't need the plots, a quicker option is:
 
       make html-noplot
 
-4. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``.
+An even quicker option is:
+
+.. code-block:: bash
+
+      make html-noplot-noreport
+
+4. Visually review the output in ``nilearn/doc/_build/html/index.html``.
    If all looks well and there were no errors, commit and push the changes.
+
+.. tip::
+
+      The documentation build by the CI uses the oldest supported version of Python
+      and Nilearn's dependencies.
+      This may explain some differences with a local build of the doc
+      if you are using different dependencies.
 
 5. You can now open a Pull Request from Nilearn's Pull Request page.
 
@@ -845,13 +964,22 @@ So if you don't need the plots, a quicker option is:
       git commit --allow-empty -m "[full doc] request full build"
 
 .. tip::
-    When generating documentation locally, you can build only specific files
-    to reduce building time. To do so, use the ``filename_pattern``:
 
-.. code-block:: bash
+      When generating documentation locally, you can build only specific files
+      to reduce building time. To do so, use the ``filename_pattern``:
 
-      python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
-      plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+      .. code-block:: bash
+
+            python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
+            plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+
+      or if you want to use make :
+
+      .. code-block:: bash
+
+            PATTERN='examples/04_glm_first_level/plot_bids_features.py'
+            export PATTERN
+            make --directory doc html-modified-examples-only
 
 
 Additional cases
@@ -886,7 +1014,7 @@ Deterministic atlases must also include:
   - that complies with the
     `dseg.tsv format from BIDS
     <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
-  - can be validated by the function ``nilearn.datasets.atlas._check_look_up_table``
+  - can be validated by the function ``nilearn._utils.helpers.check_look_up_table``
     in strict mode.
 
 In addition, the atlas will need to be called by a fetcher.
@@ -933,6 +1061,102 @@ returned by the ``request_mocker`` pytest fixture, defined in
 ``nilearn.datasets.tests._testing``. The docstrings of this module and the
 ``Sender`` class it contains provide information on how to write a test using
 this fixture. Existing tests can also serve as examples.
+
+Performance monitoring
+----------------------
+
+Nilearn includes performance monitoring in the
+library using `asv <https://asv.readthedocs.io/en/latest/index.html>`_
+benchmarks. The goal is two-fold:
+
+- To track the performance over time and flag regressions due to changes in the
+  codebase.
+- To compare the performance of different implementations of an algorithm
+  (for example, loading an image using :func:`nilearn.image.load_img` vs.
+  :func:`nibabel.loadsave.load`).
+
+A collection of these benchmarks are located in the ``nilearn/asv_benchmarks``
+directory. Currently, we run them on GitHub CI regularly on the latest commit
+of the main branch. The results are available on
+`nilearn.github.io/benchmarks/ <https://nilearn.github.io/benchmarks/>`_.
+
+To run these benchmarks locally, you will need to install
+the asv package:
+
+.. code-block:: bash
+
+      pip install asv
+
+Then, change to the ``asv_benchmarks`` directory:
+
+.. code-block:: bash
+
+      cd asv_benchmarks
+
+To run a specific set of benchmark matching a specific regex
+(for example containing ``load_img``)
+on the current HEAD of your clone of the repository,
+use the following command:
+
+.. code-block:: bash
+
+      asv run -b load_img
+
+This will run any benchmarck with ``load_img`` in the name.
+
+You can also track the performance of a specific benchmark over, say,
+5 equally spaced commits, until release 0.10.0, like this:
+
+.. code-block:: bash
+
+      asv run 0.10.0..main -b load_img --steps 5
+
+There is also a ```hashestobenchmark.txt`` file with the shasum of the git tag of several
+of the last versions of nilearn that will allow you to run
+the benchmarks only for those versions by doing:
+
+.. code-block:: bash
+
+      asv run -b load_img HASHFILE:hashestobenchmark.txt
+
+If you want to update this file you can use
+to list the shasum of all tags
+that you can then edit to only keep the versions
+you want to run your benchmarks on.
+
+.. code-block:: bash
+
+      git show-ref --tags > hashestobenchmark.txt
+
+Once you have run you benchmarks, you can view the results with:
+
+.. code-block:: bash
+
+      asv publish
+      asv preview
+
+For more information on how to use asv, please refer to the
+`asv documentation <https://asv.readthedocs.io/en/stable/>`_.
+
+Adding new benchmarks
+^^^^^^^^^^^^^^^^^^^^^
+
+Please see the `asv documentation writing tips <https://asv.readthedocs.io/en/stable/writing_benchmarks.html>`_
+to make sure you understand the basics about how to write benchmarks.
+
+For naming benchmarks, try to follow the following rules:
+
+- use snake_case instead of CamelCase
+
+- make sure that the name of the module the benchmark is in,
+  is duplicated in the name of the benchmark:
+  if you are adding a benchmark to the ``asv_benchmarks/benchmarks/maskers/nifti_masker.py``
+  make sure that the name of the benchmark contains ``nifti_masker``
+  is in the name of the benchmark (``def peakmem_nifti_masker_fit_transform``).
+  This makes is easier to systematically select the benchmarks to run
+  via the command line: ``asv run -b nifti_masker``
+  would run all the benchmarks for the NiftiMasker.
+
 
 Maintenance
 ===========

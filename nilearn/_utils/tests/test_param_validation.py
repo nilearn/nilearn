@@ -1,24 +1,14 @@
 """Test the _utils.param_validation module."""
 
-import warnings
-from pathlib import Path
-
 import numpy as np
 import pytest
-from nibabel import Nifti1Image, load
 from scipy.stats import scoreatpercentile
-from sklearn.base import BaseEstimator
 
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.param_validation import (
-    MNI152_BRAIN_VOLUME,
-    _get_mask_extent,
-    check_feature_screening,
+    _cast_to_int32,
+    check_params,
     check_threshold,
-)
-
-mni152_brain_mask = (
-    "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz"
 )
 
 
@@ -172,40 +162,48 @@ def test_check_threshold_for_error(matrix):
         )
 
 
-def test_get_mask_extent():
-    # Test that hard-coded standard mask volume can be corrected computed
-    if Path(mni152_brain_mask).is_file():
-        assert _get_mask_extent(load(mni152_brain_mask)) == MNI152_BRAIN_VOLUME
-    else:
-        warnings.warn(f"Couldn't find {mni152_brain_mask} (for testing)")
+@pytest.mark.parametrize("dtype", (np.uint8, np.uint16, np.uint32, np.int8))
+def test_sample_mask_signed(dtype):
+    """Check unsigned sample_mask is converted to signed."""
+    sample_mask = np.arange(2, dtype=dtype)
+    assert _cast_to_int32(sample_mask).dtype.kind == "i"
 
 
-def test_feature_screening(affine_eye):
-    # dummy
-    mask_img_data = np.zeros((182, 218, 182))
-    mask_img_data[30:-30, 30:-30, 30:-30] = 1
-    mask_img = Nifti1Image(mask_img_data, affine=affine_eye)
+def test_sample_mask_raises_on_negative():
+    """Check for error when sample_mask has negative."""
+    with pytest.raises(
+        ValueError, match="sample_mask should not contain negative values"
+    ):
+        _cast_to_int32(np.array([-1, -2, 1]))
 
-    for is_classif in [True, False]:
-        for screening_percentile in [100, None, 20, 101, -1, 10]:
-            if screening_percentile == 100 or screening_percentile is None:
-                assert (
-                    check_feature_screening(
-                        screening_percentile, mask_img, is_classif
-                    )
-                    is None
-                )
-            elif screening_percentile in {-1, 101}:
-                with pytest.raises(ValueError):
-                    check_feature_screening(
-                        screening_percentile,
-                        mask_img,
-                        is_classif,
-                    )
-            elif screening_percentile == 20:
-                assert isinstance(
-                    check_feature_screening(
-                        screening_percentile, mask_img, is_classif
-                    ),
-                    BaseEstimator,
-                )
+
+def test_sample_mask_raises_on_high_index():
+    """Check for error when sample_mask has a very high index."""
+    with pytest.raises(
+        ValueError, match="Max value in sample mask is larger than"
+    ):
+        _cast_to_int32(np.array(2**66))
+
+
+def test_check_params():
+    """Check that passing incorrect type to a function raises TypeError."""
+
+    def f_with_param_to_check(data_dir):
+        check_params(locals())
+        return data_dir
+
+    f_with_param_to_check(data_dir="foo")
+
+    with pytest.raises(TypeError, match="'data_dir' must be of type"):
+        f_with_param_to_check(data_dir=1)
+
+
+def test_check_params_not_necessary():
+    """Check an error is raised when function is used when not needed."""
+
+    def f_with_unknown_param(foo):
+        check_params(locals())
+        return foo
+
+    with pytest.raises(ValueError, match=r"No known parameter to check."):
+        f_with_unknown_param(foo=1)

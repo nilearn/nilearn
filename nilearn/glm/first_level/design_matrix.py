@@ -28,9 +28,6 @@ Design matrices contain three different types of regressors:
 3. Drift regressors, that represent low_frequency phenomena of no
    interest in the data; they need to be included to reduce variance
    estimates.
-
-Author: Bertrand Thirion, 2009-2015
-
 """
 
 from warnings import warn
@@ -38,8 +35,10 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_params
 from nilearn.glm._utils import full_rank
 from nilearn.glm.first_level.experimental_paradigm import (
     check_events,
@@ -49,6 +48,7 @@ from nilearn.glm.first_level.hemodynamic_models import (
     compute_regressor,
     orthogonalize,
 )
+from nilearn.signal import create_cosine_drift
 
 ######################################################################
 # Ancillary functions
@@ -82,52 +82,6 @@ def _poly_drift(order, frame_times):
     return pol
 
 
-def create_cosine_drift(high_pass, frame_times):
-    """Create a cosine drift matrix with frequencies or equal to high_pass.
-
-    Parameters
-    ----------
-    high_pass : :obj:`float`
-        Cut frequency of the high-pass filter in Hz
-
-    frame_times : array of shape (n_scans,)
-        The sampling times in seconds
-
-    Returns
-    -------
-    cosine_drift : array of shape(n_scans, n_drifts)
-        Cosine drifts plus a constant regressor at cosine_drift[:, -1]
-
-    References
-    ----------
-    http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
-
-    """
-    n_frames = len(frame_times)
-    n_times = np.arange(n_frames)
-    dt = (frame_times[-1] - frame_times[0]) / (n_frames - 1)
-    if high_pass * dt >= 0.5:
-        warn(
-            "High-pass filter will span all accessible frequencies "
-            "and saturate the design matrix. "
-            "You may want to reduce the high_pass value."
-            f"The provided value is {high_pass} Hz"
-        )
-    order = np.minimum(
-        n_frames - 1, int(np.floor(2 * n_frames * high_pass * dt))
-    )
-    cosine_drift = np.zeros((n_frames, order + 1))
-    normalizer = np.sqrt(2.0 / n_frames)
-
-    for k in range(1, order + 1):
-        cosine_drift[:, k - 1] = normalizer * np.cos(
-            (np.pi / n_frames) * (n_times + 0.5) * k
-        )
-
-    cosine_drift[:, -1] = 1.0
-    return cosine_drift
-
-
 def _none_drift(frame_times):
     """Create an intercept vector.
 
@@ -150,10 +104,10 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     frame_times : array of shape(n_scans),
         list of values representing the desired TRs
 
-    order : :obj:`int`, optional,
+    order : :obj:`int`,
         order of the drift model (in case it is polynomial)
 
-    high_pass : :obj:`float`, optional,
+    high_pass : :obj:`float`
         high-pass frequency in case of a cosine model (in Hz)
 
     Returns
@@ -198,10 +152,7 @@ def _convolve_regressors(
         see nilearn.glm.first_level.experimental_paradigm to check the
         specification for these to be valid paradigm descriptors
 
-    hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover', 'glover + derivative', 'glover + derivative + dispersion',
-        'fir', None}
-        String that specifies the hemodynamic response function
+    %(hrf_model)s
 
     frame_times : array of shape (n_scans,)
         The targeted timing for the design matrix.
@@ -232,9 +183,10 @@ def _convolve_regressors(
         if 'spm + derivative + dispersion' or
             'glover + derivative + dispersion',
             a third name is used, i.e. '#name_dispersion'
-        if 'fir', the regressos are numbered according to '#name_#delay'
+        if 'fir', the regressors are numbered according to '#name_#delay'
 
     """
+    check_params(locals())
     if fir_delays is None:
         fir_delays = [0]
     regressor_names = []
@@ -376,6 +328,7 @@ def make_first_level_design_matrix(
         and each column a regressor.
 
     """
+    check_params(locals())
     if fir_delays is None:
         fir_delays = [0]
     # check arguments
@@ -387,6 +340,10 @@ def make_first_level_design_matrix(
             add_reg_names = add_regs.columns.tolist()
         else:
             add_regs_ = np.atleast_2d(add_regs)
+
+        if np.any(np.isnan(add_regs_.ravel())):
+            raise ValueError("Extra regressors contain NaN values.")
+
         n_add_regs = add_regs_.shape[1]
         assert add_regs_.shape[0] == np.size(frame_times), (
             "Incorrect specification of additional regressors: "
@@ -501,6 +458,9 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
         confounds_name = confounds.columns.tolist()
         confounds_name.remove("subject_label")
 
+        if confounds.isna().to_numpy().any():
+            raise ValueError("Confounds contain NaN values.")
+
     design_columns = [*confounds_name, "intercept"]
     # check column names are unique
     if len(np.unique(design_columns)) != len(design_columns):
@@ -530,6 +490,7 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
     if np.linalg.cond(design_matrix.values) > design_matrix.size:
         warn(
             "Attention: Design matrix is singular. Aberrant estimates "
-            "are expected."
+            "are expected.",
+            stacklevel=find_stack_level(),
         )
     return design_matrix

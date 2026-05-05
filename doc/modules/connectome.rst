@@ -20,6 +20,9 @@ Classes
    GroupSparseCovariance
    GroupSparseCovarianceCV
 
+.. autoclasstree:: nilearn.connectome
+   :full:
+
 Functions
 ---------
 

@@ -42,10 +42,10 @@ from nilearn.image import mean_img
 from nilearn.plotting import plot_anat, plot_img, plot_stat_map, show
 
 fmri_img = subject_data.func
-mean_img = mean_img(subject_data.func[0], copy_header=True)
-plot_img(mean_img, colorbar=True, cbar_tick_format="%i")
+mean_img = mean_img(subject_data.func[0])
+plot_img(mean_img, cbar_tick_format="%i")
 
-plot_anat(subject_data.anat, colorbar=True, cbar_tick_format="%i")
+plot_anat(subject_data.anat, cbar_tick_format="%i")
 
 show()
 
@@ -90,17 +90,32 @@ from nilearn.glm.first_level import FirstLevelModel
 # * ``high_pass=0.01`` (Hz) defines the cutoff frequency
 #   (inverse of the time period).
 fmri_glm = FirstLevelModel(
-    t_r=7,
+    t_r=subject_data.t_r,
     noise_model="ar1",
     standardize=False,
     hrf_model="spm",
     drift_model="cosine",
     high_pass=0.01,
+    verbose=1,
 )
 
 # %%
+#
+# .. include:: ../../../examples/html_repr_note.rst
+#
+fmri_glm
+
+# %%
 # Now that we have specified the model, we can run it on the :term:`fMRI` image
+#
+# .. note ::
+#
+#   After fitting,
+#   the HTML representation of the estimator looks different
+#   than before before fitting.
+#
 fmri_glm = fmri_glm.fit(fmri_img, events)
+fmri_glm
 
 # %%
 # One can inspect the design matrix (rows represent time, and
@@ -333,7 +348,16 @@ eff_map.to_filename(output_dir / "listening_gt_rest_eff_map.nii.gz")
 
 # %%
 # We can furthermore extract and report the found positions in a table.
-
+#
+# .. seealso::
+#
+#     This function does not report any named anatomical location
+#     for the clusters.
+#     To get the names of the location of the clusters
+#     according to one or several atlases,
+#     we recommend using
+#     the `atlasreader package <https://github.com/miykael/atlasreader>`_.
+#
 from nilearn.reporting import get_clusters_table
 
 table = get_clusters_table(

@@ -59,6 +59,8 @@ If you wish to add a missing term, please
         In such atlases, and contrary to
         :term:`probabilistic atlases<Probabilistic atlas>`, a :term:`voxel`
         belongs to one, and only one, region.
+        Check the :ref:`list of atlases <listing_deterministic_atlases>`
+        to know the ones that are shipped with Nilearn.
 
     Dictionary learning
         `Dictionary learning`_ (or sparse coding) is a representation learning
@@ -126,6 +128,23 @@ If you wish to add a missing term, please
         submitted to a variety of group level analyses, including task-based
         or resting-state :term:`fMRI`, graph theory measures, surface or
         volume-based statistics, etc.
+
+    Tedana
+        `Tedana` is a multi-echo :term:`fMRI` data denoising pipeline.
+        `Tedana` originally came about as a part of the ME-ICA pipeline,
+        although it has since diverged. An important distinction is that
+        the ME-ICA pipeline was written for python v2.7,
+        and was not designed in a way that others could easily
+        examine and improve the underlying algorithms for
+        TE-dependent analysis of multi-echo :term:`fMRI` data, tedana now assumes
+        that you are working with data which has been previously preprocessed.
+        `Tedana` works by decomposing multi-echo BOLD data via principal
+        component analysis (PCA) and independent component analysis (ICA). The
+        resulting components are then analyzed to determine whether they are
+        TE-dependent or -independent. TE-dependent components are classified
+        as BOLD, while TE-independent components are classified as non-BOLD,
+        and are discarded as part of data cleaning. For more information,
+        visit `Tedanas' documentation <https://me-ica.github.io/multi-echo-data-analysis/content/intro.html>`_.
 
     FPR correction
         False positive rate correction. This refers to the methods employed to
@@ -232,6 +251,8 @@ If you wish to add a missing term, please
         stacked along one dimension (usually the 4th dimension). In each
         3D component, the value at a given :term:`voxel` indicates how
         strongly this :term:`voxel` is related to this component.
+        Check the :ref:`list of atlases <listing_probabilistic_atlases>`
+        to know the ones that are shipped with Nilearn.
 
     ReNA
         `Recursive nearest agglomeration`_.

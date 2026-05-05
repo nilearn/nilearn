@@ -18,3 +18,6 @@ Classes
 
    CanICA
    DictLearning
+
+.. autoclasstree:: nilearn.decomposition
+   :full:

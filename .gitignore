@@ -23,7 +23,10 @@ pip-log.txt
 
 tmp
 
-#  prettier and other JS
+# Generic python
+__pycache__
+
+#  JS
 node_modules
 
 # Mac OS X
@@ -43,19 +46,25 @@ nilearn/_version.py
 .ipynb_checkpoints
 
 # virtual environment
-env/
-venv/
+env*/
+venv*/
 
 # testing
 .pytest_cache
+tests_to_run.txt
+# do not use report*.html below
+# otherwise some of the report*.html files used in masker reports
+# are ignored from package build
 report.html
 report_doc.html
+report_slow.html
 
 # CI benchmark
 maint_tools/*_runs_timing.*
 
 # coverage
 .coverage
+.coverage*
 coverage
 coverage.xml
 nosetests_coverage/
@@ -64,6 +73,7 @@ nosetests_coverage/
 doc/_build/
 doc/auto_examples/
 doc/building_blocks/generated/
+doc/ci.rst
 doc/generated/
 doc/modules/generated/
 doc/modules/generated_reports/*.html
@@ -76,6 +86,8 @@ pattern.txt
 examples.txt
 gitlog.txt
 merge.txt
+__marimo__
+tmp.html
 
 # examples
 results/
@@ -83,3 +95,10 @@ results/
 # node
 package.json
 package-lock.json
+
+# pydeps output
+nilearn.svg
+
+# uv
+uv.lock
+.python-version

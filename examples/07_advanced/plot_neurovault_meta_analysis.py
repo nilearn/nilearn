@@ -6,20 +6,14 @@ This example shows how to download statistical maps from :term:`Neurovault`.
 
 See :func:`~nilearn.datasets.fetch_neurovault_ids`
 documentation for more details.
-
-..
-    Original authors:
-
-    - Ben Cipollini
-
 """
 
 # %%
 import scipy
 
-from nilearn import plotting
 from nilearn.datasets import fetch_neurovault_ids
 from nilearn.image import get_data, load_img, math_img, new_img_like
+from nilearn.plotting import plot_glass_brain, plot_stat_map, show
 
 # %%
 # Fetch images for "successful stop minus go"-like protocols.
@@ -41,7 +35,7 @@ stop_go_image_ids = (151, 3041, 3042, 2676, 2675, 2818, 2834)
 #
 # print([meta['id'] for meta in nv_data['images_meta']])
 
-nv_data = fetch_neurovault_ids(image_ids=stop_go_image_ids)
+nv_data = fetch_neurovault_ids(image_ids=stop_go_image_ids, timeout=30.0)
 
 images_meta = nv_data["images_meta"]
 
@@ -52,11 +46,10 @@ images_meta = nv_data["images_meta"]
 print("\nplotting glass brain for collected images\n")
 
 for im in images_meta:
-    plotting.plot_glass_brain(
+    plot_glass_brain(
         im["absolute_path"],
         title=f"image {im['id']}: {im['contrast_definition']}",
         plot_abs=False,
-        colorbar=True,
         vmin=-12,
         vmax=12,
     )
@@ -108,7 +101,7 @@ meta_analysis_img = math_img(
     "np.sum(z_imgs, axis=3) / np.sqrt(z_imgs.shape[3])", z_imgs=z_imgs
 )
 
-plotting.plot_stat_map(
+plot_stat_map(
     meta_analysis_img,
     display_mode="z",
     threshold=6,
@@ -117,4 +110,4 @@ plotting.plot_stat_map(
     vmin=-12,
 )
 
-plotting.show()
+show()

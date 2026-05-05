@@ -1,3 +1,5 @@
+.. _smith_2009_atlas:
+
 Smith 2009 atlas
 ================
 

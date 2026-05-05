@@ -11,49 +11,49 @@ discriminate children from adults. In general, the tangent space embedding
 **outperforms** the standard correlations:
 see :footcite:t:`Dadi2019` for a careful study.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 try:
     import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+except ImportError as e:
+    raise RuntimeError("This script needs the matplotlib library") from e
 
 # %%
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
 # We study only 60 subjects from the dataset, to save computation time.
-from nilearn import datasets
+from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 
-development_dataset = datasets.fetch_development_fmri(n_subjects=60)
+development_dataset = fetch_development_fmri(n_subjects=60)
 
 # %%
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
+
 from nilearn.maskers import NiftiMapsMasker
 
-msdl_data = datasets.fetch_atlas_msdl()
+msdl_data = fetch_atlas_msdl()
 msdl_coords = msdl_data.region_coords
 
 masker = NiftiMapsMasker(
     msdl_data.maps,
     resampling_target="data",
-    t_r=2,
+    t_r=development_dataset.t_r,
     detrend=True,
     low_pass=0.1,
     high_pass=0.01,
     memory="nilearn_cache",
     memory_level=1,
-    standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
-).fit()
+    standardize_confounds=True,
+    verbose=1,
+)
 
-masked_data = [
-    masker.transform(func, confounds)
-    for (func, confounds) in zip(
-        development_dataset.func, development_dataset.confounds
+masked_data = list(
+    map(
+        masker.fit_transform,
+        development_dataset.func,
+        development_dataset.confounds,
     )
-]
+)
 
 # %%
 # What kind of connectivity is most powerful for classification?
@@ -78,12 +78,15 @@ pipe = Pipeline(
             "connectivity",
             ConnectivityMeasure(
                 vectorize=True,
-                standardize="zscore_sample",
             ),
         ),
         (
             "classifier",
-            GridSearchCV(LinearSVC(dual=True), {"C": [0.1, 1.0, 10.0]}, cv=5),
+            GridSearchCV(
+                LinearSVC(dual=True, random_state=0),
+                {"C": [0.1, 1.0, 10.0]},
+                cv=5,
+            ),
         ),
     ]
 )
@@ -100,7 +103,7 @@ param_grid = [
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import LabelEncoder
 
-groups = [pheno["Child_Adult"] for pheno in development_dataset.phenotypic]
+groups = development_dataset.phenotypic["Child_Adult"].to_list()
 classes = LabelEncoder().fit_transform(groups)
 
 cv = StratifiedShuffleSplit(n_splits=30, random_state=0, test_size=10)
@@ -109,7 +112,6 @@ gs = GridSearchCV(
     param_grid,
     scoring="accuracy",
     cv=cv,
-    verbose=1,
     refit=False,
     n_jobs=2,
 )

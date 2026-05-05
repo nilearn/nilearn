@@ -15,7 +15,7 @@ HIGHLIGHTS
 
 - :bdg-success:`API` New classes :class:`nilearn.decoding.Decoder` (for :term:`classification`) and :class:`nilearn.decoding.DecoderRegressor` (for :term:`regression`) implement a model selection scheme that averages the best models within a cross validation loop (:gh:`2000` by `Binh Nguyen`_).
 
-- :bdg-success:`API` New classes :class:`nilearn.decoding.FREMClassifier` (for :term:`classification`) and :class:`nilearn.decoding.FREMRegressor` (for :term:`regression`) extend the :class:`~decoding.Decoder` object with one fast clustering step at the beginning and  aggregates a high number of estimators trained on various splits of the training set (:gh:`2327` by `Thomas Bazeille`_).
+- :bdg-success:`API` New classes :class:`nilearn.decoding.FREMClassifier` (for :term:`classification`) and :class:`nilearn.decoding.FREMRegressor` (for :term:`regression`) extend the :class:`~decoding.Decoder` object with one fast clustering step at the beginning and aggregates a high number of estimators trained on various splits of the training set (:gh:`2327` by `Thomas Bazeille`_).
 
 - :bdg-info:`Plotting` New plotting functions:
 
@@ -38,7 +38,7 @@ NEW
 
 - :bdg-success:`API` New decoder object :class:`nilearn.decoding.Decoder` (for classification) and  :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model selection scheme that averages the best models within a cross validation loop. The resulting average model is the one used as a classifier or a regressor. These two objects also leverage the ``NiftiMaskers`` to provide a direct interface with the Nifti files on disk.
 
-- :bdg-success:`API` New FREM object :class:`nilearn.decoding.FREMClassifier` (for classification) and :class:`nilearn.decoding.FREMRegressor` (for regression) extend the decoder object pipeline with one fast clustering step at the beginning (yielding an implicit spatial regularization) and  aggregates a high number of estimators trained on various splits of the training set. This returns a state-of-the-art decoding pipeline at a low computational cost. These two objects also leverage the ``NiftiMaskers`` to provide a direct interface with the Nifti files on disk.
+- :bdg-success:`API` New FREM object :class:`nilearn.decoding.FREMClassifier` (for classification) and :class:`nilearn.decoding.FREMRegressor` (for regression) extend the decoder object pipeline with one fast clustering step at the beginning (yielding an implicit spatial regularization) and aggregates a high number of estimators trained on various splits of the training set. This returns a state-of-the-art decoding pipeline at a low computational cost. These two objects also leverage the ``NiftiMaskers`` to provide a direct interface with the Nifti files on disk.
 
 - :bdg-success:`API` confounds or additional regressors for design matrix can be specified as numpy arrays or pandas DataFrames interchangeably
 

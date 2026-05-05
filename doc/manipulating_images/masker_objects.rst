@@ -1,8 +1,8 @@
 .. _masker_objects:
 
-=====================================================================
+================================================================
 From neuroimaging volumes to data matrices: the masker objects
-=====================================================================
+================================================================
 
 This chapter introduces the maskers: objects that go from
 neuroimaging volumes, on the disk or in memory, to data matrices, eg of
@@ -24,10 +24,10 @@ the raw neuroimaging data in 3D space into the units of observation
 relevant for the research questions at hand.
 
 .. tip::
-    Masker objects can transform both 3D and 4D image objects.
-    Transforming a 4D image produces a 2D (samples x features) matrix.
-    Currently, transforming a 3D image also produces a 2D (1 x features) matrix,
-    but starting in version 0.12, it will produce a 1D (features) array.
+    Masker objects can transform both 3D and 4D image objects :
+
+    - transforming a 3D image produces a 1D (features,) array,
+    - transforming a 4D image produces a 2D (samples, features) array.
 
 
 .. |niimgs| image:: ../images/niimgs.jpg
@@ -100,8 +100,8 @@ slice and create a :ref:`Niimg <niimg>` in memory:
 
 
 .. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
-    :start-after: Load movie watching based brain development fMRI dataset
-    :end-before: # To display the background
+    :start-after: to speed up computation.
+    :end-before: mean_func_img = mean_img(epi_img)
 
 Controlling how the mask is computed from the data
 --------------------------------------------------
@@ -135,27 +135,21 @@ mask computation parameters.
 The mask can be retrieved and visualized from the ``mask_img_`` attribute
 of the masker:
 
-.. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
-    :start-after: # A NiftiMasker with the default strategy
-    :end-before: # Plot the generated mask using the .generate_report method
+.. literalinclude:: ../../examples/06_manipulating_images/plot_nifti_simple.py
+    :start-after: with the mean functional image as background.
+    :end-before: # %%
 
-.. figure:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_mask_computation_002.png
+.. figure:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_nifti_simple_001.png
     :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
     :align: center
-    :scale: 40
 
 Alternatively, the mask can be visualized using the ``generate_report``
 method of the masker. The generated report can be viewed in a Jupyter notebook,
 opened in a new browser tab using ``report.open_in_browser()``,
 or saved as a portable HTML file ``report.save_as_html(output_filepath)``.
 
-.. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
-    :start-after: # We need to specify an 'epi' mask_strategy, as this is raw :term:`EPI` data
-    :end-before: # Generate mask with strong opening
-
 .. figure:: /images/niftimasker_report.png
     :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
-    :scale: 50%
     :align: center
 
 Different masking strategies
@@ -180,7 +174,6 @@ functions documentation, or :doc:`the NiftiMasker example
 
 .. figure:: /images/niftimasker_report_params.png
     :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
-    :scale: 50%
     :align: center
 
 .. _masker_preprocessing_steps:
@@ -195,7 +188,7 @@ preparation::
    >>> from nilearn import maskers
    >>> masker = maskers.NiftiMasker()
    >>> masker # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-   NiftiMasker(cmap='gray', detrend=False, dtype=None, high_pass=None,
+   NiftiMasker(clean_args=None, cmap='gray', detrend=False, dtype=None, high_pass=None,
          high_variance_confounds=False, low_pass=None, mask_args=None,
          mask_img=None, mask_strategy='background',
          memory=None, memory_level=1, reports=True,
@@ -297,8 +290,6 @@ properties, before conversion to :term:`voxel` signals.
    :func:`nilearn.signal.clean`
 
 
-
-
 Resampling: resizing and changing resolutions of images
 .......................................................
 
@@ -346,9 +337,10 @@ an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
 |
 
 .. tip::
-    Masker objects can inverse-transform both 1D and 2D arrays.
-    Inverse-transforming a 2D array produces a 4D (X x Y x Z x samples) image,
-    while inverse-transforming a 1D array produces a 3D (X x Y x Z) image.
+    Masker objects can inverse-transform both 1D and 2D arrays :
+
+    - inverse-transforming a 2D array produces a 4D (X x Y x Z x samples) image,
+    - inverse-transforming a 1D array produces a 3D (X x Y x Z) image.
 
 .. topic:: **Examples to better understand the NiftiMasker**
 
@@ -448,8 +440,17 @@ as to facilitate the computation of :term:`voxel` signals in multi-subjects sett
 While :class:`NiftiMasker`, :class:`NiftiLabelsMasker` and
 :class:`NiftiMapsMasker` work with 3D inputs (single brain volume) or 4D inputs
 (sequence of brain volumes in time for one subject), :class:`MultiNiftiMasker`,
-:class:`MultiNiftiLabelsMasker` and :class:`MultiNiftiMapsMasker` expect 5D
-inputs (list of sequences of brain volumes).
+:class:`MultiNiftiLabelsMasker` and :class:`MultiNiftiMapsMasker`
+can also handle list of 3D or 4D image objects.
+
+.. tip::
+    MultiMasker objects can transform both 3D, 4D,
+    as well as list of 3D or 4D image objects :
+
+    - transforming a 3D image produces a 1D (features,) array,
+    - transforming a 4D image produces a 2D (samples, features) array,
+    - transforming a list of 3D image produces a list of 1D (features,) array,
+    - transforming a list of 4D image produces a list of 2D (samples, features) array.
 
 :class:`MultiNiftiMasker` Usage
 -------------------------------
@@ -473,7 +474,7 @@ for each subject.
     * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
 :class:`MultiNiftiMapsMasker` Usage
--------------------------------------
+-----------------------------------
 
 :class:`MultiNiftiMapsMasker` extracts signals regions defined by maps
 for each subject.
@@ -507,3 +508,39 @@ seed position is used.
 .. topic:: **Examples**
 
   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py`
+
+
+Extraction of signals from surface images\  :class:`SurfaceMasker`, :class:`SurfaceLabelsMasker`, :class:`SurfaceMapsMasker`, :class:`MultiSurfaceMasker`
+=========================================================================================================================================================
+
+The purpose of :class:`SurfaceMasker`, :class:`SurfaceLabelsMasker`, :class:`SurfaceMapsMasker`
+is to mirror the capabilities of
+:class:`NiftiMasker`, :class:`NiftiLabelsMasker` and :class:`NiftiMapsMasker`
+but to extract data from :class:`~nilearn.surface.SurfaceImage`.
+
+They can perform data extraction from 1D surface data (n_vertices),
+2D surface data (n_vertices x samples)
+or list of 1D or 2D surface data with the same underlying mesh.
+
+.. tip::
+    Surface masker objects can transform both 1D, 2D,
+    as well as list of 1D surface image objects.
+
+    - transforming a 1D image (n_vertices,) produces a 1D array,
+    - transforming a 2D image (n_vertices, samples) produces a 2D array,
+    - transforming a list of ``length==n`` of 1D image (n_vertices,) produces a 2D array (n_vertices, n)
+
+    Multi surface masker objects can transform both 1D, 2D,
+    as well as list of 1D or 2D surface image objects.
+
+    - transforming a 1D image (n_vertices,) produces a 1D array,
+    - transforming a 2D image (n_vertices, samples) produces a 2D array,
+    - transforming a list of ``length==n`` of images (n_vertices,) produces a list of ``length==n`` of arrays where the dimension of each array matches that of the input image
+
+    Transforming a 1D image produces a 1D (features,) array.
+    All other input will produce a 1D (samples, features) array..
+
+    Surface masker objects can inverse-transform both 1D and 2D arrays :
+
+    - inverse-transforming a 1D array produces a 1D (n_vertices,) image,
+    - inverse-transforming a 2D array produces a 2D (n_vertices, samples) image.

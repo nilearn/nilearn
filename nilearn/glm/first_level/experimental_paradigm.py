@@ -8,9 +8,6 @@ It can also contain:
     * a 'duration' field that yields event duration (for so-called block
         paradigms).
     * a 'modulation' field that associated a scalar value to each event.
-
-Author: Bertrand Thirion, 2015
-
 """
 
 import warnings
@@ -19,9 +16,11 @@ import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
 from nilearn._utils import logger
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_is_of_allowed_type
 
 
-def check_events(events):
+def check_events(events: pd.DataFrame) -> pd.DataFrame:
     """Test that the events data describes a valid experimental paradigm.
 
     It is valid if the events data has ``'onset'`` and ``'duration'`` keys
@@ -47,7 +46,7 @@ def check_events(events):
         Per-event onset time (in seconds)
 
     duration : array of shape (n_events,), dtype='f'
-        Per-event durantion, (in seconds)
+        Per-event duration, (in seconds)
         defaults to zeros(n_events) when no duration is provided
 
     modulation : array of shape (n_events,), dtype='f'
@@ -83,12 +82,7 @@ def check_events(events):
                 - ``'duration'``
 
     """
-    # Check that events is a Pandas DataFrame
-    if not isinstance(events, pd.DataFrame):
-        raise TypeError(
-            "Events should be a Pandas DataFrame. "
-            f"A {type(events)} was provided instead."
-        )
+    check_is_of_allowed_type(events, (pd.DataFrame,), "events")
 
     events = _check_columns(events)
 
@@ -103,7 +97,7 @@ def check_events(events):
     return _handle_modulation(events_copy)
 
 
-def _check_columns(events):
+def _check_columns(events: pd.DataFrame) -> pd.DataFrame:
     """Check events has onset and duration numeric columns with no NaN."""
     for col_name in ["onset", "duration"]:
         if col_name not in events.columns:
@@ -125,17 +119,18 @@ def _check_columns(events):
     return events
 
 
-def _handle_missing_trial_types(events):
+def _handle_missing_trial_types(events: pd.DataFrame) -> pd.DataFrame:
     """Create 'dummy' events trial_type if the column is not present."""
     if "trial_type" not in events.columns:
         warnings.warn(
-            "'trial_type' column not found in the given events data."
+            "'trial_type' column not found in the given events data.",
+            stacklevel=find_stack_level(),
         )
         events["trial_type"] = "dummy"
     return events
 
 
-def _check_null_duration(events):
+def _check_null_duration(events: pd.DataFrame) -> None:
     """Warn if there are events with null duration."""
     conditions_with_null_duration = events["trial_type"][
         events["duration"] == 0
@@ -144,23 +139,22 @@ def _check_null_duration(events):
         ordered_list = [
             f"- '{x}'\n" for x in sorted(conditions_with_null_duration)
         ]
-        ordered_list = "".join(ordered_list)
         warnings.warn(
             (
                 "The following conditions contain events with null duration:\n"
-                f"{ordered_list}"
+                f"{''.join(ordered_list)}"
             ),
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
 
 
-def _handle_modulation(events):
+def _handle_modulation(events: pd.DataFrame) -> pd.DataFrame:
     """Set the modulation column to 1 if it is not present."""
     if "modulation" in events.columns:
         logger.log(
             "A 'modulation' column was found in "
             "the given events data and is used.",
-            stack_level=2,
+            verbose=1,
         )
     else:
         events["modulation"] = 1
@@ -170,14 +164,15 @@ def _handle_modulation(events):
 VALID_FIELDS = {"onset", "duration", "trial_type", "modulation"}
 
 
-def _check_unexpected_columns(events):
+def _check_unexpected_columns(events: pd.DataFrame) -> None:
     """Warn for each unexpected column that will not be used afterwards."""
     unexpected_columns = list(set(events.columns).difference(VALID_FIELDS))
     if unexpected_columns:
         warnings.warn(
             "The following unexpected columns "
             "in events data will be ignored: "
-            f"{', '.join(unexpected_columns)}"
+            f"{', '.join(unexpected_columns)}",
+            stacklevel=find_stack_level(),
         )
 
 
@@ -192,7 +187,9 @@ COLUMN_DEFINING_EVENT_IDENTITY = ["trial_type", "onset", "duration"]
 STRATEGY = {"modulation": "sum"}
 
 
-def handle_modulation_of_duplicate_events(events):
+def handle_modulation_of_duplicate_events(
+    events: pd.DataFrame,
+) -> pd.DataFrame:
     """Deal with modulation of duplicate events if they have one.
 
     Currently the strategy is to sum the modulation values of duplicate events.
@@ -208,7 +205,8 @@ def handle_modulation_of_duplicate_events(events):
         warnings.warn(
             "Duplicated events were detected. "
             "Amplitudes of these events will be summed. "
-            "You might want to verify your inputs."
+            "You might want to verify your inputs.",
+            stacklevel=find_stack_level(),
         )
 
     return cleaned_events

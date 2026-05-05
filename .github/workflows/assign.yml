@@ -1,7 +1,11 @@
 ---
-# Source: Scikit-learn
-# See: https://github.com/scikit-learn/scikit-learn/blob/main/.github/workflows/assign.yml
-
+# Allows anyone to self-assign an issue automatically by commenting the word `take` on any issue.
+#
+# .. seealso::
+#
+#   Adapted from `Scikit-learn <https://github.com/scikit-learn/scikit-learn/blob/main/.github/workflows/assign.yml>`_.
+#
+###
 name: Assign
 on:
     issue_comment:

@@ -25,7 +25,7 @@ from nilearn.datasets import fetch_mixed_gambles
 data = fetch_mixed_gambles(n_subjects=16)
 
 zmap_filenames = data.zmaps
-behavioral_target = data.gain
+behavioral_target = data.gain.to_numpy().ravel()
 mask_filename = data.mask_img
 
 # %%
@@ -33,17 +33,23 @@ mask_filename = data.mask_img
 # --------
 # We compare both of these models to a pipeline ensembling many models
 #
+import warnings
+
+from sklearn.exceptions import ConvergenceWarning
+
 from nilearn.decoding import FREMRegressor
 
-frem = FREMRegressor("svr", cv=10, standardize="zscore_sample")
+frem = FREMRegressor("svr", cv=10, verbose=1)
 
-frem.fit(zmap_filenames, behavioral_target)
+with warnings.catch_warnings():
+    warnings.filterwarnings(action="ignore", category=ConvergenceWarning)
+    frem.fit(zmap_filenames, behavioral_target)
 
 # %%
 # Visualize FREM weights
 # ----------------------
 
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 plot_stat_map(
     frem.coef_img_["beta"],
@@ -52,6 +58,8 @@ plot_stat_map(
     cut_coords=[20, -2],
     threshold=0.2,
 )
+
+show()
 
 # %%
 # We can observe that the coefficients map learnt
@@ -89,6 +97,7 @@ tv_l1 = SpaceNetRegressor(
     eps=1e-1,  # prefer large alphas
     memory="nilearn_cache",
     n_jobs=2,
+    verbose=1,
 )
 # tv_l1.fit(zmap_filenames, behavioral_target)
 # plot_stat_map(tv_l1.coef_img_, title="TV-L1", display_mode="yz",

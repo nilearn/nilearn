@@ -27,6 +27,9 @@ Classes
     RegressionResults
     SimpleRegressionResults
 
+.. autoclasstree:: nilearn.glm
+   :full:
+
 Functions
 ---------
 
@@ -42,6 +45,7 @@ Functions
     fdr_threshold
     cluster_level_inference
     threshold_stats_img
+    save_glm_to_bids
 
 
 :mod:`nilearn.glm.first_level`
@@ -113,3 +117,7 @@ Functions
 
     make_second_level_design_matrix
     non_parametric_inference
+
+
+.. autoclasstree:: nilearn.glm.first_level.FirstLevelModel nilearn.glm.second_level.SecondLevelModel
+   :full:

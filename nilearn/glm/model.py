@@ -1,7 +1,4 @@
-"""Implement classes to handle statistical tests on likelihood models.
-
-Author: Bertrand Thirion, 2011--2015
-"""
+"""Implement classes to handle statistical tests on likelihood models."""
 
 import numpy as np
 from nibabel.onetime import auto_attr
@@ -32,13 +29,13 @@ class LikelihoodModelResults:
     model : ``LikelihoodModel`` instance
         Model used to generate fit.
 
-    cov : None or ndarray, optional
+    cov : None or ndarray, default=None
         Covariance of thetas.
 
     dispersion : scalar, default=1
         Multiplicative factor in front of `cov`.
 
-    nuisance : None of ndarray, optional
+    nuisance : None of ndarray, default=None
         Parameter estimates needed to compute logL.
 
     Notes
@@ -146,6 +143,9 @@ class LikelihoodModelResults:
         if dispersion is None:
             dispersion = self.dispersion
 
+        if matrix is None and column is None:
+            return self.cov * dispersion
+
         if column is not None:
             column = np.asarray(column)
             if column.shape == ():
@@ -153,7 +153,7 @@ class LikelihoodModelResults:
             else:
                 return self.cov[column][:, column] * dispersion
 
-        elif matrix is not None:
+        else:
             if other is None:
                 other = matrix
             tmp = np.dot(matrix, np.dot(self.cov, np.transpose(other)))
@@ -161,8 +161,6 @@ class LikelihoodModelResults:
                 return tmp * dispersion
             else:
                 return tmp[:, :, np.newaxis] * dispersion
-        if matrix is None and column is None:
-            return self.cov * dispersion
 
     def Tcontrast(self, matrix, store=("t", "effect", "sd"), dispersion=None):  # noqa: N802
         """Compute a Tcontrast for a row vector `matrix`.
@@ -322,9 +320,6 @@ class LikelihoodModelResults:
         -----
         Confidence intervals are two-tailed.
 
-        tails : string, optional
-            Possible values: 'two' | 'upper' | 'lower'
-
         """
         if cols is None:
             lower = self.theta - inv_t_cdf(
@@ -346,7 +341,7 @@ class LikelihoodModelResults:
                     + inv_t_cdf(1 - alpha / 2, self.df_residuals)
                     * np.sqrt(self.vcov(column=i, dispersion=dispersion))
                 )
-        return np.asarray(list(zip(lower, upper)))
+        return np.asarray(list(zip(lower, upper, strict=False)))
 
 
 class TContrastResults:

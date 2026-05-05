@@ -1,11 +1,5 @@
 """Common functions and base classes."""
 
-# Author: DOHMATOB Elvis Dopgima,
-#         PIZARRO Gaspar,
-#         VAROQUAUX Gael,
-#         GRAMFORT Alexandre,
-#         PEDREGOSA Fabian
-
 from functools import partial
 
 import numpy as np

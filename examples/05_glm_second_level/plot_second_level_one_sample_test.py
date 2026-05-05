@@ -81,7 +81,7 @@ design_matrix = pd.DataFrame(
 # Next, we specify the model and fit it.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2)
+second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2, verbose=1)
 second_level_model = second_level_model.fit(
     second_level_input,
     design_matrix=design_matrix,
@@ -105,7 +105,6 @@ p001_unc = norm.isf(p_val)
 display = plotting.plot_glass_brain(
     z_map,
     threshold=p001_unc,
-    colorbar=True,
     display_mode="z",
     plot_abs=False,
     title="group left-right button press (unc p<0.001)",
@@ -170,6 +169,7 @@ out_dict = non_parametric_inference(
     smoothing_fwhm=8.0,
     n_jobs=2,
     threshold=0.001,
+    verbose=1,
 )
 
 # %%
@@ -212,7 +212,6 @@ for img_counter, (i_row, j_col) in enumerate(
     ax = axes[i_row, j_col]
     plotting.plot_glass_brain(
         IMAGES[img_counter],
-        colorbar=True,
         vmax=vmax,
         vmin=threshold,
         display_mode="z",

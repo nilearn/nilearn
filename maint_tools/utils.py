@@ -1,7 +1,5 @@
 """Utilities for maintenance."""
 
-from __future__ import annotations
-
 import ast
 import importlib
 import inspect
@@ -10,9 +8,9 @@ from typing import Literal
 
 import nilearn
 
-FOLDERS_TO_SKIP = ["externals", "data", "input_data", "tests", "_utils"]
+FOLDERS_TO_SKIP = ["data", "tests", "_utils"]
 
-FILES_TO_SKIP = ["test_", "conftest"]
+FILES_TO_SKIP = ["test_"]
 
 
 def root_dir() -> Path:
@@ -36,8 +34,12 @@ def list_modules(
         files_to_skip += "_"
 
     modules = []
-    for mod in (root_dir() / "nilearn").glob("**/*.py"):
-        if any(x.stem in folders_to_skip for x in mod.parents):
+    nilearn_dir = root_dir() / "nilearn"
+    for mod in nilearn_dir.glob("**/*.py"):
+        if any(
+            x.stem in folders_to_skip
+            for x in mod.relative_to(nilearn_dir).parents
+        ):
             continue
         if any(mod.name.startswith(s) for s in files_to_skip):
             continue
@@ -76,7 +78,9 @@ def list_nodes(
     else:
         module = file
     node_definitions = [
-        node for node in module.body if isinstance(node, node_type)
+        node
+        for node in module.body
+        if isinstance(node, node_type) and not is_overload(node)
     ]
 
     if include == "all":
@@ -86,27 +90,25 @@ def list_nodes(
     return [c for c in node_definitions if not c.name.startswith("_")]
 
 
-def update_api(api, mod):
-    """Add function and class names of a module to user facing API listing."""
-    for x in mod.__all__:
-        if x.startswith("_"):
-            continue
-        if inspect.isfunction(mod.__dict__[x]) or inspect.isclass(
-            mod.__dict__[x]
-        ):
-            api.append(x)
-    return api
+def is_overload(node) -> bool:
+    """Return True if node has @overload decorator."""
+    for dec in getattr(node, "decorator_list", []):
+        if isinstance(dec, ast.Name) and dec.id == "overload":
+            return True
+        if isinstance(dec, ast.Attribute) and dec.attr == "overload":
+            return True
+    return False
 
 
-public_api = []
+public_api = ["nilearn"]
 for subpackage in nilearn.__all__:
+    public_api.append(subpackage)
     if subpackage.startswith("_"):
         continue
     mod = importlib.import_module(f"nilearn.{subpackage}")
-    public_api = update_api(public_api, mod)
+    public_api.extend(mod.__all__)
     for x in mod.__all__:
-        if x.startswith("_"):
-            continue
         if inspect.ismodule(mod.__dict__[x]):
             submod = importlib.import_module(f"nilearn.{subpackage}.{x}")
-            public_api = update_api(public_api, submod)
+            if hasattr(submod, "__all__"):
+                public_api.extend(submod.__all__)

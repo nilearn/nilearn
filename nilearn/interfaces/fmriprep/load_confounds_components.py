@@ -1,6 +1,5 @@
 """Functions to noise components based on selected strategey.
 
-
 The _load_* functions  of this module are indirectly used
 in nilearn.interfaces.fmriprep._load_noise_component.
 
@@ -10,21 +9,135 @@ See an example below:
 
     loaded_confounds = getattr(components, f"_load_{component}")(
         confounds_raw, **params
-    )
+    )  # noqa
 
 """
 
+import re
+
 import numpy as np
 import pandas as pd
+
+from nilearn._utils.param_validation import check_parameter_in_allowed
 
 from .load_confounds_compcor import find_compcor
 from .load_confounds_scrub import optimize_scrub
 from .load_confounds_utils import (
     MissingConfoundError,
     add_suffix,
-    check_params,
+    check_params_confounds,
     find_confounds,
 )
+
+
+def _tedana_strategy(classification, mixing, metrics):
+    """
+    Auxiliary functionality to extract confounds based on the strategy.
+
+    Parameters
+    ----------
+    classification : :obj:`list`
+        list of classifications to be returned from the mixing file
+
+    mixing : :obj:`pd.DataFrame`
+        pandas dataframe with the mixing file.
+
+    metrics : :obj:`pd.DataFrame`
+        pandas dataframe with the metrics file.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame of TEDANA regressors.
+    """
+    # Get selected components from status table
+    selected_metric_components = metrics[
+        metrics["classification"].isin(classification)
+    ]
+
+    #############################################################
+    # tedana versions like 24.0.2 do not have matching component
+    # names from the mixing and status tables. For backwards
+    # compatibility we will normalize the component names to
+    # match the mixing file rejected component
+    # names: ICA_04 -> ICA_4
+    #############################################################
+
+    # Normalize mixing file column names and build a mapping
+    original_columns = mixing.columns.tolist()
+
+    # Map: normalized_name -> original_name
+    column_mapping = {
+        re.sub(r"ICA_0*(\d+)$", lambda m: f"ICA_{int(m.group(1))}", col): col
+        for col in original_columns
+    }
+
+    # Apply normalized names to columns
+    mixing.columns = list(column_mapping.keys())
+
+    # Build classification lookup from normalized component names
+    classification_lookup = {
+        re.sub(
+            r"ICA_0*(\d+)$",
+            lambda m: f"ICA_{int(m.group(1))}",
+            row["Component"],
+        ): row["classification"]
+        for _, row in selected_metric_components.iterrows()
+    }
+
+    # Select matched columns (normalized)
+    matched_components = [
+        c for c in classification_lookup if c in mixing.columns
+    ]
+    selected = mixing[sorted(matched_components)]
+
+    # Rename columns using classification + original name
+    # we are prefixing the classification value to the column name
+    # regardless of the tedana strategy selected
+    renamed_columns = {
+        col: f"{classification_lookup[col]}_{column_mapping[col]}"
+        for col in selected.columns
+    }
+
+    return selected.rename(columns=renamed_columns)
+
+
+def _load_tedana(confounds_files, tedana):
+    """Load the TEDANA regressors.
+
+    Parameters
+    ----------
+    confounds_files : :obj:`dict`
+        dict of confounds dataframes.
+
+    tedana : str
+        TEDANA strategy to use. Options are "aggressive" or
+        "non-aggressive".
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame of TEDANA regressors.
+    """
+    if tedana not in ["aggressive", "non-aggressive"]:
+        raise ValueError(
+            "Please select a valid option 'aggresive' or 'non-aggressive' "
+            "when using TEDANA strategy. "
+            f"Current input: {tedana}"
+        )
+
+    if tedana == "aggressive":
+        return _tedana_strategy(
+            ["rejected"],
+            mixing=confounds_files["mixing"],
+            metrics=confounds_files["metrics"],
+        )
+    elif tedana == "non-aggressive":
+        return _tedana_strategy(
+            ["accepted", "rejected"],
+            mixing=confounds_files["mixing"],
+            metrics=confounds_files["metrics"],
+        )
 
 
 def _load_motion(confounds_raw, motion):
@@ -54,7 +167,9 @@ def _load_motion(confounds_raw, motion):
         ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
         motion,
     )
-    motion_regressor_check = check_params(confounds_raw, motion_params)
+    motion_regressor_check = check_params_confounds(
+        confounds_raw, motion_params
+    )
     if isinstance(motion_regressor_check, list):
         raise MissingConfoundError(params=motion_regressor_check)
 
@@ -108,7 +223,7 @@ def _load_wm_csf(confounds_raw, wm_csf):
         wm_csf is not a valid choice of strategy.
     """
     wm_csf_params = add_suffix(["csf", "white_matter"], wm_csf)
-    if check_params(confounds_raw, wm_csf_params):
+    if check_params_confounds(confounds_raw, wm_csf_params):
         return confounds_raw[wm_csf_params]
     else:
         raise MissingConfoundError(keywords=["wm_csf"])
@@ -138,7 +253,7 @@ def _load_global_signal(confounds_raw, global_signal):
         signal is not a valid choice of strategy.
     """
     global_params = add_suffix(["global_signal"], global_signal)
-    if check_params(confounds_raw, global_params):
+    if check_params_confounds(confounds_raw, global_params):
         return confounds_raw[global_params]
     else:
         raise MissingConfoundError(keywords=["global_signal"])
@@ -175,7 +290,7 @@ def _load_compcor(confounds_raw, meta_json, compcor, n_compcor):
         not a valid choice of strategy.
     """
     compcor_cols = find_compcor(meta_json, compcor, n_compcor)
-    if check_params(confounds_raw, compcor_cols):
+    if check_params_confounds(confounds_raw, compcor_cols):
         return confounds_raw[compcor_cols]
     else:
         raise MissingConfoundError(keywords=["compcor"])
@@ -205,6 +320,7 @@ def _load_ica_aroma(confounds_raw, ica_aroma):
     ValueError
         When ica_aroma is not "full" or "basic".
     """
+    check_parameter_in_allowed(ica_aroma, ("full", "basic"), "ica_aroma")
     if ica_aroma == "full":
         return pd.DataFrame()
     elif ica_aroma == "basic":
@@ -212,11 +328,6 @@ def _load_ica_aroma(confounds_raw, ica_aroma):
         if not ica_aroma_params:
             raise MissingConfoundError(keywords=["ica_aroma"])
         return confounds_raw[ica_aroma_params]
-    else:
-        raise ValueError(
-            "Please select an option when using ICA-AROMA strategy."
-            f"Current input: {ica_aroma}"
-        )
 
 
 def _load_scrub(confounds_raw, scrub, fd_threshold, std_dvars_threshold):
@@ -287,5 +398,7 @@ def _load_non_steady_state(confounds_raw):
         DataFrame of non steady state regressors generated by fMRIPrep.
         If none were found, return an empty DataFrame.
     """
+    if isinstance(confounds_raw, dict):
+        return pd.DataFrame()
     nss_outliers = find_confounds(confounds_raw, ["non_steady_state"])
     return confounds_raw[nss_outliers] if nss_outliers else pd.DataFrame()

@@ -5,8 +5,6 @@ Group Sparse inverse covariance for multi-subject connectome
 This example shows how to estimate a connectome on a group of subjects
 using the group sparse inverse covariance estimate.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -47,10 +45,10 @@ def plot_matrices(cov, prec, title, labels):
 # %%
 # Fetching datasets
 # ------------------
-from nilearn import datasets
+from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 
-msdl_atlas_dataset = datasets.fetch_atlas_msdl()
-rest_dataset = datasets.fetch_development_fmri(n_subjects=n_subjects)
+msdl_atlas_dataset = fetch_atlas_msdl()
+rest_dataset = fetch_development_fmri(n_subjects=n_subjects)
 
 # print basic information on the dataset
 print(
@@ -70,24 +68,24 @@ masker = NiftiMapsMasker(
     high_variance_confounds=True,
     low_pass=None,
     high_pass=0.01,
-    t_r=2,
-    standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    t_r=rest_dataset.t_r,
+    standardize_confounds=True,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=2,
+    verbose=1,
 )
-masker.fit()
 
 subject_time_series = []
 func_filenames = rest_dataset.func
 confound_filenames = rest_dataset.confounds
 for func_filename, confound_filename in zip(
-    func_filenames, confound_filenames
+    func_filenames, confound_filenames, strict=False
 ):
     print(f"Processing file {func_filename}")
 
-    region_ts = masker.transform(func_filename, confounds=confound_filename)
+    region_ts = masker.fit_transform(
+        func_filename, confounds=confound_filename
+    )
     subject_time_series.append(region_ts)
 
 
@@ -96,13 +94,13 @@ for func_filename, confound_filename in zip(
 # -----------------------------------------
 from nilearn.connectome import GroupSparseCovarianceCV
 
-gsc = GroupSparseCovarianceCV(verbose=2)
+gsc = GroupSparseCovarianceCV(verbose=1)
 gsc.fit(subject_time_series)
 
 
 from sklearn.covariance import GraphicalLassoCV
 
-gl = GraphicalLassoCV(verbose=2)
+gl = GraphicalLassoCV(verbose=True)
 gl.fit(np.concatenate(subject_time_series))
 
 

@@ -1,7 +1,5 @@
 """Contrast computation and operation on contrast to \
 obtain fixed effect results.
-
-Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
 """
 
 from warnings import warn
@@ -10,7 +8,9 @@ import numpy as np
 import pandas as pd
 import scipy.stats as sps
 
-from nilearn._utils import logger, rename_parameters
+from nilearn._utils import logger
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -44,21 +44,17 @@ def expression_to_contrast_vector(expression, design_columns):
         contrast_vector = eye_design.eval(
             expression, engine="python"
         ).to_numpy()
-
-    except Exception:
+    except Exception as e:
         raise ValueError(
             f"The expression ({expression}) is not valid. "
             "This could be due to "
             "defining the contrasts using design matrix columns that are "
             "invalid python identifiers."
-        )
+        ) from e
 
     return contrast_vector
 
 
-@rename_parameters(
-    replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
-)
 def compute_contrast(labels, regression_result, con_val, stat_type=None):
     """Compute the specified :term:`contrast` given an estimated glm.
 
@@ -80,12 +76,6 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
         If None, then defaults to 't' for 1D `con_val`
         and 'F' for 2D `con_val`.
 
-    contrast_type :
-
-        .. deprecated:: 0.10.3
-
-            Use ``stat_type`` instead (see above).
-
     Returns
     -------
     con : Contrast instance,
@@ -103,12 +93,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
     if stat_type is None:
         stat_type = "t" if dim == 1 else "F"
 
-    acceptable_stat_types = ["t", "F"]
-    if stat_type not in acceptable_stat_types:
-        raise ValueError(
-            f"'{stat_type}' is not a known contrast type. "
-            f"Allowed types are {acceptable_stat_types}."
-        )
+    check_parameter_in_allowed(stat_type, ["t", "F"], "stat_type")
 
     if stat_type == "t":
         effect_ = np.zeros(labels.size)
@@ -161,9 +146,14 @@ def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
     """
     contrast = None
     n_contrasts = 0
-    for i, (lab, res, con_val) in enumerate(zip(labels, results, con_vals)):
+    for i, (lab, res, con_val) in enumerate(
+        zip(labels, results, con_vals, strict=False)
+    ):
         if np.all(con_val == 0):
-            warn(f"Contrast for run {int(i)} is null.")
+            warn(
+                f"Contrast for run {int(i)} is null.",
+                stacklevel=find_stack_level(),
+            )
             continue
         contrast_ = compute_contrast(lab, res, con_val, stat_type)
         if contrast_ is None:
@@ -197,7 +187,7 @@ class Contrast:
     variance : array of shape (n_voxels)
         The associated variance estimate.
 
-    dim : :obj:`int` or None, optional
+    dim : :obj:`int` or None, default=None
         The dimension of the :term:`contrast`.
 
     dof : scalar, default=DEF_DOFMAX
@@ -206,12 +196,6 @@ class Contrast:
     stat_type : {'t', 'F'}, default='t'
         Specification of the :term:`contrast` type.
 
-    contrast_type :
-
-        .. deprecated:: 0.10.3
-
-            Use ``stat_type`` instead (see above).
-
     tiny : :obj:`float`, default=DEF_TINY
         Small quantity used to avoid numerical underflows.
 
@@ -219,9 +203,6 @@ class Contrast:
         The maximum degrees of freedom of the residuals.
     """
 
-    @rename_parameters(
-        replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
-    )
     def __init__(
         self,
         effect,
@@ -247,13 +228,13 @@ class Contrast:
 
         if self.dim > 1 and stat_type == "t":
             logger.log(
-                "Automatically converted multi-dimensional t to F contrast"
+                "Automatically converted multi-dimensional t to F contrast",
+                verbose=1,
             )
             stat_type = "F"
-        if stat_type not in ["t", "F"]:
-            raise ValueError(
-                f"{stat_type} is not a valid stat_type. Should be t or F"
-            )
+
+        check_parameter_in_allowed(stat_type, ["t", "F"], "stat_type")
+
         self.stat_type = stat_type
         self.stat_ = None
         self.p_value_ = None
@@ -261,24 +242,6 @@ class Contrast:
         self.baseline = 0
         self.tiny = tiny
         self.dofmax = dofmax
-
-    @property
-    def contrast_type(self):
-        """Return value of stat_type.
-
-        .. deprecated:: 0.10.3
-        """
-        attrib_deprecation_msg = (
-            'The attribute "contrast_type" '
-            "will be removed in 0.13.0 release of Nilearn. "
-            'Please use the attribute "stat_type" instead.'
-        )
-        warn(
-            category=DeprecationWarning,
-            message=attrib_deprecation_msg,
-            stacklevel=2,
-        )
-        return self.stat_type
 
     def effect_size(self):
         """Make access to summary statistics more straightforward \
@@ -310,6 +273,7 @@ class Contrast:
         self.baseline = baseline
 
         # Case: one-dimensional contrast ==> t or t**2
+        check_parameter_in_allowed(self.stat_type, ["F", "t"], "stat_type")
         if self.stat_type == "F":
             stat = (
                 np.sum((self.effect - baseline) ** 2, 0)
@@ -321,8 +285,7 @@ class Contrast:
             stat = (self.effect - baseline) / np.sqrt(
                 np.maximum(self.variance, self.tiny)
             )
-        else:
-            raise ValueError("Unknown statistic type")
+
         self.stat_ = stat.ravel()
         return self.stat_
 
@@ -420,7 +383,7 @@ class Contrast:
     def __add__(self, other):
         """Add two contrast, Yields an new Contrast instance.
 
-        This should be used only on indepndent contrasts.
+        This should be used only on independent contrasts.
         """
         if self.stat_type != other.stat_type:
             raise ValueError(
@@ -435,7 +398,7 @@ class Contrast:
             warn(
                 "Running approximate fixed effects on F statistics.",
                 category=UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
@@ -472,7 +435,6 @@ def compute_fixed_effects(
     mask=None,
     precision_weighted=False,
     dofs=None,
-    return_z_score=False,
 ):
     """Compute the fixed effects, given images of effects and variance.
 
@@ -500,9 +462,6 @@ def compute_fixed_effects(
         when ``None``,
         it is assumed that the degrees of freedom are 100 per input.
 
-    return_z_score : :obj:`bool`, default=False
-        Whether ``fixed_fx_z_score_img`` should be output or not.
-
     Returns
     -------
     fixed_fx_contrast_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
@@ -514,13 +473,8 @@ def compute_fixed_effects(
     fixed_fx_stat_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         The fixed effects stat computed within the mask.
 
-    fixed_fx_z_score_img : Nifti1Image, optional
+    fixed_fx_z_score_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         The fixed effects corresponding z-transform
-
-    Warns
-    -----
-    DeprecationWarning
-        Starting in version 0.13, fixed_fx_z_score_img will always be returned
 
     """
     n_runs = len(contrast_imgs)
@@ -530,17 +484,20 @@ def compute_fixed_effects(
             f"from the number of variance images ({len(variance_imgs)})."
         )
 
+    # TODO (nilearn >=0.15) remove ALL standardize=None below
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = mask.fit()
     elif mask is None:
         if isinstance(contrast_imgs[0], SurfaceImage):
-            masker = SurfaceMasker().fit(contrast_imgs[0])
+            masker = SurfaceMasker(standardize=None).fit(contrast_imgs[0])
         else:
-            masker = NiftiMasker().fit(contrast_imgs)
+            masker = NiftiMasker(standardize=None).fit(contrast_imgs)
     elif isinstance(mask, SurfaceImage):
-        masker = SurfaceMasker(mask_img=mask).fit(contrast_imgs[0])
+        masker = SurfaceMasker(mask_img=mask, standardize=None).fit(
+            contrast_imgs[0]
+        )
     else:
-        masker = NiftiMasker(mask_img=mask).fit()
+        masker = NiftiMasker(mask_img=mask, standardize=None).fit()
 
     variances = np.array(
         [masker.transform(vi).squeeze() for vi in variance_imgs]
@@ -549,15 +506,14 @@ def compute_fixed_effects(
         [masker.transform(ci).squeeze() for ci in contrast_imgs]
     )
 
-    if dofs is not None:
-        if len(dofs) != n_runs:
-            raise ValueError(
-                f"The number of degrees of freedom ({len(dofs)}) "
-                f"differs from the number of contrast images ({n_runs})."
-            )
-    else:
+    if dofs is None:
         dofs = [100] * n_runs
 
+    elif len(dofs) != n_runs:
+        raise ValueError(
+            f"The number of degrees of freedom ({len(dofs)}) "
+            f"differs from the number of contrast images ({n_runs})."
+        )
     (
         fixed_fx_contrast,
         fixed_fx_variance,
@@ -571,22 +527,13 @@ def compute_fixed_effects(
     fixed_fx_variance_img = masker.inverse_transform(fixed_fx_variance)
     fixed_fx_stat_img = masker.inverse_transform(fixed_fx_stat)
     fixed_fx_z_score_img = masker.inverse_transform(fixed_fx_z_score)
-    warn(
-        category=DeprecationWarning,
-        message="The behavior of this function will be "
-        "changed in release 0.13 to have an additional"
-        "return value 'fixed_fx_z_score_img'  by default. "
-        "Please set return_z_score to True.",
+
+    return (
+        fixed_fx_contrast_img,
+        fixed_fx_variance_img,
+        fixed_fx_stat_img,
+        fixed_fx_z_score_img,
     )
-    if return_z_score:
-        return (
-            fixed_fx_contrast_img,
-            fixed_fx_variance_img,
-            fixed_fx_stat_img,
-            fixed_fx_z_score_img,
-        )
-    else:
-        return fixed_fx_contrast_img, fixed_fx_variance_img, fixed_fx_stat_img
 
 
 def _compute_fixed_effects_params(

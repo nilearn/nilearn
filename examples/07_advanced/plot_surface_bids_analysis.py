@@ -35,7 +35,7 @@ were already normalized to the same :term:`MNI` space.
 # and the confounds.tsv files.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
-data = fetch_language_localizer_demo_dataset(legacy_output=False)
+data = fetch_language_localizer_demo_dataset()
 
 # %%
 # Here is the location of the dataset on disk.
@@ -60,10 +60,6 @@ data.data_dir
 # To get the first level models we only have to specify the dataset directory
 # and the ``task_label`` as specified in the file names.
 #
-# .. note::
-#
-#       We are only using a subset of participants from the dataset
-#       to lower the run time of the example.
 #
 from nilearn.glm.first_level import first_level_from_bids
 
@@ -72,8 +68,7 @@ models, run_imgs, events, confounds = first_level_from_bids(
     task_label="languagelocalizer",
     space_label="",
     img_filters=[("desc", "preproc")],
-    sub_labels=["01", "02", "05", "08"],  # comment to run all subjects
-    hrf_model="glover",
+    smoothing_fwhm=6,
     n_jobs=2,
 )
 
@@ -101,17 +96,23 @@ models, run_imgs, events, confounds = first_level_from_bids(
 #
 from pathlib import Path
 
-from nilearn.datasets import load_fsaverage
+from nilearn.datasets import load_fsaverage, load_fsaverage_data
 from nilearn.surface import SurfaceImage
 
 fsaverage5 = load_fsaverage()
+
+# let's get the fsaverage curvature data image
+# to use as background for the GLM report.
+curvature = load_fsaverage_data(mesh_type="inflated", data_type="curvature")
+
+threshold = 1.96
 
 # Empty lists in which we are going to store activation values.
 z_scores = []
 z_scores_left = []
 z_scores_right = []
-for first_level_glm, fmri_img, confound, event in zip(
-    models, run_imgs, confounds, events
+for i, (first_level_glm, fmri_img, confound, event) in enumerate(
+    zip(models, run_imgs, confounds, events, strict=False)
 ):
     print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
 
@@ -135,6 +136,24 @@ for first_level_glm, fmri_img, confound, event in zip(
         )
     )
 
+    # Let's only generate a report for the first subject
+    if i == 1:
+        report_flm = first_level_glm.generate_report(
+            contrasts="language-string",
+            threshold=threshold,
+            height_control=None,
+            alpha=0.001,
+            bg_img=curvature,
+            title="surface based subject-level model",
+        )
+
+# %%
+# View the GLM report of the first subject
+#
+# .. include:: ../../../examples/report_note.rst
+#
+report_flm
+
 
 # %%
 # Group level model
@@ -145,7 +164,6 @@ for first_level_glm, fmri_img, confound, event in zip(
 # by passing them as input
 # to :class:`~nilearn.glm.second_level.SecondLevelModel`.
 #
-
 import pandas as pd
 
 from nilearn.glm.second_level import SecondLevelModel
@@ -153,27 +171,19 @@ from nilearn.glm.second_level import SecondLevelModel
 second_level_glm = SecondLevelModel()
 design_matrix = pd.DataFrame([1] * len(z_scores), columns=["intercept"])
 second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
-results = second_level_glm.compute_contrast("intercept", output_type="z_score")
+
+report_slm = second_level_glm.generate_report(
+    contrasts=["intercept"],
+    threshold=threshold,
+    height_control=None,
+    alpha=0.001,
+    bg_img=curvature,
+    title="surface based group-level model",
+)
 
 # %%
-# Visualization
-# -------------
-# We can now plot
-# the computed group-level maps for left and right hemisphere
-from nilearn.datasets import load_fsaverage_data
-from nilearn.plotting import plot_surf_stat_map, show
-
-fsaverage_data = load_fsaverage_data(data_type="sulcal")
-
-for hemi in ["left", "right"]:
-    plot_surf_stat_map(
-        surf_mesh=fsaverage5["inflated"],
-        stat_map=results,
-        hemi=hemi,
-        title=f"(language-string), {hemi} hemisphere",
-        colorbar=True,
-        threshold=1.96,
-        bg_map=fsaverage_data,
-    )
-
-show()
+# View the GLM report at the group level.
+#
+# .. include:: ../../../examples/report_note.rst
+#
+report_slm
