@@ -254,7 +254,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
     radius : :obj:`float`, default=2.
         radius of the searchlight ball, in millimeters.
 
-    estimator : obj:`str` or estimator object, default='svc'
+    estimator : :obj:`str` or estimator object, default='svc'
         The object to use to fit the data.
 
         %(sk_compatible_admonition)s
