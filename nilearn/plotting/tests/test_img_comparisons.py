@@ -79,6 +79,7 @@ def test_plot_img_comparison_error(surf_img_1d, img_3d_mni):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     """Tests for plot_img_comparison."""
     _, axes = plt.subplots(2, 1)
