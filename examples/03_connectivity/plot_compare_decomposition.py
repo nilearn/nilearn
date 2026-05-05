@@ -42,10 +42,6 @@ print(f"First functional nifti image (4D) is at: {rest_dataset.func[0]}")
 # as this leads to slightly faster and more reproducible results.
 # However, the images need to be in :term:`MNI` template space.
 
-import warnings
-
-from sklearn.exceptions import ConvergenceWarning
-
 from nilearn.decomposition import CanICA
 
 canica = CanICA(
@@ -56,12 +52,9 @@ canica = CanICA(
     random_state=0,
     mask_strategy="whole-brain-template",
     n_jobs=2,
+    estimator_args={"tol": 1, "max_iter": 5000},
 )
-with warnings.catch_warnings():
-    # silence warnings about ICA not converging
-    # Consider increasing tolerance or the maximum number of iterations.
-    warnings.filterwarnings(action="ignore", category=ConvergenceWarning)
-    canica.fit(func_filenames)
+canica.fit(func_filenames)
 
 # Retrieve the independent components in brain space. Directly
 # accessible through attribute `components_img_`.
