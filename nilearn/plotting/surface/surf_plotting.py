@@ -143,7 +143,7 @@ def plot_surf(
             Default value changed to None.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     %(avg_method)s
 
@@ -155,7 +155,7 @@ def plot_surf(
         ``"mean"`` if `None` is passed.
 
     %(threshold)s
-        Default=None
+        default=None
 
     alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
@@ -193,7 +193,7 @@ def plot_surf(
             engine.
 
     %(cbar_tick_format)s
-        Default="auto" which will select:
+        default="auto" which will select:
 
         - `'%%.2g'` (scientific notation) with ``matplotlib`` engine.
         - `'.1f'` (rounded floats) with ``plotly`` engine.
@@ -357,7 +357,7 @@ def plot_surf_contours(
         Whether to plot a legend of region's labels.
 
     %(cmap)s
-        Default='tab20'.
+        default='tab20'.
 
     %(title)s
 
@@ -503,7 +503,7 @@ def plot_surf_stat_map(
         .. note::
             This function uses a symmetric colorbar for the statistical map.
 
-        Default=True.
+        default=True.
 
     %(avg_method)s
 
@@ -517,7 +517,7 @@ def plot_surf_stat_map(
         .. nilearn_versionadded:: 0.10.3
 
     %(threshold)s
-        Default=None
+        default=None
 
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not the stat_map).
@@ -538,7 +538,7 @@ def plot_surf_stat_map(
     %(symmetric_cbar)s
 
     %(cbar_tick_format)s
-        Default="auto" which will select:
+        default="auto" which will select:
 
             - '%%.2g' (scientific notation) with ``matplotlib`` engine.
             - '.1f' (rounded floats) with ``plotly`` engine.
@@ -692,17 +692,17 @@ def plot_img_on_surf(
         Will default to ``['lateral', 'medial']`` if ``None`` is passed.
 
     %(cmap)s
-        Default="RdBu_r".
+        default="RdBu_r".
 
     %(colorbar)s
 
         .. note::
             This function uses a symmetric colorbar for the statistical map.
 
-        Default=True.
+        default=True.
 
     %(threshold)s
-        Default=None
+        default=None
 
     %(bg_on_data)s
 
@@ -904,10 +904,10 @@ def plot_surf_roi(
 
 
     %(cmap_lut)s
-        Default='gist_ncar'.
+        default='gist_ncar'.
 
     %(colorbar)s
-        Default=True
+        default=True
 
     %(avg_method)s
 
@@ -919,7 +919,7 @@ def plot_surf_roi(
         `avg_method` will default to ``"median"`` if ``None`` is passed.
 
     %(threshold)s
-        Default=None
+        default=None
 
         .. note::
             By default, the regions that are labeled 0 are not thresholded.
@@ -944,7 +944,7 @@ def plot_surf_roi(
     %(vmax)s
 
     %(cbar_tick_format)s
-        Default="auto" which defaults to integers format:
+        default="auto" which defaults to integers format:
 
             - "%%i" for ``matplotlib`` engine.
             - "." for ``plotly`` engine.

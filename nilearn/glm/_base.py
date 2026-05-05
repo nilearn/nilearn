@@ -432,7 +432,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             or :obj:`str` \
             or :obj:`list` of :obj:`str` \
             or ndarray or \
-            :obj:`list` of ndarray, Default=None
+            :obj:`list` of ndarray, default=None
 
             Contrasts information for a first or second level model.
 

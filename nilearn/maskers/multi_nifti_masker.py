@@ -121,7 +121,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             :func:`nilearn.masking.compute_multi_epi_mask`, or
             :func:`nilearn.masking.compute_multi_brain_mask`.
 
-        Default='background'.
+        default='background'.
 
     mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
