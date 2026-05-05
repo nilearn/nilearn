@@ -29,6 +29,8 @@ HIGHLIGHTS
  | - scipy -- 1.11.1
  | - kaleido -- 1.1.0
  | - plotly -- 6.1.1
+ | - request -- 2.33.0
+ | - jinja2 -- 3.1.6
  |
 
 .. admonition:: Google Chrome needed to save images with plotly / kaleido
