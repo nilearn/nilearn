@@ -1044,7 +1044,7 @@ def _resort_vertices(bunch, bunch_fsaverage5, data_dir):
     ]:
         data = load_surf_data(bunch[data_view])
         data_updated = _apply_mesh_mapping(order, data, None)
-        data_to_gifti(data_updated, f"{data_dir / data_view}.gii.gz")
+        data_to_gifti(data_updated[0], f"{data_dir / data_view}.gii.gz")
 
 
 def _get_mesh_mapping(fs_coords, fs5_coords):
