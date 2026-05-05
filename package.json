@@ -1,0 +1,19 @@
+{
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "express": "^4.17.1",
+    "jest": "^29.7.0",
+    "pixelmatch": "^5.1.0",
+    "pngjs": "^4.0.0",
+    "puppeteer": "^24.0.0"
+  },
+  "engines" : {
+    "npm" : ">=8.0.0",
+    "node" : ">=18.0.0"
+  }
+}
