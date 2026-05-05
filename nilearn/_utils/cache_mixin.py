@@ -7,8 +7,8 @@ from pathlib import Path
 from joblib import Memory
 
 import nilearn
-
-from .helpers import stringify_path
+from nilearn._utils.helpers import stringify_path
+from nilearn._utils.logger import find_stack_level
 
 MEMORY_CLASSES = (Memory,)
 
@@ -22,8 +22,7 @@ def check_memory(memory, verbose=0):
         Used to cache the masking process.
         If a str is given, it is the path to the caching directory.
 
-    verbose : int, default=0
-        Verbosity level.
+    %(verbose0)s
 
     Returns
     -------
@@ -57,7 +56,7 @@ def check_memory(memory, verbose=0):
                 error_msg = (
                     "Given cache path parent directory doesn't "
                     f"exists, you gave '{split_cache_dir[0]}' "
-                    "which was expanded as '{os.path.dirname(memory)}' "
+                    f"which was expanded as '{Path(memory).parent}' "
                     "but doesn't exist either. "
                     "Use nilearn.EXPAND_PATH_WILDCARDS to deactivate "
                     "auto expand user path (~) behavior."
@@ -66,7 +65,7 @@ def check_memory(memory, verbose=0):
                 # The given cache base path doesn't exist.
                 error_msg = (
                     "Given cache path parent directory doesn't "
-                    "exists, you gave '{split_cache_dir[0]}'."
+                    f"exists, you gave '{split_cache_dir[0]}'."
                 )
             raise ValueError(error_msg)
 
@@ -87,10 +86,10 @@ class _ShelvedFunc:
 
 def cache(
     func,
-    memory,
+    memory: Memory | Path,
     func_memory_level=None,
     memory_level=None,
-    shelve=False,
+    shelve: bool = False,
     **kwargs,
 ):
     """Return a joblib.Memory object.
@@ -109,11 +108,11 @@ def cache(
     memory : instance of joblib.Memory, string or pathlib.Path
         Used to cache the function call.
 
-    func_memory_level : int, optional
+    func_memory_level : int or None, default=None
         The memory_level from which caching must be enabled for the wrapped
         function.
 
-    memory_level : int, optional
+    memory_level : int or None, default=None
         The memory_level used to determine if function call must
         be cached or not (if user_memory_level is equal of greater than
         func_memory_level the function is cached).
@@ -157,7 +156,7 @@ def cache(
             raise TypeError(
                 "'memory' argument must be a string or a "
                 "joblib.Memory object. "
-                f"{memory} {type(memory)} was given."
+                f"{memory} {memory.__class__.__name__} was given."
             )
         if (
             memory.location is None
@@ -169,7 +168,7 @@ def cache(
                 "but no Memory object or path has been provided"
                 " (parameter memory). Caching deactivated for "
                 f"function {func.__name__}.",
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
     else:
         memory = Memory(location=None, verbose=verbose)
@@ -194,8 +193,16 @@ class CacheMixin:
 
     """
 
+    def _fit_cache(self):
+        """Set attributes during estimator fit."""
+        verbose = getattr(self, "verbose", 0)
+        self.memory_ = check_memory(self.memory, verbose=verbose)
+
+        if getattr(self, "_shelving", None) is None:
+            self._shelving = False
+
     def _cache(self, func, func_memory_level=1, shelve=False, **kwargs):
-        """Return a joblib.Memory object.
+        """Return a joblib.Memory object.nilearn/_utils/cache_mixin.py.
 
         The memory_level determines the level above which the wrapped
         function output is cached. By specifying a numeric value for
@@ -212,10 +219,6 @@ class CacheMixin:
             The memory_level from which caching must be enabled for the wrapped
             function.
 
-        shelve : bool, default=False
-            Whether to return a joblib MemorizedResult, callable by a .get()
-            method, instead of the return value of func.
-
         Returns
         -------
         mem : joblib.MemorizedFunc, wrapped in _ShelvedFunc if shelving
@@ -225,30 +228,22 @@ class CacheMixin:
             For consistency, a callable object is always returned.
 
         """
-        verbose = getattr(self, "verbose", 0)
-
-        # Creates attributes if they don't exist
-        # This is to make creating them in __init__() optional.
-        if not hasattr(self, "memory_level"):
-            self.memory_level = 0
-        if not hasattr(self, "memory"):
-            self.memory = Memory(location=None, verbose=verbose)
-        self.memory = check_memory(self.memory, verbose=verbose)
-
+        if not hasattr(self, "memory_") or self.memory_ is None:
+            self._fit_cache()
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
-        if self.memory_level == 0 and self.memory.location is not None:
+        if self.memory_level == 0 and self.memory_.location is not None:
             warnings.warn(
                 "memory_level is currently set to 0 but "
                 "a Memory object has been provided. "
                 "Setting memory_level to 1.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
             self.memory_level = 1
 
         return cache(
             func,
-            self.memory,
+            self.memory_,
             func_memory_level=func_memory_level,
             memory_level=self.memory_level,
             shelve=shelve,

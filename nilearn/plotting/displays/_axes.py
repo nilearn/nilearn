@@ -1,4 +1,5 @@
 import numbers
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,7 +10,10 @@ from matplotlib.patches import FancyArrow
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.image import coord_transform
+from nilearn.plotting.displays._utils import coords_3d_to_2d
 from nilearn.plotting.glass_brain import plot_brain_schematics
 
 
@@ -42,7 +46,7 @@ class BaseAxes:
             "'transform_to_2d' needs to be implemented in derived classes'"
         )
 
-    def add_object_bounds(self, bounds):
+    def add_object_bounds(self, bounds) -> None:
         """Ensure that axes get rescaled when adding object bounds."""
         old_object_bounds = self.get_object_bounds()
         self._object_bounds.append(bounds)
@@ -52,10 +56,31 @@ class BaseAxes:
             self.ax.axis(self.get_object_bounds())
 
     def draw_2d(
-        self, data_2d, data_bounds, bounding_box, type="imshow", **kwargs
+        self,
+        data_2d,
+        data_bounds,
+        bounding_box,
+        type="imshow",
+        transparency=None,
+        **kwargs,
     ):
         """Draw 2D."""
         kwargs["origin"] = "upper"
+
+        if "alpha" in kwargs:
+            warnings.warn(
+                f"{kwargs['alpha']=} detected in parameters.\n"
+                f"Overriding with {transparency=}.\n"
+                "To suppress this warning pass "
+                "your 'alpha' value "
+                "via the 'transparency' parameter.",
+                stacklevel=find_stack_level(),
+            )
+        kwargs["alpha"] = transparency
+
+        check_parameter_in_allowed(
+            self.direction, ["y", "x", "l", "r", "z"], "direction"
+        )
 
         if self.direction == "y":
             (xmin, xmax), (_, _), (zmin, zmax) = data_bounds
@@ -66,8 +91,7 @@ class BaseAxes:
         elif self.direction == "z":
             (xmin, xmax), (zmin, zmax), (_, _) = data_bounds
             (xmin_, xmax_), (zmin_, zmax_), (_, _) = bounding_box
-        else:
-            raise ValueError(f"Invalid value for direction {self.direction}")
+
         ax = self.ax
         # Here we need to do a copy to avoid having the image changing as
         # we change the data
@@ -97,12 +121,12 @@ class BaseAxes:
 
         return xmin, xmax, ymin, ymax
 
-    def draw_left_right(self, size, bg_color, **kwargs):
+    def draw_left_right(self, size, bg_color, **kwargs) -> None:
         """Draw the annotation "L" for left, and "R" for right.
 
         Parameters
         ----------
-        size : :obj:`float`, optional
+        size : :obj:`float`
             Size of the text areas.
 
         bg_color : matplotlib color: :obj:`str` or (r, g, b) value
@@ -162,7 +186,7 @@ class BaseAxes:
         color="black",
         fontsize=None,
         **kwargs,
-    ):
+    ) -> None:
         """Add a scale bar annotation to the display.
 
         Parameters
@@ -178,8 +202,8 @@ class BaseAxes:
             Physical units of the scale bar (`'cm'` or `'mm'`).
 
 
-        fontproperties : :class:`~matplotlib.font_manager.FontProperties`\
-        or :obj:`dict`, optional
+        fontproperties : :class:`~matplotlib.font_manager.FontProperties`, \
+                :obj:`dict` or None, default=None
             Font properties for the label text.
 
         frameon : :obj:`bool`, default=False
@@ -208,11 +232,10 @@ class BaseAxes:
         label_top : :obj:`bool`, default=False
             If ``True``, the label will be over the scale bar.
 
-
         color : :obj:`str`, default='black'
             Color for the scale bar and label.
 
-        fontsize : :obj:`int`, optional
+        fontsize : :obj:`int` or None, default=None
             Label font size (overwrites the size passed in through the
             ``fontproperties`` argument).
 
@@ -286,8 +309,9 @@ class CutAxes(BaseAxes):
 
         """
         coords = [0, 0, 0]
-        if self.direction not in ["x", "y", "z"]:
-            raise ValueError(f"Invalid value for direction {self.direction}")
+        check_parameter_in_allowed(
+            self.direction, ["x", "y", "z"], "direction"
+        )
         coords["xyz".index(self.direction)] = self.coord
         x_map, y_map, z_map = (
             int(np.round(c))
@@ -303,12 +327,12 @@ class CutAxes(BaseAxes):
             cut = np.rot90(data[:, :, z_map])
         return cut
 
-    def draw_position(self, size, bg_color, decimals=False, **kwargs):
+    def draw_position(self, size, bg_color, decimals=False, **kwargs) -> None:
         """Draw coordinates.
 
         Parameters
         ----------
-        size : :obj:`float`, optional
+        size : :obj:`float`
             Size of the text area.
 
         bg_color : matplotlib color: :obj:`str` or (r, g, b) value
@@ -343,31 +367,6 @@ class CutAxes(BaseAxes):
             },
             **kwargs,
         )
-
-
-def _get_index_from_direction(direction):
-    """Return numerical index from direction."""
-    directions = ["x", "y", "z"]
-    try:
-        # l and r are subcases of x
-        index = 0 if direction in "lr" else directions.index(direction)
-    except ValueError:
-        message = (
-            f"{direction} is not a valid direction. "
-            "Allowed values are 'l', 'r', 'x', 'y' and 'z'"
-        )
-        raise ValueError(message)
-    return index
-
-
-def coords_3d_to_2d(coords_3d, direction, return_direction=False):
-    """Project 3d coordinates into 2d ones given the direction of a cut."""
-    index = _get_index_from_direction(direction)
-    dimensions = [0, 1, 2]
-    dimensions.pop(index)
-    if return_direction:
-        return coords_3d[:, dimensions], coords_3d[:, index]
-    return coords_3d[:, dimensions]
 
 
 @fill_doc
@@ -466,7 +465,6 @@ class GlassBrainAxes(BaseAxes):
         the position of the cuts \
         since we are taking the max along one axis.
         """
-        pass
 
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
         """Plot markers.
@@ -533,7 +531,7 @@ class GlassBrainAxes(BaseAxes):
         %(cmap)s
             Colormap used to map ``line_values`` to a color.
 
-        vmin, vmax : :obj:`float`, optional
+        vmin, vmax : :obj:`float`, default=None
             If not ``None``, either or both of these values will be used to
             as the minimum and maximum values to color lines. If ``None`` are
             supplied the maximum absolute value within the given threshold
@@ -594,7 +592,9 @@ class GlassBrainAxes(BaseAxes):
             line_coords = np.array(line_coords)[relevant_lines]
             line_values = line_values[relevant_lines]
 
-        for start_end_point_3d, line_value in zip(line_coords, line_values):
+        for start_end_point_3d, line_value in zip(
+            line_coords, line_values, strict=False
+        ):
             start_end_point_2d = coords_3d_to_2d(
                 start_end_point_3d, self.direction
             )

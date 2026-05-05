@@ -29,13 +29,13 @@ class LikelihoodModelResults:
     model : ``LikelihoodModel`` instance
         Model used to generate fit.
 
-    cov : None or ndarray, optional
+    cov : None or ndarray, default=None
         Covariance of thetas.
 
     dispersion : scalar, default=1
         Multiplicative factor in front of `cov`.
 
-    nuisance : None of ndarray, optional
+    nuisance : None of ndarray, default=None
         Parameter estimates needed to compute logL.
 
     Notes
@@ -153,7 +153,7 @@ class LikelihoodModelResults:
             else:
                 return self.cov[column][:, column] * dispersion
 
-        elif matrix is not None:
+        else:
             if other is None:
                 other = matrix
             tmp = np.dot(matrix, np.dot(self.cov, np.transpose(other)))
@@ -320,9 +320,6 @@ class LikelihoodModelResults:
         -----
         Confidence intervals are two-tailed.
 
-        tails : string, optional
-            Possible values: 'two' | 'upper' | 'lower'
-
         """
         if cols is None:
             lower = self.theta - inv_t_cdf(
@@ -344,7 +341,7 @@ class LikelihoodModelResults:
                     + inv_t_cdf(1 - alpha / 2, self.df_residuals)
                     * np.sqrt(self.vcov(column=i, dispersion=dispersion))
                 )
-        return np.asarray(list(zip(lower, upper)))
+        return np.asarray(list(zip(lower, upper, strict=False)))
 
 
 class TContrastResults:

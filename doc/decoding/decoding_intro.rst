@@ -188,7 +188,8 @@ performance of most estimators.
 .. code-block:: python
 
      from nilearn.decoding import Decoder
-     decoder = Decoder(estimator='svc', mask=mask_filename)
+
+     decoder = Decoder(estimator="svc", mask=mask_filename)
 
 Then we can fit it on the images and the conditions we chose before.
 
@@ -368,6 +369,14 @@ argument. To keep the 10% most correlated voxels, just create us this parameter 
    :start-after: # on nested cross-validation.
    :end-before: # Visualize the results
 
+.. note::
+
+    Providing a region-of-interest mask may interact with
+    the ``screening_percentile`` parameter, particularly
+    in cases where the mask extent is small relative to the
+    total brain volume. In these cases, there may not be
+    enough features in the mask to allow for further
+    sub-selection with ``screening_percentile``.
 
 Visualizing the results
 -----------------------

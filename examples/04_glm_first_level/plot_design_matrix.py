@@ -202,3 +202,5 @@ ax1.set_title("Block design matrix", fontsize=12)
 plot_design_matrix(X4, axes=ax2)
 ax2.set_title("Modulated block design matrix", fontsize=12)
 plt.show()
+
+# sphinx_gallery_dummy_images=3

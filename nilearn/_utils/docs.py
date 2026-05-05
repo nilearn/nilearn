@@ -21,17 +21,26 @@ import sys
 #
 # Entries are listed in alphabetical order.
 #
-docdict = {}
+docdict: dict[str, str] = {}
 
 ##############################################################################
 #
 # Parameters definitions
 #
 
+# alphas
+docdict["alphas"] = """
+alphas : :obj:`float` or :obj:`list` of :obj:`float` or None, default=None
+    Choices for the constant that scales the overall regularization term.
+    This parameter is mutually exclusive with the `n_alphas` parameter.
+    If None or list of floats is provided, then the best value will be
+    selected by cross-validation.
+"""
+
 # annotate
 docdict["annotate"] = """
 annotate : :obj:`bool`, default=True
-    If `annotate` is `True`, positions and left/right annotation
+    If `annotate` is `True` (like positions and / or  left/right annotation)
     are added to the plot.
 """
 
@@ -73,7 +82,7 @@ of :obj:`float`: (xmin, ymin, width, height), default=None
     If `None`, the complete figure is used.
 """
 
-# bg_img
+# bg_map
 docdict["bg_map"] = """
 bg_map : :obj:`str` or :obj:`pathlib.Path` or \
          :class:`numpy.ndarray` \
@@ -135,6 +144,13 @@ border_size : :obj:`int`, optional
     the image to determine the value of the background.
 """
 
+# brain_color
+docdict["brain_color"] = """
+brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
+    The brain color to use as the background color (e.g., for
+    transparent colorbars).
+"""
+
 # cbar_tick_format
 docdict["cbar_tick_format"] = """
 cbar_tick_format : :obj:`str`, optional
@@ -166,7 +182,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        svc_l1 = LinearSVC(penalty="l1", dual=False, max_iter=1e4)
+        svc_l1 = LinearSVC(penalty="l1", max_iter=1e4)
 
     - ``"logistic"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -217,6 +233,18 @@ clean_args : :obj:`dict` or None, default=None
     kwargs prefixed with ``'butterworth__'``
     will be passed to the Butterworth filter.
 """
+docdict["clean_args_"] = docdict["clean_args"].replace(
+    "clean_args : :obj:`dict` or None, default=None",
+    "clean_args_ : :obj:`dict`",
+)
+
+# cluster_threshold
+docdict["cluster_threshold"] = """
+    cluster_threshold : :obj:`int`, default=0
+        Cluster size threshold.
+        Sets of connected voxels / vertices (`clusters`)
+        with size smaller than this number will be removed.
+"""
 
 # cmap
 docdict["cmap"] = """
@@ -235,15 +263,25 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
     or a matplotlib colormap object,
     or a BIDS compliant
     `look-up table <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
-    passed as a pandas dataframe.
+    passed as a pandas dataframe or a path to a tsv or csv file.
     If the look up table does not contain a ``color`` column,
     then the default colormap of this function will be used.
+
+    .. warning::
+
+        If the ``name`` column in the look up table
+        does not contain a ``background`` or ``Background`` value,
+        then the colormap will be shifted by one.
+
+        See `issue 5934 <https://github.com/nilearn/nilearn/issues/5934>`_.
+
+
 """
 
 # colorbar
 docdict["colorbar"] = """
 colorbar : :obj:`bool`, optional
-    If `True`, display a colorbar on the right of the plots.
+    If `True`, display a colorbar next to the plots.
 """
 
 # connected
@@ -254,49 +292,95 @@ connected : :obj:`bool`, optional
 
 # confounds
 docdict["confounds"] = """
-confounds : CSV file or array-like, optional
+confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
+            :class:`pandas.DataFrame` \
+            or :obj:`list` of confounds timeseries, default=None
     This parameter is passed to :func:`nilearn.signal.clean`.
     Please see the related documentation for details.
-    shape: list of (number of scans, number of confounds)
+    shape: (number of scans, number of confounds)
+"""
+docdict["confounds_multi"] = """
+confounds : :obj:`list` of confounds, default=None
+    List of confounds (arrays, dataframes,
+    str or path of files loadable into an array).
+    As confounds are passed to :func:`nilearn.signal.clean`,
+    please see the related documentation for details about accepted types.
+    Must be of same length than imgs.
+"""
+
+# copy_header
+docdict["copy_header"] = """
+copy_header : :obj:`bool`, default=True
+    Indicated if the header of the reference image
+    should be used to create the new image.
+    Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 """
 
 # cut_coords
 docdict["cut_coords"] = """
-cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
-    The MNI coordinates of the point where the cut is performed.
+cut_coords : None, allowed types depend on the ``display_mode``, optional
+    The world coordinates of the point where the cut is performed.
 
-    - If `display_mode` is `'ortho'` or `'tiled'`, this should
-      be a 3-tuple: `(x, y, z)`
+    - If ``display_mode`` is ``'ortho'`` or ``'tiled'``,
+      this must be a 3-sequence of :obj:`float` or :obj:`int`:
+      ``(x, y, z)``.
 
-    - For `display_mode == "x"`, "y", or "z", then these are
-      the coordinates of each cut in the corresponding direction.
+    - If ``display_mode`` is ``'xz'``, ``'yz'`` or ``'yx'``,
+      this must be a 2-sequence of :obj:`float` or :obj:`int`:
+      ``(x, z)``,  ``(y, z)`` or  ``(x, y)``.
 
-    - If `None` is given, the cuts are calculated automatically.
+    - If ``display_mode`` is ``"x"``, ``"y"``, or ``"z"``,
+      this can be:
 
-    - If `display_mode` is 'mosaic', and the number of cuts is the same
-      for all directions, `cut_coords` can be specified as an integer.
-      It can also be a length 3 :obj:`tuple`
-      specifying the number of cuts for
-      every direction if these are different.
+      - a sequence of :obj:`float` or :obj:`int`
+        representing the coordinates of each cut
+        in the corresponding direction,
 
-    .. note::
-
-        If `display_mode` is "x", "y" or "z",
-        `cut_coords` can be an integer,
+      - an :obj:`int`
         in which case it specifies the number of cuts to perform.
+
+    - If ``display_mode`` is ``'mosaic'``, this can be:
+
+      - an :obj:`int`
+        in which case it specifies the number of cuts to perform in each
+        direction ``"x"``, ``"y"``, ``"z"``.
+
+      - a 3-sequence of :obj:`float` or :obj:`int`
+        in which case it specifies the number of cuts to perform in each
+        direction ``"x"``, ``"y"``, ``"z"`` separately.
+
+      - :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`>
+        in which case keys are the directions ('x', 'y', 'z') and the values
+        are sequences holding the cut coordinates.
+
+    - If ``None`` is given, the cuts are calculated automatically.
 
 """
 
-# darkness
-docdict["darkness"] = """
-darkness : :obj:`float` between 0 and 1, optional
-    Specifying the darkness of the background image:
 
-    - `1` indicates that the original values of the background are used
+# cross-validation
+cv = """
+cv : cross-validation generator, :obj:`int` or None, default={}
+    A cross-validation generator.
+    See: https://scikit-learn.org/stable/modules/cross_validation.html.
+    If None is passed, cv={} will be used.
+    It can be an integer, in which case it is the number of folds in a
+    KFold using :class:`~sklearn.model_selection.StratifiedKFold`
+    when groups is None in the ``fit`` method for this class.
+    If groups is specified but ``cv``
+    is not set to custom CV splitter, default is
+    :class:`~sklearn.model_selection.LeaveOneGroupOut`.
+"""
+docdict["cv10"] = cv.format(10, 10)
+docdict["cv30"] = cv.format(30, 30)
+docdict["cv8_5"] = cv.format(8, 5)
+docdict["cvNone_3"] = cv.format("None", 3)
 
-    - `0.5` indicates that the background values
-        are reduced by half before being applied.
 
+# data_dir
+docdict["debias"] = """
+debias : :obj:`bool`, default=False
+    If set, then the estimated weights maps will be debiased.
 """
 
 # data_dir
@@ -342,6 +426,46 @@ display_mode : {"ortho", "tiled", "mosaic", "x", \
 
 """
 
+# displayed_maps
+docdict["displayed_maps"] = """
+displayed_maps : :obj:`int`, \
+                  :class:`~numpy.ndarray` or :obj:`list` of :obj:`int`, \
+                  or "all", default=10
+    Indicates which maps will be displayed in the HTML report.
+
+    - If ``"all"``: All maps will be displayed in the report.
+
+    .. code-block:: python
+
+        masker.generate_report("all")
+
+    .. warning:
+        If there are too many maps, this might be time and
+        memory consuming, and will result in very heavy
+        reports.
+
+    - If a :obj:`list` or :class:`~numpy.ndarray`:
+        This indicates the indices of the maps to be displayed in the report.
+        For example, the following code will generate a report with maps
+        6, 3, and 12, displayed in this specific order:
+
+    .. code-block:: python
+
+        masker.generate_report([6, 3, 12])
+
+    - If an :obj:`int`: This will only display the first n maps,
+        n being the value of the parameter. By default, the report
+        will only contain the first 10 maps. Example to display the
+        first 16 maps:
+
+    .. code-block:: python
+
+        masker.generate_report(16)
+"""
+docdict["displayed_spheres"] = docdict["displayed_maps"].replace(
+    "maps", "spheres"
+)
+
 # draw_cross
 docdict["draw_cross"] = """
 draw_cross : :obj:`bool`, default=True
@@ -355,6 +479,15 @@ dtype : dtype like, "auto" or None, default=None
     Data type toward which the data should be converted.
     If "auto", the data will be converted to int32
     if dtype is discrete and float32 if it is continuous.
+    If None, data will not be converted to a new data type.
+"""
+
+# estimator_args
+docdict["estimator_args"] = """
+estimator_args : dict[str, Any] or None, default=None
+    Extra parameters to pass to the scikit-learn estimators.
+
+    .. nilearn_versionadded:: 0.14.0dev
 """
 
 # extractor / extract_type
@@ -383,20 +516,49 @@ figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
     If `None` is given, a new figure is created.
 """
 
+# figure
+docdict["first_level_contrast"] = """
+first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
+                        shape (n_col) with respect to \
+                        :class:`~nilearn.glm.first_level.FirstLevelModel` \
+                        or None, default=None
+
+    When the model is a :class:`~nilearn.glm.second_level.SecondLevelModel`:
+
+    - in case a :obj:`list` of
+      :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
+      as ``second_level_input``,
+      we have to provide a :term:`contrast`
+      to apply to the first level models
+      to get the corresponding list of images desired,
+      that would be tested at the second level,
+    - in case a :class:`~pandas.DataFrame` was provided
+      as ``second_level_input`` this is the map name to extract
+      from the :class:`~pandas.DataFrame` ``map_name`` column.
+      (it has to be a 't' contrast).
+
+    When the model is a :class:`~nilearn.glm.first_level.FirstLevelModel`:
+    This parameter is ignored.
+"""
+
 # fwhm
 docdict["fwhm"] = """
 fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\
 or 'fast' or None, optional
     Smoothing strength, as a :term:`full-width at half maximum<FWHM>`,
-    in millimeters:
+    in millimeters.
+
+    For surface data, only scalar and None are supported.
+
+    For volume data, several options are possible:
 
     - If a nonzero scalar is given, width is identical in all 3 directions.
 
     - If a :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` is given,
       it must have 3 elements, giving the :term:`FWHM` along each axis.
       If any of the elements is `0` or `None`,
-
       smoothing is not performed along that axis.
+
     - If `fwhm="fast"`, a fast smoothing will be performed with a filter
       [0.2, 1, 0.2] in each direction and a normalization to preserve the
       local average value.
@@ -518,7 +680,7 @@ imgs : :obj:`list` of Niimg-like objects
 
 # keep_masked_labels
 docdict["keep_masked_labels"] = """
-keep_masked_labels : :obj:`bool`, default=True
+keep_masked_labels : :obj:`bool`, default=False
     When a mask is supplied through the "mask_img" parameter, some
     atlas regions may lie entirely outside of the brain mask, resulting
     in empty time series for those regions.
@@ -527,11 +689,11 @@ keep_masked_labels : :obj:`bool`, default=True
     zeros only. If False, the empty labels will be removed from the
     output, ensuring no empty time series are present.
 
-    .. deprecated:: 0.10.2
+    .. nilearn_deprecated:: 0.10.2
 
-        The 'True' option for ``keep_masked_labels`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_labels`` parameter will be removed in 0.15.
+    .. nilearn_versionchanged:: 0.13.0
+
+        The ``keep_masked_labels`` parameter will be removed in 0.15.
 
 """
 
@@ -544,11 +706,11 @@ keep_masked_maps : :obj:`bool`, optional
     invalid maps will be removed from the trimmed atlas, resulting in
     no empty time series in the output.
 
-    .. deprecated:: 0.10.2
+    .. nilearn_deprecated:: 0.10.2
 
-        The 'True' option for ``keep_masked_maps`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_maps`` parameter will be removed in 0.15.
+    .. nilearn_versionchanged:: 0.13.0
+
+        The ``keep_masked_maps`` parameter will be removed in 0.15.
 
 """
 
@@ -573,6 +735,41 @@ lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
 """
 
+# mask_decomposition
+docdict["mask_decomposition"] = """
+mask : Niimg-like object,  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
+        :obj:`~nilearn.surface.SurfaceImage` or \
+        :obj:`~nilearn.maskers.MultiSurfaceMasker` object, or None \
+        default=None
+    Mask to be used on data.
+    If an instance of masker is passed,
+    then its mask will be used.
+    If no mask is given, for Nifti images,
+    it will be computed automatically by a MultiNiftiMasker
+    with default parameters;
+    for surface images, all the vertices will be used.
+"""
+
+# masker_lut
+docdict["masker_lut"] = """lut : :obj:`pandas.DataFrame` or :obj:`str` \
+            or :obj:`pathlib.Path` to a TSV file or None, default=None
+        Mutually exclusive with ``labels``.
+        Act as a look up table (lut)
+        with at least columns 'index' and 'name'.
+        Formatted according to 'dseg.tsv' format from
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_.
+
+        .. warning::
+
+            If a region exist in the atlas image
+            but is missing from its associated LUT,
+            a new entry will be added to the LUT during fit
+            with the name "unknown".
+            Conversely, if regions listed in the LUT do not exist
+            in the associated atlas image,
+            they will be dropped from the LUT during fit.
+        """
+
 
 # mask_strategy
 docdict["mask_strategy"] = """
@@ -581,13 +778,17 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
     The strategy used to compute the mask:
 
     - ``"background"``: Use this option if your images present
-      a clear homogeneous background.
+      a clear homogeneous background. Uses
+      :func:`nilearn.masking.compute_background_mask` under the hood.
 
-    - ``"epi"``: Use this option if your images are raw EPI images
+    - ``"epi"``: Use this option if your images are raw EPI images. Uses
+      :func:`nilearn.masking.compute_epi_mask`.
 
     - ``"whole-brain-template"``: This will extract the whole-brain
       part of your data by resampling the MNI152 brain mask for
-      your data's field of view.
+      your data's field of view. Uses
+      :func:`nilearn.masking.compute_brain_mask` with
+      ``mask_type="whole-brain"``.
 
       .. note::
 
@@ -596,16 +797,17 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
 
     - ``"gm-template"``: This will extract the gray matter part of your
       data by resampling the corresponding MNI152 template for your
-      data's field of view.
+      data's field of view. Uses
+      :func:`nilearn.masking.compute_brain_mask` with ``mask_type="gm"``.
 
-      .. versionadded:: 0.8.1
+      .. nilearn_versionadded:: 0.8.1
 
     - ``"wm-template"``: This will extract the white matter part of your
       data by resampling the corresponding MNI152 template for your
-      data's field of view.
+      data's field of view. Uses
+      :func:`nilearn.masking.compute_brain_mask` with ``mask_type="wm"``.
 
-      .. versionadded:: 0.8.1
-
+      .. nilearn_versionadded:: 0.8.1
 """
 
 # mask_type
@@ -619,32 +821,21 @@ mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
 
 """
 
-# kwargs for Maskers
-docdict["masker_kwargs"] = """
-kwargs : dict
-    Keyword arguments to be passed to functions called within the masker.
-    Kwargs prefixed with `'clean__'` will be passed to
-    :func:`~nilearn.signal.clean`.
-    Within :func:`~nilearn.signal.clean`, kwargs prefixed with
-    `'butterworth__'` will be passed to the Butterworth filter
-    (i.e., `clean__butterworth__`).
-
-    .. deprecated:: 0.11.2dev
-
-    .. admonition:: Use ``clean_args`` instead!
-       :class: important
-
-       It is recommended to pass parameters to use for data cleaning
-       via :obj:`dict` to the ``clean_args`` parameter.
-
-       Passing parameters via "kwargs" is mutually exclusive
-       with passing cleaning parameters via ``clean_args``.
+verbose = """
+max_iter : :obj:`int`, default={}
+    Maximum number of iterations for the solver.
 """
+docdict["max_iter"] = verbose.format(200)
+docdict["max_iter10"] = verbose.format(10)
+docdict["max_iter50"] = verbose.format(50)
+docdict["max_iter100"] = verbose.format(100)
+docdict["max_iter1000"] = verbose.format(1000)
+docdict["max_iter5000"] = verbose.format(5000)
 
 # memory
 docdict["memory"] = """
 memory : None, instance of :class:`joblib.Memory`, :obj:`str`, or \
-:class:`pathlib.Path`
+:class:`pathlib.Path`, default=None
     Used to cache the masking process.
     By default, no caching is done.
     If a :obj:`str` is given, it is the path to the caching directory.
@@ -708,7 +899,7 @@ opening : :obj:`bool` or :obj:`int`, optional
 
 # output_file
 docdict["output_file"] = """
-output_file : :obj:`str` or :obj:`pathlib.Path` or None, optional
+output_file : :obj:`str` or :obj:`pathlib.Path` or None, default=None
     The name of an image file to export the plot to.
     Valid extensions are .png, .pdf, .svg.
     If `output_file` is not `None`, the plot is saved to a file,
@@ -807,12 +998,73 @@ resume : :obj:`bool`, default=True
 
 # sample_mask
 docdict["sample_mask"] = """
-sample_mask : Any type compatible with numpy-array indexing, optional
-    shape: (number of scans - number of volumes removed, )
-    Masks the niimgs along time/fourth dimension to perform scrubbing
-    (remove volumes with high motion) and/or non-steady-state volumes.
+sample_mask : Any type compatible with numpy-array indexing, default=None
+    ``shape = (total number of scans - number of scans removed)``
+    for explicit index (for example, ``sample_mask=np.asarray([1, 2, 4])``),
+    or ``shape = (number of scans)`` for binary mask
+    (for example,
+    ``sample_mask=np.asarray([False, True, True, False, True])``).
+    Masks the images along the last dimension to perform scrubbing:
+    for example to remove volumes with high motion
+    and/or non-steady-state volumes.
     This parameter is passed to :func:`nilearn.signal.clean`.
 """
+docdict["sample_mask_multi"] = """
+sample_mask : :obj:`list` of sample_mask, default=None
+    List of sample_mask (any type compatible with numpy-array indexing)
+    to use for scrubbing outliers.
+    Must be of same length as ``imgs``.
+    ``shape = (total number of scans - number of scans removed)``
+    for explicit index (for example, ``sample_mask=np.asarray([1, 2, 4])``),
+    or ``shape = (number of scans)`` for binary mask
+    (for example,
+    ``sample_mask=np.asarray([False, True, True, False, True])``).
+    Masks the images along the last dimension to perform scrubbing:
+    for example to remove volumes with high motion
+    and/or non-steady-state volumes.
+    This parameter is passed to :func:`nilearn.signal.clean`.
+"""
+
+docdict["screening_percentile"] = """
+screening_percentile : int, float, \
+                       in the closed interval [0, 100], or None, \
+                       default=20
+        Percentile value for ANOVA univariate feature selection.
+        If ``None`` is passed, it will be set to ``100``.
+        A value of ``100`` means "keep all features".
+        This percentile is expressed
+        with respect to the volume of either a standard (MNI152) brain
+        (if ``mask_img_`` is a 3D volume)
+        or a the number of vertices in the mask mesh
+        (if ``mask_img_`` is a SurfaceImage).
+        This means that the
+        ``screening_percentile`` is corrected at runtime by premultiplying it
+        with the ratio of volume of the
+        standard brain to the volume of the mask of the data.
+
+        .. note::
+
+            If the mask used is too small
+            compared to the total brain volume / surface,
+            then all its elements (voxels / vertices)
+            may be included even for very small ``screening_percentile``.
+
+"""
+docdict[
+    "screening_n_features"
+] = """screening_n_features : :obj:`int`, default=None
+    The number of features to keep for a single cross-validation.
+    If both ``screening_percentile`` and ``screening_n_features`` are set,
+    ``screening_percentile`` takes priority.
+
+    .. admonition:: Important
+
+        Given ``screening_n_features``
+        is the number of features kept **for each fold** of a cross-validation,
+        the final model can have
+        more than ``screening_n_features`` non-zero weights.
+
+    """
 
 # second_level_contrast
 docdict["second_level_contrast"] = """
@@ -830,7 +1082,7 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
 
 # second_level_confounds
 docdict["second_level_confounds"] = """
-confounds : :obj:`pandas.DataFrame` or None, default=None
+confounds : :obj:`pandas.DataFrame` or None, Default=None
     Must contain a ``subject_label`` column.
     All other columns are considered as confounds and included in the model.
     If ``design_matrix`` is provided then this argument is ignored.
@@ -840,11 +1092,11 @@ confounds : :obj:`pandas.DataFrame` or None, default=None
     and at least one confound.
 """
 
-# second_level_confounds
+# second_level_design_matrix
 docdict["second_level_design_matrix"] = """
 design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
                 or :obj:`pathlib.Path` to a CSV or TSV file, \
-                or None, default=None
+                or None, Default=None
     Design matrix to fit the :term:`GLM`.
     The number of rows in the design matrix
     must agree with the number of maps
@@ -910,6 +1162,19 @@ docdict["second_level_mask"] = docdict["second_level_mask_img"].replace(
     "mask_img :", "mask :"
 )
 
+# signals for inverse transform
+docdict["signals_inv_transform"] = """
+signals : 1D/2D :obj:`numpy.ndarray`
+    Extracted signal.
+    If a 1D array is provided,
+    then the shape should be (number of elements,).
+    If a 2D array is provided,
+    then the shape should be (number of scans, number of elements).
+"""
+docdict["region_signals_inv_transform"] = docdict["signals_inv_transform"]
+docdict["x_inv_transform"] = docdict["signals_inv_transform"]
+
+
 # smoothing_fwhm
 docdict["smoothing_fwhm"] = """
 smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
@@ -920,25 +1185,13 @@ smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
 
 # standardize
 standardize = """
-standardize : :obj:`bool`, default={}
-    If `standardize` is `True`, the data are centered and normed:
-    their mean is put to 0 and their variance is put to 1
-    in the time dimension.
-"""
-docdict["standardize"] = standardize.format("True")
-docdict["standardize_false"] = standardize.format("False")
-
-# standardize as used within maskers module
-docdict["standardize_maskers"] = """
-standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
+standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
+              default={}
     Strategy to standardize the signal:
 
-    - ``'zscore_sample'``: The signal is z-scored. Timeseries are shifted
-      to zero mean and scaled to unit variance. Uses sample std.
-
-    - ``'zscore'``: The signal is z-scored. Timeseries are shifted
-      to zero mean and scaled to unit variance. Uses population std
-      by calling default :obj:`numpy.std` with N - ``ddof=0``.
+    - ``'zscore_sample'``: The signal is z-scored.
+      Timeseries are shifted to zero mean and scaled to unit variance.
+      Uses sample std.
 
     - ``'psc'``:  Timeseries are shifted to zero mean value and scaled
       to percent signal change (as compared to original mean signal).
@@ -946,9 +1199,51 @@ standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
     - ``True``: The signal is z-scored (same as option `zscore`).
       Timeseries are shifted to zero mean and scaled to unit variance.
 
+      .. nilearn_deprecated:: 0.13.0
+
+        In nilearn version 0.15.0,
+        ``True`` will be replaced by  ``'zscore_sample'``.
+
     - ``False``: Do not standardize the data.
 
+      .. nilearn_deprecated:: 0.13.0
+
+        In nilearn version 0.15.0,
+        ``False`` will be replaced by ``None``.
+
+
 """
+
+# TODO (nilearn >= 0.15.0) update to ..versionchanged
+deprecation_notice_false_to_none = """
+
+    .. nilearn_deprecated:: 0.13.0
+
+        The default will be changed to ``None``
+        in version 0.15.0.
+
+"""
+
+# TODO (nilearn >= 0.15.0) update to ..versionchanged
+deprecation_notice_true_to_zscore_sample = """
+
+    .. nilearn_deprecated:: 0.13.0
+
+        The default will be changed to ``'zscore_sample'``
+        in version 0.15.0.
+
+"""
+
+docdict["standardize_false"] = (
+    standardize.format("False") + deprecation_notice_false_to_none
+)
+# TODO (nilearn >= 0.15.0)
+# adapt the deprecation notices
+docdict["standardize_true"] = (
+    standardize.format("True") + deprecation_notice_true_to_zscore_sample
+)
+docdict["standardize_zscore"] = standardize.format("zscore_sample")
+
 
 # standardize_confounds
 docdict["standardize_confounds"] = """
@@ -957,12 +1252,27 @@ standardize_confounds : :obj:`bool`, default=True
     their mean is put to 0 and their variance to 1 in the time dimension.
 """
 
-# standardize_confounds
+# strategy
 docdict["strategy"] = """
 strategy : :obj:`str`, default="mean"
     The name of a valid function to reduce the region with.
     Must be one of: sum, mean, median, minimum, maximum, variance,
     standard_deviation.
+"""
+
+# surf_mesh
+docdict["surf_mesh"] = """
+surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray` \
+            or a :obj:`~nilearn.surface.InMemoryMesh`, or a \
+            :obj:`~nilearn.surface.PolyMesh`, or None, default=None
+    Surface :term:`mesh` geometry, can be a file (valid formats are .gii or
+    Freesurfer specific files such as .orig, .pial, .sphere, .white,
+    .inflated) or a list of two Numpy arrays, the first containing the
+    x-y-z coordinates of the :term:`mesh` :term:`vertices<vertex>`, the
+    second containing the indices (into coords) of the :term:`mesh`
+    :term:`faces`, or a :obj:`~nilearn.surface.InMemoryMesh` object with
+    "coordinates" and "faces" attributes, or a
+    :obj:`~nilearn.surface.PolyMesh` object, or None.
 """
 
 # symmetric_cbar
@@ -985,9 +1295,9 @@ t_r : :obj:`float` or :obj:`int` or None, default=None
 
 # target_affine
 docdict["target_affine"] = """
-target_affine : :class:`numpy.ndarray` or None, default=None
+target_affine : 3x3 or a 4x4 array-like, or None, \
+       default=None
     If specified, the image is resampled corresponding to this new affine.
-    `target_affine` can be a 3x3 or a 4x4 matrix.
 """
 
 # target_shape
@@ -1011,6 +1321,13 @@ tfce : :obj:`bool`, default=False
     The TFCE calculation is implemented
     as described in :footcite:t:`Smith2009a`.
 
+    .. note::
+
+       The number of thresholds used in the TFCE procedure
+       will set between 10 and 1000.
+
+       .. nilearn_versionadded:: 0.12.0
+
     .. warning::
 
         Performing TFCE-based inference
@@ -1028,6 +1345,9 @@ threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
     If number is given, it must be non-negative. The specified value is used to
     threshold the image: values below the threshold (in absolute value) are
     plotted as transparent.
+    If a string percentile is given, it should finish with percent sign e.g.,
+    “95%”. We threshold based on the score obtained using this percentile
+    on the image data.
     If "auto" is given, the threshold is determined based on the score obtained
     using percentile value "80%" on the absolute value of the image data.
 """
@@ -1036,6 +1356,49 @@ threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
 docdict["title"] = """
 title : :obj:`str`, or None, default=None
     The title displayed on the figure.
+"""
+
+# transparency
+docdict["transparency"] = """
+transparency : :obj:`float` between 0 and 1, \
+                or a Niimg-Like object, \
+                or None, \
+                default = None
+    Value to be passed as alpha value to :func:`~matplotlib.pyplot.imshow`.
+    if ``None`` is passed, it will be set to 1.
+    If an image is passed, voxel-wise alpha blending will be applied,
+    by relying on the absolute value of ``transparency`` at each voxel.
+
+    .. nilearn_versionadded:: 0.12.0
+"""
+
+# transparency
+docdict["transparency_range"] = """
+transparency_range : :obj:`tuple` or :obj:`list` of 2 non-negative numbers, \
+                or None, \
+                default = None
+    When an image is passed to ``transparency``,
+    this determines the range of values in the image
+    to use for transparency (alpha blending).
+    For example with ``transparency_range = [1.96, 3]``,
+    any voxel / vertex (:math:`v_i`):
+
+    - with a value between between -1.96 and 1.96,
+      would be fully transparent (alpha = 0),
+    - with a value less than -3 or greater than 3,
+      would be fully opaque (alpha = 1),
+    - with a value in the intervals ``[-3.0, -1.96]`` or ``[1.96, 3.0]``,
+      would have an alpha_i value
+      scaled linearly between 0 and 1 :
+      :math:`alpha_i = (\\lvert v_i \\lvert - 1.96) / (3.0 - 1.96)`.
+
+    This parameter will be ignored
+    unless an image is passed as ``transparency``.
+    The first number must be greater than 0 and less than the second one.
+    if ``None`` is passed,
+    this will be set to ``[0, max(abs(transparency))]``.
+
+    .. nilearn_versionadded:: 0.12.0
 """
 
 # upper_cutoff
@@ -1065,11 +1428,12 @@ url : :obj:`str` or None, default=None
 
 # verbose
 verbose = """
-verbose : :obj:`int`, default={}
-    Verbosity level (`0` means no message).
+verbose : :obj:`bool` or :obj:`int`, default={}
+    Verbosity level (``0`` or ``False`` means no message).
 """
 docdict["verbose"] = verbose.format(1)
 docdict["verbose0"] = verbose.format(0)
+docdict["verbose3"] = verbose.format(3)
 
 # view
 docdict["view"] = """
@@ -1095,16 +1459,23 @@ vmax : :obj:`float` or obj:`int` or None, optional
 
 # vmin
 docdict["vmin"] = """
-vmin : :obj:`float`  or obj:`int` or None, optional
+vmin : :obj:`float` or obj:`int` or None, optional
     Lower bound of the colormap. The values below vmin are masked.
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
 
+# y
+docdict["y_dummy"] = """
+y : None
+    This parameter is unused.
+    It is solely included for scikit-learn compatibility.
+"""
+
 
 ##############################################################################
 #
-# Other values definitions
+# Other values definitions: return values, attributes...
 #
 
 # atlas_type
@@ -1112,94 +1483,271 @@ docdict["atlas_type"] = """'atlas_type' : :obj:`str`
         Type of atlas.
         See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
 
+docdict["base_decomposition_fit_attributes"] = """
+Attributes
+----------
+maps_masker_ : instance of NiftiMapsMasker or SurfaceMapsMasker
+    This masker was initialized with
+    ``components_img_``, ``masker_.mask_img_``
+    and is the masker used
+    when calling transform and inverse_transform.
+
+mask_img_ : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+    See :ref:`extracting_data`.
+    The mask of the data.
+    If no mask was given at masker creation :
+
+    - for Nifti images, this contains automatically computed mask
+        via the selected ``mask_strategy``.
+
+    - for SurfaceImage objects, this mask encompasses all vertices of
+        the input images.
+
+"""
+
+docdict["multi_pca_fit_attributes"] = """
+components_ : 2D numpy array (n_components x n-voxels or n-vertices)
+    Array of masked extracted components.
+
+    .. note::
+
+        Use attribute ``components_img_``
+        rather than manually unmasking
+        ``components_`` with ``masker_`` attribute.
+
+components_img_ : 4D Nifti image \
+                    or 2D :obj:`~nilearn.surface.SurfaceImage`
+    The image giving the extracted components.
+    Each 3D Nifti image or 1D SurfaceImage is a component.
+
+    .. nilearn_versionadded:: 0.4.1
+
+masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
+        :obj:`~nilearn.maskers.MultiSurfaceMasker`
+    Masker used to filter and mask data as first step.
+    If :obj:`~nilearn.maskers.MultiNiftiMasker`
+    or :obj:`~nilearn.maskers.MultiSurfaceMasker` is given in
+    ``mask`` parameter, this is a copy of it.
+    Otherwise, a masker is created using the value of ``mask`` and
+    other Masker
+    related parameters as initialization.
+
+memory_ : joblib memory cache
+
+"""
+
 docdict["base_decoder_fit_attributes"] = """
-        Attributes
-        ----------
-        masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
-            The masker used to mask the data.
+Attributes
+----------
+coef_ : numpy.ndarray, shape=(n_classes, n_features)
+    Contains the mean of the models weight vector across
+    fold for each class. Returns None for Dummy estimators.
 
-        mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
-            Mask computed by the masker object.
+coef_img_ : :obj:`dict` of Nifti1Image
+    Dictionary containing ``coef_`` with class names as keys,
+    and ``coef_`` transformed in Nifti1Images as values.
+    In the case of a regression,
+    it contains a single Nifti1Image at the key 'beta'.
+    Ignored if Dummy estimators are provided.
 
-        classes_ : numpy.ndarray
-            Classes to predict. For classification only.
+cv_ : :obj:`list` of pairs of lists
+    List of the (n_folds,) folds.
+    For the corresponding fold,
+    each pair is composed of two lists of indices,
+    one for the train samples and one for the test samples.
 
-        screening_percentile_ : :obj:`float`
-            Screening percentile corrected according to volume of mask,
-            relative to the volume of standard brain.
+cv_params_ : :obj:`dict` of :obj:`list`
+    Best point in the parameter grid for each tested fold
+    in the inner cross validation loop.
+    The grid is empty
+    when Dummy estimators are provided.
 
-        coef_ : numpy.ndarray, shape=(n_classes, n_features)
-            Contains the mean of the models weight vector across
-            fold for each class. Returns None for Dummy estimators.
+    .. note::
 
-        coef_img_ : :obj:`dict` of Nifti1Image
-            Dictionary containing ``coef_`` with class names as keys,
-            and ``coef_`` transformed in Nifti1Images as values.
-            In the case of a regression,
-            it contains a single Nifti1Image at the key 'beta'.
-            Ignored if Dummy estimators are provided.
+        If the estimator used its built-in cross-validation,
+        this will include an additional key
+        for the single best value estimated
+        by the built-in cross-validation
+        ('best_C' for LogisticRegressionCV
+        and 'best_alpha' for RidgeCV/RidgeClassifierCV/LassoCV),
+        in addition to the input list of values.
 
-        intercept_ : ndarray, shape (nclasses,)
-            Intercept (also known as bias) added to the decision function.
-            Ignored if Dummy estimators are provided.
+cv_scores_ : :obj:`dict`, (classes, n_folds)
+    Scores (misclassification) for each parameter, and on each fold
 
-        cv_ : :obj:`list` of pairs of lists
-            List of the (n_folds,) folds.
-            For the corresponding fold,
-            each pair is composed of two lists of indices,
-            one for the train samples and one for the test samples.
+dummy_output_ : ndarray, shape=(n_classes, 2) \
+                or shape=(1, 1) for regression
+    Contains dummy estimator attributes after class predictions
+    using strategies of :class:`sklearn.dummy.DummyClassifier`
+    (class_prior)
+    and  :class:`sklearn.dummy.DummyRegressor` (constant)
+    from scikit-learn.
+    This attribute is necessary for estimating class predictions
+    after fit.
+    Returns None if non-dummy estimators are provided.
 
-        std_coef_ : numpy.ndarray, shape=(n_classes, n_features)
-            Contains the standard deviation of the models weight vector across
-            fold for each class.
-            Note that folds are not independent,
-            see
-            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
-            Ignored if Dummy estimators are provided.
+estimator_ : Estimator object used during decoding.
 
-        std_coef_img_ : :obj:`dict` of Nifti1Image
-            Dictionary containing `std_coef_` with class names as keys,
-            and `coef_` transformed in Nifti1Image as values.
-            In the case of a regression,
-            it contains a single Nifti1Image at the key 'beta'.
-            Ignored if Dummy estimators are provided.
+estimator_args_ : dict[str, Any]
+    Extra parameters passed to the sklearn learn estimators.
 
-        cv_params_ : :obj:`dict` of :obj:`list`
-            Best point in the parameter grid for each tested fold
-            in the inner cross validation loop.
-            The grid is empty
-            when Dummy estimators are provided.
+intercept_ : ndarray, shape (nclasses,)
+    Intercept (also known as bias) added to the decision function.
+    Ignored if Dummy estimators are provided.
 
-            .. note::
+mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
+    Mask computed by the masker object.
 
-                If the estimator used its built-in cross-validation,
-                this will include an additional key
-                for the single best value estimated
-                by the built-in cross-validation
-                ('best_C' for LogisticRegressionCV
-                and 'best_alpha' for RidgeCV/RidgeClassifierCV/LassoCV),
-                in addition to the input list of values.
+masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
+    The masker used to mask the data.
 
-        scorer_ : function
-            Scorer function used on the held out data to choose the best
-            parameters for the model.
+memory_ : joblib memory cache
 
-        cv_scores_ : :obj:`dict`, (classes, n_folds)
-            Scores (misclassification) for each parameter, and on each fold
+n_elements_ : :obj:`int`
+    The number of voxels or vertices in the mask.
 
-        n_outputs_ : :obj:`int`
-            Number of outputs (column-wise)
+    .. nilearn_versionadded:: 0.12.1
 
-        dummy_output_ : ndarray, shape=(n_classes, 2) \
-                       or shape=(1, 1) for regression
-            Contains dummy estimator attributes after class predictions
-            using strategies of :class:`sklearn.dummy.DummyClassifier`
-            (class_prior)
-            and  :class:`sklearn.dummy.DummyRegressor` (constant)
-            from scikit-learn.
-            This attribute is necessary for estimating class predictions
-            after fit.
-            Returns None if non-dummy estimators are provided.
+n_outputs_ : :obj:`int`
+    Number of outputs (column-wise)
+
+scorer_ : function
+    Scorer function used on the held out data to choose the best
+    parameters for the model.
+
+screening_percentile_ : :obj:`float`
+    Percentile value for ANOVA univariate feature selection.
+    A value of 100 means 'keep all features'.
+    This percentile is expressed
+    with respect to the volume of either a standard (MNI152) brain
+    (if mask_img is a 3D volume)
+    or a the number of vertices in the mask mesh
+    (if mask_img is a SurfaceImage).
+
+std_coef_ : numpy.ndarray, shape=(n_classes, n_features)
+    Contains the standard deviation of the models weight vector across
+    fold for each class.
+    Note that folds are not independent,
+    see
+    https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+    Ignored if Dummy estimators are provided.
+
+std_coef_img_ : :obj:`dict` of Nifti1Image
+    Dictionary containing `std_coef_` with class names as keys,
+    and `coef_` transformed in Nifti1Image as values.
+    In the case of a regression,
+    it contains a single Nifti1Image at the key 'beta'.
+    Ignored if Dummy estimators are provided.
+"""
+
+docdict["spacenet_fit_attributes"] = """
+Attributes
+----------
+all_coef_ : ndarray, shape (n_l1_ratios, n_folds, n_features)
+    Coefficients for all folds and features.
+
+alpha_grids_ : ndarray, shape (n_folds, n_alphas)
+    Alpha values considered for selection of the best ones
+    (saved in `best_model_params_`)
+
+best_model_params_ : ndarray, shape (n_folds, n_parameter)
+    Best model parameters (alpha, l1_ratio) saved for the different
+    cross-validation folds.
+
+coef_ : ndarray, shape\
+    (1, n_features) for 2 class classification problems\
+    (i.e n_classes = 2)\
+    (n_classes, n_features) for n_classes > 2
+    Coefficient of the features in the decision function.
+
+coef_img_ : nifti image
+    Masked model coefficients
+
+cv_ : list of pairs of lists
+    Each pair is the list of indices for the train and test samples
+    for the corresponding fold.
+
+cv_scores_ : ndarray, shape (n_folds, n_alphas)\
+    or (n_l1_ratios, n_folds, n_alphas)
+    Scores (misclassification) for each alpha, and on each fold
+
+intercept_ : narray, shape
+    (1,) for 2 class classification problems (i.e n_classes = 2)
+    (n_classes,) for n_classes > 2
+    Intercept (a.k.a. bias) added to the decision function.
+    It is available only when parameter intercept is set to True.
+
+mask_ : ndarray 3D
+    An array contains values of the mask image.
+
+masker_ : instance of NiftiMasker
+    The nifti masker used to mask the data.
+
+mask_img_ : Nifti like image
+    The mask of the data. If no mask was supplied by the user,
+    this attribute is the mask image computed automatically from the
+    data `X`.
+
+memory_ : joblib memory cache
+
+n_elements_ : :obj:`int`
+    The number of features in the mask.
+
+    .. nilearn_versionadded:: 0.12.1
+
+screening_percentile_ : float
+    Screening percentile corrected according to volume of mask,
+    relative to the volume of standard brain.
+
+w_ : ndarray, shape
+    (1, n_features + 1) for 2 class classification problems
+    (i.e n_classes = 2)
+    (n_classes, n_features + 1) for n_classes > 2, and (n_features,)
+    for regression
+    Model weights
+
+Xmean_ : array, shape (n_features,)
+    Mean of X across samples
+
+Xstd_ : array, shape (n_features,)
+    Standard deviation of X across samples
+
+ymean_ : array, shape (n_samples,)
+    Mean of prediction targets
+
+"""
+
+docdict["displays_partial_attributes"] = """
+frame_axes : :class:`~matplotlib.axes.Axes`
+    The axes framing the whole set of views.
+
+rect : 4- :obj:`tuple`
+    Position of axes within the figure.
+"""
+
+docdict["slicer_init_parameters_partial"] = f"""
+{docdict["axes"]}
+{docdict["black_bg"]}
+{docdict["brain_color"]}
+kwargs : :obj:`dict`
+    Extra keyword arguments are passed to
+    :class:`~nilearn.plotting.displays.CutAxes` used for plotting in each
+    direction.
+"""
+
+docdict["projector_init_parameters"] = f"""
+Parameters
+----------
+cut_coords : sequence of :obj:`float` or :obj:`int`
+    The world coordinates of the point where the cut is performed. Not used
+    for projectors.
+{docdict["axes"]}
+{docdict["black_bg"]}
+{docdict["brain_color"]}
+kwargs : :obj:`dict`
+    Extra keyword arguments are passed to
+    :class:`~nilearn.plotting.displays.GlassBrainAxes` used for plotting in
+    each direction.
 """
 
 # dataset description
@@ -1223,16 +1771,105 @@ docdict["fsaverage_options"] = """
 
 """
 
+# image returned Nifti maskers by inverse_transform
+docdict["img_inv_transform_nifti"] = """img : :obj:`nibabel.nifti1.Nifti1Image`
+        Transformed image in brain space.
+        Output shape for :
+
+        - 1D array : 3D :obj:`nibabel.nifti1.Nifti1Image` will be returned.
+        - 2D array : 4D :obj:`nibabel.nifti1.Nifti1Image` will be returned.
+
+        See :ref:`extracting_data`.
+        """
+# image returned surface maskers by inverse_transform
+docdict[
+    "img_inv_transform_surface"
+] = """img : :obj:`~nilearn.surface.SurfaceImage`
+        Signal for each vertex projected on the mesh.
+        Output shape for :
+
+        - 1D array : 1D :obj:`~nilearn.surface.SurfaceImage` will be returned.
+        - 2D array : 2D :obj:`~nilearn.surface.SurfaceImage` will be returned.
+
+        See :ref:`extracting_data`.
+        """
+
 # atlas labels
 docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
         List of the names of the regions."""
 
+# mask_img_ for most nifti maskers
+docdict[
+    "nifti_mask_img_"
+] = """mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image` or None.
+        The mask of the data.
+        If no ``mask_img`` was passed at masker construction,
+        then ``mask_img_`` is ``None``, otherwise
+        is the resulting binarized version of ``mask_img``
+        where each voxel is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0."""
+
 # look up table
-docdict["lut"] = """'lut' : :obj:`pandas.DataFrame`
+docdict["lut"] = """lut : :obj:`pandas.DataFrame`
         Act as a look up table (lut)
         with at least columns 'index' and 'name'.
         Formatted according to 'dseg.tsv' format from
         `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+
+
+signals_transform = """signals : :obj:`numpy.ndarray`, \
+            :obj:`pandas.DataFrame` or \
+            `polars.DataFrame`
+
+        Signal for each element.
+
+        .. nilearn_versionchanged:: 0.13.0
+
+            Added ``set_output`` support.
+
+        The type of the output is determined by ``set_output()``:
+        see `the scikit-learn documentation <https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html>`_.
+
+        Output shape for :
+
+        - For Numpy outputs:
+
+          - {}D images: (number of elements,)
+          - {}D images: (number of scans, number of elements) array
+
+        - For DataFrame outputs:
+
+          - {}D or {}D images: (number of scans, number of elements) array
+        """
+# signals returned Nifti/Surface maskers by transform, fit_transform...
+docdict["signals_transform_nifti"] = signals_transform.format(3, 4, 3, 4)
+docdict["signals_transform_surface"] = signals_transform.format(1, 2, 1, 2)
+
+# signals returned Multi Nifti maskers by transform, fit_transform...
+docdict[
+    "signals_transform_multi_nifti"
+] = """signals : :obj:`list` of :obj:`numpy.ndarray` or :obj:`numpy.ndarray`
+        Signal for each :term:`voxel`.
+        Output shape for :
+
+        - 3D images: (number of elements,) array
+        - 4D images: (number of scans, number of elements) array
+        - list of 3D images: list of (number of elements,) array
+        - list of 4D images: list of (number of scans, number of elements)
+          array
+        """
+# signals returned Multi Nifti maskers by transform_imgs
+docdict[
+    "signals_transform_imgs_multi_nifti"
+] = """signals : :obj:`list` of :obj:`numpy.ndarray`
+        Signal for each :term:`voxel`.
+        Output shape for :
+
+        - list of 3D images: list of (number of elements,) array
+        - list of 4D images: list of (number of scans, number of elements)
+          array
+        """
+
 
 # template
 docdict["template"] = """'template' : :obj:`str`
@@ -1257,6 +1894,16 @@ docdict["templateflow"] = """
    If you wish to use the exact same release as :term:`fMRIPrep`,
    please refer to `TemplateFlow <https://www.templateflow.org>`_.
 
+"""
+
+
+docdict["fetcher_note"] = """
+If the dataset files are already present in the user's Nilearn data
+directory, this fetcher will **not** re-download them. To force a fresh
+download, you can remove the existing dataset folder from your local
+Nilearn data directory.
+
+For more details on :ref:`how Nilearn stores datasets <datasets>`.
 """
 
 ##############################################################################
@@ -1328,5 +1975,8 @@ def fill_doc(f):
     except (TypeError, ValueError, KeyError) as exp:
         funcname = f.__name__
         funcname = docstring.split("\n")[0] if funcname is None else funcname
-        raise RuntimeError(f"Error documenting {funcname}:\n{exp!s}")
+        raise RuntimeError(
+            f"Error documenting {funcname}:\n{exp!s}.\n"
+            "Did you forget to escape a character with an extra '%'"
+        ) from exp
     return f

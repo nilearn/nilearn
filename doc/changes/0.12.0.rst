@@ -1,0 +1,148 @@
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.12.0
+======
+
+**Released June 2025**
+
+HIGHLIGHTS
+----------
+
+- Better handling of surface data via the functions from the ``nilearn.image`` and ``nilearn.masking`` packages (:func:`~nilearn.image.mean_img`, :func:`~nilearn.image.math_img`, :func:`~nilearn.masking.apply_mask`...)
+
+- Add support for "transparent thresholding" plotting that not only highlights statistically significant regions but also includes subthreshold locations.
+
+- Surface plots can now plot both hemispheres.
+
+- Image comparison can now be done on both volume and surface data and can also be done via Bland-Altman.
+
+- The default colormap has been changed to ``"RdBu_r"`` or ``"gray"`` for most plotting functions.
+
+- Label maskers can now accept a BIDS formatted 'look up tables' to more easily map an atlas region name, its index and its color.
+
+- More uniform look for all nilearn masker and glm reports. Improved user interface of the GLM reports.
+
+- Fixes the behavior of :class:`nilearn.decoding.Decoder` where it used to set the score to zero if all coefficients are zero, irrespective of the scoring metric used. This change ensures that the average cross-validated scores are comparable to a pure scikit-learn implementation. (:gh:`5097`).
+
+- Improve compliance of nilearn maskers, GLM and decoder estimators with scikit-learn estimators guidelines.
+
+Fixes
+-----
+
+- :bdg-dark:`Code` Ensure ``inverse_transform`` for :class:`~nilearn.maskers.NiftiMapsMasker` and :class:`~nilearn.maskers.NiftiLabelsMasker` return output of proper shape even if ``transform`` was not run on the fitted masker (:gh:`5398` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Ensure that for all multimaskers, confounds and sample_mask are used if a nifti-like object is passed to ``transform()``, or that when a list of nifti-like object is passed, they can handle properly the expected diversity of inputs (array, dataframe, csv file...) (:gh:`5379` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Allow to generate report for :class:`~nilearn.glm.second_level.SecondLevelModel` when its inputs is a list of :class:`~nilearn.glm.first_level.FirstLevelModel` (:gh:`5357` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Prevent range overrun in TFCE (:gh:`5179` by `Lee Newberg`_).
+
+- :bdg-dark:`Code` Bound the number of thresholds in TFCE calculation (:gh:`5179` by `Lee Newberg`_).
+
+- :bdg-dark:`Code` Ensure that all figures are generated with a color bar by default (:gh:`5172` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Fixes datasets that returned numpy arrays instead of pandas dataframes (:gh:`5109` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Ensure that image plotting threshold is non-negative as one-sided behavior in image thresholding can be obtained with vmin and vmax values in plotting threshold. (:gh:`5088` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Allow one-sided image thresholding by introducing ``two_sided`` parameter to image thresholding and update behavior of negative threshold. (:gh:`4951` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Ensure that only valid surface meshes can be instantiated. (:gh:`5036` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Do not set score to zero if all coefficients are zero in :class:`nilearn.decoding.Decoder` and ensure average scores are comparable to a pure scikit-learn implementation (:gh:`5097` by `Himanshu Aggarwal`_).
+
+- :bdg-dark:`Code` New interpolation method (``method='nearest_most_frequent'``) for :func:`~nilearn.surface.vol_to_surf` to better handle deterministic atlases by assigning most frequent voxel value in the neighborhood of a vertex (:gh:`5169` by `Himanshu Aggarwal`_).
+
+Enhancements
+------------
+
+- :bdg-dark:`Code` Add surface support for :func:`~nilearn.image.clean_img`, :func:`~nilearn.image.new_img_like`, :func:`~nilearn.image.index_img`, :func:`~nilearn.image.mean_img`, :func:`~nilearn.image.concat_imgs`, :func:`~nilearn.image.iter_img`, :func:`~nilearn.image.threshold_img` (:gh:`4999`, :gh:`5425`, :gh:`5224`, :gh:`5301` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add surface support for :class:`~nilearn.decomposition.DictLearning` and :class:`~nilearn.decomposition.CanICA` (:gh:`5377` by `Himanshu Aggarwal`_ and `Rémi Gau`_).
+
+- :bdg-dark:`Code` :func:`~glm.save_glm_to_bids` can infer the naming scheme for output files from the input files passed at fit time to :class:`~nilearn.glm.first_level.FirstLevelModel`. It will also now save the GLM mask to disk (:gh:`5256`, :gh:`5279` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add a ``timeout`` parameter to the neurovault fetching functions (:gh:`5268` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add surface support to :func:`~nilearn.glm.threshold_stats_img` (:gh:`5222` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Extend :func:`~nilearn.image.high_variance_confounds` to work with :class:`~nilearn.surface.SurfaceImage` (:gh:`5277` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Extend :func:`~nilearn.masking.apply_mask` to work with :class:`~nilearn.surface.SurfaceImage` (:gh:`5277` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add different reduction strategies to :class:`nilearn.maskers.SurfaceLabelsMasker` (:gh:`4809` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add reports for the surface based GLMs (:gh:`4442` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add support for surface based GLMs to :func:`~glm.save_glm_to_bids` (:gh:`5309` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Enhance :func:`~nilearn.glm.second_level.non_parametric_inference` to support surface data. Please, note that cluster analysis, TFCE and smoothing are not yet implemented. (:gh:`5078` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Allow plotting both hemispheres together (:gh:`4991` by `Himanshu Aggarwal`_).
+
+- :bdg-dark:`Code` Add a BIDS compliant look-up table to each of the deterministic atlas (:gh:`4820` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add a look-up-table (``lut``) parameter (mutually exclusive with ``labels``) to pass a region ``name`` to ``index`` mapping to :class:`~nilearn.maskers.NiftiLabelsMasker` and :class:`~nilearn.maskers.SurfaceLabelsMasker` (:gh:`5086` and :gh:`5342` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add a ``"template"`` to each atlas to describe the space they are provided in (:gh:`5041` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add an ``"atlas_type"`` metadata to each atlas (:gh:`4820` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add ``n_networks`` and ``thickness`` parameters to :func:`nilearn.datasets.fetch_atlas_yeo_2011` to specify which parcellation should be returned :gh:`5085` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add reports for SurfaceMapsMasker (:gh:`4968` by `Himanshu Aggarwal`_).
+
+- :bdg-info:`Plotting` Add radiological view and left right labels to :func:`~nilearn.plotting.view_img` (:gh:`5346` by `Rohan Thomas Jepegnanam`_).
+
+- :bdg-info:`Plotting` ``transparency`` and ``transparency_range`` parameters have been added to the :meth:`nilearn.plotting.displays.BaseSlicer.add_overlay` (and therefore to the all classes inheriting :class:`~nilearn.plotting.displays.BaseSlicer`). These parameters were also explicitly added to the plotting functions :func:`~nilearn.plotting.plot_img`, :func:`~nilearn.plotting.plot_stat_map`, :func:`~nilearn.plotting.plot_glass_brain` (:gh:`5151` by `Rémi Gau`_ and :gh:`5371` by `Hande Gözükan`_).
+
+- :bdg-info:`Plotting` Add a :func:`~nilearn.plotting.plot_bland_altman` to create Bland-Altman plots to compare images (:gh:`5112` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Allow a :func:`~nilearn.plotting.plot_img_comparison` to compare images :class:`~nilearn.surface.SurfaceImage` (:gh:`5132` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Colormaps can be passed as BIDS compliant look-up table via a :class:`pandas.DataFrame` to :func:`~nilearn.plotting.plot_roi` and :func:`~nilearn.plotting.plot_surf_roi` (:gh:`5160` by `Rémi Gau`_).
+
+Changes
+-------
+
+- :bdg-dark:`Code` Ensure masker objects are only modified when using their ``fit`` method and not modified when using their ``transform`` method (:gh:`5398` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` HTML reports generated by :class:`~nilearn.maskers.NiftiLabelsMasker` now includes a ``"region name"`` column filled with dummy names when no labels or look-up table was passed at the masker construction (:gh:`5342` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Ensure that the post-fit ``mask_img_`` attribute of maskers is either None or binary image with a single sample (3D for volumes and 1D for surfaces) (:gh:`5347` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Fix labels of all deterministic atlases to be list of strings that contain a ``"Background"`` label (:gh:`4820`, :gh:`5006`, :gh:`5013`, :gh:`5041` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Move ``nilearn.plotting.surf_plotting`` and ``nilearn.plotting.html_surface`` under ``nilearn.plotting.surface`` (:gh:`5234` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Move ``nilearn.plotting.matrix_plotting`` under ``nilearn.plotting.matrix`` (:gh:`5240` by `Hande Gözükan`_).
+
+- :bdg-danger:`Deprecation` In version >=0.13.0, the parameter ``img`` or  ``X`` will be renamed to ``imgs`` for the ``fit``, ``transform`` and ``fit_transform`` method of all the surface maskers, the fit method of the :class:`~nilearn.maskers.NiftiSpheresMasker` and the :class:`~nilearn.regions.RegionExtractor`, and the ``fit_transform`` method of the  :class:`~nilearn.maskers.NiftiMasker` (:gh:`5262` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` From version >=0.13.0, :func:`nilearn.datasets.fetch_atlas_yeo_2011` will return a single parcellation (:gh:`5085` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` For version >=0.13.0 :func:`~nilearn.interfaces.bids.parse_bids_filename` will return a dictionary whose keys correspond to valid BIDS terms. (:gh:`5320` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` Remove the ``legacy_format`` parameter from several dataset fetcher functions as it was due for deprecation in version 0.11.0  (:gh:`5004` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` Deprecate passing cleaning arguments to maskers for NiftiImages via ``kwargs``. Introduce a ``clean_args`` parameter to match API of Surface maskers.  (:gh:`5082` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` ``nilearn.plotting.plot_img_comparison`` was moved to :func:`~nilearn.plotting.plot_img_comparison` (:gh:`5120` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` Using the transform method of nifti maskers on 3D images now returns 1D arrays. Similarly, using the transform method of surface maskers on 1D surface images now returns 1D arrays.  (:gh:`5381` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` Using the ``inverse_transform`` method of surface maskers on 1D arrays now returns surface images  (:gh:`5381` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The default for ``slice_time_ref`` in :func:`~nilearn.glm.first_level.first_level_from_bids` was changed to ``None`` (:gh:`5382` by `Rémi Gau`_).
+
+- :bdg-primary:`Doc` Add license information for Yeo 2011 atlas (:gh:`5195` by `Patrick Sadil`_).
+
+- :bdg-info:`Plotting` Improve layout of GLM reports (:gh:`5202` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Allow a :func:`~nilearn.plotting.plot_img_comparison` to accept 3D Niimg-like image and to be run without a masker (:gh:`5132` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Change the default map to be ``"RdBu_r"`` or ``"gray"`` for most plotting functions. In several examples, use the "inferno" colormap when a sequential colormap is preferable (:gh:`4807`, :gh:`4851` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Improve sulci and subcortical schema for glass brain sagittal plots (:gh:`4807` by `John T. Johnson`_).

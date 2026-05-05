@@ -5,10 +5,14 @@ See the  maintenance page of our documentation for more information
 https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-for-plotting-tests
 """
 
+import matplotlib as mpl
 import numpy as np
+import pandas as pd
 import pytest
 from matplotlib import pyplot as plt
+from nibabel import Nifti1Image
 
+from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.datasets import (
     load_fsaverage_data,
     load_mni152_template,
@@ -18,13 +22,22 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.tests._testing import modulated_event_paradigm
+from nilearn.image import math_img
 from nilearn.plotting import (
     plot_anat,
+    plot_bland_altman,
     plot_carpet,
     plot_connectome,
+    plot_contrast_matrix,
+    plot_design_matrix,
+    plot_design_matrix_correlation,
     plot_epi,
+    plot_event,
     plot_glass_brain,
     plot_img,
+    plot_img_comparison,
+    plot_img_on_surf,
+    plot_matrix,
     plot_prob_atlas,
     plot_roi,
     plot_stat_map,
@@ -32,18 +45,8 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting.img_comparison import (
-    plot_bland_altman,
-    plot_img_comparison,
-)
-from nilearn.plotting.img_plotting import MNI152TEMPLATE
-from nilearn.plotting.matrix_plotting import (
-    plot_contrast_matrix,
-    plot_design_matrix,
-    plot_design_matrix_correlation,
-    plot_event,
-    plot_matrix,
-)
+from nilearn.plotting.displays import OrthoSlicer
+from nilearn.plotting.image.utils import MNI152TEMPLATE
 
 PLOTTING_FUNCS_3D = {
     plot_img,
@@ -54,8 +57,6 @@ PLOTTING_FUNCS_3D = {
     plot_glass_brain,
 }
 
-PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
-
 SURFACE_FUNCS = {
     plot_surf,
     plot_surf_stat_map,
@@ -63,75 +64,171 @@ SURFACE_FUNCS = {
 }
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-@pytest.mark.parametrize("black_bg", [True, False])
-def test_plot_functions_black_bg(plot_func, img_3d_mni, black_bg):
-    """Test parameter for black background."""
-    return plot_func(img_3d_mni, black_bg=black_bg)
+def test_plot_functions_black_bg(plot_func, img_3d_mni):
+    """Test parameter for black background.
+
+    black_bg=False being the default it should be covered by other tests.
+    """
+    return plot_func(img_3d_mni, black_bg=True)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-@pytest.mark.parametrize("title", [None, "foo"])
-def test_plot_functions_title(plot_func, img_3d_mni, title):
-    """Test parameter for title."""
-    return plot_func(img_3d_mni, title=title)
+def test_plot_functions_title(plot_func, img_3d_mni):
+    """Test parameter for title.
+
+    title=None being the default it should be covered by other tests.
+    """
+    return plot_func(img_3d_mni, title="foo")
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-@pytest.mark.parametrize("annotate", [True, False])
-def test_plot_functions_annotate(plot_func, img_3d_mni, annotate):
-    """Test parameter for annotate."""
-    return plot_func(img_3d_mni, annotate=annotate)
+def test_plot_functions_annotate(plot_func, img_3d_mni):
+    """Test parameter for annotate=False.
+
+    annotate=True being the default it should be covered by other tests.
+    """
+    return plot_func(img_3d_mni, annotate=False)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
-@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize(
     "display_mode", ["x", "y", "z", "yx", "xz", "yz", "ortho"]
 )
-def test_plot_functions_display_mode(plot_func, display_mode):
-    """Test parameter for display_mode."""
-    return plot_func(
+def test_plot_stat_map_display_mode(display_mode):
+    """Test parameter for display_mode.
+
+    Only test one function to speed up testing.
+    """
+    return plot_stat_map(
         load_sample_motor_activation_image(), display_mode=display_mode
     )
 
 
 @pytest.mark.mpl_image_compare
+def test_plot_roi_single_value_data(affine_eye):
+    """Test `nilearn.plotting.image.img_plotting.plot_roi` to see that colorbar
+    does not appear in the plot when data displayed has single value.
+    """
+    mask = np.zeros((53, 63, 42), dtype=np.uint8)
+    mask[20:35, 25:40, 10:25] = 1
+
+    return plot_roi(
+        Nifti1Image(mask, affine_eye), display_mode="y", cut_coords=3
+    )
+
+
+@pytest.mark.slow
+@pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-@pytest.mark.parametrize("colorbar", [True, False])
-@pytest.mark.parametrize("cbar_tick_format", ["%f", "%i"])
-def test_plot_functions_colorbar(plot_func, colorbar, cbar_tick_format):
+def test_plot_functions_no_colorbar(plot_func, img_3d_mni):
+    """Test no colorbar.
+
+    colorbar=True being the default it should be covered by other tests.
+    """
+    return plot_func(
+        img_3d_mni,
+        colorbar=False,
+    )
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.slow
+@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
+def test_plot_functions_colorbar_ticks(plot_func, img_3d_mni):
     """Test parameter for colorbar."""
     return plot_func(
-        load_sample_motor_activation_image(),
-        colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format,
+        img_3d_mni,
+        cbar_tick_format="%f",
     )
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-@pytest.mark.parametrize("vmin", [None, -1, 1])
-@pytest.mark.parametrize("vmax", [None, 2, 3])
-def test_plot_functions_3d_default_params(plot_func, vmin, vmax):
-    """Test 3D plotting functions with vmin, vmax."""
-    return plot_func(
-        load_sample_motor_activation_image(), vmin=vmin, vmax=vmax
-    )
+@pytest.mark.parametrize("vmin", [-1, 1])
+def test_plot_functions_vmin(plot_func, vmin):
+    """Test 3D plotting functions with vmin."""
+    return plot_func(load_sample_motor_activation_image(), vmin=vmin)
 
 
+@pytest.mark.slow
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
+@pytest.mark.parametrize("vmax", [2, 3])
+def test_plot_functions_vmax(plot_func, vmax):
+    """Test 3D plotting functions with vmax."""
+    return plot_func(load_sample_motor_activation_image(), vmax=vmax)
+
+
+@pytest.mark.slow
+@pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plotting_func", PLOTTING_FUNCS_3D)
-@pytest.mark.parametrize("radiological", [True, False])
-def test_plotting_functions_radiological_view(
-    img_3d_mni, plotting_func, radiological
-):
-    """Test for radiological view."""
-    result = plotting_func(img_3d_mni, radiological=radiological)
-    assert result.axes.get("y").radiological is radiological
-    return result
+def test_plotting_functions_radiological_view(plotting_func):
+    """Test for radiological view.
+
+    radiological=False being the default it should be covered by other tests.
+    """
+    radiological = True
+    display = plotting_func(
+        load_sample_motor_activation_image(), radiological=radiological
+    )
+    assert display.axes.get("y").radiological is radiological
+    return display
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize(
+    "levels, colors", [([0], ["limegreen"]), ([0, 1], ["limegreen", "yellow"])]
+)
+def test_add_contours(levels, colors):
+    """Test for add_contours."""
+    display = plot_img(
+        load_sample_motor_activation_image(),
+        title=f"contour {levels=} {colors=}",
+    )
+    display.add_contours(
+        load_sample_motor_activation_image(), levels=levels, colors=colors
+    )
+    return display
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        # levels should be at least 2
+        # If single levels are passed then we force upper level to be inf
+        {"colors": "r", "alpha": 0.2, "levels": [0.0]},
+        # If two levels are passed, it should be increasing from zero index
+        # In this case, we simply omit appending inf
+        {"colors": "limegreen", "alpha": 0.1, "levels": [0.0, 0.8]},
+        # without passing colors and alpha. In this case, default values are
+        # chosen from matplotlib
+        {"levels": [0.0, 0.4, 0.8]},
+        # levels with only one value
+        # vmin argument is not needed
+        # but added because of matplotlib 3.8.0rc1 bug
+        # see https://github.com/matplotlib/matplotlib/issues/26531
+        {"levels": [0.4], "vmin": 0.0},
+        # without passing levels, should work with default levels from
+        # matplotlib
+        {},
+    ],
+)
+def test_add_contours_filled(mni152_template_res_2, kwargs):
+    """Tests for add_contours with filled = true."""
+    display = OrthoSlicer(cut_coords=(0, 0, 0))
+    display.add_contours(mni152_template_res_2, filled=True, **kwargs)
+    return display
 
 
 @pytest.mark.mpl_image_compare
@@ -156,6 +253,7 @@ def test_plot_carpet_default_params(img_4d_mni, img_3d_ones_mni):
     return plot_carpet(img_4d_mni, mask_img=img_3d_ones_mni)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
     """Smoke-test for plot_prob_atlas with default arguments."""
@@ -196,7 +294,7 @@ def test_plot_connectome_node_colors(
 
 
 @pytest.mark.mpl_image_compare
-@pytest.mark.parametrize("alpha", [0.0, 0.3, 0.7, 1.0])
+@pytest.mark.parametrize("alpha", [0.0, 0.7, 1.0])
 def test_plot_connectome_alpha(alpha, adjacency, node_coords):
     """Smoke test for plot_connectome with various alpha values."""
     return plot_connectome(adjacency, node_coords, alpha=alpha)
@@ -258,6 +356,7 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
 
 
 @pytest.mark.mpl_image_compare(tolerance=5)
+@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize(
     "view",
@@ -272,6 +371,12 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
 def test_plot_surf_surface(plot_func, view, hemi):
     """Test surface plotting functions with views and hemispheres."""
     surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
     return plot_func(
         surf_img.mesh,
         surf_img,
@@ -282,13 +387,57 @@ def test_plot_surf_surface(plot_func, view, hemi):
     )
 
 
+@pytest.mark.skipif(
+    not (is_plotly_installed() and is_kaleido_installed()),
+    reason="This test requires plotly and kaleido to be installed",
+)
 @pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
+@pytest.mark.parametrize(
+    "view",
+    [
+        "anterior",
+        "posterior",
+        "dorsal",
+        "ventral",
+    ],
+)
+@pytest.mark.parametrize("hemi", ["left", "right", "both"])
+def test_plot_surf_surface_plotly(plot_func, view, hemi):
+    """Test surface plotting functions with views and hemispheres using plotly
+    backend.
+    """
+    surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
+    return plot_func(
+        surf_img.mesh,
+        surf_img,
+        engine="plotly",
+        view=view,
+        hemi=hemi,
+        title=f"{view=}, {hemi=}",
+    )
+
+
+@pytest.mark.mpl_image_compare(tolerance=5)
+@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
 def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
     """Test surface plotting functions with colorbars."""
     surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
     return plot_func(
         surf_img.mesh,
         surf_img,
@@ -298,6 +447,60 @@ def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
     )
 
 
+@pytest.mark.skipif(
+    not (is_plotly_installed() and is_kaleido_installed()),
+    reason="This test requires plotly and kaleido to be installed",
+)
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
+@pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
+def test_plot_surf_surface_colorbar_plotly(
+    plot_func, colorbar, cbar_tick_format
+):
+    """Test surface plotting functions with colorbars using plotly backend."""
+    surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
+    return plot_func(
+        surf_img.mesh,
+        surf_img,
+        engine="plotly",
+        colorbar=colorbar,
+        cbar_tick_format=cbar_tick_format,
+    )
+
+
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("bg_on_data", [True, False])
+@pytest.mark.parametrize("symmetric_cmap", [True, False])
+@pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.parametrize("title", [None, "Foo"])
+def test_plot_img_on_surf(bg_on_data, symmetric_cmap, colorbar, title):
+    stat_img = load_sample_motor_activation_image()
+    fig, _ = plot_img_on_surf(
+        stat_map=stat_img,
+        views=[
+            "lateral",
+            "medial",
+            "dorsal",
+            "ventral",
+            "anterior",
+            "posterior",
+        ],
+        hemispheres=["left", "right"],
+        bg_on_data=bg_on_data,
+        symmetric_cmap=symmetric_cmap,
+        colorbar=colorbar,
+        title=title,
+    )
+    return fig
+
+
 # ---------------------- design matrix plotting -------------------------------
 
 
@@ -305,6 +508,30 @@ def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
 def test_plot_event_duration_0():
     """Test plot event with events of duration 0."""
     return plot_event(modulated_event_paradigm())
+
+
+@pytest.mark.mpl_image_compare
+def test_plot_event_x_lim(rng):
+    """Test that x_lim is set after end of last event.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/4907
+    """
+    trial_types = ["foo", "bar", "baz"]
+
+    n_runs = 3
+
+    events = [
+        pd.DataFrame(
+            {
+                "trial_type": trial_types,
+                "onset": rng.random((3,)) * 5,
+                "duration": rng.uniform(size=(3,)) * 2 + 1,
+            }
+        )
+        for _ in range(n_runs)
+    ]
+
+    return plot_event(events)
 
 
 @pytest.fixture
@@ -417,9 +644,33 @@ def test_plot_contrast_matrix_colorbar(colorbar):
     return ax.get_figure()
 
 
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("fn", [plot_stat_map, plot_img, plot_glass_brain])
+def test_plot_with_transparency(fn):
+    """Test transparency parameter to determine alpha layer."""
+    return fn(
+        load_sample_motor_activation_image(), transparency=0.5, cmap="cold_hot"
+    )
+
+
+@pytest.mark.slow
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("fn", [plot_stat_map, plot_img, plot_glass_brain])
+@pytest.mark.parametrize("transparency_range", [None, [0, 2], [2, 4]])
+def test_plot_with_transparency_range(fn, transparency_range):
+    """Test transparency range parameter to determine alpha layer."""
+    return fn(
+        load_sample_motor_activation_image(),
+        transparency=load_sample_motor_activation_image(),
+        transparency_range=transparency_range,
+        cmap="cold_hot",
+    )
+
+
 IMG_COMPARISON_FUNCS = {plot_img_comparison, plot_bland_altman}
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
 def test_img_comparison_default(
@@ -431,6 +682,7 @@ def test_img_comparison_default(
     return plt.gcf()
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])

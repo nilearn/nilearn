@@ -1,12 +1,12 @@
-"""Print the versions of python and several packages used in the project."""
+"""Print the versions of Python and several packages used in the project."""
 
+import importlib.metadata
 import sys
 
-import pkg_resources
+from rich import print
 
 DEPENDENCIES = [
     "joblib",
-    "lxml",
     "matplotlib",
     "nibabel",
     "numpy",
@@ -20,11 +20,10 @@ DEPENDENCIES = [
 def print_package_version(package_name, indent="  "):
     """Print install status and version of a package."""
     try:
-        dist = pkg_resources.get_distribution(package_name)
-    except pkg_resources.DistributionNotFound:
+        version = importlib.metadata.version(package_name)
+        provenance_info = f"{version} installed"
+    except importlib.metadata.PackageNotFoundError:
         provenance_info = "not installed"
-    else:
-        provenance_info = f"{dist.version} installed in {dist.location}"
 
     print(f"{indent}{package_name}: {provenance_info}")
 

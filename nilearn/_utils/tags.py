@@ -16,26 +16,22 @@ https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
 """
 
 from dataclasses import dataclass
+from typing import Any
 
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
-
-SKLEARN_LT_1_6 = parse(sklearn_version).release[1] < 6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 
 if SKLEARN_LT_1_6:
 
     def tags(
         niimg_like=True,
         surf_img=False,
-        masker=False,
-        multi_masker=False,
         **kwargs,
     ):
         """Add nilearn tags to estimator.
 
         See also: InputTags
 
-        TODO remove when dropping sklearn 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         X_types = kwargs.get("X_types", [])
         X_types.append("2darray")
@@ -43,10 +39,6 @@ if SKLEARN_LT_1_6:
             X_types.append("niimg_like")
         if surf_img:
             X_types.append("surf_img")
-        if masker:
-            X_types.append("masker")
-        if multi_masker:
-            X_types.append("multi_masker")
         X_types = list(set(X_types))
 
         return dict(X_types=X_types, **kwargs)
@@ -83,7 +75,38 @@ else:
         # estimator accepts SurfaceImage object
         surf_img: bool = False
 
-        # estimator that are maskers
-        # TODO: implement a masker_tags attribute
-        masker: bool = False
-        multi_masker: bool = False
+
+def get_tag(estimator: Any, tag: str) -> bool:
+    if not hasattr(estimator, "__sklearn_tags__"):
+        return False
+    tags = estimator.__sklearn_tags__()
+    # TODO (sklearn >= 1.6.0) simplify
+    #  for sklearn >= 1.6 tags are always a dataclass
+    if isinstance(tags, dict) and "X_types" in tags:
+        return tag in tags["X_types"]
+    else:
+        return getattr(tags.input_tags, tag, False)
+
+
+def is_masker(estimator: Any) -> bool:
+    if SKLEARN_LT_1_6:
+        return getattr(estimator, "_estimator_type", "") == "masker"
+    if not hasattr(estimator, "__sklearn_tags__"):
+        return False
+    return estimator.__sklearn_tags__().estimator_type == "masker"
+
+
+def is_glm(estimator: Any) -> bool:
+    if SKLEARN_LT_1_6:
+        return getattr(estimator, "_estimator_type", "") == "glm"
+    if not hasattr(estimator, "__sklearn_tags__"):
+        return False
+    return estimator.__sklearn_tags__().estimator_type == "glm"
+
+
+def accept_niimg_input(estimator: Any) -> bool:
+    return get_tag(estimator, "niimg_like")
+
+
+def accept_surf_img_input(estimator: Any) -> bool:
+    return get_tag(estimator, "surf_img")

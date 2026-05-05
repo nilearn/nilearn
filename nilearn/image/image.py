@@ -5,53 +5,201 @@ See also nilearn.signal.
 """
 
 import collections.abc
-import copy
+import glob
 import itertools
+import math
 import warnings
+from collections.abc import Iterable
 from copy import deepcopy
+from pathlib import Path
+from typing import Any, Literal, overload
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image, Nifti1Pair, load, spatialimages
+from nibabel.fileslice import is_fancy
+from nibabel.spatialimages import SpatialImage
+from numpy.testing import assert_array_equal
 from scipy.ndimage import gaussian_filter1d, generate_binary_structure, label
 from scipy.stats import scoreatpercentile
 
-from nilearn import signal
-from nilearn._utils import (
-    as_ndarray,
-    check_niimg,
-    check_niimg_3d,
-    check_niimg_4d,
-    fill_doc,
-    logger,
+from nilearn import EXPAND_PATH_WILDCARDS, signal
+from nilearn._utils import logger
+from nilearn._utils.cache_mixin import cache
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import stringify_path
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
+from nilearn._utils.niimg import (
+    _get_data,
+    ensure_finite_data,
+    load_niimg,
     repr_niimgs,
+    safe_get_data,
 )
-from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.helpers import (
-    check_copy_header,
-    stringify_path,
+from nilearn._utils.numpy_conversions import as_ndarray
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+    check_threshold,
 )
-from nilearn._utils.niimg import _get_data, safe_get_data
-from nilearn._utils.niimg_conversions import (
-    _index_img,
-    check_same_fov,
-    iter_check_niimg,
-)
-from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
+from nilearn.exceptions import DimensionError
+from nilearn.surface.surface import (
+    FileMesh,
+    SurfaceImage,
+    at_least_2d,
+    compute_adjacency_matrix,
+    extract_data,
+    find_surface_clusters,
+)
 from nilearn.surface.surface import get_data as get_surface_data
-from nilearn.surface.surface import new_img_like as new_surface_img_like
-from nilearn.typing import NiimgLike
+from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
+from nilearn.typing import ClusterThreshold, NiimgLike
 
 
-def get_data(img):
+def is_volume_image(imgs) -> bool:
+    """Return True if specified ``imgs`` is of type NiimgLike, SpatialImage, or
+    an iterable of those; False otherwise.
+
+    Parameters
+    ----------
+    imgs : object
+        object to check if volume image
+
+    Returns
+    -------
+    bool
+        True if volume object or iterable of volume objects, False otherwise
+
+    """
+    if not (
+        isinstance(imgs, (NiimgLike, SpatialImage))
+        or (hasattr(imgs, "__iter__"))
+    ):
+        return False
+
+    if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
+        for x in imgs:
+            if not is_volume_image(x):
+                return False
+    return True
+
+
+def is_empty_volume(img) -> bool:
+    """Check if the specified Nifti image ``img`` is empty.
+
+    Empty means any dimension of image data has length 0.
+
+    Parameters
+    ----------
+    img : :class:`nibabel.nifti1.Nifti1Image`
+        Should be a loaded nifti image.
+
+    Returns
+    -------
+    bool
+        True if the image is empty; False otherwise
+    """
+    return 0 in img.dataobj.shape
+
+
+def _get_imgs_as_filenames(imgs, wildcards=True):
+    if wildcards and EXPAND_PATH_WILDCARDS:
+        # Expand user path
+        expanded_niimg = str(Path(imgs).expanduser())
+        # Ascending sorting
+        filenames = sorted(glob.glob(expanded_niimg))
+
+        # processing filenames matching globbing expression
+        if len(filenames) >= 1 and glob.has_magic(imgs):
+            imgs = filenames  # iterable case
+        # niimg is an existing filename
+        elif [expanded_niimg] == filenames:
+            imgs = filenames[0]
+        # No files found by glob
+        elif glob.has_magic(imgs):
+            # No files matching the glob expression, warn the user
+            message = (
+                "No files matching the entered niimg expression: "
+                f"'{imgs}'.\n"
+                "You may have left wildcards usage activated: "
+                "please set the global constant "
+                "'nilearn.EXPAND_PATH_WILDCARDS' to False "
+                "to deactivate this behavior."
+            )
+            raise ValueError(message)
+        else:
+            raise ValueError(f"File not found: '{imgs}'")
+    elif not Path(imgs).exists():
+        raise ValueError(f"File not found: '{imgs}'")
+    return imgs
+
+
+def check_volume_for_fit(imgs) -> None:
+    """Check if specified ``imgs`` is a non-empty volume image or iterable of
+    non-empty volume images.
+
+    Parameters
+    ----------
+    imgs : object
+        object to check if volume image
+
+    Raises
+    ------
+    TypeError
+        If image or iterable of images are not NiftiLike objects.
+    ValueError
+        If image or iterable of images are filenames but not found or empty
+    image.
+    """
+    if not is_volume_image(imgs):
+        raise TypeError(
+            "input should be a NiftiLike object "
+            "or an iterable of NiftiLike object. "
+            f"Got: {imgs.__class__.__name__}"
+        )
+
+    imgs = stringify_path(imgs)
+    if isinstance(imgs, str):
+        imgs = _get_imgs_as_filenames(imgs)
+
+    if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
+        for img in imgs:
+            check_volume_for_fit(img)
+    else:
+        imgs = load_niimg(imgs)
+
+        if is_empty_volume(imgs):
+            raise ValueError("The image is empty.")
+
+
+def get_data(img) -> np.ndarray:
     """Get the image data as a :class:`numpy.ndarray`.
 
     Parameters
     ----------
     img : Niimg-like object or iterable of Niimg-like objects
         See :ref:`extracting_data`.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.image import get_data
+    >>> img = Nifti1Image(
+    ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
+    ... )
+    >>> data = get_data(img)
+    >>> data
+    array([[[ 0,  1,  2,  3],
+            [ 4,  5,  6,  7],
+            [ 8,  9, 10, 11]],
+           [[12, 13, 14, 15],
+            [16, 17, 18, 19],
+            [20, 21, 22, 23]]])
 
     Returns
     -------
@@ -68,18 +216,18 @@ def get_data(img):
 
 def high_variance_confounds(
     imgs, n_confounds=5, percentile=2.0, detrend=True, mask_img=None
-):
+) -> np.ndarray:
     """Return confounds extracted from input signals with highest variance.
 
     Parameters
     ----------
-    imgs : Niimg-like object
-        4D image.
+    imgs : 4D Niimg-like or 2D SurfaceImage object
         See :ref:`extracting_data`.
 
-    mask_img : Niimg-like object or None, default=None
-        If not provided, all voxels are used.
-        If provided, confounds are extracted from voxels inside the mask.
+    mask_img : Niimg-like or SurfaceImage object, or None, default=None
+        If not provided, all voxels / vertices are used.
+        If provided, confounds are extracted
+        from voxels / vertices inside the mask.
         See :ref:`extracting_data`.
 
     n_confounds : :obj:`int`, default=5
@@ -118,15 +266,24 @@ def high_variance_confounds(
     """
     from .. import masking
 
+    check_compatibility_mask_and_images(mask_img, imgs)
+
     if mask_img is not None:
+        if isinstance(imgs, SurfaceImage):
+            check_polymesh_equal(mask_img.mesh, imgs.mesh)
         sigs = masking.apply_mask(imgs, mask_img)
-    else:
-        # Load the data only if it doesn't need to be masked
-        imgs = check_niimg_4d(imgs)
-        sigs = as_ndarray(get_data(imgs))
-        # Not using apply_mask here saves memory in most cases.
-        del imgs  # help reduce memory consumption
+
+    # Load the data only if it doesn't need to be masked
+    # Not using apply_mask here saves memory in most cases.
+    elif isinstance(imgs, SurfaceImage):
+        sigs = as_ndarray(get_surface_data(imgs))
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
+    else:
+        imgs = check_niimg_4d(imgs)
+        sigs = as_ndarray(_get_data(imgs))
+        sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
+
+    del imgs  # help reduce memory consumption
 
     return signal.high_variance_confounds(
         sigs, n_confounds=n_confounds, percentile=percentile, detrend=detrend
@@ -199,7 +356,9 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         (4, 4) matrix, giving affine transformation for image. (3, 3) matrices
         are also accepted (only these coefficients are used).
         If `fwhm='fast'`, the affine is not used and can be None.
+
     %(fwhm)s
+
     ensure_finite : :obj:`bool`, default=True
         If True, replace every non-finite values (like NaNs) by zero before
         filtering.
@@ -224,7 +383,7 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         warnings.warn(
             f"The parameter 'fwhm' for smoothing is specified as {fwhm}. "
             "Setting it to None (no smoothing will be performed)",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         fwhm = None
     if arr.dtype.kind == "i":
@@ -236,7 +395,7 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         arr = arr.copy()
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
-        arr[np.logical_not(np.isfinite(arr))] = 0
+        ensure_finite_data(arr, raise_warning=False)
     if isinstance(fwhm, str) and (fwhm == "fast"):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
@@ -261,40 +420,166 @@ def smooth_img(imgs, fwhm):
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects
+    imgs : Niimg-like object, :obj:`~nilearn.surface.SurfaceImage`, \
+           or iterable of Niimg-like objects or \
+           :obj:`~nilearn.surface.SurfaceImage`.
         Image(s) to smooth (see :ref:`extracting_data`
         for a detailed description of the valid input types).
+
     %(fwhm)s
 
     Returns
     -------
-    :class:`nibabel.nifti1.Nifti1Image` or list of
-        Filtered input image. If `imgs` is an iterable,
-        then `filtered_img` is a list.
+    Niimg-like object, :obj:~nilearn.surface.SurfaceImage.
+    Smoothed input image or surface.
 
     """
-    # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
-    # See http://bugs.python.org/issue7624
+    is_surface = False
+    single_img = True
+
     imgs = stringify_path(imgs)
-    if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
+
+    if isinstance(imgs, SurfaceImage):
+        is_surface = True
+    elif hasattr(imgs, "__iter__") and not isinstance(imgs, str):
         single_img = False
-    else:
-        single_img = True
+        if all(isinstance(x, SurfaceImage) for x in imgs):
+            is_surface = True
+
+    if single_img:
         imgs = [imgs]
 
     ret = []
-    for img in imgs:
-        img = check_niimg(img)
-        affine = img.affine
-        filtered = smooth_array(
-            get_data(img), affine, fwhm=fwhm, ensure_finite=True, copy=True
-        )
-        ret.append(new_img_like(img, filtered, affine, copy_header=True))
+    if is_surface:
+        if fwhm is not None and hasattr(fwhm, "__iter__"):
+            raise TypeError("For surface data, 'fwhm' must be a scalar.")
+        for img in imgs:
+            iterations = _mris_fwhm_to_niters(fwhm, img)
+            ret.append(_smooth_surface_img(img, iterations))
+
+    else:
+        for img in imgs:
+            img = check_niimg(img)
+            affine = img.affine
+            filtered = smooth_array(
+                _get_data(img),
+                affine,
+                fwhm=fwhm,
+                ensure_finite=True,
+                copy=True,
+            )
+            ret.append(new_img_like(img, filtered, affine))
 
     return ret[0] if single_img else ret
 
 
-def _crop_img_to(img, slices, copy=True, copy_header=False):
+def _smooth_surface_img(
+    img: SurfaceImage,
+    iterations: list[int],
+):
+    """Smooth values along the surface.
+
+    Parameters
+    ----------
+    imgs : SurfaceImage
+        The surface whose is to be smoothed.
+        In the case of 2D data, each sample is smoothed independently.
+
+    iterations : :obj:`tuple` of :obj:`int` >=0
+        The number of times to repeat the smoothing operation
+        (it must be a positive value).
+        One value per mesh in the image.
+
+    Returns
+    -------
+    smoothed_imgs : SurfaceImage
+        SurfaceImage with smoothed data at each vertex.
+
+    """
+    # First, calculate the center and surround weights for the
+    # center-surround knob.
+    center_weight = 0.5
+    surround_weight = 1 - center_weight
+
+    # Calculate the adjacency matrix either weighting
+    # by inverse distance or not weighting (ones)
+    new_data = {}
+    for hemi, n_iter in zip(img.mesh.parts, iterations, strict=False):
+        mesh = img.mesh.parts[hemi]
+        data = img.data.parts[hemi]
+
+        if n_iter == 0:
+            new_data[hemi] = data
+            continue
+
+        matrix = compute_adjacency_matrix(mesh, values="ones")
+
+        # We need to normalize the matrix columns, and we can do this now by
+        # normalizing everything but the diagonal to the surround weight, then
+        # adding the center weight along the diagonal.
+        colsums = matrix.sum(axis=1)
+        colsums = np.asarray(colsums).flatten()
+        matrix = matrix.multiply(surround_weight / colsums[:, None])
+        # Add in the diagonal.
+        matrix.setdiag(center_weight)
+
+        # Run the iterations of smoothing.
+        tmp = data
+        for _ in range(n_iter):
+            tmp = matrix.dot(tmp)
+
+        # Convert back into numpy array.
+        new_data[hemi] = np.reshape(np.asarray(tmp), np.shape(data))
+
+    return new_img_like(img, new_data)
+
+
+def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
+    """Convert a desired FWHM to number of smoothing iterations for surface.
+
+    Adapted from freesurfer
+    https://github.com/freesurfer/freesurfer/blob/dev/utils/mrisutils.cpp#L1102
+
+    Parameters
+    ----------
+    fwhm : :obj:`float`
+        Full width at half maximum (in mm)
+
+    img : surface image
+
+    Returns
+    -------
+    niters: list of number of smoothing iterations (one per mesh in the image)
+    """
+    if fwhm is None:
+        fwhm = 0
+    # Convert FWHM to standard deviation of Gaussian kernel
+    std_kernel = fwhm / math.sqrt(math.log(256.0))
+
+    niters = []
+    for mesh in img.mesh.parts.values():
+        if fwhm == 0:
+            niters.append(0)
+            continue
+
+        if isinstance(mesh, FileMesh):
+            mesh = mesh.loaded()
+
+        # Compute average vertex area
+        avg_vertex_area = mesh._area / mesh.n_vertices
+
+        # Compute number of iterations using empirical formula
+        niters.append(
+            math.floor(
+                1.14 * (4 * math.pi * std_kernel**2) / (7 * avg_vertex_area)
+                + 0.5
+            )
+        )
+
+    return niters
+
+
+def _crop_img_to(img, slices, copy=True, copy_header=True):
     """Crops an image to a smaller size.
 
     Crop `img` to size indicated by slices and adjust affine accordingly.
@@ -314,13 +599,9 @@ def _crop_img_to(img, slices, copy=True, copy_header=False):
     copy : :obj:`bool`, default=True
         Specifies whether cropped data is to be copied or not.
 
-    copy_header : :obj:`bool`
-        Whether to copy the header of the input image to the output.
-        If None, the default behavior is to not copy the header.
+    %(copy_header)s
 
-        .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -334,8 +615,8 @@ def _crop_img_to(img, slices, copy=True, copy_header=False):
 
     """
     img = check_niimg(img)
+    data = _get_data(img)
 
-    data = get_data(img)
     affine = img.affine
 
     cropped_data = data[tuple(slices)]
@@ -354,8 +635,9 @@ def _crop_img_to(img, slices, copy=True, copy_header=False):
     return new_img_like(img, cropped_data, new_affine, copy_header=copy_header)
 
 
+@fill_doc
 def crop_img(
-    img, rtol=1e-8, copy=True, pad=True, return_offset=False, copy_header=False
+    img, rtol=1e-8, copy=True, pad=True, return_offset=False, copy_header=True
 ):
     """Crops an image as much as possible.
 
@@ -373,7 +655,7 @@ def crop_img(
 
     rtol : :obj:`float`, default=1e-08
         relative tolerance (with respect to maximal absolute value of the
-        image), under which values are considered negligeable and thus
+        image), under which values are considered negligible and thus
         croppable.
 
     copy : :obj:`bool`, default=True
@@ -385,12 +667,9 @@ def crop_img(
     return_offset : :obj:`bool`, default=False
         Specifies whether to return a tuple of the removed padding.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+    %(copy_header)s
 
-        .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -400,12 +679,12 @@ def crop_img(
         removed (before, after) the cropped volumes, i.e.:
         *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
 
+        If the specified image is empty, the original image will be returned.
     """
-    # TODO: remove this warning in 0.13.0
-    check_copy_header(copy_header)
+    check_params(locals())
 
     img = check_niimg(img)
-    data = get_data(img)
+    data = _get_data(img)
     infinity_norm = max(-data.min(), data.max())
     passes_threshold = np.logical_or(
         data < -rtol * infinity_norm, data > rtol * infinity_norm
@@ -418,6 +697,11 @@ def crop_img(
     # Sets full range if no data are found along the axis
     if coords.shape[1] == 0:
         start, end = [0, 0, 0], list(data.shape)
+        pad = False
+        warnings.warn(
+            f"No values above {rtol}. Returning original image.",
+            stacklevel=find_stack_level(),
+        )
     else:
         start = coords.min(axis=1)
         end = coords.max(axis=1) + 1
@@ -427,60 +711,9 @@ def crop_img(
         start = np.maximum(start - 1, 0)
         end = np.minimum(end + 1, data.shape[:3])
 
-    slices = [slice(s, e) for s, e in zip(start, end)][:3]
+    slices = list(map(slice, start, end))[:3]
     cropped_im = _crop_img_to(img, slices, copy=copy, copy_header=copy_header)
     return (cropped_im, tuple(slices)) if return_offset else cropped_im
-
-
-def _pad_array(array, pad_sizes):
-    """Pad an array with zeros.
-
-    Pads an array with zeros as specified in `pad_sizes`.
-
-    Parameters
-    ----------
-    array : :class:`numpy.ndarray`
-        Array to pad.
-
-    pad_sizes : :obj:`list`
-        Padding quantity specified as
-        *[x1minpad, x1maxpad, x2minpad,x2maxpad, x3minpad, ...]*.
-
-    Returns
-    -------
-    :class:`numpy.ndarray`
-        Padded array.
-
-    Raises
-    ------
-    ValueError
-        Inconsistent min/max padding quantities.
-
-    """
-    if len(pad_sizes) % 2 != 0:
-        raise ValueError(
-            "Please specify as many max paddings as min"
-            f" paddings. You have specified {len(pad_sizes)} arguments"
-        )
-
-    all_paddings = np.zeros([array.ndim, 2], dtype=np.int64)
-    all_paddings[: len(pad_sizes) // 2] = np.array(pad_sizes).reshape(-1, 2)
-
-    lower_paddings, upper_paddings = all_paddings.T
-    new_shape = np.array(array.shape) + upper_paddings + lower_paddings
-
-    padded = np.zeros(new_shape, dtype=array.dtype)
-    source_slices = [
-        slice(max(-lp, 0), min(s + up, s))
-        for lp, up, s in zip(lower_paddings, upper_paddings, array.shape)
-    ]
-    target_slices = [
-        slice(max(lp, 0), min(s - up, s))
-        for lp, up, s in zip(lower_paddings, upper_paddings, new_shape)
-    ]
-
-    padded[tuple(target_slices)] = array[tuple(source_slices)].copy()
-    return padded
 
 
 def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
@@ -506,15 +739,11 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
         mean_data = mean_data.mean(axis=-1)
     else:
         mean_data = mean_data.copy()
-    # TODO switch to force_resample=True
-    # when bumping to version > 0.13
     mean_data = resampling.resample_img(
         Nifti1Image(mean_data, affine),
         target_affine=target_affine,
         target_shape=target_shape,
         copy=False,
-        copy_header=True,
-        force_resample=False,
     )
     affine = mean_data.affine
     mean_data = get_data(mean_data)
@@ -533,6 +762,18 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     return mean_data, affine
 
 
+def _compute_surface_mean(imgs: SurfaceImage) -> SurfaceImage:
+    """Compute mean of a single surface image over its 2nd dimension."""
+    if len(imgs.shape) < 2 or imgs.shape[1] < 2:
+        data = imgs.data
+    else:
+        data = {
+            part: np.mean(value, axis=1).astype(float)
+            for part, value in imgs.data.parts.items()
+        }
+    return new_img_like(imgs, data=data)
+
+
 @fill_doc
 def mean_img(
     imgs,
@@ -540,39 +781,66 @@ def mean_img(
     target_shape=None,
     verbose=0,
     n_jobs=1,
-    copy_header=False,
+    copy_header=True,
 ):
-    """Compute the mean of the images over time or the 4th dimension.
+    """Compute the mean over images.
 
-    Note that if list of 4D images are given, the mean of each 4D image is
-    computed separately, and the resulting mean is computed after.
+    This can be a mean over time or the 4th dimension for a volume,
+    or the 2nd dimension for a surface image.
+
+    Note that if list of 4D volume images (or 2D surface images)
+    are given,
+    the mean of each image is computed separately,
+    and the resulting mean is computed after.
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects
-        Images to be averaged over time (see :ref:`extracting_data`
+    imgs : Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object, or \
+           iterable of Niimg-like or :obj:`~nilearn.surface.SurfaceImage`.
+        Images to be averaged over 'time'
+        (see :ref:`extracting_data`
         for a detailed description of the valid input types).
 
     %(target_affine)s
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     %(target_shape)s
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     %(verbose0)s
 
     n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation (-1 means
         'all CPUs').
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+    %(copy_header)s
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
-        This parameter will be set to True by default in 0.13.0.
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> # Create a 4D image with one volume of ones and one of zeros
+    >>> shape = (2, 2, 2, 1)
+    >>> img = Nifti1Image(np.concatenate([np.ones(shape),
+    ...                                   np.zeros(shape)],
+    ...                                  axis=-1),
+    ...                   affine=np.eye(4),
+    ...                   dtype=np.int32)
+    >>> # Compute the mean image and get its content as a numpy array
+    >>> from nilearn.image import mean_img
+    >>> mean_image = mean_img(img)
+    >>> mean_image.get_fdata()
+    array([[[0.5, 0.5],
+            [0.5, 0.5]],
+           [[0.5, 0.5],
+            [0.5, 0.5]]])
 
     Returns
     -------
-    :class:`~nibabel.nifti1.Nifti1Image`
+    :obj:`~nibabel.nifti1.Nifti1Image` or :obj:`~nilearn.surface.SurfaceImage`
         Mean image.
 
     See Also
@@ -580,16 +848,22 @@ def mean_img(
     nilearn.image.math_img : For more general operations on images.
 
     """
-    # TODO: remove this warning in 0.13.0
-    check_copy_header(copy_header)
+    check_params(locals())
+    is_iterable = isinstance(imgs, collections.abc.Iterable)
+    is_surface_img = isinstance(imgs, SurfaceImage) or (
+        is_iterable and all(isinstance(x, SurfaceImage) for x in imgs)
+    )
+    if is_surface_img:
+        if not is_iterable:
+            imgs = [imgs]
+        all_means = concat_imgs([_compute_surface_mean(x) for x in imgs])
+        return _compute_surface_mean(all_means)
 
     imgs = stringify_path(imgs)
     is_str = isinstance(imgs, str)
     is_iterable = isinstance(imgs, collections.abc.Iterable)
     if is_str or not is_iterable:
-        imgs = [
-            imgs,
-        ]
+        imgs = [imgs]
 
     imgs_iter = iter(imgs)
     first_img = check_niimg(next(imgs_iter))
@@ -654,33 +928,32 @@ def swap_img_hemispheres(img):
     img = check_niimg_3d(img)
 
     # get nifti in x-y-z order
-    img = reorder_img(img, copy_header=True)
+    img = reorder_img(img)
 
     # create swapped nifti object
-    out_img = new_img_like(
-        img, get_data(img)[::-1], img.affine, copy_header=True
-    )
+    out_img = new_img_like(img, get_data(img)[::-1], img.affine)
 
     return out_img
 
 
 def index_img(imgs, index):
-    """Indexes into a 4D Niimg-like object in the fourth dimension.
+    """Indexes into a image in the last dimension.
 
-    Common use cases include extracting a 3D image out of `img` or
-    creating a 4D image whose data is a subset of `img` data.
+    Common use cases include extracting an image out of `img` or
+    creating a 4D (or 2D for surface) image
+    whose data is a subset of `img` data.
 
     Parameters
     ----------
-    imgs : 4D Niimg-like object
+    imgs : 4D Niimg-like object or 2D :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
 
     index : Any type compatible with numpy array indexing
-        Used for indexing the 4D data array in the fourth dimension.
+        Used for indexing the data array in the last dimension.
 
     Returns
     -------
-    :class:`~nibabel.nifti1.Nifti1Image`
+    :obj:`~nibabel.nifti1.Nifti1Image` or :obj:`~nilearn.surface.SurfaceImage`
         Indexed image.
 
     See Also
@@ -717,6 +990,10 @@ def index_img(imgs, index):
      (197, 233, 189, 3)
 
     """
+    if isinstance(imgs, SurfaceImage):
+        imgs.data._check_ndims(2, var_name="imgs")
+        return new_img_like(imgs, data=extract_data(imgs, index))
+
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr
     if hasattr(index, "values") and hasattr(index, "iloc"):
@@ -724,23 +1001,52 @@ def index_img(imgs, index):
     return _index_img(imgs, index)
 
 
+def _index_img(img: Nifti1Image, index):
+    """Helper function for check_niimg_4d."""  # noqa: D401
+    # catch too-large negative indices
+    if isinstance(index, int):
+        n = img.shape[3]
+        if index < -n or index >= n:
+            raise IndexError(
+                f"Integer index {index} out of range for last dimension"
+                f" with size {n}"
+            )
+
+    if is_fancy(index):
+        data = _get_data(img)[:, :, :, index]
+    else:
+        # this should be faster
+        data = _get_data(img.slicer[..., index])
+
+    return new_img_like(img, data, img.affine)
+
+
 def iter_img(imgs):
-    """Iterate over a 4D Niimg-like object in the fourth dimension.
+    """Iterate over images.
+
+    Could be along the the 4th dimension for 4D Niimg-like object
+    or the 2nd dimension for 2D Surface images..
 
     Parameters
     ----------
-    imgs : 4D Niimg-like object
+    imgs : 4D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
 
     Returns
     -------
-    Iterator of 3D :class:`~nibabel.nifti1.Nifti1Image`
+    Iterator of :class:`~nibabel.nifti1.Nifti1Image` \
+        or :obj:`~nilearn.surface.SurfaceImage`
 
     See Also
     --------
     nilearn.image.index_img
 
     """
+    if isinstance(imgs, SurfaceImage):
+        output = (
+            index_img(imgs, i) for i in range(at_least_2d(imgs).shape[1])
+        )
+        return output
     return check_niimg_4d(imgs, return_iterator=True)
 
 
@@ -762,7 +1068,7 @@ def _downcast_from_int64_if_possible(data):
             "passing `int` as the `dtype`. Many tools such as FSL and SPM "
             "cannot deal with int64 in Nifti images, so for compatibility the "
             "data has been converted to int32.",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         return data.astype("int32")
     warnings.warn(
@@ -771,56 +1077,70 @@ def _downcast_from_int64_if_possible(data):
         "thus contains 64-bit ints, which may cause some compatibility issues "
         "with some other tools or an error when saving the image to a "
         "Nifti file.",
-        stacklevel=3,
+        stacklevel=find_stack_level(),
     )
     return data
 
 
-def new_img_like(ref_niimg, data, affine=None, copy_header=False):
+@fill_doc
+def new_img_like(ref_niimg, data, affine=None, copy_header=True):
     """Create a new image of the same class as the reference image.
 
     Parameters
     ----------
-    ref_niimg : Niimg-like object
+    ref_niimg : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Reference image. The new image will be of the same type.
 
-    data : :class:`numpy.ndarray`
+    data : :class:`numpy.ndarray`, :obj:`~nilearn.surface.PolyData`, \
+           or :obj:`dict` of  \
+           :obj:`numpy.ndarray`, \
+           :obj:`str`, \
+           :obj:`pathlib.Path`
+
         Data to be stored in the image. If data dtype is a boolean, then data
         is cast to 'uint8' by default.
 
-        .. versionchanged:: 0.9.2
+        .. nilearn_versionchanged:: 0.9.2
             Changed default dtype casting of booleans from 'int8' to 'uint8'.
+
+        If ``ref_niimg`` is a Niimg-like object,
+        then data must be a :class:`numpy.ndarray`.
 
     affine : 4x4 :class:`numpy.ndarray`, default=None
         Transformation matrix.
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
-    copy_header : :obj:`bool`, default=False
-        Indicated if the header of the reference image should be used to
-        create the new image.
+    %(copy_header)s
 
     Returns
     -------
-    Niimg-like object
+    Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object
         A loaded image with the same file type (and, optionally, header)
         as the reference image.
 
     """
+    check_params(locals())
+
+    if isinstance(ref_niimg, SurfaceImage):
+        mesh = ref_niimg.mesh
+        return SurfaceImage(
+            mesh=deepcopy(mesh),
+            data=data,
+        )
     # Hand-written loading code to avoid too much memory consumption
     orig_ref_niimg = ref_niimg
     ref_niimg = stringify_path(ref_niimg)
     is_str = isinstance(ref_niimg, str)
-    has_get_data = hasattr(ref_niimg, "get_data")
     has_get_fdata = hasattr(ref_niimg, "get_fdata")
     has_iter = hasattr(ref_niimg, "__iter__")
     has_affine = hasattr(ref_niimg, "affine")
-    if has_iter and not any([is_str, has_get_data, has_get_fdata]):
+    if has_iter and not any([is_str, has_get_fdata]):
         ref_niimg = ref_niimg[0]
         ref_niimg = stringify_path(ref_niimg)
         is_str = isinstance(ref_niimg, str)
-        has_get_data = hasattr(ref_niimg, "get_data")
         has_get_fdata = hasattr(ref_niimg, "get_fdata")
         has_affine = hasattr(ref_niimg, "affine")
-    if not ((has_get_data or has_get_fdata) and has_affine):
+    if not (has_get_fdata and has_affine):
         if is_str:
             ref_niimg = load(ref_niimg)
         else:
@@ -835,8 +1155,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         data = as_ndarray(data, dtype=np.uint8)
     data = _downcast_from_int64_if_possible(data)
     header = None
-    if copy_header:
-        header = copy.deepcopy(ref_niimg.header)
+    if copy_header and ref_niimg.header is not None:
+        header = ref_niimg.header.copy()
         try:
             "something" in header  # noqa: B015
         except TypeError:
@@ -869,8 +1189,9 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     ----------
     arr : :obj:`numpy.ndarray` of shape (X, Y, Z)
         3D array that has been thresholded at the voxel level.
-    cluster_threshold : :obj:`float`
-        Cluster-size threshold, in voxels, to apply to ``arr``.
+
+    %(cluster_threshold)s
+
     copy : :obj:`bool`, default=True
         Whether to copy the array before modifying it or not.
 
@@ -888,6 +1209,7 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     Clusters are defined using 6-connectivity, also known as NN1 (in AFNI) or
     "faces" connectivity.
     """
+    check_params(locals())
     assert arr.ndim == 3
 
     if copy:
@@ -910,14 +1232,15 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     return arr
 
 
+@fill_doc
 def threshold_img(
     img,
     threshold,
-    cluster_threshold=0,
-    two_sided=True,
+    cluster_threshold: ClusterThreshold = 0,
+    two_sided: bool = True,
     mask_img=None,
-    copy=True,
-    copy_header=False,
+    copy: bool = True,
+    copy_header: bool = True,
 ):
     """Threshold the given input image, mostly statistical or atlas images.
 
@@ -932,7 +1255,7 @@ def threshold_img(
 
         The given value should be within the range of minimum and maximum
         intensity of the input image.
-        All instensities in the interval ``[-threshold, threshold]`` will be
+        All intensities in the interval ``(-threshold, threshold)`` will be
         set to zero.
 
       - When ``two_sided`` is False:
@@ -940,16 +1263,16 @@ def threshold_img(
         - If the threshold is negative:
 
           It should be greater than the minimum intensity of the input data.
-          All intensities greater than or equal to the specified threshold will
-          be set to zero.
-          All other instensities keep their original values.
+          All intensities greater than the specified threshold will be set to
+          zero.
+          All other intensities keep their original values.
 
         - If the threshold is positive:
 
           then it should be less than the maximum intensity of the input data.
-          All intensities less than or equal to the specified threshold will be
-          set to zero.
-          All other instensities keep their original values.
+          All intensities less than the specified threshold will be set to
+          zero.
+          All other intensities keep their original values.
 
     - If threshold is :obj:`str`:
 
@@ -967,12 +1290,12 @@ def threshold_img(
 
         The score is calculated only on the non-negative values of data.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
-    .. versionchanged:: 0.9.0
+    .. nilearn_versionchanged:: 0.9.0
         New ``cluster_threshold`` and ``two_sided`` parameters added.
 
-    .. versionchanged:: 0.11.2dev
+    .. nilearn_versionchanged:: 0.12.0
         Add support for SurfaceImage.
 
     Parameters
@@ -986,22 +1309,23 @@ def threshold_img(
         maximum intensity of the data.
         If `two_sided` is True, threshold cannot be negative.
         If threshold is :obj:`str`,
-        the given string should be within the range of "0%" to "100%".
+        the given string should be
+        within the range of ``"0%%"`` to ``"100%%"``.
 
-    cluster_threshold : :obj:`float`, default=0
-        Cluster size threshold, in voxels. In the returned thresholded map,
-        sets of connected voxels (``clusters``) with size smaller than this
-        number will be removed.
+    cluster_threshold : :obj:`float` or :obj:`int`, default=0
+        Cluster size threshold, in voxels / vertices.
+        In the returned thresholded map,
+        sets of connected voxels / vertices (``clusters``)
+        with size smaller than this number
+        will be removed.
 
-        Not implemented for SurfaceImage.
-
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
     two_sided : :obj:`bool`, default=True
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
     mask_img : Niimg-like object or a :obj:`~nilearn.surface.SurfaceImage` \
         or None, default=None
@@ -1012,14 +1336,9 @@ def threshold_img(
         If True, input array is not modified. True by default: the filtering
         is not performed in-place.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+    %(copy_header)s
 
-        Not applicable for SurfaceImage.
-
-        .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -1047,40 +1366,21 @@ def threshold_img(
     from nilearn.image.resampling import resample_img
     from nilearn.masking import load_mask_img
 
+    check_params(locals())
+
     if not isinstance(img, (*NiimgLike, SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(img)=}."
+            f"Got {img.__class__.__name__}."
         )
 
-    if mask_img is not None and (
-        (isinstance(img, NiimgLike) and not isinstance(mask_img, NiimgLike))
-        or (
-            isinstance(img, SurfaceImage)
-            and not isinstance(mask_img, SurfaceImage)
-        )
-    ):
-        raise TypeError(
-            "'img' and 'mask_img' should both be "
-            "3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(img)=} and {type(mask_img)=}."
-        )
+    if mask_img is not None:
+        check_compatibility_mask_and_images(mask_img, img)
 
     if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
-        check_same_n_vertices(mask_img.mesh, img.mesh)
-
-    if isinstance(img, SurfaceImage) and cluster_threshold > 0:
-        warnings.warn(
-            "Cluster thresholding not implemented for SurfaceImage. "
-            "Setting 'cluster_threshold' to 0.",
-            stacklevel=2,
-        )
-        cluster_threshold = 0
+        check_polymesh_equal(mask_img.mesh, img.mesh)
 
     if isinstance(img, NiimgLike):
-        # TODO: remove this warning in 0.13.0
-        check_copy_header(copy_header)
-
         img = check_niimg(img)
         img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
         affine = img.affine
@@ -1096,15 +1396,11 @@ def threshold_img(
         if isinstance(mask_img, NiimgLike):
             mask_img = check_niimg_3d(mask_img)
             if not check_same_fov(img, mask_img):
-                # TODO switch to force_resample=True
-                # when bumping to version > 0.13
                 mask_img = resample_img(
                     mask_img,
                     target_affine=affine,
                     target_shape=img.shape[:3],
                     interpolation="nearest",
-                    copy_header=True,
-                    force_resample=False,
                 )
             mask_data, _ = load_mask_img(mask_img)
 
@@ -1146,11 +1442,24 @@ def threshold_img(
     if expand:
         img_data = img_data[:, :, :, None]
     if cluster_threshold > 0:
-        for i_vol in range(img_data.shape[3]):
-            img_data[..., i_vol] = _apply_cluster_size_threshold(
-                img_data[..., i_vol],
-                cluster_threshold,
-            )
+        if isinstance(img, NiimgLike):
+            for i_vol in range(img_data.shape[3]):
+                img_data[..., i_vol] = _apply_cluster_size_threshold(
+                    img_data[..., i_vol],
+                    cluster_threshold,
+                )
+        else:
+            for hemi in img_data.data.parts:
+                clusters, labels = find_surface_clusters(
+                    img_data.mesh.parts[hemi], img_data.data.parts[hemi]
+                )
+                # exclude only labels with size < min_size
+                exclude_labels = set(
+                    clusters.loc[clusters["size"] < cluster_threshold, "index"]
+                )
+                exclude = np.isin(labels, list(exclude_labels))
+                img_data.data.parts[hemi][exclude] = 0
+
     if expand:
         # Reduce back to 3D
         img_data = img_data[:, :, :, 0]
@@ -1159,7 +1468,7 @@ def threshold_img(
     if isinstance(img, NiimgLike):
         return new_img_like(img, img_data, affine, copy_header=copy_header)
 
-    return new_surface_img_like(img, img_data.data)
+    return new_img_like(img, img_data.data)
 
 
 def _apply_threshold(img_data, two_sided, cutoff_threshold):
@@ -1190,11 +1499,11 @@ def _apply_threshold(img_data, two_sided, cutoff_threshold):
         return img_data
 
     if two_sided:
-        mask = (-cutoff_threshold <= img_data) & (img_data <= cutoff_threshold)
+        mask = (-cutoff_threshold < img_data) & (img_data < cutoff_threshold)
     elif cutoff_threshold >= 0:
-        mask = img_data <= cutoff_threshold
+        mask = img_data < cutoff_threshold
     else:
-        mask = img_data >= cutoff_threshold
+        mask = img_data > cutoff_threshold
 
     img_data[mask] = 0.0
 
@@ -1204,7 +1513,7 @@ def _apply_threshold(img_data, two_sided, cutoff_threshold):
 def math_img(formula, copy_header_from=None, **imgs):
     """Interpret a numpy based string formula using niimg in named parameters.
 
-    .. versionadded:: 0.2.3
+    .. nilearn_versionadded:: 0.2.3
 
     Parameters
     ----------
@@ -1212,26 +1521,36 @@ def math_img(formula, copy_header_from=None, **imgs):
         The mathematical formula to apply to image internal data. It can use
         numpy imported as 'np'.
 
-    copy_header_from : :obj:`str`, default=None
+    copy_header_from : :obj:`str` or None, default=None
         Takes the variable name of one of the images in the formula.
         The header of this image will be copied to the result of the formula.
         Note that the result image and the image to copy the header from,
-        should have the same number of dimensions. If None, the default
+        should have the same number of dimensions.
+        If None, the default
         :class:`~nibabel.nifti1.Nifti1Header` is used.
 
-        .. versionadded:: 0.10.4
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
-    imgs : images (:class:`~nibabel.nifti1.Nifti1Image` or file names)
+        .. nilearn_versionadded:: 0.10.4
+
+    imgs : images (:class:`~nibabel.nifti1.Nifti1Image` or file names \
+           or :obj:`~nilearn.surface.SurfaceImage` object)
         Keyword arguments corresponding to the variables in the formula as
-        Nifti images. All input images should have the same geometry (shape,
-        affine).
+        images.
+        All input images should have the same 'geometry':
+
+        - shape and affine for volume data
+        - mesh (coordinates and faces) for surface data
 
     Returns
     -------
-    :class:`~nibabel.nifti1.Nifti1Image`
-        Result of the formula as a Nifti image. Note that the dimension of the
-        result image can be smaller than the input image. The affine is the
-        same as the input image.
+    :class:`~nibabel.nifti1.Nifti1Image` \
+    or :obj:`~nilearn.surface.SurfaceImage` object
+        Result of the formula as an image.
+        Note that the dimension of the result image
+        can be smaller than the input image.
+        For volume image input, the affine is the same as the input images.
+        For surface image input, the mesh is the same as the input images.
 
     See Also
     --------
@@ -1258,7 +1577,7 @@ def math_img(formula, copy_header_from=None, **imgs):
     but might have different header information, specifically the TR value,
     see :gh:`2645`.
 
-    .. versionadded:: 0.10.4
+    .. nilearn_versionadded:: 0.10.4
 
     We can also copy the header from one of the input images using
     ``copy_header_from``::
@@ -1273,6 +1592,36 @@ def math_img(formula, copy_header_from=None, **imgs):
     in FSL.
 
     """
+    is_surface = all(isinstance(x, SurfaceImage) for x in imgs.values())
+
+    if is_surface:
+        first_img = next(iter(imgs.values()))
+        for image in imgs.values():
+            assert_polymesh_equal(first_img.mesh, image.mesh)
+
+        # Computing input data as a dictionary of numpy arrays.
+        data_dict = {k: {} for k in first_img.data.parts}
+        for key, img in imgs.items():
+            for k, v in img.data.parts.items():
+                data_dict[k][key] = v
+
+        # Add a reference to numpy in the kwargs of eval
+        # so that numpy functions can be called from there.
+        result = {}
+        try:
+            for k in data_dict:
+                data_dict[k]["np"] = np
+                result[k] = eval(formula, data_dict[k])
+        except Exception as exc:
+            exc.args = (
+                "Input formula couldn't be processed, "
+                f"you provided '{formula}',",
+                *exc.args,
+            )
+            raise
+
+        return new_img_like(first_img, result)
+
     try:
         niimgs = [check_niimg(image) for image in imgs.values()]
         check_same_fov(*niimgs, raise_error=True)
@@ -1305,7 +1654,7 @@ def math_img(formula, copy_header_from=None, **imgs):
         raise
 
     if copy_header_from is None:
-        return new_img_like(niimg, result, niimg.affine)
+        return new_img_like(niimg, result, niimg.affine, copy_header=False)
     niimg = check_niimg(imgs[copy_header_from])
     # only copy the header if the result and the input image to copy the
     # header from have the same shape
@@ -1315,19 +1664,20 @@ def math_img(formula, copy_header_from=None, **imgs):
             "The result of the formula has a different number of "
             "dimensions than the image to copy the header from."
         )
-    return new_img_like(niimg, result, niimg.affine, copy_header=True)
+    return new_img_like(niimg, result, niimg.affine)
 
 
+@fill_doc
 def binarize_img(
-    img, threshold=0.0, mask_img=None, two_sided=True, copy_header=False
+    img, threshold=0.0, mask_img=None, two_sided=False, copy_header=True
 ):
     """Binarize an image such that its values are either 0 or 1.
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     Parameters
     ----------
-    img : a 3D/4D Niimg-like object
+    img : a 3D/4D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Image which should be binarized.
 
     threshold : :obj:`float` or :obj:`str`, default=0.0
@@ -1335,33 +1685,38 @@ def binarize_img(
         voxels which have intensities greater than this value will be kept.
         The given value should be within the range of minimum and
         maximum intensity of the input image.
-        If string, it should finish with percent sign e.g. "80%" and we
+        If string, it should finish with percent sign e.g. "80%%" and we
         threshold based on the score obtained using this percentile on
         the image data. The voxels which have intensities greater than
         this score will be kept. The given string should be
-        within the range of "0%" to "100%".
+        within the range of "0%%" to "100%%".
 
-    mask_img : Niimg-like object, default=None
+    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`, \
+               default=None
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
-    two_sided : :obj:`bool`, default=True
+    two_sided : :obj:`bool`, default=False
         If `True`, threshold is applied to the absolute value of the image.
         If `False`, threshold is applied to the original value of the image.
 
-        .. versionadded:: 0.10.3
+        .. nilearn_versionadded:: 0.10.3
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+        .. nilearn_versionchanged:: 0.13.0
 
-        .. versionadded:: 0.11.0
+            Default was changed to False.
 
-        This parameter will be set to True by default in 0.13.0.
+     %(copy_header)s
+
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
+
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
     :class:`~nibabel.nifti1.Nifti1Image`
-        Binarized version of the given input image. Output dtype is int.
+    or :obj:`~nilearn.surface.SurfaceImage`
+        Binarized version of the given input image. Output dtype is int8.
 
     See Also
     --------
@@ -1377,16 +1732,10 @@ def binarize_img(
     Now we binarize it, generating a pseudo brainmask::
 
      >>> from nilearn.image import binarize_img
-     >>> img = binarize_img(anatomical_image, copy_header=True)
+     >>> img = binarize_img(anatomical_image)
 
     """
-    warnings.warn(
-        'The current default behavior for the "two_sided" argument '
-        'is  "True". This behavior will be changed to "False" in '
-        "version 0.13.",
-        DeprecationWarning,
-        stacklevel=3,
-    )
+    check_params(locals())
 
     return math_img(
         "img.astype(bool).astype('int8')",
@@ -1435,12 +1784,13 @@ def clean_img(
     orthogonally to temporal filters (low- and/or high-pass filters), if both
     are specified.
 
-    .. versionadded:: 0.2.5
+    .. nilearn_versionadded:: 0.2.5
 
     Parameters
     ----------
-    imgs : Niimg-like object
-        4D image. The signals in the last dimension are filtered (see
+    imgs : 4D image Niimg-like object or \
+           2D :obj:`~nilearn.surface.SurfaceImage`
+        The signals in the last dimension are filtered (see
         :ref:`extracting_data` for a detailed description of the valid input
         types).
 
@@ -1458,8 +1808,7 @@ def clean_img(
         If detrending should be applied on timeseries
         (before confound removal).
 
-    standardize : :obj:`bool`, default=True
-        If True, returned signals are set to unit variance.
+    %(standardize_true)s
 
     confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of \
         Confounds timeseries. default=None
@@ -1484,10 +1833,11 @@ def clean_img(
         If True, the non-finite values (NaNs and infs) found in the images
         will be replaced by zeros.
 
-    mask_img : Niimg-like object, default=None
-        If provided, signal is only cleaned from voxels inside the mask. If
-        mask is provided, it should have same shape and affine as imgs.
-        If not provided, all voxels are used.
+    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`,\
+               default=None
+        If provided, signal is only cleaned from voxels inside the mask.
+        If mask is provided, it should have same shape and affine as imgs.
+        If not provided, all voxels / verrices are used.
         See :ref:`extracting_data`.
 
     kwargs : :obj:`dict`
@@ -1501,7 +1851,7 @@ def clean_img(
 
     Returns
     -------
-    Niimg-like object
+    Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Input images, cleaned. Same shape as `imgs`.
 
     Notes
@@ -1521,10 +1871,9 @@ def clean_img(
         nilearn.signal.clean
 
     """
+    check_params(locals())
     # Avoid circular import
-    from .. import masking
-
-    imgs_ = check_niimg_4d(imgs)
+    from nilearn import masking
 
     # Check if t_r is set, otherwise propose t_r from imgs header
     if (low_pass is not None or high_pass is not None) and t_r is None:
@@ -1536,16 +1885,47 @@ def clean_img(
             f"imgs header suggest it to be {imgs.header.get_zooms()[3]}"
         )
 
+    clean_kwargs = {
+        k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+    }
+
+    if isinstance(imgs, SurfaceImage):
+        imgs.data._check_ndims(2, "imgs")
+
+        data = {}
+        # Clean signal
+        for p, v in imgs.data.parts.items():
+            data[p] = signal.clean(
+                v.T,
+                runs=runs,
+                detrend=detrend,
+                standardize=standardize,
+                confounds=confounds,
+                low_pass=low_pass,
+                high_pass=high_pass,
+                t_r=t_r,
+                ensure_finite=ensure_finite,
+                **clean_kwargs,
+            )
+            data[p] = data[p].T
+
+        if mask_img is not None:
+            mask_img = masking.load_mask_img(mask_img)[0]
+            for hemi in mask_img.data.parts:
+                mask = mask_img.data.parts[hemi]
+                data[hemi][mask == 0.0, ...] = 0.0
+
+        return new_img_like(imgs, data)
+
+    imgs_ = check_niimg_4d(imgs)
+
     # Prepare signal for cleaning
     if mask_img is not None:
         signals = masking.apply_mask(imgs_, mask_img)
     else:
-        signals = get_data(imgs_).reshape(-1, imgs_.shape[-1]).T
+        signals = _get_data(imgs_).reshape(-1, imgs_.shape[-1]).T
 
     # Clean signal
-    clean_kwargs = {
-        k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
-    }
     data = signal.clean(
         signals,
         runs=runs,
@@ -1564,13 +1944,9 @@ def clean_img(
         imgs_ = masking.unmask(data, mask_img)
     elif "sample_mask" in clean_kwargs:
         sample_shape = imgs_.shape[:3] + clean_kwargs["sample_mask"].shape
-        imgs_ = new_img_like(
-            imgs_, data.T.reshape(sample_shape), copy_header=True
-        )
+        imgs_ = new_img_like(imgs_, data.T.reshape(sample_shape))
     else:
-        imgs_ = new_img_like(
-            imgs_, data.T.reshape(imgs_.shape), copy_header=True
-        )
+        imgs_ = new_img_like(imgs_, data.T.reshape(imgs_.shape))
 
     return imgs_
 
@@ -1579,7 +1955,7 @@ def clean_img(
 def load_img(img, wildcards=True, dtype=None):
     """Load a Niimg-like object from filenames or list of filenames.
 
-    .. versionadded:: 0.2.5
+    .. nilearn_versionadded:: 0.2.5
 
     Parameters
     ----------
@@ -1623,17 +1999,25 @@ def concat_imgs(
     auto_resample=False,
     verbose=0,
 ):
-    """Concatenate a list of 3D/4D niimgs of varying lengths.
+    """Concatenate a list of images of varying lengths.
 
-    The niimgs list can contain niftis/paths to images of varying dimensions
-    (i.e., 3D or 4D) as well as different 3D shapes and affines, as they
-    will be matched to the first image in the list if auto_resample=True.
+    The image list can contain:
+
+    - Niimg-like objects of varying dimensions (i.e., 3D or 4D)
+      as well as different 3D shapes and affines,
+      as they will be matched to the first image in the list
+      if ``auto_resample=True``.
+
+    - surface images of varying dimensions (i.e., 1D or 2D)
+      but with same number of vertices
 
     Parameters
     ----------
-    niimgs : iterable of Niimg-like objects or glob pattern
+    niimgs : iterable of Niimg-like objects, or glob pattern, \
+             or :obj:`list` or :obj:`tuple` \
+             of :obj:`~nilearn.surface.SurfaceImage` object
         See :ref:`extracting_data`.
-        Niimgs to concatenate.
+        Images to concatenate.
 
     dtype : numpy dtype, default=np.float32
         The dtype of the returned image.
@@ -1641,19 +2025,24 @@ def concat_imgs(
     ensure_ndim : :obj:`int`, default=None
         Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     auto_resample : :obj:`bool`, default=False
         Converts all images to the space of the first one.
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     %(verbose0)s
 
     %(memory)s
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     %(memory_level)s
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     Returns
     -------
-    concatenated : nibabel.Nifti1Image
+    concatenated : :obj:`~nibabel.nifti1.Nifti1Image` \
+                   or :obj:`~nilearn.surface.SurfaceImage`
         A single image.
 
     See Also
@@ -1661,9 +2050,31 @@ def concat_imgs(
     nilearn.image.index_img
 
     """
-    from ..image import new_img_like  # avoid circular imports
-
     check_params(locals())
+
+    if isinstance(niimgs, (tuple, list)) and len(niimgs) == 0:
+        raise TypeError("Cannot concatenate empty objects.")
+
+    if isinstance(niimgs, (tuple, list)) and all(
+        isinstance(x, SurfaceImage) for x in niimgs
+    ):
+        if len(niimgs) == 1:
+            return niimgs[0]
+
+        for i, img in enumerate(niimgs):
+            check_polymesh_equal(img.mesh, niimgs[0].mesh)
+            niimgs[i] = at_least_2d(img)
+
+        if dtype is None:
+            dtype = extract_data(niimgs[0]).dtype
+
+        output_data = {}
+        for part in niimgs[0].data.parts:
+            tmp = [img.data.parts[part] for img in niimgs]
+            output_data[part] = np.concatenate(tmp, axis=1).astype(dtype)
+
+        return new_img_like(niimgs[0], data=output_data)
+
     if memory is None:
         memory = Memory(location=None)
 
@@ -1683,8 +2094,8 @@ def concat_imgs(
     iterator, literator = itertools.tee(iter(niimgs))
     try:
         first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
-    except StopIteration:
-        raise TypeError("Cannot concatenate empty objects")
+    except StopIteration as e:
+        raise TypeError("Cannot concatenate empty objects") from e
     except DimensionError as exc:
         # Keep track of the additional dimension in the error
         exc.increment_stack_counter()
@@ -1727,6 +2138,7 @@ def concat_imgs(
                 memory=memory,
                 memory_level=memory_level,
             ),
+            strict=False,
         )
     ):
         nii_str = (
@@ -1737,15 +2149,13 @@ def concat_imgs(
         data[..., cur_4d_index : cur_4d_index + size] = _get_data(niimg)
         cur_4d_index += size
 
-    return new_img_like(
-        first_niimg, data, first_niimg.affine, copy_header=True
-    )
+    return new_img_like(first_niimg, data, first_niimg.affine)
 
 
 def largest_connected_component_img(imgs):
     """Return the largest connected component of an image or list of images.
 
-    .. versionadded:: 0.3.1
+    .. nilearn_versionadded:: 0.3.1
 
     Parameters
     ----------
@@ -1781,9 +2191,7 @@ def largest_connected_component_img(imgs):
         img = check_niimg_3d(img)
         affine = img.affine
         largest_component = largest_connected_component(safe_get_data(img))
-        ret.append(
-            new_img_like(img, largest_component, affine, copy_header=True)
-        )
+        ret.append(new_img_like(img, largest_component, affine))
 
     return ret[0] if single_img else ret
 
@@ -1801,11 +2209,483 @@ def copy_img(img):
     img_copy : image
         copy of input (data, affine and header)
     """
-    if not isinstance(img, spatialimages.SpatialImage):
-        raise ValueError("Input value is not an image")
+    check_is_of_allowed_type(img, (spatialimages.SpatialImage,), "img")
     return new_img_like(
-        img,
-        safe_get_data(img, copy_data=True),
-        img.affine.copy(),
-        copy_header=True,
+        img, safe_get_data(img, copy_data=True), img.affine.copy()
     )
+
+
+def _check_fov(img, affine, shape) -> bool:
+    """Return True if img's field of view correspond to given \
+    shape and affine, False elsewhere.
+    """
+    return img.shape[:3] == shape and np.allclose(img.affine, affine)
+
+
+def check_same_fov(*args, **kwargs) -> bool:
+    """Return True if provided images have the same field of view (shape and \
+    affine) and return False or raise an error elsewhere, depending on the \
+    `raise_error` argument.
+
+    This function can take an unlimited number of
+    images as arguments or keyword arguments and raise a user-friendly
+    ValueError if asked.
+
+    Parameters
+    ----------
+    args : images
+        Images to be checked. Images passed without keywords will be labeled
+        as img_#1 in the error message (replace 1 with the appropriate index).
+
+    kwargs : images
+        Images to be checked. In case of error, images will be referenced by
+        their keyword name in the error message.
+
+    raise_error : :obj:`bool`, optional
+        If True, an error will be raised in case of error.
+
+    """
+    raise_error = kwargs.pop("raise_error", False)
+    for i, arg in enumerate(args):
+        kwargs[f"img_#{i}"] = arg
+    errors = []
+    for (a_name, a_img), (b_name, b_img) in itertools.combinations(
+        kwargs.items(), 2
+    ):
+        if a_img.shape[:3] != b_img.shape[:3]:
+            errors.append((a_name, b_name, "shape"))
+        if not np.allclose(a_img.affine, b_img.affine):
+            errors.append((a_name, b_name, "affine"))
+    if errors and raise_error:
+        raise ValueError(
+            "Following field of view errors were detected:\n"
+            + "\n".join(
+                [
+                    f"- {e[0]} and {e[1]} do not have the same {e[2]}"
+                    for e in errors
+                ]
+            )
+        )
+    return not errors
+
+
+def check_imgs_equal(img1, img2) -> bool:
+    """Check if 2 NiftiImages have same fov and data."""
+    if not check_same_fov(img1, img2, raise_error=False):
+        return False
+
+    data_img1 = safe_get_data(img1)
+    data_img2 = safe_get_data(img2)
+
+    try:
+        assert_array_equal(data_img1, data_img2)
+        return True
+    except AssertionError:
+        return False
+    except Exception as e:
+        raise e
+
+
+@fill_doc
+def iter_check_niimg(
+    niimgs,
+    ensure_ndim=None,
+    atleast_4d=False,
+    target_fov=None,
+    dtype=None,
+    memory=None,
+    memory_level=0,
+):
+    """Iterate over a list of niimgs and do sanity checks and resampling.
+
+    Parameters
+    ----------
+    niimgs : :obj:`list` of niimg or glob pattern or itertools.tee instance
+        Images to iterate over.
+
+    ensure_ndim : :obj:`int`, default=None
+        If specified, an error is raised if the data does not have the
+        required dimension.
+
+    atleast_4d : :obj:`bool`, default=False
+        If True, any 3D image is converted to a 4D single scan.
+
+    target_fov : :obj:`tuple` of affine and shape, or None, default=None
+       If specified, images are resampled to this field of view.
+
+    %(dtype)s
+
+    %(memory)s
+        default=None
+        If ``None`` is passed will default to ``Memory(location=None)``.
+
+    %(memory_level)s
+
+    See Also
+    --------
+        check_niimg, check_niimg_3d, check_niimg_4d
+
+    """
+    check_params(locals())
+
+    # avoid circular import
+    from nilearn.image.resampling import resample_img
+
+    if memory is None:
+        memory = Memory(location=None)
+    # If niimgs is a string, use glob to expand it to the matching filenames.
+    niimgs = resolve_globbing(niimgs)
+
+    ref_fov = None
+    resample_to_first_img = False
+    ndim_minus_one = ensure_ndim - 1 if ensure_ndim is not None else None
+    if target_fov is not None and target_fov != "first":
+        ref_fov = target_fov
+
+    i = -1
+    for i, niimg in enumerate(niimgs):
+        if isinstance(niimg, SurfaceImage):
+            # TODO do some checks
+            yield niimg
+
+        else:
+            try:
+                niimg = check_niimg(
+                    niimg,
+                    ensure_ndim=ndim_minus_one,
+                    atleast_4d=atleast_4d,
+                    dtype=dtype,
+                )
+                if i == 0:
+                    ndim_minus_one = len(niimg.shape)
+                    if ref_fov is None:
+                        ref_fov = (niimg.affine, niimg.shape[:3])
+                        resample_to_first_img = True
+
+                if not _check_fov(niimg, ref_fov[0], ref_fov[1]):
+                    if target_fov is None:
+                        raise ValueError(
+                            f"Field of view of image #{i} is different from "
+                            "reference FOV.\n"
+                            f"Reference affine:\n{ref_fov[0]!r}\n"
+                            f"Image affine:\n{niimg.affine!r}\n"
+                            f"Reference shape:\n{ref_fov[1]!r}\n"
+                            f"Image shape:\n{niimg.shape!r}\n"
+                        )
+
+                    if resample_to_first_img:
+                        warnings.warn(
+                            "Affine is different across subjects."
+                            " Realignment on first subject "
+                            "affine forced",
+                            stacklevel=find_stack_level(),
+                        )
+                    niimg = cache(
+                        resample_img,
+                        memory,
+                        func_memory_level=2,
+                        memory_level=memory_level,
+                    )(
+                        niimg,
+                        target_affine=ref_fov[0],
+                        target_shape=ref_fov[1],
+                    )
+                yield niimg
+            except DimensionError as exc:
+                # Keep track of the additional dimension in the error
+                exc.increment_stack_counter()
+                raise
+            except TypeError as exc:
+                img_name = (
+                    f" ({niimg}) " if isinstance(niimg, (str, Path)) else ""
+                )
+
+                exc.args = (
+                    f"Error encountered while loading image #{i}{img_name}",
+                    *exc.args,
+                )
+                raise
+
+    # Raising an error if input generator is empty.
+    if i == -1:
+        raise ValueError("Input niimgs list is empty.")
+
+
+# ensure_ndim = 3 always returns a NiftiImage
+@overload
+def check_niimg(
+    niimg,
+    ensure_ndim: Literal[3] = ...,
+    atleast_4d: Literal[False] = ...,
+    dtype=...,
+    return_iterator: Literal[False] = ...,
+    wildcards=...,
+) -> Nifti1Image: ...
+
+
+# ensure_ndim = 4 with return_iterator=False always returns a NiftiImage
+@overload
+def check_niimg(
+    niimg,
+    ensure_ndim: Literal[4] = ...,
+    atleast_4d=...,
+    dtype=...,
+    return_iterator: Literal[False] = ...,
+    wildcards=...,
+) -> Nifti1Image: ...
+
+
+# ensure_ndim = 4 with return_iterator=True
+# always returns an iterator NiftiImage
+@overload
+def check_niimg(
+    niimg,
+    ensure_ndim: Literal[4] = ...,
+    atleast_4d=...,
+    dtype=...,
+    return_iterator: Literal[True] = ...,
+    wildcards=...,
+) -> Iterable[Nifti1Image]: ...
+
+
+@fill_doc
+def check_niimg(
+    niimg: Any,
+    ensure_ndim: Literal[3, 4] | None = None,
+    atleast_4d: bool = False,
+    dtype: Any = None,
+    return_iterator: bool = False,
+    wildcards: bool = True,
+) -> Nifti1Image | Iterable[Nifti1Image]:
+    """Check that niimg is a proper 3D/4D niimg.
+
+    Turn filenames into objects.
+
+    Parameters
+    ----------
+    niimg : Niimg-like object
+        See :ref:`extracting_data`.
+        If niimg is a string or :obj:`pathlib.Path`,
+        consider it as a path to Nifti image
+        and call nibabel.load on it.
+        The ``'~'`` symbol is expanded to the user home folder.
+        If it is an object, check if the affine attribute present
+        and that :func:`nilearn.image.get_data` returns a result,
+        raise :obj:`TypeError` otherwise.
+
+    ensure_ndim : {3, 4, None}, default=None
+        Indicate the dimensionality of the expected niimg.
+        An error is raised if the niimg is of another dimensionality.
+
+    atleast_4d : :obj:`bool`, default=False
+        Indicates if a 3d image should be turned into a single-scan 4d niimg.
+
+    %(dtype)s
+
+    return_iterator : :obj:`bool`, default=False
+        Returns an iterator on the content of the niimg file input.
+
+    wildcards : :obj:`bool`, default=True
+        Use niimg as a regular expression
+        to get a list of matching input filenames.
+        If multiple files match,
+        the returned list is sorted using an ascending order.
+        If no file matches the regular expression,
+        a :obj:`ValueError` exception is raised.
+
+    Returns
+    -------
+    result : 3D/4D Niimg-like object
+        Result can be nibabel.Nifti1Image or the input, as-is.
+        It is guaranteed that the returned object
+        has an affine attribute
+        and that its data can be retrieved
+        with :func:`nilearn.image.get_data`.
+
+    Notes
+    -----
+    In nilearn, special care has been taken to make image manipulation easy.
+    This method is a kind of pre-requisite
+    for any data processing method in Nilearn
+    because it checks if data have a correct format
+    and loads them if necessary.
+
+    Its application is idempotent.
+
+    See Also
+    --------
+        check_niimg_3d, check_niimg_4d
+
+    """
+    if not is_volume_image(niimg):
+        raise TypeError(
+            "input should be a NiftiLike object "
+            "or an iterable of NiftiLike object. "
+            f"Got: {niimg.__class__.__name__}"
+        )
+
+    niimg = stringify_path(niimg)
+
+    if isinstance(niimg, str):
+        niimg = _get_imgs_as_filenames(niimg, wildcards)
+
+    # in case of an iterable
+    if hasattr(niimg, "__iter__") and not isinstance(niimg, str):
+        if return_iterator:
+            return iter_check_niimg(
+                niimg, ensure_ndim=ensure_ndim, dtype=dtype
+            )
+        return concat_imgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
+
+    # Otherwise, it should be a filename or a SpatialImage, we load it
+    niimg = load_niimg(niimg, dtype=dtype)
+
+    if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
+        # "squeeze" the image.
+        data = safe_get_data(niimg)
+        affine = niimg.affine
+        niimg = new_img_like(niimg, data[:, :, :, 0], affine)
+
+    if len(niimg.shape) == 3:
+        # This a rare edge case where return_iterator is True
+        # but the input image is 3D.
+        if return_iterator and not atleast_4d:
+            raise DimensionError(len(niimg.shape), required_dimension=4)
+
+        if atleast_4d:
+            data = _get_data(niimg).view()
+            data = data.reshape((*data.shape, 1))
+            niimg = new_img_like(niimg, data, niimg.affine)
+
+    if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:
+        raise DimensionError(len(niimg.shape), ensure_ndim)
+
+    if return_iterator:
+        return (_index_img(niimg, i) for i in range(niimg.shape[3]))
+
+    return niimg
+
+
+@fill_doc
+def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
+    """Check that niimg is a proper 3D niimg-like object and load it.
+
+    Parameters
+    ----------
+    niimg : Niimg-like object
+        See :ref:`extracting_data`.
+        If niimg is a string, consider it as a path to Nifti image and
+        call nibabel.load on it.
+        If it is an object, check if the affine attribute present and that
+        :func:`nilearn.image.get_data` returns a result,
+        raise :obj:`TypeError` otherwise.
+
+    %(dtype)s
+
+    Returns
+    -------
+    result : 3D Niimg-like object
+        Result can be nibabel.Nifti1Image or the input, as-is.
+        It is guaranteed that the returned object has an affine attribute
+        and that its data can be retrieved
+        with :func:`nilearn.image.get_data`.
+
+    Notes
+    -----
+    In nilearn, special care has been taken to make image manipulation easy.
+    This method is a kind of pre-requisite
+    for any data processing method in Nilearn
+    because it checks if data have a correct format
+    and loads them if necessary.
+
+    Its application is idempotent.
+
+    """
+    return check_niimg(niimg, ensure_ndim=3, dtype=dtype)
+
+
+@overload
+def check_niimg_4d(
+    niimg: Any,
+    return_iterator: Literal[False] = ...,
+    dtype: Any = ...,
+) -> Nifti1Image: ...
+
+
+@overload
+def check_niimg_4d(
+    niimg: Any,
+    return_iterator: Literal[True] = ...,
+    dtype: Any = ...,
+) -> Iterable[Nifti1Image]: ...
+
+
+@fill_doc
+def check_niimg_4d(
+    niimg: Any,
+    return_iterator: Literal[False, True] = False,
+    dtype: Any = None,
+):
+    """Check that niimg is a proper 4D niimg-like object and load it.
+
+    Parameters
+    ----------
+    niimg : 4D Niimg-like object
+        See :ref:`extracting_data`.
+        If ``niimgs`` is an iterable, checks if data is really 4D.
+        Then, considering that it is a list of niimg and load them one by one.
+        If ``niimgs`` is a string,
+        consider it as a path to Nifti image
+        and call nibabel.load on it.
+        If it is an object, check if the affine attribute present
+        and that :func:`nilearn.image.get_data` returns a result,
+        raise :obj:`TypeError` otherwise.
+
+    return_iterator : :obj:`bool`, default=False
+        If True, an iterator of 3D images is returned.
+        This reduces the memory usage when ``niimgs`` contains 3D images.
+        If False, a single 4D image is returned.
+        When ``niimgs`` contains 3D images they are concatenated together.
+
+    %(dtype)s.
+
+    Returns
+    -------
+    niimg: 4D nibabel.Nifti1Image or iterator of 3D nibabel.Nifti1Image
+
+    Notes
+    -----
+    This function is the equivalent to :func:`nilearn.image.check_niimg_3d()`
+    for Niimg-like objects with a run level.
+
+    Its application is idempotent.
+
+    """
+    ensure_ndim: Literal[4] = 4
+    return check_niimg(
+        niimg,
+        ensure_ndim=ensure_ndim,
+        return_iterator=return_iterator,
+        dtype=dtype,
+    )
+
+
+def get_indices_from_image(image) -> np.ndarray:
+    """Return unique values in a label image."""
+    if isinstance(image, NiimgLike):
+        img = check_niimg(image)
+        data = safe_get_data(img)
+    elif isinstance(image, SurfaceImage):
+        data = get_surface_data(image)
+    elif isinstance(image, np.ndarray):
+        data = image
+    else:
+        raise TypeError(
+            "Image to extract indices from must be one of: "
+            "Niimg-Like, SurfaceImage, numpy array. "
+            f"Got {image.__class__.__name__}"
+        )
+
+    labels_present = np.unique(data)
+
+    return labels_present[np.isfinite(labels_present)]

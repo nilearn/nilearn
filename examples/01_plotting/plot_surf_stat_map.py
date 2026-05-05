@@ -12,7 +12,7 @@ This example use the resting state time series
 of a single subject's left hemisphere
 the :ref:`nki_dataset`.
 
-The :ref:`destrieux_atlas` in fsaverage5 space
+The :ref:`destrieux_2009_atlas` in fsaverage5 space
 is used to select a seed region in the posterior cingulate cortex.
 
 The :func:`~nilearn.plotting.plot_surf_stat_map` function is used
@@ -100,7 +100,7 @@ pcc_mask = SurfaceImage(
     data=mask_data,
 )
 
-masker = SurfaceLabelsMasker(labels_img=pcc_mask).fit()
+masker = SurfaceLabelsMasker(labels_img=pcc_mask, verbose=1).fit()
 seed_timeseries = masker.transform(surf_img_nki).squeeze()
 
 # %%
@@ -188,7 +188,9 @@ is_excluded = np.isin(
 for i, exclude_this_vertex in enumerate(is_excluded):
     if exclude_this_vertex:
         continue
-    y = surf_img_nki.data.parts[hemisphere][i, ...]
+    y = surf_img_nki.data.parts[hemisphere][i, ...].astype(
+        seed_timeseries.dtype
+    )
     results[hemisphere][i] = pearsonr(seed_timeseries, y)[0]
 
 stat_map_surf = SurfaceImage(
@@ -209,7 +211,6 @@ plot_surf_stat_map(
     view="medial",
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    darkness=0.3,
     title="Correlation map",
 )
 

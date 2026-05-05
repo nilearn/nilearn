@@ -1,7 +1,5 @@
 """Data generation utilities."""
 
-from __future__ import annotations
-
 import itertools
 import json
 import string
@@ -13,8 +11,10 @@ import scipy.signal
 from nibabel import Nifti1Image, gifti
 from scipy.ndimage import binary_dilation
 
-from nilearn import datasets, image, maskers, masking
-from nilearn._utils import as_ndarray, logger
+from nilearn._utils import logger
+from nilearn._utils.numpy_conversions import as_ndarray
+from nilearn.datasets.struct import load_mni152_brain_mask
+from nilearn.image.image import get_data, new_img_like
 from nilearn.interfaces.bids.utils import (
     bids_entities,
     check_bids_label,
@@ -23,6 +23,8 @@ from nilearn.interfaces.bids.utils import (
 
 # TODO get legal_confounds out of private testing module
 from nilearn.interfaces.fmriprep.tests._testing import get_legal_confound
+from nilearn.maskers.nifti_masker import NiftiMasker
+from nilearn.masking import unmask
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
@@ -53,22 +55,22 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
 
     """
     rand_gen = np.random.default_rng(random_state)
-    mask_img = datasets.load_mni152_brain_mask(resolution=res)
-    masker = maskers.NiftiMasker(mask_img).fit()
-    n_voxels = image.get_data(mask_img).sum()
+    mask_img = load_mni152_brain_mask(resolution=res)
+    masker = NiftiMasker(mask_img).fit()
+    n_voxels = get_data(mask_img).sum()
     data = rand_gen.standard_normal((n_scans, n_voxels))
     if mask_dilation is not None and mask_dilation > 0:
-        mask_img = image.new_img_like(
+        mask_img = new_img_like(
             mask_img,
-            binary_dilation(
-                image.get_data(mask_img), iterations=mask_dilation
-            ),
+            binary_dilation(get_data(mask_img), iterations=mask_dilation),
         )
     inverse_img = masker.inverse_transform(data)
     return inverse_img, mask_img
 
 
-def generate_timeseries(n_timepoints, n_features, random_state=0):
+def generate_timeseries(
+    n_timepoints: int, n_features: int, random_state=0
+) -> np.ndarray:
     """Generate some random timeseries.
 
     Parameters
@@ -123,7 +125,7 @@ def generate_regions_ts(
         If True, creates negative and positive valued regions randomly; all
         generated region values are positive otherwise.
 
-        .. versionadded:: 0.11.1
+        .. nilearn_versionadded:: 0.11.1
 
     Returns
     -------
@@ -199,7 +201,7 @@ def generate_maps(
         If True, creates negative and positive valued regions randomly; all
         generated region values are positive otherwise.
 
-        .. versionadded:: 0.11.1
+        .. nilearn_versionadded:: 0.11.1
 
     Returns
     -------
@@ -223,7 +225,7 @@ def generate_maps(
         negative_regions=negative_regions,
     )
     mask_img = Nifti1Image(mask, affine)
-    return masking.unmask(ts, mask_img), mask_img
+    return unmask(ts, mask_img), mask_img
 
 
 def generate_labeled_regions(
@@ -248,7 +250,7 @@ def generate_labeled_regions(
     %(random_state)s
         default=0
 
-    labels : iterable, optional
+    labels : iterable or None, default=None
         Labels to use for each zone. If provided, n_regions is unused.
 
     affine : :obj:`numpy.ndarray`, default=None
@@ -277,7 +279,7 @@ def generate_labeled_regions(
         n_voxels, n_regions, random_state=random_state
     )
     # replace weights with labels
-    for n, row in zip(labels, regions):
+    for n, row in zip(labels, regions, strict=False):
         row[row > 0] = n
     data = np.zeros(shape, dtype=dtype)
     data[np.ones(shape, dtype=bool)] = regions.sum(axis=0).T
@@ -285,13 +287,13 @@ def generate_labeled_regions(
 
 
 def generate_fake_fmri(
-    shape=(10, 11, 12),
-    length=17,
-    kind="noise",
-    affine=None,
-    n_blocks=None,
-    block_size=3,
-    block_type="classification",
+    shape: tuple[int, int, int] = (10, 11, 12),
+    length: int = 17,
+    kind: str = "noise",
+    affine: np.ndarray | None = None,
+    n_blocks: int | None = None,
+    block_size: int = 3,
+    block_type: str = "classification",
     random_state=0,
 ):
     """Generate a signal which can be used for testing.
@@ -322,7 +324,7 @@ def generate_fake_fmri(
     n_blocks : :obj:`int` or None, default=None
         Number of condition blocks.
 
-    block_size : :obj:`int` or None, default=3
+    block_size : :obj:`int`, default=3
         Number of timepoints in a block.
         Used only if n_blocks is not None.
 
@@ -359,9 +361,11 @@ def generate_fake_fmri(
 
     rand_gen = np.random.default_rng(random_state)
     if kind == "noise":
-        signals = rand_gen.integers(256, size=([*width, length]))
+        signals = rand_gen.integers(
+            256, size=([*width, length]), dtype=np.int32
+        )
     elif kind == "step":
-        signals = np.ones([*width, length])
+        signals = np.ones([*width, length], dtype=np.int32)
         signals[..., : length // 2] = 0.5
     else:
         raise ValueError("Unhandled value for parameter 'kind'")
@@ -642,7 +646,7 @@ def _generate_signals_from_precisions(
     mean = np.zeros(precisions[0].shape[0])
     signals.extend(
         rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n,))
-        for n, prec in zip(n_samples, precisions)
+        for n, prec in zip(n_samples, precisions, strict=False)
     )
     return signals
 
@@ -655,7 +659,7 @@ def generate_group_sparse_gaussian_graphs(
     density=0.1,
     random_state=0,
     verbose=0,
-):
+) -> tuple[list[np.ndarray], list[np.ndarray], np.ndarray]:
     """Generate signals drawn from a sparse Gaussian graphical model.
 
     Parameters
@@ -923,6 +927,7 @@ def create_fake_bids_dataset(
     random_state=0,
     entities=None,
     n_vertices=0,
+    n_voxels=4,
     spaces=None,
 ):
     """Create a fake :term:`BIDS` dataset directory with dummy files.
@@ -976,7 +981,7 @@ def create_fake_bids_dataset(
     %(random_state)s
         default=0
 
-    entities : :obj:`dict`, optional
+    entities : :obj:`dict` or None, default=None
         Extra entity to add to the :term:`BIDS` filename with a list of values.
         For example, if you want to add an 'echo' entity
         with values '1' for some files and '1' for others,
@@ -988,7 +993,10 @@ def create_fake_bids_dataset(
         Use n_vertices == 10242 to match the number of vertices
         in fsaverage5.
 
-    spaces : :obj:`list` of :obj:`str`, optional.
+    n_voxels : :obj:`int`, default = 4
+        Number of voxels along x, y, z dimensions for volume data.
+
+    spaces : :obj:`list` of :obj:`str` or None, default=None
         Defaults to ``("MNI", "T1w")``
 
     Returns
@@ -1009,7 +1017,6 @@ def create_fake_bids_dataset(
         n_runs = [1, 3]
     if spaces is None:
         spaces = ("MNI", "T1w")
-    n_voxels = 4
 
     rand_gen = np.random.default_rng(random_state)
 
@@ -1066,12 +1073,12 @@ def create_fake_bids_dataset(
     return bids_path
 
 
-def _check_entities_and_labels(entities):
+def _check_entities_and_labels(entities) -> None:
     """Check entities and labels are BIDS compliant.
 
     Parameters
     ----------
-    entities : :obj:`dict`, optional
+    entities : :obj:`dict`
         Extra entity to add to the BIDS filename with a list of values.
         For example, if you want to add an 'echo' entity
         with values '1' for some files and '1' for others,
@@ -1109,7 +1116,7 @@ def _mock_bids_dataset(
     entities,
     n_voxels,
     rand_gen,
-):
+) -> None:
     """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
 
     Parameters
@@ -1132,7 +1139,7 @@ def _mock_bids_dataset(
         number of runs for the corresponding task.
         No run entity will be used if a value is equal to 1 or less.
 
-    entities : :obj:`dict`, optional
+    entities : :obj:`dict`
         Extra entities to add to the BIDS filename with a list of values.
 
     n_voxels : :obj:`int`
@@ -1159,7 +1166,7 @@ def _mock_bids_dataset(
         func_path = subses_dir / "func"
         func_path.mkdir(parents=True, exist_ok=True)
 
-        for task, n_run in zip(tasks, n_runs):
+        for task, n_run in zip(tasks, n_runs, strict=False):
             for run in _listify(n_run):
                 if entities:
                     for key in entities:
@@ -1203,7 +1210,7 @@ def _mock_bids_derivatives(
     rand_gen,
     n_vertices,
     spaces,
-):
+) -> None:
     """Create a fake derivatives :term:`bids<BIDS>` dataset directory \
        with dummy files.
 
@@ -1247,7 +1254,7 @@ def _mock_bids_derivatives(
         Use n_vertices == 10242 to match the number of vertices
         in fsaverage5.
 
-    spaces : :obj:`list` of :obj:`str`, optional.
+    spaces : :obj:`list` of :obj:`str`
     """
     bids_path = bids_path / "derivatives"
     bids_path.mkdir(parents=True, exist_ok=True)
@@ -1262,7 +1269,7 @@ def _mock_bids_derivatives(
         func_path = subses_dir / "func"
         func_path.mkdir(parents=True, exist_ok=True)
 
-        for task, n_run in zip(tasks, n_runs):
+        for task, n_run in zip(tasks, n_runs, strict=False):
             for run in _listify(n_run):
                 if entities:
                     for key in entities:
@@ -1386,7 +1393,7 @@ def _write_bids_raw_func(
     fields,
     n_voxels,
     rand_gen,
-):
+) -> None:
     """Create BIDS functional raw nifti, json sidecar and events files.
 
     Parameters
@@ -1433,7 +1440,7 @@ def _write_bids_derivative_func(
     confounds_tag,
     n_vertices=0,
     spaces=None,
-):
+) -> None:
     """Create BIDS functional derivative and confounds files.
 
     Nifti files created come with two spaces and descriptions.
@@ -1458,7 +1465,7 @@ def _write_bids_derivative_func(
     rand_gen : :obj:`numpy.random.RandomState` instance
         Random number generator.
 
-    confounds_tag : :obj:`str`, optional.
+    confounds_tag : :obj:`str`
         Filename "suffix":
         For example: `desc-confounds_timeseries`
         or "desc-confounds_regressors".
@@ -1469,7 +1476,7 @@ def _write_bids_derivative_func(
         Use n_vertices == 10242 to match the number of vertices
         in fsaverage5.
 
-    spaces : :obj:`list` of :obj:`str`, optional.
+    spaces : :obj:`list` of :obj:`str` or None, default=None
         Defaults to ``("MNI", "T1w")``
     """
     n_time_points = 30

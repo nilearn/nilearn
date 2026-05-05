@@ -7,6 +7,12 @@ using a feature selection, followed by an SVM.
 
 """
 
+import warnings
+
+warnings.filterwarnings(
+    "ignore", message="The provided image has no sform in its header."
+)
+
 # %%
 # Retrieve the files of the Haxby dataset
 # ---------------------------------------
@@ -55,15 +61,19 @@ run_label = behavioral["chunks"][condition_mask]
 # on nested cross-validation.
 from nilearn.decoding import Decoder
 
-# Here screening_percentile is set to 5 percent
+# Here we select the best 500 voxels of each fold of the cross-validation
+screening_n_features = 500
+screening_percentile = None
+
 mask_img = haxby_dataset.mask
 decoder = Decoder(
     estimator="svc",
     mask=mask_img,
     smoothing_fwhm=4,
-    standardize="zscore_sample",
-    screening_percentile=5,
+    screening_percentile=screening_percentile,
+    screening_n_features=screening_n_features,
     scoring="accuracy",
+    verbose=2,
 )
 
 # %%
@@ -88,10 +98,11 @@ cv = LeaveOneGroupOut()
 decoder = Decoder(
     estimator="svc",
     mask=mask_img,
-    standardize="zscore_sample",
-    screening_percentile=5,
+    screening_percentile=screening_percentile,
+    screening_n_features=screening_n_features,
     scoring="accuracy",
     cv=cv,
+    verbose=2,
 )
 # Compute the prediction accuracy for the different folds (i.e. run)
 decoder.fit(func_img, conditions, groups=run_label)
@@ -110,12 +121,14 @@ from nilearn.plotting import plot_stat_map, show
 plot_stat_map(weight_img, bg_img=haxby_dataset.anat[0], title="SVM weights")
 
 show()
+
 # %%
 # Or we can plot the weights using :class:`~nilearn.plotting.view_img` as a
 # dynamic html viewer
 from nilearn.plotting import view_img
 
 view_img(weight_img, bg_img=haxby_dataset.anat[0], title="SVM weights", dim=-1)
+
 # %%
 # Saving the results as a Nifti file may also be important
 from pathlib import Path

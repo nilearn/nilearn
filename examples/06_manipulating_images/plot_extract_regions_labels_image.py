@@ -27,7 +27,7 @@ We use the Yeo atlas as an example for labeling regions,
 from nilearn.datasets import fetch_atlas_yeo_2011
 from nilearn.plotting import plot_roi, show
 
-atlas_yeo_2011 = fetch_atlas_yeo_2011(thickness="thick", n_networks=7)
+atlas_yeo_2011 = fetch_atlas_yeo_2011()
 
 atlas_yeo = atlas_yeo_2011.maps
 

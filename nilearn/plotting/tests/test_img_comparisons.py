@@ -9,8 +9,7 @@ from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.conftest import _affine_mni, _img_mask_mni, _make_surface_mask
 from nilearn.image import iter_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.plotting import plot_bland_altman
-from nilearn.plotting.img_comparison import plot_img_comparison
+from nilearn.plotting import plot_bland_altman, plot_img_comparison
 
 # ruff: noqa: ARG001
 
@@ -22,28 +21,18 @@ def _mask():
     return Nifti1Image(data_positive, affine)
 
 
-def test_deprecation_function_moved(matplotlib_pyplot, img_3d_mni):
-    from nilearn.plotting.img_plotting import plot_img_comparison as old_fn
-
-    with pytest.warns(DeprecationWarning, match="moved"):
-        old_fn(
-            img_3d_mni,
-            img_3d_mni,
-            plot_hist=False,
-        )
-
-
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker",
     [
         None,
         _mask(),
-        NiftiMasker(mask_img=_img_mask_mni()),
-        NiftiMasker(mask_img=_img_mask_mni()).fit(),
+        NiftiMasker(mask_img=_img_mask_mni(), standardize=None),
+        NiftiMasker(mask_img=_img_mask_mni(), standardize=None).fit(),
     ],
 )
 def test_plot_img_comparison_masker(matplotlib_pyplot, img_3d_mni, masker):
-    """Tests for plot_img_comparision with masker or mask image."""
+    """Tests for plot_img_comparison with masker or mask image."""
     plot_img_comparison(
         img_3d_mni,
         img_3d_mni,
@@ -52,13 +41,25 @@ def test_plot_img_comparison_masker(matplotlib_pyplot, img_3d_mni, masker):
     )
 
 
+@pytest.mark.thread_unsafe
+def test_plot_img_comparison_file(matplotlib_pyplot, img_3d_mni, tmp_path):
+    """Tests plot_img_comparison with files."""
+    img_3d_mni.to_filename(tmp_path / "img_compare.nii.gz")
+    plot_img_comparison(
+        tmp_path / "img_compare.nii.gz",
+        str(tmp_path / "img_compare.nii.gz"),
+        plot_hist=False,
+    )
+
+
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker",
     [
         None,
         _make_surface_mask(),
-        SurfaceMasker(mask_img=_make_surface_mask()),
-        SurfaceMasker(mask_img=_make_surface_mask()).fit(),
+        SurfaceMasker(mask_img=_make_surface_mask(), standardize=None),
+        SurfaceMasker(mask_img=_make_surface_mask(), standardize=None).fit(),
     ],
 )
 def test_plot_img_comparison_surface(matplotlib_pyplot, surf_img_1d, masker):
@@ -77,24 +78,28 @@ def test_plot_img_comparison_error(surf_img_1d, img_3d_mni):
         plot_img_comparison(surf_img_1d, img_3d_mni)
 
 
+@pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
-    """Tests for plot_img_comparision."""
+    """Tests for plot_img_comparison."""
     _, axes = plt.subplots(2, 1)
     axes = axes.ravel()
 
+    length = 2
+
     query_images, mask_img = generate_fake_fmri(
-        random_state=rng, shape=(2, 3, 4), length=5
+        random_state=rng, shape=(2, 3, 4), length=length
     )
     # plot_img_comparison doesn't handle 4d images ATM
     query_images = list(iter_img(query_images))
 
     target_images, _ = generate_fake_fmri(
-        random_state=rng, shape=(4, 5, 6), length=5
+        random_state=rng, shape=(4, 5, 6), length=length
     )
     target_images = list(iter_img(target_images))
     target_images[0] = query_images[0]
 
-    masker = NiftiMasker(mask_img).fit()
+    masker = NiftiMasker(mask_img, standardize=None).fit()
 
     correlations = plot_img_comparison(
         target_images,
@@ -111,7 +116,7 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
 
     # 5 scatterplots
     ax_0, ax_1 = axes
-    assert len(ax_0.collections) == 5
+    assert len(ax_0.collections) == length
     assert len(
         ax_0.collections[0].get_edgecolors()
         == masker.transform(target_images[0]).ravel().shape[0]
@@ -120,31 +125,33 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     assert ax_0.get_xlabel() == "image set 1"
 
     # 5 regression lines
-    assert len(ax_0.lines) == 5
+    assert len(ax_0.lines) == length
     assert ax_0.lines[0].get_linestyle() == "--"
     assert ax_1.get_title() == "Histogram of imgs values"
     gridsize = 100
-    assert len(ax_1.patches) == 5 * 2 * gridsize
+    assert len(ax_1.patches) == length * 2 * gridsize
 
 
+@pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
-    """Tests for plot_img_comparision no plot should return same result."""
+    """Tests for plot_img_comparison no plot should return same result."""
     _, axes = plt.subplots(2, 1)
     axes = axes.ravel()
 
     query_images, mask_img = generate_fake_fmri(
-        random_state=rng, shape=(2, 3, 4), length=5
+        random_state=rng, shape=(2, 3, 4), length=2
     )
     # plot_img_comparison doesn't handle 4d images ATM
     query_images = list(iter_img(query_images))
 
     target_images, _ = generate_fake_fmri(
-        random_state=rng, shape=(2, 3, 4), length=5
+        random_state=rng, shape=(2, 3, 4), length=2
     )
     target_images = list(iter_img(target_images))
     target_images[0] = query_images[0]
 
-    masker = NiftiMasker(mask_img).fit()
+    masker = NiftiMasker(mask_img, standardize=None).fit()
 
     correlations = plot_img_comparison(
         target_images, query_images, masker, plot_hist=True, colorbar=False
@@ -157,13 +164,14 @@ def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     assert np.allclose(correlations, correlations_1)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker",
     [
         None,
         _mask(),
-        NiftiMasker(mask_img=_img_mask_mni()),
-        NiftiMasker(mask_img=_img_mask_mni()).fit(),
+        NiftiMasker(mask_img=_img_mask_mni(), standardize=None),
+        NiftiMasker(mask_img=_img_mask_mni(), standardize=None).fit(),
     ],
 )
 def test_plot_bland_altman(
@@ -195,13 +203,14 @@ def test_plot_bland_altman(
     assert (tmp_path / "spam.jpg").is_file()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker",
     [
         None,
         _make_surface_mask(),
-        SurfaceMasker(mask_img=_make_surface_mask()),
-        SurfaceMasker(mask_img=_make_surface_mask()).fit(),
+        SurfaceMasker(mask_img=_make_surface_mask(), standardize=None),
+        SurfaceMasker(mask_img=_make_surface_mask(), standardize=None).fit(),
     ],
 )
 def test_plot_bland_altman_surface(matplotlib_pyplot, surf_img_1d, masker):
@@ -214,6 +223,7 @@ def test_plot_bland_altman_surface(matplotlib_pyplot, surf_img_1d, masker):
     )
 
 
+@pytest.mark.slow
 def test_plot_bland_altman_errors(
     surf_img_1d, surf_mask_1d, img_3d_rand_eye, img_3d_ones_eye
 ):
@@ -229,11 +239,23 @@ def test_plot_bland_altman_errors(
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(surf_img_1d, img_3d_rand_eye)
 
-    error_msg = "'masker' must be NiftiMasker or Niimg-Like"
-    with pytest.raises(TypeError, match=error_msg):
+    with pytest.raises(TypeError, match="must be of type"):
         plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, masker=1)
 
-    # invalid masker for that image type
+    with pytest.raises(
+        TypeError, match="'lims' must be a list or tuple of length == 4"
+    ):
+        plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[-1])
+
+    with pytest.raises(TypeError, match=r"with all values different from 0."):
+        plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[0, 1, -2, 0])
+
+
+def test_plot_bland_altman_incompatible_errors(
+    surf_img_1d, surf_mask_1d, img_3d_rand_eye, img_3d_ones_eye
+):
+    """Check error for bland altman plots incompatible mask and images."""
+    error_msg = "Mask and input images must be of compatible types."
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(
             img_3d_rand_eye, img_3d_rand_eye, masker=SurfaceMasker()
@@ -242,18 +264,8 @@ def test_plot_bland_altman_errors(
         plot_bland_altman(
             img_3d_rand_eye, img_3d_rand_eye, masker=surf_mask_1d
         )
-
-    error_msg = "'masker' must be SurfaceMasker or SurfaceImage"
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(surf_img_1d, surf_img_1d, masker=NiftiMasker())
 
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(surf_img_1d, surf_img_1d, masker=img_3d_ones_eye)
-
-    with pytest.raises(
-        TypeError, match="'lims' must be a list or tuple of length == 4"
-    ):
-        plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[-1])
-
-    with pytest.raises(TypeError, match="with all values different from 0."):
-        plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[0, 1, -2, 0])

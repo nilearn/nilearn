@@ -75,6 +75,8 @@ cv = LeaveOneGroupOut()
 # %%
 # We use :class:`~nilearn.decoding.Decoder` to estimate a baseline.
 
+import warnings
+
 mask_names = ["mask_vt", "mask_face", "mask_house"]
 
 mask_scores = {}
@@ -84,7 +86,7 @@ for mask_name in mask_names:
     print(f"Working on {mask_name}")
     # For decoding, standardizing is often very important
     mask_filename = haxby_dataset[mask_name][0]
-    masker = NiftiMasker(mask_img=mask_filename, standardize="zscore_sample")
+    masker = NiftiMasker(mask_img=mask_filename, verbose=1)
     mask_scores[mask_name] = {}
     mask_chance_scores[mask_name] = {}
 
@@ -99,9 +101,15 @@ for mask_name in mask_names:
             cv=cv,
             mask=masker,
             scoring="roc_auc",
-            standardize="zscore_sample",
+            verbose=1,
         )
-        decoder.fit(task_data, classification_target, groups=run_labels)
+
+        with warnings.catch_warnings():
+            # ignore warnings thrown because the ROI mask we are using
+            # are much smaller than the whole brain.
+            warnings.filterwarnings(action="ignore", category=UserWarning)
+            decoder.fit(task_data, classification_target, groups=run_labels)
+
         mask_scores[mask_name][category] = decoder.cv_scores_[1]
         mean = np.mean(mask_scores[mask_name][category])
         std = np.std(mask_scores[mask_name][category])
@@ -112,11 +120,17 @@ for mask_name in mask_names:
             cv=cv,
             mask=masker,
             scoring="roc_auc",
-            standardize="zscore_sample",
+            verbose=1,
         )
-        dummy_classifier.fit(
-            task_data, classification_target, groups=run_labels
-        )
+
+        with warnings.catch_warnings():
+            # ignore warnings thrown because the ROI mask we are using
+            # are much smaller than the whole brain.
+            warnings.filterwarnings(action="ignore", category=UserWarning)
+            dummy_classifier.fit(
+                task_data, classification_target, groups=run_labels
+            )
+
         mask_chance_scores[mask_name][category] = dummy_classifier.cv_scores_[
             1
         ]
@@ -132,7 +146,7 @@ plt.figure(constrained_layout=True)
 tick_position = np.arange(len(categories))
 plt.xticks(tick_position, categories, rotation=45)
 
-for color, mask_name in zip("rgb", mask_names):
+for color, mask_name in zip("rgb", mask_names, strict=False):
     score_means = [
         np.mean(mask_scores[mask_name][category]) for category in categories
     ]

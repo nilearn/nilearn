@@ -4,7 +4,10 @@ from warnings import warn
 
 import numpy as np
 import scipy.linalg as spl
+from scipy.linalg.lapack import get_lapack_funcs
 from scipy.stats import norm
+
+from nilearn._utils.logger import find_stack_level
 
 
 def z_score(pvalue, one_minus_pvalue=None):
@@ -16,8 +19,8 @@ def z_score(pvalue, one_minus_pvalue=None):
     pvalue : float or 1-d array shape=(n_pvalues,)
         P-values computed using the survival function.
 
-    one_minus_pvalue : float or 1-d array shape=(n_one_minus_pvalues,), \
-        optional
+    one_minus_pvalue : float, 1-d array shape=(n_one_minus_pvalues,) or None \
+        default=None
         It shall take the value returned
         by /nilearn/glm/contrasts.py::one_minus_pvalue
         which computes the p_value using the cumulative distribution function,
@@ -73,7 +76,6 @@ def multiple_fast_inverse(a):
     """
     if a.shape[1] != a.shape[2]:
         raise ValueError("a must have shape (n_samples, n_dim, n_dim)")
-    from scipy.linalg.lapack import get_lapack_funcs
 
     a1, n = a[0], a.shape[0]
     getrf, getri, getri_lwork = get_lapack_funcs(
@@ -136,7 +138,7 @@ def multiple_mahalanobis(effect, covariance):
     if covariance.shape[0] != covariance.shape[1]:
         raise ValueError("Inconsistent shape for covariance")
 
-    # transpose and make contuguous for the sake of speed
+    # transpose and make contiguous for the sake of speed
     Xt, Kt = np.ascontiguousarray(effect.T), np.ascontiguousarray(covariance.T)
 
     # compute the inverse of the covariances
@@ -174,7 +176,10 @@ def full_rank(X, cmax=1e15):
     if cond < cmax:
         return X, cond
 
-    warn("Matrix is singular at working precision, regularizing...")
+    warn(
+        "Matrix is singular at working precision, regularizing...",
+        stacklevel=find_stack_level(),
+    )
     lda = (smax - cmax * smin) / (cmax - 1)
     X = np.dot(U, np.dot(np.diag(s + lda), V))
     return X, cmax
@@ -223,7 +228,7 @@ def pad_contrast(con_val, theta, stat_type):
         theta of RegressionResults instances
         where P is the total number of regressors in the design matrix.
 
-    stat_type : {'t', 'F'}, optional
+    stat_type : {'t', 'F'}
         Type of the :term:`contrast`.
     """
     n_cols = con_val.shape[0] if con_val.ndim == 1 else con_val.shape[1]
@@ -248,15 +253,15 @@ def pad_contrast(con_val, theta, stat_type):
                 f"but it has length {n_cols}. "
                 "The rest of the contrast was padded with zeros.",
                 category=UserWarning,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
         if stat_type == "F":
             warn(
-                f"F contrasts should have {theta.shape[0]} colmuns, "
+                f"F contrasts should have {theta.shape[0]} columns, "
                 f"but it has only {n_cols}. "
                 "The rest of the contrast was padded with zeros.",
                 category=UserWarning,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
     if pad:

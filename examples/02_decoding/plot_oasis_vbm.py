@@ -45,8 +45,6 @@ much clearer view of the important regions.
     see the :ref:`dataset description <oasis_maps>`.
 
 ____
-
-.. include:: ../../../examples/masker_note.rst
 """
 
 # %%
@@ -86,7 +84,7 @@ print(
 # Preprocess data
 # ---------------
 nifti_masker = NiftiMasker(
-    standardize=False, smoothing_fwhm=2, memory="nilearn_cache"
+    standardize=False, smoothing_fwhm=2, memory="nilearn_cache", verbose=1
 )  # cache options
 gm_maps_masked = nifti_masker.fit_transform(gm_imgs_train)
 
@@ -122,7 +120,7 @@ decoder = DecoderRegressor(
     scoring="neg_mean_absolute_error",
     screening_percentile=1,
     n_jobs=2,
-    standardize="zscore_sample",
+    verbose=1,
 )
 # Fit and predict with the decoder
 decoder.fit(gm_imgs_train, age_train)
@@ -155,7 +153,6 @@ display = plot_stat_map(
     display_mode="z",
     cut_coords=[z_slice],
     title="SVM weights",
-    cmap="cold_hot",
 )
 show()
 
@@ -184,20 +181,24 @@ plt.legend(loc="best")
 # -----------------------------------------
 print("Massively univariate model")
 
-gm_maps_masked = NiftiMasker().fit_transform(gray_matter_map_filenames)
+gm_maps_masked = NiftiMasker(verbose=1).fit_transform(
+    gray_matter_map_filenames
+)
 data = variance_threshold.fit_transform(gm_maps_masked)
 
 # Statistical inference
 from nilearn.mass_univariate import permuted_ols
 
 # This can be changed to use more CPUs.
-neg_log_pvals, t_scores_original_data, _ = permuted_ols(
+output = permuted_ols(
     age,
     data,  # + intercept as a covariate by default
     n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
     verbose=1,  # display progress bar
     n_jobs=2,
 )
+neg_log_pvals = output["logp_max_t"]
+t_scores_original_data = output["t"]
 signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     variance_threshold.inverse_transform(signed_neg_log_pvals)

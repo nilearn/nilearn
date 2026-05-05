@@ -4,6 +4,11 @@ from math import sqrt
 
 import numpy as np
 
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.masking import unmask_from_to_3d_array
 
 from ._objective_functions import (
@@ -332,7 +337,7 @@ def graph_net_squared_loss(
         callback=callback,
         tol=tol,
         max_iter=max_iter,
-        verbose=verbose,
+        verbose=max(verbose - 1, 0),
         init=init,
     )
 
@@ -418,7 +423,7 @@ def graph_net_logistic(
         callback=callback,
         tol=tol,
         max_iter=max_iter,
-        verbose=verbose,
+        verbose=max(verbose - 1, 0),
         init=init,
     )
 
@@ -450,10 +455,7 @@ def _tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
         Value of TV-L1 penalty.
     """
     loss = loss.lower()
-    if loss not in ["mse", "logistic"]:
-        raise ValueError(
-            f"loss must be one of 'mse' or 'logistic'; got '{loss}'"
-        )
+    check_parameter_in_allowed(loss, ["mse", "logistic"], "loss")
 
     if loss == "mse":
         out = squared_loss(X, y, w)
@@ -467,6 +469,7 @@ def _tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
     return out
 
 
+@fill_doc
 def tvl1_solver(
     X,
     y,
@@ -480,7 +483,7 @@ def tvl1_solver(
     prox_max_iter=5000,
     tol=1e-4,
     callback=None,
-    verbose=1,
+    verbose=0,
 ):
     """Minimizes empirical risk for TV-L1 penalized models.
 
@@ -509,8 +512,7 @@ def tvl1_solver(
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    max_iter : :obj:`int`, default=100
-        Defines the iterations for the solver.
+    %(max_iter100)s
 
     prox_max_iter : :obj:`int`, default=5000
         Maximum number of iterations for inner FISTA loop in which
@@ -528,9 +530,11 @@ def tvl1_solver(
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.
 
-    callback : callable(dict) -> bool, default=None
+    callback : callable(dict) -> :obj:`bool`, default=None
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
+
+    %(verbose0)s
 
     Returns
     -------
@@ -545,11 +549,9 @@ def tvl1_solver(
         Solver information, for warm start.
 
     """
-    # sanitize loss
-    if loss not in ["mse", "logistic"]:
-        raise ValueError(
-            f"'{loss}' loss not implemented. Should be 'mse' or 'logistic"
-        )
+    check_params(locals())
+
+    check_parameter_in_allowed(loss, ["mse", "logistic"], "loss")
 
     # shape of image box
     flat_mask = mask.ravel()
