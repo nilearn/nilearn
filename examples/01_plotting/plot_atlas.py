@@ -85,10 +85,7 @@ print(dataset_yeo.lut)
 
 # %%
 # Let's compare the atlas with the default colormap and its own colormap.
-plot_roi(
-    dataset_yeo.maps,
-    title="Yeo atlas",
-)
+plot_roi(dataset_yeo.maps, title="Yeo atlas")
 
 plot_roi(
     dataset_yeo.maps,

@@ -33,10 +33,7 @@ atlas_yeo = atlas_yeo_2011.maps
 
 # Let's now plot it
 plot_roi(
-    atlas_yeo,
-    title="Original Yeo atlas",
-    cut_coords=(8, -4, 9),
-    cmap="Paired",
+    atlas_yeo, title="Original Yeo atlas", cut_coords=(8, -4, 9), cmap="Paired"
 )
 
 show()
