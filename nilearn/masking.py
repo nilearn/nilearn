@@ -185,7 +185,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
     %(connected)s
-        Default=True.
+        default=True.
 
     Returns
     -------
@@ -308,13 +308,13 @@ def compute_epi_mask(
             If a 3D image is given, we suggest to use the mean image.
 
     %(lower_cutoff)s
-        Default=0.2.
+        default=0.2.
     %(upper_cutoff)s
-        Default=0.85.
+        default=0.85.
     %(connected)s
-        Default=True.
+        default=True.
     %(opening)s
-        Default=2.
+        default=2.
     ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and infs)
         found in the images will be replaced by zeros
@@ -431,13 +431,13 @@ def compute_multi_epi_mask(
         masks, whereas threshold=0 is the union of all masks.
 
     %(lower_cutoff)s
-        Default=0.2.
+        default=0.2.
     %(upper_cutoff)s
-        Default=0.85.
+        default=0.85.
     %(connected)s
-        Default=True.
+        default=True.
     %(opening)s
-        Default=2.
+        default=2.
     exclude_zeros : :obj:`bool`, default=False
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
@@ -513,11 +513,11 @@ def compute_background_mask(
             If a 3D image is given, we suggest to use the mean image.
 
     %(border_size)s
-        Default=2.
+        default=2.
     %(connected)s
-        Default=False.
+        default=False.
     %(opening)s
-        Default=False.
+        default=False.
     %(target_affine)s
 
         .. note::
@@ -608,10 +608,10 @@ def compute_multi_background_mask(
         masks, whereas threshold=0 is the union of all masks.
 
     %(border_size)s
-        Default=2.
+        default=2.
 
     %(connected)s
-        Default=True.
+        default=True.
 
     %(opening)s
 
@@ -684,9 +684,9 @@ def compute_brain_mask(
     threshold : :obj:`float`, default=0.5
         The value under which the :term:`MNI` template is cut off.
     %(connected)s
-        Default=True.
+        default=True.
     %(opening)s
-        Default=2.
+        default=2.
     %(memory)s
     %(verbose0)s
     %(mask_type)s
@@ -768,10 +768,10 @@ def compute_multi_brain_mask(
         The value under which the :term:`MNI` template is cut off.
 
     %(connected)s
-        Default=True.
+        default=True.
 
     %(opening)s
-        Default=2.
+        default=2.
 
     %(mask_type)s
 

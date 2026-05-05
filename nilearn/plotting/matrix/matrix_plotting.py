@@ -193,7 +193,7 @@ def plot_matrix(
             Specifying both axes and figure is not allowed.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     %(cmap)s
         default="RdBu_r"
@@ -294,7 +294,7 @@ def plot_contrast_matrix(
         Design matrix to use.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     axes : :class:`matplotlib.axes.Axes` or None, default=None
         Axis on which to plot the figure.
