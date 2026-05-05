@@ -164,6 +164,19 @@ logistic = "Logistic regression"
 rc = "Ridge classifier"
 dc = "Dummy classifier with stratified strategy"
 
+sk_compatible_admonition = """
+
+    .. admonition:: Important
+
+        Besides the strings,
+        it is also possible to pass
+        a scikit-learn compatible estimator object.
+        See `scikit-learn's guide on developing your own estimator
+        <https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator>`_
+        for more details.
+
+"""
+
 docdict["classifier_options"] = f"""
 
     - ``"svc"``: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
@@ -221,11 +234,8 @@ docdict["classifier_options"] = f"""
 
         dummy = DummyClassifier(strategy="stratified", random_state=0)
 
-    Besides the strings, it is also possible to pass a scikit-learn compatible
-    estimator object (any object implementing 'fit' and 'predict' methods).
-    See `scikit-learn's guide on developing your own estimator
-    <https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator>`_
-    for more details.
+    {sk_compatible_admonition}
+
 """
 
 # clean_args
@@ -926,54 +936,50 @@ random_state : :obj:`int` or np.random.RandomState, optional
 """
 
 # regressor_options
-docdict["regressor_options"] = """
+docdict["regressor_options"] = f"""
 
     - ``ridge``: \
-        :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
+        :class:`Ridge regression <sklearn.linear_model.RidgeCV>`.
 
     .. code-block:: python
 
         ridge = RidgeCV()
 
     - ``ridge_regressor``: \
-        :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
+        :class:`Ridge regression <sklearn.linear_model.RidgeCV>`.
 
     .. note::
 
         Same option as `ridge`.
 
-    - ``svr``: :class:`{Support vector regression} <sklearn.svm.SVR>`.
+    - ``svr``: :class:`Support vector regression <sklearn.svm.SVR>`.
 
     .. code-block:: python
 
         svr = SVR(kernel="linear", max_iter=1e4)
 
     - ``lasso``: \
-        :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
+        :class:`Lasso regression <sklearn.linear_model.LassoCV>`.
 
     .. code-block:: python
 
         lasso = LassoCV()
 
     - ``lasso_regressor``: \
-        :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
+        :class:`Lasso regression <sklearn.linear_model.LassoCV>`.
 
     .. note::
 
         Same option as `lasso`.
 
     - ``dummy_regressor``: \
-        :class:`{Dummy regressor} <sklearn.dummy.DummyRegressor>`.
+        :class:`Dummy regressor <sklearn.dummy.DummyRegressor>`.
 
     .. code-block:: python
 
         dummy = DummyRegressor(strategy="mean")
 
-    Besides the strings, it is also possible to pass a scikit-learn compatible
-    estimator object (any object implementing 'fit' and 'predict' methods).
-    See `scikit-learn's guide on developing your own estimator
-    <https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator>`_
-    for more details.
+    {sk_compatible_admonition}
 """
 
 # resampling_interpolation
@@ -1184,6 +1190,7 @@ signals : 1D/2D :obj:`numpy.ndarray`
 docdict["region_signals_inv_transform"] = docdict["signals_inv_transform"]
 docdict["x_inv_transform"] = docdict["signals_inv_transform"]
 
+docdict["sk_compatible_admonition"] = sk_compatible_admonition
 
 # smoothing_fwhm
 docdict["smoothing_fwhm"] = """
