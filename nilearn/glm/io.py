@@ -303,7 +303,7 @@ def save_glm_to_bids(
         report_kwargs["cut_coords"],
         report_kwargs["plot_type"],
         first_level_contrast=first_level_contrast,
-        is_first_level_glm=model._is_first_level_glm(),
+        model=model,
     )
 
     contrasts = coerce_to_dict(contrasts)

@@ -443,6 +443,11 @@ class FirstLevelModel(BaseGLM):
 
         .. nilearn_versionadded:: 0.9.1
 
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+        .. nilearn_versionadded:: 0.14.0
+
     Attributes
     ----------
     design_matrices_ : :obj:`list` of :obj:`pandas.DataFrame`
@@ -509,6 +514,7 @@ class FirstLevelModel(BaseGLM):
         minimize_memory=True,
         subject_label=None,
         random_state=None,
+        reports=True,
     ):
         # design matrix parameters
         self.t_r = t_r
@@ -538,6 +544,9 @@ class FirstLevelModel(BaseGLM):
         # attributes
         self.subject_label = subject_label
         self.random_state = random_state
+
+        self.reports = reports
+        self._reset_report()
 
     def _is_first_level_glm(self):
         return True
@@ -980,6 +989,8 @@ class FirstLevelModel(BaseGLM):
             )
         )
 
+        self._reset_report()
+
         # Initialize masker_ to None such that attribute exists
         self.masker_ = None
 
@@ -995,6 +1006,12 @@ class FirstLevelModel(BaseGLM):
             drift_model_str = (
                 f"and a {self.drift_model} drift model ({param_str})"
             )
+
+        self._report_content["reports_at_fit_time"] = self.reports
+        # TODO populate _report_data only if self.reports=True
+        # currently the values in reports_data is used in other places and
+        # tests fail if only populated when reports is True.
+
         self._reporting_data = {
             "trial_types": [],
             "noise_model": self.noise_model,

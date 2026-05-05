@@ -502,6 +502,11 @@ class SecondLevelModel(BaseGLM):
         further inspection of model details. This has an important impact
         on memory consumption.
 
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+        .. nilearn_versionadded:: 0.14.0
+
     Attributes
     ----------
     confounds_ : :obj:`pandas.DataFrame` or None
@@ -561,6 +566,7 @@ class SecondLevelModel(BaseGLM):
         verbose=0,
         n_jobs=1,
         minimize_memory=True,
+        reports=True,
     ):
         self.mask_img = mask_img
         self.target_affine = target_affine
@@ -571,6 +577,9 @@ class SecondLevelModel(BaseGLM):
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
+
+        self.reports = reports
+        self._reset_report()
 
     @fill_doc
     def fit(self, second_level_input, confounds=None, design_matrix=None):
@@ -603,6 +612,8 @@ class SecondLevelModel(BaseGLM):
         )
 
         _check_confounds(confounds)
+
+        self._reset_report()
 
         if isinstance(second_level_input, pd.DataFrame):
             second_level_input = _sort_input_dataframe(second_level_input)
@@ -654,7 +665,9 @@ class SecondLevelModel(BaseGLM):
             verbose=self.verbose,
         )
 
-        self._reporting_data = {}
+        self._report_content["reports_at_fit_time"] = self.reports
+        if self.reports:
+            self._reporting_data = {}
 
         return self
 
