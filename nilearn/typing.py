@@ -40,6 +40,22 @@ Detrend: TypeAlias = bool
 DisplayMode: TypeAlias = Literal[
     "ortho", "tiled", "mosaic", "x", "y", "z", "yx", "xz", "yz"
 ]
+DisplayModeGlassBrain: TypeAlias = Literal[
+    "ortho",
+    "x",
+    "y",
+    "z",
+    "xz",
+    "yx",
+    "yz",
+    "l",
+    "r",
+    "lr",
+    "lzr",
+    "lyr",
+    "lzry",
+    "lyrz",
+]
 DrawCross: TypeAlias = bool
 ForceResample: TypeAlias = bool
 HeightControl: TypeAlias = Literal[None, "fpr", "fdr", "bonferroni"]
