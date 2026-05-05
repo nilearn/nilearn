@@ -1974,7 +1974,6 @@ def fill_doc(f: Callable) -> Callable:
     try:
         f.__doc__ = docstring % indented
     except (TypeError, ValueError, KeyError) as exp:
-        funcname = f.__name__
         funcname = docstring.split("\n")[0]
         raise RuntimeError(
             f"Error documenting {funcname}:\n{exp!s}.\n"
