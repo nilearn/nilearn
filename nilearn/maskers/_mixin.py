@@ -54,6 +54,10 @@ class _MultiMixin:
         -------
         %(signals_transform_multi_nifti)s
         """
+        # although the implementation is
+        # the same as in the BaseMasker
+        # a specific method is required
+        # to allow for a slightly different doc string
         return self.fit(imgs, y=y, **fit_params).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
