@@ -124,7 +124,7 @@ def _plot_img_with_bg(
 
     %(bg_img)s
         If nothing is specified, no background image is plotted.
-        Default=None.
+        default=None.
 
     %(cut_coords)s
 
@@ -133,7 +133,7 @@ def _plot_img_with_bg(
     %(display_mode)s
 
     %(colorbar)s
-        Default=False.
+        default=False.
 
     %(figure)s
 
@@ -148,7 +148,7 @@ def _plot_img_with_bg(
     %(draw_cross)s
 
     %(black_bg)s
-        Default=False.
+        default=False.
 
     %(vmin)s
 
@@ -342,21 +342,21 @@ def plot_img(
     %(draw_cross)s
 
     %(black_bg)s
-        Default=False.
+        default=False.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
 
     %(resampling_interpolation)s
-        Default='continuous'.
+        default='continuous'.
 
     %(bg_img)s
         If nothing is specified, no background image is plotted.
-        Default=None.
+        default=None.
 
     %(vmin)s
 
@@ -509,16 +509,16 @@ def plot_anat(
     %(draw_cross)s
 
     %(black_bg)s
-        Default='auto'.
+        default='auto'.
 
     %(dim)s
-        Default='auto'.
+        default='auto'.
 
     %(cmap)s
-        Default=`gray`.
+        default=`gray`.
 
     %(colorbar)s
-        Default=True
+        default=True
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -635,17 +635,17 @@ def plot_epi(
     %(draw_cross)s
 
     %(black_bg)s
-        Default=True.
+        default=True.
 
     %(colorbar)s
-        Default=True
+        default=True
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
 
     %(cmap)s
-        Default=`gray`.
+        default=`gray`.
 
     %(vmin)s
 
@@ -784,7 +784,7 @@ def plot_roi(
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=None".
-        Default=MNI152TEMPLATE.
+        default=MNI152TEMPLATE.
 
     %(cut_coords)s
 
@@ -803,23 +803,23 @@ def plot_roi(
     %(draw_cross)s
 
     %(black_bg)s
-        Default='auto'.
+        default='auto'.
 
     %(threshold)s
-        Default=0.5.
+        default=0.5.
 
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha sets the transparency of the color inside the filled
         contours.
 
     %(cmap_lut)s
-        Default=`gist_ncar`.
+        default=`gist_ncar`.
 
     %(dim)s
-        Default='auto'.
+        default='auto'.
 
     %(colorbar)s
-        Default=True
+        default=True
 
     cbar_tick_format : :obj:`str`, default="%%i"
         Controls how to format the tick labels of the colorbar.
@@ -830,7 +830,7 @@ def plot_roi(
     %(vmax)s
 
     %(resampling_interpolation)s
-        Default='nearest'.
+        default='nearest'.
 
     view_type : {'continuous', 'contours'}, default='continuous'
         By default view_type == 'continuous',
@@ -840,7 +840,7 @@ def plot_roi(
         denoted as 0 is considered as background and not shown.
 
     %(linewidths)s
-        Default=2.5.
+        default=2.5.
 
     %(radiological)s
 
@@ -961,7 +961,7 @@ def plot_prob_atlas(
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
-        Default=MNI152TEMPLATE.
+        default=MNI152TEMPLATE.
 
         .. nilearn_versionadded:: 0.4.0
 
@@ -1001,7 +1001,7 @@ def plot_prob_atlas(
         noise from the maps background.
 
     %(linewidths)s
-        Default=2.5.
+        default=2.5.
 
     %(cut_coords)s
 
@@ -1020,16 +1020,16 @@ def plot_prob_atlas(
     %(draw_cross)s
 
     %(black_bg)s
-        Default='auto'.
+        default='auto'.
 
     %(dim)s
-        Default='auto'.
+        default='auto'.
 
     %(cmap)s
-        Default=`gist_rainbow`.
+        default=`gist_rainbow`.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     %(vmin)s
 
@@ -1239,7 +1239,7 @@ def plot_stat_map(
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=None".
-        Default=MNI152TEMPLATE.
+        default=MNI152TEMPLATE.
 
     %(cut_coords)s
 
@@ -1248,7 +1248,7 @@ def plot_stat_map(
     %(display_mode)s
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -1261,30 +1261,30 @@ def plot_stat_map(
     %(title)s
 
     %(threshold)s
-        Default=1e-6.
+        default=1e-6.
 
     %(annotate)s
 
     %(draw_cross)s
 
     %(black_bg)s
-        Default='auto'.
+        default='auto'.
 
     %(cmap)s
 
-        Default=default="RdBu_r".
+        default=default="RdBu_r".
 
     %(symmetric_cbar)s
 
     %(dim)s
-        Default='auto'.
+        default='auto'.
 
     %(vmin)s
 
     %(vmax)s
 
     %(resampling_interpolation)s
-        Default='continuous'.
+        default='continuous'.
 
     %(radiological)s
 
@@ -1422,7 +1422,7 @@ def plot_glass_brain(
         'lzry', 'lyrz'.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -1435,15 +1435,15 @@ def plot_glass_brain(
     %(title)s
 
     %(threshold)s
-        Default='auto'.
+        default='auto'.
 
     %(annotate)s
 
     %(black_bg)s
-        Default=False.
+        default=False.
 
     %(cmap)s
-        Default=None.
+        default=None.
 
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for the brain schematics.
@@ -1464,7 +1464,7 @@ def plot_glass_brain(
     %(symmetric_cbar)s
 
     %(resampling_interpolation)s
-        Default='continuous'.
+        default='continuous'.
 
     %(radiological)s
 
@@ -1617,14 +1617,14 @@ def plot_connectome(
     edge_cmap : colormap, default="RdBu_r"
         Colormap used for representing the strength of the edges.
 
-    edge_vmin, edge_vmax : :obj:`float` or None, Default=None
+    edge_vmin, edge_vmax : :obj:`float` or None, default=None
         If not None, either or both of these values will be used to
         as the minimum and maximum values to color edges. If None are
         supplied the maximum absolute value within the given threshold
         will be used as minimum (multiplied by -1) and maximum
         coloring levels.
 
-    edge_threshold : :obj:`str`, number or None, Default=None
+    edge_threshold : :obj:`str`, number or None, default=None
         If it is a number only the edges with a value greater than
         edge_threshold will be shown.
         If it is a string it must finish with a percent sign,
@@ -1643,7 +1643,7 @@ def plot_connectome(
     %(title)s
     %(annotate)s
     %(black_bg)s
-        Default=False.
+        default=False.
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for the brain schematics.
 
@@ -1655,7 +1655,7 @@ def plot_connectome(
         the nodes in one go.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     %(radiological)s
 
@@ -1774,12 +1774,12 @@ def plot_markers(
     %(title)s
     %(annotate)s
     %(black_bg)s
-        Default=False.
+        default=False.
     node_kwargs : :obj:`dict` or None, default=None
         will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go
     %(colorbar)s
-        Default=True.
+        default=True.
     %(radiological)s
 
     Returns
@@ -1926,7 +1926,7 @@ def plot_carpet(
     %(vmax)s
     %(title)s
     %(cmap)s
-        Default=`gray`.
+        default=`gray`.
 
     cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
                   default=`gist_ncar`

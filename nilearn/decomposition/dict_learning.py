@@ -89,7 +89,7 @@ class DictLearning(_BaseDecomposition):
     %(mask_decomposition)s
 
     %(smoothing_fwhm)s
-        Default=4mm.
+        default=4mm.
 
     %(standardize_true)s
 
@@ -124,7 +124,7 @@ class DictLearning(_BaseDecomposition):
 
     %(mask_strategy)s
 
-        Default='epi'.
+        default='epi'.
 
         .. note::
             These strategies are only relevant for Nifti images and the

@@ -357,7 +357,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
     %(mask_strategy)s
 
-        Default='epi'.
+        default='epi'.
         .. note::
 
           These strategies are only relevant for Nifti images and the parameter

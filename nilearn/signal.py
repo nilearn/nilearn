@@ -477,7 +477,7 @@ def high_variance_confounds(
         than ``n_confounds``.
 
     %(detrend)s
-        Default=True.
+        default=True.
 
     Returns
     -------
@@ -630,7 +630,7 @@ def clean(
         .. nilearn_versionadded:: 0.8.0
 
     %(t_r)s
-        Default=2.5.
+        default=2.5.
 
     filter : {'butterworth', 'cosine', False}, default='butterworth'
         Filtering methods:
