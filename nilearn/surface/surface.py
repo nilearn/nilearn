@@ -963,17 +963,9 @@ def load_surf_data(surf_data):
                 gii = _load_surf_files_gifti_gzip(surf_data)
                 data_part = _gifti_img_to_data(gii)
 
-            print("#########")
-            print(surf_data)
-            print(data_part.shape)
-            print(data_part)
-
             if len(data_part.shape) == 1:
                 data_part = data_part[:, np.newaxis]
-            print(data_part.shape)
             if i == 0:
-                print("--")
-                print(surf_data)
                 data = data_part
             else:
                 try:
