@@ -114,6 +114,10 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
+@pytest.mark.skipif(
+    not is_kaleido_installed(),
+    reason="This test is run only if kaleido is installed.",
+)
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
@@ -351,6 +355,7 @@ def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_avg_method_errors(
     matplotlib_pyplot, in_memory_mesh, bg_map
 ):
@@ -434,6 +439,7 @@ def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
     assert display.axes[0].title._text == "Test title"
 
 
+@pytest.mark.thread_unsafe
 def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
     """Test error msg for invalid axes."""
     _, axes = matplotlib_pyplot.subplots()
@@ -441,6 +447,7 @@ def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
         plot_surf_stat_map(stat_map=surf_img_1d, axes=axes)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contours(
     matplotlib_pyplot, in_memory_mesh, parcellation, surf_mask_1d
 ):
@@ -928,6 +935,7 @@ def test_plot_surf_roi_error(engine, rng, in_memory_mesh, surf_roi_data):
         plot_surf_roi(in_memory_mesh, roi_map=surf_roi_data, engine=engine)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_roi_matplotlib_specific(
     matplotlib_pyplot, surface_image_roi
 ):
@@ -1194,6 +1202,7 @@ def test_plot_img_on_surf_inflate(matplotlib_pyplot, img_3d_mni):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("surf_mesh", ["fsaverage5", fetch_surf_fsaverage()])
 def test_plot_img_on_surf_surf_mesh(matplotlib_pyplot, img_3d_mni, surf_mesh):
     """Smoke test for nilearn.plotting.surface.plot_img_on_surf for surf_mesh
