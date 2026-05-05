@@ -27,11 +27,11 @@ from nilearn.datasets._utils import (
 )
 from nilearn.image import check_niimg, get_data, new_img_like, resampling
 from nilearn.surface.surface import (
-    load_surf_data,
-    mesh_to_gifti,
     FileMesh,
     PolyMesh,
     SurfaceImage,
+    load_surf_data,
+    mesh_to_gifti,
 )
 
 MNI152_FILE_PATH = (
