@@ -20,5 +20,7 @@ def test_matplotlib_cm_to_niivue_cm():
         niivue_cmap = matplotlib_cm_to_niivue_cm(1)
         assert niivue_cmap is None
 
-    with pytest.raises(ValueError, match="spec"):
+    with pytest.raises(
+        ValueError, match="'foo' is not a valid value for name"
+    ):
         matplotlib_cm_to_niivue_cm("foo")

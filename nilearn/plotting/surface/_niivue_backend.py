@@ -32,7 +32,7 @@ def colorscale_niivue(values, vmax, threshold=None):
 
 
 def matplotlib_cm_to_niivue_cm(
-    cmap: str | mpl.colors.Colormap,
+    cmap: str | mpl.colors.Colormap | Any,
 ) -> None | dict[str, dict[str, list[int]]]:
     """Convert matplotlib colormap to niivue colormap.
 

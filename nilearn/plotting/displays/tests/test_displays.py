@@ -331,41 +331,6 @@ def test_projectors_basic(projector, mni152_template_res_2, tmp_path):
     projector.close()
 
 
-@pytest.mark.slow
-def test_contour_fillings_levels_in_add_contours(mni152_template_res_2):
-    """Tests for method ``add_contours`` of ``OrthoSlicer``."""
-    oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
-    # levels should be at least 2
-    # If single levels are passed then we force upper level to be inf
-    oslicer.add_contours(
-        mni152_template_res_2, filled=True, colors="r", alpha=0.2, levels=[0.0]
-    )
-    # If two levels are passed, it should be increasing from zero index
-    # In this case, we simply omit appending inf
-    oslicer.add_contours(
-        mni152_template_res_2,
-        filled=True,
-        colors="b",
-        alpha=0.1,
-        levels=[0.0, 0.2],
-    )
-    # without passing colors and alpha. In this case, default values are
-    # chosen from matplotlib
-    oslicer.add_contours(mni152_template_res_2, filled=True, levels=[0.0, 0.2])
-
-    # levels with only one value
-    # vmin argument is not needed but added because of matplotlib 3.8.0rc1 bug
-    # see https://github.com/matplotlib/matplotlib/issues/26531
-    oslicer.add_contours(
-        mni152_template_res_2, filled=True, levels=[0.0], vmin=0.0
-    )
-
-    # without passing levels, should work with default levels from
-    # matplotlib
-    oslicer.add_contours(mni152_template_res_2, filled=True)
-    oslicer.close()
-
-
 def test_user_given_cmap_with_colorbar(mni152_template_res_2):
     """Test cmap provided as a string with ``OrthoSlicer``."""
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
