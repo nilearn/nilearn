@@ -97,6 +97,7 @@ def test_matrix_plotting_with_labels_and_different_tri(mat, labels, tri):
             assert tick.label1.get_text() == label
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("title", ["foo", "foo bar", " ", None])
 def test_matrix_plotting_set_title(mat, labels, title):
     """Test setting title with plot_matrix."""

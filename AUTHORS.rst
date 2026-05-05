@@ -75,6 +75,7 @@ Some other past or present contributors are:
 * `Binh Nguyen`_
 * `Caglar Cakan`_: Technische Universität Berlin, Berlin, Germany
 * `Chloe Hampson`_: Florida International University, Miami, United States
+* `Chris Rorden`_: University of South Carolina, USA
 * `Chris Gorgolewski`_: Google LLC
 * `Chris Markiewicz`_: Stanford University, Stanford, California, USA
 * `Christian Horea`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
@@ -188,6 +189,7 @@ Some other past or present contributors are:
 * `Prakhar Jain`_: RV College of Engineering, Bangalore, India
 * `Rahul Brito`_
 * `Raphael Meudec`_: Inria, Saclay, France
+* `Rishika Kapil`_: Thapar Institute of Engineering and Technology
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
 * `Robert Williamson`_
 * `Roberto Guidotti`_: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
@@ -211,6 +213,7 @@ Some other past or present contributors are:
 * `Sylvain Takerkart`_: CNRS, Institut des Neurosciences de la Timone, Marseille, France
 * `Tamer Gezici`_: Bilkent University
 * `Tarun Samanta`_: Acharya Prafulla Chandra College
+* `Taylor Hanayik`_: QuantCo
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
 * `Tharun K`_
 * `Thiti Premrudeepreechacharn`_
