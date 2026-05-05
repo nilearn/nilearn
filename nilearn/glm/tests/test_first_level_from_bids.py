@@ -1045,7 +1045,8 @@ def test_surface(tmp_path):
 def test_one_condition_missing(tmp_path):
     """One condition is missing in one events.tsv file.
 
-    Should raise error when using formula for contrast.
+    Should raise error when using formula for contrast
+    when one or more conditions are missing.
     """
     n_runs = 1
     n_ses = 1
@@ -1058,10 +1059,12 @@ def test_one_condition_missing(tmp_path):
         n_voxels=10,
     )
 
-    # remove rows with "c0" from "trial_type" columns in events.tsv of run 1
+    # remove rows with c0 and c2
+    # from "trial_type" columns in events.tsv
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
     events = pd.read_csv(events_files[0], sep="\t")
     events = events[events["trial_type"] != "c0"]
+    events = events[events["trial_type"] != "c2"]
     events.to_csv(events_files[0], sep="\t", index=False)
 
     models, models_run_imgs, models_events, _ = first_level_from_bids(
@@ -1074,4 +1077,4 @@ def test_one_condition_missing(tmp_path):
     models[0].fit(models_run_imgs[0], models_events[0])
 
     with pytest.raises(ValueError, match="'c0' is not defined"):
-        models[0].compute_contrast("c0-c1")
+        models[0].compute_contrast("c0-c1+c2")
