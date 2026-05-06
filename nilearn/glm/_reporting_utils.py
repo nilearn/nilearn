@@ -124,9 +124,10 @@ class GLMReportMixin(ReportMixin):
     @fill_doc
     def generate_report(
         self,
+        engine="matplotlib",
+        title: str | None = None,
         contrasts=None,
         first_level_contrast=None,
-        title: str | None = None,
         bg_img="MNI152TEMPLATE",
         threshold: float | int | np.floating | np.integer | None = None,
         alpha=0.001,
@@ -315,7 +316,7 @@ class GLMReportMixin(ReportMixin):
         )
         self._report_content["warning_messages"] = warning_messages
 
-        self._set_report_basics(engine="matplotlib", title=title)
+        self._set_report_basics(engine=engine, title=title)
         self._run_report_checks(
             height_control=height_control,
             cluster_threshold=cluster_threshold,
