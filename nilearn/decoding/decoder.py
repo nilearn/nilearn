@@ -1309,7 +1309,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='background'.
+        default='background'.
 
     %(low_pass)s
 
@@ -1493,7 +1493,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='background'.
+        default='background'.
 
     %(low_pass)s
 
@@ -1669,7 +1669,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='background'.
+        default='background'.
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
@@ -1851,7 +1851,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='background'.
+        default='background'.
 
     %(low_pass)s
     %(high_pass)s

@@ -388,6 +388,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             masker_info["coverage"] = (
                 f"{self.masker_._report_content['coverage']:0.1f}"
             )
+
         return masker_info
 
     def _generate_report_content(

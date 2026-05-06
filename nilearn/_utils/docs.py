@@ -12,6 +12,7 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 # sourcery skip: merge-dict-assign
 
 import sys
+from collections.abc import Callable
 
 ##############################################################################
 #
@@ -1082,7 +1083,7 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
 
 # second_level_confounds
 docdict["second_level_confounds"] = """
-confounds : :obj:`pandas.DataFrame` or None, Default=None
+confounds : :obj:`pandas.DataFrame` or None, default=None
     Must contain a ``subject_label`` column.
     All other columns are considered as confounds and included in the model.
     If ``design_matrix`` is provided then this argument is ignored.
@@ -1096,7 +1097,7 @@ confounds : :obj:`pandas.DataFrame` or None, Default=None
 docdict["second_level_design_matrix"] = """
 design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
                 or :obj:`pathlib.Path` to a CSV or TSV file, \
-                or None, Default=None
+                or None, default=None
     Design matrix to fit the :term:`GLM`.
     The number of rows in the design matrix
     must agree with the number of maps
@@ -1937,7 +1938,7 @@ def _indentcount_lines(lines):
     return indentno
 
 
-def fill_doc(f):
+def fill_doc(f: Callable) -> Callable:
     """Fill a docstring with docdict entries.
 
     Parameters
@@ -1973,8 +1974,7 @@ def fill_doc(f):
     try:
         f.__doc__ = docstring % indented
     except (TypeError, ValueError, KeyError) as exp:
-        funcname = f.__name__
-        funcname = docstring.split("\n")[0] if funcname is None else funcname
+        funcname = docstring.split("\n")[0]
         raise RuntimeError(
             f"Error documenting {funcname}:\n{exp!s}.\n"
             "Did you forget to escape a character with an extra '%'"
