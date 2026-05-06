@@ -430,7 +430,7 @@ def save_glm_to_bids(
             report_kwargs["min_distance"],
             report_kwargs["height_control"],
             report_kwargs["alpha"],
-            is_volume_glm=model._is_volume_glm,
+            is_volume_glm=model._is_volume_glm(),
         )
         table_details = table_details.to_dict()
         with (
