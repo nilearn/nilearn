@@ -304,18 +304,6 @@ class GLMReportMixin(ReportMixin):
         check_params(locals())
         self._reset_report_warnings()
 
-        threshold, cut_coords, first_level_contrast, warning_messages = (
-            sanitize_generate_report_input(
-                height_control,
-                threshold,
-                cut_coords,
-                plot_type,
-                first_level_contrast,
-                self,
-            )
-        )
-        self._report_content["warning_messages"] = warning_messages
-
         self._set_report_basics(engine=engine, title=title)
         self._run_report_checks(
             height_control=height_control,

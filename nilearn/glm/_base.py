@@ -21,6 +21,7 @@ from nilearn.glm._reporting_utils import (
     get_runwise_dict,
     make_stat_maps_contrast_clusters,
     mask_to_plot,
+    sanitize_generate_report_input,
     turn_into_full_path,
 )
 from nilearn.image import check_niimg
@@ -406,6 +407,18 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         display_mode,
         plot_type,
     ):
+        threshold, cut_coords, first_level_contrast, warning_messages = (
+            sanitize_generate_report_input(
+                height_control,
+                threshold,
+                cut_coords,
+                plot_type,
+                first_level_contrast,
+                self,
+            )
+        )
+        for message in warning_messages:
+            self._append_report_warning(message)
         contrasts = coerce_to_dict(contrasts)
 
         # If some contrasts are passed
