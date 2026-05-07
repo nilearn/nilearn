@@ -184,7 +184,7 @@ class GLMReportMixin(ReportMixin):
 
                 Each :term:`contrast` name must be a string.
                 Each :term:`contrast` coefficient must be a list
-                or numpy array of ints.
+                or numpy array of ints or floats.
 
             Contrasts are passed to ``contrast_def`` for FirstLevelModel
             (:func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast`)
