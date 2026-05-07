@@ -27,7 +27,7 @@
 
         </section>
         <section id="model-details-UUID-{{ unique_id }}">
-            <h2>Model details</h2>
+            <h2>Model Details</h2>
             <div class="table-container">{{ parameters|safe }}</div>
         </section>
         <div id="carousel-container-UUID-{{ unique_id }}"
@@ -92,7 +92,7 @@
                                      style="min-width: 600px" />
                             </div>
                             {% if run_content.correlation_matrix_png %}
-                                <h3>correlation matrix</h3>
+                                <h3>Correlation Matrix</h3>
                                 <div class="scroll-y">
 
                                     {% set is_bytes = not run_content.correlation_matrix_png.endswith('.png') %}
