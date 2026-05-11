@@ -78,13 +78,7 @@ jobs:
             continue-on-error: true
             run: |
                 pytest -m "not flaky and not single_process" --pyargs nilearn --report=report.html --numprocesses auto
-                pytest -m "not flaky and single_process" --pyargs nilearn --report=report.html
-
-        -   name: Generate plots tests timing
-            if: success() || failure()
-            run: |
-                pip install tox
-                tox run -e plot_test_timing
+                pytest -m "not flaky and single_process" --pyargs nilearn
 
         -   name: Upload test report
             if: success() || failure()
@@ -92,13 +86,6 @@ jobs:
             with:
                 name: ${{ matrix.os }}_${{ matrix.min_dep }}_report.html
                 path: report.html
-
-        -   name: Upload test timings
-            if: success() || failure()
-            uses: actions/upload-artifact@v7
-            with:
-                name: ${{ matrix.os }}_${{ matrix.min_dep }}_pytest_output
-                path: results/pytest_output
 
         -   name: Create issue
             if: ${{ steps.test_minimum.outcome != 'success' }}
