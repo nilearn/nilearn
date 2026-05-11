@@ -1241,7 +1241,8 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, default='svc'
+    estimator : :obj:`str` or a scikit-learn compatible estimator object,
+        default='svc'
         The estimator to choose among:
         %(classifier_options)s
 
@@ -1428,7 +1429,8 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, default="svr"
+    estimator : :obj:`str` or a scikit-learn compatible estimator object,
+        default="svr"
         The estimator to choose among:
         %(regressor_options)s
 
@@ -1601,7 +1603,8 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, default="svr"
+    estimator : :obj:`str` or a scikit-learn compatible estimator object,
+        default="svr"
         The estimator to choose among:
         %(regressor_options)s
 
@@ -1776,10 +1779,10 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, default 'svc')
+    estimator : :obj:`str` or a scikit-learn compatible estimator object,
+        default='svc'
         The estimator to choose among:
         %(classifier_options)s
-
 
     mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker or None,\
         default=None

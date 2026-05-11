@@ -830,6 +830,10 @@ authors:
     family-names: Fritsch
     website: https://github.com/VirgileFritsch
     affiliation: Inria, Saclay, France
+  - given-names: Xichun
+    family-names: Xu
+    website: https://github.com/XichunXu
+    affiliation: Oregon State University, Corvallis, Oregon, USA
   - given-names: Yaroslav
     family-names: Halchenko
     website: https://github.com/yarikoptic
