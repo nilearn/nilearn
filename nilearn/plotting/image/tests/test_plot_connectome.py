@@ -55,6 +55,7 @@ def test_plot_connectome_with_nans(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_connectome_tuple_node_coords(
     adjacency, node_coords, params_plot_connectome
 ):

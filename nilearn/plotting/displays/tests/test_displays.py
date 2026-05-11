@@ -175,6 +175,7 @@ def test_display_basics_slicers(
     display.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "display,name", zip(PROJECTORS, PROJECTOR_KEYS, strict=False)
 )
