@@ -2259,6 +2259,7 @@ def img_in_home_folder(img_3d_mni):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.single_process
 @pytest.mark.parametrize(
     "filename", ["~/test.nii", r"~/test.nii", Path("~/test.nii")]
 )
