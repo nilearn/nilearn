@@ -4,7 +4,9 @@ This file provides guidance to AI coding agents working with this repository.
 
 ## What is Nilearn
 
-Nilearn is a Python library for statistical learning on neuroimaging data. It provides tools for fMRI analysis, brain decoding, connectivity analysis, and visualization, built on top of scikit-learn.
+Nilearn is a Python library for statistical learning on neuroimaging data.
+It provides tools for fMRI analysis, brain decoding, connectivity analysis,
+and visualization, built on top of scikit-learn.
 
 ## Git
 
@@ -39,7 +41,7 @@ tox -e plotting                         # With plotting dependencies
 tox -e min                              # Minimum supported dependencies
 ```
 
-### Linting, Formatting & Architecture Validation
+### Linting, formatting & architecture validation
 
 ```bash
 pre-commit run --all-files # Run all pre-commit hooks
@@ -51,11 +53,12 @@ pre-commit run --all-files # Run all pre-commit hooks
 tox -e doc                 # Build documentation
 ```
 
-## Code Architecture
+## Code architecture
 
-### Layered Import Structure
+### Layered import structure
 
-The import architecture is enforced via `import-linter` contracts defined in `pyproject.toml`. Layers must only import from lower layers:
+The import architecture is enforced via `import-linter` contracts defined in `pyproject.toml`.
+Layers must only import from lower layers:
 
 ```
 Layer 5 (Top):    nilearn.glm, nilearn.decoding, nilearn.connectome, nilearn.decomposition
@@ -68,7 +71,7 @@ Layer 1 (Base):   nilearn.typing, nilearn.exceptions, nilearn._utils.versions
 
 Violating these contracts will fail the `lint-imports` check.
 
-### Main Modules
+### Main modules
 
 - **`nilearn.datasets`** — Download neuroimaging datasets and atlases
 - **`nilearn.image`** — Volumetric operations (resample, crop, math on NIfTI images)
@@ -88,19 +91,29 @@ Violating these contracts will fail the `lint-imports` check.
 - **`nilearn.utils`** — Utilities for nilearn users.
 - **`nilearn._utils`** — Internal utilities (not public API); `data_gen` for test fixtures
 
-### Key Design Patterns
+### Key design patterns
 
-**Scikit-learn API**: All estimators implement `fit()`. Many implement `transform()` (or `fit_transform()`). Fitted attributes have trailing underscores (e.g., `masker.mask_img_`). See `nilearn._utils.estimator_checks` for sklearn compatibility checks and additional systematic checks to apply to all Nilearn estimators.
+**Scikit-learn API**:
+All estimators implement `fit()`. Many implement `transform()` (or `fit_transform()`).
+Fitted attributes have trailing underscores
+(e.g., `masker.mask_img_`). See `nilearn._utils.estimator_checks`
+for sklearn compatibility checks and additional systematic checks to apply to all Nilearn estimators.
 
-**Maskers as transformers**: Maskers extract signals from brain images into 2D arrays (samples × features) suitable for sklearn pipelines.
+**Maskers as transformers**:
+Maskers extract signals from brain images into 2D arrays (samples × features) suitable for sklearn pipelines.
 
-**Caching**: `CacheMixin` (from `nilearn._utils.cache_mixin`) provides joblib-based caching for expensive computations and downloads.
+**Caching**:
+`CacheMixin` (from `nilearn._utils.cache_mixin`) provides joblib-based caching
+for expensive computations and downloads.
 
-**BIDS support**: The `interfaces` and `datasets` modules handle BIDS file conventions.
+**BIDS support**:
+The `interfaces` and `datasets` modules handle BIDS file conventions.
 
-**Surface vs. Volume**: The library handles both 3D/4D NIfTI volumes and surface meshes (`.gii`). Surface equivalents exist for most maskers and plotters.
+**Surface vs. Volume**:
+The library handles both 3D/4D NIfTI volumes and surface meshes (`.gii`).
+Surface equivalents exist for most maskers and plotters.
 
-## Coding Conventions
+## Coding conventions
 
 - **Style**: PEP8, ruff-enforced, 79-char line limit, double quotes
 - **Docstrings**: NumPy format (use `.. nilearn_versionadded::` and `.. nilearn_versionchanged::` for API changes)
@@ -108,9 +121,11 @@ Violating these contracts will fail the `lint-imports` check.
 - **Imports**: Absolute imports only; no new top-level dependencies without discussion
 - **Backward compatibility**: Required; use deprecation warnings before removing features
 
-## Test Conventions
+## Test conventions
 
-- Test data generated with `nilearn._utils.data_gen` (no real data in tests) or via fixtures most often stored in a `conftest.py` file: run `pytest nilearn --fixtures` to get a list of all available fixtures.
+- Test data generated with `nilearn._utils.data_gen` (no real data in tests)
+  or via fixtures most often stored in a `conftest.py` file: run `pytest nilearn --fixtures`
+  to get a list of all available fixtures.
 - Markers:
   - `@pytest.mark.slow`: for tests that exceed the timeout allowed for each test
   - `@pytest.mark.single_process`: for test that require testing n_jobs>1
@@ -131,11 +146,22 @@ Each PR must add an entry to `doc/changes/latest.rst` with a badge, PR link, and
 - :bdg-danger:`Deprecation`
 - :bdg-dark:`Code`
 
-## PR Tags
+## GitHub
+
+### Pull requests
+
+Pull requests can only be opened if there is already an existing issue
+referencing the bug the PR is trying to fix
+or the enhancement the PR is trying to implement.
+
+The top comment of the PR must use the PR template: `.github/pull_request_template.md`
+and mention that an agent / LLM was used to generate the PR.
+
+### PR Tags
 
 Prefix PR titles with: `[FIX]`, `[ENH]`, `[DOC]`, `[MAINT]`, `[WIP]`.
 
-## CI Commit Message Controls
+### Continuous integration commit message controls
 
 - `[skip test]` — Skip test workflow
 - `[skip doc]` — Skip doc build
