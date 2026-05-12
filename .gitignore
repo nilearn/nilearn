@@ -93,7 +93,6 @@ tmp.html
 results/
 
 # node
-package.json
 package-lock.json
 
 # pydeps output
