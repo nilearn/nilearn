@@ -22,6 +22,7 @@ Work made with LLM tools has a very different set of typical failure modes
 than work done entirely by humans,
 it helps others to better trace eventual issues when reviewing the code.
 -->
+Use of AI tools:
 - [ ] LLM tools were used to generate at least part of the content of this pull-request.
 - [ ] No LLM tools were used to generate at least part of the content of this pull-request.
 
