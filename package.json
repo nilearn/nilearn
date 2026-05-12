@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@niivue/niivue": "0.68.1",
+    "jquery": "3.6.0"
+  }
+}

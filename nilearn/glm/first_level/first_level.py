@@ -320,7 +320,7 @@ class FirstLevelModel(BaseGLM):
                     are passed at fit time.
 
     %(hrf_model)s
-        Default='glover'.
+        default='glover'.
 
         .. warning::
 

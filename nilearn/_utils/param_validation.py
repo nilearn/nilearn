@@ -196,6 +196,7 @@ TYPE_MAPS = {
     "opening": nilearn_typing.Opening,
     "radiological": nilearn_typing.Radiological,
     "random_state": nilearn_typing.RandomState,
+    "resampling_interpolation": nilearn_typing.ResamplingInterpolation,
     "resolution": nilearn_typing.Resolution,
     "resume": nilearn_typing.Resume,
     "screening_percentile": nilearn_typing.ScreeningPercentile,

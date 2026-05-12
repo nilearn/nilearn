@@ -9,14 +9,23 @@ Please make sure your pull request also follows the
 will be enforced during the review process.
 -->
 
-<!-- Please indicate after the # which issue you're closing with this PR.
+<!-- Please indicate after the # which issue you're closing with this pull request.
 This is helpful for the maintainers AND will magically close the issue when this
 pull request is merged!
-If the PR closes multiple issues, includes "closes" before each one is listed.
-https://help.github.com/articles/closing-issues-using-keywords -->
+If the pull request closes multiple issues, includes "closes" before each one is listed.
+https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue -->
 - Closes #
 
-<!-- Please give a brief overview of what has changed in the PR.
+<!-- Please indicate whether LLM tools were used for this pull request
+by adding a 'x' in one of the following check box.
+Work made with LLM tools has a very different set of typical failure modes
+than work done entirely by humans,
+it helps others to better trace eventual issues when reviewing the code.
+-->
+- [ ] LLM tools were used to generate at least part of the content of this pull-request.
+- [ ] No LLM tools were used to generate at least part of the content of this pull-request.
+
+<!-- Please give a brief overview of what has changed in the pull request.
 If you're not sure what to write, consider it a note to the maintainers to indicate
 what they should be looking for when they review the pull request. -->
 Changes proposed in this pull request:
