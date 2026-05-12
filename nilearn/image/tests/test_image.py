@@ -1509,6 +1509,12 @@ def test_math_img_warnings(img_4d_ones_eye):
     ):
         math_img("img1 + 1", img1=img1, img3=img3)
 
+    # the warning should not be thrown when the img
+    # is missing from the formula but used by copy_header_from
+    with warnings.catch_warnings(record=True) as warning_list:
+        math_img("img1 + 1", img1=img1, img3=img3, copy_header_from="img3")
+        assert len(warning_list) == 0
+
 
 @pytest.mark.thread_unsafe
 def test_math_img(
@@ -1547,6 +1553,18 @@ def test_math_img_surface(surf_img_2d):
 
     assert isinstance(result, SurfaceImage)
     assert_surface_image_equal(result, expected_result)
+
+
+def test_math_img_surface_warning(surf_img_2d):
+    """Warn when using copy_header_from with Surface."""
+    img1 = surf_img_2d(1)
+    img2 = surf_img_2d(3)
+
+    formula = "img1 + 1"
+    with pytest.warns(
+        UserWarning, match="'copy_header_from' is not used with SurfaceImage"
+    ):
+        math_img(formula, img1=img1, copy_header_from=img2)
 
 
 @pytest.mark.thread_unsafe

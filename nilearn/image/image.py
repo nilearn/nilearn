@@ -1631,7 +1631,9 @@ def math_img(
     in FSL.
 
     """
-    img_missing_from_formula = [x for x in imgs if x not in formula]
+    img_missing_from_formula = [
+        x for x in imgs if x not in formula and x != copy_header_from
+    ]
     if img_missing_from_formula:
         warnings.warn(
             f"Some images ({img_missing_from_formula}) "
@@ -1642,6 +1644,15 @@ def math_img(
     data_dict: dict[str, Any | dict[str, Any]] = {}
 
     if _are_all_surface_images(imgs):
+        if copy_header_from is not None:
+            warnings.warn(
+                (
+                    "'copy_header_from' is not used with SurfaceImage. "
+                    f"Got: {copy_header_from=}"
+                ),
+                stacklevel=find_stack_level(),
+            )
+
         first_img = next(iter(imgs.values()))
         for image in imgs.values():
             assert_polymesh_equal(first_img.mesh, image.mesh)
