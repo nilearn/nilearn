@@ -316,9 +316,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             # check overlap
             if np.any(np.all(mask, axis=1)):
                 raise ValueError(
-                    "Overlap detected in the maps. The overlap may be "
-                    "due to the atlas itself or possibly introduced by "
-                    "resampling."
+                    "Overlap detected in the maps."
                 )
 
         mask_data = (
