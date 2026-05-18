@@ -24,7 +24,6 @@ output_path = Path(__file__).parent
 fig = view_img(load_sample_motor_activation_image())
 fig.save_as_html(output_path / "view_img.html")
 
-
 fig = view_surf(surf_map=load_fsaverage_data())
 fig.save_as_html(output_path / "view_surf.html")
 
@@ -69,5 +68,17 @@ fig.save_as_html(output_path / "view_connectome.html")
 
 coords = np.arange(12).reshape((4, 3))
 
-fig = view_markers(coords)
+fig = view_markers(
+    coords,
+    marker_size=5.0,
+    marker_color=["r", "g", "black", "white"],
+    marker_labels=[
+        "red marker",
+        "green marker",
+        "black marker",
+        "white marker",
+    ],
+    title="test view_markers",
+    title_fontsize=30,
+)
 fig.save_as_html(output_path / "view_markers.html")

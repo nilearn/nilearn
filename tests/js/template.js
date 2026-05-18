@@ -24,14 +24,14 @@ module.exports.fullTest = (file, clip) => {
     })
 
     it(
-      'visual regression test',
+      'visual regression test ' + file,
       async () => {
         // take a screenshot of the page
         const fileCurrent = buildFilePNG(file, '', '')
         await page.screenshot({ clip, path: fileCurrent })
 
         // archive a copy of the screenshot as future reference, if specified
-        const fileReference = buildFilePNG(file, '', '_reference')
+        const fileReference = buildFilePNG(file, 'references/', '_reference')
         if ('TEST_RUN' in process.env && process.env.TEST_RUN === 'init') {
           fs.copyFileSync(fileCurrent, fileReference)
         }
