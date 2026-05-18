@@ -34,7 +34,12 @@ is responsible for a very basic labeling categorizing the issue:
 New issues get the ``Needs Triage`` label and must be reviewed by a member of the :ref:`core_devs`
 who should remove the ``Needs Triage`` label and give the issue an effort, impact and priority label.
 
-First, we try to describe the **estimated amount of work** required to solve each issue:
+The reviewer should also:
+
+- ensure that bugs can be reproduced
+- feature requests are within the scope of the project
+
+We try to describe the **estimated amount of work** required to solve each issue:
 
 - |Effort: high| The issue is likely to require a serious amount of work (more than a couple of days).
 - |Effort: medium| The issue is likely to require a decent amount of work (in between a few hours and a couple days).
