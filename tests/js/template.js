@@ -1,4 +1,4 @@
-/* global __BROWSER__ */
+/* global __BROWSER__, describe, beforeAll, afterAll, it, expect */
 
 const path = require('path')
 const fs = require('fs')

@@ -59,7 +59,10 @@ tests_to_run.txt
 tests/js/*.html
 tests/js/*fitted.png
 tests/js/view_img.png
+tests/js/view_img_on_surf.png
 tests/js/view_surf.png
+tests/js/view_markers.png
+tests/js/view_connectome.png
 
 # CI benchmark
 maint_tools/*_runs_timing.*
