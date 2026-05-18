@@ -41,6 +41,15 @@ jobs:
             with:
                 python-version: '3.10'
 
+        -   name: Key for cache based on month number
+            run: date +%m > month_num;
+
+        -   name: Get cache from a previous doc build
+            uses: actions/cache/restore@v5
+            with:
+                path: nilearn_data
+                key: data_cache-DocumentationBuilder_month-${{ hashFiles('month_num') }}
+
         -   name: Install tox
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions
 
@@ -52,4 +61,4 @@ jobs:
             uses: actions/upload-artifact@v6
             with:
                 name: image
-                path: tests/js/*.png
+                path: tests/js/**/*.png
