@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
+from packaging.version import Version
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -747,6 +748,12 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             else ""
         )
 
+        # We clean up the version number
+        # to make it more stable during tests.
+        version = str(
+            Version(__version__).__replace__(local=None, dev=None, pre=None)
+        )
+
         body = body_tpl.render(
             docstring=docstring,
             contrasts=contrasts,
@@ -760,7 +767,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             is_notebook=is_notebook(),
             smoothing_fwhm=smoothing_fwhm,
             title=title,
-            version=__version__,
+            version=version,
             unique_id=str(uuid.uuid4()).replace("-", ""),
             warning_messages=warning_messages,
             has_plotting_engine=is_matplotlib_installed(),
