@@ -27,16 +27,14 @@ and easily find what you are looking for in the issue tracker.
 When :nilearn-gh:`creating an issue <issues/new/choose>`, the user
 is responsible for a very basic labeling categorizing the issue:
 
-- |Bug| for bug reports.
-- |Documentation| for documentation related questions or requests.
-- |Enhancement| for feature requests.
+- |Bug| issue type for bug reports
+- |Enhancement| issue type for feature requests
+- |Documentation| issue label for documentation related questions or requests.
 
-First of all, the user might have mislabeled the issue, in which case a member
-of the :ref:`core_devs` team needs to correct the labels.
+New issues get the ``Needs Triage`` label and must be reviewed by a member of the :ref:`core_devs`
+who should remove the ``Needs Triage`` label and give the issue an effort, impact and priority label.
 
-In addition to these basic labels, we have many more labels which describes
-in more detail a given issue. First, we try to describe the **estimated amount
-of work** required to solve each issue:
+First, we try to describe the **estimated amount of work** required to solve each issue:
 
 - |Effort: high| The issue is likely to require a serious amount of work (more than a couple of days).
 - |Effort: medium| The issue is likely to require a decent amount of work (in between a few hours and a couple days).
@@ -59,48 +57,9 @@ new contributors. We label these issues with the |Good first issue| label
 which can be seen as an equivalent to a "very low effort" label. Because of
 this, good first issues do not require a separate effort label.
 
-Some other labels can be used to describe further the topic of the issue:
-
--   |API| This issue is related to the Nilearn's API.
--   |Code quality| This issue tackles code quality (code refactoring, PEP8...).
--   |Datasets| This issue is related to datasets or the :mod:`nilearn.datasets` module.
--   |Discussion| This issue is used to hold a general discussion on a specific topic
-    where community feedback is desired (no need to specify effort, priority, or impact here).
--   |GLM| This issue is related to the :mod:`nilearn.glm` module.
--   |Infrastructure| This issue describes a problem with the project's infrastructure (CI/CD...).
--   |Installation| The issue describes a problem with the installation of Nilearn.
--   |Maintenance| This issue is related to maintenance work.
--   |Plotting| The issue is related to plotting functionalities.
--   |Testing| The issue is related to testing.
--   |Usage| This issue is a usage question and should have been posted on :neurostars:`neurostars <>`.
-
+We have many more labels which describes in more detail a given issue.
 For a complete list of all issue labels that can be used to describe and their description,
 see `this page <https://github.com/nilearn/nilearn/labels>`_
-
-.. |API| image:: https://img.shields.io/badge/-API-fef2c0.svg
-.. |Bug| image:: https://img.shields.io/badge/-Bug-fc2929.svg
-.. |Code quality| image:: https://img.shields.io/badge/-code%20quality-09ef5a.svg
-.. |Datasets| image:: https://img.shields.io/badge/-Datasets-fad8c7.svg
-.. |Discussion| image:: https://img.shields.io/badge/-Discussion-bfe5bf.svg
-.. |Documentation| image:: https://img.shields.io/badge/-Documentation-5319e7.svg
-.. |Effort: high| image:: https://img.shields.io/badge/-effort:%20high-e26051.svg
-.. |Effort: medium| image:: https://img.shields.io/badge/-effort:%20medium-ddad1a.svg
-.. |Effort: low| image:: https://img.shields.io/badge/-effort:%20low-77c940.svg
-.. |Enhancement| image:: https://img.shields.io/badge/-Enhancement-fbca04.svg
-.. |GLM| image:: https://img.shields.io/badge/-GLM-fce1c4.svg
-.. |Good first issue| image:: https://img.shields.io/badge/-Good%20first%20issue-c7def8.svg
-.. |Impact: high| image:: https://img.shields.io/badge/-impact:%20high-1f1dc1.svg
-.. |Impact: medium| image:: https://img.shields.io/badge/-impact:%20medium-bac1fc.svg
-.. |Impact: low| image:: https://img.shields.io/badge/-impact:%20low-75eae6.svg
-.. |Infrastructure| image:: https://img.shields.io/badge/-Infrastructure-0052cc.svg
-.. |Installation| image:: https://img.shields.io/badge/-Installation-ba7030.svg
-.. |Maintenance| image:: https://img.shields.io/badge/-Maintenance-fc918f.svg
-.. |Plotting| image:: https://img.shields.io/badge/-Plotting-5319e7.svg
-.. |Priority: high| image:: https://img.shields.io/badge/-priority:%20high-9e2409.svg
-.. |Priority: medium| image:: https://img.shields.io/badge/-priority:%20medium-FBCA04.svg
-.. |Priority: low| image:: https://img.shields.io/badge/-priority:%20low-c5def5.svg
-.. |Testing| image:: https://img.shields.io/badge/-Testing-50bac4.svg
-.. |Usage| image:: https://img.shields.io/badge/-Usage-e99695.svg
 
 .. _closing_policy:
 
