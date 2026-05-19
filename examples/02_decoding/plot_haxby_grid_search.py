@@ -33,7 +33,7 @@ warnings.filterwarnings(
 )
 
 # set overall verbosity for this example
-verbose = 2
+verbose = 0
 
 # %%
 # Load the Haxby dataset
@@ -47,7 +47,7 @@ from nilearn import datasets
 from nilearn.image import index_img
 
 # load data from a single subject
-haxby_dataset = datasets.fetch_haxby()
+haxby_dataset = datasets.fetch_haxby(verbose=verbose)
 fmri_img = haxby_dataset.func[0]
 mask_img = haxby_dataset.mask
 
@@ -85,25 +85,20 @@ import warnings
 from nilearn.decoding import Decoder
 
 
-def fit_decoder(X, y, screening_percentile):
+def fit_decoder(X, y, screening_percentile, verbose=0):
     decoder = Decoder(
         estimator="svc",
         cv=3,
         mask=mask_img,  # previously loaded, same for all decoders
         smoothing_fwhm=4,
         screening_percentile=screening_percentile,
-        verbose=0,
+        verbose=verbose,
     )
     with warnings.catch_warnings():
         warnings.filterwarnings(
             action="ignore",
             category=UserWarning,
             message=r"\[NiftiMasker\.fit\] Generation of a mask has been requested",  # noqa: E501
-        )
-        warnings.filterwarnings(
-            action="ignore",
-            category=UserWarning,
-            message="The provided image has no sform in its header",
         )
         decoder.fit(X, y)
     return decoder
@@ -129,7 +124,10 @@ y_val = y[idx_val]
 validation_scores = {}  # {screening_percentile: validation_score}
 for screening_percentile in screening_percentiles:
     decoder = fit_decoder(
-        X_train, y_train, screening_percentile=screening_percentile
+        X_train,
+        y_train,
+        screening_percentile=screening_percentile,
+        verbose=verbose,
     )
     validation_scores[screening_percentile] = decoder.score(X_val, y_val)
 
@@ -197,7 +195,10 @@ for idx_train_val, idx_test in outer_cv.split(
             y_val = y.iloc[idx_val]
 
             decoder = fit_decoder(
-                X_train, y_train, screening_percentile=screening_percentile
+                X_train,
+                y_train,
+                screening_percentile=screening_percentile,
+                verbose=verbose,
             )
             val_scores.append(decoder.score(X_val, y_val))
 
@@ -223,6 +224,7 @@ for idx_train_val, idx_test in outer_cv.split(
         X_train_val,
         y_train_val,
         screening_percentile=best_screening_percentile,
+        verbose=verbose,
     )
     test_scores.append(decoder.score(X_test, y_test))
 
