@@ -344,7 +344,7 @@ def check_feature_screening(
 def validate_estimator(
     estimator,
     owning_class_type: Literal["classifier", "regressor", None] = None,
-    supported_estimator = None,
+    supported_estimator=None,
     estimator_args=None,
     verbose=0,
 ):
