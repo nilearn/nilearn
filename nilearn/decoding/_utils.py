@@ -344,7 +344,6 @@ def check_feature_screening(
 def validate_estimator(
     estimator,
     owning_class_type: Literal["classifier", "regressor", None] = None,
-    supported_estimator=None,
     estimator_args=None,
     verbose=0,
 ):
@@ -372,8 +371,6 @@ def validate_estimator(
     verbose:
         used to adjust the verbosity of the embedded estimator
     """
-    if supported_estimator is None:
-        supported_estimator = SUPPORTED_ESTIMATORS
     if not isinstance(estimator, str):
         # The following tries to make sure that the estimator_type
         # matches that of the owning class
@@ -409,10 +406,12 @@ def validate_estimator(
         return estimator
 
     if owning_class_type is None:
-        tmp = supported_estimator["classifier"]
-        tmp |= supported_estimator["regressor"]
+        tmp = (
+            SUPPORTED_ESTIMATORS["classifier"]
+            | SUPPORTED_ESTIMATORS["regressor"]
+        )
     else:
-        tmp = supported_estimator[owning_class_type]
+        tmp = SUPPORTED_ESTIMATORS[owning_class_type]
     estimator_config = tmp.get(estimator)
 
     if estimator_config is None:
