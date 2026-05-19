@@ -205,15 +205,19 @@ def overlapping_maps(rng, surf_mesh):
 
 
 @pytest.mark.parametrize("allow_overlap", [True, False])
-def test_overlap(
-    allow_overlap, non_overlapping_maps, overlapping_maps, surf_img_2d
+def test_non_overlapping_maps(
+    allow_overlap, non_overlapping_maps, surf_img_2d
 ):
-    """Test overlap in SurfaceMapsMasker."""
+    """Test allow_overlap in SurfaceMapsMasker with non overlapping maps."""
     masker = SurfaceMapsMasker(
         non_overlapping_maps, allow_overlap=allow_overlap, standardize=None
     )
     masker.fit_transform(surf_img_2d(50))
 
+
+@pytest.mark.parametrize("allow_overlap", [True, False])
+def test_overlapping_maps(allow_overlap, overlapping_maps, surf_img_2d):
+    """Test allow_overlap in SurfaceMapsMasker with overlapping maps."""
     masker = SurfaceMapsMasker(
         overlapping_maps, allow_overlap=allow_overlap, standardize=None
     )
