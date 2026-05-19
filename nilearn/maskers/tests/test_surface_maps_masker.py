@@ -204,6 +204,34 @@ def overlapping_maps(rng, surf_mesh):
     return SurfaceImage(surf_mesh, data)
 
 
+@pytest.fixture
+def overlapping_maps2(rng, surf_mesh):
+    """Generate maps with overlapping regions.
+
+    Some vertices have non null value for 2 different regions.
+    """
+    data = {
+        "left": np.asarray(
+            [
+                [0, 0],
+                [0, 0],
+                [0, 0],
+                [0.7, 0.1],  # overlap
+            ]
+        ),
+        "right": np.asarray(
+            [
+                [0, 0],
+                [0.3, 0.6],  # overlap
+                [0, 0],
+                [0, 0],
+                [0, 0],
+            ]
+        ),
+    }
+    return SurfaceImage(surf_mesh, data)
+
+
 @pytest.mark.parametrize("allow_overlap", [True, False])
 def test_non_overlapping_maps(
     allow_overlap, non_overlapping_maps, surf_img_2d
@@ -263,3 +291,31 @@ def test_overlapping_maps(allow_overlap, overlapping_maps, surf_img_2d):
                 ]
             ),
         )
+
+
+def test_overlapping_maps2(overlapping_maps2, surf_img_2d):
+    """Test `allow_overlap=True` in SurfaceMapsMasker with overlapping maps
+    containing only one vertex on each hemisphere.
+    """
+    masker = SurfaceMapsMasker(
+        overlapping_maps2, allow_overlap=True, standardize=None
+    )
+    surf_img = surf_img_2d(10)
+    region_signals = masker.fit_transform(surf_img)
+    assert np.allclose(
+        region_signals,
+        np.array(
+            [
+                [2.05128205,  15.64102564],
+                [-4.61538462, 102.30769231],
+                [-11.28205128, 188.97435897],
+                [-17.94871795, 275.64102564],
+                [-24.61538462, 362.30769231],
+                [-31.28205128, 448.97435897],
+                [-37.94871795, 535.64102564],
+                [-44.61538462, 622.30769231],
+                [-51.28205128, 708.97435897],
+                [-57.94871795, 795.64102564],
+            ]
+        ),
+    )
