@@ -13,7 +13,6 @@ from nilearn.conftest import _img_3d_rand, _surf_img_1d
 from nilearn.datasets import load_mni152_brain_mask
 from nilearn.decoding._utils import (
     MNI152_BRAIN_VOLUME,
-    SUPPORTED_ESTIMATORS,
     _get_mask_extent,
     check_feature_screening,
     validate_estimator,
@@ -155,8 +154,7 @@ def test_check_supported_estimator(estimator):
         validate_estimator(
             _BaseDecoder(
                 estimator=estimator, standardize="zscore_sample"
-            ).estimator,
-            supported_estimaptors=SUPPORTED_ESTIMATORS,
+            ).estimator
         )
     warning_messages = [str(warning.message) for warning in raised_warnings]
 
@@ -174,8 +172,7 @@ def test_check_unsupported_estimator(estimator):
         validate_estimator(
             _BaseDecoder(
                 estimator=estimator, standardize="zscore_sample"
-            ).estimator,
-            supported_estimaptors=SUPPORTED_ESTIMATORS,
+            ).estimator
         )
 
     expected_warning = (
@@ -187,6 +184,5 @@ def test_check_unsupported_estimator(estimator):
         validate_estimator(
             _BaseDecoder(
                 estimator=custom_estimator, standardize="zscore_sample"
-            ).estimator,
-            supported_estimaptors=SUPPORTED_ESTIMATORS,
+            ).estimator
         )

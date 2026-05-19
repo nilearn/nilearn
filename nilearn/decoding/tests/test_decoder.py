@@ -68,7 +68,6 @@ from nilearn.decoding import (
     FREMRegressor,
 )
 from nilearn.decoding._utils import (
-    SUPPORTED_ESTIMATORS,
     _get_mask_extent,
     check_feature_screening,
     kwarg_logistic_regression_cv,
@@ -333,7 +332,7 @@ def test_check_param_grid_replacement(rand_x_y, param_grid_input):
 
 
 @pytest.mark.parametrize("estimator", ["log_l1", RandomForestClassifier()])
-def test_non_supported_estimator_error(rand_x_y, estimator):
+def test_check_param_grid_non_supported_estimator_error(rand_x_y, estimator):
     """Raise the error when using a non supported estimator."""
     X, Y = rand_x_y
 
@@ -1390,9 +1389,7 @@ def test_decoder_vs_sklearn(classifier_penalty):
     cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
     # default scoring is accuracy
     scorer = check_scoring(
-        validate_estimator(
-            classifier_penalty, supported_estimaptors=SUPPORTED_ESTIMATORS
-        ),
+        validate_estimator(classifier_penalty),
         "accuracy",
     )
 
@@ -1412,9 +1409,7 @@ def test_decoder_vs_sklearn(classifier_penalty):
     masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 
-    sklearn_classifier = validate_estimator(
-        classifier_penalty, supported_estimaptors=SUPPORTED_ESTIMATORS
-    )
+    sklearn_classifier = validate_estimator(classifier_penalty)
     scores_sklearn = {c: [] for c in range(n_classes)}
     # convert multiclass to n_classes binary classifications
     label_binarizer = LabelBinarizer()
@@ -1492,9 +1487,7 @@ def test_regressor_vs_sklearn(regressor):
     cv = KFold(n_splits=10, shuffle=True, random_state=42)
     # r2 is the default scoring for regression
     scorer = check_scoring(
-        validate_estimator(
-            regressor, supported_estimaptors=SUPPORTED_ESTIMATORS
-        ),
+        validate_estimator(regressor),
         "r2",
     )
 
@@ -1522,9 +1515,7 @@ def test_regressor_vs_sklearn(regressor):
     masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 
-    sklearn_regressor = validate_estimator(
-        regressor, supported_estimaptors=SUPPORTED_ESTIMATORS
-    )
+    sklearn_regressor = validate_estimator(regressor)
     scores_sklearn = []
 
     for count, (train_idx, test_idx) in enumerate(cv.split(X_transformed, y)):
@@ -1570,3 +1561,51 @@ def _set_hyperparameters(
         )
 
     return sklearn_regressor
+
+
+@pytest.mark.parametrize(
+    "estimator",
+    [
+        "ridge",
+        "ridge_regressor",
+        "lasso",
+        "lasso_regressor",
+        "svr",
+        "dummy_regressor",
+    ],
+)
+@pytest.mark.parametrize("decoder", [Decoder, FREMClassifier])
+def test_decoder_error_wrong_estimator(
+    decoder, estimator, binary_classification_data
+):
+    """Ensure that Decoders cannot be instantiated a regressor estimator."""
+    X, y, mask = binary_classification_data
+
+    model = decoder(estimator=estimator, mask=mask)
+    with pytest.raises(ValueError, match="Invalid estimator"):
+        model.fit(X, y)
+
+
+@pytest.mark.parametrize(
+    "estimator",
+    [
+        "svc_l1",
+        "svc_l2",
+        "svc",
+        "logistic_l1",
+        "logistic_l2",
+        "logistic",
+        "ridge_classifier",
+        "dummy_classifier",
+    ],
+)
+@pytest.mark.parametrize("regressor", [DecoderRegressor, FREMRegressor])
+def test_regressor_error_wrong_estimator(
+    regressor, estimator, regression_data
+):
+    """Ensure that Regressors cannot be instantiated a classifier estimator."""
+    X, y, mask = regression_data
+
+    model = regressor(estimator=estimator, mask=mask)
+    with pytest.raises(ValueError, match="Invalid estimator"):
+        model.fit(X, y)

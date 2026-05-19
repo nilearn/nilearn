@@ -13,6 +13,7 @@ ensembling to achieve state of the art performance
 import itertools
 import warnings
 from collections.abc import Iterable
+from typing import Any
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -58,6 +59,7 @@ from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
+from nilearn.typing import SupportedClassifiers, SupportedRegressors
 
 _MIN_N_FEATURES_FOR_SCREENING = 100
 
@@ -161,9 +163,11 @@ def _default_param_grid(estimator, X, y):
             LassoCV,
         ),
     ):
+        tmp = list(SUPPORTED_ESTIMATORS["classifier"].keys()) + list(
+            SUPPORTED_ESTIMATORS["regressor"].keys()
+        )
         raise TypeError(
-            "Invalid estimator. The supported estimators are:"
-            f" {list(SUPPORTED_ESTIMATORS.keys())}"
+            f"Invalid estimator. The supported estimators are: {tmp}"
         )
 
     # use l1_min_c to get lower bound for estimators with L1 penalty
@@ -437,7 +441,11 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
     Parameters
     ----------
-    estimator : str, default='svc'
+    estimator : one of {"svc_l1", "svc_l2", "svc", \
+        "logistic_l1", "logistic_l2", "logistic", "ridge_classifier", \
+        "dummy_classifier", "ridge", "ridge_regressor", \
+        "lasso", "lasso_regressor", "svr", "dummy_regressor"}, \
+        or a scikit-learn compatible estimator object, default='svc'
         The estimator to use. For classification, choose among:
         %(classifier_options)s
         For regression, choose among:
@@ -546,7 +554,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
     def __init__(
         self,
-        estimator="svc",
+        estimator: SupportedRegressors | SupportedClassifiers | Any = "svc",
         mask=None,
         cv=10,
         param_grid=None,
@@ -620,9 +628,17 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         self.estimator_args_ = (
             {} if self.estimator_args is None else self.estimator_args
         )
+
+        # TODO (sklearn >= 1.8) _estimator_type will be removed
+        estimator_type = getattr(self, "_estimator_type", None)
+
+        # TODO test with sklearn sklearn_version == 1.5.0
+        if estimator_type is None:
+            estimator_type = self.__sklearn_tags__().estimator_type
+
         self.estimator_ = validate_estimator(
             self.estimator,
-            supported_estimaptors=SUPPORTED_ESTIMATORS,
+            owning_class_type=estimator_type,
             estimator_args=self.estimator_args_,
             verbose=self.verbose - 1,
         )
@@ -1112,7 +1128,9 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str` or a scikit-learn compatible estimator object,
+    estimator : one of {"svc_l1", "svc_l2", "svc", \
+        "logistic_l1", "logistic_l2", "logistic", "ridge_classifier", \
+        "dummy_classifier"}, or a scikit-learn compatible estimator object, \
         default='svc'
         The estimator to choose among:
         %(classifier_options)s
@@ -1224,7 +1242,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     def __init__(
         self,
-        estimator="svc",
+        estimator: SupportedClassifiers | Any = "svc",
         mask=None,
         cv=10,
         param_grid=None,
@@ -1302,8 +1320,10 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str` or a scikit-learn compatible estimator object,
-        default="svr"
+    estimator : one of {"ridge", "ridge_regressor", \
+        "lasso", "lasso_regressor", "svr", "dummy_regressor"}, \
+        or a scikit-learn compatible estimator object, \
+        default='svr'
         The estimator to choose among:
         %(regressor_options)s
 
@@ -1405,7 +1425,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     def __init__(
         self,
-        estimator="svr",
+        estimator: SupportedRegressors | Any = "svr",
         mask=None,
         cv=10,
         param_grid=None,
@@ -1478,8 +1498,10 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str` or a scikit-learn compatible estimator object,
-        default="svr"
+    estimator : one of {"ridge", "ridge_regressor", \
+        "lasso", "lasso_regressor", "svr", "dummy_regressor"}, \
+        or a scikit-learn compatible estimator object, \
+        default='svr'
         The estimator to choose among:
         %(regressor_options)s
 
@@ -1581,7 +1603,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     def __init__(
         self,
-        estimator="svr",
+        estimator: SupportedRegressors | Any = "svr",
         mask=None,
         cv=30,
         param_grid=None,
@@ -1656,7 +1678,9 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str` or a scikit-learn compatible estimator object,
+    estimator : one of {"svc_l1", "svc_l2", "svc", \
+        "logistic_l1", "logistic_l2", "logistic", "ridge_classifier", \
+        "dummy_classifier"}, or a scikit-learn compatible estimator object, \
         default='svc'
         The estimator to choose among:
         %(classifier_options)s
@@ -1773,7 +1797,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
 
     def __init__(
         self,
-        estimator="svc",
+        estimator: SupportedClassifiers | Any = "svc",
         mask=None,
         cv=30,
         param_grid=None,

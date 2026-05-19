@@ -7,6 +7,7 @@ in the neighborhood of each location of a domain.
 import time
 import warnings
 from copy import deepcopy
+from typing import Any
 
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
@@ -27,6 +28,7 @@ from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 from nilearn.masking import load_mask_img
+from nilearn.typing import SupportedClassifiers, SupportedRegressors
 
 
 @fill_doc
@@ -252,7 +254,11 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
     radius : :obj:`float`, default=2.
         radius of the searchlight ball, in millimeters.
 
-    estimator : :obj:`str` or a scikit-learn compatible estimator object,
+    estimator : one of {"svc_l1", "svc_l2", "svc", \
+        "logistic_l1", "logistic_l2", "logistic", "ridge_classifier", \
+        "dummy_classifier", "ridge", "ridge_regressor", \
+        "lasso", "lasso_regressor", "svr", "dummy_regressor"}, \
+        or a scikit-learn compatible estimator object, \
         default='svc'
         The estimator to choose among:
         %(classifier_options)s
@@ -334,7 +340,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         mask_img=None,
         process_mask_img=None,
         radius=2.0,
-        estimator="svc",
+        estimator: SupportedRegressors | SupportedClassifiers | Any = "svc",
         n_jobs=1,
         scoring=None,
         cv=None,
@@ -373,14 +379,14 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=False)
 
-        if self.estimator == "svr":
+        if self.estimator in SUPPORTED_ESTIMATORS["regressor"]:
             if SKLEARN_LT_1_6:
                 tags["multioutput"] = True
                 return tags
             tags.estimator_type = "regressor"
             tags.regressor_tags = RegressorTags()
 
-        elif self.estimator == "svc":
+        elif self.estimator in SUPPORTED_ESTIMATORS["classifier"]:
             if SKLEARN_LT_1_6:
                 return tags
             tags.estimator_type = "classifier"
@@ -391,9 +397,9 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
     @property
     def _estimator_type(self):
         # TODO (sklearn >= 1.8.0) remove
-        if self.estimator == "svr":
+        if self.estimator in SUPPORTED_ESTIMATORS["regressor"]:
             return "regressor"
-        elif self.estimator == "svc":
+        elif self.estimator in SUPPORTED_ESTIMATORS["classifier"]:
             return "classifier"
         return ""
 
@@ -457,7 +463,6 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
 
         estimator = validate_estimator(
             estimator=self.estimator,
-            supported_estimaptors=SUPPORTED_ESTIMATORS,
             estimator_args=self.estimator_args,
             verbose=self.verbose,
         )
@@ -518,9 +523,16 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             mask_img=self.mask_img_,
         )
 
+        # TODO (sklearn >= 1.8) _estimator_type will be removed
+        estimator_type = getattr(self, "_estimator_type", None)
+
+        # TODO test with sklearn sklearn_version == 1.5.0
+        if estimator_type is None:
+            estimator_type = self.__sklearn_tags__().estimator_type
+
         estimator = validate_estimator(
             estimator=self.estimator,
-            supported_estimaptors=SUPPORTED_ESTIMATORS,
+            owning_class_type=estimator_type,
             estimator_args=self.estimator_args,
             verbose=self.verbose,
         )

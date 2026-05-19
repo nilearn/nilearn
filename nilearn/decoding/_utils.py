@@ -2,7 +2,7 @@
 
 import inspect
 import warnings
-from typing import Any, TypedDict
+from typing import Any, Literal, TypedDict
 
 import numpy as np
 from sklearn.dummy import DummyClassifier, DummyRegressor
@@ -48,84 +48,90 @@ class EstimatorConfig(TypedDict):
     extra_params: dict[str, Any]
 
 
-SUPPORTED_ESTIMATORS: dict[str, EstimatorConfig] = {
-    # "params" cannot be overridden
-    # "extra_params" can be overridden by parameters passed by user
-    "svc_l1": {
-        "estimator": LinearSVC,
-        "params": {
-            "penalty": "l1",
+SUPPORTED_ESTIMATORS: dict[
+    Literal["classifier", "regressor"], dict[str, EstimatorConfig]
+] = {
+    "classifier": {
+        # "params" cannot be overridden
+        # "extra_params" can be overridden by parameters passed by user
+        "svc_l1": {
+            "estimator": LinearSVC,
+            "params": {
+                "penalty": "l1",
+            },
+            "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
         },
-        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
-    },
-    "svc_l2": {
-        "estimator": LinearSVC,
-        "params": {"penalty": "l2"},
-        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
-    },
-    "svc": {
-        "estimator": LinearSVC,
-        "params": {"penalty": "l2"},
-        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
-    },
-    "logistic_l1": {
-        "estimator": LogisticRegressionCV,
-        "params": {
-            "l1_ratios": (1,),
-            "solver": "liblinear",
-            **kwarg_logistic_regression_cv,
+        "svc_l2": {
+            "estimator": LinearSVC,
+            "params": {"penalty": "l2"},
+            "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
         },
-        "extra_params": {},
-    },
-    "logistic_l2": {
-        "estimator": LogisticRegressionCV,
-        "params": {
-            "l1_ratios": (0,),
-            "solver": "liblinear",
-            **kwarg_logistic_regression_cv,
+        "svc": {
+            "estimator": LinearSVC,
+            "params": {"penalty": "l2"},
+            "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
         },
-        "extra_params": {},
-    },
-    "logistic": {
-        "estimator": LogisticRegressionCV,
-        "params": {
-            "l1_ratios": (0,),
-            "solver": "liblinear",
-            **kwarg_logistic_regression_cv,
+        "logistic_l1": {
+            "estimator": LogisticRegressionCV,
+            "params": {
+                "l1_ratios": (1,),
+                "solver": "liblinear",
+                **kwarg_logistic_regression_cv,
+            },
+            "extra_params": {},
         },
-        "extra_params": {},
+        "logistic_l2": {
+            "estimator": LogisticRegressionCV,
+            "params": {
+                "l1_ratios": (0,),
+                "solver": "liblinear",
+                **kwarg_logistic_regression_cv,
+            },
+            "extra_params": {},
+        },
+        "logistic": {
+            "estimator": LogisticRegressionCV,
+            "params": {
+                "l1_ratios": (0,),
+                "solver": "liblinear",
+                **kwarg_logistic_regression_cv,
+            },
+            "extra_params": {},
+        },
+        "ridge_classifier": {
+            "estimator": RidgeClassifierCV,
+            "params": {},
+            "extra_params": {},
+        },
+        "dummy_classifier": {
+            "estimator": DummyClassifier,
+            "params": {"strategy": "stratified"},
+            "extra_params": {"random_state": 0},
+        },
     },
-    "ridge_classifier": {
-        "estimator": RidgeClassifierCV,
-        "params": {},
-        "extra_params": {},
-    },
-    "ridge_regressor": {
-        "estimator": RidgeCV,
-        "params": {},
-        "extra_params": {},
-    },
-    "ridge": {"estimator": RidgeCV, "params": {}, "extra_params": {}},
-    "lasso": {"estimator": LassoCV, "params": {}, "extra_params": {}},
-    "lasso_regressor": {
-        "estimator": LassoCV,
-        "params": {},
-        "extra_params": {},
-    },
-    "svr": {
-        "estimator": SVR,
-        "params": {"kernel": "linear"},
-        "extra_params": {"max_iter": MAX_ITER},
-    },
-    "dummy_classifier": {
-        "estimator": DummyClassifier,
-        "params": {"strategy": "stratified"},
-        "extra_params": {"random_state": 0},
-    },
-    "dummy_regressor": {
-        "estimator": DummyRegressor,
-        "params": {"strategy": "mean"},
-        "extra_params": {},
+    "regressor": {
+        "ridge_regressor": {
+            "estimator": RidgeCV,
+            "params": {},
+            "extra_params": {},
+        },
+        "ridge": {"estimator": RidgeCV, "params": {}, "extra_params": {}},
+        "lasso": {"estimator": LassoCV, "params": {}, "extra_params": {}},
+        "lasso_regressor": {
+            "estimator": LassoCV,
+            "params": {},
+            "extra_params": {},
+        },
+        "svr": {
+            "estimator": SVR,
+            "params": {"kernel": "linear"},
+            "extra_params": {"max_iter": MAX_ITER},
+        },
+        "dummy_regressor": {
+            "estimator": DummyRegressor,
+            "params": {"strategy": "mean"},
+            "extra_params": {},
+        },
     },
 }
 
@@ -337,7 +343,10 @@ def check_feature_screening(
 
 def validate_estimator(
     estimator,
-    supported_estimaptors: dict[str, EstimatorConfig],
+    supported_estimators: dict[
+        Literal["classifier", "regressor"], dict[str, EstimatorConfig]
+    ] = SUPPORTED_ESTIMATORS,
+    owning_class_type: Literal["classifier", "regressor", None] = None,
     estimator_args=None,
     verbose=0,
 ):
@@ -356,12 +365,17 @@ def validate_estimator(
         )
         return estimator
 
-    estimator_config = supported_estimaptors.get(estimator)
+    if owning_class_type is None:
+        tmp = supported_estimators["classifier"]
+        tmp |= supported_estimators["regressor"]
+    else:
+        tmp = supported_estimators[owning_class_type]
+    estimator_config = tmp.get(estimator)
 
     if estimator_config is None:
         raise ValueError(
             "Invalid estimator. Known estimators are: "
-            f"{list(supported_estimaptors.keys())}. "
+            f"{list(tmp.keys())}. "
             f"Got: {estimator}"
         )
 

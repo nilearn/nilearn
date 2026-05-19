@@ -192,7 +192,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        logistic = LogisticRegressionCV(penalty="l2", solver="liblinear")
+        logistic = LogisticRegressionCV(l1_ratios=(0,), solver="liblinear")
 
     - ``"logistic_l1"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -200,7 +200,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        logistic_l1 = LogisticRegressionCV(penalty="l1", solver="liblinear")
+        logistic_l1 = LogisticRegressionCV(l1_ratios=(1,), solver="liblinear")
 
     - ``"logistic_l2"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -925,41 +925,41 @@ random_state : :obj:`int` or np.random.RandomState, optional
 # regressor_options
 docdict["regressor_options"] = """
 
-    - ``ridge``: \
+    - ``"ridge"``: \
         :class:`Ridge regression <sklearn.linear_model.RidgeCV>`.
 
     .. code-block:: python
 
         ridge = RidgeCV()
 
-    - ``ridge_regressor``: \
+    - ``"ridge_regressor"``: \
         :class:`Ridge regression <sklearn.linear_model.RidgeCV>`.
 
     .. note::
 
         Same option as `ridge`.
 
-    - ``svr``: :class:`Support vector regression <sklearn.svm.SVR>`.
+    - ``"svr"``: :class:`Support vector regression <sklearn.svm.SVR>`.
 
     .. code-block:: python
 
         svr = SVR(kernel="linear", max_iter=1e4)
 
-    - ``lasso``: \
+    - ``"lasso"``: \
         :class:`Lasso regression <sklearn.linear_model.LassoCV>`.
 
     .. code-block:: python
 
         lasso = LassoCV()
 
-    - ``lasso_regressor``: \
+    - ``"lasso_regressor"``: \
         :class:`Lasso regression <sklearn.linear_model.LassoCV>`.
 
     .. note::
 
         Same option as `lasso`.
 
-    - ``dummy_regressor``: \
+    - ``"dummy_regressor"``: \
         :class:`Dummy regressor <sklearn.dummy.DummyRegressor>`.
 
     .. code-block:: python
