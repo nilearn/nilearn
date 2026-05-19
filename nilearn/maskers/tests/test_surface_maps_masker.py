@@ -205,7 +205,7 @@ def overlapping_maps(rng, surf_mesh):
 
 
 @pytest.fixture
-def overlapping_maps2(rng, surf_mesh):
+def overlapping_maps2(surf_mesh):
     """Generate maps with overlapping regions.
 
     Some vertices have non null value for 2 different regions.
@@ -306,7 +306,7 @@ def test_overlapping_maps2(overlapping_maps2, surf_img_2d):
         region_signals,
         np.array(
             [
-                [2.05128205,  15.64102564],
+                [2.05128205, 15.64102564],
                 [-4.61538462, 102.30769231],
                 [-11.28205128, 188.97435897],
                 [-17.94871795, 275.64102564],
