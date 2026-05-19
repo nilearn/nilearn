@@ -212,7 +212,26 @@ def test_non_overlapping_maps(
     masker = SurfaceMapsMasker(
         non_overlapping_maps, allow_overlap=allow_overlap, standardize=None
     )
-    masker.fit_transform(surf_img_2d(50))
+    masker.fit()
+    surf_img = surf_img_2d(10)
+    region_signals = masker.fit_transform(surf_img)
+    assert np.allclose(
+        region_signals,
+        np.array(
+            [
+                [3.01710043e-01, 1.32242748e01],
+                [1.61248183e01, 5.21485653e01],
+                [3.19479265e01, 9.10728558e01],
+                [4.77710348e01, 1.29997146e02],
+                [6.35941430e01, 1.68921437e02],
+                [7.94172513e01, 2.07845727e02],
+                [9.52403595e01, 2.46770018e02],
+                [1.11063468e02, 2.85694308e02],
+                [1.26886576e02, 3.24618599e02],
+                [1.42709684e02, 3.63542889e02],
+            ]
+        ),
+    )
 
 
 @pytest.mark.parametrize("allow_overlap", [True, False])
@@ -221,8 +240,26 @@ def test_overlapping_maps(allow_overlap, overlapping_maps, surf_img_2d):
     masker = SurfaceMapsMasker(
         overlapping_maps, allow_overlap=allow_overlap, standardize=None
     )
+    surf_img = surf_img_2d(10)
     if allow_overlap is False:
         with pytest.raises(ValueError, match="Overlap detected"):
-            masker.fit_transform(surf_img_2d(50))
+            masker.fit_transform(surf_img)
     else:
-        masker.fit_transform(surf_img_2d(50))
+        region_signals = masker.fit_transform(surf_img)
+        assert np.allclose(
+            region_signals,
+            np.array(
+                [
+                    [2.76741221, 11.01479598],
+                    [5.71207998, 46.5370445],
+                    [8.65674774, 82.05929303],
+                    [11.60141551, 117.58154155],
+                    [14.54608327, 153.10379008],
+                    [17.49075104, 188.6260386],
+                    [20.4354188, 224.14828713],
+                    [23.38008657, 259.67053565],
+                    [26.32475433, 295.19278418],
+                    [29.2694221, 330.7150327],
+                ]
+            ),
+        )
