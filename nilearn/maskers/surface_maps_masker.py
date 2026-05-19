@@ -315,9 +315,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
             # check overlap
             if np.any(np.all(mask, axis=1)):
-                raise ValueError(
-                    "Overlap detected in the maps."
-                )
+                raise ValueError("Overlap detected in the maps.")
 
         mask_data = (
             get_data(self.mask_img_) if self.mask_img_ is not None else None
