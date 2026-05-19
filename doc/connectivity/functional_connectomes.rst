@@ -243,6 +243,7 @@ can be computed for each region on hard :term:`parcellation` or probabilistic at
 .. code-block:: python
 
          from nilearn import plotting
+
          atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename)
 
 |

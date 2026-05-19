@@ -80,7 +80,7 @@ def check_embedded_masker(
 
     - If instance contains a mask image in mask parameter,
     we use this image as new masker mask_img, forwarding instance parameters to
-    new masker : smoothing_fwhm, standardize, detrend, low_pass= high_pass,
+    new masker : smoothing_fwhm, standardize, detrend, low_pass, high_pass,
     t_r, target_affine, target_shape, mask_strategy, mask_args...
 
     - If instance contains a masker in mask parameter, we use a copy of
@@ -166,7 +166,7 @@ def check_embedded_masker(
         new_masker_params["memory_level"] = 0
 
     if hasattr(estimator, "verbose"):
-        new_masker_params["verbose"] = estimator.verbose
+        new_masker_params["verbose"] = int(max(estimator.verbose - 1, 0))
     else:
         warnings.warn(
             warning_msg.substitute(attribute="verbose", default_value="0"),

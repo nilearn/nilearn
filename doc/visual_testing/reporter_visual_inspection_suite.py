@@ -442,7 +442,7 @@ def _generate_masker_report_files(
     return unfitted_report, report
 
 
-def report_nifti_masker(build_type):
+def report_nifti_masker(build_type, engine="matplotlib"):
     gm_template = load_mni152_gm_template()
     masker = NiftiMasker(
         mask_img=gm_template,
@@ -457,20 +457,24 @@ def report_nifti_masker(build_type):
         return _generate_masker_report_files_partial(masker), None
     else:
         data = load_sample_motor_activation_image()
-        return _generate_masker_report_files(masker, data=data)
+        return _generate_masker_report_files(masker, data=data, engine=engine)
 
 
-def report_nifti_labels_masker(build_type):
+def report_nifti_labels_masker(build_type, engine="matplotlib"):
     atlas = fetch_atlas_schaefer_2018()
     masker = NiftiLabelsMasker(
         atlas.maps, lut=atlas.lut, standardize="zscore_sample"
     )
 
     if build_type == "partial":
-        return _generate_masker_report_files_partial(masker), None
+        return _generate_masker_report_files_partial(
+            masker, engine=engine
+        ), None
     else:
         data = fetch_development_fmri(n_subjects=1)
-        return _generate_masker_report_files(masker, data=data.func[0])
+        return _generate_masker_report_files(
+            masker, data=data.func[0], engine=engine
+        )
 
 
 def report_nifti_maps_masker(build_type):

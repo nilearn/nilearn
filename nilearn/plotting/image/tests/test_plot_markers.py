@@ -11,13 +11,14 @@ from nilearn.plotting import plot_markers
 
 
 @pytest.fixture
-def coords():
+def coords() -> np.ndarray:
     """Node coordinates for testing."""
     return np.array(
         [[39, 6, -32], [29, 40, 1], [-20, -74, 35], [-29, -59, -37]]
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "node_values",
     [
@@ -33,6 +34,7 @@ def test_plot_markers_node_values(matplotlib_pyplot, node_values, coords):
     plot_markers(node_values, coords, display_mode="x")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "node_size", [10, [10, 20, 30, 40], np.array([10, 20, 30, 40])]
 )
@@ -88,6 +90,7 @@ def test_plot_markers_cmap(matplotlib_pyplot, cmap, vmin, vmax, coords):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", [-100, 2.5])
 def test_plot_markers_threshold(matplotlib_pyplot, threshold, coords):
     """Smoke test for plot_markers with different threshold values."""
@@ -96,6 +99,7 @@ def test_plot_markers_threshold(matplotlib_pyplot, threshold, coords):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_markers_tuple_node_coords(matplotlib_pyplot, coords):
     """Smoke test for plot_markers with node coordinates passed \
        as a list of tuples.
@@ -105,6 +109,7 @@ def test_plot_markers_tuple_node_coords(matplotlib_pyplot, coords):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_markers_saving_to_file(matplotlib_pyplot, coords, tmp_path):
     """Smoke test for plot_markers and file saving."""
     filename = tmp_path / "test.png"
@@ -116,6 +121,7 @@ def test_plot_markers_saving_to_file(matplotlib_pyplot, coords, tmp_path):
     assert filename.is_file() and filename.stat().st_size > 0
 
 
+@pytest.mark.thread_unsafe
 def test_plot_markers_node_kwargs(matplotlib_pyplot, coords):
     """Smoke test for plot_markers testing that node_kwargs is working \
        and does not interfere with alpha.
@@ -168,6 +174,7 @@ def test_plot_markers_node_values_errors(matplotlib_pyplot, coords):
         plot_markers(["1", "2", "3", "4"], coords, display_mode="x")
 
 
+@pytest.mark.thread_unsafe
 def test_plot_markers_threshold_errors(matplotlib_pyplot, coords):
     """Tests that a ValueError is raised when node_threshold is \
        higher than the max node_value.
@@ -182,6 +189,7 @@ def test_plot_markers_single_node_value(matplotlib_pyplot):
     plot_markers([1], [[1, 1, 1]])
 
 
+@pytest.mark.thread_unsafe
 def test_plot_markers_radiological_view(matplotlib_pyplot):
     """Smoke test for radiological view."""
     result = plot_markers([1], [[1, 1, 1]], radiological=True)

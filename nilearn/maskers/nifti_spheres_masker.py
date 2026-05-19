@@ -5,7 +5,7 @@ Mask nifti images by spherical volumes for seed-region analyses
 
 import contextlib
 import warnings
-from typing import Any, Literal
+from typing import Any, ClassVar
 
 import numpy as np
 from scipy import sparse
@@ -305,6 +305,13 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     """
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the regions defined "
+            "by the spheres of the masker."
+        ),
+        "number_of_maps": 0,
+    }
     _template_name = "body_nifti_spheres_masker.jinja"
 
     # memory and memory_level are used by CacheMixin.
@@ -356,49 +363,15 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.reports = reports
         self.verbose = verbose
 
-        self._report_content = {
-            "description": (
-                "This report shows the regions defined "
-                "by the spheres of the masker."
-            ),
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
-    @fill_doc
-    def generate_report(
-        self,
-        displayed_spheres: list[int]
-        | np.typing.NDArray[np.int_]
-        | int
-        | Literal["all"] = "all",
-        title: str | None = None,
-    ):
-        """Generate an HTML report for current ``NiftiSpheresMasker`` object.
-
-        .. note::
-            This functionality requires to have ``Matplotlib`` installed.
-
-        Parameters
-        ----------
-        %(displayed_spheres)s
-
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        Returns
-        -------
-        report : `nilearn.reporting.html_report.HTMLReport`
-            HTML report for the masker.
-        """
-        check_displayed_maps(displayed_spheres, "displayed_spheres")
-
-        # using 'number_of_maps' and 'displayed_maps'
-        # by consistency with maps maskers
-        self._report_content["number_of_maps"] = 0
-        self._report_content["displayed_maps"] = [0]
+    def _run_report_checks(self, **kwargs):
+        super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
+            displayed_spheres = kwargs.get("displayed_spheres", 10)
+            check_displayed_maps(displayed_spheres, "displayed_spheres")
+
             seeds = self._reporting_data["seeds"]
             self._report_content["number_of_maps"] = len(seeds)
 
@@ -421,11 +394,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     "No image provided to fit in NiftiSpheresMasker. "
                     "Spheres are plotted on top of the MNI152 template."
                 )
-                self._report_content["warning_messages"].append(msg)
+                self._append_report_warning(msg)
 
-        return super().generate_report(title)
-
-    def _reporting(self) -> list:
+    def _load_report_displays(self) -> list:
         """Return a list of all displays to be rendered.
 
         Returns

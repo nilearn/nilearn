@@ -43,9 +43,9 @@ def main(args=sys.argv) -> None:
     datasets.fetch_openneuro_dataset(urls=urls)
 
     datasets.fetch_adhd(n_subjects=1)
-    datasets.fetch_development_fmri(n_subjects=5)
+    datasets.fetch_development_fmri(n_subjects=60)
     datasets.fetch_fiac_first_level()
-    datasets.fetch_oasis_vbm(n_subjects=5)
+    datasets.fetch_oasis_vbm(n_subjects=100)
     datasets.fetch_localizer_first_level()
 
     if build_type in ["full", "html", "html-strict"]:
@@ -63,7 +63,9 @@ def main(args=sys.argv) -> None:
         datasets.fetch_atlas_juelich("maxprob-thr0-1mm")
         for dimension in [10, 20]:
             datasets.fetch_atlas_smith_2009(resting=False, dimension=dimension)
-        datasets.fetch_atlas_yeo_2011()
+        datasets.fetch_atlas_yeo_2011(n_networks=7)
+        datasets.fetch_atlas_yeo_2011(n_networks=17)
+        datasets.fetch_atlas_msdl()
 
         datasets.fetch_surf_fsaverage()
         datasets.fetch_surf_fsaverage("fsaverage")
@@ -75,8 +77,6 @@ def main(args=sys.argv) -> None:
 
         datasets.fetch_coords_power_2011()
         datasets.fetch_coords_dosenbach_2010()
-
-        datasets.fetch_development_fmri(n_subjects=60)
 
         datasets.fetch_haxby()
         datasets.fetch_language_localizer_demo_dataset()
@@ -108,7 +108,6 @@ def main(args=sys.argv) -> None:
         )
         datasets.fetch_mixed_gambles(n_subjects=16)
         datasets.fetch_miyawaki2008()
-        datasets.fetch_oasis_vbm(n_subjects=100)
         datasets.fetch_spm_multimodal_fmri()
         datasets.fetch_spm_auditory()
         datasets.fetch_surf_nki_enhanced(n_subjects=1)

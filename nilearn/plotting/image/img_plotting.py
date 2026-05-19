@@ -9,6 +9,8 @@ import collections.abc
 import functools
 import inspect
 import warnings
+from pathlib import Path
+from typing import overload
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -50,10 +52,18 @@ from nilearn.plotting._utils import (
     check_threshold_not_negative,
     get_colorbar_and_data_ranges,
 )
-from nilearn.plotting.displays import get_projector, get_slicer
+from nilearn.plotting.displays import OrthoSlicer, get_projector, get_slicer
 from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.image.utils import MNI152TEMPLATE, load_anat
 from nilearn.signal import clean
+from nilearn.typing import (
+    Annotate,
+    ColorBar,
+    DisplayMode,
+    DrawCross,
+    Radiological,
+    ResamplingInterpolation,
+)
 
 
 def show() -> None:
@@ -124,7 +134,7 @@ def _plot_img_with_bg(
 
     %(bg_img)s
         If nothing is specified, no background image is plotted.
-        Default=None.
+        default=None.
 
     %(cut_coords)s
 
@@ -133,7 +143,7 @@ def _plot_img_with_bg(
     %(display_mode)s
 
     %(colorbar)s
-        Default=False.
+        default=False.
 
     %(figure)s
 
@@ -148,7 +158,7 @@ def _plot_img_with_bg(
     %(draw_cross)s
 
     %(black_bg)s
-        Default=False.
+        default=False.
 
     %(vmin)s
 
@@ -231,6 +241,13 @@ def _plot_img_with_bg(
             # voxels pass the threshold
             threshold = float(fast_abs_percentile(data)) - 1e-5
 
+        if isinstance(threshold, str):
+            threshold = check_threshold(
+                threshold,
+                data,
+                percentile_func=fast_abs_percentile,
+                name="threshold",
+            )
         img = new_img_like(img, as_ndarray(data), affine)
 
     display = display_factory(display_mode)(
@@ -282,32 +299,86 @@ def _plot_img_with_bg(
     return save_figure_if_needed(display, output_file)
 
 
+@overload
+def plot_img(
+    img,
+    output_file: None = None,
+    cut_coords=...,
+    display_mode=...,
+    figure=...,
+    axes=...,
+    title=...,
+    threshold=...,
+    annotate=...,
+    draw_cross=...,
+    black_bg=...,
+    colorbar=...,
+    cbar_tick_format=...,
+    resampling_interpolation=...,
+    bg_img=...,
+    vmin=...,
+    vmax=...,
+    radiological=...,
+    decimals=...,
+    cmap=...,
+    transparency=...,
+    transparency_range=...,
+) -> OrthoSlicer: ...
+
+
+@overload
+def plot_img(
+    img,
+    output_file: str | Path,
+    cut_coords=...,
+    display_mode=...,
+    figure=...,
+    axes=...,
+    title=...,
+    threshold=...,
+    annotate=...,
+    draw_cross=...,
+    black_bg=...,
+    colorbar=...,
+    cbar_tick_format=...,
+    resampling_interpolation=...,
+    bg_img=...,
+    vmin=...,
+    vmax=...,
+    radiological=...,
+    decimals=...,
+    cmap=...,
+    transparency=...,
+    transparency_range=...,
+) -> None: ...
+
+
 @fill_doc
 def plot_img(
     img,
     cut_coords=None,
-    output_file=None,
-    display_mode="ortho",
+    output_file: str | Path | None = None,
+    display_mode: DisplayMode = "ortho",
     figure=None,
     axes=None,
-    title=None,
+    title: str | None = None,
     threshold=None,
-    annotate=True,
-    draw_cross=True,
-    black_bg=False,
-    colorbar=True,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
-    resampling_interpolation="continuous",
+    annotate: Annotate = True,
+    draw_cross: DrawCross = True,
+    black_bg: bool = False,
+    colorbar: ColorBar = True,
+    cbar_tick_format: str = DEFAULT_TICK_FORMAT,
+    resampling_interpolation: ResamplingInterpolation = "continuous",
     bg_img=None,
     vmin=None,
     vmax=None,
-    radiological=False,
-    decimals=False,
+    radiological: Radiological = False,
+    decimals: bool = False,
     cmap="gray",
     transparency=None,
     transparency_range=None,
     **kwargs,
-):
+) -> OrthoSlicer | None:
     """Plot cuts of a given image.
 
     By default Frontal, Axial, and Lateral.
@@ -335,21 +406,21 @@ def plot_img(
     %(draw_cross)s
 
     %(black_bg)s
-        Default=False.
+        default=False.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
 
     %(resampling_interpolation)s
-        Default='continuous'.
+        default='continuous'.
 
     %(bg_img)s
         If nothing is specified, no background image is plotted.
-        Default=None.
+        default=None.
 
     %(vmin)s
 
@@ -402,6 +473,18 @@ def plot_img(
             To simply plot probabilistic atlases (4D images)
         :mod:`nilearn.plotting`
             See API reference for other options
+
+    Examples
+    --------
+    >>> from nilearn.plotting.image.img_plotting import plot_img, show
+    >>> from nilearn.datasets import load_sample_motor_activation_image
+
+    # just to have a 3D image with some structure
+    >>> data = load_sample_motor_activation_image()
+
+    >>> display = plot_img(data, title="Plotting a 3D image with plot_img")
+    >>> show()
+
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -490,16 +573,16 @@ def plot_anat(
     %(draw_cross)s
 
     %(black_bg)s
-        Default='auto'.
+        default='auto'.
 
     %(dim)s
-        Default='auto'.
+        default='auto'.
 
     %(cmap)s
-        Default=`gray`.
+        default=`gray`.
 
     %(colorbar)s
-        Default=True
+        default=True
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -616,17 +699,17 @@ def plot_epi(
     %(draw_cross)s
 
     %(black_bg)s
-        Default=True.
+        default=True.
 
     %(colorbar)s
-        Default=True
+        default=True
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
 
     %(cmap)s
-        Default=`gray`.
+        default=`gray`.
 
     %(vmin)s
 
@@ -765,7 +848,7 @@ def plot_roi(
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=None".
-        Default=MNI152TEMPLATE.
+        default=MNI152TEMPLATE.
 
     %(cut_coords)s
 
@@ -784,23 +867,23 @@ def plot_roi(
     %(draw_cross)s
 
     %(black_bg)s
-        Default='auto'.
+        default='auto'.
 
     %(threshold)s
-        Default=0.5.
+        default=0.5.
 
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha sets the transparency of the color inside the filled
         contours.
 
     %(cmap_lut)s
-        Default=`gist_ncar`.
+        default=`gist_ncar`.
 
     %(dim)s
-        Default='auto'.
+        default='auto'.
 
     %(colorbar)s
-        Default=True
+        default=True
 
     cbar_tick_format : :obj:`str`, default="%%i"
         Controls how to format the tick labels of the colorbar.
@@ -811,7 +894,7 @@ def plot_roi(
     %(vmax)s
 
     %(resampling_interpolation)s
-        Default='nearest'.
+        default='nearest'.
 
     view_type : {'continuous', 'contours'}, default='continuous'
         By default view_type == 'continuous',
@@ -821,7 +904,7 @@ def plot_roi(
         denoted as 0 is considered as background and not shown.
 
     %(linewidths)s
-        Default=2.5.
+        default=2.5.
 
     %(radiological)s
 
@@ -942,7 +1025,7 @@ def plot_prob_atlas(
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
-        Default=MNI152TEMPLATE.
+        default=MNI152TEMPLATE.
 
         .. nilearn_versionadded:: 0.4.0
 
@@ -982,7 +1065,7 @@ def plot_prob_atlas(
         noise from the maps background.
 
     %(linewidths)s
-        Default=2.5.
+        default=2.5.
 
     %(cut_coords)s
 
@@ -1001,16 +1084,16 @@ def plot_prob_atlas(
     %(draw_cross)s
 
     %(black_bg)s
-        Default='auto'.
+        default='auto'.
 
     %(dim)s
-        Default='auto'.
+        default='auto'.
 
     %(cmap)s
-        Default=`gist_rainbow`.
+        default=`gist_rainbow`.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     %(vmin)s
 
@@ -1220,7 +1303,7 @@ def plot_stat_map(
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=None".
-        Default=MNI152TEMPLATE.
+        default=MNI152TEMPLATE.
 
     %(cut_coords)s
 
@@ -1229,7 +1312,7 @@ def plot_stat_map(
     %(display_mode)s
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -1242,30 +1325,30 @@ def plot_stat_map(
     %(title)s
 
     %(threshold)s
-        Default=1e-6.
+        default=1e-6.
 
     %(annotate)s
 
     %(draw_cross)s
 
     %(black_bg)s
-        Default='auto'.
+        default='auto'.
 
     %(cmap)s
 
-        Default=default="RdBu_r".
+        default=default="RdBu_r".
 
     %(symmetric_cbar)s
 
     %(dim)s
-        Default='auto'.
+        default='auto'.
 
     %(vmin)s
 
     %(vmax)s
 
     %(resampling_interpolation)s
-        Default='continuous'.
+        default='continuous'.
 
     %(radiological)s
 
@@ -1403,7 +1486,7 @@ def plot_glass_brain(
         'lzry', 'lyrz'.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -1416,15 +1499,15 @@ def plot_glass_brain(
     %(title)s
 
     %(threshold)s
-        Default='auto'.
+        default='auto'.
 
     %(annotate)s
 
     %(black_bg)s
-        Default=False.
+        default=False.
 
     %(cmap)s
-        Default=None.
+        default=None.
 
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for the brain schematics.
@@ -1445,7 +1528,7 @@ def plot_glass_brain(
     %(symmetric_cbar)s
 
     %(resampling_interpolation)s
-        Default='continuous'.
+        default='continuous'.
 
     %(radiological)s
 
@@ -1598,14 +1681,14 @@ def plot_connectome(
     edge_cmap : colormap, default="RdBu_r"
         Colormap used for representing the strength of the edges.
 
-    edge_vmin, edge_vmax : :obj:`float` or None, Default=None
+    edge_vmin, edge_vmax : :obj:`float` or None, default=None
         If not None, either or both of these values will be used to
         as the minimum and maximum values to color edges. If None are
         supplied the maximum absolute value within the given threshold
         will be used as minimum (multiplied by -1) and maximum
         coloring levels.
 
-    edge_threshold : :obj:`str`, number or None, Default=None
+    edge_threshold : :obj:`str`, number or None, default=None
         If it is a number only the edges with a value greater than
         edge_threshold will be shown.
         If it is a string it must finish with a percent sign,
@@ -1624,7 +1707,7 @@ def plot_connectome(
     %(title)s
     %(annotate)s
     %(black_bg)s
-        Default=False.
+        default=False.
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for the brain schematics.
 
@@ -1636,7 +1719,7 @@ def plot_connectome(
         the nodes in one go.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     %(radiological)s
 
@@ -1755,12 +1838,12 @@ def plot_markers(
     %(title)s
     %(annotate)s
     %(black_bg)s
-        Default=False.
+        default=False.
     node_kwargs : :obj:`dict` or None, default=None
         will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go
     %(colorbar)s
-        Default=True.
+        default=True.
     %(radiological)s
 
     Returns
@@ -1907,7 +1990,7 @@ def plot_carpet(
     %(vmax)s
     %(title)s
     %(cmap)s
-        Default=`gray`.
+        default=`gray`.
 
     cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
                   default=`gist_ncar`
@@ -1936,6 +2019,29 @@ def plot_carpet(
     In cases of long acquisitions (>800 volumes), the data will be downsampled
     to have fewer than 800 volumes before being plotted.
 
+    Examples
+    --------
+    >>> from nilearn.plotting import plot_carpet
+    >>> import matplotlib.pyplot as plt
+    >>> from nibabel import Nifti1Image
+    >>> import numpy as np
+
+    >>> rng = np.random.default_rng(seed=42)
+    >>> data = rng.integers(low=0, high=100,
+    ...                     size=(12, 12, 12, 100), dtype=np.int32)
+    >>> mask = np.ones((12, 12, 12), dtype=bool)
+    >>> img = Nifti1Image(data, affine=np.eye(4))
+    >>> mask_img = Nifti1Image(mask.astype(np.int8), affine=np.eye(4))
+
+    >>> display = plot_carpet(
+    ...     img,
+    ...     mask_img=mask_img,
+    ...     title="global patterns over time",
+    ... )
+
+    >>> display.show()
+
+
     References
     ----------
     .. footbibliography::
@@ -1943,6 +2049,13 @@ def plot_carpet(
     """
     check_params(locals())
     img = check_niimg_4d(img, dtype="auto")
+
+    # TODO (nilearn >= 0.15) remove if and elif below
+    # and change default of function
+    if standardize is True:
+        standardize = "zscore_sample"
+    elif standardize is False:
+        standardize = None
 
     # Define TR and number of frames
     t_r = t_r or float(img.header.get_zooms()[-1])
@@ -1962,7 +2075,10 @@ def plot_carpet(
             f"img != {background_label}",
             img=atlas_img_res,
         )
-        masker = NiftiMasker(atlas_bin, target_affine=img.affine)
+        # TODO (nilearn >= 0.15) remove standardize=None
+        masker = NiftiMasker(
+            atlas_bin, target_affine=img.affine, standardize=None
+        )
 
         data = masker.fit_transform(img)
         atlas_values = masker.transform(atlas_img_res)

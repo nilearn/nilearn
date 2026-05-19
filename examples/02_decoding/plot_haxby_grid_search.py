@@ -26,6 +26,15 @@ performance. See :sklearn:`modules/cross_validation.html`
 for an excellent explanation of how cross-validation works.
 """
 
+import warnings
+
+warnings.filterwarnings(
+    "ignore", message="The provided image has no sform in its header."
+)
+
+# set overall verbosity for this example
+verbose = 2
+
 # %%
 # Load the Haxby dataset
 # ----------------------
