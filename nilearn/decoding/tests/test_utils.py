@@ -151,10 +151,8 @@ def test_check_supported_estimator(estimator):
     )
 
     with warnings.catch_warnings(record=True) as raised_warnings:
-        validate_estimator(
-            _BaseDecoder(
-                estimator=estimator, standardize="zscore_sample"
-            ).estimator
+        validate_estimator(estimator
+            
         )
     warning_messages = [str(warning.message) for warning in raised_warnings]
 
