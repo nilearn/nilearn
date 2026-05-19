@@ -379,14 +379,14 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=False)
 
-        if self.estimator in SUPPORTED_ESTIMATORS["regressor"]:
+        if self._estimator_type == "regressor":
             if SKLEARN_LT_1_6:
                 tags["multioutput"] = True
                 return tags
             tags.estimator_type = "regressor"
             tags.regressor_tags = RegressorTags()
 
-        elif self.estimator in SUPPORTED_ESTIMATORS["classifier"]:
+        elif self._estimator_type == "classifier":
             if SKLEARN_LT_1_6:
                 return tags
             tags.estimator_type = "classifier"
@@ -395,12 +395,20 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         return tags
 
     @property
-    def _estimator_type(self):
-        # TODO (sklearn >= 1.8.0) remove
-        if self.estimator in SUPPORTED_ESTIMATORS["regressor"]:
-            return "regressor"
-        elif self.estimator in SUPPORTED_ESTIMATORS["classifier"]:
-            return "classifier"
+    def _estimator_type(self) -> str:
+        if isinstance(self.estimator, str):
+            if self.estimator in SUPPORTED_ESTIMATORS["regressor"]:
+                return "regressor"
+            elif self.estimator in SUPPORTED_ESTIMATORS["classifier"]:
+                return "classifier"
+        else:
+            if hasattr(self.estimator, "__sklearn_tags__"):
+                return getattr(
+                    self.estimator.__sklearn_tags__(), "estimator_type", ""
+                )
+            # TODO (sklearn >= 1.8.0) remove
+            if hasattr(self.estimator, "_estimator_type"):
+                return self.estimator._estimator_type
         return ""
 
     def fit(self, imgs, y, groups=None):
