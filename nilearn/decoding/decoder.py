@@ -163,6 +163,13 @@ def _default_param_grid(estimator, X, y):
             LassoCV,
         ),
     ):
+        # TODO
+        # we technically allow any estimator object
+        # to be passed to _BaseEstimator, Decoder, DecoderRegressor...
+        # but here we throw a warning
+        # that says the estimator must be one of the above:
+        # this inconsistency should probably be resolved
+        # or documented.
         tmp = list(SUPPORTED_ESTIMATORS["classifier"].keys()) + list(
             SUPPORTED_ESTIMATORS["regressor"].keys()
         )
@@ -630,15 +637,15 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         )
 
         # TODO (sklearn >= 1.8) _estimator_type will be removed
-        estimator_type = getattr(self, "_estimator_type", None)
+        owning_class_type = getattr(self, "_estimator_type", None)
 
         # TODO test with sklearn sklearn_version == 1.5.0
-        if estimator_type is None:
-            estimator_type = self.__sklearn_tags__().estimator_type
+        if owning_class_type is None:
+            owning_class_type = self.__sklearn_tags__().estimator_type
 
         self.estimator_ = validate_estimator(
             self.estimator,
-            owning_class_type=estimator_type,
+            owning_class_type=owning_class_type,
             estimator_args=self.estimator_args_,
             verbose=self.verbose - 1,
         )

@@ -1389,7 +1389,7 @@ def test_decoder_vs_sklearn(classifier_penalty):
     cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
     # default scoring is accuracy
     scorer = check_scoring(
-        validate_estimator(classifier_penalty),
+        validate_estimator(classifier_penalty, owning_class_type="classifier"),
         "accuracy",
     )
 
@@ -1409,7 +1409,9 @@ def test_decoder_vs_sklearn(classifier_penalty):
     masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 
-    sklearn_classifier = validate_estimator(classifier_penalty)
+    sklearn_classifier = validate_estimator(
+        classifier_penalty, owning_class_type="classifier"
+    )
     scores_sklearn = {c: [] for c in range(n_classes)}
     # convert multiclass to n_classes binary classifications
     label_binarizer = LabelBinarizer()
@@ -1487,7 +1489,7 @@ def test_regressor_vs_sklearn(regressor):
     cv = KFold(n_splits=10, shuffle=True, random_state=42)
     # r2 is the default scoring for regression
     scorer = check_scoring(
-        validate_estimator(regressor),
+        validate_estimator(regressor, owning_class_type="regressor"),
         "r2",
     )
 
@@ -1515,7 +1517,9 @@ def test_regressor_vs_sklearn(regressor):
     masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 
-    sklearn_regressor = validate_estimator(regressor)
+    sklearn_regressor = validate_estimator(
+        regressor, owning_class_type="regressor"
+    )
     scores_sklearn = []
 
     for count, (train_idx, test_idx) in enumerate(cv.split(X_transformed, y)):
@@ -1575,14 +1579,33 @@ def _set_hyperparameters(
     ],
 )
 @pytest.mark.parametrize("decoder", [Decoder, FREMClassifier])
-def test_decoder_error_wrong_estimator(
+def test_decoder_error_wrong_estimator_str(
     decoder, estimator, binary_classification_data
 ):
-    """Ensure that Decoders cannot be instantiated a regressor estimator."""
+    """Ensure that Decoders cannot be instantiated a regressor estimator.
+
+    Here only testing the string placeholder.
+    """
     X, y, mask = binary_classification_data
 
     model = decoder(estimator=estimator, mask=mask)
     with pytest.raises(ValueError, match="Invalid estimator"):
+        model.fit(X, y)
+
+
+@pytest.mark.parametrize("decoder", [Decoder, FREMClassifier])
+def test_decoder_error_wrong_estimator(decoder, binary_classification_data):
+    """Ensure that Decoders cannot be instantiated a regressor estimator."""
+    X, y, mask = binary_classification_data
+
+    model = decoder(estimator=SVR(), mask=mask)
+    with pytest.raises(
+        ValueError,
+        match=(
+            "The estimator 'SVR' is of type 'regressor' "
+            "and should be of type 'classifier'"
+        ),
+    ):
         model.fit(X, y)
 
 
@@ -1600,12 +1623,31 @@ def test_decoder_error_wrong_estimator(
     ],
 )
 @pytest.mark.parametrize("regressor", [DecoderRegressor, FREMRegressor])
-def test_regressor_error_wrong_estimator(
+def test_regressor_error_wrong_estimator_str(
     regressor, estimator, regression_data
 ):
-    """Ensure that Regressors cannot be instantiated a classifier estimator."""
+    """Ensure that Regressors cannot be instantiated a classifier estimator.
+
+    Here only testing the string placeholder.
+    """
     X, y, mask = regression_data
 
     model = regressor(estimator=estimator, mask=mask)
     with pytest.raises(ValueError, match="Invalid estimator"):
+        model.fit(X, y)
+
+
+@pytest.mark.parametrize("regressor", [DecoderRegressor, FREMRegressor])
+def test_regressor_error_wrong_estimator(regressor, regression_data):
+    """Ensure that Regressors cannot be instantiated a classifier estimator."""
+    X, y, mask = regression_data
+
+    model = regressor(estimator=LinearSVC(), mask=mask)
+    with pytest.raises(
+        ValueError,
+        match=(
+            "The estimator 'LinearSVC' is of type 'classifier' "
+            "and should be of type 'regressor'"
+        ),
+    ):
         model.fit(X, y)

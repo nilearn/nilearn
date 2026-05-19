@@ -343,9 +343,6 @@ def check_feature_screening(
 
 def validate_estimator(
     estimator,
-    supported_estimators: dict[
-        Literal["classifier", "regressor"], dict[str, EstimatorConfig]
-    ] = SUPPORTED_ESTIMATORS,
     owning_class_type: Literal["classifier", "regressor", None] = None,
     estimator_args=None,
     verbose=0,
@@ -356,20 +353,63 @@ def validate_estimator(
 
     Otherwise we instantiate one
     from the config defined in supported_estimaptors.
+
+    Parameters
+    ----------
+    estimator : Any
+        estimator to validate: can be a string
+        or ideally a sklearn compatible object
+
+    owning_class_type : "classifier" or "regressor" or None
+        estimator type of the class
+        in which the estimator to validate
+        is embedded
+
+    estimator_args: dict or None
+        extra args to pass when instantiating the embedded estimator
+
+    verbose:
+        used to adjust the verbosity of the embedded estimator
     """
     if not isinstance(estimator, str):
+        # The following tries to make sure that the estimator_type
+        # matches that of the owning class
+        # The user may not have defined estimator_type
+        # so we have to be a bit lenient here.
+
+        # TODO (sklearn >= 1.8) _estimator_type will be removed
+        estimator_type = getattr(estimator, "_estimator_type", None)
+
+        # TODO test with sklearn sklearn_version == 1.5.0
+        if estimator_type is None and hasattr(estimator, "__sklearn_tags__"):
+            estimator_type = getattr(
+                estimator.__sklearn_tags__(), "estimator_type", None
+            )
+
+        if (
+            owning_class_type is not None
+            and estimator_type is not None
+            and owning_class_type != estimator_type
+        ):
+            raise ValueError(
+                f"The estimator '{estimator.__class__.__name__}' "
+                f"is of type '{estimator_type}' "
+                f"and should be of type '{owning_class_type}'."
+            )
+
         warnings.warn(
             "Use a custom estimator at your own risk "
             "of the process not working as intended.",
             stacklevel=find_stack_level(),
         )
+
         return estimator
 
     if owning_class_type is None:
-        tmp = supported_estimators["classifier"]
-        tmp |= supported_estimators["regressor"]
+        tmp = SUPPORTED_ESTIMATORS["classifier"]
+        tmp |= SUPPORTED_ESTIMATORS["regressor"]
     else:
-        tmp = supported_estimators[owning_class_type]
+        tmp = SUPPORTED_ESTIMATORS[owning_class_type]
     estimator_config = tmp.get(estimator)
 
     if estimator_config is None:

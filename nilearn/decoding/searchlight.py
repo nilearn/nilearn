@@ -461,8 +461,16 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             mask_img=self.mask_img_,
         )
 
+        # TODO (sklearn >= 1.8) _estimator_type will be removed
+        owning_class_type = getattr(self, "_estimator_type", None)
+
+        # TODO test with sklearn sklearn_version == 1.5.0
+        if owning_class_type is None:
+            owning_class_type = self.__sklearn_tags__().estimator_type
+
         estimator = validate_estimator(
             estimator=self.estimator,
+            owning_class_type=owning_class_type,
             estimator_args=self.estimator_args,
             verbose=self.verbose,
         )
@@ -524,15 +532,15 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         )
 
         # TODO (sklearn >= 1.8) _estimator_type will be removed
-        estimator_type = getattr(self, "_estimator_type", None)
+        owning_class_type = getattr(self, "_estimator_type", None)
 
         # TODO test with sklearn sklearn_version == 1.5.0
-        if estimator_type is None:
-            estimator_type = self.__sklearn_tags__().estimator_type
+        if owning_class_type is None:
+            owning_class_type = self.__sklearn_tags__().estimator_type
 
         estimator = validate_estimator(
             estimator=self.estimator,
-            owning_class_type=estimator_type,
+            owning_class_type=owning_class_type,
             estimator_args=self.estimator_args,
             verbose=self.verbose,
         )
