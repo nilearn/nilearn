@@ -1,5 +1,7 @@
 /* global __BROWSER__, describe, beforeAll, afterAll, it, expect */
 
+// open the HTML documents, take a screenshot of it, and compare it to a reference screenshot
+
 const path = require('path')
 const fs = require('fs')
 const PNG = require('pngjs').PNG

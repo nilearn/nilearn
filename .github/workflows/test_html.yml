@@ -1,4 +1,15 @@
 ---
+# Test that HTML output stay visually constant.
+#
+# - HTML figures and reports are generated either via
+#   ``doc/visual_testing/reporter_visual_inspection_suite.py`` or
+#   ``test/js/generate_html.py``
+# - Javascript tests are run to open the HTML documents,
+#   take a screenshot of it, and compare it to a reference screenshot
+#
+# Most of this is handled via tox: ``tox run -e test_html``
+#
+###
 name: test html output
 
 on:
