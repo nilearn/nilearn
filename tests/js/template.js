@@ -36,19 +36,19 @@ module.exports.fullTest = (file, clip) => {
         const fileReference = buildFilePNG(file, 'references/', '_reference')
         if ('TEST_RUN' in process.env && process.env.TEST_RUN === 'init') {
           fs.copyFileSync(fileCurrent, fileReference)
+        } else {
+          // Compare the current and reference snapshots.
+          // Trigger an error if there is any difference
+          // and create a difference image
+          const fileDiff = buildFilePNG(file, '', '_diff')
+          const imgCurrent = PNG.sync.read(fs.readFileSync(fileCurrent))
+          const imgReference = PNG.sync.read(fs.readFileSync(fileReference))
+          const { width, height } = imgCurrent
+          const imgDiff = new PNG({ width, height })
+          const numDiffPixels = pixelmatch(imgCurrent.data, imgReference.data, imgDiff.data, width, height, { threshold: 0.2 })
+          fs.writeFileSync(fileDiff, PNG.sync.write(imgDiff))
+          expect(numDiffPixels).toBeLessThan(1000)
         }
-
-        // Compare the current and reference snapshots.
-        // Trigger an error if there is any difference
-        // and create a difference image
-        const fileDiff = buildFilePNG(file, '', '_diff')
-        const imgCurrent = PNG.sync.read(fs.readFileSync(fileCurrent))
-        const imgReference = PNG.sync.read(fs.readFileSync(fileReference))
-        const { width, height } = imgCurrent
-        const imgDiff = new PNG({ width, height })
-        const numDiffPixels = pixelmatch(imgCurrent.data, imgReference.data, imgDiff.data, width, height, { threshold: 0.2 })
-        fs.writeFileSync(fileDiff, PNG.sync.write(imgDiff))
-        expect(numDiffPixels).toBeLessThan(1000)
       },
       5000
     )
