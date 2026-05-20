@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Nilearn - Statistical Report - First Level Model</title>
+        <link rel="icon"
+              type="image/x-icon"
+              href="https://raw.githubusercontent.com/nilearn/nilearn/main/doc/logos/favicon.ico" />
+        <meta name="viewport"
+              content="width = device-width, initial-scale = 1"
+              charset="UTF-8" />
+            <!-- djlint:off --><style type="text/css">html {
+  font-family: sans-serif;
+}
+
+main {
+  margin: 4px 8px 4px 8px;
+  display: flex;
+  justify-content: center;
+}
+
+body footer {
+  padding: 0px 32px 0px 32px;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}</style><!-- djlint:on -->
+
+
+    </head>
+    <body>
+        <main>
+            <link rel="stylesheet"
+      href="https://unpkg.com/purecss@1.0.0/build/pure-min.css"
+      integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
+      crossorigin="anonymous" />
+<link rel="stylesheet"
+      href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css" />
+<!-- djlint:off -->
+<style type="text/css">
+
+/* GLOBALS */
+:root {
+  --main-bg-color: white;
+}
+
+/* ALIASES
+
+most of them are meant to resemble bootstrap classes
+https://getbootstrap.com/docs/5.3/getting-started/introduction/
+*/
+.m-0 {
+  margin: 0px;
+}
+.mt-1 {
+  margin-top: 4px;
+}
+.mt-2 {
+  margin-top: 8px;
+}
+.mt-3 {
+  margin-top: 12px;
+}
+.mb-2 {
+  margin-bottom: 8px;
+}
+.ml-2 {
+  margin-left: 8px;
+}
+.my-0 {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+.my-1 {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+.my-2 {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.p-0 {
+  padding: 0px;
+}
+.p-1 {
+  padding: 4px;
+}
+.p-2 {
+  padding: 8px;
+}
+.p-3 {
+  padding: 12px;
+}
+.p-4 {
+  padding: 24px;
+}
+.pl-2 {
+  padding-left: 8px;
+}
+.pl-3 {
+  padding-left: 12px;
+}
+.pl-5 {
+  padding-left: 48px;
+}
+.pt-0 {
+  padding-top: 0px;
+}
+.pt-2 {
+  padding-top: 8px;
+}
+.pt-3 {
+  padding-top: 12px;
+}
+.py-2 {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.py-3 {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.align-items-stretch {
+  align-items: stretch;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.justify-content-evenly {
+  justify-content: space-evenly;
+}
+
+.justify-content-left {
+  justify-content: left;
+}
+
+.justify-content-space-around {
+  justify-content: space-around;
+}
+
+.fw-bold {
+  font-weight: bold;
+}
+.fw-200 {
+  font-weight: 200;
+}
+
+.fs-1 {
+  font-size: 8px;
+}
+.fs-2 {
+  font-size: 14px;
+}
+.fs-3 {
+  font-size: 16px;
+}
+.fs-5 {
+  font-size: 36px;
+}
+
+@media (max-width: 1023px) {
+  .fs-5 {
+    font-size: 30px;
+  }
+}
+
+.border {
+  border-style: solid;
+}
+
+.border-1 {
+  border-width: 1pt;
+}
+
+.rounded-1 {
+  border-radius: 4px;
+}
+.rounded-2 {
+  border-radius: 8px;
+}
+.rounded-top-2 {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.text-center {
+  text-align: center;
+}
+/* -----------------------  Pure framework ----------------------- */
+
+/* Add a gutter to Pure's Columns */
+.pure-g > div {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 0 0.5em;
+}
+
+/*!
+Pure-button class copied from pure-min.css,
+in case reports are displayed offline.
+
+Pure v1.0.0
+Copyright 2013 Yahoo!
+Licensed under the BSD License.
+https://github.com/yahoo/pure/blob/master/LICENSE.md
+*/
+
+.pure-button {
+  /* Structure */
+  display: inline-block;
+  zoom: 1;
+  line-height: normal;
+  white-space: nowrap;
+  vertical-align: middle;
+  text-align: center;
+  cursor: pointer;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.pure-button {
+  /* Button styling */
+  font-family: inherit;
+  font-size: 100%;
+  padding: 0.5em 1em;
+  margin: 5px;
+  color: #444; /* rgba not supported (IE 8) */
+  color: rgba(0, 0, 0, 0.8); /* rgba supported */
+  border: 1px solid #999; /*IE 6/7/8*/
+  border: none rgba(0, 0, 0, 0); /*IE9 + everything else*/
+  background-color: #e6e6e6;
+  text-decoration: none;
+  border-radius: 2px;
+}
+
+/*!
+End pure-button class definition from pure-min.css
+*/
+
+.btn {
+  background-color: #3498db;
+  color: white;
+  padding: 6px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn:hover,
+.btn:focus {
+  background-color: #2980b9;
+}
+
+.scroll-x {
+  overflow-x: scroll;
+}
+.scroll-y {
+  overflow-y: scroll;
+}
+
+/* -----------------------  Warning banner  ----------------------- */
+.warning {
+  border-color: red;
+  color: red;
+  text-align: left;
+}
+.warning h2:first-child {
+  background-color: #f5f5f5;
+}
+
+/* -----------------------  Carousel navbar  ----------------------- */
+
+.carousel-navbar {
+  position: sticky;
+  top: 34px;
+  background-color: #fff;
+  height: 35px;
+}
+
+.carousel-navbar-element {
+  height: 100%;
+}
+
+/* -----------------------  Nilearn report  ----------------------- */
+.nilearn-report {
+  border-color: rgb(150, 150, 150);
+  overflow: hidden; /* Needed to avoid scrolling in jupyter :( */
+  color: black;
+  background-color: var(--main-bg-color);
+  height: 90vh;
+  overflow-y: scroll;
+}
+
+.nilearn-report section {
+  margin: 8px;
+  padding: 8px;
+}
+.terminal .nilearn-report {
+  max-width: min(50ex, 100vw); /* Needed in vscode */
+}
+
+.nilearn-report h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-align: left;
+}
+
+.nilearn-report h1:first-child {
+  background-color: #f5f5f5;
+  text-align: left;
+}
+
+.nilearn-report summary::-webkit-details-marker {
+  margin-right: 2px;
+}
+
+.nilearn-report summary:focus {
+  outline-style: none;
+}
+
+.nilearn-report .table-container {
+  overflow-x: scroll;
+  overflow-y: scroll;
+  max-height: 800px;
+}
+
+.nilearn-report table {
+  margin: 50px auto;
+  max-height: 800px;
+}
+
+.nilearn-report thead th {
+  text-align: center;
+  vertical-align: middle;
+  position: sticky;
+  top: 0;
+  background-color: #ddd;
+}
+
+.nilearn-report tbody tr:nth-child(even) {
+  background-color: #ddd;
+}
+
+/* Tooltip container */
+.nilearn-report .withtooltip {
+  position: relative;
+}
+
+/* Tooltip text */
+.nilearn-report .withtooltip .tooltiptext {
+  visibility: hidden;
+  max-width: 35em;
+  background-color: rgba(24, 24, 24, 0.9);
+  color: #fff;
+  text-align: center;
+
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 200;
+
+  width: 99%;
+  left: 8px;
+  top: 133%;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.nilearn-report .withtooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+.nilearn-report .image {
+  position: relative;
+  height: auto;
+  width: 100%;
+}
+
+.nilearn-report .image .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: 0.5s ease;
+  height: auto;
+  width: 100%;
+  -webkit-transition: 0.5s ease;
+}
+
+.nilearn-report .image:hover .overlay {
+  opacity: 1;
+}
+
+.nilearn-report .main-container {
+  min-height: 700px !important;
+}
+
+/* -----------------------  Navbar  ----------------------- */
+/* Adapted from Pure CSS navbar : https://purecss.io/layouts/tucked-menu-vertical/  */
+.navbar {
+  position: sticky; /* Apply the sticky positioning */
+  top: 0; /* Stick the element to the top of the viewport */
+  z-index: 10; /* Ensure the navbar is above other content */
+  background-color: #f5f5f5;
+  margin-bottom: 1em;
+  -webkit-font-smoothing: antialiased;
+  height: 2.1em;
+  overflow: hidden;
+  -webkit-transition: height 0.5s;
+  -moz-transition: height 0.5s;
+  -ms-transition: height 0.5s;
+  transition: height 0.5s;
+}
+.navbar.open {
+  height: 16em;
+}
+
+.custom-toggle {
+  width: 34px;
+  height: 34px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: none;
+}
+
+.custom-toggle .bar {
+  background-color: black;
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 100px;
+  position: absolute;
+  top: 18px;
+  right: 7px;
+  -webkit-transition: all 0.5s;
+  -moz-transition: all 0.5s;
+  -ms-transition: all 0.5s;
+  transition: all 0.5s;
+}
+
+.custom-toggle .bar:first-child {
+  -webkit-transform: translateY(-6px);
+  -moz-transform: translateY(-6px);
+  -ms-transform: translateY(-6px);
+  transform: translateY(-6px);
+}
+
+.custom-toggle.x .bar {
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+.custom-toggle.x .bar:first-child {
+  -webkit-transform: rotate(-45deg);
+  -moz-transform: rotate(-45deg);
+  -ms-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+
+.pure-menu-link {
+  font-size: 90%;
+  font-weight: normal;
+  margin: 10px 5px;
+  padding: 0px;
+}
+
+@media (max-width: 1023px) {
+  .custom-toggle {
+    display: block;
+  }
+}
+
+</style>
+<!-- djlint:on -->
+<section class="nilearn-report pt-0 border border-1 rounded-2 scroll-y">
+    <h1 class="withtooltip m-0 pl-3 pt-3 rounded-top-2 fs-5">
+        Statistical Report - First Level Model
+        <span class="tooltiptext m-1 p-1 fw-200 fs-3 border border-1 rounded-2">Implement the General Linear Model for single run :term:`fMRI` data.
+
+    </span>
+    </h1>
+
+
+<!-- Adapted from Pure CSS navbar : https://purecss.io/layouts/tucked-menu-vertical/ -->
+<nav class="navbar pure-g fw-bold" id="menu">
+    <script>var unique_id = "UUID-ec0e34cbb7c64bd4b94c2aec16b43e71";</script>
+    <div class="pure-u-1 pure-u-lg-1-8">
+        <div class="pure-menu">
+            <a href="#model-details-UUID-ec0e34cbb7c64bd4b94c2aec16b43e71" class="pure-menu-heading">Home</a>
+            <a href="#" class="custom-toggle" id="toggle"><s class="bar"></s><s class="bar"></s></a>
+        </div>
+    </div>
+    <div class="pure-u-1 pure-u-lg-1-6">
+        <div class="pure-menu pure-menu-horizontal custom-can-transform">
+            <ul class="pure-menu-list">
+                <li class="pure-menu-item">
+                    <a href="#model-details-UUID-ec0e34cbb7c64bd4b94c2aec16b43e71" class="pure-menu-link">Model details</a>
+                </li>
+                <li class="pure-menu-item">
+                    <a href="#mask-UUID-ec0e34cbb7c64bd4b94c2aec16b43e71" class="pure-menu-link">Mask</a>
+                </li>
+                <li class="pure-menu-item">
+                    <a href="#about-UUID-ec0e34cbb7c64bd4b94c2aec16b43e71" class="pure-menu-link">About</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<script>
+  (function (window, document) {
+    var menu = document.getElementById("menu"),
+      rollback,
+      WINDOW_CHANGE_EVENT =
+        "onorientationchange" in window ? "orientationchange" : "resize";
+
+    function toggleHorizontal() {
+      menu.classList.remove("closing");
+      [].forEach.call(
+        document
+          .getElementById("menu")
+          .querySelectorAll(".custom-can-transform"),
+        function (el) {
+          el.classList.toggle("pure-menu-horizontal");
+        },
+      );
+    }
+
+    function toggleMenu() {
+      // set timeout so that the panel has a chance to roll up
+      // before the menu switches states
+      if (menu.classList.contains("open")) {
+        menu.classList.add("closing");
+        rollBack = setTimeout(toggleHorizontal, 500);
+      } else {
+        if (menu.classList.contains("closing")) {
+          clearTimeout(rollBack);
+        } else {
+          toggleHorizontal();
+        }
+      }
+      menu.classList.toggle("open");
+      document.getElementById("toggle").classList.toggle("x");
+    }
+
+    function closeMenu() {
+      if (menu.classList.contains("open")) {
+        toggleMenu();
+      }
+    }
+
+    document.getElementById("toggle").addEventListener("click", function (e) {
+      toggleMenu();
+      e.preventDefault();
+    });
+
+    window.addEventListener(WINDOW_CHANGE_EVENT, closeMenu);
+  })(this, this.document);
+</script>
+
+    <div class="pure-g d-flex justify-content-center my-1">
+        <div class="pure-u-7-8 pure-u-md-7-8 d-flex flex-column justify-content-space-around main-container">
+
+    <section id="warnings">
+        <div class="warning my-2 border border-1 rounded-2">
+            <h2 class="m-0 p-3 fw-bold rounded-top-2">WARNING</h2>
+            <ul>
+                    <li class="fw-bold p-1">No contrast passed during report generation.</li>
+                    <li class="fw-bold p-1">
+This estimator has not been fit yet.
+Make sure to run `fit` before inspecting reports.</li>
+            </ul>
+        </div>
+    </section>
+
+
+
+    <div class="report">
+        <section>
+            <h2>Description</h2>
+
+<p>
+    Data were analyzed using <a href="https://nilearn.github.io">Nilearn</a>
+    (version= TEST; RRID:SCR_001362).
+</p>
+    <p>
+        At the subject level, a mass univariate analysis was performed with a linear
+        regression at each voxel of the brain, using generalized least squares with a
+        global ar1 noise model to account for temporal auto-correlation
+        None.
+    </p>
+
+        </section>
+        <section id="model-details-UUID-ec0e34cbb7c64bd4b94c2aec16b43e71">
+            <h2>Model details</h2>
+            <div class="table-container"><table class="pure-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Value</th>
+    </tr>
+    <tr>
+      <th>Parameter</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>drift_model</th>
+      <td>cosine</td>
+    </tr>
+    <tr>
+      <th>high_pass (Hertz)</th>
+      <td>0.01</td>
+    </tr>
+    <tr>
+      <th>hrf_model</th>
+      <td>glover</td>
+    </tr>
+    <tr>
+      <th>noise_model</th>
+      <td>ar1</td>
+    </tr>
+    <tr>
+      <th>signal_scaling</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>slice_time_ref</th>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>standardize</th>
+      <td>False</td>
+    </tr>
+  </tbody>
+</table></div>
+        </section>
+        <div id="carousel-container-UUID-ec0e34cbb7c64bd4b94c2aec16b43e71">
+        </div>
+        <section id="mask-UUID-ec0e34cbb7c64bd4b94c2aec16b43e71">
+            <h2>Mask</h2>
+                <p>No mask was provided.</p>
+        </section>
+        <section id="statistical-maps-UUID-ec0e34cbb7c64bd4b94c2aec16b43e71">
+            <h2>Statistical Maps</h2>
+            <div class="pure-g">
+                    <div class="d-flex flex-wrap justify-content-evenly">
+                        <p style="letter-spacing: normal">No statistical map was provided.</p>
+                    </div>
+            </div>
+        </section>
+        <section id="about-UUID-ec0e34cbb7c64bd4b94c2aec16b43e71" style="text-align: left">
+            <h2>About</h2>
+            <ul>
+                <li>
+                    Date preprocessed: <time>2026-05-20T09:12:33</time>
+                </li>
+            </ul>
+        </section>
+    </div>
+
+        </div>
+    </div>
+</section>
+
+
+        </main>
+        <footer >
+            <address>
+                <p>
+                    Built using
+                    <a href="https://nilearn.github.io">Nilearn (version=TEST)</a>.
+                    Source code on
+                    <a href="https://github.com/nilearn/nilearn">GitHub</a>. File bugs
+                    &amp; feature requests
+                    <a href="https://github.com/nilearn/nilearn/issues">here</a>.
+                </p>
+            </address>
+        </footer>
+    </body>
+
+
+</html>

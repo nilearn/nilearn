@@ -1595,7 +1595,9 @@ def test_decoder_error_wrong_estimator_str(
 
 @pytest.mark.parametrize("decoder", [Decoder, FREMClassifier])
 def test_decoder_error_wrong_estimator(decoder, binary_classification_data):
-    """Ensure that Decoders cannot be instantiated with a Regressor estimator."""
+    """Ensure that Decoders cannot be instantiated \
+        with a Regressor estimator.
+    """
     X, y, mask = binary_classification_data
 
     model = decoder(estimator=SVR(), mask=mask)
@@ -1626,7 +1628,8 @@ def test_decoder_error_wrong_estimator(decoder, binary_classification_data):
 def test_regressor_error_wrong_estimator_str(
     regressor, estimator, regression_data
 ):
-    """Ensure that Regressors cannot be instantiated with a Classifier estimator.
+    """Ensure that Regressors cannot be instantiated \
+        with a Classifier estimator.
 
     Here only testing the string placeholder.
     """
