@@ -9,6 +9,9 @@
 #
 # Most of this is handled via tox: ``tox run -e test_html``
 #
+# Screenshots (reference, current and their difference) are uploaded
+# at the end of the workflow.
+#
 ###
 name: test html output
 
@@ -34,9 +37,6 @@ jobs:
     test_js:
 
         name: Test HTML output
-        # - run js test with browser coverage
-        #   - run python examples to generate html required by javascript tests
-        # - upload coverage as artifacts
 
         runs-on: ubuntu-latest
 
@@ -67,7 +67,7 @@ jobs:
         -   name: Run test on html output
             run: tox run -e test_html
 
-        -   name: Upload reference, new and diff images from test
+        -   name: Upload reference, current and diff images from test
             if: success() || failure()
             uses: actions/upload-artifact@v6
             with:

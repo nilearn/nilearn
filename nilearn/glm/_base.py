@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
-from packaging.version import Version
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -24,8 +23,11 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_GTE_1_7, SKLEARN_LT_1_6
-from nilearn._version import __version__
+from nilearn._utils.versions import (
+    SKLEARN_GTE_1_7,
+    SKLEARN_LT_1_6,
+    __short_version__,
+)
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
     glm_model_attributes_to_dataframe,
@@ -748,12 +750,6 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             else ""
         )
 
-        # We clean up the version number
-        # to make it more stable during tests.
-        version = str(
-            Version(__version__).__replace__(local=None, dev=None, pre=None)
-        )
-
         body = body_tpl.render(
             docstring=docstring,
             contrasts=contrasts,
@@ -767,7 +763,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             is_notebook=is_notebook(),
             smoothing_fwhm=smoothing_fwhm,
             title=title,
-            version=version,
+            version=__short_version__,
             unique_id=str(uuid.uuid4()).replace("-", ""),
             warning_messages=warning_messages,
             has_plotting_engine=is_matplotlib_installed(),

@@ -2,11 +2,9 @@
 
 from string import Template
 
-from packaging.version import Version
-
 from nilearn._assets import get_template
 from nilearn._utils.html_document import HTMLDocument
-from nilearn._version import __version__
+from nilearn._utils.versions import __short_version__
 
 UNFITTED_MSG = (
     "\nThis estimator has not been fit yet.\n"
@@ -83,18 +81,12 @@ def assemble_report(body: str, page_title: str) -> HTMLReport:
     """Put together head and body of report."""
     head_tpl = get_template("html/head.jinja")
 
-    # We clean up the version number
-    # to make it more stable during tests.
-    version = str(
-        Version(__version__).__replace__(local=None, dev=None, pre=None)
-    )
-
     return HTMLReport(
         body=body,
         head_tpl=head_tpl,
         head_values={
             "head_css": True,
-            "version": version,
+            "version": __short_version__,
             "page_title": page_title,
             "display_footer": "style='display: none'" if is_notebook() else "",
         },

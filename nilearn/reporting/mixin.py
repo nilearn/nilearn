@@ -10,13 +10,11 @@ from datetime import datetime
 from typing import Any, ClassVar
 
 import pandas as pd
-from packaging.version import Version
 
 from nilearn._assets import get_template
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.versions import SKLEARN_GTE_1_7
-from nilearn._version import __version__
+from nilearn._utils.versions import SKLEARN_GTE_1_7, __short_version__
 from nilearn.reporting._utils import (
     dataframe_to_html,
     model_attributes_to_dataframe,
@@ -198,13 +196,7 @@ class ReportMixin:
             datetime.now().replace(microsecond=0).isoformat()
         )
 
-        # We clean up the version number
-        # to make it more stable during tests.
-        version = str(
-            Version(__version__).__replace__(local=None, dev=None, pre=None)
-        )
-
-        report_content["version"] = version
+        report_content["version"] = __short_version__
 
     def _run_report_checks(self, **kwargs):
         """Run standard checks before report is generated.

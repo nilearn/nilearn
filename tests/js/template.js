@@ -11,7 +11,7 @@ const buildFilePNG = function (file, prefix, suffix) {
   return `${path.resolve(__dirname)}/` + prefix + file.split('.')[0] + suffix + '.png'
 }
 
-module.exports.fullTest = (file, clip) => {
+module.exports.fullTest = (file, clip, tolerance = 1000) => {
   describe('index page', () => {
     let page
 
@@ -34,6 +34,7 @@ module.exports.fullTest = (file, clip) => {
 
         // archive a copy of the screenshot as future reference, if specified
         const fileReference = buildFilePNG(file, 'references/', '_reference')
+
         if ('TEST_RUN' in process.env && process.env.TEST_RUN === 'init') {
           fs.copyFileSync(fileCurrent, fileReference)
         } else {
@@ -47,7 +48,7 @@ module.exports.fullTest = (file, clip) => {
           const imgDiff = new PNG({ width, height })
           const numDiffPixels = pixelmatch(imgCurrent.data, imgReference.data, imgDiff.data, width, height, { threshold: 0.2 })
           fs.writeFileSync(fileDiff, PNG.sync.write(imgDiff))
-          expect(numDiffPixels).toBeLessThan(1000)
+          expect(numDiffPixels).toBeLessThan(tolerance)
         }
       },
       5000
