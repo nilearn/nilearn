@@ -595,7 +595,7 @@ def view_img(
     opacity=1,
     radiological=False,
     show_lr=True,
-):
+) -> StatMapView:
     """Interactive html viewer of a statistical map, with optional background.
 
     Parameters
@@ -747,7 +747,7 @@ def create_brainsprite(
     opacity=1,
     radiological=False,
     show_lr=True,
-):
+) -> dict[str, Any]:
     """Wrap most of view_img to reuse it in other places."""
     # Prepare the color map and thresholding
     mask_img, stat_map_img, data, threshold = _mask_stat_map(

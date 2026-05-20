@@ -157,7 +157,7 @@ def _full_brain_info(
 def _fill_html_template(
     info,
     engine: Literal["niivue", "plotly"] = "plotly",
-):
+) -> SurfaceView:
     backend = get_surface_backend(engine)
     view_img_tpl = get_template(backend.HTML_TEMPLATE_PATH)
 

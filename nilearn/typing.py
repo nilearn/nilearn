@@ -88,6 +88,24 @@ ScreeningPercentile: TypeAlias = float | int | np.floating | np.integer | None
 SmoothingFwhm: TypeAlias = float | int | np.floating | np.integer | None
 Standardize: TypeAlias = Literal["zscore_sample", "psc", True, False, None]
 StandardizeConfounds: TypeAlias = bool
+SupportedRegressors: TypeAlias = Literal[
+    "ridge",
+    "ridge_regressor",
+    "lasso",
+    "lasso_regressor",
+    "svr",
+    "dummy_regressor",
+]
+SupportedClassifiers: TypeAlias = Literal[
+    "svc_l1",
+    "svc_l2",
+    "svc",
+    "logistic_l1",
+    "logistic_l2",
+    "logistic",
+    "ridge_classifier",
+    "dummy_classifier",
+]
 TargetAffine: TypeAlias = ndarray | list | tuple | None
 
 # Note that this is usable as for static type checking,
