@@ -1,6 +1,6 @@
 const template = require('./template.js')
 
-const VIEWPORT = { x: 0, y: 0, width: 1200, height: 2400 }
+const VIEWPORT = { x: 0, y: 0, width: 1200, height: 750 }
 
 const maskers = ['NiftiMasker', 'NiftiLabelsMasker', 'NiftiMapsMasker', 'SurfaceMasker', 'SurfaceLabelsMasker', 'SurfaceMapsMasker']
 
