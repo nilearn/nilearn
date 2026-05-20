@@ -166,9 +166,20 @@ for screening_percentile, val_score in validation_scores.items():
 #    test score is obtained on the left-out test set. We then report the
 #    average test score across folds as an estimate of the generalization
 #    performance of the model.
+#
+#    In addition, we plot the average validation scores across inner CV folds
+#    for each value of the hyperparameter. This can help us visualize the
+#    hyperparameter tuning process and the stability of the best hyperparameter
+#    value across different outer CV folds.
 
+import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import GroupKFold
+
+plt.figure(figsize=(6, 4))
+plt.xticks(np.arange(len(screening_percentiles)), screening_percentiles)
+plt.xlabel("ANOVA screening percentile")
+plt.ylabel("Average validation score across inner CV folds")
 
 outer_cv = GroupKFold(n_splits=3)
 test_scores = []
@@ -189,6 +200,12 @@ for idx_train_val, idx_test in outer_cv.split(
         for idx_train, idx_val in inner_cv.split(
             idx_train_val, groups=runs.iloc[idx_train_val]
         ):
+            # inner_cv.split() returns indices relative to idx_train_val, so we
+            # need to index into idx_train_val to get the actual indices for
+            # the train and validation sets
+            idx_train = idx_train_val[idx_train]
+            idx_val = idx_train_val[idx_val]
+
             X_train = index_img(fmri_niimgs, idx_train)
             y_train = y.iloc[idx_train]
             X_val = index_img(fmri_niimgs, idx_val)
@@ -205,6 +222,29 @@ for idx_train_val, idx_test in outer_cv.split(
         mean_val_scores[screening_percentile] = np.mean(val_scores)
 
     best_screening_percentile = max(mean_val_scores, key=mean_val_scores.get)
+
+    # plot average validation score for each screening percentile value
+    # use a different marker shape for the best screening percentile
+    i_fold = len(test_scores)
+    color = f"C{i_fold}"
+    plt.scatter(
+        np.arange(len(screening_percentiles)),
+        mean_val_scores.values(),
+        c=[
+            color
+            if screening_percentile != best_screening_percentile
+            else "white"
+            for screening_percentile in screening_percentiles
+        ],
+        label=f"Outer CV fold {i_fold + 1}",
+    )
+    plt.scatter(
+        screening_percentiles.index(best_screening_percentile),
+        mean_val_scores[best_screening_percentile],
+        c=color,
+        s=100,
+        marker="*",
+    )
 
     # pick the best screening percentile from the inner CV loop
     print("Average validation scores by screening percentile:")
@@ -227,6 +267,8 @@ for idx_train_val, idx_test in outer_cv.split(
         verbose=verbose,
     )
     test_scores.append(decoder.score(X_test, y_test))
+
+plt.legend()
 
 # final model performance estimation
 print(
