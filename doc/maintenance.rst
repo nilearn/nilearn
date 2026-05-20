@@ -27,9 +27,9 @@ and easily find what you are looking for in the issue tracker.
 When :nilearn-gh:`creating an issue <issues/new/choose>`, the user
 is responsible for a very basic labeling categorizing the issue:
 
-- |Bug| issue type for bug reports
-- |Enhancement| issue type for feature requests
-- |Documentation| issue label for documentation related questions or requests.
+- ``Bug`` issue type for bug reports
+- ``Enhancement`` issue type for feature requests
+- ``Documentation`` issue label for documentation related questions or requests.
 
 New issues get the ``Needs Triage`` label and must be reviewed by a member of the :ref:`core_devs`
 who should remove the ``Needs Triage`` label and give the issue an effort, impact and priority label.
@@ -41,24 +41,24 @@ The reviewer should also:
 
 We try to describe the **estimated amount of work** required to solve each issue:
 
-- |Effort: high| The issue is likely to require a serious amount of work (more than a couple of days).
-- |Effort: medium| The issue is likely to require a decent amount of work (in between a few hours and a couple days).
-- |Effort: low| The issue is likely to require a small amount of work (less than a few hours).
+- ``Effort: high`` The issue is likely to require a serious amount of work (more than a couple of days).
+- ``Effort: medium`` The issue is likely to require a decent amount of work (in between a few hours and a couple days).
+- ``Effort: low`` The issue is likely to require a small amount of work (less than a few hours).
 
 We also try to quantify the **estimated impact** of the proposed change on the project:
 
-- |Impact: high| Solving this issue will have a high impact on the project.
-- |Impact: medium| Solving this issue will have a decent impact on the project.
-- |Impact: low| Solving this issue will have a small impact on the project.
+- ``Impact: high`` Solving this issue will have a high impact on the project.
+- ``Impact: medium`` Solving this issue will have a decent impact on the project.
+- ``Impact: low`` Solving this issue will have a small impact on the project.
 
 Finally, we also indicate the **priority level** of the issue:
 
-- |Priority: high| The task is urgent and needs to be addressed as soon as possible.
-- |Priority: medium| The task is important but not urgent and should be addressed over the next few months.
-- |Priority: low| The task is not urgent and can be delayed.
+- ``Priority: high`` The task is urgent and needs to be addressed as soon as possible.
+- ``Priority: medium`` The task is important but not urgent and should be addressed over the next few months.
+- ``Priority: low`` The task is not urgent and can be delayed.
 
 Some issues---particular those which are low effort and low to medium priority---can serve as good starting project for
-new contributors. We label these issues with the |Good first issue| label
+new contributors. We label these issues with the ``Good first issue`` label
 which can be seen as an equivalent to a "very low effort" label. Because of
 this, good first issues do not require a separate effort label.
 
@@ -76,7 +76,7 @@ possible reasons for a community member to close an issue:
 
 -   The issue has been solved: kindly asked the author whether the issue can be closed.
     In the absence of reply, close the issue after two weeks.
--   The issue is a usage question: label the issue with |Usage|
+-   The issue is a usage question: label the issue with ``Usage``
     and kindly redirect the author to :neurostars:`neurostars <>`.
     Close the issue afterwards.
 -   The issue has no recent activity (no messages in the last three months):
