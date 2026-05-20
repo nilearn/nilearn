@@ -23,8 +23,11 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_GTE_1_7, SKLEARN_LT_1_6
-from nilearn._version import __version__
+from nilearn._utils.versions import (
+    SKLEARN_GTE_1_7,
+    SKLEARN_LT_1_6,
+    __short_version__,
+)
 from nilearn.glm._reporting_utils import (
     check_generate_report_input,
     glm_model_attributes_to_dataframe,
@@ -760,7 +763,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             is_notebook=is_notebook(),
             smoothing_fwhm=smoothing_fwhm,
             title=title,
-            version=__version__,
+            version=__short_version__,
             unique_id=str(uuid.uuid4()).replace("-", ""),
             warning_messages=warning_messages,
             has_plotting_engine=is_matplotlib_installed(),
