@@ -1,9 +1,12 @@
 """Test the _utils.param_validation module."""
 
+import warnings
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectKBest, SelectPercentile
 
 from nilearn.conftest import _img_3d_rand, _surf_img_1d
@@ -12,7 +15,9 @@ from nilearn.decoding._utils import (
     MNI152_BRAIN_VOLUME,
     _get_mask_extent,
     check_feature_screening,
+    validate_estimator,
 )
+from nilearn.decoding.decoder import _BaseDecoder
 
 
 @pytest.mark.thread_unsafe
@@ -118,4 +123,62 @@ def test_check_feature_screening_n_features_error(surf_img_1d):
             mask_img=surf_img_1d,
             is_classification=True,
             screening_n_features=100,
+        )
+
+
+@pytest.mark.parametrize(
+    "estimator",
+    [
+        "svc",
+        "svc_l2",
+        "svc_l1",
+        "logistic",
+        "logistic_l1",
+        "logistic_l2",
+        "ridge",
+        "ridge_classifier",
+        "ridge_regressor",
+        "svr",
+        "dummy_classifier",
+        "dummy_regressor",
+    ],
+)
+def test_check_supported_estimator(estimator):
+    """Check if the estimator is one of the supported estimators."""
+    expected_warning = (
+        "Use a custom estimator at your own risk "
+        "of the process not working as intended."
+    )
+
+    with warnings.catch_warnings(record=True) as raised_warnings:
+        validate_estimator(estimator)
+    warning_messages = [str(warning.message) for warning in raised_warnings]
+
+    assert expected_warning not in warning_messages
+
+
+@pytest.mark.parametrize("estimator", ["ridgo", "svb"])
+def test_check_unsupported_estimator(estimator):
+    """Check if the estimator is one of the supported estimators.
+
+    If not, if it is a string and if not in supported ones,
+    then raise the error.
+    """
+    with pytest.raises(ValueError, match="Invalid estimator"):
+        validate_estimator(
+            _BaseDecoder(
+                estimator=estimator, standardize="zscore_sample"
+            ).estimator
+        )
+
+    expected_warning = (
+        "Use a custom estimator at your own risk "
+        "of the process not working as intended."
+    )
+    custom_estimator = RandomForestClassifier()
+    with pytest.warns(UserWarning, match=expected_warning):
+        validate_estimator(
+            _BaseDecoder(
+                estimator=custom_estimator, standardize="zscore_sample"
+            ).estimator
         )
