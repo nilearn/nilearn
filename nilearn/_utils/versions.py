@@ -6,6 +6,10 @@ from typing import Literal
 from packaging.version import Version, parse
 from sklearn import __version__ as sklearn_version
 
+from nilearn._utils.testing import (
+    are_tests_running,
+    baseline_generation_running,
+)
 from nilearn._version import __version__
 
 OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.8.0"
@@ -20,9 +24,12 @@ VERSION_OPERATORS = {
 }
 
 # We clean up the version number
-# to make it more stable during tests.
-__short_version__ = str(
-    Version(__version__).__replace__(local=None, dev=None, pre=None)
+# to make it more stable during tests
+# and less dependent if git tags are present or not.
+__short_version__ = (
+    "TEST"
+    if are_tests_running() or baseline_generation_running()
+    else str(Version(__version__).__replace__(local=None, dev=None, pre=None))
 )
 
 
