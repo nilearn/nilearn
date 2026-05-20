@@ -4,7 +4,7 @@ from string import Template
 
 from nilearn._assets import get_template
 from nilearn._utils.html_document import HTMLDocument
-from nilearn._version import __version__
+from nilearn._utils.versions import __short_version__
 
 UNFITTED_MSG = (
     "\nThis estimator has not been fit yet.\n"
@@ -86,7 +86,7 @@ def assemble_report(body: str, page_title: str) -> HTMLReport:
         head_tpl=head_tpl,
         head_values={
             "head_css": True,
-            "version": __version__,
+            "version": __short_version__,
             "page_title": page_title,
             "display_footer": "style='display: none'" if is_notebook() else "",
         },
