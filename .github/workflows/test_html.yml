@@ -43,9 +43,6 @@ jobs:
         steps:
         -   uses: actions/checkout@v6
 
-        -   name: Merge with upstream
-            run: bash ./build_tools/github/merge_upstream.sh
-
         -   uses: actions/setup-node@v6
             with:
                 node-version: 18
