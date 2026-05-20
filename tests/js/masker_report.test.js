@@ -1,9 +1,9 @@
 const template = require('./template.js')
 
+const VIEWPORT = { x: 0, y: 0, width: 1200, height: 2400 }
+
 const maskers = ['NiftiMasker', 'NiftiLabelsMasker', 'NiftiMapsMasker', 'SurfaceMasker', 'SurfaceLabelsMasker', 'SurfaceMapsMasker']
 
 for (let i = 0; i < maskers.length; i++) {
-  template.fullTest(maskers[i] + '_fitted.html',
-    { x: 0, y: 0, width: 800, height: 650 }
-  )
+  template.fullTest(maskers[i] + '_fitted.html', VIEWPORT)
 }
