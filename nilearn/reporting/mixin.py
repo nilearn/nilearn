@@ -14,8 +14,7 @@ import pandas as pd
 from nilearn._assets import get_template
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.versions import SKLEARN_GTE_1_7
-from nilearn._version import __version__
+from nilearn._utils.versions import SKLEARN_GTE_1_7, __short_version__
 from nilearn.reporting._utils import (
     dataframe_to_html,
 )
@@ -72,7 +71,7 @@ class ReportMixin:
         "docstring": "",
         "parameters": "",
         "date": "",
-        "version": __version__,
+        "version": __short_version__,
         "warning_messages": [],
     }
 

@@ -156,7 +156,7 @@ def _full_brain_info(
 def _fill_html_template(
     info,
     engine: Literal["niivue", "plotly"] = "plotly",
-):
+) -> SurfaceView:
     backend = get_surface_backend(engine)
     view_img_tpl = get_template(backend.HTML_TEMPLATE_PATH)
 
@@ -189,7 +189,7 @@ def view_img_on_surf(
     title_fontsize=25,
     view="left",
     vol_to_surf_kwargs=None,
-):
+) -> SurfaceView:
     """Insert a surface plot of a statistical map into an HTML page.
 
     Parameters
@@ -328,7 +328,7 @@ def view_surf(
     title_fontsize=25,
     engine="plotly",
     view="left",
-):
+) -> SurfaceView:
     """Insert a surface plot of a surface map into an HTML page.
 
     Parameters
