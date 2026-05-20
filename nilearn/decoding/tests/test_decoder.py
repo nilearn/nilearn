@@ -1582,7 +1582,7 @@ def _set_hyperparameters(
 def test_decoder_error_wrong_estimator_str(
     decoder, estimator, binary_classification_data
 ):
-    """Ensure that Decoders cannot be instantiated with a Regressor estimator.
+    """Ensure that Decoders cannot be fitted with a Regressor estimator.
 
     Here only testing the string placeholder.
     """
@@ -1595,7 +1595,7 @@ def test_decoder_error_wrong_estimator_str(
 
 @pytest.mark.parametrize("decoder", [Decoder, FREMClassifier])
 def test_decoder_error_wrong_estimator(decoder, binary_classification_data):
-    """Ensure that Decoders cannot be instantiated \
+    """Ensure that Decoders cannot be fitted \
         with a Regressor estimator.
     """
     X, y, mask = binary_classification_data
@@ -1628,7 +1628,7 @@ def test_decoder_error_wrong_estimator(decoder, binary_classification_data):
 def test_regressor_error_wrong_estimator_str(
     regressor, estimator, regression_data
 ):
-    """Ensure that Regressors cannot be instantiated \
+    """Ensure that Regressors cannot be fitted \
         with a Classifier estimator.
 
     Here only testing the string placeholder.
@@ -1642,7 +1642,7 @@ def test_regressor_error_wrong_estimator_str(
 
 @pytest.mark.parametrize("regressor", [DecoderRegressor, FREMRegressor])
 def test_regressor_error_wrong_estimator(regressor, regression_data):
-    """Ensure that Regressors cannot be instantiated a classifier estimator."""
+    """Ensure that Regressors cannot be fitted with a classifier estimator."""
     X, y, mask = regression_data
 
     model = regressor(estimator=LinearSVC(), mask=mask)
