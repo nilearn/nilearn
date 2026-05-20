@@ -23,7 +23,7 @@ module.exports.fullTest = (file, clip, tolerance = 1000, timeout = 5000) => {
 
     afterAll(async () => {
       await page.close()
-    })
+    }, timeout)
 
     it(
       'visual regression test ' + file,
