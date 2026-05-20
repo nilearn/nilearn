@@ -352,7 +352,7 @@ def validate_estimator(
     If an actual estimator instance was passed, we allow it but warn the user.
 
     Otherwise we instantiate one
-    from the config defined in supported_estimaptors.
+    from the config defined in supported_estimators.
 
     Parameters
     ----------
