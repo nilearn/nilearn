@@ -7,8 +7,6 @@ import tempfile
 import warnings
 from pathlib import Path
 
-import pytest
-
 # we use memory_profiler library for memory consumption checks
 try:
     from memory_profiler import memory_usage
@@ -34,6 +32,8 @@ except ImportError:
         """Use as a decorator to skip tests requiring memory_profiler."""
 
         def dummy_func():
+            import pytest
+
             pytest.skip("Test requires memory_profiler.")
 
         return dummy_func
@@ -190,4 +190,6 @@ def skip_if_running_tests(msg="") -> None:
 
     """
     if are_tests_running():
+        import pytest
+
         pytest.skip(msg, allow_module_level=True)
