@@ -485,6 +485,78 @@ def test_plot_img_on_surf(bg_on_data, symmetric_cmap, colorbar, title):
     return fig
 
 
+@pytest.mark.slow
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize(
+    "resolution", ["fsaverage3", "fsaverage4", "fsaverage5"]
+)
+@pytest.mark.parametrize("hemi", ["left", "right"])
+def test_surface_fs_data(hemi, resolution):
+
+    mesh_type = [
+        "white_matter",
+        "pial",
+        "inflated",
+        "sphere",
+        # "flat", This does not really work here
+    ]
+
+    data_type = ["area", "curvature", "sulcal", "thickness"]
+
+    fig, ax = plt.subplots(
+        nrows=len(data_type),
+        ncols=len(mesh_type),
+        subplot_kw={"projection": "3d"},
+        figsize=(20, 20),
+    )
+
+    for row, data in enumerate(data_type):
+        for col, mesh in enumerate(mesh_type):
+            fs = load_fsaverage_data(
+                resolution, mesh_type=mesh, data_type=data
+            )
+
+            view = "lateral"
+
+            cmap = "inferno"
+            vmax = None
+            vmin = None
+            if data == "thickness":
+                vmax = 5
+                vmin = 0
+            if data == "sulcal":
+                cmap = "RdBu_r"
+                vmax = 2
+                vmin = -2
+            if data == "curvature":
+                cmap = "RdBu_r"
+                vmax = 0.5
+                vmin = -0.5
+
+            title = f"{mesh=} - {data=}"
+
+            colorbar = False
+            if col == len(mesh_type) - 1:
+                colorbar = True
+
+            fig = plot_surf(
+                None,
+                fs,
+                bg_on_data=True,
+                vmax=vmax,
+                vmin=vmin,
+                figure=fig,
+                axes=ax[row][col],
+                view=view,
+                cmap=cmap,
+                hemi=hemi,
+                title=title,
+                colorbar=colorbar,
+            )
+
+    return fig
+
+
 # ---------------------- design matrix plotting -------------------------------
 
 
