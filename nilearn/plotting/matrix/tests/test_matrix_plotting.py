@@ -110,6 +110,7 @@ def test_matrix_plotting_set_title(mat, labels, title):
         assert ax._axes.title.get_text() == title
 
 
+@pytest.mark.thread_unsafe
 def test_matrix_plotting_reorder(matplotlib_pyplot, mat, labels):  # noqa: ARG001
     # test if reordering with default linkage works
     idx = [2, 3, 5]
@@ -301,6 +302,7 @@ def test_save_contrast_matrix(tmp_path):
     assert (tmp_path / "contrast.pdf").exists()
 
 
+@pytest.mark.thread_unsafe
 def test_show_contrast_matrix_axes():
     """Test poassing axes to plot_contrast_matrix."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
