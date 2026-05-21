@@ -34,6 +34,7 @@ PACKAGE_DIRECTORY = Path(__file__).absolute().parent
 
 
 ALLOWED_DATA_TYPES = (
+    "area",
     "curvature",
     "sulcal",
     "thickness",

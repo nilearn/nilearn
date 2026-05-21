@@ -1105,6 +1105,7 @@ def load_fsaverage_data(
             - ``"curvature"``,
             - ``"sulcal"``,
             - ``"thickness"``,
+            - ``"area"``,
 
     %(data_dir)s
 
@@ -1119,7 +1120,12 @@ def load_fsaverage_data(
 
     fsaverage = load_fsaverage(mesh=mesh, data_dir=data_dir)
     fsaverage_data = fetch_surf_fsaverage(mesh=mesh, data_dir=data_dir)
-    renaming = {"curvature": "curv", "sulcal": "sulc", "thickness": "thick"}
+    renaming = {
+        "curvature": "curv",
+        "sulcal": "sulc",
+        "thickness": "thick",
+        "area": "area",
+    }
     img = SurfaceImage(
         mesh=fsaverage[mesh_type],
         data={
