@@ -187,7 +187,7 @@ class ReportMixin:
         report_content["title"] = (
             title if title is not None else self.__class__.__name__
         )
-
+        report_content["page_title"] = report_content["title"]
         report_content["engine"] = engine
 
         report_content["has_plotting_engine"] = is_matplotlib_installed()
@@ -332,10 +332,6 @@ class ReportMixin:
         """
         if self._report_content["engine"] == "brainsprite":
             self._set_brainsprite_data()
-
-        self._report_content["page_title"] = self._report_content.get(
-            "page_title", self.__class__.__name__
-        )
 
         estimator_type = self._report_content.get("estimator_type", "")
         body_tpl = self._get_body_template(estimator_type)

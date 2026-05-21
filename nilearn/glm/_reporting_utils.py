@@ -48,12 +48,12 @@ class GLMReportMixin(ReportMixin):
 
     def _set_report_basics(self, engine, title):
         title = f"<br>{title}" if title else ""
+        title = f"Statistical Report - {self.__str__()}{title}"
+
         super()._set_report_basics(engine, title)
+
         report_content = self._report_content
 
-        report_content["page_title"] = (
-            f"Statistical Report - {self.__str__()}{title}"
-        )
         report_content["estimator_type"] = self._estimator_type
         report_content["model_type"] = self.__str__()
 
