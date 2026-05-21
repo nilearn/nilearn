@@ -11,9 +11,7 @@ from typing import Any
 
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
-from sklearn import svm
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.base import TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
 from sklearn.utils import check_array
