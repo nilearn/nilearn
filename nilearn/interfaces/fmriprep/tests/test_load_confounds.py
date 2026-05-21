@@ -208,6 +208,7 @@ def _corr_tseries(tseries1, tseries2):
     return corr
 
 
+@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore")
 def test_nilearn_standardize_false(tmp_path):
     """Test removing confounds with no standardization."""

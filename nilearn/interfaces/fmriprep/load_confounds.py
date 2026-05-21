@@ -300,14 +300,14 @@ def load_confounds(
 
     sample_mask : None, :class:`numpy.ndarray` or, :obj:`list` of \
         :class:`numpy.ndarray` or None
-        When no volumns require removal, the value is None.
+        When no volume require removal, the value is None.
         Otherwise, shape: (number of scans - number of volumes removed, )
         The index of the niimgs along time/fourth dimension for valid volumes
         for subsequent analysis.
         This attribute should be passed to parameter `sample_mask` of
         :class:`nilearn.maskers.NiftiMasker` or
         :func:`nilearn.signal.clean`.
-        Volumns are removed if flagged as following:
+        Volumes are removed if flagged as following:
 
         - Non-steady-state volumes (if present)
         - Motion outliers detected by scrubbing

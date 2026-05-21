@@ -41,7 +41,9 @@ available_filters = ("butterworth", "cosine")
 def standardize_signal(
     signals,
     detrend: bool = False,
-    standardize: Literal["psc", "zscore_sample"] | None = "zscore_sample",
+    standardize: Literal["psc", "zscore_sample"]
+    | bool
+    | None = "zscore_sample",
 ) -> np.ndarray:
     """Center and standardize a given signal (time is along first axis).
 
@@ -63,6 +65,12 @@ def standardize_signal(
     check_params(locals())
 
     signals = _detrend(signals, inplace=False) if detrend else signals.copy()
+
+    # TODO (nilearn >= 0.15) remove casting from bool
+    if standardize is False:
+        standardize = None
+    elif standardize is True:
+        standardize = "zscore_sample"
 
     if standardize is None:
         return signals
@@ -469,7 +477,7 @@ def high_variance_confounds(
         than ``n_confounds``.
 
     %(detrend)s
-        Default=True.
+        default=True.
 
     Returns
     -------
@@ -622,7 +630,7 @@ def clean(
         .. nilearn_versionadded:: 0.8.0
 
     %(t_r)s
-        Default=2.5.
+        default=2.5.
 
     filter : {'butterworth', 'cosine', False}, default='butterworth'
         Filtering methods:
@@ -633,7 +641,7 @@ def clean(
 
     %(low_pass)s
 
-        .. note::
+        .. warning::
             `low_pass` is not implemented for filter='cosine'.
 
     %(high_pass)s
@@ -719,6 +727,11 @@ def clean(
         confounds = _create_cosine_drift_terms(
             signals, confounds, high_pass, t_r
         )
+        if low_pass is not None:
+            warnings.warn(
+                "low_pass is not implemented for filter='cosine'",
+                stacklevel=find_stack_level(),
+            )
 
     # Interpolation / censoring
     signals, confounds, sample_mask = _handle_scrubbed_volumes(

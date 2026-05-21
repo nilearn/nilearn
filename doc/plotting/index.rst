@@ -143,6 +143,7 @@ different heuristics to find cutting coordinates.
    .. code-block:: python
 
      from nilearn import plotting
+
      display = plotting.plot_stat_map(img)
      display.close()
 
@@ -374,6 +375,7 @@ To display the figure when running a script, you need to call
 .. code-block:: python
 
      from nilearn import plotting
+
      plotting.show()
 
 The simplest way to output an image file from the plotting functions is
@@ -382,7 +384,8 @@ to specify the ``output_file`` argument:
 .. code-block:: python
 
      from nilearn import plotting
-     plotting.plot_stat_map(img, output_file='pretty_brain.png')
+
+     plotting.plot_stat_map(img, output_file="pretty_brain.png")
 
 In this case, the display is closed automatically and the plotting
 function returns None.
@@ -395,8 +398,9 @@ that can be used to save the plot to an image file:
 .. code-block:: python
 
      from nilearn import plotting
+
      display = plotting.plot_stat_map(img)
-     display.savefig('pretty_brain.png')
+     display.savefig("pretty_brain.png")
      # Remember to close the display
      display.close()
 
@@ -506,8 +510,9 @@ cortical surface:
 .. code-block:: python
 
      from nilearn import plotting, datasets
-     img = datasets.fetch_localizer_button_task()['tmap']
-     view = plotting.view_img_on_surf(img, threshold='90%', surf_mesh='fsaverage')
+
+     img = datasets.fetch_localizer_button_task()["tmap"]
+     view = plotting.view_img_on_surf(img, threshold="90%", surf_mesh="fsaverage")
 
 If you are running a notebook, displaying ``view`` will embed an interactive
 plot (this is the case for all interactive plots produced by nilearn's "view"
@@ -542,10 +547,15 @@ a cortical mesh:
 .. code-block:: python
 
      from nilearn import plotting, datasets
+
      destrieux = datasets.fetch_atlas_surf_destrieux()
      fsaverage = datasets.fetch_surf_fsaverage()
-     view = plotting.view_surf(fsaverage['infl_left'], destrieux['map_left'],
-                               cmap='gist_ncar', symmetric_cmap=False)
+     view = plotting.view_surf(
+         fsaverage["infl_left"],
+         destrieux["map_left"],
+         cmap="gist_ncar",
+         symmetric_cmap=False,
+     )
      view.open_in_browser()
 
 
@@ -562,15 +572,21 @@ cortical mesh:
 .. code-block:: python
 
      from nilearn import plotting, datasets, surface
+
      fsaverage = datasets.fetch_surf_fsaverage()
      motor_images = datasets.load_sample_motor_activation_image()
      mesh = surface.load_surf_mesh(fsaverage.pial_right)
      map = surface.vol_to_surf(motor_images.images[0], mesh)
-     fig = plotting.plot_surf_stat_map(mesh, map, hemi='right',
-                                       view='lateral', colorbar=True,
-                                       threshold=1.2,
-                                       bg_map=fsaverage.sulc_right,
-                                       engine='plotly')
+     fig = plotting.plot_surf_stat_map(
+         mesh,
+         map,
+         hemi="right",
+         view="lateral",
+         colorbar=True,
+         threshold=1.2,
+         bg_map=fsaverage.sulc_right,
+         engine="plotly",
+     )
      fig.show()
 
 .. image:: ../images/plotly_plot_surf_stat_map.png
@@ -587,7 +603,7 @@ use :func:`view_markers`.
 
 .. code-block:: python
 
-     view = plotting.view_connectome(correlation_matrix, coords, edge_threshold='90%')
+     view = plotting.view_connectome(correlation_matrix, coords, edge_threshold="90%")
      view.open_in_browser()
 
 
@@ -604,9 +620,11 @@ use :func:`view_markers`.
 .. code-block:: python
 
      from nilearn import plotting
+
      dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
-     view = plotting.view_markers(dmn_coords, ['red', 'cyan', 'magenta', 'orange'],
-                                  marker_size=10)
+     view = plotting.view_markers(
+         dmn_coords, ["red", "cyan", "magenta", "orange"], marker_size=10
+     )
      view.open_in_browser()
 
 
@@ -623,10 +641,11 @@ Interactive visualization of statistical map slices
 .. code-block:: python
 
      from nilearn import plotting, datasets
-     img = datasets.fetch_localizer_button_task()['tmap']
-     html_view = plotting.view_img(img, threshold=2, vmax=4,
-                                   cut_coords=[-42, -16, 52],
-                                   title="Motor contrast")
+
+     img = datasets.fetch_localizer_button_task()["tmap"]
+     html_view = plotting.view_img(
+         img, threshold=2, vmax=4, cut_coords=[-42, -16, 52], title="Motor contrast"
+     )
 
 in a Jupyter notebook, if ``html_view`` is not requested, the viewer will be inserted in the notebook:
 

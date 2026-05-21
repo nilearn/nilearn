@@ -6,13 +6,16 @@ functions in :obj:`~nilearn.plotting.surface` should be in this file.
 """
 
 import math
+from typing import Any
 
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.helpers import is_kaleido_installed
+from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.displays import PlotlySurfaceFigure
+from nilearn.plotting.js_plotting_utils import mesh_to_plotly
 from nilearn.plotting.surface._utils import (
     DEFAULT_ENGINE,
     DEFAULT_HEMI,
@@ -22,7 +25,7 @@ from nilearn.plotting.surface._utils import (
     get_surface_backend,
     sanitize_hemi_view,
 )
-from nilearn.surface import load_surf_data, load_surf_mesh
+from nilearn.surface.surface import load_surf_data, load_surf_mesh
 
 try:
     import plotly.graph_objects as go
@@ -30,6 +33,8 @@ except ImportError:
     from nilearn.plotting._utils import engine_warning
 
     engine_warning("plotly")
+
+HTML_TEMPLATE_PATH = "html/plotting/surface_plot.jinja"
 
 CAMERAS = {
     "left": {
@@ -361,3 +366,59 @@ def _plot_surf(
         plotly_figure.savefig()
 
     return plotly_figure
+
+
+def _one_mesh_info(
+    surf_map,
+    surf_mesh,
+    threshold=None,
+    cmap=cm.cold_hot,  # type: ignore[attr-defined]
+    black_bg: bool = False,
+    bg_map=None,
+    symmetric_cmap: bool = True,
+    bg_on_data: bool = False,
+    vmax=None,
+    vmin=None,
+    title_fontsize=25,
+    **colorbar_kwargs,
+) -> dict[str, Any]:
+    """Prepare info for plotting one surface map on a single mesh.
+
+    This computes the dictionary that gets inserted in the web page,
+    which contains the encoded mesh, colors, min and max values, and
+    background color.
+
+    """
+    info: dict[str, Any] = {}
+
+    info["inflated_both"] = mesh_to_plotly(surf_mesh)
+
+    colors = colorscale(
+        cmap,
+        surf_map,
+        threshold,
+        symmetric_cmap=symmetric_cmap,
+        vmax=vmax,
+        vmin=vmin,
+    )
+    backend = get_surface_backend(DEFAULT_ENGINE)
+    info["vertexcolor_both"] = backend._get_vertexcolor(
+        surf_map,
+        colors["cmap"],
+        colors["norm"],
+        absolute_threshold=colors["abs_threshold"],
+        bg_map=bg_map,
+        bg_on_data=bg_on_data,
+    )
+    info["cmin"] = float(colors["vmin"])
+    info["cmax"] = float(colors["vmax"])
+    info["black_bg"] = black_bg
+    info["full_brain_mesh"] = False
+    info["colorscale"] = colors["colors"]
+
+    info["colorbar"] = colorbar_kwargs.get("colorbar", True)
+    info["cbar_height"] = colorbar_kwargs.get("colorbar_height", 0.5)
+    info["cbar_fontsize"] = colorbar_kwargs.get("colorbar_fontsize", 25)
+    info["title_fontsize"] = title_fontsize
+
+    return info

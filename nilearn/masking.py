@@ -20,13 +20,14 @@ from nilearn.datasets import (
     load_mni152_template,
     load_mni152_wm_template,
 )
-from nilearn.exceptions import MaskWarning, NotImplementedWarning
+from nilearn.exceptions import MaskWarning
 from nilearn.image.image import (
     check_niimg,
     check_niimg_3d,
     check_same_fov,
     get_data,
     new_img_like,
+    smooth_img,
 )
 from nilearn.image.resampling import resample_to_img
 from nilearn.surface.surface import SurfaceImage
@@ -184,7 +185,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
     %(connected)s
-        Default=True.
+        default=True.
 
     Returns
     -------
@@ -307,13 +308,13 @@ def compute_epi_mask(
             If a 3D image is given, we suggest to use the mean image.
 
     %(lower_cutoff)s
-        Default=0.2.
+        default=0.2.
     %(upper_cutoff)s
-        Default=0.85.
+        default=0.85.
     %(connected)s
-        Default=True.
+        default=True.
     %(opening)s
-        Default=2.
+        default=2.
     ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and infs)
         found in the images will be replaced by zeros
@@ -430,13 +431,13 @@ def compute_multi_epi_mask(
         masks, whereas threshold=0 is the union of all masks.
 
     %(lower_cutoff)s
-        Default=0.2.
+        default=0.2.
     %(upper_cutoff)s
-        Default=0.85.
+        default=0.85.
     %(connected)s
-        Default=True.
+        default=True.
     %(opening)s
-        Default=2.
+        default=2.
     exclude_zeros : :obj:`bool`, default=False
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
@@ -512,11 +513,11 @@ def compute_background_mask(
             If a 3D image is given, we suggest to use the mean image.
 
     %(border_size)s
-        Default=2.
+        default=2.
     %(connected)s
-        Default=False.
+        default=False.
     %(opening)s
-        Default=False.
+        default=False.
     %(target_affine)s
 
         .. note::
@@ -607,10 +608,10 @@ def compute_multi_background_mask(
         masks, whereas threshold=0 is the union of all masks.
 
     %(border_size)s
-        Default=2.
+        default=2.
 
     %(connected)s
-        Default=True.
+        default=True.
 
     %(opening)s
 
@@ -683,9 +684,9 @@ def compute_brain_mask(
     threshold : :obj:`float`, default=0.5
         The value under which the :term:`MNI` template is cut off.
     %(connected)s
-        Default=True.
+        default=True.
     %(opening)s
-        Default=2.
+        default=2.
     %(memory)s
     %(verbose0)s
     %(mask_type)s
@@ -767,10 +768,10 @@ def compute_multi_brain_mask(
         The value under which the :term:`MNI` template is cut off.
 
     %(connected)s
-        Default=True.
+        default=True.
 
     %(opening)s
-        Default=2.
+        default=2.
 
     %(mask_type)s
 
@@ -817,7 +818,7 @@ def compute_multi_brain_mask(
 @fill_doc
 def apply_mask(
     imgs, mask_img, dtype="f", smoothing_fwhm=None, ensure_finite=True
-):
+) -> np.ndarray:
     """Extract signals from images using specified mask.
 
     Read the time series from the given image object, using the mask.
@@ -842,11 +843,7 @@ def apply_mask(
 
         .. note::
 
-            Implies ensure_finite=True.
-
-        .. warning::
-
-            Not yet implemented for surface images
+            Implies ensure_finite=True when applied to volume data.
 
     ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and
@@ -893,14 +890,7 @@ def apply_mask_fmri(
     if isinstance(imgs, SurfaceImage) and isinstance(mask_img, SurfaceImage):
         check_polymesh_equal(mask_img.mesh, imgs.mesh)
 
-        if smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                NotImplementedWarning,
-                stacklevel=2,
-            )
-            smoothing_fwhm = True
+        imgs = smooth_img(imgs, fwhm=smoothing_fwhm)
 
         mask_data = as_ndarray(get_surface_data(mask_img), dtype=bool)
         series = get_surface_data(imgs)
@@ -1068,7 +1058,7 @@ def unmask(X, mask_img, order="F"):
             f"Masked data X must be 2D or 1D array; got shape: {X.shape!s}"
         )
 
-    return new_img_like(mask_img, unmasked, affine)
+    return new_img_like(mask_img, unmasked, affine, copy_header=False)
 
 
 def unmask_from_to_3d_array(w, mask):

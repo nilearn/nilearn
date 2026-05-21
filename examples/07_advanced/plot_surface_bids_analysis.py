@@ -68,6 +68,7 @@ models, run_imgs, events, confounds = first_level_from_bids(
     task_label="languagelocalizer",
     space_label="",
     img_filters=[("desc", "preproc")],
+    smoothing_fwhm=6,
     n_jobs=2,
 )
 

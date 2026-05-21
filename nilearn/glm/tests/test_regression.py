@@ -1,5 +1,6 @@
 """Test functions for models.regression."""
 
+import numpy as np
 import pytest
 from numpy.testing import (
     assert_almost_equal,
@@ -11,12 +12,12 @@ from nilearn.glm import ARModel, OLSModel, SimpleRegressionResults
 
 
 @pytest.fixture()
-def X(rng):  # noqa: N802
+def X(rng) -> np.ndarray:  # noqa: N802
     return rng.standard_normal(size=(40, 10))
 
 
 @pytest.fixture()
-def Y(rng):  # noqa: N802
+def Y(rng) -> np.ndarray:  # noqa: N802
     return rng.standard_normal(size=(40, 10))
 
 

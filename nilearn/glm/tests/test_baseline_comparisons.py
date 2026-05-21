@@ -42,14 +42,28 @@ def test_stat_map_to_png_volume(
     """Check figures plotting for GLM report."""
     alpha = 0.001
 
-    thresholded_img, threshold = threshold_stats_img(
-        stat_img=load_sample_motor_activation_image(),
-        threshold=threshold,
-        alpha=alpha,
-        cluster_threshold=cluster_threshold,
-        height_control=height_control,
-        two_sided=two_sided,
-    )
+    if height_control is None and threshold == 3:
+        with pytest.warns(
+            FutureWarning,
+            match="nilearn version>=0.15, the default 'threshold' will be set",
+        ):
+            thresholded_img, threshold = threshold_stats_img(
+                stat_img=load_sample_motor_activation_image(),
+                threshold=threshold,
+                alpha=alpha,
+                cluster_threshold=cluster_threshold,
+                height_control=height_control,
+                two_sided=two_sided,
+            )
+    else:
+        thresholded_img, threshold = threshold_stats_img(
+            stat_img=load_sample_motor_activation_image(),
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            two_sided=two_sided,
+        )
 
     table_details = OrderedDict()
     table_details.update({"Threshold Z": np.around(threshold, 3)})
