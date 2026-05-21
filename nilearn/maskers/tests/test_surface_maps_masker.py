@@ -258,7 +258,8 @@ def test_non_overlapping_maps(
                 [126.88, 324.61],
                 [142.70, 363.54],
             ]
-        ), atol=1e-02
+        ),
+        atol=1e-02,
     )
 
 
@@ -289,7 +290,8 @@ def test_overlapping_maps(allow_overlap, overlapping_maps, surf_img_2d):
                     [26.32, 295.19],
                     [29.26, 330.71],
                 ]
-            ), atol=1e-02
+            ),
+            atol=1e-02,
         )
 
 
@@ -317,5 +319,6 @@ def test_overlapping_maps2(overlapping_maps2, surf_img_2d):
                 [-51.28, 708.97],
                 [-57.94, 795.64],
             ]
-        ), atol=1e-02
+        ),
+        atol=1e-02,
     )
