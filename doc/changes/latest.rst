@@ -67,6 +67,8 @@ Fixes
 
 - :bdg-dark:`Code` Do not copy mask image's header in ``masking.unmask`` (:gh:`6157` by `Taylor Salo`_).
 
+- :bdg-dark:`Code` Make sure that area data of Freesurfer can loaded as SurfaceImage by :func:`~nilearn.datasets.load_fsaverage_data` (:gh:`6230` by `Rémi Gau`_).
+
 Enhancements
 ------------
 
