@@ -69,6 +69,7 @@ def test_fit(surf_label_img):
     assert masker.region_ids_ == {"background": 0, 0: 1}
 
 
+@pytest.mark.thread_unsafe
 def test_fit_transform(surf_label_img, surf_img_1d):
     """Test transform does not return any value for the background.
 

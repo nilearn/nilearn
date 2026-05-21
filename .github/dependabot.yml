@@ -1,12 +1,12 @@
 ---
 # Documentation
-# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+# https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference
 version: 2
 updates:
 -   package-ecosystem: github-actions
     directory: /
     schedule:
-        interval: monthly
+        interval: quarterly
     labels:
     -   Dependencies
     -   Infrastructure
