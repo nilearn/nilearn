@@ -58,6 +58,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
     """
 
     _estimator_type = "glm"  # TODO (sklearn >= 1.8) remove
+    design_only: bool
 
     def _doc_link_url_param_generator(self, *args):  # noqa : ARG002
         """Return doc URL components for GLM estimators.
@@ -614,7 +615,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
 
         design_matrices = None
         mask_plot = None
-        mask_info = {"n_elements": 0, "coverage": "0"}
+        mask_info: dict[str, Any] = {"n_elements": 0, "coverage": "0"}
         results = None
 
         if not self.__sklearn_is_fitted__():
@@ -632,13 +633,13 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
 
             # We try to rely on the content of glm object only
             # by reading images from disk rarther than recomputing them
-            mask_info = {
-                k: v
-                for k, v in self.masker_._report_content.items()
-                if k in ["n_elements", "coverage"]
-            }
-            if "coverage" in mask_info:
-                mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
+            if not self.design_only:
+                mask_info = {
+                    k: v
+                    for k, v in self.masker_._report_content.items()
+                    if k in ["n_elements", "coverage"]
+                }
+            mask_info["coverage"] = f"{float(mask_info['coverage']):0.1f}"
 
             statistical_maps = {}
             if self._is_volume_glm() and output is not None:
@@ -731,7 +732,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
 
         # for methods writing, only keep the contrast expressed as strings
         if contrasts is not None:
-            contrasts = [x for x in contrasts.values() if isinstance(x, str)]
+            contrasts = [str(x) for x in contrasts if isinstance(x, str)]
 
         title = f"<br>{title}" if title else ""
         title = f"Statistical Report - {self.__str__()}{title}"
@@ -773,6 +774,7 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             unique_id=str(uuid.uuid4()).replace("-", ""),
             warning_messages=warning_messages,
             has_plotting_engine=is_matplotlib_installed(),
+            design_only=self.design_only,
             **mask_info,
         )
 

@@ -50,7 +50,7 @@ from nilearn.typing import NiimgLike
 
 def _input_type_error_message(second_level_input):
     return (
-        "second_level_input must be either:\n"
+        "'second_level_input' must be either:\n"
         "- a pandas DataFrame,\n"
         "- a Niimg-like object\n"
         "- a pandas Series of Niimg-like object\n"
@@ -67,18 +67,16 @@ def _check_second_level_input(
 ) -> None:
     """Check second_level_input type."""
     _check_design_matrix(design_matrix)
-    if not design_only:
-        if second_level_input is None:
-            raise TypeError(
-                "'second_level_input' can only be None for design only models."
-            )
-    elif second_level_input is None:
+    if design_only:
         if design_matrix is None:
             raise TypeError(
-                "'second_level_input' and 'design_matrix' "
-                "cannot both be None for design only models."
+                "'design_matrix' cannot be None when design_only is True."
             )
         return
+    elif second_level_input is None:
+        raise TypeError(
+            "'second_level_input' cannot be None when design_only is False."
+        )
 
     input_type = _check_input_type(second_level_input)
     _check_input_as_type(
@@ -141,7 +139,10 @@ def _check_all_elements_of_same_type(data) -> None:
 
 
 def _check_input_as_type(
-    second_level_input, input_type, none_confounds, none_design_matrix
+    second_level_input,
+    input_type,
+    none_confounds,
+    none_design_matrix,
 ) -> None:
     if input_type == "flm_object":
         _check_input_as_first_level_model(second_level_input, none_confounds)
@@ -395,10 +396,8 @@ def _infer_effect_maps(second_level_input, contrast_def):
     return effect_maps
 
 
-def _process_second_level_input(second_level_input, design_only=False):
+def _process_second_level_input(second_level_input):
     """Process second_level_input."""
-    if design_only and second_level_input:
-        return None, None
     if isinstance(second_level_input, pd.DataFrame):
         return _process_second_level_input_as_dataframe(second_level_input)
     elif hasattr(second_level_input, "__iter__") and isinstance(
@@ -636,9 +635,10 @@ class SecondLevelModel(BaseGLM):
 
         self.confounds_ = confounds
 
-        sample_map, subjects_label = _process_second_level_input(
-            second_level_input, self.design_only
-        )
+        if not self.design_only:
+            sample_map, subjects_label = _process_second_level_input(
+                second_level_input
+            )
 
         # Create and set design matrix, if not given
         if design_matrix is None:
@@ -654,6 +654,7 @@ class SecondLevelModel(BaseGLM):
         self.masker_ = None
         self.n_elements_ = 0
         self._reporting_data = {}
+
         if self.design_only:
             return self
 
@@ -687,10 +688,7 @@ class SecondLevelModel(BaseGLM):
         return self
 
     def __sklearn_is_fitted__(self) -> bool:
-        return hasattr(self, "second_level_input_") and (
-            (not self.design_only and self.second_level_input_ is not None)
-            or self.design_only
-        )
+        return hasattr(self, "second_level_input_")
 
     @fill_doc
     def compute_contrast(
@@ -719,18 +717,21 @@ class SecondLevelModel(BaseGLM):
 
         Returns
         -------
-        output_image : :class:`~nibabel.nifti1.Nifti1Image`
+        output_image : :class:`~nibabel.nifti1.Nifti1Image`, \
+                       :class:`~nilearn.surface.SurfaceImage`, None, or\
+                       a :obj:`dict` of  \
+                       :class:`~nibabel.nifti1.Nifti1Image`, \
+                       :class:`~nilearn.surface.SurfaceImage` or None
             The desired output image(s).
             If ``output_type == 'all'``,
             then the output is a dictionary of images,
             keyed by the type of image.
 
+            If the model has ``design_only=True``,
+            this will return None or a :obj:`dict` whose values are None.
+
         """
         check_is_fitted(self)
-        if self.design_only:
-            raise RuntimeError(
-                "Cannot compute contrasts on 'design_only' models."
-            )
 
         # check first_level_contrast
         _check_first_level_contrast(
@@ -752,6 +753,22 @@ class SecondLevelModel(BaseGLM):
             "all",
         ]
         check_parameter_in_allowed(output_type, valid_types, "output_type")
+
+        output_types = (
+            valid_types[:-1] if output_type == "all" else [output_type]
+        )
+
+        outputs = {}
+        for output_type_ in output_types:
+            outputs[output_type_] = None
+
+        if self.design_only:
+            warn(
+                "Cannot compute contrasts on 'design_only' models.",
+                category=UserWarning,
+                stacklevel=find_stack_level(),
+            )
+            return outputs if output_type == "all" else None
 
         # Get effect_maps appropriate for chosen contrast
         effect_maps = _infer_effect_maps(
@@ -789,11 +806,6 @@ class SecondLevelModel(BaseGLM):
             self.labels_, self.results_, con_val, second_level_stat_type
         )
 
-        output_types = (
-            valid_types[:-1] if output_type == "all" else [output_type]
-        )
-
-        outputs = {}
         for output_type_ in output_types:
             # We get desired output from contrast object
             estimate_ = getattr(contrast, output_type_)()

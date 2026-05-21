@@ -190,6 +190,7 @@ def test_plot_connectome_exceptions_non_symmetric_adjacency(matrix):
         plot_connectome(matrix, node_coords, display_mode="x")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "node_color",
     [

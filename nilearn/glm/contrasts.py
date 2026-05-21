@@ -479,17 +479,20 @@ def compute_fixed_effects(
             f"from the number of variance images ({len(variance_imgs)})."
         )
 
+    # TODO (nilearn >=0.15) remove ALL standardize=None below
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = mask.fit()
     elif mask is None:
         if isinstance(contrast_imgs[0], SurfaceImage):
-            masker = SurfaceMasker().fit(contrast_imgs[0])
+            masker = SurfaceMasker(standardize=None).fit(contrast_imgs[0])
         else:
-            masker = NiftiMasker().fit(contrast_imgs)
+            masker = NiftiMasker(standardize=None).fit(contrast_imgs)
     elif isinstance(mask, SurfaceImage):
-        masker = SurfaceMasker(mask_img=mask).fit(contrast_imgs[0])
+        masker = SurfaceMasker(mask_img=mask, standardize=None).fit(
+            contrast_imgs[0]
+        )
     else:
-        masker = NiftiMasker(mask_img=mask).fit()
+        masker = NiftiMasker(mask_img=mask, standardize=None).fit()
 
     variances = np.array(
         [masker.transform(vi).squeeze() for vi in variance_imgs]

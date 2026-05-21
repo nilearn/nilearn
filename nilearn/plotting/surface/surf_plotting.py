@@ -108,12 +108,21 @@ def plot_surf(
             installed.
 
         .. note::
-            To be able to save figures to disk with the ``plotly`` engine, you
-            need to have ``kaleido`` installed.
+            To be able to save figures to disk with ``plotly`` engine
+            you need to have ``kaleido`` installed.
 
-        .. warning::
-            The ``plotly`` engine is new and experimental. Please report bugs
-            that you may encounter.
+            To be able to save images with plotly,
+            make sure that Google Chrome is installed!
+            You can install a compatible Chrome version using
+            the ``kaleido_get_chrome`` command in command line or
+            ``kaleido.get_chrome_sync()`` function
+            in Python.
+
+            .. code-block:: python
+
+                import kaleido
+
+                kaleido.get_chrome_sync()
 
     %(cmap)s
         If `None`, ``matplotlib`` default will be chosen.
@@ -470,13 +479,21 @@ def plot_surf_stat_map(
             have ``plotly`` installed.
 
         .. note::
-            To be able to save figures to disk with the ``plotly``
-            engine you need to have ``kaleido`` installed.
+            To be able to save figures to disk with ``plotly`` engine
+            you need to have ``kaleido`` installed.
 
-        .. warning::
-            The ``plotly`` engine is new and experimental.
-            Please report bugs that you may encounter.
+            To be able to save images with plotly,
+            make sure that Google Chrome is installed!
+            You can install a compatible Chrome version using
+            the ``kaleido_get_chrome`` command in command line or
+            ``kaleido.get_chrome_sync()`` function
+            in Python.
 
+            .. code-block:: python
+
+                import kaleido
+
+                kaleido.get_chrome_sync()
 
     %(cmap)s
         default="RdBu_r"
@@ -872,9 +889,19 @@ def plot_surf_roi(
             To be able to save figures to disk with ``plotly`` engine
             you need to have ``kaleido`` installed.
 
-        .. warning::
-            The ``plotly`` engine is new and experimental.
-            Please report bugs that you may encounter.
+            To be able to save images with plotly,
+            make sure that Google Chrome is installed!
+            You can install a compatible Chrome version using
+            the ``kaleido_get_chrome`` command in command line or
+            ``kaleido.get_chrome_sync()`` function
+            in Python.
+
+            .. code-block:: python
+
+                import kaleido
+
+                kaleido.get_chrome_sync()
+
 
     %(cmap_lut)s
         Default='gist_ncar'.

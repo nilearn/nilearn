@@ -384,8 +384,6 @@ class FirstLevelModel(BaseGLM):
         by a NiftiMasker
         or :obj:`~nilearn.maskers.SurfaceMasker` with default parameters.
         If False is given then the data will not be masked.
-        In the case of surface analysis, passing None or False will lead to
-        no masking.
 
     %(target_affine)s
 
@@ -837,14 +835,6 @@ class FirstLevelModel(BaseGLM):
             hasattr(self, "labels_")
             and hasattr(self, "results_")
             and hasattr(self, "fir_delays_")
-            and (
-                self.design_only
-                or (
-                    not self.design_only
-                    and self.labels_ is not None
-                    and self.results_ is not None
-                )
-            )
         )
 
     def fit(
@@ -880,7 +870,7 @@ class FirstLevelModel(BaseGLM):
                    default=None
             Data on which the :term:`GLM` will be fitted.
             If this is a list, the affine is considered the same for all.
-            If ``design_only`` is True, then ``run_imgs`` can be ``None``.
+            If ``design_only=True``, then ``run_imgs`` can be ``None``.
 
             .. warning::
 
@@ -916,7 +906,7 @@ class FirstLevelModel(BaseGLM):
 
             .. warning::
 
-                This parameter is ignored if design_matrices are passed.
+                This parameter is ignored if ``design_matrices`` are passed.
 
         confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
                     :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
@@ -930,7 +920,7 @@ class FirstLevelModel(BaseGLM):
 
             .. warning::
 
-                This parameter is ignored if design_matrices are passed.
+                This parameter is ignored if ``design_matrices`` are passed.
 
         sample_masks : array_like, or :obj:`list` of array_like, default=None
             shape of array: (number of scans - number of volumes remove)
@@ -947,7 +937,7 @@ class FirstLevelModel(BaseGLM):
                           :obj:`pathlib.Path` to a CSV or TSV file, \
                           or None, default=None
             Design matrices that will be used to fit the GLM.
-            If given it takes precedence over events and confounds.
+            If given it takes precedence over ``events`` and ``confounds``.
 
         bins : :obj:`int`, default=100
             Maximum number of discrete bins for the AR coef histogram.
@@ -1011,9 +1001,6 @@ class FirstLevelModel(BaseGLM):
                 design_matrices,
             )
         )
-
-        # Initialize masker_ to None such that attribute exists
-        self.masker_ = None
 
         # Assumption: FIXME ?
         # compute mask based on first run
@@ -1106,12 +1093,18 @@ class FirstLevelModel(BaseGLM):
 
         Returns
         -------
-        output : Nifti1Image, :obj:`~nilearn.surface.SurfaceImage`, \
-                 or :obj:`dict`
+        output_image : :class:`~nibabel.nifti1.Nifti1Image`, \
+                       :class:`~nilearn.surface.SurfaceImage`, None, or\
+                       a :obj:`dict` of  \
+                       :class:`~nibabel.nifti1.Nifti1Image`, \
+                       :class:`~nilearn.surface.SurfaceImage` or None
             The desired output image(s).
             If ``output_type == 'all'``,
             then the output is a dictionary of images,
             keyed by the type of image.
+
+            If the model has ``design_only=True``,
+            this will return None or a :obj:`dict` whose values are None.
 
         """
         check_is_fitted(self)
@@ -1332,6 +1325,10 @@ class FirstLevelModel(BaseGLM):
         if self.mask_img is False:
             # TODO this changes the value of self.mask_img
             # this should not happen as per sklearn rules about estimators
+            #
+            # TODO SecondLevelModel does not have a mask_img=False option
+            # that leads to no implicit mask (all voxels / vertices
+            # are included): do we want to add it?
             #
             # We create a dummy mask to preserve functionality of api
             if masker_type == "surface":
