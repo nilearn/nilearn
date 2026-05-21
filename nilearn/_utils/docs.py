@@ -12,6 +12,7 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 # sourcery skip: merge-dict-assign
 
 import sys
+from collections.abc import Callable
 
 ##############################################################################
 #
@@ -164,6 +165,7 @@ logistic = "Logistic regression"
 rc = "Ridge classifier"
 dc = "Dummy classifier with stratified strategy"
 
+
 docdict["classifier_options"] = f"""
 
     - ``"svc"``: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
@@ -190,7 +192,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        logistic = LogisticRegressionCV(penalty="l2", solver="liblinear")
+        logistic = LogisticRegressionCV(l1_ratios=(0,), solver="liblinear")
 
     - ``"logistic_l1"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -198,7 +200,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        logistic_l1 = LogisticRegressionCV(penalty="l1", solver="liblinear")
+        logistic_l1 = LogisticRegressionCV(l1_ratios=(1,), solver="liblinear")
 
     - ``"logistic_l2"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -923,42 +925,42 @@ random_state : :obj:`int` or np.random.RandomState, optional
 # regressor_options
 docdict["regressor_options"] = """
 
-    - ``ridge``: \
-        :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
+    - ``"ridge"``: \
+        :class:`Ridge regression <sklearn.linear_model.RidgeCV>`.
 
     .. code-block:: python
 
         ridge = RidgeCV()
 
-    - ``ridge_regressor``: \
-        :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
+    - ``"ridge_regressor"``: \
+        :class:`Ridge regression <sklearn.linear_model.RidgeCV>`.
 
     .. note::
 
         Same option as `ridge`.
 
-    - ``svr``: :class:`{Support vector regression} <sklearn.svm.SVR>`.
+    - ``"svr"``: :class:`Support vector regression <sklearn.svm.SVR>`.
 
     .. code-block:: python
 
         svr = SVR(kernel="linear", max_iter=1e4)
 
-    - ``lasso``: \
-        :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
+    - ``"lasso"``: \
+        :class:`Lasso regression <sklearn.linear_model.LassoCV>`.
 
     .. code-block:: python
 
         lasso = LassoCV()
 
-    - ``lasso_regressor``: \
-        :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
+    - ``"lasso_regressor"``: \
+        :class:`Lasso regression <sklearn.linear_model.LassoCV>`.
 
     .. note::
 
         Same option as `lasso`.
 
-    - ``dummy_regressor``: \
-        :class:`{Dummy regressor} <sklearn.dummy.DummyRegressor>`.
+    - ``"dummy_regressor"``: \
+        :class:`Dummy regressor <sklearn.dummy.DummyRegressor>`.
 
     .. code-block:: python
 
@@ -1082,7 +1084,7 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
 
 # second_level_confounds
 docdict["second_level_confounds"] = """
-confounds : :obj:`pandas.DataFrame` or None, Default=None
+confounds : :obj:`pandas.DataFrame` or None, default=None
     Must contain a ``subject_label`` column.
     All other columns are considered as confounds and included in the model.
     If ``design_matrix`` is provided then this argument is ignored.
@@ -1096,7 +1098,7 @@ confounds : :obj:`pandas.DataFrame` or None, Default=None
 docdict["second_level_design_matrix"] = """
 design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
                 or :obj:`pathlib.Path` to a CSV or TSV file, \
-                or None, Default=None
+                or None, default=None
     Design matrix to fit the :term:`GLM`.
     The number of rows in the design matrix
     must agree with the number of maps
@@ -1174,6 +1176,20 @@ signals : 1D/2D :obj:`numpy.ndarray`
 docdict["region_signals_inv_transform"] = docdict["signals_inv_transform"]
 docdict["x_inv_transform"] = docdict["signals_inv_transform"]
 
+sk_compatible_admonition = """
+
+    .. admonition:: Important
+
+        Besides the strings,
+        it is also possible to pass
+        a scikit-learn compatible estimator object.
+        See `scikit-learn's guide on developing your own estimator
+        <https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator>`_
+        for more details.
+
+"""
+
+docdict["sk_compatible_admonition"] = sk_compatible_admonition
 
 # smoothing_fwhm
 docdict["smoothing_fwhm"] = """
@@ -1937,7 +1953,7 @@ def _indentcount_lines(lines):
     return indentno
 
 
-def fill_doc(f):
+def fill_doc(f: Callable) -> Callable:
     """Fill a docstring with docdict entries.
 
     Parameters
@@ -1973,8 +1989,7 @@ def fill_doc(f):
     try:
         f.__doc__ = docstring % indented
     except (TypeError, ValueError, KeyError) as exp:
-        funcname = f.__name__
-        funcname = docstring.split("\n")[0] if funcname is None else funcname
+        funcname = docstring.split("\n")[0]
         raise RuntimeError(
             f"Error documenting {funcname}:\n{exp!s}.\n"
             "Did you forget to escape a character with an extra '%'"

@@ -267,7 +267,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='background'.
+        default='background'.
 
     mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to

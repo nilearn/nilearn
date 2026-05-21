@@ -259,7 +259,7 @@ class BaseSlicer:
             If ``True``, leave space between the plots.
 
         %(colorbar)s
-            Default=False.
+            default=False.
 
         %(brain_color)s
 
@@ -426,7 +426,7 @@ class BaseSlicer:
                 threshold (in absolute value) are plotted as transparent.
 
         %(colorbar)s
-            Default=False.
+            default=False.
 
         cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.

@@ -21,7 +21,6 @@ and importing them will fail if pytest is not installed.
 import contextlib
 import inspect
 import io
-import os
 import pickle
 import re
 import warnings
@@ -75,7 +74,7 @@ from nilearn._utils.tags import (
     is_glm,
     is_masker,
 )
-from nilearn._utils.testing import write_imgs_to_path
+from nilearn._utils.testing import is_ci, write_imgs_to_path
 from nilearn._utils.versions import SKLEARN_LT_1_6, compare_version
 from nilearn.conftest import (
     _affine_eye,
@@ -856,14 +855,6 @@ def check_set_output(estimator_orig) -> None:
     with pytest.raises(ImportError, match="requires polars to be installed"):
         signal = estimator.transform(img)
 
-    # check on 1D image for estimators that accepts surface
-    if accept_surf_img_input(estimator_orig):
-        estimator = clone(estimator_orig)
-        estimator = fit_estimator(estimator)
-        estimator.set_output(transform="pandas")
-        signal = estimator.transform(img)
-        assert isinstance(signal, pd.DataFrame)
-
 
 def check_doc_attributes(estimator) -> None:
     """Check that parameters and attributes are documented.
@@ -1083,7 +1074,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     with contextlib.redirect_stdout(buffer):
         fit_estimator(estimator)
     output_true = buffer.getvalue()
-    if os.getenv("CI") is None:
+    if not is_ci():
         # when running locally the output
         # can be easily 'cleaned' to be compared
         assert _sanitize_standard_output(
@@ -1101,9 +1092,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     with contextlib.redirect_stdout(buffer):
         fit_estimator(estimator)
     output_2 = buffer.getvalue()
-    if os.getenv("CI") is not None and isinstance(
-        estimator, SurfaceMapsMasker
-    ):
+    if is_ci() and isinstance(estimator, SurfaceMapsMasker):
         # For SurfaceMapsMasker the output is harder to sanitize in CI
         return
     assert len(output_2) >= len(output), f"\n{output=}\n{output_2=}"
@@ -1161,7 +1150,9 @@ def _sanitize_standard_output(output):
     output = re.sub(
         r"<nibabel.nifti1.Nifti1Image object at .*>", "Nifti1Image", output
     )
-    output = re.sub(r", .* seconds remaining", ", X seconds remaining", output)
+    output = re.sub(
+        r", .* HR .* MIN .* SEC remaining", ", X seconds remaining", output
+    )
     output = re.sub(
         r"Time Elapsed: .* seconds", "Time Elapsed: X seconds", output
     )

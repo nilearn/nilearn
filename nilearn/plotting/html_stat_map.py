@@ -595,7 +595,7 @@ def view_img(
     opacity=1,
     radiological=False,
     show_lr=True,
-):
+) -> StatMapView:
     """Interactive html viewer of a statistical map, with optional background.
 
     Parameters
@@ -608,7 +608,7 @@ def view_img(
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
-        Default='MNI152'.
+        default='MNI152'.
 
     cut_coords : None, or a :obj:`tuple` of :obj:`float`, default=None
         The :term:`MNI` coordinates of the point where the cut is performed
@@ -649,7 +649,7 @@ def view_img(
         or an anatomical image.
 
     %(dim)s
-        Default='auto'.
+        default='auto'.
 
     vmax : :obj:`float`, or None, default=None
         max value for mapping colors.
@@ -666,7 +666,7 @@ def view_img(
         image, or 0 when a threshold is used.
 
     %(resampling_interpolation)s
-        Default='continuous'.
+        default='continuous'.
 
     width_view : :obj:`int`, default=600
         Width of the viewer in pixels.
@@ -747,7 +747,7 @@ def create_brainsprite(
     opacity=1,
     radiological=False,
     show_lr=True,
-):
+) -> dict[str, Any]:
     """Wrap most of view_img to reuse it in other places."""
     # Prepare the color map and thresholding
     mask_img, stat_map_img, data, threshold = _mask_stat_map(

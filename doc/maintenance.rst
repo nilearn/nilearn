@@ -27,80 +27,44 @@ and easily find what you are looking for in the issue tracker.
 When :nilearn-gh:`creating an issue <issues/new/choose>`, the user
 is responsible for a very basic labeling categorizing the issue:
 
-- |Bug| for bug reports.
-- |Documentation| for documentation related questions or requests.
-- |Enhancement| for feature requests.
+- ``Bug`` issue type for bug reports
+- ``Enhancement`` issue type for feature requests
+- ``Documentation`` issue label for documentation related questions or requests.
 
-First of all, the user might have mislabeled the issue, in which case a member
-of the :ref:`core_devs` team needs to correct the labels.
+New issues get the ``Needs Triage`` label and must be reviewed by a member of the :ref:`core_devs`
+who should remove the ``Needs Triage`` label and give the issue an effort, impact and priority label.
 
-In addition to these basic labels, we have many more labels which describes
-in more detail a given issue. First, we try to describe the **estimated amount
-of work** required to solve each issue:
+The reviewer should also:
 
-- |Effort: high| The issue is likely to require a serious amount of work (more than a couple of days).
-- |Effort: medium| The issue is likely to require a decent amount of work (in between a few hours and a couple days).
-- |Effort: low| The issue is likely to require a small amount of work (less than a few hours).
+- ensure that bugs can be reproduced
+- feature requests are within the scope of the project
+
+We try to describe the **estimated amount of work** required to solve each issue:
+
+- ``Effort: high`` The issue is likely to require a serious amount of work (more than a couple of days).
+- ``Effort: medium`` The issue is likely to require a decent amount of work (in between a few hours and a couple days).
+- ``Effort: low`` The issue is likely to require a small amount of work (less than a few hours).
 
 We also try to quantify the **estimated impact** of the proposed change on the project:
 
-- |Impact: high| Solving this issue will have a high impact on the project.
-- |Impact: medium| Solving this issue will have a decent impact on the project.
-- |Impact: low| Solving this issue will have a small impact on the project.
+- ``Impact: high`` Solving this issue will have a high impact on the project.
+- ``Impact: medium`` Solving this issue will have a decent impact on the project.
+- ``Impact: low`` Solving this issue will have a small impact on the project.
 
 Finally, we also indicate the **priority level** of the issue:
 
-- |Priority: high| The task is urgent and needs to be addressed as soon as possible.
-- |Priority: medium| The task is important but not urgent and should be addressed over the next few months.
-- |Priority: low| The task is not urgent and can be delayed.
+- ``Priority: high`` The task is urgent and needs to be addressed as soon as possible.
+- ``Priority: medium`` The task is important but not urgent and should be addressed over the next few months.
+- ``Priority: low`` The task is not urgent and can be delayed.
 
 Some issues---particular those which are low effort and low to medium priority---can serve as good starting project for
-new contributors. We label these issues with the |Good first issue| label
+new contributors. We label these issues with the ``Good first issue`` label
 which can be seen as an equivalent to a "very low effort" label. Because of
 this, good first issues do not require a separate effort label.
 
-Some other labels can be used to describe further the topic of the issue:
-
--   |API| This issue is related to the Nilearn's API.
--   |Code quality| This issue tackles code quality (code refactoring, PEP8...).
--   |Datasets| This issue is related to datasets or the :mod:`nilearn.datasets` module.
--   |Discussion| This issue is used to hold a general discussion on a specific topic
-    where community feedback is desired (no need to specify effort, priority, or impact here).
--   |GLM| This issue is related to the :mod:`nilearn.glm` module.
--   |Infrastructure| This issue describes a problem with the project's infrastructure (CI/CD...).
--   |Installation| The issue describes a problem with the installation of Nilearn.
--   |Maintenance| This issue is related to maintenance work.
--   |Plotting| The issue is related to plotting functionalities.
--   |Testing| The issue is related to testing.
--   |Usage| This issue is a usage question and should have been posted on :neurostars:`neurostars <>`.
-
+We have many more labels which describes in more detail a given issue.
 For a complete list of all issue labels that can be used to describe and their description,
 see `this page <https://github.com/nilearn/nilearn/labels>`_
-
-.. |API| image:: https://img.shields.io/badge/-API-fef2c0.svg
-.. |Bug| image:: https://img.shields.io/badge/-Bug-fc2929.svg
-.. |Code quality| image:: https://img.shields.io/badge/-code%20quality-09ef5a.svg
-.. |Datasets| image:: https://img.shields.io/badge/-Datasets-fad8c7.svg
-.. |Discussion| image:: https://img.shields.io/badge/-Discussion-bfe5bf.svg
-.. |Documentation| image:: https://img.shields.io/badge/-Documentation-5319e7.svg
-.. |Effort: high| image:: https://img.shields.io/badge/-effort:%20high-e26051.svg
-.. |Effort: medium| image:: https://img.shields.io/badge/-effort:%20medium-ddad1a.svg
-.. |Effort: low| image:: https://img.shields.io/badge/-effort:%20low-77c940.svg
-.. |Enhancement| image:: https://img.shields.io/badge/-Enhancement-fbca04.svg
-.. |GLM| image:: https://img.shields.io/badge/-GLM-fce1c4.svg
-.. |Good first issue| image:: https://img.shields.io/badge/-Good%20first%20issue-c7def8.svg
-.. |Impact: high| image:: https://img.shields.io/badge/-impact:%20high-1f1dc1.svg
-.. |Impact: medium| image:: https://img.shields.io/badge/-impact:%20medium-bac1fc.svg
-.. |Impact: low| image:: https://img.shields.io/badge/-impact:%20low-75eae6.svg
-.. |Infrastructure| image:: https://img.shields.io/badge/-Infrastructure-0052cc.svg
-.. |Installation| image:: https://img.shields.io/badge/-Installation-ba7030.svg
-.. |Maintenance| image:: https://img.shields.io/badge/-Maintenance-fc918f.svg
-.. |Plotting| image:: https://img.shields.io/badge/-Plotting-5319e7.svg
-.. |Priority: high| image:: https://img.shields.io/badge/-priority:%20high-9e2409.svg
-.. |Priority: medium| image:: https://img.shields.io/badge/-priority:%20medium-FBCA04.svg
-.. |Priority: low| image:: https://img.shields.io/badge/-priority:%20low-c5def5.svg
-.. |Testing| image:: https://img.shields.io/badge/-Testing-50bac4.svg
-.. |Usage| image:: https://img.shields.io/badge/-Usage-e99695.svg
 
 .. _closing_policy:
 
@@ -112,7 +76,7 @@ possible reasons for a community member to close an issue:
 
 -   The issue has been solved: kindly asked the author whether the issue can be closed.
     In the absence of reply, close the issue after two weeks.
--   The issue is a usage question: label the issue with |Usage|
+-   The issue is a usage question: label the issue with ``Usage``
     and kindly redirect the author to :neurostars:`neurostars <>`.
     Close the issue afterwards.
 -   The issue has no recent activity (no messages in the last three months):
@@ -122,7 +86,7 @@ possible reasons for a community member to close an issue:
 .. _pull request:
 
 Pull Requests
----------------
+-------------
 
 We welcome pull requests from all community members, if they follow the
 :ref:`contribution_guidelines` inspired from scikit learn conventions. (More
@@ -149,26 +113,36 @@ must be handled with a ``pytest.warns`` context manager:
     with pytest.warns(FutureWarning, match="message"):
         ...
 
-Generating new baseline figures for plotting tests
-==================================================
+Generating new baseline figures for tests
+=========================================
 
-We use the ``pytest-mpl`` pytest plugin to run several regression tests on our Matplotlib figures.
-
-Sometimes, the output of a plotting function may unintentionally change
+Sometimes, the figure or report generated by a function
+may unintentionally change
 as a side effect of changing another function or piece of code
 that it depends on.
 These tests ensure that the outputs are not accidentally changed.
 
-For each figure to test,
+For each figure / report to test,
 an image is generated and then subtracted from an existing reference image.
-If the root mean square of the residual is larger than a user-specified tolerance,
+If the residual is larger than a user-specified tolerance,
 the test will fail.
 
 Failures are expected at times when the output is changed intentionally
-(for example when fixing a bug,  adding features, bumping the python or Matplotlib version...)
+(for example when fixing a bug, adding features, bumping the python or Matplotlib version...)
 for a particular function.
 In such cases, the output needs to be manually updated and visually checked
 as part of the PR review process and to set a new baseline for comparison.
+
+Python
+------
+
+We use the ``pytest-mpl`` pytest plugin to run several regression tests on our Matplotlib figures.
+Those tests can be run with tox.
+
+.. code-block:: bash
+
+    pip install tox
+    tox run -e pytest_mpl
 
 You can set a new 'baseline' (set of reference images) by running the following
 with the oldest supported Python and Matplotlib:
@@ -177,6 +151,44 @@ with the oldest supported Python and Matplotlib:
 
     pip install tox
     tox run -e pytest_mpl_generate
+
+Javascript
+----------
+
+HTML outputs (for report or some interactive figures) are tested using Javascript.
+
+This requires to have `node and npm <https://nodejs.org>`_ installed
+(see ``package.json`` to know the minimum required version).
+
+Those tests can be run with tox.
+
+.. code-block:: bash
+
+    pip install tox
+    tox run -e test_html
+
+You can set a new 'baseline' (set of reference images) by running the following:
+
+.. code-block:: bash
+
+    pip install tox
+    tox run -e test_html_generate
+
+
+Updating vendored dependencies
+==============================
+
+Some javascript dependencies are vendored with Nilearn
+and need to be updated manually
+when the upstream source changes.
+
+```bash
+tox run -e update_js
+```
+
+.. note::
+
+    This requires to have `node and npm <https://nodejs.org>`_ installed.
 
 How to make a release?
 ======================
