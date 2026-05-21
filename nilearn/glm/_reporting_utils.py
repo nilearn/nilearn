@@ -47,11 +47,10 @@ class GLMReportMixin(ReportMixin):
     _template_name = "body_glm.jinja"
 
     def _set_report_basics(self, engine, title):
+        title = f"<br>{title}" if title else ""
         super()._set_report_basics(engine, title)
-
         report_content = self._report_content
 
-        title = f"<br>{title}" if title else ""
         report_content["page_title"] = (
             f"Statistical Report - {self.__str__()}{title}"
         )
