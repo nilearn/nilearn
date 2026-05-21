@@ -166,6 +166,11 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path):
     ],
 )
 def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
+    """Test nilearn.datasets.fetch_surf_fsaverage for fsaverage5 to fsaverage7.
+
+    TODO: "fsaverage3" and "fsaverage4" should be added after the data with
+    correct order is updated in OSF.
+    """
     # Define attribute list that nilearn meshs should contain
     # (each attribute should eventually map to a _.gii.gz file
     # named after the attribute)
@@ -210,6 +215,13 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     ],
 )
 def test_fetch_surf_fsaverage_wrong_order(mesh, tmp_path, monkeypatch):
+    """Test nilearn.datasets.fetch_surf_fsaverage for fsaverage3 and
+    fsaverage4 to check if a warning is raised when vertex order is wrong and
+    if the vertex order is corrected.
+
+    TODO : Remove this tests once the datasets on OSF are updated adding mesh
+    parameters "fsaverage3" and "fsaverage4" to test_fetch_surf_fsaverage test.
+    """
     # Define attribute list that nilearn meshs should contain
     # (each attribute should eventually map to a _.gii.gz file
     # named after the attribute)
