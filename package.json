@@ -7,7 +7,8 @@
   },
   "dependencies": {
     "@niivue/niivue": "0.68.1",
-    "jquery": "3.6.0"
+    "jquery": "3.6.0",
+    "plotly.js-gl3d-dist-min": "1.50.1"
   },
   "devDependencies": {
     "express": "^4.17.1",
