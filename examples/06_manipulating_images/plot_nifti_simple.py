@@ -89,7 +89,11 @@ show()
 # by generating a masker report.
 # This can be done using
 # the :meth:`~nilearn.maskers.NiftiMasker.generate_report` method.
-report = masker.generate_report()
+# Here we use the 'brainsprite' engine
+# that gives an interactive visualization
+# instead of the static one generated
+# by the matplotlib engine.
+report = masker.generate_report(engine="brainsprite")
 
 # %%
 #

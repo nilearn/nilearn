@@ -471,14 +471,17 @@ def _sanitize_masker(masker, image_type, ref_img):
     Raise exception
     if there is type mismatch between the masker and ref_img.
     """
+    # TODO (nilearn >= 0.15) remove ALL 'standardize=None'
+    # from below
     if masker is None:
         if image_type == "volume":
             masker = NiftiMasker(
                 target_affine=ref_img.affine,
                 target_shape=ref_img.shape,
+                standardize=None,
             )
         else:
-            masker = SurfaceMasker()
+            masker = SurfaceMasker(standardize=None)
 
     check_compatibility_mask_and_images(masker, ref_img)
 
@@ -487,12 +490,11 @@ def _sanitize_masker(masker, image_type, ref_img):
             mask_img=masker,
             target_affine=ref_img.affine,
             target_shape=ref_img.shape,
+            standardize=None,
         )
     elif isinstance(masker, SurfaceImage):
         check_polymesh_equal(ref_img.mesh, masker.mesh)
-        masker = SurfaceMasker(
-            mask_img=masker,
-        )
+        masker = SurfaceMasker(mask_img=masker, standardize=None)
 
     if not masker.__sklearn_is_fitted__():
         masker.fit(ref_img)

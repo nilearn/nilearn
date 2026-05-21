@@ -3,10 +3,7 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-from sklearn.model_selection import (
-    KFold,
-    LeaveOneGroupOut,
-)
+from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
@@ -89,7 +86,7 @@ def define_cross_validation():
     return cv, n_jobs
 
 
-def test_searchlight_no_mask():
+def test_error_searchlight_no_mask():
     """Check validation type mask."""
     sl = searchlight.SearchLight(mask_img=1)
 
@@ -115,7 +112,7 @@ def test_searchlight_small_radius():
         n_jobs=n_jobs,
         scoring="accuracy",
         cv=cv,
-        verbose=1,
+        verbose=0,
     )
     sl.fit(data_img, y=cond)
 

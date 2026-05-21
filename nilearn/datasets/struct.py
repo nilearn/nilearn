@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from nibabel import Nifti1Image
 from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
@@ -168,7 +169,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
 @functools.lru_cache(maxsize=3)
 @fill_doc
-def load_mni152_template(resolution=None):
+def load_mni152_template(resolution=None) -> Nifti1Image:
     """Load the MNI152 skullstripped T1 template.
 
     This function takes the skullstripped,
@@ -1104,6 +1105,7 @@ def load_fsaverage_data(
             - ``"curvature"``,
             - ``"sulcal"``,
             - ``"thickness"``,
+            - ``"area"``,
 
     %(data_dir)s
 
@@ -1118,7 +1120,12 @@ def load_fsaverage_data(
 
     fsaverage = load_fsaverage(mesh=mesh, data_dir=data_dir)
     fsaverage_data = fetch_surf_fsaverage(mesh=mesh, data_dir=data_dir)
-    renaming = {"curvature": "curv", "sulcal": "sulc", "thickness": "thick"}
+    renaming = {
+        "curvature": "curv",
+        "sulcal": "sulc",
+        "thickness": "thick",
+        "area": "area",
+    }
     img = SurfaceImage(
         mesh=fsaverage[mesh_type],
         data={

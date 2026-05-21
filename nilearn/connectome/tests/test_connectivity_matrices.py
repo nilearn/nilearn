@@ -163,7 +163,9 @@ def random_spd(p, eig_min, cond, random_state=0):
     return unitary.dot(diag).dot(unitary.T)
 
 
-def _signals(n_subjects=N_SUBJECTS):
+def _signals(
+    n_subjects: int = N_SUBJECTS,
+) -> tuple[list[np.ndarray], np.ndarray]:
     """Generate signals and compute covariances \
     and apply confounds while computing covariances.
     """
@@ -183,7 +185,8 @@ def _signals(n_subjects=N_SUBJECTS):
 
 
 @pytest.fixture
-def signals():
+def signals() -> list[np.ndarray]:
+    """Return a list of signals as arrays."""
     return _signals(N_SUBJECTS)[0]
 
 

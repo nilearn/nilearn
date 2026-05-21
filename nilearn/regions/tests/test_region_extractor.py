@@ -365,6 +365,7 @@ def test_strategy_percentile(maps_and_mask):
         thresholding_strategy="percentile",
         mask_img=mask_img,
         two_sided=True,
+        standardize=None,
     )
     extractor.fit()
 

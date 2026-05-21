@@ -1,11 +1,16 @@
 """Utilities and constants for version comparisons."""
 
 import operator
-from importlib.metadata import version as importlib_version
 from typing import Literal
 
-from packaging.version import parse
+from packaging.version import Version, parse
 from sklearn import __version__ as sklearn_version
+
+from nilearn._utils.testing import (
+    are_tests_running,
+    baseline_generation_running,
+)
+from nilearn._version import __version__
 
 OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.8.0"
 
@@ -17,6 +22,15 @@ VERSION_OPERATORS = {
     "<": operator.lt,
     "<=": operator.le,
 }
+
+# We clean up the version number
+# to make it more stable during tests
+# and less dependent if git tags are present or not.
+__short_version__ = (
+    "TEST"
+    if are_tests_running() or baseline_generation_running()
+    else str(Version(__version__).__replace__(local=None, dev=None, pre=None))
+)
 
 
 def compare_version(
@@ -58,22 +72,3 @@ def compare_version(
 SKLEARN_LT_1_6 = compare_version(sklearn_version, "<", "1.6.0")
 SKLEARN_GTE_1_7 = compare_version(sklearn_version, ">=", "1.7.0")
 SKLEARN_GTE_1_8 = compare_version(sklearn_version, ">=", "1.8.0")
-
-
-# TODO remove this when min supported kaleido version is >= 1.0.0
-def is_kaleido_plotly_compatible():
-    """Check if installed versions of plotly and kaleido are compatible.
-
-    This function assumes that both plotly and kaleido are installed.
-    """
-    # minimum plotly compatible with kaleido >= 1.0.0
-    min_plotly = "6.1.1"
-    # max kaleido version compatible with versions of plotly less than 6.1.1
-    max_kaleido = "0.2.1"
-    plotly_version = importlib_version("plotly")
-    kaleido_version = importlib_version("kaleido")
-
-    return not (
-        compare_version(kaleido_version, ">", max_kaleido)
-        and compare_version(plotly_version, "<", min_plotly)
-    )

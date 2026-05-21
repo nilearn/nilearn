@@ -79,7 +79,7 @@ def all_functions(
     ----------
     return_private : :obj:`bool`
         Whether to return also private functions or not.
-        Default=False.
+        default=False.
 
     modules_to_ignore : :obj:`list` or :obj:`set` of :obj:`str` or None,\
                         default=None

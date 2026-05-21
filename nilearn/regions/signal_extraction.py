@@ -323,7 +323,7 @@ def img_to_signals_labels(
         getattr(ndimage, strategy), labels=labels_data, index=labels
     )
     # Parallel reduction across samples
-    signals = Parallel(n_jobs=n_jobs, backend="threading")(
+    signals = Parallel(n_jobs=n_jobs)(
         delayed(reduction_function)(img) for img in np.rollaxis(data, -1)
     )
     signals = np.asarray(signals, dtype=target_datatype, order=order)
