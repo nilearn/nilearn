@@ -11,7 +11,7 @@ const buildFilePNG = function (file, prefix, suffix) {
   return `${path.resolve(__dirname)}/` + prefix + file.split('.')[0] + suffix + '.png'
 }
 
-module.exports.fullTest = (file, clip, tolerance = 1000) => {
+module.exports.fullTest = (file, clip, tolerance = 1000, timeout = 5000) => {
   describe('index page', () => {
     let page
 
@@ -19,11 +19,11 @@ module.exports.fullTest = (file, clip, tolerance = 1000) => {
       page = await __BROWSER__.newPage()
 
       await page.goto('http://localhost:8080/' + file)
-    }, 5000)
+    }, timeout)
 
     afterAll(async () => {
       await page.close()
-    })
+    }, timeout)
 
     it(
       'visual regression test ' + file,
@@ -52,7 +52,7 @@ module.exports.fullTest = (file, clip, tolerance = 1000) => {
           expect(numDiffPixels).toBeLessThan(tolerance)
         }
       },
-      5000
+      timeout
     )
   })
 }

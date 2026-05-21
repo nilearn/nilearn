@@ -118,11 +118,19 @@ repos:
                 | nilearn/image/image.py
             )$
 
+
 -   repo: https://github.com/standard/standard
     rev: v17.1.2
     hooks:
     -   id: standard
-        files: tests/js/.*js
+        # ignoring JS files that are not our own
+        exclude: |
+            (?x)^(
+                nilearn/_assets/js/.*min.*
+                | nilearn/_assets/js/niivue.umd.js
+            )$
+
+        args: [--global, $, --global, Plotly]
 
     # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter

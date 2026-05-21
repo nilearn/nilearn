@@ -1150,7 +1150,9 @@ def _sanitize_standard_output(output):
     output = re.sub(
         r"<nibabel.nifti1.Nifti1Image object at .*>", "Nifti1Image", output
     )
-    output = re.sub(r", .* seconds remaining", ", X seconds remaining", output)
+    output = re.sub(
+        r", .* HR .* MIN .* SEC remaining", ", X seconds remaining", output
+    )
     output = re.sub(
         r"Time Elapsed: .* seconds", "Time Elapsed: X seconds", output
     )
