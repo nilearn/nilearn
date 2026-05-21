@@ -152,7 +152,7 @@
                 </div>
             {% elif engine == "brainsprite" %}
 
-                {% include "html/maskers/partials/brainsprite.jinja" %}
+                {% include "html/partials/brainsprite.jinja" %}
 
             {% else %}
                 <p>No mask was provided.</p>
@@ -237,11 +237,8 @@
         </script>
     {% endif %}
     {% if engine == "brainsprite" %}
-        <script> {{ js_query_code }} </script>
-        <script> {{ brainsprite_code }} </script>
-        <script>
-       {% include "html/maskers/partials/brainsprite_opacity.jinja" %}
-
-        </script>
+        <script> {% include "js/jquery.min.js" %} </script>
+        <script> {% include "js/brainsprite.min.js" %} </script>
+        <script> {% include "js/brainsprite_opacity.jinja" %} </script>
     {% endif %}
 {% endblock report %}

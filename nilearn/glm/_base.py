@@ -43,7 +43,6 @@ from nilearn.maskers import SurfaceMasker
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.html_report import (
     MISSING_ENGINE_MSG,
-    OTHER_JS,
     UNFITTED_MSG,
     HTMLReport,
     assemble_report,
@@ -768,14 +767,6 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             else ""
         )
 
-        js_query_code = None
-        brainsprite_code = None
-        if engine == "brainsprite":
-            with (OTHER_JS / "jquery.min.js").open("r") as f:
-                js_query_code = f.read()
-            with (OTHER_JS / "brainsprite.min.js").open("r") as f:
-                brainsprite_code = f.read()
-
         body = body_tpl.render(
             docstring=docstring,
             contrasts=contrasts,
@@ -794,8 +785,6 @@ class BaseGLM(CacheMixin, NilearnBaseEstimator):
             warning_messages=warning_messages,
             has_plotting_engine=is_matplotlib_installed(),
             engine=engine,
-            js_query_code=js_query_code,
-            brainsprite_code=brainsprite_code,
             **mask_info,
             **mask_plot_brainsprite,
         )
