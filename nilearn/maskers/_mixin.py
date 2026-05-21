@@ -300,7 +300,7 @@ class _LabelMaskerMixin:
 
         return region_ids_
 
-    def get_feature_names_out(self, input_features=None):
+    def get_feature_names_out(self, input_features=None) -> list[str]:
         """Get output feature names for transformation.
 
         Parameters
@@ -309,7 +309,7 @@ class _LabelMaskerMixin:
             Only for sklearn API compatibility.
         """
         del input_features
-        return np.asarray(self.region_names_.values(), dtype=object)
+        return list(self.region_names_.values())
 
     def _generate_lut(self):
         """Generate a look up table if one was not provided.
