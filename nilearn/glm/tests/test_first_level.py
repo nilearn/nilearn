@@ -1034,7 +1034,6 @@ def test_first_level_glm_computation(shape_4d_default):
         mask_img=mask,
         drift_model="polynomial",
         drift_order=3,
-        minimize_memory=False,
     )
     events = basic_paradigm()
     model.fit(fmri_data[0], events)
@@ -1073,7 +1072,6 @@ def test_first_level_contrast_computation():
         mask_img=mask,
         drift_model="polynomial",
         drift_order=3,
-        minimize_memory=False,
     )
     c1, c2, cnull = np.eye(7)[0], np.eye(7)[1], np.zeros(7)
 
@@ -1119,7 +1117,6 @@ def test_first_level_contrast_computation_errors(shape_4d_default):
         mask_img=mask,
         drift_model="polynomial",
         drift_order=3,
-        minimize_memory=False,
     )
     c1, cnull = np.eye(7)[0], np.zeros(7)
 
@@ -1284,8 +1281,7 @@ def test_first_level_residuals_errors(shape_4d_default):
 
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    # For coverage
-    with pytest.raises(ValueError, match="must be one of"):
+    with pytest.raises(ValueError, match="'attribute' must be one of"):
         model._get_element_wise_model_attribute("foo", True)
 
 
@@ -1661,7 +1657,7 @@ def test_generate_report_default(kwargs):
         shapes=[(30, 31, 32, 33)], rk=3
     )
 
-    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
+    flm = FirstLevelModel(mask_img=mask).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
 
@@ -1689,7 +1685,7 @@ def test_generate_report_height_none_future_default():
         shapes=[(30, 31, 32, 33)], rk=3
     )
 
-    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
+    flm = FirstLevelModel(mask_img=mask).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
 
@@ -1716,7 +1712,7 @@ def test_generate_report_threshold_unused(threshold):
         shapes=[(30, 31, 32, 33)], rk=3
     )
 
-    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
+    flm = FirstLevelModel(mask_img=mask).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
 

@@ -5,6 +5,7 @@ first level contrasts or directly on fitted first level models.
 import operator
 import time
 from pathlib import Path
+from typing import Literal
 from warnings import warn
 
 import numpy as np
@@ -819,7 +820,16 @@ class SecondLevelModel(BaseGLM):
         }
 
     def _get_element_wise_model_attribute(
-        self, attribute, result_as_time_series
+        self,
+        attribute: Literal[
+            "residuals",
+            "normalized_residuals",
+            "predicted",
+            "SSE",
+            "r_square",
+            "MSE",
+        ],
+        result_as_time_series: bool,
     ):
         """Transform RegressionResults instances within a dictionary \
         (whose keys represent the autoregressive coefficient under the 'ar1' \
@@ -828,10 +838,9 @@ class SecondLevelModel(BaseGLM):
 
         Parameters
         ----------
-        attribute : :obj:`str`
+        attribute : {"residuals", "normalized_residuals", "predicted", \
+                    "SSE", "r_square", "MSE"}
             an attribute of a RegressionResults instance.
-            possible values include: 'residuals', 'normalized_residuals',
-            'predicted', SSE, r_square, MSE.
 
         result_as_time_series : :obj:`bool`
             whether the RegressionResult attribute has a value
@@ -849,9 +858,7 @@ class SecondLevelModel(BaseGLM):
         possible_attributes = [
             prop for prop in all_attributes if "__" not in prop
         ]
-        if attribute not in possible_attributes:
-            msg = f"attribute must be one of: {possible_attributes}"
-            raise ValueError(msg)
+        check_parameter_in_allowed(attribute, possible_attributes, "attribute")
 
         if self.minimize_memory:
             raise ValueError(
