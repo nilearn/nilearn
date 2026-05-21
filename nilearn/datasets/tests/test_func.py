@@ -136,8 +136,15 @@ def test_fetch_haxby(tmp_path, request_mocker, capsys):
         assert len(haxby.mask_face_little) == 1
         assert len(haxby.mask_house_little) == 1
 
+    check_fetcher_verbosity(func.fetch_haxby, capsys, data_dir=tmp_path)
+
+
+def test_fetch_haxby_subject_with_list(tmp_path, request_mocker):
     # subjects with list
     subjects = [1, 2, 6]
+    request_mocker.url_mapping[re.compile(r".*(subj\d).*\.tar\.gz")] = (
+        _make_haxby_subject_data
+    )
     request_mocker.url_mapping[re.compile(r".*stimuli.*")] = list_to_archive(
         [Path("stimuli", "README")]
     )
@@ -157,14 +164,13 @@ def test_fetch_haxby(tmp_path, request_mocker, capsys):
     assert len(haxby.mask_face_little) == len(subjects)
     assert "stimuli" in haxby
 
+
+def test_fetch_haxby_error(tmp_path):
     subjects = ["a", 8]
     message = "'subject id' must be one of"
-
     for sub_id in subjects:
         with pytest.raises(ValueError, match=message.format(sub_id)):
             func.fetch_haxby(data_dir=tmp_path, subjects=[sub_id])
-
-    check_fetcher_verbosity(func.fetch_haxby, capsys, data_dir=tmp_path)
 
 
 def _adhd_example_subject(match, request):  # noqa: ARG001

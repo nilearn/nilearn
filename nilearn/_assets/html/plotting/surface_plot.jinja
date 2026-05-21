@@ -1,0 +1,51 @@
+{% extends "html/head.jinja" %}
+
+{% block script %}
+    <script> {% include "js/jquery.min.js" %} </script>
+    <script> {% include "js/plotly-gl3d-latest.min.js" %} </script>
+    <script> {% include "js/common-surface-plot-utils.js" %}</script>
+    <script>
+      var surfaceMapInfo = {{  stat_map_json }};
+      {% include "js/surface-plot-utils.js" %}
+
+    </script>
+    <script>
+      $(document).ready(function () {
+        if (surfaceMapInfo["full_brain_mesh"]) {
+          $("#select-hemisphere").change(addPlot);
+          $("#select-kind").change(addPlot);
+        } else {
+          $("#select-hemisphere").hide();
+          $("#select-kind").hide();
+        }
+        addPlot();
+        $("#select-view").change(surfaceRelayout);
+        $("#surface-plot").mouseup(function () {
+          $("#select-view").val("custom");
+        });
+        $(window).resize(surfaceRelayout);
+      });
+    </script>
+{% endblock script %}
+
+{% block main %}
+    <div id="surface-plot"></div>
+    <select id="select-hemisphere">
+        <option value="both">Both hemispheres</option>
+        <option value="left">Left hemisphere</option>
+        <option value="right">Right hemisphere</option>
+    </select>
+    <select id="select-kind">
+        <option value="inflated">Inflated</option>
+        <option value="pial">Pial</option>
+    </select>
+    <select id="select-view">
+        <option value="left">view: Left</option>
+        <option value="right">view: Right</option>
+        <option value="front">view: Front</option>
+        <option value="back">view: Back</option>
+        <option value="top">view: Top</option>
+        <option value="bottom">view: Bottom</option>
+        <option value="custom">view: -</option>
+    </select>
+{% endblock main %}

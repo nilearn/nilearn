@@ -339,6 +339,9 @@ class HierarchicalKMeans(
 
         self.sizes_ = sizes
         self.n_clusters = len(sizes)
+
+        self._n_features_out = self.n_clusters
+
         return self
 
     def __sklearn_is_fitted__(self) -> bool:

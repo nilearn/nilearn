@@ -7,7 +7,6 @@ import json
 import warnings
 from base64 import b64encode
 from io import BytesIO
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 import matplotlib
@@ -17,6 +16,7 @@ from nibabel import Nifti1Image
 from nibabel.affines import apply_affine
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._assets import get_template
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.html_document import HTMLDocument
@@ -35,7 +35,6 @@ from nilearn.image import (
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
-from nilearn.plotting.js_plotting_utils import get_html_template
 from nilearn.typing import Threshold
 
 if TYPE_CHECKING:
@@ -469,14 +468,7 @@ def _json_view_data(
     """
     # Initialize brainsprite data structure
     json_view = dict.fromkeys(
-        [
-            "bg_base64",
-            "stat_map_base64",
-            "cm_base64",
-            "params",
-            "js_jquery",
-            "js_brainsprite",
-        ]
+        ["bg_base64", "stat_map_base64", "cm_base64", "params"]
     )
 
     # Create a base64 sprite for the background
@@ -534,20 +526,17 @@ def _json_view_to_html(
     # Fix the size of the viewer
     width, height = _json_view_size(json_view["params"], width_view)
 
-    # Populate all missing keys with html-ready data
-    json_view["INSERT_PAGE_TITLE_HERE"] = (
-        json_view["params"]["title"] or "Slice viewer"
-    )
-    json_view["params"] = json.dumps(json_view["params"])
-    js_dir = Path(__file__).parent / "data" / "js"
-    with (js_dir / "jquery.min.js").open() as f:
-        json_view["js_jquery"] = f.read()
-    with (js_dir / "brainsprite.min.js").open() as f:
-        json_view["js_brainsprite"] = f.read()
-
     # Load the html template, and plug in all the data
-    html_view = get_html_template("stat_map_template.html")
-    html_view = html_view.safe_substitute(json_view)
+    view_img_tpl = get_template("html/plotting/view_img.jinja")
+
+    html_view = view_img_tpl.render(
+        page_title=json_view["params"]["title"] or "Slice viewer",
+        params=json.dumps(json_view["params"]),
+        bg_base64=json_view["bg_base64"],
+        cm_base64=json_view["cm_base64"],
+        stat_map_base64=json_view["stat_map_base64"],
+        display_footer='style="display: none"',
+    )
 
     return StatMapView(html_view, width=width, height=height)
 
@@ -606,7 +595,7 @@ def view_img(
     opacity=1,
     radiological=False,
     show_lr=True,
-):
+) -> StatMapView:
     """Interactive html viewer of a statistical map, with optional background.
 
     Parameters
@@ -619,7 +608,7 @@ def view_img(
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
-        Default='MNI152'.
+        default='MNI152'.
 
     cut_coords : None, or a :obj:`tuple` of :obj:`float`, default=None
         The :term:`MNI` coordinates of the point where the cut is performed
@@ -660,7 +649,7 @@ def view_img(
         or an anatomical image.
 
     %(dim)s
-        Default='auto'.
+        default='auto'.
 
     vmax : :obj:`float`, or None, default=None
         max value for mapping colors.
@@ -677,7 +666,7 @@ def view_img(
         image, or 0 when a threshold is used.
 
     %(resampling_interpolation)s
-        Default='continuous'.
+        default='continuous'.
 
     width_view : :obj:`int`, default=600
         Width of the viewer in pixels.
@@ -758,7 +747,7 @@ def create_brainsprite(
     opacity=1,
     radiological=False,
     show_lr=True,
-):
+) -> dict[str, Any]:
     """Wrap most of view_img to reuse it in other places."""
     # Prepare the color map and thresholding
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
