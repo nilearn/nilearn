@@ -353,19 +353,14 @@ def _make_volume_data_from_components(
 
     data = []
 
-    # TODO
-    # changing this value leads makes tests overall faster but makes
-    # test_canica_square_img to fail
-    magic_number = n_timepoints
-
     for _ in range(n_subjects):
         this_data = np.dot(
-            rng.normal(size=(magic_number, N_COMPONENTS)), components
+            rng.normal(size=(n_timepoints, N_COMPONENTS)), components
         )
         this_data += 0.01 * rng.normal(size=this_data.shape)
 
         # Get back into 3D for CanICA
-        this_data = np.reshape(this_data, (magic_number, *shape))
+        this_data = np.reshape(this_data, (n_timepoints, *shape))
         this_data = np.rollaxis(this_data, 0, N_COMPONENTS)
 
         # Put the border of the image to zero, to mimic a brain image

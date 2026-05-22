@@ -373,21 +373,18 @@ def test_single_subject_score(canica_img, data_type, estimator):
         smoothing_fwhm=None,
         standardize="zscore_sample",
     )
-
-    data = canica_img
-
-    est.fit(data)
+    est.fit(canica_img)
 
     check_decomposition_estimator(est, data_type)
 
     # One score for all components
-    scores = est.score(data, per_component=False)
+    scores = est.score(canica_img, per_component=False)
 
     assert isinstance(scores, float)
     assert 0 <= scores <= 1
 
     # Per component score
-    scores = est.score(data, per_component=True)
+    scores = est.score(canica_img, per_component=True)
 
     assert scores.shape, (n_components,)
     assert np.all(scores <= 1)
@@ -410,10 +407,8 @@ def test_single_subject_file(data_type, canica_img, estimator, tmp_path):
         standardize="zscore_sample",
     )
 
-    data = canica_img
-
     img = write_imgs_to_path(
-        data,
+        canica_img,
         file_path=tmp_path,
         create_files=True,
         use_wildcards=True,
@@ -428,7 +423,7 @@ def test_single_subject_file(data_type, canica_img, estimator, tmp_path):
     # path
     est = clone(est)
     tmp_file = tmp_path / "tmp.nii.gz"
-    data.to_filename(tmp_file)
+    canica_img.to_filename(tmp_file)
 
     est.fit(tmp_file)
 
