@@ -69,6 +69,9 @@ Fixes
 
 - :bdg-dark:`Code` Make sure that area data of Freesurfer can loaded as SurfaceImage by :func:`~nilearn.datasets.load_fsaverage_data` (:gh:`6230` by `Rémi Gau`_).
 
+- :bdg-info:`Reporting` Fix resizing of reports when viewed in browser. (:gh:`6234` by `Hande Gözükan`_).
+
+
 Enhancements
 ------------
 
