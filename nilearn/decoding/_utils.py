@@ -39,7 +39,10 @@ kwarg_logistic_regression_cv = {}
 if SKLEARN_GTE_1_8:
     # TODO (sklearn 1.8) remove if
     # TODO (sklearn 1.10) remove 'use_legacy_attributes'
-    kwarg_logistic_regression_cv = {"use_legacy_attributes": False}
+    kwarg_logistic_regression_cv = {
+        "use_legacy_attributes": False,
+        "scoring": "neg_log_loss",
+    }
 
 
 class EstimatorConfig(TypedDict):
