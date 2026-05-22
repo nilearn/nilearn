@@ -812,7 +812,7 @@ def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
 
     with pytest.raises(ValueError, match=r"The model has no results."):
         getattr(model, attribute)
-    with pytest.raises(ValueError, match="attribute must be one of"):
+    with pytest.raises(ValueError, match="'attribute' must be one of"):
         model._get_element_wise_model_attribute("foo", True)
 
 
@@ -835,7 +835,7 @@ def test_second_level_voxelwise_attribute_errors_minimize_memory(
 
     model.compute_contrast()
 
-    with pytest.raises(ValueError, match="To access voxelwise attributes"):
+    with pytest.raises(AttributeError, match="To access voxelwise attributes"):
         getattr(model, attribute)
 
 
