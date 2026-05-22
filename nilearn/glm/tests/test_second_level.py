@@ -835,7 +835,7 @@ def test_second_level_voxelwise_attribute_errors_minimize_memory(
 
     model.compute_contrast()
 
-    with pytest.raises(ValueError, match="To access voxelwise attributes"):
+    with pytest.raises(AttributeError, match="To access voxelwise attributes"):
         getattr(model, attribute)
 
 
