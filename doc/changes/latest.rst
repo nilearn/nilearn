@@ -80,7 +80,7 @@ Enhancements
 
 - :bdg-info:`Plotting` Allow string threshold in ``nilearn.plotting.plot_*`` functions (:gh:`5982` by `Saeed Babadi`_).
 
-- :bdg-success:`Doc` Add an example to the plot_carpet function (:gh:`6065` by `Johanna Bayer`_).
+- :bdg-primary:`Doc` Add an example to the plot_carpet function (:gh:`6065` by `Johanna Bayer`_).
 
 - :bdg-dark:`Code` Add surface support to :func:`~nilearn.image.smooth_img` (:gh:`3267` by `Jason D. Yeatman`_ and `Noah C. Benson`_ ).
 
@@ -97,6 +97,8 @@ Enhancements
 - :bdg-secondary:`Maint` Add list of badges to changelog template on :ref:`maintenance_process` page (:gh:`6084` by `Michelle Wang`_).
 
 - :bdg-info:`Plotting`  Add opacity slider on :func:`~plotting.view_img` (:gh:`6107` by `Rémi Gau`_).
+
+- :bdg-success:`API` Add ``design_only`` parameter to :class:`~glm.first_level.FirstLevelModel` and :class:`~glm.second_level.SecondLevelModel` to be able to inspect only the model specification before fitting it with data to avoid wasting computation time on a misspecified model (:gh:`54680` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting`  Add support for `niivue <https://niivue.com/>`_ as a backend engine for :func:`~plotting.view_surf` (:gh:`3729` by  `Alexis Thual`_, `Himanshu Aggarwal`_, `Rémi Gau`_, `Pierre-Louis Barbarant`_, `Chris Rorden`_, `Taylor Hanayik`_, `Hande Gözükan`_).
 

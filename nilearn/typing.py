@@ -37,6 +37,7 @@ CopyHeader: TypeAlias = bool
 DType: TypeAlias = DTypeLike | None
 DataDir: TypeAlias = str | pathlib.Path | None
 Detrend: TypeAlias = bool
+DesignOnly: TypeAlias = bool
 DisplayMode: TypeAlias = Literal[
     "ortho", "tiled", "mosaic", "x", "y", "z", "yx", "xz", "yz"
 ]
