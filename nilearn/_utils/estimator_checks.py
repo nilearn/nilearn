@@ -107,6 +107,7 @@ from nilearn.decoding.decoder import (
 from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.space_net import BaseSpaceNet
 from nilearn.decoding.tests.test_same_api import to_niimgs
+from nilearn.decomposition import DictLearning
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.decomposition.tests.conftest import (
     _canica_components_volume,
@@ -749,14 +750,26 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
         return imgs, None
 
     elif isinstance(estimator, _BaseDecomposition):
+        n_subjects = 2
+        n_timepoints = 40
+        if isinstance(estimator, DictLearning):
+            n_subjects = 1
+            n_timepoints = 200
+
         decomp_input = _make_volume_data_from_components(
             _canica_components_volume(_shape_3d_large()),
             _affine_eye(),
             _shape_3d_large(),
             _rng(),
-            n_subjects=2,
+            n_subjects=n_subjects,
+            n_timepoints=n_timepoints,
         )
-        return decomp_input, None
+
+        return (
+            (decomp_input[0], None)
+            if isinstance(estimator, DictLearning)
+            else (decomp_input, None)
+        )
 
     elif not (
         accept_niimg_input(estimator) or accept_surf_img_input(estimator)
