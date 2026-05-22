@@ -164,7 +164,10 @@ def test_nifti_maps_masker_mask_img_masks_all_maps_error(
 
     for resampling_target in ["mask", "maps"]:
         masker = NiftiMapsMasker(
-            maps_img, mask_img=mask_img, resampling_target=resampling_target
+            maps_img,
+            mask_img=mask_img,
+            resampling_target=resampling_target,
+            standardize=None,
         )
 
         with pytest.raises(
@@ -185,14 +188,14 @@ def test_nifti_maps_masker_mask_img_masks_all_maps_error(
     # but we can know this if some image is passed at fit time
     # or we can for sure know it at transform time
 
-    masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
+    masker = NiftiMapsMasker(maps_img, mask_img=mask_img, standardize=None)
 
     with pytest.raises(
         ValueError, match="No map left after applying mask to the maps image"
     ):
         masker.fit(img_4d_rand_eye)
 
-    masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
+    masker = NiftiMapsMasker(maps_img, mask_img=mask_img, standardize=None)
     masker.fit()
     with pytest.raises(
         ValueError, match="No map left after applying mask to the maps image"

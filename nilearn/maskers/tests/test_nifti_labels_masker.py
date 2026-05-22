@@ -213,7 +213,10 @@ def test_nifti_labels_masker_mask_img_masks_all_labels_error(
     labels_img = Nifti1Image(labels, affine_eye)
 
     masker = NiftiLabelsMasker(
-        labels_img, mask_img=mask_img, resampling_target="labels"
+        labels_img,
+        mask_img=mask_img,
+        resampling_target="labels",
+        standardize=None,
     )
 
     with pytest.raises(
@@ -234,14 +237,14 @@ def test_nifti_labels_masker_mask_img_masks_all_labels_error(
     # but we can know this if some image is passed at fit time
     # or we can for sure know it at transform time
 
-    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
+    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img, standardize=None)
     with pytest.raises(
         ValueError,
         match="No label left after applying mask to the labels image",
     ):
         masker.fit(img_4d_rand_eye)
 
-    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
+    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img, standardize=None)
     masker.fit()
     with pytest.raises(
         ValueError,
