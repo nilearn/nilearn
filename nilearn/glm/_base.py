@@ -434,7 +434,23 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             )
 
         bg_img = self._load_bg_img(bg_img, self._is_volume_glm())
-        self._report_content["mask_plot"] = mask_to_plot(self, bg_img)
+
+        if self._report_content["engine"] == "matplotlib":
+            self._report_content["mask_plot"] = mask_to_plot(self, bg_img)
+        else:
+            bg_img = self.masker_._reporting_data["images"]
+            stat_map_img = self.masker_._reporting_data["mask"]
+            self.masker_._create_brainsprite(
+                bg_img=bg_img, stat_map_img=stat_map_img
+            )
+            self._report_content["mask_plot"] = {
+                "bg_base64": self.masker_._reporting_data["bg_base64"],
+                "cm_base64": self.masker_._reporting_data["cm_base64"],
+                "params": self.masker_._reporting_data["params"],
+                "stat_map_base64": self.masker_._reporting_data[
+                    "stat_map_base64"
+                ],
+            }
         self._report_content.update(self._get_masker_info())
         self._report_content["results"] = make_stat_maps_contrast_clusters(
             model=self,

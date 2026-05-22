@@ -125,7 +125,7 @@ class GLMReportMixin(ReportMixin):
     @fill_doc
     def generate_report(
         self,
-        engine="matplotlib",
+        engine: Literal["matplotlib", "brainsprite"] = "matplotlib",
         title: str | None = None,
         contrasts=None,
         first_level_contrast=None,
