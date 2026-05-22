@@ -756,7 +756,7 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
             n_subjects = 1
             n_timepoints = 200
 
-        _make_volume_data_from_components(
+        decomp_input = _make_volume_data_from_components(
             _canica_components_volume(_shape_3d_large()),
             _affine_eye(),
             _shape_3d_large(),
@@ -764,6 +764,8 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
             n_subjects=n_subjects,
             n_timepoints=n_timepoints,
         )
+
+        return decomp_input[0], None
 
     elif not (
         accept_niimg_input(estimator) or accept_surf_img_input(estimator)
