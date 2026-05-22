@@ -69,7 +69,11 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_fit_errors(
-    data_type, decomposition_images, estimator, decomposition_mask_img
+    data_type,
+    decomposition_images,
+    canica_data,
+    estimator,
+    decomposition_mask_img,
 ):
     """Fit fail without the proper arguments."""
     est = estimator(smoothing_fwhm=None, standardize="zscore_sample")
@@ -96,10 +100,8 @@ def test_fit_errors(
     # so it should have the same number of True vertices as the vertices
     # in input images
     elif data_type == "surface":
-        est.fit(decomposition_images)
-        assert (
-            est.masker_.n_elements_ == decomposition_images[0].mesh.n_vertices
-        )
+        est.fit(canica_data)
+        assert est.masker_.n_elements_ == canica_data[0].mesh.n_vertices
 
     # mismatch len confounds and input to fit
     est = estimator(
@@ -183,11 +185,6 @@ def test_transform_confounds(
         smoothing_fwhm=None,
         standardize="zscore_sample",
     )
-    if data_type == "surface" and isinstance(est, DictLearning):
-        pytest.skip(
-            "dummy data for surface give empty signals with DictLearning"
-        )
-
     est.fit(canica_data)
 
     signals = est.transform(canica_data)
@@ -255,6 +252,7 @@ def test_with_confounds(
 def test_transform(
     data_type,  # noqa: ARG001
     canica_data,
+    canica_img,
     estimator,
     single_subject,
 ):
@@ -271,7 +269,7 @@ def test_transform(
     )
 
     if single_subject:
-        data = canica_data[0]
+        data = canica_img
         assert not isinstance(data, list)
     else:
         data = canica_data
@@ -361,7 +359,7 @@ def test_pass_masker_arg_to_estimator(
 @pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
-def test_single_subject_score(canica_data, data_type, estimator):
+def test_single_subject_score(canica_img, data_type, estimator):
     """Check content of scores after fitting."""
     n_components = 3
 
@@ -376,7 +374,7 @@ def test_single_subject_score(canica_data, data_type, estimator):
         standardize="zscore_sample",
     )
 
-    data = canica_data[0]
+    data = canica_img
 
     est.fit(data)
 
@@ -400,7 +398,7 @@ def test_single_subject_score(canica_data, data_type, estimator):
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_single_subject_file(data_type, canica_data, estimator, tmp_path):
+def test_single_subject_file(data_type, canica_img, estimator, tmp_path):
     """Test with a single-subject dataset with globbing and path.
 
     Only for nifti as we cannot read surface from file.
@@ -412,7 +410,7 @@ def test_single_subject_file(data_type, canica_data, estimator, tmp_path):
         standardize="zscore_sample",
     )
 
-    data = canica_data[0]
+    data = canica_img
 
     img = write_imgs_to_path(
         data,

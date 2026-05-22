@@ -224,11 +224,15 @@ def canica_data(
         )
 
     else:
-        # TODO for now we generate random data
-        # rather than data based on actual components.
-        return _decomposition_images_surface(
-            rng, decomposition_mesh, with_activation=True
-        )
+        return [
+            _make_surface_data_from_components(
+                _make_canica_components,
+                decomposition_mesh,
+                rng,
+                n_timepoints=200,
+            )
+            for _ in range(n_subjects)
+        ]
 
 
 @pytest.fixture
@@ -298,12 +302,50 @@ def _canica_components_volume(shape):
     )
 
 
+def _make_surface_data_from_components(
+    components: np.ndarray,
+    mesh: PolyMesh,
+    rng,
+    n_timepoints: int = 200,
+) -> SurfaceImage:
+    """Create a single surface image suitable for DictLearning.
+
+    Parameters
+    ----------
+    components : ndarray of shape (n_components, n_vertices)
+        Spatial component maps over all vertices (left then right).
+
+    mesh : PolyMesh
+
+    rng : numpy random Generator
+
+    n_timepoints : int
+        Number of timepoints. 200 has been empirically validated to produce
+        SVD-reduced features that exceed DictLearning's default alpha=10.
+    """
+    n_components = components.shape[0]
+    n_left = mesh.parts["left"].coordinates.shape[0]
+
+    weights = rng.normal(size=(n_timepoints, n_components))
+    data_all = weights @ components + 0.01 * rng.normal(
+        size=(n_timepoints, components.shape[1])
+    )
+    return SurfaceImage(
+        mesh=mesh,
+        data={
+            "left": data_all[:, :n_left].T,
+            "right": data_all[:, n_left:].T,
+        },
+    )
+
+
 def _make_volume_data_from_components(
     components,
     affine,
     shape,
     rng,
     n_subjects: int,
+    n_timepoints: int = 40,
 ) -> list[Nifti1Image]:
     """Create a "multi-subject" dataset of volume data."""
     background = -0.01 * rng.normal(size=shape) - 2
@@ -314,7 +356,7 @@ def _make_volume_data_from_components(
     # TODO
     # changing this value leads makes tests overall faster but makes
     # test_canica_square_img to fail
-    magic_number = 40
+    magic_number = n_timepoints
 
     for _ in range(n_subjects):
         this_data = np.dot(
@@ -353,6 +395,39 @@ def canica_components(rng, _make_canica_components) -> np.ndarray:
 def canica_data_single_img(canica_data) -> Nifti1Image | SurfaceImage:
     """Create a canonical ICA data for testing purposes."""
     return canica_data[0]
+
+
+@pytest.fixture
+def canica_img(
+    data_type: str,
+    rng,
+    _make_canica_components: np.ndarray,
+    shape_3d_large,
+    affine_eye,
+    decomposition_mesh,
+) -> Nifti1Image | SurfaceImage:
+    """Return a single image with enough timepoints for DictLearning.
+
+    Unlike ``canica_data``, this fixture uses 200 timepoints so that
+    SVD-reduced features exceed the default ``alpha=10`` regularization
+    used by :class:`~nilearn.decomposition.DictLearning`.
+    """
+    if data_type == "nifti":
+        return _make_volume_data_from_components(
+            _make_canica_components,
+            affine_eye,
+            shape_3d_large,
+            rng,
+            n_subjects=1,
+            n_timepoints=200,
+        )[0]
+
+    return _make_surface_data_from_components(
+        _make_canica_components,
+        decomposition_mesh,
+        rng,
+        n_timepoints=200,
+    )
 
 
 def check_decomposition_estimator(estimator, data_type) -> None:
