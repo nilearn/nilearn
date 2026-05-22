@@ -1240,7 +1240,7 @@ class FirstLevelModel(BaseGLM):
         check_parameter_in_allowed(attribute, possible_attributes, "attribute")
 
         if self.minimize_memory:
-            raise ValueError(
+            raise AttributeError(
                 "To access voxelwise attributes like "
                 "R-squared, residuals, and predictions, "
                 "the `FirstLevelModel`-object needs to store "
