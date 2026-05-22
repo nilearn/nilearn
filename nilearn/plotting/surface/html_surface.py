@@ -32,7 +32,7 @@ from nilearn.surface.surface import (
     load_surf_data,
     load_surf_mesh,
 )
-from nilearn.typing import ColorBar
+from nilearn.typing import ColorBar, Title
 
 ALLOWED_VIEWS = {"left", "right", "front", "back", "top", "bottom"}
 
@@ -186,7 +186,7 @@ def view_img_on_surf(
     colorbar: ColorBar = True,
     colorbar_height=0.5,
     colorbar_fontsize=25,
-    title=None,
+    title: Title = None,
     title_fontsize=25,
     view: Literal["left", "right", "front", "back", "top", "bottom"] = "left",
     vol_to_surf_kwargs=None,
@@ -325,7 +325,7 @@ def view_surf(
     colorbar: ColorBar = True,
     colorbar_height=0.5,
     colorbar_fontsize=25,
-    title=None,
+    title: Title = None,
     title_fontsize=25,
     engine: Literal["plotly", "niivue"] = "plotly",
     view: Literal["left", "right", "front", "back", "top", "bottom"] = "left",

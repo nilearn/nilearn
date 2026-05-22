@@ -29,7 +29,7 @@ from nilearn.surface.surface import (
     check_extensions,
     check_mesh_is_fsaverage,
 )
-from nilearn.typing import ColorBar, OutputFile
+from nilearn.typing import ColorBar, OutputFile, Title
 
 # subset of data format extensions supported
 DATA_EXTENSIONS = (
@@ -59,7 +59,7 @@ def plot_surf(
     cbar_vmin=None,
     cbar_vmax=None,
     cbar_tick_format="auto",
-    title: str | None = None,
+    title: Title = None,
     title_font_size=None,
     output_file: OutputFile = None,
     axes=None,
@@ -303,7 +303,7 @@ def plot_surf_contours(
     colors=None,
     legend=False,
     cmap="tab20",
-    title: str | None = None,
+    title: Title = None,
     output_file: OutputFile = None,
     axes=None,
     figure=None,
@@ -429,7 +429,7 @@ def plot_surf_stat_map(
     vmax=None,
     symmetric_cbar="auto",
     cbar_tick_format="auto",
-    title: str | None = None,
+    title: Title = None,
     title_font_size=None,
     output_file: OutputFile = None,
     axes=None,
@@ -649,7 +649,7 @@ def plot_img_on_surf(
     vmax=None,
     symmetric_cbar="auto",
     cbar_tick_format="%i",
-    title: str | None = None,
+    title: Title = None,
     output_file: OutputFile = None,
     **kwargs,
 ):
@@ -826,7 +826,7 @@ def plot_surf_roi(
     vmin=None,
     vmax=None,
     cbar_tick_format="auto",
-    title: str | None = None,
+    title: Title = None,
     title_font_size=None,
     output_file: OutputFile = None,
     axes=None,

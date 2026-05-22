@@ -26,7 +26,7 @@ from nilearn.plotting.matrix._utils import (
     sanitize_reorder,
     sanitize_tri,
 )
-from nilearn.typing import ColorBar, OutputFile
+from nilearn.typing import ColorBar, OutputFile, Title
 
 
 def _configure_axis(
@@ -151,7 +151,7 @@ def _sanitize_inputs_plot_matrix(
 @fill_doc
 def plot_matrix(
     mat,
-    title: str | None = None,
+    title: Title = None,
     labels=None,
     figure=None,
     axes=None,
