@@ -1270,7 +1270,7 @@ def test_first_level_residuals_errors(shape_4d_default):
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    with pytest.raises(ValueError, match="To access voxelwise attributes"):
+    with pytest.raises(AttributeError, match="To access voxelwise attributes"):
         model.residuals[0]
 
     # Check that trying to access residuals without fitting
