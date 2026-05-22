@@ -62,9 +62,9 @@ from nilearn.typing import (
     DisplayMode,
     DrawCross,
     OutputFile,
-Radiological,
-ResamplingInterpolation,
-Title,
+    Radiological,
+    ResamplingInterpolation,
+    Title,
 )
 
 
