@@ -765,11 +765,7 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
             n_timepoints=n_timepoints,
         )
 
-        return (
-            (decomp_input[0], None)
-            if isinstance(estimator, DictLearning)
-            else (decomp_input, None)
-        )
+        return decomp_input[0], None
 
     elif not (
         accept_niimg_input(estimator) or accept_surf_img_input(estimator)
