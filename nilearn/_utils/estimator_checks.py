@@ -2516,7 +2516,7 @@ def check_masker_mask_img(estimator_orig) -> None:
 
     if isinstance(estimator, (NiftiMasker, SurfaceMasker)):
         with pytest.warns(
-            UserWarning,
+            RuntimeWarning,
             match=(
                 "Generation of a mask has been requested .* "
                 "while a mask was given at masker creation."

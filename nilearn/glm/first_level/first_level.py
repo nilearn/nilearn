@@ -1341,7 +1341,10 @@ class FirstLevelModel(BaseGLM):
             with warnings.catch_warnings():
                 # ignore warning in case the masker
                 # was initialized with a mask image
-                warnings.simplefilter("ignore")
+                warnings.filterwarnings(
+                    "ignore",
+                    message=r".*Generation of a mask has been",
+                )
                 self.masker_.fit(run_img)
 
         else:

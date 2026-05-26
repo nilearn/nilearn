@@ -1561,7 +1561,7 @@ def test_flm_with_surface_masker_with_mask(
     """Test FirstLevelModel with SurfaceMasker and mask image."""
     surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
     img, des = surface_glm_data(5)
-    masker = SurfaceMasker(mask_img=surf_mask).fit(img)
+    masker = SurfaceMasker(mask_img=surf_mask).fit()
     model = FirstLevelModel(mask_img=masker)
     model.fit(img, design_matrices=des)
 
