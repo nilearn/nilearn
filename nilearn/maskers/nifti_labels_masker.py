@@ -814,7 +814,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         )
         labels_after_resampling = set(np.unique(safe_get_data(labels_img_)))
         if len(labels_after_resampling) <= 1:
-            raise RuntimeError(
+            raise ValueError(
                 "No label left after resampling the labels image."
             )
         if labels_diff := labels_before_resampling.difference(

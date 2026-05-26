@@ -253,7 +253,7 @@ def test_nifti_labels_masker_mask_img_masks_all_labels_error(
         masker.transform(img_4d_rand_eye)
 
 
-def test_nifti_labels_masker_no_label_after_resampling_error(
+def test_no_label_after_resampling_error(
     img_labels, affine_mni, shape_3d_large, rng
 ):
     """Ensure error is raised when resampling leads to no label left."""
