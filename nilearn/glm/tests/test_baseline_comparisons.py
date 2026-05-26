@@ -7,10 +7,12 @@ https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-f
 
 from collections import OrderedDict
 
-import matplotlib as mpl
 import numpy as np
 import pandas as pd
 import pytest
+
+pytest.importorskip("matplotlib")
+import matplotlib as mpl
 
 from nilearn.datasets import (
     load_fsaverage_data,

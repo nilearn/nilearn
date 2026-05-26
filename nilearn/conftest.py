@@ -38,6 +38,8 @@ if is_matplotlib_installed():
         # with the oldest version of matplolib
         collect_ignore.extend(
             [
+                "glm/tests/test_baseline_comparisons.py",
+                "maskers/tests/test_baseline_comparisons.py",
                 "plotting/tests/test_baseline_comparisons.py",
                 "reporting/tests/test_baseline_comparisons.py",
             ]
@@ -47,6 +49,8 @@ else:
     collect_ignore.extend(
         [
             "_utils/plotting.py",
+            "glm/tests/test_baseline_comparisons.py",
+            "maskers/tests/test_baseline_comparisons.py",
             "plotting",
             "reporting/tests/test_baseline_comparisons.py",
         ]
