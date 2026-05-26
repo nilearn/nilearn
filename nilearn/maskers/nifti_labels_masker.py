@@ -726,6 +726,14 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                     target_shape=imgs_.shape[:3],
                     target_affine=imgs_.affine,
                 )
+                labels_data = get_data(labels_img_)
+                mask_data = get_data(mask_img_).astype(bool)
+                masked_labels_data = labels_data[mask_data, ...]
+                if np.all(masked_labels_data == 0):
+                    raise ValueError(
+                        "No label left after applying mask "
+                        "to the labels image."
+                    )
 
             # Remove imgs_ from memory before loading the same image
             # in filter_and_extract.
@@ -805,6 +813,10 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             target_affine=imgs_.affine,
         )
         labels_after_resampling = set(np.unique(safe_get_data(labels_img_)))
+        if len(labels_after_resampling) <= 1:
+            raise RuntimeError(
+                "No label left after resampling the labels image."
+            )
         if labels_diff := labels_before_resampling.difference(
             labels_after_resampling
         ):

@@ -253,6 +253,22 @@ def test_nifti_labels_masker_mask_img_masks_all_labels_error(
         masker.transform(img_4d_rand_eye)
 
 
+def test_nifti_labels_masker_no_label_after_resampling_error(
+    img_labels, affine_mni, shape_3d_large, rng
+):
+    """Ensure error is raised when resampling leads to no label left."""
+    input_img = Nifti1Image(rng.random(shape_3d_large), affine_mni)
+
+    estimator = NiftiLabelsMasker(labels_img=img_labels, standardize=None)
+    estimator.fit()
+    with pytest.raises(RuntimeError, match="No label left after resampling"):
+        estimator.transform(input_img)
+
+    estimator = NiftiLabelsMasker(labels_img=img_labels, standardize=None)
+    with pytest.raises(RuntimeError, match="No label left after resampling"):
+        estimator.fit_transform(input_img)
+
+
 def test_nifti_labels_masker_with_nans_and_infs(
     affine_eye, n_regions, length, img_labels, img_fmri
 ):
