@@ -1851,7 +1851,7 @@ def clean_img(
     ensure_finite: bool = ...,
     mask_img: Nifti1Image | str | Path | None = ...,
     **kwargs,
-) -> SurfaceImage: ...
+) -> Nifti1Image: ...
 
 
 @fill_doc
