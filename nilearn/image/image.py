@@ -57,7 +57,14 @@ from nilearn.surface.surface import (
 )
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
-from nilearn.typing import ClusterThreshold, HighPass, LowPass, NiimgLike, Tr
+from nilearn.typing import (
+    ClusterThreshold,
+    HighPass,
+    LowPass,
+    NiimgLike,
+    Standardize,
+    Tr,
+)
 
 
 def is_volume_image(imgs) -> bool:
@@ -1815,6 +1822,38 @@ def binarize_img(
     )
 
 
+@overload
+def clean_img(
+    imgs: SurfaceImage,
+    runs: np.ndarray | None = ...,
+    detrend: bool = ...,
+    standardize: Standardize = ...,
+    confounds=...,
+    low_pass: LowPass = ...,
+    high_pass: HighPass = ...,
+    t_r: Tr = ...,
+    ensure_finite: bool = ...,
+    mask_img: SurfaceImage | None = ...,
+    **kwargs,
+) -> SurfaceImage: ...
+
+
+@overload
+def clean_img(
+    imgs: Nifti1Image | str | Path | list[Nifti1Image | str | Path],
+    runs: np.ndarray | None = ...,
+    detrend: bool = ...,
+    standardize: Standardize = ...,
+    confounds=...,
+    low_pass: LowPass = ...,
+    high_pass: HighPass = ...,
+    t_r: Tr = ...,
+    ensure_finite: bool = ...,
+    mask_img: Nifti1Image | str | Path | None = ...,
+    **kwargs,
+) -> SurfaceImage: ...
+
+
 @fill_doc
 def clean_img(
     imgs: SurfaceImage
@@ -1824,7 +1863,7 @@ def clean_img(
     | list[Nifti1Image | str | Path],
     runs: np.ndarray | None = None,
     detrend: bool = True,
-    standardize: bool = True,
+    standardize: Standardize = True,
     confounds=None,
     low_pass: LowPass = None,
     high_pass: HighPass = None,
