@@ -33,6 +33,7 @@ fig.resize(WIDTH, HEIGHT)
 fig.save_as_html(output_path / "view_surf.html")
 
 fig = view_img_on_surf(load_sample_motor_activation_image())
+fig.resize(WIDTH, HEIGHT)
 fig.save_as_html(output_path / "view_img_on_surf.html")
 
 
