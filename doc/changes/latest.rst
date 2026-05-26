@@ -121,7 +121,7 @@ Changes
 
 - :bdg-danger:`Deprecation` ``plot_img_comparison`` is no longer accessible from ``nilearn.plotting.image.img_plotting``, access it from ``nilearn.plotting`` or from ``nilearn.plotting.img_comparison`` (:gh:`5995` by `Rémi Gau`_).
 
-- :bdg-danger:`Deprecation` The attributes ``residuals``, ``predicted`` and ``r_square`` are deprecated and will be removed in version >=0.16.0. "Use ``residuals_``, ``predicted_`` and ``r_square_`` instead." (:gh:`6236 by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` The attributes ``residuals``, ``predicted`` and ``r_square`` are deprecated and will be removed in version >=0.16.0. "Use ``residuals_``, ``predicted_`` and ``r_square_`` instead." (:gh:`6236` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The ``"z_score"`` value for the ``standardize`` parameter is no longer supported. Use ``standardize="z_score_sample"`` instead (:gh:`5995` by `Rémi Gau`_).
 
