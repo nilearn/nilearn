@@ -307,6 +307,7 @@ def _make_surface_data_from_components(
     mesh: PolyMesh,
     rng,
     n_timepoints: int = 200,
+    weights=None,
 ) -> SurfaceImage:
     """Create a single surface image suitable for DictLearning.
 
@@ -322,11 +323,16 @@ def _make_surface_data_from_components(
     n_timepoints : int
         Number of timepoints. 200 has been empirically validated to produce
         SVD-reduced features that exceed DictLearning's default alpha=10.
+
+    weights : None or numpy array (n_timepoints, components.shape[0])
+              default: None
     """
     n_components = components.shape[0]
     n_left = mesh.parts["left"].coordinates.shape[0]
 
-    weights = rng.normal(size=(n_timepoints, n_components))
+    if weights is None:
+        weights = rng.normal(size=(n_timepoints, n_components))
+
     data_all = weights @ components + 0.01 * rng.normal(
         size=(n_timepoints, components.shape[1])
     )
