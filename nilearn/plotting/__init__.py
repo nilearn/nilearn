@@ -1,15 +1,17 @@
 """Plotting code for nilearn."""
 
-from nilearn._utils.helpers import set_mpl_backend
-
 try:
-    set_mpl_backend()
+    import matplotlib  # noqa: F401
 except ImportError:
     # matplotlib is not installed; plotting functions are unavailable.
     # This allows the package to be imported (e.g. for pytest conftest
     # discovery) without crashing when matplotlib is absent.
-    pass
+    __all__ = []
 else:
+    from nilearn.plotting._utils import set_mpl_backend
+
+    set_mpl_backend()
+
     from nilearn.plotting import cm
     from nilearn.plotting.find_cuts import (
         find_cut_slices,
@@ -53,38 +55,38 @@ else:
         view_surf,
     )
 
-__all__ = [
-    "cm",  # cm not in API doc
-    "find_cut_slices",
-    "find_parcellation_cut_coords",
-    "find_probabilistic_atlas_cut_coords",
-    "find_xyz_cut_coords",
-    "plot_anat",
-    "plot_bland_altman",
-    "plot_carpet",
-    "plot_connectome",
-    "plot_contrast_matrix",
-    "plot_design_matrix",
-    "plot_design_matrix_correlation",
-    "plot_epi",
-    "plot_event",
-    "plot_glass_brain",
-    "plot_img",
-    "plot_img_comparison",
-    "plot_img_on_surf",
-    "plot_markers",
-    "plot_matrix",
-    "plot_prob_atlas",
-    "plot_roi",
-    "plot_stat_map",
-    "plot_surf",
-    "plot_surf_contours",
-    "plot_surf_roi",
-    "plot_surf_stat_map",
-    "show",
-    "view_connectome",
-    "view_img",
-    "view_img_on_surf",
-    "view_markers",
-    "view_surf",
-]
+    __all__ = [
+        "cm",  # cm not in API doc
+        "find_cut_slices",
+        "find_parcellation_cut_coords",
+        "find_probabilistic_atlas_cut_coords",
+        "find_xyz_cut_coords",
+        "plot_anat",
+        "plot_bland_altman",
+        "plot_carpet",
+        "plot_connectome",
+        "plot_contrast_matrix",
+        "plot_design_matrix",
+        "plot_design_matrix_correlation",
+        "plot_epi",
+        "plot_event",
+        "plot_glass_brain",
+        "plot_img",
+        "plot_img_comparison",
+        "plot_img_on_surf",
+        "plot_markers",
+        "plot_matrix",
+        "plot_prob_atlas",
+        "plot_roi",
+        "plot_stat_map",
+        "plot_surf",
+        "plot_surf_contours",
+        "plot_surf_roi",
+        "plot_surf_stat_map",
+        "show",
+        "view_connectome",
+        "view_img",
+        "view_img_on_surf",
+        "view_markers",
+        "view_surf",
+    ]
