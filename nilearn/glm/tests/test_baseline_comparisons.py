@@ -22,6 +22,11 @@ from nilearn.datasets import (
 from nilearn.glm._reporting_utils import _stat_map_to_png
 from nilearn.glm.thresholding import threshold_stats_img
 
+pytest.importorskip(
+    "matplotlib",
+    reason="Matplotlib is not installed; required to run the tests!",
+)
+
 
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
@@ -94,7 +99,6 @@ def test_stat_map_to_png_volume(
 
 @pytest.mark.thread_unsafe
 @pytest.mark.mpl_image_compare
-@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize(
     "height_control, two_sided, threshold",
     [
@@ -133,15 +137,19 @@ def test_stat_map_to_png_surface(
         orient="index",
     )
 
-    _, fig = _stat_map_to_png(
-        stat_img=thresholded_img,
-        threshold=threshold,
-        bg_img=surf_img,
-        cut_coords=None,
-        display_mode="ortho",
-        plot_type="slice",
-        table_details=table_details,
-        two_sided=two_sided,
-    )
+    import matplotlib as mpl
+
+    mpl_rc = mpl.rc_context({"axes.autolimit_mode": "data"})
+    with mpl_rc:
+        _, fig = _stat_map_to_png(
+            stat_img=thresholded_img,
+            threshold=threshold,
+            bg_img=surf_img,
+            cut_coords=None,
+            display_mode="ortho",
+            plot_type="slice",
+            table_details=table_details,
+            two_sided=two_sided,
+        )
 
     return fig
