@@ -28,6 +28,8 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         overall area of the brain to consider. The data for each \
         hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
+    %(label_maps)s
+
     allow_overlap : :obj:`bool`, default=True
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
@@ -73,6 +75,9 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
     ----------
     %(clean_args_)s
 
+    label_maps_ : iterable of :obj:`str`
+        Name of each map in the maps_img_.
+
     maps_img_ : :obj:`~nilearn.surface.SurfaceImage`
         The same as the input `maps_img`, kept solely for consistency
         across maskers.
@@ -96,6 +101,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         self,
         maps_img=None,
         mask_img=None,
+        label_maps=None,
         allow_overlap=True,
         smoothing_fwhm=None,
         standardize=False,
@@ -116,6 +122,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         super().__init__(
             maps_img=maps_img,
             mask_img=mask_img,
+            label_maps=label_maps,
             allow_overlap=allow_overlap,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,

@@ -36,6 +36,8 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
+    %(label_maps)s
+
     allow_overlap : :obj:`bool`, default=True
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
@@ -98,6 +100,9 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
     ----------
     %(clean_args_)s
 
+    label_maps_ : iterable of :obj:`str`
+        Name of each map in the maps_img_.
+
     maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The maps mask of the data.
 
@@ -131,6 +136,7 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
         self,
         maps_img=None,
         mask_img=None,
+        label_maps=None,
         allow_overlap=True,
         smoothing_fwhm=None,
         standardize=False,
@@ -155,6 +161,7 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
         super().__init__(
             maps_img,
             mask_img=mask_img,
+            label_maps=label_maps,
             allow_overlap=allow_overlap,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
