@@ -21,10 +21,15 @@ from nilearn.surface import SurfaceImage
 
 output_path = Path(__file__).parent
 
+WIDTH = 1200
+HEIGHT = 800
+
 fig = view_img(load_sample_motor_activation_image())
+fig.resize(WIDTH, HEIGHT)
 fig.save_as_html(output_path / "view_img.html")
 
 fig = view_surf(surf_map=load_fsaverage_data())
+fig.resize(WIDTH, HEIGHT)
 fig.save_as_html(output_path / "view_surf.html")
 
 fig = view_img_on_surf(load_sample_motor_activation_image())
@@ -64,6 +69,7 @@ fig = view_connectome(
     coordinates,
     edge_threshold="90%",
 )
+fig.resize(WIDTH, HEIGHT)
 fig.save_as_html(output_path / "view_connectome.html")
 
 coords = np.arange(12).reshape((4, 3))
@@ -81,4 +87,5 @@ fig = view_markers(
     title="test view_markers",
     title_fontsize=30,
 )
+fig.resize(WIDTH, HEIGHT)
 fig.save_as_html(output_path / "view_markers.html")
