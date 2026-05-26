@@ -27,6 +27,8 @@ from nibabel import Nifti1Image
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
+Scalar: TypeAlias = float | int | np.floating | np.integer | None
+
 Annotate: TypeAlias = bool
 BgOnData: TypeAlias = bool
 BorderSize: TypeAlias = int | np.integer
@@ -65,11 +67,11 @@ HeightControl: TypeAlias = Literal[None, "fpr", "fdr", "bonferroni"]
 # if we wanted to use proper type annotation
 HrfModel: TypeAlias = str | Callable | list | None
 
-HighPass: TypeAlias = float | int | np.floating | np.integer | None
+HighPass: TypeAlias = Scalar
 KeepMaskedLabels: TypeAlias = bool
 KeepMaskedMaps: TypeAlias = bool
 LowerCutoff: TypeAlias = float | np.floating
-LowPass: TypeAlias = float | int | np.floating | np.integer | None
+LowPass: TypeAlias = Scalar
 MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
 MemoryLevel: TypeAlias = int | np.integer
 NJobs: TypeAlias = int | np.integer
@@ -83,8 +85,8 @@ RandomState: TypeAlias = (
 ResamplingInterpolation: TypeAlias = Literal["continuous", "nearest"]
 Resolution: TypeAlias = int | np.integer | None
 Resume: TypeAlias = bool
-ScreeningPercentile: TypeAlias = float | int | np.floating | np.integer | None
-SmoothingFwhm: TypeAlias = float | int | np.floating | np.integer | None
+ScreeningPercentile: TypeAlias = Scalar
+SmoothingFwhm: TypeAlias = Scalar
 Standardize: TypeAlias = Literal["zscore_sample", "psc", True, False, None]
 StandardizeConfounds: TypeAlias = bool
 SupportedRegressors: TypeAlias = Literal[
@@ -116,7 +118,7 @@ Threshold: TypeAlias = float | int | np.floating | np.integer | str | None
 
 Tfce: TypeAlias = bool
 Title: TypeAlias = str | None
-Tr: TypeAlias = float | int | np.floating | np.integer | None
+Tr: TypeAlias = Scalar
 Transparency: TypeAlias = (
     float
     | int
@@ -133,5 +135,5 @@ TwoSidedTest: TypeAlias = bool
 Url: TypeAlias = str | None
 UpperCutoff: TypeAlias = float | np.floating
 Verbose: TypeAlias = bool | int | np.integer
-Vmin: TypeAlias = float | int | np.floating | np.integer | None
-Vmax: TypeAlias = float | int | np.floating | np.integer | None
+Vmin: TypeAlias = Scalar
+Vmax: TypeAlias = Scalar

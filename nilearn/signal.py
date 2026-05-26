@@ -7,7 +7,7 @@ features
 
 import warnings
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 import pandas as pd
@@ -27,6 +27,12 @@ from nilearn._utils.param_validation import (
     check_run_sample_masks,
 )
 from nilearn.exceptions import AllVolumesRemovedError
+from nilearn.typing import (
+    HighPass,
+    LowPass,
+    StandardizeConfounds,
+    Tr,
+)
 
 __all__ = [
     "butterworth",
@@ -34,7 +40,7 @@ __all__ = [
     "high_variance_confounds",
 ]
 
-available_filters = ("butterworth", "cosine")
+AVAILABLE_FILTERS = ("butterworth", "cosine")
 
 
 @fill_doc
@@ -535,21 +541,21 @@ def _ensure_float(data: np.ndarray) -> np.ndarray:
 
 @fill_doc
 def clean(
-    signals,
-    runs=None,
-    detrend=True,
+    signals: np.ndarray,
+    runs: np.ndarray | None = None,
+    detrend: bool = True,
     standardize="zscore_sample",
     sample_mask=None,
     confounds=None,
-    standardize_confounds=True,
-    filter="butterworth",
-    low_pass=None,
-    high_pass=None,
-    t_r=2.5,
-    ensure_finite=False,
-    extrapolate=False,
+    standardize_confounds: StandardizeConfounds = True,
+    filter: Literal["butterworth", "cosine", False] = "butterworth",
+    low_pass: LowPass = None,
+    high_pass: HighPass = None,
+    t_r: Tr = 2.5,
+    ensure_finite: bool = False,
+    extrapolate: bool = False,
     **kwargs,
-):
+) -> np.ndarray:
     """Improve :term:`SNR` on masked :term:`fMRI` signals.
 
     This function can do several things on the input signals. With the default
@@ -598,7 +604,7 @@ def clean(
         Timeseries. Must have shape (instant number, features number).
         This array is not modified.
 
-    runs : :class:`numpy.ndarray`, default=None
+    runs : :class:`numpy.ndarray` or None, default=None
         Add a run level to the cleaning process. Each run will be
         cleaned independently. Must be a 1D array of n_samples elements.
 
@@ -753,6 +759,10 @@ def clean(
 
     # Butterworth filtering
     if filter_type == "butterworth":
+        if TYPE_CHECKING:
+            # dirty type narrowing for static type checking
+            assert t_r is not None
+
         butterworth_kwargs = {
             k.replace("butterworth__", ""): v
             for k, v in kwargs.items()
@@ -1158,9 +1168,17 @@ def _sanitize_confound_dtype(n_signal: int, confound) -> np.ndarray:
     return confound
 
 
-def _check_filter_parameters(filter, low_pass, high_pass, t_r):
+def _check_filter_parameters(
+    filter: Literal["butterworth", "cosine", False],
+    low_pass: LowPass,
+    high_pass: HighPass,
+    t_r: Tr,
+) -> Literal["butterworth", "cosine", False]:
     """Check all filter related parameters are set correctly."""
-    if not filter:
+    if filter not in [*AVAILABLE_FILTERS, False]:
+        raise ValueError(f"Filter method {filter} not implemented.")
+
+    if filter is False:
         if any(
             isinstance(item, (float, int)) for item in [low_pass, high_pass]
         ):
@@ -1169,34 +1187,29 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
                 "Will not perform filtering.",
                 stacklevel=find_stack_level(),
             )
-        return False
-    elif filter in available_filters:
-        if filter == "cosine" and not all(
-            isinstance(item, (float, int)) for item in [t_r, high_pass]
-        ):
+    elif filter == "cosine" and any(item is None for item in [t_r, high_pass]):
+        raise ValueError(
+            "Repetition time (t_r) and low cutoff frequency (high_pass) "
+            "must be specified for cosine filtering. "
+            f"Got: '{t_r=}' and '{high_pass=}'"
+        )
+    elif filter == "butterworth":
+        if all(item is None for item in [low_pass, high_pass]):
+            # Butterworth was switched off by passing
+            # None to at least low_pass and high_pass
+            return False
+        if t_r is None:
             raise ValueError(
-                "Repetition time (t_r) and low cutoff frequency (high_pass) "
-                "must be specified for cosine "
-                f"filtering.t_r='{t_r}', high_pass='{high_pass}'"
+                "Repetition time (t_r) must be specified for "
+                "butterworth filtering. "
+                f"Got: '{t_r=}'"
             )
-        if filter == "butterworth":
-            if all(item is None for item in [low_pass, high_pass]):
-                # Butterworth was switched off by passing
-                # None to at least low_pass and high_pass
-                return False
-            if t_r is None:
-                raise ValueError(
-                    "Repetition time (t_r) must be specified for "
-                    "butterworth filtering."
-                )
-            if any(isinstance(item, bool) for item in [low_pass, high_pass]):
-                raise TypeError(
-                    "high/low pass must be float or None but you provided "
-                    f"high_pass='{high_pass}', low_pass='{low_pass}'"
-                )
-        return filter
-    else:
-        raise ValueError(f"Filter method {filter} not implemented.")
+        if any(isinstance(item, bool) for item in [low_pass, high_pass]):
+            raise TypeError(
+                "high/low pass must be float or None but you provided "
+                f"'{high_pass=}' and '{low_pass=}'"
+            )
+    return filter
 
 
 def _sanitize_signals(signals, ensure_finite):
