@@ -73,7 +73,7 @@ Fixes
 
 - :bdg-dark:`Code` Fix several issues in plotting, maskers and decomposition when handling map (or label) images with 0 or just a single map (or label) (:gh:`5908` by `Rémi Gau`_).
 
-- :bdg-info:`Reporting` Fix resizing of reports when viewed in browser. (:gh:`6234` by `Hande Gözükan`_).
+- :bdg-info:`Reporting` Fix resizing of reports when viewed in browser (:gh:`6234` by `Hande Gözükan`_).
 
 
 Enhancements
