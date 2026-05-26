@@ -137,8 +137,6 @@ def test_stat_map_to_png_surface(
         orient="index",
     )
 
-    import matplotlib as mpl
-
     mpl_rc = mpl.rc_context({"axes.autolimit_mode": "data"})
     with mpl_rc:
         _, fig = _stat_map_to_png(
