@@ -229,7 +229,6 @@ def canica_data(
                 _make_canica_components,
                 decomposition_mesh,
                 rng,
-                n_timepoints=200,
             )
             for _ in range(n_subjects)
         ]
@@ -306,7 +305,7 @@ def _make_surface_data_from_components(
     components: np.ndarray,
     mesh: PolyMesh,
     rng,
-    n_timepoints: int = 200,
+    n_timepoints: int = 40,
     weights=None,
 ) -> SurfaceImage:
     """Create a single surface image suitable for DictLearning.
@@ -321,8 +320,7 @@ def _make_surface_data_from_components(
     rng : numpy random Generator
 
     n_timepoints : int
-        Number of timepoints. 200 has been empirically validated to produce
-        SVD-reduced features that exceed DictLearning's default alpha=10.
+        Number of timepoints.
 
     weights : None or numpy array (n_timepoints, components.shape[0])
               default: None
@@ -409,7 +407,7 @@ def canica_img(
 ) -> Nifti1Image | SurfaceImage:
     """Return a single image with enough timepoints for DictLearning.
 
-    Unlike ``canica_data``, this fixture uses 200 timepoints so that
+    Unlike ``canica_data``, this fixture uses more timepoints so that
     SVD-reduced features exceed the default ``alpha=10`` regularization
     used by :class:`~nilearn.decomposition.DictLearning`.
     """
@@ -420,14 +418,14 @@ def canica_img(
             shape_3d_large,
             rng,
             n_subjects=1,
-            n_timepoints=200,
+            n_timepoints=40,
         )[0]
 
     return _make_surface_data_from_components(
         _make_canica_components,
         decomposition_mesh,
         rng,
-        n_timepoints=200,
+        n_timepoints=40,
     )
 
 
