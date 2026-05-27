@@ -1087,18 +1087,20 @@ def test_first_level_contrast_computation():
     model.compute_contrast([c2, c2])
 
     # smoke test for contrast that will be repeated
-    model.compute_contrast(c2)
-    model.compute_contrast(c2, "F")
-    model.compute_contrast(c2, "t", "z_score")
-    model.compute_contrast(c2, "t", "stat")
-    model.compute_contrast(c2, "t", "p_value")
-    model.compute_contrast(c2, None, "effect_size")
-    model.compute_contrast(c2, None, "effect_variance")
+    for kwargs in [
+        {},
+        {"stat_type": "F"},
+        {"stat_type": "t", "output_type": "z_score"},
+        {"stat_type": "t", "output_type": "stat"},
+        {"stat_type": "t", "output_type": "p_value"},
+        {"output_type": "effect_size"},
+        {"output_type": "effect_variance"},
+    ]:
+        model.compute_contrast(c2, **kwargs)
 
     # formula should work (passing variable name directly)
-    model.compute_contrast("c0")
-    model.compute_contrast("c1")
-    model.compute_contrast("c2")
+    for cn in ["c0", "c1", "c2"]:
+        model.compute_contrast(cn)
 
     # smoke test for one null contrast in group
     model.compute_contrast([c2, cnull])
