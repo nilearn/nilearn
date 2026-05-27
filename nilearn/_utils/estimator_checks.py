@@ -590,11 +590,13 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
             yield (clone(estimator), check_decoder_compatibility_mask_image)
+            yield (clone(estimator), check_decoder_screening_n_features)
             yield (clone(estimator), check_decoder_with_surface_data)
             yield (clone(estimator), check_decoder_with_arrays)
             yield (clone(estimator), check_decoder_estimator_args)
             yield (clone(estimator), check_verbosity_embedded_masker)
-            yield (clone(estimator), check_decoder_screening_n_features)
+            yield (clone(estimator), check_warning_embedded_masker)
+
             if is_regressor(estimator):
                 yield (
                     clone(estimator),
@@ -685,9 +687,11 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
         yield (clone(estimator), check_glm_dtypes)
         yield (clone(estimator), check_glm_empty_data_messages)
         yield (clone(estimator), check_verbosity_embedded_masker)
+        yield (clone(estimator), check_warning_embedded_masker)
 
     if isinstance(estimator, _BaseDecomposition):
         yield (clone(estimator), check_verbosity_embedded_masker)
+        yield (clone(estimator), check_warning_embedded_masker)
 
 
 def _not_fitted_error_message(estimator) -> str:
@@ -1152,6 +1156,17 @@ def check_verbosity_embedded_masker(estimator_orig):
     if is_glm(estimator):
         for verbose in [1, 2, 3]:
             assert re.search(r"Computation of .* done in", outputs[verbose])
+
+
+def check_warning_embedded_masker(estimator_orig):
+    """Check no excessive warning thrown by embedded masker."""
+    estimator = clone(estimator_orig)
+
+    # no such warning is thrown when using fit_transform
+    with warnings.catch_warnings(record=True) as warning_list:
+        estimator = fit_estimator(estimator)
+    for w in warning_list:
+        assert "Given mask will be used" not in str(w)
 
 
 def _sanitize_standard_output(output):
@@ -2517,10 +2532,7 @@ def check_masker_mask_img(estimator_orig) -> None:
     if isinstance(estimator, (NiftiMasker, SurfaceMasker)):
         with pytest.warns(
             RuntimeWarning,
-            match=(
-                "Generation of a mask has been requested .* "
-                "while a mask was given at masker creation."
-            ),
+            match=("Generation of a mask has been requested.*"),
         ):
             estimator.fit(input_img)
     else:
@@ -2536,6 +2548,15 @@ def check_masker_mask_img(estimator_orig) -> None:
             get_surface_data(ref_mask_img_),
             get_surface_data(estimator.mask_img_),
         )
+
+    estimator = clone(estimator)
+    estimator.mask_img = binary_mask_img
+
+    # no such warning is thrown when using fit_transform
+    with warnings.catch_warnings(record=True) as warning_list:
+        estimator.fit_transform(input_img)
+    for w in warning_list:
+        assert "Given mask will be used" not in str(w)
 
 
 def check_masker_clean(estimator_orig) -> None:

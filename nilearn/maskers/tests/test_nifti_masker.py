@@ -84,31 +84,6 @@ def test_fit_transform(y, img_3d_rand_eye, mask_img_1):
         assert np.any(X != 0)
 
 
-def test_fit_warning(img_3d_rand_eye, mask_img_1):
-    """Warn that mask creation is happening \
-        when mask was provided at instantiation.
-    """
-    masker = NiftiMasker(mask_img=mask_img_1, standardize=None)
-    with pytest.warns(
-        RuntimeWarning,
-        match="Generation of a mask has been requested.*",
-    ):
-        masker.fit(img_3d_rand_eye)
-
-
-def test_fit_transform_no_warning(img_3d_rand_eye, mask_img_1):
-    """Do not warn that mask creation is happening
-    when mask was provided at instantiation
-    when doing a fit_transform.
-    """
-    # no such warning is thrown when using fit_transform
-    masker = NiftiMasker(mask_img=mask_img_1, standardize=None)
-    with warnings.catch_warnings(record=True) as warning_list:
-        masker.fit_transform(img_3d_rand_eye)
-    for w in warning_list:
-        assert "Given mask will be used" not in str(w)
-
-
 @pytest.mark.parametrize(
     "target_affine", [2 * np.eye(3), (2 * np.eye(3)).tolist()]
 )

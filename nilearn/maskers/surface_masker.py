@@ -159,6 +159,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                     " given at masker creation. Given mask"
                     " will be used.",
                     stacklevel=find_stack_level(),
+                    category=RuntimeWarning,
                 )
             return
 

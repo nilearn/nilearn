@@ -719,29 +719,32 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
             * self._clustering_percentile
             / 10000
         )
-        if n_final_features < 50:
-            extra_msg = ""
-            screening_percentile_lt_100 = self.screening_percentile_ < 100
-            clustering_percentile_lt_100 = (
-                hasattr(self, "clustering_percentile")
-                and self._clustering_percentile < 100
-            )
-            if screening_percentile_lt_100 or clustering_percentile_lt_100:
-                extra_msg = "Consider raising "
-            if screening_percentile_lt_100:
-                extra_msg += "'screening_percentile' "
-                if clustering_percentile_lt_100:
-                    extra_msg += "and / or"
+
+        extra_msg = ""
+        screening_percentile_lt_100 = self.screening_percentile_ < 100
+        clustering_percentile_lt_100 = (
+            hasattr(self, "clustering_percentile")
+            and self._clustering_percentile < 100
+        )
+        if screening_percentile_lt_100 or clustering_percentile_lt_100:
+            extra_msg = "Consider raising "
+        if screening_percentile_lt_100:
+            extra_msg += "'screening_percentile' "
             if clustering_percentile_lt_100:
-                extra_msg += "'clustering_percentile'"
-            warning_msg = (
+                extra_msg += "and / or"
+        if clustering_percentile_lt_100:
+            extra_msg += "'clustering_percentile'"
+
+        if n_final_features == 0:
+            msg = f"No feature left for training. {extra_msg}."
+            raise RuntimeError(msg)
+        if n_final_features < 50:
+            msg = (
                 "The decoding model will be trained only "
                 f"on {n_final_features} features. "
                 f"{extra_msg}."
             )
-            warnings.warn(
-                warning_msg, UserWarning, stacklevel=find_stack_level()
-            )
+            warnings.warn(msg, UserWarning, stacklevel=find_stack_level())
         else:
             log(
                 (
