@@ -54,7 +54,7 @@ __all__ = [
 
 @overload
 def load_mask_img(
-    mask_img: str | Path | Nifti1Image,
+    mask_img: NiimgLike,
     allow_empty: bool = ...,
 ) -> tuple[np.ndarray, np.ndarray]: ...
 
@@ -67,7 +67,7 @@ def load_mask_img(
 
 
 def load_mask_img(
-    mask_img: str | Path | Nifti1Image | SurfaceImage,
+    mask_img: NiimgLike | SurfaceImage,
     allow_empty: bool = False,
 ) -> tuple[np.ndarray, np.ndarray] | tuple[SurfaceImage, None]:
     """Check that a mask is valid.
