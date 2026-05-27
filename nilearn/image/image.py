@@ -1856,7 +1856,7 @@ def clean_img(
 
 @fill_doc
 def clean_img(
-    imgs: SurfaceImage | Nifti1Image | str | Path | list[NiimgLike],
+    imgs: SurfaceImage | NiimgLike | list[NiimgLike],
     runs: np.ndarray | None = None,
     detrend: bool = True,
     standardize: Standardize = True,

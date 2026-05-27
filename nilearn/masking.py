@@ -2,7 +2,6 @@
 
 import numbers
 import warnings
-from pathlib import Path
 from typing import Literal, get_args, overload
 
 import numpy as np
