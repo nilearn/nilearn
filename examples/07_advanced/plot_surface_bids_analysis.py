@@ -205,7 +205,6 @@ neg_log_pvals_permuted = non_parametric_inference(
     model_intercept=True,
     n_perm=1000,
     two_sided_test=two_sided,
-    tfce=True,
     n_jobs=2,
 )
 
