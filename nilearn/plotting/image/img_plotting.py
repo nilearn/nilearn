@@ -61,8 +61,10 @@ from nilearn.typing import (
     ColorBar,
     DisplayMode,
     DrawCross,
+    OutputFile,
     Radiological,
     ResamplingInterpolation,
+    Title,
 )
 
 
@@ -99,15 +101,15 @@ def _plot_img_with_bg(
     img,
     bg_img=None,
     cut_coords=None,
-    output_file=None,
+    output_file: OutputFile = None,
     display_mode="ortho",
     colorbar=False,
     figure=None,
     axes=None,
-    title=None,
+    title: Title = None,
     threshold=None,
-    annotate=True,
-    draw_cross=True,
+    annotate: Annotate = True,
+    draw_cross: DrawCross = True,
     black_bg=False,
     vmin=None,
     vmax=None,
@@ -120,7 +122,7 @@ def _plot_img_with_bg(
     cbar_tick_format=DEFAULT_TICK_FORMAT,
     brain_color=(0.5, 0.5, 0.5),
     decimals=False,
-    radiological=False,
+    radiological: Radiological = False,
     transparency=None,
     transparency_range=None,
     **kwargs,
@@ -357,7 +359,7 @@ def plot_img(
 def plot_img(
     img,
     cut_coords=None,
-    output_file: str | Path | None = None,
+    output_file: OutputFile = None,
     display_mode: DisplayMode = "ortho",
     figure=None,
     axes=None,
@@ -525,24 +527,24 @@ def plot_img(
 def plot_anat(
     anat_img=MNI152TEMPLATE,
     cut_coords=None,
-    output_file=None,
+    output_file: OutputFile = None,
     display_mode="ortho",
     figure=None,
     axes=None,
-    title=None,
-    annotate=True,
+    title: Title = None,
+    annotate: Annotate = True,
     threshold=None,
-    draw_cross=True,
+    draw_cross: DrawCross = True,
     black_bg="auto",
     dim="auto",
     cmap="gray",
-    colorbar=True,
+    colorbar: ColorBar = True,
     cbar_tick_format=DEFAULT_TICK_FORMAT,
-    radiological=False,
+    radiological: Radiological = False,
     vmin=None,
     vmax=None,
     **kwargs,
-):
+) -> OrthoSlicer | None:
     """Plot cuts of an anatomical image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -657,22 +659,22 @@ def plot_anat(
 def plot_epi(
     epi_img=None,
     cut_coords=None,
-    output_file=None,
+    output_file: OutputFile = None,
     display_mode="ortho",
     figure=None,
     axes=None,
-    title=None,
-    annotate=True,
-    draw_cross=True,
-    black_bg=True,
-    colorbar=True,
+    title: Title = None,
+    annotate: Annotate = True,
+    draw_cross: DrawCross = True,
+    black_bg: bool = True,
+    colorbar: ColorBar = True,
     cbar_tick_format=DEFAULT_TICK_FORMAT,
     cmap="gray",
     vmin=None,
     vmax=None,
-    radiological=False,
+    radiological: Radiological = False,
     **kwargs,
-):
+) -> OrthoSlicer | None:
     """Plot cuts of an :term:`EPI` image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -812,28 +814,28 @@ def plot_roi(
     roi_img,
     bg_img=MNI152TEMPLATE,
     cut_coords=None,
-    output_file=None,
+    output_file: OutputFile = None,
     display_mode="ortho",
     figure=None,
     axes=None,
-    title=None,
-    annotate=True,
-    draw_cross=True,
+    title: Title = None,
+    annotate: Annotate = True,
+    draw_cross: DrawCross = True,
     black_bg="auto",
     threshold=0.5,
     alpha=0.7,
     cmap="gist_ncar",
     dim="auto",
-    colorbar=True,
+    colorbar: ColorBar = True,
     cbar_tick_format=DEFAULT_TICK_FORMAT,
     vmin=None,
     vmax=None,
     resampling_interpolation="nearest",
     view_type="continuous",
     linewidths=2.5,
-    radiological=False,
+    radiological: Radiological = False,
     **kwargs,
-):
+) -> OrthoSlicer | None:
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -997,23 +999,23 @@ def plot_prob_atlas(
     threshold="auto",
     linewidths=2.5,
     cut_coords=None,
-    output_file=None,
+    output_file: OutputFile = None,
     display_mode="ortho",
     figure=None,
     axes=None,
-    title=None,
-    annotate=True,
-    draw_cross=True,
+    title: Title = None,
+    annotate: Annotate = True,
+    draw_cross: DrawCross = True,
     black_bg="auto",
     dim="auto",
-    colorbar=True,
+    colorbar: ColorBar = True,
     cmap="gist_rainbow",
     vmin=None,
     vmax=None,
     alpha=0.7,
-    radiological=False,
+    radiological: Radiological = False,
     **kwargs,
-):
+) -> OrthoSlicer | None:
     """Plot a :term:`Probabilistic atlas` onto the anatomical image \
     by default :term:`MNI` template.
 
@@ -1166,7 +1168,7 @@ def plot_prob_atlas(
         # it will use default percentage,
         # strategy is to avoid maximum overlaps as possible
         if view_type == "contours":
-            correction_factor = 1
+            correction_factor = 1.0
         elif view_type == "filled_contours":
             correction_factor = 0.8
         else:
@@ -1231,34 +1233,46 @@ def plot_prob_atlas(
                 **kwargs_contour,
             )
     if colorbar:
-        display._colorbar = True
-        # Create a colormap from color list to feed display
-        cmap = LinearSegmentedColormap.from_list(
-            "segmented colors", color_list, n_maps + 1
-        )
-        display._show_colorbar(cmap, Normalize(1, n_maps + 1))
-        tick_locator = MaxNLocator(nbins=10)
-        display.locator = tick_locator
-        display._cbar.update_ticks()
-        tick_location = np.round(
-            np.linspace(1, n_maps, min(n_maps, 10))
-        ).astype("int")
-        display._cbar.set_ticks(tick_location + 0.5)
-        display._cbar.set_ticklabels(tick_location)
-        (
-            left,
-            bottom,
-            width,
-            height,
-        ) = display._colorbar_ax.get_position().bounds
-        display._colorbar_ax.set_position([left, bottom, width, height * 0.95])
-        display._colorbar_ax.annotate(
-            "Map #",
-            xy=(1, 1.03),
-            ha="right",
-            va="bottom",
-            xycoords="axes fraction",
-        )
+        if n_maps == 1:
+            warnings.warn(
+                (
+                    "\nThe image maps contains a single image."
+                    "\nNo color map needed."
+                ),
+                RuntimeWarning,
+                stacklevel=find_stack_level(),
+            )
+        else:
+            display._colorbar = True
+            # Create a colormap from color list to feed display
+            cmap = LinearSegmentedColormap.from_list(
+                "segmented colors", color_list, n_maps + 1
+            )
+            display._show_colorbar(cmap, Normalize(1, n_maps + 1))
+            tick_locator = MaxNLocator(nbins=10)
+            display.locator = tick_locator
+            display._cbar.update_ticks()
+            tick_location = np.round(
+                np.linspace(1, n_maps, min(n_maps, 10))
+            ).astype("int")
+            display._cbar.set_ticks(tick_location + 0.5)
+            display._cbar.set_ticklabels(tick_location)
+            (
+                left,
+                bottom,
+                width,
+                height,
+            ) = display._colorbar_ax.get_position().bounds
+            display._colorbar_ax.set_position(
+                [left, bottom, width, height * 0.95]
+            )
+            display._colorbar_ax.annotate(
+                "Map #",
+                xy=(1, 1.03),
+                ha="right",
+                va="bottom",
+                xycoords="axes fraction",
+            )
 
     return save_figure_if_needed(display, output_file)
 
@@ -1268,28 +1282,28 @@ def plot_stat_map(
     stat_map_img,
     bg_img=MNI152TEMPLATE,
     cut_coords=None,
-    output_file=None,
+    output_file: OutputFile = None,
     display_mode="ortho",
-    colorbar=True,
+    colorbar: ColorBar = True,
     cbar_tick_format=DEFAULT_TICK_FORMAT,
     figure=None,
     axes=None,
-    title=None,
+    title: Title = None,
     threshold=1e-6,
-    annotate=True,
-    draw_cross=True,
+    annotate: Annotate = True,
+    draw_cross: DrawCross = True,
     black_bg="auto",
     cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cbar="auto",
     dim="auto",
     vmin=None,
     vmax=None,
-    radiological=False,
+    radiological: Radiological = False,
     resampling_interpolation="continuous",
     transparency=None,
     transparency_range=None,
     **kwargs,
-):
+) -> OrthoSlicer | None:
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -1640,18 +1654,18 @@ def plot_connectome(
     edge_vmin=None,
     edge_vmax=None,
     edge_threshold=None,
-    output_file=None,
+    output_file: OutputFile = None,
     display_mode="ortho",
     figure=None,
     axes=None,
-    title=None,
-    annotate=True,
-    black_bg=False,
+    title: Title = None,
+    annotate: Annotate = True,
+    black_bg: bool = False,
     alpha=0.7,
     edge_kwargs=None,
     node_kwargs=None,
-    colorbar=True,
-    radiological=False,
+    colorbar: ColorBar = True,
+    radiological: Radiological = False,
 ):
     """Plot connectome on top of the brain glass schematics.
 
@@ -1778,16 +1792,16 @@ def plot_markers(
     node_vmax=None,
     node_threshold=None,
     alpha=0.7,
-    output_file=None,
+    output_file: OutputFile = None,
     display_mode="ortho",
     figure=None,
     axes=None,
-    title=None,
-    annotate=True,
-    black_bg=False,
+    title: Title = None,
+    annotate: Annotate = True,
+    black_bg: bool = False,
     node_kwargs=None,
-    colorbar=True,
-    radiological=False,
+    colorbar: ColorBar = True,
+    radiological: Radiological = False,
 ):
     """Plot network nodes (markers) on top of the brain glass schematics.
 
@@ -1939,13 +1953,13 @@ def plot_carpet(
     mask_img=None,
     mask_labels=None,
     t_r=None,
-    detrend=True,
-    output_file=None,
+    detrend: bool = True,
+    output_file: OutputFile = None,
     figure=None,
     axes=None,
     vmin=None,
     vmax=None,
-    title=None,
+    title: Title = None,
     cmap="gray",
     cmap_labels="gist_ncar",
     standardize=True,

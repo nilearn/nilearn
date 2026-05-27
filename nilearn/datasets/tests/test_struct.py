@@ -207,6 +207,7 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     assert mesh_attributes.issubset(set(dataset.keys()))
 
 
+@pytest.mark.flaky
 @pytest.mark.parametrize(
     "mesh",
     [

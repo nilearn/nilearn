@@ -796,7 +796,9 @@ def test_second_level_glm_computation(n_subjects):
     assert len(results1) == len(results2)
 
 
-@pytest.mark.parametrize("attribute", ["residuals", "predicted", "r_square"])
+@pytest.mark.parametrize(
+    "attribute", ["residuals_", "predicted_", "r_square_"]
+)
 def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
     """Tests that an error is raised when trying to access \
        voxelwise attributes before fitting the model, \
@@ -812,12 +814,14 @@ def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
 
     with pytest.raises(ValueError, match=r"The model has no results."):
         getattr(model, attribute)
-    with pytest.raises(ValueError, match="attribute must be one of"):
+    with pytest.raises(ValueError, match="'attribute' must be one of"):
         model._get_element_wise_model_attribute("foo", True)
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("attribute", ["residuals", "predicted", "r_square"])
+@pytest.mark.parametrize(
+    "attribute", ["residuals_", "predicted_", "r_square_"]
+)
 def test_second_level_voxelwise_attribute_errors_minimize_memory(
     attribute, n_subjects
 ):
@@ -835,12 +839,14 @@ def test_second_level_voxelwise_attribute_errors_minimize_memory(
 
     model.compute_contrast()
 
-    with pytest.raises(ValueError, match="To access voxelwise attributes"):
+    with pytest.raises(AttributeError, match="To access voxelwise attributes"):
         getattr(model, attribute)
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("attribute", ["residuals", "predicted", "r_square"])
+@pytest.mark.parametrize(
+    "attribute", ["residuals_", "predicted_", "r_square_"]
+)
 def test_second_level_voxelwise_attribute(attribute, n_subjects):
     """Smoke test for voxelwise attributes for SecondLevelModel."""
     mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
@@ -862,9 +868,9 @@ def test_second_level_residuals(n_subjects):
     model.fit(Y, design_matrix=X)
     model.compute_contrast()
 
-    assert isinstance(model.residuals, Nifti1Image)
-    assert model.residuals.shape == (*SHAPE[:3], n_subjects)
-    mean_residuals = model.masker_.transform(model.residuals).mean(0)
+    assert isinstance(model.residuals_, Nifti1Image)
+    assert model.residuals_.shape == (*SHAPE[:3], n_subjects)
+    mean_residuals = model.masker_.transform(model.residuals_).mean(0)
     assert_array_almost_equal(mean_residuals, 0)
 
 
