@@ -1032,7 +1032,7 @@ def _unmask_4d(X, mask, order="C"):
 @overload
 def unmask(
     X: ArrayLike,
-    mask_img: Nifti1Image | str | Path,
+    mask_img: NiimgLike,
     order: Literal["F", "C"] = "F",
 ) -> Nifti1Image: ...
 
@@ -1040,14 +1040,14 @@ def unmask(
 @overload
 def unmask(
     X: list[ArrayLike],
-    mask_img: Nifti1Image | str | Path,
+    mask_img: NiimgLike,
     order: Literal["F", "C"] = "F",
 ) -> list[Nifti1Image]: ...
 
 
 def unmask(
     X: ArrayLike | list[ArrayLike],
-    mask_img: Nifti1Image | str | Path,
+    mask_img: NiimgLike,
     order: Literal["F", "C"] = "F",
 ) -> Nifti1Image | list[Nifti1Image]:
     """Take masked data and bring them back into 3D/4D.

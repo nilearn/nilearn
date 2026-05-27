@@ -1535,14 +1535,14 @@ def math_img(
 def math_img(
     formula: str,
     copy_header_from: str | None = None,
-    **imgs: Nifti1Image | str | Path,
+    **imgs: NiimgLike,
 ) -> Nifti1Image: ...
 
 
 def math_img(
     formula: str,
     copy_header_from: str | None = None,
-    **imgs: Nifti1Image | str | Path | SurfaceImage,
+    **imgs: NiimgLike | SurfaceImage,
 ) -> SurfaceImage | Nifti1Image:
     """Interpret a numpy based string formula using niimg in named parameters.
 
@@ -1840,7 +1840,7 @@ def clean_img(
 
 @overload
 def clean_img(
-    imgs: Nifti1Image | str | Path | list[Nifti1Image | str | Path],
+    imgs: NiimgLike | list[NiimgLike],
     runs: np.ndarray | None = ...,
     detrend: bool = ...,
     standardize: Standardize = ...,
@@ -1849,18 +1849,14 @@ def clean_img(
     high_pass: HighPass = ...,
     t_r: Tr = ...,
     ensure_finite: bool = ...,
-    mask_img: Nifti1Image | str | Path | None = ...,
+    mask_img: NiimgLike | None = ...,
     **kwargs,
 ) -> Nifti1Image: ...
 
 
 @fill_doc
 def clean_img(
-    imgs: SurfaceImage
-    | Nifti1Image
-    | str
-    | Path
-    | list[Nifti1Image | str | Path],
+    imgs: SurfaceImage | Nifti1Image | str | Path | list[NiimgLike],
     runs: np.ndarray | None = None,
     detrend: bool = True,
     standardize: Standardize = True,
@@ -1869,7 +1865,7 @@ def clean_img(
     high_pass: HighPass = None,
     t_r: Tr = None,
     ensure_finite: bool = False,
-    mask_img: SurfaceImage | Nifti1Image | str | Path | None = None,
+    mask_img: SurfaceImage | NiimgLike | None = None,
     **kwargs,
 ) -> SurfaceImage | Nifti1Image:
     """Improve :term:`SNR` on masked :term:`fMRI` signals.
