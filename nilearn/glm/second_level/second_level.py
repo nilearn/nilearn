@@ -1097,6 +1097,10 @@ def non_parametric_inference(
     # Learn the mask. Assume the first level imgs have been masked.
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = clone(mask)
+        if masker.standardize is True:
+            masker.standardize = "zscore_sample"
+        elif masker.standardize is False:
+            masker.standardize = None
         if smoothing_fwhm is not None and masker.smoothing_fwhm is not None:
             warn(
                 "Parameter 'smoothing_fwhm' of the masker overridden.",
@@ -1320,7 +1324,9 @@ def _non_parametric_inference_surface(
         single_hemi_mask = new_img_like(
             effect_maps, {"left": mask_left, "right": mask_right}
         )
-        single_hemi_masker = SurfaceMasker(mask_img=single_hemi_mask).fit()
+        single_hemi_masker = SurfaceMasker(
+            mask_img=single_hemi_mask, standardize=None
+        ).fit()
 
         target_vars = single_hemi_masker.transform(effect_maps)
 
