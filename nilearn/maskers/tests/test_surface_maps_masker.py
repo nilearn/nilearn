@@ -187,7 +187,7 @@ def test_surface_maps_masker_mask_img_masks_all_maps_error(surf_mesh):
 def non_overlapping_maps(rng, surf_mesh):
     """Generate maps with non-overlapping regions.
 
-    Each vertex belong to only 1 region.
+    Each vertex belongs to only 1 region.
     """
     data = {
         "left": np.asarray(
