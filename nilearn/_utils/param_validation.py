@@ -281,6 +281,13 @@ def check_params(fn_dict) -> None:
 def check_is_of_allowed_type(
     value: Any, type_to_check: tuple[Any] | Any, parameter_name: str
 ) -> None:
+    """Check that value is of requested type.
+
+    Ignore truthy / falsy so that:
+
+    check_is_of_allowed_type(True, (int), "foo") will fail.
+
+    """
     if not isinstance(type_to_check, tuple):
         type_to_check = (type_to_check,)
     type_to_check_str = ", ".join([str(x) for x in type_to_check])
@@ -288,9 +295,13 @@ def check_is_of_allowed_type(
         f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
         f"Got: '{value.__class__.__name__}'"
     )
-    if (
-        bool not in type_to_check and isinstance(value, bool)
-    ) or not isinstance(value, type_to_check):
+    flat_types: list = []
+    for t in type_to_check:
+        args = get_args(t)
+        flat_types.extend(args or [t])
+    if (bool not in flat_types and isinstance(value, bool)) or not isinstance(
+        value, type_to_check
+    ):
         raise TypeError(error_msg)
 
 

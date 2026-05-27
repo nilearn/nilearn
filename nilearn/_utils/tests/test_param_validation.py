@@ -214,6 +214,7 @@ def test_check_params_not_necessary():
 
 def test_check_is_of_allowed_type_bool():
     """Make sure check_is_of_allowed_type is strict about truthy/falsy."""
+    check_is_of_allowed_type(True, (bool | int), "foo")
     with pytest.raises(TypeError, match="'foo' must be of type"):
         check_is_of_allowed_type(True, (int), "foo")
 
