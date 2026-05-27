@@ -1,12 +1,13 @@
 from itertools import pairwise
 from numbers import Number
+from typing import Literal
 from warnings import warn
 
 import numpy as np
 
 from nilearn._utils.logger import find_stack_level
 
-DEFAULT_ENGINE = "matplotlib"
+DEFAULT_ENGINE: Literal["matplotlib"] = "matplotlib"
 DEFAULT_TICK_FORMAT = "%.2g"
 
 
