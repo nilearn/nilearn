@@ -1278,6 +1278,9 @@ def _non_parametric_inference_surface(
 
     For parameters description see non_parametric_inference.
     """
+    if tfce:
+        raise NotImplementedError("TFCE not implemented yet for surface data.")
+
     effect_maps = concat_imgs(effect_maps, verbose=verbose)
 
     # To keep track of the result of each hemisphere
@@ -1357,7 +1360,7 @@ def _non_parametric_inference_surface(
 
     neg_log10_vfwe_pvals_img = new_img_like(effect_maps, data["logp_max_t"])
 
-    if (not tfce) and (threshold is None):
+    if threshold is None:  # and (not tfce)
         return neg_log10_vfwe_pvals_img
 
     t_img = new_img_like(effect_maps, data["t"])
@@ -1367,15 +1370,17 @@ def _non_parametric_inference_surface(
         "logp_max_t": neg_log10_vfwe_pvals_img,
     }
 
-    if tfce:
-        out["tfce"] = masker.inverse_transform(np.ravel(outputs["tfce"]))
-        out["logp_max_tfce"] = masker.inverse_transform(
-            np.ravel(outputs["logp_max_tfce"]),
-        )
+    # TODO when implementing TFCE
+    # if tfce:
+    #     out["tfce"] = masker.inverse_transform(np.ravel(outputs["tfce"]))
+    #     out["logp_max_tfce"] = masker.inverse_transform(
+    #         np.ravel(outputs["logp_max_tfce"]),
+    #     )
 
     include = []
-    if tfce:
-        include.extend(["tfce", "logp_max_tfce"])
+    # TODO when implementing TFCE
+    # if tfce:
+    #     include.extend(["tfce", "logp_max_tfce"])
     if threshold is not None:
         include.extend(["logp_max_size", "logp_max_mass", "size", "mass"])
     for k in include:

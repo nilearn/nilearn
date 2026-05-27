@@ -160,7 +160,7 @@ def test_fmri_inputs_errors(
 
     # test wrong input errors
     # test first level model
-    with pytest.raises(TypeError, match="second_level_input must be"):
+    with pytest.raises(TypeError, match="'second_level_input' must be"):
         non_parametric_inference(flm)
 
     # test list of less than two niimgs
@@ -369,7 +369,7 @@ def test_contrast_computation_errors(rng, n_subjects):
     func_img, mask = fake_fmri_data()
 
     # asking for contrast before model fit gives error
-    with pytest.raises(TypeError, match="second_level_input must be either"):
+    with pytest.raises(TypeError, match="'second_level_input' must be either"):
         non_parametric_inference(
             second_level_input=None,
             second_level_contrast="intercept",
@@ -386,7 +386,7 @@ def test_contrast_computation_errors(rng, n_subjects):
     # passing null contrast should give back a value error
     with pytest.raises(
         ValueError,
-        match=("Second_level_contrast must be a valid"),
+        match=("'second_level_contrast' must be a valid"),
     ):
         non_parametric_inference(
             second_level_input=Y,
@@ -396,7 +396,7 @@ def test_contrast_computation_errors(rng, n_subjects):
         )
     with pytest.raises(
         ValueError,
-        match=("Second_level_contrast must be a valid"),
+        match=("'second_level_contrast' must be a valid"),
     ):
         non_parametric_inference(
             second_level_input=Y,
@@ -485,3 +485,21 @@ def test_with_surface_images_smoothing(
         smoothing_fwhm=smoothing_fwhm,
         **kwargs,
     )
+
+
+@pytest.mark.thread_unsafe
+def test_with_surface_images_tfce_not_implemented_error(
+    surf_img_1d, n_subjects
+):
+    """Raise not implemented error when using TFCE with surface."""
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
+
+    design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
+
+    with pytest.raises(NotImplementedError):
+        non_parametric_inference(
+            second_level_input=second_level_input,
+            design_matrix=design_matrix,
+            n_perm=N_PERM,
+            tfce=True,
+        )
