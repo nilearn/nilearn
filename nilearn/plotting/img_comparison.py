@@ -497,6 +497,12 @@ def _sanitize_masker(masker, image_type, ref_img):
         masker = SurfaceMasker(mask_img=masker, standardize=None)
 
     if not masker.__sklearn_is_fitted__():
+        # ignore warning in case the masker
+        # was initialized with a mask image
+        warnings.filterwarnings(
+            "ignore",
+            message=r".*Generation of a mask.*",
+        )
         masker.fit(ref_img)
 
     return masker
