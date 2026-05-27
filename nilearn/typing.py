@@ -27,11 +27,13 @@ from nibabel import Nifti1Image
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
+Integer: TypeAlias = int | np.integer
+
 Annotate: TypeAlias = bool
 BgOnData: TypeAlias = bool
-BorderSize: TypeAlias = int | np.integer
+BorderSize: TypeAlias = Integer
 ColorBar: TypeAlias = bool
-ClusterThreshold: TypeAlias = int | np.integer
+ClusterThreshold: TypeAlias = Integer
 Connected: TypeAlias = bool
 CopyHeader: TypeAlias = bool
 DType: TypeAlias = DTypeLike | None
@@ -71,11 +73,12 @@ KeepMaskedMaps: TypeAlias = bool
 LowerCutoff: TypeAlias = float | np.floating
 LowPass: TypeAlias = float | int | np.floating | np.integer | None
 MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
-MemoryLevel: TypeAlias = int | np.integer
-NJobs: TypeAlias = int | np.integer
-NPerm: TypeAlias = int | np.integer
+MemoryLevel: TypeAlias = Integer
+NJobs: TypeAlias = Integer
+NPerm: TypeAlias = Integer
 NiimgLike = (Nifti1Image, str, Path)
-Opening: TypeAlias = bool | int | np.integer
+Opening: TypeAlias = bool | Integer
+OutputFile: TypeAlias = str | pathlib.Path | None
 Radiological: TypeAlias = bool
 RandomState: TypeAlias = (
     int | np.floating | np.integer | np.random.RandomState | None
