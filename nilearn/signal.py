@@ -1204,11 +1204,6 @@ def _check_filter_parameters(
                 "butterworth filtering. "
                 f"Got: '{t_r=}'"
             )
-        if any(isinstance(item, bool) for item in [low_pass, high_pass]):
-            raise TypeError(
-                "high/low pass must be float or None but you provided "
-                f"'{high_pass=}' and '{low_pass=}'"
-            )
     return filter
 
 

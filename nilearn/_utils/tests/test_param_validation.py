@@ -7,6 +7,7 @@ from scipy.stats import scoreatpercentile
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.param_validation import (
     _cast_to_int32,
+    check_is_of_allowed_type,
     check_params,
     check_threshold,
 )
@@ -207,3 +208,9 @@ def test_check_params_not_necessary():
 
     with pytest.raises(ValueError, match=r"No known parameter to check."):
         f_with_unknown_param(foo=1)
+
+
+def test_check_is_of_allowed_type_bool():
+    """Make sure check_is_of_allowed_type is strict about truthy/falsy."""
+    with pytest.raises(TypeError, match="'foo' must be of type"):
+        check_is_of_allowed_type(True, (int), "foo")
