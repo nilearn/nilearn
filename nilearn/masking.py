@@ -2,6 +2,7 @@
 
 import numbers
 import warnings
+from typing import get_args
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -75,7 +76,7 @@ def load_mask_img(mask_img, allow_empty=False):
         Affine of the mask if Niimg-like object was passed as input,
         None otherwise.
     """
-    if not isinstance(mask_img, (*NiimgLike, SurfaceImage)):
+    if not isinstance(mask_img, (*get_args(NiimgLike), SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
             f"Got {mask_img.__class__.__name__}."

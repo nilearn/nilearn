@@ -8,7 +8,7 @@ import inspect
 import time
 import warnings
 from pathlib import Path
-from typing import Literal
+from typing import Literal, get_args
 from warnings import warn
 
 import numpy as np
@@ -566,7 +566,8 @@ class FirstLevelModel(BaseGLM):
         ) or (
             isinstance(run_imgs, (list, tuple))
             and not all(
-                isinstance(x, (*NiimgLike, SurfaceImage)) for x in run_imgs
+                isinstance(x, (*get_args(NiimgLike), SurfaceImage))
+                for x in run_imgs
             )
         ):
             input_type = type(run_imgs)
