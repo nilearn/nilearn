@@ -111,6 +111,7 @@ def test_cmap_with_one_level(matplotlib_pyplot, shape_3d_default, affine_eye):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_cmap_as_lookup_table(img_labels):
     """Test colormap passed as BIDS lookup table."""
     lut = pd.DataFrame(

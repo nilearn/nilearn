@@ -7,10 +7,10 @@ in the neighborhood of each location of a domain.
 import time
 import warnings
 from copy import deepcopy
+from typing import Any
 
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
-from sklearn import svm
 from sklearn.base import TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
@@ -23,12 +23,12 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import readable_time
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn.decoding._utils import SUPPORTED_ESTIMATORS, validate_estimator
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 from nilearn.masking import load_mask_img
-
-ESTIMATOR_CATALOG = {"svc": svm.LinearSVC, "svr": svm.SVR}
+from nilearn.typing import SupportedClassifiers, SupportedRegressors
 
 
 @fill_doc
@@ -53,8 +53,8 @@ def search_light(
     y : array-like
         target variable to predict.
 
-    estimator : estimator object implementing 'fit'
-        object to use to fit the data
+    estimator : scikit-learn compatible estimator object
+        Object to use to fit the data.
 
     A : scipy sparse matrix.
         adjacency matrix. Defines for each feature the neighboring features
@@ -149,8 +149,8 @@ def _group_iter_search_light(
         adjacency rows. For a voxel with index i in X, list_rows[i] is the list
         of neighboring voxels indices (in X).
 
-    estimator : estimator object implementing 'fit'
-        object to use to fit the data
+    estimator : scikit-learn compatible estimator object
+        object to use to fit the data.
 
     X : array-like of shape at least 2D
         data to fit.
@@ -254,8 +254,18 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
     radius : :obj:`float`, default=2.
         radius of the searchlight ball, in millimeters.
 
-    estimator : 'svr', 'svc', or an estimator object implementing 'fit'
-        The object to use to fit the data
+    estimator : one of {"svc_l1", "svc_l2", "svc", \
+        "logistic_l1", "logistic_l2", "logistic", "ridge_classifier", \
+        "dummy_classifier", "ridge", "ridge_regressor", \
+        "lasso", "lasso_regressor", "svr", "dummy_regressor"}, \
+        or a scikit-learn compatible estimator object, \
+        default='svc'
+        The estimator to choose among:
+        %(classifier_options)s
+
+        %(regressor_options)s
+
+        %(sk_compatible_admonition)s
 
     %(n_jobs)s
 
@@ -330,7 +340,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         mask_img=None,
         process_mask_img=None,
         radius=2.0,
-        estimator="svc",
+        estimator: SupportedRegressors | SupportedClassifiers | Any = "svc",
         n_jobs=1,
         scoring=None,
         cv=None,
@@ -369,14 +379,14 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=False)
 
-        if self.estimator == "svr":
+        if self._estimator_type == "regressor":
             if SKLEARN_LT_1_6:
                 tags["multioutput"] = True
                 return tags
             tags.estimator_type = "regressor"
             tags.regressor_tags = RegressorTags()
 
-        elif self.estimator == "svc":
+        elif self._estimator_type == "classifier":
             if SKLEARN_LT_1_6:
                 return tags
             tags.estimator_type = "classifier"
@@ -385,29 +395,21 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         return tags
 
     @property
-    def _estimator_type(self):
-        # TODO (sklearn >= 1.8.0) remove
-        if self.estimator == "svr":
-            return "regressor"
-        elif self.estimator == "svc":
-            return "classifier"
+    def _estimator_type(self) -> str:
+        if isinstance(self.estimator, str):
+            if self.estimator in SUPPORTED_ESTIMATORS["regressor"]:
+                return "regressor"
+            elif self.estimator in SUPPORTED_ESTIMATORS["classifier"]:
+                return "classifier"
+        else:
+            if hasattr(self.estimator, "__sklearn_tags__"):
+                return getattr(
+                    self.estimator.__sklearn_tags__(), "estimator_type", ""
+                )
+            # TODO (sklearn >= 1.8.0) remove
+            if hasattr(self.estimator, "_estimator_type"):
+                return self.estimator._estimator_type
         return ""
-
-    def _get_estimator(self):
-        if not isinstance(self.estimator, str):
-            return self.estimator
-
-        estimator_args = (
-            {} if self.estimator_args is None else self.estimator_args
-        )
-        if "verbose" not in estimator_args:
-            estimator_args["verbose"] = (self.verbose - 1) > 0
-        if self.estimator == "svc" and "random_state" not in estimator_args:
-            estimator_args["random_state"] = self.random_state
-
-        estimator = ESTIMATOR_CATALOG[self.estimator](**estimator_args)
-
-        return estimator
 
     def fit(self, imgs, y, groups=None):
         """Fit the searchlight.
@@ -467,7 +469,19 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             mask_img=self.mask_img_,
         )
 
-        estimator = self._get_estimator()
+        # TODO (sklearn >= 1.8) _estimator_type will be removed
+        owning_class_type = getattr(self, "_estimator_type", None)
+
+        # TODO test with sklearn sklearn_version == 1.5.0
+        if owning_class_type is None:
+            owning_class_type = self.__sklearn_tags__().estimator_type
+
+        estimator = validate_estimator(
+            estimator=self.estimator,
+            owning_class_type=owning_class_type,
+            estimator_args=self.estimator_args,
+            verbose=self.verbose,
+        )
 
         scores = search_light(
             X,
@@ -525,7 +539,19 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             mask_img=self.mask_img_,
         )
 
-        estimator = self._get_estimator()
+        # TODO (sklearn >= 1.8) _estimator_type will be removed
+        owning_class_type = getattr(self, "_estimator_type", None)
+
+        # TODO test with sklearn sklearn_version == 1.5.0
+        if owning_class_type is None:
+            owning_class_type = self.__sklearn_tags__().estimator_type
+
+        estimator = validate_estimator(
+            estimator=self.estimator,
+            owning_class_type=owning_class_type,
+            estimator_args=self.estimator_args,
+            verbose=self.verbose,
+        )
 
         # Use the modified `_group_iter_search_light` logic to avoid `y` issues
         result = search_light(

@@ -224,6 +224,7 @@ Some other past or present contributors are:
 * `Victoria McCray`_: Northeastern University, USA
 * `Vincent Michel`_: https://www.logilab.fr/
 * `Virgile Fritsch`_: Inria, Saclay, France
+* `Xichun Xu`_: Oregon State University, Corvallis, Oregon, USA
 * `Yaroslav Halchenko`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Yasmin Mzayek`_: Inria, Saclay, France
 * `Yichun Huang`_: Peking University, Beijing, China

@@ -221,7 +221,7 @@ def _get_connectome(
     }
 
 
-def _make_connectome_html(connectome_info):
+def _make_connectome_html(connectome_info) -> ConnectomeView:
     plot_info = {"connectome": connectome_info}
     mesh = fetch_surf_fsaverage()
     for hemi in ["pial_left", "pial_right"]:
@@ -254,7 +254,7 @@ def view_connectome(
     title=None,
     title_fontsize=25,
     node_labels=None,
-):
+) -> ConnectomeView:
     """Insert a 3d plot of a connectome into an HTML page.
 
     Parameters
@@ -373,7 +373,7 @@ def view_markers(
     marker_labels=None,
     title=None,
     title_fontsize=25,
-):
+) -> ConnectomeView:
     """Insert a 3d plot of markers in a brain into an HTML page.
 
     Parameters

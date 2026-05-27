@@ -166,7 +166,7 @@ def connected_regions(
         Minimum volume in mm3 for a region to be kept.
         For example, if the :term:`voxel` size is 3x3x3 mm
         then the volume of the :term:`voxel` is 27mm^3.
-        Default=1350mm^3, which means
+        default=1350mm^3, which means
         we take minimum size of 1350 / 27 = 50 voxels.
     %(extract_type)s
     %(smoothing_fwhm)s
@@ -177,7 +177,7 @@ def connected_regions(
             This parameter is passed to `nilearn.image.image.smooth_array`.
             It will be used only if ``extract_type='local_regions'``.
 
-        Default=6.
+        default=6.
 
     mask_img : Niimg-like object, default=None
         If given, mask image is applied to input data.
@@ -348,7 +348,7 @@ class RegionExtractor(NiftiMapsMasker):
             Please set this parameter according to maps resolution,
             otherwise extraction will fail.
 
-        Default=6mm.
+        default=6mm.
 
     %(standardize_false)s
 
@@ -368,7 +368,7 @@ class RegionExtractor(NiftiMapsMasker):
         .. note::
             Passed to :func:`nilearn.signal.clean`.
 
-        Default=False.
+        default=False.
 
     %(low_pass)s
 

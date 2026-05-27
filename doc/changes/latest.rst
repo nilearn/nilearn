@@ -57,6 +57,8 @@ Fixes
 
 - :bdg-secondary:`Maint` Allow local installation with ``uv sync`` (:gh:`6024` by `Mathieu Dugré`_)
 
+- :bdg-primary:`Doc` Rewrite :class:`~nilearn.decoding.Decoder` :ref:`example <sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py>` with incorrect nested cross-validation implementation (:gh:`6059` by `Michelle Wang`_).
+
 - :bdg-info:`Plotting` Fix ``nilearn.plotting.view_img`` resampling of non-isotropic images when no background image is used (:gh:`6031` by `Michelle Wang`_).
 
 - :bdg-info:`Plotting` Fix bug introduced in ``0.13.0`` while plotting single valued data with :func:`~nilearn.plotting.plot_roi`.  (:gh:`6122` by `Hande Gözükan`_).
@@ -65,12 +67,21 @@ Fixes
 
 - :bdg-dark:`Code` Do not copy mask image's header in ``masking.unmask`` (:gh:`6157` by `Taylor Salo`_).
 
+- :bdg-dark:`Code` Make sure that area data of Freesurfer can loaded as SurfaceImage by :func:`~nilearn.datasets.load_fsaverage_data` (:gh:`6230` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Fix order of vertices and data for ``fsaverage3`` and ``fsaverage4`` datasets and warn user (:gh:`6127` by `Rémi Gau`_ and `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Fix several issues in plotting, maskers and decomposition when handling map (or label) images with 0 or just a single map (or label) (:gh:`5908` by `Rémi Gau`_).
+
+
 Enhancements
 ------------
 
 - :bdg-success:`API` The parameter ``estimator_args`` was added to all decoding estimators to allow to pass parameters directly to the underlying Scikit-Learn estimators (:gh:`5641` by `Rémi Gau`_).
 
 - :bdg-success:`API` :class:`~nilearn.decoding.SearchLight` now has a ``random_state`` and ``estimator_args`` to pass to the underlying estimator (:gh:`6020` by `Rémi Gau`_).
+
+- :bdg-success:`API` Extend the list of estimators supported by :class:`~nilearn.decoding.SearchLight` (:gh:`6215` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Allow string threshold in ``nilearn.plotting.plot_*`` functions (:gh:`5982` by `Saeed Babadi`_).
 
@@ -102,6 +113,8 @@ Enhancements
 
 - :bdg-info:`Plotting` Add ``node_labels`` parameter to :func:`~plotting.view_connectome` (:gh:`6153` by `Rishika Kapil`_).
 
+- :bdg-primary:`Doc` Unify estimator documentation to explicitly accept scikit-learn compatible objects and add cross-links to the developer guide (:gh:`6181` by `Xichun Xu`_).
+
 Changes
 -------
 
@@ -115,6 +128,8 @@ Changes
 
 - :bdg-danger:`Deprecation` ``plot_img_comparison`` is no longer accessible from ``nilearn.plotting.image.img_plotting``, access it from ``nilearn.plotting`` or from ``nilearn.plotting.img_comparison`` (:gh:`5995` by `Rémi Gau`_).
 
+- :bdg-danger:`Deprecation` The attributes ``residuals``, ``predicted`` and ``r_square`` are deprecated and will be removed in version >=0.16.0. "Use ``residuals_``, ``predicted_`` and ``r_square_`` instead." (:gh:`6236` by `Rémi Gau`_).
+
 - :bdg-danger:`Deprecation` The ``"z_score"`` value for the ``standardize`` parameter is no longer supported. Use ``standardize="z_score_sample"`` instead (:gh:`5995` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Remove aggressive garbage collection in safe_get_data for performance, mainly in CI. (:gh:`6039` by `Basile Pinsard`_).
@@ -123,4 +138,4 @@ Changes
 
 - :bdg-secondary:`Maint` Several optional dependencies (``dev``, ``test``, ``doc``...) have been swapped in favor of `dependency groups <https://packaging.python.org/en/latest/specifications/dependency-groups>`_, so they will no longer work when installing Nilearn from pypi. When installing locally, instead of ``pip install '.[dev]'`` do ``pip install . --group dev`` (:gh:`6108` by `Rémi Gau`_).
 
-- :bdg-secondary:`Maint` The optional dependency ``plotly`` has been removed in favor of ``plotting`` when so instead of ``pip install 'nilearn[plotly]'`` do ``pip install 'nilearn[plotting]`` (:gh:`6108` by `Rémi Gau`_).
+- :bdg-secondary:`Maint` The optional dependency ``plotly`` has been removed in favor of ``plotting``, so instead of ``pip install 'nilearn[plotly]'`` do ``pip install 'nilearn[plotting]`` (:gh:`6108` by `Rémi Gau`_).

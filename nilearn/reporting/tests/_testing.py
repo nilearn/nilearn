@@ -74,14 +74,12 @@ def generate_and_check_report(
     excludes = []
 
     if is_matplotlib_installed():
-        excludes.extend(
-            [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
-        )
+        excludes.extend([MISSING_ENGINE_MSG, "No plotting engine found"])
     else:
         includes.extend(
             [
                 MISSING_ENGINE_MSG,
-                'grey">No plotting engine found</p>',
+                "No plotting engine found",
             ]
         )
         warnings_msg_to_check.append(MISSING_ENGINE_MSG)

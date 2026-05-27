@@ -355,6 +355,8 @@
 
 .. _Virgile Fritsch: https://github.com/VirgileFritsch
 
+.. _Xichun Xu: https://github.com/XichunXu
+
 .. _Yaroslav Halchenko: https://github.com/yarikoptic
 
 .. _Yasmin Mzayek: https://github.com/ymzayek

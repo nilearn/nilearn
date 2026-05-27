@@ -73,20 +73,20 @@ def generate_signals(
 
     # Generate random confounds
     confounds_shape = (length, n_confounds)
-    confounds = np.ndarray(confounds_shape, order=order)
+    confounds: np.ndarray = np.ndarray(confounds_shape, order=order)
     confounds[...] = rng.standard_normal(size=confounds_shape)
     confounds[...] = scipy.signal.detrend(confounds, axis=0)
 
     # Compute noise based on confounds, with random factors
     factors = rng.standard_normal(size=(n_confounds, n_features))
     noises_shape = (length, n_features)
-    noises = np.ndarray(noises_shape, order=order)
+    noises: np.ndarray = np.ndarray(noises_shape, order=order)
     noises[...] = np.dot(confounds, factors)
     noises[...] = scipy.signal.detrend(noises, axis=0)
 
     # Generate random signals with random amplitudes
     signals_shape = noises_shape
-    signals = np.ndarray(signals_shape, order=order)
+    signals: np.ndarray = np.ndarray(signals_shape, order=order)
     if same_variance:
         signals[...] = rng.standard_normal(size=signals_shape)
     else:

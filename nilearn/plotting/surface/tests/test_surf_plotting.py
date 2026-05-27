@@ -666,6 +666,7 @@ def test_plot_surf_stat_map_with_threshold(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_vmax(plt, engine, in_memory_mesh, bg_map):
     """Smoke test when vmax is specified to
     nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
@@ -1216,6 +1217,7 @@ def test_plot_img_on_surf_surf_mesh(matplotlib_pyplot, img_3d_mni, surf_mesh):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_img_on_surf_surf_mesh_low_alpha(matplotlib_pyplot, img_3d_mni):
     """Check that low alpha value do not cause floating point error.
 
