@@ -194,6 +194,7 @@ TYPE_MAPS = {
     "n_jobs": nilearn_typing.NJobs,
     "n_perm": nilearn_typing.NPerm,
     "opening": nilearn_typing.Opening,
+    "output_file": nilearn_typing.OutputFile,
     "radiological": nilearn_typing.Radiological,
     "random_state": nilearn_typing.RandomState,
     "resampling_interpolation": nilearn_typing.ResamplingInterpolation,
