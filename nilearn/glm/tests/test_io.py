@@ -1,7 +1,9 @@
 """Tests saving glm to bids."""
 
 import json
+import re
 import warnings
+from html import unescape
 
 import numpy as np
 import pandas as pd
@@ -429,6 +431,10 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
 
     with (tmp_path / "report.html").open("r") as f:
         content = f.read()
+        # remove iframe part from content and unescape
+        indices = [match.start() for match in re.finditer('"', content)]
+        content = content[indices[0] + 1 : indices[1]]
+        content = unescape(content)
         assert "BBB-AAA" in content
         if is_matplotlib_installed():
             for file in EXPECTED_FILENAMES:
