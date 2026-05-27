@@ -491,7 +491,7 @@ def compute_fixed_effects(
     # was initialized with a mask image
     warnings.filterwarnings(
         "ignore",
-        message=r".*Generation of a mask has been",
+        message=r".*Generation of a mask.*",
     )
     # TODO (nilearn >=0.15) remove ALL standardize=None below
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):

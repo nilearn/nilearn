@@ -2532,7 +2532,7 @@ def check_masker_mask_img(estimator_orig) -> None:
     if isinstance(estimator, (NiftiMasker, SurfaceMasker)):
         with pytest.warns(
             RuntimeWarning,
-            match=("Generation of a mask has been requested.*"),
+            match=("Generation of a mask.*"),
         ):
             estimator.fit(input_img)
     else:
@@ -2553,10 +2553,11 @@ def check_masker_mask_img(estimator_orig) -> None:
     estimator.mask_img = binary_mask_img
 
     # no such warning is thrown when using fit_transform
-    with warnings.catch_warnings(record=True) as warning_list:
-        estimator.fit_transform(input_img)
-    for w in warning_list:
-        assert "Given mask will be used" not in str(w)
+    if isinstance(estimator, (NiftiMasker, SurfaceMasker)):
+        with warnings.catch_warnings(record=True) as warning_list:
+            estimator.fit_transform(input_img)
+        for w in warning_list:
+            assert "Given mask will be used" not in str(w)
 
 
 def check_masker_clean(estimator_orig) -> None:

@@ -62,7 +62,7 @@ class _MultiMixin:
         # (only for MultiNiftiMasker)
         warnings.filterwarnings(
             "ignore",
-            message=r".*Generation of a mask has been",
+            message=r".*Generation of a mask.*",
         )
         # although the implementation is
         # the same as in the BaseMasker

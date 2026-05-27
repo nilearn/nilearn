@@ -154,10 +154,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             if img is not None:
                 warn(
                     f"[{self.__class__.__name__}.fit] "
-                    "Generation of a mask has been"
-                    " requested (img != None) while a mask was"
-                    " given at masker creation. Given mask"
-                    " will be used.",
+                    "Generation of a mask has been requested (imgs != None) "
+                    "while a mask was given at masker creation. "
+                    "Given mask will be used.",
                     stacklevel=find_stack_level(),
                     category=RuntimeWarning,
                 )

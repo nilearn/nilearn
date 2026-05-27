@@ -1338,14 +1338,13 @@ class FirstLevelModel(BaseGLM):
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"
 
-            with warnings.catch_warnings():
-                # ignore warning in case the masker
-                # was initialized with a mask image
-                warnings.filterwarnings(
-                    "ignore",
-                    message=r".*Generation of a mask has been",
-                )
-                self.masker_.fit(run_img)
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            self.masker_.fit(run_img)
 
         else:
             check_is_fitted(self.mask_img)

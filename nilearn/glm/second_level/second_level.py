@@ -659,7 +659,7 @@ class SecondLevelModel(BaseGLM):
         # was initialized with a mask image
         warnings.filterwarnings(
             "ignore",
-            message=r".*Generation of a mask has been",
+            message=r".*Generation of a mask.*",
         )
         self.masker_.fit(sample_map)
 
@@ -1109,7 +1109,7 @@ def non_parametric_inference(
     # was initialized with a mask image
     warnings.filterwarnings(
         "ignore",
-        message=r".*Generation of a mask has been",
+        message=r".*Generation of a mask.*",
     )
 
     # Learn the mask. Assume the first level imgs have been masked.
