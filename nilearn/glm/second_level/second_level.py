@@ -5,8 +5,7 @@ first level contrasts or directly on fitted first level models.
 import operator
 import time
 from pathlib import Path
-from typing import Any
-from typing import Literal
+from typing import Any, Literal
 from warnings import warn
 
 import numpy as np
