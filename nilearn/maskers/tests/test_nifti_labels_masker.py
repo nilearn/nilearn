@@ -261,11 +261,11 @@ def test_no_label_after_resampling_error(
 
     estimator = NiftiLabelsMasker(labels_img=img_labels, standardize=None)
     estimator.fit()
-    with pytest.raises(RuntimeError, match="No label left after resampling"):
+    with pytest.raises(ValueError, match="No label left after resampling"):
         estimator.transform(input_img)
 
     estimator = NiftiLabelsMasker(labels_img=img_labels, standardize=None)
-    with pytest.raises(RuntimeError, match="No label left after resampling"):
+    with pytest.raises(ValueError, match="No label left after resampling"):
         estimator.fit_transform(input_img)
 
 
