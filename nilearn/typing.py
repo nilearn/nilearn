@@ -27,8 +27,9 @@ from nibabel import Nifti1Image
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
-Scalar: TypeAlias = float | int | np.floating | np.integer | None
 Integer: TypeAlias = int | np.integer
+NonNullScalar: TypeAlias = float | np.floating | Integer
+Scalar: TypeAlias = NonNullScalar | None
 
 Annotate: TypeAlias = bool
 BgOnData: TypeAlias = bool
@@ -85,7 +86,7 @@ RandomState: TypeAlias = (
     int | np.floating | np.integer | np.random.RandomState | None
 )
 ResamplingInterpolation: TypeAlias = Literal["continuous", "nearest"]
-Resolution: TypeAlias = int | np.integer | None
+Resolution: TypeAlias = Integer | None
 Resume: TypeAlias = bool
 ScreeningPercentile: TypeAlias = Scalar
 SmoothingFwhm: TypeAlias = Scalar
@@ -116,7 +117,7 @@ TargetAffine: TypeAlias = ndarray | list | tuple | None
 # about using a generic and would prefer "list[int]" to "list".
 TargetShape: TypeAlias = tuple | list | ndarray | None
 
-Threshold: TypeAlias = float | int | np.floating | np.integer | str | None
+Threshold: TypeAlias = Scalar | str
 
 Tfce: TypeAlias = bool
 Title: TypeAlias = str | None
@@ -136,6 +137,6 @@ TransparencyRange: TypeAlias = list | tuple | None
 TwoSidedTest: TypeAlias = bool
 Url: TypeAlias = str | None
 UpperCutoff: TypeAlias = float | np.floating
-Verbose: TypeAlias = bool | int | np.integer
+Verbose: TypeAlias = bool | Integer
 Vmin: TypeAlias = Scalar
 Vmax: TypeAlias = Scalar

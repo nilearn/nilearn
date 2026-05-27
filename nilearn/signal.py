@@ -30,6 +30,7 @@ from nilearn.exceptions import AllVolumesRemovedError
 from nilearn.typing import (
     HighPass,
     LowPass,
+    NonNullScalar,
     StandardizeConfounds,
     Tr,
 )
@@ -704,7 +705,9 @@ def clean(
     if confounds is not None:
         _check_signal_parameters(detrend, standardize_confounds)
     # check if filter parameters are satisfied and return correct filter
-    filter_type = _check_filter_parameters(filter, low_pass, high_pass, t_r)
+    filter_type, t_r_, low_pass_, high_pass_ = _check_filter_parameters(
+        filter, low_pass, high_pass, t_r
+    )
 
     # Read confounds and signals
     signals, runs, confounds, sample_mask, standardize = _sanitize_inputs(
@@ -721,9 +724,9 @@ def clean(
             confounds,
             sample_mask,
             filter_type,
-            low_pass,
-            high_pass,
-            t_r,
+            low_pass_,
+            high_pass_,
+            t_r_,
         )
 
     # For the following steps, sample_mask should be either None or index-like
@@ -731,9 +734,9 @@ def clean(
     # Generate cosine drift terms using the full length of the signals
     if filter_type == "cosine":
         confounds = _create_cosine_drift_terms(
-            signals, confounds, high_pass, t_r
+            signals, confounds, high_pass_, t_r_
         )
-        if low_pass is not None:
+        if low_pass_ is not None:
             warnings.warn(
                 "low_pass is not implemented for filter='cosine'",
                 stacklevel=find_stack_level(),
@@ -760,9 +763,8 @@ def clean(
     # Butterworth filtering
     if filter_type == "butterworth":
         if TYPE_CHECKING:
-            # dirty type narrowing for static type checking
-            assert t_r is not None
-
+            # guaranteed by _check_filter_parameters
+            assert t_r_ is not None
         butterworth_kwargs = {
             k.replace("butterworth__", ""): v
             for k, v in kwargs.items()
@@ -770,9 +772,9 @@ def clean(
         }
         signals = butterworth(
             signals,
-            sampling_rate=1.0 / t_r,
-            low_pass=low_pass,
-            high_pass=high_pass,
+            sampling_rate=1.0 / t_r_,
+            low_pass=low_pass_,
+            high_pass=high_pass_,
             **butterworth_kwargs,
         )
         if confounds is not None:
@@ -780,9 +782,9 @@ def clean(
             # (according to Lindquist et al. (2018))
             confounds = butterworth(
                 confounds,
-                sampling_rate=1.0 / t_r,
-                low_pass=low_pass,
-                high_pass=high_pass,
+                sampling_rate=1.0 / t_r_,
+                low_pass=low_pass_,
+                high_pass=high_pass_,
                 **butterworth_kwargs,
             )
 
@@ -1173,7 +1175,11 @@ def _check_filter_parameters(
     low_pass: LowPass,
     high_pass: HighPass,
     t_r: Tr,
-) -> Literal["butterworth", "cosine", False]:
+) -> (
+    tuple[Literal["butterworth"], NonNullScalar, LowPass, HighPass]
+    | tuple[Literal["cosine"], NonNullScalar, LowPass, NonNullScalar]
+    | tuple[Literal[False], Tr, LowPass, HighPass]
+):
     """Check all filter related parameters are set correctly."""
     if filter not in [*AVAILABLE_FILTERS, False]:
         raise ValueError(f"Filter method {filter} not implemented.")
@@ -1187,24 +1193,29 @@ def _check_filter_parameters(
                 "Will not perform filtering.",
                 stacklevel=find_stack_level(),
             )
-    elif filter == "cosine" and any(item is None for item in [t_r, high_pass]):
-        raise ValueError(
-            "Repetition time (t_r) and low cutoff frequency (high_pass) "
-            "must be specified for cosine filtering. "
-            f"Got: '{t_r=}' and '{high_pass=}'"
-        )
-    elif filter == "butterworth":
-        if all(item is None for item in [low_pass, high_pass]):
-            # Butterworth was switched off by passing
-            # None to at least low_pass and high_pass
-            return False
-        if t_r is None:
+        return False, t_r, low_pass, high_pass
+
+    if filter == "cosine":
+        if t_r is None or high_pass is None:
             raise ValueError(
-                "Repetition time (t_r) must be specified for "
-                "butterworth filtering. "
-                f"Got: '{t_r=}'"
+                "Repetition time (t_r) and low cutoff frequency (high_pass) "
+                "must be specified for cosine filtering. "
+                f"Got: '{t_r=}' and '{high_pass=}'"
             )
-    return filter
+        return "cosine", t_r, low_pass, high_pass
+
+    # filter == "butterworth"
+    if all(item is None for item in [low_pass, high_pass]):
+        # Butterworth was switched off
+        # by passing None to both low_pass and high_pass
+        return False, t_r, low_pass, high_pass
+    if t_r is None:
+        raise ValueError(
+            "Repetition time (t_r) must be specified for "
+            "butterworth filtering. "
+            f"Got: '{t_r=}'"
+        )
+    return "butterworth", t_r, low_pass, high_pass
 
 
 def _sanitize_signals(signals, ensure_finite):
