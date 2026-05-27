@@ -82,9 +82,7 @@ NiimgLike = (Nifti1Image, str, Path)
 Opening: TypeAlias = bool | Integer
 OutputFile: TypeAlias = str | pathlib.Path | None
 Radiological: TypeAlias = bool
-RandomState: TypeAlias = (
-    int | np.floating | np.integer | np.random.RandomState | None
-)
+RandomState: TypeAlias = np.floating | Integer | np.random.RandomState | None
 ResamplingInterpolation: TypeAlias = Literal["continuous", "nearest"]
 Resolution: TypeAlias = Integer | None
 Resume: TypeAlias = bool
@@ -123,15 +121,7 @@ Tfce: TypeAlias = bool
 Title: TypeAlias = str | None
 Tr: TypeAlias = Scalar
 Transparency: TypeAlias = (
-    float
-    | int
-    | np.floating
-    | np.integer
-    | str
-    | Path
-    | Nifti1Image
-    | Path
-    | None
+    float | np.floating | Integer | str | Path | Nifti1Image | Path | None
 )
 TransparencyRange: TypeAlias = list | tuple | None
 TwoSidedTest: TypeAlias = bool

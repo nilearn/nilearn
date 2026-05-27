@@ -1,5 +1,7 @@
 """Test the _utils.param_validation module."""
 
+from typing import TypeAlias
+
 import numpy as np
 import pytest
 from scipy.stats import scoreatpercentile
@@ -214,3 +216,18 @@ def test_check_is_of_allowed_type_bool():
     """Make sure check_is_of_allowed_type is strict about truthy/falsy."""
     with pytest.raises(TypeError, match="'foo' must be of type"):
         check_is_of_allowed_type(True, (int), "foo")
+
+
+def test_check_is_of_allowed_type_nested_type_alias():
+    """Check 'nested' TypeAlias work with."""
+    check_is_of_allowed_type(1, (int | np.integer | None), "foo")
+    check_is_of_allowed_type(None, (int | np.integer | None), "foo")
+    with pytest.raises(TypeError, match="'foo' must be of type"):
+        check_is_of_allowed_type("1", (int | np.integer | None), "foo")
+
+    Integer: TypeAlias = int | np.integer
+    IntegerOrNone: TypeAlias = Integer | None
+    check_is_of_allowed_type(1, IntegerOrNone, "foo")
+    check_is_of_allowed_type(None, IntegerOrNone, "foo")
+    with pytest.raises(TypeError, match="'foo' must be of type"):
+        check_is_of_allowed_type("1", Integer, "foo")
