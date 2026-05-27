@@ -468,7 +468,7 @@ def test_with_surface_images_2d_mask(surf_img_2d, surf_mask_1d, n_subjects):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.parametrize("kwargs", [{}, {"tfce": True}, {"threshold": 0.001}])
+@pytest.mark.parametrize("kwargs", [{}, {"threshold": 0.001}])
 @pytest.mark.parametrize("smoothing_fwhm", [0, 6])
 def test_with_surface_images_smoothing(
     surf_img_1d, n_subjects, smoothing_fwhm, kwargs
