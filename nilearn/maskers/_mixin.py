@@ -5,7 +5,7 @@ import itertools
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, get_args
 
 import numpy as np
 import pandas as pd
@@ -147,7 +147,7 @@ class _MultiMixin:
                 "'sample_mask' must be a None or a list. "
                 f"Got {sample_mask.__class__.__name__}."
             )
-        if isinstance(imgs, (*NiimgLike, SurfaceImage)):
+        if isinstance(imgs, (*get_args(NiimgLike), SurfaceImage)):
             if isinstance(confounds, list):
                 confounds = confounds[0]
             if isinstance(sample_mask, list):

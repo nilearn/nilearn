@@ -6,6 +6,7 @@ constitutes output maps
 """
 
 import warnings
+from typing import get_args
 
 import numpy as np
 from sklearn.decomposition import dict_learning_online
@@ -324,7 +325,7 @@ class DictLearning(_BaseDecomposition):
                     MultiSurfaceMasker,
                     SurfaceImage,
                     MultiNiftiMasker,
-                    *NiimgLike,
+                    *get_args(NiimgLike),
                 ),
                 "mask",
             )

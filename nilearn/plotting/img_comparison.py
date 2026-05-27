@@ -1,6 +1,7 @@
 """Functions to compare volume or surface images."""
 
 import warnings
+from typing import get_args
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -97,9 +98,9 @@ def plot_img_comparison(
     """
     check_params(locals())
     # Cast to list
-    if isinstance(ref_imgs, (*NiimgLike, SurfaceImage)):
+    if isinstance(ref_imgs, (*get_args(NiimgLike), SurfaceImage)):
         ref_imgs = [ref_imgs]
-    if isinstance(src_imgs, (*NiimgLike, SurfaceImage)):
+    if isinstance(src_imgs, (*get_args(NiimgLike), SurfaceImage)):
         src_imgs = [src_imgs]
     if not isinstance(ref_imgs, list) or not isinstance(src_imgs, list):
         raise TypeError(

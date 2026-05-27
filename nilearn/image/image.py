@@ -12,7 +12,7 @@ import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, TypeGuard, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeGuard, get_args, overload
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -1375,7 +1375,7 @@ def threshold_img(
 
     check_params(locals())
 
-    if not isinstance(img, (*NiimgLike, SurfaceImage)):
+    if not isinstance(img, (*get_args(NiimgLike), SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
             f"Got {img.__class__.__name__}."
