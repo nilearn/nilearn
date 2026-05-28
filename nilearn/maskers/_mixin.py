@@ -2,6 +2,7 @@
 
 import abc
 import itertools
+import warnings
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
@@ -56,6 +57,13 @@ class _MultiMixin:
         -------
         %(signals_transform_multi_nifti)s
         """
+        # ignore warning in case the masker
+        # was initialized with a mask image
+        # (only for MultiNiftiMasker)
+        warnings.filterwarnings(
+            "ignore",
+            message=r".*Generation of a mask.*",
+        )
         # although the implementation is
         # the same as in the BaseMasker
         # a specific method is required
