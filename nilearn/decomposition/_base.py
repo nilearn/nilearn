@@ -10,6 +10,7 @@ import warnings
 from math import ceil
 from pathlib import Path
 from string import Template
+from typing import get_args
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -456,7 +457,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
                     SurfaceMasker,
                     SurfaceImage,
                     NiftiMasker,
-                    *NiimgLike,
+                    *get_args(NiimgLike),
                 ),
                 "mask",
             )
@@ -529,7 +530,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         if self.mask is not None:
             if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)):
                 masker_type = "multi_surface"
-            if isinstance(self.mask, (MultiNiftiMasker, *NiimgLike)):
+            if isinstance(self.mask, (MultiNiftiMasker, *get_args(NiimgLike))):
                 masker_type = "multi_nii"
             elif isinstance(self.mask, SurfaceMasker):
                 masker_type = "surface"

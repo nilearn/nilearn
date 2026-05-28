@@ -73,6 +73,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix several issues in plotting, maskers and decomposition when handling map (or label) images with 0 or just a single map (or label) (:gh:`5908` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Raise error when maps (or labels) images contain no map (or label) after resampling by :class:`~nilearn.maskers.NiftiMapsMasker` (or :class:`~nilearn.maskers.NiftiLabelsMasker`) (:gh:`6240` by `Rémi Gau`_).
+
 - :bdg-info:`Plotting` Fix colors while plotting ROI contours with ``nilearn.plotting.plot_roi`` (:gh:`6245` by `Hande Gözükan`_).
 
 
