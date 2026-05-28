@@ -66,7 +66,7 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
     elif engine == "plotly":
         if is_plotly_installed():
             import nilearn.plotting.surface._plotly_backend as backend
-        else:  # pragma: no cover
+        else:
             raise ImportError(
                 "Using engine='plotly' requires that ``plotly`` is installed."
             )
