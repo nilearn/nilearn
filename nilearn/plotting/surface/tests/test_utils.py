@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
+from nilearn._utils.helpers import is_plotly_installed
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.surface._utils import (
     _check_hemisphere_is_valid,
@@ -246,3 +247,15 @@ def test_get_surface_backend_unknown_error():
     """
     with pytest.raises(ValueError, match="'engine' must be one of"):
         get_surface_backend("unknown")
+
+
+@pytest.mark.skipif(
+    is_plotly_installed(),
+    reason="This test is run only if plotly is not installed.",
+)
+def test_get_surface_backend_plotly_not_installed():
+    """Tests to see if get_surface_backend raises error when plotly is not
+    installed.
+    """
+    with pytest.raises(ImportError, match="Using engine"):
+        get_surface_backend("plotly")
