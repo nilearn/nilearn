@@ -15,11 +15,17 @@ Fsaverage5 standard surface as distributed with Freesurfer (:footcite:t:`Fischl1
 
 The mesh has 10242 vertices per hemisphere.
 
+.. the figures are copied in the folder during doc build
+   see doc/Makefile sym_links_datasets
 .. figure:: test_surface_fs_data_left-fsaverage5.png
    :align: center
 
+   data fsaverage5 left hemisphere
+
 .. figure:: test_surface_fs_data_right-fsaverage5.png
    :align: center
+
+   data fsaverage5 right hemisphere
 
 References
 ----------

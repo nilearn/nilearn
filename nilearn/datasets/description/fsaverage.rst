@@ -15,6 +15,8 @@ Fsaverage standard surface as distributed with Freesurfer (:footcite:t:`Fischl19
 
 The mesh has 163842 vertices per hemisphere.
 
+Direct download link from OSF: https://osf.io/svf8k
+
 References
 ----------
 .. footbibliography::
