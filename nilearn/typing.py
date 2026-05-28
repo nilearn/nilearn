@@ -120,9 +120,7 @@ Threshold: TypeAlias = Scalar | str
 Tfce: TypeAlias = bool
 Title: TypeAlias = str | None
 Tr: TypeAlias = Scalar
-Transparency: TypeAlias = (
-    float | np.floating | Integer | NiimgLike | Path | None
-)
+Transparency: TypeAlias = float | np.floating | Integer | NiimgLike | None
 TransparencyRange: TypeAlias = list | tuple | None
 TwoSidedTest: TypeAlias = bool
 Url: TypeAlias = str | None
