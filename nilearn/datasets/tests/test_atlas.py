@@ -588,7 +588,10 @@ def test_fetch_atlas_aal(
     )
     request_mocker.url_mapping[f"*{url_key}*"] = aal_data
 
-    dataset = fetch_atlas_aal(version=version, data_dir=tmp_path, verbose=0)
+    with pytest.warns(UserWarning, match="regions are present in the atlas"):
+        dataset = fetch_atlas_aal(
+            version=version, data_dir=tmp_path, verbose=0
+        )
 
     validate_atlas(dataset)
     assert isinstance(dataset.maps, str)
@@ -710,9 +713,10 @@ def test_fetch_atlas_surf_destrieux(tmp_path, capsys):
     assert bunch.map_left.shape == (4,)
     assert bunch.map_right.shape == (4,)
 
-    check_fetcher_verbosity(
-        fetch_atlas_surf_destrieux, capsys, data_dir=tmp_path
-    )
+    with pytest.warns(UserWarning, match="regions are present in the atlas"):
+        check_fetcher_verbosity(
+            fetch_atlas_surf_destrieux, capsys, data_dir=tmp_path
+        )
 
 
 def _get_small_fake_talairach():
@@ -849,13 +853,14 @@ def test_fetch_atlas_schaefer_2018(
     mock_file = mock_dir / basename
     mock_lut.to_csv(mock_file, sep="\t", header=False)
 
-    data = fetch_atlas_schaefer_2018(
-        n_rois=n_rois,
-        yeo_networks=yeo_networks,
-        resolution_mm=resolution_mm,
-        data_dir=tmp_path,
-        verbose=0,
-    )
+    with pytest.warns(UserWarning, match="regions are present in the atlas"):
+        data = fetch_atlas_schaefer_2018(
+            n_rois=n_rois,
+            yeo_networks=yeo_networks,
+            resolution_mm=resolution_mm,
+            data_dir=tmp_path,
+            verbose=0,
+        )
 
     validate_atlas(data)
 
@@ -870,14 +875,15 @@ def test_fetch_atlas_schaefer_2018(
     assert img.header.get_zooms()[0] == resolution_mm
     assert np.array_equal(np.unique(img.dataobj), np.arange(n_rois + 1))
 
-    check_fetcher_verbosity(
-        fetch_atlas_schaefer_2018,
-        capsys,
-        n_rois=n_rois,
-        yeo_networks=yeo_networks,
-        resolution_mm=resolution_mm,
-        data_dir=tmp_path,
-    )
+    with pytest.warns(UserWarning, match="regions are present in the atlas"):
+        check_fetcher_verbosity(
+            fetch_atlas_schaefer_2018,
+            capsys,
+            n_rois=n_rois,
+            yeo_networks=yeo_networks,
+            resolution_mm=resolution_mm,
+            data_dir=tmp_path,
+        )
 
 
 @pytest.fixture

@@ -2,7 +2,7 @@
 obtain fixed effect results.
 """
 
-from warnings import warn
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -155,7 +155,7 @@ def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
         zip(labels, results, con_vals, strict=False)
     ):
         if np.all(con_val == 0):
-            warn(
+            warnings.warn(
                 f"Contrast for run {int(i)} is null.",
                 stacklevel=find_stack_level(),
             )
@@ -398,7 +398,7 @@ class Contrast:
             )
         dof_ = self.dof + other.dof
         if self.stat_type == "F":
-            warn(
+            warnings.warn(
                 "Running approximate fixed effects on F statistics.",
                 category=UserWarning,
                 stacklevel=find_stack_level(),
@@ -487,6 +487,12 @@ def compute_fixed_effects(
             f"from the number of variance images ({len(variance_imgs)})."
         )
 
+    # ignore warning in case the masker
+    # was initialized with a mask image
+    warnings.filterwarnings(
+        "ignore",
+        message=r".*Generation of a mask.*",
+    )
     # TODO (nilearn >=0.15) remove ALL standardize=None below
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = mask.fit()
