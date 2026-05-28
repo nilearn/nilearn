@@ -17,12 +17,13 @@ from nilearn.plotting._utils import (
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Test requires matplotlib to be installed.",
+)
 @patch("matplotlib.use")
 @patch("matplotlib.get_backend", side_effect=["backend_1", "backend_2"])
-def test_should_raise_warning_if_backend_changes(
-    matplotlib_pyplot,  # noqa: ARG001
-    *_,
-):
+def test_should_raise_warning_if_backend_changes(*_):
     """Check backend values returned by matplotlib.get_backend are different.
     Warning should be raised to inform user of the backend switch.
     """
@@ -31,12 +32,13 @@ def test_should_raise_warning_if_backend_changes(
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Test requires matplotlib to be installed.",
+)
 @patch("matplotlib.use")
 @patch("matplotlib.get_backend", side_effect=["backend_1", "backend_1"])
-def test_should_not_raise_warning_if_backend_is_not_changed(
-    matplotlib_pyplot,  # noqa: ARG001
-    *_,
-):
+def test_should_not_raise_warning_if_backend_is_not_changed(*_):
     """Check backend values returned by matplotlib.get_backend are identical.
     Warning should not be raised.
     """

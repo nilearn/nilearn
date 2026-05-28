@@ -19,20 +19,11 @@ DEFAULT_TICK_FORMAT = "%.2g"
 def set_mpl_backend() -> None:
     """Check if matplotlib is installed.
 
-    If not installed, raise error and display warning to install necessary
-    dependencies.
-
     If installed, check if the installed version complies with the minimum
     supported matplotlib version. If it does not, raise error; otherwise set
     the matplotlib backend.
 
     If current backend is not usable, switch to default "Agg" backend.
-
-    Parameters
-    ----------
-    message: str, default=None
-        Message to be prepended to standard warning when matplotlib is not
-    installed.
     """
     with contextlib.suppress(ImportError):
         import matplotlib
