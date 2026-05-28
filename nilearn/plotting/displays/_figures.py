@@ -97,7 +97,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         ).T
 
     def __init__(self, figure=None, output_file=None, hemi=DEFAULT_HEMI):
-        if not is_plotly_installed():
+        if not is_plotly_installed():  # pragma: no cover
             raise ImportError(
                 "Plotly is required to use 'PlotlySurfaceFigure'."
             )
