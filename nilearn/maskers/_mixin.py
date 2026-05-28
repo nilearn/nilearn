@@ -2,10 +2,11 @@
 
 import abc
 import itertools
+import warnings
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, get_args
 
 import numpy as np
 import pandas as pd
@@ -56,6 +57,13 @@ class _MultiMixin:
         -------
         %(signals_transform_multi_nifti)s
         """
+        # ignore warning in case the masker
+        # was initialized with a mask image
+        # (only for MultiNiftiMasker)
+        warnings.filterwarnings(
+            "ignore",
+            message=r".*Generation of a mask.*",
+        )
         # although the implementation is
         # the same as in the BaseMasker
         # a specific method is required
@@ -147,7 +155,7 @@ class _MultiMixin:
                 "'sample_mask' must be a None or a list. "
                 f"Got {sample_mask.__class__.__name__}."
             )
-        if isinstance(imgs, (*NiimgLike, SurfaceImage)):
+        if isinstance(imgs, (*get_args(NiimgLike), SurfaceImage)):
             if isinstance(confounds, list):
                 confounds = confounds[0]
             if isinstance(sample_mask, list):

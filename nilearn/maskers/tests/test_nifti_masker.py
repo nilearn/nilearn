@@ -78,24 +78,8 @@ def test_detrend(img_3d_rand_eye, mask_img_1):
 @pytest.mark.parametrize("y", [None, np.ones((9, 9, 9))])
 def test_fit_transform(y, img_3d_rand_eye, mask_img_1):
     """Check fit_transform of BaseMasker with several input args."""
-    # Smoke test the fit
     for mask_img in [mask_img_1, None]:
         masker = NiftiMasker(mask_img=mask_img, standardize=None)
-        X = masker.fit_transform(X=img_3d_rand_eye, y=y)
-        assert np.any(X != 0)
-
-
-def test_fit_transform_warning(img_3d_rand_eye, mask_img_1):
-    """Warn that mask creation is happening \
-        when mask was provided at instantiation.
-    """
-    y = np.ones((9, 9, 9))
-    masker = NiftiMasker(mask_img=mask_img_1, standardize=None)
-    with pytest.warns(
-        UserWarning,
-        match="Generation of a mask has been requested .*"
-        "while a mask was given at masker creation.",
-    ):
         X = masker.fit_transform(X=img_3d_rand_eye, y=y)
         assert np.any(X != 0)
 

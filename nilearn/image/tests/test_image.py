@@ -1699,13 +1699,30 @@ def test_binarize_img_no_userwarning(img_4d_rand_eye):
         binarize_img(img_4d_rand_eye)
 
 
+@pytest.mark.parametrize("low_pass, high_pass", [(0.1, None), (None, 100)])
+def test_clean_img_error(
+    img_4d_rand_eye, surf_img_2d, low_pass, high_pass
+) -> None:
+    """Test error t_r missing for cleaning with
+    low_pass is not None or high_pass is not None.
+    """
+    with pytest.raises(
+        ValueError, match=r"t_r.*must be specified.*imgs header suggest"
+    ):
+        clean_img(
+            img_4d_rand_eye, t_r=None, low_pass=low_pass, high_pass=high_pass
+        )
+
+    with pytest.raises(ValueError, match=r"t_r.*must be specified"):
+        clean_img(
+            surf_img_2d(50), t_r=None, low_pass=low_pass, high_pass=high_pass
+        )
+
+
 def test_clean_img(affine_eye, shape_3d_default, rng):
     data = rng.standard_normal(size=(10, 10, 10, 100)) + 0.5
     data_flat = data.T.reshape(100, -1)
     data_img = Nifti1Image(data, affine_eye)
-
-    with pytest.raises(ValueError, match=r"t_r.*must be specified"):
-        clean_img(data_img, t_r=None, low_pass=0.1)
 
     data_img_ = clean_img(
         data_img, detrend=True, standardize=None, low_pass=0.1, t_r=1.0

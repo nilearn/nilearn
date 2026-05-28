@@ -416,6 +416,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.affine,
                     )
+                    maps_data = get_data(self.maps_img_)
+                    if np.all(maps_data == 0):
+                        raise ValueError(
+                            "No map left after resampling maps_img."
+                        )
+
             if self.mask_img_ is not None and not check_same_fov(
                 ref_img, self.mask_img_
             ):
@@ -592,6 +598,11 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.affine,
                     )
+                    maps_data = get_data(maps_img_)
+                    if np.all(maps_data == 0):
+                        raise ValueError(
+                            "No map left after resampling maps_img."
+                        )
 
             if self.mask_img_ is not None and not check_same_fov(
                 ref_img,

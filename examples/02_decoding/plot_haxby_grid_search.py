@@ -94,13 +94,7 @@ def fit_decoder(X, y, screening_percentile, verbose=0):
         screening_percentile=screening_percentile,
         verbose=verbose,
     )
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            action="ignore",
-            category=UserWarning,
-            message=r"\[NiftiMasker\.fit\] Generation of a mask has been requested",  # noqa: E501
-        )
-        decoder.fit(X, y)
+    decoder.fit(X, y)
     return decoder
 
 

@@ -2,9 +2,12 @@
 
 import numbers
 import warnings
+from typing import Literal, get_args, overload
 
 import numpy as np
 from joblib import Parallel, delayed
+from nibabel import Nifti1Image
+from numpy.typing import ArrayLike
 from scipy.ndimage import binary_dilation, binary_erosion
 
 from nilearn._utils import logger
@@ -48,7 +51,24 @@ __all__ = [
 ]
 
 
-def load_mask_img(mask_img, allow_empty=False):
+@overload
+def load_mask_img(
+    mask_img: NiimgLike,
+    allow_empty: bool = ...,
+) -> tuple[np.ndarray, np.ndarray]: ...
+
+
+@overload
+def load_mask_img(
+    mask_img: SurfaceImage,
+    allow_empty: bool = ...,
+) -> tuple[SurfaceImage, None]: ...
+
+
+def load_mask_img(
+    mask_img: NiimgLike | SurfaceImage,
+    allow_empty: bool = False,
+) -> tuple[np.ndarray, np.ndarray] | tuple[SurfaceImage, None]:
     """Check that a mask is valid.
 
     This checks if it contains two values including 0 and load it.
@@ -75,15 +95,15 @@ def load_mask_img(mask_img, allow_empty=False):
         Affine of the mask if Niimg-like object was passed as input,
         None otherwise.
     """
-    if not isinstance(mask_img, (*NiimgLike, SurfaceImage)):
+    if not isinstance(mask_img, (*get_args(NiimgLike), SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
             f"Got {mask_img.__class__.__name__}."
         )
 
     if isinstance(mask_img, NiimgLike):
-        mask_img = check_niimg_3d(mask_img)
-        mask = safe_get_data(mask_img, ensure_finite=True)
+        loaded_img = check_niimg_3d(mask_img)
+        mask = safe_get_data(loaded_img, ensure_finite=True)
     else:
         mask_img.data._check_ndims(1)
         mask = get_surface_data(mask_img, ensure_finite=True)
@@ -113,7 +133,7 @@ def load_mask_img(mask_img, allow_empty=False):
     mask = as_ndarray(mask, dtype=bool)
 
     if isinstance(mask_img, NiimgLike):
-        return mask, mask_img.affine
+        return mask, loaded_img.affine
 
     for hemi in mask_img.data.parts:
         mask_img.data.parts[hemi] = as_ndarray(
@@ -1008,7 +1028,27 @@ def _unmask_4d(X, mask, order="C"):
     return data
 
 
-def unmask(X, mask_img, order="F"):
+@overload
+def unmask(
+    X: ArrayLike,
+    mask_img: NiimgLike,
+    order: Literal["F", "C"] = "F",
+) -> Nifti1Image: ...
+
+
+@overload
+def unmask(
+    X: list[ArrayLike],
+    mask_img: NiimgLike,
+    order: Literal["F", "C"] = "F",
+) -> list[Nifti1Image]: ...
+
+
+def unmask(
+    X: ArrayLike | list[ArrayLike],
+    mask_img: NiimgLike,
+    order: Literal["F", "C"] = "F",
+) -> Nifti1Image | list[Nifti1Image]:
     """Take masked data and bring them back into 3D/4D.
 
     This function can be applied to a list of masked data.
@@ -1029,7 +1069,8 @@ def unmask(X, mask_img, order="F"):
 
     Returns
     -------
-    data : :class:`nibabel.nifti1.Nifti1Image`
+    data : :class:`nibabel.nifti1.Nifti1Image` \
+        or list of :class:`nibabel.nifti1.Nifti1Image`
         Unmasked data. Depending on the shape of X, data can have
         different shapes:
 
