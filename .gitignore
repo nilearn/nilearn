@@ -102,3 +102,6 @@ nilearn.svg
 # uv
 uv.lock
 .python-version
+
+# glass brain generation
+maint_tools/svg

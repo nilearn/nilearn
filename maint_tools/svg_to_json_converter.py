@@ -2,7 +2,8 @@
 
 Leverages off https://github.com/cjlano/svg
 and exports the coordinates of the paths in the svg
-together with a few path attributes (id, stroke-color, stroke-width, etc.)
+together with a few path attributes (id, stroke-color, stroke-width, etc.):
+to use it clone the cjlano/svg in the folder where this script is located
 
 The main assumption is that the SVG only contains Bezier curves and
 segments.
@@ -168,12 +169,14 @@ def _import_svg():
         import svg
 
         return svg
-    except ImportError as exc:
-        exc.args += (
+    except (ImportError, ModuleNotFoundError) as e:
+        raise ModuleNotFoundError(
             "Could not import svg (https://github.com/cjlano/svg)"
-            " which is required to parse the svg file",
-        )
-        raise
+            " which is required to parse the svg file.\n",
+            "Install it by running:\n"
+            " git clone https://github.com/cjlano/svg "
+            f"{Path(__file__).parent / 'svg'}",
+        ) from e
 
 
 if __name__ == "__main__":

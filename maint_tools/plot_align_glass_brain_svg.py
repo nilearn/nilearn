@@ -4,7 +4,8 @@
 # requires-python = ">=3.10"
 # dependencies = [
 #   "nilearn[plotting]>=0.12",
-#    "PyQt6"
+#    "PyQt6",
+#    "templateflow"
 # ]
 # ///
 
@@ -14,13 +15,40 @@ anatomy for a slice in each direction..
 This is only useful for internal purposes especially when the SVG is modified.
 """
 
+from pathlib import Path
+
 from nilearn.plotting.glass_brain import plot_brain_schematics
 from nilearn.plotting.image import plot_anat, plot_glass_brain, show
 from nilearn.plotting.image.utils import load_anat
 
+ANAT_TO_DISPLAY = None
+
+TEST_ON_RAT_TEMPLATE = False
+
+if TEST_ON_RAT_TEMPLATE:
+    import templateflow.api as tflow
+
+    fetched_files = tflow.get("WHS", resolution=2, suffix="T2star")
+
+    import nilearn as ni
+
+    ni.plotting.GLASS_BRAIN_ASSETS = (
+        Path(__file__).parents[1]
+        / "examples"
+        / "07_advanced"
+        / "glass_brain_files"
+    )
+
+    ANAT_TO_DISPLAY = Path(fetched_files)
+
+
 if __name__ == "__main__":
     # plotting anat for coarse alignment
-    bg_img, _, _, _ = load_anat()
+    if ANAT_TO_DISPLAY is None:
+        bg_img, _, _, _ = load_anat()
+    else:
+        bg_img = ANAT_TO_DISPLAY
+
     plot_glass_brain(bg_img, threshold=0, black_bg=True, title="anat", alpha=1)
     plot_glass_brain(
         bg_img,

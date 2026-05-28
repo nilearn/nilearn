@@ -1,7 +1,6 @@
 """Brain schematics plotting for glass brain functionality."""
 
 import json
-import pathlib
 
 from matplotlib import colors, patches, transforms
 from matplotlib.path import Path
@@ -83,6 +82,8 @@ def _get_json_and_transform(direction):
     """Return the json filename and an affine transform, which has \
     been tweaked by hand to fit the MNI template.
     """
+    from nilearn.plotting import GLASS_BRAIN_ASSETS
+
     direction_to_view_name = {
         "x": "side",
         "y": "back",
@@ -99,9 +100,8 @@ def _get_json_and_transform(direction):
         "r": [0.38, 0, 0, 0.38, -108, -70],
     }
 
-    dirname = pathlib.Path(__file__).resolve().parent / "glass_brain_files"
     direction_to_filename = {
-        _direction: dirname / f"brain_schematics_{view_name}.json"
+        _direction: GLASS_BRAIN_ASSETS / f"brain_schematics_{view_name}.json"
         for _direction, view_name in direction_to_view_name.items()
     }
 

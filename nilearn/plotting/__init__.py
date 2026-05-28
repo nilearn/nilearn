@@ -1,5 +1,7 @@
 """Plotting code for nilearn."""
 
+from pathlib import Path
+
 from nilearn._utils.helpers import set_mpl_backend
 
 set_mpl_backend()
@@ -47,6 +49,8 @@ from nilearn.plotting.surface import (
     view_img_on_surf,
     view_surf,
 )
+
+GLASS_BRAIN_ASSETS = Path(__file__).resolve().parent / "glass_brain_files"
 
 __all__ = [
     "cm",  # cm not in API doc
