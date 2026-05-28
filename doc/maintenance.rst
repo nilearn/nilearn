@@ -190,6 +190,62 @@ tox run -e update_js
 
     This requires to have `node and npm <https://nodejs.org>`_ installed.
 
+Datasets
+========
+
+Several datasets are on `OSF <https://osf.io>`_ and some of those are 'maintained' by the Nilearn devs.
+
+Here is a quick description of the different OSF projects
+that the dev have access to:
+
+- `nilearn_data <https://osf.io/hxctv>`_
+  Project hosting the data for:
+
+  - ``fetch_atlas_allen_2011``: https://osf.io/hrcku
+
+- `Nilearn_datasets <https://osf.io/mk53n>`_
+  Project hosting the data for
+
+  - ``fetch_surf_fsaverage``:
+
+    - ``fsaverage3``: "https://osf.io/azhdf"
+    - ``fsaverage4``: "https://osf.io/28uma"
+    - ``fsaverage6``: "https://osf.io/jzxyr"
+    - ``fsaverage7``: "https://osf.io/svf8k"
+
+- `nistats <https://osf.io/v7hsw>`_
+  Project hosting the data for:
+
+  - ``fetch_localizer_first_level``: https://osf.io/2bqxn
+
+- `NiLearn's Quick Files <https://osf.io/hr36b>`_
+  Project hosting some of the data for:
+
+  - ``fetch_ds000030_urls``: https://osf.io/86xj7
+
+  - ``fetch_icbm152_2009``: https://osf.io/7pj92
+
+- `temporary space to store dataset for nilearn example gallery <https://osf.io/5dr8p>`_
+  Project hosting the data for
+
+  - ``fetch_language_localizer_demo_dataset``
+    ``https://osf.io/3dj2a`` (from https://osf.io/5dr8p/overview) acts as fall-back URL in case
+    ``https://osf.io/nh987`` (from https://osf.io/k4jp8/overview) fails
+
+- `nilearn_data_backup_archive <https://osf.io/59wxs>`_
+  This is an old project used for back up Nilearn's data.
+
+.. TODO
+   `Allen and MIALAB ICA atlas 2011 <https://osf.io/vp4dk>`_
+   Unrelated project under the Nilearn OSF user account
+
+.. admonition:: Important
+
+    If you need to update certain files,
+    do NOT remove any old files as this may break some older versions of Nilearn
+    that still use that URL.
+    Add new files and mention the version in their filename.
+
 How to make a release?
 ======================
 
