@@ -872,6 +872,13 @@ def fetch_surf_fsaverage(
     :func:`~nilearn.datasets.load_fsaverage_data`
     to access fsaverage data as :obj:`~nilearn.surface.SurfaceImage`.
 
+    .. nilearn_versionchanged:: 0.14.0dev
+
+        The data for fsaverage3 and fsaverage4 have been updated
+        to have their vertices in the same order as fsaverage5-7.
+        Old faulty local copies of fsaverage3 and fsaverage4
+        are corrected the first time they are loaded.
+
     Parameters
     ----------
     mesh : :obj:`str`, default='fsaverage5'
@@ -884,31 +891,27 @@ def fetch_surf_fsaverage(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
-         - 'area_left': Gifti file, left hemisphere area data
-         - 'area_right': Gifti file, right hemisphere area data
-         - 'curv_left': Gifti file, left hemisphere curvature data
-         - 'curv_right': Gifti file, right hemisphere curvature data
-         - 'flat_left': Gifti file, left hemisphere flat surface :term:`mesh`
-         - 'flat_right': Gifti file, right hemisphere flat surface :term:`mesh`
-         - 'pial_left': Gifti file, left hemisphere pial surface :term:`mesh`
-         - 'pial_right': Gifti file, right hemisphere pial surface :term:`mesh`
-         - 'infl_left': Gifti file, left hemisphere inflated pial surface
-           :term:`mesh`
-         - 'infl_right': Gifti file, right hemisphere inflated pial
-           surface :term:`mesh`
-         - 'sphere_left': Gifti file, left hemisphere sphere surface
-           :term:`mesh`
-         - 'sphere_right': Gifti file, right hemisphere sphere surface
-           :term:`mesh`
-         - 'sulc_left': Gifti file, left hemisphere sulcal depth data
-         - 'sulc_right': Gifti file, right hemisphere sulcal depth data
-         - 'thick_left': Gifti file, left hemisphere cortical thickness data
-         - 'thick_right': Gifti file, right hemisphere cortical thickness data
-         - 'white_left': Gifti file, left hemisphere
-           white surface :term:`mesh`
-         - 'white_right': Gifti file, right hemisphere*
-           white surface :term:`mesh`
+        Dictionary-like object,
+        where each value is a path to a Gifti file
+        and the keys are:
+         - 'flat_left':    left hemisphere flat surface :term:`mesh`
+         - 'flat_right':   right hemisphere flat surface :term:`mesh`
+         - 'infl_left':    left hemisphere inflated pial surface :term:`mesh`
+         - 'infl_right':   right hemisphere inflated pial surface :term:`mesh`
+         - 'pial_left':    left hemisphere pial surface :term:`mesh`
+         - 'pial_right':   right hemisphere pial surface :term:`mesh`
+         - 'sphere_left':  left hemisphere sphere surface :term:`mesh`
+         - 'sphere_right': right hemisphere sphere surface :term:`mesh`
+         - 'white_left':   left hemisphere white surface :term:`mesh`
+         - 'white_right':  right hemisphere white surface :term:`mesh`
+         - 'area_left':    left hemisphere area data
+         - 'area_right':   right hemisphere area data
+         - 'curv_left':    left hemisphere curvature data
+         - 'curv_right':   right hemisphere curvature data
+         - 'sulc_left':    left hemisphere sulcal depth data
+         - 'sulc_right':   right hemisphere sulcal depth data
+         - 'thick_left':   left hemisphere cortical thickness data
+         - 'thick_right':  right hemisphere cortical thickness data
 
     References
     ----------
@@ -1135,8 +1138,8 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None) -> Bunch[str, str]:
     opts = {"uncompress": True}
 
     url = {
-        "fsaverage3": "https://osf.io/azhdf/download",
-        "fsaverage4": "https://osf.io/28uma/download",
+        "fsaverage3": "https://osf.io/329dq/download",
+        "fsaverage4": "https://osf.io/gkqd5/download",
         "fsaverage6": "https://osf.io/jzxyr/download",
         "fsaverage": "https://osf.io/svf8k/download",  # fsaverage7
     }[dataset_name]

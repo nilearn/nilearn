@@ -208,7 +208,7 @@ that the dev have access to:
 
   - ``fetch_surf_fsaverage``:
 
-    - ``fsaverage3``: "https://osf.io/azhdf"
+    - ``fsaverage3``: "https://osf.io/329dq"
     - ``fsaverage4``: "https://osf.io/28uma"
     - ``fsaverage6``: "https://osf.io/jzxyr"
     - ``fsaverage7``: "https://osf.io/svf8k"
