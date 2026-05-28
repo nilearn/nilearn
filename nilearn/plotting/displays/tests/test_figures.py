@@ -2,7 +2,8 @@
 
 import pytest
 
-from nilearn.plotting.displays import SurfaceFigure
+from nilearn._utils.helpers import is_plotly_installed
+from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 
 
 def test_surface_figure():
@@ -26,3 +27,15 @@ def test_surface_figure_errors():
         figure.show()
     with pytest.raises(ValueError, match="You must provide an output file"):
         figure._check_output_file()
+
+
+@pytest.mark.skipif(
+    is_plotly_installed(),
+    reason="This test only runs if Plotly is not installed.",
+)
+def test_plotly_surface_figure_import_error():
+    """Test that an ImportError is raised when instantiating \
+       a PlotlySurfaceFigure without having Plotly installed.
+    """
+    with pytest.raises(ImportError, match="Plotly is required"):
+        PlotlySurfaceFigure()
