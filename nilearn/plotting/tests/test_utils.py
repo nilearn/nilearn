@@ -8,6 +8,7 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
@@ -45,13 +46,14 @@ def test_should_not_raise_warning_if_backend_is_not_changed(
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Test requires matplotlib to be installed.",
+)
 @patch(
     "matplotlib.use", side_effect=[Exception("Failed to switch backend"), True]
 )
-def test_should_switch_to_agg_backend_if_current_backend_fails(
-    matplotlib_pyplot,  # noqa: ARG001
-    use_mock,
-):
+def test_should_switch_to_agg_backend_if_current_backend_fails(use_mock):
     """Check first call to `matplotlib.use` raises an exception,
     hence the default Agg backend should be triggered.
     """
