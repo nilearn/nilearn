@@ -2,6 +2,7 @@
 
 import warnings as _warnings
 from operator import itemgetter
+from typing import get_args
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -271,7 +272,7 @@ class CanICA(_MultiPCA):
                     MultiSurfaceMasker,
                     SurfaceImage,
                     MultiNiftiMasker,
-                    *NiimgLike,
+                    *get_args(NiimgLike),
                 ),
                 "mask",
             )

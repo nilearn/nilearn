@@ -276,6 +276,22 @@ def test_nifti_maps_masker_resampling_errors(
         masker.fit()
 
 
+def test_no_map_after_resampling_error(
+    img_maps, affine_mni, shape_3d_large, rng
+):
+    """Ensure error is raised when resampling leads to no map left."""
+    input_img = Nifti1Image(rng.random(shape_3d_large), affine_mni)
+
+    estimator = NiftiMapsMasker(maps_img=img_maps, standardize=None)
+    estimator.fit()
+    with pytest.raises(ValueError, match="No map left after resampling"):
+        estimator.transform(input_img)
+
+    estimator = NiftiMapsMasker(maps_img=img_maps, standardize=None)
+    with pytest.raises(ValueError, match="No map left after resampling"):
+        estimator.fit_transform(input_img)
+
+
 def test_nifti_maps_masker_with_nans_and_infs(length, n_regions, affine_eye):
     """Apply a NiftiMapsMasker containing NaNs and infs.
 
