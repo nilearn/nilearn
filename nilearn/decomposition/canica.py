@@ -32,7 +32,7 @@ class CanICA(_MultiPCA):
         Number of components to extract.
 
     %(smoothing_fwhm)s
-        Default=6mm.
+        default=6mm.
 
     do_cca : :obj:`bool`, default=True
         Indicate if a Canonical Correlation Analysis must be run after the
@@ -86,7 +86,7 @@ class CanICA(_MultiPCA):
 
     %(mask_strategy)s
 
-        Default='epi'.
+        default='epi'.
 
         .. note::
             These strategies are only relevant for Nifti images and the

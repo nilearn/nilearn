@@ -1,26 +1,142 @@
 """Utilities to check for decoders."""
 
+import inspect
 import warnings
+from typing import Any, Literal, TypedDict
 
 import numpy as np
+from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.feature_selection import (
     SelectKBest,
     SelectPercentile,
     f_classif,
     f_regression,
 )
+from sklearn.linear_model import (
+    LassoCV,
+    LogisticRegressionCV,
+    RidgeClassifierCV,
+    RidgeCV,
+)
+from sklearn.svm import SVR, LinearSVC
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
+from nilearn._utils.versions import SKLEARN_GTE_1_8
 from nilearn.exceptions import MaskWarning
 from nilearn.image import get_data
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
+MAX_ITER = 10000
+
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1882989.0
+
+kwarg_logistic_regression_cv = {}
+if SKLEARN_GTE_1_8:
+    # TODO (sklearn 1.8) remove if
+    # TODO (sklearn 1.10) remove 'use_legacy_attributes'
+    kwarg_logistic_regression_cv = {
+        "use_legacy_attributes": False,
+        "scoring": "neg_log_loss",
+    }
+
+
+class EstimatorConfig(TypedDict):
+    estimator: Any
+    params: dict[str, Any]
+    extra_params: dict[str, Any]
+
+
+SUPPORTED_ESTIMATORS: dict[
+    Literal["classifier", "regressor"], dict[str, EstimatorConfig]
+] = {
+    "classifier": {
+        # "params" cannot be overridden
+        # "extra_params" can be overridden by parameters passed by user
+        "svc_l1": {
+            "estimator": LinearSVC,
+            "params": {
+                "penalty": "l1",
+            },
+            "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
+        },
+        "svc_l2": {
+            "estimator": LinearSVC,
+            "params": {"penalty": "l2"},
+            "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
+        },
+        "svc": {
+            "estimator": LinearSVC,
+            "params": {"penalty": "l2"},
+            "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
+        },
+        "logistic_l1": {
+            "estimator": LogisticRegressionCV,
+            "params": {
+                "l1_ratios": (1,),
+                "solver": "liblinear",
+                **kwarg_logistic_regression_cv,
+            },
+            "extra_params": {},
+        },
+        "logistic_l2": {
+            "estimator": LogisticRegressionCV,
+            "params": {
+                "l1_ratios": (0,),
+                "solver": "liblinear",
+                **kwarg_logistic_regression_cv,
+            },
+            "extra_params": {},
+        },
+        "logistic": {
+            "estimator": LogisticRegressionCV,
+            "params": {
+                "l1_ratios": (0,),
+                "solver": "liblinear",
+                **kwarg_logistic_regression_cv,
+            },
+            "extra_params": {},
+        },
+        "ridge_classifier": {
+            "estimator": RidgeClassifierCV,
+            "params": {},
+            "extra_params": {},
+        },
+        "dummy_classifier": {
+            "estimator": DummyClassifier,
+            "params": {"strategy": "stratified"},
+            "extra_params": {"random_state": 0},
+        },
+    },
+    "regressor": {
+        "ridge_regressor": {
+            "estimator": RidgeCV,
+            "params": {},
+            "extra_params": {},
+        },
+        "ridge": {"estimator": RidgeCV, "params": {}, "extra_params": {}},
+        "lasso": {"estimator": LassoCV, "params": {}, "extra_params": {}},
+        "lasso_regressor": {
+            "estimator": LassoCV,
+            "params": {},
+            "extra_params": {},
+        },
+        "svr": {
+            "estimator": SVR,
+            "params": {"kernel": "linear"},
+            "extra_params": {"max_iter": MAX_ITER},
+        },
+        "dummy_regressor": {
+            "estimator": DummyRegressor,
+            "params": {"strategy": "mean"},
+            "extra_params": {},
+        },
+    },
+}
 
 
 def _get_mask_extent(mask_img):
@@ -226,3 +342,101 @@ def check_feature_screening(
         return SelectPercentile(
             f_test, percentile=int(effective_screening_percentile)
         )
+
+
+def validate_estimator(
+    estimator,
+    owning_class_type: Literal["classifier", "regressor", None] = None,
+    estimator_args=None,
+    verbose=0,
+):
+    """Check requested estimator.
+
+    If an actual estimator instance was passed, we allow it but warn the user.
+
+    Otherwise we instantiate one
+    from the config defined in supported_estimators.
+
+    Parameters
+    ----------
+    estimator : Any
+        estimator to validate: can be a string
+        or ideally a sklearn compatible object
+
+    owning_class_type : "classifier" or "regressor" or None
+        estimator type of the class
+        in which the estimator to validate
+        is embedded
+
+    estimator_args: dict or None
+        extra args to pass when instantiating the embedded estimator
+
+    verbose:
+        used to adjust the verbosity of the embedded estimator
+    """
+    if not isinstance(estimator, str):
+        # The following tries to make sure that the estimator_type
+        # matches that of the owning class
+        # The user may not have defined estimator_type
+        # so we have to be a bit lenient here.
+
+        # TODO (sklearn >= 1.8) _estimator_type will be removed
+        estimator_type = getattr(estimator, "_estimator_type", None)
+
+        # TODO test with sklearn sklearn_version == 1.5.0
+        if estimator_type is None and hasattr(estimator, "__sklearn_tags__"):
+            estimator_type = getattr(
+                estimator.__sklearn_tags__(), "estimator_type", None
+            )
+
+        if (
+            owning_class_type is not None
+            and estimator_type is not None
+            and owning_class_type != estimator_type
+        ):
+            raise ValueError(
+                f"The estimator '{estimator.__class__.__name__}' "
+                f"is of type '{estimator_type}' "
+                f"and should be of type '{owning_class_type}'."
+            )
+
+        warnings.warn(
+            "Use a custom estimator at your own risk "
+            "of the process not working as intended.",
+            stacklevel=find_stack_level(),
+        )
+
+        return estimator
+
+    if owning_class_type is None:
+        tmp = (
+            SUPPORTED_ESTIMATORS["classifier"]
+            | SUPPORTED_ESTIMATORS["regressor"]
+        )
+    else:
+        tmp = SUPPORTED_ESTIMATORS[owning_class_type]
+    estimator_config = tmp.get(estimator)
+
+    if estimator_config is None:
+        raise ValueError(
+            "Invalid estimator. Known estimators are: "
+            f"{list(tmp.keys())}. "
+            f"Got: {estimator}"
+        )
+
+    # "extra_params" can be overridden by parameters passed by user
+    params = estimator_config["extra_params"]
+    if estimator_args is not None:
+        params |= estimator_args
+
+    # "params" cannot be overridden so we use them last
+    # to update the parameter of the estimator
+    params |= estimator_config["params"]
+
+    sig = inspect.signature(estimator_config["estimator"]).parameters
+    if "verbose" in sig:
+        params["verbose"] = (verbose - 1) > 0
+
+    estimator = estimator_config["estimator"](**params)
+
+    return estimator

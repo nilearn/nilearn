@@ -153,6 +153,13 @@ jobs:
                 tox run --list-dependencies -e ${{ matrix.env }} -- ${tests_to_run}
                 tox run -e plot_test_timing
 
+        -   name: Upload figures comparison
+            if: ${{ failure() &&  matrix.env == 'pytest_mpl'}}
+            uses: actions/upload-artifact@v7
+            with:
+                name: figure_diff
+                path: results
+
         -   name: Upload test report
             if: success() || failure()
             uses: actions/upload-artifact@v7

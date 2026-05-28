@@ -17,7 +17,7 @@ def check_threshold(
     percentile_func,
     name: str = "threshold",
     two_sided: bool = True,
-):
+) -> float:
     """Check if the given threshold is in correct format and within the limit.
 
     If threshold is string, this function returns score of the data calculated
@@ -87,7 +87,9 @@ def check_threshold(
             "or a string finishing with a percent sign"
         )
 
-    if threshold >= 0:
+    threshold = float(threshold)
+
+    if threshold >= 0.0:
         data = abs(data) if two_sided else np.extract(data >= 0, data)
 
         if percentile:
@@ -121,7 +123,7 @@ def check_threshold(
                 stacklevel=find_stack_level(),
             )
 
-    return threshold
+    return float(threshold)
 
 
 def check_run_sample_masks(n_runs: int, sample_masks: Any):
@@ -192,8 +194,10 @@ TYPE_MAPS = {
     "n_jobs": nilearn_typing.NJobs,
     "n_perm": nilearn_typing.NPerm,
     "opening": nilearn_typing.Opening,
+    "output_file": nilearn_typing.OutputFile,
     "radiological": nilearn_typing.Radiological,
     "random_state": nilearn_typing.RandomState,
+    "resampling_interpolation": nilearn_typing.ResamplingInterpolation,
     "resolution": nilearn_typing.Resolution,
     "resume": nilearn_typing.Resume,
     "screening_percentile": nilearn_typing.ScreeningPercentile,

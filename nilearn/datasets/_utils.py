@@ -21,7 +21,7 @@ import requests
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, readable_time
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -34,6 +34,7 @@ PACKAGE_DIRECTORY = Path(__file__).absolute().parent
 
 
 ALLOWED_DATA_TYPES = (
+    "area",
     "curvature",
     "sulcal",
     "thickness",
@@ -53,10 +54,6 @@ def md5_hash(string):
     m = hashlib.md5()
     m.update(string.encode("utf-8"))
     return m.hexdigest()
-
-
-def _format_time(t):
-    return f"{t / 60.0:4.1f}min" if t > 60 else f" {t:5.1f}s"
 
 
 def _md5_sum_file(path):
@@ -125,7 +122,7 @@ def _chunk_report_(
         logger.log(
             f"\rDownloaded {bytes_so_far} of {total_size} bytes "
             f"({total_percent * 100:.1f}%%, "
-            f"{_format_time(time_remaining)} remaining)",
+            f"{readable_time(time_remaining)} remaining)",
             verbose=verbose,
         )
 
@@ -704,13 +701,13 @@ def fetch_single_file(
     return full_name
 
 
-def get_dataset_descr(ds_name):
+def get_dataset_descr(ds_name: str) -> str:
     """Return the description of a dataset."""
     try:
         with (PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst").open(
             "rb"
         ) as rst_file:
-            descr = rst_file.read()
+            descr = rst_file.read().decode("utf-8")
     except OSError:
         descr = ""
 
@@ -720,10 +717,7 @@ def get_dataset_descr(ds_name):
             stacklevel=find_stack_level(),
         )
 
-    if isinstance(descr, bytes):
-        descr = descr.decode("utf-8")
-
-    return descr
+    return str(descr)
 
 
 def movetree(src, dst) -> None:

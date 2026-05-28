@@ -1,5 +1,5 @@
 ---
-# This workflow is triggered when a new commit is pushed to the main branch (or when a pull request is merged) and is also automatically run once a month.
+# This workflow is automatically run once a month.
 #
 # Checks that installing the minimum version of a given dependency of Nilearn
 # along with the latest version of all the other dependencies leads to a successful run of all the tests.
@@ -77,13 +77,8 @@ jobs:
             # do not run flaky tests when testing minimum version of dependencies
             continue-on-error: true
             run: |
-                pytest -m "not flaky" --pyargs nilearn --report=report.html --numprocesses auto --csv results/pytest_output/pytest_output.csv
-
-        -   name: Generate plots tests timing
-            if: success() || failure()
-            run: |
-                pip install tox
-                tox run -e plot_test_timing
+                pytest -m "not flaky and not single_process" --pyargs nilearn --report=report.html --numprocesses auto
+                pytest -m "not flaky and single_process" --pyargs nilearn
 
         -   name: Upload test report
             if: success() || failure()
@@ -91,13 +86,6 @@ jobs:
             with:
                 name: ${{ matrix.os }}_${{ matrix.min_dep }}_report.html
                 path: report.html
-
-        -   name: Upload test timings
-            if: success() || failure()
-            uses: actions/upload-artifact@v7
-            with:
-                name: ${{ matrix.os }}_${{ matrix.min_dep }}_pytest_output
-                path: results/pytest_output
 
         -   name: Create issue
             if: ${{ steps.test_minimum.outcome != 'success' }}

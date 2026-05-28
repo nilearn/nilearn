@@ -160,6 +160,7 @@ def test_to_color_strings(colors):
     assert to_color_strings(colors) == expected
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "threshold, cbar_vmin, cbar_vmax, vmin, vmax, expected_ticks",
     [

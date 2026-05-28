@@ -38,7 +38,7 @@ def check_html_view_img(html_view, title=None):
     assert "brain = brainsprite(" in str(html_view)
     assert "overlayImg" in str(html_view)
     if title is not None:
-        assert f"<title>{title}</title>" in str(html_view)
+        assert f"<title>Nilearn - {title}</title>" in str(html_view)
 
 
 def _simulate_img(affine=None):

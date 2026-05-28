@@ -228,7 +228,7 @@ class OrthoProjector(OrthoSlicer):
             nodes at one.
 
         %(colorbar)s
-            Default=False.
+            default=False.
         """
         # set defaults
         edge_kwargs = edge_kwargs or {}

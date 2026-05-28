@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ bg_color }}">
+    <head>
+        <title>Nilearn - {{ page_title }}</title>
+        <meta charset="UTF-8" />
+        <link rel="icon"
+              type="image/x-icon"
+              href="https://raw.githubusercontent.com/nilearn/nilearn/main/doc/logos/favicon.ico" />
+        <!-- djlint:off --><style>{% include "css/niivue.jinja" %}</style><!-- djlint:on -->
+        <script> {% include "js/niivue.umd.js" %} </script>
+        <script type="module" async> {% include "js/niivue.jinja" %} </script>
+        <script>
+            document.getElementById("gl").addEventListener("mouseup", () => {
+            document.getElementById("select-view").value = "custom";
+            });
+        </script>
+    </head>
+    <body>
+        <div id="page-title">{{ page_title }}</div>
+        <canvas id="gl"></canvas>
+        <footer>
+            <div id="toolbar">
+                <select id="select-view">
+                    <option value="left">view: Left</option>
+                    <option value="right">view: Right</option>
+                    <option value="front">view: Front</option>
+                    <option value="back">view: Back</option>
+                    <option value="top">view: Top</option>
+                    <option value="bottom">view: Bottom</option>
+                    <option value="custom">view: -</option>
+                </select>
+            </div>
+        </footer>
+    </body>
+</html>

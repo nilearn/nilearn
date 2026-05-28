@@ -57,6 +57,8 @@
 
 .. _Chloe Hampson: https://github.com/chlohamp
 
+.. _Chris Rorden: https://github.com/neurolabusc
+
 .. _Chris Gorgolewski: https://chrisgorgolewski.org/
 
 .. _Chris Markiewicz: https://github.com/effigies
@@ -283,6 +285,8 @@
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
+.. _Rishika Kapil: https://github.com/RishikaKaps
+
 .. _Robert Luke: https://github.com/rob-luke
 
 .. _Robert Williamson: https://github.com/RobWilliamson15
@@ -329,6 +333,8 @@
 
 .. _Tarun Samanta: https://github.com/SamantaTarun
 
+.. _Taylor Hanayik: https://github.com/hanayik
+
 .. _Taylor Salo: https://tsalo.github.io/
 
 .. _Tharun K: https://github.com/tharun634
@@ -348,6 +354,8 @@
 .. _Vincent Michel: https://github.com/vmichel
 
 .. _Virgile Fritsch: https://github.com/VirgileFritsch
+
+.. _Xichun Xu: https://github.com/XichunXu
 
 .. _Yaroslav Halchenko: https://github.com/yarikoptic
 
