@@ -19,7 +19,7 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
-from nilearn.typing import NiimgLike
+from nilearn.typing import ColorBar, NiimgLike, OutputFile, Title
 
 
 @fill_doc
@@ -223,12 +223,12 @@ def plot_bland_altman(
     ref_label="reference image",
     src_label="source image",
     figure=None,
-    title=None,
+    title: Title = None,
     cmap=DEFAULT_SEQUENTIAL_CMAP,
-    colorbar=True,
+    colorbar: ColorBar = True,
     gridsize=100,
     lims=None,
-    output_file=None,
+    output_file: OutputFile = None,
 ):
     """Create a Bland-Altman plot between 2 images.
 
@@ -497,6 +497,12 @@ def _sanitize_masker(masker, image_type, ref_img):
         masker = SurfaceMasker(mask_img=masker, standardize=None)
 
     if not masker.__sklearn_is_fitted__():
+        # ignore warning in case the masker
+        # was initialized with a mask image
+        warnings.filterwarnings(
+            "ignore",
+            message=r".*Generation of a mask.*",
+        )
         masker.fit(ref_img)
 
     return masker
