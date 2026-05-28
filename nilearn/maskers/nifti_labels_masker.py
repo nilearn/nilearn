@@ -812,7 +812,12 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             target_shape=imgs_.shape[:3],
             target_affine=imgs_.affine,
         )
+
+        # labels_after_resampling also include the background value,
+        # so its minimum value should be 1
         labels_after_resampling = set(np.unique(safe_get_data(labels_img_)))
+        # (using <= for some weird edge cases
+        # where we would not even get some background voxels)
         if len(labels_after_resampling) <= 1:
             raise ValueError(
                 "No label left after resampling the labels image."
