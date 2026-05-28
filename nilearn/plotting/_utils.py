@@ -1,3 +1,4 @@
+import contextlib
 from itertools import pairwise
 from numbers import Number
 from typing import Literal
@@ -15,7 +16,7 @@ DEFAULT_ENGINE: Literal["matplotlib"] = "matplotlib"
 DEFAULT_TICK_FORMAT = "%.2g"
 
 
-def set_mpl_backend(message: str | None = None) -> None:
+def set_mpl_backend() -> None:
     """Check if matplotlib is installed.
 
     If not installed, raise error and display warning to install necessary
@@ -33,48 +34,35 @@ def set_mpl_backend(message: str | None = None) -> None:
         Message to be prepended to standard warning when matplotlib is not
     installed.
     """
-    # We are doing local imports here to avoid polluting our namespace
-    try:
+    with contextlib.suppress(ImportError):
         import matplotlib
-    except ImportError:
-        warning = (
-            "Some dependencies of nilearn.plotting package seem to be missing."
-            "\nThey can be installed with:\n"
-            " pip install 'nilearn[plotting]'"
+
+    # When matplotlib was successfully imported we need to check
+    # that the version is greater that the minimum required one
+    mpl_version = getattr(matplotlib, "__version__", "0.0.0")
+    if not compare_version(mpl_version, ">=", OPTIONAL_MATPLOTLIB_MIN_VERSION):
+        raise ImportError(
+            f"A matplotlib version of at least "
+            f"{OPTIONAL_MATPLOTLIB_MIN_VERSION} "
+            f"is required to use nilearn. {mpl_version} was found. "
+            f"Please upgrade matplotlib."
         )
-        if message is not None:
-            warning = f"{message}\n{warning}"
-        warn(warning, stacklevel=find_stack_level())
-        raise
-    else:
-        # When matplotlib was successfully imported we need to check
-        # that the version is greater that the minimum required one
-        mpl_version = getattr(matplotlib, "__version__", "0.0.0")
-        if not compare_version(
-            mpl_version, ">=", OPTIONAL_MATPLOTLIB_MIN_VERSION
-        ):
-            raise ImportError(
-                f"A matplotlib version of at least "
-                f"{OPTIONAL_MATPLOTLIB_MIN_VERSION} "
-                f"is required to use nilearn. {mpl_version} was found. "
-                f"Please upgrade matplotlib."
-            )
-        current_backend = matplotlib.get_backend().lower()
+    current_backend = matplotlib.get_backend().lower()
 
-        try:
-            # Making sure the current backend is usable by matplotlib
-            matplotlib.use(current_backend)
-        except Exception:
-            # If not, switching to default agg backend
-            matplotlib.use("Agg")
-        new_backend = matplotlib.get_backend().lower()
+    try:
+        # Making sure the current backend is usable by matplotlib
+        matplotlib.use(current_backend)
+    except Exception:
+        # If not, switching to default agg backend
+        matplotlib.use("Agg")
+    new_backend = matplotlib.get_backend().lower()
 
-        if new_backend != current_backend:
-            # Matplotlib backend has been changed, let's warn the user
-            warn(
-                f"Backend changed to {new_backend}...",
-                stacklevel=find_stack_level(),
-            )
+    if new_backend != current_backend:
+        # Matplotlib backend has been changed, let's warn the user
+        warn(
+            f"Backend changed to {new_backend}...",
+            stacklevel=find_stack_level(),
+        )
 
 
 def engine_warning(engine: str) -> None:

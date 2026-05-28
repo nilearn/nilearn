@@ -1,11 +1,22 @@
 """Plotting code for nilearn."""
 
+import warnings
+
+from nilearn._utils.logger import find_stack_level
+
 try:
     import matplotlib  # noqa: F401
 except ImportError:
     # matplotlib is not installed; plotting functions are unavailable.
     # This allows the package to be imported (e.g. for pytest conftest
     # discovery) without crashing when matplotlib is absent.
+    warning = (
+        "Some dependencies of nilearn.plotting package seem to be missing."
+        "\nThey can be installed with:\n"
+        " pip install 'nilearn[plotting]'"
+    )
+    warnings.warn(warning, stacklevel=find_stack_level())
+
     __all__ = []
 else:
     from nilearn.plotting._utils import set_mpl_backend

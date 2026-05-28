@@ -8,7 +8,6 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
-from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
@@ -16,51 +15,13 @@ from nilearn.plotting._utils import (
 )
 
 
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="Test requires matplotlib not to be installed.",
-)
-def test_should_raise_custom_warning_if_mpl_not_installed():
-    """Tests if, when provided, custom message is displayed together with
-    default warning.
-    """
-    warning = "This package requires nilearn.plotting package."
-    with (
-        pytest.warns(UserWarning, match=warning + "\nSome dependencies"),
-        pytest.raises(
-            ModuleNotFoundError, match="No module named 'matplotlib'"
-        ),
-    ):
-        set_mpl_backend(warning)
-
-
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="Test requires matplotlib not to be installed.",
-)
-def test_should_raise_warning_if_mpl_not_installed():
-    """Tests if default warning is displayed when no custom message is
-    specified.
-    """
-    with (
-        pytest.warns(
-            UserWarning, match="Some dependencies of nilearn.plotting"
-        ),
-        pytest.raises(
-            ModuleNotFoundError, match="No module named 'matplotlib'"
-        ),
-    ):
-        set_mpl_backend()
-
-
 @pytest.mark.thread_unsafe
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Test requires matplotlib to be installed.",
-)
 @patch("matplotlib.use")
 @patch("matplotlib.get_backend", side_effect=["backend_1", "backend_2"])
-def test_should_raise_warning_if_backend_changes(*_):
+def test_should_raise_warning_if_backend_changes(
+    matplotlib_pyplot,  # noqa: ARG001
+    *_,
+):
     """Check backend values returned by matplotlib.get_backend are different.
     Warning should be raised to inform user of the backend switch.
     """
@@ -69,13 +30,12 @@ def test_should_raise_warning_if_backend_changes(*_):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Test requires matplotlib to be installed.",
-)
 @patch("matplotlib.use")
 @patch("matplotlib.get_backend", side_effect=["backend_1", "backend_1"])
-def test_should_not_raise_warning_if_backend_is_not_changed(*_):
+def test_should_not_raise_warning_if_backend_is_not_changed(
+    matplotlib_pyplot,  # noqa: ARG001
+    *_,
+):
     """Check backend values returned by matplotlib.get_backend are identical.
     Warning should not be raised.
     """
@@ -85,14 +45,13 @@ def test_should_not_raise_warning_if_backend_is_not_changed(*_):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Test requires matplotlib to be installed.",
-)
 @patch(
     "matplotlib.use", side_effect=[Exception("Failed to switch backend"), True]
 )
-def test_should_switch_to_agg_backend_if_current_backend_fails(use_mock):
+def test_should_switch_to_agg_backend_if_current_backend_fails(
+    matplotlib_pyplot,  # noqa: ARG001
+    use_mock,
+):
     """Check first call to `matplotlib.use` raises an exception,
     hence the default Agg backend should be triggered.
     """
@@ -104,12 +63,8 @@ def test_should_switch_to_agg_backend_if_current_backend_fails(use_mock):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Test requires matplotlib to be installed.",
-)
 @patch("matplotlib.__version__", "0.0.0")
-def test_should_raise_import_error_for_version_check():
+def test_should_raise_import_error_for_version_check(matplotlib_pyplot):  # noqa: ARG001
     """Check error version mpl."""
     with pytest.raises(ImportError, match="A matplotlib version of at least"):
         set_mpl_backend()
