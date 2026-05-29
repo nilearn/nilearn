@@ -259,17 +259,24 @@ def get_dataset_dir(
         if path.is_symlink():
             # Resolve path
             path = path.resolve()
-        if path.exists() and path.is_dir() and len(list(path.iterdir())) > 0:
+        if path.exists() and path.is_dir():
             logger.log(
                 f"Non empty dataset directory found: {path}",
                 verbose=verbose,
                 msg_level=1,
             )
-            logger.log(
-                " Note that some files still may be missing.",
-                verbose=verbose,
-                msg_level=2,
-            )
+            if len(list(path.iterdir())) > 0:
+                logger.log(
+                    " Dataset directory is empty",
+                    verbose=verbose,
+                    msg_level=1,
+                )
+            else:
+                logger.log(
+                    " Note that some files still may be missing.",
+                    verbose=verbose,
+                    msg_level=2,
+                )
             return path
 
     # If not, create a folder in the first writable directory
