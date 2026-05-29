@@ -1361,8 +1361,11 @@ def fetch_atlas_aal(
           The default was changed to '3v2'.
 
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -1425,6 +1428,13 @@ def fetch_atlas_aal(
     dataset_name = f"aal_{version}"
     opts = {"uncompress": True}
 
+    backup_url = {
+        "3v2": "https://osf.io/6jngh/download",
+        "SPM12": "https://osf.io/s94qg/download",
+        "SPM8": "https://osf.io/rkpeh/download",
+        "SPM5": "https://osf.io/948y2/download",
+    }
+
     if url is None:
         base_url = "https://www.gin.cnrs.fr/"
         if version == "SPM12":
@@ -1447,9 +1457,29 @@ def fetch_atlas_aal(
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    atlas_img, labels_file = fetch_files(
-        data_dir, filenames, resume=resume, verbose=verbose
-    )
+    try:
+        atlas_img, labels_file = fetch_files(
+            data_dir, filenames, resume=resume, verbose=verbose
+        )
+    except SSLError:
+        if version == "SPM12":
+            filenames = [
+                (Path("aal", "atlas", f), backup_url[version], opts)
+                for f in basenames
+            ]
+        elif version == "3v2":
+            filenames = [
+                (Path("AAL3", f), backup_url[version], opts) for f in basenames
+            ]
+        else:
+            filenames = [
+                (Path(f"aal_for_{version}", f), backup_url[version], opts)
+                for f in basenames
+            ]
+        atlas_img, labels_file = fetch_files(
+            data_dir, filenames, resume=resume, verbose=verbose
+        )
+
     fdescr = get_dataset_descr("aal")
     labels = ["Background"]
     indices = ["0"]
@@ -2043,9 +2073,9 @@ def _download_talairach(talairach_dir, verbose) -> None:
         # See https://github.com/nilearn/nilearn/issues/5896
         # A copy of the atlas was hence added
         # to Nilearn OSF
-        fall_back_atlas_url = "https://osf.io/x4b2w/download"
+        backup_url = "https://osf.io/x4b2w/download"
         temp_file = fetch_single_file(
-            fall_back_atlas_url, Path(temp_dir), verbose=verbose
+            backup_url, Path(temp_dir), verbose=verbose
         )
         shutil.move(temp_file, Path(temp_dir) / "talairach.nii")
         temp_file = Path(temp_dir) / "talairach.nii"
