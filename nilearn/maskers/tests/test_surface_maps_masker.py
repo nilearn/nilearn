@@ -184,7 +184,7 @@ def test_surface_maps_masker_mask_img_masks_all_maps_error(surf_mesh):
 
 
 @pytest.fixture
-def non_overlapping_maps(rng, surf_mesh):
+def non_overlapping_maps(surf_mesh):
     """Generate maps with non-overlapping regions.
 
     Each vertex belongs to only 1 region.
@@ -192,59 +192,27 @@ def non_overlapping_maps(rng, surf_mesh):
     data = {
         "left": np.asarray(
             [
-                [1, 0],
-                [0, 1],
-                [1, 0],
-                [0, 1],
+                [0, 0],
+                [0, 0],
+                [0, 0.1],
+                [0.7, 0],
             ]
         ),
         "right": np.asarray(
             [
-                [1, 0],
-                [0, 1],
-                [0, 1],
-                [0, 1],
+                [0, 0.6],
+                [0.3, 0],
+                [0, 0],
+                [0, 0],
                 [0, 0],
             ]
         ),
     }
-    # multiply with random "probability" values
-    data = {part: data[part] * rng.random(data[part].shape) for part in data}
     return SurfaceImage(surf_mesh, data)
 
 
 @pytest.fixture
-def overlapping_maps(rng, surf_mesh):
-    """Generate maps with overlapping regions.
-
-    Some vertices have non null value for 2 different regions.
-    """
-    data = {
-        "left": np.asarray(
-            [
-                [1, 1],  # overlap
-                [0, 1],
-                [1, 0],
-                [1, 1],  # overlap
-            ]
-        ),
-        "right": np.asarray(
-            [
-                [1, 0],
-                [1, 1],  # overlap
-                [0, 1],
-                [1, 1],  # overlap
-                [0, 0],
-            ]
-        ),
-    }
-    # multiply with random "probability" values
-    data = {part: data[part] * rng.random(data[part].shape) for part in data}
-    return SurfaceImage(surf_mesh, data)
-
-
-@pytest.fixture
-def overlapping_maps2(surf_mesh):
+def overlapping_maps(surf_mesh):
     """Generate maps with overlapping regions.
 
     Some vertices have non null value for 2 different regions.
@@ -273,91 +241,33 @@ def overlapping_maps2(surf_mesh):
 
 @pytest.mark.parametrize("allow_overlap", [True, False])
 def test_non_overlapping_maps(
-    allow_overlap, non_overlapping_maps, surf_img_2d
+    allow_overlap, non_overlapping_maps, surf_img_ones_1d
 ):
     """Test allow_overlap in SurfaceMapsMasker with non overlapping maps."""
     masker = SurfaceMapsMasker(
         non_overlapping_maps, allow_overlap=allow_overlap, standardize=None
     )
-    masker.fit()
-    surf_img = surf_img_2d(10)
-    region_signals = masker.fit_transform(surf_img)
+    region_signals = masker.fit_transform(surf_img_ones_1d)
     assert np.allclose(
         region_signals,
-        np.array(
-            [
-                [0.30, 13.22],
-                [16.12, 52.14],
-                [31.94, 91.07],
-                [47.77, 129.99],
-                [63.59, 168.92],
-                [79.41, 207.84],
-                [95.24, 246.77],
-                [111.06, 285.69],
-                [126.88, 324.61],
-                [142.70, 363.54],
-            ]
-        ),
+        np.array([[1.72, 1.89]]),
         atol=1e-02,
     )
 
 
 @pytest.mark.parametrize("allow_overlap", [True, False])
-def test_overlapping_maps(allow_overlap, overlapping_maps, surf_img_2d):
+def test_overlapping_maps(allow_overlap, overlapping_maps, surf_img_ones_1d):
     """Test allow_overlap in SurfaceMapsMasker with overlapping maps."""
     masker = SurfaceMapsMasker(
         overlapping_maps, allow_overlap=allow_overlap, standardize=None
     )
-    surf_img = surf_img_2d(10)
     if allow_overlap is False:
         with pytest.raises(ValueError, match="Overlap detected"):
-            masker.fit_transform(surf_img)
+            masker.fit_transform(surf_img_ones_1d)
     else:
-        region_signals = masker.fit_transform(surf_img)
+        region_signals = masker.fit_transform(surf_img_ones_1d)
         assert np.allclose(
             region_signals,
-            np.array(
-                [
-                    [2.76, 11.01],
-                    [5.71, 46.53],
-                    [8.65, 82.05],
-                    [11.60, 117.58],
-                    [14.54, 153.10],
-                    [17.49, 188.62],
-                    [20.43, 224.14],
-                    [23.38, 259.67],
-                    [26.32, 295.19],
-                    [29.26, 330.71],
-                ]
-            ),
+            np.array([[1.28, 1.02]]),
             atol=1e-02,
         )
-
-
-def test_overlapping_maps2(overlapping_maps2, surf_img_2d):
-    """Test `allow_overlap=True` in SurfaceMapsMasker with overlapping maps
-    containing only one vertex on each hemisphere.
-    """
-    masker = SurfaceMapsMasker(
-        overlapping_maps2, allow_overlap=True, standardize=None
-    )
-    surf_img = surf_img_2d(10)
-    region_signals = masker.fit_transform(surf_img)
-    assert np.allclose(
-        region_signals,
-        np.array(
-            [
-                [2.05, 15.64],
-                [-4.61, 102.30],
-                [-11.28, 188.97],
-                [-17.94, 275.64],
-                [-24.61, 362.30],
-                [-31.28, 448.97],
-                [-37.94, 535.64],
-                [-44.61, 622.30],
-                [-51.28, 708.97],
-                [-57.94, 795.64],
-            ]
-        ),
-        atol=1e-02,
-    )
