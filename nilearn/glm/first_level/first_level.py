@@ -1566,12 +1566,26 @@ def first_level_from_bids(
         a specific set of confounds by relying on confound loading strategies
         defined in :func:`~nilearn.interfaces.fmriprep.load_confounds`.
         If no kwargs are passed, ``first_level_from_bids`` will return
-        all the confounds available in the confounds TSV files.
+        all the confounds available in the confounds TSV files. If
+        no confounds are available, or if ``confounds_strategy`` is
+        set to ``None``, a list of ``None`` is returned for the confounds.
 
         .. nilearn_versionadded:: 0.10.3
 
     Examples
     --------
+    If you want to load only models, images and events:
+
+    .. code-block:: python
+
+        models, imgs, events, _ = first_level_from_bids(
+            dataset_path=path_to_a_bids_dataset,
+            task_label="TaskName",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=None,
+        )
+
     If you want to only load
     the rotation and translation motion parameters confounds:
 
@@ -1706,7 +1720,7 @@ def first_level_from_bids(
     if (
         drift_model is not None
         and kwargs_load_confounds is not None
-        and "high_pass" in kwargs_load_confounds.get("strategy")
+        and "high_pass" in kwargs_load_confounds.get("strategy", [])
     ):
         if drift_model == "cosine":
             verb = "duplicate"
@@ -2245,10 +2259,10 @@ def _get_confounds(
     )
     _check_confounds_list(confounds=confounds_files, imgs=imgs)
 
-    if not confounds_files:
+    if not confounds_files or kwargs_load_confounds is None:
         return None
 
-    if kwargs_load_confounds is None:
+    if len(kwargs_load_confounds) == 0:
         confounds = [
             pd.read_csv(c, sep="\t", index_col=None) for c in confounds_files
         ]
@@ -2391,8 +2405,12 @@ def _check_kwargs_load_confounds(**kwargs):
         "demean": True,
     }
 
-    if kwargs.get("confounds_strategy") is None:
+    if "confounds_strategy" in kwargs and kwargs["confounds_strategy"] is None:
+        kwargs.pop("confounds_strategy")
         return None, kwargs
+
+    elif "confounds_strategy" not in kwargs:
+        return {}, kwargs
 
     remaining_kwargs = kwargs.copy()
     kwargs_load_confounds = {}
