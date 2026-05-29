@@ -2754,6 +2754,9 @@ def fetch_openneuro_dataset(
 def fetch_localizer_first_level(data_dir=None, verbose=1):
     """Download a first-level localizer :term:`fMRI` dataset.
 
+    For more information
+    see the :ref:`dataset description <localizer_first_level_dataset>`.
+
     Parameters
     ----------
     %(data_dir)s
@@ -2775,6 +2778,8 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
         - slice_time_ref:
             slice timing reference used during slice timing correction
+
+        - %(template)s
 
     Notes
     -----
@@ -2803,6 +2808,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     data.description = description
     data.t_r = 2.4
     data.slice_time_ref = 0.5
+    data.template = "MNI305"
     return data
 
 
