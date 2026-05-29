@@ -2397,6 +2397,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
             downloaded_files = fetch_files(
                 data_dir, files_spec, resume=True, verbose=verbose
             )
+            uncompress_file(downloaded_files[0])
     except Exception:
         # The files_spec needed for fetch_files
         files_spec = [
@@ -2408,7 +2409,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
             downloaded_files = fetch_files(
                 data_dir, files_spec, resume=True, verbose=verbose
             )
-    uncompress_file(downloaded_files[0])
+            uncompress_file(downloaded_files[0])
 
     file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
 
