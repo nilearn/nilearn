@@ -2351,6 +2351,9 @@ def _reduce_confounds(regressors, keep_confounds):
 def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     """Download language localizer demo dataset.
 
+    For more information
+    see the :ref:`dataset description <language_localizer_dataset>`.
+
     Parameters
     ----------
     %(data_dir)s
