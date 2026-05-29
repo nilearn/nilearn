@@ -39,7 +39,7 @@ def _tfce_design():
 
     mask_img = Nifti1Image(np.ones((3, 3, 3)), np.eye(4))
     masker = NiftiMasker(mask_img)
-    masker.fit(mask_img)
+    masker.fit()
 
     n_descriptors = np.prod(mask_img.shape)
     n_regressors = 1  # tested_var is 1D
@@ -97,7 +97,7 @@ def masker(affine_eye) -> NiftiMasker:
     """Return a default masker."""
     mask_img = Nifti1Image(np.ones((5, 5, 5)), affine_eye)
     masker = NiftiMasker(mask_img)
-    masker.fit(mask_img)
+    masker.fit()
     return masker
 
 

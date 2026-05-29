@@ -1242,7 +1242,7 @@ def test_decoder_screening_percentile_surface_default(
 
 @ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.thread_unsafe
-@pytest.mark.parametrize("perc", [None, 100, 0])
+@pytest.mark.parametrize("perc", [None, 100])
 def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
     """Test passing screening percentile with surface image."""
     X, y = _make_surface_class_data
@@ -1257,6 +1257,21 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
         assert model.screening_percentile_ == 100
     else:
         assert model.screening_percentile_ == perc
+
+
+@ignore_warnings(category=ConvergenceWarning)
+@pytest.mark.thread_unsafe
+def test_decoder_no_feature_left_error(_make_surface_class_data) -> None:
+    """Raise error when no feature is left."""
+    X, y = _make_surface_class_data
+
+    model = Decoder(
+        mask=SurfaceMasker(),
+        screening_percentile=0,
+        standardize="zscore_sample",
+    )
+    with pytest.raises(RuntimeError, match="No feature left for training"):
+        model.fit(X, y)
 
 
 @pytest.mark.thread_unsafe
