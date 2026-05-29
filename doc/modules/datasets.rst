@@ -157,7 +157,6 @@ Datasets descriptions
 
     description/ABIDE_pcp.rst
     description/adhd.rst
-    description/bids_langloc.rst
     description/development_fmri.rst
     description/ds000030.rst
     description/fiac.rst

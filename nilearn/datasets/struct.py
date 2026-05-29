@@ -888,6 +888,7 @@ def fetch_surf_fsaverage(
         Dictionary-like object,
         where each value is a path to a Gifti file
         and the keys are:
+
          - 'flat_left':    left hemisphere flat surface :term:`mesh`
          - 'flat_right':   right hemisphere flat surface :term:`mesh`
          - 'infl_left':    left hemisphere inflated pial surface :term:`mesh`
