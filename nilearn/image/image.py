@@ -12,7 +12,7 @@ import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Literal, TypeGuard, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeGuard, get_args, overload
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -57,7 +57,14 @@ from nilearn.surface.surface import (
 )
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
-from nilearn.typing import ClusterThreshold, NiimgLike
+from nilearn.typing import (
+    ClusterThreshold,
+    HighPass,
+    LowPass,
+    NiimgLike,
+    Standardize,
+    Tr,
+)
 
 
 def is_volume_image(imgs) -> bool:
@@ -1368,7 +1375,7 @@ def threshold_img(
 
     check_params(locals())
 
-    if not isinstance(img, (*NiimgLike, SurfaceImage)):
+    if not isinstance(img, (*get_args(NiimgLike), SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
             f"Got {img.__class__.__name__}."
@@ -1528,14 +1535,14 @@ def math_img(
 def math_img(
     formula: str,
     copy_header_from: str | None = None,
-    **imgs: Nifti1Image | str | Path,
+    **imgs: NiimgLike,
 ) -> Nifti1Image: ...
 
 
 def math_img(
     formula: str,
     copy_header_from: str | None = None,
-    **imgs: Nifti1Image | str | Path | SurfaceImage,
+    **imgs: NiimgLike | SurfaceImage,
 ) -> SurfaceImage | Nifti1Image:
     """Interpret a numpy based string formula using niimg in named parameters.
 
@@ -1815,20 +1822,52 @@ def binarize_img(
     )
 
 
+@overload
+def clean_img(
+    imgs: SurfaceImage,
+    runs: np.ndarray | None = ...,
+    detrend: bool = ...,
+    standardize: Standardize = ...,
+    confounds=...,
+    low_pass: LowPass = ...,
+    high_pass: HighPass = ...,
+    t_r: Tr = ...,
+    ensure_finite: bool = ...,
+    mask_img: SurfaceImage | None = ...,
+    **kwargs,
+) -> SurfaceImage: ...
+
+
+@overload
+def clean_img(
+    imgs: NiimgLike | list[NiimgLike],
+    runs: np.ndarray | None = ...,
+    detrend: bool = ...,
+    standardize: Standardize = ...,
+    confounds=...,
+    low_pass: LowPass = ...,
+    high_pass: HighPass = ...,
+    t_r: Tr = ...,
+    ensure_finite: bool = ...,
+    mask_img: NiimgLike | None = ...,
+    **kwargs,
+) -> Nifti1Image: ...
+
+
 @fill_doc
 def clean_img(
-    imgs,
-    runs=None,
-    detrend=True,
-    standardize=True,
+    imgs: SurfaceImage | NiimgLike | list[NiimgLike],
+    runs: np.ndarray | None = None,
+    detrend: bool = True,
+    standardize: Standardize = True,
     confounds=None,
-    low_pass=None,
-    high_pass=None,
-    t_r=None,
-    ensure_finite=False,
-    mask_img=None,
+    low_pass: LowPass = None,
+    high_pass: HighPass = None,
+    t_r: Tr = None,
+    ensure_finite: bool = False,
+    mask_img: SurfaceImage | NiimgLike | None = None,
     **kwargs,
-):
+) -> SurfaceImage | Nifti1Image:
     """Improve :term:`SNR` on masked :term:`fMRI` signals.
 
     This function can do several things on the input signals, in
@@ -1890,7 +1929,7 @@ def clean_img(
 
     %(high_pass)s
 
-    t_r : :obj:`float`, default=None
+    t_r : :obj:`float`, :obj:`int` or None, default=None
         Repetition time, in second (sampling period). Set to None if not
         specified. Mandatory if used together with `low_pass` or `high_pass`.
 
@@ -1944,15 +1983,28 @@ def clean_img(
     if (low_pass is not None or high_pass is not None) and t_r is None:
         # We raise an error, instead of using the header's t_r as this
         # value is considered to be non-reliable
+        extra = ""
+        if not isinstance(imgs, SurfaceImage):
+            imgs_ = check_niimg_4d(imgs)
+
+            if TYPE_CHECKING:
+                # dirty type narrowing for static type checking
+                assert isinstance(imgs, Nifti1Image)
+
+            extra = (
+                f"imgs header suggest it to be {imgs.header.get_zooms()[3]}"
+            )
         raise ValueError(
             "Repetition time (t_r) must be specified for filtering. "
             "You specified None. "
-            f"imgs header suggest it to be {imgs.header.get_zooms()[3]}"
+            f"{extra}"
         )
 
     clean_kwargs = {
         k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
     }
+
+    check_compatibility_mask_and_images(mask_img, imgs)
 
     if isinstance(imgs, SurfaceImage):
         imgs.data._check_ndims(2, "imgs")
@@ -1974,7 +2026,7 @@ def clean_img(
             )
             data[p] = data[p].T
 
-        if mask_img is not None:
+        if isinstance(mask_img, SurfaceImage):
             mask_img = masking.load_mask_img(mask_img)[0]
             for hemi in mask_img.data.parts:
                 mask = mask_img.data.parts[hemi]
@@ -2005,15 +2057,13 @@ def clean_img(
     )
 
     # Put results back into Niimg-like object
-    if mask_img is not None:
-        imgs_ = masking.unmask(data, mask_img)
+    if isinstance(mask_img, NiimgLike):
+        return masking.unmask(data, mask_img)
     elif "sample_mask" in clean_kwargs:
         sample_shape = imgs_.shape[:3] + clean_kwargs["sample_mask"].shape
-        imgs_ = new_img_like(imgs_, data.T.reshape(sample_shape))
+        return new_img_like(imgs_, data.T.reshape(sample_shape))
     else:
-        imgs_ = new_img_like(imgs_, data.T.reshape(imgs_.shape))
-
-    return imgs_
+        return new_img_like(imgs_, data.T.reshape(imgs_.shape))
 
 
 @fill_doc
