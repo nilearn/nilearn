@@ -2070,7 +2070,9 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     level_name : {'hemisphere', 'lobe', 'gyrus', 'tissue', 'ba'}
         Which level of the atlas to use: the hemisphere, the lobe, the gyrus,
         the tissue type or the Brodmann area.
+
     %(data_dir)s
+
     %(verbose)s
 
     Returns
