@@ -261,7 +261,14 @@ def get_dataset_dir(
             path = path.resolve()
         if path.exists() and path.is_dir():
             logger.log(
-                f"Dataset found in {path}", verbose=verbose, msg_level=1
+                f"Dataset directory found in {path}",
+                verbose=verbose,
+                msg_level=1,
+            )
+            logger.log(
+                " Note that some files still may be missing.",
+                verbose=verbose,
+                msg_level=2,
             )
             return path
 
@@ -846,6 +853,12 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             overwrite
             or (not target_file.exists() and not temp_target_file.exists())
         ):
+            logger.log(
+                f"Downloading missing file: {target_file}",
+                verbose=verbose,
+                msg_level=2,
+            )
+
             # We may be in a global read-only repository. If so, we cannot
             # download files.
             if not os.access(data_dir, os.W_OK):
