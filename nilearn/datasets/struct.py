@@ -57,13 +57,19 @@ FSAVERAGE5_PATH = PACKAGE_DIRECTORY / "data" / "fsaverage5"
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
+
     %(templateflow)s
 
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -115,8 +121,6 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     -----
     %(fetcher_note)s
 
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
     """
     check_params(locals())
 
