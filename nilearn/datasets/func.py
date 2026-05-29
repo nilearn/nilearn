@@ -287,15 +287,22 @@ def adhd_ids():
 def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ADHD :term:`resting-state` dataset.
 
+    For more information
+    see the :ref:`dataset description <adhd_dataset>`.
+
     Parameters
     ----------
     n_subjects : :obj:`int`, default=30
         The number of subjects to load from maximum of 40 subjects.
         By default, 30 subjects will be loaded. If None is given,
         all 40 subjects will be loaded.
+
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -318,12 +325,6 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     Notes
     -----
     %(fetcher_note)s
-
-    See :footcite:t:`ADHDdataset`.
-
-    References
-    ----------
-    .. footbibliography::
 
     """
     check_params(locals())
