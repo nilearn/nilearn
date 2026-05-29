@@ -23,13 +23,11 @@ import numpy as np
 import pandas as pd
 
 from nilearn.datasets import fetch_haxby
-from nilearn.image import load_img
 
 # We fetch 2nd subject from haxby datasets (which is default)
 haxby_dataset = fetch_haxby()
 
 # print basic information on the dataset
-print(f"Anatomical nifti image (3D) is located at: {haxby_dataset.mask}")
 print(f"Functional nifti image (4D) is located at: {haxby_dataset.func[0]}")
 
 fmri_filename = haxby_dataset.func[0]
@@ -174,17 +172,20 @@ print(f"Runs (groups): {np.unique(run)}")
 
 # %%
 # Perform searchlight analysis, using the CorrelationMVPA estimator
-# defined above
+# defined above.
+#
+# We also compute a binary mask to restrict
 from nilearn.decoding import SearchLight
+from nilearn.masking import compute_epi_mask
 
-mask_img = load_img(haxby_dataset.mask)
+mask_img = compute_epi_mask(fmri_img)
 
 searchlight = SearchLight(
     mask_img=mask_img,
-    process_mask_img=None,
+    process_mask_img=mask_img,
     radius=5.6,
     n_jobs=2,
-    verbose=1,
+    verbose=0,
     estimator=CorrelationMVPA(labels=("face", "house")),
 )
 searchlight.fit(imgs=fmri_img, y=y, groups=run)
@@ -192,21 +193,20 @@ scores_img = searchlight.scores_img_
 
 # %%
 # Visualize the searchlight scores
-from nilearn.plotting import plot_img
+from matplotlib import pyplot as plt
+
+from nilearn.plotting import plot_stat_map, show
 
 mean_fmri = mean_img(fmri_img)
 
-plot_img(
+plot_stat_map(
     scores_img,
     bg_img=mean_fmri,
     title="Searchlight scores (face vs house)",
-    display_mode="z",
-    cut_coords=[-9],
-    vmin=0.0,
     threshold=0.15,
-    cmap="inferno",
     black_bg=True,
-    colorbar=True,
+    figure=plt.figure(figsize=(6, 4)),
+    symmetric_cbar=True,
 )
 
-# %%
+show()
