@@ -2072,9 +2072,8 @@ def _download_talairach(talairach_dir, verbose) -> None:
 def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach :term:`Deterministic atlas`.
 
-    For more information, see :footcite:t:`talairach_atlas`,
-    :footcite:t:`Lancaster2000`,
-    and :footcite:t:`Lancaster1997`.
+    For more information,
+    see the :ref:`dataset description <talairach_atlas>`.
 
     .. nilearn_versionadded:: 0.4.0
 
