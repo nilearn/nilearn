@@ -10,6 +10,7 @@ from xml.etree import ElementTree
 import numpy as np
 import pandas as pd
 from nibabel import freesurfer, load
+from requests.exceptions import SSLError
 from sklearn.utils import Bunch
 
 from nilearn._utils import logger
@@ -26,6 +27,7 @@ from nilearn._utils.param_validation import (
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
+    fetch_single_file,
     get_dataset_descr,
     get_dataset_dir,
 )
@@ -2037,22 +2039,33 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
 
 def _download_talairach(talairach_dir, verbose) -> None:
     """Download the Talairach atlas and separate the different levels."""
-    atlas_url = "https://www.talairach.org/talairach.nii"
     temp_dir = mkdtemp()
     try:
+        atlas_url = "https://www.talairach.org/talairach.nii"
         temp_file = fetch_files(
             temp_dir, [("talairach.nii", atlas_url, {})], verbose=verbose
         )[0]
-        atlas_img = load(temp_file, mmap=False)
-        atlas_img = check_niimg(atlas_img)
-        labels_text = atlas_img.header.extensions[0].get_content()
-        multi_labels = labels_text.strip().decode("utf-8").split("\n")
-        labels = [lab.split(".") for lab in multi_labels]
-        _separate_talairach_levels(
-            atlas_img, labels, talairach_dir, verbose=verbose
+    except SSLError:
+        # See https://github.com/nilearn/nilearn/issues/5896
+        # A copy of the atlas was hence added
+        # to Nilearn OSF
+        fall_back_atlas_url = "https://osf.io/x4b2w/download"
+        temp_file = fetch_single_file(
+            fall_back_atlas_url, Path(temp_dir), verbose=verbose
         )
-    finally:
-        shutil.rmtree(temp_dir)
+        shutil.move(temp_file, Path(temp_dir) / "talairach.nii")
+        temp_file = Path(temp_dir) / "talairach.nii"
+
+    atlas_img = load(temp_file, mmap=False)
+    atlas_img = check_niimg(atlas_img)
+    labels_text = atlas_img.header.extensions[0].get_content()
+    multi_labels = labels_text.strip().decode("utf-8").split("\n")
+    labels = [lab.split(".") for lab in multi_labels]
+    _separate_talairach_levels(
+        atlas_img, labels, talairach_dir, verbose=verbose
+    )
+
+    shutil.rmtree(temp_dir)
 
 
 @fill_doc

@@ -521,9 +521,9 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
 @fill_doc
 def fetch_single_file(
     url,
-    data_dir,
-    resume=True,
-    overwrite=False,
+    data_dir: Path,
+    resume: bool = True,
+    overwrite: bool = False,
     md5sum=None,
     username=None,
     password=None,
@@ -535,8 +535,11 @@ def fetch_single_file(
     Parameters
     ----------
     %(url)s
+
     %(data_dir)s
+
     %(resume)s
+
     overwrite : bool, default=False
         If true and file already exists, delete it.
 
