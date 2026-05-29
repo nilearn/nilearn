@@ -184,6 +184,9 @@ def load_mni152_template(resolution=None) -> Nifti1Image:
     re-scaled 1mm-resolution version of the :term:`MNI` ICBM152 T1 template
     and re-samples it using a different resolution, if specified.
 
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
+
     %(templateflow)s
 
     Parameters
@@ -207,11 +210,6 @@ def load_mni152_template(resolution=None) -> Nifti1Image:
 
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
-
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     check_params(locals())
@@ -245,6 +243,9 @@ def load_mni152_gm_template(resolution=None):
     MNI ICBM152 template and re-samples it using a different resolution,
     if specified.
 
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
+
     %(templateflow)s
 
     .. nilearn_versionadded:: 0.8.1
@@ -265,11 +266,6 @@ def load_mni152_gm_template(resolution=None):
 
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
-
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     check_params(locals())
@@ -304,6 +300,9 @@ def load_mni152_wm_template(resolution=None):
     and re-samples it using a different
     resolution, if specified.
 
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
+
     %(templateflow)s
 
     .. nilearn_versionadded:: 0.8.1
@@ -324,11 +323,6 @@ def load_mni152_wm_template(resolution=None):
 
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template.
-
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     check_params(locals())
@@ -361,6 +355,9 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
     This function takes the whole-brain MNI152 T1 template and threshold it,
     in order to obtain the corresponding whole-brain mask.
 
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
+
     %(templateflow)s
 
     .. nilearn_versionadded:: 0.2.5
@@ -383,11 +380,6 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
     nilearn.datasets.load_mni152_template : for details about version of the
         MNI152 T1 template and related.
 
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
-
     """
     check_params(locals())
 
@@ -407,6 +399,9 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     This function takes the grey-matter MNI152 template and threshold it, in
     order to obtain the corresponding grey-matter mask.
+
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     %(templateflow)s
 
@@ -434,11 +429,6 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template and related.
 
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
-
     """
     check_params(locals())
 
@@ -463,6 +453,9 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     This function takes the white-matter MNI152 template and threshold it, in
     order to obtain the corresponding white-matter mask.
+
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     %(templateflow)s
 
@@ -490,11 +483,6 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template and related.
 
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
-
     """
     check_params(locals())
 
@@ -518,6 +506,9 @@ def fetch_icbm152_brain_gm_mask(
     data_dir=None, threshold=0.2, resume=True, n_iter=2, verbose=1
 ):
     """Download ICBM152 template first, then loads the 'gm' mask.
+
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
      %(templateflow)s
 
@@ -567,8 +558,6 @@ def fetch_icbm152_brain_gm_mask(
     .. note::
         It is advised to check the mask image with your own data processing.
 
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
     """
     check_params(locals())
 
@@ -647,6 +636,9 @@ def fetch_oasis_vbm(
 ):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
+    For more information
+    see the :ref:`dataset description <oasis_maps>`.
+
     ..  admonition:: Data Usage Agreement
         :class: attention
 
@@ -686,8 +678,6 @@ def fetch_oasis_vbm(
     -----
     %(fetcher_note)s
 
-    For more information
-    see the :ref:`dataset description <oasis_maps>`.
     """
     check_params(locals())
 

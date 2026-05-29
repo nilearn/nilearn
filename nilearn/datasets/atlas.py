@@ -1775,15 +1775,17 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Allen and MIALAB :term:`ICA` \
     :term:`Probabilistic atlas` (dated 2011).
 
-    See :footcite:t:`Allen2011`.
-
-    The provided images are in MNI152 space.
+    For more information
+    see the :ref:`dataset description <allen_2011_atlas>`.
 
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -1824,18 +1826,10 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
         - %(template)s
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
     %(fetcher_note)s
 
-    License: unknown
-
-    See https://trendscenter.org/data/ for more information
-    on this dataset.
     """
     check_params(locals())
 

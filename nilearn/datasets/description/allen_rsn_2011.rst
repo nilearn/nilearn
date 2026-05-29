@@ -12,6 +12,14 @@ Notes
 Collection of :term:`resting-state` network templates
 extracted from 600 healthy subjects :term:`fMRI` data.
 
+The provided images are in MNI152 space.
+
+For more information on this dataset's structure, see:
+https://trendscenter.org/data/
+
+Slices and label of the RSN ICs:
+https://www.frontiersin.org/files/Articles/2093/fnsys-05-00002-HTML/image_m/fnsys-05-00002-g004.jpg
+
 Content
 -------
     :"maps": T-maps of all 75 unthresholded components.
@@ -24,12 +32,6 @@ References
 ----------
 
 .. footbibliography::
-
-For more information on this dataset's structure, see:
-https://trendscenter.org/data/
-
-Slices and label of the RSN ICs:
-https://www.frontiersin.org/files/Articles/2093/fnsys-05-00002-HTML/image_m/fnsys-05-00002-g004.jpg
 
 License
 -------

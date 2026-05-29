@@ -1518,6 +1518,9 @@ def fetch_megatrawls_netmats(
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects.
 
+    For more information
+    see the :ref:`dataset description <megatrawls_maps>`.
+
     ..  admonition:: Technical details
         :class: important
 
@@ -1582,9 +1585,6 @@ def fetch_megatrawls_netmats(
     Notes
     -----
     %(fetcher_note)s
-
-    For more information
-    see the :ref:`dataset description <megatrawls_maps>`.
 
     """
     check_params(locals())
@@ -1759,6 +1759,9 @@ def fetch_surf_nki_enhanced(
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
+    For more information
+    see the :ref:`dataset description <nki_dataset>`.
+
     .. nilearn_versionadded:: 0.3
 
     Parameters
@@ -1799,8 +1802,6 @@ def fetch_surf_nki_enhanced(
     -----
     %(fetcher_note)s
 
-    For more information
-    see the :ref:`dataset description <nki_dataset>`.
     """
     check_params(locals())
 
@@ -1906,6 +1907,9 @@ def load_nki(
 ):
     """Load NKI enhanced surface data into a surface object.
 
+    For more information
+    see the :ref:`dataset description <nki_dataset>`.
+
     .. nilearn_versionadded:: 0.11.0
 
     Parameters
@@ -1941,10 +1945,6 @@ def load_nki(
     list of SurfaceImage objects
         One image per subject.
 
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <nki_dataset>`.
     """
     check_params(locals())
     check_parameter_in_allowed(mesh_type, ALLOWED_MESH_TYPES, "mesh_type")
@@ -3115,6 +3115,9 @@ def fetch_spm_multimodal_fmri(
 def fetch_fiac_first_level(data_dir=None, verbose=1):
     """Download a first-level fiac :term:`fMRI` dataset (2 runs).
 
+    For more information
+    see the :ref:`dataset description <fiac_dataset>`.
+
     Parameters
     ----------
     %(data_dir)s
@@ -3138,9 +3141,6 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     Notes
     -----
     %(fetcher_note)s
-
-    For more information
-    see the :ref:`dataset description <fiac_dataset>`.
 
     """
     check_params(locals())
