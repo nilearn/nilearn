@@ -1325,14 +1325,8 @@ def fetch_atlas_aal(
 ):
     """Download and returns the AAL template for :term:`SPM` 12.
 
-    This :term:`Deterministic atlas` is the result of an automated anatomical
-    parcellation of the spatially normalized single-subject high-resolution
-    T1 volume provided by the Montreal Neurological Institute (:term:`MNI`)
-    (D. L. Collins et al., 1998, Trans. Med. Imag. 17, 463-468, PubMed).
-
-    For more information on this dataset's structure,
-    see :footcite:t:`AAL_atlas`,
-    and :footcite:t:`Tzourio-Mazoyer2002`.
+    For more information
+    see the :ref:`dataset description <aal_atlas>`.
 
     .. warning::
 
@@ -1408,15 +1402,10 @@ def fetch_atlas_aal(
 
         - %(atlas_type)s
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
     %(fetcher_note)s
 
-    License: unknown.
     """
     check_params(locals())
 
