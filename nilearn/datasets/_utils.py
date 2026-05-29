@@ -259,9 +259,9 @@ def get_dataset_dir(
         if path.is_symlink():
             # Resolve path
             path = path.resolve()
-        if path.exists() and path.is_dir():
+        if path.exists() and path.is_dir() and len(list(path.iterdir())) > 0:
             logger.log(
-                f"Dataset directory found in {path}",
+                f"Non empty dataset directory found: {path}",
                 verbose=verbose,
                 msg_level=1,
             )
