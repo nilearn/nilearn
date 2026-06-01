@@ -77,7 +77,7 @@ Fixes
 
 - :bdg-dark:`Code` Raise error when maps (or labels) images contain no map (or label) after resampling by :class:`~nilearn.maskers.NiftiMapsMasker` (or :class:`~nilearn.maskers.NiftiLabelsMasker`) (:gh:`6240` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Fix missing subjects from ADHD dataset phenotypic data. (:gh:`` by `Hande Gözükan`_).
+- :bdg-dark:`Code` Fix missing subjects in ADHD dataset phenotypic data. (:gh:`6250` by `Hande Gözükan`_).
 
 
 Enhancements
