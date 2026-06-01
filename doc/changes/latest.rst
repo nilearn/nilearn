@@ -77,6 +77,8 @@ Fixes
 
 - :bdg-dark:`Code` Raise error when maps (or labels) images contain no map (or label) after resampling by :class:`~nilearn.maskers.NiftiMapsMasker` (or :class:`~nilearn.maskers.NiftiLabelsMasker`) (:gh:`6240` by `Rémi Gau`_).
 
+- :bdg-info:`Maskers` Fix :class:`~nilearn.maskers.SurfaceMapsMasker` to use ``allow_overlap`` parameter (:gh:`6211` by `Rémi Gau`_ and `Hande Gözükan`_).
+
 - :bdg-info:`Plotting` Fix colors while plotting ROI contours with ``nilearn.plotting.plot_roi`` (:gh:`6245` by `Hande Gözükan`_).
 
 
