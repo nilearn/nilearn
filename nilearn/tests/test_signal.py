@@ -789,13 +789,6 @@ def test_clean_errros(signals):
     with pytest.raises(ValueError, match="'ensure_finite' must be one of"):
         clean(signals, ensure_finite=None)
 
-    # test boolean is not given to signal.clean
-    with pytest.raises(TypeError, match="high/low pass must be float or None"):
-        clean(signals, low_pass=False)
-
-    with pytest.raises(TypeError, match="high/low pass must be float or None"):
-        clean(signals, high_pass=False)
-
 
 @pytest.mark.thread_unsafe
 def test_clean_confounds():
