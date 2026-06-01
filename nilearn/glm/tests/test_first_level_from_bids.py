@@ -739,6 +739,33 @@ def test_all_confounds_missing(tmp_path_factory):
         assert condounds_ is None
 
 
+@pytest.mark.parametrize("n_sub", [1, 2])
+def test_confounds_strategy_none(tmp_path, n_sub):
+    """If confounds_strategy is None, \
+    confounds should be an array of None.
+    """
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        n_runs=[1, 2],
+        spaces=["MNI152NLin2009cAsym"],
+    )
+    models, imgs, events, confounds = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label=None,
+        img_filters=[("desc", "preproc")],
+        slice_time_ref=0.0,
+        confounds_strategy=None,
+    )
+
+    assert len(models) == len(imgs)
+    assert len(models) == len(events)
+    assert len(models) == len(confounds)
+    for c in confounds:
+        assert c is None
+
+
 def test_no_derivatives(tmp_path):
     """Raise error if the derivative folder does not exist."""
     bids_path = create_fake_bids_dataset(
