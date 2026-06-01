@@ -8,6 +8,8 @@ https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-f
 import numpy as np
 import pytest
 
+pytest.importorskip("matplotlib")
+
 from nilearn.datasets import (
     load_fsaverage_data,
     load_mni152_gm_mask,
