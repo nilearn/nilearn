@@ -221,6 +221,7 @@ def canica_data(
             shape_3d_large,
             rng,
             n_subjects,
+            n_timepoints=175,
         )
 
     else:
@@ -274,7 +275,7 @@ def _make_canica_components(
     )
 
 
-def _canica_components_volume(shape):
+def _canica_components_volume(shape) -> np.ndarray:
     """Create 4 volume components."""
     component1 = np.zeros(shape)
     component1[:5, :10] = 1
@@ -330,7 +331,7 @@ def _make_surface_data_from_components(
     n_left = mesh.parts["left"].coordinates.shape[0]
 
     if weights is None:
-        weights = rng.normal(size=(n_timepoints, n_components))
+        weights = np.abs(rng.normal(size=(n_timepoints, n_components)))
 
     data_all = weights @ components + 0.01 * rng.normal(
         size=(n_timepoints, components.shape[1])
@@ -360,7 +361,7 @@ def _make_volume_data_from_components(
 
     for _ in range(n_subjects):
         this_data = np.dot(
-            rng.normal(size=(n_timepoints, N_COMPONENTS)), components
+            np.abs(rng.normal(size=(n_timepoints, N_COMPONENTS))), components
         )
         this_data += 0.01 * rng.normal(size=this_data.shape)
 
