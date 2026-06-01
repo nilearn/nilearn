@@ -471,7 +471,7 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
     ]
 
     # check content of a new report
-    report = model.generate_report(contrasts=["AAA-BBB"], **KWARGS)
+    report = model.generate_report(["AAA-BBB"], **KWARGS)
 
     assert "AAA-BBB" in report.__str__()
     assert "BBB-AAA" not in report.__str__()

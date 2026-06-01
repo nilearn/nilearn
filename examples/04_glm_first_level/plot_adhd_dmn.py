@@ -125,7 +125,7 @@ print(f"Save z-map in '{filename}'.")
 # which we do here.
 
 report = first_level_model.generate_report(
-    contrasts=contrasts,
+    contrasts,
     title="ADHD DMN Report",
     cluster_threshold=15,
     min_distance=8.0,

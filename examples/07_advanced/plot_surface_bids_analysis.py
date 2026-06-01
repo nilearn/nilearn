@@ -173,7 +173,7 @@ design_matrix = pd.DataFrame([1] * len(z_scores), columns=["intercept"])
 second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
 
 report_slm = second_level_glm.generate_report(
-    contrasts=["intercept"],
+    ["intercept"],
     threshold=threshold,
     height_control=None,
     alpha=0.001,

@@ -479,7 +479,7 @@ def save_glm_to_bids(
             )
             glm_report = model.generate_report(**kwargs)
         else:
-            glm_report = model.generate_report(contrasts=contrasts, **kwargs)
+            glm_report = model.generate_report(contrasts, **kwargs)
 
     model.verbose += 1
     glm_report.save_as_html(out_dir / f"{prefix}report.html")

@@ -36,6 +36,7 @@ from nilearn.typing import ClusterThreshold, HeightControl
 
 class GLMReportMixin(ReportMixin):
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "engine": "matplotlib",
         "model_type": "",
         "smoothing_fwhm": None,
         "contrasts": None,
@@ -125,10 +126,9 @@ class GLMReportMixin(ReportMixin):
     @fill_doc
     def generate_report(
         self,
-        engine="matplotlib",
-        title: str | None = None,
         contrasts=None,
         first_level_contrast=None,
+        title: str | None = None,
         bg_img="MNI152TEMPLATE",
         threshold: float | int | np.floating | np.integer | None = None,
         alpha=0.001,
@@ -140,6 +140,7 @@ class GLMReportMixin(ReportMixin):
         cut_coords=None,
         display_mode=None,
         report_dims=(1600, 800),
+        engine="matplotlib",
     ) -> HTMLReport:
         """Generate an HTML report which shows all important aspects of a
         fitted :term:`GLM`.
