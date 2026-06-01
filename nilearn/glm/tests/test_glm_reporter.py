@@ -443,7 +443,7 @@ def test_masking_first_level_model(contrasts):
         rk,
     )
     masker = NiftiMasker(mask_img=mask, standardize=None)
-    masker.fit(fmri_data)
+    masker.fit()
     flm = FirstLevelModel(mask_img=masker).fit(
         fmri_data, design_matrices=design_matrices
     )

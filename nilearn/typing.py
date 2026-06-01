@@ -28,6 +28,8 @@ from numpy import ndarray
 from numpy.typing import DTypeLike
 
 Integer: TypeAlias = int | np.integer
+NonNullScalar: TypeAlias = float | np.floating | Integer
+Scalar: TypeAlias = NonNullScalar | None
 
 Annotate: TypeAlias = bool
 BgOnData: TypeAlias = bool
@@ -67,27 +69,25 @@ HeightControl: TypeAlias = Literal[None, "fpr", "fdr", "bonferroni"]
 # if we wanted to use proper type annotation
 HrfModel: TypeAlias = str | Callable | list | None
 
-HighPass: TypeAlias = float | int | np.floating | np.integer | None
+HighPass: TypeAlias = Scalar
 KeepMaskedLabels: TypeAlias = bool
 KeepMaskedMaps: TypeAlias = bool
 LowerCutoff: TypeAlias = float | np.floating
-LowPass: TypeAlias = float | int | np.floating | np.integer | None
+LowPass: TypeAlias = Scalar
 MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
 MemoryLevel: TypeAlias = Integer
 NJobs: TypeAlias = Integer
 NPerm: TypeAlias = Integer
-NiimgLike = (Nifti1Image, str, Path)
+NiimgLike: TypeAlias = Nifti1Image | str | Path
 Opening: TypeAlias = bool | Integer
 OutputFile: TypeAlias = str | pathlib.Path | None
 Radiological: TypeAlias = bool
-RandomState: TypeAlias = (
-    int | np.floating | np.integer | np.random.RandomState | None
-)
+RandomState: TypeAlias = np.floating | Integer | np.random.RandomState | None
 ResamplingInterpolation: TypeAlias = Literal["continuous", "nearest"]
-Resolution: TypeAlias = int | np.integer | None
+Resolution: TypeAlias = Integer | None
 Resume: TypeAlias = bool
-ScreeningPercentile: TypeAlias = float | int | np.floating | np.integer | None
-SmoothingFwhm: TypeAlias = float | int | np.floating | np.integer | None
+ScreeningPercentile: TypeAlias = Scalar
+SmoothingFwhm: TypeAlias = Scalar
 Standardize: TypeAlias = Literal["zscore_sample", "psc", True, False, None]
 StandardizeConfounds: TypeAlias = bool
 SupportedRegressors: TypeAlias = Literal[
@@ -115,26 +115,16 @@ TargetAffine: TypeAlias = ndarray | list | tuple | None
 # about using a generic and would prefer "list[int]" to "list".
 TargetShape: TypeAlias = tuple | list | ndarray | None
 
-Threshold: TypeAlias = float | int | np.floating | np.integer | str | None
+Threshold: TypeAlias = Scalar | str
 
 Tfce: TypeAlias = bool
 Title: TypeAlias = str | None
-Tr: TypeAlias = float | int | np.floating | np.integer | None
-Transparency: TypeAlias = (
-    float
-    | int
-    | np.floating
-    | np.integer
-    | str
-    | Path
-    | Nifti1Image
-    | Path
-    | None
-)
+Tr: TypeAlias = Scalar
+Transparency: TypeAlias = float | np.floating | Integer | NiimgLike | None
 TransparencyRange: TypeAlias = list | tuple | None
 TwoSidedTest: TypeAlias = bool
 Url: TypeAlias = str | None
 UpperCutoff: TypeAlias = float | np.floating
-Verbose: TypeAlias = bool | int | np.integer
-Vmin: TypeAlias = float | int | np.floating | np.integer | None
-Vmax: TypeAlias = float | int | np.floating | np.integer | None
+Verbose: TypeAlias = bool | Integer
+Vmin: TypeAlias = Scalar
+Vmax: TypeAlias = Scalar

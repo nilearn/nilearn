@@ -13,7 +13,8 @@ def suppress_specific_decoding_warning():
             "Brain mask is bigger.*|"
             "Brain mask is smaller.*|"
             "After clustering.*|"
-            "Overriding provided-default estimator.*"
+            "Overriding provided-default estimator.*|"
+            "The decoding model will be trained only on 12 features.*"
         )
         warnings.filterwarnings(
             "ignore",
