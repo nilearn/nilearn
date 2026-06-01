@@ -110,7 +110,7 @@ def report_flm_adhd_dmn(build_type):
     )
 
     report = first_level_model.generate_report(
-        contrasts,
+        contrasts=contrasts,
         title="ADHD DMN Report",
         cluster_threshold=15,
         alpha=0.0009,
@@ -214,7 +214,7 @@ def report_flm_bids_features(build_type):
     title = "FLM Bids Features Stat maps"
 
     report = model.generate_report(
-        "StopSuccess - Go",
+        contrasts="StopSuccess - Go",
         title=title,
         cluster_threshold=3,
         plot_type="glass",
@@ -297,10 +297,10 @@ def report_slm_oasis(build_type):
         oasis_dataset.gray_matter_maps, design_matrix=design_matrix
     )
 
-    contrasts = ["age", "sex"]
+    contrast = ["age", "sex"]
 
     report = second_level_model.generate_report(
-        contrasts,
+        contrasts=contrast,
         bg_img=fetch_icbm152_2009()["t1"],
         height_control=None,
         plot_type="glass",

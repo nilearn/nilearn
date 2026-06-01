@@ -1670,7 +1670,7 @@ def test_generate_report_default(kwargs):
     ]
 
     with warnings.catch_warnings(record=True) as warning_list:
-        flm.generate_report(contrasts, **kwargs)
+        flm.generate_report(contrasts=contrasts, **kwargs)
         assert len(warning_list) == 0 if is_matplotlib_installed() else 2
 
 
@@ -1700,7 +1700,7 @@ def test_generate_report_height_none_future_default():
     with pytest.warns(
         FutureWarning, match="the default 'threshold' will be set to"
     ):
-        flm.generate_report(contrasts, height_control=None)
+        flm.generate_report(contrasts=contrasts, height_control=None)
 
 
 @pytest.mark.slow
@@ -1725,7 +1725,7 @@ def test_generate_report_threshold_unused(threshold):
     ]
 
     with warnings.catch_warnings(record=True) as warning_list:
-        flm.generate_report(contrasts, threshold=threshold)
+        flm.generate_report(contrasts=contrasts, threshold=threshold)
         assert (
             sum(
                 "'threshold' was set to 'None'" in str(warning.message)

@@ -181,7 +181,7 @@ plotting.show()
 # %%
 # Generate and save the GLM report at the group level.
 report_slm = second_level_model.generate_report(
-    "intercept",
+    contrasts="intercept",
     first_level_contrast="language-string",
     threshold=p001_unc,
     display_mode="x",

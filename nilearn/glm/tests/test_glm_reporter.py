@@ -190,7 +190,9 @@ def test_flm_report_invalid_param(flm, contrasts):
     generate_report.
     """
     with pytest.warns(UserWarning, match="'first_level_contrast' is ignored"):
-        flm.generate_report(contrasts, first_level_contrast=contrasts)
+        flm.generate_report(
+            contrasts=contrasts, first_level_contrast=contrasts
+        )
 
 
 @pytest.mark.thread_unsafe
@@ -297,7 +299,7 @@ def test_generate_report_error_plot_type(flm, contrasts, display_mode):
     """Check errors when wrong plot type is requested."""
     with pytest.raises(ValueError, match="'plot_type' must be one of"):
         flm.generate_report(
-            contrasts,
+            contrasts=contrasts,
             display_mode=display_mode,
             plot_type="junk",
         )
@@ -309,7 +311,7 @@ def test_generate_report_warning_glass_cut_coords(flm, contrasts):
     """Check cut_coords not used with glass brain."""
     with pytest.warns(UserWarning, match="'cut_coords' was set to None"):
         flm.generate_report(
-            contrasts,
+            contrasts=contrasts,
             cut_coords=[1.0, 2.0, 3.0],
             display_mode="z",
             plot_type="glass",
@@ -424,7 +426,7 @@ def test_report_invalid_plot_type(flm, contrasts):
     """Check errors when wrong plot type is requested."""
     with pytest.raises(ValueError, match="'plot_type' must be one of"):
         flm.generate_report(
-            contrasts,
+            contrasts=contrasts,
             plot_type="junk",
         )
 
