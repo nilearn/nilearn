@@ -183,7 +183,7 @@ def check_volume_for_fit(imgs) -> None:
             raise ValueError("The image is empty.")
 
 
-def get_data(img) -> np.ndarray:
+def get_data(img: NiimgLike) -> np.ndarray:
     """Get the image data as a :class:`numpy.ndarray`.
 
     Parameters
@@ -1768,10 +1768,34 @@ def math_img(
     return new_img_like(niimg, result, niimg.affine)
 
 
+@overload
+def binarize_img(
+    img: SurfaceImage,
+    threshold=0.0,
+    mask_img: SurfaceImage | NiimgLike | None = ...,
+    two_sided: bool = ...,
+    copy_header: bool = ...,
+) -> SurfaceImage: ...
+
+
+@overload
+def binarize_img(
+    img: NiimgLike | list[NiimgLike],
+    threshold=0.0,
+    mask_img: SurfaceImage | NiimgLike | None = ...,
+    two_sided: bool = ...,
+    copy_header: bool = ...,
+) -> NiimgLike: ...
+
+
 @fill_doc
 def binarize_img(
-    img, threshold=0.0, mask_img=None, two_sided=False, copy_header=True
-):
+    img: SurfaceImage | NiimgLike | list[NiimgLike],
+    threshold=0.0,
+    mask_img: SurfaceImage | NiimgLike | None = None,
+    two_sided: bool = False,
+    copy_header: bool = True,
+) -> SurfaceImage | NiimgLike:
     """Binarize an image such that its values are either 0 or 1.
 
     .. nilearn_versionadded:: 0.8.1
@@ -1815,8 +1839,8 @@ def binarize_img(
 
     Returns
     -------
-    :class:`~nibabel.nifti1.Nifti1Image`
-    or :obj:`~nilearn.surface.SurfaceImage`
+    :class:`~nibabel.nifti1.Nifti1Image` or \
+        :obj:`~nilearn.surface.SurfaceImage`
         Binarized version of the given input image. Output dtype is int8.
 
     See Also
@@ -2096,7 +2120,9 @@ def clean_img(
 
 
 @fill_doc
-def load_img(img, wildcards=True, dtype=None):
+def load_img(
+    img: NiimgLike, wildcards: bool = True, dtype=None
+) -> Nifti1Image:
     """Load a Niimg-like object from filenames or list of filenames.
 
     .. nilearn_versionadded:: 0.2.5
