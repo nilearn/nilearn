@@ -6,7 +6,7 @@ import json
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
-from typing import Any
+from typing import Any, overload
 
 import numpy as np
 from joblib import Memory
@@ -409,6 +409,11 @@ class BaseMasker(_BaseMasker):
         tags.estimator_type = "masker"
         return tags
 
+    @property
+    def _n_features_out(self):
+        """Needed by sklearn machinery for set_ouput."""
+        return self.n_elements_
+
     def _get_masker_params(self, ignore: None | list[str] = None, deep=False):
         """Get parameters for this masker.
 
@@ -442,7 +447,13 @@ class BaseMasker(_BaseMasker):
 
         return params
 
-    def _load_mask(self, imgs):
+    @overload
+    def _load_mask(self, imgs: None) -> None: ...
+
+    @overload
+    def _load_mask(self, imgs: Nifti1Image) -> Nifti1Image: ...
+
+    def _load_mask(self, imgs) -> None | Nifti1Image:
         """Load and validate mask if one passed at init.
 
         Returns
@@ -459,8 +470,8 @@ class BaseMasker(_BaseMasker):
 
         # ensure that the mask_img_ is a 3D binary image
         tmp = check_niimg(self.mask_img, atleast_4d=True)
-        mask = safe_get_data(tmp, ensure_finite=True)
-        mask = mask.astype(bool).all(axis=3)
+        mask_data = safe_get_data(tmp, ensure_finite=True)
+        mask = mask_data.astype(bool).all(axis=3)
         mask_img_ = new_img_like(self.mask_img, mask)
 
         # Just check that the mask is valid
@@ -554,7 +565,14 @@ class BaseMasker(_BaseMasker):
         %(signals_transform_nifti)s
 
         """
-        return self.fit(imgs, y, **fit_params).transform(
+        # ignore warning in case the masker
+        # was initialized with a mask image
+        warnings.filterwarnings(
+            "ignore",
+            message=r".*Generation of a mask.*",
+        )
+        self.fit(imgs, y, **fit_params)
+        return self.transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
@@ -716,7 +734,13 @@ class _BaseSurfaceMasker(_BaseMasker):
                 f"Got: {imgs.__class__.__name__}"
             )
 
-    def _load_mask(self, imgs):
+    @overload
+    def _load_mask(self, imgs: None) -> None: ...
+
+    @overload
+    def _load_mask(self, imgs: SurfaceImage) -> SurfaceImage: ...
+
+    def _load_mask(self, imgs) -> None | SurfaceImage:
         """Load and validate mask if one passed at init.
 
         Returns
@@ -877,6 +901,9 @@ class _BaseSurfaceMasker(_BaseMasker):
         %(signals_transform_surface)s
         """
         del y
+        # ignore warning in case the masker
+        # was initialized with a mask image
+        warnings.filterwarnings("ignore", message=r".*Generation of a mask.*")
         return self.fit(imgs).transform(imgs, confounds, sample_mask)
 
     def _smooth(self, imgs):

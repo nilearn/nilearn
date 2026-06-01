@@ -132,6 +132,8 @@ def test_masker_reporting_true(masker, img_func, kwargs):
     assert match in str(report)
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
 @pytest.mark.parametrize(
     "masker, img_func",
     [

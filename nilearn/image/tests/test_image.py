@@ -1492,9 +1492,28 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye, surf_img_2d):
         math_img(formula, img1=img1, img3=img3, copy_header_from="img1")
 
     # Passing an 'img*' variable (to copy_header_from) that is not in the
-    # formula or an img* argument should raise a KeyError exception.
-    with pytest.raises(KeyError):
+    # formula or an img* argument should raise a ValueError exception.
+    with pytest.raises(
+        ValueError,
+        match=("copy_header_from='img2' but 'img2' is missing from 'imgs'"),
+    ):
         math_img(formula, img1=img1, img3=img3, copy_header_from="img2")
+
+
+def test_math_img_warnings(img_4d_ones_eye):
+    """Test warnings raised by math_img."""
+    img1 = img_4d_ones_eye
+    img3 = img_4d_ones_eye
+    with pytest.warns(
+        UserWarning, match=r"Some images .* are not mentioned in the formula"
+    ):
+        math_img("img1 + 1", img1=img1, img3=img3)
+
+    # the warning should not be thrown when the img
+    # is missing from the formula but used by copy_header_from
+    with warnings.catch_warnings(record=True) as warning_list:
+        math_img("img1 + 1", img1=img1, img3=img3, copy_header_from="img3")
+        assert len(warning_list) == 0
 
 
 @pytest.mark.thread_unsafe
@@ -1534,6 +1553,18 @@ def test_math_img_surface(surf_img_2d):
 
     assert isinstance(result, SurfaceImage)
     assert_surface_image_equal(result, expected_result)
+
+
+def test_math_img_surface_warning(surf_img_2d):
+    """Warn when using copy_header_from with Surface."""
+    img1 = surf_img_2d(1)
+    img2 = surf_img_2d(3)
+
+    formula = "img1 + 1"
+    with pytest.warns(
+        UserWarning, match="'copy_header_from' is not used with SurfaceImage"
+    ):
+        math_img(formula, img1=img1, copy_header_from=img2)
 
 
 @pytest.mark.thread_unsafe
@@ -1668,13 +1699,30 @@ def test_binarize_img_no_userwarning(img_4d_rand_eye):
         binarize_img(img_4d_rand_eye)
 
 
+@pytest.mark.parametrize("low_pass, high_pass", [(0.1, None), (None, 100)])
+def test_clean_img_error(
+    img_4d_rand_eye, surf_img_2d, low_pass, high_pass
+) -> None:
+    """Test error t_r missing for cleaning with
+    low_pass is not None or high_pass is not None.
+    """
+    with pytest.raises(
+        ValueError, match=r"t_r.*must be specified.*imgs header suggest"
+    ):
+        clean_img(
+            img_4d_rand_eye, t_r=None, low_pass=low_pass, high_pass=high_pass
+        )
+
+    with pytest.raises(ValueError, match=r"t_r.*must be specified"):
+        clean_img(
+            surf_img_2d(50), t_r=None, low_pass=low_pass, high_pass=high_pass
+        )
+
+
 def test_clean_img(affine_eye, shape_3d_default, rng):
     data = rng.standard_normal(size=(10, 10, 10, 100)) + 0.5
     data_flat = data.T.reshape(100, -1)
     data_img = Nifti1Image(data, affine_eye)
-
-    with pytest.raises(ValueError, match=r"t_r.*must be specified"):
-        clean_img(data_img, t_r=None, low_pass=0.1)
 
     data_img_ = clean_img(
         data_img, detrend=True, standardize=None, low_pass=0.1, t_r=1.0
@@ -2258,7 +2306,9 @@ def img_in_home_folder(img_3d_mni):
     created_file.expanduser().unlink()
 
 
+@pytest.mark.single_process
 @pytest.mark.thread_unsafe
+@pytest.mark.single_process
 @pytest.mark.parametrize(
     "filename", ["~/test.nii", r"~/test.nii", Path("~/test.nii")]
 )

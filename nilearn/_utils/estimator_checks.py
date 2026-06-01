@@ -21,7 +21,6 @@ and importing them will fail if pytest is not installed.
 import contextlib
 import inspect
 import io
-import os
 import pickle
 import re
 import warnings
@@ -77,11 +76,10 @@ from nilearn._utils.tags import (
     is_glm,
     is_masker,
 )
-from nilearn._utils.testing import write_imgs_to_path
+from nilearn._utils.testing import is_ci, write_imgs_to_path
 from nilearn._utils.versions import SKLEARN_LT_1_6, compare_version
 from nilearn.conftest import (
     _affine_eye,
-    _affine_mni,
     _drop_surf_img_part,
     _flip_surf_img,
     _img_3d_mni,
@@ -111,10 +109,11 @@ from nilearn.decoding.decoder import (
 from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.space_net import BaseSpaceNet
 from nilearn.decoding.tests.test_same_api import to_niimgs
+from nilearn.decomposition import DictLearning
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.decomposition.tests.conftest import (
-    _decomposition_img,
-    _decomposition_mesh,
+    _canica_components_volume,
+    _make_volume_data_from_components,
 )
 from nilearn.exceptions import DimensionError, MeshDimensionError
 from nilearn.glm.first_level import FirstLevelModel
@@ -606,11 +605,13 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
             yield (clone(estimator), check_decoder_compatibility_mask_image)
+            yield (clone(estimator), check_decoder_screening_n_features)
             yield (clone(estimator), check_decoder_with_surface_data)
             yield (clone(estimator), check_decoder_with_arrays)
             yield (clone(estimator), check_decoder_estimator_args)
             yield (clone(estimator), check_verbosity_embedded_masker)
-            yield (clone(estimator), check_decoder_screening_n_features)
+            yield (clone(estimator), check_warning_embedded_masker)
+
             if is_regressor(estimator):
                 yield (
                     clone(estimator),
@@ -699,9 +700,11 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
     if is_glm(estimator):
         yield (clone(estimator), check_glm_empty_data_messages)
         yield (clone(estimator), check_verbosity_embedded_masker)
+        yield (clone(estimator), check_warning_embedded_masker)
 
     if isinstance(estimator, _BaseDecomposition):
         yield (clone(estimator), check_verbosity_embedded_masker)
+        yield (clone(estimator), check_warning_embedded_masker)
 
 
 def _not_fitted_error_message(estimator) -> str:
@@ -767,13 +770,22 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
         return imgs, None
 
     elif isinstance(estimator, _BaseDecomposition):
-        decomp_input = _decomposition_img(
-            data_type="surface",
-            rng=_rng(),
-            mesh=_decomposition_mesh(),
-            with_activation=True,
+        n_subjects = 2
+        n_timepoints = 40
+        if isinstance(estimator, DictLearning):
+            n_subjects = 1
+            n_timepoints = 200
+
+        decomp_input = _make_volume_data_from_components(
+            _canica_components_volume(_shape_3d_large()),
+            _affine_eye(),
+            _shape_3d_large(),
+            _rng(),
+            n_subjects=n_subjects,
+            n_timepoints=n_timepoints,
         )
-        return decomp_input, None
+
+        return decomp_input[0], None
 
     elif not (
         accept_niimg_input(estimator) or accept_surf_img_input(estimator)
@@ -875,14 +887,6 @@ def check_set_output(estimator_orig) -> None:
     # sklearn will raise error if it's not installed
     with pytest.raises(ImportError, match="requires polars to be installed"):
         signal = estimator.transform(img)
-
-    # check on 1D image for estimators that accepts surface
-    if accept_surf_img_input(estimator_orig):
-        estimator = clone(estimator_orig)
-        estimator = fit_estimator(estimator)
-        estimator.set_output(transform="pandas")
-        signal = estimator.transform(img)
-        assert isinstance(signal, pd.DataFrame)
 
 
 def check_transformer_set_output(estimator):
@@ -1110,7 +1114,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     with contextlib.redirect_stdout(buffer):
         fit_estimator(estimator)
     output_true = buffer.getvalue()
-    if os.getenv("CI") is None:
+    if not is_ci():
         # when running locally the output
         # can be easily 'cleaned' to be compared
         assert _sanitize_standard_output(
@@ -1128,9 +1132,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     with contextlib.redirect_stdout(buffer):
         fit_estimator(estimator)
     output_2 = buffer.getvalue()
-    if os.getenv("CI") is not None and isinstance(
-        estimator, SurfaceMapsMasker
-    ):
+    if is_ci() and isinstance(estimator, SurfaceMapsMasker):
         # For SurfaceMapsMasker the output is harder to sanitize in CI
         return
     assert len(output_2) >= len(output), f"\n{output=}\n{output_2=}"
@@ -1183,12 +1185,25 @@ def check_verbosity_embedded_masker(estimator_orig):
             assert re.search(r"Computation of .* done in", outputs[verbose])
 
 
+def check_warning_embedded_masker(estimator_orig):
+    """Check no excessive warning thrown by embedded masker."""
+    estimator = clone(estimator_orig)
+
+    # no such warning is thrown when using fit_transform
+    with warnings.catch_warnings(record=True) as warning_list:
+        estimator = fit_estimator(estimator)
+    for w in warning_list:
+        assert "Given mask will be used" not in str(w)
+
+
 def _sanitize_standard_output(output):
     """Clean standard output to facilitate comparison to another output."""
     output = re.sub(
         r"<nibabel.nifti1.Nifti1Image object at .*>", "Nifti1Image", output
     )
-    output = re.sub(r", .* seconds remaining", ", X seconds remaining", output)
+    output = re.sub(
+        r", .* HR .* MIN .* SEC remaining", ", X seconds remaining", output
+    )
     output = re.sub(
         r"Time Elapsed: .* seconds", "Time Elapsed: X seconds", output
     )
@@ -2669,7 +2684,7 @@ def check_masker_mask_img_from_imgs(estimator_orig) -> None:
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
         input_img = Nifti1Image(
-            _rng().random(_shape_3d_large()), _affine_mni()
+            _rng().random(_shape_3d_large()), _affine_eye()
         )
 
     else:
@@ -2756,11 +2771,8 @@ def check_masker_mask_img(estimator_orig) -> None:
 
     if isinstance(estimator, (NiftiMasker, SurfaceMasker)):
         with pytest.warns(
-            UserWarning,
-            match=(
-                "Generation of a mask has been requested .* "
-                "while a mask was given at masker creation."
-            ),
+            RuntimeWarning,
+            match=("Generation of a mask.*"),
         ):
             estimator.fit(input_img)
     else:
@@ -2776,6 +2788,16 @@ def check_masker_mask_img(estimator_orig) -> None:
             get_surface_data(ref_mask_img_),
             get_surface_data(estimator.mask_img_),
         )
+
+    estimator = clone(estimator)
+    estimator.mask_img = binary_mask_img
+
+    # no such warning is thrown when using fit_transform
+    if isinstance(estimator, (NiftiMasker, SurfaceMasker)):
+        with warnings.catch_warnings(record=True) as warning_list:
+            estimator.fit_transform(input_img)
+        for w in warning_list:
+            assert "Given mask will be used" not in str(w)
 
 
 def check_masker_clean(estimator_orig) -> None:
@@ -2964,7 +2986,7 @@ def check_masker_with_confounds(estimator_orig):
     length = 20
     if accept_niimg_input(estimator):
         input_img = Nifti1Image(
-            _rng().random((4, 5, 6, length)), affine=_affine_eye()
+            _rng().random((*_shape_3d_default(), length)), affine=_affine_eye()
         )
     else:
         input_img = _make_surface_img(length)
@@ -3534,7 +3556,10 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
             assert img.shape == (_make_surface_img().mesh.n_vertices, 1)
 
         elif n_sample == 0:
-            assert signals.shape == (estimator.n_elements_,)
+            if estimator.n_elements_ == 1:
+                assert signals.shape == ()
+            else:
+                assert signals.shape == (estimator.n_elements_,)
 
             img = estimator.inverse_transform(signals)
             assert img.shape == (_make_surface_img().mesh.n_vertices,)
@@ -3543,10 +3568,7 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
             assert signals.shape == (n_sample, estimator.n_elements_)
 
             img = estimator.inverse_transform(signals)
-            assert img.shape == (
-                _make_surface_img().mesh.n_vertices,
-                n_sample,
-            )
+            assert img.shape == (_make_surface_img().mesh.n_vertices, n_sample)
 
     estimator = clone(estimator_orig)
 
@@ -3615,7 +3637,7 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
     for imgs, n_sample in zip(
         images_to_transform, expected_n_sample, strict=False
     ):
-        for mask_img in [_surf_mask_1d(), _make_surface_mask()]:
+        for mask_img in [_surf_mask_1d(), _make_surface_mask(n_zeros=2)]:
             estimator = clone(estimator_orig)
 
             estimator.mask_img = mask_img
@@ -3639,15 +3661,6 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
             elif n_sample == 0:
                 assert signals.size == estimator.n_elements_
 
-                if isinstance(estimator, (SurfaceLabelsMasker)):
-                    # TODO having a test where SurfaceLabelsMasker
-                    # with mask leads to have only 1 ROI
-                    # is a bit of an edge case
-                    # Should this be changed?
-                    # We should maybe also check what happens
-                    # to the surface maps masker with only 1 map.
-                    assert estimator.n_elements_ == 1
-
                 # TODO We have some unexpected behavior from
                 # SurfaceMapsMasker, SurfaceLabelsMasker
                 # This should be fixed (in a follow up PR).
@@ -3658,9 +3671,8 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
                     and n_dim_mask == 2
                 ):
                     assert signals.shape == (1, estimator.n_elements_)
-                elif isinstance(estimator, (SurfaceLabelsMasker)):
-                    # we probably get a scalar here because
-                    # the label masker has only 1 valid ROI.
+
+                elif estimator.n_elements_ == 1:
                     assert signals.shape == ()
                 else:
                     assert signals.shape == (estimator.n_elements_,)
@@ -3712,7 +3724,11 @@ def check_nifti_masker_fit_transform(estimator_orig):
     signal = estimator.transform(_img_3d_rand())
 
     assert isinstance(signal, np.ndarray)
-    assert signal.shape == (estimator.n_elements_,)
+
+    if estimator.n_elements_ == 1:
+        assert signal.shape == ()
+    else:
+        assert signal.shape == (estimator.n_elements_,)
 
     signal_2 = estimator.fit_transform(_img_3d_rand())
 
@@ -3726,8 +3742,12 @@ def check_nifti_masker_fit_transform(estimator_orig):
         assert len(signal) == 2
         for x in signal:
             assert isinstance(x, np.ndarray)
-            assert x.ndim == 1
-            assert x.shape == (estimator.n_elements_,)
+            if estimator.n_elements_ == 1:
+                assert x.ndim == 0
+                assert x.shape == ()
+            else:
+                assert x.ndim == 1
+                assert x.shape == (estimator.n_elements_,)
     else:
         assert isinstance(signal, np.ndarray)
         assert signal.ndim == 2

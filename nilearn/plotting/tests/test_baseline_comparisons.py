@@ -14,6 +14,7 @@ from nibabel import Nifti1Image
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.datasets import (
+    fetch_surf_fsaverage,
     load_fsaverage_data,
     load_mni152_template,
     load_sample_motor_activation_image,
@@ -45,7 +46,9 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
+from nilearn.plotting.displays import OrthoSlicer
 from nilearn.plotting.image.utils import MNI152TEMPLATE
+from nilearn.surface import load_surf_data
 
 PLOTTING_FUNCS_3D = {
     plot_img,
@@ -176,11 +179,58 @@ def test_plotting_functions_radiological_view(plotting_func):
     radiological=False being the default it should be covered by other tests.
     """
     radiological = True
-    result = plotting_func(
+    display = plotting_func(
         load_sample_motor_activation_image(), radiological=radiological
     )
-    assert result.axes.get("y").radiological is radiological
-    return result
+    assert display.axes.get("y").radiological is radiological
+    return display
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize(
+    "levels, colors", [([0], ["limegreen"]), ([0, 1], ["limegreen", "yellow"])]
+)
+def test_add_contours(levels, colors):
+    """Test for add_contours."""
+    display = plot_img(
+        load_sample_motor_activation_image(),
+        title=f"contour {levels=} {colors=}",
+    )
+    display.add_contours(
+        load_sample_motor_activation_image(), levels=levels, colors=colors
+    )
+    return display
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        # levels should be at least 2
+        # If single levels are passed then we force upper level to be inf
+        {"colors": "r", "alpha": 0.2, "levels": [0.0]},
+        # If two levels are passed, it should be increasing from zero index
+        # In this case, we simply omit appending inf
+        {"colors": "limegreen", "alpha": 0.1, "levels": [0.0, 0.8]},
+        # without passing colors and alpha. In this case, default values are
+        # chosen from matplotlib
+        {"levels": [0.0, 0.4, 0.8]},
+        # levels with only one value
+        # vmin argument is not needed
+        # but added because of matplotlib 3.8.0rc1 bug
+        # see https://github.com/matplotlib/matplotlib/issues/26531
+        {"levels": [0.4], "vmin": 0.0},
+        # without passing levels, should work with default levels from
+        # matplotlib
+        {},
+    ],
+)
+def test_add_contours_filled(mni152_template_res_2, kwargs):
+    """Tests for add_contours with filled = true."""
+    display = OrthoSlicer(cut_coords=(0, 0, 0))
+    display.add_contours(mni152_template_res_2, filled=True, **kwargs)
+    return display
 
 
 @pytest.mark.mpl_image_compare
@@ -434,6 +484,126 @@ def test_plot_img_on_surf(bg_on_data, symmetric_cmap, colorbar, title):
         colorbar=colorbar,
         title=title,
     )
+    return fig
+
+
+@pytest.mark.slow
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize(
+    "resolution", ["fsaverage3", "fsaverage4", "fsaverage5"]
+)
+@pytest.mark.parametrize("hemi", ["left", "right"])
+def test_surface_fs_data(hemi, resolution):
+    """Plot freesurfer data on all meshes."""
+    mesh_type = [
+        "white_matter",
+        "pial",
+        "inflated",
+        "sphere",
+        # "flat", This does not really work here
+    ]
+
+    data_type = ["area", "curvature", "sulcal", "thickness"]
+
+    fig, ax = plt.subplots(
+        nrows=len(data_type),
+        ncols=len(mesh_type),
+        subplot_kw={"projection": "3d"},
+        figsize=(20, 20),
+    )
+
+    for row, data in enumerate(data_type):
+        for col, mesh in enumerate(mesh_type):
+            fs = load_fsaverage_data(
+                resolution, mesh_type=mesh, data_type=data
+            )
+
+            view = "lateral"
+
+            cmap = "inferno"
+            vmax = None
+            vmin = None
+            if data == "thickness":
+                vmax = 5
+                vmin = 0
+            if data == "sulcal":
+                cmap = "RdBu_r"
+                vmax = 2
+                vmin = -2
+            if data == "curvature":
+                cmap = "RdBu_r"
+                vmax = 0.5
+                vmin = -0.5
+
+            title = f"{mesh=} - {data=}"
+
+            colorbar = False
+            if col == len(mesh_type) - 1:
+                colorbar = True
+
+            fig = plot_surf(
+                None,
+                fs,
+                bg_on_data=True,
+                vmax=vmax,
+                vmin=vmin,
+                figure=fig,
+                axes=ax[row][col],
+                view=view,
+                cmap=cmap,
+                hemi=hemi,
+                title=title,
+                colorbar=colorbar,
+            )
+
+    return fig
+
+
+@pytest.mark.slow
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("hemi", ["left", "right"])
+def test_surface_fs_vertices_order(hemi):
+    """Visual check to make sure freesurfer vertices are in the same order
+    across meshes.
+
+    Regression test for: https://github.com/nilearn/nilearn/issues/3415
+    """
+    mesh_type = ["white", "pial", "infl", "sphere"]
+
+    resolution = ["fsaverage3", "fsaverage4", "fsaverage5"]
+
+    fs5 = fetch_surf_fsaverage(mesh="fsaverage5")
+
+    fig, ax = plt.subplots(
+        nrows=len(resolution),
+        ncols=len(mesh_type),
+        subplot_kw={"projection": "3d"},
+        figsize=(20, 10),
+    )
+
+    for row, res in enumerate(resolution):
+        for col, mesh in enumerate(mesh_type):
+            fs = fetch_surf_fsaverage(mesh=res)
+            coordinates, faces = load_surf_data(fs[f"pial_{hemi}"])
+
+            surf = load_surf_data(fs5[f"sulc_{hemi}"])
+
+            plot_surf(
+                (coordinates, faces),
+                surf[: coordinates.shape[0]],
+                vmax=2,
+                vmin=-2,
+                figure=fig,
+                axes=ax[row][col],
+                view="lateral",
+                cmap="RdBu_r",
+                title=f"{res=} - {mesh=}",
+                hemi=hemi,
+                colorbar=False,
+            )
+
+    plt.tight_layout()
+
     return fig
 
 

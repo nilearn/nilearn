@@ -10,6 +10,7 @@ import warnings
 from math import ceil
 from pathlib import Path
 from string import Template
+from typing import get_args
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -361,7 +362,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
     %(mask_strategy)s
 
-        Default='epi'.
+        default='epi'.
         .. note::
 
           These strategies are only relevant for Nifti images and the parameter
@@ -462,7 +463,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
                     SurfaceMasker,
                     SurfaceImage,
                     NiftiMasker,
-                    *NiimgLike,
+                    *get_args(NiimgLike),
                 ),
                 "mask",
             )
@@ -510,9 +511,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             # these classes are meant for list of 4D images
             # (multi-subject), we want it to work also on a single
             # subject, so we hack it.
-            imgs = [
-                imgs,
-            ]
+            imgs = [imgs]
 
         if len(imgs) == 0:
             # Common error that arises from a null glob. Capture
@@ -537,7 +536,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         if self.mask is not None:
             if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)):
                 masker_type = "multi_surface"
-            if isinstance(self.mask, (MultiNiftiMasker, *NiimgLike)):
+            if isinstance(self.mask, (MultiNiftiMasker, *get_args(NiimgLike))):
                 masker_type = "multi_nii"
             elif isinstance(self.mask, SurfaceMasker):
                 masker_type = "surface"

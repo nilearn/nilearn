@@ -8,6 +8,7 @@ import inspect
 import time
 import warnings
 from pathlib import Path
+from typing import Literal, get_args
 from warnings import warn
 
 import numpy as np
@@ -320,7 +321,7 @@ class FirstLevelModel(BaseGLM):
                     are passed at fit time.
 
     %(hrf_model)s
-        Default='glover'.
+        default='glover'.
 
         .. warning::
 
@@ -443,6 +444,11 @@ class FirstLevelModel(BaseGLM):
 
         .. nilearn_versionadded:: 0.9.1
 
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+        .. nilearn_versionadded:: 0.14.0
+
     Attributes
     ----------
     design_matrices_ : :obj:`list` of :obj:`pandas.DataFrame`
@@ -509,6 +515,7 @@ class FirstLevelModel(BaseGLM):
         minimize_memory=True,
         subject_label=None,
         random_state=None,
+        reports=True,
     ):
         # design matrix parameters
         self.t_r = t_r
@@ -539,6 +546,9 @@ class FirstLevelModel(BaseGLM):
         self.subject_label = subject_label
         self.random_state = random_state
 
+        self.reports = reports
+        self._reset_report()
+
     def _is_first_level_glm(self):
         return True
 
@@ -556,7 +566,8 @@ class FirstLevelModel(BaseGLM):
         ) or (
             isinstance(run_imgs, (list, tuple))
             and not all(
-                isinstance(x, (*NiimgLike, SurfaceImage)) for x in run_imgs
+                isinstance(x, (*get_args(NiimgLike), SurfaceImage))
+                for x in run_imgs
             )
         ):
             input_type = type(run_imgs)
@@ -980,6 +991,8 @@ class FirstLevelModel(BaseGLM):
             )
         )
 
+        self._reset_report()
+
         # Initialize masker_ to None such that attribute exists
         self.masker_ = None
 
@@ -995,6 +1008,12 @@ class FirstLevelModel(BaseGLM):
             drift_model_str = (
                 f"and a {self.drift_model} drift model ({param_str})"
             )
+
+        self._report_content["reports_at_fit_time"] = self.reports
+        # TODO populate _report_data only if self.reports=True
+        # currently the values in reports_data is used in other places and
+        # tests fail if only populated when reports is True.
+
         self._reporting_data = {
             "trial_types": [],
             "noise_model": self.noise_model,
@@ -1197,7 +1216,16 @@ class FirstLevelModel(BaseGLM):
         }
 
     def _get_element_wise_model_attribute(
-        self, attribute, result_as_time_series
+        self,
+        attribute: Literal[
+            "residuals",
+            "normalized_residuals",
+            "predicted",
+            "SSE",
+            "r_square",
+            "MSE",
+        ],
+        result_as_time_series: bool,
     ):
         """Transform RegressionResults instances within a dictionary \
         (whose keys represent the autoregressive coefficient under the 'ar1' \
@@ -1206,10 +1234,9 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        attribute : :obj:`str`
+        attribute : {"residuals", "normalized_residuals", "predicted", \
+                    "SSE", "r_square", "MSE"}
             an attribute of a RegressionResults instance.
-            possible values include: residuals, normalized_residuals,
-            predicted, SSE, r_square, MSE.
 
         result_as_time_series : :obj:`bool`
             whether the RegressionResult attribute has a value
@@ -1228,10 +1255,10 @@ class FirstLevelModel(BaseGLM):
         possible_attributes = [
             prop for prop in all_attributes if "__" not in prop
         ]
-        check_parameter_in_allowed(attribute, possible_attributes, attribute)
+        check_parameter_in_allowed(attribute, possible_attributes, "attribute")
 
         if self.minimize_memory:
-            raise ValueError(
+            raise AttributeError(
                 "To access voxelwise attributes like "
                 "R-squared, residuals, and predictions, "
                 "the `FirstLevelModel`-object needs to store "
@@ -1312,11 +1339,13 @@ class FirstLevelModel(BaseGLM):
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"
 
-            with warnings.catch_warnings():
-                # ignore warning in case the masker
-                # was initialized with a mask image
-                warnings.simplefilter("ignore")
-                self.masker_.fit(run_img)
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            self.masker_.fit(run_img)
 
         else:
             check_is_fitted(self.mask_img)
@@ -1537,12 +1566,26 @@ def first_level_from_bids(
         a specific set of confounds by relying on confound loading strategies
         defined in :func:`~nilearn.interfaces.fmriprep.load_confounds`.
         If no kwargs are passed, ``first_level_from_bids`` will return
-        all the confounds available in the confounds TSV files.
+        all the confounds available in the confounds TSV files. If
+        no confounds are available, or if ``confounds_strategy`` is
+        set to ``None``, a list of ``None`` is returned for the confounds.
 
         .. nilearn_versionadded:: 0.10.3
 
     Examples
     --------
+    If you want to load only models, images and events:
+
+    .. code-block:: python
+
+        models, imgs, events, _ = first_level_from_bids(
+            dataset_path=path_to_a_bids_dataset,
+            task_label="TaskName",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=None,
+        )
+
     If you want to only load
     the rotation and translation motion parameters confounds:
 
@@ -1677,7 +1720,7 @@ def first_level_from_bids(
     if (
         drift_model is not None
         and kwargs_load_confounds is not None
-        and "high_pass" in kwargs_load_confounds.get("strategy")
+        and "high_pass" in kwargs_load_confounds.get("strategy", [])
     ):
         if drift_model == "cosine":
             verb = "duplicate"
@@ -2216,10 +2259,10 @@ def _get_confounds(
     )
     _check_confounds_list(confounds=confounds_files, imgs=imgs)
 
-    if not confounds_files:
+    if not confounds_files or kwargs_load_confounds is None:
         return None
 
-    if kwargs_load_confounds is None:
+    if len(kwargs_load_confounds) == 0:
         confounds = [
             pd.read_csv(c, sep="\t", index_col=None) for c in confounds_files
         ]
@@ -2362,8 +2405,12 @@ def _check_kwargs_load_confounds(**kwargs):
         "demean": True,
     }
 
-    if kwargs.get("confounds_strategy") is None:
+    if "confounds_strategy" in kwargs and kwargs["confounds_strategy"] is None:
+        kwargs.pop("confounds_strategy")
         return None, kwargs
+
+    elif "confounds_strategy" not in kwargs:
+        return {}, kwargs
 
     remaining_kwargs = kwargs.copy()
     kwargs_load_confounds = {}

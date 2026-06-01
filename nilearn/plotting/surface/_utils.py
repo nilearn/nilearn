@@ -52,7 +52,9 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
     :class:`~nilearn.plotting.surface._plotly_backend`.
         The backend module for the specified engine.
     """
-    check_parameter_in_allowed(engine, ["matplotlib", "plotly"], "engine")
+    check_parameter_in_allowed(
+        engine, ["matplotlib", "plotly", "niivue"], "engine"
+    )
     if engine == "matplotlib":
         if is_matplotlib_installed():
             import nilearn.plotting.surface._matplotlib_backend as backend
@@ -68,6 +70,8 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
             raise ImportError(
                 "Using engine='plotly' requires that ``plotly`` is installed."
             )
+    elif engine == "niivue":
+        import nilearn.plotting.surface._niivue_backend as backend
 
     return backend
 

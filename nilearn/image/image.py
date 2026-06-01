@@ -12,7 +12,7 @@ import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Literal, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeGuard, get_args, overload
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -57,7 +57,14 @@ from nilearn.surface.surface import (
 )
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
-from nilearn.typing import ClusterThreshold, NiimgLike
+from nilearn.typing import (
+    ClusterThreshold,
+    HighPass,
+    LowPass,
+    NiimgLike,
+    Standardize,
+    Tr,
+)
 
 
 def is_volume_image(imgs) -> bool:
@@ -1368,7 +1375,7 @@ def threshold_img(
 
     check_params(locals())
 
-    if not isinstance(img, (*NiimgLike, SurfaceImage)):
+    if not isinstance(img, (*get_args(NiimgLike), SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
             f"Got {img.__class__.__name__}."
@@ -1510,7 +1517,33 @@ def _apply_threshold(img_data, two_sided, cutoff_threshold):
     return img_data
 
 
-def math_img(formula, copy_header_from=None, **imgs):
+def _are_all_surface_images(
+    imgs: dict[str, Any],
+) -> TypeGuard[dict[str, SurfaceImage]]:
+    return all(isinstance(x, SurfaceImage) for x in imgs.values())
+
+
+@overload
+def math_img(
+    formula: str,
+    copy_header_from: str | None = None,
+    **imgs: SurfaceImage,
+) -> SurfaceImage: ...
+
+
+@overload
+def math_img(
+    formula: str,
+    copy_header_from: str | None = None,
+    **imgs: NiimgLike,
+) -> Nifti1Image: ...
+
+
+def math_img(
+    formula: str,
+    copy_header_from: str | None = None,
+    **imgs: NiimgLike | SurfaceImage,
+) -> SurfaceImage | Nifti1Image:
     """Interpret a numpy based string formula using niimg in named parameters.
 
     .. nilearn_versionadded:: 0.2.3
@@ -1522,12 +1555,25 @@ def math_img(formula, copy_header_from=None, **imgs):
         numpy imported as 'np'.
 
     copy_header_from : :obj:`str` or None, default=None
-        Takes the variable name of one of the images in the formula.
         The header of this image will be copied to the result of the formula.
         Note that the result image and the image to copy the header from,
         should have the same number of dimensions.
         If None, the default
         :class:`~nibabel.nifti1.Nifti1Header` is used.
+
+        .. note:
+
+            It is technically possible to pass an image
+            to copy the header from,
+            but that is unused in the formula.
+
+            .. code-block:: python
+
+                math_img("img1 + img2",
+                         copy_header_from="img3",
+                         img1=anat1,
+                         img2=anat2,
+                         img3=anat3)
 
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
@@ -1592,17 +1638,36 @@ def math_img(formula, copy_header_from=None, **imgs):
     in FSL.
 
     """
-    is_surface = all(isinstance(x, SurfaceImage) for x in imgs.values())
+    img_missing_from_formula = [
+        x for x in imgs if x not in formula and x != copy_header_from
+    ]
+    if img_missing_from_formula:
+        warnings.warn(
+            f"Some images ({img_missing_from_formula}) "
+            f"are not mentioned in the {formula=}.",
+            stacklevel=find_stack_level(),
+        )
 
-    if is_surface:
+    data_dict: dict[str, Any | dict[str, Any]] = {}
+
+    if _are_all_surface_images(imgs):
+        if copy_header_from is not None:
+            warnings.warn(
+                (
+                    "'copy_header_from' is not used with SurfaceImage. "
+                    f"Got: {copy_header_from=}"
+                ),
+                stacklevel=find_stack_level(),
+            )
+
         first_img = next(iter(imgs.values()))
         for image in imgs.values():
             assert_polymesh_equal(first_img.mesh, image.mesh)
 
         # Computing input data as a dictionary of numpy arrays.
         data_dict = {k: {} for k in first_img.data.parts}
-        for key, img in imgs.items():
-            for k, v in img.data.parts.items():
+        for key, surf_img in imgs.items():
+            for k, v in surf_img.data.parts.items():
                 data_dict[k][key] = v
 
         # Add a reference to numpy in the kwargs of eval
@@ -1623,8 +1688,10 @@ def math_img(formula, copy_header_from=None, **imgs):
         return new_img_like(first_img, result)
 
     try:
-        niimgs = [check_niimg(image) for image in imgs.values()]
-        check_same_fov(*niimgs, raise_error=True)
+        niimgs: dict[str, Nifti1Image] = {
+            k: check_niimg(v) for k, v in imgs.items()
+        }
+        check_same_fov(*list(niimgs.values()), raise_error=True)
     except Exception as exc:
         exc.args = (
             "Input images cannot be compared, "
@@ -1633,13 +1700,17 @@ def math_img(formula, copy_header_from=None, **imgs):
         )
         raise
 
+    if copy_header_from is not None and copy_header_from not in imgs:
+        raise ValueError(
+            f"{copy_header_from=} but '{copy_header_from}' "
+            "is missing from 'imgs' that contains: "
+            f"{imgs.keys()}"
+        )
+
     # Computing input data as a dictionary of numpy arrays. Keep a reference
     # niimg for building the result as a new niimg.
-    niimg = None
-    data_dict = {}
-    for key, img in imgs.items():
-        niimg = check_niimg(img)
-        data_dict[key] = safe_get_data(niimg)
+    for key, img in niimgs.items():
+        data_dict[key] = safe_get_data(img)
 
     # Add a reference to numpy in the kwargs of eval so that numpy functions
     # can be called from there.
@@ -1654,7 +1725,8 @@ def math_img(formula, copy_header_from=None, **imgs):
         raise
 
     if copy_header_from is None:
-        return new_img_like(niimg, result, niimg.affine, copy_header=False)
+        return new_img_like(img, result, img.affine, copy_header=False)
+
     niimg = check_niimg(imgs[copy_header_from])
     # only copy the header if the result and the input image to copy the
     # header from have the same shape
@@ -1750,20 +1822,52 @@ def binarize_img(
     )
 
 
+@overload
+def clean_img(
+    imgs: SurfaceImage,
+    runs: np.ndarray | None = ...,
+    detrend: bool = ...,
+    standardize: Standardize = ...,
+    confounds=...,
+    low_pass: LowPass = ...,
+    high_pass: HighPass = ...,
+    t_r: Tr = ...,
+    ensure_finite: bool = ...,
+    mask_img: SurfaceImage | None = ...,
+    **kwargs,
+) -> SurfaceImage: ...
+
+
+@overload
+def clean_img(
+    imgs: NiimgLike | list[NiimgLike],
+    runs: np.ndarray | None = ...,
+    detrend: bool = ...,
+    standardize: Standardize = ...,
+    confounds=...,
+    low_pass: LowPass = ...,
+    high_pass: HighPass = ...,
+    t_r: Tr = ...,
+    ensure_finite: bool = ...,
+    mask_img: NiimgLike | None = ...,
+    **kwargs,
+) -> Nifti1Image: ...
+
+
 @fill_doc
 def clean_img(
-    imgs,
-    runs=None,
-    detrend=True,
-    standardize=True,
+    imgs: SurfaceImage | NiimgLike | list[NiimgLike],
+    runs: np.ndarray | None = None,
+    detrend: bool = True,
+    standardize: Standardize = True,
     confounds=None,
-    low_pass=None,
-    high_pass=None,
-    t_r=None,
-    ensure_finite=False,
-    mask_img=None,
+    low_pass: LowPass = None,
+    high_pass: HighPass = None,
+    t_r: Tr = None,
+    ensure_finite: bool = False,
+    mask_img: SurfaceImage | NiimgLike | None = None,
     **kwargs,
-):
+) -> SurfaceImage | Nifti1Image:
     """Improve :term:`SNR` on masked :term:`fMRI` signals.
 
     This function can do several things on the input signals, in
@@ -1825,7 +1929,7 @@ def clean_img(
 
     %(high_pass)s
 
-    t_r : :obj:`float`, default=None
+    t_r : :obj:`float`, :obj:`int` or None, default=None
         Repetition time, in second (sampling period). Set to None if not
         specified. Mandatory if used together with `low_pass` or `high_pass`.
 
@@ -1879,15 +1983,28 @@ def clean_img(
     if (low_pass is not None or high_pass is not None) and t_r is None:
         # We raise an error, instead of using the header's t_r as this
         # value is considered to be non-reliable
+        extra = ""
+        if not isinstance(imgs, SurfaceImage):
+            imgs_ = check_niimg_4d(imgs)
+
+            if TYPE_CHECKING:
+                # dirty type narrowing for static type checking
+                assert isinstance(imgs, Nifti1Image)
+
+            extra = (
+                f"imgs header suggest it to be {imgs.header.get_zooms()[3]}"
+            )
         raise ValueError(
             "Repetition time (t_r) must be specified for filtering. "
             "You specified None. "
-            f"imgs header suggest it to be {imgs.header.get_zooms()[3]}"
+            f"{extra}"
         )
 
     clean_kwargs = {
         k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
     }
+
+    check_compatibility_mask_and_images(mask_img, imgs)
 
     if isinstance(imgs, SurfaceImage):
         imgs.data._check_ndims(2, "imgs")
@@ -1909,7 +2026,7 @@ def clean_img(
             )
             data[p] = data[p].T
 
-        if mask_img is not None:
+        if isinstance(mask_img, SurfaceImage):
             mask_img = masking.load_mask_img(mask_img)[0]
             for hemi in mask_img.data.parts:
                 mask = mask_img.data.parts[hemi]
@@ -1940,15 +2057,13 @@ def clean_img(
     )
 
     # Put results back into Niimg-like object
-    if mask_img is not None:
-        imgs_ = masking.unmask(data, mask_img)
+    if isinstance(mask_img, NiimgLike):
+        return masking.unmask(data, mask_img)
     elif "sample_mask" in clean_kwargs:
         sample_shape = imgs_.shape[:3] + clean_kwargs["sample_mask"].shape
-        imgs_ = new_img_like(imgs_, data.T.reshape(sample_shape))
+        return new_img_like(imgs_, data.T.reshape(sample_shape))
     else:
-        imgs_ = new_img_like(imgs_, data.T.reshape(imgs_.shape))
-
-    return imgs_
+        return new_img_like(imgs_, data.T.reshape(imgs_.shape))
 
 
 @fill_doc

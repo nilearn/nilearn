@@ -270,7 +270,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='background'.
+        default='background'.
 
     mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
@@ -571,6 +571,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "while a mask was given at masker creation. "
                 "Given mask will be used.",
                 stacklevel=find_stack_level(),
+                category=RuntimeWarning,
             )
 
         self._report_content["reports_at_fit_time"] = self.reports

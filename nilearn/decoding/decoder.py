@@ -10,19 +10,16 @@ Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
 
-import inspect
 import itertools
 import warnings
 from collections.abc import Iterable
+from typing import Any
 
 import numpy as np
 from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from sklearn import clone
-from sklearn.base import (
-    MultiOutputMixin,
-    is_classifier,
-)
+from sklearn.base import MultiOutputMixin, is_classifier
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
     LassoCV,
@@ -50,104 +47,21 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
-from nilearn.decoding._utils import check_feature_screening
+from nilearn.decoding._utils import (
+    SUPPORTED_ESTIMATORS,
+    check_feature_screening,
+    validate_estimator,
+)
 from nilearn.image import check_niimg
 from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
+from nilearn.typing import SupportedClassifiers, SupportedRegressors
 
-MAX_ITER = 10000
 _MIN_N_FEATURES_FOR_SCREENING = 100
-
-kwarg_logistic_regression_cv = {}
-if SKLEARN_GTE_1_8:
-    # TODO (sklearn 1.8) remove if
-    # TODO (sklearn 1.10) remove 'use_legacy_attributes'
-    kwarg_logistic_regression_cv = {"use_legacy_attributes": False}
-
-SUPPORTED_ESTIMATORS = {
-    # "params" cannot be overridden
-    # "extra_params" can be overridden by parameters passed by user
-    "svc_l1": {
-        "estimator": LinearSVC,
-        "params": {
-            "penalty": "l1",
-        },
-        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
-    },
-    "svc_l2": {
-        "estimator": LinearSVC,
-        "params": {"penalty": "l2"},
-        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
-    },
-    "svc": {
-        "estimator": LinearSVC,
-        "params": {"penalty": "l2"},
-        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
-    },
-    "logistic_l1": {
-        "estimator": LogisticRegressionCV,
-        "params": {
-            "l1_ratios": (1,),
-            "solver": "liblinear",
-            **kwarg_logistic_regression_cv,
-        },
-        "extra_params": {},
-    },
-    "logistic_l2": {
-        "estimator": LogisticRegressionCV,
-        "params": {
-            "l1_ratios": (0,),
-            "solver": "liblinear",
-            **kwarg_logistic_regression_cv,
-        },
-        "extra_params": {},
-    },
-    "logistic": {
-        "estimator": LogisticRegressionCV,
-        "params": {
-            "l1_ratios": (0,),
-            "solver": "liblinear",
-            **kwarg_logistic_regression_cv,
-        },
-        "extra_params": {},
-    },
-    "ridge_classifier": {
-        "estimator": RidgeClassifierCV,
-        "params": {},
-        "extra_params": {},
-    },
-    "ridge_regressor": {
-        "estimator": RidgeCV,
-        "params": {},
-        "extra_params": {},
-    },
-    "ridge": {"estimator": RidgeCV, "params": {}, "extra_params": {}},
-    "lasso": {"estimator": LassoCV, "params": {}, "extra_params": {}},
-    "lasso_regressor": {
-        "estimator": LassoCV,
-        "params": {},
-        "extra_params": {},
-    },
-    "svr": {
-        "estimator": SVR,
-        "params": {"kernel": "linear"},
-        "extra_params": {"max_iter": MAX_ITER},
-    },
-    "dummy_classifier": {
-        "estimator": DummyClassifier,
-        "params": {"strategy": "stratified"},
-        "extra_params": {"random_state": 0},
-    },
-    "dummy_regressor": {
-        "estimator": DummyRegressor,
-        "params": {"strategy": "mean"},
-        "extra_params": {},
-    },
-}
 
 
 @fill_doc
@@ -249,9 +163,18 @@ def _default_param_grid(estimator, X, y):
             LassoCV,
         ),
     ):
+        # TODO
+        # we technically allow any estimator object
+        # to be passed to _BaseEstimator, Decoder, DecoderRegressor...
+        # but here we throw a warning
+        # that says the estimator must be one of the above:
+        # this inconsistency should probably be resolved
+        # or documented.
+        tmp = list(SUPPORTED_ESTIMATORS["classifier"].keys()) + list(
+            SUPPORTED_ESTIMATORS["regressor"].keys()
+        )
         raise TypeError(
-            "Invalid estimator. The supported estimators are:"
-            f" {list(SUPPORTED_ESTIMATORS.keys())}"
+            f"Invalid estimator. The supported estimators are: {tmp}"
         )
 
     # use l1_min_c to get lower bound for estimators with L1 penalty
@@ -396,48 +319,6 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
     return new_param_grid
 
 
-def _check_estimator(estimator, estimator_args=None, verbose=0):
-    """Check requested estimator.
-
-    If an actual estimator instance was passed, we allow it but warn the user.
-
-    Otherwise we instantiate one
-    from the config defined in SUPPORTED_ESTIMATORS.
-    """
-    if not isinstance(estimator, str):
-        warnings.warn(
-            "Use a custom estimator at your own risk "
-            "of the process not working as intended.",
-            stacklevel=find_stack_level(),
-        )
-        return estimator
-
-    if estimator not in SUPPORTED_ESTIMATORS:
-        raise ValueError(
-            "Invalid estimator. Known estimators are: "
-            f"{list(SUPPORTED_ESTIMATORS.keys())}"
-        )
-
-    estimator_config = SUPPORTED_ESTIMATORS.get(estimator)
-
-    # "extra_params" can be overridden by parameters passed by user
-    params = estimator_config["extra_params"]
-    if estimator_args is not None:
-        params |= estimator_args
-
-    # "params" cannot be overridden so we use them last
-    # to update the parameter of the estimator
-    params |= estimator_config["params"]
-
-    sig = inspect.signature(estimator_config["estimator"]).parameters
-    if "verbose" in sig:
-        params["verbose"] = (verbose - 1) > 0
-
-    estimator = estimator_config["estimator"](**params)
-
-    return estimator
-
-
 def _parallel_fit(
     estimator,
     X,
@@ -567,7 +448,11 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
     Parameters
     ----------
-    estimator : str, default='svc'
+    estimator : one of {"svc_l1", "svc_l2", "svc", \
+        "logistic_l1", "logistic_l2", "logistic", "ridge_classifier", \
+        "dummy_classifier", "ridge", "ridge_regressor", \
+        "lasso", "lasso_regressor", "svr", "dummy_regressor"}, \
+        or a scikit-learn compatible estimator object, default='svc'
         The estimator to use. For classification, choose among:
         %(classifier_options)s
         For regression, choose among:
@@ -676,7 +561,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
     def __init__(
         self,
-        estimator="svc",
+        estimator: SupportedRegressors | SupportedClassifiers | Any = "svc",
         mask=None,
         cv=10,
         param_grid=None,
@@ -750,8 +635,17 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         self.estimator_args_ = (
             {} if self.estimator_args is None else self.estimator_args
         )
-        self.estimator_ = _check_estimator(
+
+        # TODO (sklearn >= 1.8) _estimator_type will be removed
+        owning_class_type = getattr(self, "_estimator_type", None)
+
+        # TODO test with sklearn sklearn_version == 1.5.0
+        if owning_class_type is None:
+            owning_class_type = self.__sklearn_tags__().estimator_type
+
+        self.estimator_ = validate_estimator(
             self.estimator,
+            owning_class_type=owning_class_type,
             estimator_args=self.estimator_args_,
             verbose=self.verbose - 1,
         )
@@ -825,29 +719,32 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
             * self._clustering_percentile
             / 10000
         )
-        if n_final_features < 50:
-            extra_msg = ""
-            screening_percentile_lt_100 = self.screening_percentile_ < 100
-            clustering_percentile_lt_100 = (
-                hasattr(self, "clustering_percentile")
-                and self._clustering_percentile < 100
-            )
-            if screening_percentile_lt_100 or clustering_percentile_lt_100:
-                extra_msg = "Consider raising "
-            if screening_percentile_lt_100:
-                extra_msg += "'screening_percentile' "
-                if clustering_percentile_lt_100:
-                    extra_msg += "and / or"
+
+        extra_msg = ""
+        screening_percentile_lt_100 = self.screening_percentile_ < 100
+        clustering_percentile_lt_100 = (
+            hasattr(self, "clustering_percentile")
+            and self._clustering_percentile < 100
+        )
+        if screening_percentile_lt_100 or clustering_percentile_lt_100:
+            extra_msg = "Consider raising "
+        if screening_percentile_lt_100:
+            extra_msg += "'screening_percentile' "
             if clustering_percentile_lt_100:
-                extra_msg += "'clustering_percentile'"
-            warning_msg = (
+                extra_msg += "and / or"
+        if clustering_percentile_lt_100:
+            extra_msg += "'clustering_percentile'"
+
+        if n_final_features == 0:
+            msg = f"No feature left for training. {extra_msg}."
+            raise RuntimeError(msg)
+        if n_final_features < 50:
+            msg = (
                 "The decoding model will be trained only "
                 f"on {n_final_features} features. "
                 f"{extra_msg}."
             )
-            warnings.warn(
-                warning_msg, UserWarning, stacklevel=find_stack_level()
-            )
+            warnings.warn(msg, UserWarning, stacklevel=find_stack_level())
         else:
             log(
                 (
@@ -1241,9 +1138,14 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, default='svc'
+    estimator : one of {"svc_l1", "svc_l2", "svc", \
+        "logistic_l1", "logistic_l2", "logistic", "ridge_classifier", \
+        "dummy_classifier"}, or a scikit-learn compatible estimator object, \
+        default='svc'
         The estimator to choose among:
         %(classifier_options)s
+
+        %(sk_compatible_admonition)s
 
     mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
            :obj:`~nilearn.surface.SurfaceImage` \
@@ -1309,7 +1211,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='background'.
+        default='background'.
 
     %(low_pass)s
 
@@ -1350,7 +1252,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     def __init__(
         self,
-        estimator="svc",
+        estimator: SupportedClassifiers | Any = "svc",
         mask=None,
         cv=10,
         param_grid=None,
@@ -1428,9 +1330,14 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, default="svr"
+    estimator : one of {"ridge", "ridge_regressor", \
+        "lasso", "lasso_regressor", "svr", "dummy_regressor"}, \
+        or a scikit-learn compatible estimator object, \
+        default='svr'
         The estimator to choose among:
         %(regressor_options)s
+
+        %(sk_compatible_admonition)s
 
     mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
             or None, default=None
@@ -1493,7 +1400,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='background'.
+        default='background'.
 
     %(low_pass)s
 
@@ -1528,7 +1435,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     def __init__(
         self,
-        estimator="svr",
+        estimator: SupportedRegressors | Any = "svr",
         mask=None,
         cv=10,
         param_grid=None,
@@ -1601,9 +1508,14 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, default="svr"
+    estimator : one of {"ridge", "ridge_regressor", \
+        "lasso", "lasso_regressor", "svr", "dummy_regressor"}, \
+        or a scikit-learn compatible estimator object, \
+        default='svr'
         The estimator to choose among:
         %(regressor_options)s
+
+        %(sk_compatible_admonition)s
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, \
         default=None
@@ -1669,7 +1581,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='background'.
+        default='background'.
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
@@ -1701,7 +1613,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     def __init__(
         self,
-        estimator="svr",
+        estimator: SupportedRegressors | Any = "svr",
         mask=None,
         cv=30,
         param_grid=None,
@@ -1776,10 +1688,14 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, default 'svc')
+    estimator : one of {"svc_l1", "svc_l2", "svc", \
+        "logistic_l1", "logistic_l2", "logistic", "ridge_classifier", \
+        "dummy_classifier"}, or a scikit-learn compatible estimator object, \
+        default='svc'
         The estimator to choose among:
         %(classifier_options)s
 
+        %(sk_compatible_admonition)s
 
     mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker or None,\
         default=None
@@ -1851,7 +1767,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='background'.
+        default='background'.
 
     %(low_pass)s
     %(high_pass)s
@@ -1891,7 +1807,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
 
     def __init__(
         self,
-        estimator="svc",
+        estimator: SupportedClassifiers | Any = "svc",
         mask=None,
         cv=30,
         param_grid=None,

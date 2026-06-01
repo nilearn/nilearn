@@ -93,7 +93,7 @@ def _univariate_feature_screening(
     %(screening_percentile)s
 
     %(smoothing_fwhm)s
-        Default=2.
+        default=2.
 
     Returns
     -------
