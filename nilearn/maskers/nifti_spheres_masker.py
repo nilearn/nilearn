@@ -643,9 +643,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
         if target_dtype is None:
             target_dtype = img_data_dtype(imgs)
-      
+
         signals = signals.astype(target_dtype)
-      
+
         if self.n_elements_ == 1:
             return signals
         else:
