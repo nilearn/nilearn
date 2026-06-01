@@ -12,6 +12,7 @@ import pytest
 from matplotlib import pyplot as plt
 from nibabel import Nifti1Image
 
+from nilearn._utils.data_gen import generate_labeled_regions
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.datasets import (
     fetch_surf_fsaverage,
@@ -125,6 +126,35 @@ def test_plot_roi_single_value_data(affine_eye):
     return plot_roi(
         Nifti1Image(mask, affine_eye), display_mode="y", cut_coords=3
     )
+
+
+@pytest.mark.mpl_image_compare
+def test_plot_roi_contour_colors():
+    """Test `nilearn.plotting.image.img_plotting.plot_roi` to see that contour
+    colors comply with region colors.
+    """
+    affine = np.array(
+        [
+            [1.5, 0.0, 0.0, 0],
+            [0.0, 1.5, 0.0, 0],
+            [0.0, 0.0, 1.5, 0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
+
+    img = generate_labeled_regions((40, 35, 32), n_regions=6, affine=affine)
+
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(15, 5))
+
+    plot_roi(img, title="ROIs", cut_coords=[0, 0, 0], axes=ax[0])
+    plot_roi(
+        img,
+        title="contours",
+        view_type="contours",
+        cut_coords=[0, 0, 0],
+        axes=ax[1],
+    )
+    return fig
 
 
 @pytest.mark.slow
