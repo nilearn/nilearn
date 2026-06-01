@@ -36,7 +36,6 @@ from nilearn.typing import ClusterThreshold, HeightControl
 
 class GLMReportMixin(ReportMixin):
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
-        "engine": "matplotlib",
         "model_type": "",
         "smoothing_fwhm": None,
         "contrasts": None,
