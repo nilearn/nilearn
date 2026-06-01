@@ -368,6 +368,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     # Load the csv file
     phenotypic = pd.read_table(phenotypic, delimiter=",")
+    phenotypic["Subject"] = phenotypic["Subject"].apply(lambda x: f"{x:07d}")
 
     # Keep phenotypic information for selected subjects
     mask = phenotypic["Subject"].apply(lambda x: str(x) in ids)
