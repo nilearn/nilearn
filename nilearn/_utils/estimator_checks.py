@@ -841,6 +841,7 @@ def check_set_output(estimator_orig) -> None:
     - by default we transform to numpy array
     - can transform to polar or pandas dataframe
     - can inverse_transform from numpy array, or pandas / polars dataframes
+      and give the same results
     - check that estimators that work with surface can deal with 1D image
 
 
@@ -876,15 +877,31 @@ def check_set_output(estimator_orig) -> None:
 
     to_inverse_transform = {
         "default": signal,
-        "pandas": pd.DataFrame(signal),
-        "polars": pl.from_numpy(signal),
+        "pandas": pd.DataFrame(np.atleast_2d(signal)),
+        "polars": pl.from_numpy(np.atleast_2d(signal)),
     }
-
+    results = {}
+    # check inverse_transform always gives the expected output type
     if hasattr(estimator, "inverse_transform"):
-        for v in to_inverse_transform.values():
-            estimator.inverse_transform(v)
+        for k, v in to_inverse_transform.items():
+            r = estimator.inverse_transform(v)
+            if accept_niimg_input(estimator):
+                assert isinstance(r, Nifti1Image)
+            elif accept_surf_img_input(estimator):
+                assert isinstance(r, SurfaceImage)
+            else:
+                assert isinstance(r, np.ndarray)
+            results[k] = r
+    # check inverse_transform always gives the same result
+    for k in ["pandas", "polars"]:
+        if accept_niimg_input(estimator):
+            check_imgs_equal(results[k], results["default"])
+        elif accept_surf_img_input(estimator):
+            assert_surface_image_equal(results[k], results["default"])
+        else:
+            assert_array_equal(results[k], results["default"])
 
-    # output to "pandas" or  "polars"
+    # transform output to "pandas" or  "polars"
     for output, expected_type in zip(
         ["pandas", "polars"], [pd.DataFrame, pl.DataFrame], strict=False
     ):
@@ -898,23 +915,13 @@ def check_set_output(estimator_orig) -> None:
                 estimator.inverse_transform(v)
 
     # check on 1D image for estimators that accepts surface
-    # TODO errors transforming 1D images
-    # when output set to "pandas" or "polars"
     if accept_surf_img_input(estimator_orig):
         estimator = clone(estimator_orig)
         estimator = fit_estimator(estimator)
 
         for output in ["default", "pandas", "polars"]:
             estimator.set_output(transform=output)
-
-            if output in ["pandas", "polars"]:
-                with pytest.raises(
-                    ValueError,
-                    match=r"Length mismatch|must match data dimensions",
-                ):
-                    signal = estimator.transform(_surf_mask_1d())
-            else:
-                signal = estimator.transform(_surf_mask_1d())
+            signal = estimator.transform(_surf_mask_1d())
 
         if hasattr(estimator, "inverse_transform"):
             estimator.inverse_transform(signal)
