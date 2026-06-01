@@ -1087,18 +1087,20 @@ def test_first_level_contrast_computation():
     model.compute_contrast([c2, c2])
 
     # smoke test for contrast that will be repeated
-    model.compute_contrast(c2)
-    model.compute_contrast(c2, "F")
-    model.compute_contrast(c2, "t", "z_score")
-    model.compute_contrast(c2, "t", "stat")
-    model.compute_contrast(c2, "t", "p_value")
-    model.compute_contrast(c2, None, "effect_size")
-    model.compute_contrast(c2, None, "effect_variance")
+    for kwargs in [
+        {},
+        {"stat_type": "F"},
+        {"stat_type": "t", "output_type": "z_score"},
+        {"stat_type": "t", "output_type": "stat"},
+        {"stat_type": "t", "output_type": "p_value"},
+        {"output_type": "effect_size"},
+        {"output_type": "effect_variance"},
+    ]:
+        model.compute_contrast(c2, **kwargs)
 
     # formula should work (passing variable name directly)
-    model.compute_contrast("c0")
-    model.compute_contrast("c1")
-    model.compute_contrast("c2")
+    for cn in ["c0", "c1", "c2"]:
+        model.compute_contrast(cn)
 
     # smoke test for one null contrast in group
     model.compute_contrast([c2, cnull])
@@ -1247,7 +1249,7 @@ def test_first_level_residuals(shape_4d_default):
 
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    residuals = model.residuals[0]
+    residuals = model.residuals_[0]
     mean_residuals = model.masker_.transform(residuals).mean(0)
 
     assert_array_almost_equal(mean_residuals, 0)
@@ -1271,7 +1273,7 @@ def test_first_level_residuals_errors(shape_4d_default):
     model.fit(fmri_data, design_matrices=design_matrices)
 
     with pytest.raises(AttributeError, match="To access voxelwise attributes"):
-        model.residuals[0]
+        model.residuals_[0]
 
     # Check that trying to access residuals without fitting
     # raises an error
@@ -1332,9 +1334,9 @@ def test_first_level_predictions_r_square(shape_4d_default):
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    pred = model.predicted[0]
+    pred = model.predicted_[0]
     data = fmri_data[0]
-    r_square_3d = model.r_square[0]
+    r_square_3d = model.r_square_[0]
 
     y_predicted = model.masker_.transform(pred)
     y_measured = model.masker_.transform(data)
@@ -1397,7 +1399,7 @@ def test_glm_sample_mask(shape_4d_default):
     )
 
     assert model.design_matrices_[0].shape[0] == shape_4d_default[3] - 3
-    assert model.predicted[0].shape[-1] == shape_4d_default[3] - 3
+    assert model.predicted_[0].shape[-1] == shape_4d_default[3] - 3
 
 
 def test_check_trial_type_warning(tmp_path):
@@ -1561,7 +1563,7 @@ def test_flm_with_surface_masker_with_mask(
     """Test FirstLevelModel with SurfaceMasker and mask image."""
     surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
     img, des = surface_glm_data(5)
-    masker = SurfaceMasker(mask_img=surf_mask).fit(img)
+    masker = SurfaceMasker(mask_img=surf_mask).fit()
     model = FirstLevelModel(mask_img=masker)
     model.fit(img, design_matrices=des)
 
@@ -1601,12 +1603,12 @@ def test_flm_get_element_wise_model_attribute_with_surface_data(
     events = basic_paradigm()
     model.fit([img, img], events=[events, events])
 
-    assert len(model.residuals) == 2
-    assert model.residuals[0].shape == img.shape
-    assert len(model.predicted) == 2
-    assert model.predicted[0].shape == img.shape
-    assert len(model.r_square) == 2
-    assert model.r_square[0].shape == (img.mesh.n_vertices, 1)
+    assert len(model.residuals_) == 2
+    assert model.residuals_[0].shape == img.shape
+    assert len(model.predicted_) == 2
+    assert model.predicted_[0].shape == img.shape
+    assert len(model.r_square_) == 2
+    assert model.r_square_[0].shape == (img.mesh.n_vertices, 1)
 
 
 # -----------------------bids tests----------------------- #

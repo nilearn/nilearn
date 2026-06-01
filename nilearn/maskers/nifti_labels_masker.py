@@ -505,6 +505,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 idx = self.labels.index("background")
                 self.labels[idx] = "Background"
 
+        if np.all(get_data(self.labels_img_) == self.background_label):
+            raise ValueError("Image has no label.")
+
         self.lut_ = self._generate_lut()
 
         self._original_region_ids = self.lut_["index"].to_list()
@@ -557,6 +560,15 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
             # Just check that the mask is valid
             load_mask_img(self.mask_img_)
+
+        if self.mask_img_ is not None and ref_img is not None:
+            labels_data = get_data(self.labels_img_)
+            mask_data = get_data(self.mask_img_).astype(bool)
+            masked_labels_data = labels_data[mask_data, ...]
+            if np.all(masked_labels_data == 0):
+                raise ValueError(
+                    "No label left after applying mask to the labels image."
+                )
 
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
@@ -714,6 +726,14 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                     target_shape=imgs_.shape[:3],
                     target_affine=imgs_.affine,
                 )
+                labels_data = get_data(labels_img_)
+                mask_data = get_data(mask_img_).astype(bool)
+                masked_labels_data = labels_data[mask_data, ...]
+                if np.all(masked_labels_data == 0):
+                    raise ValueError(
+                        "No label left after applying mask "
+                        "to the labels image."
+                    )
 
             # Remove imgs_ from memory before loading the same image
             # in filter_and_extract.
@@ -792,7 +812,16 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             target_shape=imgs_.shape[:3],
             target_affine=imgs_.affine,
         )
+
+        # labels_after_resampling also include the background value,
+        # so its minimum value should be 1
         labels_after_resampling = set(np.unique(safe_get_data(labels_img_)))
+        # (using <= for some weird edge cases
+        # where we would not even get some background voxels)
+        if len(labels_after_resampling) <= 1:
+            raise ValueError(
+                "No label left after resampling the labels image."
+            )
         if labels_diff := labels_before_resampling.difference(
             labels_after_resampling
         ):

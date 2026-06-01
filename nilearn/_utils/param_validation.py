@@ -194,6 +194,7 @@ TYPE_MAPS = {
     "n_jobs": nilearn_typing.NJobs,
     "n_perm": nilearn_typing.NPerm,
     "opening": nilearn_typing.Opening,
+    "output_file": nilearn_typing.OutputFile,
     "radiological": nilearn_typing.Radiological,
     "random_state": nilearn_typing.RandomState,
     "resampling_interpolation": nilearn_typing.ResamplingInterpolation,
@@ -280,14 +281,27 @@ def check_params(fn_dict) -> None:
 def check_is_of_allowed_type(
     value: Any, type_to_check: tuple[Any] | Any, parameter_name: str
 ) -> None:
+    """Check that value is of requested type.
+
+    Ignore truthy / falsy so that:
+
+    check_is_of_allowed_type(True, (int), "foo") will fail.
+
+    """
     if not isinstance(type_to_check, tuple):
         type_to_check = (type_to_check,)
-    if not isinstance(value, type_to_check):
-        type_to_check_str = ", ".join([str(x) for x in type_to_check])
-        error_msg = (
-            f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
-            f"Got: '{value.__class__.__name__}'"
-        )
+    type_to_check_str = ", ".join([str(x) for x in type_to_check])
+    error_msg = (
+        f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
+        f"Got: '{value.__class__.__name__}'"
+    )
+    flat_types: list = []
+    for t in type_to_check:
+        args = get_args(t)
+        flat_types.extend(args or [t])
+    if (bool not in flat_types and isinstance(value, bool)) or not isinstance(
+        value, type_to_check
+    ):
         raise TypeError(error_msg)
 
 

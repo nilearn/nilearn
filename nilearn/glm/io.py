@@ -517,7 +517,7 @@ def _write_model_level_statistical_maps(model, out_dir):
         "model_level_mapping"
     ].items():
         for attr, map_name in model_level_mapping.items():
-            img = getattr(model, attr)
+            img = getattr(model, f"{attr}_")
             stat_map_to_save = img[i_run] if isinstance(img, Iterable) else img
             if model._is_volume_glm():
                 stat_map_to_save.to_filename(out_dir / map_name)
