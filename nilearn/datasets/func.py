@@ -2442,7 +2442,7 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
         in your analysis pipeline to fetch this dataset from openneuro.
 
         The `Datalad <https://handbook.datalad.org/en/latest/>`_ package
-        offers more flexibility to access those datassets:
+        offers more flexibility to access those datasets:
 
         Note also that each openneuro dataset has a tab giving you advice
         on how to download it
@@ -2623,7 +2623,7 @@ def fetch_openneuro_dataset(
         in your analysis pipeline to fetch data from openneuro.
 
         The `Datalad <https://handbook.datalad.org/en/latest/>`_ package
-        offers more flexibility to access those datassets:
+        offers more flexibility to access those datasets:
 
         Note also that each openneuro dataset has a tab giving you advice
         on how to download it

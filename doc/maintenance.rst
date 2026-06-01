@@ -193,7 +193,7 @@ tox run -e update_js
 Datasets
 ========
 
-Several datasets are on `OSF <https://osf.io>`_ and some of those are 'maintained' by the Nilearn devs.
+Several datasets are on `OSF <https://osf.io>`_ and some of those are 'maintained' by the Nilearn developers.
 
 Here is a quick description of the different OSF projects
 that the dev have access to:
