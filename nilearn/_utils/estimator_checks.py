@@ -758,7 +758,7 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
         n_timepoints = 40
         if isinstance(estimator, DictLearning):
             n_subjects = 1
-            n_timepoints = 150
+            n_timepoints = 175
 
         decomp_input = _make_volume_data_from_components(
             _canica_components_volume(_shape_3d_large()),

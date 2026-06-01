@@ -229,7 +229,7 @@ def canica_data(
                 _make_canica_components,
                 decomposition_mesh,
                 rng,
-                n_timepoints=150,
+                n_timepoints=175,
             )
             for _ in range(n_subjects)
         ]
@@ -419,14 +419,14 @@ def canica_img(
             shape_3d_large,
             rng,
             n_subjects=1,
-            n_timepoints=150,
+            n_timepoints=175,
         )[0]
 
     return _make_surface_data_from_components(
         _make_canica_components,
         decomposition_mesh,
         rng,
-        n_timepoints=150,
+        n_timepoints=175,
     )
 
 
