@@ -1239,16 +1239,40 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     return arr
 
 
+@overload
+def threshold_img(
+    img: SurfaceImage,
+    threshold,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    mask_img=...,
+    copy: bool = ...,
+    copy_header: bool = ...,
+) -> SurfaceImage: ...
+
+
+@overload
+def threshold_img(
+    img: NiimgLike | list[NiimgLike],
+    threshold,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    mask_img=...,
+    copy: bool = ...,
+    copy_header: bool = ...,
+) -> Nifti1Image: ...
+
+
 @fill_doc
 def threshold_img(
-    img,
-    threshold,
+    img: SurfaceImage | NiimgLike | list[NiimgLike],
+    threshold: float | str,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = True,
-    mask_img=None,
+    mask_img: SurfaceImage | NiimgLike | None = None,
     copy: bool = True,
     copy_header: bool = True,
-):
+) -> SurfaceImage | Nifti1Image:
     """Threshold the given input image, mostly statistical or atlas images.
 
     Thresholding can be done based on direct image intensities or selection
@@ -1381,9 +1405,6 @@ def threshold_img(
             f"Got {img.__class__.__name__}."
         )
 
-    if mask_img is not None:
-        check_compatibility_mask_and_images(mask_img, img)
-
     if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
         check_polymesh_equal(mask_img.mesh, img.mesh)
 
@@ -1399,8 +1420,13 @@ def threshold_img(
     img_data_for_cutoff = img_data
 
     if mask_img is not None:
+        check_compatibility_mask_and_images(mask_img, img)
+
         # Set as 0 for the values which are outside of the mask
         if isinstance(mask_img, NiimgLike):
+            if TYPE_CHECKING:
+                assert isinstance(img, Nifti1Image)
+
             mask_img = check_niimg_3d(mask_img)
             if not check_same_fov(img, mask_img):
                 mask_img = resample_img(
@@ -1417,6 +1443,9 @@ def threshold_img(
             img_data[mask_data == 0.0] = 0.0
 
         else:
+            if TYPE_CHECKING:
+                assert isinstance(img, SurfaceImage)
+
             mask_img, _ = load_mask_img(mask_img)
 
             mask_data = get_surface_data(mask_img)
