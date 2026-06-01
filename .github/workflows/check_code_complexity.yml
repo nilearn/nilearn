@@ -1,0 +1,51 @@
+---
+name: Complexity Check
+
+on:
+    pull_request:
+        branches:
+        -   '*'
+        paths:
+        -   nilearn/**/*
+
+env:
+    MAX_COMPLEXITY_ALLOWED: 25
+
+jobs:
+    check:
+        runs-on: ubuntu-latest
+        # The write permissions block is removed since we are no longer committing files.
+        steps:
+        # 1. Checkout the main branch to establish the baseline
+        -   name: Checkout main branch
+            uses: actions/checkout@v4
+            with:
+                ref: main
+                path: main_branch
+
+        # 2. Checkout the current branch/PR being tested
+        -   name: Checkout current branch
+            uses: actions/checkout@v4
+            with:
+                path: current_branch
+
+        -   name: Set up Python
+            uses: actions/setup-python@v5
+            with:
+                python-version: 3.x
+
+        -   name: Install complexipy
+            run: pip install complexipy>=5.0.0
+
+        # 3. Generate the snapshot on main and copy it to the current branch directory
+        -   name: Create snapshot from main
+            run: |
+                cd main_branch
+                complexipy nilearn --snapshot-create
+                cp complexipy-snapshot.json ../current_branch/
+
+        # 4. Evaluate the current branch against the copied main snapshot
+        -   name: Check code complexity
+            run: |
+                cd current_branch
+                complexipy nilearn --max-complexity-allowed ${{ env.MAX_COMPLEXITY_ALLOWED }}
