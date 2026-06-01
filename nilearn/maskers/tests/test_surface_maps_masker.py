@@ -181,3 +181,93 @@ def test_surface_maps_masker_mask_img_masks_all_maps_error(surf_mesh):
         match="No map left after applying mask to the maps image",
     ):
         SurfaceMapsMasker(maps_img=maps_img, mask_img=mask_img).fit()
+
+
+@pytest.fixture
+def non_overlapping_maps(surf_mesh):
+    """Generate maps with non-overlapping regions.
+
+    Each vertex belongs to only 1 region.
+    """
+    data = {
+        "left": np.asarray(
+            [
+                [0, 0],
+                [0, 0],
+                [0, 0.1],
+                [0.7, 0],
+            ]
+        ),
+        "right": np.asarray(
+            [
+                [0, 0.6],
+                [0.3, 0],
+                [0, 0],
+                [0, 0],
+                [0, 0],
+            ]
+        ),
+    }
+    return SurfaceImage(surf_mesh, data)
+
+
+@pytest.fixture
+def overlapping_maps(surf_mesh):
+    """Generate maps with overlapping regions.
+
+    Some vertices have non null value for 2 different regions.
+    """
+    data = {
+        "left": np.asarray(
+            [
+                [0, 0],
+                [0, 0],
+                [0, 0],
+                [0.7, 0.1],  # overlap
+            ]
+        ),
+        "right": np.asarray(
+            [
+                [0, 0],
+                [0.3, 0.6],  # overlap
+                [0, 0],
+                [0, 0],
+                [0, 0],
+            ]
+        ),
+    }
+    return SurfaceImage(surf_mesh, data)
+
+
+@pytest.mark.parametrize("allow_overlap", [True, False])
+def test_non_overlapping_maps(
+    allow_overlap, non_overlapping_maps, surf_img_ones_1d
+):
+    """Test allow_overlap in SurfaceMapsMasker with non overlapping maps."""
+    masker = SurfaceMapsMasker(
+        non_overlapping_maps, allow_overlap=allow_overlap, standardize=None
+    )
+    region_signals = masker.fit_transform(surf_img_ones_1d)
+    assert np.allclose(
+        region_signals,
+        np.array([[1.72, 1.89]]),
+        atol=1e-02,
+    )
+
+
+@pytest.mark.parametrize("allow_overlap", [True, False])
+def test_overlapping_maps(allow_overlap, overlapping_maps, surf_img_ones_1d):
+    """Test allow_overlap in SurfaceMapsMasker with overlapping maps."""
+    masker = SurfaceMapsMasker(
+        overlapping_maps, allow_overlap=allow_overlap, standardize=None
+    )
+    if allow_overlap is False:
+        with pytest.raises(ValueError, match="Overlap detected"):
+            masker.fit_transform(surf_img_ones_1d)
+    else:
+        region_signals = masker.fit_transform(surf_img_ones_1d)
+        assert np.allclose(
+            region_signals,
+            np.array([[1.28, 1.02]]),
+            atol=1e-02,
+        )
