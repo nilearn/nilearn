@@ -261,11 +261,11 @@ def get_dataset_dir(
             path = path.resolve()
         if path.exists() and path.is_dir():
             logger.log(
-                f"Non empty dataset directory found: {path}",
+                f"Dataset directory found: {path}",
                 verbose=verbose,
                 msg_level=1,
             )
-            if len(list(path.iterdir())) > 0:
+            if len(list(path.iterdir())) == 0:
                 logger.log(
                     " Dataset directory is empty",
                     verbose=verbose,
