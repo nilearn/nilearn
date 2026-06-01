@@ -758,7 +758,7 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
         n_timepoints = 40
         if isinstance(estimator, DictLearning):
             n_subjects = 1
-            n_timepoints = 175
+            n_timepoints = 200
 
         decomp_input = _make_volume_data_from_components(
             _canica_components_volume(_shape_3d_large()),
@@ -1880,27 +1880,18 @@ def check_img_estimator_standardization(estimator_orig) -> None:
         if not hasattr(estimator_orig, method):
             continue
 
-        estimator = clone(estimator_orig)
-
-        if is_classifier(estimator) or is_regressor(estimator):
-            estimator.fit(input_img, y)
-        else:
-            estimator.fit(input_img)
-
         results = {}
         standardize_values = [
             "zscore_sample",
             "psc",
-            True,
-            False,
             None,
         ]
         for standardize in standardize_values:
             if standardize == "psc" and isinstance(
-                estimator, _BaseDecomposition
+                estimator_orig, DictLearning
             ):
                 # FIXME flaky test
-                # psc with _BaseDecomposition
+                # psc with DictLearning
                 # sometimes leads to an array of inf / nan
                 continue
 
@@ -1913,24 +1904,7 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             else:
                 estimator.fit(input_img)
 
-            if (
-                not isinstance(estimator, _BaseDecomposition)
-                and isinstance(standardize, bool)
-                and method == "transform"
-            ):
-                with pytest.warns(
-                    FutureWarning,
-                    match=(
-                        "boolean values for 'standardize' will be deprecated"
-                    ),
-                ):
-                    results[str(standardize)] = getattr(estimator, method)(
-                        input_img
-                    )
-            else:
-                results[str(standardize)] = getattr(estimator, method)(
-                    input_img
-                )
+            results[str(standardize)] = getattr(estimator, method)(input_img)
 
         unstandarized_result = results[str(None)]
 
