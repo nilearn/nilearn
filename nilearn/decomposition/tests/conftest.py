@@ -221,7 +221,7 @@ def canica_data(
             shape_3d_large,
             rng,
             n_subjects,
-            n_timepoints=175,
+            n_timepoints=200,
         )
 
     else:
@@ -230,7 +230,7 @@ def canica_data(
                 _make_canica_components,
                 decomposition_mesh,
                 rng,
-                n_timepoints=175,
+                n_timepoints=200,
             )
             for _ in range(n_subjects)
         ]
@@ -332,7 +332,7 @@ def _make_surface_data_from_components(
     n_left = mesh.parts["left"].coordinates.shape[0]
 
     if weights is None:
-        weights = np.abs(rng.normal(size=(n_timepoints, n_components)))
+        weights = rng.normal(size=(n_timepoints, n_components))
 
     data_all = weights @ components + 0.01 * rng.normal(
         size=(n_timepoints, components.shape[1])
@@ -425,14 +425,14 @@ def canica_img(
             shape_3d_large,
             rng,
             n_subjects=1,
-            n_timepoints=175,
+            n_timepoints=200,
         )[0]
 
     return _make_surface_data_from_components(
         _make_canica_components,
         decomposition_mesh,
         rng,
-        n_timepoints=175,
+        n_timepoints=200,
     )
 
 
