@@ -309,7 +309,7 @@ def _make_surface_data_from_components(
     rng,
     n_timepoints: int = 40,
     weights=None,
-    baseline: float = 1000,
+    baseline: float = 100,
 ) -> SurfaceImage:
     """Create a single surface image suitable for DictLearning.
 
@@ -355,7 +355,7 @@ def _make_volume_data_from_components(
     rng,
     n_subjects: int,
     n_timepoints: int = 40,
-    baseline: float = 1000,
+    baseline: float = 100,
 ) -> list[Nifti1Image]:
     """Create a "multi-subject" dataset of volume data."""
     background = -0.01 * rng.normal(size=shape) - 2
