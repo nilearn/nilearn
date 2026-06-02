@@ -133,16 +133,18 @@ def test_plot_roi_contour_colors(affine_mni):
     """Test `nilearn.plotting.image.img_plotting.plot_roi` to see that contour
     colors comply with region colors.
     """
-    img = generate_labeled_regions((40, 35, 32), n_regions=6, affine=affine_mni)
+    img = generate_labeled_regions(
+        (40, 35, 32), n_regions=6, affine=affine_mni
+    )
 
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(15, 5))
 
-    plot_roi(img, title="ROIs", cut_coords=[0, 0, 0], axes=ax[0])
+    plot_roi(img, title="ROIs", cut_coords=[-50, -90, -40], axes=ax[0])
     plot_roi(
         img,
         title="contours",
         view_type="contours",
-        cut_coords=[0, 0, 0],
+        cut_coords=[-50, -90, -40],
         axes=ax[1],
     )
     return fig
