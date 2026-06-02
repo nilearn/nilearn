@@ -767,6 +767,7 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
             _rng(),
             n_subjects=n_subjects,
             n_timepoints=n_timepoints,
+            baseline=100,
         )
 
         return decomp_input[0], None
