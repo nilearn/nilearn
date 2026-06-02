@@ -33,6 +33,11 @@ The advantage of this second approach is that it makes it easy to run
 second-level analyses on the surface.
 On the other hand, it is obviously less accurate
 than using a subject-tailored mesh.
+
+.. seealso::
+
+    For more information about the dataset
+    see its :ref:`description <localizer_first_level_dataset>`.
 """
 
 # %%
