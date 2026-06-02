@@ -15,6 +15,11 @@ should first run the
 :ref:`sphx_glr_auto_examples_00_tutorials_plot_single_subject_single_run.py`
 tutorial to get a bit more familiar with the base concepts,
 and only then run this tutorial example.
+
+.. seealso::
+
+    For more information about the dataset
+    see its :ref:`description <localizer_first_level_dataset>`.
 """
 
 # %%
