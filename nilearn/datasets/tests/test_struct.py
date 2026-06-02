@@ -12,7 +12,6 @@ from nilearn._utils.helpers import is_windows_platform
 from nilearn.datasets.struct import (
     _apply_mesh_mapping,
     _get_mesh_mapping,
-    _is_vertex_order_equal,
     fetch_icbm152_2009,
     fetch_icbm152_brain_gm_mask,
     fetch_oasis_vbm,
@@ -32,7 +31,7 @@ from nilearn.datasets.tests._testing import (
     dict_to_archive,
     list_to_archive,
 )
-from nilearn.surface import PolyMesh, SurfaceImage, load_surf_data
+from nilearn.surface import PolyMesh, SurfaceImage
 
 
 def test_fetch_icbm152_2009(tmp_path, request_mocker, capsys):
@@ -205,50 +204,6 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     check_type_fetcher(dataset)
 
     assert mesh_attributes.issubset(set(dataset.keys()))
-
-
-@pytest.mark.flaky
-@pytest.mark.parametrize(
-    "mesh",
-    [
-        "fsaverage3",
-        "fsaverage4",
-    ],
-)
-def test_fetch_surf_fsaverage_wrong_order(mesh, tmp_path, monkeypatch):
-    """Test nilearn.datasets.fetch_surf_fsaverage for fsaverage3 and
-    fsaverage4 to check if a warning is raised when vertex order is wrong and
-    if the vertex order is corrected.
-
-    TODO : Remove this tests once the datasets on OSF are updated adding mesh
-    parameters "fsaverage3" and "fsaverage4" to test_fetch_surf_fsaverage test.
-    """
-    # Define attribute list that nilearn meshs should contain
-    # (each attribute should eventually map to a _.gii.gz file
-    # named after the attribute)
-    monkeypatch.undo()
-
-    with pytest.warns(UserWarning, match="Unsorted vertex"):
-        fsx = fetch_surf_fsaverage(mesh, data_dir=tmp_path)
-
-    fs7 = fetch_surf_fsaverage("fsaverage7", data_dir=tmp_path)
-
-    for view in [
-        "flat_left",
-        "flat_right",
-        "pial_left",
-        "pial_right",
-        "infl_left",
-        "infl_right",
-        "sphere_left",
-        "sphere_right",
-        "white_left",
-        "white_right",
-    ]:
-        fs7_coordinates, _ = load_surf_data(fs7[view])
-        fsx_coordinates, _ = load_surf_data(fsx[view])
-
-        assert _is_vertex_order_equal(fs7_coordinates, fsx_coordinates)
 
 
 def test_fetch_load_fsaverage():

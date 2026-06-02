@@ -791,7 +791,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     roi_data = get_data(roi_img)
     labels = np.unique(roi_data)
     cmap = plt.get_cmap(cmap)
-    color_list = cmap(np.linspace(0, 1, len(labels)))
+    color_list = cmap(np.linspace(0, 1, len(labels) - 1))
     for idx, label in enumerate(labels):
         if label == 0:
             continue
