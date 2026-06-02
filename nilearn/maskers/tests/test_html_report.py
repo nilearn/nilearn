@@ -175,7 +175,11 @@ def input_parameters(masker_class, img_mask_eye, labels, img_labels):
     ],
 )
 def test_displayed_maps_valid_inputs(
-    masker_class, input_parameters, displayed_maps, expected_displayed_maps
+    matplotlib_pyplot,  # noqa: ARG001
+    masker_class,
+    input_parameters,
+    displayed_maps,
+    expected_displayed_maps,
 ):
     """Test valid inputs for displayed_maps/spheres."""
     masker = masker_class(**input_parameters)
@@ -607,7 +611,9 @@ def test_surface_maps_masker_generate_report_engine_error(
     reason="Test requires plotly not to be installed.",
 )
 def test_surface_maps_masker_generate_report_engine_no_plotly_warning(
-    surf_maps_img, surf_img_2d
+    matplotlib_pyplot,  # noqa: ARG001
+    surf_maps_img,
+    surf_img_2d,
 ):
     """Test warning is raised when engine selected is plotly but it is not
     installed. Only run when plotly is not installed but matplotlib is.
