@@ -261,8 +261,22 @@ def get_dataset_dir(
             path = path.resolve()
         if path.exists() and path.is_dir():
             logger.log(
-                f"Dataset found in {path}", verbose=verbose, msg_level=1
+                f"Dataset directory found: {path}",
+                verbose=verbose,
+                msg_level=1,
             )
+            if len(list(path.iterdir())) == 0:
+                logger.log(
+                    " Dataset directory is empty",
+                    verbose=verbose,
+                    msg_level=1,
+                )
+            else:
+                logger.log(
+                    " Note that some files still may be missing.",
+                    verbose=verbose,
+                    msg_level=2,
+                )
             return path
 
     # If not, create a folder in the first writable directory
@@ -521,9 +535,9 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
 @fill_doc
 def fetch_single_file(
     url,
-    data_dir,
-    resume=True,
-    overwrite=False,
+    data_dir: Path,
+    resume: bool = True,
+    overwrite: bool = False,
     md5sum=None,
     username=None,
     password=None,
@@ -535,8 +549,11 @@ def fetch_single_file(
     Parameters
     ----------
     %(url)s
+
     %(data_dir)s
+
     %(resume)s
+
     overwrite : bool, default=False
         If true and file already exists, delete it.
 
@@ -843,6 +860,12 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             overwrite
             or (not target_file.exists() and not temp_target_file.exists())
         ):
+            logger.log(
+                f"Downloading missing file: {target_file}",
+                verbose=verbose,
+                msg_level=2,
+            )
+
             # We may be in a global read-only repository. If so, we cannot
             # download files.
             if not os.access(data_dir, os.W_OK):

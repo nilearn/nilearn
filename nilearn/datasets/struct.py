@@ -57,13 +57,19 @@ FSAVERAGE5_PATH = PACKAGE_DIRECTORY / "data" / "fsaverage5"
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
+
     %(templateflow)s
 
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -115,8 +121,6 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     -----
     %(fetcher_note)s
 
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
     """
     check_params(locals())
 
@@ -180,6 +184,9 @@ def load_mni152_template(resolution=None) -> Nifti1Image:
     re-scaled 1mm-resolution version of the :term:`MNI` ICBM152 T1 template
     and re-samples it using a different resolution, if specified.
 
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
+
     %(templateflow)s
 
     Parameters
@@ -203,11 +210,6 @@ def load_mni152_template(resolution=None) -> Nifti1Image:
 
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
-
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     check_params(locals())
@@ -241,6 +243,9 @@ def load_mni152_gm_template(resolution=None):
     MNI ICBM152 template and re-samples it using a different resolution,
     if specified.
 
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
+
     %(templateflow)s
 
     .. nilearn_versionadded:: 0.8.1
@@ -261,11 +266,6 @@ def load_mni152_gm_template(resolution=None):
 
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
-
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     check_params(locals())
@@ -300,6 +300,9 @@ def load_mni152_wm_template(resolution=None):
     and re-samples it using a different
     resolution, if specified.
 
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
+
     %(templateflow)s
 
     .. nilearn_versionadded:: 0.8.1
@@ -320,11 +323,6 @@ def load_mni152_wm_template(resolution=None):
 
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template.
-
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     check_params(locals())
@@ -357,6 +355,9 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
     This function takes the whole-brain MNI152 T1 template and threshold it,
     in order to obtain the corresponding whole-brain mask.
 
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
+
     %(templateflow)s
 
     .. nilearn_versionadded:: 0.2.5
@@ -379,11 +380,6 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
     nilearn.datasets.load_mni152_template : for details about version of the
         MNI152 T1 template and related.
 
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
-
     """
     check_params(locals())
 
@@ -403,6 +399,9 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     This function takes the grey-matter MNI152 template and threshold it, in
     order to obtain the corresponding grey-matter mask.
+
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     %(templateflow)s
 
@@ -430,11 +429,6 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template and related.
 
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
-
     """
     check_params(locals())
 
@@ -459,6 +453,9 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     This function takes the white-matter MNI152 template and threshold it, in
     order to obtain the corresponding white-matter mask.
+
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     %(templateflow)s
 
@@ -486,11 +483,6 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template and related.
 
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
-
     """
     check_params(locals())
 
@@ -514,6 +506,9 @@ def fetch_icbm152_brain_gm_mask(
     data_dir=None, threshold=0.2, resume=True, n_iter=2, verbose=1
 ):
     """Download ICBM152 template first, then loads the 'gm' mask.
+
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
      %(templateflow)s
 
@@ -563,8 +558,6 @@ def fetch_icbm152_brain_gm_mask(
     .. note::
         It is advised to check the mask image with your own data processing.
 
-    For more information
-    see the :ref:`dataset description <icbm_152_template>`.
     """
     check_params(locals())
 
@@ -643,6 +636,9 @@ def fetch_oasis_vbm(
 ):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
+    For more information
+    see the :ref:`dataset description <oasis_maps>`.
+
     ..  admonition:: Data Usage Agreement
         :class: attention
 
@@ -682,8 +678,6 @@ def fetch_oasis_vbm(
     -----
     %(fetcher_note)s
 
-    For more information
-    see the :ref:`dataset description <oasis_maps>`.
     """
     check_params(locals())
 
@@ -872,6 +866,13 @@ def fetch_surf_fsaverage(
     :func:`~nilearn.datasets.load_fsaverage_data`
     to access fsaverage data as :obj:`~nilearn.surface.SurfaceImage`.
 
+    .. nilearn_versionchanged:: 0.14.0dev
+
+        The data for fsaverage3 and fsaverage4 have been updated
+        to have their vertices in the same order as fsaverage5-7.
+        Old faulty local copies of fsaverage3 and fsaverage4
+        are corrected the first time they are loaded.
+
     Parameters
     ----------
     mesh : :obj:`str`, default='fsaverage5'
@@ -884,31 +885,28 @@ def fetch_surf_fsaverage(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
-         - 'area_left': Gifti file, left hemisphere area data
-         - 'area_right': Gifti file, right hemisphere area data
-         - 'curv_left': Gifti file, left hemisphere curvature data
-         - 'curv_right': Gifti file, right hemisphere curvature data
-         - 'flat_left': Gifti file, left hemisphere flat surface :term:`mesh`
-         - 'flat_right': Gifti file, right hemisphere flat surface :term:`mesh`
-         - 'pial_left': Gifti file, left hemisphere pial surface :term:`mesh`
-         - 'pial_right': Gifti file, right hemisphere pial surface :term:`mesh`
-         - 'infl_left': Gifti file, left hemisphere inflated pial surface
-           :term:`mesh`
-         - 'infl_right': Gifti file, right hemisphere inflated pial
-           surface :term:`mesh`
-         - 'sphere_left': Gifti file, left hemisphere sphere surface
-           :term:`mesh`
-         - 'sphere_right': Gifti file, right hemisphere sphere surface
-           :term:`mesh`
-         - 'sulc_left': Gifti file, left hemisphere sulcal depth data
-         - 'sulc_right': Gifti file, right hemisphere sulcal depth data
-         - 'thick_left': Gifti file, left hemisphere cortical thickness data
-         - 'thick_right': Gifti file, right hemisphere cortical thickness data
-         - 'white_left': Gifti file, left hemisphere
-           white surface :term:`mesh`
-         - 'white_right': Gifti file, right hemisphere*
-           white surface :term:`mesh`
+        Dictionary-like object,
+        where each value is a path to a Gifti file
+        and the keys are:
+
+         - 'flat_left':    left hemisphere flat surface :term:`mesh`
+         - 'flat_right':   right hemisphere flat surface :term:`mesh`
+         - 'infl_left':    left hemisphere inflated pial surface :term:`mesh`
+         - 'infl_right':   right hemisphere inflated pial surface :term:`mesh`
+         - 'pial_left':    left hemisphere pial surface :term:`mesh`
+         - 'pial_right':   right hemisphere pial surface :term:`mesh`
+         - 'sphere_left':  left hemisphere sphere surface :term:`mesh`
+         - 'sphere_right': right hemisphere sphere surface :term:`mesh`
+         - 'white_left':   left hemisphere white surface :term:`mesh`
+         - 'white_right':  right hemisphere white surface :term:`mesh`
+         - 'area_left':    left hemisphere area data
+         - 'area_right':   right hemisphere area data
+         - 'curv_left':    left hemisphere curvature data
+         - 'curv_right':   right hemisphere curvature data
+         - 'sulc_left':    left hemisphere sulcal depth data
+         - 'sulc_right':   right hemisphere sulcal depth data
+         - 'thick_left':   left hemisphere cortical thickness data
+         - 'thick_right':  right hemisphere cortical thickness data
 
     References
     ----------
@@ -1135,8 +1133,8 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None) -> Bunch[str, str]:
     opts = {"uncompress": True}
 
     url = {
-        "fsaverage3": "https://osf.io/azhdf/download",
-        "fsaverage4": "https://osf.io/28uma/download",
+        "fsaverage3": "https://osf.io/329dq/download",
+        "fsaverage4": "https://osf.io/gkqd5/download",
         "fsaverage6": "https://osf.io/jzxyr/download",
         "fsaverage": "https://osf.io/svf8k/download",  # fsaverage7
     }[dataset_name]

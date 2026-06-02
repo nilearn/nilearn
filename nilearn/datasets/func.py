@@ -287,15 +287,22 @@ def adhd_ids():
 def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ADHD :term:`resting-state` dataset.
 
+    For more information
+    see the :ref:`dataset description <adhd_dataset>`.
+
     Parameters
     ----------
     n_subjects : :obj:`int`, default=30
         The number of subjects to load from maximum of 40 subjects.
         By default, 30 subjects will be loaded. If None is given,
         all 40 subjects will be loaded.
+
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -318,12 +325,6 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     Notes
     -----
     %(fetcher_note)s
-
-    See :footcite:t:`ADHDdataset`.
-
-    References
-    ----------
-    .. footbibliography::
 
     """
     check_params(locals())
@@ -1518,6 +1519,9 @@ def fetch_megatrawls_netmats(
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects.
 
+    For more information
+    see the :ref:`dataset description <megatrawls_maps>`.
+
     ..  admonition:: Technical details
         :class: important
 
@@ -1582,9 +1586,6 @@ def fetch_megatrawls_netmats(
     Notes
     -----
     %(fetcher_note)s
-
-    For more information
-    see the :ref:`dataset description <megatrawls_maps>`.
 
     """
     check_params(locals())
@@ -1759,6 +1760,9 @@ def fetch_surf_nki_enhanced(
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
+    For more information
+    see the :ref:`dataset description <nki_dataset>`.
+
     .. nilearn_versionadded:: 0.3
 
     Parameters
@@ -1799,8 +1803,6 @@ def fetch_surf_nki_enhanced(
     -----
     %(fetcher_note)s
 
-    For more information
-    see the :ref:`dataset description <nki_dataset>`.
     """
     check_params(locals())
 
@@ -1906,6 +1908,9 @@ def load_nki(
 ):
     """Load NKI enhanced surface data into a surface object.
 
+    For more information
+    see the :ref:`dataset description <nki_dataset>`.
+
     .. nilearn_versionadded:: 0.11.0
 
     Parameters
@@ -1941,10 +1946,6 @@ def load_nki(
     list of SurfaceImage objects
         One image per subject.
 
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <nki_dataset>`.
     """
     check_params(locals())
     check_parameter_in_allowed(mesh_type, ALLOWED_MESH_TYPES, "mesh_type")
@@ -2351,6 +2352,9 @@ def _reduce_confounds(regressors, keep_confounds):
 def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     """Download language localizer demo dataset.
 
+    For more information
+    see the :ref:`dataset description <language_localizer_dataset>`.
+
     Parameters
     ----------
     %(data_dir)s
@@ -2375,21 +2379,38 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     """
     check_params(locals())
 
-    url = "https://osf.io/3dj2a/download"
-    # When it starts working again change back to:
-    # url = 'https://osf.io/nh987/download'
+    url = "https://osf.io/nh987/download"
+    # back up URL in case the one above fails
+    backup_url = "https://osf.io/3dj2a/download"
+
     main_folder = "fMRI-language-localizer-demo-dataset"
 
     data_dir = get_dataset_dir(main_folder, data_dir=data_dir, verbose=verbose)
-    # The files_spec needed for fetch_files
-    files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
-    # Only download if directory is empty
-    # Directory will have been created by the call to get_dataset_dir above
-    if not list(data_dir.iterdir()):
-        downloaded_files = fetch_files(
-            data_dir, files_spec, resume=True, verbose=verbose
-        )
-        uncompress_file(downloaded_files[0])
+
+    try:
+        # The files_spec needed for fetch_files
+        files_spec = [
+            (f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})
+        ]
+        # Only download if directory is empty
+        # Directory will have been created by the call to get_dataset_dir above
+        if not list(data_dir.iterdir()):
+            downloaded_files = fetch_files(
+                data_dir, files_spec, resume=True, verbose=verbose
+            )
+            uncompress_file(downloaded_files[0])
+    except Exception:
+        # The files_spec needed for fetch_files
+        files_spec = [
+            (f"{main_folder}.zip", backup_url, {"move": f"{main_folder}.zip"})
+        ]
+        # Only download if directory is empty
+        # Directory will have been created by the call to get_dataset_dir above
+        if not list(data_dir.iterdir()):
+            downloaded_files = fetch_files(
+                data_dir, files_spec, resume=True, verbose=verbose
+            )
+            uncompress_file(downloaded_files[0])
 
     file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
 
@@ -2407,15 +2428,31 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
 
     This dataset is version 1.0.4 of the "UCLA Consortium for
     Neuropsychiatric Phenomics LA5c" dataset
-    :footcite:p:`Poldrack2016`.
 
     Downloading the index allows users to explore the dataset directories
     to select specific files to download.
     The index is a sorted list of urls.
 
+    For more information,
+    see the :ref:`dataset description <ds000030>`.
+
+    .. admonition:: Recommendation
+
+        We strongly suggest you do NOT use this function
+        in your analysis pipeline to fetch this dataset from openneuro.
+
+        The `Datalad <https://handbook.datalad.org/en/latest/>`_ package
+        offers more flexibility to access those datasets:
+
+        Note also that each openneuro dataset has a tab giving you advice
+        on how to download it
+        (see for
+        `example <https://openneuro.org/datasets/ds000030/versions/1.0.0/download>`_).
+
     Parameters
     ----------
     %(data_dir)s
+
     %(verbose)s
 
     Returns
@@ -2430,9 +2467,6 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
     -----
     %(fetcher_note)s
 
-    References
-    ----------
-    .. footbibliography::
     """
     check_params(locals())
 
@@ -2578,9 +2612,23 @@ def fetch_openneuro_dataset(
     """Download OpenNeuro :term:`BIDS` dataset.
 
     This function specifically downloads files from a series of URLs.
+
     Unless you use :func:`fetch_ds000030_urls` or the default parameters,
     it is up to the user to ensure that the URLs are correct,
     and that they are associated with an OpenNeuro dataset.
+
+    .. admonition:: Recommendation
+
+        We strongly suggest you do NOT use this function
+        in your analysis pipeline to fetch data from openneuro.
+
+        The `Datalad <https://handbook.datalad.org/en/latest/>`_ package
+        offers more flexibility to access those datasets:
+
+        Note also that each openneuro dataset has a tab giving you advice
+        on how to download it
+        (see for
+        `example <https://openneuro.org/datasets/ds000030/versions/1.0.0/download>`_).
 
     Parameters
     ----------
@@ -2588,9 +2636,12 @@ def fetch_openneuro_dataset(
         List of URLs to dataset files to download.
         If not specified, all files from the default dataset
         (``ds000030_R1.0.4``) will be downloaded.
+
     %(data_dir)s
+
     dataset_version : :obj:`str`, default='ds000030_R1.0.4'
         Dataset version name. Assumes it is of the form [name]_[version].
+
     %(verbose)s
 
     Returns
@@ -2606,8 +2657,9 @@ def fetch_openneuro_dataset(
     %(fetcher_note)s
 
     The default dataset downloaded by this function is the
-    "UCLA Consortium for Neuropsychiatric Phenomics LA5c" dataset
-    :footcite:p:`Poldrack2016`.
+    "UCLA Consortium for Neuropsychiatric Phenomics LA5c" dataset.
+    For more information,
+    see the :ref:`dataset description <ds000030>`.
 
     This copy includes filenames that are not compliant with the current
     version of :term:`BIDS`, so this function also calls
@@ -2618,9 +2670,6 @@ def fetch_openneuro_dataset(
     :func:`fetch_ds000030_urls`
     :func:`patch_openneuro_dataset`
 
-    References
-    ----------
-    .. footbibliography::
     """
     check_params(locals())
 
@@ -2710,6 +2759,9 @@ def fetch_openneuro_dataset(
 def fetch_localizer_first_level(data_dir=None, verbose=1):
     """Download a first-level localizer :term:`fMRI` dataset.
 
+    For more information
+    see the :ref:`dataset description <localizer_first_level_dataset>`.
+
     Parameters
     ----------
     %(data_dir)s
@@ -2731,6 +2783,8 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
         - slice_time_ref:
             slice timing reference used during slice timing correction
+
+        - %(template)s
 
     Notes
     -----
@@ -2759,6 +2813,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     data.description = description
     data.t_r = 2.4
     data.slice_time_ref = 0.5
+    data.template = "MNI305"
     return data
 
 
@@ -3071,6 +3126,9 @@ def fetch_spm_multimodal_fmri(
 def fetch_fiac_first_level(data_dir=None, verbose=1):
     """Download a first-level fiac :term:`fMRI` dataset (2 runs).
 
+    For more information
+    see the :ref:`dataset description <fiac_dataset>`.
+
     Parameters
     ----------
     %(data_dir)s
@@ -3094,9 +3152,6 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     Notes
     -----
     %(fetcher_note)s
-
-    For more information
-    see the :ref:`dataset description <fiac_dataset>`.
 
     """
     check_params(locals())
