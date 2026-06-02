@@ -1887,14 +1887,6 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             None,
         ]
         for standardize in standardize_values:
-            if standardize == "psc" and isinstance(
-                estimator_orig, DictLearning
-            ):
-                # FIXME flaky test
-                # psc with DictLearning
-                # sometimes leads to an array of inf / nan
-                continue
-
             estimator = clone(estimator_orig)
 
             estimator.standardize = standardize
