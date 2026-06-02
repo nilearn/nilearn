@@ -221,7 +221,6 @@ def canica_data(
             shape_3d_large,
             rng,
             n_subjects,
-            n_timepoints=200,
         )
 
     else:
