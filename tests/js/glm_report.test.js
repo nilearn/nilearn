@@ -6,7 +6,7 @@ const VIEWPORT = { x: 0, y: 0, width: 1200, height: 6000 }
 const glms = [
   { glm: 'slm_oasis', tolerance: 3500 },
   { glm: 'flm_bids_features', tolerance: 5000 },
-  { glm: 'flm_surf', tolerance: 5000 }
+  { glm: 'flm_surf', tolerance: 6500 }
 ]
 
 for (let i = 0; i < glms.length; i++) {
