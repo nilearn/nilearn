@@ -23,7 +23,7 @@ from nilearn.decomposition.tests.conftest import (
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 
-ESTIMATORS_TO_CHECK = [DictLearning(), CanICA()]
+ESTIMATORS_TO_CHECK = [DictLearning(random_state=42), CanICA(random_state=42)]
 
 if SKLEARN_LT_1_6:
 

@@ -361,7 +361,7 @@ def _make_volume_data_from_components(
 
     for _ in range(n_subjects):
         this_data = np.dot(
-            np.abs(rng.normal(size=(n_timepoints, N_COMPONENTS))), components
+            rng.normal(size=(n_timepoints, N_COMPONENTS)), components
         )
         this_data += 0.01 * rng.normal(size=this_data.shape)
 
