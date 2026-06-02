@@ -309,6 +309,7 @@ def _make_surface_data_from_components(
     rng,
     n_timepoints: int = 40,
     weights=None,
+    baseline: float = 1000,
 ) -> SurfaceImage:
     """Create a single surface image suitable for DictLearning.
 
@@ -336,6 +337,8 @@ def _make_surface_data_from_components(
     data_all = weights @ components + 0.01 * rng.normal(
         size=(n_timepoints, components.shape[1])
     )
+    data_all += baseline
+
     return SurfaceImage(
         mesh=mesh,
         data={
@@ -352,6 +355,7 @@ def _make_volume_data_from_components(
     rng,
     n_subjects: int,
     n_timepoints: int = 40,
+    baseline: float = 1000,
 ) -> list[Nifti1Image]:
     """Create a "multi-subject" dataset of volume data."""
     background = -0.01 * rng.normal(size=shape) - 2
@@ -364,6 +368,7 @@ def _make_volume_data_from_components(
             rng.normal(size=(n_timepoints, N_COMPONENTS)), components
         )
         this_data += 0.01 * rng.normal(size=this_data.shape)
+        this_data += baseline
 
         # Get back into 3D for CanICA
         this_data = np.reshape(this_data, (n_timepoints, *shape))
