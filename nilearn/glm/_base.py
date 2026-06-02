@@ -498,7 +498,8 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
 
         if self._report_content["engine"] == "matplotlib":
             self._report_content["mask_plot"] = mask_to_plot(self, bg_img)
-        else:
+
+        elif self._report_content["engine"] == "brainsprite":
             bg_img = self.masker_._reporting_data["images"]
             stat_map_img = self.masker_._reporting_data["mask"]
             self.masker_._create_brainsprite(
@@ -512,6 +513,11 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
                     "stat_map_base64"
                 ],
             }
+
+            self._set_brainsprite_data()
+
+        print(self._report_content.keys())
+
         self._report_content.update(self._get_masker_info())
         self._report_content["results"] = make_stat_maps_contrast_clusters(
             model=self,
