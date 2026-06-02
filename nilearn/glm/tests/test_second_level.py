@@ -713,6 +713,22 @@ def test_fit_inputs_errors(confounds, shape_4d_default):
         )
 
 
+def test_error_runs_different_fov(rng):
+    """Check runs have same FOV: raise an error if not."""
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+    design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(
+        shapes=[(10, 11, 12, 5), (10, 11, 12, 5)]
+    )
+
+    # error message happens at coompute contrast time
+    # but it should probably happen at fit time
+    slm = SecondLevelModel().fit(fmri_data, design_matrix=design_matrix)
+    slm.compute_contrast("b")
+
+
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "filename, sep", [("design.csv", ","), ("design.tsv", "\t")]

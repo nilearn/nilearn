@@ -1447,6 +1447,60 @@ def test_img_table_checks():
         _check_length_match([""] * 2, [""], "", "")
 
 
+def test_error_runs_different_fov():
+    """Check runs have same FOV: raise an error if not."""
+    _, imgs, des_mat = generate_fake_fmri_data_and_design(
+        shapes=[(10, 11, 12, 50), (20, 21, 22, 55)]
+    )
+
+    with pytest.raises(
+        ValueError, match="Following field of view errors were detected"
+    ):
+        FirstLevelModel().fit(imgs, design_matrices=des_mat)
+
+
+def test_mask_computed_on_all_runs():
+    """Ensure mask of a GLM with several run is computed on all runs.
+
+    - generate 2 runs with their design matrices
+    - set data in different part of each run to 0
+    - run GLM for each run separately or together
+      and compare their mask (and their intersection)
+
+    Regression test for https://github.com/nilearn/nilearn/issues/6253
+    """
+    mask, imgs, des_mat = generate_fake_fmri_data_and_design(
+        shapes=[(10, 11, 12, 50), (10, 11, 12, 55)]
+    )
+
+    data1 = get_data(imgs[0])
+    data1[6:, 6:, 6:, ...] = 0
+    imgs[0] = new_img_like(imgs[0], data1)
+
+    data2 = get_data(imgs[1])
+    data2[:5, :5, :5, ...] = 0
+    imgs[1] = new_img_like(imgs[1], data2)
+
+    flm = FirstLevelModel().fit(imgs, design_matrices=des_mat)
+    mask = flm.masker_.mask_img_
+    n_voxel_both_run = np.sum(get_data(mask) > 0)
+
+    flm1 = FirstLevelModel().fit(imgs[0], design_matrices=des_mat[0])
+    mask1 = flm1.masker_.mask_img_
+    n_voxel_run_1 = np.sum(get_data(mask1) > 0)
+
+    flm2 = FirstLevelModel().fit(imgs[1], design_matrices=des_mat[1])
+    mask2 = flm2.masker_.mask_img_
+    n_voxel_run_2 = np.sum(get_data(mask2) > 0)
+
+    new_mask = intersect_masks([mask1, mask2], threshold=1)
+    n_voxel_intersection = np.sum(get_data(new_mask) > 0)
+
+    assert n_voxel_both_run <= n_voxel_run_1
+    assert n_voxel_both_run <= n_voxel_run_2
+    assert n_voxel_intersection == n_voxel_both_run
+
+
 # -----------------------surface tests--------------------------------------- #
 
 
@@ -1734,45 +1788,3 @@ def test_generate_report_threshold_unused(threshold):
             )
             == 1
         )
-
-
-def test_mask_computed_on_all_runs():
-    """Ensure mask of a GLM with several run is computed on all runs.
-
-    - generate 2 runs with their design matrices
-    - set data in different part of each run to 0
-    - run GLM for each run separately or together
-      and compare their mask (and their intersection)
-
-    Regression test for https://github.com/nilearn/nilearn/issues/6253
-    """
-    mask, imgs, des_mat = generate_fake_fmri_data_and_design(
-        shapes=[(10, 11, 12, 50), (10, 11, 12, 55)]
-    )
-
-    data1 = get_data(imgs[0])
-    data1[6:, 6:, 6:, ...] = 0
-    imgs[0] = new_img_like(imgs[0], data1)
-
-    data2 = get_data(imgs[1])
-    data2[:5, :5, :5, ...] = 0
-    imgs[1] = new_img_like(imgs[1], data2)
-
-    flm = FirstLevelModel().fit(imgs, design_matrices=des_mat)
-    mask = flm.masker_.mask_img_
-    n_voxel_both_run = np.sum(get_data(mask) > 0)
-
-    flm1 = FirstLevelModel().fit(imgs[0], design_matrices=des_mat[0])
-    mask1 = flm1.masker_.mask_img_
-    n_voxel_run_1 = np.sum(get_data(mask1) > 0)
-
-    flm2 = FirstLevelModel().fit(imgs[1], design_matrices=des_mat[1])
-    mask2 = flm2.masker_.mask_img_
-    n_voxel_run_2 = np.sum(get_data(mask2) > 0)
-
-    new_mask = intersect_masks([mask1, mask2], threshold=1)
-    n_voxel_intersection = np.sum(get_data(new_mask) > 0)
-
-    assert n_voxel_both_run <= n_voxel_run_1
-    assert n_voxel_both_run <= n_voxel_run_2
-    assert n_voxel_intersection == n_voxel_both_run

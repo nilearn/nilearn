@@ -38,7 +38,13 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
-from nilearn.image import check_niimg, concat_imgs, iter_img, mean_img
+from nilearn.image.image import (
+    check_niimg,
+    check_same_fov,
+    concat_imgs,
+    iter_img,
+    mean_img,
+)
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.mass_univariate import permuted_ols
@@ -647,9 +653,11 @@ class SecondLevelModel(BaseGLM):
             )[0]
         self.design_matrix_ = design_matrix
 
-        masker_type = "nii"
         if not self._is_volume_glm() or isinstance(sample_map, SurfaceImage):
             masker_type = "surface"
+        else:
+            masker_type = "nii"
+            check_same_fov(*sample_map)
 
         check_compatibility_mask_and_images(self.mask_img, sample_map)
         self.masker_ = check_embedded_masker(self, masker_type)

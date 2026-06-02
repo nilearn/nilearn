@@ -47,7 +47,7 @@ from nilearn.glm.regression import (
     RegressionResults,
     SimpleRegressionResults,
 )
-from nilearn.image import check_niimg, get_data
+from nilearn.image.image import check_niimg, check_same_fov, get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids.query import (
     infer_repetition_time_from_dataset,
@@ -578,13 +578,20 @@ class FirstLevelModel(BaseGLM):
                 "of any of the following:\n"
                 "- string\n"
                 "- pathlib.Path\n"
-                "- NiftiImage\n"
+                "- \n"
                 "- SurfaceImage\n"
                 f"Got: {input_type}"
             )
 
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
+
+        if all(isinstance(x, (str, Path, Nifti1Image)) for x in run_imgs):
+            check_same_fov(*run_imgs, raise_error=True)
+        else:
+            ...
+            # TODO
+            # check mesh of surface images
 
         if design_matrices is not None:
             # If design_matrices is provided,
