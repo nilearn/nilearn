@@ -31,8 +31,14 @@ that both are initially defined in the same space.
 
 The advantage of this second approach is that it makes it easy to run
 second-level analyses on the surface.
-On the other hand, it is obviously less accurate
+On the other hand,
+it is obviously less accurate
 than using a subject-tailored mesh.
+
+.. seealso::
+
+    For more information about the dataset
+    see its :ref:`description <localizer_first_level_dataset>`.
 """
 
 # %%
@@ -101,7 +107,8 @@ glm = FirstLevelModel(
 #
 # Specify the contrasts.
 #
-# For practical purpose, we first generate an identity matrix whose size is
+# For practical purpose,
+# we first generate an identity matrix whose size is
 # the number of columns of the design matrix.
 import numpy as np
 

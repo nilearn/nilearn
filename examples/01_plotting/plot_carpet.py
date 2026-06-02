@@ -12,6 +12,10 @@ from a 4D functional image.
 # %%
 # Fetching data from ADHD dataset
 # -------------------------------
+#
+# For more information
+# see the :ref:`dataset description <adhd_dataset>`.
+#
 from nilearn.datasets import fetch_adhd
 from nilearn.plotting import plot_carpet
 

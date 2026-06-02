@@ -6,7 +6,7 @@ from warnings import warn
 import numpy as np
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.helpers import is_plotly_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
@@ -56,13 +56,7 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
         engine, ["matplotlib", "plotly", "niivue"], "engine"
     )
     if engine == "matplotlib":
-        if is_matplotlib_installed():
-            import nilearn.plotting.surface._matplotlib_backend as backend
-        else:
-            raise ImportError(
-                "Using engine='matplotlib' requires that ``matplotlib`` is "
-                "installed."
-            )
+        import nilearn.plotting.surface._matplotlib_backend as backend
     elif engine == "plotly":
         if is_plotly_installed():
             import nilearn.plotting.surface._plotly_backend as backend
