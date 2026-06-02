@@ -129,20 +129,11 @@ def test_plot_roi_single_value_data(affine_eye):
 
 
 @pytest.mark.mpl_image_compare
-def test_plot_roi_contour_colors():
+def test_plot_roi_contour_colors(affine_mni):
     """Test `nilearn.plotting.image.img_plotting.plot_roi` to see that contour
     colors comply with region colors.
     """
-    affine = np.array(
-        [
-            [1.5, 0.0, 0.0, 0],
-            [0.0, 1.5, 0.0, 0],
-            [0.0, 0.0, 1.5, 0],
-            [0.0, 0.0, 0.0, 1.0],
-        ]
-    )
-
-    img = generate_labeled_regions((40, 35, 32), n_regions=6, affine=affine)
+    img = generate_labeled_regions((40, 35, 32), n_regions=6, affine=affine_mni)
 
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(15, 5))
 
