@@ -27,7 +27,7 @@ The order of vertices was modified to match that of fsaverage5-7.
 .. figure:: test_surface_fs_data_right-fsaverage4.png
    :align: center
 
-   data fsaverage5 right hemisphere
+   data fsaverage4 right hemisphere
 
 Direct download link from OSF: https://osf.io/329dq
 
