@@ -79,6 +79,8 @@ Fixes
 
 - :bdg-info:`Maskers` Fix :class:`~nilearn.maskers.SurfaceMapsMasker` to use ``allow_overlap`` parameter (:gh:`6211` by `Rémi Gau`_ and `Hande Gözükan`_).
 
+- :bdg-dark:`Code` Fix missing subjects in ADHD dataset phenotypic data. (:gh:`6250` by `Hande Gözükan`_).
+
 
 Enhancements
 ------------
