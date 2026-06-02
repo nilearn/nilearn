@@ -1912,13 +1912,6 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             # TODO
             return
 
-        # check which options are equal or different
-        try:
-            assert_array_equal(results[str(None)], results[str(False)])
-        except AssertionError:
-            # FIXME
-            print(f"Flaky test for {estimator.__class__.__name__}?")
-
         if isinstance(estimator, Decoder):
             # differences are too small to have an effect in this test
             return
