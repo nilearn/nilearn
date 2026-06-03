@@ -427,7 +427,7 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
         "run-1_contrast-bbbMinusAaa_design.png",
     ]
 
-    with (tmp_path / "report.html").open("r") as f:
+    with (tmp_path / "report.html").open("r", encoding="utf-8") as f:
         content = f.read()
         assert "BBB-AAA" in content
         if is_matplotlib_installed():
