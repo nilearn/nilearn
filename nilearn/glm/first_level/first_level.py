@@ -6,7 +6,6 @@ objects of fMRI data analyses.
 import csv
 import inspect
 import time
-import warnings
 from pathlib import Path
 from typing import Literal, get_args
 from warnings import warn
@@ -1003,7 +1002,7 @@ class FirstLevelModel(BaseGLM):
         # Initialize masker_ to None such that attribute exists
         self.masker_ = None
 
-        self._prepare_mask(run_imgs[0])
+        self._prepare_mask(run_imgs)
 
         # collect info that may be useful for report generation
         drift_model_str = None
@@ -1296,36 +1295,54 @@ class FirstLevelModel(BaseGLM):
 
         return output
 
-    def _prepare_mask(self, run_img):
+    def _prepare_mask(self, run_imgs):
         """Set up the masker.
+
+        If mask_img == False, include all voxels / vertices in GLM.
+        If mask_img is a masker we just check it has been fitted.
+        If mask_img is not a masker,
+        we compute an implicit mask based on all the runs.
+
 
         Parameters
         ----------
-        run_img : Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object
+        run_imgs : Niimg-like object, \
+                   :obj:`list` or :obj:`tuple` of Niimg-like objects, \
+                   SurfaceImage object, \
+                   or :obj:`list` or \
+                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Used for setting up the masker object.
         """
-        masker_type = "nii"
-        if not self._is_volume_glm() or isinstance(run_img, SurfaceImage):
-            masker_type = "surface"
+        first_image = run_imgs[0]
+
+        masker_type = "multi_nii"
+        if not self._is_volume_glm() or isinstance(first_image, SurfaceImage):
+            masker_type = "multi_surface"
 
         # Learn the mask
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
-            if masker_type == "surface":
+            # TODO here we break the sklearn convention
+            # of not changing attributes passed at init
+            # This could probably be improved
+            if masker_type == "multi_surface":
                 surf_data = {
                     part: np.ones(
-                        run_img.data.parts[part].shape[0], dtype=bool
+                        first_image.data.parts[part].shape[0], dtype=bool
                     )
-                    for part in run_img.mesh.parts
+                    for part in first_image.mesh.parts
                 }
-                self.mask_img = SurfaceImage(mesh=run_img.mesh, data=surf_data)
+                self.mask_img = SurfaceImage(
+                    mesh=first_image.mesh, data=surf_data
+                )
             else:
-                ref_img = check_niimg(run_img)
+                ref_img = check_niimg(first_image)
                 self.mask_img = Nifti1Image(
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
 
-        check_compatibility_mask_and_images(self.mask_img, run_img)
+        check_compatibility_mask_and_images(self.mask_img, first_image)
+
         if (  # deal with self.mask_img as image, str, path, none
             (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
             or
@@ -1338,21 +1355,26 @@ class FirstLevelModel(BaseGLM):
                 and self.masker_ is None
             )
         ):
+            # compute implicit mask based on all runs
+            masker = check_embedded_masker(
+                self, ignore=["high_pass"], masker_type=masker_type
+            )
+            masker.memory_level = self.memory_level
+            if masker_type == "multi_nii":
+                masker.mask_strategy = "epi"
+            masker.fit(run_imgs)
+
+            # reuse mask_img to initialize a non-multi masker
             self.masker_ = check_embedded_masker(
-                self, masker_type, ignore=["high_pass"]
+                self,
+                ignore=["high_pass"],
+                masker_type=masker_type.replace("multi_", ""),
             )
             self.masker_.memory_level = self.memory_level
-
-            if isinstance(self.masker_, NiftiMasker):
+            if masker_type == "multi_nii":
                 self.masker_.mask_strategy = "epi"
-
-            # ignore warning in case the masker
-            # was initialized with a mask image
-            warnings.filterwarnings(
-                "ignore",
-                message=r".*Generation of a mask.*",
-            )
-            self.masker_.fit(run_img)
+            self.masker_.mask_img = masker.mask_img_
+            self.masker_.fit()
 
         else:
             check_is_fitted(self.mask_img)
