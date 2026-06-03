@@ -525,7 +525,7 @@ def overlapping_maps():
 )
 @pytest.mark.parametrize("allow_overlap", [True, False])
 def test_nifti_maps_masker_overlap(maps_img_fn, allow_overlap, img_fmri):
-    """Test resampling in NiftiMapsMasker."""
+    """Test overlap in NiftiMapsMasker."""
     masker = NiftiMapsMasker(
         maps_img_fn(), allow_overlap=allow_overlap, standardize=None
     )

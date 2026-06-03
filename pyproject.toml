@@ -70,7 +70,6 @@ test_common = [
     "pytest-csv>=3.0.0",
     "pytest-randomly>=4.0.0",
     "pytest-reporter-html1>=0.9.2,<0.9.4",
-    "pytest-mpl>=0.18.0",
     "pytest-rerunfailures>=16.1",
     "pyarrow>=13.0.0"  # mostly to avoid some warnings in pandas
 ]
@@ -80,6 +79,8 @@ test_free_threaded = [
     {include-group = "test_common"},
     "pytest-run-parallel>=0.8.2"
 ]
+# For running baseline image comparison tests (requires matplotlib)
+test_mpl = ["pytest-mpl>=0.18.0"]
 
 [project]
 authors = [{name = "Nilearn developers"}]
@@ -195,6 +196,7 @@ ignore_imports = [
     "nilearn._utils.estimator_checks -> nilearn.glm.*",  # allowed in tests
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
+    "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
     "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
     "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level"  # TODO: (nilearn >= 0.15.0) remove
@@ -230,6 +232,7 @@ ignore_imports = [
     "nilearn._utils.estimator_checks -> nilearn.glm.*",  # allowed in tests
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
+    "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
     "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
     "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level",  # TODO: (nilearn >= 0.15.0) remove
@@ -353,7 +356,8 @@ markers = [
     "single_process",  # for test that require testing n_jobs>1 or that are flaky when used xdist testing parallelization
     "thread_unsafe",  # used by pytest-run-parallel: adding it here to avoid warning and not always install the extension
     "ai_generated",  # used by AI agents to flag tests they generate or modify
-    "engines"  # used to specify engines for a test to be selected from available ones
+    "engines",  # used to specify engines for a test to be selected from available ones
+    "mpl_image_compare"  # registered here so --strict-markers works without pytest-mpl installed
 ]
 minversion = "6.0"
 testpaths = ["nilearn"]

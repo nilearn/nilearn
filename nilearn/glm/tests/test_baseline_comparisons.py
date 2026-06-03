@@ -11,6 +11,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
+pytest.importorskip("matplotlib")
+import matplotlib as mpl
+
 from nilearn.datasets import (
     load_fsaverage_data,
     load_mni152_template,
@@ -133,8 +136,6 @@ def test_stat_map_to_png_surface(
         table_details,
         orient="index",
     )
-
-    import matplotlib as mpl
 
     mpl_rc = mpl.rc_context({"axes.autolimit_mode": "data"})
     with mpl_rc:
