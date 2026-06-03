@@ -34,6 +34,10 @@ from nilearn.maskers import NiftiSpheresMasker
 # Prepare data and analysis parameters
 # ------------------------------------
 # Prepare the data.
+#
+# For more information
+# see the :ref:`dataset description <adhd_dataset>`.
+#
 adhd_dataset = fetch_adhd(n_subjects=1)
 
 # Prepare seed

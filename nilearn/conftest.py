@@ -38,6 +38,8 @@ if is_matplotlib_installed():
         # with the oldest version of matplolib
         collect_ignore.extend(
             [
+                "glm/tests/test_baseline_comparisons.py",
+                "maskers/tests/test_baseline_comparisons.py",
                 "plotting/tests/test_baseline_comparisons.py",
                 "reporting/tests/test_baseline_comparisons.py",
             ]
@@ -47,6 +49,8 @@ else:
     collect_ignore.extend(
         [
             "_utils/plotting.py",
+            "glm/tests/test_baseline_comparisons.py",
+            "maskers/tests/test_baseline_comparisons.py",
             "plotting",
             "reporting/tests/test_baseline_comparisons.py",
         ]
@@ -617,6 +621,7 @@ def surf_mesh():
 
 
 def _make_surface_img(n_samples=1):
+    """Create data with increasing values for each vertex."""
     mesh = _make_mesh()
     data = {}
     for i, (key, val) in enumerate(mesh.parts.items()):
@@ -630,7 +635,7 @@ def _make_surface_img(n_samples=1):
 
 @pytest.fixture
 def surf_img_2d():
-    """Return a 2D SurfaceImage with random data.
+    """Return a 2D SurfaceImage.
 
     The shape of the data will be (n_vertices, n_samples).
     n_samples by default is 1.
@@ -639,7 +644,7 @@ def surf_img_2d():
 
 
 def _surf_img_1d():
-    """Return a 1D SurfaceImage with random data.
+    """Return a 1D SurfaceImage.
 
     The shape of the data will be (n_vertices,).
     """
@@ -651,11 +656,21 @@ def _surf_img_1d():
 
 @pytest.fixture
 def surf_img_1d():
-    """Return a 1D SurfaceImage with random data.
+    """Return a 1D SurfaceImage.
 
     The shape of the data will be (n_vertices,).
     """
     return _surf_img_1d()
+
+
+@pytest.fixture
+def surf_img_ones_1d(surf_mesh):
+    """Return a 1D SurfaceImage with only 1."""
+    data = {
+        "left": np.ones((surf_mesh.parts["left"].n_vertices, 1)),
+        "right": np.ones((surf_mesh.parts["right"].n_vertices, 1)),
+    }
+    return SurfaceImage(surf_mesh, data)
 
 
 def _make_surface_mask(n_zeros=4):

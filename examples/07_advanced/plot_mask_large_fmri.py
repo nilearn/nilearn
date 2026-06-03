@@ -51,6 +51,10 @@ file paths.
 # Here we will create a "large" fMRI image by fetching 6 subjects'
 # fMRI images via the :func:`~nilearn.datasets.fetch_adhd`
 # function, concatenating them and then saving to a file.
+#
+# For more information
+# see the :ref:`dataset description <adhd_dataset>`.
+#
 
 from pathlib import Path
 
