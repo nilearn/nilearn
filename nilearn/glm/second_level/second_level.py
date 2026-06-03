@@ -71,7 +71,9 @@ def _input_type_error_message(second_level_input):
 
 def _check_second_level_input(
     second_level_input, design_matrix, confounds=None
-) -> None:
+) -> Literal[
+    "df_object", "pd_series", "nii_object", "surf_img_object", "flm_object"
+]:
     """Check second_level_input type."""
     _check_design_matrix(design_matrix)
 
@@ -83,8 +85,14 @@ def _check_second_level_input(
         design_matrix is None,
     )
 
+    return input_type
 
-def _check_input_type(second_level_input):
+
+def _check_input_type(
+    second_level_input,
+) -> Literal[
+    "df_object", "pd_series", "nii_object", "surf_img_object", "flm_object"
+]:
     """Determine the type of input provided."""
     if isinstance(second_level_input, pd.DataFrame):
         return "df_object"
@@ -106,7 +114,9 @@ def _return_type(second_level_input):
         return type(second_level_input)
 
 
-def _check_input_type_when_list(second_level_input):
+def _check_input_type_when_list(
+    second_level_input,
+) -> Literal["flm_object", "nii_object", "surf_img_object"]:
     """Determine the type of input provided when it is a list."""
     if len(second_level_input) < 2:
         raise TypeError(
@@ -239,6 +249,8 @@ def _check_input_as_nifti_images(
         second_level_input = [second_level_input]
     for niimg in second_level_input:
         check_niimg(niimg=niimg, atleast_4d=True)
+    if len(second_level_input) > 1:
+        check_same_fov(*second_level_input)
     if none_design_matrix:
         raise ValueError(
             "List of niimgs as second_level_input"
@@ -653,11 +665,9 @@ class SecondLevelModel(BaseGLM):
             )[0]
         self.design_matrix_ = design_matrix
 
+        masker_type = "nii"
         if not self._is_volume_glm() or isinstance(sample_map, SurfaceImage):
             masker_type = "surface"
-        else:
-            masker_type = "nii"
-            check_same_fov(*sample_map)
 
         check_compatibility_mask_and_images(self.mask_img, sample_map)
         self.masker_ = check_embedded_masker(self, masker_type)
