@@ -218,6 +218,7 @@ def _cluster_level_inference_surface(
         "left": np.zeros(stat_img.data.parts["left"].shape),
         "right": np.zeros(stat_img.data.parts["right"].shape),
     }
+
     for hemi in ["left", "right"]:
         if hemi == "left":
             mask_left = mask_img.data.parts["left"].astype(bool)
@@ -248,11 +249,11 @@ def _cluster_level_inference_surface(
         proportion_true_discoveries_img = math_img("0. * img", img=stat_img)
         proportion_true_discoveries = masker.transform(
             proportion_true_discoveries_img
-        ).ravel()
+        )
 
         for threshold_ in sorted(threshold):
             label_map, n_labels = label(stat_map > threshold_)
-            labels = label_map[masker.mask_img_.data.parts[hemi] > 0]
+            labels = label_map[masker.mask_img_.data.parts[hemi] > 0].ravel()
 
             for label_ in range(1, n_labels + 1):
                 # get the z-vals in the cluster
@@ -264,6 +265,9 @@ def _cluster_level_inference_surface(
 
         tmp_img = masker.inverse_transform(proportion_true_discoveries)
         data[hemi] = tmp_img.data.parts[hemi]
+
+    for hemi in ["left", "right"]:
+        data[hemi] = np.squeeze(data[hemi])
 
     return new_img_like(stat_img, data)
 
