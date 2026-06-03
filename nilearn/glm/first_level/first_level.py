@@ -578,7 +578,7 @@ class FirstLevelModel(BaseGLM):
                 "of any of the following:\n"
                 "- string\n"
                 "- pathlib.Path\n"
-                "- \n"
+                "- NiftiImage\n"
                 "- SurfaceImage\n"
                 f"Got: {input_type}"
             )
