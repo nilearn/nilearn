@@ -250,7 +250,7 @@ def _check_input_as_nifti_images(
     for niimg in second_level_input:
         check_niimg(niimg=niimg, atleast_4d=True)
     if len(second_level_input) > 1:
-        check_same_fov(*second_level_input)
+        check_same_fov(*second_level_input, raise_error=True)
     if none_design_matrix:
         raise ValueError(
             "List of niimgs as second_level_input"

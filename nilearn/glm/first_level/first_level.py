@@ -58,6 +58,7 @@ from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.surface import SurfaceImage
+from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import NiimgLike, Tr
 
 
@@ -589,9 +590,8 @@ class FirstLevelModel(BaseGLM):
         if all(isinstance(x, (str, Path, Nifti1Image)) for x in run_imgs):
             check_same_fov(*run_imgs, raise_error=True)
         else:
-            ...
-            # TODO
-            # check mesh of surface images
+            for img in run_imgs[1:]:
+                check_polymesh_equal(run_imgs[0].mesh, img.mesh)
 
         if design_matrices is not None:
             # If design_matrices is provided,

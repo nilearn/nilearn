@@ -32,6 +32,7 @@ from nilearn._utils.estimator_checks import (
 )
 from nilearn._utils.helpers import is_matplotlib_installed, is_windows_platform
 from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn.exceptions import MeshDimensionError
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import FirstLevelModel, mean_scaling, run_glm
 from nilearn.glm.first_level.design_matrix import (
@@ -47,7 +48,7 @@ from nilearn.glm.first_level.first_level import (
 )
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
-from nilearn.image import get_data, new_img_like
+from nilearn.image import get_data, iter_img, new_img_like
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.masking import intersect_masks
 from nilearn.surface import SurfaceImage
@@ -1579,6 +1580,21 @@ def test_error_flm_surface_mask_volume_image(
         model.fit(img_4d_rand_eye, design_matrices=des)
 
 
+def test_error_flm_surface_different_mesh(surface_glm_data, flip_surf_img):
+    """Test error is raised when surface images have different meshes."""
+    img, des = surface_glm_data(5)
+
+    img = list(iter_img(img))
+    img[1] = flip_surf_img(img[1])
+
+    model = FirstLevelModel()
+    with pytest.raises(
+        MeshDimensionError,
+        match="Number of vertices do not match for between meshes",
+    ):
+        model.fit(img, design_matrices=des)
+
+
 def test_error_flm_volume_mask_surface_image(surface_glm_data):
     """Test error is raised when mask is a volume and data is in surface."""
     shapes, rk = [(7, 8, 9, 15)], 3
@@ -1666,9 +1682,6 @@ def test_flm_get_element_wise_model_attribute_with_surface_data(
     assert model.r_square_[0].shape == (img.mesh.n_vertices, 1)
 
 
-# -----------------------bids tests----------------------- #
-
-
 def test_fixed_effect_contrast_surface(surface_glm_data):
     """Smoke test of compute_fixed_effects with surface data."""
     mini_img, _ = surface_glm_data(5)
@@ -1695,6 +1708,9 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
         assert len(outputs) == 4
         for output in outputs:
             assert isinstance(output, SurfaceImage)
+
+
+# -----------------------report tests----------------------- #
 
 
 @pytest.mark.slow

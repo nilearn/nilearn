@@ -720,12 +720,41 @@ def test_error_runs_different_fov(rng):
     design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
     _, fmri_data, _ = generate_fake_fmri_data_and_design(
+        shapes=[(10, 11, 12, 5), (20, 21, 22, 5)]
+    )
+
+    with pytest.raises(
+        ValueError, match="Following field of view errors were detected"
+    ):
+        SecondLevelModel().fit(fmri_data, design_matrix=design_matrix)
+
+
+def test_error_5d_image(rng):
+    """Disallow 5D images."""
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+    design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(
         shapes=[(10, 11, 12, 5), (10, 11, 12, 5)]
     )
 
-    # error message happens at coompute contrast time
-    # but it should probably happen at fit time
     slm = SecondLevelModel().fit(fmri_data, design_matrix=design_matrix)
+    # TODO failure should happen at fit time
+    slm.compute_contrast("b")
+
+
+def test_error_mistmatch_n_image_row_design_matrix(rng):
+    """Check n_row in design matrix matches n_images."""
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+    design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(
+        shapes=[(10, 11, 12, 5)]
+    )
+
+    slm = SecondLevelModel().fit(fmri_data[0], design_matrix=design_matrix)
     slm.compute_contrast("b")
 
 
