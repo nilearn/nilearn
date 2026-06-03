@@ -204,7 +204,7 @@ def _make_design_matrix_for_bids_feature(data_dir, subject):
     return design_matrix
 
 
-def report_flm_bids_features(build_type):
+def report_flm_bids_features(build_type, engine="matplolib"):
     if build_type == "partial":
         _generate_dummy_html(filenames=["flm_bids_features.html"])
         return None
@@ -218,9 +218,10 @@ def report_flm_bids_features(build_type):
         title=title,
         cluster_threshold=3,
         plot_type="glass",
+        engine=engine,
     )
 
-    verbose_save(report, "flm_bids_features.html")
+    verbose_save(report, f"flm_bids_features-{engine}.html")
 
     return report
 
@@ -666,13 +667,13 @@ def main(args=sys.argv):
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 
-    report_nifti_masker(build_type)
-    report_nifti_maps_masker(build_type)
-    report_nifti_labels_masker(build_type)
-    report_sphere_masker(build_type)
-    report_surface_masker(build_type)
-    report_surface_label_masker(build_type)
-    report_surface_maps_masker(build_type)
+    # report_nifti_masker(build_type)
+    # report_nifti_maps_masker(build_type)
+    # report_nifti_labels_masker(build_type)
+    # report_sphere_masker(build_type)
+    # report_surface_masker(build_type)
+    # report_surface_label_masker(build_type)
+    # report_surface_maps_masker(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")
@@ -680,12 +681,13 @@ def main(args=sys.argv):
     print("\nGenerating GLM reports templates\n")
     t0 = time.time()
 
-    report_flm_adhd_dmn(build_type)
-    report_flm_bids_features(build_type)
-    report_flm_fiac(build_type)
-    report_slm_oasis(build_type)
-    report_surface_flm(build_type)
-    report_surface_slm()
+    # report_flm_adhd_dmn(build_type)
+    # report_flm_bids_features(build_type)
+    report_flm_bids_features(build_type, engine="brainsprite")
+    # report_flm_fiac(build_type)
+    # report_slm_oasis(build_type)
+    # report_surface_flm(build_type)
+    # report_surface_slm()
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")

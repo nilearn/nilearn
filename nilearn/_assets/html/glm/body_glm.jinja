@@ -142,7 +142,7 @@
 
                 {% include "html/partials/missing_plotting_engine.jinja" %}
 
-            {% elif mask_plot %}
+            {% elif mask_plot and engine == "matplotlib" %}
                 <div class="scroll-y">
                     <img class="pure-img"
                          src="data:image/png;base64,{{ mask_plot }}"
@@ -150,6 +150,10 @@
                          title="Mask image"
                          style="min-width: 600px" />
                 </div>
+            {% elif engine == "brainsprite" %}
+
+                {% include "html/partials/brainsprite.jinja" %}
+
             {% else %}
                 <p>No mask was provided.</p>
             {% endif %}
@@ -231,5 +235,10 @@
             }
             );
         </script>
+    {% endif %}
+    {% if engine == "brainsprite" %}
+        <script> {% include "js/jquery.min.js" %} </script>
+        <script> {% include "js/brainsprite.min.js" %} </script>
+        <script> {% include "js/brainsprite_opacity.jinja" %} </script>
     {% endif %}
 {% endblock report %}

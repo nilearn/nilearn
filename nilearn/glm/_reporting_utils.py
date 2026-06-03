@@ -139,6 +139,7 @@ class GLMReportMixin(ReportMixin):
         cut_coords=None,
         display_mode=None,
         report_dims=(1600, 800),
+        engine: Literal["matplotlib", "brainsprite"] = "matplotlib",
     ) -> HTMLReport:
         """Generate an HTML report which shows all important aspects of a
         fitted :term:`GLM`.
@@ -289,7 +290,7 @@ class GLMReportMixin(ReportMixin):
         check_params(locals())
         self._reset_report_warnings()
 
-        self._set_report_basics(engine="matplotlib", title=title)
+        self._set_report_basics(engine=engine, title=title)
         self._run_report_checks(
             height_control=height_control,
             cluster_threshold=cluster_threshold,

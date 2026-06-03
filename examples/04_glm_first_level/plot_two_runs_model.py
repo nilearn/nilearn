@@ -255,6 +255,7 @@ report = fmri_glm_multirun.generate_report(
     contrasts,
     bg_img=mean_img_,
     title="two-runs fMRI model fitting",
+    engine="brainsprite",
 )
 
 # %%
