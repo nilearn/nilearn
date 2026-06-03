@@ -655,13 +655,14 @@ class SecondLevelModel(BaseGLM):
         self.masker_ = check_embedded_masker(self, masker_type)
         self.masker_.memory_level = self.memory_level
 
-        # ignore warning in case the masker
-        # was initialized with a mask image
-        warnings.filterwarnings(
-            "ignore",
-            message=r".*Generation of a mask.*",
-        )
-        self.masker_.fit(sample_map)
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            self.masker_.fit(sample_map)
 
         self.n_elements_ = self.masker_.n_elements_
 
@@ -1105,13 +1106,6 @@ def non_parametric_inference(
     t0 = time.time()
     logger.log("Fitting second level model...", verbose=verbose)
 
-    # ignore warning in case the masker
-    # was initialized with a mask image
-    warnings.filterwarnings(
-        "ignore",
-        message=r".*Generation of a mask.*",
-    )
-
     # Learn the mask. Assume the first level imgs have been masked.
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = clone(mask)
@@ -1143,7 +1137,14 @@ def non_parametric_inference(
             standardize=None,
         )
 
-    masker.fit(sample_map)
+    with warnings.catch_warnings():
+        # ignore warning in case the masker
+        # was initialized with a mask image
+        warnings.filterwarnings(
+            "ignore",
+            message=r".*Generation of a mask.*",
+        )
+        masker.fit(sample_map)
 
     # Report progress
     logger.log(

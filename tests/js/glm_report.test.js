@@ -2,8 +2,13 @@ const template = require('./template.js')
 
 const VIEWPORT = { x: 0, y: 0, width: 1200, height: 6000 }
 
-const glms = ['slm_oasis', 'flm_bids_features', 'flm_surf']
+// tolerance might vary due to font issue
+const glms = [
+  { glm: 'slm_oasis', tolerance: 3500 },
+  { glm: 'flm_bids_features', tolerance: 5000 },
+  { glm: 'flm_surf', tolerance: 6500 }
+]
 
 for (let i = 0; i < glms.length; i++) {
-  template.fullTest(glms[i] + '.html', VIEWPORT)
+  template.fullTest(glms[i].glm + '.html', VIEWPORT, glms[i].tolerance)
 }
