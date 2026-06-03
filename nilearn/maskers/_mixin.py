@@ -474,7 +474,11 @@ class MaskerReportMixin(ReportMixin):
 
     @fill_doc
     def generate_report(
-        self, engine="matplotlib", title: str | None = None, **kwargs
+        self,
+        engine="matplotlib",
+        title: str | None = None,
+        report_dims: tuple[int, int] | None = None,
+        **kwargs,
     ) -> HTMLReport:
         """Generate an HTML report for this masker.
 
@@ -508,6 +512,11 @@ class MaskerReportMixin(ReportMixin):
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
 
+        report_dims : Sequence[:obj:`int`, :obj:`int`] or None, default=None
+            Specifies width, height (in pixels) of report window.
+            Can be set after report creation
+            using ``report.width``, ``report.height``.
+
         kwargs : :obj:`dict` [ :obj:`str` , Any]
             Dictionary of key-word arguments necessary for report generation.
 
@@ -533,6 +542,9 @@ class MaskerReportMixin(ReportMixin):
         self._generate_report_htmls()
         self._display_report_warnings()
         html_report = self._assemble_report()
+
+        if report_dims is not None:
+            html_report.resize(*report_dims)
 
         return html_report
 
