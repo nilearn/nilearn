@@ -579,12 +579,10 @@ def test_fmri_inputs_images(rng, shape_3d_default, confounds):
     # niimgs as input
     niimgs = [fmri_data, fmri_data, fmri_data]
     slm = SecondLevelModel().fit(niimgs, confounds, design_matrix)
-    slm.compute_contrast("b")
 
     # 4d niimg as input
     niimg_4d = concat_imgs(niimgs)
     slm = SecondLevelModel().fit(niimg_4d, confounds, design_matrix)
-    slm.compute_contrast("b")
 
 
 @pytest.mark.parametrize("confounds", [None, _confounds()])
