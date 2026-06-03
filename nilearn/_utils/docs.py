@@ -1129,7 +1129,7 @@ second_level_input : :obj:`list` of \
       ``subject_label``, ``map_name`` and ``effects_map_path``.
       It can contain multiple maps that would be selected
       during contrast estimation with the argument ``first_level_contrast``
-      of :met:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
+      of :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
       The :class:`~pandas.DataFrame` will be sorted
       based on the ``subject_label`` column to avoid order inconsistencies
       when extracting the maps.
