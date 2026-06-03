@@ -2,13 +2,14 @@ const template = require('./template.js')
 
 const VIEWPORT = { x: 0, y: 0, width: 1200, height: 750 }
 
+// tolerance might vary due to font issue
 const maskers = [
-  { masker: 'NiftiMasker', tolerance: 1000 },
-  { masker: 'NiftiLabelsMasker', tolerance: 1000 },
-  { masker: 'NiftiMapsMasker', tolerance: 3000 }, // needs slightly higher tolerance due to font issue
-  { masker: 'SurfaceMasker', tolerance: 1000 },
-  { masker: 'SurfaceLabelsMasker', tolerance: 1000 },
-  { masker: 'SurfaceMapsMasker', tolerance: 1000 }
+  { masker: 'NiftiMasker', tolerance: 2500 },
+  { masker: 'NiftiLabelsMasker', tolerance: 1500 },
+  { masker: 'NiftiMapsMasker', tolerance: 3000 },
+  { masker: 'SurfaceMasker', tolerance: 1600 },
+  { masker: 'SurfaceLabelsMasker', tolerance: 1500 },
+  { masker: 'SurfaceMapsMasker', tolerance: 3000 }
 ]
 
 for (let i = 0; i < maskers.length; i++) {

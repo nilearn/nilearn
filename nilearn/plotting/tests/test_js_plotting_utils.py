@@ -71,7 +71,7 @@ def check_html_surface_plots(
         with tmpfile.open() as f:
             saved = f.read()
         saved = saved.replace("\r\n", "\n")
-        standalone = html.get_standalone().replace("\r\n", "\n")
+        standalone = html.get_iframe().replace("\r\n", "\n")
         assert saved == standalone
 
     resized = html.resize(3, 17)

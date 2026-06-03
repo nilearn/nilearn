@@ -238,7 +238,7 @@ class HTMLDocument:
 
         """
         with Path(file_name).open("wb") as f:
-            f.write(self.get_standalone().encode("utf-8"))
+            f.write(self.get_iframe().encode("utf-8"))
 
     def open_in_browser(self, file_name: str | None = None) -> None:
         """Save the plot to a temporary HTML file and open it in a browser.
@@ -249,7 +249,7 @@ class HTMLDocument:
             HTML file to use as a temporary file.
         """
         if file_name is None:
-            _open_in_browser(self.get_standalone().encode("utf-8"))
+            _open_in_browser(self.get_iframe().encode("utf-8"))
         else:
             self.save_as_html(file_name)
             webbrowser.open(f"file://{file_name}")
