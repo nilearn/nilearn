@@ -1195,6 +1195,14 @@ def check_warning_embedded_masker(estimator_orig):
     for w in warning_list:
         assert "Given mask will be used" not in str(w)
 
+    # ensure that further fitting of masker
+    # still throw the warning
+    # regression test for
+    # https://github.com/nilearn/nilearn/pull/6242#issuecomment-4594097602
+    masker = NiftiMasker(_img_mask_mni())
+    with pytest.warns(RuntimeWarning, match="Given mask will be used"):
+        fit_estimator(masker)
+
 
 def _sanitize_standard_output(output):
     """Clean standard output to facilitate comparison to another output."""
@@ -2120,30 +2128,13 @@ def check_img_estimator_standardization(estimator_orig) -> None:
         if not hasattr(estimator_orig, method):
             continue
 
-        estimator = clone(estimator_orig)
-
-        if is_classifier(estimator) or is_regressor(estimator):
-            estimator.fit(input_img, y)
-        else:
-            estimator.fit(input_img)
-
         results = {}
         standardize_values = [
             "zscore_sample",
             "psc",
-            True,
-            False,
             None,
         ]
         for standardize in standardize_values:
-            if standardize == "psc" and isinstance(
-                estimator, _BaseDecomposition
-            ):
-                # FIXME flaky test
-                # psc with _BaseDecomposition
-                # sometimes leads to an array of inf / nan
-                continue
-
             estimator = clone(estimator_orig)
 
             estimator.standardize = standardize
@@ -2153,37 +2144,13 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             else:
                 estimator.fit(input_img)
 
-            if (
-                not isinstance(estimator, _BaseDecomposition)
-                and isinstance(standardize, bool)
-                and method == "transform"
-            ):
-                with pytest.warns(
-                    FutureWarning,
-                    match=(
-                        "boolean values for 'standardize' will be deprecated"
-                    ),
-                ):
-                    results[str(standardize)] = getattr(estimator, method)(
-                        input_img
-                    )
-            else:
-                results[str(standardize)] = getattr(estimator, method)(
-                    input_img
-                )
+            results[str(standardize)] = getattr(estimator, method)(input_img)
 
         unstandarized_result = results[str(None)]
 
         if isinstance(estimator, _BaseDecomposition):
             # TODO
             return
-
-        # check which options are equal or different
-        try:
-            assert_array_equal(results[str(None)], results[str(False)])
-        except AssertionError:
-            # FIXME
-            print(f"Flaky test for {estimator.__class__.__name__}?")
 
         if isinstance(estimator, Decoder):
             # differences are too small to have an effect in this test

@@ -487,15 +487,17 @@ def compute_fixed_effects(
             f"from the number of variance images ({len(variance_imgs)})."
         )
 
-    # ignore warning in case the masker
-    # was initialized with a mask image
-    warnings.filterwarnings(
-        "ignore",
-        message=r".*Generation of a mask.*",
-    )
-    # TODO (nilearn >=0.15) remove ALL standardize=None below
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):
-        masker = mask.fit()
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            masker = mask.fit()
+
+    # TODO (nilearn >=0.15) remove ALL standardize=None below
     elif mask is None:
         if isinstance(contrast_imgs[0], SurfaceImage):
             masker = SurfaceMasker(standardize=None).fit(contrast_imgs[0])

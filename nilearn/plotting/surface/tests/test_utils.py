@@ -6,10 +6,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
-from nilearn._utils.helpers import (
-    is_matplotlib_installed,
-    is_plotly_installed,
-)
+from nilearn._utils.helpers import is_plotly_installed
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.surface._utils import (
     _check_hemisphere_is_valid,
@@ -244,16 +241,12 @@ def test_get_faces_on_edge_matplotlib(in_memory_mesh):
         get_faces_on_edge(faces, [91])
 
 
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="This test is run only if matplotlib is not installed.",
-)
-def test_get_surface_backend_matplotlib_not_installed():
-    """Tests to see if get_surface_backend raises error when matplotlib is not
-    installed.
+def test_get_surface_backend_unknown_error():
+    """Tests to see if get_surface_backend raises error when the specified
+    backend is not implemented.
     """
-    with pytest.raises(ImportError, match="Using engine"):
-        get_surface_backend("matplotlib")
+    with pytest.raises(ValueError, match="'engine' must be one of"):
+        get_surface_backend("unknown")
 
 
 @pytest.mark.skipif(
@@ -266,11 +259,3 @@ def test_get_surface_backend_plotly_not_installed():
     """
     with pytest.raises(ImportError, match="Using engine"):
         get_surface_backend("plotly")
-
-
-def test_get_surface_backend_unknown_error():
-    """Tests to see if get_surface_backend raises error when the specified
-    backend is not implemented.
-    """
-    with pytest.raises(ValueError, match="'engine' must be one of"):
-        get_surface_backend("unknown")

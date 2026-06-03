@@ -274,7 +274,7 @@ def _make_canica_components(
     )
 
 
-def _canica_components_volume(shape):
+def _canica_components_volume(shape) -> np.ndarray:
     """Create 4 volume components."""
     component1 = np.zeros(shape)
     component1[:5, :10] = 1
@@ -306,8 +306,9 @@ def _make_surface_data_from_components(
     components: np.ndarray,
     mesh: PolyMesh,
     rng,
-    n_timepoints: int = 200,
+    n_timepoints: int = 40,
     weights=None,
+    baseline: float = 100,
 ) -> SurfaceImage:
     """Create a single surface image suitable for DictLearning.
 
@@ -321,8 +322,7 @@ def _make_surface_data_from_components(
     rng : numpy random Generator
 
     n_timepoints : int
-        Number of timepoints. 200 has been empirically validated to produce
-        SVD-reduced features that exceed DictLearning's default alpha=10.
+        Number of timepoints.
 
     weights : None or numpy array (n_timepoints, components.shape[0])
               default: None
@@ -336,6 +336,8 @@ def _make_surface_data_from_components(
     data_all = weights @ components + 0.01 * rng.normal(
         size=(n_timepoints, components.shape[1])
     )
+    data_all += baseline
+
     return SurfaceImage(
         mesh=mesh,
         data={
@@ -352,6 +354,7 @@ def _make_volume_data_from_components(
     rng,
     n_subjects: int,
     n_timepoints: int = 40,
+    baseline: float = 100,
 ) -> list[Nifti1Image]:
     """Create a "multi-subject" dataset of volume data."""
     background = -0.01 * rng.normal(size=shape) - 2
@@ -364,6 +367,7 @@ def _make_volume_data_from_components(
             rng.normal(size=(n_timepoints, N_COMPONENTS)), components
         )
         this_data += 0.01 * rng.normal(size=this_data.shape)
+        this_data += baseline
 
         # Get back into 3D for CanICA
         this_data = np.reshape(this_data, (n_timepoints, *shape))
@@ -409,7 +413,7 @@ def canica_img(
 ) -> Nifti1Image | SurfaceImage:
     """Return a single image with enough timepoints for DictLearning.
 
-    Unlike ``canica_data``, this fixture uses 200 timepoints so that
+    Unlike ``canica_data``, this fixture uses more timepoints so that
     SVD-reduced features exceed the default ``alpha=10`` regularization
     used by :class:`~nilearn.decomposition.DictLearning`.
     """

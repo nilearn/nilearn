@@ -322,7 +322,20 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         ).astype(np.float32)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
-        maps_data = get_data(self.maps_img_)
+        maps_data = get_data(self.maps_img)
+
+        if not self.allow_overlap:
+            # Create mask depending on dtype
+            if np.issubdtype(maps_data.dtype, np.floating):
+                eps = np.finfo(maps_data.dtype).eps
+                mask = (maps_data > eps) | (maps_data < -eps)
+            else:
+                mask = maps_data != 0
+
+            # check overlap
+            if np.any(np.all(mask, axis=1)):
+                raise ValueError("Overlap detected in the maps.")
+
         mask_data = (
             get_data(self.mask_img_) if self.mask_img_ is not None else None
         )

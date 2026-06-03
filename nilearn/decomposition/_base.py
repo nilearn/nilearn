@@ -595,7 +595,14 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
                 dtype=self.dtype,
                 **maps_masker_kwargs,
             )
-        self.maps_masker_.fit()
+
+        try:
+            self.maps_masker_.fit()
+        except ValueError as e:
+            if "maps_img contains no map" in str(e):
+                raise ValueError("No component found in data.") from e
+            else:
+                raise e
 
         return self
 

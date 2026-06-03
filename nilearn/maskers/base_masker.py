@@ -565,13 +565,14 @@ class BaseMasker(_BaseMasker):
         %(signals_transform_nifti)s
 
         """
-        # ignore warning in case the masker
-        # was initialized with a mask image
-        warnings.filterwarnings(
-            "ignore",
-            message=r".*Generation of a mask.*",
-        )
-        self.fit(imgs, y, **fit_params)
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            self.fit(imgs, y, **fit_params)
         return self.transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
@@ -901,10 +902,13 @@ class _BaseSurfaceMasker(_BaseMasker):
         %(signals_transform_surface)s
         """
         del y
-        # ignore warning in case the masker
-        # was initialized with a mask image
-        warnings.filterwarnings("ignore", message=r".*Generation of a mask.*")
-        return self.fit(imgs).transform(imgs, confounds, sample_mask)
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore", message=r".*Generation of a mask.*"
+            )
+            return self.fit(imgs).transform(imgs, confounds, sample_mask)
 
     def _smooth(self, imgs):
         if self.smoothing_fwhm is not None:

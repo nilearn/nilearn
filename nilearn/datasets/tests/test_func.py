@@ -246,18 +246,20 @@ def test_fetch_adhd_edge_cases(tmp_path, request_mocker, subjects):
     )
 
 
-def test_fetch_adhd(tmp_path, request_mocker, capsys):
+@pytest.mark.parametrize("n_subjects", [12, 40])
+def test_fetch_adhd(tmp_path, request_mocker, capsys, n_subjects):
     request_mocker.url_mapping["*metadata.tgz"] = _adhd_metadata()
     request_mocker.url_mapping[re.compile(r".*adhd40_([0-9]+)\.tgz")] = (
         _adhd_example_subject
     )
-    adhd = func.fetch_adhd(data_dir=tmp_path, n_subjects=12, verbose=0)
+    adhd = func.fetch_adhd(data_dir=tmp_path, n_subjects=n_subjects, verbose=0)
 
     assert isinstance(adhd, Bunch)
     check_type_fetcher(adhd)
-    assert len(adhd.func) == 12
-    assert len(adhd.confounds) == 12
-    assert request_mocker.url_count == 13  # Subjects + phenotypic
+    assert len(adhd.func) == n_subjects
+    assert len(adhd.confounds) == n_subjects
+    assert len(adhd.phenotypic) == n_subjects
+    assert request_mocker.url_count == n_subjects + 1  # Subjects + phenotypic
 
     check_fetcher_verbosity(
         func.fetch_adhd, capsys, n_subjects=1, data_dir=tmp_path
