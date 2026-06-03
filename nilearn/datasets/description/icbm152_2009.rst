@@ -55,6 +55,8 @@ segmentation of MRI data. These atlases were generated from large ensembles
 of MRI data in an unbiased fashion. MRI data from templates are derived from
 "a truly normal, well characterized population."
 
+Direct download link from OSF: https://osf.io/7pj92
+
 The original download URL is
 https://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
 

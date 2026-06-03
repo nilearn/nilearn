@@ -1034,8 +1034,8 @@ class FirstLevelModel(BaseGLM):
             run_imgs, events, confounds, design_matrices
         )
 
-        self._reporting_data["trial_types"] = set(
-            self._reporting_data["trial_types"]
+        self._reporting_data["trial_types"] = sorted(
+            set(self._reporting_data["trial_types"])
         )
 
         # For each run fit the model and keep only the regression results.

@@ -195,6 +195,7 @@ ignore_imports = [
     "nilearn._utils.estimator_checks -> nilearn.glm.*",  # allowed in tests
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
+    "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
     "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
     "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level"  # TODO: (nilearn >= 0.15.0) remove
@@ -230,6 +231,7 @@ ignore_imports = [
     "nilearn._utils.estimator_checks -> nilearn.glm.*",  # allowed in tests
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
+    "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
     "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
     "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level",  # TODO: (nilearn >= 0.15.0) remove
