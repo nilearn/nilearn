@@ -675,6 +675,11 @@ class SecondLevelModel(BaseGLM):
         self.design_matrix_ = design_matrix
 
         if isinstance(self.second_level_input_, list):
+            # for some input we can make an early check
+            # between number of inputs
+            # and number of rows in the design matrix
+            # for other type of inputs this check
+            # will be done when computing contrasts
             _check_n_rows_desmat_vs_n_effect_maps(
                 self.second_level_input_, self.design_matrix_
             )
