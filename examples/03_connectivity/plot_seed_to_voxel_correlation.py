@@ -16,8 +16,6 @@ numpy array, corresponding to the data inside the mask.
     :ref:`for a similar example using cortical surface input data
     <sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -67,7 +65,6 @@ seed_masker = NiftiSpheresMasker(
     pcc_coords,
     radius=8,
     detrend=True,
-    standardize="zscore_sample",
     standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
@@ -94,7 +91,6 @@ from nilearn.maskers import NiftiMasker
 brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
-    standardize="zscore_sample",
     standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,

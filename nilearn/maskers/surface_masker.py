@@ -1,14 +1,14 @@
 """Masker for surface objects."""
 
 from copy import deepcopy
+from typing import Any, ClassVar
 from warnings import warn
 
 import numpy as np
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils.class_inspect import get_params
+from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
@@ -85,6 +85,18 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     """
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the input surface image overlaid "
+            "with the outlines of the mask. "
+            "We recommend to inspect the report for the overlap "
+            "between the mask and its input image. "
+        ),
+        "n_vertices": {},
+        # unused but required in HTML template
+        "number_of_regions": None,
+    }
+
     def __init__(
         self,
         mask_img=None,
@@ -119,21 +131,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            # unused but required in HTML template
-            "number_of_regions": None,
-            "summary": {},
-            "warning_messages": [],
-            "n_elements": 0,
-            "coverage": 0,
-        }
+        self._reset_report()
 
     def __sklearn_is_fitted__(self) -> bool:
         return (
@@ -156,11 +154,11 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             if img is not None:
                 warn(
                     f"[{self.__class__.__name__}.fit] "
-                    "Generation of a mask has been"
-                    " requested (img != None) while a mask was"
-                    " given at masker creation. Given mask"
-                    " will be used.",
+                    "Generation of a mask has been requested (imgs != None) "
+                    "while a mask was given at masker creation. "
+                    "Given mask will be used.",
                     stacklevel=find_stack_level(),
+                    category=RuntimeWarning,
                 )
             return
 
@@ -215,9 +213,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         del y
         check_params(self.__dict__)
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -314,6 +312,8 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if self.reports:
             self._reporting_data["images"] = imgs
 
+        imgs = self._smooth(imgs)
+
         mask_logger("extracting", verbose=self.verbose)
 
         output = np.empty((1, self.n_elements_))
@@ -323,27 +323,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
-        mask_logger("cleaning", verbose=self.verbose)
-
-        parameters = get_params(self.__class__, self, ignore=["mask_img"])
-
-        parameters["clean_args"] = self.clean_args_
-
-        # signal cleaning here
-        output = self._cache(signal.clean, func_memory_level=2)(
-            output,
-            detrend=parameters["detrend"],
-            standardize=parameters["standardize"],
-            standardize_confounds=parameters["standardize_confounds"],
-            t_r=parameters["t_r"],
-            low_pass=parameters["low_pass"],
-            high_pass=parameters["high_pass"],
-            confounds=confounds,
-            sample_mask=sample_mask,
-            **parameters["clean_args"],
-        )
-
-        return output
+        return self._clean(output, confounds, sample_mask)
 
     @fill_doc
     def inverse_transform(self, signals):
@@ -380,7 +360,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
-    def _reporting(self) -> None | str:
+    def _load_report_displays(self) -> None | str:
         """Load displays needed for report.
 
         Returns

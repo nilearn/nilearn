@@ -1,5 +1,7 @@
 import pytest
+from sklearn import clone
 
+from nilearn._utils.helpers import is_gil_enabled
 from nilearn.conftest import _img_3d_rand, _make_surface_img
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -42,6 +44,8 @@ def masker(request, img_maps, surf_maps_img, img_labels, surf_label_img):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize(
     "masker, img_func, kwargs",
     [
@@ -89,8 +93,10 @@ def test_masker_reporting_true(masker, img_func, kwargs):
     """Test nilearn.maskers._mixin._ReportingMixin on concrete masker
     instances when ``reports=True``.
     """
+    masker = clone(masker)
+
     # check masker at initialization
-    assert masker._report_content["warning_messages"] == []
+    assert masker._report_warnings == []
 
     # check masker report before fit
     generate_and_check_masker_report(masker, **kwargs)
@@ -126,6 +132,8 @@ def test_masker_reporting_true(masker, img_func, kwargs):
     assert match in str(report)
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
 @pytest.mark.parametrize(
     "masker, img_func",
     [
@@ -155,10 +163,12 @@ def test_masker_reporting_false(masker, img_func):
     """Test nilearn.maskers._mixin._ReportingMixin on concrete masker
     instances when ``reports=False``.
     """
+    masker = clone(masker)
+
     # check masker at initialization
     assert masker._report_content is not None
     assert masker._report_content["description"] is not None
-    assert masker._report_content["warning_messages"] == []
+    assert masker._report_warnings == []
     assert masker._report_content["summary"] == {}
     assert masker._has_report_data() is False
 

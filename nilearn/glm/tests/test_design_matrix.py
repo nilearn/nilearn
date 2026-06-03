@@ -71,12 +71,12 @@ def design_matrix_light(
 
 
 @pytest.fixture
-def n_frames():
+def n_frames() -> int:
     return 128
 
 
 @pytest.fixture
-def frame_times(n_frames):
+def frame_times(n_frames) -> np.ndarray:
     t_r = 1.0
     return np.linspace(0, (n_frames - 1) * t_r, n_frames)
 

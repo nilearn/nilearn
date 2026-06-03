@@ -227,6 +227,7 @@ def _check_n_files_derivatives_for_task(
     assert not files
 
 
+@pytest.mark.single_process
 @pytest.mark.parametrize("n_sub", [1, 2])
 @pytest.mark.parametrize("n_ses", [1, 2])
 @pytest.mark.parametrize(

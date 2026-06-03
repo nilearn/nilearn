@@ -224,7 +224,7 @@ class Parcellations(_MultiPCA):
         Number of parcels to divide the data into.
 
     %(random_state)s
-        Default=0.
+        default=0.
 
     mask : Niimg-like object,  \
         :obj:`~nilearn.maskers.NiftiMasker` or \
@@ -243,7 +243,7 @@ class Parcellations(_MultiPCA):
         for surface images, all the vertices will be used.
 
     %(smoothing_fwhm)s
-        Default=4.0.
+        default=4.0.
 
     %(standardize_false)s
 
@@ -257,7 +257,7 @@ class Parcellations(_MultiPCA):
             This parameter is passed to :func:`nilearn.signal.clean`.
             Please see the related documentation for details.
 
-        Default=False.
+        default=False.
 
     %(low_pass)s
 
@@ -301,7 +301,7 @@ class Parcellations(_MultiPCA):
              :func:`nilearn.masking.compute_epi_mask`, or
              :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='epi'.
+        default='epi'.
 
     mask_args : :obj:`dict`, default=None
         If mask is None, these are additional parameters passed to
@@ -600,13 +600,22 @@ class Parcellations(_MultiPCA):
         )
         # Required for special cases like extracting signals on list of
         # 3D images or SurfaceImages.
+
+        # TODO (nilearn > 0.15.0)
+        # remove casting to None or "zscore_sample"
+        standardize = self.standardize
+        if standardize is False:
+            standardize = None
+        elif standardize is True:
+            standardize = "zscore_sample"
+
         if isinstance(self.masker_.mask_img_, SurfaceImage):
             imgs_list = imgs.copy()
             masker = SurfaceLabelsMasker(
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
                 smoothing_fwhm=self.smoothing_fwhm,
-                standardize=self.standardize,
+                standardize=standardize,
                 detrend=self.detrend,
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,
@@ -621,7 +630,7 @@ class Parcellations(_MultiPCA):
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
                 smoothing_fwhm=self.smoothing_fwhm,
-                standardize=self.standardize,
+                standardize=standardize,
                 detrend=self.detrend,
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,

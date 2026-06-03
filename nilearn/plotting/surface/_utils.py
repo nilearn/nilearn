@@ -6,7 +6,7 @@ from warnings import warn
 import numpy as np
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.helpers import is_plotly_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
@@ -52,15 +52,11 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
     :class:`~nilearn.plotting.surface._plotly_backend`.
         The backend module for the specified engine.
     """
-    check_parameter_in_allowed(engine, ["matplotlib", "plotly"], "engine")
+    check_parameter_in_allowed(
+        engine, ["matplotlib", "plotly", "niivue"], "engine"
+    )
     if engine == "matplotlib":
-        if is_matplotlib_installed():
-            import nilearn.plotting.surface._matplotlib_backend as backend
-        else:
-            raise ImportError(
-                "Using engine='matplotlib' requires that ``matplotlib`` is "
-                "installed."
-            )
+        import nilearn.plotting.surface._matplotlib_backend as backend
     elif engine == "plotly":
         if is_plotly_installed():
             import nilearn.plotting.surface._plotly_backend as backend
@@ -68,11 +64,13 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
             raise ImportError(
                 "Using engine='plotly' requires that ``plotly`` is installed."
             )
+    elif engine == "niivue":
+        import nilearn.plotting.surface._niivue_backend as backend
 
     return backend
 
 
-def check_engine_params(params, engine) -> None:
+def check_engine_params(params, engine: str) -> None:
     """Check default values of the parameters that are not implemented for
     current engine and warn the user if the parameter has other value then
     None.

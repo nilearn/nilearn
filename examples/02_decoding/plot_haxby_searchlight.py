@@ -7,8 +7,6 @@ times. As a result, it is an intrinsically slow method. In order to speed
 up computing, in this example, Searchlight is run only on one slice on
 the :term:`fMRI` (see the generated figures).
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -77,7 +75,8 @@ n_jobs = 2
 # splitting the samples in 4 folds and make 4 runs using each fold as a test
 # set once and the others as learning sets
 #
-# The radius is the one of the Searchlight sphere that will scan the volume
+# The radius is the one of the Searchlight sphere that will scan the volume.
+#
 from sklearn.model_selection import KFold
 
 from nilearn.decoding import SearchLight
@@ -97,9 +96,8 @@ searchlight.fit(fmri_img, y)
 # %%
 # Visualization
 # -------------
-# %%
 # After fitting the searchlight, we can access the searchlight scores
-# as a NIfTI image using the `scores_img_` attribute.
+# as a NIfTI image using the ``scores_img_`` attribute.
 scores_img = searchlight.scores_img_
 
 # %%
@@ -120,11 +118,14 @@ plot_img(
     display_mode="z",
     cut_coords=[-9],
     vmin=0.2,
+    vmax=0.9,
     cmap="inferno",
     threshold=0.2,
     black_bg=True,
     colorbar=True,
 )
+
+show()
 
 # %%
 # F-scores computation
@@ -137,7 +138,6 @@ from nilearn.maskers import NiftiMasker
 nifti_masker = NiftiMasker(
     mask_img=mask_img,
     runs=run,
-    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
     verbose=1,

@@ -1,16 +1,23 @@
 """Test the _utils.param_validation module."""
 
+import warnings
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectKBest, SelectPercentile
 
+from nilearn.conftest import _img_3d_rand, _surf_img_1d
 from nilearn.datasets import load_mni152_brain_mask
 from nilearn.decoding._utils import (
     MNI152_BRAIN_VOLUME,
     _get_mask_extent,
     check_feature_screening,
+    validate_estimator,
 )
+from nilearn.decoding.decoder import _BaseDecoder
 
 
 @pytest.mark.thread_unsafe
@@ -65,3 +72,113 @@ def test_feature_screening(
             )
             assert screening_percentile <= select_percentile.percentile < 100
         assert isinstance(select_percentile, BaseEstimator)
+
+
+@pytest.mark.parametrize("mask_img", [_img_3d_rand(), _surf_img_1d()])
+def test_screening_priority_logic(mask_img):
+    """Test that check_feature_screening prefers percentile over n_voxels.
+
+    Call the function with BOTH options (Conflict!)
+    screening_percentile=10, screening_n_features=50
+
+    We should get a SelectPercentile object
+    If logic is wrong, this will be SelectKBest and the test will fail.
+    """
+    with pytest.warns(UserWarning):
+        selector = check_feature_screening(
+            screening_percentile=10,
+            mask_img=mask_img,
+            is_classification=True,
+            screening_n_features=50,
+        )
+
+    assert isinstance(selector, SelectPercentile)
+    assert not isinstance(selector, SelectKBest)
+
+
+@pytest.mark.parametrize("mask_img", [_img_3d_rand(), _surf_img_1d()])
+def test_check_feature_screening_n_features_only(mask_img):
+    """Test that screening_n_features works when percentile is None."""
+    # Call the function with only n_voxels specified
+    selector = check_feature_screening(
+        screening_percentile=None,
+        mask_img=mask_img,
+        is_classification=True,
+        screening_n_features=7,
+    )
+
+    # Verify it returned a SelectKBest object with the right 'k'
+    assert isinstance(selector, SelectKBest)
+    assert selector.k == 7
+
+
+def test_check_feature_screening_n_features_error(surf_img_1d):
+    """Test when not enough feature in image."""
+    with pytest.raises(
+        ValueError,
+        match="screening_n_features=100 is larger the number of features",
+    ):
+        check_feature_screening(
+            screening_percentile=None,
+            mask_img=surf_img_1d,
+            is_classification=True,
+            screening_n_features=100,
+        )
+
+
+@pytest.mark.parametrize(
+    "estimator",
+    [
+        "svc",
+        "svc_l2",
+        "svc_l1",
+        "logistic",
+        "logistic_l1",
+        "logistic_l2",
+        "ridge",
+        "ridge_classifier",
+        "ridge_regressor",
+        "svr",
+        "dummy_classifier",
+        "dummy_regressor",
+    ],
+)
+def test_check_supported_estimator(estimator):
+    """Check if the estimator is one of the supported estimators."""
+    expected_warning = (
+        "Use a custom estimator at your own risk "
+        "of the process not working as intended."
+    )
+
+    with warnings.catch_warnings(record=True) as raised_warnings:
+        validate_estimator(estimator)
+    warning_messages = [str(warning.message) for warning in raised_warnings]
+
+    assert expected_warning not in warning_messages
+
+
+@pytest.mark.parametrize("estimator", ["ridgo", "svb"])
+def test_check_unsupported_estimator(estimator):
+    """Check if the estimator is one of the supported estimators.
+
+    If not, if it is a string and if not in supported ones,
+    then raise the error.
+    """
+    with pytest.raises(ValueError, match="Invalid estimator"):
+        validate_estimator(
+            _BaseDecoder(
+                estimator=estimator, standardize="zscore_sample"
+            ).estimator
+        )
+
+    expected_warning = (
+        "Use a custom estimator at your own risk "
+        "of the process not working as intended."
+    )
+    custom_estimator = RandomForestClassifier()
+    with pytest.warns(UserWarning, match=expected_warning):
+        validate_estimator(
+            _BaseDecoder(
+                estimator=custom_estimator, standardize="zscore_sample"
+            ).estimator
+        )

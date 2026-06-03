@@ -22,14 +22,13 @@ ROOT = str(Path(__file__).parent.parent)  # nilearn package
 _MODULE_TO_IGNORE = {
     "_utils",
     "conftest",
-    "input_data",
     "tests",
 }
 
 
 def _skip_module(module_name: str):
     module_parts = module_name.split(".")
-    return bool(
+    return (
         any(part in _MODULE_TO_IGNORE for part in module_parts)
         or "._" in module_name
     )

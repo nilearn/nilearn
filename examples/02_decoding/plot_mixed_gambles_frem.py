@@ -39,7 +39,7 @@ from sklearn.exceptions import ConvergenceWarning
 
 from nilearn.decoding import FREMRegressor
 
-frem = FREMRegressor("svr", cv=10, standardize="zscore_sample", verbose=1)
+frem = FREMRegressor("svr", cv=10, verbose=1)
 
 with warnings.catch_warnings():
     warnings.filterwarnings(action="ignore", category=ConvergenceWarning)

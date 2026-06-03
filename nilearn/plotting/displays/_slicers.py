@@ -259,7 +259,7 @@ class BaseSlicer:
             If ``True``, leave space between the plots.
 
         %(colorbar)s
-            Default=False.
+            default=False.
 
         %(brain_color)s
 
@@ -426,7 +426,7 @@ class BaseSlicer:
                 threshold (in absolute value) are plotted as transparent.
 
         %(colorbar)s
-            Default=False.
+            default=False.
 
         cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
@@ -841,6 +841,12 @@ class BaseSlicer:
             is computed based on the data.
 
         """
+        cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
+        cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
+
+        if cbar_vmin == cbar_vmax:
+            return
+
         # create new  axis for the colorbar
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect
@@ -1400,13 +1406,14 @@ class OrthoSlicer(_MultiDSlicer):
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
-        coords = {}
-        for direction in "xyz":
-            coords[direction] = (
+        coords = {
+            direction: (
                 cut_coords[self._cut_displayed.index(direction)]
                 if direction in self._cut_displayed
                 else None
             )
+            for direction in "xyz"
+        }
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()
@@ -1729,13 +1736,14 @@ class TiledSlicer(_MultiDSlicer):
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
-        coords = {}
-        for direction in "xyz":
-            coords[direction] = (
+        coords = {
+            direction: (
                 cut_coords[self._cut_displayed.index(direction)]
                 if direction in self._cut_displayed
                 else None
             )
+            for direction in "xyz"
+        }
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()

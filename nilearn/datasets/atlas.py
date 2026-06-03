@@ -10,6 +10,7 @@ from xml.etree import ElementTree
 import numpy as np
 import pandas as pd
 from nibabel import freesurfer, load
+from requests.exceptions import SSLError
 from sklearn.utils import Bunch
 
 from nilearn._utils import logger
@@ -18,7 +19,7 @@ from nilearn._utils.bids import (
     generate_atlas_look_up_table,
 )
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import rename_parameters
+from nilearn._utils.niimg import _get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -26,11 +27,11 @@ from nilearn._utils.param_validation import (
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
+    fetch_single_file,
     get_dataset_descr,
     get_dataset_dir,
 )
 from nilearn.image import check_niimg, new_img_like, reorder_img
-from nilearn.image import get_data as get_img_data
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -715,7 +716,7 @@ def fetch_atlas_juelich(
         verbose=verbose,
     )
     atlas_niimg = check_niimg(atlas_img)
-    atlas_data = get_img_data(atlas_niimg)
+    atlas_data = _get_data(atlas_niimg)
 
     if atlas_type == "probabilistic":
         new_atlas_data, new_names = _merge_probabilistic_maps_juelich(
@@ -870,7 +871,7 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     # should be positive. This is important to
     # correctly split left and right hemispheres.
     assert atlas_niimg.affine[0, 0] > 0
-    atlas_data = get_img_data(atlas_niimg)
+    atlas_data = _get_data(atlas_niimg)
     labels = np.unique(atlas_data)
     # Build a mask of both halves of the brain
     middle_ind = (atlas_data.shape[0]) // 2
@@ -1324,14 +1325,8 @@ def fetch_atlas_aal(
 ):
     """Download and returns the AAL template for :term:`SPM` 12.
 
-    This :term:`Deterministic atlas` is the result of an automated anatomical
-    parcellation of the spatially normalized single-subject high-resolution
-    T1 volume provided by the Montreal Neurological Institute (:term:`MNI`)
-    (D. L. Collins et al., 1998, Trans. Med. Imag. 17, 463-468, PubMed).
-
-    For more information on this dataset's structure,
-    see :footcite:t:`AAL_atlas`,
-    and :footcite:t:`Tzourio-Mazoyer2002`.
+    For more information
+    see the :ref:`dataset description <aal_atlas>`.
 
     .. warning::
 
@@ -1360,8 +1355,11 @@ def fetch_atlas_aal(
           The default was changed to '3v2'.
 
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -1404,15 +1402,10 @@ def fetch_atlas_aal(
 
         - %(atlas_type)s
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
     %(fetcher_note)s
 
-    License: unknown.
     """
     check_params(locals())
 
@@ -1423,6 +1416,13 @@ def fetch_atlas_aal(
 
     dataset_name = f"aal_{version}"
     opts = {"uncompress": True}
+
+    backup_url = {
+        "3v2": "https://osf.io/6jngh/download",
+        "SPM12": "https://osf.io/s94qg/download",
+        "SPM8": "https://osf.io/rkpeh/download",
+        "SPM5": "https://osf.io/948y2/download",
+    }
 
     if url is None:
         base_url = "https://www.gin.cnrs.fr/"
@@ -1446,9 +1446,29 @@ def fetch_atlas_aal(
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    atlas_img, labels_file = fetch_files(
-        data_dir, filenames, resume=resume, verbose=verbose
-    )
+    try:
+        atlas_img, labels_file = fetch_files(
+            data_dir, filenames, resume=resume, verbose=verbose
+        )
+    except SSLError:
+        if version == "SPM12":
+            filenames = [
+                (Path("aal", "atlas", f), backup_url[version], opts)
+                for f in basenames
+            ]
+        elif version == "3v2":
+            filenames = [
+                (Path("AAL3", f), backup_url[version], opts) for f in basenames
+            ]
+        else:
+            filenames = [
+                (Path(f"aal_for_{version}", f), backup_url[version], opts)
+                for f in basenames
+            ]
+        atlas_img, labels_file = fetch_files(
+            data_dir, filenames, resume=resume, verbose=verbose
+        )
+
     fdescr = get_dataset_descr("aal")
     labels = ["Background"]
     indices = ["0"]
@@ -1774,15 +1794,17 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Allen and MIALAB :term:`ICA` \
     :term:`Probabilistic atlas` (dated 2011).
 
-    See :footcite:t:`Allen2011`.
-
-    The provided images are in MNI152 space.
+    For more information
+    see the :ref:`dataset description <allen_2011_atlas>`.
 
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -1823,18 +1845,10 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
         - %(template)s
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
     %(fetcher_note)s
 
-    License: unknown
-
-    See https://trendscenter.org/data/ for more information
-    on this dataset.
     """
     check_params(locals())
 
@@ -2013,6 +2027,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         f"Separating talairach atlas levels: {_TALAIRACH_LEVELS}",
         verbose=verbose,
     )
+    atlas_data = _get_data(atlas_img)
     for level_name, old_level_labels in zip(
         _TALAIRACH_LEVELS, np.asarray(labels).T, strict=False
     ):
@@ -2022,9 +2037,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         level_labels = {"*": 0}
         for region_nb, region_name in enumerate(old_level_labels):
             level_labels.setdefault(region_name, len(level_labels))
-            level_data[get_img_data(atlas_img) == region_nb] = level_labels[
-                region_name
-            ]
+            level_data[atlas_data == region_nb] = level_labels[region_name]
         new_img_like(atlas_img, level_data).to_filename(
             output_dir / f"{level_name}.nii.gz"
         )
@@ -2039,16 +2052,25 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
 
 def _download_talairach(talairach_dir, verbose) -> None:
     """Download the Talairach atlas and separate the different levels."""
-    atlas_url = "https://www.talairach.org/talairach.nii"
     temp_dir = mkdtemp()
     try:
+        atlas_url = "https://www.talairach.org/talairach.nii"
         temp_file = fetch_files(
             temp_dir, [("talairach.nii", atlas_url, {})], verbose=verbose
         )[0]
-        atlas_img = load(temp_file, mmap=False)
-        atlas_img = check_niimg(atlas_img)
-    finally:
-        shutil.rmtree(temp_dir)
+    except SSLError:
+        # See https://github.com/nilearn/nilearn/issues/5896
+        # A copy of the atlas was hence added
+        # to Nilearn OSF
+        backup_url = "https://osf.io/x4b2w/download"
+        temp_file = fetch_single_file(
+            backup_url, Path(temp_dir), verbose=verbose
+        )
+        shutil.move(temp_file, Path(temp_dir) / "talairach.nii")
+        temp_file = Path(temp_dir) / "talairach.nii"
+
+    atlas_img = load(temp_file, mmap=False)
+    atlas_img = check_niimg(atlas_img)
     labels_text = atlas_img.header.extensions[0].get_content()
     multi_labels = labels_text.strip().decode("utf-8").split("\n")
     labels = [lab.split(".") for lab in multi_labels]
@@ -2056,14 +2078,15 @@ def _download_talairach(talairach_dir, verbose) -> None:
         atlas_img, labels, talairach_dir, verbose=verbose
     )
 
+    shutil.rmtree(temp_dir)
+
 
 @fill_doc
 def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach :term:`Deterministic atlas`.
 
-    For more information, see :footcite:t:`talairach_atlas`,
-    :footcite:t:`Lancaster2000`,
-    and :footcite:t:`Lancaster1997`.
+    For more information,
+    see the :ref:`dataset description <talairach_atlas>`.
 
     .. nilearn_versionadded:: 0.4.0
 
@@ -2072,7 +2095,9 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     level_name : {'hemisphere', 'lobe', 'gyrus', 'tissue', 'ba'}
         Which level of the atlas to use: the hemisphere, the lobe, the gyrus,
         the tissue type or the Brodmann area.
+
     %(data_dir)s
+
     %(verbose)s
 
     Returns
@@ -2131,10 +2156,6 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     )
 
 
-# TODO (nilearn >= 0.13.1)
-@rename_parameters(
-    replacement_params={"version": "atlas_type"}, end_version="0.13.1"
-)
 @fill_doc
 def fetch_atlas_pauli_2017(
     atlas_type="probabilistic", data_dir=None, verbose=1

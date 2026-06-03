@@ -9,7 +9,7 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_bold_img,
 )
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import is_gil_enabled, is_matplotlib_installed
 from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.datasets import load_fsaverage
 from nilearn.glm.first_level import FirstLevelModel
@@ -37,13 +37,12 @@ def generate_and_check_glm_report(
     """
     if warnings_msg_to_check is None:
         warnings_msg_to_check = []
-    includes = []
     excludes = []
 
-    # check the navbar and its css is there
-    includes.append('<nav class="navbar pure-g fw-bold" id="menu"')
-    includes.append("Adapted from Pure CSS navbar")  # css
-
+    includes = [
+        '<nav class="navbar pure-g fw-bold" id="menu"',
+        "Adapted from Pure CSS navbar",
+    ]
     # 'Contrasts' and 'Statistical maps' should appear
     # as section and in navbar
     # if report was generated with contrasts.
@@ -136,7 +135,7 @@ def rk() -> int:
 
 
 @pytest.fixture
-def contrasts(rk):
+def contrasts(rk) -> np.ndarray:
     """Return a contrast vector."""
     c = np.zeros((1, rk))
     c[0][0] = 1
@@ -145,13 +144,15 @@ def contrasts(rk):
 
 @pytest.fixture()
 def flm(rk) -> FirstLevelModel:
-    """Generate first level model."""
+    """Generate a fitted first level model."""
     shapes = ((7, 7, 7, 5),)
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
     )
     # generate_fake_fmri_data_and_design
-    return FirstLevelModel().fit(fmri_data, design_matrices=design_matrices)
+    return FirstLevelModel(standardize=None).fit(
+        fmri_data, design_matrices=design_matrices
+    )
 
 
 @pytest.fixture()
@@ -166,6 +167,7 @@ def slm() -> SecondLevelModel:
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
     """Check presence message of no activation found.
 
@@ -177,9 +179,11 @@ def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
         extend_includes=["No suprathreshold cluster"],
         contrasts=contrasts,
         extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 def test_flm_report_invalid_param(flm, contrasts):
     """Check if a warning is raised when first_level_contrast is specified to
@@ -191,6 +195,7 @@ def test_flm_report_invalid_param(flm, contrasts):
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("model", [FirstLevelModel, SecondLevelModel])
 @pytest.mark.parametrize("bg_img", [_img_mask_mni(), _make_surface_mask()])
 def test_empty_reports(tmp_path, model, bg_img):
@@ -205,6 +210,7 @@ def test_empty_reports(tmp_path, model, bg_img):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_flm_reporting_no_contrasts(flm, tmp_path):
     """Test for model report can be generated with no contrasts."""
     generate_and_check_glm_report(
@@ -218,6 +224,7 @@ def test_flm_reporting_no_contrasts(flm, tmp_path):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 def test_flm_reporting_several_contrasts(flm, tmp_path, rk):
     """Test for model report can be generated with no contrasts."""
@@ -238,6 +245,7 @@ def test_flm_reporting_several_contrasts(flm, tmp_path, rk):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("height_control", ["fdr", "bonferroni", None])
 def test_generate_report_height_control(
     flm, height_control, contrasts, tmp_path
@@ -298,6 +306,7 @@ def test_generate_report_error_plot_type(flm, contrasts, display_mode):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_generate_report_warning_glass_cut_coords(flm, contrasts):
     """Check cut_coords not used with glass brain."""
     with pytest.warns(UserWarning, match="'cut_coords' was set to None"):
@@ -310,24 +319,26 @@ def test_generate_report_warning_glass_cut_coords(flm, contrasts):
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
+# TODO (nilearn >= 0.15) add None to height_control parametrization
+@pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni"])
 def test_slm_reporting_method(slm, height_control):
     """Test for the second level reporting."""
     c1 = np.eye(len(slm.design_matrix_.columns))[0]
 
-    extra_warnings_allowed = False
-    if height_control is None:
-        extra_warnings_allowed = True
     generate_and_check_glm_report(
         slm,
         contrasts=c1,
         height_control=height_control,
         alpha=0.01,
-        extra_warnings_allowed=extra_warnings_allowed,
+        extra_warnings_allowed=False,
     )
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_slm_with_flm_as_inputs(flm, contrasts):
     """Test second level reporting when inputs are first level models."""
     model = SecondLevelModel()
@@ -350,6 +361,8 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
     """Test second level reporting when input is a dataframe."""
     file_path = write_fake_bold_img(
@@ -377,6 +390,7 @@ def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 def test_report_plot_type(flm, plot_type, contrasts):
     """Smoke test for valid plot type."""
@@ -385,10 +399,12 @@ def test_report_plot_type(flm, plot_type, contrasts):
         contrasts=contrasts,
         plot_type=plot_type,
         extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
 def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
@@ -400,10 +416,23 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
         display_mode="z",
         plot_type=plot_type,
         extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
+def test_report_invalid_plot_type(flm, contrasts):
+    """Check errors when wrong plot type is requested."""
+    with pytest.raises(ValueError, match="'plot_type' must be one of"):
+        flm.generate_report(
+            contrasts=contrasts,
+            plot_type="junk",
+        )
+
+
+@pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_masking_first_level_model(contrasts):
     """Check that using NiftiMasker when instantiating FirstLevelModel \
        doesn't raise Error when calling generate_report().
@@ -413,8 +442,8 @@ def test_masking_first_level_model(contrasts):
         shapes,
         rk,
     )
-    masker = NiftiMasker(mask_img=mask)
-    masker.fit(fmri_data)
+    masker = NiftiMasker(mask_img=mask, standardize=None)
+    masker.fit()
     flm = FirstLevelModel(mask_img=masker).fit(
         fmri_data, design_matrices=design_matrices
     )
@@ -430,6 +459,7 @@ def test_masking_first_level_model(contrasts):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_fir_delays_in_params(contrasts):
     """Check that fir_delays is in the report when hrf_model is fir.
 
@@ -439,7 +469,11 @@ def test_fir_delays_in_params(contrasts):
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
     )
-    model = FirstLevelModel(hrf_model="fir", fir_delays=[1, 2, 3])
+    model = FirstLevelModel(
+        hrf_model="fir",
+        fir_delays=[1, 2, 3],
+        standardize=None,
+    )
     model.fit(fmri_data, design_matrices=design_matrices)
 
     # FIXME:
@@ -451,10 +485,12 @@ def test_fir_delays_in_params(contrasts):
         contrasts=contrasts,
         extend_includes=["fir_delays"],
         extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_drift_order_in_params(contrasts):
     """Check that drift_order is in the report when parameter is drift_model is
     polynomial.
@@ -463,7 +499,10 @@ def test_drift_order_in_params(contrasts):
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
     )
-    model = FirstLevelModel(drift_model="polynomial", drift_order=3)
+    model = FirstLevelModel(
+        drift_model="polynomial",
+        drift_order=3,
+    )
     model.fit(fmri_data, design_matrices=design_matrices)
 
     generate_and_check_glm_report(
@@ -471,10 +510,12 @@ def test_drift_order_in_params(contrasts):
         contrasts=contrasts,
         extend_includes=["drift_order"],
         extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_flm_generate_report_surface_data(rng):
     """Generate report from flm fitted surface.
 
@@ -493,7 +534,7 @@ def test_flm_generate_report_surface_data(rng):
     fmri_data = SurfaceImage(mesh, data)
 
     # using smoothing_fwhm for coverage
-    model = FirstLevelModel(t_r=t_r, smoothing_fwhm=None)
+    model = FirstLevelModel(t_r=t_r, smoothing_fwhm=None, standardize=None)
 
     model.fit(fmri_data, events=events)
 
@@ -502,12 +543,15 @@ def test_flm_generate_report_surface_data(rng):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_flm_generate_report_surface_data_error(
     surf_mask_1d, surf_img_2d, img_3d_mni
 ):
     """Generate report from flm fitted surface."""
     model = FirstLevelModel(
-        mask_img=surf_mask_1d, t_r=2.0, smoothing_fwhm=None
+        mask_img=surf_mask_1d,
+        t_r=2.0,
+        smoothing_fwhm=None,
     )
     events = basic_paradigm()
     model.fit(surf_img_2d(9), events=events)
@@ -519,6 +563,7 @@ def test_flm_generate_report_surface_data_error(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_carousel_several_runs(
     matplotlib_pyplot,  # noqa: ARG001
     contrasts,
@@ -537,18 +582,22 @@ def test_carousel_several_runs(
     contrasts = np.zeros((1, rk))
     contrasts[0][1] = 1
 
-    flm_two_runs = FirstLevelModel().fit(
+    flm_two_runs = FirstLevelModel(standardize=None).fit(
         fmri_data, design_matrices=design_matrices
     )
 
     report = generate_and_check_glm_report(
-        flm_two_runs, contrasts=contrasts, extra_warnings_allowed=True
+        flm_two_runs,
+        contrasts=contrasts,
+        extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
     # 3 runs should be in the carousel
     assert str(report).count('id="carousel-obj-') == len(shapes)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.slow
 def test_report_make_glm_deprecation_warning(flm, contrasts):
     """Test deprecation warning for nilearn.reporting.make_glm_report.

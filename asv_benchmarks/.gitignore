@@ -1,6 +1,4 @@
-*__pycache_*
-.DS_Store
-env
 nilearn
 results
 html
+hashestobenchmark_tmp.txt

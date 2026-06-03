@@ -294,6 +294,7 @@ class Sender:
             return None
 
     def get_response(self, response, match, request):
+        """Get response."""
         if callable(response):
             response = response(match, request)
 

@@ -49,7 +49,6 @@ from .neurovault import (
     fetch_neurovault,
     fetch_neurovault_auditory_computation_task,
     fetch_neurovault_ids,
-    fetch_neurovault_motor_task,
 )
 from .struct import (
     GM_MNI152_FILE_PATH,
@@ -111,7 +110,6 @@ __all__ = [
     "fetch_neurovault",
     "fetch_neurovault_auditory_computation_task",
     "fetch_neurovault_ids",
-    "fetch_neurovault_motor_task",
     "fetch_oasis_vbm",
     "fetch_openneuro_dataset",
     "fetch_spm_auditory",

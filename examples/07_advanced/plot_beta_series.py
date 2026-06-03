@@ -55,8 +55,6 @@ to build the LSS beta series.
     that LSA performs better than LSS when trial variability is greater
     than scan noise, even in fast designs.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 # sphinx_gallery_thumbnail_number = -2
 
@@ -65,6 +63,10 @@ to build the LSS beta series.
 # ------------------------------------
 # Download data in :term:`BIDS` format and event information for one subject,
 # and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
+#
+# For more information
+# see the :ref:`dataset description <language_localizer_dataset>`.
+#
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.plotting import plot_design_matrix, plot_stat_map, show
@@ -318,7 +320,6 @@ seed_masker = NiftiSpheresMasker(
     coords,
     radius=8,
     detrend=True,
-    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
     verbose=1,
@@ -327,7 +328,6 @@ seed_masker = NiftiSpheresMasker(
 brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
-    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
     verbose=1,

@@ -12,6 +12,10 @@ from a 4D functional image.
 # %%
 # Fetching data from ADHD dataset
 # -------------------------------
+#
+# For more information
+# see the :ref:`dataset description <adhd_dataset>`.
+#
 from nilearn.datasets import fetch_adhd
 from nilearn.plotting import plot_carpet
 
@@ -39,7 +43,6 @@ display = plot_carpet(
     adhd_dataset.func[0],
     mask_img,
     t_r=adhd_dataset.t_r,
-    standardize="zscore_sample",
     title="global patterns over time",
 )
 
@@ -78,7 +81,6 @@ display = plot_carpet(
     t_r=adhd_dataset.t_r,
     mask_labels=map_labels,
     axes=ax,
-    standardize="zscore_sample",
     title="global patterns over time separated by tissue type",
 )
 

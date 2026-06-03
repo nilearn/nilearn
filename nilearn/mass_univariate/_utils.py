@@ -16,7 +16,7 @@ def calculate_tfce(
     E=0.5,
     H=2,
     dh="auto",
-    two_sided_test=True,
+    two_sided_test: bool = True,
 ):
     """Calculate threshold-free cluster enhancement values for scores maps.
 

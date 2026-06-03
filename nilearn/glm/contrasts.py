@@ -2,7 +2,7 @@
 obtain fixed effect results.
 """
 
-from warnings import warn
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -44,13 +44,20 @@ def expression_to_contrast_vector(expression, design_columns):
         contrast_vector = eye_design.eval(
             expression, engine="python"
         ).to_numpy()
-    except Exception:
+    except pd.errors.UndefinedVariableError as e:
         raise ValueError(
-            f"The expression ({expression}) is not valid. "
+            f"The expression ({expression}) is not valid:\n"
+            f"{e}.\n"
+            f"Available matrix columns are: {design_columns}"
+        ) from e
+    except Exception as e:
+        raise ValueError(
+            f"The expression ({expression}) is not valid.\n"
             "This could be due to "
             "defining the contrasts using design matrix columns that are "
-            "invalid python identifiers."
-        )
+            "invalid python identifiers.\n"
+            f"Available matrix columns are: {design_columns}"
+        ) from e
 
     return contrast_vector
 
@@ -148,12 +155,13 @@ def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
         zip(labels, results, con_vals, strict=False)
     ):
         if np.all(con_val == 0):
-            warn(
+            warnings.warn(
                 f"Contrast for run {int(i)} is null.",
                 stacklevel=find_stack_level(),
             )
             continue
         contrast_ = compute_contrast(lab, res, con_val, stat_type)
+
         contrast = contrast_ if contrast is None else contrast + contrast_
         n_contrasts += 1
     if contrast is None:
@@ -390,7 +398,7 @@ class Contrast:
             )
         dof_ = self.dof + other.dof
         if self.stat_type == "F":
-            warn(
+            warnings.warn(
                 "Running approximate fixed effects on F statistics.",
                 category=UserWarning,
                 stacklevel=find_stack_level(),
@@ -480,16 +488,27 @@ def compute_fixed_effects(
         )
 
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):
-        masker = mask.fit()
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            masker = mask.fit()
+
+    # TODO (nilearn >=0.15) remove ALL standardize=None below
     elif mask is None:
         if isinstance(contrast_imgs[0], SurfaceImage):
-            masker = SurfaceMasker().fit(contrast_imgs[0])
+            masker = SurfaceMasker(standardize=None).fit(contrast_imgs[0])
         else:
-            masker = NiftiMasker().fit(contrast_imgs)
+            masker = NiftiMasker(standardize=None).fit(contrast_imgs)
     elif isinstance(mask, SurfaceImage):
-        masker = SurfaceMasker(mask_img=mask).fit(contrast_imgs[0])
+        masker = SurfaceMasker(mask_img=mask, standardize=None).fit(
+            contrast_imgs[0]
+        )
     else:
-        masker = NiftiMasker(mask_img=mask).fit()
+        masker = NiftiMasker(mask_img=mask, standardize=None).fit()
 
     variances = np.array(
         [masker.transform(vi).squeeze() for vi in variance_imgs]

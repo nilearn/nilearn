@@ -1,6 +1,7 @@
 """Functions to compare volume or surface images."""
 
 import warnings
+from typing import get_args
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,7 +20,7 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
-from nilearn.typing import NiimgLike
+from nilearn.typing import ColorBar, NiimgLike, OutputFile, Title
 
 
 @fill_doc
@@ -97,9 +98,9 @@ def plot_img_comparison(
     """
     check_params(locals())
     # Cast to list
-    if isinstance(ref_imgs, (*NiimgLike, SurfaceImage)):
+    if isinstance(ref_imgs, (*get_args(NiimgLike), SurfaceImage)):
         ref_imgs = [ref_imgs]
-    if isinstance(src_imgs, (*NiimgLike, SurfaceImage)):
+    if isinstance(src_imgs, (*get_args(NiimgLike), SurfaceImage)):
         src_imgs = [src_imgs]
     if not isinstance(ref_imgs, list) or not isinstance(src_imgs, list):
         raise TypeError(
@@ -223,12 +224,12 @@ def plot_bland_altman(
     ref_label="reference image",
     src_label="source image",
     figure=None,
-    title=None,
+    title: Title = None,
     cmap=DEFAULT_SEQUENTIAL_CMAP,
-    colorbar=True,
+    colorbar: ColorBar = True,
     gridsize=100,
     lims=None,
-    output_file=None,
+    output_file: OutputFile = None,
 ):
     """Create a Bland-Altman plot between 2 images.
 
@@ -471,14 +472,17 @@ def _sanitize_masker(masker, image_type, ref_img):
     Raise exception
     if there is type mismatch between the masker and ref_img.
     """
+    # TODO (nilearn >= 0.15) remove ALL 'standardize=None'
+    # from below
     if masker is None:
         if image_type == "volume":
             masker = NiftiMasker(
                 target_affine=ref_img.affine,
                 target_shape=ref_img.shape,
+                standardize=None,
             )
         else:
-            masker = SurfaceMasker()
+            masker = SurfaceMasker(standardize=None)
 
     check_compatibility_mask_and_images(masker, ref_img)
 
@@ -487,14 +491,20 @@ def _sanitize_masker(masker, image_type, ref_img):
             mask_img=masker,
             target_affine=ref_img.affine,
             target_shape=ref_img.shape,
+            standardize=None,
         )
     elif isinstance(masker, SurfaceImage):
         check_polymesh_equal(ref_img.mesh, masker.mesh)
-        masker = SurfaceMasker(
-            mask_img=masker,
-        )
+        masker = SurfaceMasker(mask_img=masker, standardize=None)
 
     if not masker.__sklearn_is_fitted__():
-        masker.fit(ref_img)
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            masker.fit(ref_img)
 
     return masker

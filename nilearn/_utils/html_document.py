@@ -62,10 +62,10 @@ def _open_in_browser(content):
     webbrowser.open(url)
     try:
         queue.get(timeout=BROWSER_TIMEOUT_SECONDS)
-    except Empty:
+    except Empty as e:
         raise RuntimeError(
             "Failed to open nilearn plot or report in a web browser."
-        )
+        ) from e
     server.shutdown()
     server_thread.join()
 
@@ -227,7 +227,7 @@ class HTMLDocument:
     def __str__(self):
         return self.html
 
-    def save_as_html(self, file_name) -> None:
+    def save_as_html(self, file_name: str | Path) -> None:
         """Save the plot in an HTML file, that can later be opened \
         in a browser.
 
@@ -238,7 +238,7 @@ class HTMLDocument:
 
         """
         with Path(file_name).open("wb") as f:
-            f.write(self.get_standalone().encode("utf-8"))
+            f.write(self.get_iframe().encode("utf-8"))
 
     def open_in_browser(self, file_name: str | None = None) -> None:
         """Save the plot to a temporary HTML file and open it in a browser.
@@ -249,7 +249,7 @@ class HTMLDocument:
             HTML file to use as a temporary file.
         """
         if file_name is None:
-            _open_in_browser(self.get_standalone().encode("utf-8"))
+            _open_in_browser(self.get_iframe().encode("utf-8"))
         else:
             self.save_as_html(file_name)
             webbrowser.open(f"file://{file_name}")

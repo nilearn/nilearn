@@ -1,18 +1,22 @@
 """Visualizing 3D stat maps in a Brainsprite viewer."""
 
+from __future__ import annotations
+
 import copy
 import json
 import warnings
 from base64 import b64encode
 from io import BytesIO
-from pathlib import Path
+from typing import TYPE_CHECKING, Any, Literal
 
 import matplotlib
 import numpy as np
 from matplotlib.image import imsave
+from nibabel import Nifti1Image
 from nibabel.affines import apply_affine
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._assets import get_template
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.html_document import HTMLDocument
@@ -25,15 +29,21 @@ from nilearn.image import (
     get_data,
     new_img_like,
     reorder_img,
+    resample_img,
     resample_to_img,
 )
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
-from nilearn.plotting.js_plotting_utils import get_html_template
+from nilearn.typing import Threshold
+
+if TYPE_CHECKING:
+    from nibabel import Nifti1Image
 
 
-def _data_to_sprite(data, radiological=False):
+def _data_to_sprite(
+    data: np.ndarray, radiological: bool = False
+) -> np.ndarray:
     """Convert a 3D array into a sprite of sagittal slices.
 
     Parameters
@@ -74,7 +84,7 @@ def _data_to_sprite(data, radiological=False):
     return sprite
 
 
-def _threshold_data(data, threshold=None):
+def _threshold_data(data: np.ndarray, threshold: Any = None):
     """Threshold a data array.
 
     Parameters
@@ -134,9 +144,9 @@ def _save_sprite(
     vmin,
     mask=None,
     cmap="Greys",
-    format="png",
-    radiological=False,
-):
+    format: str = "png",
+    radiological: bool = False,
+) -> np.ndarray:
     """Generate a sprite from a 3D Niimg-like object.
 
     Parameters
@@ -196,7 +206,9 @@ def _bytes_io_to_base64(handle_io):
     return data
 
 
-def _save_cm(output_cmap, cmap, format="png", n_colors=256) -> None:
+def _save_cm(
+    output_cmap, cmap, format: str = "png", n_colors: int = 256
+) -> None:
     """Save the colormap of an image as an image file."""
     # save the colormap
     data = np.arange(0.0, n_colors) / (n_colors - 1.0)
@@ -208,7 +220,9 @@ class StatMapView(HTMLDocument):  # noqa: D101
     pass
 
 
-def _mask_stat_map(stat_map_img, threshold=None):
+def _mask_stat_map(
+    stat_map_img: Any, threshold: Threshold = None
+) -> tuple[Nifti1Image, Nifti1Image, np.ndarray, Threshold]:
     """Load a stat map and apply a threshold.
 
     Returns
@@ -236,7 +250,12 @@ def _mask_stat_map(stat_map_img, threshold=None):
     return mask_img, stat_map_img, data, threshold
 
 
-def load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
+def load_bg_img(
+    stat_map_img,
+    bg_img: Any = "MNI152",
+    black_bg: bool | Literal["auto"] = "auto",
+    dim="auto",
+):
     """Load and resample bg_img in an isotropic resolution, \
     with a positive diagonal affine matrix.
 
@@ -270,12 +289,45 @@ def load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
             bg_img, dim=dim, black_bg=black_bg
         )
     bg_img = reorder_img(bg_img, resample="nearest")
+
+    if not _is_isotropic(bg_img.affine):
+        bg_img = _resample_to_isotropic(bg_img)
+
     return bg_img, bg_min, bg_max, black_bg
+
+
+def _is_isotropic(diagonal_affine: np.ndarray) -> bool:
+    """
+    Check if the affine matrix has an isotropic voxel size.
+
+    The affine must be positive diagonal, which can be achieved by calling
+    ``nilearn.image.reorder_img`` on the image and specifying a ``resample``
+    parameter.
+    """
+    diag = np.diag(diagonal_affine)[:3]
+    return (diag == diag[0]).all()
+
+
+def _resample_to_isotropic(
+    img: Nifti1Image, voxel_size: float | None = None
+) -> Nifti1Image:
+    """
+    Resample an image to an isotropic resolution.
+
+    By default, the voxel size is set to the smallest dimension of the input
+    image.
+    """
+    diag = np.diag(img.affine)[:3]
+    if voxel_size is None:
+        voxel_size = np.min(np.abs(diag))
+    new_affine = img.affine.copy()
+    np.fill_diagonal(new_affine[:3, :3], voxel_size * np.sign(diag))
+    return resample_img(img, target_affine=new_affine)
 
 
 def _resample_stat_map(
     stat_map_img, bg_img, mask_img, resampling_interpolation="continuous"
-):
+) -> tuple[Nifti1Image, Nifti1Image]:
     """Resample the stat map and mask to the background.
 
     Returns
@@ -309,7 +361,7 @@ def _json_view_params(
     value=True,
     radiological=False,
     show_lr=True,
-):
+) -> dict[str, Any]:
     """Create a dictionary with all the brainsprite parameters.
 
     Returns
@@ -360,7 +412,7 @@ def _json_view_params(
     return params
 
 
-def _json_view_size(params, width_view=600):
+def _json_view_size(params, width_view: int = 600) -> tuple[int, int]:
     """Define the size of the viewer.
 
     Returns
@@ -376,7 +428,7 @@ def _json_view_size(params, width_view=600):
     # axial_height (y).
     # Also add 20% extra height for annotation and margin
     slices_height = np.max([params["nbSlice"]["Y"], params["nbSlice"]["Z"]])
-    slices_height = 1.20 * slices_height
+    slices_height = 1.50 * slices_height
 
     # Get the final size of the viewer
     ratio = slices_height / slices_width
@@ -385,7 +437,7 @@ def _json_view_size(params, width_view=600):
     return width_view, height_view
 
 
-def _get_bg_mask_and_cmap(bg_img, black_bg):
+def _get_bg_mask_and_cmap(bg_img, black_bg: bool):
     """Get background data for _json_view_data."""
     bg_mask = np.ma.getmaskarray(get_data(bg_img))
     bg_cmap = copy.copy(matplotlib.pyplot.get_cmap("gray"))
@@ -402,12 +454,12 @@ def _json_view_data(
     mask_img,
     bg_min,
     bg_max,
-    black_bg,
+    black_bg: bool,
     colors,
     cmap,
-    colorbar,
-    radiological,
-):
+    colorbar: bool = True,
+    radiological: bool = False,
+) -> dict[str, Any]:
     """Create a json-like viewer object, and populate with base64 data.
 
     Returns
@@ -416,14 +468,7 @@ def _json_view_data(
     """
     # Initialize brainsprite data structure
     json_view = dict.fromkeys(
-        [
-            "bg_base64",
-            "stat_map_base64",
-            "cm_base64",
-            "params",
-            "js_jquery",
-            "js_brainsprite",
-        ]
+        ["bg_base64", "stat_map_base64", "cm_base64", "params"]
     )
 
     # Create a base64 sprite for the background
@@ -469,7 +514,9 @@ def _json_view_data(
     return json_view
 
 
-def _json_view_to_html(json_view, width_view=600):
+def _json_view_to_html(
+    json_view: dict[str, Any], width_view: int = 600
+) -> StatMapView:
     """Fill a brainsprite html template with relevant parameters and data.
 
     Returns
@@ -479,20 +526,17 @@ def _json_view_to_html(json_view, width_view=600):
     # Fix the size of the viewer
     width, height = _json_view_size(json_view["params"], width_view)
 
-    # Populate all missing keys with html-ready data
-    json_view["INSERT_PAGE_TITLE_HERE"] = (
-        json_view["params"]["title"] or "Slice viewer"
-    )
-    json_view["params"] = json.dumps(json_view["params"])
-    js_dir = Path(__file__).parent / "data" / "js"
-    with (js_dir / "jquery.min.js").open() as f:
-        json_view["js_jquery"] = f.read()
-    with (js_dir / "brainsprite.min.js").open() as f:
-        json_view["js_brainsprite"] = f.read()
-
     # Load the html template, and plug in all the data
-    html_view = get_html_template("stat_map_template.html")
-    html_view = html_view.safe_substitute(json_view)
+    view_img_tpl = get_template("html/plotting/view_img.jinja")
+
+    html_view = view_img_tpl.render(
+        page_title=json_view["params"]["title"] or "Slice viewer",
+        params=json.dumps(json_view["params"]),
+        bg_base64=json_view["bg_base64"],
+        cm_base64=json_view["cm_base64"],
+        stat_map_base64=json_view["stat_map_base64"],
+        display_footer='style="display: none"',
+    )
 
     return StatMapView(html_view, width=width, height=height)
 
@@ -514,18 +558,18 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
         cut_slices = apply_affine(
             np.linalg.inv(stat_map_img.affine), cut_coords
         )
-    except ValueError:
+    except ValueError as e:
         raise ValueError(
             "The input given for display_mode='ortho' "
             "needs to be a list of 3d world coordinates in (x, y, z). "
             f"You provided cut_coords={cut_coords}"
-        )
-    except IndexError:
+        ) from e
+    except IndexError as e:
         raise ValueError(
             "The input given for display_mode='ortho' "
             "needs to be a list of 3d world coordinates in (x, y, z). "
             f"You provided single cut, cut_coords={cut_coords}"
-        )
+        ) from e
 
     return cut_slices
 
@@ -551,7 +595,7 @@ def view_img(
     opacity=1,
     radiological=False,
     show_lr=True,
-):
+) -> StatMapView:
     """Interactive html viewer of a statistical map, with optional background.
 
     Parameters
@@ -564,7 +608,7 @@ def view_img(
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
-        Default='MNI152'.
+        default='MNI152'.
 
     cut_coords : None, or a :obj:`tuple` of :obj:`float`, default=None
         The :term:`MNI` coordinates of the point where the cut is performed
@@ -605,7 +649,7 @@ def view_img(
         or an anatomical image.
 
     %(dim)s
-        Default='auto'.
+        default='auto'.
 
     vmax : :obj:`float`, or None, default=None
         max value for mapping colors.
@@ -622,7 +666,7 @@ def view_img(
         image, or 0 when a threshold is used.
 
     %(resampling_interpolation)s
-        Default='continuous'.
+        default='continuous'.
 
     width_view : :obj:`int`, default=600
         Width of the viewer in pixels.
@@ -658,6 +702,53 @@ def view_img(
     """
     check_params(locals())
 
+    json_view = create_brainsprite(
+        stat_map_img,
+        bg_img,
+        cut_coords,
+        colorbar,
+        title,
+        threshold,
+        annotate,
+        draw_cross,
+        black_bg,
+        cmap,
+        symmetric_cmap,
+        dim,
+        vmax,
+        vmin,
+        resampling_interpolation,
+        opacity,
+        radiological,
+        show_lr,
+    )
+
+    html_view = _json_view_to_html(json_view, width_view)
+
+    return html_view
+
+
+def create_brainsprite(
+    stat_map_img,
+    bg_img="MNI152",
+    cut_coords=None,
+    colorbar=True,
+    title=None,
+    threshold=1e-6,
+    annotate=True,
+    draw_cross=True,
+    black_bg="auto",
+    cmap=DEFAULT_DIVERGING_CMAP,
+    symmetric_cmap=True,
+    dim="auto",
+    vmax=None,
+    vmin=None,
+    resampling_interpolation="continuous",
+    opacity=1,
+    radiological=False,
+    show_lr=True,
+) -> dict[str, Any]:
+    """Wrap most of view_img to reuse it in other places."""
     # Prepare the color map and thresholding
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
         stat_map_img, threshold
@@ -711,6 +802,4 @@ def view_img(
         show_lr=show_lr,
     )
 
-    html_view = _json_view_to_html(json_view, width_view)
-
-    return html_view
+    return json_view

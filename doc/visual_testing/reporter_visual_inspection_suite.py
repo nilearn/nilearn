@@ -58,8 +58,9 @@ REPORTS_DIR = Path(__file__).parent.parent / "modules" / "generated_reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def verbose_save(report, file: str) -> None:
+def verbose_save(report, file: str, size=(1200, 800)) -> None:
     """Save reportas html  and say where it was saved."""
+    report.resize(size[0], size[1])
     report.save_as_html(REPORTS_DIR / file)
     print(f"Report saved to {REPORTS_DIR / file}")
 
@@ -120,7 +121,7 @@ def report_flm_adhd_dmn(build_type):
         report_dims=(1200, "a"),
     )
 
-    verbose_save(report, "flm_adhd_dmn.html")
+    verbose_save(report, "flm_adhd_dmn.html", (1200, 6000))
 
     return report
 
@@ -220,7 +221,7 @@ def report_flm_bids_features(build_type):
         plot_type="glass",
     )
 
-    verbose_save(report, "flm_bids_features.html")
+    verbose_save(report, "flm_bids_features.html", (1200, 6000))
 
     return report
 
@@ -255,7 +256,7 @@ def report_flm_fiac(build_type):
         height_control="fdr",
     )
 
-    verbose_save(report, "flm_fiac.html")
+    verbose_save(report, "flm_fiac.html", (1200, 6000))
 
     return report
 
@@ -306,7 +307,7 @@ def report_slm_oasis(build_type):
         plot_type="glass",
     )
 
-    verbose_save(report, "slm_oasis.html")
+    verbose_save(report, "slm_oasis.html", (1200, 6000))
 
     return report
 
@@ -365,7 +366,7 @@ def report_surface_flm(build_type):
         height_control=None,
     )
 
-    verbose_save(report_flm, "flm_surf.html")
+    verbose_save(report_flm, "flm_surf.html", (1200, 6000))
 
     return report_flm, report_flm_empty
 
@@ -374,7 +375,7 @@ def report_surface_slm():
     slm = SecondLevelModel(mask_img=SurfaceMasker())
     report_slm_empty = slm.generate_report(height_control="bonferroni")
 
-    verbose_save(report_slm_empty, "slm_surf_empty.html")
+    verbose_save(report_slm_empty, "slm_surf_empty.html", (1200, 6000))
 
     return report_slm_empty
 
@@ -398,7 +399,9 @@ def _generate_masker_report_files_partial(masker, **kwargs) -> HTMLReport:
     unfitted_report = masker.generate_report(
         title=f"{masker_class_name} unfitted", **kwargs
     )
-    verbose_save(unfitted_report, f"{masker_class_name}_unfitted.html")
+    verbose_save(
+        unfitted_report, f"{masker_class_name}_unfitted.html", (1200, 750)
+    )
 
     masker.reports = False
     unfitted_report_no_reporting = masker.generate_report(
@@ -407,6 +410,7 @@ def _generate_masker_report_files_partial(masker, **kwargs) -> HTMLReport:
     verbose_save(
         unfitted_report_no_reporting,
         f"{masker_class_name}_unfitted_reports-False.html",
+        (1200, 750),
     )
 
     _generate_dummy_html(filenames=[f"{masker_class_name}_fitted.html"])
@@ -437,12 +441,12 @@ def _generate_masker_report_files(
     masker.reports = True
     masker.fit(data)
     report = masker.generate_report(**kwargs)
-    verbose_save(report, f"{masker_class_name}_fitted.html")
+    verbose_save(report, f"{masker_class_name}_fitted.html", (1200, 750))
 
     return unfitted_report, report
 
 
-def report_nifti_masker(build_type):
+def report_nifti_masker(build_type, engine="matplotlib"):
     gm_template = load_mni152_gm_template()
     masker = NiftiMasker(
         mask_img=gm_template,
@@ -457,20 +461,24 @@ def report_nifti_masker(build_type):
         return _generate_masker_report_files_partial(masker), None
     else:
         data = load_sample_motor_activation_image()
-        return _generate_masker_report_files(masker, data=data)
+        return _generate_masker_report_files(masker, data=data, engine=engine)
 
 
-def report_nifti_labels_masker(build_type):
+def report_nifti_labels_masker(build_type, engine="matplotlib"):
     atlas = fetch_atlas_schaefer_2018()
     masker = NiftiLabelsMasker(
         atlas.maps, lut=atlas.lut, standardize="zscore_sample"
     )
 
     if build_type == "partial":
-        return _generate_masker_report_files_partial(masker), None
+        return _generate_masker_report_files_partial(
+            masker, engine=engine
+        ), None
     else:
         data = fetch_development_fmri(n_subjects=1)
-        return _generate_masker_report_files(masker, data=data.func[0])
+        return _generate_masker_report_files(
+            masker, data=data.func[0], engine=engine
+        )
 
 
 def report_nifti_maps_masker(build_type):
@@ -599,7 +607,9 @@ def report_surface_maps_masker(build_type):
             displayed_maps=[6, 2],
         )
         verbose_save(
-            matplotlib_reports, "SurfaceMapsMasker_fitted_matplotlib.html"
+            matplotlib_reports,
+            "SurfaceMapsMasker_fitted_matplotlib.html",
+            (1200, 750),
         )
 
         print("Use plotly")
@@ -610,7 +620,9 @@ def report_surface_maps_masker(build_type):
             engine="plotly",
             displayed_maps=[6, 2],
         )
-        verbose_save(plotly_reports, "SurfaceMapsMasker_fitted_plotly.html")
+        verbose_save(
+            plotly_reports, "SurfaceMapsMasker_fitted_plotly.html", (1200, 750)
+        )
 
         return empty_report, matplotlib_reports, plotly_reports
 

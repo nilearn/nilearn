@@ -1,11 +1,11 @@
 import warnings
+from importlib.util import find_spec
 
 import numpy as np
 from scipy import linalg
 from scipy.spatial import distance_matrix
 
 from nilearn._utils.helpers import (
-    is_kaleido_installed,
     is_plotly_installed,
     is_sphinx_build,
 )
@@ -137,15 +137,37 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         savefig_kwargs:
         """
-        if not is_kaleido_installed():
-            raise ImportError(
-                "`kaleido` is required to save plotly figures to disk."
-            )
         self._check_output_file(output_file=output_file)
         if self.figure is not None:
             if output_file is not None:
                 self.output_file = output_file
-            self.figure.write_image(self.output_file)
+
+            try:
+                self.figure.write_image(self.output_file)
+            except RuntimeError as e:
+                kaleido_spec = find_spec("kaleido")
+                if "Kaleido requires Google Chrome" in str(e) or kaleido_spec:
+                    raise RuntimeError(
+                        "As of version 1.0.0, Google Chrome is no more "
+                        "bundled with Kaleido.\n"
+                        "To be able to save images with plotly, make sure "
+                        "that Google Chrome is installed!\n"
+                        "You can install a compatible Chrome version using "
+                        "the `kaleido_get_chrome` command in command line or "
+                        "`kaleido.get_chrome_sync()` function "
+                        "in Python."
+                    ) from e
+                else:
+                    raise e
+            except ValueError as e:
+                kaleido_spec = find_spec("kaleido")
+                if not kaleido_spec:
+                    raise RuntimeError(
+                        "Kaleido and Google Chrome are required to save "
+                        "plotly figures to disk."
+                    ) from e
+                else:
+                    raise e
 
     def add_contours(
         self,

@@ -21,7 +21,7 @@ import requests
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, readable_time
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -34,6 +34,7 @@ PACKAGE_DIRECTORY = Path(__file__).absolute().parent
 
 
 ALLOWED_DATA_TYPES = (
+    "area",
     "curvature",
     "sulcal",
     "thickness",
@@ -53,10 +54,6 @@ def md5_hash(string):
     m = hashlib.md5()
     m.update(string.encode("utf-8"))
     return m.hexdigest()
-
-
-def _format_time(t):
-    return f"{t / 60.0:4.1f}min" if t > 60 else f" {t:5.1f}s"
 
 
 def _md5_sum_file(path):
@@ -125,7 +122,7 @@ def _chunk_report_(
         logger.log(
             f"\rDownloaded {bytes_so_far} of {total_size} bytes "
             f"({total_percent * 100:.1f}%%, "
-            f"{_format_time(time_remaining)} remaining)",
+            f"{readable_time(time_remaining)} remaining)",
             verbose=verbose,
         )
 
@@ -264,8 +261,22 @@ def get_dataset_dir(
             path = path.resolve()
         if path.exists() and path.is_dir():
             logger.log(
-                f"Dataset found in {path}", verbose=verbose, msg_level=1
+                f"Dataset directory found: {path}",
+                verbose=verbose,
+                msg_level=1,
             )
+            if len(list(path.iterdir())) == 0:
+                logger.log(
+                    " Dataset directory is empty",
+                    verbose=verbose,
+                    msg_level=1,
+                )
+            else:
+                logger.log(
+                    " Note that some files still may be missing.",
+                    verbose=verbose,
+                    msg_level=2,
+                )
             return path
 
     # If not, create a folder in the first writable directory
@@ -431,8 +442,8 @@ def _filter_column(array, col: str, criteria):
     # test it across all possible types (pandas, recarray...)
     try:
         array[col]
-    except Exception:
-        raise KeyError(f"Filtering criterion {col} does not exist")
+    except Exception as e:
+        raise KeyError(f"Filtering criterion {col} does not exist") from e
 
     if (
         not isinstance(criteria, str)
@@ -508,7 +519,7 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
         try:
             data = urllib.request.urlopen(request.url, timeout=timeout)
         except Exception as e:
-            raise requests.RequestException(e.reason)
+            raise requests.RequestException(e.reason) from e
         data.release_conn = data.close
         resp = requests.Response()
         resp.url = data.geturl()
@@ -524,9 +535,9 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
 @fill_doc
 def fetch_single_file(
     url,
-    data_dir,
-    resume=True,
-    overwrite=False,
+    data_dir: Path,
+    resume: bool = True,
+    overwrite: bool = False,
     md5sum=None,
     username=None,
     password=None,
@@ -538,8 +549,11 @@ def fetch_single_file(
     Parameters
     ----------
     %(url)s
+
     %(data_dir)s
+
     %(resume)s
+
     overwrite : bool, default=False
         If true and file already exists, delete it.
 
@@ -704,13 +718,13 @@ def fetch_single_file(
     return full_name
 
 
-def get_dataset_descr(ds_name):
+def get_dataset_descr(ds_name: str) -> str:
     """Return the description of a dataset."""
     try:
         with (PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst").open(
             "rb"
         ) as rst_file:
-            descr = rst_file.read()
+            descr = rst_file.read().decode("utf-8")
     except OSError:
         descr = ""
 
@@ -720,10 +734,7 @@ def get_dataset_descr(ds_name):
             stacklevel=find_stack_level(),
         )
 
-    if isinstance(descr, bytes):
-        descr = descr.decode("utf-8")
-
-    return descr
+    return str(descr)
 
 
 def movetree(src, dst) -> None:
@@ -849,6 +860,12 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             overwrite
             or (not target_file.exists() and not temp_target_file.exists())
         ):
+            logger.log(
+                f"Downloading missing file: {target_file}",
+                verbose=verbose,
+                msg_level=2,
+            )
+
             # We may be in a global read-only repository. If so, we cannot
             # download files.
             if not os.access(data_dir, os.W_OK):

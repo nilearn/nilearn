@@ -47,7 +47,6 @@ colors = ["red", "blue", "limegreen"]
 for mask, color in zip(masks, colors, strict=False):
     display.add_contours(
         mask,
-        contours=1,
         antialiased=False,
         linewidth=4.0,
         levels=[0],

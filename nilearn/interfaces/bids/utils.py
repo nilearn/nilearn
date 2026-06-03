@@ -1,7 +1,9 @@
 """Public Utility functions for the nilearn.interfaces.bids module."""
 
+from typing import Any
 
-def bids_entities():
+
+def bids_entities() -> dict[str, list[str]]:
     """Return a dictionary of BIDS entities.
 
     Entities are listed in the order they should appear in a filename.
@@ -37,7 +39,7 @@ def bids_entities():
     }
 
 
-def check_bids_label(label) -> None:
+def check_bids_label(label: Any) -> None:
     """Validate a BIDS label.
 
     https://bids-specification.readthedocs.io/en/stable/glossary.html#label-formats
@@ -59,7 +61,10 @@ def check_bids_label(label) -> None:
         )
 
 
-def create_bids_filename(fields, entities_to_include=None):
+def create_bids_filename(
+    fields,
+    entities_to_include: list[str] | None = None,
+) -> str:
     """Create BIDS filename from dictionary of entity-label pairs.
 
     Parameters

@@ -11,6 +11,7 @@ from nilearn.image import get_data
 from nilearn.plotting import plot_glass_brain
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_abs", [True, False])
 @pytest.mark.parametrize("resampling_interpolation", ["nearest", "continuous"])
 def test_plot_glass_brain_absolute(
@@ -20,6 +21,7 @@ def test_plot_glass_brain_absolute(
     plot_glass_brain(img_3d_mni, plot_abs=plot_abs)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_glass_brain_file_output(matplotlib_pyplot, img_3d_mni, tmp_path):
     """Smoke-test for hemispheric glass brain with file output."""
     filename = tmp_path / "test.png"
@@ -30,6 +32,7 @@ def test_plot_glass_brain_file_output(matplotlib_pyplot, img_3d_mni, tmp_path):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_noncurrent_axes(matplotlib_pyplot, rng):
     """Regression test for Issue #450."""
     maps_img = Nifti1Image(rng.random((10, 10, 10)), np.eye(4))
@@ -47,6 +50,7 @@ def test_plot_noncurrent_axes(matplotlib_pyplot, rng):
         assert ax_fh == fh1, f"New axis {ax_name} should be in fh1."
 
 
+@pytest.mark.thread_unsafe
 def test_add_markers_using_plot_glass_brain(matplotlib_pyplot):
     """Tests for adding markers through plot_glass_brain."""
     fig = plot_glass_brain(None)
@@ -55,6 +59,7 @@ def test_add_markers_using_plot_glass_brain(matplotlib_pyplot):
     fig.close()
 
 
+@pytest.mark.thread_unsafe
 def test_add_markers_right_hemi(matplotlib_pyplot):
     """Add a single marker in right hemisphere.
 
@@ -76,6 +81,7 @@ def test_add_markers_right_hemi(matplotlib_pyplot):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_add_markers_left_hemi(matplotlib_pyplot):
     """Add two markers in left hemisphere.
 
@@ -98,6 +104,7 @@ def test_add_markers_left_hemi(matplotlib_pyplot):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_glass_brain_colorbar_having_nans(
     matplotlib_pyplot, affine_eye, img_3d_mni
 ):
@@ -107,6 +114,7 @@ def test_plot_glass_brain_colorbar_having_nans(
     plot_glass_brain(Nifti1Image(data, affine_eye), colorbar=True)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("display_mode", ["lr", "lzry"])
 def test_plot_glass_brain_display_modes_without_img(
     matplotlib_pyplot, display_mode
@@ -116,6 +124,7 @@ def test_plot_glass_brain_display_modes_without_img(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("display_mode", ["lr", "lzry"])
 def test_plot_glass_brain_with_completely_masked_img(
     matplotlib_pyplot, img_3d_mni, display_mode
@@ -124,6 +133,7 @@ def test_plot_glass_brain_with_completely_masked_img(
     plot_glass_brain(img_3d_mni, display_mode=display_mode)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_glass_brain_negative_vmin_with_plot_abs(
     matplotlib_pyplot, img_3d_mni
 ):

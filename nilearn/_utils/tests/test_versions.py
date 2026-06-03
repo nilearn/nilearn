@@ -17,6 +17,7 @@ def test_compare_version(version_a, operator, version_b):
     assert compare_version(version_a, operator, version_b)
 
 
+@pytest.mark.single_process
 def test_compare_version_error():
     with pytest.raises(
         ValueError,

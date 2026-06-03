@@ -8,7 +8,7 @@ from typing import Literal
 
 import nilearn
 
-FOLDERS_TO_SKIP = ["data", "input_data", "tests", "_utils"]
+FOLDERS_TO_SKIP = ["data", "tests", "_utils"]
 
 FILES_TO_SKIP = ["test_"]
 

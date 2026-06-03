@@ -87,7 +87,7 @@ print(f"Runs (groups): {np.unique(run)}")
 
 from nilearn.maskers import NiftiMasker
 
-masker = NiftiMasker(mask_img=mask_vt, standardize="zscore_sample", verbose=1)
+masker = NiftiMasker(mask_img=mask_vt, standardize="zscore_sample")
 
 # %%
 # Convert the multi-class labels to binary labels
@@ -130,7 +130,7 @@ for col in range(y_binary_.shape[1]):
 fig, (ax_binary, ax_multi) = plt.subplots(
     2, gridspec_kw={"height_ratios": [10, 1.5]}, figsize=(12, 2)
 )
-cmap = ListedColormap(["white"] + list(plt.cm.tab10.colors)[:n_labels])
+cmap = ListedColormap(["white", *list(plt.cm.tab10.colors)[:n_labels]])
 binary_plt = ax_binary.imshow(
     y_binary_.T,
     aspect="auto",
@@ -232,9 +232,32 @@ classifier = LogisticRegressionCV(
     solver="liblinear",
     Cs=np.geomspace(1e-3, 1e4, 8),
     refit=True,
-    verbose=1,
 )
 
+# %%
+# Leave out a test set for final evaluation
+# -----------------------------------------
+#
+# Before we train and cross-validate, let's leave out one run as a final test
+# set to evaluate the performance of the trained decoder on unseen data.
+
+test_run = 6
+test_mask = run == test_run
+
+# training data for cross-validation
+fmri_img_cv = index_img(fmri_img, ~test_mask)
+y_cv = y[~test_mask]
+y_binary_cv = y_binary[~test_mask]
+run_cv = run[~test_mask]
+
+# Transform fMRI data into a 2D numpy array and standardize it with the masker
+X_cv = masker.fit_transform(fmri_img_cv)
+
+# test data
+fmri_img_test = index_img(fmri_img, test_mask)
+X_test = masker.transform(fmri_img_test)
+y_test = y_binary[test_mask]
+run_test = run[test_mask]
 # %%
 # Train and cross-validate via an Scikit-Learn pipeline
 # -----------------------------------------------------
@@ -250,37 +273,42 @@ from sklearn.model_selection import LeaveOneGroupOut
 
 logo_cv = LeaveOneGroupOut()
 
-# Transform fMRI data into a 2D numpy array and standardize it with the masker
-X = masker.fit_transform(fmri_img)
-print(f"fMRI data shape after masking: {X.shape}")
-# So now we have a 2D numpy array of shape (864, 464) where each row
-# corresponds to a trial and each column corresponds to a feature
-# (voxel in the Ventral Temporal cortex).
+print(f"fMRI data shape after masking: {X_cv.shape}")
+# So now we have a 2D numpy array where each row corresponds to a trial and
+# each column corresponds to a feature (voxel in the Ventral Temporal cortex).
 
 # Loop over each CV split and each class vs. rest binary classification
 # problems (number of classification problems = n_labels)
 scores_sklearn = []
+coefs_sklearn = []
+intercepts_sklearn = []
 for klass in range(n_labels):
-    for train, test in logo_cv.split(X, y, groups=run):
-        # separate train and test events in the data
-        X_train, X_test = X[train], X[test]
-        # separate labels for train and test events for a given class vs. rest
+    for train, val in logo_cv.split(X_cv, groups=run_cv):
+        # separate train and val events in the data
+        X_train, X_val = X_cv[train], X_cv[val]
+        # separate labels for train and val events for a given class vs. rest
         # problem
-        y_train, y_test = y_binary[train, klass], y_binary[test, klass]
+        y_train, y_val = (
+            y_binary_cv[train, klass],
+            y_binary_cv[val, klass],
+        )
 
         # select the voxels by fitting feature selector on training data
         X_train = feature_selector.fit_transform(X_train, y_train)
-        # pick the same voxels in the test data
-        X_test = feature_selector.transform(X_test)
+        # pick the same voxels in the val data
+        X_val = feature_selector.transform(X_val)
 
         # fit the classifier on the training data
         classifier.fit(X_train, y_train)
-        # predict the labels on the test data
-        pred = classifier.predict_proba(X_test)
+        # predict the labels on the val data
+        pred = classifier.predict_proba(X_val)
 
         # calculate the ROC AUC score
-        score = roc_auc_score(y_test, pred[:, 1])
+        score = roc_auc_score(y_val, pred[:, 1])
         scores_sklearn.append(score)
+
+        coefs_sklearn.append(classifier.coef_)
+        intercepts_sklearn.append(classifier.intercept_)
 
 # %%
 # Decode via the :class:`~nilearn.decoding.Decoder`
@@ -295,14 +323,12 @@ from nilearn.decoding import Decoder
 decoder = Decoder(
     estimator="logistic_l2",
     mask=mask_vt,
-    standardize="zscore_sample",
     n_jobs=n_labels,
     cv=logo_cv,
     screening_percentile=screening_percentile,
     scoring="roc_auc_ovr",
-    verbose=1,
 )
-decoder.fit(fmri_img, y, groups=run)
+decoder.fit(fmri_img_cv, y_cv, groups=run_cv)
 scores_nilearn = np.concatenate(list(decoder.cv_scores_.values()))
 
 # %%
@@ -324,3 +350,103 @@ print("Scikit-Learn mean AU-ROC score", np.mean(scores_sklearn))
 # to train, cross-validate and predict on new data, while also parallelizing
 # the computations to make the cross-validation faster. It also organizes the
 # results in a structured way that can be easily accessed and analyzed.
+
+# %%
+# Compare the coefficients and intercepts
+# ---------------------------------------
+#
+# The decoder object also provides access to the coefficients and intercepts of
+# the trained classifiers for each class vs. rest problem. These are stored in
+# the ``coef_`` and ``intercept_`` attributes of the decoder object,
+# respectively. These coefficients and intercepts are averaged across the CV
+# splits for each class vs. rest problem.
+#
+# So we can aggregate the coefficients and intercepts from the Scikit-Learn
+# pipeline by taking their mean across CV splits for each class vs. rest
+# problem to check if they are comparable to the coefficients and intercepts
+# from the Nilearn decoder.
+
+from nilearn.plotting import plot_img_comparison, plot_stat_map, show
+
+increment = len(np.unique(run_cv))
+
+av_sklearn_coef = np.vstack(
+    [
+        np.mean(coefs_sklearn[i : i + increment], axis=0)
+        for i in range(0, len(coefs_sklearn), increment)
+    ]
+)
+av_sklearn_intercept = np.squeeze(
+    np.vstack(
+        [
+            np.mean(intercepts_sklearn[i : i + increment], axis=0)
+            for i in range(0, len(intercepts_sklearn), increment)
+        ]
+    )
+)
+
+fig, (ax_nilearn, ax_sklearn) = plt.subplots(1, 2, figsize=(12, 5))
+plot_stat_map(
+    decoder.coef_img_["bottle"],
+    axes=ax_nilearn,
+    display_mode="z",
+    cut_coords=[-9],
+    title="Nilearn",
+)
+
+plot_stat_map(
+    masker.inverse_transform(av_sklearn_coef[0]),
+    axes=ax_sklearn,
+    display_mode="z",
+    cut_coords=[-9],
+    title="Scikit-Learn",
+)
+show()
+
+plot_img_comparison(
+    decoder.coef_img_["bottle"],
+    masker.inverse_transform(av_sklearn_coef[0]),
+    decoder.masker_,
+    ref_label="Nilearn",
+    src_label="Scikit-Learn",
+)
+show()
+
+# %%
+# .. note::
+#   The coefficients and intercepts from the Scikit-Learn pipeline and the
+#   Nilearn decoder are not identical. We're unsure about the exact reason
+#   for this but the differences seem to depend on OS -- they are bigger on
+#   Linux than on Mac. However they are not big enough to cause a difference
+#   in the predicted labels on the test set.
+
+# %%
+# Compare the predicted labels on the left-out test set
+# -----------------------------------------------------
+#
+# Finally, the decoder object also uses these aggregated coefficients and
+# intercepts to predict the labels on new data via its ``predict``
+# method. So if we also compare the predicted labels from the decoder and
+# the Scikit-Learn pipeline on the left-out test set, we should see that they
+# are also identical.
+
+from sklearn.utils.extmath import safe_sparse_dot
+
+# select the same voxels in the test data as selected in the training data
+X_test = feature_selector.transform(X_test)
+
+pred_nilearn = decoder.predict(X_test)
+decision_function_sklearn = (
+    safe_sparse_dot(X_test, av_sklearn_coef.T, dense_output=True)
+    + av_sklearn_intercept
+)
+indices = decision_function_sklearn.argmax(axis=1)
+pred_sklearn = decoder.classes_[indices]
+
+
+print(
+    "Predicted labels are identical:",
+    (pred_nilearn == pred_sklearn).all(),
+)
+
+# %%

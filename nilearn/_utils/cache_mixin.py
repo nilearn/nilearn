@@ -86,10 +86,10 @@ class _ShelvedFunc:
 
 def cache(
     func,
-    memory,
+    memory: Memory | Path,
     func_memory_level=None,
     memory_level=None,
-    shelve=False,
+    shelve: bool = False,
     **kwargs,
 ):
     """Return a joblib.Memory object.
@@ -202,7 +202,7 @@ class CacheMixin:
             self._shelving = False
 
     def _cache(self, func, func_memory_level=1, shelve=False, **kwargs):
-        """Return a joblib.Memory object.
+        """Return a joblib.Memory object.nilearn/_utils/cache_mixin.py.
 
         The memory_level determines the level above which the wrapped
         function output is cached. By specifying a numeric value for

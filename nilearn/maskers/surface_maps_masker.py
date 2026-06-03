@@ -3,15 +3,14 @@ brain regions.
 """
 
 import warnings
-from typing import Literal
+from typing import Any, ClassVar
 
 import numpy as np
 from scipy import linalg
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils.class_inspect import get_params
+from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     is_matplotlib_installed,
@@ -127,6 +126,16 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     """
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the input surface image "
+            "(if provided via img) overlaid with the regions provided "
+            "via maps_img."
+        ),
+        "n_vertices": {},
+        "number_of_regions": 0,
+        "number_of_maps": 0,
+    }
     _template_name = "body_surface_maps_masker.jinja"
 
     def __init__(
@@ -167,19 +176,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image "
-                "(if provided via img) overlaid with the regions provided "
-                "via maps_img."
-            ),
-            "n_vertices": {},
-            "number_of_regions": getattr(self, "n_elements_", 0),
-            "displayed_maps": [],
-            "number_of_maps": 0,
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
     @fill_doc
     def fit(self, imgs=None, y=None):
@@ -199,9 +196,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         del y
         check_params(self.__dict__)
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -234,6 +231,11 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         # check maps_img data is 2D
         self.maps_img.data._check_ndims(2, "maps_img")
+
+        maps_data = get_data(self.maps_img)
+        if np.all(maps_data == 0):
+            raise ValueError("maps_img contains no map.")
+
         self.maps_img_ = self.maps_img
 
         self.n_elements_ = self.maps_img.shape[1]
@@ -242,16 +244,16 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
 
+            mask_data = get_data(self.mask_img_).astype(bool)
+            masked_map_data = maps_data[mask_data, ...]
+            if np.all(masked_map_data == 0):
+                raise ValueError(
+                    "No map left after applying mask to the maps image."
+                )
+
         self._report_content["reports_at_fit_time"] = self.reports
         # initialize reporting content and data
         if self.reports:
-            for part in self.maps_img.data.parts:
-                self._report_content["n_vertices"][part] = (
-                    self.maps_img.mesh.parts[part].n_vertices
-                )
-
-            self._report_content["number_of_regions"] = self.n_elements_
-
             self._reporting_data = {
                 "maps_image": self.maps_img_,
                 "mask": self.mask_img_,
@@ -304,6 +306,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         imgs = at_least_2d(imgs)
 
+        imgs = self._smooth(imgs)
+
         self._reporting_data["images"] = imgs
 
         img_data = np.concatenate(
@@ -312,12 +316,22 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
+
+        if not self.allow_overlap:
+            # Create mask depending on dtype
+            if np.issubdtype(maps_data.dtype, np.floating):
+                eps = np.finfo(maps_data.dtype).eps
+                mask = (maps_data > eps) | (maps_data < -eps)
+            else:
+                mask = maps_data != 0
+
+            # check overlap
+            if np.any(np.all(mask, axis=1)):
+                raise ValueError("Overlap detected in the maps.")
+
         mask_data = (
             get_data(self.mask_img_) if self.mask_img_ is not None else None
         )
-
-        parameters = get_params(self.__class__, self)
-        parameters["clean_args"] = self.clean_args_
 
         # apply mask if provided
         # and then extract signal via least square regression
@@ -333,27 +347,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 maps_data, img_data
             )[0].T
 
-        mask_logger("cleaning", verbose=self.verbose)
-
-        parameters = get_params(self.__class__, self)
-
-        parameters["clean_args"] = self.clean_args_
-
-        # signal cleaning here
-        region_signals = self._cache(signal.clean, func_memory_level=2)(
-            region_signals,
-            detrend=parameters["detrend"],
-            standardize=parameters["standardize"],
-            standardize_confounds=parameters["standardize_confounds"],
-            t_r=parameters["t_r"],
-            low_pass=parameters["low_pass"],
-            high_pass=parameters["high_pass"],
-            confounds=confounds,
-            sample_mask=sample_mask,
-            **parameters["clean_args"],
-        )
-
-        return region_signals
+        return self._clean(region_signals, confounds, sample_mask)
 
     @fill_doc
     def inverse_transform(self, region_signals):
@@ -424,57 +418,27 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return imgs
 
-    @fill_doc
-    def generate_report(
-        self,
-        displayed_maps: list[int]
-        | np.typing.NDArray[np.int_]
-        | int
-        | Literal["all"] = 10,
-        engine: str = "matplotlib",
-        title: str | None = None,
-    ):
-        """Generate an HTML report for the current ``SurfaceMapsMasker``
-        object.
-
-        .. note::
-            This functionality requires to have ``Matplotlib`` installed.
-
-        Parameters
-        ----------
-        %(displayed_maps)s
-
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        engine : :obj:`str`, default="matplotlib"
-            The plotting engine to use for the report. Can be either
-            "matplotlib" or "plotly". If "matplotlib" is selected, the report
-            will be static. If "plotly" is selected, the report
-            will be interactive. If the selected engine is not installed, the
-            report will use the available plotting engine. If none of the
-            engines are installed, no report will be generated.
-
-        Returns
-        -------
-        report : `nilearn.reporting.html_report.HTMLReport`
-            HTML report for the masker.
-        """
-        check_displayed_maps(displayed_maps)
-
-        self._report_content["number_of_maps"] = 0
-        self._report_content["displayed_maps"] = []
+    def _run_report_checks(self, **kwargs):
+        super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
+            displayed_maps = kwargs.get("displayed_maps", 10)
+            check_displayed_maps(displayed_maps)
+
+            for part in self.maps_img.data.parts:
+                self._report_content["n_vertices"][part] = (
+                    self.maps_img.mesh.parts[part].n_vertices
+                )
+
             maps_image = self._reporting_data["maps_image"]
             n_maps = maps_image.shape[1]
-
-            self._report_content["number_of_maps"] = n_maps
 
             self, maps_to_be_displayed = sanitize_displayed_maps(
                 self, displayed_maps, n_maps
             )
 
+            self._report_content["number_of_regions"] = self.n_elements_
+            self._report_content["number_of_maps"] = n_maps
             self._report_content["displayed_maps"] = maps_to_be_displayed
 
             if self._reporting_data.get("images") is None:
@@ -483,11 +447,13 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                     "(via transform() method) on any image yet. "
                     "Plotting only maps for reporting."
                 )
-                self._report_content["warning_messages"].append(msg)
+                self._append_report_warning(msg)
 
         # need to have matplotlib installed to generate reports no matter what
         # engine is selected
         if is_matplotlib_installed():
+            engine = self._report_content["engine"]
+
             check_parameter_in_allowed(
                 engine, ["plotly", "matplotlib"], "engine"
             )
@@ -502,9 +468,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 )
             self._report_content["engine"] = engine
 
-        return super().generate_report(title)
-
-    def _reporting(self) -> list:
+    def _load_report_displays(self) -> list:
         """Load displays needed for report.
 
         Returns

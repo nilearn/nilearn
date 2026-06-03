@@ -46,7 +46,7 @@ NEW
 
 - :func:`~datasets.fetch_neurovault_auditory_computation_task`.
 
-- :func:`~datasets.fetch_neurovault_motor_task`.
+- ``nilearn.datasets.fetch_neurovault_motor_task``.
 
 
 ENHANCEMENTS
@@ -246,7 +246,7 @@ Enhancements
 
 - :bdg-success:`API` New function :func:`~datasets.fetch_atlas_pauli_2017` to download a recent subcortical neuroimaging atlas.
 
-- :bdg-success:`API` New functions :func:`~datasets.fetch_neurovault_auditory_computation_task` and :func:`~datasets.fetch_neurovault_motor_task` for simple example data.
+- :bdg-success:`API` New functions :func:`~datasets.fetch_neurovault_auditory_computation_task` and ``nilearn.datasets.fetch_neurovault_motor_task`` for simple example data.
 
 - :bdg-info:`Plotting` Displays created by plotting functions can now add a scale bar to indicate the size in mm or cm (see :ref:`plotting`) (by `Oscar Esteban`_).
 

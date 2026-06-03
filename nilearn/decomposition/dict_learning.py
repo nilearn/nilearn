@@ -6,6 +6,7 @@ constitutes output maps
 """
 
 import warnings
+from typing import get_args
 
 import numpy as np
 from sklearn.decomposition import dict_learning_online
@@ -89,7 +90,7 @@ class DictLearning(_BaseDecomposition):
     %(mask_decomposition)s
 
     %(smoothing_fwhm)s
-        Default=4mm.
+        default=4mm.
 
     %(standardize_true)s
 
@@ -124,7 +125,7 @@ class DictLearning(_BaseDecomposition):
 
     %(mask_strategy)s
 
-        Default='epi'.
+        default='epi'.
 
         .. note::
             These strategies are only relevant for Nifti images and the
@@ -324,7 +325,7 @@ class DictLearning(_BaseDecomposition):
                     MultiSurfaceMasker,
                     SurfaceImage,
                     MultiNiftiMasker,
-                    *NiimgLike,
+                    *get_args(NiimgLike),
                 ),
                 "mask",
             )

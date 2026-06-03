@@ -9,8 +9,12 @@ import pytest
 from nibabel import Nifti1Header, Nifti1Image, load
 
 from nilearn._utils.niimg import (
+    _get_data,
     _get_target_dtype,
+    ensure_finite_data,
+    has_non_finite,
     img_data_dtype,
+    is_binary_niimg,
     load_niimg,
     repr_niimgs,
 )
@@ -21,6 +25,19 @@ from nilearn.image import get_data, new_img_like
 @pytest.fixture
 def img1(affine_eye):
     data = np.ones((2, 2, 2, 2))
+    return Nifti1Image(data, affine=affine_eye)
+
+
+@pytest.fixture
+def img_binary(affine_eye, has_inf, has_nan, non_bin):
+    data = np.ones((3, 3, 3, 3))
+
+    if has_inf:
+        data[0, 0, 0, 0] = np.inf
+    if has_nan:
+        data[1, 1, 1, 1] = np.nan
+    if non_bin:
+        data[2, 2, 2, 2] = 5
     return Nifti1Image(data, affine=affine_eye)
 
 
@@ -276,4 +293,57 @@ def test_repr_niimgs_with_niimg(
     assert (
         repr_niimgs(img_3d_ones_eye, shorten=True)
         == f"{class_name}('{Path(filename).name[:18]}...')"
+    )
+
+
+@pytest.mark.parametrize(
+    "has_inf,has_nan,non_bin,expected",
+    [
+        (False, False, False, False),
+        (True, False, False, True),
+        (False, True, False, True),
+        (False, False, True, False),
+        (True, True, True, True),
+    ],
+)
+def test_has_non_finite(img_binary, expected):
+    """Test nilearn._utils.niimg.has_non_finite."""
+    data = _get_data(img_binary)
+    has_not_finite, _ = has_non_finite(data)
+    assert has_not_finite == expected
+
+
+@pytest.mark.parametrize("has_inf,has_nan,non_bin", [(True, True, False)])
+def test_ensure_finite_data(img_binary):
+    data = _get_data(img_binary)
+    data_returned = ensure_finite_data(data)
+    expected_data = np.ones((3, 3, 3, 3))
+    expected_data[0, 0, 0, 0] = 0
+    expected_data[1, 1, 1, 1] = 0
+
+    assert np.array_equal(data_returned, expected_data)
+
+
+@pytest.mark.parametrize(
+    "has_inf,has_nan,non_bin,accept_non_finite,expected",
+    [
+        (False, False, False, True, True),
+        (False, False, False, False, True),
+        (True, False, False, True, True),
+        (True, False, False, False, False),
+        (False, True, False, True, True),
+        (False, True, False, False, False),
+        (True, True, False, True, True),
+        (True, True, False, False, False),
+        (False, False, True, True, False),
+        (False, False, True, False, False),
+        (True, True, True, True, False),
+        (True, True, True, False, False),
+    ],
+)
+def test_is_binary_niimg(img_binary, accept_non_finite, expected):
+    """Test nilearn._utils.niimg.is_binary_niimg."""
+    assert (
+        is_binary_niimg(img_binary, accept_non_finite=accept_non_finite)
+        == expected
     )

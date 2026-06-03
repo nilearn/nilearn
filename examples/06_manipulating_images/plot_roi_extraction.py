@@ -23,8 +23,6 @@ visualization & results checking be possible at each step.
     for automatic ROI extraction of brain connected networks
     given in 4D image.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%

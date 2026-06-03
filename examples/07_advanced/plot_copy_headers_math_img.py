@@ -14,6 +14,10 @@ depending on the software used.
 
 # %%
 # Let's fetch an example :term:`fMRI` dataset
+#
+# For more information
+# see the :ref:`dataset description <adhd_dataset>`.
+#
 from nilearn.datasets import fetch_adhd
 
 dataset = fetch_adhd(n_subjects=2)
