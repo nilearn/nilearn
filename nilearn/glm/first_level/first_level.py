@@ -57,6 +57,7 @@ from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.masking import intersect_masks
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike, Tr
 
@@ -1466,6 +1467,7 @@ def first_level_from_bids(
     sub_labels=None,
     exclude_subjects=None,
     img_filters=None,
+    mask_from_derivatives=False,
     t_r=None,
     slice_time_ref=None,
     hrf_model="glover",
@@ -1691,6 +1693,9 @@ def first_level_from_bids(
         memory = Memory(None)
     if space_label is None:
         space_label = "MNI152NLin2009cAsym"
+
+    if mask_img is not None:
+        mask_from_derivatives = False
 
     sub_labels = sub_labels or []
     img_filters = img_filters or []
@@ -1918,6 +1923,20 @@ def first_level_from_bids(
             kwargs_load_confounds=kwargs_load_confounds,
         )
         models_confounds.append(confounds)
+
+        if mask_from_derivatives:
+            masks = _get_masks_files(
+                derivatives_path=derivatives_path,
+                sub_label=sub_label_,
+                task_label=task_label,
+                space_label=space_label,
+                img_filters=img_filters,
+                imgs=files_to_check,
+                verbose=verbose,
+            )
+            if masks:
+                mask_img = intersect_masks(masks, threshold=1, connected=False)
+                model.mask_img = mask_img
 
     return models, models_run_imgs, models_events, models_confounds
 
@@ -2165,6 +2184,7 @@ def _get_events_files(
         extra_filter=img_filters,
         verbose=verbose,
     )
+
     events = get_bids_files(
         dataset_path,
         modality_folder="func",
@@ -2190,6 +2210,86 @@ def _get_events_files(
         verbose=verbose,
     )
     return events
+
+
+def _get_masks_files(
+    derivatives_path,
+    sub_label,
+    task_label,
+    space_label,
+    img_filters,
+    imgs,
+    verbose,
+) -> list[str]:
+    """Get mask images for a given subject, task, space and filters.
+
+    Parameters
+    ----------
+    TODO
+
+    Returns
+    -------
+    events : :obj:`list` of :obj:`str`
+        List of fullpath to the masks files
+    """
+    if (
+        space_label is None
+        or space_label == ""
+        or space_label in ("fsaverage5")
+    ):
+        return []
+
+    filters = _make_bids_files_filter(
+        task_label=task_label,
+        space_label=space_label,
+        supported_filters=bids_entities()["raw"]
+        + bids_entities()["derivatives"],
+        extra_filter=img_filters,
+        verbose=verbose,
+    )
+
+    masks_files = get_bids_files(
+        main_path=derivatives_path,
+        modality_folder="func",
+        file_tag="mask",
+        file_type="nii*",
+        sub_label=sub_label,
+        filters=filters,
+    )
+
+    _report_found_files(
+        files=masks_files,
+        text="masks",
+        sub_label=sub_label,
+        filters=filters,
+        verbose=verbose,
+    )
+    _check_masks_list(masks_files, imgs)
+
+    return masks_files
+
+
+def _check_masks_list(masks_files, imgs) -> None:
+    """Check the number of confounds.tsv files.
+
+    If no file is found, it will be assumed there are none,
+    but if there are any confounds files, there must be one per run.
+
+    Parameters
+    ----------
+    masks_files : :obj:`list` of :obj:`str`
+        List of fullpath to the mask files
+
+    imgs : :obj:`list` of :obj:`str`
+        List of fullpath to the preprocessed images
+
+    """
+    if len(masks_files) != len(imgs):
+        warn(
+            f"{len(masks_files)} mask files found "
+            f"for {len(imgs)} bold files. ",
+            stacklevel=find_stack_level(),
+        )
 
 
 def _get_confounds(

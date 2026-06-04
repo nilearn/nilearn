@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
@@ -373,6 +374,31 @@ def test_space_none(tmp_path):
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+
+@pytest.mark.parametrize("mask_from_derivatives", [True, False])
+def test_mask_from_derivatives(tmp_path, mask_from_derivatives):
+    """Test mask is loaded from derivatives."""
+    n_sub = 2
+    bids_path = create_fake_bids_dataset(
+        base_dir=Path(__file__).parent,
+        n_sub=n_sub,
+        spaces=["MNI152NLin2009cAsym"],
+    )
+    models, _, _, _ = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
+        img_filters=[("desc", "preproc")],
+        mask_from_derivatives=mask_from_derivatives,
+        verbose=1,
+    )
+
+    for m in models:
+        if mask_from_derivatives is False:
+            assert m.mask_img is None
+        else:
+            assert isinstance(m.mask_img, Nifti1Image)
 
 
 def test_select_one_run_per_session(bids_dataset):

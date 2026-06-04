@@ -577,7 +577,13 @@ def _write_fake_bold_gifti(
     return file_path
 
 
-def write_fake_bold_img(file_path, shape, affine=None, random_state=0):
+def write_fake_bold_img(
+    file_path,
+    shape,
+    affine=None,
+    random_state=0,
+    mask_file_path: Path | str | None = None,
+):
     """Generate a random image of given shape and write it to disk.
 
     Parameters
@@ -607,6 +613,12 @@ def write_fake_bold_img(file_path, shape, affine=None, random_state=0):
     data = rand_gen.standard_normal(shape)
     data[1:-1, 1:-1, 1:-1] += 100
     Nifti1Image(data, affine).to_filename(file_path)
+
+    if mask_file_path is not None:
+        Nifti1Image(np.all((data > 0),axis=3).astype(np.int32), affine).to_filename(
+            mask_file_path
+        )
+
     return file_path
 
 
@@ -1519,7 +1531,16 @@ def _write_bids_derivative_func(
             bold_path = func_path / create_bids_filename(
                 fields=fields, entities_to_include=entities_to_include
             )
-            write_fake_bold_img(bold_path, shape=shape, random_state=rand_gen)
+            fields["suffix"] = "mask"
+            mask_file_path = func_path / create_bids_filename(
+                fields=fields, entities_to_include=entities_to_include
+            )
+            write_fake_bold_img(
+                bold_path,
+                shape=shape,
+                random_state=rand_gen,
+                mask_file_path=mask_file_path,
+            )
 
     fields["entities"]["space"] = "fsaverage5"
     fields["extension"] = "func.gii"
