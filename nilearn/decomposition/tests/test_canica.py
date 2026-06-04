@@ -47,7 +47,6 @@ def test_percentile_range(rng, canica_data_single_img):
         canica.fit(canica_data_single_img)
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_canica_square_img(
     decomposition_mask_img, canica_components, canica_data

@@ -57,7 +57,7 @@ else:
 
 
 @pytest.mark.slow
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
+@pytest.mark.flaky(reruns=5, reruns_delay=2)
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
