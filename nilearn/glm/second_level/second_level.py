@@ -57,7 +57,7 @@ from nilearn.typing import NiimgLike
 
 def _input_type_error_message(second_level_input):
     return (
-        "second_level_input must be either:\n"
+        "'second_level_input' must be either:\n"
         "- a pandas DataFrame,\n"
         "- a Niimg-like object\n"
         "- a pandas Series of Niimg-like object\n"
@@ -140,7 +140,7 @@ def _check_all_elements_of_same_type(data) -> None:
     for idx, input in enumerate(data):
         if not isinstance(input, type(data[0])):
             raise TypeError(
-                f"Elements of second_level_input must be of the same type."
+                f"Elements of 'second_level_input' must be of the same type."
                 f" Got object type {type(input)} at idx {idx}."
             )
 
@@ -262,29 +262,37 @@ def _check_input_as_nifti_images(
         check_same_fov(*second_level_input, raise_error=True)
     if none_design_matrix:
         raise ValueError(
-            "List of niimgs as second_level_input"
+            "List of niimgs as 'second_level_input'"
             " require a design matrix to be provided."
         )
 
 
 def _check_input_as_surface_images(
-    second_level_input, none_design_matrix: bool
+    second_level_input: SurfaceImage | list[SurfaceImage],
+    none_design_matrix: bool,
 ) -> None:
     if isinstance(second_level_input, SurfaceImage) and (
         len(second_level_input.shape) == 1 or second_level_input.shape[1] == 1
     ):
         raise TypeError(
             "If a single SurfaceImage object is passed "
-            "as second_level_input,"
+            "as 'second_level_input',"
             "it must be a 3D SurfaceImage."
         )
 
     if isinstance(second_level_input, list):
+        for img in second_level_input:
+            if len(img.shape) > 1 and img.shape[1] != 1:
+                raise TypeError(
+                    "List of SurfaceImage objects as 'second_level_input'"
+                    " require all images to be 3D SurfaceImage."
+                )
+
         for img in second_level_input[1:]:
             check_polymesh_equal(second_level_input[0].mesh, img.mesh)
         if none_design_matrix:
             raise ValueError(
-                "List of SurfaceImage objects as second_level_input"
+                "List of SurfaceImage objects as 'second_level_input'"
                 " require a design matrix to be provided."
             )
 
@@ -320,7 +328,7 @@ def _check_first_level_contrast(
         and first_level_contrast is None
     ):
         raise ValueError(
-            "If second_level_input was a list of FirstLevelModel,"
+            "If 'second_level_input' was a list of FirstLevelModel,"
             " then first_level_contrast is mandatory. "
             "It corresponds to the second_level_contrast argument "
             "of the compute_contrast method of FirstLevelModel."

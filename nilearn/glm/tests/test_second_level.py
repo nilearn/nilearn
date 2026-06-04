@@ -243,7 +243,7 @@ def test_check_shape_first_level_models(shape_4d_default, n_subjects):
 
 def test_check_second_level_input(shape_4d_default):
     """Raise errors when wrong inputs are passed to SecondLevelModel."""
-    with pytest.raises(TypeError, match="second_level_input must be"):
+    with pytest.raises(TypeError, match="'second_level_input' must be"):
         _check_second_level_input(1, None)
 
     with pytest.raises(
@@ -286,7 +286,7 @@ def test_check_second_level_input_list_wrong_type():
     """
     model = SecondLevelModel()
     second_level_input = [1, 2]
-    with pytest.raises(TypeError, match="second_level_input must be"):
+    with pytest.raises(TypeError, match="'second_level_input' must be"):
         model.fit(second_level_input)
 
 
@@ -359,13 +359,13 @@ def test_check_second_level_input_design_matrix(shape_3d_default):
 
     with pytest.raises(
         ValueError,
-        match="List of niimgs as second_level_input "
+        match="List of niimgs as 'second_level_input' "
         "require a design matrix to be provided",
     ):
         _check_second_level_input(fmri_data * 2, None)
     with pytest.raises(
         ValueError,
-        match="List of niimgs as second_level_input "
+        match="List of niimgs as 'second_level_input' "
         "require a design matrix to be provided",
     ):
         _check_second_level_input(fmri_data[0], None)
@@ -398,7 +398,7 @@ def test_check_confounds():
 def test_check_first_level_contrast():
     _check_first_level_contrast(["foo"], None)  # Should not do anything
     _check_first_level_contrast([FirstLevelModel()], "foo")
-    with pytest.raises(ValueError, match="If second_level_input was a list"):
+    with pytest.raises(ValueError, match="If 'second_level_input' was a list"):
         _check_first_level_contrast([FirstLevelModel()], None)
 
 
@@ -676,7 +676,7 @@ def test_fit_inputs_errors(confounds, shape_4d_default):
     )
 
     # test first level model requirements
-    with pytest.raises(TypeError, match="second_level_input must be"):
+    with pytest.raises(TypeError, match="'second_level_input' must be"):
         SecondLevelModel().fit(second_level_input=flm)
     with pytest.raises(TypeError, match="at least two"):
         SecondLevelModel().fit(second_level_input=[flm])
@@ -721,9 +721,27 @@ def test_error_5d_image(rng):
     When passing images to fit,
     a list of 4D images must not have more than 1 volume
     for any image.
+    """
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+    design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
-    # TODO
-    need same for surface data
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(
+        shapes=[(10, 11, 12, 1), (10, 11, 12, 5)]
+    )
+
+    with pytest.raises(
+        ValueError, match="each image must be 3D, or 4D with single volume"
+    ):
+        SecondLevelModel().fit(fmri_data, design_matrix=design_matrix)
+
+
+def test_error_list_2d_surface_image(rng):
+    """Disallow list of 2d surface image.
+
+    When passing images to fit,
+    a list of 2D images must not have more than 1 volume
+    for any image.
     """
     p, q = 80, 10
     X = rng.standard_normal(size=(p, q))
@@ -814,7 +832,7 @@ def test_fmri_img_inputs_errors(confounds):
         SecondLevelModel().fit(niimgs)
     with pytest.raises(
         TypeError,
-        match=r"Elements of second_level_input must be of the same type.",
+        match=r"Elements of 'second_level_input' must be of the same type.",
     ):
         SecondLevelModel().fit([*niimgs, []], confounds)
 
@@ -1132,6 +1150,15 @@ def test_second_level_input_error_surface_image_2d(surf_img_2d):
     model = SecondLevelModel()
 
     with pytest.raises(TypeError, match="must be a 3D SurfaceImage"):
+        model.fit(second_level_input, design_matrix=design_matrix)
+
+    second_level_input = [surf_img_2d(2), surf_img_2d(4)]
+
+    design_matrix = pd.DataFrame([1] * 6, columns=["intercept"])
+
+    model = SecondLevelModel()
+
+    with pytest.raises(TypeError, match="all images to be 3D SurfaceImage"):
         model.fit(second_level_input, design_matrix=design_matrix)
 
 
