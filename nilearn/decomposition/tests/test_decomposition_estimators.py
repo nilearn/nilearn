@@ -11,7 +11,6 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.helpers import is_windows_platform
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.decomposition import CanICA, DictLearning
@@ -57,7 +56,7 @@ else:
 
 
 @pytest.mark.slow
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
+@pytest.mark.flaky(reruns=5, reruns_delay=2)
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
