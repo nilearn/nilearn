@@ -2402,7 +2402,7 @@ def check_same_fov(*args, **kwargs) -> bool:
 
     Parameters
     ----------
-    args : images
+    args : NiimgLike
         Images to be checked. Images passed without keywords will be labeled
         as img_#1 in the error message (replace 1 with the appropriate index).
 
@@ -2417,14 +2417,21 @@ def check_same_fov(*args, **kwargs) -> bool:
     raise_error = kwargs.pop("raise_error", False)
     for i, arg in enumerate(args):
         kwargs[f"img_#{i}"] = arg
+
     errors = []
     for (a_name, a_img), (b_name, b_img) in itertools.combinations(
         kwargs.items(), 2
     ):
+        if isinstance(a_img, (str, Path)):
+            a_img = load(a_img)
+        if isinstance(b_img, (str, Path)):
+            b_img = load(b_img)
+
         if a_img.shape[:3] != b_img.shape[:3]:
             errors.append((a_name, b_name, "shape"))
         if not np.allclose(a_img.affine, b_img.affine):
             errors.append((a_name, b_name, "affine"))
+
     if errors and raise_error:
         raise ValueError(
             "Following field of view errors were detected:\n"
@@ -2435,6 +2442,7 @@ def check_same_fov(*args, **kwargs) -> bool:
                 ]
             )
         )
+
     return not errors
 
 
