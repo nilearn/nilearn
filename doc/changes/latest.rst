@@ -61,6 +61,8 @@ Fixes
 
 - :bdg-primary:`Doc` Rewrite :class:`~nilearn.decoding.Decoder` :ref:`example <sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py>` with incorrect nested cross-validation implementation (:gh:`6059` by `Michelle Wang`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for :func:`~nilearn.connectome.cov_to_corr`, :func:`~nilearn.connectome.prec_to_partial`, :func:`~nilearn.glm.contrasts.expression_to_contrast_vector` and :func:`~nilearn.interfaces.bids.parse_bids_filename` (:gh:`5824` by `Laura Piñero Roig`_).
+
 - :bdg-info:`Plotting` Fix ``nilearn.plotting.view_img`` resampling of non-isotropic images when no background image is used (:gh:`6031` by `Michelle Wang`_).
 
 - :bdg-info:`Plotting` Fix bug introduced in ``0.13.0`` while plotting single valued data with :func:`~nilearn.plotting.plot_roi`.  (:gh:`6122` by `Hande Gözükan`_).
