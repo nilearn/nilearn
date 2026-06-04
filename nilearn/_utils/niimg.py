@@ -12,7 +12,7 @@ from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 
 
-def _get_data(img) -> np.ndarray:
+def _get_data(img: Nifti1Image) -> np.ndarray:
     # copy-pasted from
     # https://github.com/nipy/nibabel/blob/de44a10/nibabel/dataobj_images.py#L204
     #
