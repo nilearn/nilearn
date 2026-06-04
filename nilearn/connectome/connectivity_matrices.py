@@ -394,8 +394,8 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         When passing a customized estimator, the covariance estimator must
         have a ``fit`` method that takes as input a 2D array of shape
         (n_samples, n_features) and has an attribute ``covariance_`` of shape
-        (n_features, n_features) after fitting. Please see ``sklearn.covariance``
-        for examples/.
+        (n_features, n_features) after fitting. Please see 
+        ``sklearn.covariance`` for examples.
 
     kind : {"covariance", "correlation", "partial correlation",\
             "tangent", "precision"}, default='covariance'
@@ -532,9 +532,10 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             and hasattr(self.cov_estimator, "covariance_")
         ):
             raise ValueError(
-                f"`cov_estimator` must be an estimator with `.fit()` and `.covariance_` "
-                f"(e.g., from `sklearn.covariance` or a custom estimator constructed similarly). "
-                f"Got: `{type(self.cov_estimator).__name__}`."
+                f"`cov_estimator` must be an estimator with `.fit()` and "
+                f"`.covariance_` (e.g., from `sklearn.covariance` or a "
+                f"custom estimator constructed similarly). Got: "
+                f"`{type(self.cov_estimator).__name__}`."
             )
 
         if not hasattr(X, "__iter__"):
