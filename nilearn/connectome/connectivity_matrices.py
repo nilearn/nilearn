@@ -394,7 +394,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         When passing a customized estimator, the covariance estimator must
         have a ``fit`` method that takes as input a 2D array of shape
         (n_samples, n_features) and has an attribute ``covariance_`` of shape
-        (n_features, n_features) after fitting. Please see 
+        (n_features, n_features) after fitting. Please see
         ``sklearn.covariance`` for examples.
 
     kind : {"covariance", "correlation", "partial correlation",\
