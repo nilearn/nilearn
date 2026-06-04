@@ -550,7 +550,16 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         self.masker_.memory_level = self.memory_level
-        self.masker_.dtype = self.dtype
+        # Only propagate float dtypes to masker_ (used for fitting/SVD).
+        # Integer dtypes would collapse float data to uniform integers,
+        # zeroing out PCA components after centering.
+        # The transform output dtype is handled by maps_masker_ instead.
+        _dtype_is_int = (
+            self.dtype is not None
+            and self.dtype != "auto"
+            and np.dtype(self.dtype).kind != "f"
+        )
+        self.masker_.dtype = None if _dtype_is_int else self.dtype
 
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img

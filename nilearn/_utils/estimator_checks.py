@@ -1930,7 +1930,9 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
             with warnings.catch_warnings(record=True) as warning_list:
                 output_img = estimator.inverse_transform(signal)
 
-            if isinstance(estimator, _BaseDecomposition):
+            if isinstance(estimator, _BaseDecomposition) and isinstance(
+                output_img, list
+            ):
                 output_img = output_img[0]
 
             target_dtype = get_target_dtype(np.dtype(input_dtype), dtype)
