@@ -57,6 +57,8 @@ Fixes
 
 - :bdg-success:`API` Fix bug when ``confounds_strategy=None`` in :func:`~glm.first_level.first_level_from_bids` (:gh:`6247` by `Pierre-Louis Barbarant`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for :func:`~nilearn.glm.fdr_threshold`, :func:`~nilearn.glm.first_level.mean_scaling`, :func:`~nilearn.glm.first_level.glover_hrf`, :func:`~nilearn.glm.first_level.glover_time_derivative` and :func:`~nilearn.glm.first_level.glover_dispersion_derivative` (:gh:`6262` by `Laura Piñero Roig`_).
+
 - :bdg-secondary:`Maint` Allow local installation with ``uv sync`` (:gh:`6024` by `Mathieu Dugré`_)
 
 - :bdg-primary:`Doc` Rewrite :class:`~nilearn.decoding.Decoder` :ref:`example <sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py>` with incorrect nested cross-validation implementation (:gh:`6059` by `Michelle Wang`_).
