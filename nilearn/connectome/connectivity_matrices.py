@@ -394,13 +394,13 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         When passing a customized estimator, the covariance estimator must
         have a ``fit`` method that takes as input a 2D array of shape
         (n_samples, n_features) and has an attribute ``covariance_`` of shape
-        (n_features, n_features) after fitting. Please see ``sklearn.covariance`` 
+        (n_features, n_features) after fitting. Please see ``sklearn.covariance``
         for examples/.
 
     kind : {"covariance", "correlation", "partial correlation",\
             "tangent", "precision"}, default='covariance'
         The matrix kind.
-        This parameter performs calculation on the covariance matrix. 
+        This parameter performs calculation on the covariance matrix.
         The default option returns the value from `cov_estimator`.
         For the use of "tangent" see :footcite:t:`Varoquaux2010b`.
 
@@ -527,13 +527,15 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         """Avoid duplication of computation."""
         if self.cov_estimator is None:
             self.cov_estimator = LedoitWolf(store_precision=False)
-        else:  # check if the estimator is a valid sklearn covariance estimator
-            if not ((hasattr(self.cov_estimator, "fit") and hasattr(self.cov_estimator, "covariance_"))):
-                raise ValueError(
-                    f"`cov_estimator` must be an estimator with `.fit()` and `.covariance_` "
-                    f"(e.g., from `sklearn.covariance` or a custom estimator constructed similarly). "
-                    f"Got: `{type(self.cov_estimator).__name__}`."
-                )
+        elif not (
+            hasattr(self.cov_estimator, "fit")
+            and hasattr(self.cov_estimator, "covariance_")
+        ):
+            raise ValueError(
+                f"`cov_estimator` must be an estimator with `.fit()` and `.covariance_` "
+                f"(e.g., from `sklearn.covariance` or a custom estimator constructed similarly). "
+                f"Got: `{type(self.cov_estimator).__name__}`."
+            )
 
         if not hasattr(X, "__iter__"):
             raise TypeError(
