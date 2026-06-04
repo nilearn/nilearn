@@ -400,7 +400,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
     kind : {"covariance", "correlation", "partial correlation",\
             "tangent", "precision"}, default='covariance'
         The matrix kind.
-        This parameter performance calcuatuon on the covariance matrix. 
+        This parameter performs calculation on the covariance matrix. 
         The default option returns the value from `cov_estimator`.
         For the use of "tangent" see :footcite:t:`Varoquaux2010b`.
 
