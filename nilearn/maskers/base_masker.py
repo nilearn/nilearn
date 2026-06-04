@@ -813,13 +813,23 @@ class _BaseSurfaceMasker(_BaseMasker):
         if self.reports:
             self._reporting_data["images"] = imgs
 
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+        _wrap_output = (
+            sklearn_output_config is not None
+            and sklearn_output_config.get("transform", "default") != "default"
+        )
+
         if confounds is None and not self.high_variance_confounds:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=FutureWarning)
                 signals = self.transform_single_imgs(
                     imgs, confounds=confounds, sample_mask=sample_mask
                 )
-            return signals.squeeze() if return_1D else signals
+            return (
+                signals.squeeze()
+                if return_1D and not _wrap_output
+                else signals
+            )
 
         # Compute high variance confounds if requested
         all_confounds = []
@@ -838,13 +848,7 @@ class _BaseSurfaceMasker(_BaseMasker):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
-        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
-
-        return (
-            signals.squeeze()
-            if return_1D and sklearn_output_config is not None
-            else signals
-        )
+        return signals.squeeze() if return_1D and not _wrap_output else signals
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):

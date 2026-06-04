@@ -446,9 +446,9 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        signals = self._check_array(signals)
+        return_1D = hasattr(signals, "ndim") and signals.ndim < 2
 
-        return_1D = signals.ndim < 2
+        signals = self._check_array(signals)
 
         mask_logger("inverse_transform", verbose=self.verbose)
 
