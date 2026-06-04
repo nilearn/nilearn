@@ -57,6 +57,8 @@ Fixes
 
 - :bdg-success:`API` Fix bug when ``confounds_strategy=None`` in first_level_from_bids (:gh:`6247` by `Pierre-Louis Barbarant`_).
 
+- :bdg-dark:`Code` Ensure that maskers maskers ``inverse_transform`` can accept pandas or polars dataframe as input (:gh:`6175` by `Rémi Gau`_).
+
 - :bdg-secondary:`Maint` Allow local installation with ``uv sync`` (:gh:`6024` by `Mathieu Dugré`_)
 
 - :bdg-primary:`Doc` Rewrite :class:`~nilearn.decoding.Decoder` :ref:`example <sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py>` with incorrect nested cross-validation implementation (:gh:`6059` by `Michelle Wang`_).
@@ -94,6 +96,8 @@ Enhancements
 - :bdg-success:`API` :class:`~nilearn.decoding.SearchLight` now has a ``random_state`` and ``estimator_args`` to pass to the underlying estimator (:gh:`6020` by `Rémi Gau`_).
 
 - :bdg-success:`API` Extend the list of estimators supported by :class:`~nilearn.decoding.SearchLight` (:gh:`6215` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Implement ``set_output`` for multi maskers to extract data to pandas or polars dataframe (:gh:`6175` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Allow string threshold in ``nilearn.plotting.plot_*`` functions (:gh:`5982` by `Saeed Babadi`_).
 
