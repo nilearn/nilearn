@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
 
-from nilearn._utils.helpers import is_windows_platform
 from nilearn.decomposition.canica import CanICA
 from nilearn.decomposition.tests.conftest import (
     RANDOM_STATE,
