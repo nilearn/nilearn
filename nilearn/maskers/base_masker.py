@@ -915,7 +915,7 @@ class _BaseSurfaceMasker(_BaseMasker):
         """
         if hasattr(signals, "to_numpy"):
             # convert pandas or polars dataframe to numpy
-            signals = signals.to_numpy().squeeze()
+            signals = signals.to_numpy()
 
         signals = np.atleast_2d(signals)
 
