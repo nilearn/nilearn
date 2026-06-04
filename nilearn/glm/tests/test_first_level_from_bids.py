@@ -381,7 +381,7 @@ def test_mask_from_derivatives(tmp_path, mask_from_derivatives):
     """Test mask is loaded from derivatives."""
     n_sub = 2
     bids_path = create_fake_bids_dataset(
-        base_dir=Path(__file__).parent,
+        base_dir=tmp_path,
         n_sub=n_sub,
         spaces=["MNI152NLin2009cAsym"],
     )

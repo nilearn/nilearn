@@ -615,9 +615,9 @@ def write_fake_bold_img(
     Nifti1Image(data, affine).to_filename(file_path)
 
     if mask_file_path is not None:
-        Nifti1Image(np.all((data > 0),axis=3).astype(np.int32), affine).to_filename(
-            mask_file_path
-        )
+        Nifti1Image(
+            np.all((data > 0), axis=3).astype(np.int32), affine
+        ).to_filename(mask_file_path)
 
     return file_path
 
