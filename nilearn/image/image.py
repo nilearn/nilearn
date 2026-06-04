@@ -183,7 +183,7 @@ def check_volume_for_fit(imgs) -> None:
             raise ValueError("The image is empty.")
 
 
-def get_data(img) -> np.ndarray:
+def get_data(img: NiimgLike) -> np.ndarray:
     """Get the image data as a :class:`numpy.ndarray`.
 
     Parameters
@@ -1239,16 +1239,40 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     return arr
 
 
+@overload
+def threshold_img(
+    img: SurfaceImage,
+    threshold,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    mask_img=...,
+    copy: bool = ...,
+    copy_header: bool = ...,
+) -> SurfaceImage: ...
+
+
+@overload
+def threshold_img(
+    img: NiimgLike,
+    threshold,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    mask_img=...,
+    copy: bool = ...,
+    copy_header: bool = ...,
+) -> Nifti1Image: ...
+
+
 @fill_doc
 def threshold_img(
-    img,
-    threshold,
+    img: SurfaceImage | NiimgLike,
+    threshold: float | str,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = True,
-    mask_img=None,
+    mask_img: SurfaceImage | NiimgLike | None = None,
     copy: bool = True,
     copy_header: bool = True,
-):
+) -> SurfaceImage | Nifti1Image:
     """Threshold the given input image, mostly statistical or atlas images.
 
     Thresholding can be done based on direct image intensities or selection
@@ -1381,12 +1405,6 @@ def threshold_img(
             f"Got {img.__class__.__name__}."
         )
 
-    if mask_img is not None:
-        check_compatibility_mask_and_images(mask_img, img)
-
-    if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
-        check_polymesh_equal(mask_img.mesh, img.mesh)
-
     if isinstance(img, NiimgLike):
         img = check_niimg(img)
         img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
@@ -1399,8 +1417,13 @@ def threshold_img(
     img_data_for_cutoff = img_data
 
     if mask_img is not None:
+        check_compatibility_mask_and_images(mask_img, img)
+
         # Set as 0 for the values which are outside of the mask
         if isinstance(mask_img, NiimgLike):
+            if TYPE_CHECKING:
+                assert isinstance(img, Nifti1Image)
+
             mask_img = check_niimg_3d(mask_img)
             if not check_same_fov(img, mask_img):
                 mask_img = resample_img(
@@ -1417,6 +1440,11 @@ def threshold_img(
             img_data[mask_data == 0.0] = 0.0
 
         else:
+            if TYPE_CHECKING:
+                assert isinstance(img, SurfaceImage)
+
+            check_polymesh_equal(mask_img.mesh, img.mesh)
+
             mask_img, _ = load_mask_img(mask_img)
 
             mask_data = get_surface_data(mask_img)
@@ -1739,10 +1767,34 @@ def math_img(
     return new_img_like(niimg, result, niimg.affine)
 
 
+@overload
+def binarize_img(
+    img: SurfaceImage,
+    threshold=0.0,
+    mask_img: SurfaceImage | NiimgLike | None = ...,
+    two_sided: bool = ...,
+    copy_header: bool = ...,
+) -> SurfaceImage: ...
+
+
+@overload
+def binarize_img(
+    img: NiimgLike,
+    threshold=0.0,
+    mask_img: SurfaceImage | NiimgLike | None = ...,
+    two_sided: bool = ...,
+    copy_header: bool = ...,
+) -> NiimgLike: ...
+
+
 @fill_doc
 def binarize_img(
-    img, threshold=0.0, mask_img=None, two_sided=False, copy_header=True
-):
+    img: SurfaceImage | NiimgLike,
+    threshold=0.0,
+    mask_img: SurfaceImage | NiimgLike | None = None,
+    two_sided: bool = False,
+    copy_header: bool = True,
+) -> SurfaceImage | NiimgLike:
     """Binarize an image such that its values are either 0 or 1.
 
     .. nilearn_versionadded:: 0.8.1
@@ -1786,8 +1838,8 @@ def binarize_img(
 
     Returns
     -------
-    :class:`~nibabel.nifti1.Nifti1Image`
-    or :obj:`~nilearn.surface.SurfaceImage`
+    :class:`~nibabel.nifti1.Nifti1Image` or \
+        :obj:`~nilearn.surface.SurfaceImage`
         Binarized version of the given input image. Output dtype is int8.
 
     See Also
@@ -2067,7 +2119,9 @@ def clean_img(
 
 
 @fill_doc
-def load_img(img, wildcards=True, dtype=None):
+def load_img(
+    img: NiimgLike, wildcards: bool = True, dtype=None
+) -> Nifti1Image:
     """Load a Niimg-like object from filenames or list of filenames.
 
     .. nilearn_versionadded:: 0.2.5
@@ -2348,7 +2402,7 @@ def check_same_fov(*args, **kwargs) -> bool:
 
     Parameters
     ----------
-    args : images
+    args : NiimgLike
         Images to be checked. Images passed without keywords will be labeled
         as img_#1 in the error message (replace 1 with the appropriate index).
 
@@ -2363,14 +2417,21 @@ def check_same_fov(*args, **kwargs) -> bool:
     raise_error = kwargs.pop("raise_error", False)
     for i, arg in enumerate(args):
         kwargs[f"img_#{i}"] = arg
+
     errors = []
     for (a_name, a_img), (b_name, b_img) in itertools.combinations(
         kwargs.items(), 2
     ):
+        if isinstance(a_img, (str, Path)):
+            a_img = load(a_img)
+        if isinstance(b_img, (str, Path)):
+            b_img = load(b_img)
+
         if a_img.shape[:3] != b_img.shape[:3]:
             errors.append((a_name, b_name, "shape"))
         if not np.allclose(a_img.affine, b_img.affine):
             errors.append((a_name, b_name, "affine"))
+
     if errors and raise_error:
         raise ValueError(
             "Following field of view errors were detected:\n"
@@ -2381,6 +2442,7 @@ def check_same_fov(*args, **kwargs) -> bool:
                 ]
             )
         )
+
     return not errors
 
 
