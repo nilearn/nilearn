@@ -1253,7 +1253,7 @@ def threshold_img(
 
 @overload
 def threshold_img(
-    img: NiimgLike | list[NiimgLike],
+    img: NiimgLike,
     threshold,
     cluster_threshold: ClusterThreshold = ...,
     two_sided: bool = ...,
@@ -1265,7 +1265,7 @@ def threshold_img(
 
 @fill_doc
 def threshold_img(
-    img: SurfaceImage | NiimgLike | list[NiimgLike],
+    img: SurfaceImage | NiimgLike,
     threshold: float | str,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = True,
@@ -1405,9 +1405,6 @@ def threshold_img(
             f"Got {img.__class__.__name__}."
         )
 
-    if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
-        check_polymesh_equal(mask_img.mesh, img.mesh)
-
     if isinstance(img, NiimgLike):
         img = check_niimg(img)
         img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
@@ -1445,6 +1442,8 @@ def threshold_img(
         else:
             if TYPE_CHECKING:
                 assert isinstance(img, SurfaceImage)
+
+            check_polymesh_equal(mask_img.mesh, img.mesh)
 
             mask_img, _ = load_mask_img(mask_img)
 
@@ -1780,7 +1779,7 @@ def binarize_img(
 
 @overload
 def binarize_img(
-    img: NiimgLike | list[NiimgLike],
+    img: NiimgLike,
     threshold=0.0,
     mask_img: SurfaceImage | NiimgLike | None = ...,
     two_sided: bool = ...,
@@ -1790,7 +1789,7 @@ def binarize_img(
 
 @fill_doc
 def binarize_img(
-    img: SurfaceImage | NiimgLike | list[NiimgLike],
+    img: SurfaceImage | NiimgLike,
     threshold=0.0,
     mask_img: SurfaceImage | NiimgLike | None = None,
     two_sided: bool = False,
