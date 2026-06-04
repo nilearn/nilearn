@@ -338,9 +338,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         target_dtype = get_target_dtype(input_type, self.dtype)
         if target_dtype is None:
             target_dtype = imgs.data._dtype
-        output = output.astype(target_dtype)
 
-        return self._clean(output, confounds, sample_mask)
+        output = self._clean(output, confounds, sample_mask)
+        return output.astype(target_dtype)
 
     @fill_doc
     def inverse_transform(self, signals):

@@ -445,9 +445,9 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         target_dtype = get_target_dtype(input_type, self.dtype)
         if target_dtype is None:
             target_dtype = imgs.data._dtype
-        region_signals = region_signals.astype(target_dtype)
 
-        return self._clean(region_signals, confounds, sample_mask)
+        region_signals = self._clean(region_signals, confounds, sample_mask)
+        return region_signals.astype(target_dtype)
 
     @fill_doc
     def inverse_transform(self, signals):
