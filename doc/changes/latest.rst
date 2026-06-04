@@ -55,7 +55,7 @@ NEW
 Fixes
 -----
 
-- :bdg-success:`API` Fix bug when ``confounds_strategy=None`` in first_level_from_bids (:gh:`6247` by `Pierre-Louis Barbarant`_).
+- :bdg-success:`API` Fix bug when ``confounds_strategy=None`` in :func:`~glm.first_level.first_level_from_bids` (:gh:`6247` by `Pierre-Louis Barbarant`_).
 
 - :bdg-secondary:`Maint` Allow local installation with ``uv sync`` (:gh:`6024` by `Mathieu Dugré`_)
 
@@ -88,6 +88,8 @@ Fixes
 
 Enhancements
 ------------
+
+- :bdg-success:`API` Add a ``mask_from_derivatives`` parameter to :func:`~glm.first_level.first_level_from_bids` to generate a mask from the masks in BIDS derivative to use in the model (:gh:`5981` by `Rémi Gau`_).
 
 - :bdg-success:`API` The parameter ``estimator_args`` was added to all decoding estimators to allow to pass parameters directly to the underlying Scikit-Learn estimators (:gh:`5641` by `Rémi Gau`_).
 

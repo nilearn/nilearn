@@ -1544,6 +1544,13 @@ def first_level_from_bids(
         Filter examples would be ``('desc', 'preproc')``, ``('dir', 'pa')``
         and ``('run', '10')``.
 
+    mask_from_derivatives: :obj:`bool`
+        Ignore if ``mask_img`` is not None.
+        If ``True`` a mask image is generated
+        from the intersection of the relevant mask images
+        of all the runs of a each subject
+        and used for the model of that subject.
+
     slice_time_ref : :obj:`float` between ``0.0`` and ``1.0``, or None, \
                      default= None
         This parameter indicates the time of the reference slice used in the
@@ -2237,6 +2244,7 @@ def _get_masks_files(
         or space_label == ""
         or space_label in ("fsaverage5")
     ):
+        # TODO for surface data?
         return []
 
     filters = _make_bids_files_filter(
