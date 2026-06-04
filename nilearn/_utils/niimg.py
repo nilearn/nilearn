@@ -13,7 +13,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import get_target_dtype
 
 
-def _get_data(img) -> np.ndarray:
+def _get_data(img: Nifti1Image) -> np.ndarray:
     # copy-pasted from
     # https://github.com/nipy/nibabel/blob/de44a10/nibabel/dataobj_images.py#L204
     #
