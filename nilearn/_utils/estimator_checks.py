@@ -852,9 +852,7 @@ def check_set_output(estimator_orig) -> None:
     ):
         return
 
-    if isinstance(
-        estimator_orig, (_BaseDecomposition, ConnectivityMeasure, _MultiMixin)
-    ):
+    if isinstance(estimator_orig, (_BaseDecomposition, ConnectivityMeasure)):
         for output in ["pandas", "polars"]:
             with pytest.raises(NotImplementedError):
                 estimator_orig.set_output(transform=output)
