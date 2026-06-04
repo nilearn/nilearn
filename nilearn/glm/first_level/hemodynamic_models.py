@@ -145,6 +145,17 @@ def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     hrf : array of shape(length / t_r * oversampling, dtype=float)
          :term:`HRF` sampling on the oversampled time grid.
 
+    Examples
+    --------
+    >>> from nilearn.glm.first_level import glover_hrf
+    >>> hrf = glover_hrf(t_r=2.0, oversampling=1, time_length=20.0)
+    >>> hrf.shape
+    (10,)
+    >>> bool(hrf.max() > 0)
+    True
+    >>> bool(hrf.min() < 0)
+    True
+
     """
     return _gamma_difference_hrf(
         t_r,
@@ -261,6 +272,13 @@ def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     -------
     dhrf : array of shape(length / t_r), dtype=float
           dhrf sampling on the provided grid
+
+    Examples
+    --------
+    >>> from nilearn.glm.first_level import glover_time_derivative
+    >>> dhrf = glover_time_derivative(t_r=2.0, oversampling=1, time_length=20.0)
+    >>> dhrf.shape
+    (10,)
 
     """
     return _generic_time_derivative(
@@ -379,6 +397,15 @@ def glover_dispersion_derivative(
     -------
     dhrf : array of shape(length / t_r * oversampling), dtype=float
           dhrf sampling on the oversampled time grid
+
+    Examples
+    --------
+    >>> from nilearn.glm.first_level import glover_dispersion_derivative
+    >>> ddhrf = glover_dispersion_derivative(
+    ...     t_r=2.0, oversampling=1, time_length=20.0
+    ... )
+    >>> ddhrf.shape
+    (10,)
 
     """
     return _generic_dispersion_derivative(
