@@ -1,5 +1,5 @@
 {
-    "LiteBuildConfig": {
-      "no_sourcemaps": true
-    }
+  "LiteBuildConfig": {
+    "no_sourcemaps": true
   }
+}
