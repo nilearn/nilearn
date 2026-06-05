@@ -720,6 +720,8 @@ def test_fit_inputs_errors_more(confounds):
         match=r"Elements of second_level_input must be of the same type.",
     ):
         SecondLevelModel().fit([*niimgs, []], confounds)
+
+
 def test_error_runs_different_fov(rng):
     """Check runs have same FOV: raise an error if not."""
     p, q = 80, 10
