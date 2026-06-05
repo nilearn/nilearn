@@ -274,7 +274,9 @@ def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     --------
     >>> import numpy as np
     >>> from nilearn.glm.first_level import glover_time_derivative
-    >>> dhrf = glover_time_derivative(t_r=2.0, oversampling=1, time_length=20.0)
+    >>> dhrf = glover_time_derivative(
+    ...     t_r=2.0, oversampling=1, time_length=20.0
+    ... )
     >>> np.round(dhrf, 3).tolist()
     [0.0, 0.0, 0.267, 0.076, -0.215, -0.168, -0.039, 0.027, 0.033, 0.019]
 
