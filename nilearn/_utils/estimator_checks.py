@@ -4100,7 +4100,7 @@ def check_glm_empty_data_messages(
         # SecondLevel
         else:
             estimator.fit(
-                [Nifti1Image(data_nifti, np.eye(4)) for _ in range(3)],
+                [Nifti1Image(data_nifti, np.eye(4)) for _ in range(5)],
                 design_matrix=design_matrices,
             )
 

@@ -189,6 +189,8 @@
 
 .. _Kun CHEN: https://chenkun.me
 
+.. _Laura Piñero Roig: https://github.com/laurapiro17
+
 .. _Lee Newberg: https://github.com/Leengit
 
 .. _Leonard Sasse: https://github.com/LeSasse
