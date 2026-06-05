@@ -1807,7 +1807,7 @@ def first_level_from_bids(
         filters = _make_bids_files_filter(
             task_label=task_label,
             supported_filters=[*bids_entities()["raw"]],
-            extra_filter=img_filters,
+            extra_filter=[x for x in img_filters if x[0] != "desc"],
             verbose=verbose,
         )
         inferred_t_r = infer_repetition_time_from_dataset(
@@ -2275,6 +2275,7 @@ def _get_masks_files(
         # TODO for surface data?
         return []
 
+    img_filters = [x for x in img_filters if x[0] != "desc"]
     filters = _make_bids_files_filter(
         task_label=task_label,
         space_label=space_label,
