@@ -38,6 +38,8 @@ if is_matplotlib_installed():
         # with the oldest version of matplolib
         collect_ignore.extend(
             [
+                "glm/tests/test_baseline_comparisons.py",
+                "maskers/tests/test_baseline_comparisons.py",
                 "plotting/tests/test_baseline_comparisons.py",
                 "reporting/tests/test_baseline_comparisons.py",
             ]
@@ -47,6 +49,8 @@ else:
     collect_ignore.extend(
         [
             "_utils/plotting.py",
+            "glm/tests/test_baseline_comparisons.py",
+            "maskers/tests/test_baseline_comparisons.py",
             "plotting",
             "reporting/tests/test_baseline_comparisons.py",
         ]
@@ -60,8 +64,6 @@ if not is_gil_enabled():
             # making the tests thread unsafe
             # therefore we skip them when testing without the GIL
             "datasets",
-            # TODO
-            "plotting",
         ]
     )
 
@@ -421,7 +423,7 @@ def _n_regions():
     return 9
 
 
-def generate_regions_ts(n_features, n_regions):
+def generate_regions_ts(n_features, n_regions) -> np.ndarray:
     """Generate some regions as timeseries.
 
     adapted from nilearn._utils.data_gen.generate_regions_ts
@@ -475,7 +477,7 @@ def n_regions():
     return _n_regions()
 
 
-def _img_maps(n_regions=None):
+def _img_maps(n_regions=None) -> Nifti1Image:
     """Generate a default map image.
 
     adapted from nilearn._utils.data_gen.generate_maps
@@ -493,12 +495,12 @@ def _img_maps(n_regions=None):
 
 
 @pytest.fixture
-def img_maps(n_regions):
+def img_maps(n_regions) -> Nifti1Image:
     """Generate fixture for default map image."""
     return _img_maps(n_regions)
 
 
-def _img_labels(n_regions=None):
+def _img_labels(n_regions=None) -> Nifti1Image:
     """Generate fixture for default label image.
 
     adapted from nilearn._utils.data_gen.generate_labeled_regions
@@ -525,7 +527,7 @@ def _img_labels(n_regions=None):
 
 
 @pytest.fixture
-def img_labels(n_regions):
+def img_labels(n_regions) -> Nifti1Image:
     """Generate fixture for default label image."""
     return _img_labels(n_regions)
 
@@ -619,6 +621,7 @@ def surf_mesh():
 
 
 def _make_surface_img(n_samples=1):
+    """Create data with increasing values for each vertex."""
     mesh = _make_mesh()
     data = {}
     for i, (key, val) in enumerate(mesh.parts.items()):
@@ -632,7 +635,7 @@ def _make_surface_img(n_samples=1):
 
 @pytest.fixture
 def surf_img_2d():
-    """Return a 2D SurfaceImage with random data.
+    """Return a 2D SurfaceImage.
 
     The shape of the data will be (n_vertices, n_samples).
     n_samples by default is 1.
@@ -641,7 +644,7 @@ def surf_img_2d():
 
 
 def _surf_img_1d():
-    """Return a 1D SurfaceImage with random data.
+    """Return a 1D SurfaceImage.
 
     The shape of the data will be (n_vertices,).
     """
@@ -653,11 +656,21 @@ def _surf_img_1d():
 
 @pytest.fixture
 def surf_img_1d():
-    """Return a 1D SurfaceImage with random data.
+    """Return a 1D SurfaceImage.
 
     The shape of the data will be (n_vertices,).
     """
     return _surf_img_1d()
+
+
+@pytest.fixture
+def surf_img_ones_1d(surf_mesh):
+    """Return a 1D SurfaceImage with only 1."""
+    data = {
+        "left": np.ones((surf_mesh.parts["left"].n_vertices, 1)),
+        "right": np.ones((surf_mesh.parts["right"].n_vertices, 1)),
+    }
+    return SurfaceImage(surf_mesh, data)
 
 
 def _make_surface_mask(n_zeros=4):
@@ -734,12 +747,16 @@ def surf_three_labels_img(surf_mesh):
     return SurfaceImage(surf_mesh, data)
 
 
-def _surf_maps_img():
+def _surf_maps_img(n_regions: int = 6) -> SurfaceImage:
     """Return a sample surface map image using the sample mesh.
     Has 6 regions in total: 3 in both, 1 only in left and 2 only in right.
     Later we multiply the data with random "probability" values to make it
     more realistic.
     """
+    if n_regions > 6 or n_regions < 1:
+        raise ValueError(
+            f"'n_regions' must be  in interaval '[1, 6]'. Got {n_regions=}."
+        )
     data = {
         "left": np.asarray(
             [
@@ -759,6 +776,12 @@ def _surf_maps_img():
             ]
         ),
     }
+    data["left"] = data["left"][..., 0:n_regions]
+    data["right"] = data["right"][..., 0:n_regions]
+
+    assert data["left"].shape == (4, n_regions)
+    assert data["right"].shape == (5, n_regions)
+
     # multiply with random "probability" values
     data = {
         part: data[part] * _rng().random(data[part].shape) for part in data
@@ -767,7 +790,7 @@ def _surf_maps_img():
 
 
 @pytest.fixture
-def surf_maps_img():
+def surf_maps_img() -> SurfaceImage:
     """Return a sample surface map as fixture."""
     return _surf_maps_img()
 
@@ -925,9 +948,9 @@ def check_parameters_doctring(parameters, doc_dict):
     extras = [param for param in documented if param not in parameters]
 
     # no undocumented
-    assert len(undocumented) == 0
+    assert not undocumented
     # no extras
-    assert len(extras) == 0
+    assert not extras
     # no duplicates
     assert len(documented) == len(set(documented))
 

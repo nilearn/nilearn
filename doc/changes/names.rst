@@ -45,6 +45,8 @@
 
 .. _Audrey Duran: https://github.com/AudreyDuran
 
+.. _Basile Pinsard: https://github.com/bpinsard
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -54,6 +56,8 @@
 .. _Caglar Cakan: https://github.com/caglorithm
 
 .. _Chloe Hampson: https://github.com/chlohamp
+
+.. _Chris Rorden: https://github.com/neurolabusc
 
 .. _Chris Gorgolewski: https://chrisgorgolewski.org/
 
@@ -135,6 +139,8 @@
 
 .. _Jason Kai: https://github.com/kaitj
 
+.. _Jason D. Yeatman: https://edneuro.stanford.edu/
+
 .. _Javier Rasero: https://jrasero.github.io/
 
 .. _Jean Kossaifi: https://jeankossaifi.com/
@@ -148,6 +154,8 @@
 .. _Jerome Dockes: https://jeromedockes.github.io/
 
 .. _Jerome-Alexis Chevalier: https://github.com/ja-che
+
+.. _Johanna Bayer: https://opencodereview.netlify.app/
 
 .. _Johannes Wiesner: https://github.com/JohannesWiesner
 
@@ -180,6 +188,8 @@
 .. _Kshitij Chawla: https://github.com/kchawla-pi
 
 .. _Kun CHEN: https://chenkun.me
+
+.. _Laura Piñero Roig: https://github.com/laurapiro17
 
 .. _Lee Newberg: https://github.com/Leengit
 
@@ -243,6 +253,8 @@
 
 .. _Nikhil Krish: https://github.com/NIkhilgKrish
 
+.. _Noah C. Benson: https://nben.net/
+
 .. _Oliver Warrington: https://github.com/OliverWarrington
 
 .. _Oscar Esteban: https://github.com/oesteban
@@ -275,6 +287,8 @@
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
+.. _Rishika Kapil: https://github.com/RishikaKaps
+
 .. _Robert Luke: https://github.com/rob-luke
 
 .. _Robert Williamson: https://github.com/RobWilliamson15
@@ -290,6 +304,8 @@
 .. _Rémi Gau: https://github.com/Remi-Gau
 
 .. _Sachin Patalasingh: https://github.com/sachin-bsai
+
+.. _Saeed Babadi: https://github.com/saeed-neuro
 
 .. _Sage Hahn: https://github.com/sahahn
 
@@ -319,6 +335,8 @@
 
 .. _Tarun Samanta: https://github.com/SamantaTarun
 
+.. _Taylor Hanayik: https://github.com/hanayik
+
 .. _Taylor Salo: https://tsalo.github.io/
 
 .. _Tharun K: https://github.com/tharun634
@@ -338,6 +356,8 @@
 .. _Vincent Michel: https://github.com/vmichel
 
 .. _Virgile Fritsch: https://github.com/VirgileFritsch
+
+.. _Xichun Xu: https://github.com/XichunXu
 
 .. _Yaroslav Halchenko: https://github.com/yarikoptic
 

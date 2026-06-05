@@ -95,6 +95,7 @@ def test_plot_stat_map_threshold(matplotlib_pyplot, data, affine_eye):
     plot_stat_map(Nifti1Image(data, affine_eye), threshold=1000, colorbar=True)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_stat_map_threshold_for_affine_with_rotation(
     matplotlib_pyplot, rng
 ):

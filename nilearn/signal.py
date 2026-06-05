@@ -7,7 +7,7 @@ features
 
 import warnings
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 import pandas as pd
@@ -27,6 +27,13 @@ from nilearn._utils.param_validation import (
     check_run_sample_masks,
 )
 from nilearn.exceptions import AllVolumesRemovedError
+from nilearn.typing import (
+    HighPass,
+    LowPass,
+    NonNullScalar,
+    StandardizeConfounds,
+    Tr,
+)
 
 __all__ = [
     "butterworth",
@@ -34,14 +41,16 @@ __all__ = [
     "high_variance_confounds",
 ]
 
-available_filters = ("butterworth", "cosine")
+AVAILABLE_FILTERS = ("butterworth", "cosine")
 
 
 @fill_doc
 def standardize_signal(
     signals,
     detrend: bool = False,
-    standardize: Literal["psc", "zscore_sample"] | None = "zscore_sample",
+    standardize: Literal["psc", "zscore_sample"]
+    | bool
+    | None = "zscore_sample",
 ) -> np.ndarray:
     """Center and standardize a given signal (time is along first axis).
 
@@ -64,46 +73,53 @@ def standardize_signal(
 
     signals = _detrend(signals, inplace=False) if detrend else signals.copy()
 
-    assert not isinstance(standardize, bool)
+    # TODO (nilearn >= 0.15) remove casting from bool
+    if standardize is False:
+        standardize = None
+    elif standardize is True:
+        standardize = "zscore_sample"
 
-    if standardize is not None:
-        check_parameter_in_allowed(
-            standardize,
-            allowed=["psc", "zscore_sample"],
-            parameter_name="standardize",
+    if standardize is None:
+        return signals
+
+    check_parameter_in_allowed(
+        standardize,
+        allowed=["psc", "zscore_sample"],
+        parameter_name="standardize",
+    )
+    if signals.shape[0] == 1:
+        warnings.warn(
+            "Standardization of 3D signal has been requested but "
+            "would lead to zero values. Skipping.",
+            stacklevel=find_stack_level(),
         )
-        if signals.shape[0] == 1:
+        return signals
+
+    # Standardize
+    if standardize == "zscore_sample":
+        if not detrend:
+            # remove mean if not already detrended
+            signals = signals - signals.mean(axis=0)
+
+        std = signals.std(axis=0, ddof=1)
+        # avoid numerical problems
+        std[std < np.finfo(np.float64).eps] = 1.0
+        signals /= std
+
+    elif standardize == "psc":
+        mean_signals = signals.mean(axis=0)
+        invalid_ix = np.absolute(mean_signals) < np.finfo(np.float64).eps
+        signals = (signals - mean_signals) / np.absolute(mean_signals)
+        signals *= 100
+
+        if np.any(invalid_ix):
             warnings.warn(
-                "Standardization of 3D signal has been requested but "
-                "would lead to zero values. Skipping.",
+                "psc standardization strategy is meaningless "
+                "for features that have a mean of 0. "
+                "These time series are set to 0.",
                 stacklevel=find_stack_level(),
             )
-            return signals
-
-        elif standardize == "zscore_sample":
-            if not detrend:
-                # remove mean if not already detrended
-                signals = signals - signals.mean(axis=0)
-
-            std = signals.std(axis=0, ddof=1)
-            # avoid numerical problems
-            std[std < np.finfo(np.float64).eps] = 1.0
-            signals /= std
-
-        elif standardize == "psc":
-            mean_signals = signals.mean(axis=0)
-            invalid_ix = np.absolute(mean_signals) < np.finfo(np.float64).eps
-            signals = (signals - mean_signals) / np.absolute(mean_signals)
-            signals *= 100
-
-            if np.any(invalid_ix):
-                warnings.warn(
-                    "psc standardization strategy is meaningless "
-                    "for features that have a mean of 0. "
-                    "These time series are set to 0.",
-                    stacklevel=find_stack_level(),
-                )
-                signals[:, invalid_ix] = 0
+            signals[:, invalid_ix] = 0
 
     return signals
 
@@ -468,7 +484,7 @@ def high_variance_confounds(
         than ``n_confounds``.
 
     %(detrend)s
-        Default=True.
+        default=True.
 
     Returns
     -------
@@ -526,21 +542,21 @@ def _ensure_float(data: np.ndarray) -> np.ndarray:
 
 @fill_doc
 def clean(
-    signals,
-    runs=None,
-    detrend=True,
+    signals: np.ndarray,
+    runs: np.ndarray | None = None,
+    detrend: bool = True,
     standardize="zscore_sample",
     sample_mask=None,
     confounds=None,
-    standardize_confounds=True,
-    filter="butterworth",
-    low_pass=None,
-    high_pass=None,
-    t_r=2.5,
-    ensure_finite=False,
-    extrapolate=False,
+    standardize_confounds: StandardizeConfounds = True,
+    filter: Literal["butterworth", "cosine", False] = "butterworth",
+    low_pass: LowPass = None,
+    high_pass: HighPass = None,
+    t_r: Tr = 2.5,
+    ensure_finite: bool = False,
+    extrapolate: bool = False,
     **kwargs,
-):
+) -> np.ndarray:
     """Improve :term:`SNR` on masked :term:`fMRI` signals.
 
     This function can do several things on the input signals. With the default
@@ -589,7 +605,7 @@ def clean(
         Timeseries. Must have shape (instant number, features number).
         This array is not modified.
 
-    runs : :class:`numpy.ndarray`, default=None
+    runs : :class:`numpy.ndarray` or None, default=None
         Add a run level to the cleaning process. Each run will be
         cleaned independently. Must be a 1D array of n_samples elements.
 
@@ -621,7 +637,7 @@ def clean(
         .. nilearn_versionadded:: 0.8.0
 
     %(t_r)s
-        Default=2.5.
+        default=2.5.
 
     filter : {'butterworth', 'cosine', False}, default='butterworth'
         Filtering methods:
@@ -632,7 +648,7 @@ def clean(
 
     %(low_pass)s
 
-        .. note::
+        .. warning::
             `low_pass` is not implemented for filter='cosine'.
 
     %(high_pass)s
@@ -689,7 +705,9 @@ def clean(
     if confounds is not None:
         _check_signal_parameters(detrend, standardize_confounds)
     # check if filter parameters are satisfied and return correct filter
-    filter_type = _check_filter_parameters(filter, low_pass, high_pass, t_r)
+    filter_type, t_r_, low_pass_, high_pass_ = _check_filter_parameters(
+        filter, low_pass, high_pass, t_r
+    )
 
     # Read confounds and signals
     signals, runs, confounds, sample_mask, standardize = _sanitize_inputs(
@@ -706,9 +724,9 @@ def clean(
             confounds,
             sample_mask,
             filter_type,
-            low_pass,
-            high_pass,
-            t_r,
+            low_pass_,
+            high_pass_,
+            t_r_,
         )
 
     # For the following steps, sample_mask should be either None or index-like
@@ -716,8 +734,13 @@ def clean(
     # Generate cosine drift terms using the full length of the signals
     if filter_type == "cosine":
         confounds = _create_cosine_drift_terms(
-            signals, confounds, high_pass, t_r
+            signals, confounds, high_pass_, t_r_
         )
+        if low_pass_ is not None:
+            warnings.warn(
+                "low_pass is not implemented for filter='cosine'",
+                stacklevel=find_stack_level(),
+            )
 
     # Interpolation / censoring
     signals, confounds, sample_mask = _handle_scrubbed_volumes(
@@ -739,6 +762,9 @@ def clean(
 
     # Butterworth filtering
     if filter_type == "butterworth":
+        if TYPE_CHECKING:
+            # guaranteed by _check_filter_parameters
+            assert t_r_ is not None
         butterworth_kwargs = {
             k.replace("butterworth__", ""): v
             for k, v in kwargs.items()
@@ -746,9 +772,9 @@ def clean(
         }
         signals = butterworth(
             signals,
-            sampling_rate=1.0 / t_r,
-            low_pass=low_pass,
-            high_pass=high_pass,
+            sampling_rate=1.0 / t_r_,
+            low_pass=low_pass_,
+            high_pass=high_pass_,
             **butterworth_kwargs,
         )
         if confounds is not None:
@@ -756,9 +782,9 @@ def clean(
             # (according to Lindquist et al. (2018))
             confounds = butterworth(
                 confounds,
-                sampling_rate=1.0 / t_r,
-                low_pass=low_pass,
-                high_pass=high_pass,
+                sampling_rate=1.0 / t_r_,
+                low_pass=low_pass_,
+                high_pass=high_pass_,
                 **butterworth_kwargs,
             )
 
@@ -1144,9 +1170,21 @@ def _sanitize_confound_dtype(n_signal: int, confound) -> np.ndarray:
     return confound
 
 
-def _check_filter_parameters(filter, low_pass, high_pass, t_r):
+def _check_filter_parameters(
+    filter: Literal["butterworth", "cosine", False],
+    low_pass: LowPass,
+    high_pass: HighPass,
+    t_r: Tr,
+) -> (
+    tuple[Literal["butterworth"], NonNullScalar, LowPass, HighPass]
+    | tuple[Literal["cosine"], NonNullScalar, LowPass, NonNullScalar]
+    | tuple[Literal[False], Tr, LowPass, HighPass]
+):
     """Check all filter related parameters are set correctly."""
-    if not filter:
+    if filter not in [*AVAILABLE_FILTERS, False]:
+        raise ValueError(f"Filter method {filter} not implemented.")
+
+    if filter is False:
         if any(
             isinstance(item, (float, int)) for item in [low_pass, high_pass]
         ):
@@ -1155,34 +1193,29 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
                 "Will not perform filtering.",
                 stacklevel=find_stack_level(),
             )
-        return False
-    elif filter in available_filters:
-        if filter == "cosine" and not all(
-            isinstance(item, (float, int)) for item in [t_r, high_pass]
-        ):
+        return False, t_r, low_pass, high_pass
+
+    if filter == "cosine":
+        if t_r is None or high_pass is None:
             raise ValueError(
                 "Repetition time (t_r) and low cutoff frequency (high_pass) "
-                "must be specified for cosine "
-                f"filtering.t_r='{t_r}', high_pass='{high_pass}'"
+                "must be specified for cosine filtering. "
+                f"Got: '{t_r=}' and '{high_pass=}'"
             )
-        if filter == "butterworth":
-            if all(item is None for item in [low_pass, high_pass]):
-                # Butterworth was switched off by passing
-                # None to at least low_pass and high_pass
-                return False
-            if t_r is None:
-                raise ValueError(
-                    "Repetition time (t_r) must be specified for "
-                    "butterworth filtering."
-                )
-            if any(isinstance(item, bool) for item in [low_pass, high_pass]):
-                raise TypeError(
-                    "high/low pass must be float or None but you provided "
-                    f"high_pass='{high_pass}', low_pass='{low_pass}'"
-                )
-        return filter
-    else:
-        raise ValueError(f"Filter method {filter} not implemented.")
+        return "cosine", t_r, low_pass, high_pass
+
+    # filter == "butterworth"
+    if all(item is None for item in [low_pass, high_pass]):
+        # Butterworth was switched off
+        # by passing None to both low_pass and high_pass
+        return False, t_r, low_pass, high_pass
+    if t_r is None:
+        raise ValueError(
+            "Repetition time (t_r) must be specified for "
+            "butterworth filtering. "
+            f"Got: '{t_r=}'"
+        )
+    return "butterworth", t_r, low_pass, high_pass
 
 
 def _sanitize_signals(signals, ensure_finite):

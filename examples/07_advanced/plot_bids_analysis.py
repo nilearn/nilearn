@@ -30,6 +30,10 @@ from nilearn import plotting
 # subject folders only contain bold.json and events.tsv files, while the
 # derivatives folder includes the preprocessed files preproc.nii and the
 # confounds.tsv files.
+#
+# For more information
+# see the :ref:`dataset description <language_localizer_dataset>`.
+#
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
 data = fetch_language_localizer_demo_dataset()

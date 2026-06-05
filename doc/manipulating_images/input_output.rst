@@ -21,7 +21,8 @@ All Nilearn functions accept file names as arguments:
 .. code-block:: python
 
      from nilearn import image
-     smoothed_img = image.smooth_img('/home/user/t_map001.nii')
+
+     smoothed_img = image.smooth_img("/home/user/t_map001.nii")
 
 Nilearn can operate on either file names or `NiftiImage objects
 <https://nipy.org/nibabel/nibabel_images.html>`_. The later represent the
@@ -41,7 +42,8 @@ series of 3D images. It can be **a list of file names**, if these contain
 
      # dataset folder contains subject1.nii and subject2.nii
      from nilearn.image import smooth_img
-     result_img = smooth_img(['dataset/subject1.nii', 'dataset/subject2.nii'])
+
+     result_img = smooth_img(["dataset/subject1.nii", "dataset/subject2.nii"])
 
 ``result_img`` is a 4D in-memory image, containing the data of both
 subjects.
@@ -63,6 +65,7 @@ shell):
 
   # Example with a smoothing process:
   from nilearn.image import smooth_img
+
   result_img = smooth_img("dataset/subject_*.nii")
 
 Note that the resulting is a 4D image.
@@ -108,6 +111,7 @@ datasets and atlases. They can be imported from
 .. code-block:: python
 
      from nilearn import datasets
+
      haxby_dataset = datasets.fetch_haxby()
 
 They return a data structure that contains different pieces of
@@ -276,10 +280,12 @@ presented to the subject:
 .. code-block:: python
 
      from nilearn import datasets
+
      haxby_dataset = datasets.fetch_haxby()
      import pandas as pd
+
      labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
-     stimuli = labels['labels']
+     stimuli = labels["labels"]
      print(stimuli.unique())
      # ['bottle' 'cat' 'chair' 'face' 'house' 'rest' 'scissors' 'scrambledpix' 'shoe']
 

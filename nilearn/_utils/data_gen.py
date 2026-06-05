@@ -10,6 +10,7 @@ import pandas as pd
 import scipy.signal
 from nibabel import Nifti1Image, gifti
 from scipy.ndimage import binary_dilation
+from sklearn.utils import check_random_state
 
 from nilearn._utils import logger
 from nilearn._utils.numpy_conversions import as_ndarray
@@ -68,7 +69,9 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     return inverse_img, mask_img
 
 
-def generate_timeseries(n_timepoints, n_features, random_state=0):
+def generate_timeseries(
+    n_timepoints: int, n_features: int, random_state=0
+) -> np.ndarray:
     """Generate some random timeseries.
 
     Parameters
@@ -285,13 +288,13 @@ def generate_labeled_regions(
 
 
 def generate_fake_fmri(
-    shape=(10, 11, 12),
-    length=17,
-    kind="noise",
-    affine=None,
-    n_blocks=None,
-    block_size=3,
-    block_type="classification",
+    shape: tuple[int, int, int] = (10, 11, 12),
+    length: int = 17,
+    kind: str = "noise",
+    affine: np.ndarray | None = None,
+    n_blocks: int | None = None,
+    block_size: int = 3,
+    block_type: str = "classification",
     random_state=0,
 ):
     """Generate a signal which can be used for testing.
@@ -322,7 +325,7 @@ def generate_fake_fmri(
     n_blocks : :obj:`int` or None, default=None
         Number of condition blocks.
 
-    block_size : :obj:`int` or None, default=3
+    block_size : :obj:`int`, default=3
         Number of timepoints in a block.
         Used only if n_blocks is not None.
 
@@ -359,9 +362,11 @@ def generate_fake_fmri(
 
     rand_gen = np.random.default_rng(random_state)
     if kind == "noise":
-        signals = rand_gen.integers(256, size=([*width, length]))
+        signals = rand_gen.integers(
+            256, size=([*width, length]), dtype=np.int32
+        )
     elif kind == "step":
-        signals = np.ones([*width, length])
+        signals = np.ones([*width, length], dtype=np.int32)
         signals[..., : length // 2] = 0.5
     else:
         raise ValueError("Unhandled value for parameter 'kind'")
@@ -1005,6 +1010,8 @@ def create_fake_bids_dataset(
         Creates a directory with dummy files.
 
     """
+    rand_gen = check_random_state(random_state)
+
     if base_dir is None:
         base_dir = Path()
     if tasks is None:

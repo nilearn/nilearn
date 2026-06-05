@@ -152,14 +152,15 @@ show()
 # for more details.
 from nilearn.plotting import view_connectome
 
-view = view_connectome(partial_correlation_matrix, dmn_coords)
+view = view_connectome(
+    partial_correlation_matrix, dmn_coords, node_labels=labels
+)
 
 # In a notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 view
 
 # %%
-
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 

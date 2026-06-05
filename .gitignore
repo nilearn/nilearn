@@ -47,18 +47,19 @@ nilearn/_version.py
 .ipynb_checkpoints
 
 # virtual environment
-env/
-venv/
+env*/
+venv*/
 
 # testing
+.nyc_output
+.puppeteerEndpoint
 .pytest_cache
+*diff.png
+report*.html
 tests_to_run.txt
-# do not use report*.html below
-# otherwise some of the report*.html files used in masker reports
-# are ignored from package build
-report.html
-report_doc.html
-report_slow.html
+tests/js/*.html
+tests/js/*.png
+
 
 # CI benchmark
 maint_tools/*_runs_timing.*
@@ -89,12 +90,13 @@ pattern.txt
 examples.txt
 gitlog.txt
 merge.txt
+__marimo__
+tmp.html
 
 # examples
 results/
 
 # node
-package.json
 package-lock.json
 
 # pydeps output

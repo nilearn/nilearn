@@ -349,6 +349,15 @@ def cov_to_corr(covariance: np.ndarray) -> np.ndarray:
     correlation : 2D numpy.ndarray
         The output correlation matrix.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.connectome import cov_to_corr
+    >>> cov = np.array([[4.0, 2.0], [2.0, 9.0]])
+    >>> cov_to_corr(cov)
+    array([[1.        , 0.33333333],
+           [0.33333333, 1.        ]])
+
     """
     diagonal = np.atleast_2d(1.0 / np.sqrt(np.diag(covariance)))
     correlation = covariance * diagonal * diagonal.T
@@ -371,6 +380,15 @@ def prec_to_partial(precision: np.ndarray) -> np.ndarray:
     partial_correlation : 2D numpy.ndarray
         The 2D output partial correlation matrix.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.connectome import prec_to_partial
+    >>> precision = np.array([[2.0, -1.0], [-1.0, 2.0]])
+    >>> prec_to_partial(precision)
+    array([[1. , 0.5],
+           [0.5, 1. ]])
+
     """
     partial_correlation = -cov_to_corr(precision)
     np.fill_diagonal(partial_correlation, 1.0)
@@ -390,11 +408,18 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                     default=LedoitWolf(store_precision=False)
         The covariance estimator.
         This implies that correlations are slightly shrunk
-        towards zero compared to a maximum-likelihood estimate
+        towards zero compared to a maximum-likelihood estimate.
+        When passing a customized estimator, the covariance estimator must
+        have a ``fit`` method that takes as input a 2D array of shape
+        (n_samples, n_features) and has an attribute ``covariance_`` of shape
+        (n_features, n_features) after fitting. Please see
+        ``sklearn.covariance`` for examples.
 
     kind : {"covariance", "correlation", "partial correlation",\
             "tangent", "precision"}, default='covariance'
         The matrix kind.
+        This parameter performs calculation on the covariance matrix.
+        The default option returns the value from `cov_estimator`.
         For the use of "tangent" see :footcite:t:`Varoquaux2010b`.
 
     vectorize : :obj:`bool`, default=False
@@ -520,6 +545,13 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         """Avoid duplication of computation."""
         if self.cov_estimator is None:
             self.cov_estimator = LedoitWolf(store_precision=False)
+        elif not (hasattr(self.cov_estimator, "fit")):
+            raise ValueError(
+                f"`cov_estimator` must be an estimator with `.fit()` and "
+                f"`.covariance_` (e.g., from `sklearn.covariance` or a "
+                f"custom estimator constructed similarly). Got: "
+                f"`{type(self.cov_estimator).__name__}`."
+            )
 
         if not hasattr(X, "__iter__"):
             raise TypeError(

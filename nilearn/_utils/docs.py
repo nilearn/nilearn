@@ -12,6 +12,7 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 # sourcery skip: merge-dict-assign
 
 import sys
+from collections.abc import Callable
 
 ##############################################################################
 #
@@ -164,6 +165,7 @@ logistic = "Logistic regression"
 rc = "Ridge classifier"
 dc = "Dummy classifier with stratified strategy"
 
+
 docdict["classifier_options"] = f"""
 
     - ``"svc"``: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
@@ -182,7 +184,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        svc_l1 = LinearSVC(penalty="l1", dual=False, max_iter=1e4)
+        svc_l1 = LinearSVC(penalty="l1", max_iter=1e4)
 
     - ``"logistic"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -190,7 +192,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        logistic = LogisticRegressionCV(penalty="l2", solver="liblinear")
+        logistic = LogisticRegressionCV(l1_ratios=(0,), solver="liblinear")
 
     - ``"logistic_l1"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -198,7 +200,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        logistic_l1 = LogisticRegressionCV(penalty="l1", solver="liblinear")
+        logistic_l1 = LogisticRegressionCV(l1_ratios=(1,), solver="liblinear")
 
     - ``"logistic_l2"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -482,6 +484,14 @@ dtype : dtype like, "auto" or None, default=None
     If None, data will not be converted to a new data type.
 """
 
+# estimator_args
+docdict["estimator_args"] = """
+estimator_args : dict[str, Any] or None, default=None
+    Extra parameters to pass to the scikit-learn estimators.
+
+    .. nilearn_versionadded:: 0.14.0dev
+"""
+
 # extractor / extract_type
 docdict["extractor"] = """
 extractor : {"local_regions", "connected_components"}, default="local_regions"
@@ -538,15 +548,19 @@ docdict["fwhm"] = """
 fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\
 or 'fast' or None, optional
     Smoothing strength, as a :term:`full-width at half maximum<FWHM>`,
-    in millimeters:
+    in millimeters.
+
+    For surface data, only scalar and None are supported.
+
+    For volume data, several options are possible:
 
     - If a nonzero scalar is given, width is identical in all 3 directions.
 
     - If a :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` is given,
       it must have 3 elements, giving the :term:`FWHM` along each axis.
       If any of the elements is `0` or `None`,
-
       smoothing is not performed along that axis.
+
     - If `fwhm="fast"`, a fast smoothing will be performed with a filter
       [0.2, 1, 0.2] in each direction and a normalization to preserve the
       local average value.
@@ -911,42 +925,42 @@ random_state : :obj:`int` or np.random.RandomState, optional
 # regressor_options
 docdict["regressor_options"] = """
 
-    - ``ridge``: \
-        :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
+    - ``"ridge"``: \
+        :class:`Ridge regression <sklearn.linear_model.RidgeCV>`.
 
     .. code-block:: python
 
         ridge = RidgeCV()
 
-    - ``ridge_regressor``: \
-        :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
+    - ``"ridge_regressor"``: \
+        :class:`Ridge regression <sklearn.linear_model.RidgeCV>`.
 
     .. note::
 
         Same option as `ridge`.
 
-    - ``svr``: :class:`{Support vector regression} <sklearn.svm.SVR>`.
+    - ``"svr"``: :class:`Support vector regression <sklearn.svm.SVR>`.
 
     .. code-block:: python
 
         svr = SVR(kernel="linear", max_iter=1e4)
 
-    - ``lasso``: \
-        :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
+    - ``"lasso"``: \
+        :class:`Lasso regression <sklearn.linear_model.LassoCV>`.
 
     .. code-block:: python
 
         lasso = LassoCV()
 
-    - ``lasso_regressor``: \
-        :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
+    - ``"lasso_regressor"``: \
+        :class:`Lasso regression <sklearn.linear_model.LassoCV>`.
 
     .. note::
 
         Same option as `lasso`.
 
-    - ``dummy_regressor``: \
-        :class:`{Dummy regressor} <sklearn.dummy.DummyRegressor>`.
+    - ``"dummy_regressor"``: \
+        :class:`Dummy regressor <sklearn.dummy.DummyRegressor>`.
 
     .. code-block:: python
 
@@ -1070,7 +1084,7 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
 
 # second_level_confounds
 docdict["second_level_confounds"] = """
-confounds : :obj:`pandas.DataFrame` or None, Default=None
+confounds : :obj:`pandas.DataFrame` or None, default=None
     Must contain a ``subject_label`` column.
     All other columns are considered as confounds and included in the model.
     If ``design_matrix`` is provided then this argument is ignored.
@@ -1084,7 +1098,7 @@ confounds : :obj:`pandas.DataFrame` or None, Default=None
 docdict["second_level_design_matrix"] = """
 design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
                 or :obj:`pathlib.Path` to a CSV or TSV file, \
-                or None, Default=None
+                or None, default=None
     Design matrix to fit the :term:`GLM`.
     The number of rows in the design matrix
     must agree with the number of maps
@@ -1096,35 +1110,36 @@ design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
 # second_level_input
 docdict["second_level_input"] = """
 second_level_input : :obj:`list` of \
-    :class:`~nilearn.glm.first_level.FirstLevelModel` objects or \
-    :class:`pandas.DataFrame` or \
-    :obj:`list` of 3D Niimg-like objects or \
-    4D Niimg-like objects or \
-    :obj:`list` of :class:`~nilearn.surface.SurfaceImage` objects or \
+    :class:`~nilearn.glm.first_level.FirstLevelModel` objects, or \
+    :class:`pandas.DataFrame`, or \
+    :obj:`list` of 3D Niimg-like objects, or \
+    a 4D Niimg-like object, or \
+    :obj:`list` of 1D :class:`~nilearn.surface.SurfaceImage` objects, or \
+    a 2D :class:`~nilearn.surface.SurfaceImage` object, or \
     :obj:`pandas.Series` of Niimg-like objects.
 
     - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
       will allow to easily compute the second level contrast of arbitrary first
-      level contrasts thanks to the `first_level_contrast` argument of
+      level contrasts thanks to the ``first_level_contrast`` argument of
       :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
       Effect size images will be computed for each model
       to contrast at the second level.
 
     - If a :class:`~pandas.DataFrame`, then it has to contain
-      `subject_label`, `map_name` and `effects_map_path`.
+      ``subject_label``, ``map_name`` and ``effects_map_path``.
       It can contain multiple maps that would be selected
-      during contrast estimation with the argument `first_level_contrast`
+      during contrast estimation with the argument ``first_level_contrast``
       of :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
       The :class:`~pandas.DataFrame` will be sorted
-      based on the `subject_label` column to avoid order inconsistencies
+      based on the ``subject_label`` column to avoid order inconsistencies
       when extracting the maps.
       So the rows of the automatically computed design matrix,
-      if not provided, will correspond to the sorted `subject_label` column.
+      if not provided, will correspond to the sorted ``subject_label`` column.
 
     - If a :obj:`list` of Niimg-like objects
       or :class:`~nilearn.surface.SurfaceImage` objects
       then this is taken literally as Y for the model fit
-      and `design_matrix` must be provided.
+      and ``design_matrix`` must be provided.
 
 """
 
@@ -1162,6 +1177,20 @@ signals : 1D/2D :obj:`numpy.ndarray`
 docdict["region_signals_inv_transform"] = docdict["signals_inv_transform"]
 docdict["x_inv_transform"] = docdict["signals_inv_transform"]
 
+sk_compatible_admonition = """
+
+    .. admonition:: Important
+
+        Besides the strings,
+        it is also possible to pass
+        a scikit-learn compatible estimator object.
+        See `scikit-learn's guide on developing your own estimator
+        <https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator>`_
+        for more details.
+
+"""
+
+docdict["sk_compatible_admonition"] = sk_compatible_admonition
 
 # smoothing_fwhm
 docdict["smoothing_fwhm"] = """
@@ -1205,7 +1234,7 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
 # TODO (nilearn >= 0.15.0) update to ..versionchanged
 deprecation_notice_false_to_none = """
 
-    .. nilearn_deprecated:: 0.15.0dev
+    .. nilearn_deprecated:: 0.13.0
 
         The default will be changed to ``None``
         in version 0.15.0.
@@ -1215,7 +1244,7 @@ deprecation_notice_false_to_none = """
 # TODO (nilearn >= 0.15.0) update to ..versionchanged
 deprecation_notice_true_to_zscore_sample = """
 
-    .. nilearn_deprecated:: 0.15.0dev
+    .. nilearn_deprecated:: 0.13.0
 
         The default will be changed to ``'zscore_sample'``
         in version 0.15.0.
@@ -1225,7 +1254,7 @@ deprecation_notice_true_to_zscore_sample = """
 docdict["standardize_false"] = (
     standardize.format("False") + deprecation_notice_false_to_none
 )
-# TODO (nilearn >= 0.14.0 and 0.15.0)
+# TODO (nilearn >= 0.15.0)
 # adapt the deprecation notices
 docdict["standardize_true"] = (
     standardize.format("True") + deprecation_notice_true_to_zscore_sample
@@ -1333,6 +1362,9 @@ threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
     If number is given, it must be non-negative. The specified value is used to
     threshold the image: values below the threshold (in absolute value) are
     plotted as transparent.
+    If a string percentile is given, it should finish with percent sign e.g.,
+    “95%”. We threshold based on the score obtained using this percentile
+    on the image data.
     If "auto" is given, the threshold is determined based on the score obtained
     using percentile value "80%" on the absolute value of the image data.
 """
@@ -1572,6 +1604,9 @@ dummy_output_ : ndarray, shape=(n_classes, 2) \
     Returns None if non-dummy estimators are provided.
 
 estimator_ : Estimator object used during decoding.
+
+estimator_args_ : dict[str, Any]
+    Extra parameters passed to the sklearn learn estimators.
 
 intercept_ : ndarray, shape (nclasses,)
     Intercept (also known as bias) added to the decision function.
@@ -1919,7 +1954,7 @@ def _indentcount_lines(lines):
     return indentno
 
 
-def fill_doc(f):
+def fill_doc(f: Callable) -> Callable:
     """Fill a docstring with docdict entries.
 
     Parameters
@@ -1955,8 +1990,7 @@ def fill_doc(f):
     try:
         f.__doc__ = docstring % indented
     except (TypeError, ValueError, KeyError) as exp:
-        funcname = f.__name__
-        funcname = docstring.split("\n")[0] if funcname is None else funcname
+        funcname = docstring.split("\n")[0]
         raise RuntimeError(
             f"Error documenting {funcname}:\n{exp!s}.\n"
             "Did you forget to escape a character with an extra '%'"

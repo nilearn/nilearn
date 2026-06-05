@@ -57,6 +57,7 @@ known_dirs = sorted(
         "nilearn/_utils",
         "nilearn/connectome",
         "nilearn/mass_univariate",
+        "nilearn/_assets",
     ]
 )
 assert known_dirs == all_folders, f"\n{known_dirs=}\n{all_folders=}"
@@ -169,6 +170,7 @@ def restrict_tests(changed_files: list[str]) -> list[str]:
                 "nilearn/exceptions.py",
                 "nilearn/signal.py",
                 "nilearn/typing.py",
+                "nilearn/_assets",
             ]
         ):
             tests_to_run.extend(

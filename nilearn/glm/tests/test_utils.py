@@ -34,7 +34,10 @@ def test_full_rank(rng):
     assert_array_almost_equal(X, X_)
 
     X[:, -1] = X[:, :-1].sum(1)
-    X_, cond = full_rank(X)
+    with pytest.warns(
+        UserWarning, match="Matrix is singular at working precision"
+    ):
+        X_, cond = full_rank(X)
 
     assert cond > 1.0e10
     assert_array_almost_equal(X, X_)
@@ -120,7 +123,7 @@ def test_z_score_opposite_contrast(rng):
         shape=(50, 20, 50), length=96, random_state=rng
     )
 
-    nifti_masker = NiftiMasker(mask_img=mask)
+    nifti_masker = NiftiMasker(mask_img=mask, standardize=None)
     data = nifti_masker.fit_transform(fmri)
 
     frametimes = np.linspace(0, (96 - 1) * 2, 96)
@@ -135,10 +138,8 @@ def test_z_score_opposite_contrast(rng):
         c2 = np.array([0] + [1] + [0] * (design_matrix.shape[1] - 2))
         contrasts = {"seed1 - seed2": c1 - c2, "seed2 - seed1": c2 - c1}
         fmri_glm = FirstLevelModel(
-            t_r=2.0,
             noise_model="ar1",
             standardize=False,
-            hrf_model="spm",
             drift_model="cosine",
         )
         fmri_glm.fit(fmri, design_matrices=design_matrix)

@@ -1499,7 +1499,7 @@ class PolyData:
         if "hemi-R" in filename.stem:
             data = self.parts["right"]
 
-        _data_to_gifti(data, filename)
+        data_to_gifti(data, filename)
 
     def _set_data_dtype(self, dtype) -> None:
         if dtype is not None:
@@ -1558,7 +1558,7 @@ class SurfaceMesh(abc.ABC):
         gifti_file : :obj:`str` or :obj:`pathlib.Path`
             Filename to save the mesh to.
         """
-        _mesh_to_gifti(self.coordinates, self.faces, gifti_file)
+        mesh_to_gifti(self.coordinates, self.faces, gifti_file)
 
 
 class InMemoryMesh(SurfaceMesh):
@@ -1606,6 +1606,27 @@ class InMemoryMesh(SurfaceMesh):
             raise IndexError(
                 "Index out of range. Use 0 for coordinates and 1 for faces."
             )
+
+    @property
+    def _area(self):
+        """Compute area of mesh.
+
+        Get the vertex coordinates for each face
+        Compute vectors for two edges of the triangle
+        Compute the cross product of the two edge vectors
+        Area of triangle = 0.5 * norm of cross product
+        """
+        (idx0, idx1, idx2) = self.faces.T
+        (v0, v1, v2) = (
+            self.coordinates[idx0],
+            self.coordinates[idx1],
+            self.coordinates[idx2],
+        )
+        edge1 = v1 - v0
+        edge2 = v2 - v0
+        cross_prod = np.cross(edge1, edge2)
+        area = 0.5 * np.sqrt(np.sum(cross_prod**2, axis=1))
+        return np.sum(area)
 
     def __iter__(self):
         return iter([self.coordinates, self.faces])
@@ -1763,7 +1784,7 @@ def _check_data_and_mesh_compat(mesh, data) -> None:
             )
 
 
-def _mesh_to_gifti(coordinates, faces, gifti_file) -> None:
+def mesh_to_gifti(coordinates, faces, gifti_file=None) -> gifti.GiftiImage:
     """Write surface mesh to gifti file on disk.
 
     Parameters
@@ -1774,10 +1795,9 @@ def _mesh_to_gifti(coordinates, faces, gifti_file) -> None:
     faces : :obj:`numpy.ndarray`
         a Numpy array containing the indices (into coords) of the mesh faces.
 
-    gifti_file : :obj:`str` or :obj:`pathlib.Path`
+    gifti_file : :obj:`str` or :obj:`pathlib.Path` or None, default=None
         name for the output gifti file.
     """
-    gifti_file = Path(gifti_file)
     gifti_img = gifti.GiftiImage()
     coords_array = gifti.GiftiDataArray(
         coordinates, intent="NIFTI_INTENT_POINTSET", datatype="float32"
@@ -1787,10 +1807,14 @@ def _mesh_to_gifti(coordinates, faces, gifti_file) -> None:
     )
     gifti_img.add_gifti_data_array(coords_array)
     gifti_img.add_gifti_data_array(faces_array)
-    gifti_img.to_filename(gifti_file)
+
+    if gifti_file is not None:
+        gifti_img.to_filename(Path(gifti_file))
+
+    return gifti_img
 
 
-def _data_to_gifti(data, gifti_file) -> None:
+def data_to_gifti(data, gifti_file=None) -> gifti.GiftiImage:
     """Save data from Polydata to a gifti file.
 
     Parameters
@@ -1803,7 +1827,7 @@ def _data_to_gifti(data, gifti_file) -> None:
         - NIFTI_TYPE_FLOAT32
         See https://github.com/nipy/nibabel/blob/master/nibabel/gifti/gifti.py
 
-    gifti_file : :obj:`str` or :obj:`pathlib.Path`
+    gifti_file : :obj:`str` or :obj:`pathlib.Path` or None, default=None
         name for the output gifti file.
     """
     if data.dtype in [np.uint16, np.uint32, np.uint64]:
@@ -1824,7 +1848,11 @@ def _data_to_gifti(data, gifti_file) -> None:
     darray = gifti.GiftiDataArray(data=data, datatype=datatype)
 
     gii = gifti.GiftiImage(darrays=[darray])
-    gii.to_filename(Path(gifti_file))
+
+    if gifti_file is not None:
+        gii.to_filename(Path(gifti_file))
+
+    return gii
 
 
 def _sanitize_filename(filename):
@@ -2019,7 +2047,7 @@ def get_data(img, ensure_finite: bool = False) -> np.ndarray:
     img : :obj:`~surface.SurfaceImage` or :obj:`~surface.PolyData`
         SurfaceImage whose data to concatenate and extract.
 
-    ensure_finite : :obj:`bool`, Default=False
+    ensure_finite : :obj:`bool`, default=False
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
@@ -2085,7 +2113,7 @@ def extract_data(img, index) -> dict[Any, np.ndarray]:
     }
 
 
-def compute_adjacency_matrix(mesh: InMemoryMesh, dtype=None):
+def compute_adjacency_matrix(mesh: InMemoryMesh, values="ones", dtype=None):
     """Compute the adjacency matrix for a surface.
 
     The adjacency matrix is a matrix
@@ -2096,6 +2124,12 @@ def compute_adjacency_matrix(mesh: InMemoryMesh, dtype=None):
     Parameters
     ----------
     mesh : InMemoryMesh
+
+    values : {'invlen', 'ones'}, default="ones"
+        If `values` is `'ones'` (the default), then the returned matrix
+        contains uniform values in the cells representing edges.
+        If the value is `'invlen'`, then the the inverse of the distances
+        are returned.
 
     dtype : numpy dtype-like or None, default=None
         The dtype that should be used for the returned sparse matrix.
@@ -2139,7 +2173,18 @@ def compute_adjacency_matrix(mesh: InMemoryMesh, dtype=None):
     # Decode back to pairs of vertices (u, v).
     (u, v) = (edges // n, edges % n)
 
-    if dtype is None:
+    # Calculate distances between pairs.
+    # We use this as a weighting to make sure that
+    # smoothing takes into account the distance between each vertex neighbor
+    if values == "invlen":
+        coords = mesh.coordinates
+        edge_lens = np.sqrt(np.sum((coords[u, :] - coords[v, :]) ** 2, axis=1))
+        if dtype is None:
+            dtype = edge_lens.dtype
+        else:
+            edge_lens = edge_lens.astype(dtype)
+        edge_lens = 1 / edge_lens
+    elif dtype is None:
         edge_lens = np.ones_like(edges)
     else:
         edge_lens = np.ones(edges.shape, dtype=dtype)

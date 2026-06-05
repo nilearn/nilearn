@@ -2,13 +2,15 @@
 
 import abc
 import contextlib
+import json
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
-from typing import Any
+from typing import Any, overload
 
 import numpy as np
 from joblib import Memory
+from nibabel import Nifti1Image
 from sklearn.base import TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
@@ -17,7 +19,7 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import stringify_path
+from nilearn._utils.helpers import is_matplotlib_installed, stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -28,7 +30,6 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn._utils.versions import SKLEARN_LT_1_6
-from nilearn.exceptions import NotImplementedWarning
 from nilearn.image.image import (
     check_niimg,
     check_volume_for_fit,
@@ -38,7 +39,7 @@ from nilearn.image.image import (
     smooth_img,
 )
 from nilearn.image.resampling import resample_img
-from nilearn.maskers._mixin import _ReportingMixin
+from nilearn.maskers._mixin import MaskerReportMixin
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
@@ -262,7 +263,7 @@ def sanitize_displayed_maps(
                 f"But masker only has {n_maps} {var_name}(s). "
                 f"'displayed_{var_name}s' was set to {n_maps}."
             )
-            estimator._report_content["warning_messages"].append(msg)
+            estimator._append_report_warning(msg)
 
             displayed_maps = n_maps
 
@@ -285,14 +286,14 @@ def sanitize_displayed_maps(
             f"{unavailable_maps} because "
             f"masker only has {n_maps} {var_name}(s)."
         )
-        estimator._report_content["warning_messages"].append(msg)
+        estimator._append_report_warning(msg)
 
     return estimator, displayed_maps
 
 
 @fill_doc
 class _BaseMasker(
-    _ReportingMixin,
+    MaskerReportMixin,
     TransformerMixin,
     CacheMixin,
     NilearnBaseEstimator,
@@ -339,9 +340,9 @@ class BaseMasker(_BaseMasker):
         if imgs is not None:
             self._check_imgs(imgs)
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
@@ -407,6 +408,11 @@ class BaseMasker(_BaseMasker):
         tags.estimator_type = "masker"
         return tags
 
+    @property
+    def _n_features_out(self):
+        """Needed by sklearn machinery for set_ouput."""
+        return self.n_elements_
+
     def _get_masker_params(self, ignore: None | list[str] = None, deep=False):
         """Get parameters for this masker.
 
@@ -440,7 +446,13 @@ class BaseMasker(_BaseMasker):
 
         return params
 
-    def _load_mask(self, imgs):
+    @overload
+    def _load_mask(self, imgs: None) -> None: ...
+
+    @overload
+    def _load_mask(self, imgs: Nifti1Image) -> Nifti1Image: ...
+
+    def _load_mask(self, imgs) -> None | Nifti1Image:
         """Load and validate mask if one passed at init.
 
         Returns
@@ -457,8 +469,8 @@ class BaseMasker(_BaseMasker):
 
         # ensure that the mask_img_ is a 3D binary image
         tmp = check_niimg(self.mask_img, atleast_4d=True)
-        mask = safe_get_data(tmp, ensure_finite=True)
-        mask = mask.astype(bool).all(axis=3)
+        mask_data = safe_get_data(tmp, ensure_finite=True)
+        mask = mask_data.astype(bool).all(axis=3)
         mask_img_ = new_img_like(self.mask_img, mask)
 
         # Just check that the mask is valid
@@ -552,7 +564,15 @@ class BaseMasker(_BaseMasker):
         %(signals_transform_nifti)s
 
         """
-        return self.fit(imgs, y, **fit_params).transform(
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            self.fit(imgs, y, **fit_params)
+        return self.transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
@@ -622,6 +642,44 @@ class BaseMasker(_BaseMasker):
 
         return signals
 
+    def _get_summary_html(self, summary):
+        """Convert summary part of the report content for nifti maskers to
+        html.
+        """
+        return self._dict_to_html(summary)
+
+    def _create_brainsprite(
+        self,
+        bg_img: Nifti1Image | None,
+        stat_map_img: Nifti1Image,
+        cmap=None,
+    ) -> None:
+
+        from nilearn.plotting.html_stat_map import create_brainsprite
+
+        self._reporting_data["bg_base64"] = None
+        self._reporting_data["cm_base64"] = None
+        self._reporting_data["stat_map_base64"] = None
+        self._reporting_data["params"] = json.dumps({})
+
+        if not is_matplotlib_installed():
+            return
+
+        if bg_img is None:  # images were not provided to fit
+            bg_img = stat_map_img
+
+        json_view = create_brainsprite(
+            stat_map_img=stat_map_img,
+            bg_img=bg_img,
+            cmap=self.cmap if cmap is None else cmap,
+            symmetric_cmap=False,
+        )
+
+        self._reporting_data["bg_base64"] = json_view["bg_base64"]
+        self._reporting_data["cm_base64"] = json_view["cm_base64"]
+        self._reporting_data["stat_map_base64"] = json_view["stat_map_base64"]
+        self._reporting_data["params"] = json.dumps(json_view["params"])
+
 
 class _BaseSurfaceMasker(_BaseMasker):
     """Class from which all surface maskers should inherit."""
@@ -662,7 +720,13 @@ class _BaseSurfaceMasker(_BaseMasker):
                 f"Got: {imgs.__class__.__name__}"
             )
 
-    def _load_mask(self, imgs):
+    @overload
+    def _load_mask(self, imgs: None) -> None: ...
+
+    @overload
+    def _load_mask(self, imgs: SurfaceImage) -> SurfaceImage: ...
+
+    def _load_mask(self, imgs) -> None | SurfaceImage:
         """Load and validate mask if one passed at init.
 
         Returns
@@ -730,15 +794,6 @@ class _BaseSurfaceMasker(_BaseMasker):
         check_surf_img(imgs)
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
-
-        if self.smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                NotImplementedWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = None
 
         if self.standardize in [True, False]:
             # TODO (nilearn >= 0.15.0) remove warning
@@ -819,7 +874,26 @@ class _BaseSurfaceMasker(_BaseMasker):
         %(signals_transform_surface)s
         """
         del y
-        return self.fit(imgs).transform(imgs, confounds, sample_mask)
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore", message=r".*Generation of a mask.*"
+            )
+            return self.fit(imgs).transform(imgs, confounds, sample_mask)
+
+    def _smooth(self, imgs):
+        if self.smoothing_fwhm is not None:
+            logger.log("Smoothing images", verbose=self.verbose)
+
+            imgs = cache(
+                smooth_img,
+                self.memory,
+                func_memory_level=2,
+                memory_level=self.memory_level,
+            )(imgs, self.smoothing_fwhm)
+
+        return imgs
 
     def _check_array(
         self, signals: np.ndarray, sklearn_check: bool = True
@@ -933,3 +1007,18 @@ class _BaseSurfaceMasker(_BaseMasker):
             **self.clean_args_,
         )
         return region_signals
+
+    def _get_summary_html(self, summary):
+        """Convert summary part of the report content for surface maskers to
+        html.
+        """
+        summary_html = {}
+        for part in summary:
+            summary_html[part] = self._dict_to_html(
+                summary[part],
+                precision=2,
+                header=True,
+                index=False,
+                sparsify=False,
+            )
+        return summary_html

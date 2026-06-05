@@ -1,0 +1,82 @@
+var nv = new niivue.Niivue({
+show3Dcrosshair: false,
+backColor: {{ bg_color }},
+});
+nv.attachTo("gl");
+document.body.style.backgroundColor = "";
+const bg_map_base64 = "{{ bg_map }}";
+let layers =
+bg_map_base64 === "null"
+? [
+{
+name: "surf_map.gii",
+opacity: 1,
+cal_min: {{ threshold }},
+cal_max: {{ vmax }},
+base64: "{{ surf_map }}",
+useNegativeCmap: true,
+},
+]
+: [
+{
+name: "bg_map.gii",
+useNegativeCmap: false,
+opacity: 0.7,
+colormap: "gray",
+base64: "{{ bg_map }}",
+},
+{
+name: "surf_map.gii",
+opacity: 1,
+cal_min: {{ threshold }},
+cal_max: {{ vmax }},
+base64: "{{ surf_map }}",
+useNegativeCmap: true,
+},
+];
+function base64ToFile(base64, filename) {
+const binary = atob(base64);
+const bytes = new Uint8Array(binary.length);
+for (let i = 0; i < binary.length; i++) {
+bytes[i] = binary.charCodeAt(i);
+}
+return new File([bytes], filename);
+}
+// Load the surface mesh
+let m = await niivue.NVMesh.loadFromFile({
+gl: nv.gl,
+name: "surf_mesh.gii",
+layers: layers,
+file: base64ToFile("{{ surf_mesh }}", "surf_mesh.gii"),
+});
+await nv.addMesh(m);
+// Hide background map colorbar
+const surfLayers = nv.meshes[0].layers;
+if (surfLayers.length === 2) {
+surfLayers[0].colorbarVisible = false;
+}
+nv.opts.isColorbar = {{ colorbar }};
+// Customize colormap
+let cmap = {{ cmap }};
+await nv.addColormap("CustomPos", cmap.pos);
+await nv.addColormap("CustomNeg", cmap.neg);
+surfLayers[surfLayers.length - 1].colormap = "CustomPos";
+surfLayers[surfLayers.length - 1].colormapNegative = "CustomNeg";
+// Refresh scene to take colorbar changes into account
+nv.meshes[0].updateMesh(nv.gl);
+nv.updateGLVolume();
+// Use Plotly-like views
+const plotlyViews = {
+left: [90, 0],
+right: [270, 0],
+front: [180, 0], // anterior
+back: [0, 0], // posterior
+top: [0, 90], // superior
+bottom: [180, -90], // inferior
+};
+document.getElementById("select-view").onchange = (e) => {
+const view = e.target.value;
+if (view === "custom") return;
+const [az, el] = plotlyViews[view];
+nv.setRenderAzimuthElevation(az, el, true);
+};

@@ -11,7 +11,7 @@ from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
 
 @pytest.fixture
 def expected_parameters(strategy_keywords):
-    """Return expoected parameters for a given strategy."""
+    """Return expected parameters for a given strategy."""
     expectation = {
         "compcor": {"compcor": "anat_combined", "n_compcor": 6},
         "ica_aroma": {"ica_aroma": "basic"},

@@ -112,7 +112,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                python: ['3.13']
+                python: ['3.14']
                 dependencies: [plotting]
                 include:
                 -   python: '3.10'

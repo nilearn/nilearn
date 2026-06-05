@@ -74,18 +74,19 @@ def generate_and_check_report(
     excludes = []
 
     if is_matplotlib_installed():
-        excludes.extend(
-            [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
-        )
+        excludes.extend([MISSING_ENGINE_MSG, "No plotting engine found"])
     else:
         includes.extend(
             [
                 MISSING_ENGINE_MSG,
-                'grey">No plotting engine found</p>',
+                "No plotting engine found",
             ]
         )
-
         warnings_msg_to_check.append(MISSING_ENGINE_MSG)
+
+        if (engine := kwargs.get("engine")) and engine == "brainsprite":
+            excludes.append('<div class="image">')
+            includes.append('<div id="div_viewer">')
 
     if not estimator.__sklearn_is_fitted__():
         warnings_msg_to_check.append("This estimator has not been fit yet.")
@@ -108,7 +109,7 @@ def generate_and_check_report(
             report = estimator.generate_report(title=title, **kwargs)
             warnings_msg = [str(x.message) for x in all_warnings]
             if not extra_warnings_allowed:
-                assert len(warnings_msg) == 0, warnings_msg
+                assert not warnings_msg, warnings_msg
 
         if not duplicate_warnings_allowed:
             # make sure that warnings are not thrown several times

@@ -236,18 +236,18 @@ def get_missing(docstring: str, values=None) -> list[tuple[str, str, str]]:
 
 def function_has_return_value(node: ast.AST) -> bool:
     """Return True if function contains a return statement with a value."""
-    for subnode in ast.walk(node):
-        if isinstance(subnode, ast.Return) and subnode.value is not None:
-            return True
-    return False
+    return any(
+        isinstance(subnode, ast.Return) and subnode.value is not None
+        for subnode in ast.walk(node)
+    )
 
 
 def function_has_yield(node: ast.AST) -> bool:
     """Return True if function contains a yield statement."""
-    for subnode in ast.walk(node):
-        if isinstance(subnode, (ast.Yield, ast.YieldFrom)):
-            return True
-    return False
+    return any(
+        isinstance(subnode, (ast.Yield, ast.YieldFrom))
+        for subnode in ast.walk(node)
+    )
 
 
 def has_none_return_annotation(node: ast.FunctionDef) -> bool:

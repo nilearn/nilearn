@@ -255,6 +255,7 @@ def test_max_alpha_squared_loss(estimator, l1_ratio):
     assert_almost_equal(reg.coef_, 0.0)
 
 
+@pytest.mark.slow
 def test_tikhonov_regularization_vs_graph_net():
     """Test one of the extreme cases of Graph-Net.
 
