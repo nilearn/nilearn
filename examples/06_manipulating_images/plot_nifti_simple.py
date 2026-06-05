@@ -118,7 +118,7 @@ print(fmri_masked.shape)
 # -------------------
 #
 # You can also use 'set_output()' to decide the output format of 'transform'.
-# If you want to output to a DataFrame, you an choose 'pandas' and 'polars'.
+# If you want to output to a DataFrame, you can choose 'pandas' or 'polars'.
 #
 masker.set_output(transform="pandas")
 fmri_masked = masker.transform(func_filename)
