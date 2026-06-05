@@ -113,6 +113,10 @@ class DictLearning(_BaseDecomposition):
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
+    %(dtype)s
+
+        ..versionadded:: 0.14.0dev
+
     %(target_affine)s
 
         .. note::
@@ -180,6 +184,7 @@ class DictLearning(_BaseDecomposition):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -200,6 +205,7 @@ class DictLearning(_BaseDecomposition):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             target_affine=target_affine,
             target_shape=target_shape,
             mask_strategy=mask_strategy,
