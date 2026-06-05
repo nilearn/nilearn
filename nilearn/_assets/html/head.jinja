@@ -11,18 +11,14 @@
         {% if head_css %}
             <!-- djlint:off --><style type="text/css">{% include "css/head.css" %}</style><!-- djlint:on -->
         {% endif %}
-
         {% block script %}
         {% endblock script %}
-
     </head>
     <body>
         <main>
             {{ body }}
-
             {% block main %}
             {% endblock main %}
-
         </main>
         <footer {{ display_footer }}>
             <address>
@@ -37,8 +33,6 @@
             </address>
         </footer>
     </body>
-
     {% block endscript %}
     {% endblock endscript %}
-
 </html>

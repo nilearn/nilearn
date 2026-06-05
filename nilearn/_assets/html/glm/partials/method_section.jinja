@@ -34,9 +34,7 @@
 {% if contrasts %}
     <p>
         The following contrasts were computed
-        {% if model_type == "First Level Model" %}
-            using a fixed-effect approach across runs
-        {% endif %}
+        {% if model_type == "First Level Model" %}using a fixed-effect approach across runs{% endif %}
         :
         <ul>
             {% for c in contrasts %}<li>{{ c }}</li>{% endfor %}

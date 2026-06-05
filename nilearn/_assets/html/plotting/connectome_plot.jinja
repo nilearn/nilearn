@@ -1,5 +1,4 @@
 {% extends "html/head.jinja" %}
-
 {% block script %}
     <script> {% include "js/jquery.min.js" %} </script>
     <script> {% include "js/plotly-gl3d-latest.min.js" %} </script>
@@ -22,7 +21,6 @@
       });
     </script>
 {% endblock script %}
-
 {% block main %}
     <div id="connectome-plot"></div>
     <select id="select-view">
