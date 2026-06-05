@@ -57,7 +57,7 @@ Fixes
 
 - :bdg-success:`API` Fix bug when ``confounds_strategy=None`` in :func:`~glm.first_level.first_level_from_bids` (:gh:`6247` by `Pierre-Louis Barbarant`_).
 
-- :bdg-dark:`Code` Ensure that maskers maskers ``inverse_transform`` can accept pandas or polars dataframe as input (:gh:`6175` by `Rémi Gau`_).
+- :bdg-dark:`Code` Ensure that maskers ``inverse_transform`` can accept pandas or polars dataframe as input (:gh:`6175` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` Allow local installation with ``uv sync`` (:gh:`6024` by `Mathieu Dugré`_)
 
