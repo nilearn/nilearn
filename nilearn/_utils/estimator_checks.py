@@ -1914,6 +1914,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
                 estimator.mask_img = mask_img
 
             with warnings.catch_warnings(record=True) as warning_list:
+                warnings.simplefilter("always")
                 estimator = fit_estimator(estimator)
                 # no data conversion should happen during fitting
                 assert not any(
@@ -1928,6 +1929,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
                 signal = [signal]
 
             with warnings.catch_warnings(record=True) as warning_list:
+                warnings.simplefilter("always")
                 output_img = estimator.inverse_transform(signal)
 
             if isinstance(estimator, _BaseDecomposition) and isinstance(
