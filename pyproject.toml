@@ -16,6 +16,9 @@ dev = [
 doc = [
     "docutils>=0.17",
     "furo>=2024.8.6",
+    "jupyterlite-pyodide-kernel",
+    "jupyterlite-sphinx",
+    "marimo>=0.12.0",
     "memory_profiler>=0.61",  # measuring memory during docs building
     "myst-parser>=3.0.1",
     "numpydoc>=1.8.0",
@@ -23,15 +26,12 @@ doc = [
     "sphinx>=7.4.7",
     "sphinx-copybutton>=0.5.2",
     "sphinx-design>=0.6.1",
+    "sphinxcontrib-mermaid>=1.0.0",
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
     "sphinxext-opengraph>=0.9.1",
-    "sphinxcontrib-mermaid>=1.0.0",
-    "marimo>=0.12.0",
     "templateflow>=25.0.0",
     "pyarrow>=13.0.0"  # mostly to avoid some warnings in pandas
-        "jupyterlite-pyodide-kernel",
-    "jupyterlite-sphinx",
 ]
 min = [
     "joblib==1.2.0",
