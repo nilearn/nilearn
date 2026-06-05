@@ -1168,7 +1168,7 @@ docdict["second_level_mask"] = docdict["second_level_mask_img"].replace(
 # signals for inverse transform
 docdict["signals_inv_transform"] = """
 signals : 1D/2D :obj:`numpy.ndarray` or :class:`pandas.DataFrame` \
-          or polars.DataFrame
+          or :class:`polars.DataFrame`
     Extracted signal.
     If a 1D array is provided,
     then the shape should be (number of elements,).
