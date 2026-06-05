@@ -141,6 +141,7 @@ Some other past or present contributors are:
 * `Konstantin Shmelkov`_
 * `Kshitij Chawla`_: Duke University Health System, USA
 * `Kun CHEN`_: University of Macau, Macau, China
+* `Laura Piñero Roig`_: University of Barcelona, Barcelona, Spain
 * `Lee Newberg`_: Kitware, Inc., USA
 * `Leonard Sasse`_
 * `Loic Estève`_
