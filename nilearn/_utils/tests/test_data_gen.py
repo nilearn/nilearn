@@ -253,8 +253,9 @@ def test_fake_bids_derivatives_with_session_and_runs(
         )
 
     all_files = list(bids_path.glob("derivatives/sub-*/ses-*/*/*"))
-    # per subject: (2 confound + 3 bold + 2 gifti) per run per session
-    n_derivatives_files_expected = n_sub * (7 * sum(n_runs) * n_ses)
+    # per subject:
+    # (2 confound + 3 bold + 2 gifti + 2 masks) per run per session
+    n_derivatives_files_expected = n_sub * (9 * sum(n_runs) * n_ses)
     assert len(all_files) == n_derivatives_files_expected
 
 
@@ -272,9 +273,20 @@ def test_bids_dataset_no_run_entity(tmp_path):
     files = list(bids_path.glob("**/*run-*"))
     assert not files
 
-    # nifti: 1 anat + 1 raw bold + 3 derivatives bold
+    # 1 anat
+    files = list(bids_path.glob("**/*T1w.nii.gz"))
+    assert len(files) == 1
+
+    # 2 bolds: 1 raw + 3 derivatives
+    files = list(bids_path.glob("**/*bold.nii.gz"))
+    assert len(files) == 4
+
+    # 2 mask
+    files = list(bids_path.glob("**/*mask.nii.gz"))
+    assert len(files) == 2
+
     files = list(bids_path.glob("**/*.nii.gz"))
-    assert len(files) == 5
+    assert len(files) == 7
 
     # events or json or confounds: 1
     for suffix in ["events.tsv", "timeseries.tsv", "bold.json"]:
@@ -296,9 +308,9 @@ def test_bids_dataset_no_session(tmp_path):
     files = list(bids_path.glob("**/*ses-*"))
     assert not files
 
-    # nifti: 1 anat + 1 raw bold + 3 derivatives bold
+    # nifti: 1 anat + 1 raw bold + 3 derivatives bold + 2 masks
     files = list(bids_path.glob("**/*.nii.gz"))
-    assert len(files) == 5
+    assert len(files) == 7
 
     # events or json or confounds: 1
     for suffix in ["events.tsv", "timeseries.tsv", "bold.json"]:
@@ -417,10 +429,10 @@ def test_fake_bids_extra_raw_entity(tmp_path):
             )
 
     all_files = list(bids_path.glob("derivatives/sub-*/ses-*/*/*"))
-    # per subject: (2 confound + 3 bold + 2 gifti)
+    # per subject: (2 confound + 3 bold + 2 gifti + 2 masks)
     #              per run per session per entity
     n_derivatives_files_expected = (
-        n_sub * (7 * sum(n_runs) * n_ses) * len(entities["acq"])
+        n_sub * (9 * sum(n_runs) * n_ses) * len(entities["acq"])
     )
     assert len(all_files) == n_derivatives_files_expected
 
@@ -460,10 +472,10 @@ def test_fake_bids_extra_derivative_entity(tmp_path):
     all_files = list(bids_path.glob("derivatives/sub-*/ses-*/*/*"))
     # per subject:
     # 1 confound per run per session
-    # + (3 bold + 2 gifti) per run per session per entity
+    # + (3 bold + 2 masks + 2 gifti) per run per session per entity
     n_derivatives_files_expected = n_sub * (
         2 * sum(n_runs) * n_ses
-        + 5 * sum(n_runs) * n_ses * len(entities["res"])
+        + 7 * sum(n_runs) * n_ses * len(entities["res"])
     )
     assert len(all_files) == n_derivatives_files_expected
 

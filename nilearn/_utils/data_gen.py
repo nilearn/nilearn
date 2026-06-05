@@ -1525,13 +1525,15 @@ def _write_bids_derivative_func(
             if space == "MNI" and desc == "fmriprep":
                 continue
 
+            fields["suffix"] = "bold"
             fields["entities"]["space"] = space
             fields["entities"]["desc"] = desc
-
             bold_path = func_path / create_bids_filename(
                 fields=fields, entities_to_include=entities_to_include
             )
+
             fields["suffix"] = "mask"
+            fields["entities"]["desc"] = "brain"
             mask_file_path = func_path / create_bids_filename(
                 fields=fields, entities_to_include=entities_to_include
             )
@@ -1542,6 +1544,7 @@ def _write_bids_derivative_func(
                 mask_file_path=mask_file_path,
             )
 
+    fields["suffix"] = "bold"
     fields["entities"]["space"] = "fsaverage5"
     fields["extension"] = "func.gii"
     fields["entities"].pop("desc")
