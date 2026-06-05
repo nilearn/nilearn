@@ -408,11 +408,18 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                     default=LedoitWolf(store_precision=False)
         The covariance estimator.
         This implies that correlations are slightly shrunk
-        towards zero compared to a maximum-likelihood estimate
+        towards zero compared to a maximum-likelihood estimate.
+        When passing a customized estimator, the covariance estimator must
+        have a ``fit`` method that takes as input a 2D array of shape
+        (n_samples, n_features) and has an attribute ``covariance_`` of shape
+        (n_features, n_features) after fitting. Please see
+        ``sklearn.covariance`` for examples.
 
     kind : {"covariance", "correlation", "partial correlation",\
             "tangent", "precision"}, default='covariance'
         The matrix kind.
+        This parameter performs calculation on the covariance matrix.
+        The default option returns the value from `cov_estimator`.
         For the use of "tangent" see :footcite:t:`Varoquaux2010b`.
 
     vectorize : :obj:`bool`, default=False
@@ -538,6 +545,13 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         """Avoid duplication of computation."""
         if self.cov_estimator is None:
             self.cov_estimator = LedoitWolf(store_precision=False)
+        elif not (hasattr(self.cov_estimator, "fit")):
+            raise ValueError(
+                f"`cov_estimator` must be an estimator with `.fit()` and "
+                f"`.covariance_` (e.g., from `sklearn.covariance` or a "
+                f"custom estimator constructed similarly). Got: "
+                f"`{type(self.cov_estimator).__name__}`."
+            )
 
         if not hasattr(X, "__iter__"):
             raise TypeError(
