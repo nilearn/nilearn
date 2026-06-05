@@ -889,13 +889,6 @@ def check_set_output(estimator_orig) -> None:
         signal = estimator.transform(img)
 
 
-def check_transformer_set_output(estimator):
-    """Check that set_ouput throws a not implemented error."""
-    if hasattr(estimator, "transform"):
-        with pytest.raises(NotImplementedError):
-            estimator.set_output(transform="default")
-
-
 def check_doc_attributes(estimator) -> None:
     """Check that parameters and attributes are documented.
 
