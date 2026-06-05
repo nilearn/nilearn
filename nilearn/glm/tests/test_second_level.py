@@ -31,7 +31,6 @@ from nilearn.glm.second_level.second_level import (
     _check_confounds,
     _check_first_level_contrast,
     _check_input_as_first_level_model,
-    _check_n_rows_desmat_vs_n_effect_maps,
     _check_second_level_input,
     _infer_effect_maps,
     _process_second_level_input_as_dataframe,
@@ -350,26 +349,26 @@ def test_check_second_level_input_confounds(shape_4d_default):
         )
 
 
-def test_check_second_level_input_design_matrix(shape_4d_default):
+def test_check_second_level_input_design_matrix(shape_3d_default):
     """Raise errors when no design matrix is passed to SecondLevelModel.
 
     When passing niimg like objects.
     """
     _, fmri_data, _ = generate_fake_fmri_data_and_design(
-        shapes=[shape_4d_default]
+        shapes=[(*shape_3d_default, 1)]
     )
 
     _check_second_level_input(fmri_data[0], pd.DataFrame())
 
     with pytest.raises(
         ValueError,
-        match="List of niimgs as second_level_input "
+        match="List of niimgs as 'second_level_input' "
         "require a design matrix to be provided",
     ):
         _check_second_level_input(fmri_data * 2, None)
     with pytest.raises(
         ValueError,
-        match="List of niimgs as second_level_input "
+        match="List of niimgs as 'second_level_input' "
         "require a design matrix to be provided",
     ):
         _check_second_level_input(fmri_data[0], None)
@@ -404,22 +403,8 @@ def test_check_first_level_contrast():
     """Test _check_first_level_contrast."""
     _check_first_level_contrast(["foo"], None)  # Should not do anything
     _check_first_level_contrast([FirstLevelModel()], "foo")
-    with pytest.raises(ValueError, match="If second_level_input was a list"):
+    with pytest.raises(ValueError, match="If 'second_level_input' was a list"):
         _check_first_level_contrast([FirstLevelModel()], None)
-
-
-def test_check_n_rows_desmat_vs_n_effect_maps():
-    """Check _check_n_rows_desmat_vs_n_effect_maps raises expected error."""
-    _check_n_rows_desmat_vs_n_effect_maps(
-        [1, 2, 3], np.array([[1, 2], [3, 4], [5, 6]])
-    )
-    with pytest.raises(
-        ValueError,
-        match="design_matrix does not match the number of maps considered",
-    ):
-        _check_n_rows_desmat_vs_n_effect_maps(
-            [1, 2], np.array([[1, 2], [3, 4], [5, 6]])
-        )
 
 
 @pytest.mark.slow
@@ -735,6 +720,78 @@ def test_fit_inputs_errors_more(confounds):
         match=r"Elements of second_level_input must be of the same type.",
     ):
         SecondLevelModel().fit([*niimgs, []], confounds)
+def test_error_runs_different_fov(rng):
+    """Check runs have same FOV: raise an error if not."""
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+    design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(
+        shapes=[(10, 11, 12, 1), (20, 21, 22, 1), (30, 31, 32, 1)]
+    )
+
+    with pytest.raises(
+        ValueError, match="Following field of view errors were detected"
+    ):
+        SecondLevelModel().fit(fmri_data, design_matrix=design_matrix)
+
+
+def test_error_5d_image(rng):
+    """Disallow 5D images.
+
+    When passing images to fit,
+    a list of 4D images must not have more than 1 volume
+    for any image.
+    """
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+    design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(
+        shapes=[(10, 11, 12, 1), (10, 11, 12, 5)]
+    )
+
+    with pytest.raises(
+        ValueError, match="each image must be 3D, or 4D with single volume"
+    ):
+        SecondLevelModel().fit(fmri_data, design_matrix=design_matrix)
+
+
+def test_error_list_2d_surface_image(rng):
+    """Disallow list of 2d surface image.
+
+    When passing images to fit,
+    a list of 2D images must not have more than 1 volume
+    for any image.
+    """
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+    design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(
+        shapes=[(10, 11, 12, 1), (10, 11, 12, 5)]
+    )
+
+    with pytest.raises(
+        ValueError, match="each image must be 3D, or 4D with single volume"
+    ):
+        SecondLevelModel().fit(fmri_data, design_matrix=design_matrix)
+
+
+def test_error_mistmatch_n_image_row_design_matrix(rng):
+    """Check n_row in design matrix matches n_images."""
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+    design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(
+        shapes=[(10, 11, 12, 5)]
+    )
+
+    with pytest.raises(
+        ValueError, match="'design_matrix' does not match the number of"
+    ):
+        SecondLevelModel().fit(fmri_data[0], design_matrix=design_matrix)
 
 
 @pytest.mark.slow
@@ -786,6 +843,22 @@ def test_design_matrix_error_type(img_3d_mni, design_matrix):
         SecondLevelModel().fit(
             second_level_input=second_level_input, design_matrix=design_matrix
         )
+
+
+def test_fmri_img_inputs_errors(confounds):
+    # prepare correct input
+    _, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
+    fmri_data = fmri_data[0]
+
+    # test niimgs requirements
+    niimgs = [fmri_data, fmri_data, fmri_data]
+    with pytest.raises(ValueError, match="require a design matrix"):
+        SecondLevelModel().fit(niimgs)
+    with pytest.raises(
+        TypeError,
+        match=r"Elements of 'second_level_input' must be of the same type.",
+    ):
+        SecondLevelModel().fit([*niimgs, []], confounds)
 
 
 @pytest.mark.slow
@@ -1106,6 +1179,15 @@ def test_second_level_input_error_surface_image_2d(surf_img_2d):
     model = SecondLevelModel()
 
     with pytest.raises(TypeError, match="must be a 3D SurfaceImage"):
+        model.fit(second_level_input, design_matrix=design_matrix)
+
+    second_level_input = [surf_img_2d(2), surf_img_2d(4)]
+
+    design_matrix = pd.DataFrame([1] * 6, columns=["intercept"])
+
+    model = SecondLevelModel()
+
+    with pytest.raises(TypeError, match="all images to be 3D SurfaceImage"):
         model.fit(second_level_input, design_matrix=design_matrix)
 
 

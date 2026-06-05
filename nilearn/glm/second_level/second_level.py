@@ -43,6 +43,12 @@ from nilearn.image import (
     iter_img,
     mean_img,
     new_img_like,
+from nilearn.image.image import (
+    check_niimg,
+    check_same_fov,
+    concat_imgs,
+    iter_img,
+    mean_img,
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
@@ -68,7 +74,9 @@ def _input_type_error_message(second_level_input):
 
 def _check_second_level_input(
     second_level_input, design_matrix, confounds=None
-) -> None:
+) -> Literal[
+    "df_object", "pd_series", "nii_object", "surf_img_object", "flm_object"
+]:
     """Check second_level_input type."""
     _check_design_matrix(design_matrix)
 
@@ -80,8 +88,14 @@ def _check_second_level_input(
         design_matrix is None,
     )
 
+    return input_type
 
-def _check_input_type(second_level_input):
+
+def _check_input_type(
+    second_level_input,
+) -> Literal[
+    "df_object", "pd_series", "nii_object", "surf_img_object", "flm_object"
+]:
     """Determine the type of input provided."""
     if isinstance(second_level_input, pd.DataFrame):
         return "df_object"
@@ -103,7 +117,9 @@ def _return_type(second_level_input):
         return type(second_level_input)
 
 
-def _check_input_type_when_list(second_level_input):
+def _check_input_type_when_list(
+    second_level_input,
+) -> Literal["flm_object", "nii_object", "surf_img_object"]:
     """Determine the type of input provided when it is a list."""
     if len(second_level_input) < 2:
         raise TypeError(
@@ -127,13 +143,16 @@ def _check_all_elements_of_same_type(data) -> None:
     for idx, input in enumerate(data):
         if not isinstance(input, type(data[0])):
             raise TypeError(
-                f"Elements of second_level_input must be of the same type."
+                f"Elements of 'second_level_input' must be of the same type."
                 f" Got object type {type(input)} at idx {idx}."
             )
 
 
 def _check_input_as_type(
-    second_level_input, input_type, none_confounds, none_design_matrix
+    second_level_input,
+    input_type,
+    none_confounds: bool,
+    none_design_matrix: bool,
 ) -> None:
     if input_type == "flm_object":
         _check_input_as_first_level_model(second_level_input, none_confounds)
@@ -152,7 +171,7 @@ INF = 1000 * np.finfo(np.float32).eps
 
 
 def _check_input_as_first_level_model(
-    second_level_input, none_confounds
+    second_level_input, none_confounds: bool
 ) -> None:
     """Check that all all first level models are valid.
 
@@ -230,37 +249,53 @@ def _check_input_as_dataframe(second_level_input) -> None:
 
 
 def _check_input_as_nifti_images(
-    second_level_input, none_design_matrix
+    second_level_input, none_design_matrix: bool
 ) -> None:
     if isinstance(second_level_input, NiimgLike):
         second_level_input = [second_level_input]
-    for niimg in second_level_input:
-        check_niimg(niimg=niimg, atleast_4d=True)
+    for i, niimg in enumerate(second_level_input):
+        niimg = check_niimg(niimg=niimg, atleast_4d=True)
+        if len(second_level_input) > 1 and niimg.shape[3] != 1:
+            raise ValueError(
+                "When passing a list of Nifti image, "
+                "each image must be 3D, or 4D with single volume. "
+                f"Got 'second_level_input[{i}].shape={niimg.shape}'."
+            )
+    if len(second_level_input) > 1:
+        check_same_fov(*second_level_input, raise_error=True)
     if none_design_matrix:
         raise ValueError(
-            "List of niimgs as second_level_input"
+            "List of niimgs as 'second_level_input'"
             " require a design matrix to be provided."
         )
 
 
 def _check_input_as_surface_images(
-    second_level_input, none_design_matrix
+    second_level_input: SurfaceImage | list[SurfaceImage],
+    none_design_matrix: bool,
 ) -> None:
     if isinstance(second_level_input, SurfaceImage) and (
         len(second_level_input.shape) == 1 or second_level_input.shape[1] == 1
     ):
         raise TypeError(
             "If a single SurfaceImage object is passed "
-            "as second_level_input,"
+            "as 'second_level_input',"
             "it must be a 3D SurfaceImage."
         )
 
     if isinstance(second_level_input, list):
+        for img in second_level_input:
+            if len(img.shape) > 1 and img.shape[1] != 1:
+                raise TypeError(
+                    "List of SurfaceImage objects as 'second_level_input'"
+                    " require all images to be 3D SurfaceImage."
+                )
+
         for img in second_level_input[1:]:
             check_polymesh_equal(second_level_input[0].mesh, img.mesh)
         if none_design_matrix:
             raise ValueError(
-                "List of SurfaceImage objects as second_level_input"
+                "List of SurfaceImage objects as 'second_level_input'"
                 " require a design matrix to be provided."
             )
 
@@ -296,7 +331,7 @@ def _check_first_level_contrast(
         and first_level_contrast is None
     ):
         raise ValueError(
-            "If second_level_input was a list of FirstLevelModel,"
+            "If 'second_level_input' was a list of FirstLevelModel,"
             " then first_level_contrast is mandatory. "
             "It corresponds to the second_level_contrast argument "
             "of the compute_contrast method of FirstLevelModel."
@@ -319,7 +354,7 @@ def _check_n_rows_desmat_vs_n_effect_maps(effect_maps, design_matrix) -> None:
     """Check design matrix and effect maps agree on number of rows."""
     if len(effect_maps) != design_matrix.shape[0]:
         raise ValueError(
-            "design_matrix does not match the number of maps considered. "
+            "'design_matrix' does not match the number of maps considered. "
             f"{design_matrix.shape[0]} rows in design matrix do not match "
             f"with {len(effect_maps)} maps."
         )
@@ -650,6 +685,16 @@ class SecondLevelModel(BaseGLM):
             )[0]
         self.design_matrix_ = design_matrix
 
+        if isinstance(self.second_level_input_, list):
+            # for some input we can make an early check
+            # between number of inputs
+            # and number of rows in the design matrix
+            # for other type of inputs this check
+            # will be done when computing contrasts
+            _check_n_rows_desmat_vs_n_effect_maps(
+                self.second_level_input_, self.design_matrix_
+            )
+
         masker_type = "nii"
         if not self._is_volume_glm() or isinstance(sample_map, SurfaceImage):
             masker_type = "surface"
@@ -658,13 +703,14 @@ class SecondLevelModel(BaseGLM):
         self.masker_ = check_embedded_masker(self, masker_type)
         self.masker_.memory_level = self.memory_level
 
-        # ignore warning in case the masker
-        # was initialized with a mask image
-        warnings.filterwarnings(
-            "ignore",
-            message=r".*Generation of a mask.*",
-        )
-        self.masker_.fit(sample_map)
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            self.masker_.fit(sample_map)
 
         self.n_elements_ = self.masker_.n_elements_
 
@@ -1100,13 +1146,6 @@ def non_parametric_inference(
     t0 = time.time()
     logger.log("Fitting second level model...", verbose=verbose)
 
-    # ignore warning in case the masker
-    # was initialized with a mask image
-    warnings.filterwarnings(
-        "ignore",
-        message=r".*Generation of a mask.*",
-    )
-
     # Learn the mask. Assume the first level imgs have been masked.
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = clone(mask)
@@ -1142,7 +1181,14 @@ def non_parametric_inference(
             standardize=None,
         )
 
-    masker.fit(sample_map)
+    with warnings.catch_warnings():
+        # ignore warning in case the masker
+        # was initialized with a mask image
+        warnings.filterwarnings(
+            "ignore",
+            message=r".*Generation of a mask.*",
+        )
+        masker.fit(sample_map)
 
     # Report progress
     logger.log(

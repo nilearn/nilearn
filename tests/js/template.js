@@ -30,7 +30,6 @@ module.exports.fullTest = (file, clip, tolerance = 1000, timeout = 5000) => {
       async () => {
         // take a screenshot of the page
         const fileCurrent = buildFilePNG(file, '', '')
-        await page.setViewport({ width: clip.width, height: clip.height })
         await page.screenshot({ clip, path: fileCurrent })
 
         // archive a copy of the screenshot as future reference, if specified

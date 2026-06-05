@@ -1168,6 +1168,14 @@ def check_warning_embedded_masker(estimator_orig):
     for w in warning_list:
         assert "Given mask will be used" not in str(w)
 
+    # ensure that further fitting of masker
+    # still throw the warning
+    # regression test for
+    # https://github.com/nilearn/nilearn/pull/6242#issuecomment-4594097602
+    masker = NiftiMasker(_img_mask_mni())
+    with pytest.warns(RuntimeWarning, match="Given mask will be used"):
+        fit_estimator(masker)
+
 
 def _sanitize_standard_output(output):
     """Clean standard output to facilitate comparison to another output."""
@@ -3864,7 +3872,7 @@ def check_glm_empty_data_messages(
         # SecondLevel
         else:
             estimator.fit(
-                [Nifti1Image(data_nifti, np.eye(4)) for _ in range(3)],
+                [Nifti1Image(data_nifti, np.eye(4)) for _ in range(5)],
                 design_matrix=design_matrices,
             )
 

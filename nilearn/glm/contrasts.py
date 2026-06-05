@@ -31,6 +31,19 @@ def expression_to_contrast_vector(expression, design_columns):
     design_columns : :obj:`list` or array of :obj:`str`
         The column names of the design matrix.
 
+    Returns
+    -------
+    contrast_vector : numpy.ndarray
+        1D array with one entry per design column.
+
+    Examples
+    --------
+    >>> from nilearn.glm.contrasts import expression_to_contrast_vector
+    >>> expression_to_contrast_vector("task", ["task", "rest"])
+    array([1., 0.])
+    >>> expression_to_contrast_vector("task - rest", ["task", "rest"])
+    array([ 1., -1.])
+
     """
     if expression in design_columns:
         contrast_vector = np.zeros(len(design_columns))
@@ -487,15 +500,17 @@ def compute_fixed_effects(
             f"from the number of variance images ({len(variance_imgs)})."
         )
 
-    # ignore warning in case the masker
-    # was initialized with a mask image
-    warnings.filterwarnings(
-        "ignore",
-        message=r".*Generation of a mask.*",
-    )
-    # TODO (nilearn >=0.15) remove ALL standardize=None below
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):
-        masker = mask.fit()
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            masker = mask.fit()
+
+    # TODO (nilearn >=0.15) remove ALL standardize=None below
     elif mask is None:
         if isinstance(contrast_imgs[0], SurfaceImage):
             masker = SurfaceMasker(standardize=None).fit(contrast_imgs[0])
