@@ -839,7 +839,7 @@ def check_set_output(estimator_orig) -> None:
 
     Check that:
     - by default we transform to numpy array
-    - can transform to polar or pandas dataframe
+    - can transform to polars or pandas dataframe
     - can inverse_transform from numpy array, or pandas / polars dataframes
       and give the same results
     - check that estimators that work with surface can deal with 1D image
