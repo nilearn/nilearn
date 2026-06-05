@@ -1840,8 +1840,7 @@ docdict["lut"] = """lut : :obj:`pandas.DataFrame`
 
 
 signals_transform = """signals : :obj:`numpy.ndarray`, \
-            :obj:`pandas.DataFrame` or \
-            `polars.DataFrame`
+            :obj:`pandas.DataFrame` or polars.DataFrame
 
         Signal for each element.
 

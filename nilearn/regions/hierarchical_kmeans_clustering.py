@@ -365,8 +365,7 @@ class HierarchicalKMeans(
         Returns
         -------
         X_red : : :obj:`numpy.ndarray`, \
-            :obj:`pandas.DataFrame` or \
-            `polars.DataFrame`
+            :obj:`pandas.DataFrame` or polars.DataFrame
             Data reduced with agglomerated signal for each cluster.
 
         The type of the output is determined by ``set_output()``:
