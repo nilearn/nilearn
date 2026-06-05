@@ -300,6 +300,17 @@ def parse_bids_filename(img_path):
         `typical bids filename <https://bids.neuroimaging.io/getting_started/folders_and_files/files.html#filename-template>`_
         for more information.
 
+    Examples
+    --------
+    >>> from nilearn.interfaces.bids import parse_bids_filename
+    >>> ref = parse_bids_filename("sub-01_task-rest_bold.nii.gz")
+    >>> ref["suffix"]
+    'bold'
+    >>> ref["extension"]
+    'nii.gz'
+    >>> ref["entities"] == {"sub": "01", "task": "rest"}
+    True
+
     """
     reference = {
         "file_path": img_path,

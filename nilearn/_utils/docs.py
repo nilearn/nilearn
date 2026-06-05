@@ -1110,35 +1110,36 @@ design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
 # second_level_input
 docdict["second_level_input"] = """
 second_level_input : :obj:`list` of \
-    :class:`~nilearn.glm.first_level.FirstLevelModel` objects or \
-    :class:`pandas.DataFrame` or \
-    :obj:`list` of 3D Niimg-like objects or \
-    4D Niimg-like objects or \
-    :obj:`list` of :class:`~nilearn.surface.SurfaceImage` objects or \
+    :class:`~nilearn.glm.first_level.FirstLevelModel` objects, or \
+    :class:`pandas.DataFrame`, or \
+    :obj:`list` of 3D Niimg-like objects, or \
+    a 4D Niimg-like object, or \
+    :obj:`list` of 1D :class:`~nilearn.surface.SurfaceImage` objects, or \
+    a 2D :class:`~nilearn.surface.SurfaceImage` object, or \
     :obj:`pandas.Series` of Niimg-like objects.
 
     - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
       will allow to easily compute the second level contrast of arbitrary first
-      level contrasts thanks to the `first_level_contrast` argument of
+      level contrasts thanks to the ``first_level_contrast`` argument of
       :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
       Effect size images will be computed for each model
       to contrast at the second level.
 
     - If a :class:`~pandas.DataFrame`, then it has to contain
-      `subject_label`, `map_name` and `effects_map_path`.
+      ``subject_label``, ``map_name`` and ``effects_map_path``.
       It can contain multiple maps that would be selected
-      during contrast estimation with the argument `first_level_contrast`
+      during contrast estimation with the argument ``first_level_contrast``
       of :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
       The :class:`~pandas.DataFrame` will be sorted
-      based on the `subject_label` column to avoid order inconsistencies
+      based on the ``subject_label`` column to avoid order inconsistencies
       when extracting the maps.
       So the rows of the automatically computed design matrix,
-      if not provided, will correspond to the sorted `subject_label` column.
+      if not provided, will correspond to the sorted ``subject_label`` column.
 
     - If a :obj:`list` of Niimg-like objects
       or :class:`~nilearn.surface.SurfaceImage` objects
       then this is taken literally as Y for the model fit
-      and `design_matrix` must be provided.
+      and ``design_matrix`` must be provided.
 
 """
 

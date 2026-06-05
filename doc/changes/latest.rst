@@ -61,6 +61,8 @@ Fixes
 
 - :bdg-primary:`Doc` Rewrite :class:`~nilearn.decoding.Decoder` :ref:`example <sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py>` with incorrect nested cross-validation implementation (:gh:`6059` by `Michelle Wang`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for :func:`~nilearn.connectome.cov_to_corr`, :func:`~nilearn.connectome.prec_to_partial`, :func:`~nilearn.glm.expression_to_contrast_vector` and :func:`~nilearn.interfaces.bids.parse_bids_filename` (:gh:`5824` by `Laura Piñero Roig`_).
+
 - :bdg-info:`Plotting` Fix ``nilearn.plotting.view_img`` resampling of non-isotropic images when no background image is used (:gh:`6031` by `Michelle Wang`_).
 
 - :bdg-info:`Plotting` Fix bug introduced in ``0.13.0`` while plotting single valued data with :func:`~nilearn.plotting.plot_roi`.  (:gh:`6122` by `Hande Gözükan`_).
@@ -84,7 +86,6 @@ Fixes
 - :bdg-dark:`Code` Fix missing subjects in ADHD dataset phenotypic data. (:gh:`6250` by `Hande Gözükan`_).
 
 - :bdg-info:`Plotting` Fix colors while plotting ROI contours with ``nilearn.plotting.plot_roi`` (:gh:`6245` by `Hande Gözükan`_).
-
 
 Enhancements
 ------------
@@ -151,3 +152,11 @@ Changes
 - :bdg-secondary:`Maint` The optional dependency ``plotly`` has been removed in favor of ``plotting``, so instead of ``pip install 'nilearn[plotly]'`` do ``pip install 'nilearn[plotting]`` (:gh:`6108` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` update fsaverage3 and fsaverage3 datasets on the open-science framework (OSF) with correctly ordered vertices (see :gh:`6127`), add Talairach and AAL atlas to OSF as fall back url in case the primary one fails (:gh:`6246` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Ensure input images of :class:`~.glm.first_level.FirstLevelModel` and :class:`~.glm.second_level.SecondLevelModel` have same field of view (for nifti) or compatible meshes (for surfaces) (:gh:`6254` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Ensure implicit mask of :class:`~.glm.first_level.FirstLevelModel` is computed on data from all runs (:gh:`6254` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Ensure input of :class:`~.glm.second_level.SecondLevelModel` cannot be a 5D volume image or list of 2D surface images (:gh:`6254` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` For some input of :class:`~.glm.second_level.SecondLevelModel` check at fit time that number of images match number of row in design matrix (:gh:`6254` by `Rémi Gau`_).
