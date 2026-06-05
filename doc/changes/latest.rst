@@ -63,6 +63,8 @@ Fixes
 
 - :bdg-primary:`Doc` Rewrite :class:`~nilearn.decoding.Decoder` :ref:`example <sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py>` with incorrect nested cross-validation implementation (:gh:`6059` by `Michelle Wang`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for :func:`~nilearn.connectome.cov_to_corr`, :func:`~nilearn.connectome.prec_to_partial`, :func:`~nilearn.glm.expression_to_contrast_vector` and :func:`~nilearn.interfaces.bids.parse_bids_filename` (:gh:`5824` by `Laura Piñero Roig`_).
+
 - :bdg-info:`Plotting` Fix ``nilearn.plotting.view_img`` resampling of non-isotropic images when no background image is used (:gh:`6031` by `Michelle Wang`_).
 
 - :bdg-info:`Plotting` Fix bug introduced in ``0.13.0`` while plotting single valued data with :func:`~nilearn.plotting.plot_roi`.  (:gh:`6122` by `Hande Gözükan`_).
@@ -125,6 +127,8 @@ Enhancements
 - :bdg-info:`Plotting` Add ``node_labels`` parameter to :func:`~plotting.view_connectome` (:gh:`6153` by `Rishika Kapil`_).
 
 - :bdg-primary:`Doc` Unify estimator documentation to explicitly accept scikit-learn compatible objects and add cross-links to the developer guide (:gh:`6181` by `Xichun Xu`_).
+
+- :bdg-primary:`Doc` Add API documentation for :class:`~nilearn.connectome.ConnectivityMeasure` to elaborate the requirement for customized ``cov_estimator`` and extra test to ensure the user input is a valid sklearn estimator (:gh:`6074` by `Hao-Ting Wang`_).
 
 Changes
 -------
