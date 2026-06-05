@@ -529,7 +529,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             self.cov_estimator = LedoitWolf(store_precision=False)
         elif not (
             hasattr(self.cov_estimator, "fit")
-            and hasattr(self.cov_estimator, "covariance_")
         ):
             raise ValueError(
                 f"`cov_estimator` must be an estimator with `.fit()` and "
