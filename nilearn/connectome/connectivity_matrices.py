@@ -349,6 +349,15 @@ def cov_to_corr(covariance: np.ndarray) -> np.ndarray:
     correlation : 2D numpy.ndarray
         The output correlation matrix.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.connectome import cov_to_corr
+    >>> cov = np.array([[4.0, 2.0], [2.0, 9.0]])
+    >>> cov_to_corr(cov)
+    array([[1.        , 0.33333333],
+           [0.33333333, 1.        ]])
+
     """
     diagonal = np.atleast_2d(1.0 / np.sqrt(np.diag(covariance)))
     correlation = covariance * diagonal * diagonal.T
@@ -370,6 +379,15 @@ def prec_to_partial(precision: np.ndarray) -> np.ndarray:
     -------
     partial_correlation : 2D numpy.ndarray
         The 2D output partial correlation matrix.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.connectome import prec_to_partial
+    >>> precision = np.array([[2.0, -1.0], [-1.0, 2.0]])
+    >>> prec_to_partial(precision)
+    array([[1. , 0.5],
+           [0.5, 1. ]])
 
     """
     partial_correlation = -cov_to_corr(precision)
