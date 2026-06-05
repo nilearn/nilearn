@@ -557,6 +557,10 @@ if with_jupyterlite:
         "notebook_modification_function": notebook_modification_function
     }
 
+    global_enable_try_examples = True
+    try_examples_global_button_text = "Try it in your browser!"
+    try_examples_global_warning_text = "TODO Add warning message here"
+
 mermaid_version = "11.4.0"
 
 
