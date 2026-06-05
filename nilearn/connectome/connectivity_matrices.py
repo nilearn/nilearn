@@ -527,9 +527,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         """Avoid duplication of computation."""
         if self.cov_estimator is None:
             self.cov_estimator = LedoitWolf(store_precision=False)
-        elif not (
-            hasattr(self.cov_estimator, "fit")
-        ):
+        elif not (hasattr(self.cov_estimator, "fit")):
             raise ValueError(
                 f"`cov_estimator` must be an estimator with `.fit()` and "
                 f"`.covariance_` (e.g., from `sklearn.covariance` or a "
