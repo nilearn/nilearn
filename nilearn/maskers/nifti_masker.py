@@ -131,7 +131,6 @@ def filter_and_mask(
     confounds=None,
     sample_mask=None,
     copy=True,
-    dtype=None,
     sklearn_output_config=None,
 ):
     """Extract representative time series using given mask.
@@ -199,9 +198,6 @@ def filter_and_mask(
     # we return 1D array
     if temp_imgs.ndim == 3 and sklearn_output_config is None:
         data = data.squeeze()
-
-    # TODO implement
-    del dtype
 
     return data
 
