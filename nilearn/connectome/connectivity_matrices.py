@@ -506,14 +506,39 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                 f"You provided: {features_dims}"
             )
 
-        for s in X:
-            check_array(s, accept_sparse=False)
+        if self.__sklearn_is_fitted__():
+            # TODO (sklearn >= 1.6.0) simplify
+            if SKLEARN_LT_1_6:
+                for x in X:
+                    check_array(
+                        x,
+                        estimator=self,
+                        ensure_min_features=self.n_features_in_,
+                        accept_sparse=False,
+                    )
+            else:
+                from sklearn.utils.validation import validate_data
 
-        if confounds is not None and not hasattr(confounds, "__iter__"):
-            raise TypeError(
-                "'confounds' input argument must be an iterable. "
-                f"You provided {confounds.__class__}"
-            )
+                for x in X:
+                    validate_data(self, x, reset=False, accept_sparse=False)
+        else:
+            for s in X:
+                check_array(s, accept_sparse=False)
+
+        if confounds is not None:
+            if not hasattr(confounds, "__iter__"):
+                raise TypeError(
+                    "'confounds' input argument must be an iterable. "
+                    f"You provided {confounds.__class__}"
+                )
+            if not self.vectorize:
+                error_message = (
+                    "'confounds' are provided but vectorize=False. "
+                    "Confounds are only cleaned on vectorized matrices "
+                    "as second level connectome regression "
+                    "but not on symmetric matrices."
+                )
+                raise ValueError(error_message)
 
     @fill_doc
     def fit(self, X, y=None):
@@ -543,31 +568,52 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         self, X, do_transform=False, do_fit=False, confounds=None
     ):
         """Avoid duplication of computation."""
-        if self.cov_estimator is None:
-            self.cov_estimator = LedoitWolf(store_precision=False)
-        elif not (hasattr(self.cov_estimator, "fit")):
-            raise ValueError(
-                f"`cov_estimator` must be an estimator with `.fit()` and "
-                f"`.covariance_` (e.g., from `sklearn.covariance` or a "
-                f"custom estimator constructed similarly). Got: "
-                f"`{type(self.cov_estimator).__name__}`."
-            )
-
         if not hasattr(X, "__iter__"):
             raise TypeError(
                 "Input must be an iterable of numpy arrays. "
                 f"Got {X.__class__.__name__}"
             )
-
         # casting to a list
         # to make it easier to check with sklearn estimator compliance
         if isinstance(X, np.ndarray) and X.ndim == 2:
             X = [X]
+
         self._check_input(X, confounds=confounds)
 
         if do_fit:
+            if self.cov_estimator is None:
+                self.cov_estimator_ = LedoitWolf(store_precision=False)
+            else:
+                if not (hasattr(self.cov_estimator, "fit")):
+                    raise ValueError(
+                        f"'cov_estimator' must be an estimator "
+                        "with '.fit()' and '.covariance_' "
+                        "(e.g., from `sklearn.covariance` or a "
+                        f"custom estimator constructed similarly). Got: "
+                        f"`{type(self.cov_estimator).__name__}`."
+                    )
+                self.cov_estimator_ = clone(self.cov_estimator)
+
+            allowed_kinds = (
+                "correlation",
+                "partial correlation",
+                "tangent",
+                "covariance",
+                "precision",
+            )
+            check_parameter_in_allowed(self.kind, allowed_kinds, "kind")
+
             self.n_features_in_ = next(iter(s.shape[1] for s in X))
-            self.cov_estimator_ = clone(self.cov_estimator)
+
+        if do_transform and self.kind == "tangent" and len(X) <= 1:
+            # Check that people are applying transform to a group of subjects
+            # We can only impose this in transform,
+            # as it is legit to fit only on a single given reference point
+            raise ValueError(
+                "Tangent space parametrization can only "
+                "be applied to a group of subjects, as it returns "
+                f"deviations to the mean. You provided {X!r}"
+            )
 
         # Compute all the matrices, stored in "connectivities"
         if self.kind == "correlation":
@@ -585,15 +631,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             connectivities = [cov_to_corr(cov) for cov in covariances_std]
         else:
             covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
-
-            allowed_kinds = (
-                "correlation",
-                "partial correlation",
-                "tangent",
-                "covariance",
-                "precision",
-            )
-            check_parameter_in_allowed(self.kind, allowed_kinds, "kind")
 
             if self.kind in ("covariance", "tangent"):
                 connectivities = covariances
@@ -620,24 +657,10 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                 self.mean_ *= 0.5
                 self.whitening_ = None
 
-                log("Finished fit", verbose=self.verbose)
+            log("Finished fit", verbose=self.verbose)
 
         # Compute the vector we return on transform
         if do_transform:
-            # TODO (sklearn >= 1.6.0) simplify
-            if SKLEARN_LT_1_6:
-                for x in X:
-                    check_array(
-                        x,
-                        estimator=self,
-                        ensure_min_features=self.n_features_in_,
-                    )
-            else:
-                from sklearn.utils.validation import validate_data
-
-                for x in X:
-                    validate_data(self, x, reset=False)
-
             if self.kind == "tangent":
                 connectivities = [
                     _map_eigenvalues(
@@ -647,15 +670,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                 ]
 
             connectivities = np.array(connectivities)
-
-            if confounds is not None and not self.vectorize:
-                error_message = (
-                    "'confounds' are provided but vectorize=False. "
-                    "Confounds are only cleaned on vectorized matrices "
-                    "as second level connectome regression "
-                    "but not on symmetric matrices."
-                )
-                raise ValueError(error_message)
 
             if self.vectorize:
                 connectivities = sym_matrix_to_vec(
@@ -700,25 +714,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
 
         """
         del y
-        # casting to a list
-        # to make it easier to check with sklearn estimator compliance
-        if not hasattr(X, "__iter__"):
-            raise TypeError(
-                "Input must be an iterable of numpy arrays. "
-                f"Got {X.__class__.__name__}"
-            )
-        if isinstance(X, np.ndarray) and X.ndim == 2:
-            X = [X]
-        if self.kind == "tangent" and len(X) <= 1:
-            # Check that people are applying fit_transform to a group of
-            # subject
-            # We can only impose this in fit_transform, as it is legit to
-            # fit only on a single given reference point
-            raise ValueError(
-                "Tangent space parametrization can only "
-                "be applied to a group of subjects, as it returns "
-                f"deviations to the mean. You provided {X!r}"
-            )
         return self._fit_transform(
             X, do_fit=True, do_transform=True, confounds=confounds
         )
