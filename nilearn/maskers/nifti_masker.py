@@ -693,7 +693,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             confounds=confounds,
             sample_mask=sample_mask,
             copy=copy,
-            dtype=self.dtype,
             sklearn_output_config=sklearn_output_config,
         )
 
