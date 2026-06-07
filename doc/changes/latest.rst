@@ -85,7 +85,7 @@ Fixes
 
 - :bdg-info:`Plotting` Fix colors while plotting ROI contours with ``nilearn.plotting.plot_roi`` (:gh:`6245` by `Hande Gözükan`_).
 
-- :bdg-primary:`Doc` Fix several typos and grammatical errors in the :ref:`introduction tutorial to fMRI decoding <sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py>` (:gh:`XXXX` by `Kosei Tanno`_).
+- :bdg-primary:`Doc` Fix several typos and grammatical errors in the :ref:`introduction tutorial to fMRI decoding <sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py>` (:gh:`6269` by `Kosei Tanno`_).
 
 Enhancements
 ------------
