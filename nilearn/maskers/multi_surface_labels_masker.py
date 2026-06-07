@@ -75,6 +75,10 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
 
     %(t_r)s
 
+    %(dtype)s
+
+        ..versionadded:: 0.14.0dev
+
     %(memory)s
 
     %(memory_level1)s
@@ -134,6 +138,7 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         n_jobs=1,
@@ -157,6 +162,7 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
