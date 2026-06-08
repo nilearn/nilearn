@@ -120,11 +120,13 @@ def test_load_surf_data_numpy_gt_1pt23():
     load_surf_data(fsaverage["pial_left"])
 
 
-@pytest.mark.ai_generated
 def test_gifti_img_to_data_preserves_numeric_dtype():
     """Multi-darray GIFTI with uniform dtype must not return object array.
 
-    Regression test: _gifti_img_to_data previously forced dtype=object for
+    Regression test for
+    https://github.com/nilearn/nilearn/issues/5525#issuecomment-4646130161
+
+    _gifti_img_to_data previously forced dtype=object for
     any multi-darray GIFTI, causing downstream failures (e.g. np.isfinite)
     when the dtype was preserved through the masker pipeline.
     """
@@ -149,11 +151,13 @@ def test_gifti_img_to_data_preserves_numeric_dtype():
     assert data.shape == (n_vertices, n_timepoints)
 
 
-@pytest.mark.ai_generated
 def test_polydata_casts_object_dtype_with_warning():
     """PolyData must warn and cast to float32 when given object-dtype data.
 
-    Regression test: object dtype propagated silently through the masker
+    Regression test for
+    https://github.com/nilearn/nilearn/issues/5525#issuecomment-4646130161
+
+    Object dtype propagated silently through the masker
     pipeline (fit_transform to inverse_transform) and caused np.isfinite to
     fail inside threshold_img.
     """
@@ -168,7 +172,6 @@ def test_polydata_casts_object_dtype_with_warning():
     assert pd.parts["left"].dtype == np.float32
 
 
-@pytest.mark.ai_generated
 def test_surface_image_casts_object_dtype_with_warning(surf_mesh):
     """SurfaceImage warns and casts to float32 when data has object dtype."""
     data = {
@@ -180,6 +183,23 @@ def test_surface_image_casts_object_dtype_with_warning(surf_mesh):
         img = SurfaceImage(mesh=surf_mesh, data=data)
     for part in img.data.parts.values():
         assert part.dtype == np.float32
+
+
+@pytest.mark.parametrize("dtype", [1, 1.5, "foo"])
+def test_dtype_error(surf_mesh, dtype):
+    """Check dtype errors.
+
+    Note the errors are raised by numpy.
+    """
+    with pytest.raises(TypeError, match=r"understood|data type"):
+        PolyData(left=np.ones((10, 3)), dtype=dtype)
+
+    data = {
+        hemi: np.ones((part.n_vertices, 3))
+        for hemi, part in surf_mesh.parts.items()
+    }
+    with pytest.raises(TypeError, match=r"understood|data type"):
+        SurfaceImage(mesh=surf_mesh, data=data, dtype=dtype)
 
 
 def test_load_surf_data_array():
