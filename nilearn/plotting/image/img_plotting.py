@@ -51,7 +51,6 @@ from nilearn.plotting._utils import (
     get_colorbar_and_data_ranges,
 )
 from nilearn.plotting.displays import OrthoSlicer, get_projector, get_slicer
-from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.image.utils import MNI152TEMPLATE, load_anat
 from nilearn.signal import clean
 from nilearn.typing import (
@@ -296,7 +295,10 @@ def _plot_img_with_bg(
     if title is not None and title != "":
         display.title(title)
 
-    return save_figure_if_needed(display, output_file)
+    if output_file is not None:
+        display.savefig(output_file)
+
+    return display
 
 
 @overload
@@ -959,7 +961,6 @@ def plot_roi(
         img=roi_img,
         bg_img=bg_img,
         cut_coords=cut_coords,
-        output_file=output_file,
         display_mode=display_mode,
         figure=figure,
         axes=axes,
@@ -985,6 +986,9 @@ def plot_roi(
         display = _plot_roi_contours(
             display, img, cmap=cmap, alpha=alpha, linewidths=linewidths
         )
+
+    if output_file is not None:
+        display.savefig(output_file)
 
     return display
 
@@ -1272,7 +1276,9 @@ def plot_prob_atlas(
                 xycoords="axes fraction",
             )
 
-    return save_figure_if_needed(display, output_file)
+    if output_file is not None:
+        display.savefig(output_file)
+    return display
 
 
 @fill_doc
@@ -1614,7 +1620,6 @@ def plot_glass_brain(
 
     display = _plot_img_with_bg(
         img=stat_map_img,
-        output_file=output_file,
         display_mode=display_mode,
         figure=figure,
         axes=axes,
@@ -1639,6 +1644,8 @@ def plot_glass_brain(
     if stat_map_img is None and "l" in display.axes:
         display.axes["l"].ax.invert_xaxis()
 
+    if output_file is not None:
+        display.savefig(output_file)
     return display
 
 
@@ -1777,7 +1784,10 @@ def plot_connectome(
         colorbar=colorbar,
     )
 
-    return save_figure_if_needed(display, output_file)
+    if output_file is not None:
+        display.savefig(output_file)
+
+    return display
 
 
 @fill_doc
@@ -1942,7 +1952,9 @@ def plot_markers(
         display._colorbar = True
         display._show_colorbar(cmap=node_cmap, norm=norm)
 
-    return save_figure_if_needed(display, output_file)
+    if output_file is not None:
+        display.savefig(output_file)
+    return display
 
 
 @fill_doc
@@ -2231,4 +2243,8 @@ def plot_carpet(
         axes.spines["left"].set_position(("outward", buffer))
         axes.set_ylabel("voxels")
 
-    return save_figure_if_needed(figure, output_file)
+    if output_file is not None:
+        figure.savefig(output_file)
+        plt.close(figure)
+
+    return figure
