@@ -2169,7 +2169,6 @@ def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
     )
 
 
-@pytest.mark.thread_unsafe
 def test_check_niimg_bool_error(img_3d_zeros_eye):
     """Check data dtype equal with dtype='auto'."""
     with pytest.raises(HeaderDataError, match=r"bool.*not supported"):
