@@ -17,7 +17,7 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
-from nilearn.plotting.displays._slicers import save_figure_if_needed
+from nilearn.plotting._engine_utils import save_figure_if_needed
 from nilearn.plotting.matrix._utils import (
     mask_matrix,
     pad_contrast_matrix,

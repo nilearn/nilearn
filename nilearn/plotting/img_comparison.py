@@ -17,7 +17,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.plotting.displays._slicers import save_figure_if_needed
+from nilearn.plotting._engine_utils import save_figure_if_needed
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import ColorBar, NiimgLike, OutputFile, Title

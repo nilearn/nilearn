@@ -2,6 +2,7 @@
 multiple modules in nilearn.plotting package.
 """
 
+from pathlib import Path
 from warnings import warn
 
 import matplotlib.pyplot as plt
@@ -24,6 +25,40 @@ from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
 )
+
+
+def save_figure_if_needed(fig, output_file):
+    """Save figure if an output file value is given.
+
+    Create output path if required.
+
+    Parameters
+    ----------
+    fig: figure, axes instance
+
+    output_file: str, Path or None
+
+    Returns
+    -------
+    None if ``output_file`` is None, ``fig`` otherwise.
+
+    """
+    if output_file is None:
+        return fig
+
+    output_file = Path(output_file)
+    output_file.parent.mkdir(exist_ok=True, parents=True)
+
+    if not isinstance(fig, plt.Figure):
+        fig = fig.figure
+
+    fig.savefig(output_file)
+    if isinstance(fig, plt.Figure):
+        plt.close(fig)
+    else:
+        fig.close()
+
+    return None
 
 
 @fill_doc
