@@ -435,7 +435,8 @@ def _plot_surf(
     if title is not None:
         axes.set_title(title)
 
-    return save_figure_if_needed(figure, output_file)
+    save_figure_if_needed(figure, output_file)
+    return figure
 
 
 def _plot_surf_contours(
@@ -530,7 +531,8 @@ def _plot_surf_contours(
     if title:
         axes.set_title(title)
 
-    return save_figure_if_needed(figure, output_file)
+    save_figure_if_needed(figure, output_file)
+    return figure
 
 
 def _plot_img_on_surf(

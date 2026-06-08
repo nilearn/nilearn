@@ -408,7 +408,8 @@ def plot_bland_altman(
         cb = figure.colorbar(hb, cax=ax4)
         cb.set_label("log10(N)")
 
-    return save_figure_if_needed(figure, output_file)
+    save_figure_if_needed(figure, output_file)
+    return figure
 
 
 def _extract_data_2_images(ref_img, src_img, masker=None):

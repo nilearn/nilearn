@@ -352,7 +352,8 @@ def plot_contrast_matrix(
         fig = axes.figure
         fig.colorbar(mat, fraction=0.025, pad=0.04)
 
-    return save_figure_if_needed(axes, output_file)
+    save_figure_if_needed(axes, output_file)
+    return axes
 
 
 @fill_doc
@@ -412,7 +413,8 @@ def plot_design_matrix(
     # corresponding dataframe
     axes.xaxis.tick_top()
 
-    return save_figure_if_needed(axes, output_file)
+    save_figure_if_needed(axes, output_file)
+    return axes
 
 
 @fill_doc
@@ -536,7 +538,8 @@ def plot_event(
     axes.set_yticks(np.arange(n_runs) + 0.5)
     axes.set_yticklabels(np.arange(n_runs) + 1)
 
-    return save_figure_if_needed(figure, output_file)
+    save_figure_if_needed(figure, output_file)
+    return figure
 
 
 @fill_doc
@@ -638,4 +641,5 @@ def plot_design_matrix_correlation(
         **kwargs,
     )
 
-    return save_figure_if_needed(display, output_file)
+    save_figure_if_needed(display, output_file)
+    return display
