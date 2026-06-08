@@ -15,8 +15,10 @@ This shows:
 
 -   how to use run some decoding directly on surface data.
 
-See the :ref:`dataset description <nki_dataset>`
-for more information on the data used in this example.
+.. seealso::
+
+    See the :ref:`dataset description <nki_dataset>`
+    for more information on the data used in this example.
 """
 
 from nilearn._utils.helpers import check_matplotlib
