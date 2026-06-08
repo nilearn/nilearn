@@ -80,7 +80,7 @@ def test_plot_connectome_to_file(
     display = plot_connectome(
         adjacency, node_coords, output_file=filename, **params_plot_connectome
     )
-    assert display is None
+    assert display is not None
     assert filename.is_file()
     assert filename.stat().st_size > 0
 
