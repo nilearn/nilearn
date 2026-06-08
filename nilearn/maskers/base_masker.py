@@ -315,6 +315,10 @@ class _BaseMasker(
         """
         raise NotImplementedError()
 
+    def _check_dtype(self):
+        if self.dtype == bool:
+            raise TypeError("'dtype' cannot be bool")
+
 
 @fill_doc
 class BaseMasker(_BaseMasker):
@@ -337,6 +341,7 @@ class BaseMasker(_BaseMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -644,6 +649,12 @@ class BaseMasker(_BaseMasker):
                 f"Got {signals.shape}."
             )
 
+        if signals.dtype == bool:
+            warnings.warn(
+                "Casting boolean input to int32", stacklevel=find_stack_level()
+            )
+            signals = signals.astype(np.int32)
+
         return signals
 
     def _get_summary_html(self, summary):
@@ -946,6 +957,12 @@ class _BaseSurfaceMasker(_BaseMasker):
                 f"Last dimension should be {self.n_elements_}.\n"
                 f"Got {signals.shape[-1]}."
             )
+
+        if signals.dtype == bool:
+            warnings.warn(
+                "Casting boolean input to int32", stacklevel=find_stack_level()
+            )
+            signals = signals.astype(np.int32)
 
         return signals
 

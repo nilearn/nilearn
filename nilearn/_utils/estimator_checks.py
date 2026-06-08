@@ -579,6 +579,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
         yield (clone(estimator), check_fit_returns_self)
         yield (clone(estimator), check_img_estimator_dtypes)
+        yield (clone(estimator), check_img_estimator_dtype_bool)
         yield (clone(estimator), check_img_estimator_dict_unchanged)
         yield (clone(estimator), check_img_estimator_dont_overwrite_parameters)
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
@@ -1767,6 +1768,40 @@ def check_img_estimator_pipeline_consistency(estimator_orig) -> None:
             assert_allclose_dense_sparse(result, result_pipe)
 
 
+def check_img_estimator_dtype_bool(estimator_orig):
+    """Raise error for dtype bool or
+    cast bool input to int for inverse_transform.
+    """
+    estimator = clone(estimator_orig)
+    if hasattr(estimator_orig, "dtype"):
+        estimator.dtype = bool
+        with pytest.raises(TypeError, match="'dtype' cannot be bool"):
+            estimator = fit_estimator(estimator)
+
+    if not hasattr(estimator, "inverse_transform"):
+        return None
+
+    estimator = clone(estimator_orig)
+
+    X, _ = generate_data_to_fit(estimator)
+
+    if isinstance(estimator, NiftiSpheresMasker):
+        # NiftiSpheresMasker needs mask_img to run inverse_transform
+        mask_img = new_img_like(X, np.ones(X.shape[:3]))
+        estimator.mask_img = mask_img
+
+    estimator = fit_estimator(estimator)
+
+    signal = estimator.transform(X)
+    if isinstance(signal, list):
+        signal = [x.astype(bool) for x in signal]
+    else:
+        signal = signal.astype(bool)
+
+    with pytest.warns(UserWarning, match="Casting boolean input to int32"):
+        estimator.inverse_transform(signal)
+
+
 def check_img_estimator_dtypes(estimator_orig):
     """Check estimator can fit and run several methods \
        with inputs of varying dtypes.
@@ -1780,8 +1815,9 @@ def check_img_estimator_dtypes(estimator_orig):
 
     input_dtype np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    for input_dtype in [np.float32, "float64", np.int32, "i4"]:
-        for dtype in [
+    dtype_list = [None]
+    if hasattr(estimator_orig, "dtype"):
+        dtype_list = [
             np.float32,
             "float64",
             np.int32,
@@ -1789,14 +1825,22 @@ def check_img_estimator_dtypes(estimator_orig):
             "i4",
             "auto",
             None,
-        ]:
-            for memory in [None, Path(mkdtemp())]:
+        ]
+
+    memory_list = [None]
+    if hasattr(estimator_orig, "memory"):
+        memory = [None, Path(mkdtemp())]
+
+    for input_dtype in [np.float32, "float64", np.int32, "i4"]:
+        for dtype in dtype_list:
+            for memory in memory_list:
                 estimator = clone(estimator_orig)
 
                 if hasattr(estimator, "dtype"):
                     estimator.dtype = dtype
 
-                estimator.memory = memory
+                if hasattr(estimator, "memory"):
+                    estimator.memory = memory
 
                 input_dtype = np.dtype(input_dtype)
 
@@ -1885,8 +1929,9 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
     we must handle deal with the fact that nibabel won't create
     images with np.int64
     """
-    for input_dtype in [np.float32, "float64", np.int64, np.int32, "i4"]:
-        for dtype in [
+    dtype_list = [None]
+    if hasattr(estimator_orig, "dtype"):
+        dtype_list = [
             np.float32,
             "float64",
             np.int32,
@@ -1894,7 +1939,10 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
             "i4",
             "auto",
             None,
-        ]:
+        ]
+
+    for input_dtype in [np.float32, "float64", np.int64, np.int32, "i4"]:
+        for dtype in dtype_list:
             estimator = clone(estimator_orig)
 
             if hasattr(estimator, "dtype"):
