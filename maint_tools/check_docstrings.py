@@ -294,7 +294,7 @@ def check_returns_yields_and_annotation(
 
     np_docstring = NumpyDocString(docstring)
 
-    # function returns / yields a value → must have Returns / Yields section
+    # function returns / yields a value to must have Returns / Yields section
     if has_return_value or has_yield:
         if has_yield and bool(np_docstring["Yields"]):
             print(
@@ -309,7 +309,7 @@ def check_returns_yields_and_annotation(
                 "- [red]missing Return section in docstring"
             )
 
-    # no return & no yield → must be annotated as -> None
+    # no return & no yield to must be annotated as -> None
     elif not has_none_return_annotation(ast_node):
         print(
             f"{filename}:{ast_node.lineno} "

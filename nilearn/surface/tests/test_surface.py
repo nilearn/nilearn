@@ -154,7 +154,7 @@ def test_polydata_casts_object_dtype_with_warning():
     """PolyData must warn and cast to float32 when given object-dtype data.
 
     Regression test: object dtype propagated silently through the masker
-    pipeline (fit_transform → inverse_transform) and caused np.isfinite to
+    pipeline (fit_transform to inverse_transform) and caused np.isfinite to
     fail inside threshold_img.
     """
     data = np.ones((10, 3), dtype=object)
