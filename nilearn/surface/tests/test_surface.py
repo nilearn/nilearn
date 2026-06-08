@@ -1246,12 +1246,17 @@ def test_check_surf_img(surf_img_1d, surf_img_2d):
 
 
 def test_check_surf_img_dtype(surf_img_1d):
-    """Check dtype of SurfaceImage can be set at init."""
+    """Check dtype of SurfaceImage can be set at init.
+
+    Check private attribute _dtype of PolyData is set.
+    """
     data = {
         "left": np.ones(surf_img_1d.data.parts["left"].shape, dtype="float32"),
         "right": np.ones(surf_img_1d.data.parts["right"].shape, dtype="int32"),
     }
     new_img = SurfaceImage(surf_img_1d.mesh, data, dtype=np.int32)
+
+    assert new_img.data._dtype == np.int32
 
     for k in surf_img_1d.data.parts:
         assert new_img.data.parts[k].dtype != surf_img_1d.data.parts[k].dtype
