@@ -368,9 +368,10 @@ view_img(
 # by comparing to a score at chance.
 
 # %%
-# Let's define an object with Dummy estimator replacing 'svc' for
-# classification setting. This object initializes estimator with default
-# dummy strategy.
+# Let's define an object with a Dummy estimator
+# replacing 'svc' for classification setting.
+# This object initializes estimator
+# with a default dummy strategy.
 dummy_decoder = Decoder(
     estimator="dummy_classifier",
     mask=mask_filename,
