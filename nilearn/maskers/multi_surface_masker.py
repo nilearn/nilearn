@@ -8,6 +8,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import check_params
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.base_masker import mask_logger
@@ -48,6 +49,10 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
     %(high_pass)s
 
     %(t_r)s
+
+    %(dtype)s
+
+        ..versionadded:: 0.14.0dev
 
     %(memory)s
 
@@ -95,6 +100,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         n_jobs=1,
@@ -114,6 +120,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
@@ -205,4 +212,14 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
-        return self._clean(output, confounds, sample_mask)
+        input_type = (
+            imgs.data._dtype
+            if isinstance(imgs, SurfaceImage)
+            else imgs[0].data._dtype
+        )
+        target_dtype = get_target_dtype(input_type, self.dtype)
+        if target_dtype is None:
+            target_dtype = imgs.data._dtype
+
+        output = self._clean(output, confounds, sample_mask)
+        return output.astype(target_dtype)
