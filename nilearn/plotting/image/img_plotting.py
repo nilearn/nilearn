@@ -15,7 +15,6 @@ from typing import overload
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib import __version__ as mpl_version
 from matplotlib import get_backend
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.gridspec import GridSpecFromSubplotSpec
@@ -33,7 +32,6 @@ from nilearn._utils.param_validation import (
     check_params,
     check_threshold,
 )
-from nilearn._utils.versions import compare_version
 from nilearn.image import (
     check_niimg_3d,
     check_niimg_4d,
@@ -2178,9 +2176,7 @@ def plot_carpet(
         else:
             ax0.set_yticks([])
 
-        # Carpet plot
-        if compare_version(mpl_version, ">=", "3.8.0rc1"):
-            axes.remove()  # remove axes for newer versions of mpl
+        axes.remove()  # remove axes for newer versions of mpl
         axes = plt.subplot(gs[1])  # overwrites axes with older versions of mpl
         axes.imshow(
             data.T,
