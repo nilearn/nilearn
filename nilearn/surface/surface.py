@@ -879,9 +879,13 @@ def _gifti_img_to_data(gifti_img):
     if len(gifti_img.darrays) == 1:
         return np.asarray([gifti_img.darrays[0].data]).T.squeeze()
 
-    return np.asarray(
-        [arr.data for arr in gifti_img.darrays], dtype=object
-    ).T.squeeze()
+    try:
+        return np.asarray([arr.data for arr in gifti_img.darrays]).T.squeeze()
+    except ValueError:
+        # Ragged arrays (darrays with different shapes): fall back to object.
+        return np.asarray(
+            [arr.data for arr in gifti_img.darrays], dtype=object
+        ).T.squeeze()
 
 
 FREESURFER_MESH_EXTENSIONS = ("orig", "pial", "sphere", "white", "inflated")
@@ -1361,6 +1365,14 @@ class PolyData:
             if param is not None:
                 if not isinstance(param, np.ndarray):
                     param = load_surf_data(param)
+                if param.dtype == object:
+                    warnings.warn(
+                        "Object dtype is not supported for surface data. "
+                        f"Part '{hemi}' will be cast to np.float32.",
+                        UserWarning,
+                        stacklevel=2,
+                    )
+                    param = param.astype(np.float32)
                 parts[hemi] = param
         self.parts = parts
         self._set_dtype(dtype)
@@ -1512,6 +1524,14 @@ class PolyData:
     def _set_dtype(self, dtype) -> None:
         """Set dtype for all parts."""
         if dtype is not None:
+            if np.dtype(dtype) == np.dtype(object):
+                warnings.warn(
+                    "Object dtype is not supported for surface data. "
+                    "Data will be cast to np.float32 instead.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+                dtype = np.float32
             for h, v in self.parts.items():
                 self.parts[h] = v.astype(dtype)
 

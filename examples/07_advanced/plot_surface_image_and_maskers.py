@@ -47,7 +47,7 @@ from nilearn.plotting import plot_matrix, plot_surf, show
 surf_img_nki = load_nki()[0]
 print(f"NKI image: {surf_img_nki}")
 
-masker = SurfaceMasker(verbose=1, smoothing_fwhm=3)
+masker = SurfaceMasker(verbose=1, smoothing_fwhm=3, standardize=None)
 masked_data = masker.fit_transform(surf_img_nki)
 print(f"Masked data shape: {masked_data.shape}")
 
@@ -139,7 +139,7 @@ labels_img = SurfaceImage(
 )
 
 labels_masker = SurfaceLabelsMasker(
-    labels_img=labels_img, lut=destrieux.lut, verbose=1
+    labels_img=labels_img, lut=destrieux.lut, verbose=1, standardize=None
 ).fit()
 
 masked_data = labels_masker.transform(surf_img_nki)
@@ -205,6 +205,7 @@ decoder = Decoder(
     param_grid={"C": [0.01, 0.1]},
     cv=3,
     screening_percentile=1,
+    standardize=None,
 )
 decoder.fit(surf_img_nki, y)
 print("CV scores:", decoder.cv_scores_)
@@ -225,7 +226,7 @@ show()
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
 decoder = pipeline.make_pipeline(
-    SurfaceMasker(verbose=1),
+    SurfaceMasker(verbose=1, standardize=None),
     preprocessing.StandardScaler(),
     feature_selection.SelectKBest(
         score_func=feature_selection.f_regression, k=500
