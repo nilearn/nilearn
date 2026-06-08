@@ -45,25 +45,18 @@ def save_figure_if_needed(fig, output_file):
     None if ``output_file`` is None, ``fig`` otherwise.
 
     """
-    if output_file is None:
-        return fig
+    if output_file is not None:
+        output_file = Path(output_file)
+        try:
+            output_file.parent.mkdir(exist_ok=True, parents=True)
+        except Exception:
+            log("Please specify a valid file path: {filename=}.", verbose=1)
 
-    output_file = Path(output_file)
-    try:
-        output_file.parent.mkdir(exist_ok=True, parents=True)
-    except Exception:
-        log("Please specify a valid file path: {filename=}.", verbose=1)
+        if not isinstance(fig, plt.Figure):
+            fig = fig.figure
 
-    if not isinstance(fig, plt.Figure):
-        fig = fig.figure
-
-    fig.savefig(output_file)
-    if isinstance(fig, plt.Figure):
+        fig.savefig(output_file)
         plt.close(fig)
-    else:
-        fig.close()
-
-    return None
 
 
 @fill_doc
