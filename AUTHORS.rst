@@ -139,6 +139,7 @@ Some other past or present contributors are:
 * `Koen Helwegen`_: Dutch Connectome Lab, VU, Amsterdam, The Netherlands
 * `Konrad Wagstyl`_
 * `Konstantin Shmelkov`_
+* `Kosei Tanno`_
 * `Kshitij Chawla`_: Duke University Health System, USA
 * `Kun CHEN`_: University of Macau, Macau, China
 * `Laura Piñero Roig`_: University of Barcelona, Barcelona, Spain
