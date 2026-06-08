@@ -2708,7 +2708,7 @@ def save_figure_if_needed(fig, output_file):
 
     Parameters
     ----------
-    fig: figure, axes, or display instance
+    fig: figure, axes instance
 
     output_file: str, Path or None
 
@@ -2723,7 +2723,7 @@ def save_figure_if_needed(fig, output_file):
     output_file = Path(output_file)
     output_file.parent.mkdir(exist_ok=True, parents=True)
 
-    if not isinstance(fig, (plt.Figure, BaseSlicer)):
+    if not isinstance(fig, plt.Figure):
         fig = fig.figure
 
     fig.savefig(output_file)
