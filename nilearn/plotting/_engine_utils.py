@@ -16,7 +16,7 @@ from matplotlib.colors import (
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_threshold
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
@@ -47,7 +47,10 @@ def save_figure_if_needed(fig, output_file):
         return fig
 
     output_file = Path(output_file)
-    output_file.parent.mkdir(exist_ok=True, parents=True)
+    try:
+        output_file.parent.mkdir(exist_ok=True, parents=True)
+    except Exception:
+        log("Please specify a valid file path: {filename=}.", verbose=1)
 
     if not isinstance(fig, plt.Figure):
         fig = fig.figure
