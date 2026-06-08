@@ -34,9 +34,11 @@ def save_figure_if_needed(fig, output_file):
 
     Parameters
     ----------
-    fig: figure, axes instance
+    fig:  :class:`matplotlib.figure.Figure` or :class:`matplotlib.axes.Axes`
+        figure to save
 
     output_file: str, Path or None
+        file path to save the figure
 
     Returns
     -------
