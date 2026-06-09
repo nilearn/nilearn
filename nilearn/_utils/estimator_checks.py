@@ -3430,7 +3430,7 @@ def check_masker_transform_resampling(estimator_orig) -> None:
             actual_shape = new_imgs.shape
             assert actual_shape == expected_shape
 
-            if resampling_target == "maps":
+            if resampling_target in ["maps", "labels"]:
                 with pytest.warns(UserWarning, match="at transform time"):
                     estimator.transform(imgs)
             else:
@@ -3451,16 +3451,8 @@ def check_masker_transform_resampling(estimator_orig) -> None:
             # than the one used at fit time,
             # but there should be a resampling warning
             # we are resampling to data
-            if resampling_target in ["data", "maps"]:
-                with pytest.warns(UserWarning, match="at transform time"):
-                    estimator.transform(imgs_with_different_fov)
-            else:
-                with warnings.catch_warnings(record=True) as warning_list:
-                    estimator.transform(imgs_with_different_fov)
-                assert all(
-                    "at transform time" not in str(x.message)
-                    for x in warning_list
-                )
+            with pytest.warns(UserWarning, match="at transform time"):
+                estimator.transform(imgs_with_different_fov)
 
 
 def check_masker_shelving(estimator_orig) -> None:
