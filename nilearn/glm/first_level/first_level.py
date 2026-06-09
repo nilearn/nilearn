@@ -1495,7 +1495,6 @@ def first_level_from_bids(
     sub_labels=None,
     exclude_subjects=None,
     img_filters=None,
-    mask_from_derivatives=False,
     t_r=None,
     slice_time_ref=None,
     hrf_model="glover",
@@ -1572,9 +1571,12 @@ def first_level_from_bids(
         Filter examples would be ``('desc', 'preproc')``, ``('dir', 'pa')``
         and ``('run', '10')``.
 
-    mask_from_derivatives: :obj:`bool`
-        Ignore if ``mask_img`` is not None.
-        If ``True`` a mask image is generated
+    mask_img: Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
+             :obj:`~nilearn.maskers.SurfaceMasker`, False
+             or ``"derivatives"``, or \
+             None, default=None
+        Mask to be used on data.
+        If ``"derivatives"`` is passed a mask image is generated
         from the intersection of the relevant mask images
         of all the runs of a each subject
         and used for the model of that subject.
@@ -1728,9 +1730,6 @@ def first_level_from_bids(
         memory = Memory(None)
     if space_label is None:
         space_label = "MNI152NLin2009cAsym"
-
-    if mask_img is not None:
-        mask_from_derivatives = False
 
     sub_labels = sub_labels or []
     img_filters = img_filters or []
@@ -1909,7 +1908,7 @@ def first_level_from_bids(
             drift_order=drift_order,
             fir_delays=fir_delays,
             min_onset=min_onset,
-            mask_img=mask_img,
+            mask_img=None if mask_img == "derivatives" else mask_img,
             target_affine=target_affine,
             target_shape=target_shape,
             smoothing_fwhm=smoothing_fwhm,
@@ -1959,7 +1958,7 @@ def first_level_from_bids(
         )
         models_confounds.append(confounds)
 
-        if mask_from_derivatives:
+        if mask_img == "derivatives":
             masks = _get_masks_files(
                 derivatives_path=derivatives_path,
                 sub_label=sub_label_,
@@ -1970,7 +1969,9 @@ def first_level_from_bids(
                 verbose=verbose,
             )
             if masks:
-                mask_img = intersect_masks(masks, threshold=1, connected=False)
+                mask_img = intersect_masks(
+                    masks, threshold=0.5, connected=False
+                )
                 model.mask_img = mask_img
 
     return models, models_run_imgs, models_events, models_confounds

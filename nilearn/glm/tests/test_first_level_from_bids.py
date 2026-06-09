@@ -376,9 +376,8 @@ def test_space_none(tmp_path):
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
 
-@pytest.mark.parametrize("mask_img", [None, False])
-@pytest.mark.parametrize("mask_from_derivatives", [True, False])
-def test_mask_from_derivatives(tmp_path, mask_img, mask_from_derivatives):
+@pytest.mark.parametrize("mask_img", [None, False, "derivatives"])
+def test_mask_from_derivatives(tmp_path, mask_img):
     """Test mask is loaded from derivatives."""
     n_sub = 2
     bids_path = create_fake_bids_dataset(
@@ -392,16 +391,15 @@ def test_mask_from_derivatives(tmp_path, mask_img, mask_from_derivatives):
         slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         img_filters=[("desc", "preproc")],
         mask_img=mask_img,
-        mask_from_derivatives=mask_from_derivatives,
     )
 
     for m in models:
         if mask_img is False:
             assert m.mask_img is False
-        elif mask_from_derivatives is False:
-            assert m.mask_img is None
-        else:
+        elif mask_img == "derivatives":
             assert isinstance(m.mask_img, Nifti1Image)
+        else:
+            assert m.mask_img is None
 
 
 def test_select_one_run_per_session(bids_dataset):
