@@ -63,6 +63,10 @@ Fixes
 
 - :bdg-info:`Plotting` Fix ``nilearn.plotting.view_img`` resampling of non-isotropic images when no background image is used (:gh:`6031` by `Michelle Wang`_).
 
+- :bdg-dark:`Code` Disallow boolean dtype for estimators. (:gh:`6271` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Better checks of dtype for :class:`~surface.SurfaceImage` and :class:`~nilearn.surface.PolyData`. (:gh:`6271` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Ensure that estimators that accept images can work will several datatypes as input and that their methods can output arrays or images of the requested datatype (:gh:`5511` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Fix bug introduced in ``0.13.0`` while plotting single valued data with :func:`~nilearn.plotting.plot_roi`.  (:gh:`6122` by `Hande Gözükan`_).
@@ -71,7 +75,7 @@ Fixes
 
 - :bdg-dark:`Code` Do not copy mask image's header in ``masking.unmask`` (:gh:`6157` by `Taylor Salo`_).
 
-- :bdg-dark:`Code` Make sure that area data of Freesurfer can loaded as SurfaceImage by :func:`~nilearn.datasets.load_fsaverage_data` (:gh:`6230` by `Rémi Gau`_).
+- :bdg-dark:`Code` Make sure that area data of Freesurfer can loaded as :class:`~surface.SurfaceImage` by :func:`~nilearn.datasets.load_fsaverage_data` (:gh:`6230` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix order of vertices and data for ``fsaverage3`` and ``fsaverage4`` datasets and warn user (:gh:`6127` by `Rémi Gau`_ and `Hande Gözükan`_).
 

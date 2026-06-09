@@ -1206,6 +1206,7 @@ def test_load_save_data_1d(rng, tmp_path, surf_mesh):
         np.int64,
         np.float32,
         np.float64,
+        bool,
     ],
 )
 def test_save_dtype(surf_img_1d, tmp_path, dtype):

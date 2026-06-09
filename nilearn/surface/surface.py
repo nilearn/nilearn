@@ -1318,6 +1318,12 @@ class PolyData:
     right : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
             or None, default = None
 
+    dtype : DTypeLike object, default=None
+        dtype to enforce on the data.
+        If ``None`` the original dtype if used.
+
+        .. nilearn_versionadded:: 0.12.1
+
     Attributes
     ----------
     parts : :obj:`dict` of 2D :obj:`numpy.ndarray` (n_vertices, n_timepoints)
@@ -1326,12 +1332,6 @@ class PolyData:
             The first dimension corresponds to the vertices:
             the typical shape of the
             data for a hemisphere is ``(n_vertices, n_time_points)``.
-
-    dtype : DTypeLike object, default=None
-        dtype to enforce on the data.
-        If ``None`` the original dtype if used.
-
-        .. nilearn_versionadded:: 0.12.1
 
     Examples
     --------
@@ -1859,7 +1859,7 @@ def data_to_gifti(data, gifti_file=None) -> gifti.GiftiImage:
     gifti_file : :obj:`str` or :obj:`pathlib.Path` or None, default=None
         name for the output gifti file.
     """
-    if data.dtype in [np.uint16, np.uint32, np.uint64]:
+    if data.dtype in [np.uint16, np.uint32, np.uint64, bool]:
         data = data.astype(np.uint8)
     elif data.dtype in [np.int8, np.int16, np.int64]:
         data = data.astype(np.int32)
