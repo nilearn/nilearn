@@ -613,7 +613,7 @@ class BaseMasker(_BaseMasker):
         with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
 
-        img = self._set_inverse_transform_output_dtype(X, img)
+        img = self._post_process_inverse_transform(X, img)
 
         return img
 
@@ -650,10 +650,12 @@ class BaseMasker(_BaseMasker):
             )
 
         if signals.dtype == bool:
+            target_dtype = self.dtype if self.dtype is not None else np.int32
             warnings.warn(
-                "Casting boolean input to int32", stacklevel=find_stack_level()
+                f"Casting boolean input to {target_dtype}",
+                stacklevel=find_stack_level(),
             )
-            signals = signals.astype(np.int32)
+            signals = signals.astype(target_dtype)
 
         return signals
 
@@ -695,7 +697,7 @@ class BaseMasker(_BaseMasker):
         self._reporting_data["stat_map_base64"] = json_view["stat_map_base64"]
         self._reporting_data["params"] = json.dumps(json_view["params"])
 
-    def _set_inverse_transform_output_dtype(
+    def _post_process_inverse_transform(
         self, input: np.ndarray, output: Nifti1Image
     ) -> Nifti1Image:
         """Set dtype for data to return for inverse_transform."""
@@ -959,10 +961,12 @@ class _BaseSurfaceMasker(_BaseMasker):
             )
 
         if signals.dtype == bool:
+            target_dtype = self.dtype if self.dtype is not None else np.int32
             warnings.warn(
-                "Casting boolean input to int32", stacklevel=find_stack_level()
+                f"Casting boolean input to {target_dtype}",
+                stacklevel=find_stack_level(),
             )
-            signals = signals.astype(np.int32)
+            signals = signals.astype(target_dtype)
 
         return signals
 
