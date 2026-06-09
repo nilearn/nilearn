@@ -75,7 +75,7 @@ Fixes
 
 - :bdg-dark:`Code` Do not copy mask image's header in ``masking.unmask`` (:gh:`6157` by `Taylor Salo`_).
 
-- :bdg-dark:`Code` Make sure that area data of Freesurfer can loaded as :class:`~surface.SurfaceImage` by :func:`~nilearn.datasets.load_fsaverage_data` (:gh:`6230` by `Rémi Gau`_).
+- :bdg-dark:`Code` Make sure that area data of Freesurfer can be loaded as :class:`~surface.SurfaceImage` by :func:`~nilearn.datasets.load_fsaverage_data` (:gh:`6230` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix order of vertices and data for ``fsaverage3`` and ``fsaverage4`` datasets and warn user (:gh:`6127` by `Rémi Gau`_ and `Hande Gözükan`_).
 
