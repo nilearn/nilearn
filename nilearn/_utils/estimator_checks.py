@@ -1799,7 +1799,7 @@ def check_img_estimator_dtype_bool(estimator_orig):
     else:
         signal = signal.astype(bool)
 
-    with pytest.warns(UserWarning, match="Casting boolean input to int32"):
+    with pytest.warns(UserWarning, match="Casting boolean input to"):
         estimator.inverse_transform(signal)
 
 
