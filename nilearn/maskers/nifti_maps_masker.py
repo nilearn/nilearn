@@ -716,6 +716,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             mask_img=self.mask_img_,
         )
 
-        img = self._set_inverse_transform_output_dtype(region_signals, img)
+        img = self._post_process_inverse_transform(region_signals, img)
 
         return img

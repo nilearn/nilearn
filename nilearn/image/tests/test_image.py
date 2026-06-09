@@ -12,6 +12,7 @@ import pandas as pd
 import pytest
 from nibabel import AnalyzeImage, Nifti1Image, Nifti2Image, load, spatialimages
 from nibabel.freesurfer import MGHImage
+from nibabel.spatialimages import HeaderDataError
 from numpy.testing import (
     assert_allclose,
     assert_almost_equal,
@@ -2166,6 +2167,12 @@ def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
         get_data(img_4d_zeros_eye).dtype.kind
         == get_data(img_4d_check).dtype.kind
     )
+
+
+def test_check_niimg_bool_error(img_3d_zeros_eye):
+    """Check data dtype equal with dtype='auto'."""
+    with pytest.raises(HeaderDataError, match=r"bool.*not supported"):
+        check_niimg(img_3d_zeros_eye, dtype=bool)
 
 
 @pytest.mark.thread_unsafe

@@ -479,9 +479,11 @@ draw_cross : :obj:`bool`, default=True
 docdict["dtype"] = """
 dtype : dtype like, "auto" or None, default=None
     Data type toward which the data should be converted.
-    If "auto", the data will be converted to int32
-    if dtype is discrete and float32 if it is continuous.
+    If "auto", the data will be converted
+    to int32 if dtype is discrete
+    and to float32 if it is continuous.
     If None, data will not be converted to a new data type.
+    ``dtype=bool`` will raise an Exception.
 """
 
 # estimator_args
