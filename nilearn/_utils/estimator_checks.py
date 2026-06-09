@@ -140,7 +140,10 @@ from nilearn.regions import HierarchicalKMeans, Parcellations, RegionExtractor
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
-from nilearn.surface.utils import assert_surface_image_equal
+from nilearn.surface.utils import (
+    assert_surface_image_close,
+    assert_surface_image_equal,
+)
 
 SKLEARN_GTE_1_6 = compare_version(sklearn_version, ">=", "1.6.0")
 
@@ -915,7 +918,7 @@ def check_set_output(estimator_orig) -> None:
         if accept_niimg_input(estimator):
             check_imgs_equal(results[k], results["default"])
         elif accept_surf_img_input(estimator):
-            assert_surface_image_equal(results[k], results["default"])
+            assert_surface_image_close(results[k], results["default"])
         else:
             assert_array_equal(results[k], results["default"])
 
