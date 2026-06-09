@@ -1396,6 +1396,9 @@ class PolyData:
                 "You can fix this by passing a 'dtype' at instantiation."
             )
 
+        if np.dtype(parts["left"].dtype) == bool:
+            raise TypeError("bool dtype not supported")
+
     @property
     def shape(self):
         """Shape of the data."""
@@ -1511,6 +1514,8 @@ class PolyData:
 
     def _set_dtype(self, dtype) -> None:
         """Set dtype for all parts."""
+        if np.dtype(dtype) == bool:
+            raise TypeError("bool dtype not supported")
         if dtype is not None:
             for h, v in self.parts.items():
                 self.parts[h] = v.astype(dtype)
