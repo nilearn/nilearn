@@ -464,8 +464,12 @@ def test_nifti_labels_masker_resampling(
             "labels were removed",
         ):
             signals = masker.fit_transform(fmri_img)
-    else:
-        signals = masker.fit_transform(fmri_img)
+    elif resampling_target == "labels":
+        with pytest.warns(
+            UserWarning,
+            match="Resampling images at transform time",
+        ):
+            signals = masker.fit_transform(fmri_img)
 
     resampled_labels_img = masker.labels_img_
     n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
