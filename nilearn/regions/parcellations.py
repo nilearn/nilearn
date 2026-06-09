@@ -799,4 +799,10 @@ class Parcellations(_MultiPCA):
                     f"Got {signals.shape}."
                 )
 
+        if signals.dtype == bool:
+            warnings.warn(
+                "Casting boolean input to int32", stacklevel=find_stack_level()
+            )
+            signals = signals.astype(np.int32)
+
         return signals
