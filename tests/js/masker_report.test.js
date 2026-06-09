@@ -4,8 +4,10 @@ const VIEWPORT = { x: 0, y: 0, width: 1200, height: 750 }
 
 // tolerance might vary due to font issue
 const maskers = [
-  { masker: 'NiftiMasker', tolerance: 2500 },
-  { masker: 'NiftiLabelsMasker', tolerance: 1500 },
+  { masker: 'NiftiMasker_matplotlib', tolerance: 2500 },
+  { masker: 'NiftiMasker_brainsprite', tolerance: 2500 },
+  { masker: 'NiftiLabelsMasker_matplotlib', tolerance: 1500 },
+  { masker: 'NiftiLabelsMasker_brainsprite', tolerance: 1500 },
   { masker: 'NiftiMapsMasker', tolerance: 3000 },
   { masker: 'SurfaceMasker', tolerance: 1600 },
   { masker: 'SurfaceLabelsMasker', tolerance: 1500 },
