@@ -355,6 +355,7 @@ def _make_volume_data_from_components(
     n_subjects: int,
     n_timepoints: int = 40,
     baseline: float = 100,
+    noise_level: float = 0.01,
 ) -> list[Nifti1Image]:
     """Create a "multi-subject" dataset of volume data."""
     background = -0.01 * rng.normal(size=shape) - 2
@@ -366,7 +367,7 @@ def _make_volume_data_from_components(
         this_data = np.dot(
             rng.normal(size=(n_timepoints, N_COMPONENTS)), components
         )
-        this_data += 0.01 * rng.normal(size=this_data.shape)
+        this_data += noise_level * rng.normal(size=this_data.shape)
         this_data += baseline
 
         # Get back into 3D for CanICA

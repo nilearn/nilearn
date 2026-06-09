@@ -783,6 +783,7 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
             _rng(),
             n_subjects=n_subjects,
             n_timepoints=n_timepoints,
+            noise_level=1.0,
         )
 
         return decomp_input[0], None
