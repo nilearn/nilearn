@@ -34,7 +34,7 @@ def save_figure_if_needed(fig, output_file):
 
     Parameters
     ----------
-    fig:  :class:`matplotlib.figure.Figure` or :class:`matplotlib.axes.Axes`
+    fig:  :class:`matplotlib.figure.Figure`
         figure to save
 
     output_file: str, Path or None
@@ -45,10 +45,7 @@ def save_figure_if_needed(fig, output_file):
         try:
             output_file.parent.mkdir(exist_ok=True, parents=True)
         except Exception:
-            log("Please specify a valid file path: {filename=}.", verbose=1)
-
-        if not isinstance(fig, plt.Figure):
-            fig = fig.figure
+            log("Please specify a valid file path: {output_file=}.", verbose=1)
 
         fig.savefig(output_file)
         plt.close(fig)
