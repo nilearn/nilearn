@@ -617,18 +617,20 @@ class BaseMasker(_BaseMasker):
 
         return img
 
-    def _check_array(
-        self, signals: np.ndarray, sklearn_check: bool = True
-    ) -> np.ndarray:
+    def _check_array(self, signals, sklearn_check: bool = True) -> np.ndarray:
         """Check array to inverse transform.
 
         Parameters
         ----------
-        signals : :obj:`numpy.ndarray`
+        signals : array like (numpy array, pandas or polars DataFrame)
 
         sklearn_check : :obj:`bool`
             Run scikit learn check on input
         """
+        if hasattr(signals, "to_numpy"):
+            # convert pandas or polars dataframe to numpy
+            signals = signals.to_numpy().squeeze()
+
         signals = np.atleast_1d(signals)
 
         if sklearn_check:
@@ -839,13 +841,23 @@ class _BaseSurfaceMasker(_BaseMasker):
         if self.reports:
             self._reporting_data["images"] = imgs
 
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+        _wrap_output = (
+            sklearn_output_config is not None
+            and sklearn_output_config.get("transform", "default") != "default"
+        )
+
         if confounds is None and not self.high_variance_confounds:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=FutureWarning)
                 signals = self.transform_single_imgs(
                     imgs, confounds=confounds, sample_mask=sample_mask
                 )
-            return signals.squeeze() if return_1D else signals
+            return (
+                signals.squeeze()
+                if return_1D and not _wrap_output
+                else signals
+            )
 
         # Compute high variance confounds if requested
         all_confounds = []
@@ -864,13 +876,7 @@ class _BaseSurfaceMasker(_BaseMasker):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
-        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
-
-        return (
-            signals.squeeze()
-            if return_1D and sklearn_output_config is not None
-            else signals
-        )
+        return signals.squeeze() if return_1D and not _wrap_output else signals
 
     def _post_process_inverse_transform(
         self, input: np.ndarray, output: SurfaceImage, return_1D: bool
@@ -943,11 +949,15 @@ class _BaseSurfaceMasker(_BaseMasker):
 
         Parameters
         ----------
-        signals : :obj:`numpy.ndarray`
+        signals : array like (numpy array, pandas or polars DataFrame)
 
         sklearn_check : :obj:`bool`
             Run scikit learn check on input
         """
+        if hasattr(signals, "to_numpy"):
+            # convert pandas or polars dataframe to numpy
+            signals = signals.to_numpy()
+
         signals = np.atleast_2d(signals)
 
         if sklearn_check:

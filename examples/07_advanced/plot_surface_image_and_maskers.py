@@ -32,7 +32,7 @@ check_matplotlib()
 # as a list of :class:`~nilearn.surface.SurfaceImage`.
 # Then we extract data with a masker and
 # compute the mean image across time points for the first subject.
-# We then plot the the mean image.
+# We then plot the mean image.
 import matplotlib.pyplot as plt
 import numpy as np
 
