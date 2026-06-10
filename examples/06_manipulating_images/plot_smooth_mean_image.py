@@ -22,7 +22,7 @@ data = fetch_development_fmri(n_subjects=1)
 
 # Print basic information on the dataset
 print(
-    f"First subject functional nifti image (4D) are located at: {data.func[0]}"
+    f"First subject functional nifti image (4D) is located at: {data.func[0]}"
 )
 
 first_epi_file = data.func[0]
