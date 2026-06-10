@@ -6,6 +6,8 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from nilearn import DEFAULT_DIVERGING_CMAP
@@ -162,7 +164,7 @@ def plot_matrix(
     grid: bool = False,
     reorder: bool = False,
     **kwargs,
-):
+) -> Axes:
     """Plot the given matrix.
 
     Parameters
@@ -283,7 +285,7 @@ def plot_contrast_matrix(
     colorbar: ColorBar = True,
     axes=None,
     output_file: OutputFile = None,
-):
+) -> Axes:
     """Create plot for :term:`contrast` definition.
 
     Parameters
@@ -362,7 +364,7 @@ def plot_design_matrix(
     rescale: bool = True,
     axes=None,
     output_file: OutputFile = None,
-):
+) -> Axes:
     """Plot a design matrix.
 
     Parameters
@@ -420,7 +422,7 @@ def plot_design_matrix(
 @fill_doc
 def plot_event(
     model_event, cmap=None, output_file: OutputFile = None, **fig_kwargs
-):
+) -> Figure:
     """Create plot for event visualization.
 
     .. warning::
@@ -550,7 +552,7 @@ def plot_design_matrix_correlation(
     colorbar: ColorBar = True,
     output_file: OutputFile = None,
     **kwargs,
-):
+) -> Axes:
     """Compute and plot the correlation between regressor of a design matrix.
 
     The drift and constant regressors are omitted from the plot.
