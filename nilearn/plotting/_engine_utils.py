@@ -39,11 +39,6 @@ def save_figure_if_needed(fig, output_file):
 
     output_file: str, Path or None
         file path to save the figure
-
-    Returns
-    -------
-    None if ``output_file`` is None, ``fig`` otherwise.
-
     """
     if output_file is not None:
         output_file = Path(output_file)
