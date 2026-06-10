@@ -1561,14 +1561,6 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
         else:
             tol = 2 * np.finfo(np.float64).eps
 
-        # TODO
-        # some estimator can return some pretty different results
-        # investigate why
-        if isinstance(estimator, (Decoder)):
-            tol = 1e-5
-        elif isinstance(estimator, FREMClassifier):
-            tol = 0.1
-
         assert_allclose_dense_sparse(
             result,
             new_result,
