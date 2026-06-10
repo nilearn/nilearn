@@ -202,6 +202,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
         # Reset report
         # in case where the masker was previously fitted
@@ -380,7 +381,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        return_1D = region_signals.ndim < 2
+        return_1D = hasattr(region_signals, "ndim") and region_signals.ndim < 2
 
         region_signals = self._check_array(region_signals)
 

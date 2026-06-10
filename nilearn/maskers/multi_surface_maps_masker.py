@@ -160,6 +160,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
         # Reset report
         # in case where the masker was previously fitted

@@ -224,15 +224,6 @@ class _MultiMixin:
 
         return sample_mask
 
-    def set_output(self, *, transform=None):
-        """Set the output container when ``"transform"`` is called.
-
-        .. warning::
-
-            This has not been implemented yet.
-        """
-        raise NotImplementedError()
-
 
 class _LabelMaskerMixin:
     lut_: pd.DataFrame

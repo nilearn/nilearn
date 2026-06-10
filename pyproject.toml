@@ -65,6 +65,7 @@ test = [
 # For running unit and docstring tests
 test_common = [
     "numpydoc>=1.8.0",
+    "polars>=1.0.0",
     "pytest>=6.0.0",
     "pytest-csv>=3.0.0",
     "pytest-randomly>=4.0.0",
@@ -330,6 +331,7 @@ module = [
     "numpydoc.*",
     "packaging.*",
     "plotly.*",
+    "polars.*",
     "pytest.*",
     "rich.*",
     "scipy.*",
@@ -506,4 +508,4 @@ max-branches = 22
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 8
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 96
+max-statements = 100
