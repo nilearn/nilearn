@@ -111,6 +111,14 @@ def fdr_threshold(z_vals, alpha):
     threshold : :obj:`float`
         FDR-controling threshold from the Benjamini-Hochberg procedure.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm import fdr_threshold
+    >>> z_vals = np.array([4.0, 3.5, 2.8, 2.5, 1.9, 1.2])
+    >>> float(np.round(fdr_threshold(z_vals, alpha=0.05), 2))
+    1.9
+
     """
     if alpha < 0 or alpha > 1:
         raise ValueError(

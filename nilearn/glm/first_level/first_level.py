@@ -82,6 +82,19 @@ def mean_scaling(Y, axis=0):
     mean : array of shape (n_voxels,)
         The data mean.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import mean_scaling
+    >>> Y = np.array([[1.0, 2.0, 3.0], [2.0, 4.0, 6.0]])
+    >>> Y_scaled, mean = mean_scaling(Y)
+    >>> Y_scaled.shape
+    (2, 3)
+    >>> mean
+    array([1.5, 3. , 4.5])
+    >>> bool(np.allclose(Y_scaled.mean(axis=0), 0))
+    True
+
     """
     mean = Y.mean(axis=axis)
     if (mean == 0).any():

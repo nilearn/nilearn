@@ -42,7 +42,7 @@ print(f"{fsaverage_meshes['pial'].parts['left']=}")
 print(f"{fsaverage_meshes['inflated'].parts['left']=}")
 
 # The fsaverage data contains file names pointing to the file locations
-# The sulcal depth maps will be is used for shading.
+# The sulcal depth maps will be used for shading.
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
 print(f"{fsaverage_sulcal=}")
 
