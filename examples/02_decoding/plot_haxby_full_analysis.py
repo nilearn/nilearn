@@ -27,7 +27,7 @@ func_filename = haxby_dataset.func[0]
 
 # Print basic information on the dataset
 print(
-    "First subject anatomical nifti image (3D) located is "
+    "First subject anatomical nifti image (3D) is located "
     f"at: {haxby_dataset.anat[0]}"
 )
 print(
