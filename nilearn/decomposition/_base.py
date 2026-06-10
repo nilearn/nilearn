@@ -562,7 +562,17 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             and self.dtype != "auto"
             and np.dtype(self.dtype).kind != "f"
         )
-        self.masker_.dtype = None if _dtype_is_int else self.dtype
+        # masker_ must produce float data for PCA/ICA and for
+        # inverse_transform (used to build components_img_). Integer dtypes
+        # round float components to 0, making maps_masker_.fit() fail with
+        # "maps_img contains no map". Only preserve an explicit float dtype;
+        # in all other cases use float32.
+        _is_explicit_float = (
+            self.dtype is not None
+            and self.dtype != "auto"
+            and np.dtype(self.dtype).kind == "f"
+        )
+        self.masker_.dtype = self.dtype if _is_explicit_float else "float32"
 
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img

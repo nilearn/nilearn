@@ -302,6 +302,44 @@ def _canica_components_volume(shape) -> np.ndarray:
     )
 
 
+def _canica_components_volume_n(shape, n: int) -> np.ndarray:
+    """Create n non-overlapping volume components arranged in a grid.
+
+    Divides the first two spatial axes into a grid of n_rows x n_cols
+    blocks, each block yielding one bipolar (+1 / -1) component.
+
+    Parameters
+    ----------
+    shape : tuple of 3 ints
+        3-D spatial shape of the volume.
+
+    n : int
+        Number of components to generate.
+    """
+    n0, n1, _ = shape
+    n_cols = max(2, int(np.ceil(np.sqrt(n))))
+    n_rows = int(np.ceil(n / n_cols))
+
+    bands_0 = np.array_split(np.arange(n0), n_rows)
+    bands_1 = np.array_split(np.arange(n1), n_cols)
+
+    components: list[np.ndarray] = []
+    for b0 in bands_0:
+        for b1 in bands_1:
+            if len(components) >= n:
+                break
+            comp = np.zeros(shape)
+            mid = max(1, len(b0) // 2)
+            # first half of the band is +1, second half is -1
+            comp[b0[:mid][:, None], b1[None, :], :] = 1
+            comp[b0[mid:][:, None], b1[None, :], :] = -1
+            components.append(comp.ravel())
+        if len(components) >= n:
+            break
+
+    return np.vstack(components)
+
+
 def _make_surface_data_from_components(
     components: np.ndarray,
     mesh: PolyMesh,
@@ -363,16 +401,17 @@ def _make_volume_data_from_components(
 
     data = []
 
+    n_components = components.shape[0]
     for _ in range(n_subjects):
         this_data = np.dot(
-            rng.normal(size=(n_timepoints, N_COMPONENTS)), components
+            rng.normal(size=(n_timepoints, n_components)), components
         )
         this_data += noise_level * rng.normal(size=this_data.shape)
         this_data += baseline
 
-        # Get back into 3D for CanICA
+        # Get back into 3D for CanICA: reshape then move time axis to last
         this_data = np.reshape(this_data, (n_timepoints, *shape))
-        this_data = np.rollaxis(this_data, 0, N_COMPONENTS)
+        this_data = np.moveaxis(this_data, 0, -1)
 
         # Put the border of the image to zero, to mimic a brain image
         this_data[:5] = background[:5]
