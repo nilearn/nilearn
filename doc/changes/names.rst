@@ -185,6 +185,8 @@
 
 .. _Konstantin Shmelkov: https://github.com/kshmelkov
 
+.. _Kosei Tanno: https://github.com/KoseiTanno
+
 .. _Kshitij Chawla: https://github.com/kchawla-pi
 
 .. _Kun CHEN: https://chenkun.me

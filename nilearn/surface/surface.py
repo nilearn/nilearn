@@ -879,9 +879,13 @@ def _gifti_img_to_data(gifti_img):
     if len(gifti_img.darrays) == 1:
         return np.asarray([gifti_img.darrays[0].data]).T.squeeze()
 
-    return np.asarray(
-        [arr.data for arr in gifti_img.darrays], dtype=object
-    ).T.squeeze()
+    try:
+        return np.asarray([arr.data for arr in gifti_img.darrays]).T.squeeze()
+    except ValueError:
+        # Ragged arrays (darrays with different shapes): fall back to object.
+        return np.asarray(
+            [arr.data for arr in gifti_img.darrays], dtype=object
+        ).T.squeeze()
 
 
 FREESURFER_MESH_EXTENSIONS = ("orig", "pial", "sphere", "white", "inflated")
@@ -1314,6 +1318,12 @@ class PolyData:
     right : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
             or None, default = None
 
+    dtype : DTypeLike object, default=None
+        dtype to enforce on the data.
+        If ``None`` the original dtype is used.
+
+        .. nilearn_versionadded:: 0.12.1
+
     Attributes
     ----------
     parts : :obj:`dict` of 2D :obj:`numpy.ndarray` (n_vertices, n_timepoints)
@@ -1322,12 +1332,6 @@ class PolyData:
             The first dimension corresponds to the vertices:
             the typical shape of the
             data for a hemisphere is ``(n_vertices, n_time_points)``.
-
-    dtype : DTypeLike object, default=None
-        dtype to enforce on the data.
-        If ``None`` the original dtype if used.
-
-        .. nilearn_versionadded:: 0.12.1
 
     Examples
     --------
@@ -1361,9 +1365,17 @@ class PolyData:
             if param is not None:
                 if not isinstance(param, np.ndarray):
                     param = load_surf_data(param)
+                if param.dtype == object:
+                    warnings.warn(
+                        "Object dtype is not supported for surface data. "
+                        f"Part '{hemi}' will be cast to np.float32.",
+                        UserWarning,
+                        stacklevel=2,
+                    )
+                    param = param.astype(np.float32)
                 parts[hemi] = param
         self.parts = parts
-        self._set_data_dtype(dtype)
+        self._set_dtype(dtype)
 
         self._check_parts()
 
@@ -1501,8 +1513,25 @@ class PolyData:
 
         data_to_gifti(data, filename)
 
-    def _set_data_dtype(self, dtype) -> None:
+    @property
+    def _dtype(self):
+        """Return dtype of the first part.
+
+        Assume all parts have same dtype.
+        """
+        return next(iter(self.parts.values())).dtype
+
+    def _set_dtype(self, dtype) -> None:
+        """Set dtype for all parts."""
         if dtype is not None:
+            if np.dtype(dtype) == np.dtype(object):
+                warnings.warn(
+                    "Object dtype is not supported for surface data. "
+                    "Data will be cast to np.float32 instead.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+                dtype = np.float32
             for h, v in self.parts.items():
                 self.parts[h] = v.astype(dtype)
 
@@ -1830,7 +1859,7 @@ def data_to_gifti(data, gifti_file=None) -> gifti.GiftiImage:
     gifti_file : :obj:`str` or :obj:`pathlib.Path` or None, default=None
         name for the output gifti file.
     """
-    if data.dtype in [np.uint16, np.uint32, np.uint64]:
+    if data.dtype in [np.uint16, np.uint32, np.uint64, bool]:
         data = data.astype(np.uint8)
     elif data.dtype in [np.int8, np.int16, np.int64]:
         data = data.astype(np.int32)
@@ -1935,7 +1964,7 @@ class SurfaceImage:
 
         if isinstance(data, PolyData):
             self.data = data
-            self.data._set_data_dtype(dtype)
+            self.data._set_dtype(dtype)
         else:
             self.data = PolyData(**data, dtype=dtype)
 
