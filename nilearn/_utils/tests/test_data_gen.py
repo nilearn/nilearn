@@ -281,7 +281,7 @@ def test_bids_dataset_no_run_entity(tmp_path):
     files = list(bids_path.glob("**/*bold.nii.gz"))
     assert len(files) == 4
 
-    # 2 mask
+    # 2 masks
     files = list(bids_path.glob("**/*mask.nii.gz"))
     assert len(files) == 2
 

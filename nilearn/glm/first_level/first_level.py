@@ -1589,9 +1589,9 @@ def first_level_from_bids(
              or ``"derivatives"``, or \
              None, default=None
         Mask to be used on data.
-        If ``"derivatives"`` is passed a mask image is generated
+        If ``"derivatives"`` is passed, a mask image is generated
         from the intersection of the relevant mask images
-        of all the runs of a each subject
+        of all the runs of a subject
         and used for the model of that subject.
 
     slice_time_ref : :obj:`float` between ``0.0`` and ``1.0``, or None, \
@@ -2263,7 +2263,7 @@ def _get_events_files(
 
 def _get_masks_files(
     derivatives_path,
-    sub_label,
+    subject_label,
     task_label,
     space_label,
     img_filters,
@@ -2279,13 +2279,9 @@ def _get_masks_files(
     Returns
     -------
     events : :obj:`list` of :obj:`str`
-        List of fullpath to the masks files
+        List of full path to the masks files
     """
-    if (
-        space_label is None
-        or space_label == ""
-        or space_label in ("fsaverage5")
-    ):
+    if space_label in (None, "", "fsaverage5"):
         # TODO for surface data?
         return []
 
@@ -2329,10 +2325,10 @@ def _check_masks_list(masks_files, imgs) -> None:
     Parameters
     ----------
     masks_files : :obj:`list` of :obj:`str`
-        List of fullpath to the mask files
+        List of full path to the mask files
 
     imgs : :obj:`list` of :obj:`str`
-        List of fullpath to the preprocessed images
+        List of full path to the preprocessed images
 
     """
     if len(masks_files) != len(imgs):
