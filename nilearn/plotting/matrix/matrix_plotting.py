@@ -352,7 +352,7 @@ def plot_contrast_matrix(
         fig = axes.figure
         fig.colorbar(mat, fraction=0.025, pad=0.04)
 
-    save_figure_if_needed(axes, output_file)
+    save_figure_if_needed(axes.figure, output_file)
     return axes
 
 
@@ -413,7 +413,7 @@ def plot_design_matrix(
     # corresponding dataframe
     axes.xaxis.tick_top()
 
-    save_figure_if_needed(axes, output_file)
+    save_figure_if_needed(axes.figure, output_file)
     return axes
 
 
@@ -641,5 +641,5 @@ def plot_design_matrix_correlation(
         **kwargs,
     )
 
-    save_figure_if_needed(display, output_file)
+    save_figure_if_needed(display.figure, output_file)
     return display

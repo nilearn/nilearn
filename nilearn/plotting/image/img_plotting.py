@@ -42,7 +42,10 @@ from nilearn.image import (
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
-from nilearn.plotting._engine_utils import create_colormap_from_lut
+from nilearn.plotting._engine_utils import (
+    create_colormap_from_lut,
+    save_figure_if_needed,
+)
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
     check_threshold_not_negative,
@@ -2181,8 +2184,5 @@ def plot_carpet(
         axes.spines["left"].set_position(("outward", buffer))
         axes.set_ylabel("voxels")
 
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(figure)
-
+    save_figure_if_needed(figure, output_file)
     return figure
