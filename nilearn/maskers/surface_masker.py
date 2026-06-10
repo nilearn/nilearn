@@ -357,7 +357,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        return_1D = signals.ndim < 2
+        return_1D = hasattr(signals, "ndim") and signals.ndim < 2
 
         # do not run sklearn_check as they may cause some failure
         # with some GLM inputs

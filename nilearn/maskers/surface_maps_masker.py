@@ -381,7 +381,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        return_1D = region_signals.ndim < 2
+        return_1D = hasattr(region_signals, "ndim") and region_signals.ndim < 2
 
         region_signals = self._check_array(region_signals)
 
