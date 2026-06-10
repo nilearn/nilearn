@@ -550,9 +550,12 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         self.masker_.memory_level = self.memory_level
-        # Only propagate float dtypes to masker_ (used for fitting/SVD).
-        # Integer dtypes would collapse float data to uniform integers,
-        # zeroing out PCA components after centering.
+        # The masker_ must always produce float data for PCA/ICA.
+        # Integer dtypes would collapse zscore values (+/-0 to 3) to 0 after
+        # rounding, zeroing out PCA components. This applies to:
+        #   - explicit integer dtypes (int32, int64, …)
+        #   - 'auto', which inherits the input image dtype (possibly integer)
+        #   - None, which falls back to the input image dtype (same risk)
         # The transform output dtype is handled by maps_masker_ instead.
         _dtype_is_int = (
             self.dtype is not None
