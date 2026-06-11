@@ -47,6 +47,14 @@ from nilearn._utils.param_validation import (
 )
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.exceptions import DimensionError
+from nilearn.nilearn_typing import (
+    ClusterThreshold,
+    HighPass,
+    LowPass,
+    NiimgLike,
+    Standardize,
+    Tr,
+)
 from nilearn.surface.surface import (
     FileMesh,
     SurfaceImage,
@@ -57,14 +65,6 @@ from nilearn.surface.surface import (
 )
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
-from nilearn.typing import (
-    ClusterThreshold,
-    HighPass,
-    LowPass,
-    NiimgLike,
-    Standardize,
-    Tr,
-)
 
 
 def is_volume_image(imgs) -> bool:
