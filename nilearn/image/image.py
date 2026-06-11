@@ -2368,19 +2368,15 @@ def largest_connected_component_img(imgs):
     >>> img.get_fdata()
     array([[[1., 0., 1., 1.],
             [1., 0., 1., 1.]],
-
-        [[1., 0., 1., 1.],
+           [[1., 0., 1., 1.],
             [1., 0., 1., 1.]]])
     >>> from nilearn.image import largest_connected_component_img
-
     >>> largest_cc_image = largest_connected_component_img(img)
     >>> largest_cc_image.get_fdata()
     array([[[0., 0., 1., 1.],
             [0., 0., 1., 1.]],
-
-        [[0., 0., 1., 1.],
+           [[0., 0., 1., 1.],
             [0., 0., 1., 1.]]])
-
     """
     from .._utils.ndimage import largest_connected_component
 
