@@ -842,6 +842,24 @@ def reorder_img(img, resample=None, copy_header=True):
         be passed as the 'interpolation' argument into
         resample_img.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.image import reorder_img
+    >>> affine = np.array([[0., 1., 0., 0.],
+    ...                    [1., 0., 0., 0.],
+    ...                    [0., 0., 1., 0.],
+    ...                    [0., 0., 0., 1.]])
+    >>> data = np.ones((2, 2, 2))
+    >>> img = Nifti1Image(data, affine)
+    >>> reordered = reorder_img(img)
+    >>> reordered.affine
+    array([[1., 0., 0., 0.],
+        [0., 1., 0., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 0., 1.]])
+
     %(copy_header)s
 
         .. nilearn_versionadded:: 0.11.0
