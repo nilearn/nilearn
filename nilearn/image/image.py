@@ -1370,7 +1370,7 @@ def threshold_img(
     %(copy_header)s
 
         .. nilearn_versionadded:: 0.11.0
-    
+
     Returns
     -------
     :obj:`~nibabel.nifti1.Nifti1Image` \
@@ -1392,7 +1392,7 @@ def threshold_img(
     nilearn.glm.threshold_stats_img :
         Threshold a statistical image using the alpha value, optionally with
         false positive control.
-    
+
     Examples
     --------
     >>> import numpy as np
