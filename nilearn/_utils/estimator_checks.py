@@ -3502,7 +3502,7 @@ def check_masker_transform_resampling(estimator_orig) -> None:
             # than the one used at fit time,
             # but there should be a resampling warning
             # we are resampling to data
-            with pytest.warns(UserWarning, match="at transform time"):
+            with pytest.warns(UserWarning, match="Resampling images at transform time"):
                 estimator.transform(imgs_with_different_fov)
 
 
