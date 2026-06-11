@@ -2890,6 +2890,23 @@ def check_niimg_4d(
 
     Its application is idempotent.
 
+    Examples
+    --------
+    Let's create a 4D Nifti1Image::
+
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> img_4d = Nifti1Image(
+    ...     np.arange(24).reshape((2, 3, 2, 2)),
+    ...     affine=np.eye(4),
+    ...     dtype=np.int32,
+    ... )
+
+    We can check if img_4d is a proper 4D image::
+
+    >>> from nilearn.image import check_niimg_4d
+    >>> checked_img = check_niimg_4d(img_4d)
+
     """
     ensure_ndim: Literal[4] = 4
     return check_niimg(
