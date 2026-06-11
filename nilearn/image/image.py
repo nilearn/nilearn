@@ -2345,6 +2345,42 @@ def largest_connected_component_img(imgs):
     This operation is done internally to avoid big-endian issues with
     scipy ndimage module.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>>
+    >>> # Create a simple 3D image with two components.
+    >>> shape = (2, 2, 1)
+    >>> img = Nifti1Image(
+    ...     np.concatenate(
+    ...         [
+    ...             np.ones(shape),
+    ...             np.zeros(shape),
+    ...             np.ones(shape),
+    ...             np.ones(shape),
+    ...         ],
+    ...         axis=-1,
+    ...     ),
+    ...     affine=np.eye(4),
+    ...     dtype=np.int32,
+    ... )
+    >>> img.get_fdata()
+    array([[[1., 0., 1., 1.],
+            [1., 0., 1., 1.]],
+
+        [[1., 0., 1., 1.],
+            [1., 0., 1., 1.]]])
+    >>> from nilearn.image import largest_connected_component_img
+
+    >>> largest_cc_image = largest_connected_component_img(img)
+    >>> largest_cc_image.get_fdata()
+    array([[[0., 0., 1., 1.],
+            [0., 0., 1., 1.]],
+
+        [[0., 0., 1., 1.],
+            [0., 0., 1., 1.]]])
+
     """
     from .._utils.ndimage import largest_connected_component
 
