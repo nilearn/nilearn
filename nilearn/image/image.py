@@ -1370,23 +1370,6 @@ def threshold_img(
     %(copy_header)s
 
         .. nilearn_versionadded:: 0.11.0
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from nibabel import Nifti1Image
-    >>> # Create a 3D "statistical map" with a mix of values
-    >>> data = np.array([[[0., 0.2, 0.8],
-    ...                   [1.5, 3.0, 0.1],
-    ...                   [0.4, 2.2, 0.0]]])
-    >>> img = Nifti1Image(data, affine=np.eye(4), dtype=np.int32)
-    >>> # Threshold: voxels with intensity < 1.0 are set to zero
-    >>> from nilearn.image import threshold_img
-    >>> thresholded_img = threshold_img(img, threshold=1.0, two_sided=False)
-    >>> thresholded_img.get_fdata()
-    array([[[0. , 0. , 0. ],
-            [1.5, 3. , 0. ],
-            [0. , 2.2, 0. ]]])
     
     Returns
     -------
@@ -1409,7 +1392,23 @@ def threshold_img(
     nilearn.glm.threshold_stats_img :
         Threshold a statistical image using the alpha value, optionally with
         false positive control.
-
+    
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> # Create a 3D "statistical map" with a mix of values
+    >>> data = np.array([[[0., 0.2, 0.8],
+    ...                   [1.5, 3.0, 0.1],
+    ...                   [0.4, 2.2, 0.0]]])
+    >>> img = Nifti1Image(data, affine=np.eye(4), dtype=np.int32)
+    >>> # Threshold: voxels with intensity < 1.0 are set to zero
+    >>> from nilearn.image import threshold_img
+    >>> thresholded_img = threshold_img(img, threshold=1.0, two_sided=False)
+    >>> thresholded_img.get_fdata()
+    array([[[0. , 0. , 0. ],
+            [1.5, 3. , 0. ],
+            [0. , 2.2, 0. ]]])
     """
     from nilearn.image.resampling import resample_img
     from nilearn.masking import load_mask_img
