@@ -2693,6 +2693,32 @@ def check_niimg(
     --------
         check_niimg_3d, check_niimg_4d
 
+    Examples
+    --------
+    Let's create a 3D Nifti1Image::
+
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> img_3d = Nifti1Image(
+    ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
+    ... )
+
+    We can check the image::
+
+    >>> from nilearn.image import check_niimg
+    >>> checked_img = check_niimg(img_3d)
+
+    We can get the data of the image::
+
+    >>> from nilearn.image import get_data
+    >>> data = get_data(checked_img)
+    >>> data
+    array([[[ 0,  1,  2,  3],
+            [ 4,  5,  6,  7],
+            [ 8,  9, 10, 11]],
+           [[12, 13, 14, 15],
+            [16, 17, 18, 19],
+            [20, 21, 22, 23]]])
     """
     if not is_volume_image(niimg):
         raise TypeError(
