@@ -191,6 +191,14 @@ def get_data(img: NiimgLike) -> np.ndarray:
     img : Niimg-like object or iterable of Niimg-like objects
         See :ref:`extracting_data`.
 
+    Returns
+    -------
+    :class:`numpy.ndarray`
+        3D or 4D numpy array depending on the shape of `img`. This function
+        preserves the type of the image data.
+        If `img` is an in-memory Nifti image
+        it returns the image data array itself -- not a copy.
+
     Examples
     --------
     >>> import numpy as np
@@ -207,14 +215,6 @@ def get_data(img: NiimgLike) -> np.ndarray:
            [[12, 13, 14, 15],
             [16, 17, 18, 19],
             [20, 21, 22, 23]]])
-
-    Returns
-    -------
-    :class:`numpy.ndarray`
-        3D or 4D numpy array depending on the shape of `img`. This function
-        preserves the type of the image data.
-        If `img` is an in-memory Nifti image
-        it returns the image data array itself -- not a copy.
 
     """
     img = check_niimg(img)
@@ -825,6 +825,15 @@ def mean_img(
 
         .. nilearn_versionadded:: 0.11.0
 
+    Returns
+    -------
+    :obj:`~nibabel.nifti1.Nifti1Image` or :obj:`~nilearn.surface.SurfaceImage`
+        Mean image.
+
+    See Also
+    --------
+    nilearn.image.math_img : For more general operations on images.
+
     Examples
     --------
     >>> import numpy as np
@@ -844,15 +853,6 @@ def mean_img(
             [0.5, 0.5]],
            [[0.5, 0.5],
             [0.5, 0.5]]])
-
-    Returns
-    -------
-    :obj:`~nibabel.nifti1.Nifti1Image` or :obj:`~nilearn.surface.SurfaceImage`
-        Mean image.
-
-    See Also
-    --------
-    nilearn.image.math_img : For more general operations on images.
 
     """
     check_params(locals())
@@ -1646,6 +1646,11 @@ def math_img(
     --------
     nilearn.image.mean_img : To simply compute the mean of multiple images
 
+    Notes
+    -----
+    This function is the Python equivalent of ImCal in SPM or fslmaths
+    in FSL.
+
     Examples
     --------
     Let's load an image using nilearn datasets module::
@@ -1676,10 +1681,6 @@ def math_img(
      ...                                   img1=anatomical_image, img2=log_img,
      ...                                   copy_header_from="img1")
 
-    Notes
-    -----
-    This function is the Python equivalent of ImCal in SPM or fslmaths
-    in FSL.
 
     """
     img_missing_from_formula = [
