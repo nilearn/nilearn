@@ -101,6 +101,8 @@
 
 .. _Fabian Pedregosa: https://github.com/fabianp
 
+.. _Fernanda Ponce: https://github.com/ferponcem
+
 .. _Florent Pollet: https://florian6973.github.io/
 
 .. _Franz Liem: https://github.com/fliem
