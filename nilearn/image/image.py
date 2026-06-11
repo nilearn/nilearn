@@ -2803,6 +2803,33 @@ def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
 
     Its application is idempotent.
 
+    Examples
+    --------
+    Let's create a 3D Nifti1Image::
+
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> img_3d = Nifti1Image(
+    ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
+    ... )
+
+    We can check if img_3d is a proper 3D image::
+
+    >>> from nilearn.image import check_niimg_3d
+    >>> checked_img = check_niimg_3d(img_3d)
+
+    We can get the data of the image::
+
+    >>> from nilearn.image import get_data
+    >>> data = get_data(checked_img)
+    >>> data
+    array([[[ 0,  1,  2,  3],
+            [ 4,  5,  6,  7],
+            [ 8,  9, 10, 11]],
+           [[12, 13, 14, 15],
+            [16, 17, 18, 19],
+            [20, 21, 22, 23]]])
+
     """
     return check_niimg(niimg, ensure_ndim=3, dtype=dtype)
 
