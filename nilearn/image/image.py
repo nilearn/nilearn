@@ -1387,9 +1387,7 @@ def threshold_img(
     array([[[0. , 0. , 0. ],
             [1.5, 3. , 0. ],
             [0. , 2.2, 0. ]]])
-    >>> # Threshold using a percentile string: keep only the top 50%
-    >>> thresholded_img = threshold_img(img, threshold="50%", two_sided=False)
-
+    
     Returns
     -------
     :obj:`~nibabel.nifti1.Nifti1Image` \
