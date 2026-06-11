@@ -140,6 +140,8 @@ Enhancements
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.image.largest_connected_component_img`.
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.threshold_img` (:gh:`6280` by `Fernanda Ponce`_).
+
 Changes
 -------
 
