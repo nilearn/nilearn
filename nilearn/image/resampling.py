@@ -842,6 +842,15 @@ def reorder_img(img, resample=None, copy_header=True):
         be passed as the 'interpolation' argument into
         resample_img.
 
+    %(copy_header)s
+
+        .. nilearn_versionadded:: 0.11.0
+
+    Returns
+    -------
+    nibabel.Nifti1Image
+        Reordered image with the affine diagonal.
+
     Examples
     --------
     >>> import numpy as np
@@ -859,11 +868,6 @@ def reorder_img(img, resample=None, copy_header=True):
         [0., 1., 0., 0.],
         [0., 0., 1., 0.],
         [0., 0., 0., 1.]])
-
-    %(copy_header)s
-
-        .. nilearn_versionadded:: 0.11.0
-
     """
     from .image import new_img_like
 
