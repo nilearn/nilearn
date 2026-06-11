@@ -97,6 +97,7 @@ Some other past or present contributors are:
 * `Eric Larson`_: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
 * `Evan Edmond`_: University of Oxford, Oxford, UK
 * `Fabian Pedregosa`_: @google, Geneva, Switzerland
+* `Fernanda Ponce`_: Université Paris-Saclay, Inria, Saclay, France
 * `Florent Pollet`_: ENS Paris-Saclay, Saclay, France
 * `Franz Liem`_
 * `François Paugam`_
