@@ -412,6 +412,33 @@ def signals_to_img_labels(
     nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels
         images e.g. clusters
 
+    Examples
+    --------
+    Create signals with 5 time points and 3 regions:
+
+    >>> import numpy as np
+    >>> signals = np.random.default_rng(42).standard_normal((5, 3))
+
+    Create labels image with definitions for 3 regions:
+
+    >>> labels_data = np.zeros((2, 2, 3), dtype="int32")
+    >>> h0, h1, h2 = 1, 1, 1
+    >>> labels_data[:h0, :, :h2] = 1
+    >>> labels_data[:h0, :, h2:] = 2
+    >>> labels_data[h0:, :h1, :h2] = 3
+    >>> labels_data[h0:, :, :] = 3
+    >>> labels_data
+    array([[[1, 2, 2],
+        [1, 2, 2]],
+       [[3, 3, 3],
+        [3, 3, 3]]], dtype=int32)
+    >>> labels_img = Nifti1Image(labels_data, np.eye(4))
+
+    Now we can create image from region signals defined as labels:
+
+    >>> from nilearn.regions import signals_to_img_labels
+    >>> data_img = signals_to_img_labels(signals, labels_img)
+
     """
     labels_img = check_niimg_3d(labels_img)
 
