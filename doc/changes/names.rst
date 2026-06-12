@@ -47,6 +47,8 @@
 
 .. _Basile Pinsard: https://github.com/bpinsard
 
+.. _Bastien Cagna: https://github.com/bastiencagna
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -100,6 +102,8 @@
 .. _Evan Edmond: https://evan.science/
 
 .. _Fabian Pedregosa: https://github.com/fabianp
+
+.. _Fernanda Ponce: https://github.com/ferponcem
 
 .. _Florent Pollet: https://florian6973.github.io/
 

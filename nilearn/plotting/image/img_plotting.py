@@ -458,13 +458,13 @@ def plot_img(
     ValueError
         if the specified threshold is a negative number
 
-    .. note::
+    Notes
+    -----
+    This is a low-level function. For most use cases, other plotting
+    functions might be more appropriate and easier to use.
 
-        This is a low-level function. For most use cases, other plotting
-        functions might be more appropriate and easier to use.
-
-    .. seealso::
-
+    See Also
+    --------
         :func:`~nilearn.plotting.plot_anat`
             To simply plot anatomical images
         :func:`~nilearn.plotting.plot_epi`
@@ -2033,6 +2033,10 @@ def plot_carpet(
     In cases of long acquisitions (>800 volumes), the data will be downsampled
     to have fewer than 800 volumes before being plotted.
 
+    References
+    ----------
+    .. footbibliography::
+
     Examples
     --------
     >>> from nilearn.plotting import plot_carpet
@@ -2054,11 +2058,6 @@ def plot_carpet(
     ... )
 
     >>> display.show()
-
-
-    References
-    ----------
-    .. footbibliography::
 
     """
     check_params(locals())
