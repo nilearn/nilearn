@@ -40,6 +40,11 @@ contact:
 license: BSD-4-Clause
 
 authors:
+  - given-names: Ruben
+    family-names: Dörfel
+    website: https://rdoerfel.github.io/
+    affiliation: Karolinska Institutet
+    orcid: https://orcid.org/0000-0002-5920-5102
   - family-names: Nilearn contributors
   - given-names: Ahmad
     family-names: Chamma
@@ -137,6 +142,11 @@ authors:
     family-names: Pinsard
     website: https://github.com/bpinsard
     affiliation: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
+  - given-names: Bastien
+    family-names: Cagna
+    website: https://github.com/bastiencagna
+    affiliation: CATI, APHP, Paris, France
+    orcid: https://orcid.org/0009-0005-4243-5234
   - given-names: Ben
     family-names: Cipollini
     website: https://github.com/bcipolli
@@ -260,6 +270,11 @@ authors:
     website: https://github.com/fabianp
     affiliation: '@google, Geneva, Switzerland'
     orcid: https://orcid.org/0000-0003-4025-3953
+  - given-names: Fernanda
+    family-names: Ponce
+    website: https://github.com/ferponcem
+    affiliation: Université Paris-Saclay, Inria, Saclay, France
+    orcid: https://orcid.org/0000-0001-7142-0975
   - given-names: Florent
     family-names: Pollet
     website: https://florian6973.github.io/

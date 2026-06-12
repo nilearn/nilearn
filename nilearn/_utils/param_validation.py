@@ -7,7 +7,7 @@ from typing import Any, Literal, get_args, get_origin
 
 import numpy as np
 
-import nilearn.typing as nilearn_typing
+from nilearn import nilearn_typing
 from nilearn._utils.logger import find_stack_level
 
 

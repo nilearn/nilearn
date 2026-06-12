@@ -45,9 +45,9 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
-from nilearn.typing import NiimgLike
 
 
 def _warn_ignored_surface_masker_params(estimator) -> None:
