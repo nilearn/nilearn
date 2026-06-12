@@ -24,8 +24,8 @@ from nilearn.image import (
     threshold_img,
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.nilearn_typing import ClusterThreshold, HeightControl
 from nilearn.surface.surface import SurfaceImage, check_surf_img
-from nilearn.typing import ClusterThreshold, HeightControl
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
 

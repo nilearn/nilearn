@@ -48,11 +48,11 @@ from nilearn.image.image import (
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.mass_univariate import permuted_ols
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface.surface import (
     SurfaceImage,
 )
 from nilearn.surface.utils import check_polymesh_equal
-from nilearn.typing import NiimgLike
 
 
 def _input_type_error_message(second_level_input):
