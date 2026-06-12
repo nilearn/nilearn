@@ -1655,7 +1655,7 @@ def first_level_from_bids(
         of the i\\ :sup:`th` subject.
 
     models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
-        ``None``
+        :obj:`list` of None
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
         ``models_confounds[i][j]`` corresponds to the j\\ :sup:`th`
@@ -2371,7 +2371,7 @@ def _get_confounds(
     imgs,
     verbose,
     kwargs_load_confounds,
-) -> list[pd.DataFrame] | None:
+) -> list[pd.DataFrame] | list[None]:
     """Get confounds.tsv files for a given subject, task and filters.
 
     Also checks that the number of confounds.tsv files
@@ -2400,9 +2400,10 @@ def _get_confounds(
 
     Returns
     -------
-    confounds : :obj:`list` of :class:`pandas.DataFrame` or None
+    confounds : :obj:`list` of :class:`pandas.DataFrame` or \
+        :obj:`list` of None
 
-    """
+    """   
     # pop the 'desc' filter
     # it would otherwise trigger some meaningless warnings
     # as desc entity are not supported in BIDS raw datasets
@@ -2431,8 +2432,11 @@ def _get_confounds(
     )
     _check_confounds_list(confounds=confounds_files, imgs=imgs)
 
-    if not confounds_files or kwargs_load_confounds is None:
-        return None
+    if not confounds_files:
+        return [None] *  len(imgs)
+    
+    if kwargs_load_confounds is None:
+        return [None] *  len(imgs)
 
     if len(kwargs_load_confounds) == 0:
         confounds = [

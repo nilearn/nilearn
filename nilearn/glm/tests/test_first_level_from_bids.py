@@ -78,12 +78,9 @@ def _check_output_first_level_from_bids(
 
     assert len(models) == len(confounds)
     for confound_ in confounds:
-        # confound_ should be None or a list of dataframes
-        try:
-            assert confound_ is None
-        except AssertionError:
-            assert isinstance(confound_, list)
-            assert all(isinstance(x, pd.DataFrame) for x in confound_)
+        # confound_ should be list of None or a list of dataframes
+        assert isinstance(confound_, list)
+        assert all((x is None or isinstance(x, pd.DataFrame)) for x in confound_)
 
 
 def test_set_repetition_time_warnings(tmp_path):
@@ -774,8 +771,8 @@ def test_all_confounds_missing(tmp_path_factory, confounds_strategy):
     assert len(models) == len(imgs)
     assert len(models) == len(events)
     assert len(models) == len(confounds)
-    for condounds_ in confounds:
-        assert condounds_ is None
+    for confound_ in confounds:
+        assert all((x is None or isinstance(x, pd.DataFrame)) for x in confound_)
 
 
 @pytest.mark.parametrize("n_sub", [1, 2])
@@ -801,8 +798,8 @@ def test_confounds_strategy_none(tmp_path, n_sub):
     assert len(models) == len(imgs)
     assert len(models) == len(events)
     assert len(models) == len(confounds)
-    for c in confounds:
-        assert c is None
+    for confound_ in confounds:
+        assert all((x is None or isinstance(x, pd.DataFrame)) for x in confound_)
 
 
 def test_no_derivatives(tmp_path):
