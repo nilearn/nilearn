@@ -563,7 +563,7 @@ def compute_background_mask(
     >>> from nibabel import Nifti1Image
     >>> from nilearn.masking import compute_epi_mask
     >>> affine = np.eye(4)
-    >>> data = np.random.rand((2,3,4))
+    >>> data = np.random.rand(2,3,4)
 
     Set background to zero:
 
