@@ -2719,6 +2719,23 @@ def check_niimg(
            [[12, 13, 14, 15],
             [16, 17, 18, 19],
             [20, 21, 22, 23]]])
+
+    We can also check the image specifying expected dimension. For example for
+    a 3D image::
+
+    >>> from nilearn.image import check_niimg
+    >>> checked_img = check_niimg(img_3d, ensure_ndim=3)
+
+    Let's check to ensure the same image to be 4D::
+
+    >>> from nilearn.image import check_niimg
+    >>> checked_img = check_niimg(img_3d, ensure_ndim=4)
+    Traceback (most recent call last):
+      ...
+    nilearn.exceptions.DimensionError: Input data has incompatible
+    dimensionality: Expected dimension is 4D and you provided a 3D image.
+    See https://nilearn.github.io/stable/manipulating_images/input_output.html.
+
     """
     if not is_volume_image(niimg):
         raise TypeError(
@@ -2830,6 +2847,23 @@ def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
             [16, 17, 18, 19],
             [20, 21, 22, 23]]])
 
+    We can try it with 4D image::
+
+    >>> img_4d = Nifti1Image(
+    ...     np.arange(24).reshape((2, 3, 2, 2)),
+    ...     affine=np.eye(4),
+    ...     dtype=np.int32,
+    ... )
+
+    Let's see the result for img_4d::
+
+    >>> checked_img = check_niimg_3d(img_4d)
+    Traceback (most recent call last):
+      ...
+    nilearn.exceptions.DimensionError: Input data has incompatible
+    dimensionality: Expected dimension is 3D and you provided a 4D image.
+    See https://nilearn.github.io/stable/manipulating_images/input_output.html.
+
     """
     return check_niimg(niimg, ensure_ndim=3, dtype=dtype)
 
@@ -2906,6 +2940,19 @@ def check_niimg_4d(
 
     >>> from nilearn.image import check_niimg_4d
     >>> checked_img = check_niimg_4d(img_4d)
+
+    Now let's try with a 3D image::
+
+    >>> from nibabel import Nifti1Image
+    >>> img_3d = Nifti1Image(
+    ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
+    ... )
+    >>> checked_img = check_niimg_4d(img_3d)
+    Traceback (most recent call last):
+      ...
+    nilearn.exceptions.DimensionError: Input data has incompatible
+    dimensionality: Expected dimension is 4D and you provided a 3D image.
+    See https://nilearn.github.io/stable/manipulating_images/input_output.html.
 
     """
     ensure_ndim: Literal[4] = 4
