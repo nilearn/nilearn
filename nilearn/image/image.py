@@ -2975,7 +2975,7 @@ def check_niimg_4d(
 
     Examples
     --------
-    Let's create a 4D Nifti1Image::
+    Let's create a 4D Nifti1Image:
 
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
@@ -2985,12 +2985,12 @@ def check_niimg_4d(
     ...     dtype=np.int32,
     ... )
 
-    We can check if img_4d is a proper 4D image::
+    We can check if img_4d is a proper 4D image:
 
     >>> from nilearn.image import check_niimg_4d
     >>> checked_img = check_niimg_4d(img_4d)
 
-    Now let's try with a 3D image::
+    Now let's try with a 3D image:
 
     >>> from nibabel import Nifti1Image
     >>> img_3d = Nifti1Image(
