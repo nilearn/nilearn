@@ -446,9 +446,9 @@ def smooth_img(imgs, fwhm):
 
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
-    >>> data = np.array([[[0., 0.2, 0.8],
-    ...                   [1.5, 3.0, 0.1],
-    ...                   [0.4, 2.2, 0.0]]])
+    >>> data = np.array([[[0.0, 0.0, 0.0],
+    ...                   [0.0, 3.0, 0.0],
+    ...                   [0.0, 0.0, 0.0]]])
     >>> img = Nifti1Image(data, affine=np.eye(4))
 
     Now we can smooth the image::
