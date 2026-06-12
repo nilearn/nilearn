@@ -77,8 +77,12 @@ def _check_output_first_level_from_bids(
 
     assert len(models) == len(confounds)
     for confound_ in confounds:
-        assert isinstance(confound_, list)
-        assert all(isinstance(x, pd.DataFrame) for x in confound_)
+        # confound_ should be None or a list of dataframes
+        try:
+            assert confound_ is None
+        except AssertionError:
+            assert isinstance(confound_, list)
+            assert all(isinstance(x, pd.DataFrame) for x in confound_)
 
 
 def test_set_repetition_time_warnings(tmp_path):
@@ -1043,6 +1047,32 @@ def test_subject_order_with_labels(tmp_path):
     expected_subjects = ["01", "02", "03", "04", "05", "10"]
     returned_subjects = [model.subject_label for model in models]
     assert returned_subjects == expected_subjects
+
+
+@pytest.mark.parametrize("confounds_strategy", [None, ("motion",)])
+def test_surface_confounds(tmp_path, confounds_strategy):
+    """Test finding and loading Surface data in BIDS dataset."""
+    n_sub = 2
+    tasks = ["main"]
+    n_runs = [2]
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        n_ses=0,
+        tasks=tasks,
+        n_runs=n_runs,
+        n_vertices=10242,
+    )
+
+    models, imgs, events, confounds = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="fsaverage5",
+        confounds_strategy=confounds_strategy,
+    )
+
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
 
 def test_surface(tmp_path):
