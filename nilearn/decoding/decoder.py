@@ -57,9 +57,9 @@ from nilearn.decoding._utils import (
 from nilearn.image import check_niimg
 from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.nilearn_typing import SupportedClassifiers, SupportedRegressors
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
-from nilearn.typing import SupportedClassifiers, SupportedRegressors
 
 _MIN_N_FEATURES_FOR_SCREENING = 100
 
