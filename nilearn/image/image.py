@@ -1663,7 +1663,7 @@ def math_img(
     >>> from nilearn.image import math_img
     >>> log_img = math_img("np.log(img)", img=anatomical_image)
 
-    We can also apply mathematical operations on several images::
+    We can also apply mathematical operations on several images:
 
     >>> result_img = math_img("img1 + img2",
     ...                       img1=anatomical_image, img2=log_img)
@@ -1674,12 +1674,13 @@ def math_img(
 
     .. nilearn_versionadded:: 0.10.4
 
-    We can also copy the header from one of the input images using
-    ``copy_header_from``:
+        We can also copy the header from one of the input images using
+        ``copy_header_from``:
 
-    >>> result_img_with_header = math_img("img1 + img2",
-    ...                                   img1=anatomical_image, img2=log_img,
-    ...                                   copy_header_from="img1")
+        >>> result_img_with_header = math_img("img1 + img2",
+        ...                                   img1=anatomical_image,
+        ...                                   img2=log_img,
+        ...                                   copy_header_from="img1")
 
 
     """
