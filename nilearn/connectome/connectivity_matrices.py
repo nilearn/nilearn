@@ -259,6 +259,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal: bool = False) -> np.ndarray:
     Discard_diagonal=True drops the diagonal entries entirely::
 
     >>> vec_no_diag = sym_matrix_to_vec(sym_matrix, discard_diagonal=True)
+    >>> vec_no_diag
     array([2., 3., 5.])
 
     """
