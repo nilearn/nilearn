@@ -47,6 +47,8 @@
 
 .. _Basile Pinsard: https://github.com/bpinsard
 
+.. _Bastien Cagna: https://github.com/bastiencagna
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
