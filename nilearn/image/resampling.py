@@ -455,6 +455,35 @@ def resample_img(
     if the given target_affine (transformation matrix) is diagonal and
     homogeneous.
 
+    Examples
+    --------
+    Resample an image with 1 mm voxels onto a 2 mm voxel grid
+    by passing only a target affine:
+
+    >>> import numpy as np
+    >>> import nibabel as nib
+    >>> from nilearn import image
+    >>> data = np.zeros((4, 4, 4))
+    >>> img = nib.Nifti1Image(data, affine=np.eye(4))  # 1 mm voxels
+    >>> resampled = image.resample_img(
+    ...     img,
+    ...     target_affine=np.eye(4) * 2,  # 2 mm voxels
+    ... )
+    >>> resampled.affine[:3, :3]
+    array([[2., 0., 0.],
+            [0., 2., 0.],
+            [0., 0., 2.]])
+    >>> resampled.shape
+    (3, 3, 3)
+
+    To control the output dimensions exactly, pass `target_shape`
+    alongside the affine:
+
+    >>> resampled = image.resample_img(
+    ...     img, target_affine=np.eye(4) * 2, target_shape=(2, 2, 2)
+    ... )
+    >>> resampled.shape
+    (2, 2, 2)
     """
     check_params(locals())
     _check_resample_img_inputs(target_shape, target_affine, interpolation)
