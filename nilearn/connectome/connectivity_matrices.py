@@ -294,7 +294,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     >>> import numpy as np
     >>> # A vector representing the flattened lower triangular part
     >>> # (including the diagonal) of a symmetric matrix
-    >>> vec = np.array([1, 2, 3, 4, 5, 6])
+    >>> vec = np.arange(1, 7)
     >>> from nilearn.connectome import vec_to_sym_matrix
     >>> sym = vec_to_sym_matrix(vec)
     >>> sym
