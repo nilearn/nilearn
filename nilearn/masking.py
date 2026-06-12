@@ -361,6 +361,7 @@ def compute_epi_mask(
     -------
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
+
     """
     check_params(locals())
     logger.log("EPI mask computation", verbose)
@@ -555,6 +556,19 @@ def compute_background_mask(
     -------
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.masking import compute_epi_mask
+    >>> affine = np.eye(4)
+    >>> data = np.random.rand((2,3,4))
+    >>> #set background to zero
+    >>> data[0:3,0:2,0:3] = 0
+    >>> img = Nifti1Image(data,affine)
+    >>> background_mask = compute_background_mask(img)
+    >>> print(background_mask.get_fdata())
     """
     check_params(locals())
     logger.log("Background mask computation", verbose)
