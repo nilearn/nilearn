@@ -242,6 +242,23 @@ def sym_matrix_to_vec(symmetric, discard_diagonal: bool = False) -> np.ndarray:
         (..., n_features * (n_features + 1) / 2) if discard_diagonal is False
         and (..., (n_features - 1) * n_features / 2) otherwise.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> sym_matrix = np.array([[1.0, 2.0, 3.0],
+    ...                        [2.0, 1.0, 5.0],
+    ...                        [3.0, 5.0, 1.0]])
+    >>> from nilearn.connectome import sym_matrix_to_vec
+    >>> # Diagonal elements (all 1.0 here) are divided by sqrt(2)
+    >>> vec = sym_matrix_to_vec(sym_matrix)
+    >>> vec
+    array([0.70710678, 2.        , 0.70710678, 3.        , 5.        ,
+           0.70710678])
+    >>> # discard_diagonal=True drops the diagonal entries entirely
+    >>> vec_no_diag = sym_matrix_to_vec(sym_matrix, discard_diagonal=True)
+    >>> vec_no_diag
+    array([2., 3., 5.])
+
     """
     if discard_diagonal:
         # No scaling, we directly return the values
