@@ -440,6 +440,27 @@ def smooth_img(imgs, fwhm):
     Niimg-like object, :obj:~nilearn.surface.SurfaceImage.
     Smoothed input image or surface.
 
+    Examples
+    --------
+    Let's first create a Nifti1Image::
+
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> data = np.array([[[0., 0.2, 0.8],
+    ...                   [1.5, 3.0, 0.1],
+    ...                   [0.4, 2.2, 0.0]]])
+    >>> img = Nifti1Image(data, affine=np.eye(4))
+
+    Now we can smooth the image::
+
+    >>> from nilearn.image import smooth_img, get_data
+    >>> smoothed_img = smooth_img(img, fwhm=2)
+    >>> data = get_data(smoothed_img)
+    >>> data
+    array([[[0.57124888, 0.73652723, 0.6933248 ],
+        [1.12224931, 1.24926252, 0.74885515],
+        [1.10007979, 1.30044878, 0.67800354]]])
+
     """
     is_surface = False
     single_img = True
