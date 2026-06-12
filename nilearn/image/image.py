@@ -2896,7 +2896,7 @@ def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
             [16, 17, 18, 19],
             [20, 21, 22, 23]]])
 
-    We can try it with 4D image::
+    We can try it with a 4D image::
 
     >>> img_4d = Nifti1Image(
     ...     np.arange(24).reshape((2, 3, 2, 2)),
