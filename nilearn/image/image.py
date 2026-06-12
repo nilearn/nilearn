@@ -2235,6 +2235,23 @@ def concat_imgs(
     --------
     nilearn.image.index_img
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+
+    Two 3D images, each (2, 2, 1)
+
+    >>> img1 = Nifti1Image(np.zeros((2, 2, 1)), affine=np.eye(4))
+    >>> img2 = Nifti1Image(np.ones((2, 2, 1)), affine=np.eye(4))
+
+    concat_imgs stacks them along a new 4th dimension
+
+    >>> from nilearn.image import concat_imgs
+    >>> concatenated_img = concat_imgs([img1, img2])
+    >>> concatenated_img.shape
+    (2, 2, 1, 2)
+
     """
     check_params(locals())
 
