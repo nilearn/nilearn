@@ -144,6 +144,13 @@ Enhancements
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for  :func:`~nilearn.regions.signal_extraction.signals_to_img_labels` function (:gh:`6306` by `Hande Gözükan`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.img.smooth_img` function (:gh:`6302` by `Hande Gözükan`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.glm.threshold_stats_img` function (:gh:`6297` by `Hande Gözükan`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.check_niimg`, :func:`~nilearn.image.check_niimg_3d` and	:func:`~nilearn.image.check_niimg_4d` functions (:gh:`6286` by `Hande Gözükan`_).
+
+
 Changes
 -------
 
