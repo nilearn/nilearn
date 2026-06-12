@@ -75,7 +75,7 @@ jobs:
                 uv pip install -e . --group test_free_threaded
                 uv pip install --verbose --upgrade --pre \
                     --index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple \
-                    pandas scikit-learn matplotlib
+                    pandas scikit-learn matplotlib==3.10.9
 
         -   name: Run test suite
             # run on several threads
