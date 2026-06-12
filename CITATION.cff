@@ -137,6 +137,11 @@ authors:
     family-names: Pinsard
     website: https://github.com/bpinsard
     affiliation: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
+  - given-names: Bastien
+    family-names: Cagna
+    website: https://github.com/bastiencagna
+    affiliation: CATI, APHP, Paris, France
+    orcid: https://orcid.org/0009-0005-4243-5234
   - given-names: Ben
     family-names: Cipollini
     website: https://github.com/bcipolli
