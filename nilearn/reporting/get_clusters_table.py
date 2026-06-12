@@ -23,8 +23,8 @@ from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
+from nilearn.nilearn_typing import ClusterThreshold
 from nilearn.surface.surface import SurfaceImage, find_surface_clusters
-from nilearn.typing import ClusterThreshold
 
 
 def _local_max(data, affine, min_distance):
