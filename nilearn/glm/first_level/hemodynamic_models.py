@@ -93,6 +93,10 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
+        .. nilearn_versionchanged:: 0.11.0
+
+           The old ``tr`` parameter was replaced by ``t_r``.
+
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
 
@@ -126,6 +130,10 @@ def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     ----------
     t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
+
+        .. nilearn_versionchanged:: 0.11.0
+
+           The old ``tr`` parameter was replaced by ``t_r``.
 
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
@@ -208,6 +216,10 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
+        .. nilearn_versionchanged:: 0.11.0
+
+           The old ``tr`` parameter was replaced by ``t_r``.
+
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
 
@@ -247,6 +259,10 @@ def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     ----------
     t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
+
+        .. nilearn_versionchanged:: 0.11.0
+
+           The old ``tr`` parameter was replaced by ``t_r``.
 
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
@@ -334,6 +350,10 @@ def spm_dispersion_derivative(
     t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
+        .. nilearn_versionchanged:: 0.11.0
+
+           The old ``tr`` parameter was replaced by ``t_r``.
+
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor in seconds.
 
@@ -373,6 +393,10 @@ def glover_dispersion_derivative(
     ----------
     t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
+
+        .. nilearn_versionchanged:: 0.11.0
+
+           The old ``tr`` parameter was replaced by ``t_r``.
 
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor in seconds.
