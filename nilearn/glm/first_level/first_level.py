@@ -2262,19 +2262,39 @@ def _get_events_files(
 
 
 def _get_masks_files(
-    derivatives_path,
-    sub_label,
-    task_label,
-    space_label,
-    img_filters,
-    imgs,
-    verbose,
+    derivatives_path: Path,
+    sub_label: str,
+    task_label: str,
+    space_label: str,
+    img_filters: list[tuple[str, str]],
+    imgs: list[str],
+    verbose: int,
 ) -> list[str]:
     """Get mask images for a given subject, task, space and filters.
 
     Parameters
     ----------
-    TODO
+    dataset_path : :obj:`pathlib.Path`
+        Directory of the derivatives BIDS dataset.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like sub-<sub_label>_.
+
+    task_label : :obj:`str`
+        Task label as specified in the file names like _task-<task_label>_.
+
+    task_label : :obj:`str`
+        Space label as specified in the file names like _space-<space_label>_.
+
+    img_filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    imgs : :obj:`list` of :obj:`str`
+        List of fullpath to the preprocessed images
+
+    verbose : :obj:`integer`
+        Indicate the level of verbosity.
 
     Returns
     -------
@@ -2316,7 +2336,7 @@ def _get_masks_files(
     return masks_files
 
 
-def _check_masks_list(masks_files, imgs) -> None:
+def _check_masks_list(masks_files: list[str], imgs: list[str]) -> None:
     """Check the number of confounds.tsv files.
 
     If no file is found, it will be assumed there are none,
