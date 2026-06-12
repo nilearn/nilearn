@@ -2769,7 +2769,7 @@ def check_niimg(
             [16, 17, 18, 19],
             [20, 21, 22, 23]]])
 
-    We can also check the image specifying expected dimension. For example for
+    We can also check the image specifying the expected dimension. For example for
     a 3D image::
 
     >>> from nilearn.image import check_niimg
