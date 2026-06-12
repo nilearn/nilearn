@@ -451,7 +451,7 @@ def smooth_img(imgs, fwhm):
     ...                   [0.0, 0.0, 0.0]]])
     >>> img = Nifti1Image(data, affine=np.eye(4))
 
-    Now we can smooth the image::
+    Now we can smooth the image:
 
     >>> from nilearn.image import smooth_img, get_data
     >>> smoothed_img = smooth_img(img, fwhm=2)
