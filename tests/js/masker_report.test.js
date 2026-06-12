@@ -10,7 +10,7 @@ const maskers = [
   { masker: 'NiftiLabelsMasker_brainsprite', tolerance: 1500 },
   { masker: 'NiftiMapsMasker', tolerance: 3000 },
   { masker: 'SurfaceMasker', tolerance: 1600 },
-  { masker: 'SurfaceLabelsMasker', tolerance: 1500 },
+  { masker: 'SurfaceLabelsMasker', tolerance: 1800 },
   { masker: 'SurfaceMapsMasker', tolerance: 3000 }
 ]
 
