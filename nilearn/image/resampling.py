@@ -824,6 +824,36 @@ def resample_to_img(
     --------
     nilearn.image.resample_img
 
+    Examples
+    --------
+    Resample a source image to match the shape and affine of a
+    target image:
+
+    >>> import numpy as np
+    >>> import nibabel as nib
+    >>> from nilearn import image
+    >>> source_data = np.zeros((4, 4, 4))
+    >>> source_img = nib.Nifti1Image(source_data, affine=np.eye(4))
+    >>> target_data = np.zeros((2, 2, 2))
+    >>> target_img = nib.Nifti1Image(
+    ...     target_data,
+    ...     affine=np.eye(4) * 2,  # 2 mm voxels
+    ... )
+    >>> resampled = image.resample_to_img(source_img, target_img)
+    >>> resampled.shape
+    (2, 2, 2)
+    >>> resampled.affine[:3, :3]
+    array([[2., 0., 0.],
+          [0., 2., 0.],
+          [0., 0., 2.]])
+
+    The resampled image inherits the shape and affine of the
+    target image:
+
+    >>> np.array_equal(resampled.affine, target_img.affine)
+    True
+    >>> resampled.shape == target_img.shape
+    True
     """
     check_params(locals())
 
