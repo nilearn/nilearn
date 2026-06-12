@@ -2432,32 +2432,49 @@ def copy_img(img):
     >>> from nilearn.image import copy_img
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
-    >>> # create a dummy image
+    
+    Create a dummy image::
+
     >>> affine = np.eye(4)
     >>> data = np.ones((3, 3, 3))
     >>> img_3d = Nifti1Image(data, affine)
-    >>> # copy the image vs reference assignment
+    
+    Copy the image vs reference assignment::
+
     >>> img_3d_copy = copy_img(img_3d)
-    >>> # Use reference assignment. This is not copying, img_3d_notcopy
-    >>> # points to the same object as img_3d!
+    
+    Use reference assignment. This is not copying, img_3d_notcopy points to the same 
+    object as img_3d!::
+
     >>> img_3d_notcopy = img_3d
-    >>> # show initial dtypes; they are all the same
+    
+    Show initial dtypes; they are all the same::
+
     >>> img_3d.get_data_dtype()
     dtype('<f8')
     >>> img_3d_copy.get_data_dtype()
     dtype('<f8')
     >>> img_3d_notcopy.get_data_dtype()
     dtype('<f8')
-    >>> # change the dtype in the original image
+    
+    Change the dtype in the original image::
+
     >>> img_3d.set_data_dtype("uint8")
-    >>> # show the new dtypes
+    
+    Show the new dtypes::
+
     >>> img_3d.get_data_dtype()
     dtype('uint8')
-    >>> # img_3d_copy was copied before the change and keeps the original dtype
+    
+    img_3d_copy was copied before the change and keeps the original dtype::
+    
     >>> img_3d_copy.get_data_dtype()
     dtype('<f8')
-    >>> # img_3d_notcopy refers to the same object as img_3d,
-    >>> # hence its dtype has changed
+    
+    img_3d_notcopy refers to the same object as img_3d,::
+    
+    Hence its dtype has changed::
+
     >>> img_3d_notcopy.get_data_dtype()
     dtype('uint8')
     """
