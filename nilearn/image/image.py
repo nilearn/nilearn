@@ -1031,7 +1031,7 @@ def _index_img(img: Nifti1Image, index):
 def iter_img(imgs):
     """Iterate over images.
 
-    Could be along the the 4th dimension for 4D Niimg-like object
+    Could be along the 4th dimension for 4D Niimg-like object
     or the 2nd dimension for 2D Surface images..
 
     Parameters
