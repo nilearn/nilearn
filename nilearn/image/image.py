@@ -2443,8 +2443,8 @@ def copy_img(img):
 
     >>> img_3d_copy = copy_img(img_3d)
     
-    Use reference assignment. This is not copying, img_3d_notcopy points to the same 
-    object as img_3d!::
+    Use reference assignment. This is not copying, img_3d_notcopy points to the
+    same object as img_3d!::
 
     >>> img_3d_notcopy = img_3d
     
