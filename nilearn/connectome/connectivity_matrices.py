@@ -248,17 +248,6 @@ def sym_matrix_to_vec(symmetric, discard_diagonal: bool = False) -> np.ndarray:
     >>> sym_matrix = np.array([[1.0, 2.0, 3.0],
     ...                        [2.0, 1.0, 5.0],
     ...                        [3.0, 5.0, 1.0]])
-    >>> from nilearn.connectome import sym_matrix_to_vec
-    >>> # Diagonal elements (all 1.0 here) are divided by sqrt(2)
-    >>> vec = sym_matrix_to_vec(sym_matrix)
-    >>> vec
-    array([0.70710678, 2. , 0.70710678, 3. , 5. , 0.70710678])
-    >>> # discard_diagonal=True drops the diagonal entries entirely
-    >>> vec_no_diag = sym_matrix_to_vec(sym_matrix, discard_diagonal=True)
-    >>> import numpy as np
-    >>> sym_matrix = np.array([[1.0, 2.0, 3.0],
-    ...                        [2.0, 1.0, 5.0],
-    ...                        [3.0, 5.0, 1.0]])
     
     Diagonal elements (all 1.0 here) are divided by sqrt(2)::
     
