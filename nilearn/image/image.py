@@ -2744,7 +2744,7 @@ def check_niimg(
 
     Examples
     --------
-    Let's create a 3D Nifti1Image::
+    Let's create a 3D Nifti1Image:
 
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
@@ -2752,12 +2752,12 @@ def check_niimg(
     ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
     ... )
 
-    We can check the image::
+    We can check the image:
 
     >>> from nilearn.image import check_niimg
     >>> checked_img = check_niimg(img_3d)
 
-    We can get the data of the image::
+    We can get the data of the image:
 
     >>> from nilearn.image import get_data
     >>> data = get_data(checked_img)
