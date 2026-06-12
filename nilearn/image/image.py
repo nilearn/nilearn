@@ -2043,6 +2043,22 @@ def clean_img(
     --------
         nilearn.signal.clean
 
+    Examples
+    --------
+    Let's load an image using nilearn datasets module::
+
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+
+    >>> shape = (2,2,2,1)
+    >>> img = Nifti1Image(
+    ...     np.concatenate([np.ones(shape), np.zeros(shape)], axis=-1),
+    ...     affine=np.eye(4),
+    ...     dtype=np.int32)
+
+    >>> from nilearn.image import clean_img
+    >>> cleaned_img = clean_img(img, standardize=None)
+
     """
     check_params(locals())
     # Avoid circular import
