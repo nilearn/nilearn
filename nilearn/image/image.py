@@ -191,6 +191,14 @@ def get_data(img: NiimgLike) -> np.ndarray:
     img : Niimg-like object or iterable of Niimg-like objects
         See :ref:`extracting_data`.
 
+    Returns
+    -------
+    :class:`numpy.ndarray`
+        3D or 4D numpy array depending on the shape of `img`. This function
+        preserves the type of the image data.
+        If `img` is an in-memory Nifti image
+        it returns the image data array itself -- not a copy.
+
     Examples
     --------
     >>> import numpy as np
@@ -207,14 +215,6 @@ def get_data(img: NiimgLike) -> np.ndarray:
            [[12, 13, 14, 15],
             [16, 17, 18, 19],
             [20, 21, 22, 23]]])
-
-    Returns
-    -------
-    :class:`numpy.ndarray`
-        3D or 4D numpy array depending on the shape of `img`. This function
-        preserves the type of the image data.
-        If `img` is an in-memory Nifti image
-        it returns the image data array itself -- not a copy.
 
     """
     img = check_niimg(img)
@@ -825,6 +825,15 @@ def mean_img(
 
         .. nilearn_versionadded:: 0.11.0
 
+    Returns
+    -------
+    :obj:`~nibabel.nifti1.Nifti1Image` or :obj:`~nilearn.surface.SurfaceImage`
+        Mean image.
+
+    See Also
+    --------
+    nilearn.image.math_img : For more general operations on images.
+
     Examples
     --------
     >>> import numpy as np
@@ -844,15 +853,6 @@ def mean_img(
             [0.5, 0.5]],
            [[0.5, 0.5],
             [0.5, 0.5]]])
-
-    Returns
-    -------
-    :obj:`~nibabel.nifti1.Nifti1Image` or :obj:`~nilearn.surface.SurfaceImage`
-        Mean image.
-
-    See Also
-    --------
-    nilearn.image.math_img : For more general operations on images.
 
     """
     check_params(locals())
@@ -1393,6 +1393,22 @@ def threshold_img(
         Threshold a statistical image using the alpha value, optionally with
         false positive control.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> # Create a 3D "statistical map" with a mix of values
+    >>> data = np.array([[[0., 0.2, 0.8],
+    ...                   [1.5, 3.0, 0.1],
+    ...                   [0.4, 2.2, 0.0]]])
+    >>> img = Nifti1Image(data, affine=np.eye(4), dtype=np.int32)
+    >>> # Threshold: voxels with intensity < 1.0 are set to zero
+    >>> from nilearn.image import threshold_img
+    >>> thresholded_img = threshold_img(img, threshold=1.0, two_sided=False)
+    >>> thresholded_img.get_fdata()
+    array([[[0. , 0. , 0. ],
+            [1.5, 3. , 0. ],
+            [0. , 2.2, 0. ]]])
     """
     from nilearn.image.resampling import resample_img
     from nilearn.masking import load_mask_img
@@ -1630,6 +1646,11 @@ def math_img(
     --------
     nilearn.image.mean_img : To simply compute the mean of multiple images
 
+    Notes
+    -----
+    This function is the Python equivalent of ImCal in SPM or fslmaths
+    in FSL.
+
     Examples
     --------
     Let's load an image using nilearn datasets module::
@@ -1660,10 +1681,6 @@ def math_img(
      ...                                   img1=anatomical_image, img2=log_img,
      ...                                   copy_header_from="img1")
 
-    Notes
-    -----
-    This function is the Python equivalent of ImCal in SPM or fslmaths
-    in FSL.
 
     """
     img_missing_from_formula = [
@@ -2345,6 +2362,38 @@ def largest_connected_component_img(imgs):
     This operation is done internally to avoid big-endian issues with
     scipy ndimage module.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>>
+    >>> # Create a simple 3D image with two components.
+    >>> shape = (2, 2, 1)
+    >>> img = Nifti1Image(
+    ...     np.concatenate(
+    ...         [
+    ...             np.ones(shape),
+    ...             np.zeros(shape),
+    ...             np.ones(shape),
+    ...             np.ones(shape),
+    ...         ],
+    ...         axis=-1,
+    ...     ),
+    ...     affine=np.eye(4),
+    ...     dtype=np.int32,
+    ... )
+    >>> img.get_fdata()
+    array([[[1., 0., 1., 1.],
+            [1., 0., 1., 1.]],
+           [[1., 0., 1., 1.],
+            [1., 0., 1., 1.]]])
+    >>> from nilearn.image import largest_connected_component_img
+    >>> largest_cc_image = largest_connected_component_img(img)
+    >>> largest_cc_image.get_fdata()
+    array([[[0., 0., 1., 1.],
+            [0., 0., 1., 1.]],
+           [[0., 0., 1., 1.],
+            [0., 0., 1., 1.]]])
     """
     from .._utils.ndimage import largest_connected_component
 

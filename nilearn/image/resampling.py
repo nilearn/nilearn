@@ -846,6 +846,28 @@ def reorder_img(img, resample=None, copy_header=True):
 
         .. nilearn_versionadded:: 0.11.0
 
+    Returns
+    -------
+    nibabel.Nifti1Image
+        Reordered image with the affine diagonal.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.image import reorder_img
+    >>> affine = np.array([[0., 1., 0., 0.],
+    ...                    [1., 0., 0., 0.],
+    ...                    [0., 0., 1., 0.],
+    ...                    [0., 0., 0., 1.]])
+    >>> data = np.ones((2, 2, 2))
+    >>> img = Nifti1Image(data, affine)
+    >>> reordered = reorder_img(img)
+    >>> reordered.affine
+    array([[1., 0., 0., 0.],
+        [0., 1., 0., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 0., 1.]])
     """
     from .image import new_img_like
 

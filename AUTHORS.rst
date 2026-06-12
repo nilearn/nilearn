@@ -70,6 +70,7 @@ Some other past or present contributors are:
 * `Aswin Vijayan`_
 * `Audrey Duran`_: TheraPanacea, France
 * `Basile Pinsard`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
+* `Bastien Cagna`_: CATI, APHP, Paris, France
 * `Ben Cipollini`_: Facebook, Hayward, California, USA
 * `Bertrand Thirion`_: Inria, Saclay, France
 * `Binh Nguyen`_
@@ -97,6 +98,7 @@ Some other past or present contributors are:
 * `Eric Larson`_: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
 * `Evan Edmond`_: University of Oxford, Oxford, UK
 * `Fabian Pedregosa`_: @google, Geneva, Switzerland
+* `Fernanda Ponce`_: Université Paris-Saclay, Inria, Saclay, France
 * `Florent Pollet`_: ENS Paris-Saclay, Saclay, France
 * `Franz Liem`_
 * `François Paugam`_
