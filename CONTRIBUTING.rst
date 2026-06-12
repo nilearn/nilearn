@@ -940,7 +940,7 @@ If you wish to build documentation:
 
 .. code-block:: bash
 
-      pip install '.[doc]'
+      pip install -e . --group doc
 
 2. Then go to ``nilearn/examples`` or ``nilearn/doc`` and make needed changes
    using `reStructuredText files <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_

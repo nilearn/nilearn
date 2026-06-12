@@ -40,6 +40,11 @@ contact:
 license: BSD-4-Clause
 
 authors:
+  - given-names: Ruben
+    family-names: Dörfel
+    website: https://rdoerfel.github.io/
+    affiliation: Karolinska Institutet
+    orcid: https://orcid.org/0000-0002-5920-5102
   - family-names: Nilearn contributors
   - given-names: Ahmad
     family-names: Chamma
