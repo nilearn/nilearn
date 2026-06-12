@@ -442,7 +442,7 @@ def smooth_img(imgs, fwhm):
 
     Examples
     --------
-    Let's first create a Nifti1Image::
+    Let's first create a Nifti1Image:
 
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
