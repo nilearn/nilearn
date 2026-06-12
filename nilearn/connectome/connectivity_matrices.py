@@ -289,6 +289,19 @@ def vec_to_sym_matrix(vec, diagonal=None):
     --------
     nilearn.connectome.sym_matrix_to_vec
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> # A vector representing the flattened lower triangular part
+    >>> # (including the diagonal) of a symmetric matrix
+    >>> vec = np.array([1, 2, 3, 4, 5, 6])
+    >>> from nilearn.connectome import vec_to_sym_matrix
+    >>> sym = vec_to_sym_matrix(vec)
+    >>> sym
+    array([[1.41421356, 2.        , 4.        ],
+           [2.        , 4.24264069, 5.        ],
+           [4.        , 5.        , 8.48528137]])
+
     """
     n = vec.shape[-1]
     # Compute the number of the symmetric matrix columns
