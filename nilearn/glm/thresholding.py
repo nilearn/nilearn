@@ -407,6 +407,29 @@ def threshold_stats_img(
         Apply an explicit voxel-level (and optionally cluster-level) threshold
         without correction.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> data = np.array([[[0., 0.2, 0.8],
+    ...                   [1.5, 3.0, 0.1],
+    ...                   [0.4, 2.2, 0.0]]])
+    >>> img = Nifti1Image(data, affine=np.eye(4))
+
+    Now let's threshold the image::
+
+    >>> from nilearn.glm import threshold_stats_img
+    >>> from nilearn.image import get_data
+    >>> thresholded_img, _ = threshold_stats_img(
+    ...     img, threshold=1,
+    ...     height_control=None
+    ...  )
+    >>> data = get_data(thresholded_img)
+    >>> data
+    array([[[0. , 0. , 0. ],
+        [1.5, 3. , 0. ],
+        [0. , 2.2, 0. ]]])
+
     """
     if height_control is None:
         if threshold is None:
