@@ -1053,22 +1053,22 @@ def iter_img(imgs):
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
     >>> from nilearn.image import iter_img
-    
+
     Create dummy 4D image:
-    
+
     >>> affine = np.eye(4)
     >>> data = np.ones((3,3,3,5))
-    
+
     Set different values for each 3D image in 4D series:
-    
+
     >>> for i in range(data.shape[-1]):
     ...     data[:,:,:,i] = data[:,:,:,i] * i
     ...
     >>> img_4d = Nifti1Image(data, affine)
-    
+
     Create iter object and iterate through 4th dimension
     returns a 3D NiftiImage:
-    
+
     >>> for img in iter_img(img_4d):
     ...     # print first element of array we modified above
     ...     img.get_fdata()[0,0,0]
