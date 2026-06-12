@@ -2770,13 +2770,12 @@ def check_niimg(
             [20, 21, 22, 23]]])
 
     We can also check the image specifying the expected dimension. For example
-    for a 3D image::
-    We can also check the image specifying the expected dimension. For example
-    for a 3D image::
+    for a 3D image:
+
     >>> from nilearn.image import check_niimg
     >>> checked_img = check_niimg(img_3d, ensure_ndim=3)
 
-    Let's check to ensure the same image to be 4D::
+    Let's check to ensure the same image to be 4D:
 
     >>> from nilearn.image import check_niimg
     >>> checked_img = check_niimg(img_3d, ensure_ndim=4)
