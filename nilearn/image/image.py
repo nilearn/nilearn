@@ -2884,7 +2884,7 @@ def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
     >>> from nilearn.image import check_niimg_3d
     >>> checked_img = check_niimg_3d(img_3d)
 
-    We can get the data of the image::
+    We can get the data of the image:
 
     >>> from nilearn.image import get_data
     >>> data = get_data(checked_img)
@@ -2896,7 +2896,7 @@ def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
             [16, 17, 18, 19],
             [20, 21, 22, 23]]])
 
-    We can try it with a 4D image::
+    We can try it with a 4D image:
 
     >>> img_4d = Nifti1Image(
     ...     np.arange(24).reshape((2, 3, 2, 2)),
@@ -2904,7 +2904,7 @@ def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
     ...     dtype=np.int32,
     ... )
 
-    Let's see the result for img_4d::
+    Let's see the result for img_4d:
 
     >>> checked_img = check_niimg_3d(img_4d)
     Traceback (most recent call last):
