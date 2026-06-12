@@ -142,6 +142,9 @@ Enhancements
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.threshold_img` (:gh:`6280` by `Fernanda Ponce`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.img.smooth_img` function (:gh:`` by `Hande Gözükan`_).
+
+
 Changes
 -------
 
