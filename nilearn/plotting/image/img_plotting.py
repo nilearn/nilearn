@@ -2128,7 +2128,7 @@ def plot_carpet(
         else:
             ax0.set_yticks([])
 
-        axes.remove()  # remove axes for newer versions of mpl
+        axes.remove()
         axes = plt.subplot(gs[1])  # overwrites axes with older versions of mpl
         axes.imshow(
             data.T,
