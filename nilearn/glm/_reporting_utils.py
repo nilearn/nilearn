@@ -18,6 +18,7 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD, threshold_stats_img
+from nilearn.nilearn_typing import ClusterThreshold, HeightControl
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
@@ -31,7 +32,6 @@ from nilearn.reporting.mixin import ReportMixin
 from nilearn.reporting.utils import figure_to_png_base64
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
-from nilearn.typing import ClusterThreshold, HeightControl
 
 
 class GLMReportMixin(ReportMixin):

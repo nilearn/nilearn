@@ -111,6 +111,8 @@
 
 .. _François Paugam: https://github.com/FrancoisPgm
 
+.. _Gabriele Amorosino: https://github.com/gamorosino
+
 .. _Gael Varoquaux: https://gael-varoquaux.info/
 
 .. _Gilles de Hollander: https://github.com/Gilles86
@@ -304,6 +306,8 @@
 .. _Rohan Thomas Jepegnanam: https://github.com/rohan3412
 
 .. _Ronald Phlypo: https://github.com/rphlypo
+
+.. _Ruben Dörfel: https://rdoerfel.github.io/
 
 .. _Ryan Hammonds: https://github.com/ryanhammonds
 

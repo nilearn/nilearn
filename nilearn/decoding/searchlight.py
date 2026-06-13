@@ -29,7 +29,7 @@ from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 from nilearn.masking import load_mask_img
-from nilearn.typing import SupportedClassifiers, SupportedRegressors
+from nilearn.nilearn_typing import SupportedClassifiers, SupportedRegressors
 
 
 def _check_searchlight_estimator(estimator, *, scoring, y):

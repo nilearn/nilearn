@@ -33,8 +33,8 @@ from nilearn.datasets import (
     load_sample_motor_activation_image,
 )
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface import SurfaceImage
-from nilearn.typing import NiimgLike
 
 functions = {
     fetch_atlas_aal: None,
