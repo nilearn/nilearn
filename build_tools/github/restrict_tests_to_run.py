@@ -169,7 +169,7 @@ def restrict_tests(changed_files: list[str]) -> list[str]:
                 "nilearn/conftest.py",
                 "nilearn/exceptions.py",
                 "nilearn/signal.py",
-                "nilearn/typing.py",
+                "nilearn/nilearn_typing.py",
                 "nilearn/_assets",
             ]
         ):

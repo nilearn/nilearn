@@ -17,6 +17,7 @@ from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, get_data, new_img_like, reorder_img
 from nilearn.image.image import _check_fov
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.plotting._engine_utils import create_colorbar_for_fig
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
@@ -29,7 +30,6 @@ from nilearn.plotting.displays._utils import (
 )
 from nilearn.plotting.displays.edge_detect import edge_map
 from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
-from nilearn.typing import NiimgLike
 
 
 @fill_doc
