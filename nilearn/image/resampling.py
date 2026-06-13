@@ -455,6 +455,35 @@ def resample_img(
     if the given target_affine (transformation matrix) is diagonal and
     homogeneous.
 
+    Examples
+    --------
+    Resample an image with 1 mm voxels onto a 2 mm voxel grid
+    by passing only a target affine:
+
+    >>> import numpy as np
+    >>> import nibabel as nib
+    >>> from nilearn import image
+    >>> data = np.zeros((4, 4, 4))
+    >>> img = nib.Nifti1Image(data, affine=np.eye(4))  # 1 mm voxels
+    >>> resampled = image.resample_img(
+    ...     img,
+    ...     target_affine=np.eye(4) * 2,  # 2 mm voxels
+    ... )
+    >>> resampled.affine[:3, :3]
+    array([[2., 0., 0.],
+            [0., 2., 0.],
+            [0., 0., 2.]])
+    >>> resampled.shape
+    (3, 3, 3)
+
+    To control the output dimensions exactly, pass `target_shape`
+    alongside the affine:
+
+    >>> resampled = image.resample_img(
+    ...     img, target_affine=np.eye(4) * 2, target_shape=(2, 2, 2)
+    ... )
+    >>> resampled.shape
+    (2, 2, 2)
     """
     check_params(locals())
     _check_resample_img_inputs(target_shape, target_affine, interpolation)
@@ -795,6 +824,36 @@ def resample_to_img(
     --------
     nilearn.image.resample_img
 
+    Examples
+    --------
+    Resample a source image to match the shape and affine of a
+    target image:
+
+    >>> import numpy as np
+    >>> import nibabel as nib
+    >>> from nilearn import image
+    >>> source_data = np.zeros((4, 4, 4))
+    >>> source_img = nib.Nifti1Image(source_data, affine=np.eye(4))
+    >>> target_data = np.zeros((2, 2, 2))
+    >>> target_img = nib.Nifti1Image(
+    ...     target_data,
+    ...     affine=np.eye(4) * 2,  # 2 mm voxels
+    ... )
+    >>> resampled = image.resample_to_img(source_img, target_img)
+    >>> resampled.shape
+    (2, 2, 2)
+    >>> resampled.affine[:3, :3]
+    array([[2., 0., 0.],
+          [0., 2., 0.],
+          [0., 0., 2.]])
+
+    The resampled image inherits the shape and affine of the
+    target image:
+
+    >>> np.array_equal(resampled.affine, target_img.affine)
+    True
+    >>> resampled.shape == target_img.shape
+    True
     """
     check_params(locals())
 
@@ -846,6 +905,28 @@ def reorder_img(img, resample=None, copy_header=True):
 
         .. nilearn_versionadded:: 0.11.0
 
+    Returns
+    -------
+    nibabel.Nifti1Image
+        Reordered image with the affine diagonal.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.image import reorder_img
+    >>> affine = np.array([[0., 1., 0., 0.],
+    ...                    [1., 0., 0., 0.],
+    ...                    [0., 0., 1., 0.],
+    ...                    [0., 0., 0., 1.]])
+    >>> data = np.ones((2, 2, 2))
+    >>> img = Nifti1Image(data, affine)
+    >>> reordered = reorder_img(img)
+    >>> reordered.affine
+    array([[1., 0., 0., 0.],
+        [0., 1., 0., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 0., 1.]])
     """
     from .image import new_img_like
 

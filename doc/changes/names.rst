@@ -47,6 +47,8 @@
 
 .. _Basile Pinsard: https://github.com/bpinsard
 
+.. _Bastien Cagna: https://github.com/bastiencagna
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -302,6 +304,8 @@
 .. _Rohan Thomas Jepegnanam: https://github.com/rohan3412
 
 .. _Ronald Phlypo: https://github.com/rphlypo
+
+.. _Ruben Dörfel: https://rdoerfel.github.io/
 
 .. _Ryan Hammonds: https://github.com/ryanhammonds
 
