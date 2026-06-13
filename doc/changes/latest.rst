@@ -152,6 +152,8 @@ Enhancements
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.check_niimg`, :func:`~nilearn.image.check_niimg_3d` and	:func:`~nilearn.image.check_niimg_4d` functions (:gh:`6286` by `Hande Gözükan`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.signal.butterworth` function (:gh:`6311` by `Hande Gözükan`_).
+
 
 Changes
 -------
