@@ -326,6 +326,30 @@ def make_first_level_design_matrix(
     design_matrix : DataFrame instance,
         holding the computed design matrix, the index being the frames_times
         and each column a regressor.
+    Example
+    -------
+    >>> import numpy as np
+    >>> from pandas import DataFrame
+    >>> from nilearn.glm.first_level import make_first_level_design_matrix
+    >>> frame_times = np.arange(9)
+    >>> onsets = np.arange(9)
+    >>> duration = np.ones(9)
+    >>> trial_type = [
+    >>> "ET_0","ET_0","ET_0","ET_1","ET_1","ET_1","ET_2","ET_2","ET_2"
+    >>> ]
+    >>> hrf_model = "glover"
+    >>> events = DataFrame(
+    >>>     {"trial_type":trial_type,"onset":onsets,"duration":duration}
+    >>> )
+    >>> design_matrix = make_first_level_design_matrix(
+    >>>     frame_times,
+    >>>     events,
+    >>>     drift_model="polynomial",
+    >>>     drift_order=3,
+    >>>     hrf_model=hrf_model
+    >>> )
+    >>> print (design_matrix)
+
 
     """
     check_params(locals())
