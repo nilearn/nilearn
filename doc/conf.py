@@ -20,7 +20,6 @@ from pathlib import Path
 from nilearn._version import __version__
 from sphinx.domains import changeset
 from sphinx.locale import _
-from sphinx_gallery.notebook import add_code_cell, add_markdown_cell
 
 
 # ----------------------------------------------------------------------------
@@ -493,16 +492,26 @@ sphinx_gallery_conf = {
 }
 
 
-def notebook_modification_function(notebook_content, notebook_filename):  # noqa : ARG001
-    notebook_content_str = str(notebook_content)
-    warning_template = (
-        "\n"
-        "<div class='alert alert-{message_class}'>"
-        "# JupyterLite warning {message}</div>"
-    )
+# def jlite_modification_function(content):
+#     content_str = str(content)
+#     code_lines = []
 
-    message_class = "warning"
-    message = (
+#     if "plotly.express" in content_str:
+#         code_lines.append("%pip install plotly nbformat")
+#     if "fetch_" in content_str:
+#         code_lines.extend(
+#             [
+#                 "%pip install pyodide-http",
+#                 "import pyodide_http",
+#                 "pyodide_http.patch_all()",
+#             ]
+#         )
+
+
+if with_jupyterlite:
+    global_enable_try_examples = True
+    try_examples_global_button_text = "Try it in your browser!"
+    try_examples_global_warning_text = (
         "Running the nilearn examples in JupyterLite is experimental"
         " and you may encounter some unexpected behavior.\n\n"
         " The main difference is that imports will take a lot longer"
@@ -511,55 +520,14 @@ def notebook_modification_function(notebook_content, notebook_filename):  # noqa
         " an [issue](https://github.com/nilearn/nilearn/issues/new/choose)"
         "about it."
     )
-
-    markdown = warning_template.format(
-        message_class=message_class, message=message
-    )
-
-    dummy_notebook_content = {"cells": []}
-    add_markdown_cell(dummy_notebook_content, markdown)
-
-    code_lines = []
-
-    if "plotly.express" in notebook_content_str:
-        code_lines.append("%pip install plotly nbformat")
-    if "nilearn" in notebook_content_str:
-        code_lines.append("%pip install -q nilearn")
-    if "fetch_" in notebook_content_str:
-        code_lines.extend(
-            [
-                "%pip install pyodide-http",
-                "import pyodide_http",
-                "pyodide_http.patch_all()",
-            ]
-        )
-
-    # always import matplotlib and pandas to avoid Pyodide limitation with
-    # imports inside functions
-    code_lines.extend(["import matplotlib", "import pandas"])
-
     # Work around https://github.com/jupyterlite/pyodide-kernel/issues/166
     # and https://github.com/pyodide/micropip/issues/223 by installing the
     # dependencies first, and then nilearn from Anaconda.org.
-
-    if code_lines:
-        code_lines = ["# JupyterLite-specific code", *code_lines]
-        code = "\n".join(code_lines)
-        add_code_cell(dummy_notebook_content, code)
-
-    notebook_content["cells"] = (
-        dummy_notebook_content["cells"] + notebook_content["cells"]
-    )
-
-
-if with_jupyterlite:
-    sphinx_gallery_conf["jupyterlite"] = {
-        "notebook_modification_function": notebook_modification_function
-    }
-
-    global_enable_try_examples = True
-    try_examples_global_button_text = "Try it in your browser!"
-    try_examples_global_warning_text = "TODO Add warning message here"
+    try_examples_preamble = """
+    import matplotlib
+    import pandas
+    %pip install -q nilearn
+    """
 
 mermaid_version = "11.4.0"
 
