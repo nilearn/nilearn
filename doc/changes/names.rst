@@ -305,6 +305,8 @@
 
 .. _Ronald Phlypo: https://github.com/rphlypo
 
+.. _Ruben Dörfel: https://rdoerfel.github.io/
+
 .. _Ryan Hammonds: https://github.com/ryanhammonds
 
 .. _Rémi Gau: https://github.com/Remi-Gau
