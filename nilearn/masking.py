@@ -33,10 +33,10 @@ from nilearn.image.image import (
     smooth_img,
 )
 from nilearn.image.resampling import resample_to_img
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import check_polymesh_equal
-from nilearn.typing import NiimgLike
 
 __all__ = [
     "apply_mask",
