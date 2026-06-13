@@ -62,7 +62,7 @@ from nilearn.plotting._utils import (
     get_colorbar_and_data_ranges,
 )
 from nilearn.plotting.displays import (
-    OrthoSlicer,
+    BaseSlicer,
     get_projector,
     get_slicer,
 )
@@ -203,9 +203,9 @@ def _plot_img_with_bg(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or \
+    display : :class:`~nilearn.plotting.displays.BaseSlicer` or \
         :class:`~nilearn.plotting.displays.OrthoProjector`
-        An instance of the OrthoSlicer or OrthoProjector class depending on the
+        An instance of the BaseSlicer or OrthoProjector class depending on the
         function defined in ``display_factory``.
 
     Raises
@@ -330,7 +330,7 @@ def plot_img(
     transparency=None,
     transparency_range=None,
     **kwargs,
-) -> OrthoSlicer:
+) -> BaseSlicer:
     """Plot cuts of a given image.
 
     By default Frontal, Axial, and Lateral.
@@ -399,8 +399,8 @@ def plot_img(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer`
-        An instance of the OrthoSlicer class.
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`
+        An instance of the BaseSlicer class.
 
     Raises
     ------
@@ -493,7 +493,7 @@ def plot_anat(
     vmin=None,
     vmax=None,
     **kwargs,
-) -> OrthoSlicer:
+) -> BaseSlicer:
     """Plot cuts of an anatomical image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -552,8 +552,8 @@ def plot_anat(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer`
-        An instance of the OrthoSlicer class.
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`
+        An instance of the BaseSlicer class.
 
     Raises
     ------
@@ -622,7 +622,7 @@ def plot_epi(
     vmax=None,
     radiological: Radiological = False,
     **kwargs,
-) -> OrthoSlicer:
+) -> BaseSlicer:
     """Plot cuts of an :term:`EPI` image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -674,8 +674,8 @@ def plot_epi(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer`
-        An instance of the OrthoSlicer class.
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`
+        An instance of the BaseSlicer class.
 
     Notes
     -----
@@ -710,7 +710,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
 
     Parameters
     ----------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer`, object
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`, object
         An object with background image on which contours are shown.
 
     roi_img : Niimg-like object
@@ -730,7 +730,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer`, object
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`, object
         Contours displayed on the background image.
 
     """
@@ -782,7 +782,7 @@ def plot_roi(
     linewidths=2.5,
     radiological: Radiological = False,
     **kwargs,
-) -> OrthoSlicer:
+) -> BaseSlicer:
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -864,8 +864,8 @@ def plot_roi(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer`
-        An instance of the OrthoSlicer class.
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`
+        An instance of the BaseSlicer class.
 
     Raises
     ------
@@ -963,7 +963,7 @@ def plot_prob_atlas(
     alpha=0.7,
     radiological: Radiological = False,
     **kwargs,
-) -> OrthoSlicer:
+) -> BaseSlicer:
     """Plot a :term:`Probabilistic atlas` onto the anatomical image \
     by default :term:`MNI` template.
 
@@ -1060,8 +1060,8 @@ def plot_prob_atlas(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer`
-        An instance of the OrthoSlicer class.
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`
+        An instance of the BaseSlicer class.
 
     Raises
     ------
@@ -1252,7 +1252,7 @@ def plot_stat_map(
     transparency=None,
     transparency_range=None,
     **kwargs,
-) -> OrthoSlicer:
+) -> BaseSlicer:
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -1326,8 +1326,8 @@ def plot_stat_map(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer`
-        An instance of the OrthoSlicer class.
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`
+        An instance of the BaseSlicer class.
 
     Raises
     ------
