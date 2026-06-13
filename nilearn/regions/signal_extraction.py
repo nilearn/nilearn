@@ -415,14 +415,13 @@ def signals_to_img_labels(
     Examples
     --------
     >>> import numpy as np
-    >>> from nilearn.image import get_data
     >>> from nilearn.regions import signals_to_img_labels
     >>>
     >>> # create signals with 2 time points and 3 regions
     >>> signals = np.random.default_rng(42).standard_normal((2, 3))
     >>> signals
     array([[ 0.30471708, -1.03998411,  0.7504512 ],
-       [ 0.94056472, -1.95103519, -1.30217951]])
+           [ 0.94056472, -1.95103519, -1.30217951]])
     >>>
     >>> # create labels image with definitions for 3 regions
     >>> labels_data = np.array(
@@ -432,16 +431,16 @@ def signals_to_img_labels(
     >>>
     >>> # create image from region signals defined as labels
     >>> img = signals_to_img_labels(signals, labels_img)
-    >>> img_data = get_data(img)
+    >>> img_data = img.get_fdata()
     >>> img_data
     array([[[[ 0.30471708,  0.94056472],
-         [-1.03998411, -1.95103519]],
-        [[ 0.30471708,  0.94056472],
-         [-1.03998411, -1.95103519]]],
-       [[[ 0.7504512 , -1.30217951],
-         [ 0.7504512 , -1.30217951]],
-        [[ 0.7504512 , -1.30217951],
-         [ 0.7504512 , -1.30217951]]]])
+             [-1.03998411, -1.95103519]],
+            [[ 0.30471708,  0.94056472],
+             [-1.03998411, -1.95103519]]],
+           [[[ 0.7504512 , -1.30217951],
+             [ 0.7504512 , -1.30217951]],
+            [[ 0.7504512 , -1.30217951],
+             [ 0.7504512 , -1.30217951]]]])
 
     """
     labels_img = check_niimg_3d(labels_img)
