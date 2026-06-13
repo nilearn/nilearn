@@ -281,6 +281,12 @@ authors:
     family-names: Paugam
     website: https://github.com/FrancoisPgm
     orcid: https://orcid.org/0000-0002-8161-7699
+  - given-names: Gabriele
+    family-names: Amorosino
+    website: https://github.com/gamorosino
+    affiliation: Department of Psychology, The University of Texas at Austin, TX, USA
+    email: g.amorosino@gmail.com
+    orcid: https://orcid.org/0000-0003-2789-5193
   - given-names: Gael
     family-names: Varoquaux
     website: https://gael-varoquaux.info/
