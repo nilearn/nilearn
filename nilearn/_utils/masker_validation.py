@@ -4,13 +4,14 @@ Must be kept out of the nilearn.maskers subpackage to avoid circular imports.
 """
 
 from collections.abc import Iterable
+from typing import Any, get_args
 
 from nilearn._utils.param_validation import check_is_of_allowed_type
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface.surface import SurfaceImage
-from nilearn.typing import NiimgLike
 
 
-def check_compatibility_mask_and_images(mask_img, run_imgs):
+def check_compatibility_mask_and_images(mask_img: Any, run_imgs: Any) -> None:
     """Check that mask type and image types are compatible.
 
     Images to fit should be a Niimg-Like
@@ -32,7 +33,7 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
         f"and images of type: {[type(x) for x in run_imgs]}"
     )
 
-    volumetric_type = (*NiimgLike, NiftiMasker)
+    volumetric_type = (*get_args(NiimgLike), NiftiMasker)
     surface_type = (SurfaceImage, SurfaceMasker)
     all_allowed_types = (*volumetric_type, *surface_type)
 

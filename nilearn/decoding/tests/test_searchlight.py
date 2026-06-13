@@ -3,10 +3,8 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-from sklearn.model_selection import (
-    KFold,
-    LeaveOneGroupOut,
-)
+from sklearn.base import BaseEstimator
+from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
@@ -14,7 +12,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _rng
 from nilearn.decoding import searchlight
 
@@ -50,6 +48,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
@@ -88,7 +87,7 @@ def define_cross_validation():
     return cv, n_jobs
 
 
-def test_searchlight_no_mask():
+def test_error_searchlight_no_mask():
     """Check validation type mask."""
     sl = searchlight.SearchLight(mask_img=1)
 
@@ -114,7 +113,7 @@ def test_searchlight_small_radius():
         n_jobs=n_jobs,
         scoring="accuracy",
         cv=cv,
-        verbose=1,
+        verbose=0,
     )
     sl.fit(data_img, y=cond)
 
@@ -254,6 +253,7 @@ def test_mask_img_dimension_mismatch():
     assert sl.scores_.shape == invalid_mask_img.shape
 
 
+@pytest.mark.slow
 def test_transform_applies_mask_correctly():
     """Test if `transform()` applies the mask correctly."""
     frames = 20
@@ -296,3 +296,206 @@ def test_process_mask_shape_mismatch():
     # Ensure scores_ exists and is the correct shape
     assert sl.scores_ is not None
     assert sl.scores_.shape == process_mask_img.shape
+
+
+# ---------------------------------------------------------------------------
+# Minimal estimators used by _check_searchlight_estimator and no-CV tests
+# ---------------------------------------------------------------------------
+
+
+class _ValidEstimator(BaseEstimator):
+    def fit(self, X, y, groups=None):  # noqa: ARG002
+        return self
+
+    def score(self, X, y=None, groups=None):  # noqa: ARG002
+        return 0.0
+
+
+class _EstimatorWithDecisionFunction(BaseEstimator):
+    def fit(self, X, y, groups=None):  # noqa: ARG002
+        return self
+
+    def decision_function(self, X):
+        return np.zeros(len(X))
+
+    def score(self, X, y=None, groups=None):  # noqa: ARG002
+        return 0.0
+
+
+class _NoScoreEstimator(BaseEstimator):
+    def fit(self, X, y, groups=None):  # noqa: ARG002
+        return self
+
+
+class _NoCVEstimator(BaseEstimator):
+    nilearn_searchlight_uses_cv = False
+
+    def fit(self, X, y, groups=None):  # noqa: ARG002
+        self.score_ = 0.5
+        return self
+
+    def score(self, X=None, y=None, groups=None):  # noqa: ARG002
+        return self.score_
+
+
+class _NoCVNoScoreEstimator(BaseEstimator):
+    nilearn_searchlight_uses_cv = False
+
+    def fit(self, X, y, groups=None):  # noqa: ARG002
+        return self
+
+
+class _NoCVNoGroupsEstimator(BaseEstimator):
+    nilearn_searchlight_uses_cv = False
+
+    def fit(self, X, y):  # noqa: ARG002
+        self.score_ = 0.5
+        return self
+
+    def score(self, X=None, y=None):  # noqa: ARG002
+        return self.score_
+
+
+# ---------------------------------------------------------------------------
+# Unit tests for _check_searchlight_estimator
+# ---------------------------------------------------------------------------
+
+
+def test_check_searchlight_estimator_class_not_instance_raises():
+    with pytest.raises(TypeError, match="must be an \\*instance\\*"):
+        searchlight._check_searchlight_estimator(
+            _ValidEstimator, scoring="accuracy", y=np.ones(5)
+        )
+
+
+def test_check_searchlight_estimator_not_base_estimator_raises():
+    class _NotAnEstimator:
+        def fit(self, X, y):  # noqa: ARG002
+            return self
+
+        def score(self, X, y):  # noqa: ARG002
+            return 0.0
+
+    with pytest.raises(TypeError, match="BaseEstimator"):
+        searchlight._check_searchlight_estimator(
+            _NotAnEstimator(), scoring="accuracy", y=np.ones(5)
+        )
+
+
+def test_check_searchlight_estimator_y_none_no_decision_function_raises():
+    with pytest.raises(TypeError, match="decision_function"):
+        searchlight._check_searchlight_estimator(
+            _ValidEstimator(), scoring="accuracy", y=None
+        )
+
+
+def test_check_searchlight_estimator_y_none_with_decision_function_passes():
+    searchlight._check_searchlight_estimator(
+        _EstimatorWithDecisionFunction(), scoring="accuracy", y=None
+    )
+
+
+def test_check_searchlight_estimator_scoring_none_no_score_raises():
+    with pytest.raises(TypeError, match="scoring=None"):
+        searchlight._check_searchlight_estimator(
+            _NoScoreEstimator(), scoring=None, y=np.ones(5)
+        )
+
+
+def test_check_searchlight_estimator_no_cv_no_score_raises():
+    with pytest.raises(
+        TypeError, match="nilearn_searchlight_uses_cv is False"
+    ):
+        searchlight._check_searchlight_estimator(
+            _NoCVNoScoreEstimator(), scoring="accuracy", y=np.ones(5)
+        )
+
+
+def test_check_searchlight_estimator_no_cv_no_groups_in_fit_raises():
+    with pytest.raises(TypeError, match="'groups' parameter in fit"):
+        searchlight._check_searchlight_estimator(
+            _NoCVNoGroupsEstimator(), scoring="accuracy", y=np.ones(5)
+        )
+
+
+def test_check_searchlight_estimator_no_cv_valid_passes():
+    searchlight._check_searchlight_estimator(
+        _NoCVEstimator(), scoring="accuracy", y=np.ones(5)
+    )
+
+
+def test_check_searchlight_estimator_regular_valid_passes():
+    searchlight._check_searchlight_estimator(
+        _ValidEstimator(), scoring="accuracy", y=np.ones(5)
+    )
+
+
+# ---------------------------------------------------------------------------
+# Integration tests: SearchLight with a custom no-CV estimator
+# ---------------------------------------------------------------------------
+
+
+def test_searchlight_custom_no_cv_estimator_runs_and_warns():
+    """SearchLight with nilearn_searchlight_uses_cv=False bypasses CV."""
+    frames = 20
+    data_img, cond, mask_img = _make_searchlight_test_data(frames)
+
+    sl = searchlight.SearchLight(
+        mask_img=mask_img,
+        process_mask_img=mask_img,
+        radius=1,
+        n_jobs=1,
+        estimator=_NoCVEstimator(),
+    )
+
+    with pytest.warns(UserWarning, match="Use a custom estimator"):
+        sl.fit(data_img, y=cond)
+
+    assert sl.scores_ is not None
+    assert sl.scores_.shape == (5, 5, 5)
+    mask = mask_img.get_fdata().astype(bool)
+    # _NoCVEstimator always returns 0.5 from score(); if CV were used instead,
+    # scores would be data-dependent and this assertion would fail.
+    assert np.all(sl.scores_[mask] == pytest.approx(0.5))
+
+
+def test_searchlight_no_cv_estimator_receives_groups():
+    """Groups are forwarded to fit() when nilearn_searchlight_uses_cv=False."""
+    frames = 20
+    data_img, cond, mask_img = _make_searchlight_test_data(frames)
+    run = np.arange(frames) % 4
+
+    class _GroupCheckEstimator(BaseEstimator):
+        nilearn_searchlight_uses_cv = False
+
+        def fit(self, X, y, groups=None):  # noqa: ARG002
+            self.score_ = 1.0 if groups is not None else 0.0
+            return self
+
+        def score(self, X=None, y=None, groups=None):  # noqa: ARG002
+            return self.score_
+
+    sl = searchlight.SearchLight(
+        mask_img=mask_img,
+        process_mask_img=mask_img,
+        radius=1,
+        n_jobs=1,
+        estimator=_GroupCheckEstimator(),
+    )
+
+    with pytest.warns(UserWarning, match="Use a custom estimator"):
+        sl.fit(data_img, y=cond, groups=run)
+
+    mask = mask_img.get_fdata().astype(bool)
+    # _GroupCheckEstimator sets score_=1.0 only when groups is not None;
+    # if groups were not forwarded, all scores would be 0.0.
+    assert np.all(sl.scores_[mask] == pytest.approx(1.0))
+
+
+def test_searchlight_estimator_type_plain_base_estimator():
+    """_estimator_type is falsy for a custom estimator without a type mixin."""
+    # If this fails, _estimator_type is incorrectly reporting the estimator as
+    # a classifier or regressor, which would affect __sklearn_tags__ behavior.
+    assert not searchlight.SearchLight(
+        estimator=_NoCVEstimator()
+    )._estimator_type

@@ -18,6 +18,7 @@ BASE_TESTS = [
     "nilearn/tests/test_exceptions.py",
     "nilearn/tests/test_init.py",
     "nilearn/tests/test_package_import.py",
+    "nilearn/_utils/tests",
 ]
 
 HIGHEST_LAYER = ["nilearn/utils"]
@@ -32,7 +33,7 @@ MID_LAYER = [
     "nilearn/regions",
     "nilearn/surface",
 ]
-IGNORE = ["input_data", "__pycache__", "tests"]
+IGNORE = ["__pycache__", "tests"]
 
 
 def root_folder():
@@ -56,6 +57,7 @@ known_dirs = sorted(
         "nilearn/_utils",
         "nilearn/connectome",
         "nilearn/mass_univariate",
+        "nilearn/_assets",
     ]
 )
 assert known_dirs == all_folders, f"\n{known_dirs=}\n{all_folders=}"
@@ -167,7 +169,8 @@ def restrict_tests(changed_files: list[str]) -> list[str]:
                 "nilearn/conftest.py",
                 "nilearn/exceptions.py",
                 "nilearn/signal.py",
-                "nilearn/typing.py",
+                "nilearn/nilearn_typing.py",
+                "nilearn/_assets",
             ]
         ):
             tests_to_run.extend(

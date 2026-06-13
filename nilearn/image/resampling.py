@@ -13,14 +13,19 @@ from scipy.ndimage import affine_transform, find_objects
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import _get_data
-from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
+from nilearn._utils.niimg import _get_data, has_non_finite, is_binary_data
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.image.image import copy_img, crop_img, new_img_like
+from nilearn.image import (
+    check_niimg,
+    check_niimg_3d,
+    copy_img,
+    crop_img,
+    new_img_like,
+)
 
 ###############################################################################
 # Affine utils
@@ -158,7 +163,7 @@ def coord_transform(x, y, z, affine):
     return np.reshape(x, shape), np.reshape(y, shape), np.reshape(z, shape)
 
 
-def get_bounds(shape, affine):
+def get_bounds(shape, affine) -> list[tuple[np.float64, np.float64]]:
     """Return the world-space bounds occupied by an array given an affine.
 
     The coordinates returned correspond to the **center** of the corner voxels.
@@ -271,8 +276,7 @@ def _resample_one_img(
         # Integers are always finite
         has_not_finite = False
     else:
-        not_finite = np.logical_not(np.isfinite(data))
-        has_not_finite = np.any(not_finite)
+        has_not_finite, non_finite_mask = has_non_finite(data)
     if has_not_finite:
         warnings.warn(
             "NaNs or infinite values are present in the data "
@@ -289,12 +293,14 @@ def _resample_one_img(
         from ..masking import extrapolate_out_mask
 
         data = extrapolate_out_mask(
-            data, np.logical_not(not_finite), iterations=2
+            data, np.logical_not(non_finite_mask), iterations=2
         )[0]
 
     # If data is binary and interpolation is continuous or linear,
     # warn the user as this might be unintentional
-    if interpolation_order != 0 and np.array_equal(np.unique(data), [0, 1]):
+    if interpolation_order != 0 and is_binary_data(
+        data, accept_non_finite=False
+    ):
         warnings.warn(
             "Resampling binary images with continuous or "
             "linear interpolation. This might lead to "
@@ -327,7 +333,7 @@ def _resample_one_img(
             )
             # We need to resample the mask of not_finite values
             not_finite = affine_transform(
-                not_finite,
+                non_finite_mask,
                 A,
                 offset=b,
                 output_shape=target_shape,
@@ -391,7 +397,7 @@ def resample_img(
         False is intended for testing,
         this prevents the use of a padding optimization.
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
 
             Default changed to True.
 
@@ -449,11 +455,45 @@ def resample_img(
     if the given target_affine (transformation matrix) is diagonal and
     homogeneous.
 
+    Examples
+    --------
+    Resample an image with 1 mm voxels onto a 2 mm voxel grid
+    by passing only a target affine:
+
+    >>> import numpy as np
+    >>> import nibabel as nib
+    >>> from nilearn import image
+    >>> data = np.zeros((4, 4, 4))
+    >>> img = nib.Nifti1Image(data, affine=np.eye(4))  # 1 mm voxels
+    >>> resampled = image.resample_img(
+    ...     img,
+    ...     target_affine=np.eye(4) * 2,  # 2 mm voxels
+    ... )
+    >>> resampled.affine[:3, :3]
+    array([[2., 0., 0.],
+            [0., 2., 0.],
+            [0., 0., 2.]])
+    >>> resampled.shape
+    (3, 3, 3)
+
+    To control the output dimensions exactly, pass `target_shape`
+    alongside the affine:
+
+    >>> resampled = image.resample_img(
+    ...     img, target_affine=np.eye(4) * 2, target_shape=(2, 2, 2)
+    ... )
+    >>> resampled.shape
+    (2, 2, 2)
     """
     check_params(locals())
     _check_resample_img_inputs(target_shape, target_affine, interpolation)
 
     img = stringify_path(img)
+    # If we have a string (filename), we won't need to copy, as
+    # there will be no side effect
+    if isinstance(img, str):
+        copy = False
+
     img = check_niimg(img)
 
     # If later on we want to impute sform using qform add this condition
@@ -469,9 +509,8 @@ def resample_img(
             )
 
     # noop cases
-    input_img_is_string = isinstance(img, str)
     if _resampling_not_needed(img, target_affine, target_shape):
-        if copy and not input_img_is_string:
+        if copy:
             img = copy_img(img)
         return img
 
@@ -616,7 +655,7 @@ def resample_img(
                 target_shape,
                 interpolation_order,
                 out=resampled_data[all_img + ind],
-                copy=not input_img_is_string,
+                copy=copy,
                 fill_value=fill_value,
             )
 
@@ -785,7 +824,39 @@ def resample_to_img(
     --------
     nilearn.image.resample_img
 
+    Examples
+    --------
+    Resample a source image to match the shape and affine of a
+    target image:
+
+    >>> import numpy as np
+    >>> import nibabel as nib
+    >>> from nilearn import image
+    >>> source_data = np.zeros((4, 4, 4))
+    >>> source_img = nib.Nifti1Image(source_data, affine=np.eye(4))
+    >>> target_data = np.zeros((2, 2, 2))
+    >>> target_img = nib.Nifti1Image(
+    ...     target_data,
+    ...     affine=np.eye(4) * 2,  # 2 mm voxels
+    ... )
+    >>> resampled = image.resample_to_img(source_img, target_img)
+    >>> resampled.shape
+    (2, 2, 2)
+    >>> resampled.affine[:3, :3]
+    array([[2., 0., 0.],
+          [0., 2., 0.],
+          [0., 0., 2.]])
+
+    The resampled image inherits the shape and affine of the
+    target image:
+
+    >>> np.array_equal(resampled.affine, target_img.affine)
+    True
+    >>> resampled.shape == target_img.shape
+    True
     """
+    check_params(locals())
+
     target = check_niimg(target_img)
     target_shape = target.shape
 
@@ -834,6 +905,28 @@ def reorder_img(img, resample=None, copy_header=True):
 
         .. nilearn_versionadded:: 0.11.0
 
+    Returns
+    -------
+    nibabel.Nifti1Image
+        Reordered image with the affine diagonal.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.image import reorder_img
+    >>> affine = np.array([[0., 1., 0., 0.],
+    ...                    [1., 0., 0., 0.],
+    ...                    [0., 0., 1., 0.],
+    ...                    [0., 0., 0., 1.]])
+    >>> data = np.ones((2, 2, 2))
+    >>> img = Nifti1Image(data, affine)
+    >>> reordered = reorder_img(img)
+    >>> reordered.affine
+    array([[1., 0., 0., 0.],
+        [0., 1., 0., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 0., 1.]])
     """
     from .image import new_img_like
 

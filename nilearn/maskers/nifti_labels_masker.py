@@ -2,7 +2,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any
+from typing import Any, ClassVar
 
 import numpy as np
 import pandas as pd
@@ -10,22 +10,23 @@ from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.bids import sanitize_look_up_table
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import (
-    check_niimg,
-    check_niimg_3d,
-    check_same_fov,
-)
+from nilearn._utils.niimg import img_data_dtype, safe_get_data
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
-    check_params,
     check_reduction_strategy,
 )
-from nilearn.image import get_data, load_img, resample_img
+from nilearn.image import (
+    check_niimg,
+    check_niimg_3d,
+    get_data,
+    load_img,
+    resample_img,
+)
+from nilearn.image.image import check_same_fov
 from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
@@ -63,7 +64,6 @@ class _ExtractionFunctor:
             strategy=self.strategy,
             keep_masked_labels=self.keep_masked_labels,
             mask_img=self.mask_img,
-            return_masked_atlas=True,
         )
         return signals, (labels, masked_labels_img)
 
@@ -89,7 +89,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         See :ref:`extracting_data`.
         Region definitions, as one image of labels.
 
-    labels : :obj:`list` of :obj:`str`, optional
+    labels : :obj:`list` of :obj:`str`, or None, default=None
         Full labels corresponding to the labels image.
         This is used to improve reporting quality if provided.
         Mutually exclusive with ``lut``.
@@ -116,7 +116,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
             This value must be consistent with label values and image provided.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
@@ -164,8 +164,17 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         If set to True, data is saved in order to produce a report.
 
     %(cmap)s
-        default="CMRmap_r"
+        default=None
         Only relevant for the report figures.
+
+        When using ``"matplotlib"`` as an engine to create reports,
+        ``cmap`` will be used for the background image:
+        in this case, if ``None`` is passed, then the ``"CMRmap_r"`` colormap
+        will be used for the background image.
+        When using ``"brainsprite"`` as an engine to create reports,
+        ``cmap`` will be used for the label image:
+        in this case, if ``None`` is passed, then the ``"tab20"`` colormap
+        will be used for the label image.
 
     %(clean_args)s
 
@@ -193,6 +202,12 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     """
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the regions defined by the labels of the mask."
+        ),
+        "number_of_regions": 0,
+    }
     _template_name = "body_nifti_labels_masker.jinja"
 
     # memory and memory_level are used by _utils.CacheMixin.
@@ -220,7 +235,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         strategy="mean",
         keep_masked_labels=False,
         reports=True,
-        cmap="CMRmap_r",
+        cmap=None,
         clean_args=None,
     ):
         self.labels_img = labels_img
@@ -260,15 +275,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         self.strategy = strategy
 
-        self._report_content = {
-            "description": (
-                "This report shows the regions "
-                "defined by the labels of the mask."
-            ),
-            "number_of_regions": 0,
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
     @property
     def _region_id_name(self):
@@ -319,44 +326,28 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return masked_atlas, removed_region_ids, removed_region_names, display
 
-    def generate_report(self, title: str | None = None):
-        """Generate an HTML report for the current object.
-
-        Parameters
-        ----------
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
-
-        Returns
-        -------
-        report : `nilearn.reporting.html_report.HTMLReport`
-            HTML report for the masker.
-        """
-        from nilearn.reporting.html_report import generate_report
-
-        self._report_content["title"] = title
+    def _run_report_checks(self, **kwargs):
+        super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
             img = self._reporting_data["images"]
 
             if img is None:
                 msg = (
-                    "No image provided to fit in NiftiLabelsMasker. "
+                    f"No image provided to fit in {self.__class__.__name__}. "
                     "Plotting ROIs of label image on the "
                     "MNI152Template for reporting."
                 )
-                self._report_content["warning_messages"].append(msg)
+                self._append_report_warning(msg)
 
             elif self._reporting_data["dim"] == 5:
                 msg = (
                     "A list of 4D subject images were provided to fit. "
                     "Only first subject is shown in the report."
                 )
-                self._report_content["warning_messages"].append(msg)
+                self._append_report_warning(msg)
 
-        return generate_report(self)
-
-    def _reporting(self):
+    def _load_report_displays(self):
         """Return a figure to be rendered.
 
         Returns
@@ -423,6 +414,27 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         -------
         list of :class:`~matplotlib.figure.Figure` or None
         """
+        cmap = self.cmap
+
+        if (
+            self._report_content.get("engine") is not None
+            and self._report_content["engine"] == "brainsprite"
+        ):
+            bg_img = self._reporting_data["images"]
+            if bg_img is None:
+                from nilearn.plotting.image.utils import load_anat
+
+                bg_img, _, _, _ = load_anat()
+            stat_map_img = self._reporting_data["labels_image"]
+
+            if cmap is None:
+                cmap = "tab20"
+
+            self._create_brainsprite(
+                bg_img=bg_img, stat_map_img=stat_map_img, cmap=cmap
+            )
+            return None
+
         if not is_matplotlib_installed():
             return None
 
@@ -438,13 +450,16 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         img = self._reporting_data["images"]
 
+        if cmap is None:
+            cmap = "CMRmap_r"
+
         # If we have a func image to show in the report, use it
         if img is not None:
             display = plot_img(
                 img,
                 cut_coords=cut_coords,
                 black_bg=False,
-                cmap=self.cmap,
+                cmap=cmap,
             )
             plt.close()
             display.add_contours(labels_image, filled=False, linewidths=3)
@@ -466,35 +481,13 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return display
 
-    @fill_doc
-    def fit(self, imgs=None, y=None):
-        """Prepare signal extraction from regions.
-
-        Parameters
-        ----------
-        imgs : :obj:`list` of Niimg-like objects or None, default=None
-            See :ref:`extracting_data`.
-            Image data passed to the reporter.
-
-        %(y_dummy)s
-        """
-        del y
-        check_params(self.__dict__)
-
+    def _fit(self, imgs):
         check_reduction_strategy(self.strategy)
         check_parameter_in_allowed(
             self.resampling_target,
             ("labels", "data", None),
             "resampling_target",
         )
-
-        # Reset warning message
-        # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
-
-        self.clean_args_ = {} if self.clean_args is None else self.clean_args
-
-        self._fit_cache()
 
         mask_logger("load_regions", self.labels_img, verbose=self.verbose)
 
@@ -513,14 +506,15 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 idx = self.labels.index("background")
                 self.labels[idx] = "Background"
 
+        if np.all(get_data(self.labels_img_) == self.background_label):
+            raise ValueError("Image has no label.")
+
         self.lut_ = self._generate_lut()
 
         self._original_region_ids = self.lut_["index"].to_list()
 
         if imgs is not None:
             imgs_ = check_niimg(imgs, atleast_4d=True)
-
-        self.mask_img_ = self._load_mask(imgs)
 
         # Check shapes and affines for resample.
         if self.resampling_target is None:
@@ -568,6 +562,15 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             # Just check that the mask is valid
             load_mask_img(self.mask_img_)
 
+        if self.mask_img_ is not None and ref_img is not None:
+            labels_data = get_data(self.labels_img_)
+            mask_data = get_data(self.mask_img_).astype(bool)
+            masked_labels_data = labels_data[mask_data, ...]
+            if np.all(masked_labels_data == 0):
+                raise ValueError(
+                    "No label left after applying mask to the labels image."
+                )
+
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._reporting_data = {
@@ -613,18 +616,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             Images to process.
             If a 3D niimg is provided, a 1D array is returned.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
-
-        region_ids_: dict[str | int, int | float] = {}
-        if self.background_label in index:
-            index.pop(index.index(self.background_label))
-            region_ids_["background"] = self.background_label
-        for i, id in enumerate(index):
-            region_ids_[i] = id  # noqa : PERF403
-
-        return region_ids_
+        %(y_dummy)s
 
         %(confounds)s
 
@@ -642,7 +634,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "labels_img_") and hasattr(self, "lut_")
 
     @fill_doc
@@ -735,6 +727,14 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                     target_shape=imgs_.shape[:3],
                     target_affine=imgs_.affine,
                 )
+                labels_data = get_data(labels_img_)
+                mask_data = get_data(mask_img_).astype(bool)
+                masked_labels_data = labels_data[mask_data, ...]
+                if np.all(masked_labels_data == 0):
+                    raise ValueError(
+                        "No label left after applying mask "
+                        "to the labels image."
+                    )
 
             # Remove imgs_ from memory before loading the same image
             # in filter_and_extract.
@@ -743,14 +743,21 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         target_shape = None
         target_affine = None
         if self.resampling_target == "labels":
+            if not check_same_fov(labels_img_, imgs):
+                warnings.warn(
+                    (
+                        "Resampling images at transform time...\n"
+                        "To avoid this warning, make sure to resample the "
+                        "images you want to transform to the shape of the "
+                        "maps or set resampling_target to 'data'."
+                    ),
+                    stacklevel=find_stack_level(),
+                )
+
             target_shape = labels_img_.shape[:3]
             target_affine = labels_img_.affine
 
-        params = get_params(
-            NiftiLabelsMasker,
-            self,
-            ignore=["resampling_target"],
-        )
+        params = self._get_masker_params(ignore=["resampling_target"])
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
         params["clean_kwargs"] = self.clean_args_
@@ -774,7 +781,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             params,
             confounds=confounds,
             sample_mask=sample_mask,
-            dtype=self.dtype,
             # Caching
             memory=self.memory_,
             memory_level=self.memory_level,
@@ -803,7 +809,12 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         self.region_atlas_ = masked_atlas
 
-        return region_signals
+        imgs = load_img(imgs)
+        target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
+        if target_dtype is None:
+            target_dtype = img_data_dtype(imgs)
+
+        return region_signals.astype(target_dtype)
 
     def _resample_labels(self, imgs_):
         mask_logger("resample_regions", verbose=self.verbose)
@@ -817,7 +828,16 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             target_shape=imgs_.shape[:3],
             target_affine=imgs_.affine,
         )
+
+        # labels_after_resampling also include the background value,
+        # so its minimum value should be 1
         labels_after_resampling = set(np.unique(safe_get_data(labels_img_)))
+        # (using <= for some weird edge cases
+        # where we would not even get some background voxels)
+        if len(labels_after_resampling) <= 1:
+            raise ValueError(
+                "No label left after resampling the labels image."
+            )
         if labels_diff := labels_before_resampling.difference(
             labels_after_resampling
         ):
@@ -859,9 +879,13 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         mask_logger("inverse_transform", verbose=self.verbose)
 
-        return signal_extraction.signals_to_img_labels(
+        img = signal_extraction.signals_to_img_labels(
             signals,
             self.labels_img_,
             self.mask_img_,
             background_label=self.background_label,
         )
+
+        img = self._post_process_inverse_transform(signals, img)
+
+        return img

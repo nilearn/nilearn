@@ -2,9 +2,12 @@
 
 import numbers
 import warnings
+from typing import Literal, get_args, overload
 
 import numpy as np
 from joblib import Parallel, delayed
+from nibabel import Nifti1Image
+from numpy.typing import ArrayLike
 from scipy.ndimage import binary_dilation, binary_erosion
 
 from nilearn._utils import logger
@@ -12,12 +15,7 @@ from nilearn._utils.cache_mixin import cache
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import get_border_data, largest_connected_component
-from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import (
-    check_niimg,
-    check_niimg_3d,
-    check_same_fov,
-)
+from nilearn._utils.niimg import ensure_finite_data, safe_get_data
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets import (
@@ -25,14 +23,20 @@ from nilearn.datasets import (
     load_mni152_template,
     load_mni152_wm_template,
 )
-from nilearn.exceptions import MaskWarning, NotImplementedWarning
-from nilearn.image import get_data, new_img_like, resampling
-from nilearn.surface.surface import (
-    SurfaceImage,
+from nilearn.exceptions import MaskWarning
+from nilearn.image.image import (
+    check_niimg,
+    check_niimg_3d,
+    check_same_fov,
+    get_data,
+    new_img_like,
+    smooth_img,
 )
+from nilearn.image.resampling import resample_to_img
+from nilearn.nilearn_typing import NiimgLike
+from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import check_polymesh_equal
-from nilearn.typing import NiimgLike
 
 __all__ = [
     "apply_mask",
@@ -47,7 +51,24 @@ __all__ = [
 ]
 
 
-def load_mask_img(mask_img, allow_empty=False):
+@overload
+def load_mask_img(
+    mask_img: NiimgLike,
+    allow_empty: bool = ...,
+) -> tuple[np.ndarray, np.ndarray]: ...
+
+
+@overload
+def load_mask_img(
+    mask_img: SurfaceImage,
+    allow_empty: bool = ...,
+) -> tuple[SurfaceImage, None]: ...
+
+
+def load_mask_img(
+    mask_img: NiimgLike | SurfaceImage,
+    allow_empty: bool = False,
+) -> tuple[np.ndarray, np.ndarray] | tuple[SurfaceImage, None]:
     """Check that a mask is valid.
 
     This checks if it contains two values including 0 and load it.
@@ -74,15 +95,15 @@ def load_mask_img(mask_img, allow_empty=False):
         Affine of the mask if Niimg-like object was passed as input,
         None otherwise.
     """
-    if not isinstance(mask_img, (*NiimgLike, SurfaceImage)):
+    if not isinstance(mask_img, (*get_args(NiimgLike), SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
             f"Got {mask_img.__class__.__name__}."
         )
 
     if isinstance(mask_img, NiimgLike):
-        mask_img = check_niimg_3d(mask_img)
-        mask = safe_get_data(mask_img, ensure_finite=True)
+        loaded_img = check_niimg_3d(mask_img)
+        mask = safe_get_data(loaded_img, ensure_finite=True)
     else:
         mask_img.data._check_ndims(1)
         mask = get_surface_data(mask_img, ensure_finite=True)
@@ -112,7 +133,7 @@ def load_mask_img(mask_img, allow_empty=False):
     mask = as_ndarray(mask, dtype=bool)
 
     if isinstance(mask_img, NiimgLike):
-        return mask, mask_img.affine
+        return mask, loaded_img.affine
 
     for hemi in mask_img.data.parts:
         mask_img.data.parts[hemi] = as_ndarray(
@@ -156,7 +177,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
     extrapolation = np.nansum(extrapolation, axis=0) / np.sum(
         np.isfinite(extrapolation), axis=0
     )
-    extrapolation[np.logical_not(np.isfinite(extrapolation))] = 0
+    ensure_finite_data(extrapolation, raise_warning=False)
     new_data = np.zeros_like(masked_data)
     new_data[outer_shell] = extrapolation
     new_data[larger_mask] = masked_data[larger_mask]
@@ -184,7 +205,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
     %(connected)s
-        Default=True.
+        default=True.
 
     Returns
     -------
@@ -307,13 +328,13 @@ def compute_epi_mask(
             If a 3D image is given, we suggest to use the mean image.
 
     %(lower_cutoff)s
-        Default=0.2.
+        default=0.2.
     %(upper_cutoff)s
-        Default=0.85.
+        default=0.85.
     %(connected)s
-        Default=True.
+        default=True.
     %(opening)s
-        Default=2.
+        default=2.
     ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and infs)
         found in the images will be replaced by zeros
@@ -358,7 +379,7 @@ def compute_epi_mask(
         # Get rid of memmapping
         mean_epi = as_ndarray(mean_epi)
         # SPM tends to put NaNs in the data outside the brain
-        mean_epi[np.logical_not(np.isfinite(mean_epi))] = 0
+        ensure_finite_data(mean_epi, raise_warning=False)
     sorted_input = np.sort(np.ravel(mean_epi))
     if exclude_zeros:
         sorted_input = sorted_input[sorted_input != 0]
@@ -430,13 +451,13 @@ def compute_multi_epi_mask(
         masks, whereas threshold=0 is the union of all masks.
 
     %(lower_cutoff)s
-        Default=0.2.
+        default=0.2.
     %(upper_cutoff)s
-        Default=0.85.
+        default=0.85.
     %(connected)s
-        Default=True.
+        default=True.
     %(opening)s
-        Default=2.
+        default=2.
     exclude_zeros : :obj:`bool`, default=False
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
@@ -512,11 +533,11 @@ def compute_background_mask(
             If a 3D image is given, we suggest to use the mean image.
 
     %(border_size)s
-        Default=2.
+        default=2.
     %(connected)s
-        Default=False.
+        default=False.
     %(opening)s
-        Default=False.
+        default=False.
     %(target_affine)s
 
         .. note::
@@ -607,10 +628,10 @@ def compute_multi_background_mask(
         masks, whereas threshold=0 is the union of all masks.
 
     %(border_size)s
-        Default=2.
+        default=2.
 
     %(connected)s
-        Default=True.
+        default=True.
 
     %(opening)s
 
@@ -683,9 +704,9 @@ def compute_brain_mask(
     threshold : :obj:`float`, default=0.5
         The value under which the :term:`MNI` template is cut off.
     %(connected)s
-        Default=True.
+        default=True.
     %(opening)s
-        Default=2.
+        default=2.
     %(memory)s
     %(verbose0)s
     %(mask_type)s
@@ -714,9 +735,7 @@ def compute_brain_mask(
             "Only 'whole-brain', 'gm' or 'wm' are accepted."
         )
 
-    resampled_template = cache(resampling.resample_to_img, memory)(
-        template, target_img
-    )
+    resampled_template = cache(resample_to_img, memory)(template, target_img)
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")
 
@@ -769,10 +788,10 @@ def compute_multi_brain_mask(
         The value under which the :term:`MNI` template is cut off.
 
     %(connected)s
-        Default=True.
+        default=True.
 
     %(opening)s
-        Default=2.
+        default=2.
 
     %(mask_type)s
 
@@ -819,7 +838,7 @@ def compute_multi_brain_mask(
 @fill_doc
 def apply_mask(
     imgs, mask_img, dtype="f", smoothing_fwhm=None, ensure_finite=True
-):
+) -> np.ndarray:
     """Extract signals from images using specified mask.
 
     Read the time series from the given image object, using the mask.
@@ -844,11 +863,7 @@ def apply_mask(
 
         .. note::
 
-            Implies ensure_finite=True.
-
-        .. warning::
-
-            Not yet implemented for surface images
+            Implies ensure_finite=True when applied to volume data.
 
     ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and
@@ -865,6 +880,7 @@ def apply_mask(
     When using smoothing, ``ensure_finite`` is set to True, as non-finite
     values would spread across the image.
     """
+    check_params(locals())
     if not isinstance(imgs, SurfaceImage):
         mask_img = check_niimg_3d(mask_img)
         mask, mask_affine = load_mask_img(mask_img)
@@ -894,14 +910,7 @@ def apply_mask_fmri(
     if isinstance(imgs, SurfaceImage) and isinstance(mask_img, SurfaceImage):
         check_polymesh_equal(mask_img.mesh, imgs.mesh)
 
-        if smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                NotImplementedWarning,
-                stacklevel=2,
-            )
-            smoothing_fwhm = True
+        imgs = smooth_img(imgs, fwhm=smoothing_fwhm)
 
         mask_data = as_ndarray(get_surface_data(mask_img), dtype=bool)
         series = get_surface_data(imgs)
@@ -1019,7 +1028,27 @@ def _unmask_4d(X, mask, order="C"):
     return data
 
 
-def unmask(X, mask_img, order="F"):
+@overload
+def unmask(
+    X: ArrayLike,
+    mask_img: NiimgLike,
+    order: Literal["F", "C"] = "F",
+) -> Nifti1Image: ...
+
+
+@overload
+def unmask(
+    X: list[ArrayLike],
+    mask_img: NiimgLike,
+    order: Literal["F", "C"] = "F",
+) -> list[Nifti1Image]: ...
+
+
+def unmask(
+    X: ArrayLike | list[ArrayLike],
+    mask_img: NiimgLike,
+    order: Literal["F", "C"] = "F",
+) -> Nifti1Image | list[Nifti1Image]:
     """Take masked data and bring them back into 3D/4D.
 
     This function can be applied to a list of masked data.
@@ -1040,7 +1069,8 @@ def unmask(X, mask_img, order="F"):
 
     Returns
     -------
-    data : :class:`nibabel.nifti1.Nifti1Image`
+    data : :class:`nibabel.nifti1.Nifti1Image` \
+        or list of :class:`nibabel.nifti1.Nifti1Image`
         Unmasked data. Depending on the shape of X, data can have
         different shapes:
 
@@ -1069,7 +1099,7 @@ def unmask(X, mask_img, order="F"):
             f"Masked data X must be 2D or 1D array; got shape: {X.shape!s}"
         )
 
-    return new_img_like(mask_img, unmasked, affine)
+    return new_img_like(mask_img, unmasked, affine, copy_header=False)
 
 
 def unmask_from_to_3d_array(w, mask):

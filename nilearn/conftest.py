@@ -1,20 +1,15 @@
 """Configuration and extra fixtures for pytest."""
 
-import nibabel
+import inspect
+
 import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
+from numpydoc.docscrape import NumpyDocString
 from scipy.signal import get_window
 
-from nilearn import image
-from nilearn._utils.helpers import is_matplotlib_installed
-
-# we need to import these fixtures even if not used in this module
-from nilearn.datasets.tests._testing import (
-    request_mocker,  # noqa: F401
-    temp_nilearn_data_dir,  # noqa: F401
-)
+from nilearn._utils.helpers import is_gil_enabled, is_matplotlib_installed
 from nilearn.masking import unmask
 from nilearn.surface import (
     InMemoryMesh,
@@ -30,7 +25,7 @@ collect_ignore = []
 if is_matplotlib_installed():
     import matplotlib
 
-    from nilearn._utils.helpers import (
+    from nilearn._utils.versions import (
         OPTIONAL_MATPLOTLIB_MIN_VERSION,
         compare_version,
     )
@@ -43,6 +38,8 @@ if is_matplotlib_installed():
         # with the oldest version of matplolib
         collect_ignore.extend(
             [
+                "glm/tests/test_baseline_comparisons.py",
+                "maskers/tests/test_baseline_comparisons.py",
                 "plotting/tests/test_baseline_comparisons.py",
                 "reporting/tests/test_baseline_comparisons.py",
             ]
@@ -52,60 +49,29 @@ else:
     collect_ignore.extend(
         [
             "_utils/plotting.py",
+            "glm/tests/test_baseline_comparisons.py",
+            "maskers/tests/test_baseline_comparisons.py",
             "plotting",
             "reporting/tests/test_baseline_comparisons.py",
         ]
     )
     matplotlib = None  # type: ignore[assignment]
 
+if not is_gil_enabled():
+    collect_ignore.extend(
+        [
+            # data fetchers tests are using a monkeypatch fixture
+            # making the tests thread unsafe
+            # therefore we skip them when testing without the GIL
+            "datasets",
+        ]
+    )
+
 
 def pytest_configure(config):  # noqa: ARG001
     """Use Agg so that no figures pop up."""
     if matplotlib is not None:
         matplotlib.use("Agg", force=True)
-
-
-@pytest.fixture(autouse=True)
-def no_int64_nifti(monkeypatch):
-    """Prevent creating or writing a Nift1Image containing 64-bit ints.
-
-    It is easy to create such images by mistake because Numpy uses int64 by
-    default, but tools like FSL fail to read them and Nibabel will refuse to
-    write them in the future.
-
-    For tests that do need to manipulate int64 images, it is always possible to
-    disable this fixture by parametrizing a test to override it:
-
-    @pytest.mark.parametrize("no_int64_nifti", [None])
-    def test_behavior_when_user_provides_int64_img():
-        # ...
-
-    But by default it is used automatically so that Nilearn doesn't create such
-    images by mistake.
-
-    """
-    forbidden_types = (np.int64, np.uint64)
-    error_msg = (
-        "Creating or saving an image containing 64-bit ints is forbidden."
-    )
-
-    to_filename = nibabel.nifti1.Nifti1Image.to_filename
-
-    def checked_to_filename(img, filename):
-        assert image.get_data(img).dtype not in forbidden_types, error_msg
-        return to_filename(img, filename)
-
-    monkeypatch.setattr(
-        "nibabel.nifti1.Nifti1Image.to_filename", checked_to_filename
-    )
-
-    init = nibabel.nifti1.Nifti1Image.__init__
-
-    def checked_init(self, dataobj, *args, **kwargs):
-        assert dataobj.dtype not in forbidden_types, error_msg
-        return init(self, dataobj, *args, **kwargs)
-
-    monkeypatch.setattr("nibabel.nifti1.Nifti1Image.__init__", checked_init)
 
 
 @pytest.fixture(autouse=True)
@@ -457,7 +423,7 @@ def _n_regions():
     return 9
 
 
-def generate_regions_ts(n_features, n_regions):
+def generate_regions_ts(n_features, n_regions) -> np.ndarray:
     """Generate some regions as timeseries.
 
     adapted from nilearn._utils.data_gen.generate_regions_ts
@@ -511,7 +477,7 @@ def n_regions():
     return _n_regions()
 
 
-def _img_maps(n_regions=None):
+def _img_maps(n_regions=None) -> Nifti1Image:
     """Generate a default map image.
 
     adapted from nilearn._utils.data_gen.generate_maps
@@ -529,12 +495,12 @@ def _img_maps(n_regions=None):
 
 
 @pytest.fixture
-def img_maps(n_regions):
+def img_maps(n_regions) -> Nifti1Image:
     """Generate fixture for default map image."""
     return _img_maps(n_regions)
 
 
-def _img_labels(n_regions=None):
+def _img_labels(n_regions=None) -> Nifti1Image:
     """Generate fixture for default label image.
 
     adapted from nilearn._utils.data_gen.generate_labeled_regions
@@ -561,7 +527,7 @@ def _img_labels(n_regions=None):
 
 
 @pytest.fixture
-def img_labels(n_regions):
+def img_labels(n_regions) -> Nifti1Image:
     """Generate fixture for default label image."""
     return _img_labels(n_regions)
 
@@ -655,6 +621,7 @@ def surf_mesh():
 
 
 def _make_surface_img(n_samples=1):
+    """Create data with increasing values for each vertex."""
     mesh = _make_mesh()
     data = {}
     for i, (key, val) in enumerate(mesh.parts.items()):
@@ -668,7 +635,7 @@ def _make_surface_img(n_samples=1):
 
 @pytest.fixture
 def surf_img_2d():
-    """Return a 2D SurfaceImage with random data.
+    """Return a 2D SurfaceImage.
 
     The shape of the data will be (n_vertices, n_samples).
     n_samples by default is 1.
@@ -677,7 +644,7 @@ def surf_img_2d():
 
 
 def _surf_img_1d():
-    """Return a 1D SurfaceImage with random data.
+    """Return a 1D SurfaceImage.
 
     The shape of the data will be (n_vertices,).
     """
@@ -689,11 +656,21 @@ def _surf_img_1d():
 
 @pytest.fixture
 def surf_img_1d():
-    """Return a 1D SurfaceImage with random data.
+    """Return a 1D SurfaceImage.
 
     The shape of the data will be (n_vertices,).
     """
     return _surf_img_1d()
+
+
+@pytest.fixture
+def surf_img_ones_1d(surf_mesh):
+    """Return a 1D SurfaceImage with only 1."""
+    data = {
+        "left": np.ones((surf_mesh.parts["left"].n_vertices, 1)),
+        "right": np.ones((surf_mesh.parts["right"].n_vertices, 1)),
+    }
+    return SurfaceImage(surf_mesh, data)
 
 
 def _make_surface_mask(n_zeros=4):
@@ -770,12 +747,16 @@ def surf_three_labels_img(surf_mesh):
     return SurfaceImage(surf_mesh, data)
 
 
-def _surf_maps_img():
+def _surf_maps_img(n_regions: int = 6) -> SurfaceImage:
     """Return a sample surface map image using the sample mesh.
     Has 6 regions in total: 3 in both, 1 only in left and 2 only in right.
     Later we multiply the data with random "probability" values to make it
     more realistic.
     """
+    if n_regions > 6 or n_regions < 1:
+        raise ValueError(
+            f"'n_regions' must be  in interaval '[1, 6]'. Got {n_regions=}."
+        )
     data = {
         "left": np.asarray(
             [
@@ -795,6 +776,12 @@ def _surf_maps_img():
             ]
         ),
     }
+    data["left"] = data["left"][..., 0:n_regions]
+    data["right"] = data["right"][..., 0:n_regions]
+
+    assert data["left"].shape == (4, n_regions)
+    assert data["right"].shape == (5, n_regions)
+
     # multiply with random "probability" values
     data = {
         part: data[part] * _rng().random(data[part].shape) for part in data
@@ -803,7 +790,7 @@ def _surf_maps_img():
 
 
 @pytest.fixture
-def surf_maps_img():
+def surf_maps_img() -> SurfaceImage:
     """Return a sample surface map as fixture."""
     return _surf_maps_img()
 
@@ -811,7 +798,7 @@ def surf_maps_img():
 def _flip_surf_img_parts(poly_obj):
     """Flip hemispheres of a surface image data or mesh."""
     keys = list(poly_obj.parts.keys())
-    keys = [keys[-1]] + keys[:-1]
+    keys = [keys[-1], *keys[:-1]]
     return dict(zip(keys, poly_obj.parts.values(), strict=False))
 
 
@@ -910,3 +897,82 @@ def transparency_image(rng, affine_mni):
     data_rng = rng.random((7, 7, 3)) * 10 - 5
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     return Nifti1Image(data_positive, affine_mni)
+
+
+# ------------------------ DOCSTRING ------------------------#
+
+
+def check_obj_docstring(obj) -> None:
+    """Check that class and method parameters and attributes are documented.
+
+    - Check if public class attributes are documented
+    - Check if __init__ parameters are documented
+    - Check if each public function and parameters are documented
+    - Check not to have duplicates
+
+    Parameters
+    ----------
+    obj: :obj:`object`
+        Instance of the class to check
+    """
+    obj_doc = NumpyDocString(inspect.getdoc(obj.__class__))
+
+    # check public class attributes
+    # ------------------------------
+    attributes = [x for x in obj.__dict__ if not x.startswith("_")]
+    check_parameters_doctring(attributes, obj_doc["Attributes"])
+
+    # check __init__ parameters
+    # -------------------------
+    parameters = dict(**inspect.signature(obj.__init__).parameters)
+    check_parameters_doctring(parameters, obj_doc["Parameters"])
+
+    # get public methods from class definition
+    # ----------------------------------------
+    check_methods_docstring(obj.__class__)
+
+
+def check_parameters_doctring(parameters, doc_dict):
+    """Check if all parameters are documented without duplicates and extras."""
+    documented = []
+    for param in doc_dict:
+        if param.name.startswith("_"):
+            continue
+        # make sure type is defined for the parameter
+        assert param.type
+
+        # in case multiple params are defined in a line
+        documented.extend([name.strip() for name in param.name.split(",")])
+
+    undocumented = [param for param in parameters if param not in documented]
+    extras = [param for param in documented if param not in parameters]
+
+    # no undocumented
+    assert not undocumented
+    # no extras
+    assert not extras
+    # no duplicates
+    assert len(documented) == len(set(documented))
+
+
+def check_methods_docstring(cls):
+    """Check if all public functions and parameters are documented."""
+    for name, member in cls.__dict__.items():
+        if name.startswith("_"):
+            continue
+        if isinstance(member, (staticmethod, classmethod)):
+            func = member.__func__
+        elif inspect.isfunction(member):
+            func = member
+        else:
+            continue
+
+        sig = inspect.signature(func)
+        params = [
+            p.name
+            for p in sig.parameters.values()
+            if p.name not in ("self", "cls")
+        ]
+        func_doc = NumpyDocString(inspect.getdoc(func))
+
+        check_parameters_doctring(params, func_doc["Parameters"])

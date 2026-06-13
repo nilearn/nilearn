@@ -39,7 +39,7 @@ from sklearn.exceptions import ConvergenceWarning
 
 from nilearn.decoding import FREMRegressor
 
-frem = FREMRegressor("svr", cv=10, standardize="zscore_sample", verbose=1)
+frem = FREMRegressor("svr", cv=10, verbose=1)
 
 with warnings.catch_warnings():
     warnings.filterwarnings(action="ignore", category=ConvergenceWarning)
@@ -97,6 +97,7 @@ tv_l1 = SpaceNetRegressor(
     eps=1e-1,  # prefer large alphas
     memory="nilearn_cache",
     n_jobs=2,
+    verbose=1,
 )
 # tv_l1.fit(zmap_filenames, behavioral_target)
 # plot_stat_map(tv_l1.coef_img_, title="TV-L1", display_mode="yz",

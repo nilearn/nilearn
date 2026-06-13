@@ -45,8 +45,6 @@ much clearer view of the important regions.
     see the :ref:`dataset description <oasis_maps>`.
 
 ____
-
-.. include:: ../../../examples/masker_note.rst
 """
 
 # %%
@@ -85,20 +83,21 @@ print(
 # %%
 # Preprocess data
 # ---------------
+# The features with too low between-subject variance are removed using
+# :class:`sklearn.feature_selection.VarianceThreshold`.
+# Then we convert the data back to the mask image in order to use it for
+# decoding process
+#
 nifti_masker = NiftiMasker(
-    standardize=False, smoothing_fwhm=2, memory="nilearn_cache"
+    standardize=False, smoothing_fwhm=2, memory="nilearn_cache", verbose=1
 )  # cache options
 gm_maps_masked = nifti_masker.fit_transform(gm_imgs_train)
 
-# The features with too low between-subject variance are removed using
-# :class:`sklearn.feature_selection.VarianceThreshold`.
 from sklearn.feature_selection import VarianceThreshold
 
 variance_threshold = VarianceThreshold(threshold=0.01)
 variance_threshold.fit_transform(gm_maps_masked)
 
-# Then we convert the data back to the mask image in order to use it for
-# decoding process
 mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 
 # %%
@@ -122,7 +121,7 @@ decoder = DecoderRegressor(
     scoring="neg_mean_absolute_error",
     screening_percentile=1,
     n_jobs=2,
-    standardize="zscore_sample",
+    verbose=1,
 )
 # Fit and predict with the decoder
 decoder.fit(gm_imgs_train, age_train)
@@ -155,7 +154,6 @@ display = plot_stat_map(
     display_mode="z",
     cut_coords=[z_slice],
     title="SVM weights",
-    cmap="cold_hot",
 )
 show()
 
@@ -184,7 +182,9 @@ plt.legend(loc="best")
 # -----------------------------------------
 print("Massively univariate model")
 
-gm_maps_masked = NiftiMasker().fit_transform(gray_matter_map_filenames)
+gm_maps_masked = NiftiMasker(verbose=1).fit_transform(
+    gray_matter_map_filenames
+)
 data = variance_threshold.fit_transform(gm_maps_masked)
 
 # Statistical inference

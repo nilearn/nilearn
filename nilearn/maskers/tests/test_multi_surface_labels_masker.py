@@ -6,11 +6,14 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.maskers import MultiSurfaceLabelsMasker
 from nilearn.maskers.tests.conftest import sklearn_surf_label_img
 
-ESTIMATORS_TO_CHECK = [MultiSurfaceLabelsMasker(sklearn_surf_label_img())]
+ESTIMATORS_TO_CHECK = [
+    MultiSurfaceLabelsMasker(sklearn_surf_label_img()),
+    MultiSurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
+]
 
 if SKLEARN_LT_1_6:
 

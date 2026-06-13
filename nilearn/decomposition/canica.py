@@ -2,6 +2,7 @@
 
 import warnings as _warnings
 from operator import itemgetter
+from typing import get_args
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -11,7 +12,11 @@ from sklearn.utils import check_random_state
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn.decomposition._multi_pca import _MultiPCA
+from nilearn.maskers import MultiNiftiMasker, MultiSurfaceMasker
+from nilearn.nilearn_typing import NiimgLike
+from nilearn.surface import SurfaceImage
 
 
 @fill_doc
@@ -28,7 +33,7 @@ class CanICA(_MultiPCA):
         Number of components to extract.
 
     %(smoothing_fwhm)s
-        Default=6mm.
+        default=6mm.
 
     do_cca : :obj:`bool`, default=True
         Indicate if a Canonical Correlation Analysis must be run after the
@@ -69,6 +74,9 @@ class CanICA(_MultiPCA):
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
+    %(dtype)s
+
+        ..versionadded:: 0.14.0dev
 
     %(target_affine)s
 
@@ -82,13 +90,13 @@ class CanICA(_MultiPCA):
 
     %(mask_strategy)s
 
-        Default='epi'.
+        default='epi'.
 
         .. note::
             These strategies are only relevant for Nifti images and the
             parameter is ignored for SurfaceImage objects.
 
-    mask_args : :obj:`dict`, optional
+    mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`
@@ -132,6 +140,7 @@ class CanICA(_MultiPCA):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -153,6 +162,7 @@ class CanICA(_MultiPCA):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             target_affine=target_affine,
             target_shape=target_shape,
             mask_strategy=mask_strategy,
@@ -166,7 +176,7 @@ class CanICA(_MultiPCA):
         self.threshold = threshold
         self.n_init = n_init
 
-    def _unmix_components(self, components):
+    def _unmix_components(self, components) -> None:
         """Core function of CanICA than rotate components_ to maximize \
         independence.
         """
@@ -253,7 +263,21 @@ class CanICA(_MultiPCA):
                 f"Number of maps is {self.n_components} "
                 f"and you provided threshold={self.threshold}."
             )
+
         components = _MultiPCA._raw_fit(self, data)
 
         self._unmix_components(components)
         return self
+
+    def _validate_mask(self) -> None:
+        if self.mask is not None:
+            check_is_of_allowed_type(
+                self.mask,
+                (
+                    MultiSurfaceMasker,
+                    SurfaceImage,
+                    MultiNiftiMasker,
+                    *get_args(NiimgLike),
+                ),
+                "mask",
+            )

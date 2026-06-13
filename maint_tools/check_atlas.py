@@ -15,7 +15,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from nibabel import Nifti1Image
 from rich import print
 from templateflow import api as tflow
 
@@ -34,8 +33,8 @@ from nilearn.datasets import (
     load_sample_motor_activation_image,
 )
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface import SurfaceImage
-from nilearn.typing import NiimgLike
 
 functions = {
     fetch_atlas_aal: None,
@@ -51,9 +50,9 @@ functions = {
 
 
 def _check_atlas(
-    labels_img: str | Path | Nifti1Image | SurfaceImage,
+    labels_img: NiimgLike | SurfaceImage,
     atlas_name: str,
-    stat_map: str | Path | Nifti1Image | SurfaceImage,
+    stat_map: NiimgLike | SurfaceImage,
     output_dir: Path,
     background_label=0,
     **kwargs,

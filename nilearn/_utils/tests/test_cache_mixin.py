@@ -8,6 +8,8 @@ from joblib import Memory
 
 import nilearn
 from nilearn._utils.cache_mixin import CacheMixin, cache, check_memory
+from nilearn._utils.helpers import is_gil_enabled
+from nilearn.datasets.tests.conftest import temp_nilearn_data_dir  # noqa: F401
 
 
 def _get_subdirs(top_dir):
@@ -29,12 +31,12 @@ def test_check_memory(tmp_path):
     mem_temp = Memory(location=str(tmp_path))
 
     for mem in [None, mem_none]:
-        memory = check_memory(mem, verbose=0)
+        memory = check_memory(mem)
         assert memory, Memory
         assert memory.location == mem_none.location
 
     for mem in [str(tmp_path), mem_temp]:
-        memory = check_memory(mem, verbose=0)
+        memory = check_memory(mem)
         assert memory.location == mem_temp.location
         assert memory, Memory
 
@@ -51,6 +53,8 @@ class CacheMixinTest(CacheMixin):
         self._cache(f)
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_cache_mixin_with_expand_user():
     # Test the memory cache is correctly created when using ~.
     cache_dir = "~/nilearn_data/test_cache"
@@ -66,6 +70,7 @@ def test_cache_mixin_with_expand_user():
             shutil.rmtree(expand_cache_dir)
 
 
+@pytest.mark.thread_unsafe
 def test_cache_mixin_without_expand_user():
     # Test the memory cache is correctly created when using ~.
     cache_dir = "~/nilearn_data/test_cache"

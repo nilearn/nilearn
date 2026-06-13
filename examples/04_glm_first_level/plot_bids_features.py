@@ -25,11 +25,15 @@ More specifically:
 # %%
 # Fetch openneuro :term:`BIDS` dataset
 # ------------------------------------
-# We download one subject from the stopsignal task
-# in the ds000030 V4 :term:`BIDS` dataset available in openneuro.
+# We download one subject from the ``stopsignal`` task
+# in the ds000030 :term:`BIDS` dataset available in openneuro.
 # This dataset contains the necessary information to run a statistical analysis
 # using Nilearn. The dataset also contains statistical results from a previous
 # FSL analysis that we can employ for comparison with the Nilearn estimation.
+#
+# For more information,
+# see the :ref:`dataset description <ds000030>`.
+#
 from nilearn.datasets import (
     fetch_ds000030_urls,
     fetch_openneuro_dataset,
@@ -197,8 +201,12 @@ show()
 # Saving model outputs to disk
 # ----------------------------
 #
-# We can now easily save the main results,
-# the model metadata and an HTML report to the disk.
+# It can be useful to quickly generate a portable, ready-to-view report with
+# most of the pertinent information.
+# We can do this by saving the output of the GLM to disk
+# including an HTML report.
+# This is easy to do if you have a fitted model and the list of contrasts,
+# which we do here.
 #
 from nilearn.glm import save_glm_to_bids
 

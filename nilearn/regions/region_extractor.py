@@ -2,6 +2,7 @@
 
 import collections.abc
 import numbers
+import warnings
 from copy import deepcopy
 
 import numpy as np
@@ -10,20 +11,19 @@ from scipy.stats import scoreatpercentile
 
 from nilearn import masking
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import (
-    check_niimg,
-    check_niimg_3d,
-    check_niimg_4d,
-    check_same_fov,
-)
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
 from nilearn._utils.segmentation import random_walker
 from nilearn.image.image import (
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
+    check_same_fov,
     concat_imgs,
     new_img_like,
     smooth_array,
@@ -166,7 +166,7 @@ def connected_regions(
         Minimum volume in mm3 for a region to be kept.
         For example, if the :term:`voxel` size is 3x3x3 mm
         then the volume of the :term:`voxel` is 27mm^3.
-        Default=1350mm^3, which means
+        default=1350mm^3, which means
         we take minimum size of 1350 / 27 = 50 voxels.
     %(extract_type)s
     %(smoothing_fwhm)s
@@ -177,7 +177,7 @@ def connected_regions(
             This parameter is passed to `nilearn.image.image.smooth_array`.
             It will be used only if ``extract_type='local_regions'``.
 
-        Default=6.
+        default=6.
 
     mask_img : Niimg-like object, default=None
         If given, mask image is applied to input data.
@@ -202,6 +202,8 @@ def connected_regions(
         region extraction on continuous type atlas images and
         also time series signals extraction from regions extracted.
     """
+    check_params(locals())
+
     all_regions_imgs = []
     index_of_each_map = []
     maps_img = check_niimg(maps_img, atleast_4d=True)
@@ -259,6 +261,13 @@ def connected_regions(
         index_of_each_map.extend([index] * len(regions))
         all_regions_imgs.extend(regions)
 
+    if not all_regions_imgs:
+        warnings.warn(
+            "No supra threshold regions was found",
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
+        return None, None
     regions_extracted_img = concat_imgs(all_regions_imgs)
 
     return regions_extracted_img, index_of_each_map
@@ -284,7 +293,7 @@ class RegionExtractor(NiftiMapsMasker):
         Image containing a set of whole brain atlas maps or statistically
         decomposed brain maps.
 
-    mask_img : Niimg-like object or None, optional
+    mask_img : Niimg-like object or None, default=None
         Mask to be applied to input data, passed to NiftiMapsMasker.
         If None, no masking is applied.
 
@@ -339,7 +348,7 @@ class RegionExtractor(NiftiMapsMasker):
             Please set this parameter according to maps resolution,
             otherwise extraction will fail.
 
-        Default=6mm.
+        default=6mm.
 
     %(standardize_false)s
 
@@ -359,7 +368,7 @@ class RegionExtractor(NiftiMapsMasker):
         .. note::
             Passed to :func:`nilearn.signal.clean`.
 
-        Default=False.
+        default=False.
 
     %(low_pass)s
 

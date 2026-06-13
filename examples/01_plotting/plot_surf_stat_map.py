@@ -100,7 +100,7 @@ pcc_mask = SurfaceImage(
     data=mask_data,
 )
 
-masker = SurfaceLabelsMasker(labels_img=pcc_mask).fit()
+masker = SurfaceLabelsMasker(labels_img=pcc_mask, verbose=1).fit()
 seed_timeseries = masker.transform(surf_img_nki).squeeze()
 
 # %%

@@ -23,6 +23,7 @@ def test_assert_polydata_equal():
         assert_polydata_equal(data_1, data_2)
 
 
+@pytest.mark.thread_unsafe
 def test_assert_surface_mesh_equal(surf_mesh):
     """Check that Meshes with different faces/coords are detected."""
     assert_surface_mesh_equal(surf_mesh.parts["left"], surf_mesh.parts["left"])

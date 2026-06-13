@@ -15,8 +15,10 @@ This shows:
 
 -   how to use run some decoding directly on surface data.
 
-See the :ref:`dataset description <nki_dataset>`
-for more information on the data used in this example.
+.. seealso::
+
+    See the :ref:`dataset description <nki_dataset>`
+    for more information on the data used in this example.
 """
 
 from nilearn._utils.helpers import check_matplotlib
@@ -30,7 +32,7 @@ check_matplotlib()
 # as a list of :class:`~nilearn.surface.SurfaceImage`.
 # Then we extract data with a masker and
 # compute the mean image across time points for the first subject.
-# We then plot the the mean image.
+# We then plot the mean image.
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -45,7 +47,7 @@ from nilearn.plotting import plot_matrix, plot_surf, show
 surf_img_nki = load_nki()[0]
 print(f"NKI image: {surf_img_nki}")
 
-masker = SurfaceMasker()
+masker = SurfaceMasker(verbose=1, smoothing_fwhm=3, standardize=None)
 masked_data = masker.fit_transform(surf_img_nki)
 print(f"Masked data shape: {masked_data.shape}")
 
@@ -137,8 +139,7 @@ labels_img = SurfaceImage(
 )
 
 labels_masker = SurfaceLabelsMasker(
-    labels_img=labels_img,
-    lut=destrieux.lut,
+    labels_img=labels_img, lut=destrieux.lut, verbose=1, standardize=None
 ).fit()
 
 masked_data = labels_masker.transform(surf_img_nki)
@@ -147,9 +148,7 @@ print(f"Masked data shape: {masked_data.shape}")
 # %%
 # Plot connectivity matrix
 # ------------------------
-connectome_measure = ConnectivityMeasure(
-    kind="correlation", standardize="zscore_sample"
-)
+connectome_measure = ConnectivityMeasure(kind="correlation")
 connectome = connectome_measure.fit([masked_data])
 
 vmax = np.absolute(connectome.mean_).max()
@@ -202,10 +201,11 @@ y = rng.choice(
 )
 
 decoder = Decoder(
-    mask=SurfaceMasker(),
+    mask=SurfaceMasker(verbose=1),
     param_grid={"C": [0.01, 0.1]},
     cv=3,
     screening_percentile=1,
+    standardize=None,
 )
 decoder.fit(surf_img_nki, y)
 print("CV scores:", decoder.cv_scores_)
@@ -226,7 +226,7 @@ show()
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
 decoder = pipeline.make_pipeline(
-    SurfaceMasker(),
+    SurfaceMasker(verbose=1, standardize=None),
     preprocessing.StandardScaler(),
     feature_selection.SelectKBest(
         score_func=feature_selection.f_regression, k=500

@@ -2,6 +2,23 @@
 
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
+
+from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn.datasets import load_mni152_template
+
+
+def pytest_ignore_collect(collection_path, config):  # noqa: ARG001
+    """Skip all collection inside this directory when matplotlib is absent."""
+    if not is_matplotlib_installed():
+        return True
+    return None
+
+
+@pytest.fixture(scope="session")
+def mni152_template_res_2() -> Nifti1Image:
+    """Return the mni152 template at 2 mm resolution."""
+    return load_mni152_template(resolution=2)
 
 
 @pytest.fixture

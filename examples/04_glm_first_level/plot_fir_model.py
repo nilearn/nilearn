@@ -9,13 +9,12 @@ even on fast event-related :term:`fMRI` datasets.
 
 Here, we demonstrate the use of a :term:`FIR` model with 3 lags,
 computing 4 contrasts
-from a single subject dataset from the "Neurospin Localizer". It is a fast
-event related design: During 5 minutes, 80 events of the following types are
-presented : ['audio_computation', 'audio_left_hand_button_press',
-'audio_right_hand_button_press', 'horizontal_checkerboard',
-'sentence_listening', 'sentence_reading', 'vertical_checkerboard',
-'visual_computation', 'visual_left_hand_button_press',
-'visual_right_hand_button_press']
+from a single subject dataset from the "Neurospin Localizer".
+
+.. seealso::
+
+    For more information about the dataset
+    see its :ref:`description <localizer_first_level_dataset>`.
 """
 
 # %%
@@ -45,7 +44,9 @@ events = pd.read_table(events_file)
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.plotting import plot_contrast_matrix, plot_design_matrix
 
-first_level_model = FirstLevelModel(t_r, hrf_model="fir", fir_delays=[1, 2, 3])
+first_level_model = FirstLevelModel(
+    t_r, hrf_model="fir", fir_delays=[1, 2, 3], verbose=1
+)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)

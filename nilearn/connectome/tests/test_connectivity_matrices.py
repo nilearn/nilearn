@@ -16,7 +16,7 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.extmath import is_spd
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
     _check_spd,
@@ -44,9 +44,8 @@ N_SUBJECTS = 5
 
 
 ESTIMATORS_TO_CHECK = [
-    ConnectivityMeasure(
-        cov_estimator=EmpiricalCovariance(), standardize="zscore_sample"
-    )
+    ConnectivityMeasure(cov_estimator=EmpiricalCovariance()),
+    ConnectivityMeasure(),
 ]
 
 if SKLEARN_LT_1_6:
@@ -165,7 +164,9 @@ def random_spd(p, eig_min, cond, random_state=0):
     return unitary.dot(diag).dot(unitary.T)
 
 
-def _signals(n_subjects=N_SUBJECTS):
+def _signals(
+    n_subjects: int = N_SUBJECTS,
+) -> tuple[list[np.ndarray], np.ndarray]:
     """Generate signals and compute covariances \
     and apply confounds while computing covariances.
     """
@@ -185,7 +186,8 @@ def _signals(n_subjects=N_SUBJECTS):
 
 
 @pytest.fixture
-def signals():
+def signals() -> list[np.ndarray]:
+    """Return a list of signals as arrays."""
     return _signals(N_SUBJECTS)[0]
 
 
@@ -648,6 +650,18 @@ def test_connectivity_measure_errors():
     ):
         conn_measure.fit_transform([np.ones((100, 40))])
 
+    # invalid cov_estimator
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"'cov_estimator' must be an estimator with '.fit\(\)' and "
+            "'.covariance_'"
+        ),
+    ):
+        ConnectivityMeasure(cov_estimator="not_an_estimator").fit(
+            [np.ones((100, 40)), np.ones((100, 40))]
+        )
+
 
 @pytest.mark.parametrize(
     "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
@@ -1057,18 +1071,3 @@ def test_confounds_connectome_measure_errors(signals):
         ValueError, match="'confounds' are provided but vectorize=False"
     ):
         conn_measure.fit_transform(signals, None, confounds[:10])
-
-
-def test_connectivity_measure_standardize(signals):
-    """Check warning is raised and then suppressed with setting standardize."""
-    match = "default strategy for standardize"
-
-    with pytest.deprecated_call(match=match):
-        ConnectivityMeasure(kind="correlation").fit_transform(signals)
-
-    with warnings.catch_warnings(record=True) as record:
-        ConnectivityMeasure(
-            kind="correlation", standardize="zscore_sample"
-        ).fit_transform(signals)
-        for m in record:
-            assert match not in m.message

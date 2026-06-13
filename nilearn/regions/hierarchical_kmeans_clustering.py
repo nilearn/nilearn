@@ -4,7 +4,6 @@ import warnings
 
 import numpy as np
 from sklearn.base import (
-    BaseEstimator,
     ClassNamePrefixFeaturesOutMixin,
     ClusterMixin,
     TransformerMixin,
@@ -13,9 +12,11 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
+from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.param_validation import check_params
+from nilearn._utils.versions import SKLEARN_LT_1_6
 
 
 def _remove_empty_labels(labels):
@@ -89,7 +90,7 @@ def hierarchical_k_means(
         If an ndarray is passed, it should be of shape (n_clusters, n_features)
         and gives the initial centers.
 
-    batch_size : :obj:`int`, default: 1000
+    batch_size : :obj:`int`, default=1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
     n_init : :obj:`int`, default=10
@@ -97,7 +98,7 @@ def hierarchical_k_means(
         In contrast to KMeans, the algorithm is only run once, using the
         best of the ``n_init`` initializations as measured by inertia.
 
-    max_no_improvement : :obj:`int`, default: 10
+    max_no_improvement : :obj:`int`, default=10
         Control early stopping based on the consecutive number of mini
         batches that does not yield an improvement on the smoothed inertia.
         To disable convergence detection based on inertia, set
@@ -114,6 +115,8 @@ def hierarchical_k_means(
     labels : list of ints (len n_features)
         Parcellation of features in clusters
     """
+    check_params(locals())
+
     n_big_clusters = int(np.sqrt(n_clusters))
     mbk = MiniBatchKMeans(
         init=init,
@@ -157,7 +160,7 @@ class HierarchicalKMeans(
     ClassNamePrefixFeaturesOutMixin,
     ClusterMixin,
     TransformerMixin,
-    BaseEstimator,
+    NilearnBaseEstimator,
 ):
     """Hierarchical KMeans.
 
@@ -182,7 +185,7 @@ class HierarchicalKMeans(
         * If an ndarray is passed, it should be of shape (n_clusters,
           n_features) and gives the initial centers.
 
-    batch_size : :obj:`int`, optional, default: 1000
+    batch_size : :obj:`int`, default=1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
     n_init : :obj:`int`, default=10
@@ -190,7 +193,7 @@ class HierarchicalKMeans(
         In contrast to KMeans, the algorithm is only run once, using the
         best of the ``n_init`` initializations as measured by inertia.
 
-    max_no_improvement : :obj:`int`, default: 10
+    max_no_improvement : :obj:`int`, default=10
         Control early stopping based on the consecutive number of mini
         batches that does not yield an improvement on the smoothed inertia.
         To disable convergence detection based on inertia, set
@@ -336,9 +339,12 @@ class HierarchicalKMeans(
 
         self.sizes_ = sizes
         self.n_clusters = len(sizes)
+
+        self._n_features_out = self.n_clusters
+
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "labels_")
 
     @fill_doc
@@ -359,8 +365,7 @@ class HierarchicalKMeans(
         Returns
         -------
         X_red : : :obj:`numpy.ndarray`, \
-            :obj:`pandas.DataFrame` or \
-            `polars.DataFrame`
+            :obj:`pandas.DataFrame` or polars.DataFrame
             Data reduced with agglomerated signal for each cluster.
 
         The type of the output is determined by ``set_output()``:
@@ -415,6 +420,7 @@ class HierarchicalKMeans(
         """
         check_is_fitted(self)
 
+        X_red = check_array(X_red, estimator=self)
         X_red = X_red.T
         inverse = self.labels_
         if self.scaling:

@@ -1,88 +1,9 @@
 import functools
-import operator
 import os
+import sys
 import warnings
 
-from packaging.version import parse
-
 from nilearn._utils.logger import find_stack_level
-
-OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.8.0"
-
-
-def set_mpl_backend(message=None):
-    """Check if matplotlib is installed.
-
-    If not installed, raise error and display warning to install necessary
-    dependencies.
-
-    If installed, check if the installed version complies with the minimum
-    supported matplotlib version. If it does not, raise error; otherwise set
-    the matplotlib backend.
-
-    If current backend is not usable, switch to default "Agg" backend.
-
-    Parameters
-    ----------
-    message: str, default=None
-        Message to be prepended to standard warning when matplotlib is not
-    installed.
-    """
-    # We are doing local imports here to avoid polluting our namespace
-    try:
-        import matplotlib
-    except ImportError:
-        warning = (
-            "Some dependencies of nilearn.plotting package seem to be missing."
-            "\nThey can be installed with:\n"
-            " pip install 'nilearn[plotting]'"
-        )
-        if message is not None:
-            warning = f"{message}\n{warning}"
-        warnings.warn(warning, stacklevel=find_stack_level())
-        raise
-    else:
-        # When matplotlib was successfully imported we need to check
-        # that the version is greater that the minimum required one
-        mpl_version = getattr(matplotlib, "__version__", "0.0.0")
-        if not compare_version(
-            mpl_version, ">=", OPTIONAL_MATPLOTLIB_MIN_VERSION
-        ):
-            raise ImportError(
-                f"A matplotlib version of at least "
-                f"{OPTIONAL_MATPLOTLIB_MIN_VERSION} "
-                f"is required to use nilearn. {mpl_version} was found. "
-                f"Please upgrade matplotlib."
-            )
-        current_backend = matplotlib.get_backend().lower()
-
-        try:
-            # Making sure the current backend is usable by matplotlib
-            matplotlib.use(current_backend)
-        except Exception:
-            # If not, switching to default agg backend
-            matplotlib.use("Agg")
-        new_backend = matplotlib.get_backend().lower()
-
-        if new_backend != current_backend:
-            # Matplotlib backend has been changed, let's warn the user
-            warnings.warn(
-                f"Backend changed to {new_backend}...",
-                stacklevel=find_stack_level(),
-            )
-
-        if new_backend == "agg":
-            warnings.warn(
-                (
-                    f"\nYou are using the '{matplotlib.get_backend()}' "
-                    "matplotlib backend that is non-interactive."
-                    "\nNo figure will be plotted when calling "
-                    "matplotlib.pyplot.show() or nilearn.plotting.show()."
-                    "\nYou can fix this by installing a different backend: "
-                    "for example via\n\tpip install PyQt6"
-                ),
-                stacklevel=find_stack_level(),
-            )
 
 
 def rename_parameters(
@@ -125,7 +46,9 @@ def rename_parameters(
     return _replace_params
 
 
-def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
+def _warn_deprecated_params(
+    replacement_params, end_version, lib_name, kwargs
+) -> None:
     """Raise warnings about deprecated parameters, \
     for the decorator replace_parameters().
 
@@ -249,49 +172,7 @@ def stringify_path(path):
     return path.__fspath__() if isinstance(path, os.PathLike) else path
 
 
-VERSION_OPERATORS = {
-    "==": operator.eq,
-    "!=": operator.ne,
-    ">": operator.gt,
-    ">=": operator.ge,
-    "<": operator.lt,
-    "<=": operator.le,
-}
-
-
-def compare_version(version_a, operator, version_b):
-    """Compare two version strings via a user-specified operator.
-
-    .. note::
-
-        This function is inspired from MNE-Python.
-        See https://github.com/mne-tools/mne-python/blob/main/mne/fixes.py
-
-    Parameters
-    ----------
-    version_a : :obj:`str`
-        First version string.
-
-    operator : {'==', '!=','>', '<', '>=', '<='}
-        Operator to compare ``version_a`` and ``version_b`` in the form of
-        ``version_a operator version_b``.
-
-    version_b : :obj:`str`
-        Second version string.
-
-    Returns
-    -------
-    result : :obj:`bool`
-        The result of the version comparison.
-
-    """
-    if operator not in VERSION_OPERATORS:
-        error_msg = "'compare_version' received an unexpected operator "
-        raise ValueError(error_msg + operator + ".")
-    return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))
-
-
-def is_matplotlib_installed():
+def is_matplotlib_installed() -> bool:
     """Check if matplotlib is installed."""
     try:
         import matplotlib  # noqa: F401
@@ -301,7 +182,7 @@ def is_matplotlib_installed():
         return True
 
 
-def check_matplotlib():
+def check_matplotlib() -> None:
     """Check if matplotlib is installed, raise an error if not.
 
     Used in examples that require matplolib.
@@ -315,7 +196,7 @@ def check_matplotlib():
         )
 
 
-def is_plotly_installed():
+def is_plotly_installed() -> bool:
     """Check if plotly is installed."""
     try:
         import plotly.graph_objects as go  # noqa: F401
@@ -324,7 +205,7 @@ def is_plotly_installed():
     return True
 
 
-def is_kaleido_installed():
+def is_kaleido_installed() -> bool:
     """Check if kaleido is installed."""
     try:
         import kaleido  # noqa: F401
@@ -333,6 +214,19 @@ def is_kaleido_installed():
     return True
 
 
-def is_windows_platform():
+def is_windows_platform() -> bool:
     """Check if the current platform is Windows."""
     return os.name == "nt"
+
+
+def is_gil_enabled() -> bool:
+    """Check if the Python GIL is enabled."""
+    try:
+        return sys._is_gil_enabled()  # type: ignore[attr-defined]
+    except AttributeError:
+        # sys._is_gil_enabled does not exist in standard Python builds
+        return True
+
+
+def is_sphinx_build() -> bool:
+    return any(module.startswith("sphinx.") for module in sys.modules)

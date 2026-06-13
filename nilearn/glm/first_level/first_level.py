@@ -6,9 +6,8 @@ objects of fMRI data analyses.
 import csv
 import inspect
 import time
-import warnings
-from collections.abc import Iterable
 from pathlib import Path
+from typing import Literal, get_args
 from warnings import warn
 
 import matplotlib.pyplot as plt
@@ -23,11 +22,10 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, readable_time
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
     check_parameter_in_allowed,
@@ -35,7 +33,6 @@ from nilearn._utils.param_validation import (
     check_run_sample_masks,
 )
 from nilearn.datasets import load_fsaverage
-from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -50,8 +47,7 @@ from nilearn.glm.regression import (
     RegressionResults,
     SimpleRegressionResults,
 )
-from nilearn.glm.thresholding import warn_default_threshold
-from nilearn.image import get_data
+from nilearn.image.image import check_niimg, check_same_fov, get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids.query import (
     infer_repetition_time_from_dataset,
@@ -61,8 +57,9 @@ from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, NiftiSpheresMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.nilearn_typing import NiimgLike, Tr
 from nilearn.surface import SurfaceImage
-from nilearn.typing import NiimgLike, Tr
+from nilearn.surface.utils import check_polymesh_equal
 
 
 def mean_scaling(Y, axis=0):
@@ -84,6 +81,19 @@ def mean_scaling(Y, axis=0):
 
     mean : array of shape (n_voxels,)
         The data mean.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import mean_scaling
+    >>> Y = np.array([[1.0, 2.0, 3.0], [2.0, 4.0, 6.0]])
+    >>> Y_scaled, mean = mean_scaling(Y)
+    >>> Y_scaled.shape
+    (2, 3)
+    >>> mean
+    array([1.5, 3. , 4.5])
+    >>> bool(np.allclose(Y_scaled.mean(axis=0), 0))
+    True
 
     """
     mean = Y.mean(axis=axis)
@@ -121,7 +131,7 @@ def _yule_walker(x, order):
     n = np.prod(np.array(x.shape[:-1], int))
     r = np.zeros((n, order + 1), np.float64)
     y = x - x.mean()
-    y.shape = (n, x.shape[-1])  # inplace
+    y = y.reshape(n, x.shape[-1])  # inplace
     r[:, 0] += (y[:, np.newaxis, :] @ y[:, :, np.newaxis])[:, 0, 0]
     for k in range(1, order + 1):
         r[:, k] += (y[:, np.newaxis, 0:-k] @ y[:, k:, np.newaxis])[:, 0, 0]
@@ -133,7 +143,8 @@ def _yule_walker(x, order):
     # section removed-ambiguity-when-broadcasting-in-np-solve
     rho = np.linalg.solve(rt, r[:, 1:, None])[..., 0]
 
-    rho.shape = x.shape[:-1] + (order,)
+    rho = rho.reshape((*x.shape[:-1], order))
+
     return rho
 
 
@@ -185,6 +196,8 @@ def run_glm(
         values are RegressionResults instances corresponding to the voxels.
 
     """
+    check_params(locals())
+
     acceptable_noise_models = ["ols", "arN"]
     if (noise_model[:2] != "ar") and (noise_model != "ols"):
         raise ValueError(
@@ -210,8 +223,8 @@ def run_glm(
         )
         try:
             ar_order = int(noise_model[2:])
-        except ValueError:
-            raise ValueError(err_msg)
+        except ValueError as e:
+            raise ValueError(err_msg) from e
 
         # compute the AR coefficients
         ar_coef_ = _yule_walker(ols_result.residuals.T, ar_order)
@@ -263,7 +276,7 @@ def run_glm(
     return labels, results
 
 
-def _check_trial_type(events) -> None:
+def _check_trial_type(events: list[str | Path]) -> None:
     """Check that the event files contain a "trial_type" column.
 
     Parameters
@@ -322,7 +335,7 @@ class FirstLevelModel(BaseGLM):
                     are passed at fit time.
 
     %(hrf_model)s
-        Default='glover'.
+        default='glover'.
 
         .. warning::
 
@@ -415,16 +428,16 @@ class FirstLevelModel(BaseGLM):
         1 refers to mean scaling each time point with respect to all voxels &
         (0, 1) refers to scaling with respect to voxels and time,
         which is known as grand mean scaling.
-        Incompatible with standardize (standardize=False is enforced when
-        signal_scaling is not False).
+        Incompatible with standardize (``standardize=None`` is enforced when
+        ``signal_scaling`` is not False).
 
     noise_model : {'ar1', 'ols'}, default='ar1'
         The temporal variance model.
 
-    %(verbose)s
-        If 1 prints progress by computation of
-        each run. If 2 prints timing details of masker and GLM. If 3
-        prints masker computation details.
+    %(verbose0)s
+        If 0, prints nothing
+        If 1, prints progress by computation of each run.
+        If 2, prints timing details of masker and GLM.
 
     %(n_jobs)s
 
@@ -434,7 +447,7 @@ class FirstLevelModel(BaseGLM):
         further inspection of model details. This has an important impact
         on memory consumption.
 
-    subject_label : :obj:`str`, optional
+    subject_label : :obj:`str` or None, default=None
         This id will be used to identify a `FirstLevelModel` when passed to
         a `SecondLevelModel` object.
 
@@ -444,6 +457,11 @@ class FirstLevelModel(BaseGLM):
         of order at least 2 ('ar(N)' with n >= 2).
 
         .. nilearn_versionadded:: 0.9.1
+
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+        .. nilearn_versionadded:: 0.14.0
 
     Attributes
     ----------
@@ -478,6 +496,10 @@ class FirstLevelModel(BaseGLM):
         Values are SimpleRegressionResults corresponding to the voxels,
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
+
+    standardize_ :  any of: 'zscore_sample', 'zscore', 'psc', or None
+        This value may differ from the ``standardize`` parameters
+        as it is set to ``None`` when ``signal_scaling`` is not False.
     """
 
     def __str__(self):
@@ -507,6 +529,7 @@ class FirstLevelModel(BaseGLM):
         minimize_memory=True,
         subject_label=None,
         random_state=None,
+        reports=True,
     ):
         # design matrix parameters
         self.t_r = t_r
@@ -537,6 +560,12 @@ class FirstLevelModel(BaseGLM):
         self.subject_label = subject_label
         self.random_state = random_state
 
+        self.reports = reports
+        self._reset_report()
+
+    def _is_first_level_glm(self):
+        return True
+
     def _check_fit_inputs(
         self,
         run_imgs,
@@ -551,7 +580,8 @@ class FirstLevelModel(BaseGLM):
         ) or (
             isinstance(run_imgs, (list, tuple))
             and not all(
-                isinstance(x, (*NiimgLike, SurfaceImage)) for x in run_imgs
+                isinstance(x, (*get_args(NiimgLike), SurfaceImage))
+                for x in run_imgs
             )
         ):
             input_type = type(run_imgs)
@@ -569,6 +599,12 @@ class FirstLevelModel(BaseGLM):
 
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
+
+        if all(isinstance(x, (str, Path, Nifti1Image)) for x in run_imgs):
+            check_same_fov(*run_imgs, raise_error=True)
+        else:
+            for img in run_imgs[1:]:
+                check_polymesh_equal(run_imgs[0].mesh, img.mesh)
 
         if design_matrices is not None:
             # If design_matrices is provided,
@@ -645,7 +681,7 @@ class FirstLevelModel(BaseGLM):
 
     def _log(
         self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
-    ):
+    ) -> None:
         """Generate and log messages for different step of the model fit."""
         if step == "progress":
             msg = self._report_progress(run_idx, n_runs, t0)
@@ -660,7 +696,7 @@ class FirstLevelModel(BaseGLM):
         elif step == "done":
             msg = (
                 f"Computation of {n_runs} runs done "
-                f"in {int(time_in_second)} seconds."
+                f"in {readable_time(time_in_second)}."
             )
 
         logger.log(
@@ -676,13 +712,13 @@ class FirstLevelModel(BaseGLM):
             dt = time.time() - t0
             # We use a max to avoid a division by zero
             remaining = (100.0 - percent) / max(0.01, percent) * dt
-            remaining = f"{int(remaining)} seconds remaining"
+            remaining = f"{readable_time(remaining)} remaining"
 
         return (
             f"Computing run {run_idx + 1} out of {n_runs} runs ({remaining})."
         )
 
-    def _fit_single_run(self, sample_masks, bins, run_img, run_idx):
+    def _fit_single_run(self, sample_masks, bins, run_img, run_idx) -> None:
         """Fit the model for a single and keep only the regression results."""
         design = self.design_matrices_[run_idx]
 
@@ -816,7 +852,7 @@ class FirstLevelModel(BaseGLM):
 
         return design
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return (
             hasattr(self, "labels_")
             and hasattr(self, "results_")
@@ -947,11 +983,20 @@ class FirstLevelModel(BaseGLM):
 
         self._fit_cache()
 
+        self.standardize_ = self.standardize
+
+        # TODO (nilearn >= 0.15.0) remove if and elif
+        # avoid some FutureWarning the user cannot affect
+        if self.standardize is False:
+            self.standardize_ = None
+        elif self.standardize is True:
+            self.standardize_ = "zscore_sample"
+
         check_parameter_in_allowed(
             self.signal_scaling, {False, 1, (0, 1)}, "signal_scaling"
         )
         if self.signal_scaling in [0, 1, (0, 1)]:
-            self.standardize = False
+            self.standardize_ = None
 
         self.labels_ = None
         self.results_ = None
@@ -966,10 +1011,12 @@ class FirstLevelModel(BaseGLM):
             )
         )
 
+        self._reset_report()
+
         # Initialize masker_ to None such that attribute exists
         self.masker_ = None
 
-        self._prepare_mask(run_imgs[0])
+        self._prepare_mask(run_imgs)
 
         # collect info that may be useful for report generation
         drift_model_str = None
@@ -981,6 +1028,12 @@ class FirstLevelModel(BaseGLM):
             drift_model_str = (
                 f"and a {self.drift_model} drift model ({param_str})"
             )
+
+        self._report_content["reports_at_fit_time"] = self.reports
+        # TODO populate _report_data only if self.reports=True
+        # currently the values in reports_data is used in other places and
+        # tests fail if only populated when reports is True.
+
         self._reporting_data = {
             "trial_types": [],
             "noise_model": self.noise_model,
@@ -996,8 +1049,8 @@ class FirstLevelModel(BaseGLM):
             run_imgs, events, confounds, design_matrices
         )
 
-        self._reporting_data["trial_types"] = set(
-            self._reporting_data["trial_types"]
+        self._reporting_data["trial_types"] = sorted(
+            set(self._reporting_data["trial_types"])
         )
 
         # For each run fit the model and keep only the regression results.
@@ -1185,7 +1238,16 @@ class FirstLevelModel(BaseGLM):
         }
 
     def _get_element_wise_model_attribute(
-        self, attribute, result_as_time_series
+        self,
+        attribute: Literal[
+            "residuals",
+            "normalized_residuals",
+            "predicted",
+            "SSE",
+            "r_square",
+            "MSE",
+        ],
+        result_as_time_series: bool,
     ):
         """Transform RegressionResults instances within a dictionary \
         (whose keys represent the autoregressive coefficient under the 'ar1' \
@@ -1194,10 +1256,9 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        attribute : :obj:`str`
+        attribute : {"residuals", "normalized_residuals", "predicted", \
+                    "SSE", "r_square", "MSE"}
             an attribute of a RegressionResults instance.
-            possible values include: residuals, normalized_residuals,
-            predicted, SSE, r_square, MSE.
 
         result_as_time_series : :obj:`bool`
             whether the RegressionResult attribute has a value
@@ -1216,10 +1277,10 @@ class FirstLevelModel(BaseGLM):
         possible_attributes = [
             prop for prop in all_attributes if "__" not in prop
         ]
-        check_parameter_in_allowed(attribute, possible_attributes, attribute)
+        check_parameter_in_allowed(attribute, possible_attributes, "attribute")
 
         if self.minimize_memory:
-            raise ValueError(
+            raise AttributeError(
                 "To access voxelwise attributes like "
                 "R-squared, residuals, and predictions, "
                 "the `FirstLevelModel`-object needs to store "
@@ -1250,48 +1311,54 @@ class FirstLevelModel(BaseGLM):
 
         return output
 
-    def _prepare_mask(self, run_img):
+    def _prepare_mask(self, run_imgs):
         """Set up the masker.
+
+        If mask_img == False, include all voxels / vertices in GLM.
+        If mask_img is a masker we just check it has been fitted.
+        If mask_img is not a masker,
+        we compute an implicit mask based on all the runs.
+
 
         Parameters
         ----------
-        run_img : Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object
+        run_imgs : Niimg-like object, \
+                   :obj:`list` or :obj:`tuple` of Niimg-like objects, \
+                   SurfaceImage object, \
+                   or :obj:`list` or \
+                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Used for setting up the masker object.
         """
-        masker_type = "nii"
-        # all elements of X should be of the similar type by now
-        # so we can only check the first one
-        to_check = run_img[0] if isinstance(run_img, Iterable) else run_img
-        if not self._is_volume_glm() or isinstance(to_check, SurfaceImage):
-            masker_type = "surface"
+        first_image = run_imgs[0]
+
+        masker_type = "multi_nii"
+        if not self._is_volume_glm() or isinstance(first_image, SurfaceImage):
+            masker_type = "multi_surface"
 
         # Learn the mask
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
-            if masker_type == "surface":
+            # TODO here we break the sklearn convention
+            # of not changing attributes passed at init
+            # This could probably be improved
+            if masker_type == "multi_surface":
                 surf_data = {
                     part: np.ones(
-                        run_img.data.parts[part].shape[0], dtype=bool
+                        first_image.data.parts[part].shape[0], dtype=bool
                     )
-                    for part in run_img.mesh.parts
+                    for part in first_image.mesh.parts
                 }
-                self.mask_img = SurfaceImage(mesh=run_img.mesh, data=surf_data)
+                self.mask_img = SurfaceImage(
+                    mesh=first_image.mesh, data=surf_data
+                )
             else:
-                ref_img = check_niimg(run_img)
+                ref_img = check_niimg(first_image)
                 self.mask_img = Nifti1Image(
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
 
-        if masker_type == "surface" and self.smoothing_fwhm is not None:
-            warn(
-                "Parameter smoothing_fwhm is not "
-                "yet supported for surface data",
-                NotImplementedWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = 0
+        check_compatibility_mask_and_images(self.mask_img, first_image)
 
-        check_compatibility_mask_and_images(self.mask_img, run_img)
         if (  # deal with self.mask_img as image, str, path, none
             (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
             or
@@ -1304,102 +1371,38 @@ class FirstLevelModel(BaseGLM):
                 and self.masker_ is None
             )
         ):
+            # compute implicit mask based on all runs
+            masker = check_embedded_masker(
+                self, ignore=["high_pass"], masker_type=masker_type
+            )
+            masker.memory_level = self.memory_level
+            if masker_type == "multi_nii":
+                masker.mask_strategy = "epi"
+            masker.fit(run_imgs)
+
+            # reuse mask_img to initialize a non-multi masker
             self.masker_ = check_embedded_masker(
-                self, masker_type, ignore=["high_pass"]
+                self,
+                ignore=["high_pass"],
+                masker_type=masker_type.replace("multi_", ""),
             )
             self.masker_.memory_level = self.memory_level
-
-            if isinstance(self.masker_, NiftiMasker):
+            if masker_type == "multi_nii":
                 self.masker_.mask_strategy = "epi"
-
-            with warnings.catch_warnings():
-                # ignore warning in case the masker
-                # was initialized with a mask image
-                warnings.simplefilter("ignore")
-                self.masker_.fit(run_img)
+            self.masker_.mask_img = masker.mask_img_
+            self.masker_.fit()
 
         else:
             check_is_fitted(self.mask_img)
 
             self.masker_ = self.mask_img
 
+        # override value of the masker standardize
+        # with standardize_ that takes into account
+        # whether to do signal_scaling or not
+        self.masker_.standardize = self.standardize_
+
         self.n_elements_ = self.masker_.n_elements_
-
-    @fill_doc
-    def generate_report(
-        self,
-        contrasts=None,
-        title=None,
-        bg_img="MNI152TEMPLATE",
-        threshold=3.09,
-        alpha=0.001,
-        cluster_threshold=0,
-        height_control="fpr",
-        two_sided=False,
-        min_distance=8.0,
-        plot_type="slice",
-        cut_coords=None,
-        display_mode=None,
-        report_dims=(1600, 800),
-    ):
-        """Return a :class:`~nilearn.reporting.HTMLReport` \
-        which shows all important aspects of a fitted :term:`GLM`.
-
-        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
-        browser, displayed in a notebook, or saved to disk as a standalone
-        HTML file.
-
-        The :term:`GLM` must be fitted and have the computed design
-        matrix(ces).
-
-        .. note::
-
-            Refer to the documentation of
-            :func:`~nilearn.reporting.make_glm_report`
-            for details about the parameters
-
-        Returns
-        -------
-        report_text : :class:`~nilearn.reporting.HTMLReport`
-            Contains the HTML code for the :term:`GLM` report.
-
-        """
-        from nilearn.reporting.glm_reporter import make_glm_report
-
-        parameters = inspect.signature(
-            FirstLevelModel.generate_report
-        ).parameters
-        warn_default_threshold(
-            threshold,
-            parameters["threshold"].default,
-            3.09,
-            height_control=height_control,
-        )
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = {
-                "trial_types": [],
-                "noise_model": getattr(self, "noise_model", None),
-                "hrf_model": getattr(self, "hrf_model", None),
-                "drift_model": None,
-            }
-
-        return make_glm_report(
-            self,
-            contrasts,
-            title=title,
-            bg_img=bg_img,
-            threshold=threshold,
-            alpha=alpha,
-            cluster_threshold=cluster_threshold,
-            height_control=height_control,
-            two_sided=two_sided,
-            min_distance=min_distance,
-            plot_type=plot_type,
-            cut_coords=cut_coords,
-            display_mode=display_mode,
-            report_dims=report_dims,
-        )
 
     def _plotting_pred_and_res(
         self,
@@ -1585,10 +1588,6 @@ def _check_events_file_uses_tab_separators(events_files):
         Files are expected to be text files.
         Non-text files will raise ValueError.
 
-    Returns
-    -------
-    None
-
     Raises
     ------
     ValueError:
@@ -1737,7 +1736,7 @@ def first_level_from_bids(
     exclude_subjects : :obj:`list` of :obj:`str` or None, default=None
         Specifies the subset of subject labels to skip.
 
-        .. nilearn_versionadded:: 0.13.0dev
+        .. nilearn_versionadded:: 0.13.0
 
     img_filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), \
         default=None
@@ -1774,12 +1773,59 @@ def first_level_from_bids(
         a specific set of confounds by relying on confound loading strategies
         defined in :func:`~nilearn.interfaces.fmriprep.load_confounds`.
         If no kwargs are passed, ``first_level_from_bids`` will return
-        all the confounds available in the confounds TSV files.
+        all the confounds available in the confounds TSV files. If
+        no confounds are available, or if ``confounds_strategy`` is
+        set to ``None``, a list of ``None`` is returned for the confounds.
 
         .. nilearn_versionadded:: 0.10.3
 
+    Returns
+    -------
+    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
+        Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
+        corresponds to a subject.
+        All runs from different sessions are considered together
+        for the same subject to run a fixed effects analysis on them.
+
+    models_run_imgs : :obj:`list` of :obj:`list` of Niimg-like objects
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_run_imgs[i][j]`` corresponds to the j\\ :sup:`th` run
+        of the i\\ :sup:`th` subject.
+
+    models_events : :obj:`list` of :obj:`list` of pandas DataFrames
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_events[i][j]`` corresponds to the j\\ :sup:`th` event file
+        of the i\\ :sup:`th` subject.
+
+    models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
+        ``None``
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_confounds[i][j]`` corresponds to the j\\ :sup:`th`
+        confound file of the i\\ :sup:`th` subject.
+
+        .. note::
+
+            Any NaN values on the first row of the loaded confounds
+            will be replaced by 0 to avoid later errors
+            during design matrix creation.
+
     Examples
     --------
+    If you want to load only models, images and events:
+
+    .. code-block:: python
+
+        models, imgs, events, _ = first_level_from_bids(
+            dataset_path=path_to_a_bids_dataset,
+            task_label="TaskName",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=None,
+        )
+
     If you want to only load
     the rotation and translation motion parameters confounds:
 
@@ -1844,32 +1890,6 @@ def first_level_from_bids(
     of :func:`~nilearn.interfaces.fmriprep.load_confounds`
     for more details on the confounds loading strategies.
 
-    Returns
-    -------
-    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
-        Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
-        corresponds to a subject.
-        All runs from different sessions are considered together
-        for the same subject to run a fixed effects analysis on them.
-
-    models_run_imgs : :obj:`list` of list of Niimg-like objects,
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-
-    models_events : :obj:`list` of list of pandas DataFrames,
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-
-    models_confounds : :obj:`list` of list of pandas DataFrames or ``None``,
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-
-        .. note::
-
-            Any NaN values on the first row of the loaded confounds
-            will be replaced by 0 to avoid later errors
-            during design matrix creation.
-
 
     """
     check_params(locals())
@@ -1907,7 +1927,7 @@ def first_level_from_bids(
     if (
         drift_model is not None
         and kwargs_load_confounds is not None
-        and "high_pass" in kwargs_load_confounds.get("strategy")
+        and "high_pass" in kwargs_load_confounds.get("strategy", [])
     ):
         if drift_model == "cosine":
             verb = "duplicate"
@@ -2151,7 +2171,7 @@ def _list_valid_subjects(derivatives_path, sub_labels) -> list[str]:
     return sorted(set(sub_labels_exist))
 
 
-def _report_found_files(files, text, sub_label, filters, verbose):
+def _report_found_files(files, text, sub_label, filters, verbose) -> None:
     """Print list of files found for a given subject and filter.
 
     Parameters
@@ -2446,10 +2466,10 @@ def _get_confounds(
     )
     _check_confounds_list(confounds=confounds_files, imgs=imgs)
 
-    if not confounds_files:
+    if not confounds_files or kwargs_load_confounds is None:
         return None
 
-    if kwargs_load_confounds is None:
+    if len(kwargs_load_confounds) == 0:
         confounds = [
             pd.read_csv(c, sep="\t", index_col=None) for c in confounds_files
         ]
@@ -2466,7 +2486,7 @@ def _get_confounds(
     return confounds
 
 
-def _check_confounds_list(confounds, imgs):
+def _check_confounds_list(confounds, imgs) -> None:
     """Check the number of confounds.tsv files.
 
     If no file is found, it will be assumed there are none,
@@ -2592,8 +2612,12 @@ def _check_kwargs_load_confounds(**kwargs):
         "demean": True,
     }
 
-    if kwargs.get("confounds_strategy") is None:
+    if "confounds_strategy" in kwargs and kwargs["confounds_strategy"] is None:
+        kwargs.pop("confounds_strategy")
         return None, kwargs
+
+    elif "confounds_strategy" not in kwargs:
+        return {}, kwargs
 
     remaining_kwargs = kwargs.copy()
     kwargs_load_confounds = {}
@@ -2621,14 +2645,14 @@ def _make_bids_files_filter(
     task_label : :obj:`str`
         Task label as specified in the file names like _task-<task_label>_.
 
-    space_label : :obj:`str` or None, optional
+    space_label : :obj:`str` or None, default=None
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
-    supported_filters : :obj:`list` of :obj:`str` or None, optional
+    supported_filters : :obj:`list` of :obj:`str` or None, default=None
         List of authorized BIDS entities
 
-    extra_filter : :obj:`list` of :obj:`tuple` (str, str) or None, optional
+    extra_filter : :obj:`list` of :obj:`tuple` (str, str) or None, default=None
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
@@ -2741,7 +2765,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
 
 def _check_bids_events_list(
     events, imgs, sub_label, task_label, dataset_path, events_filters, verbose
-):
+) -> None:
     """Check input BIDS events.
 
     Check that:

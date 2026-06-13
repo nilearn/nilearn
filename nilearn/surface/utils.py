@@ -8,7 +8,24 @@ from nilearn._utils.logger import find_stack_level
 from nilearn.exceptions import MeshDimensionError
 
 
-def assert_polydata_equal(data_1, data_2):
+def assert_polydata_close(data_1, data_2, **kwargs) -> None:
+    """Check that 2 PolyData data are close."""
+    set_1 = set(data_1.parts.keys())
+    set_2 = set(data_2.parts.keys())
+    if set_1 != set_2:
+        diff = set_1.symmetric_difference(set_2)
+        raise ValueError(
+            f"PolyData do not have the same keys. Offending keys: {diff}"
+        )
+
+    for key in data_1.parts:
+        if not np.allclose(data_1.parts[key], data_2.parts[key], **kwargs):
+            raise ValueError(
+                f"Part '{key}' of PolyData instances are not equal."
+            )
+
+
+def assert_polydata_equal(data_1, data_2) -> None:
     """Check that 2 PolyData data are equal."""
     set_1 = set(data_1.parts.keys())
     set_2 = set(data_2.parts.keys())
@@ -32,7 +49,7 @@ def assert_polymesh_equal(mesh_1, mesh_2) -> None:
         assert_surface_mesh_equal(mesh_1.parts[key], mesh_2.parts[key])
 
 
-def assert_polymesh_have_same_keys(mesh_1, mesh_2):
+def assert_polymesh_have_same_keys(mesh_1, mesh_2) -> None:
     """Check that 2 polymeshes have the same keys."""
     set_1 = set(mesh_1.parts.keys())
     set_2 = set(mesh_2.parts.keys())
@@ -58,7 +75,7 @@ def check_polymesh_equal(mesh_1, mesh_2) -> None:
         )
 
 
-def assert_same_number_vertices(mesh_1, mesh_2):
+def assert_same_number_vertices(mesh_1, mesh_2) -> None:
     """Assert 2 meshes or polymeshes have the same number of vertices."""
     if mesh_1.n_vertices != mesh_2.n_vertices:
         raise MeshDimensionError(
@@ -79,3 +96,9 @@ def assert_surface_image_equal(img_1, img_2) -> None:
     """Check that 2 SurfaceImages are equal."""
     assert_polymesh_equal(img_1.mesh, img_2.mesh)
     assert_polydata_equal(img_1.data, img_2.data)
+
+
+def assert_surface_image_close(img_1, img_2, **kwargs) -> None:
+    """Check that 2 SurfaceImages are close."""
+    assert_polymesh_equal(img_1.mesh, img_2.mesh)
+    assert_polydata_close(img_1.data, img_2.data, **kwargs)

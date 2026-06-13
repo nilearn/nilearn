@@ -8,7 +8,12 @@ import numpy as np
 from nilearn._utils.param_validation import check_is_of_allowed_type
 
 
-def as_ndarray(arr, copy=False, dtype=None, order="K"):
+def as_ndarray(
+    arr,
+    copy: bool = False,
+    dtype=None,
+    order="K",
+) -> np.ndarray:
     """Convert to numpy.ndarray starting with an arbitrary array.
 
     In the case of a memmap array, a copy is automatically made to break the
@@ -124,10 +129,36 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
         except csv.Error as e:
             raise TypeError(
                 f"Could not read CSV file [{csv_path}]: {e.args[0]}"
-            )
+            ) from e
 
         array = np.genfromtxt(
             csv_path, delimiter=dialect.delimiter, encoding=None, **kwargs
         )
 
     return array
+
+
+def get_target_dtype(dtype, target_dtype):
+    """Return a new dtype if conversion is needed.
+
+    Parameters
+    ----------
+    dtype : dtype
+        Data type of the original data
+
+    target_dtype : {None, dtype, "auto"}
+        If None, no conversion is required. If a type is provided, the
+        function will check if a conversion is needed. The "auto" mode will
+        automatically convert to int32 if dtype is discrete and float32 if it
+        is continuous.
+
+    Returns
+    -------
+    dtype : dtype
+        The data type toward which the original data should be converted.
+    """
+    if target_dtype is None:
+        return None
+    if target_dtype == "auto":
+        target_dtype = np.int32 if dtype.kind == "i" else np.float32
+    return None if target_dtype == dtype else target_dtype

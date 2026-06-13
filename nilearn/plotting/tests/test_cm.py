@@ -23,6 +23,7 @@ def test_replace_inside():
         replace_inside(plt.cm.gnuplot, plt.cm.gnuplot2, 0.2, 0.8)
 
 
+@pytest.mark.thread_unsafe
 def test_cm_preload():
     plt.imshow([list(range(10))], cmap="cold_hot")
 

@@ -48,6 +48,7 @@ solution. To use it, you need to create an estimator object:
 .. code-block:: python
 
      from sklearn.covariance import GraphicalLassoCV
+
      estimator = GraphicalLassoCV()
 
 And then you can fit it on the activation time series, for instance
@@ -248,7 +249,7 @@ In nilearn, this is implemented in
 
 .. code-block:: python
 
-     measure = ConnectivityMeasure(kind='tangent')
+     measure = ConnectivityMeasure(kind="tangent")
 
 The group connectivity is computed using all the subjects timeseries.:
 

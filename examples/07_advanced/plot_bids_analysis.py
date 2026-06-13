@@ -30,6 +30,10 @@ from nilearn import plotting
 # subject folders only contain bold.json and events.tsv files, while the
 # derivatives folder includes the preprocessed files preproc.nii and the
 # confounds.tsv files.
+#
+# For more information
+# see the :ref:`dataset description <language_localizer_dataset>`.
+#
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
 data = fetch_language_localizer_demo_dataset()
@@ -189,14 +193,7 @@ report_slm = second_level_model.generate_report(
 
 # %%
 # View the GLM report at the group level.
+#
+# .. include:: ../../../examples/report_note.rst
+#
 report_slm
-
-# %%
-# Or in a separate browser window
-# report_slm.open_in_browser()
-
-# %%
-# Save the report to disk
-output_dir = Path.cwd() / "results" / "plot_bids_analysis"
-output_dir.mkdir(exist_ok=True, parents=True)
-report_slm.save_as_html(output_dir / "report_slm.html")

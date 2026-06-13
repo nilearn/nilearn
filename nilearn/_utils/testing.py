@@ -7,8 +7,6 @@ import tempfile
 import warnings
 from pathlib import Path
 
-import pytest
-
 # we use memory_profiler library for memory consumption checks
 try:
     from memory_profiler import memory_usage
@@ -34,6 +32,8 @@ except ImportError:
         """Use as a decorator to skip tests requiring memory_profiler."""
 
         def dummy_func():
+            import pytest
+
             pytest.skip("Test requires memory_profiler.")
 
         return dummy_func
@@ -48,7 +48,7 @@ def is_64bit() -> bool:
 
 def assert_memory_less_than(
     memory_limit, tolerance, callable_obj, *args, **kwargs
-):
+) -> None:
     """Check memory consumption of a callable stays below a given limit.
 
     Parameters
@@ -100,7 +100,10 @@ def serialize_niimg(img, gzipped=True):
 
 
 def write_imgs_to_path(
-    *imgs, file_path=None, create_files=True, use_wildcards=False
+    *imgs,
+    file_path: None | Path = None,
+    create_files: bool = True,
+    use_wildcards: bool = False,
 ):
     """Write Nifti images on disk.
 
@@ -161,20 +164,32 @@ def write_imgs_to_path(
         return imgs
 
 
-def are_tests_running():
+def is_ci() -> bool:
+    """Return whether we are in CI."""
+    return os.environ.get("CI") is not None
+
+
+def are_tests_running() -> bool:
     """Return whether we are running the pytest test loader."""
     # https://docs.pytest.org/en/stable/example/simple.html#detect-if-running-from-within-a-pytest-run
     return os.environ.get("PYTEST_VERSION") is not None
 
 
-def skip_if_running_tests(msg=""):
+def baseline_generation_running() -> bool:
+    """Return whether we are running some test on the HTML output."""
+    return os.environ.get("HTML_TEST") is not None
+
+
+def skip_if_running_tests(msg="") -> None:
     """Raise a SkipTest if we appear to be running the pytest test loader.
 
     Parameters
     ----------
-    msg : string, optional
+    msg : string, default=""
         The message issued when a test is skipped.
 
     """
     if are_tests_running():
+        import pytest
+
         pytest.skip(msg, allow_module_level=True)

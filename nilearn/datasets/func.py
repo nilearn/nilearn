@@ -23,7 +23,6 @@ from sklearn.utils import Bunch
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -41,7 +40,7 @@ from nilearn.datasets._utils import (
     uncompress_file,
 )
 from nilearn.datasets.struct import load_fsaverage
-from nilearn.image import get_data
+from nilearn.image import check_niimg, get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.surface import SurfaceImage
 
@@ -119,6 +118,8 @@ def fetch_haxby(
 
     Notes
     -----
+    %(fetcher_note)s
+
     PyMVPA provides a tutorial making use of this dataset:
     http://www.pymvpa.org/tutorial.html
 
@@ -130,7 +131,6 @@ def fetch_haxby(
 
     Run 8 in subject 5 does not contain any task labels.
     The anatomical image for subject 6 is unavailable.
-
     """
     check_params(locals())
 
@@ -199,9 +199,7 @@ def fetch_haxby(
 
     files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    if (isinstance(subjects, numbers.Number) and subjects == 6) or np.any(
-        subject_mask == 6
-    ):
+    if subjects == 6 or np.any(subject_mask == 6):
         files.append(None)  # None value because subject 6 has no anat
 
     kwargs = {}
@@ -289,7 +287,8 @@ def adhd_ids():
 def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ADHD :term:`resting-state` dataset.
 
-    See :footcite:t:`ADHDdataset`.
+    For more information
+    see the :ref:`dataset description <adhd_dataset>`.
 
     Parameters
     ----------
@@ -297,9 +296,13 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
         The number of subjects to load from maximum of 40 subjects.
         By default, 30 subjects will be loaded. If None is given,
         all 40 subjects will be loaded.
+
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -319,10 +322,9 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
         - 't_r': :obj:`float`
             Repetition time of the functional data.
 
-
-    References
-    ----------
-    .. footbibliography::
+    Notes
+    -----
+    %(fetcher_note)s
 
     """
     check_params(locals())
@@ -367,6 +369,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     # Load the csv file
     phenotypic = pd.read_table(phenotypic, delimiter=",")
+    phenotypic["Subject"] = phenotypic["Subject"].apply(lambda x: f"{x:07d}")
 
     # Keep phenotypic information for selected subjects
     mask = phenotypic["Subject"].apply(lambda x: str(x) in ids)
@@ -486,6 +489,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     This dataset is available on the `brainliner website
     <http://brainliner.jp/restrictedProject.atr>`_
 
@@ -749,6 +754,10 @@ def fetch_localizer_contrasts(
         - 'anats': :obj:`str`
             Path to nifti files corresponding to the subjects structural images
 
+    Notes
+    -----
+    %(fetcher_note)s
+
     References
     ----------
     .. footbibliography::
@@ -936,7 +945,7 @@ def fetch_localizer_contrasts(
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
 
-def _check_inputs_fetch_localizer_contrasts(contrasts):
+def _check_inputs_fetch_localizer_contrasts(contrasts) -> None:
     """Check that requested contrast name exists."""
     if isinstance(contrasts, str):
         raise TypeError(
@@ -966,6 +975,7 @@ def _is_valid_path(path, index, verbose):
 def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, verbose=1):
     """Fetch calculation task contrast maps from the localizer.
 
+
     Parameters
     ----------
     n_subjects : :obj:`int`, default=1
@@ -984,6 +994,8 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
     The 'calculation (auditory and visual cue)' contrast is used.
@@ -1014,6 +1026,7 @@ def fetch_localizer_button_task(data_dir=None, verbose=1):
     """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
+
     Parameters
     ----------
     %(data_dir)s
@@ -1031,6 +1044,8 @@ def fetch_localizer_button_task(data_dir=None, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
     The 'left vs right button press' contrast is used.
@@ -1039,6 +1054,7 @@ def fetch_localizer_button_task(data_dir=None, verbose=1):
     --------
     nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_contrasts
+
 
     """
     check_params(locals())
@@ -1079,10 +1095,12 @@ def fetch_abide_pcp(
     version of ABIDE provided by the preprocess connectome projects (PCP).
     See :footcite:t:`Nielsen2013`.
 
+
     Parameters
     ----------
     %(data_dir)s
-    n_subjects : :obj:`int`, default=None
+
+    n_subjects : :obj:`int` or None, default=None
         The number of subjects to load. If None is given,
         all available subjects are used (this number depends on the
         preprocessing pipeline used).
@@ -1098,7 +1116,7 @@ def fetch_abide_pcp(
         Indicates if global signal regression should be applied on the
         signals.
 
-    derivatives : :obj:`list` of :obj:`str`, default=None
+    derivatives : :obj:`list` of :obj:`str`, or None, default=None
         Types of downloaded files. Possible values are: alff, degree_binarize,
         degree_weighted, dual_regression, eigenvector_binarize,
         eigenvector_weighted, falff, func_mask, func_mean, func_preproc, lfcd,
@@ -1110,7 +1128,9 @@ def fetch_abide_pcp(
     quality_checked : :obj:`bool`, default=True
         If true (default), restrict the list of the subjects to the one that
         passed quality assessment for all raters.
+
     %(url)s
+
     %(verbose)s
 
     kwargs : extra parameters, optional
@@ -1211,6 +1231,8 @@ def fetch_abide_pcp(
 
     Notes
     -----
+    %(fetcher_note)s
+
     Code and description of preprocessing pipelines are provided on the
     `PCP website <http://preprocessed-connectomes-project.org/>`_.
 
@@ -1440,6 +1462,9 @@ def fetch_mixed_gambles(
           else it is ``None``.
         - 'description': data description
 
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -1459,7 +1484,9 @@ def fetch_mixed_gambles(
         (f"zmaps{os.sep}sub{int(j + 1):03}_zmaps.nii.gz", url, opts)
         for j in range(n_subjects)
     ]
-    data_dir = get_dataset_dir("jimura_poldrack_2012_zmaps", data_dir=data_dir)
+    data_dir = get_dataset_dir(
+        "jimura_poldrack_2012_zmaps", data_dir=data_dir, verbose=verbose
+    )
     zmap_fnames = fetch_files(data_dir, files, resume=resume, verbose=verbose)
     subject_id = pd.DataFrame(
         {"subject_id": np.repeat(np.arange(n_subjects), 6 * 8).tolist()}
@@ -1492,6 +1519,9 @@ def fetch_megatrawls_netmats(
     non-imaging behavioral measures such as age, sex, education, etc.
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects.
+
+    For more information
+    see the :ref:`dataset description <megatrawls_maps>`.
 
     ..  admonition:: Technical details
         :class: important
@@ -1529,8 +1559,11 @@ def fetch_megatrawls_netmats(
         Valid inputs are 'full_correlation' or 'partial_correlation'.
         By default, partial correlation matrices will be returned
         otherwise if selected full correlation matrices will be returned.
+
     %(data_dir)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -1553,8 +1586,7 @@ def fetch_megatrawls_netmats(
 
     Notes
     -----
-    For more information
-    see the :ref:`dataset description <megatrawls_maps>`.
+    %(fetcher_note)s
 
     """
     check_params(locals())
@@ -1729,6 +1761,9 @@ def fetch_surf_nki_enhanced(
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
+    For more information
+    see the :ref:`dataset description <nki_dataset>`.
+
     .. nilearn_versionadded:: 0.3
 
     Parameters
@@ -1738,8 +1773,11 @@ def fetch_surf_nki_enhanced(
         By default, 10 subjects will be loaded. If None is given,
         all 102 subjects will be loaded.
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -1764,8 +1802,8 @@ def fetch_surf_nki_enhanced(
 
     Notes
     -----
-    For more information
-    see the :ref:`dataset description <nki_dataset>`.
+    %(fetcher_note)s
+
     """
     check_params(locals())
 
@@ -1871,6 +1909,9 @@ def load_nki(
 ):
     """Load NKI enhanced surface data into a surface object.
 
+    For more information
+    see the :ref:`dataset description <nki_dataset>`.
+
     .. nilearn_versionadded:: 0.11.0
 
     Parameters
@@ -1906,10 +1947,6 @@ def load_nki(
     list of SurfaceImage objects
         One image per subject.
 
-    Notes
-    -----
-    For more information
-    see the :ref:`dataset description <nki_dataset>`.
     """
     check_params(locals())
     check_parameter_in_allowed(mesh_type, ALLOWED_MESH_TYPES, "mesh_type")
@@ -2108,6 +2145,7 @@ def fetch_development_fmri(
 
     .. nilearn_versionadded:: 0.5.2
 
+
     Parameters
     ----------
     n_subjects : :obj:`int`, default=None
@@ -2151,6 +2189,8 @@ def fetch_development_fmri(
 
     Notes
     -----
+    %(fetcher_note)s
+
     The original data is downloaded from OpenNeuro
     https://openneuro.org/datasets/ds000228/versions/1.0.0
 
@@ -2171,7 +2211,9 @@ def fetch_development_fmri(
     check_params(locals())
 
     dataset_name = "development_fmri"
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir, verbose=1)
+    data_dir = get_dataset_dir(
+        dataset_name, data_dir=data_dir, verbose=verbose
+    )
     keep_confounds = [
         "trans_x",
         "trans_y",
@@ -2311,6 +2353,9 @@ def _reduce_confounds(regressors, keep_confounds):
 def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     """Download language localizer demo dataset.
 
+    For more information
+    see the :ref:`dataset description <language_localizer_dataset>`.
+
     Parameters
     ----------
     %(data_dir)s
@@ -2329,24 +2374,44 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
 
         - ``'description'`` : :obj:`str`, dataset description
 
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
-    url = "https://osf.io/3dj2a/download"
-    # When it starts working again change back to:
-    # url = 'https://osf.io/nh987/download'
+    url = "https://osf.io/nh987/download"
+    # back up URL in case the one above fails
+    backup_url = "https://osf.io/3dj2a/download"
+
     main_folder = "fMRI-language-localizer-demo-dataset"
 
     data_dir = get_dataset_dir(main_folder, data_dir=data_dir, verbose=verbose)
-    # The files_spec needed for fetch_files
-    files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
-    # Only download if directory is empty
-    # Directory will have been created by the call to get_dataset_dir above
-    if not list(data_dir.iterdir()):
-        downloaded_files = fetch_files(
-            data_dir, files_spec, resume=True, verbose=verbose
-        )
-        uncompress_file(downloaded_files[0])
+
+    try:
+        # The files_spec needed for fetch_files
+        files_spec = [
+            (f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})
+        ]
+        # Only download if directory is empty
+        # Directory will have been created by the call to get_dataset_dir above
+        if not list(data_dir.iterdir()):
+            downloaded_files = fetch_files(
+                data_dir, files_spec, resume=True, verbose=verbose
+            )
+            uncompress_file(downloaded_files[0])
+    except Exception:
+        # The files_spec needed for fetch_files
+        files_spec = [
+            (f"{main_folder}.zip", backup_url, {"move": f"{main_folder}.zip"})
+        ]
+        # Only download if directory is empty
+        # Directory will have been created by the call to get_dataset_dir above
+        if not list(data_dir.iterdir()):
+            downloaded_files = fetch_files(
+                data_dir, files_spec, resume=True, verbose=verbose
+            )
+            uncompress_file(downloaded_files[0])
 
     file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
 
@@ -2364,15 +2429,31 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
 
     This dataset is version 1.0.4 of the "UCLA Consortium for
     Neuropsychiatric Phenomics LA5c" dataset
-    :footcite:p:`Poldrack2016`.
 
     Downloading the index allows users to explore the dataset directories
     to select specific files to download.
     The index is a sorted list of urls.
 
+    For more information,
+    see the :ref:`dataset description <ds000030>`.
+
+    .. admonition:: Recommendation
+
+        We strongly suggest you do NOT use this function
+        in your analysis pipeline to fetch this dataset from openneuro.
+
+        The `Datalad <https://handbook.datalad.org/en/latest/>`_ package
+        offers more flexibility to access those datasets:
+
+        Note also that each openneuro dataset has a tab giving you advice
+        on how to download it
+        (see for
+        `example <https://openneuro.org/datasets/ds000030/versions/1.0.0/download>`_).
+
     Parameters
     ----------
     %(data_dir)s
+
     %(verbose)s
 
     Returns
@@ -2383,9 +2464,10 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
     urls : :obj:`list` of :obj:`str`
         Sorted list of dataset directories.
 
-    References
-    ----------
-    .. footbibliography::
+    Notes
+    -----
+    %(fetcher_note)s
+
     """
     check_params(locals())
 
@@ -2487,7 +2569,7 @@ def select_from_index(
     return urls
 
 
-def patch_openneuro_dataset(file_list):
+def patch_openneuro_dataset(file_list) -> None:
     """Add symlinks for files not named according to :term:`BIDS` conventions.
 
     .. warning::
@@ -2531,9 +2613,23 @@ def fetch_openneuro_dataset(
     """Download OpenNeuro :term:`BIDS` dataset.
 
     This function specifically downloads files from a series of URLs.
+
     Unless you use :func:`fetch_ds000030_urls` or the default parameters,
     it is up to the user to ensure that the URLs are correct,
     and that they are associated with an OpenNeuro dataset.
+
+    .. admonition:: Recommendation
+
+        We strongly suggest you do NOT use this function
+        in your analysis pipeline to fetch data from openneuro.
+
+        The `Datalad <https://handbook.datalad.org/en/latest/>`_ package
+        offers more flexibility to access those datasets:
+
+        Note also that each openneuro dataset has a tab giving you advice
+        on how to download it
+        (see for
+        `example <https://openneuro.org/datasets/ds000030/versions/1.0.0/download>`_).
 
     Parameters
     ----------
@@ -2541,9 +2637,12 @@ def fetch_openneuro_dataset(
         List of URLs to dataset files to download.
         If not specified, all files from the default dataset
         (``ds000030_R1.0.4``) will be downloaded.
+
     %(data_dir)s
+
     dataset_version : :obj:`str`, default='ds000030_R1.0.4'
         Dataset version name. Assumes it is of the form [name]_[version].
+
     %(verbose)s
 
     Returns
@@ -2556,9 +2655,12 @@ def fetch_openneuro_dataset(
 
     Notes
     -----
+    %(fetcher_note)s
+
     The default dataset downloaded by this function is the
-    "UCLA Consortium for Neuropsychiatric Phenomics LA5c" dataset
-    :footcite:p:`Poldrack2016`.
+    "UCLA Consortium for Neuropsychiatric Phenomics LA5c" dataset.
+    For more information,
+    see the :ref:`dataset description <ds000030>`.
 
     This copy includes filenames that are not compliant with the current
     version of :term:`BIDS`, so this function also calls
@@ -2569,9 +2671,6 @@ def fetch_openneuro_dataset(
     :func:`fetch_ds000030_urls`
     :func:`patch_openneuro_dataset`
 
-    References
-    ----------
-    .. footbibliography::
     """
     check_params(locals())
 
@@ -2661,9 +2760,13 @@ def fetch_openneuro_dataset(
 def fetch_localizer_first_level(data_dir=None, verbose=1):
     """Download a first-level localizer :term:`fMRI` dataset.
 
+    For more information
+    see the :ref:`dataset description <localizer_first_level_dataset>`.
+
     Parameters
     ----------
     %(data_dir)s
+
     %(verbose)s
 
     Returns
@@ -2682,8 +2785,11 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
         - slice_time_ref:
             slice timing reference used during slice timing correction
 
+        - %(template)s
 
-
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -2708,11 +2814,12 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     data.description = description
     data.t_r = 2.4
     data.slice_time_ref = 0.5
+    data.template = "MNI305"
     return data
 
 
-def _download_spm_auditory_data(data_dir):
-    logger.log("Data absent, downloading...")
+def _download_spm_auditory_data(data_dir, verbose):
+    logger.log("Data absent, downloading...", verbose=verbose)
     url = (
         "https://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
         "MoAEpilot.bids.zip"
@@ -2722,10 +2829,11 @@ def _download_spm_auditory_data(data_dir):
     try:
         uncompress_file(archive_path)
     except Exception:
-        logger.log("Archive corrupted, trying to download it again.")
+        logger.log("Archive corrupted, trying to download it again.", verbose)
         return fetch_spm_auditory(data_dir=data_dir, data_name="")
 
 
+@fill_doc
 def fetch_spm_auditory(
     data_dir=None,
     data_name="spm_auditory",
@@ -2768,13 +2876,17 @@ def fetch_spm_auditory(
     ----------
     .. footbibliography::
 
+
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
     data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
 
     if not (data_dir / "MoAEpilot" / "sub-01").exists():
-        _download_spm_auditory_data(data_dir)
+        _download_spm_auditory_data(data_dir, verbose)
 
     anat = get_bids_files(
         main_path=data_dir / "MoAEpilot",
@@ -2801,7 +2913,9 @@ def fetch_spm_auditory(
     return Bunch(**spm_auditory_data)
 
 
-def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
+def _get_func_data_spm_multimodal(
+    subject_dir, session, _subject_data, verbose
+):
     session_func = sorted(
         subject_dir.glob(
             f"fMRI/Session{session}/fMETHODS-000{session + 4}-*-01.img"
@@ -2810,7 +2924,8 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
     if len(session_func) < 390:
         logger.log(
             f"Missing {390 - len(session_func)} functional scans "
-            f"for session {session}."
+            f"for session {session}.",
+            verbose=verbose,
         )
         return None
 
@@ -2818,40 +2933,42 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
     return _subject_data
 
 
-def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
+def _get_session_trials_spm_multimodal(
+    subject_dir, session, _subject_data, verbose
+):
     sess_trials = subject_dir / f"fMRI/trials_ses{int(session)}.mat"
     if not sess_trials.is_file():
-        logger.log(f"Missing session file: {sess_trials}")
+        logger.log(f"Missing session file: {sess_trials}", verbose)
         return None
 
     _subject_data[f"trials_ses{int(session)}"] = str(sess_trials)
     return _subject_data
 
 
-def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data):
+def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data, verbose):
     anat = subject_dir / "sMRI/smri.img"
     if not anat.is_file():
-        logger.log("Missing structural image.")
+        logger.log("Missing structural image.", verbose=verbose)
         return None
 
     _subject_data["anat"] = str(anat)
     return _subject_data
 
 
-def _glob_spm_multimodal_fmri_data(subject_dir):
+def _glob_spm_multimodal_fmri_data(subject_dir, verbose):
     """Glob data from subject_dir."""
     _subject_data = {"slice_order": "descending"}
 
     for session in range(1, 3):
         # glob func data for session
         _subject_data = _get_func_data_spm_multimodal(
-            subject_dir, session, _subject_data
+            subject_dir, session, _subject_data, verbose
         )
         if not _subject_data:
             return None
         # glob trials .mat file
         _subject_data = _get_session_trials_spm_multimodal(
-            subject_dir, session, _subject_data
+            subject_dir, session, _subject_data, verbose
         )
         if not _subject_data:
             return None
@@ -2873,13 +2990,13 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
 
     # glob for anat data
     _subject_data = _get_anatomical_data_spm_multimodal(
-        subject_dir, _subject_data
+        subject_dir, _subject_data, verbose=verbose
     )
     return Bunch(**_subject_data) if _subject_data else None
 
 
-def _download_data_spm_multimodal(data_dir, subject_dir):
-    logger.log("Data absent, downloading...")
+def _download_data_spm_multimodal(data_dir, subject_dir, verbose):
+    logger.log("Data absent, downloading...", verbose=verbose)
     urls = [
         # fmri
         (
@@ -2899,10 +3016,13 @@ def _download_data_spm_multimodal(data_dir, subject_dir):
         try:
             uncompress_file(archive_path)
         except Exception:
-            logger.log("Archive corrupted, trying to download it again.")
+            logger.log(
+                "Archive corrupted, trying to download it again.",
+                verbose=verbose,
+            )
             return fetch_spm_multimodal_fmri(data_dir=data_dir, data_name="")
 
-    return _glob_spm_multimodal_fmri_data(subject_dir)
+    return _glob_spm_multimodal_fmri_data(subject_dir, verbose)
 
 
 def _make_events_filepath_spm_multimodal_fmri(_subject_data, session):
@@ -2980,6 +3100,9 @@ def fetch_spm_multimodal_fmri(
         - 't_r' : :obj:`float`. Repetition time in seconds
            of the functional images.
 
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -2990,10 +3113,10 @@ def fetch_spm_multimodal_fmri(
     description = get_dataset_descr("spm_multimodal")
 
     # maybe data_dir already contains the data ?
-    data = _glob_spm_multimodal_fmri_data(subject_dir)
+    data = _glob_spm_multimodal_fmri_data(subject_dir, verbose)
     if data is None:
         # No. Download the data
-        data = _download_data_spm_multimodal(data_dir, subject_dir)
+        data = _download_data_spm_multimodal(data_dir, subject_dir, verbose)
 
     data.description = description
     data.t_r = 2
@@ -3004,9 +3127,13 @@ def fetch_spm_multimodal_fmri(
 def fetch_fiac_first_level(data_dir=None, verbose=1):
     """Download a first-level fiac :term:`fMRI` dataset (2 runs).
 
+    For more information
+    see the :ref:`dataset description <fiac_dataset>`.
+
     Parameters
     ----------
     %(data_dir)s
+
     %(verbose)s
 
     Returns
@@ -3025,8 +3152,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
     Notes
     -----
-    For more information
-    see the :ref:`dataset description <fiac_dataset>`.
+    %(fetcher_note)s
 
     """
     check_params(locals())
@@ -3035,7 +3161,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         "fiac_nilearn.glm", data_dir=data_dir, verbose=verbose
     )
 
-    def _glob_fiac_data():
+    def _glob_fiac_data(verbose):
         """Glob data from subject_dir."""
         _subject_data = {}
         subject_dir = data_dir / "nipy-data-0.2/data/fiac/fiac0"
@@ -3043,7 +3169,10 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
             # glob func data for session
             session_func = subject_dir / f"run{int(run)}.nii.gz"
             if not session_func.is_file():
-                logger.log(f"Missing functional scan for session {int(run)}.")
+                logger.log(
+                    f"Missing functional scan for session {int(run)}.",
+                    verbose=verbose,
+                )
                 return None
 
             _subject_data[f"func{int(run)}"] = str(session_func)
@@ -3051,7 +3180,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
             # glob design matrix .npz file
             sess_dmtx = subject_dir / f"run{int(run)}_design.npz"
             if not sess_dmtx.is_file():
-                logger.log(f"Missing run file: {sess_dmtx}")
+                logger.log(f"Missing run file: {sess_dmtx}", verbose=verbose)
                 return None
 
             design_matrix_data = np.load(str(sess_dmtx))
@@ -3064,7 +3193,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         # glob for mask data
         mask = subject_dir / "mask.nii.gz"
         if not mask.is_file():
-            logger.log("Missing mask image.")
+            logger.log("Missing mask image.", verbose=verbose)
             return None
 
         _subject_data["mask"] = str(mask)
@@ -3073,13 +3202,13 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     description = get_dataset_descr("fiac")
 
     # maybe data_dir already contains the data ?
-    data = _glob_fiac_data()
+    data = _glob_fiac_data(verbose)
     if data is not None:
         data.description = description
         return data
 
     # No. Download the data
-    logger.log("Data absent, downloading...")
+    logger.log("Data absent, downloading...", verbose=verbose)
     url = "https://nipy.org/data-packages/nipy-data-0.2.tar.gz"
 
     archive_path = data_dir / Path(url).name
@@ -3087,12 +3216,14 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     try:
         uncompress_file(archive_path)
     except Exception:
-        logger.log("Archive corrupted, trying to download it again.")
+        logger.log(
+            "Archive corrupted, trying to download it again.", verbose=verbose
+        )
         data = fetch_fiac_first_level(data_dir=data_dir)
         data.description = description
         return data
 
-    data = _glob_fiac_data()
+    data = _glob_fiac_data(verbose)
     data.description = description
     return data
 

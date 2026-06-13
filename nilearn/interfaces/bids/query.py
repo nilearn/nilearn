@@ -7,6 +7,7 @@ from warnings import warn
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_params
 
 
 def _get_metadata_from_bids(
@@ -28,7 +29,7 @@ def _get_metadata_from_bids(
     json_files : :obj:`list` of :obj:`str`
         List of path to json files, for example returned by get_bids_files.
 
-    bids_path : :obj:`str` or :obj:`pathlib.Path`, optional
+    bids_path : :obj:`str` or :obj:`pathlib.Path` or None, default=None
         Fullpath to the BIDS dataset.
 
     Returns
@@ -75,7 +76,7 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     bids_path : :obj:`str` or :obj:`pathlib.Path`
         Fullpath to the derivatives folder of the BIDS dataset.
 
-    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), optional
+    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`)
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
@@ -89,6 +90,8 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
         Value of the field or None if the field is not found.
 
     """
+    check_params(locals())
+
     img_specs = get_bids_files(
         bids_path,
         modality_folder="func",
@@ -121,7 +124,7 @@ def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
     bids_path : :obj:`str` or :obj:`pathlib.Path`
         Fullpath to the raw folder of the BIDS dataset.
 
-    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), optional
+    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`)
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
@@ -135,6 +138,8 @@ def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
         Value of the field or None if the field is not found.
 
     """
+    check_params(locals())
+
     img_specs = get_bids_files(
         main_path=bids_path,
         modality_folder="func",
@@ -230,6 +235,32 @@ def get_bids_files(
     files : :obj:`list` of :obj:`str`
         List of file paths found.
 
+    Examples
+    --------
+    >>> from pathlib import Path
+    >>> from nilearn.interfaces.bids import get_bids_files
+    >>> bids_path = Path("my_bids_folder")
+    >>> bids_func_dir = bids_path / "sub-01" / "ses-01" / "func"
+
+    Create a fake fMRI NIfTI file.
+
+    >>> bids_func_dir.mkdir(parents=True, exist_ok=True)
+    >>> _ = ( bids_func_dir
+    ...    / "sub-01_ses-01_task-finger_run-01_bold.nii.gz"
+    ...    ).touch()
+
+    Searching for finger tapping task fMRI files.
+
+    >>> bids_files = get_bids_files(
+    ...    bids_path,
+    ...    file_tag='bold',
+    ...    file_type='nii.gz',
+    ...    sub_label='01',
+    ...    modality_folder='func',
+    ...    filters=[('task','finger')],
+    ... )
+    >>> len(bids_files)
+    1
     """
     main_path = Path(main_path)
     if sub_folder:
@@ -281,7 +312,7 @@ def parse_bids_filename(img_path):
         Returns a dictionary with all key-value pairs in the file name
         parsed and other useful fields.
 
-        .. nilearn_versionadded :: 0.13.0dev
+        .. nilearn_versionadded :: 0.13.0
 
         The dictionary will contain:
 
@@ -294,6 +325,17 @@ def parse_bids_filename(img_path):
         See the documentation on
         `typical bids filename <https://bids.neuroimaging.io/getting_started/folders_and_files/files.html#filename-template>`_
         for more information.
+
+    Examples
+    --------
+    >>> from nilearn.interfaces.bids import parse_bids_filename
+    >>> ref = parse_bids_filename("sub-01_task-rest_bold.nii.gz")
+    >>> ref["suffix"]
+    'bold'
+    >>> ref["extension"]
+    'nii.gz'
+    >>> ref["entities"] == {"sub": "01", "task": "rest"}
+    True
 
     """
     reference = {

@@ -13,6 +13,7 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import datasets, image
 from nilearn._utils import data_gen
+from nilearn._utils.helpers import is_windows_platform
 from nilearn.image import resampling
 from nilearn.surface.surface import (
     FileMesh,
@@ -21,13 +22,12 @@ from nilearn.surface.surface import (
     PolyMesh,
     SurfaceImage,
     _choose_kind,
-    _data_to_gifti,
+    _gifti_img_to_data,
     _gifti_img_to_mesh,
     _interpolation_sampling,
     _load_surf_files_gifti_gzip,
     _load_uniform_ball_cloud,
     _masked_indices,
-    _mesh_to_gifti,
     _nearest_voxel_sampling,
     _projection_matrix,
     _sample_locations,
@@ -38,11 +38,13 @@ from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
     check_surf_img,
     compute_adjacency_matrix,
+    data_to_gifti,
     extract_data,
     find_surface_clusters,
     get_data,
     load_surf_data,
     load_surf_mesh,
+    mesh_to_gifti,
     vol_to_surf,
 )
 
@@ -116,6 +118,88 @@ def test_load_surf_data_numpy_gt_1pt23():
     """
     fsaverage = datasets.fetch_surf_fsaverage()
     load_surf_data(fsaverage["pial_left"])
+
+
+def test_gifti_img_to_data_preserves_numeric_dtype():
+    """Multi-darray GIFTI with uniform dtype must not return object array.
+
+    Regression test for
+    https://github.com/nilearn/nilearn/issues/5525#issuecomment-4646130161
+
+    _gifti_img_to_data previously forced dtype=object for
+    any multi-darray GIFTI, causing downstream failures (e.g. np.isfinite)
+    when the dtype was preserved through the masker pipeline.
+    """
+    n_vertices = 20
+    n_timepoints = 5
+    darrays = [
+        gifti.GiftiDataArray(
+            data=np.ones(n_vertices, dtype=np.float32),
+            datatype="NIFTI_TYPE_FLOAT32",
+        )
+        for _ in range(n_timepoints)
+    ]
+    gii = gifti.GiftiImage(darrays=darrays)
+
+    data = _gifti_img_to_data(gii)
+
+    assert data.dtype != object, (
+        "Expected a numeric dtype, got object. "
+        "Downstream np.isfinite calls will fail on object arrays."
+    )
+    assert data.dtype == np.float32
+    assert data.shape == (n_vertices, n_timepoints)
+
+
+def test_polydata_casts_object_dtype_with_warning():
+    """PolyData must warn and cast to float32 when given object-dtype data.
+
+    Regression test for
+    https://github.com/nilearn/nilearn/issues/5525#issuecomment-4646130161
+
+    Object dtype propagated silently through the masker
+    pipeline (fit_transform to inverse_transform) and caused np.isfinite to
+    fail inside threshold_img.
+    """
+    data = np.ones((10, 3), dtype=object)
+
+    with pytest.warns(UserWarning, match="Object dtype is not supported"):
+        pd = PolyData(left=data)
+    assert pd.parts["left"].dtype == np.float32
+
+    with pytest.warns(UserWarning, match="Object dtype is not supported"):
+        pd = PolyData(left=np.ones((10, 3), dtype=np.float32), dtype=object)
+    assert pd.parts["left"].dtype == np.float32
+
+
+def test_surface_image_casts_object_dtype_with_warning(surf_mesh):
+    """SurfaceImage warns and casts to float32 when data has object dtype."""
+    data = {
+        hemi: np.ones((part.n_vertices, 3), dtype=object)
+        for hemi, part in surf_mesh.parts.items()
+    }
+
+    with pytest.warns(UserWarning, match="Object dtype is not supported"):
+        img = SurfaceImage(mesh=surf_mesh, data=data)
+    for part in img.data.parts.values():
+        assert part.dtype == np.float32
+
+
+@pytest.mark.parametrize("dtype", [1, 1.5, "foo"])
+def test_dtype_error(surf_mesh, dtype):
+    """Check dtype errors.
+
+    Note the errors are raised by numpy.
+    """
+    with pytest.raises(TypeError, match=r"understood|data type"):
+        PolyData(left=np.ones((10, 3)), dtype=dtype)
+
+    data = {
+        hemi: np.ones((part.n_vertices, 3))
+        for hemi, part in surf_mesh.parts.items()
+    }
+    with pytest.raises(TypeError, match=r"understood|data type"):
+        SurfaceImage(mesh=surf_mesh, data=data, dtype=dtype)
 
 
 def test_load_surf_data_array():
@@ -460,6 +544,11 @@ def test_vertex_outer_normals():
     assert_array_almost_equal(computed_normals, true_normals)
 
 
+def test_mesh_area():
+    mesh = flat_mesh(5, 7)
+    assert mesh._area == 24
+
+
 @pytest.mark.parametrize("n_points", [10, 20, 40, 80, 160])
 def test_load_uniform_ball_cloud_no_warning(n_points):
     """Test that loading precomputed point clouds does not raise warnings.
@@ -477,6 +566,7 @@ def test_load_uniform_ball_cloud_no_warning(n_points):
         assert len(w) == 0
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("n_points", [3, 7])
 def test_load_uniform_ball_cloud(n_points):
     """Test requesting n points with no cached results match computation."""
@@ -594,6 +684,7 @@ def test_vol_to_surf_errors():
         vol_to_surf(img, mesh, interpolation="bad")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("kind", ["line", "ball"])
 @pytest.mark.parametrize("n_scans", [1, 20])
 @pytest.mark.parametrize("use_mask", [True, False])
@@ -842,8 +933,8 @@ def test_data_to_gifti(rng, tmp_path, dtype):
     - make sure files can be loaded with nibabel
     """
     data = rng.random((5, 6)).astype(dtype)
-    _data_to_gifti(data=data, gifti_file=tmp_path / "data.gii")
-    _data_to_gifti(data=data, gifti_file=str(tmp_path / "data.gii"))
+    data_to_gifti(data=data, gifti_file=tmp_path / "data.gii")
+    data_to_gifti(data=data, gifti_file=str(tmp_path / "data.gii"))
     load(tmp_path / "data.gii")
 
 
@@ -852,7 +943,7 @@ def test_data_to_gifti_unsupported_dtype(rng, tmp_path, dtype):
     """Check saving unsupported data type raises an error."""
     data = rng.random((5, 6)).astype(dtype)
     with pytest.raises(ValueError, match="supports uint8, int32 and float32"):
-        _data_to_gifti(data=data, gifti_file=tmp_path / "data.gii")
+        data_to_gifti(data=data, gifti_file=tmp_path / "data.gii")
 
 
 @pytest.mark.parametrize("shape", [(5,), (5, 1), (5, 2)])
@@ -890,10 +981,10 @@ def test_mesh_to_gifti(single_mesh, tmp_path):
     - make sure files can be loaded with nibabel
     """
     coordinates, faces = single_mesh
-    _mesh_to_gifti(
+    mesh_to_gifti(
         coordinates=coordinates, faces=faces, gifti_file=tmp_path / "mesh.gii"
     )
-    _mesh_to_gifti(
+    mesh_to_gifti(
         coordinates=coordinates,
         faces=faces,
         gifti_file=str(tmp_path / "mesh.gii"),
@@ -1115,6 +1206,7 @@ def test_load_save_data_1d(rng, tmp_path, surf_mesh):
         np.int64,
         np.float32,
         np.float64,
+        bool,
     ],
 )
 def test_save_dtype(surf_img_1d, tmp_path, dtype):
@@ -1125,6 +1217,7 @@ def test_save_dtype(surf_img_1d, tmp_path, dtype):
     surf_img_1d.data.to_filename(tmp_path / "data.gii")
 
 
+@pytest.mark.thread_unsafe
 def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 3D Niftiimage object or file for data."""
     SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_3d_mni)
@@ -1137,6 +1230,7 @@ def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_load_from_volume_4d_nifti(img_4d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
     img = SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_4d_mni)
@@ -1236,12 +1330,17 @@ def test_check_surf_img(surf_img_1d, surf_img_2d):
 
 
 def test_check_surf_img_dtype(surf_img_1d):
-    """Check dtype of SurfaceImage can be set at init."""
+    """Check dtype of SurfaceImage can be set at init.
+
+    Check private attribute _dtype of PolyData is set.
+    """
     data = {
         "left": np.ones(surf_img_1d.data.parts["left"].shape, dtype="float32"),
         "right": np.ones(surf_img_1d.data.parts["right"].shape, dtype="int32"),
     }
     new_img = SurfaceImage(surf_img_1d.mesh, data, dtype=np.int32)
+
+    assert new_img.data._dtype == np.int32
 
     for k in surf_img_1d.data.parts:
         assert new_img.data.parts[k].dtype != surf_img_1d.data.parts[k].dtype

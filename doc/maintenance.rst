@@ -27,80 +27,44 @@ and easily find what you are looking for in the issue tracker.
 When :nilearn-gh:`creating an issue <issues/new/choose>`, the user
 is responsible for a very basic labeling categorizing the issue:
 
-- |Bug| for bug reports.
-- |Documentation| for documentation related questions or requests.
-- |Enhancement| for feature requests.
+- ``Bug`` issue type for bug reports
+- ``Enhancement`` issue type for feature requests
+- ``Documentation`` issue label for documentation related questions or requests.
 
-First of all, the user might have mislabeled the issue, in which case a member
-of the :ref:`core_devs` team needs to correct the labels.
+New issues get the ``Needs Triage`` label and must be reviewed by a member of the :ref:`core_devs`
+who should remove the ``Needs Triage`` label and give the issue an effort, impact and priority label.
 
-In addition to these basic labels, we have many more labels which describes
-in more detail a given issue. First, we try to describe the **estimated amount
-of work** required to solve each issue:
+The reviewer should also:
 
-- |Effort: high| The issue is likely to require a serious amount of work (more than a couple of days).
-- |Effort: medium| The issue is likely to require a decent amount of work (in between a few hours and a couple days).
-- |Effort: low| The issue is likely to require a small amount of work (less than a few hours).
+- ensure that bugs can be reproduced
+- feature requests are within the scope of the project
+
+We try to describe the **estimated amount of work** required to solve each issue:
+
+- ``Effort: high`` The issue is likely to require a serious amount of work (more than a couple of days).
+- ``Effort: medium`` The issue is likely to require a decent amount of work (in between a few hours and a couple days).
+- ``Effort: low`` The issue is likely to require a small amount of work (less than a few hours).
 
 We also try to quantify the **estimated impact** of the proposed change on the project:
 
-- |Impact: high| Solving this issue will have a high impact on the project.
-- |Impact: medium| Solving this issue will have a decent impact on the project.
-- |Impact: low| Solving this issue will have a small impact on the project.
+- ``Impact: high`` Solving this issue will have a high impact on the project.
+- ``Impact: medium`` Solving this issue will have a decent impact on the project.
+- ``Impact: low`` Solving this issue will have a small impact on the project.
 
 Finally, we also indicate the **priority level** of the issue:
 
-- |Priority: high| The task is urgent and needs to be addressed as soon as possible.
-- |Priority: medium| The task is important but not urgent and should be addressed over the next few months.
-- |Priority: low| The task is not urgent and can be delayed.
+- ``Priority: high`` The task is urgent and needs to be addressed as soon as possible.
+- ``Priority: medium`` The task is important but not urgent and should be addressed over the next few months.
+- ``Priority: low`` The task is not urgent and can be delayed.
 
 Some issues---particular those which are low effort and low to medium priority---can serve as good starting project for
-new contributors. We label these issues with the |Good first issue| label
+new contributors. We label these issues with the ``Good first issue`` label
 which can be seen as an equivalent to a "very low effort" label. Because of
 this, good first issues do not require a separate effort label.
 
-Some other labels can be used to describe further the topic of the issue:
-
--   |API| This issue is related to the Nilearn's API.
--   |Code quality| This issue tackles code quality (code refactoring, PEP8...).
--   |Datasets| This issue is related to datasets or the :mod:`nilearn.datasets` module.
--   |Discussion| This issue is used to hold a general discussion on a specific topic
-    where community feedback is desired (no need to specify effort, priority, or impact here).
--   |GLM| This issue is related to the :mod:`nilearn.glm` module.
--   |Infrastructure| This issue describes a problem with the project's infrastructure (CI/CD...).
--   |Installation| The issue describes a problem with the installation of Nilearn.
--   |Maintenance| This issue is related to maintenance work.
--   |Plotting| The issue is related to plotting functionalities.
--   |Testing| The issue is related to testing.
--   |Usage| This issue is a usage question and should have been posted on :neurostars:`neurostars <>`.
-
+We have many more labels which describes in more detail a given issue.
 For a complete list of all issue labels that can be used to describe and their description,
 see `this page <https://github.com/nilearn/nilearn/labels>`_
-
-.. |API| image:: https://img.shields.io/badge/-API-fef2c0.svg
-.. |Bug| image:: https://img.shields.io/badge/-Bug-fc2929.svg
-.. |Code quality| image:: https://img.shields.io/badge/-code%20quality-09ef5a.svg
-.. |Datasets| image:: https://img.shields.io/badge/-Datasets-fad8c7.svg
-.. |Discussion| image:: https://img.shields.io/badge/-Discussion-bfe5bf.svg
-.. |Documentation| image:: https://img.shields.io/badge/-Documentation-5319e7.svg
-.. |Effort: high| image:: https://img.shields.io/badge/-effort:%20high-e26051.svg
-.. |Effort: medium| image:: https://img.shields.io/badge/-effort:%20medium-ddad1a.svg
-.. |Effort: low| image:: https://img.shields.io/badge/-effort:%20low-77c940.svg
-.. |Enhancement| image:: https://img.shields.io/badge/-Enhancement-fbca04.svg
-.. |GLM| image:: https://img.shields.io/badge/-GLM-fce1c4.svg
-.. |Good first issue| image:: https://img.shields.io/badge/-Good%20first%20issue-c7def8.svg
-.. |Impact: high| image:: https://img.shields.io/badge/-impact:%20high-1f1dc1.svg
-.. |Impact: medium| image:: https://img.shields.io/badge/-impact:%20medium-bac1fc.svg
-.. |Impact: low| image:: https://img.shields.io/badge/-impact:%20low-75eae6.svg
-.. |Infrastructure| image:: https://img.shields.io/badge/-Infrastructure-0052cc.svg
-.. |Installation| image:: https://img.shields.io/badge/-Installation-ba7030.svg
-.. |Maintenance| image:: https://img.shields.io/badge/-Maintenance-fc918f.svg
-.. |Plotting| image:: https://img.shields.io/badge/-Plotting-5319e7.svg
-.. |Priority: high| image:: https://img.shields.io/badge/-priority:%20high-9e2409.svg
-.. |Priority: medium| image:: https://img.shields.io/badge/-priority:%20medium-FBCA04.svg
-.. |Priority: low| image:: https://img.shields.io/badge/-priority:%20low-c5def5.svg
-.. |Testing| image:: https://img.shields.io/badge/-Testing-50bac4.svg
-.. |Usage| image:: https://img.shields.io/badge/-Usage-e99695.svg
 
 .. _closing_policy:
 
@@ -112,7 +76,7 @@ possible reasons for a community member to close an issue:
 
 -   The issue has been solved: kindly asked the author whether the issue can be closed.
     In the absence of reply, close the issue after two weeks.
--   The issue is a usage question: label the issue with |Usage|
+-   The issue is a usage question: label the issue with ``Usage``
     and kindly redirect the author to :neurostars:`neurostars <>`.
     Close the issue afterwards.
 -   The issue has no recent activity (no messages in the last three months):
@@ -122,77 +86,63 @@ possible reasons for a community member to close an issue:
 .. _pull request:
 
 Pull Requests
----------------
+-------------
 
 We welcome pull requests from all community members, if they follow the
 :ref:`contribution_guidelines` inspired from scikit learn conventions. (More
 details on their process are available
-:sklearn:`here <developers/contributing.html#contributing-code>`).
+:sklearn:`here <developers/contributing.html#contributing-code-and-documentation>`).
 
-Using tox
-=========
+Deprecations
+============
 
-`Tox <https://tox.wiki/en/4.23.2/>`_ is set
-to facilitate testing and managing environments during development
-and ensure that the same commands can easily be run locally and in CI.
+Use :class:`FutureWarning` for deprecations that users should know about
+on which they can have some control,
+for example by making sure that the warning message mentions
+what action to take to prevent the warning to be thrown.
+If there is no way for the user to prevent the warning to be thrown,
+consider using a :class:`DeprecationWarning`.
 
-Install it with:
+Tests are run via tox using ``-W error::FutureWarning``
+so that any FutureWarning thrown by a test will raise an error.
+To prevent this, any call that will throw a :class:`FutureWarning`
+must be handled with a ``pytest.warns`` context manager:
 
-.. code-block:: bash
+.. code-block:: python
 
-    pip install tox
+    with pytest.warns(FutureWarning, match="message"):
+        ...
 
-You can set up certain environment or run certain command by calling ``tox``.
+Generating new baseline figures for tests
+=========================================
 
-Calling ``tox`` with no extra argument will simply run
-all the default commands defined in the tox configuration (``tox.ini``).
-
-Use ``tox list`` to view all environment descriptions.
-
-Use ``tox run`` to run a specific environment.
-
-Example
-
-.. code-block:: bash
-
-    tox run -e lint
-
-Some environments allow passing extra argument:
-
-.. code-block:: bash
-
-    # only run ruff
-    tox run -e lint -- ruff
-
-    # only run some tests
-    tox -e plotting -- nilearn/glm/tests/test_contrasts.py
-
-You can also run any arbitrary command in a given environment with ``tox exec``:
-
-.. code-block:: bash
-
-    tox exec -e latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
-
-Generating new baseline figures for plotting tests
-==================================================
-
-We use the ``pytest-mpl`` pytest plugin to run several regression tests on our Matplotlib figures.
-
-Sometimes, the output of a plotting function may unintentionally change
+Sometimes, the figure or report generated by a function
+may unintentionally change
 as a side effect of changing another function or piece of code
 that it depends on.
 These tests ensure that the outputs are not accidentally changed.
 
-For each figure to test,
+For each figure / report to test,
 an image is generated and then subtracted from an existing reference image.
-If the root mean square of the residual is larger than a user-specified tolerance,
+If the residual is larger than a user-specified tolerance,
 the test will fail.
 
 Failures are expected at times when the output is changed intentionally
-(for example when fixing a bug,  adding features, bumping the python or Matplotlib version...)
+(for example when fixing a bug, adding features, bumping the python or Matplotlib version...)
 for a particular function.
 In such cases, the output needs to be manually updated and visually checked
 as part of the PR review process and to set a new baseline for comparison.
+
+Python
+------
+
+We use the ``pytest-mpl`` pytest plugin to run several regression tests on our Matplotlib figures.
+Those tests can be run with tox.
+
+.. code-block:: bash
+
+    pip install tox
+    tox run -e pytest_mpl
 
 You can set a new 'baseline' (set of reference images) by running the following
 with the oldest supported Python and Matplotlib:
@@ -201,6 +151,106 @@ with the oldest supported Python and Matplotlib:
 
     pip install tox
     tox run -e pytest_mpl_generate
+
+Javascript
+----------
+
+HTML outputs (for report or some interactive figures) are tested using Javascript.
+
+This requires to have `node and npm <https://nodejs.org>`_ installed
+(see ``package.json`` to know the minimum required version).
+
+Those tests can be run with tox.
+
+.. code-block:: bash
+
+    pip install tox
+    tox run -e test_html
+
+You can set a new 'baseline' (set of reference images) by running the following:
+
+.. code-block:: bash
+
+    pip install tox
+    tox run -e test_html_generate
+
+
+Updating vendored dependencies
+==============================
+
+Some javascript dependencies are vendored with Nilearn
+and need to be updated manually
+when the upstream source changes.
+
+```bash
+tox run -e update_js
+```
+
+.. note::
+
+    This requires to have `node and npm <https://nodejs.org>`_ installed.
+
+Datasets
+========
+
+Several datasets are on `OSF <https://osf.io>`_ and some of those are 'maintained' by the Nilearn developers.
+
+Here is a quick description of the different OSF projects
+that the dev have access to:
+
+- `nilearn_data <https://osf.io/hxctv>`_
+
+  Project hosting the data for:
+
+  - ``fetch_atlas_allen_2011``: https://osf.io/hrcku
+
+- `Nilearn_datasets <https://osf.io/mk53n>`_
+
+  Project hosting the data for
+
+  - ``fetch_surf_fsaverage``:
+
+    - ``fsaverage3``: https://osf.io/329dq
+    - ``fsaverage4``: https://osf.io/28uma
+    - ``fsaverage6``: https://osf.io/jzxyr
+    - ``fsaverage7``: https://osf.io/svf8k
+
+- `nistats <https://osf.io/v7hsw>`_
+
+  Project hosting the data for:
+
+  - ``fetch_localizer_first_level``: https://osf.io/2bqxn
+
+- `NiLearn's Quick Files <https://osf.io/hr36b>`_
+
+  Project hosting some of the data for:
+
+  - ``fetch_ds000030_urls``: https://osf.io/86xj7
+
+  - ``fetch_icbm152_2009``: https://osf.io/7pj92
+
+- `temporary space to store dataset for nilearn example gallery <https://osf.io/5dr8p>`_
+
+  Project hosting the data for
+
+  - ``fetch_language_localizer_demo_dataset``
+    ``https://osf.io/3dj2a`` (from https://osf.io/5dr8p/overview) acts as fall-back URL in case
+    ``https://osf.io/nh987`` (from https://osf.io/k4jp8/overview) fails
+
+- `nilearn_data_backup_archive <https://osf.io/59wxs>`_
+
+  This is an old project used for back up Nilearn's data.
+
+.. TODO
+   `Allen and MIALAB ICA atlas 2011 <https://osf.io/vp4dk>`_
+   Unrelated project under the Nilearn OSF user account
+
+.. admonition:: Important
+
+    If you need to update certain files,
+    do NOT remove any old files as this may break some older versions of Nilearn
+    that still use that URL.
+    Add new files and mention the version in their filename.
 
 How to make a release?
 ======================
@@ -220,6 +270,31 @@ to build the sdist, wheel, and extract version number from the git tag.
 We assume that we are in a clean state where all the Pull Requests (PR)
 that we wish to include in the new release have been merged.
 
+Pre-release
+-----------
+
+If you are doing a `pre-release <https://peps.python.org/pep-0440/#pre-releases>`_,
+that users can install with the prerelease flag
+(``pip install --prerelease nilearn``),
+then the release protocol is simplified and only consists of:
+
+-   adding a git tag and updating the upstream repository
+
+    .. code-block:: bash
+
+        git checkout main
+        git pull upstream main
+        git tag X.Y.ZrcN
+        git push upstream --tags
+
+    Use the ``rcN`` (release candidate) in the version tag,
+    with ``N`` starting at 0 and incrementing
+    with each new release candidate for a specific version.
+
+-   :ref:`building and uploading the distributions to Pypi <build_distribution>`
+
+-   doing a :ref:`Github release`
+
 Prepare code for the release
 ----------------------------
 
@@ -227,11 +302,11 @@ The repository should be checked and updated in preparation for the release.
 
 One thing that **must** be done before the release is made is
 to update ``deprecated``, ``versionchanged`` and ``versionadded`` directives
-from the current ``[x.y.z].dev`` tag to the new version number.
+from the current ``[X.Y.Z].dev`` tag to the new version number.
 These directives are added in a function's docstring to indicate the version number,
 when, say, a new parameter is added or deprecated.
 
-For example, if a parameter ``param2`` was added in version ``x.y.z``,
+For example, if a parameter ``param2`` was added in version ``X.Y.Z``,
 the docstring should be updated to:
 
 .. code-block:: python
@@ -246,7 +321,7 @@ the docstring should be updated to:
         param2 : type
             Description of param2.
 
-        .. nilearn_versionadded:: x.y.z
+        .. nilearn_versionadded:: X.Y.Z
 
         Returns
         -------
@@ -265,7 +340,11 @@ Finally, make sure the documentation can be built correctly.
 Prepare the documentation for the release
 -----------------------------------------
 
-In several places the user guide relies on figures generated in the examples for illustration.
+Check illustrations
+...................
+
+In several places the user guide relies
+on the code examples and the figures they generate.
 
 If the examples are modified, and an expected figure is not created anymore
 or the order of the generated figures is changed,
@@ -276,7 +355,11 @@ but care should be taken that at least the following have not been affected:
 
 - ``.rst`` files containing the string ``image:: ../auto_examples``,
 - the tables in the :ref:`plotting` section,
+- ``literalinclude`` sphinx-directives with a ``:start-after:``
 - ...
+
+Update links
+............
 
 Update the links for the new version of the documentation in ``doc/versions.rst``.
 For example:
@@ -287,7 +370,15 @@ For example:
 
     * `Nilearn latest - dev documentation <http://nilearn.github.io/dev/>`_
     * `Nilearn latest - stable documentation <http://nilearn.github.io/stable/>`_
-    * `Nilearn x.y.z documentation <http://nilearn.github.io/x.y.z/>`_
+    * `Nilearn X.Y.Z documentation <http://nilearn.github.io/X.Y.Z/>`_
+
+Update atlas figures
+....................
+
+The :ref:`datasets_ref <datasets_ref>` has tables with figures listing all the atlases
+that Nilearn provides.
+
+Run the script ``doc/make_atlas_table.py`` commit the new output to update the tables.
 
 Prepare the release
 -------------------
@@ -296,7 +387,7 @@ Switch to a new branch locally:
 
 .. code-block:: bash
 
-    git checkout -b REL-x.y.z
+    git checkout -b REL-X.Y.Z
 
 
 First we need to prepare the release by updating the file ``nilearn/doc/changes/latest.rst``
@@ -318,7 +409,7 @@ For example::
     - :bdg-info:`Plotting` ...
 
 We also need to write a "Highlights" section promoting the most important additions that come with this new release.
-Finally, we need to change the title from ``x.y.z.dev`` to ``x.y.z``:
+Finally, we need to change the title from ``X.Y.Z.dev`` to ``X.Y.Z``:
 
 .. code-block:: RST
 
@@ -326,7 +417,7 @@ Finally, we need to change the title from ``x.y.z.dev`` to ``x.y.z``:
 
    .. include:: names.rst
 
-   x.y.z
+   X.Y.Z
    =====
 
    **Released MONTH YEAR**
@@ -341,8 +432,8 @@ We must also ensure that every entry in ``nilearn/doc/changes/latest.rst``
 starts with a "badge" (see the :ref:`changelog` section).
 
 Once we have made all the necessary changes to ``nilearn/doc/changes/latest.rst``,
-we should rename it into ``nilearn/doc/changes/x.y.z.rst``,
-where ``x.y.z`` is the corresponding version number.
+we should rename it into ``nilearn/doc/changes/X.Y.Z.rst``,
+where ``X.Y.Z`` is the corresponding version number.
 
 We then need to update ``nilearn/doc/changes/whats_new.rst`` and replace:
 
@@ -356,7 +447,7 @@ By:
 .. code-block:: RST
 
    .. _vx.y.z:
-   .. include:: x.y.z.rst
+   .. include:: X.Y.Z.rst
 
 
 Add these changes and submit a PR:
@@ -364,8 +455,8 @@ Add these changes and submit a PR:
 .. code:: bash
 
     git add doc/changes/
-    git commit -m "REL x.y.z"
-    git push origin REL-x.y.z
+    git commit --message "REL X.Y.Z"
+    git push origin REL-X.Y.Z
 
 
 Once the PR has been reviewed and merged, pull from master and tag the merge commit:
@@ -374,7 +465,7 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
 
     git checkout main
     git pull upstream main
-    git tag x.y.z
+    git tag X.Y.Z
     git push upstream --tags
 
 .. note::
@@ -382,6 +473,7 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
     When building the distribution as described below, ``hatch-vcs``, defined in ``pyproject.toml``,
     extracts the version number using this tag and writes it to a ``_version.py`` file.
 
+.. _build_distribution:
 
 Build the distributions and upload them to Pypi
 -----------------------------------------------
@@ -390,7 +482,7 @@ First of all we should make sure we don't include files that shouldn't be presen
 
 .. code-block:: bash
 
-    git checkout x.y.z
+    git checkout X.Y.Z
 
 
 If the workspace contains a ``dist`` folder, make sure to clean it:
@@ -445,13 +537,14 @@ We are now ready to upload to ``Pypi``. Note that you will need to have an `acco
 Once the upload is completed, make sure everything looks good on `Pypi <https://pypi.org/project/nilearn/>`_.
 Otherwise you will probably have to fix the issue and start over a new release with the patch number incremented.
 
+.. _Github release:
 
 Github release
 --------------
 
 At this point, we need to upload the binaries to GitHub and link them to the tag.
 To do so, go to the :nilearn-gh:`Nilearn GitHub page <tags>` under the "Releases" tab,
-and edit the ``x.y.z`` tag by providing a description,
+and edit the ``X.Y.Z`` tag by providing a description,
 and upload the distributions we just created (you can just drag and drop the files).
 
 
@@ -540,8 +633,18 @@ sections for the version currently under development:
 
    .. include:: names.rst
 
-   x.y.z+1.dev
+   X.Y.Z+1.dev
    =========
+
+   ..
+    Each changelog entry should begin with one of the following badges:
+    - :bdg-primary:`Doc`
+    - :bdg-secondary:`Maint`
+    - :bdg-success:`API`
+    - :bdg-info:`Plotting`
+    - :bdg-warning:`Test`
+    - :bdg-danger:`Deprecation`
+    - :bdg-dark:`Code`
 
    NEW
    ---

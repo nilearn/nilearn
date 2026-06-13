@@ -1,5 +1,7 @@
 """Miscellaneous matrix plotting utilities."""
 
+from typing import Literal
+
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,9 +11,13 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
+from nilearn.nilearn_typing import ColorBar, OutputFile, Title
 from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.matrix._utils import (
     mask_matrix,
@@ -25,7 +31,7 @@ from nilearn.plotting.matrix._utils import (
 
 def _configure_axis(
     axes, labels, label_size, x_label_rotation, y_label_rotation
-):
+) -> None:
     """Help for plot_matrix."""
     if not labels:
         axes.xaxis.set_major_formatter(plt.NullFormatter())
@@ -67,7 +73,7 @@ def _configure_grid(axes, tri, size):
             axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
 
 
-def _fit_axes(axes):
+def _fit_axes(axes) -> None:
     """Help for plot_matrix.
 
     This function redimensions the given axes to have
@@ -145,16 +151,16 @@ def _sanitize_inputs_plot_matrix(
 @fill_doc
 def plot_matrix(
     mat,
-    title=None,
+    title: Title = None,
     labels=None,
     figure=None,
     axes=None,
-    colorbar=True,
+    colorbar: ColorBar = True,
     cmap=DEFAULT_DIVERGING_CMAP,
-    tri="full",
-    auto_fit=True,
-    grid=False,
-    reorder=False,
+    tri: Literal["full", "lower", "diag"] = "full",
+    auto_fit: bool = True,
+    grid: bool = False,
+    reorder: bool = False,
     **kwargs,
 ):
     """Plot the given matrix.
@@ -190,7 +196,7 @@ def plot_matrix(
             Specifying both axes and figure is not allowed.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     %(cmap)s
         default="RdBu_r"
@@ -231,6 +237,7 @@ def plot_matrix(
         Axes image.
 
     """
+    check_params(locals())
     labels, reorder, fig, axes, _ = _sanitize_inputs_plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
@@ -238,9 +245,11 @@ def plot_matrix(
         mat, labels = reorder_matrix(mat, labels, reorder)
     if tri != "full":
         mat = mask_matrix(mat, tri)
-    display = axes.imshow(
-        mat, aspect="equal", interpolation="nearest", cmap=cmap, **kwargs
-    )
+
+    kwargs |= {"aspect": "equal", "interpolation": "nearest"}
+
+    display = axes.imshow(mat, cmap=cmap, **kwargs)
+
     axes.set_autoscale_on(False)
     ymin, ymax = axes.get_ylim()
     _configure_axis(
@@ -269,7 +278,11 @@ def plot_matrix(
 
 @fill_doc
 def plot_contrast_matrix(
-    contrast_def, design_matrix, colorbar=True, axes=None, output_file=None
+    contrast_def,
+    design_matrix,
+    colorbar: ColorBar = True,
+    axes=None,
+    output_file: OutputFile = None,
 ):
     """Create plot for :term:`contrast` definition.
 
@@ -288,7 +301,7 @@ def plot_contrast_matrix(
         Design matrix to use.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     axes : :class:`matplotlib.axes.Axes` or None, default=None
         Axis on which to plot the figure.
@@ -302,6 +315,8 @@ def plot_contrast_matrix(
         Figure object.
 
     """
+    check_params(locals())
+
     contrast_def = pad_contrast_matrix(contrast_def, design_matrix)
     con_matrix = np.array(contrast_def, ndmin=2)
 
@@ -343,9 +358,9 @@ def plot_contrast_matrix(
 @fill_doc
 def plot_design_matrix(
     design_matrix,
-    rescale=True,
+    rescale: bool = True,
     axes=None,
-    output_file=None,
+    output_file: OutputFile = None,
 ):
     """Plot a design matrix.
 
@@ -401,7 +416,9 @@ def plot_design_matrix(
 
 
 @fill_doc
-def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
+def plot_event(
+    model_event, cmap=None, output_file: OutputFile = None, **fig_kwargs
+):
     """Create plot for event visualization.
 
     .. warning::
@@ -525,10 +542,10 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 @fill_doc
 def plot_design_matrix_correlation(
     design_matrix,
-    tri="full",
+    tri: Literal["full", "diag"] = "full",
     cmap=DEFAULT_DIVERGING_CMAP,
-    colorbar=True,
-    output_file=None,
+    colorbar: ColorBar = True,
+    output_file: OutputFile = None,
     **kwargs,
 ):
     """Compute and plot the correlation between regressor of a design matrix.
@@ -573,6 +590,8 @@ def plot_design_matrix_correlation(
     display : :class:`matplotlib.axes.Axes`
         Axes image.
     """
+    check_params(locals())
+
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     check_design_matrix(design_matrix)

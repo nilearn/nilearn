@@ -1,6 +1,6 @@
 """Helper functions to download NeuroImaging datasets."""
 
-from .atlas import (
+from nilearn.datasets.atlas import (
     fetch_atlas_aal,
     fetch_atlas_allen_2011,
     fetch_atlas_basc_multiscale_2015,
@@ -20,6 +20,7 @@ from .atlas import (
     fetch_coords_power_2011,
     fetch_coords_seitzman_2018,
 )
+
 from .func import (
     fetch_abide_pcp,
     fetch_adhd,
@@ -48,7 +49,6 @@ from .neurovault import (
     fetch_neurovault,
     fetch_neurovault_auditory_computation_task,
     fetch_neurovault_ids,
-    fetch_neurovault_motor_task,
 )
 from .struct import (
     GM_MNI152_FILE_PATH,
@@ -110,7 +110,6 @@ __all__ = [
     "fetch_neurovault",
     "fetch_neurovault_auditory_computation_task",
     "fetch_neurovault_ids",
-    "fetch_neurovault_motor_task",
     "fetch_oasis_vbm",
     "fetch_openneuro_dataset",
     "fetch_spm_auditory",

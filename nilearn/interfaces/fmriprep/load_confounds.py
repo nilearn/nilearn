@@ -42,7 +42,7 @@ component_parameters = {
 }
 
 
-def _check_strategy(strategy):
+def _check_strategy(strategy) -> None:
     """Ensure the denoising strategies combinations are valid.
 
     Parameters
@@ -87,7 +87,7 @@ def _check_strategy(strategy):
         )
 
 
-def _check_error(missing):
+def _check_error(missing) -> None:
     """Consolidate a single error message across multiple missing confounds."""
     if missing["confounds"] or missing["keywords"]:
         error_msg = (
@@ -217,14 +217,14 @@ def load_confounds(
 
     fd_threshold : :obj:`float`, default=0.5
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
            The default was changed from ``0.2`` to ``0.5``.
 
         Framewise displacement threshold for scrub in mm.
 
     std_dvars_threshold : :obj:`float`, default=1.5
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
            The default value will be changed from ``3.0`` to ``1.5``.
 
         Standardized DVARS threshold for scrub.
@@ -300,14 +300,14 @@ def load_confounds(
 
     sample_mask : None, :class:`numpy.ndarray` or, :obj:`list` of \
         :class:`numpy.ndarray` or None
-        When no volumns require removal, the value is None.
+        When no volume require removal, the value is None.
         Otherwise, shape: (number of scans - number of volumes removed, )
         The index of the niimgs along time/fourth dimension for valid volumes
         for subsequent analysis.
         This attribute should be passed to parameter `sample_mask` of
         :class:`nilearn.maskers.NiftiMasker` or
         :func:`nilearn.signal.clean`.
-        Volumns are removed if flagged as following:
+        Volumes are removed if flagged as following:
 
         - Non-steady-state volumes (if present)
         - Motion outliers detected by scrubbing
@@ -316,7 +316,7 @@ def load_confounds(
     -----
     The noise components implemented in this class are adapted from
     :footcite:t:`Ciric2017`. Band-pass filter is replaced by high-pass filter.
-    Low-pass filters can be implemented, e.g., through `NifitMaskers`.
+    Low-pass filters can be implemented, e.g., through `NiftiMaskers`.
     Other aspects of the preprocessing listed
     in :footcite:t:`Ciric2017` are controlled
     through :term:`fMRIPrep`, e.g. distortion correction.
