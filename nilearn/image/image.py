@@ -2045,7 +2045,7 @@ def clean_img(
 
     Examples
     --------
-    Let's load an image using nilearn datasets module::
+    Let's load an image using nilearn datasets module:
 
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
