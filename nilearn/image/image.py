@@ -682,11 +682,15 @@ def crop_img(
     -------
     Niimg-like object or :obj:`tuple`
         Cropped version of the input image and, if `return_offset=True`,
-        a tuple of tuples representing the number of voxels
+        a tuple of :py:class: representing the number of voxels
         removed (before, after) the cropped volumes, i.e.:
         *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
 
         If the specified image is empty, the original image will be returned.
+
+    Examples
+    --------
+    >>> from
     """
     check_params(locals())
 
