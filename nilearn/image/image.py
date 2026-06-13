@@ -1078,7 +1078,7 @@ def iter_img(imgs):
     Create dummy 4D image:
 
     >>> affine = np.eye(4)
-    >>> data = np.ones((3,3,3,2))
+    >>> data = np.ones((3, 3, 3, 2))
 
     Set different values for each 3D image in 4D series:
 
