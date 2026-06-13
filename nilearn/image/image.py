@@ -1148,10 +1148,11 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=True):
 
     Examples
     --------
-    Let's create a Nifti1Image:
-
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
+    >>> from nilearn.image import new_img_like
+    >>>
+    >>> # create a Nifti1Image
     >>> data1 = np.array([[[0., 0.2, 0.8],
     ...                   [1.5, 3.0, 0.1],
     ...                   [0.4, 2.2, 0.0]]])
@@ -1159,18 +1160,15 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=True):
     >>> img1 = Nifti1Image(data1, affine, dtype=np.int32)
     >>> type(img1)
     <class 'nibabel.nifti1.Nifti1Image'>
-
-    Now we will create a new image from data2, and we would like to create an
-    image of the same type with img_1:
-
+    >>>
+    >>> # create a new image from data2, and we would like to create an
+    >>> # image of the same type with img_1:
     >>> data2 = np.array([[[0., 0.5, 0.3],
     ...                   [2.5, 2.0, 0.2],
     ...                   [0.1, 0.2, 1.0]]])
-    >>> from nilearn.image import new_img_like
     >>> img2 = new_img_like(img1, data2)
     >>> type(img2)
     <class 'nibabel.nifti1.Nifti1Image'>
-
     >>> np.allclose(img1.affine, img2.affine)
     True
 
