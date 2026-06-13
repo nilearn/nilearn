@@ -1475,7 +1475,7 @@ class FirstLevelModel(BaseGLM):
 
     def plot_predicted_signal_and_residuals(
         self,
-        coords=(0, 0, 0),
+        coords=None,
         masker=None,
         radius=3.0,
         figsize=(10, 8),
@@ -1489,8 +1489,9 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        coords: tuple of coordinates
-            Coordinates of the voxel or region center.
+        coords: tuple, or list of tuples of coordinates, optional
+            Coordinates of the voxel(s) or region center(s).
+            Ignored if `masker` is provided.
         masker : NiftiMasker or NiftiSpheresMasker, optional
             Custom masker used to extract the time series. If None, a
             :class:`~nilearn.maskers.NiftiSpheresMasker` centered on `coords`
@@ -1506,9 +1507,11 @@ class FirstLevelModel(BaseGLM):
         -------
         timeseries_df : :class:`pandas.DataFrame`
             DataFrame containing the observed, predicted, and residuals \
-            time series.
-        fig : matplotlib.figure.Figure
-            The generated figure.
+            time series. If several locations were provided, columns are
+            suffixed with the index of the location (e.g. ``observed_0``).
+        fig : matplotlib.figure.Figure or list of Figure
+            The generated figure(s). A A list if several locations were
+            provided.
 
         Notes
         -----
@@ -1528,10 +1531,18 @@ class FirstLevelModel(BaseGLM):
                 "when initializing the `FirstLevelModel`-object."
             )
 
-        # Create masker if needed
         if masker is None:
-            masker = NiftiSpheresMasker([coords], radius=radius)
+            if coords is None:
+                raise ValueError(
+                    "Either `masker` or `coords` must be provided."
+                )
+            # Allow a single coordinate tuple to be passed
+            if isinstance(coords[0], (int, float)):
+                coords = [coords]
+            masker = NiftiSpheresMasker(seeds=coords, radius=radius)
             masker.fit()
+        else:
+            check_is_fitted(masker)
 
         # Get observed, predicted, and residual time series
         y_pred = self._get_element_wise_model_attribute(
@@ -1546,25 +1557,30 @@ class FirstLevelModel(BaseGLM):
         residuals_ts = masker.transform(resid[0])
         observed_ts = predicted_ts + residuals_ts
 
-        # Plot the results
-        fig = self._plotting_pred_and_res(
-            observed_ts.flatten(),
-            predicted_ts.flatten(),
-            residuals_ts.flatten(),
-            figsize=figsize,
-            close=not show,
-        )
-        if show:
-            plt.show(fig)
+        n_regions = predicted_ts.shape[1]
 
-        timeseries_df = pd.DataFrame(
-            {
-                "observed": observed_ts.flatten(),
-                "predicted": predicted_ts.flatten(),
-                "residuals": residuals_ts.flatten(),
-            }
-        )
-        return timeseries_df, fig
+        figs = []
+        timeseries_data = {}
+        for i in range(n_regions):
+            fig = self._plotting_pred_and_res(
+                observed_ts[:, i],
+                predicted_ts[:, i],
+                residuals_ts[:, i],
+                figsize=figsize,
+                close=not show,
+            )
+            if show:
+                fig.show()
+            figs.append(fig)
+
+            suffix = "" if n_regions == 1 else f"_{i}"
+            timeseries_data[f"observed{suffix}"] = observed_ts[:, i]
+            timeseries_data[f"predicted{suffix}"] = predicted_ts[:, i]
+            timeseries_data[f"residuals{suffix}"] = residuals_ts[:, i]
+
+        timeseries_df = pd.DataFrame(timeseries_data)
+
+        return timeseries_df, figs if n_regions > 1 else figs[0]
 
 
 def _check_events_file_uses_tab_separators(events_files):
