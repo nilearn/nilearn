@@ -172,7 +172,7 @@ def get_bids_files(
     modality_folder="*",
     filters=None,
     sub_folder=True,
-):
+) -> list[str]:
     """Search for files in a :term:`BIDS` dataset following given constraints.
 
     This utility function allows to filter files in the :term:`BIDS` dataset by
