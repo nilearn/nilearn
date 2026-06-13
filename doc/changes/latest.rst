@@ -98,6 +98,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` Allow the ``mask_img`` parameter to :func:`~glm.first_level.first_level_from_bids` to take the value ``"derivatives"`` to generate a mask from the masks in BIDS derivative to use in the model (:gh:`5981` by `Rémi Gau`_).
+
 - :bdg-success:`API` The parameter ``estimator_args`` was added to all decoding estimators to allow to pass parameters directly to the underlying Scikit-Learn estimators (:gh:`5641` by `Rémi Gau`_).
 
 - :bdg-success:`API` :class:`~nilearn.decoding.SearchLight` now has a ``random_state`` and ``estimator_args`` to pass to the underlying estimator (:gh:`6020` by `Rémi Gau`_).
@@ -142,7 +144,7 @@ Enhancements
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.threshold_img` (:gh:`6280` by `Fernanda Ponce`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.interfaces.bids.query.get_bids_files` (:gh:`6317` by `Gabriele Amorosino`_).
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.interfaces.bids.get_bids_files` (:gh:`6317` by `Gabriele Amorosino`_).
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.smooth_img` function (:gh:`6302` by `Hande Gözükan`_).
 
@@ -153,6 +155,8 @@ Enhancements
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.glm.threshold_stats_img` function (:gh:`6297` by `Hande Gözükan`_).
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.check_niimg`, :func:`~nilearn.image.check_niimg_3d` and	:func:`~nilearn.image.check_niimg_4d` functions (:gh:`6286` by `Hande Gözükan`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for  :func:`~nilearn.regions.signals_to_img_labels` function (:gh:`6306` by `Hande Gözükan`_).
 
 
 Changes
