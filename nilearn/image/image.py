@@ -724,8 +724,6 @@ def crop_img(
         >>> img = Nifti1Image(data, affine=affine)
         >>> img.shape
         (5, 6, 7)
-        >>> plot_anat(img, black_bg=False, vmin=0)
-
         >>> cropped_img, offset = crop_img(img, return_offset=True)
         >>> cropped_img.shape
         (5, 6, 5)
@@ -733,8 +731,7 @@ def crop_img(
         (slice(np.int64(0), np.int64(5), None),
          slice(np.int64(0), np.int64(6), None),
          slice(np.int64(2), np.int64(7), None))
-        >>> plot_anat(cropped_img, black_bg=False, vmin=0)
-
+        >>>
         >>> cropped_img, offset = crop_img(img, return_offset=True, rtol=0.5)
         >>> cropped_img.shape
         (4, 6, 5)
@@ -742,8 +739,7 @@ def crop_img(
         (slice(np.int64(1), np.int64(5), None),
          slice(np.int64(0), np.int64(6), None),
          slice(np.int64(2), np.int64(7), None))
-        >>> plot_anat(cropped_img, black_bg=False, vmin=0)
-
+        >>>
         >>> cropped_img, offset = crop_img(img, return_offset=True, pad=False)
         >>> cropped_img.shape
         (3, 4, 3)
@@ -751,7 +747,6 @@ def crop_img(
         (slice(np.int64(1), np.int64(4), None),
          slice(np.int64(1), np.int64(5), None),
          slice(np.int64(3), np.int64(6), None))
-        >>> plot_anat(cropped_img, black_bg=False, vmin=0)
     """
     check_params(locals())
 
