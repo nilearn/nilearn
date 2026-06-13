@@ -103,6 +103,15 @@ def all_estimators(type_filter=None):
         where ``name`` is the class name as string
         and ``class`` is the actual type of the class.
 
+    Examples
+    --------
+    >>> from nilearn.utils import all_estimators
+    >>> estimators = all_estimators()
+    >>> len(estimators)
+    33
+    >>> estimators[0]
+    ('BaseGLM', <class 'nilearn.glm._base.BaseGLM'>)
+
     """
     # TODO: add GLM?
     allowed_filters = {
@@ -172,15 +181,6 @@ def all_functions():
         List of ``(name, function)``,
         where ``name`` is the function name as string
         and ``function`` is the actual function.
-
-    Examples
-    --------
-    >>> from nilearn.utils import all_functions
-    >>> functions = all_functions()
-    >>> len(functions)
-    173
-    >>> functions[4]
-    ('binarize_img', <function binarize_img at 0x1248560c0>)
 
     """
     all_functions = []
