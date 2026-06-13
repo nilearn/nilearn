@@ -495,22 +495,6 @@ sphinx_gallery_conf = {
 }
 
 
-# def jlite_modification_function(content):
-#     content_str = str(content)
-#     code_lines = []
-
-#     if "plotly.express" in content_str:
-#         code_lines.append("%pip install plotly nbformat")
-#     if "fetch_" in content_str:
-#         code_lines.extend(
-#             [
-#                 "%pip install pyodide-http",
-#                 "import pyodide_http",
-#                 "pyodide_http.patch_all()",
-#             ]
-#         )
-
-
 if with_jupyterlite:
     global_enable_try_examples = True
     try_examples_global_button_text = "Try it in your browser!"
