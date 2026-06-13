@@ -1160,7 +1160,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=True):
     >>> type(img1)
     <class 'nibabel.nifti1.Nifti1Image'>
 
-    Now we will create a new image from data2, and we would like to create and
+    Now we will create a new image from data2, and we would like to create an
     image of the same type with img_1:
 
     >>> data2 = np.array([[[0., 0.5, 0.3],
