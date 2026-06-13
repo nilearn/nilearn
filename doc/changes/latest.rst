@@ -152,6 +152,8 @@ Enhancements
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.check_niimg`, :func:`~nilearn.image.check_niimg_3d` and	:func:`~nilearn.image.check_niimg_4d` functions (:gh:`6286` by `Hande Gözükan`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.regions.img_to_signals_labels` function (:gh:`6315` by `Hande Gözükan`_).
+
 
 Changes
 -------
