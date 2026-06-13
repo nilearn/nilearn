@@ -17,6 +17,7 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
+from nilearn.nilearn_typing import ColorBar, OutputFile, Title
 from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.matrix._utils import (
     mask_matrix,
@@ -26,7 +27,6 @@ from nilearn.plotting.matrix._utils import (
     sanitize_reorder,
     sanitize_tri,
 )
-from nilearn.typing import ColorBar, OutputFile, Title
 
 
 def _configure_axis(

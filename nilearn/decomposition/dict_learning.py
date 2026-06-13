@@ -20,8 +20,8 @@ from nilearn._utils.param_validation import (
     sanitize_verbose,
 )
 from nilearn.maskers import MultiNiftiMasker, MultiSurfaceMasker
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface import SurfaceImage
-from nilearn.typing import NiimgLike
 
 from ._base import _BaseDecomposition
 from .canica import CanICA

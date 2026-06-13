@@ -27,7 +27,7 @@ from nilearn._utils.param_validation import (
     check_run_sample_masks,
 )
 from nilearn.exceptions import AllVolumesRemovedError
-from nilearn.typing import (
+from nilearn.nilearn_typing import (
     HighPass,
     LowPass,
     NonNullScalar,

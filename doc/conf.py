@@ -429,8 +429,11 @@ html_context = {"build_dev_html": build_dev_html}
 # Output file base name for HTML help builder.
 htmlhelp_basename = "PythonScientic"
 
-# Sphinx copybutton config
-copybutton_prompt_text = ">>> "
+# sphinx-copybutton configurations
+copybutton_prompt_text = (
+    r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+)
+copybutton_prompt_is_regexp = True
 
 trim_doctests_flags = True
 
