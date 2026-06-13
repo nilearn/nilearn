@@ -672,7 +672,8 @@ def crop_img(
         Toggles adding 1-voxel of 0s around the border.
 
     return_offset : :obj:`bool`, default=False
-        Specifies whether to return a tuple of the removed padding.
+        Specifies whether to return the voxels from the
+        original image that are kept in the output.
 
     %(copy_header)s
 
@@ -682,15 +683,53 @@ def crop_img(
     -------
     Niimg-like object or :obj:`tuple`
         Cropped version of the input image and, if `return_offset=True`,
-        a tuple of :py:class: representing the number of voxels
-        removed (before, after) the cropped volumes, i.e.:
-        *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
+        a tuple of :py:class:`slice` representing the voxels from the original
+        image kept in the cropped volume, i.e.:
+        *[slice(x1_pre, x1_post, None), slice(x2_pre, x2_post, None), ...,
+        slice(xN_pre, xN_post, None)]*
 
         If the specified image is empty, the original image will be returned.
 
     Examples
     --------
-    >>> from
+    .. plot::
+
+        >>> import numpy as np
+        >>> from nibabel import Nifti1Image
+        >>> data = np.zeros((5, 6, 7))
+        >>> data[2:4, 1:5, 3:6] = 1
+        >>> data[1, 1:5, 3:6] = 0.5
+        >>> img = Nifti1Image(data, affine=affine)
+        >>> img.shape
+        (5, 6, 7)
+        >>> plot_anat(img, black_bg=False, vmin=0)
+
+        >>> cropped_img, offset = crop_img(img, return_offset=True)
+        >>> cropped_img.shape
+        (5, 6, 5)
+        >>> offset
+        (slice(np.int64(0), np.int64(5), None),
+         slice(np.int64(0), np.int64(6), None),
+         slice(np.int64(2), np.int64(7), None))
+        >>> plot_anat(cropped_img, black_bg=False, vmin=0)
+
+        >>> cropped_img, offset = crop_img(img, return_offset=True, rtol=0.5)
+        >>> cropped_img.shape
+        (4, 6, 5)
+        >>> offset
+        (slice(np.int64(1), np.int64(5), None),
+         slice(np.int64(0), np.int64(6), None),
+         slice(np.int64(2), np.int64(7), None))
+        >>> plot_anat(cropped_img, black_bg=False, vmin=0)
+
+        >>> cropped_img, offset = crop_img(img, return_offset=True, pad=False)
+        >>> cropped_img.shape
+        (3, 4, 3)
+        >>> offset
+        (slice(np.int64(1), np.int64(4), None),
+         slice(np.int64(1), np.int64(5), None),
+         slice(np.int64(3), np.int64(6), None))
+        >>> plot_anat(cropped_img, black_bg=False, vmin=0)
     """
     check_params(locals())
 
