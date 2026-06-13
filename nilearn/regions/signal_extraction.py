@@ -424,18 +424,11 @@ def signals_to_img_labels(
 
     Create labels image with definitions for 3 regions:
 
-    >>> labels_data = np.zeros((2, 2, 3), dtype="int32")
-    >>> h0, h1, h2 = 1, 1, 1
-    >>> labels_data[:h0, :, :h2] = 1
-    >>> labels_data[:h0, :, h2:] = 2
-    >>> labels_data[h0:, :h1, :h2] = 3
-    >>> labels_data[h0:, :, :] = 3
-    >>> labels_data
-    array([[[1, 2, 2],
-        [1, 2, 2]],
-       [[3, 3, 3],
-        [3, 3, 3]]], dtype=int32)
-    >>> from nibabel import Nifti1Image
+    Now we'll create labels image with definitions for 3 regions:
+
+    >>> labels_data = np.array(
+    ...     [[[1, 2, 2], [1, 2, 2]], [[3, 3, 3], [3, 3, 3]]], dtype=np.int32
+    ... )
     >>> labels_img = Nifti1Image(labels_data, np.eye(4))
 
     Now we can create image from region signals defined as labels:
