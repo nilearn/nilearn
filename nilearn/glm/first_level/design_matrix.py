@@ -421,6 +421,28 @@ def check_design_matrix(design_matrix):
     names : array of shape (n_events,), dtype='f'
         Per-event onset time (in seconds)
 
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from nilearn.glm.first_level import check_design_matrix
+
+    Create a mock design matrix
+    >>> design_matrix = pd.DataFrame(
+    ...     data={"col1": [1, 2], "col2": [3, 4]},
+    ...     index=[3, 4],
+    ... )
+
+    check the design matrix
+    >>> frame_times, matrix, names = check_design_matrix(design_matrix)
+    >>> print(f"Frame times: {frame_times}")
+    Frame times: Index([3, 4], dtype='int64')
+    >>> print(f"Matrix:\n{matrix}")
+    Matrix:
+    [[1 3]
+    [2 4]]
+    >>> print(f"Key names: {names}")
+    Key names: ['col1', 'col2']
+
     """
     if len(design_matrix.columns) == 0:
         raise ValueError("The design_matrix dataframe cannot be empty.")
