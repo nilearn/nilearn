@@ -527,6 +527,7 @@ if with_jupyterlite:
     # and https://github.com/pyodide/micropip/issues/223 by installing the
     # dependencies first, and then nilearn from Anaconda.org.
     try_examples_preamble = """
+    # Jupyterlite specific code
     import matplotlib
     import pandas
     %pip install -q nilearn
