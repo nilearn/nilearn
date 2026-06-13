@@ -56,9 +56,9 @@ from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.nilearn_typing import NiimgLike, Tr
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
-from nilearn.typing import NiimgLike, Tr
 
 
 def mean_scaling(Y, axis=0):
@@ -1614,6 +1614,39 @@ def first_level_from_bids(
 
         .. nilearn_versionadded:: 0.10.3
 
+    Returns
+    -------
+    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
+        Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
+        corresponds to a subject.
+        All runs from different sessions are considered together
+        for the same subject to run a fixed effects analysis on them.
+
+    models_run_imgs : :obj:`list` of :obj:`list` of Niimg-like objects
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_run_imgs[i][j]`` corresponds to the j\\ :sup:`th` run
+        of the i\\ :sup:`th` subject.
+
+    models_events : :obj:`list` of :obj:`list` of pandas DataFrames
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_events[i][j]`` corresponds to the j\\ :sup:`th` event file
+        of the i\\ :sup:`th` subject.
+
+    models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
+        ``None``
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_confounds[i][j]`` corresponds to the j\\ :sup:`th`
+        confound file of the i\\ :sup:`th` subject.
+
+        .. note::
+
+            Any NaN values on the first row of the loaded confounds
+            will be replaced by 0 to avoid later errors
+            during design matrix creation.
+
     Examples
     --------
     If you want to load only models, images and events:
@@ -1691,39 +1724,6 @@ def first_level_from_bids(
     Please refer to the documentation
     of :func:`~nilearn.interfaces.fmriprep.load_confounds`
     for more details on the confounds loading strategies.
-
-    Returns
-    -------
-    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
-        Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
-        corresponds to a subject.
-        All runs from different sessions are considered together
-        for the same subject to run a fixed effects analysis on them.
-
-    models_run_imgs : :obj:`list` of :obj:`list` of Niimg-like objects
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-        ``models_run_imgs[i][j]`` corresponds to the j\\ :sup:`th` run
-        of the i\\ :sup:`th` subject.
-
-    models_events : :obj:`list` of :obj:`list` of pandas DataFrames
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-        ``models_events[i][j]`` corresponds to the j\\ :sup:`th` event file
-        of the i\\ :sup:`th` subject.
-
-    models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
-        ``None``
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-        ``models_confounds[i][j]`` corresponds to the j\\ :sup:`th`
-        confound file of the i\\ :sup:`th` subject.
-
-        .. note::
-
-            Any NaN values on the first row of the loaded confounds
-            will be replaced by 0 to avoid later errors
-            during design matrix creation.
 
 
     """
