@@ -424,8 +424,6 @@ def signals_to_img_labels(
 
     Create labels image with definitions for 3 regions:
 
-    Now we'll create labels image with definitions for 3 regions:
-
     >>> labels_data = np.array(
     ...     [[[1, 2], [1, 2]], [[3, 3], [3, 3]]], dtype=np.int32
     ... )
