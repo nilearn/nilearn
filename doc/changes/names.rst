@@ -111,6 +111,8 @@
 
 .. _François Paugam: https://github.com/FrancoisPgm
 
+.. _Gabriele Amorosino: https://github.com/gamorosino
+
 .. _Gael Varoquaux: https://gael-varoquaux.info/
 
 .. _Gilles de Hollander: https://github.com/Gilles86

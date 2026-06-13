@@ -90,6 +90,7 @@ derivatives_folder = "derivatives/fmriprep"
     data_dir,
     task_label,
     space_label,
+    mask_img="derivatives",
     smoothing_fwhm=5.0,
     derivatives_folder=derivatives_folder,
     n_jobs=2,
