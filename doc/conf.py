@@ -520,7 +520,7 @@ if with_jupyterlite:
         " The main difference is that imports will take a lot longer"
         " than usual, for example the first `import nilearn` can take"
         " roughly 10-20s.\n\nIf you notice problems, feel free to open"
-        " an [issue](https://github.com/nilearn/nilearn/issues/new/choose)"
+        " an [issue](https://github.com/nilearn/nilearn/issues/new/choose) "
         "about it."
     )
     # Work around https://github.com/jupyterlite/pyodide-kernel/issues/166
