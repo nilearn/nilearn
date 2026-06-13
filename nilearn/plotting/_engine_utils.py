@@ -21,6 +21,7 @@ from nilearn.plotting._utils import (
     check_threshold_not_negative,
     get_cbar_bounds,
     get_cbar_ticks,
+    get_colorbar_and_data_ranges,
 )
 
 
@@ -72,30 +73,9 @@ def colorscale(
     specified vmin, vmax, and threshold values. Return the results as dict to
     be used in plotly.
     """
-    abs_values = np.abs(values)
-
-    if (
-        symmetric_cmap
-        and vmin is not None
-        and vmax is not None
-        and vmin != -vmax
-    ):
-        warn(
-            f"Specified {vmin=} and {vmax=} values do not create a symmetric"
-            " colorbar. The values will be modified to be symmetric.",
-            stacklevel=find_stack_level(),
-        )
-    if vmax is None:
-        vmax = abs_values.max()
-    if vmin is None:
-        vmin = values.min()
-    # cast to float to avoid TypeError if vmax/vmin is a numpy boolean
-    vmax = float(vmax)
-    vmin = float(vmin)
-
-    if symmetric_cmap:
-        vmax = max(abs(vmin), abs(vmax))
-        vmin = -vmax
+    _, _, vmin, vmax = get_colorbar_and_data_ranges(
+        values, vmin, vmax, symmetric_cmap
+    )
 
     if threshold is not None:
         threshold = check_threshold(threshold, values, fast_abs_percentile)

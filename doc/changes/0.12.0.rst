@@ -62,7 +62,7 @@ Enhancements
 
 - :bdg-dark:`Code` Add surface support for :class:`~nilearn.decomposition.DictLearning` and :class:`~nilearn.decomposition.CanICA` (:gh:`5377` by `Himanshu Aggarwal`_ and `Rémi Gau`_).
 
-- :bdg-dark:`Code` :func:`~nilearn.interfaces.bids.save_glm_to_bids` can infer the naming scheme for output files from the input files passed at fit time to :class:`~nilearn.glm.first_level.FirstLevelModel`. It will also now save the GLM mask to disk (:gh:`5256`, :gh:`5279` by `Rémi Gau`_).
+- :bdg-dark:`Code` :func:`~glm.save_glm_to_bids` can infer the naming scheme for output files from the input files passed at fit time to :class:`~nilearn.glm.first_level.FirstLevelModel`. It will also now save the GLM mask to disk (:gh:`5256`, :gh:`5279` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add a ``timeout`` parameter to the neurovault fetching functions (:gh:`5268` by `Rémi Gau`_).
 
@@ -76,7 +76,7 @@ Enhancements
 
 - :bdg-dark:`Code` Add reports for the surface based GLMs (:gh:`4442` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Add support for surface based GLMs to :func:`~nilearn.interfaces.bids.save_glm_to_bids` (:gh:`5309` by `Rémi Gau`_).
+- :bdg-dark:`Code` Add support for surface based GLMs to :func:`~glm.save_glm_to_bids` (:gh:`5309` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Enhance :func:`~nilearn.glm.second_level.non_parametric_inference` to support surface data. Please, note that cluster analysis, TFCE and smoothing are not yet implemented. (:gh:`5078` by `Rémi Gau`_).
 

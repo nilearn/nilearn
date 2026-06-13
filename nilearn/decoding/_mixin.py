@@ -11,7 +11,7 @@ from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 class _ClassifierMixin:
-    _estimator_type = "classifier"  # TODO (sklearn >= 1.6) remove
+    _estimator_type = "classifier"  # TODO (sklearn >= 1.8) remove
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -57,7 +57,7 @@ class _ClassifierMixin:
 
 
 class _RegressorMixin:
-    _estimator_type = "regressor"  # TODO (sklearn >= 1.6) remove
+    _estimator_type = "regressor"  # TODO (sklearn >= 1.8) remove
 
     def __sklearn_tags__(self):
         """Return estimator tags.

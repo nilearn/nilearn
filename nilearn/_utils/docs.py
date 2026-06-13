@@ -395,6 +395,46 @@ display_mode : {"ortho", "tiled", "mosaic", "x", \
 
 """
 
+# displayed_maps
+docdict["displayed_maps"] = """
+displayed_maps : :obj:`int`, \
+                  :class:`~numpy.ndarray` or :obj:`list` of :obj:`int`, \
+                  or "all", default=10
+    Indicates which maps will be displayed in the HTML report.
+
+    - If ``"all"``: All maps will be displayed in the report.
+
+    .. code-block:: python
+
+        masker.generate_report("all")
+
+    .. warning:
+        If there are too many maps, this might be time and
+        memory consuming, and will result in very heavy
+        reports.
+
+    - If a :obj:`list` or :class:`~numpy.ndarray`:
+        This indicates the indices of the maps to be displayed in the report.
+        For example, the following code will generate a report with maps
+        6, 3, and 12, displayed in this specific order:
+
+    .. code-block:: python
+
+        masker.generate_report([6, 3, 12])
+
+    - If an :obj:`int`: This will only display the first n maps,
+        n being the value of the parameter. By default, the report
+        will only contain the first 10 maps. Example to display the
+        first 16 maps:
+
+    .. code-block:: python
+
+        masker.generate_report(16)
+"""
+docdict["displayed_spheres"] = docdict["displayed_maps"].replace(
+    "maps", "spheres"
+)
+
 # draw_cross
 docdict["draw_cross"] = """
 draw_cross : :obj:`bool`, default=True

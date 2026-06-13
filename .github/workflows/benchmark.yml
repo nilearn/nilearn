@@ -68,7 +68,7 @@ jobs:
                 working-directory: ./asv_benchmarks
 
         steps:
-        -   uses: actions/checkout@v5
+        -   uses: actions/checkout@v6
             with:
                   # fetch all branches and tags
                 fetch-depth: 0

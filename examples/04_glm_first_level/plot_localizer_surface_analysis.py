@@ -204,7 +204,7 @@ show()
 # Or we can save as an html file.
 from pathlib import Path
 
-from nilearn.interfaces.bids import save_glm_to_bids
+from nilearn.glm import save_glm_to_bids
 
 output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
 output_dir.mkdir(exist_ok=True, parents=True)

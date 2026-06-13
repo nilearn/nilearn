@@ -44,7 +44,7 @@ References
    For more technical details about predicting the measures, refer to:
    Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
    April 2015 "HCP500-MegaTrawl" release.
-   https://db.humanconnectome.org/megatrawl/
+   https://balsa.wustl.edu
 
 Disclaimer
 ----------
@@ -74,4 +74,4 @@ please advice your co-researchers that they must register with ConnectomeDB
 and agree to these terms.
 
 Register and sign the Open Access Data Use Terms at
-ConnectomeDB: https://db.humanconnectome.org/
+ConnectomeDB: https://balsa.wustl.edu

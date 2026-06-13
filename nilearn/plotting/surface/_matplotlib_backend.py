@@ -10,7 +10,6 @@ import itertools
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn.image import get_data
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import (
     create_colorbar_for_fig,
@@ -18,7 +17,6 @@ from nilearn.plotting._engine_utils import (
 )
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
-    get_colorbar_and_data_ranges,
 )
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays._slicers import save_figure_if_needed
@@ -72,51 +70,7 @@ MATPLOTLIB_VIEWS = {
     },
 }
 
-
-def _adjust_colorbar_and_data_ranges(
-    stat_map, vmin=None, vmax=None, symmetric_cbar=None
-):
-    """Adjust colorbar and data ranges for 'matplotlib' engine.
-
-    Parameters
-    ----------
-    stat_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
-
-    %(vmin)s
-
-    %(vmax)s
-
-    %(symmetric_cbar)s
-
-    Returns
-    -------
-        cbar_vmin, cbar_vmax, vmin, vmax
-    """
-    return get_colorbar_and_data_ranges(
-        stat_map,
-        vmin=vmin,
-        vmax=vmax,
-        symmetric_cbar=symmetric_cbar,
-    )
-
-
-def _adjust_plot_roi_params(params):
-    """Adjust avg_method and cbar_tick_format values for 'matplotlib' engine.
-
-    Sets the values in params dict.
-
-    Parameters
-    ----------
-    params : dict
-        dictionary to set the adjusted parameters
-    """
-    avg_method = params.get("avg_method", None)
-    if avg_method is None:
-        params["avg_method"] = "median"
-
-    cbar_tick_format = params.get("cbar_tick_format", "auto")
-    if cbar_tick_format == "auto":
-        params["cbar_tick_format"] = DEFAULT_TICK_FORMAT
+PARAMS_NOT_IMPLEMENTED = ["symmetric_cmap", "title_font_size"]
 
 
 def _normalize_bg_data(data):
@@ -358,27 +312,34 @@ def _plot_surf(
     }
     check_engine_params(parameters_not_implemented_in_matplotlib, "matplotlib")
 
-    # adjust values
-    avg_method = "mean" if avg_method is None else avg_method
-    alpha = "auto" if alpha is None else alpha
-    if cbar_tick_format == "auto":
+    # adjust common params
+    if cbar_tick_format is None or cbar_tick_format == "auto":
         cbar_tick_format = DEFAULT_TICK_FORMAT
-    # Leave space for colorbar
-    figsize = [4.7, 5] if colorbar else [4, 5]
-
-    coords, faces = load_surf_mesh(surf_mesh)
-
-    limits = [coords.min(), coords.max()]
-
-    # Get elevation and azimut from view
-    elev, azim = _get_view_plot_surf(hemi, view)
-
     # if no cmap is given, set to matplotlib default
     if cmap is None:
         cmap = plt.get_cmap(plt.rcParamsDefault["image.cmap"])
     # if cmap is given as string, translate to matplotlib cmap
     elif isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
+
+    # adjust non-common params
+    if avg_method is None:
+        avg_method = "mean"
+    if alpha is None:
+        alpha = "auto"
+
+    # Leave space for colorbar
+    figsize = [4.7, 5] if colorbar else [4, 5]
+
+    coords, faces = load_surf_mesh(surf_mesh)
+
+    # Center the mesh
+    coords -= np.mean(coords, axis=0)
+
+    limits = [coords.min(), coords.max()]
+
+    # Get elevation and azimut from view
+    elev, azim = _get_view_plot_surf(hemi, view)
 
     # initiate figure and 3d axes
     if axes is None:
@@ -544,16 +505,22 @@ def _plot_surf_contours(
     _, faces = load_surf_mesh(surf_mesh)
     roi = load_surf_data(roi_map)
 
+    collections = axes.collections[0]
+
     patch_list = []
     for level, color, label in zip(levels, colors, labels, strict=False):
         roi_indices = np.where(roi == level)[0]
         faces_outside = get_faces_on_edge(faces, roi_indices)
-        axes.collections[0]._facecolor3d[faces_outside] = color
-        if axes.collections[0]._edgecolor3d.size == 0:
-            axes.collections[0].set_edgecolor(axes.collections[0]._facecolor3d)
-        axes.collections[0]._edgecolor3d[faces_outside] = color
+
+        collections._facecolor3d[faces_outside] = color
+
+        if collections._edgecolor3d.size == 0:
+            collections.set_edgecolor(collections._facecolor3d)
+        collections._edgecolor3d[faces_outside] = color
+
         if label and legend:
             patch_list.append(Patch(color=color, label=label))
+
     # plot legend only if indicated and labels provided
     if legend and np.any([lbl is not None for lbl in labels]):
         figure.legend(handles=patch_list)
@@ -569,7 +536,6 @@ def _plot_surf_contours(
 def _plot_img_on_surf(
     surf,
     surf_mesh,
-    stat_map,
     texture,
     hemis,
     modes,
@@ -642,14 +608,6 @@ def _plot_img_on_surf(
         )
         loaded_stat_map = load_surf_data(stat_map_iter)
 
-        # derive symmetric vmin, vmax and colorbar limits depending on
-        # symmetric_cbar settings
-        _, _, vmin, vmax = _adjust_colorbar_and_data_ranges(
-            loaded_stat_map,
-            vmin=vmin,
-            vmax=vmax,
-            symmetric_cbar=symmetric_cbar,
-        )
         _plot_surf(
             surf_mesh=surf_mesh_iter,
             surf_map=loaded_stat_map,
@@ -676,12 +634,6 @@ def _plot_img_on_surf(
         cbar_ax = fig.add_subplot(cbar_grid[1])
         axes.append(cbar_ax)
 
-        _, _, vmin, vmax = get_colorbar_and_data_ranges(
-            get_data(stat_map),
-            vmin=vmin,
-            vmax=vmax,
-            symmetric_cbar=symmetric_cbar,
-        )
         cmap = plt.get_cmap(cmap)
         norm = Normalize(vmin, vmax)
 

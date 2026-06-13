@@ -12,6 +12,8 @@ from nilearn.maskers.masker_validation import check_embedded_masker
 class OwningClass(BaseEstimator):
     """Dummy class that can have an embedded masker."""
 
+    _estimator_type = "home_made"  # TODO (sklearn  >= 1.8.0) remove
+
     def __init__(
         self,
         mask=None,
@@ -67,6 +69,8 @@ class OwningClass(BaseEstimator):
 
 class DummyEstimator:
     """Dummy class that checks embedded masker at fit time."""
+
+    _estimator_type = "home_made"  # TODO (sklearn  >= 1.8.0) remove
 
     def __init__(self, **kwargs):
         for k, v in kwargs.items():

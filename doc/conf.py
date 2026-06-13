@@ -186,33 +186,42 @@ linkcheck_allowed_redirects = {
 linkcheck_ignore = [
     # ignore nilearn github issues mostly for the sake of speed
     # given that there many of those in our changelog
-    r"https://github.com/nilearn/nilearn/issues/.*",
-    # those are needed because figures cannot take sphinx gallery reference
-    # as target
+    r"https://github.com/nilearn/nilearn/issues.*",
+    # those are needed because figures
+    # cannot take sphinx gallery reference as target
     r"../auto_examples/.*html",
     r"auto_examples/.*html",
+    "https://github.com/nilearn/nilearn/issues/new/choose",
+    (
+        "https://www.info.gouv.fr/"
+        "organisation/"  # codespell:ignore organisation
+        "secretariat-general-pour-l-investissement-sgpi"
+    ),
     # give a 403 Client Error: Forbidden for url:
     r"https://sites.wustl.edu/oasisbrains/.*",
     # similarly below are publishers that do not like doi redirects:
     r"https://doi.org/.*",
     # do not check download links for OSF
     r"https://osf.io/.*/download",
+    # neurovault and some of our datasets websites can be flaky
+    r"https://neurovault.org.*",
     r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
-    r"https://fcon_1000.projects.nitrc.org/.*",
-    r"https://www.cambridge.org/be/universitypress/.*",
-    r"https://sites.wustl.edu/oasisbrains/.*",
+    r"https://fcon_1000.projects.nitrc.org.*",
+    r"https://pkgs.org/search.*",
+    r"https://pmc.ncbi.nlm.nih.gov/articles.*",
+    r"https://pubmed.ncbi.nlm.nih.gov.*",
+    r"https://rrid.site/data/record.*",
+    r"https://sites.wustl.edu/oasisbrains.*",
+    r"https://www.cambridge.org/be/universitypress.*",
     "http://brainomics.cea.fr/localizer/",
     "https://childmind.org/science/global-open-science/healthy-brain-network/",
+    "https://digicosme.cnrs.fr/en/digicosme-paris-saclay-english/",
     "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
-    "https://github.com/nilearn/nilearn/issues/new/choose",
+    "https://imaging.mrc-cbu.cam.ac.uk/imaging/DesignEfficiency",
+    "https://octave.org",
     "https://pages.saclay.inria.fr/bertrand.thirion/",
     "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
-    (
-        "https://www.info.gouv.fr/"
-        "organisation/"  # codespell:ignore organisation
-        "secretariat-general-pour-l-investissement-sgpi"
-    ),
-    "https://pkgs.org/search/.*",
+    "https://surfer.nmr.mgh.harvard.edu/",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]

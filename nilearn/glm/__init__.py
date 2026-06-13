@@ -7,6 +7,7 @@ from nilearn.glm.contrasts import (
     compute_fixed_effects,
     expression_to_contrast_vector,
 )
+from nilearn.glm.io import save_glm_to_bids
 from nilearn.glm.model import (
     FContrastResults,
     LikelihoodModelResults,
@@ -39,6 +40,7 @@ __all__ = [
     "expression_to_contrast_vector",
     "fdr_threshold",
     "first_level",
+    "save_glm_to_bids",
     "second_level",
     "threshold_stats_img",
 ]
