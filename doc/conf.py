@@ -77,6 +77,7 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinx.ext.imgmath",
     "sphinx.ext.intersphinx",
+    "matplotlib.sphinxext.plot_directive",
     "sphinx.ext.linkcode",
     "sphinxcontrib.bibtex",
     "sphinxcontrib.mermaid",
