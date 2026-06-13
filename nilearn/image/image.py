@@ -685,8 +685,9 @@ def crop_img(
         Cropped version of the input image and, if `return_offset=True`,
         a tuple of :py:class:`slice` representing the voxels from the original
         image kept in the cropped volume, i.e.:
-        *[slice(x1_pre, x1_post, None), slice(x2_pre, x2_post, None), ...,
-        slice(xN_pre, xN_post, None)]*
+        *[slice(dim1_first_voxel, dim1_last_voxel - 1, None),
+        slice(dim2_first_voxel, dim2_last_voxel - 1, None), ...,
+        slice(dimN_first_voxel, dimN_last_voxel - 1, None)]*
 
         If the specified image is empty, the original image will be returned.
 
@@ -698,7 +699,7 @@ def crop_img(
         >>> from nibabel import Nifti1Image
         >>> data = np.zeros((5, 6, 7))
         >>> data[2:4, 1:5, 3:6] = 1
-        >>> data[1, 1:5, 3:6] = 0.5
+        >>> data[1, 1:5, 3:6] = 0.49
         >>> img = Nifti1Image(data, affine=affine)
         >>> img.shape
         (5, 6, 7)
