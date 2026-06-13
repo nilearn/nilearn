@@ -11,7 +11,8 @@ const maskers = [
   { masker: 'NiftiMapsMasker', tolerance: 3000 },
   { masker: 'SurfaceMasker', tolerance: 1600 },
   { masker: 'SurfaceLabelsMasker', tolerance: 1800 },
-  { masker: 'SurfaceMapsMasker', tolerance: 3000 }
+  { masker: 'SurfaceMapsMasker_matplotlib', tolerance: 3000 },
+  { masker: 'SurfaceMapsMasker_plotly', tolerance: 3000 }
 ]
 
 for (let i = 0; i < maskers.length; i++) {
