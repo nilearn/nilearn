@@ -305,6 +305,50 @@ def img_to_signals_labels(
     nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels images
         e.g. clusters
 
+    Examples
+    --------
+    First we create image data:
+
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> img_data = np.array(
+    ...     [
+    ...         [
+    ...             [[0.30471708, 0.94056472], [-1.03998411, -1.95103519]],
+    ...             [[0.30471708, 0.94056472], [-1.03998411, -1.95103519]],
+    ...         ],
+    ...         [
+    ...             [[0.7504512, -1.30217951], [0.7504512, -1.30217951]],
+    ...             [[0.7504512, -1.30217951], [0.7504512, -1.30217951]],
+    ...         ],
+    ...     ]
+    ... )
+    >>> img = Nifti1Image(img_data, np.eye(4))
+
+    Now we'll create labels image with definitions for 3 regions:
+
+    >>> labels_data = np.array(
+    ...     [[[1, 2], [1, 2]], [[3, 3], [3, 3]]], dtype=np.int32
+    ... )
+    >>> labels_img = Nifti1Image(labels_data, np.eye(4))
+
+    Now we can extract region signals from image:
+
+    >>> from nilearn.regions.signal_extraction import img_to_signals_labels
+    >>> signals, labels, masked_atlas = img_to_signals_labels(img, labels_img)
+    >>> signals
+    array([[ 0.30471708, -1.03998411,  0.7504512 ],
+       [ 0.94056472, -1.95103519, -1.30217951]])
+    >>> labels
+    [np.int32(1), np.int32(2), np.int32(3)]
+    >>> from nilearn.image import get_data
+    >>> atlas_data = get_data(masked_atlas)
+    >>> atlas_data
+    array([[[1, 2],
+        [1, 2]],
+       [[3, 3],
+        [3, 3]]], dtype=int8)
+
     """
     check_params(locals())
 
