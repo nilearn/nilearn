@@ -362,6 +362,24 @@ def compute_epi_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.masking import compute_epi_mask
+    >>> affine = np.eye(4)
+    >>> mean=10
+    >>> std_dev=.9
+    >>> data = np.random.normal(loc=mean,scale=std_dev,size=(10,10,10,10))
+    >>> # Visual inspection of data histogram
+    >>> hist,_=np.histogram(data,bins=10)
+    >>> print(hist)
+    >>> img = Nifti1Image(data,affine)
+    >>> img_mask = compute_epi_mask(img,lower_cutoff=.1,upper_cutoff=.9)
+    >>> # Counting masked values
+    >>> mask_count=np.count_nonzero(img_mask.get_fdata())
+    >>> print(f" masked {mask_count} from 10000 voxels")
+
     """
     check_params(locals())
     logger.log("EPI mask computation", verbose)
