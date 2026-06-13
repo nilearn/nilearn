@@ -16,6 +16,10 @@ import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
+from scipy.linalg import toeplitz
+from sklearn.cluster import KMeans
+from sklearn.utils.estimator_checks import check_is_fitted
+
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
@@ -59,9 +63,6 @@ from nilearn.maskers import NiftiMasker, NiftiSpheresMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike, Tr
-from scipy.linalg import toeplitz
-from sklearn.cluster import KMeans
-from sklearn.utils.estimator_checks import check_is_fitted
 
 
 def mean_scaling(Y, axis=0):
@@ -1323,6 +1324,82 @@ class FirstLevelModel(BaseGLM):
 
         self.n_elements_ = self.masker_.n_elements_
 
+    @fill_doc
+    def generate_report(
+        self,
+        contrasts=None,
+        title=None,
+        bg_img="MNI152TEMPLATE",
+        threshold=3.09,
+        alpha=0.001,
+        cluster_threshold=0,
+        height_control="fpr",
+        two_sided=False,
+        min_distance=8.0,
+        plot_type="slice",
+        cut_coords=None,
+        display_mode=None,
+        report_dims=(1600, 800),
+    ):
+        """Return a :class:`~nilearn.reporting.HTMLReport` \
+        which shows all important aspects of a fitted :term:`GLM`.
+
+        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
+        browser, displayed in a notebook, or saved to disk as a standalone
+        HTML file.
+
+        The :term:`GLM` must be fitted and have the computed design
+        matrix(ces).
+
+        .. note::
+
+            Refer to the documentation of
+            :func:`~nilearn.reporting.make_glm_report`
+            for details about the parameters
+
+        Returns
+        -------
+        report_text : :class:`~nilearn.reporting.HTMLReport`
+            Contains the HTML code for the :term:`GLM` report.
+
+        """
+        from nilearn.reporting.glm_reporter import make_glm_report
+
+        parameters = inspect.signature(
+            FirstLevelModel.generate_report
+        ).parameters
+        warn_default_threshold(
+            threshold,
+            parameters["threshold"].default,
+            3.09,
+            height_control=height_control,
+        )
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = {
+                "trial_types": [],
+                "noise_model": getattr(self, "noise_model", None),
+                "hrf_model": getattr(self, "hrf_model", None),
+                "drift_model": None,
+            }
+
+        return make_glm_report(
+            self,
+            contrasts,
+            title=title,
+            bg_img=bg_img,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            plot_type=plot_type,
+            cut_coords=cut_coords,
+            display_mode=display_mode,
+            report_dims=report_dims,
+        )
+
     def _plotting_pred_and_res(
         self,
         observed_ts,
@@ -1331,7 +1408,7 @@ class FirstLevelModel(BaseGLM):
         figsize=(10, 8),
         close=True,
     ):
-        """Helper function to plot observed vs predicted signal and residuals.
+        """Help plot observed vs predicted signal and residuals.
 
         Parameters
         ----------
@@ -1351,7 +1428,6 @@ class FirstLevelModel(BaseGLM):
         fig : matplotlib.figure.Figure
             The generated figure.
         """
-
         # Generate a time axis
         n_timepoints = len(observed_ts)
         time_axis = np.arange(n_timepoints)
@@ -1485,82 +1561,6 @@ class FirstLevelModel(BaseGLM):
             }
         )
         return timeseries_df, fig
-
-    @fill_doc
-    def generate_report(
-        self,
-        contrasts=None,
-        title=None,
-        bg_img="MNI152TEMPLATE",
-        threshold=3.09,
-        alpha=0.001,
-        cluster_threshold=0,
-        height_control="fpr",
-        two_sided=False,
-        min_distance=8.0,
-        plot_type="slice",
-        cut_coords=None,
-        display_mode=None,
-        report_dims=(1600, 800),
-    ):
-        """Return a :class:`~nilearn.reporting.HTMLReport` \
-        which shows all important aspects of a fitted :term:`GLM`.
-
-        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
-        browser, displayed in a notebook, or saved to disk as a standalone
-        HTML file.
-
-        The :term:`GLM` must be fitted and have the computed design
-        matrix(ces).
-
-        .. note::
-
-            Refer to the documentation of
-            :func:`~nilearn.reporting.make_glm_report`
-            for details about the parameters
-
-        Returns
-        -------
-        report_text : :class:`~nilearn.reporting.HTMLReport`
-            Contains the HTML code for the :term:`GLM` report.
-
-        """
-        from nilearn.reporting.glm_reporter import make_glm_report
-
-        parameters = inspect.signature(
-            FirstLevelModel.generate_report
-        ).parameters
-        warn_default_threshold(
-            threshold,
-            parameters["threshold"].default,
-            3.09,
-            height_control=height_control,
-        )
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = {
-                "trial_types": [],
-                "noise_model": getattr(self, "noise_model", None),
-                "hrf_model": getattr(self, "hrf_model", None),
-                "drift_model": None,
-            }
-
-        return make_glm_report(
-            self,
-            contrasts,
-            title=title,
-            bg_img=bg_img,
-            threshold=threshold,
-            alpha=alpha,
-            cluster_threshold=cluster_threshold,
-            height_control=height_control,
-            two_sided=two_sided,
-            min_distance=min_distance,
-            plot_type=plot_type,
-            cut_coords=cut_coords,
-            display_mode=display_mode,
-            report_dims=report_dims,
-        )
 
 
 def _check_events_file_uses_tab_separators(events_files):
