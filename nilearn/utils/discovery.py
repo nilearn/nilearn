@@ -227,7 +227,7 @@ def all_displays(type_filter=None):
         List of (name, class), where ``name`` is the display class name as
         string and ``class`` is the actual type of the class.
 
-        Examples
+    Examples
     --------
     >>> from nilearn.utils import all_displays
     >>> displays = all_displays()
