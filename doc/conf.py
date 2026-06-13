@@ -115,6 +115,10 @@ source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 # Generate the plots for the gallery
 plot_gallery = "True"
 
+# Always include the source code
+# when using the ..plot directive from matplotlib
+plot_include_source = True
+
 # The master toctree document.
 master_doc = "index"
 
