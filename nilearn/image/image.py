@@ -2256,6 +2256,23 @@ def concat_imgs(
     --------
     nilearn.image.index_img
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+
+    Two 3D images, each (2, 2, 1)
+
+    >>> img1 = Nifti1Image(np.zeros((2, 2, 1)), affine=np.eye(4))
+    >>> img2 = Nifti1Image(np.ones((2, 2, 1)), affine=np.eye(4))
+
+    concat_imgs stacks them along a new 4th dimension
+
+    >>> from nilearn.image import concat_imgs
+    >>> concatenated_img = concat_imgs([img1, img2])
+    >>> concatenated_img.shape
+    (2, 2, 1, 2)
+
     """
     check_params(locals())
 
@@ -2447,6 +2464,57 @@ def copy_img(img):
     -------
     img_copy : image
         copy of input (data, affine and header)
+
+    Examples
+    --------
+    >>> from nilearn.image import copy_img
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+
+    Create a dummy image:
+
+    >>> affine = np.eye(4)
+    >>> data = np.ones((3, 3, 3))
+    >>> img_3d = Nifti1Image(data, affine)
+
+    Copy the image vs reference assignment:
+
+    >>> img_3d_copy = copy_img(img_3d)
+
+    Use reference assignment. This is not copying, img_3d_notcopy points to the
+    same object as img_3d!:
+
+    >>> img_3d_notcopy = img_3d
+
+    Show initial dtypes; they are all the same:
+
+    >>> img_3d.get_data_dtype()
+    dtype('<f8')
+    >>> img_3d_copy.get_data_dtype()
+    dtype('<f8')
+    >>> img_3d_notcopy.get_data_dtype()
+    dtype('<f8')
+
+    Change the dtype in the original image:
+
+    >>> img_3d.set_data_dtype("uint8")
+
+    Show the new dtypes:
+
+    >>> img_3d.get_data_dtype()
+    dtype('uint8')
+
+    img_3d_copy was copied before the change and keeps the original dtype:
+
+    >>> img_3d_copy.get_data_dtype()
+    dtype('<f8')
+
+    img_3d_notcopy refers to the same object as img_3d:
+
+    Hence its dtype has changed:
+
+    >>> img_3d_notcopy.get_data_dtype()
+    dtype('uint8')
     """
     check_is_of_allowed_type(img, (spatialimages.SpatialImage,), "img")
     return new_img_like(
