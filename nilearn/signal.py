@@ -375,9 +375,10 @@ def butterworth(
 
     Examples
     --------
-    Let's generate a single time series:
-
     >>> import numpy as np
+    >>> from nilearn.signal import butterworth
+    >>>
+    >>> # generate a single time series:
     >>> signals = np.random.default_rng(42).standard_normal(size=40)
     >>> signals
     array([ 0.30471708, -1.03998411,  0.7504512 ,  0.94056472, -1.95103519,
@@ -388,10 +389,8 @@ def butterworth(
        -0.35213355,  0.53230919,  0.36544406,  0.41273261,  0.430821  ,
         2.1416476 , -0.40641502, -0.51224273, -0.81377273,  0.61597942,
         1.12897229, -0.11394746, -0.84015648, -0.82448122,  0.65059279])
-
-    Now we will apply Butterworth filter to the signal:
-
-    >>> from nilearn.signal import butterworth
+    >>>
+    >>> # apply Butterworth filter to the signal
     >>> out_single = butterworth(
     ...     signals,
     ...     sampling_rate=1,
