@@ -47,6 +47,14 @@ from nilearn._utils.param_validation import (
 )
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.exceptions import DimensionError
+from nilearn.nilearn_typing import (
+    ClusterThreshold,
+    HighPass,
+    LowPass,
+    NiimgLike,
+    Standardize,
+    Tr,
+)
 from nilearn.surface.surface import (
     FileMesh,
     SurfaceImage,
@@ -57,14 +65,6 @@ from nilearn.surface.surface import (
 )
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
-from nilearn.typing import (
-    ClusterThreshold,
-    HighPass,
-    LowPass,
-    NiimgLike,
-    Standardize,
-    Tr,
-)
 
 
 def is_volume_image(imgs) -> bool:
@@ -439,6 +439,27 @@ def smooth_img(imgs, fwhm):
     -------
     Niimg-like object, :obj:~nilearn.surface.SurfaceImage.
     Smoothed input image or surface.
+
+    Examples
+    --------
+    Let's first create a Nifti1Image:
+
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> data = np.array([[[0.0, 0.0, 0.0],
+    ...                   [0.0, 3.0, 0.0],
+    ...                   [0.0, 0.0, 0.0]]])
+    >>> img = Nifti1Image(data, affine=np.eye(4))
+
+    Now we can smooth the image:
+
+    >>> from nilearn.image import smooth_img, get_data
+    >>> smoothed_img = smooth_img(img, fwhm=2)
+    >>> data = get_data(smoothed_img)
+    >>> data
+    array([[[0.20943692, 0.37378672, 0.20943692],
+        [0.37378672, 0.66710546, 0.37378672],
+        [0.20943692, 0.37378672, 0.20943692]]])
 
     """
     is_surface = False
@@ -2235,6 +2256,23 @@ def concat_imgs(
     --------
     nilearn.image.index_img
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+
+    Two 3D images, each (2, 2, 1)
+
+    >>> img1 = Nifti1Image(np.zeros((2, 2, 1)), affine=np.eye(4))
+    >>> img2 = Nifti1Image(np.ones((2, 2, 1)), affine=np.eye(4))
+
+    concat_imgs stacks them along a new 4th dimension
+
+    >>> from nilearn.image import concat_imgs
+    >>> concatenated_img = concat_imgs([img1, img2])
+    >>> concatenated_img.shape
+    (2, 2, 1, 2)
+
     """
     check_params(locals())
 
@@ -2426,6 +2464,57 @@ def copy_img(img):
     -------
     img_copy : image
         copy of input (data, affine and header)
+
+    Examples
+    --------
+    >>> from nilearn.image import copy_img
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+
+    Create a dummy image:
+
+    >>> affine = np.eye(4)
+    >>> data = np.ones((3, 3, 3))
+    >>> img_3d = Nifti1Image(data, affine)
+
+    Copy the image vs reference assignment:
+
+    >>> img_3d_copy = copy_img(img_3d)
+
+    Use reference assignment. This is not copying, img_3d_notcopy points to the
+    same object as img_3d!:
+
+    >>> img_3d_notcopy = img_3d
+
+    Show initial dtypes; they are all the same:
+
+    >>> img_3d.get_data_dtype()
+    dtype('<f8')
+    >>> img_3d_copy.get_data_dtype()
+    dtype('<f8')
+    >>> img_3d_notcopy.get_data_dtype()
+    dtype('<f8')
+
+    Change the dtype in the original image:
+
+    >>> img_3d.set_data_dtype("uint8")
+
+    Show the new dtypes:
+
+    >>> img_3d.get_data_dtype()
+    dtype('uint8')
+
+    img_3d_copy was copied before the change and keeps the original dtype:
+
+    >>> img_3d_copy.get_data_dtype()
+    dtype('<f8')
+
+    img_3d_notcopy refers to the same object as img_3d:
+
+    Hence its dtype has changed:
+
+    >>> img_3d_notcopy.get_data_dtype()
+    dtype('uint8')
     """
     check_is_of_allowed_type(img, (spatialimages.SpatialImage,), "img")
     return new_img_like(
@@ -2742,6 +2831,49 @@ def check_niimg(
     --------
         check_niimg_3d, check_niimg_4d
 
+    Examples
+    --------
+    Let's create a 3D Nifti1Image:
+
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> img_3d = Nifti1Image(
+    ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
+    ... )
+
+    We can check the image:
+
+    >>> from nilearn.image import check_niimg
+    >>> checked_img = check_niimg(img_3d)
+
+    We can get the data of the image:
+
+    >>> from nilearn.image import get_data
+    >>> data = get_data(checked_img)
+    >>> data
+    array([[[ 0,  1,  2,  3],
+            [ 4,  5,  6,  7],
+            [ 8,  9, 10, 11]],
+           [[12, 13, 14, 15],
+            [16, 17, 18, 19],
+            [20, 21, 22, 23]]])
+
+    We can also check the image specifying the expected dimension. For example
+    for a 3D image:
+
+    >>> from nilearn.image import check_niimg
+    >>> checked_img = check_niimg(img_3d, ensure_ndim=3)
+
+    Let's check to ensure the same image to be 4D:
+
+    >>> from nilearn.image import check_niimg
+    >>> checked_img = check_niimg(img_3d, ensure_ndim=4)
+    Traceback (most recent call last):
+      ...
+    nilearn.exceptions.DimensionError: Input data has incompatible
+    dimensionality: Expected dimension is 4D and you provided a 3D image.
+    See https://nilearn.github.io/stable/manipulating_images/input_output.html.
+
     """
     if not is_volume_image(niimg):
         raise TypeError(
@@ -2826,6 +2958,50 @@ def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
 
     Its application is idempotent.
 
+    Examples
+    --------
+    Let's create a 3D Nifti1Image:
+
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> img_3d = Nifti1Image(
+    ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
+    ... )
+
+    We can check if img_3d is a proper 3D image:
+
+    >>> from nilearn.image import check_niimg_3d
+    >>> checked_img = check_niimg_3d(img_3d)
+
+    We can get the data of the image:
+
+    >>> from nilearn.image import get_data
+    >>> data = get_data(checked_img)
+    >>> data
+    array([[[ 0,  1,  2,  3],
+            [ 4,  5,  6,  7],
+            [ 8,  9, 10, 11]],
+           [[12, 13, 14, 15],
+            [16, 17, 18, 19],
+            [20, 21, 22, 23]]])
+
+    We can try it with a 4D image:
+
+    >>> img_4d = Nifti1Image(
+    ...     np.arange(24).reshape((2, 3, 2, 2)),
+    ...     affine=np.eye(4),
+    ...     dtype=np.int32,
+    ... )
+
+    Let's see the result for img_4d:
+
+    >>> checked_img = check_niimg_3d(img_4d)
+    Traceback (most recent call last):
+      ...
+    nilearn.exceptions.DimensionError: Input data has incompatible
+    dimensionality: Expected dimension is 3D and you provided a 4D image.
+    See https://nilearn.github.io/stable/manipulating_images/input_output.html.
+
     """
     return check_niimg(niimg, ensure_ndim=3, dtype=dtype)
 
@@ -2885,6 +3061,36 @@ def check_niimg_4d(
     for Niimg-like objects with a run level.
 
     Its application is idempotent.
+
+    Examples
+    --------
+    Let's create a 4D Nifti1Image:
+
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> img_4d = Nifti1Image(
+    ...     np.arange(24).reshape((2, 3, 2, 2)),
+    ...     affine=np.eye(4),
+    ...     dtype=np.int32,
+    ... )
+
+    We can check if img_4d is a proper 4D image:
+
+    >>> from nilearn.image import check_niimg_4d
+    >>> checked_img = check_niimg_4d(img_4d)
+
+    Now let's try with a 3D image:
+
+    >>> from nibabel import Nifti1Image
+    >>> img_3d = Nifti1Image(
+    ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
+    ... )
+    >>> checked_img = check_niimg_4d(img_3d)
+    Traceback (most recent call last):
+      ...
+    nilearn.exceptions.DimensionError: Input data has incompatible
+    dimensionality: Expected dimension is 4D and you provided a 3D image.
+    See https://nilearn.github.io/stable/manipulating_images/input_output.html.
 
     """
     ensure_ndim: Literal[4] = 4

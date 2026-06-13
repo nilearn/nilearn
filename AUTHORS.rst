@@ -199,6 +199,7 @@ Some other past or present contributors are:
 * `Roberto Guidotti`_: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
 * `Rohan Thomas Jepegnanam`_: Cognitive Neuroscience & Clinical Phenomenology Lab, Christian Medical College, Vellore, India
 * `Ronald Phlypo`_: Lyon area, France
+* `Ruben Dörfel`_: Karolinska Institutet
 * `Ryan Hammonds`_: UC San Diego, San Diego, California, USA
 * `Rémi Gau`_: Inria, Saclay, France
 * `Sachin Patalasingh`_

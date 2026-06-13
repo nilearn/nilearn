@@ -22,9 +22,9 @@ from nilearn._utils.niimg import repr_niimgs
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn.image import high_variance_confounds
 from nilearn.image.image import get_indices_from_image, iter_check_niimg
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
-from nilearn.typing import NiimgLike
 
 
 class _MultiMixin:
