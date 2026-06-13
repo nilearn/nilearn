@@ -414,10 +414,13 @@ def signals_to_img_labels(
 
     Examples
     --------
-    Create signals with 5 time points and 3 regions:
+    Create signals with 2 time points and 3 regions:
 
     >>> import numpy as np
-    >>> signals = np.random.default_rng(42).standard_normal((5, 3))
+    >>> signals = np.random.default_rng(42).standard_normal((2, 3))
+    >>> signals
+    array([[ 0.30471708, -1.03998411,  0.7504512 ],
+       [ 0.94056472, -1.95103519, -1.30217951]])
 
     Create labels image with definitions for 3 regions:
 
@@ -432,12 +435,28 @@ def signals_to_img_labels(
         [1, 2, 2]],
        [[3, 3, 3],
         [3, 3, 3]]], dtype=int32)
+    >>> from nibabel import Nifti1Image
     >>> labels_img = Nifti1Image(labels_data, np.eye(4))
 
     Now we can create image from region signals defined as labels:
 
     >>> from nilearn.regions import signals_to_img_labels
-    >>> data_img = signals_to_img_labels(signals, labels_img)
+    >>> from nilearn.image import get_data
+    >>> img = signals_to_img_labels(signals, labels_img)
+    >>> img_data = get_data(img)
+    >>> img_data
+    array([[[[ 0.30471708,  0.94056472],
+         [-1.03998411, -1.95103519],
+         [-1.03998411, -1.95103519]],
+        [[ 0.30471708,  0.94056472],
+         [-1.03998411, -1.95103519],
+         [-1.03998411, -1.95103519]]],
+       [[[ 0.7504512 , -1.30217951],
+         [ 0.7504512 , -1.30217951],
+         [ 0.7504512 , -1.30217951]],
+        [[ 0.7504512 , -1.30217951],
+         [ 0.7504512 , -1.30217951],
+         [ 0.7504512 , -1.30217951]]]])
 
     """
     labels_img = check_niimg_3d(labels_img)
