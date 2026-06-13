@@ -1078,21 +1078,25 @@ def iter_img(imgs):
     Create dummy 4D image:
 
     >>> affine = np.eye(4)
-    >>> data = np.ones((3,3,3,5))
+    >>> data = np.ones((3,3,3,2))
 
     Set different values for each 3D image in 4D series:
 
     >>> for i in range(data.shape[-1]):
     ...     data[:,:,:,i] = data[:,:,:,i] * i
-    ...
+
+    Create 4D Nifti Image and print the shape of the data
+
     >>> img_4d = Nifti1Image(data, affine)
+    >>> img_4d_data = img_4d.get_fdata()
+    >>> print(f"Original Shape: {img_4d_data.shape}")
 
     Create iter object and iterate through 4th dimension
-    returns a 3D NiftiImage:
+    returns a 3D NiftiImage that can be used for stats:
 
     >>> for img in iter_img(img_4d):
-    ...     # print first element of array we modified above
-    ...     img.get_fdata()[0,0,0]
+    ...     img_data = img.get_fdata()
+    ...     print(f"Mean: {np.mean(img_data)}; Shape: {img_data.shape}")
 
     """
     if isinstance(imgs, SurfaceImage):
