@@ -173,6 +173,15 @@ def all_functions():
         where ``name`` is the function name as string
         and ``function`` is the actual function.
 
+    Examples
+    --------
+    >>> from nilearn.utils import all_functions
+    >>> functions = all_functions()
+    >>> len(functions)
+    173
+    >>> functions[4]
+    ('binarize_img', <function binarize_img at 0x1248560c0>)
+
     """
     all_functions = []
     # Ignore deprecation warnings triggered at import time and from walking
