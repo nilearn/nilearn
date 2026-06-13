@@ -307,10 +307,11 @@ def img_to_signals_labels(
 
     Examples
     --------
-    First we create image data:
-
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
+    >>> from nilearn.regions.signal_extraction import img_to_signals_labels
+    >>>
+    >>> # create image data
     >>> img_data = np.array(
     ...     [
     ...         [
@@ -324,17 +325,14 @@ def img_to_signals_labels(
     ...     ]
     ... )
     >>> img = Nifti1Image(img_data, np.eye(4))
-
-    Now we'll create labels image with definitions for 3 regions:
-
+    >>>
+    >>> # create labels image with definitions for 3 regions
     >>> labels_data = np.array(
     ...     [[[1, 2], [1, 2]], [[3, 3], [3, 3]]], dtype=np.int32
     ... )
     >>> labels_img = Nifti1Image(labels_data, np.eye(4))
-
-    Now we can extract region signals from image:
-
-    >>> from nilearn.regions.signal_extraction import img_to_signals_labels
+    >>>
+    >>> # extract region signals from image
     >>> signals, labels, masked_atlas = img_to_signals_labels(img, labels_img)
     >>> signals
     array([[ 0.30471708, -1.03998411,  0.7504512 ],
