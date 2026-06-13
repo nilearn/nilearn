@@ -214,21 +214,21 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
     Examples
     --------
-    import nibabel as nib
-    from nilearn import masking
+    >>> import nibabel as nib
+    >>> from nilearn import masking
 
-    # Load binary masks
-    img_a = nib.load("region_a_bin.nii.gz")
-    img_b = nib.load("region_b_bin.nii.gz")
+    >>> # Load binary masks
+    >>> img_a = nib.load("region_a_bin.nii.gz")
+    >>> img_b = nib.load("region_b_bin.nii.gz")
 
-    # Compute intersection (threshold=0: union, threshold=1: intersection)
-    img_c = masking.intersect_masks([img_a, img_b], threshold=0, connected=True)
+    >>> # Compute intersection (threshold=0: union, threshold=1: intersection)
+    >>> img_c = masking.intersect_masks([img_a, img_b], threshold=0, connected=True)
 
-    # Check output shape
-    print(img_c.get_fdata().shape)
+    >>> # Check output shape
+    >>> print(img_c.get_fdata().shape)
 
-    # Save the file
-    nib.save(img_c, "your_ab_regions_union.nii.gz")
+    >>> # Save the file
+    >>> nib.save(img_c, "your_ab_regions_union.nii.gz")
     """
     check_params(locals())
 

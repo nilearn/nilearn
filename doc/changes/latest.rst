@@ -142,6 +142,8 @@ Enhancements
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.threshold_img` (:gh:`6280` by `Fernanda Ponce`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.masking.intersect_masks` (:gh:`6318` by `Marco Bedini`_).
+
 Changes
 -------
 
