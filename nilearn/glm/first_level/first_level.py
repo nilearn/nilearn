@@ -1405,8 +1405,8 @@ class FirstLevelModel(BaseGLM):
 
         self.n_elements_ = self.masker_.n_elements_
 
+    @staticmethod
     def _plotting_pred_and_res(
-        self,
         observed_ts,
         predicted_ts,
         residuals_ts,
