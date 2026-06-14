@@ -152,6 +152,7 @@ Some other past or present contributors are:
 * `Loic Tetrel`_
 * `Luz Paz`_
 * `Manon Pietrantoni`_
+* `Marco Flores`_: Basque Center on Cognition Brain and Language, Spain
 * `Martin Perez-Guevara`_: Criteo, France
 * `Martin Wegrzyn`_: Bielefeld University, Bielefeld, Germany
 * `Mathias Goncalves`_: Stanford University, Stanford, California, USA

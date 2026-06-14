@@ -1585,7 +1585,7 @@ def first_level_from_bids(
         and ``('run', '10')``.
 
     mask_img: Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
-             :obj:`~nilearn.maskers.SurfaceMasker`, False
+             :obj:`~nilearn.maskers.SurfaceMasker`, False \
              or ``"derivatives"``, or \
              None, default=None
         Mask to be used on data.
@@ -1610,6 +1610,8 @@ def first_level_from_bids(
 
     kwargs : :obj:`dict`
 
+        .. nilearn_versionadded:: 0.10.3
+
         Keyword arguments to be passed to functions called within this
         function.
 
@@ -1623,7 +1625,9 @@ def first_level_from_bids(
         no confounds are available, or if ``confounds_strategy`` is
         set to ``None``, a list of ``None`` is returned for the confounds.
 
-        .. nilearn_versionadded:: 0.10.3
+        Please refer to the documentation
+        of :func:`~nilearn.interfaces.fmriprep.load_confounds`
+        for more details on the confounds loading strategies.
 
     Returns
     -------
@@ -1731,11 +1735,6 @@ def first_level_from_bids(
             confounds_fd_threshold=0.2,
             confounds_std_dvars_threshold=0,
         )
-
-    Please refer to the documentation
-    of :func:`~nilearn.interfaces.fmriprep.load_confounds`
-    for more details on the confounds loading strategies.
-
 
     """
     check_params(locals())
