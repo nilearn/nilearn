@@ -158,6 +158,7 @@ Enhancements
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for  :func:`~nilearn.regions.signals_to_img_labels` function (:gh:`6306` by `Hande Gözükan`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.glm.first_level.make_first_level_design_matrix` (:gh:`6320` by `Marco Flores`_).
 
 Changes
 -------
