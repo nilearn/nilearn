@@ -22,6 +22,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level, readable_time
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -1473,6 +1474,78 @@ class FirstLevelModel(BaseGLM):
             plt.close(fig)
         return fig
 
+    def _get_predicted_signal_and_residuals(
+        self, coords=None, masker=None, radius=3.0
+    ):
+        """Return observed, predicted and residuals time series as a DataFrame.
+
+        Parameters
+        ----------
+        coords : tuple, or list of tuples of coordinates, optional
+            Coordinates of the voxel(s) or region center(s).
+            Ignored if `masker` is provided.
+        masker : NiftiMasker or NiftiSpheresMasker, optional
+            Custom masker used to extract the time series. If None, a
+            :class:`~nilearn.maskers.NiftiSpheresMasker` is created from
+            `coords` and `radius`.
+        radius : float, optional
+            Radius of the sphere(s) if `masker` is None. Default is 3mm.
+
+        Returns
+        -------
+        timeseries_df : :class:`pandas.DataFrame`
+            DataFrame containing the observed, predicted, and residuals
+            time series. If several locations were provided, columns are
+            suffixed with the index of the location (e.g. ``observed_0``).
+        """
+        check_is_fitted(self)
+
+        if self.minimize_memory:
+            raise ValueError(
+                "To plot predicted signal and residuals, "
+                "the `FirstLevelModel`-object needs to store "
+                "there attributes. "
+                "To do so, set `minimize_memory` to `False` "
+                "when initializing the `FirstLevelModel`-object."
+            )
+
+        if masker is None:
+            if coords is None:
+                raise ValueError(
+                    "Either `masker` or `coords` must be provided."
+                )
+            # Allow a single coordinate tuple to be passed
+            if isinstance(coords[0], (int, float)):
+                coords = [coords]
+            masker = NiftiSpheresMasker(seeds=coords, radius=radius)
+            masker.fit()
+        else:
+            check_is_fitted(masker)
+
+        # Get observed, predicted, and residual time series
+        y_pred = self._get_element_wise_model_attribute(
+            "predicted", result_as_time_series=True
+        )
+        resid = self._get_element_wise_model_attribute(
+            "residuals", result_as_time_series=True
+        )
+
+        # Extract time series for the observed, predicted, and residuals
+        predicted_ts = masker.transform(y_pred[0])
+        residuals_ts = masker.transform(resid[0])
+        observed_ts = predicted_ts + residuals_ts
+
+        n_regions = predicted_ts.shape[1]
+
+        data = {}
+        for i in range(n_regions):
+            suffix = "" if n_regions == 1 else f"_{i}"
+            data[f"observed{suffix}"] = observed_ts[:, i]
+            data[f"predicted{suffix}"] = predicted_ts[:, i]
+            data[f"residuals{suffix}"] = residuals_ts[:, i]
+
+        return pd.DataFrame(data)
+
     def plot_predicted_signal_and_residuals(
         self,
         coords=None,
@@ -1520,65 +1593,33 @@ class FirstLevelModel(BaseGLM):
         and residuals are only stored in that mode.
 
         """
-        check_is_fitted(self)
-
-        if self.minimize_memory:
-            raise ValueError(
-                "To plot predicted signal and residuals, "
-                "the `FirstLevelModel`-object needs to store "
-                "there attributes. "
-                "To do so, set `minimize_memory` to `False` "
-                "when initializing the `FirstLevelModel`-object."
+        timeseries_df = self._get_predicted_signal_and_residuals(
+            coords=coords, masker=masker, radius=radius
+        )
+        if not is_matplotlib_installed():
+            warn(
+                "Matplotlib is not installed. "
+                "Returning the time series DataFrame only.",
+                ImportWarning,
+                stacklevel=2,
             )
+            return timeseries_df
 
-        if masker is None:
-            if coords is None:
-                raise ValueError(
-                    "Either `masker` or `coords` must be provided."
-                )
-            # Allow a single coordinate tuple to be passed
-            if isinstance(coords[0], (int, float)):
-                coords = [coords]
-            masker = NiftiSpheresMasker(seeds=coords, radius=radius)
-            masker.fit()
-        else:
-            check_is_fitted(masker)
-
-        # Get observed, predicted, and residual time series
-        y_pred = self._get_element_wise_model_attribute(
-            "predicted", result_as_time_series=True
-        )
-        resid = self._get_element_wise_model_attribute(
-            "residuals", result_as_time_series=True
-        )
-
-        # Extract time series for the observed, predicted, and residuals
-        predicted_ts = masker.transform(y_pred[0])
-        residuals_ts = masker.transform(resid[0])
-        observed_ts = predicted_ts + residuals_ts
-
-        n_regions = predicted_ts.shape[1]
+        n_regions = sum(1 for c in timeseries_df.columns if "observed" in c)
 
         figs = []
-        timeseries_data = {}
         for i in range(n_regions):
+            suffix = "" if n_regions == 1 else f"_{i}"
             fig = self._plotting_pred_and_res(
-                observed_ts[:, i],
-                predicted_ts[:, i],
-                residuals_ts[:, i],
+                observed_ts=timeseries_df[f"observed{suffix}"].values,
+                predicted_ts=timeseries_df[f"predicted{suffix}"].values,
+                residuals_ts=timeseries_df[f"residuals{suffix}"].values,
                 figsize=figsize,
                 close=not show,
             )
             if show:
                 fig.show()
             figs.append(fig)
-
-            suffix = "" if n_regions == 1 else f"_{i}"
-            timeseries_data[f"observed{suffix}"] = observed_ts[:, i]
-            timeseries_data[f"predicted{suffix}"] = predicted_ts[:, i]
-            timeseries_data[f"residuals{suffix}"] = residuals_ts[:, i]
-
-        timeseries_df = pd.DataFrame(timeseries_data)
 
         return timeseries_df, figs if n_regions > 1 else figs[0]
 

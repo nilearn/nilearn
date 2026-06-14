@@ -62,7 +62,7 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         check_estimator(estimators=ESTIMATORS_TO_CHECK),
     )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+    def test_check_estimator_sklearn_valid(estimator, check, name):
         """Check compliance with sklearn estimators."""
         check(estimator)
 
@@ -71,7 +71,7 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
     )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+    def test_check_estimator_sklearn_invalid(estimator, check, name):
         """Check compliance with sklearn estimators."""
         check(estimator)
 
@@ -194,7 +194,7 @@ def test_explicit_fixed_effects(shape_3d_default):
     contrasts = [dic1["effect_size"], dic2["effect_size"]]
     variance = [dic1["effect_variance"], dic2["effect_variance"]]
 
-    (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _) = (
+    fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _ = (
         compute_fixed_effects(contrasts, variance, mask)
     )
 
@@ -255,7 +255,7 @@ def test_explicit_fixed_effects_without_mask(shape_3d_default):
     variance = [dic1["effect_variance"], dic2["effect_variance"]]
 
     # test without mask variable
-    (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _) = (
+    fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _ = (
         compute_fixed_effects(contrasts, variance)
     )
     assert_almost_equal(
@@ -627,7 +627,7 @@ def test_glm_ar_estimates(rng, ar_vals):
 
 def test_glm_ar_estimates_errors(rng):
     """Test Yule-Walker errors."""
-    (n, p) = (1, 500)
+    n, p = (1, 500)
     Y_orig = rng.standard_normal((p, n))
 
     with pytest.raises(TypeError, match="AR order must be an integer"):
@@ -1804,3 +1804,56 @@ def test_generate_report_threshold_unused(threshold):
             )
             == 1
         )
+
+
+# ------- Tests for plot_predicted_signal_and_residuals ----------------------
+@pytest.fixture
+def fitted_model():
+    """Return a fitted FirstLevelModel on fake data."""
+    shapes, rk = [(10, 10, 10, 20)], 1
+    mask, fmri_imgs, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
+    )
+    model = FirstLevelModel(minimize_memory=False, mask_img=mask)
+    model.fit(fmri_imgs, design_matrices=design_matrices)
+    return model
+
+
+@pytest.mark.skipif(
+    is_matplotlib_installed(),
+    reason="This test is run only if matplotlib is not installed.",
+)
+def test_plot_predicted_signal_and_residuals_no_matplotlib(fitted_model):
+    """Return only DataFrame with a warning if matplotlib is not installed."""
+    with pytest.warns(ImportWarning, match="matplotlib is required"):
+        result = fitted_model.plot_predicted_signal_and_residuals(
+            coords=(1, 1, 1)
+        )
+
+    assert isinstance(result, pd.DataFrame)
+    assert set(result.columns) == {"observed", "predicted", "residuals"}
+
+
+def test_get_predicted_signal_and_residuals(fitted_model):
+    """_get_predicted_signal_and_residuals works without matplotlib."""
+    df = fitted_model._get_predicted_signal_and_residuals(coords=(1, 1, 1))
+
+    assert isinstance(df, pd.DataFrame)
+    assert set(df.columns) == {"observed", "predicted", "residuals"}
+
+
+def test_get_predicted_signal_and_residuals_multiple_coords(fitted_model):
+    """_get_predicted_signal_and_residuals works with multiple coords."""
+    df = fitted_model._get_predicted_signal_and_residuals(
+        coords=[(1, 1, 1), (7, 7, 7)], radius=1.0
+    )
+
+    assert isinstance(df, pd.DataFrame)
+    assert set(df.columns) == {
+        "observed_0",
+        "predicted_0",
+        "residuals_0",
+        "observed_1",
+        "predicted_1",
+        "residuals_1",
+    }
