@@ -137,6 +137,11 @@ authors:
     family-names: Pinsard
     website: https://github.com/bpinsard
     affiliation: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
+  - given-names: Bastien
+    family-names: Cagna
+    website: https://github.com/bastiencagna
+    affiliation: CATI, APHP, Paris, France
+    orcid: https://orcid.org/0009-0005-4243-5234
   - given-names: Ben
     family-names: Cipollini
     website: https://github.com/bcipolli
@@ -276,6 +281,12 @@ authors:
     family-names: Paugam
     website: https://github.com/FrancoisPgm
     orcid: https://orcid.org/0000-0002-8161-7699
+  - given-names: Gabriele
+    family-names: Amorosino
+    website: https://github.com/gamorosino
+    affiliation: Department of Psychology, The University of Texas at Austin, TX, USA
+    email: g.amorosino@gmail.com
+    orcid: https://orcid.org/0000-0003-2789-5193
   - given-names: Gael
     family-names: Varoquaux
     website: https://gael-varoquaux.info/
@@ -502,6 +513,10 @@ authors:
   - given-names: Manon
     family-names: Pietrantoni
     website: https://github.com/ManonP38
+  - given-names: Marco
+    family-names: Flores
+    website: https://github.com/marco7877
+    affiliation: Basque Center on Cognition Brain and Language
   - given-names: Martin
     family-names: Perez-Guevara
     website: https://github.com/MartinPerez
@@ -717,6 +732,11 @@ authors:
     family-names: Phlypo
     website: https://github.com/rphlypo
     affiliation: Lyon area, France
+  - given-names: Ruben
+    family-names: Dörfel
+    website: https://rdoerfel.github.io/
+    affiliation: Karolinska Institutet
+    orcid: https://orcid.org/0000-0002-5920-5102
   - given-names: Ryan
     family-names: Hammonds
     website: https://github.com/ryanhammonds

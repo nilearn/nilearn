@@ -98,6 +98,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` Allow the ``mask_img`` parameter to :func:`~glm.first_level.first_level_from_bids` to take the value ``"derivatives"`` to generate a mask from the masks in BIDS derivative to use in the model (:gh:`5981` by `Rémi Gau`_).
+
 - :bdg-success:`API` The parameter ``estimator_args`` was added to all decoding estimators to allow to pass parameters directly to the underlying Scikit-Learn estimators (:gh:`5641` by `Rémi Gau`_).
 
 - :bdg-success:`API` :class:`~nilearn.decoding.SearchLight` now has a ``random_state`` and ``estimator_args`` to pass to the underlying estimator (:gh:`6020` by `Rémi Gau`_).
@@ -138,7 +140,25 @@ Enhancements
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for nine utility functions in the public API: :func:`~nilearn.connectome.cov_to_corr`, :func:`~nilearn.connectome.prec_to_partial`, :func:`~nilearn.glm.expression_to_contrast_vector`, :func:`~nilearn.glm.fdr_threshold`, :func:`~nilearn.glm.first_level.glover_dispersion_derivative`, :func:`~nilearn.glm.first_level.glover_hrf`, :func:`~nilearn.glm.first_level.glover_time_derivative`, :func:`~nilearn.glm.first_level.mean_scaling` and :func:`~nilearn.interfaces.bids.parse_bids_filename` (:gh:`6259` and :gh:`6262` by `Laura Piñero Roig`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.image.largest_connected_component_img` (:gh:`6283` by `Bastien Cagna`_).
+
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.threshold_img` (:gh:`6280` by `Fernanda Ponce`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.interfaces.bids.get_bids_files` (:gh:`6317` by `Gabriele Amorosino`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.smooth_img` function (:gh:`6302` by `Hande Gözükan`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.copy_img` (:gh:`6299` by `Ruben Dörfel`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.smooth_img` function (:gh:`6302` by `Hande Gözükan`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.glm.threshold_stats_img` function (:gh:`6297` by `Hande Gözükan`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.check_niimg`, :func:`~nilearn.image.check_niimg_3d` and	:func:`~nilearn.image.check_niimg_4d` functions (:gh:`6286` by `Hande Gözükan`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for  :func:`~nilearn.regions.signals_to_img_labels` function (:gh:`6306` by `Hande Gözükan`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.glm.first_level.make_first_level_design_matrix` (:gh:`6320` by `Marco Flores`_).
 
 Changes
 -------

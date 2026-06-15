@@ -47,6 +47,8 @@
 
 .. _Basile Pinsard: https://github.com/bpinsard
 
+.. _Bastien Cagna: https://github.com/bastiencagna
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -108,6 +110,8 @@
 .. _Franz Liem: https://github.com/fliem
 
 .. _François Paugam: https://github.com/FrancoisPgm
+
+.. _Gabriele Amorosino: https://github.com/gamorosino
 
 .. _Gael Varoquaux: https://gael-varoquaux.info/
 
@@ -207,6 +211,8 @@
 
 .. _Manon Pietrantoni: https://github.com/ManonP38
 
+.. _Marco Flores: https://github.com/marco7877
+
 .. _Martin Perez-Guevara: https://github.com/MartinPerez
 
 .. _Martin Wegrzyn: https://github.com/mwegrzyn
@@ -302,6 +308,8 @@
 .. _Rohan Thomas Jepegnanam: https://github.com/rohan3412
 
 .. _Ronald Phlypo: https://github.com/rphlypo
+
+.. _Ruben Dörfel: https://rdoerfel.github.io/
 
 .. _Ryan Hammonds: https://github.com/ryanhammonds
 

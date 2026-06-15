@@ -70,6 +70,7 @@ Some other past or present contributors are:
 * `Aswin Vijayan`_
 * `Audrey Duran`_: TheraPanacea, France
 * `Basile Pinsard`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
+* `Bastien Cagna`_: CATI, APHP, Paris, France
 * `Ben Cipollini`_: Facebook, Hayward, California, USA
 * `Bertrand Thirion`_: Inria, Saclay, France
 * `Binh Nguyen`_
@@ -101,6 +102,7 @@ Some other past or present contributors are:
 * `Florent Pollet`_: ENS Paris-Saclay, Saclay, France
 * `Franz Liem`_
 * `François Paugam`_
+* `Gabriele Amorosino`_: Department of Psychology, The University of Texas at Austin, TX, USA
 * `Gael Varoquaux`_: Inria, Saclay, France
 * `Gilles de Hollander`_: Vrije Universiteit, Amsterdam, The Netherlands
 * `Greg Kiar`_: Child Mind Institute
@@ -150,6 +152,7 @@ Some other past or present contributors are:
 * `Loic Tetrel`_
 * `Luz Paz`_
 * `Manon Pietrantoni`_
+* `Marco Flores`_: Basque Center on Cognition Brain and Language
 * `Martin Perez-Guevara`_: Criteo, France
 * `Martin Wegrzyn`_: Bielefeld University, Bielefeld, Germany
 * `Mathias Goncalves`_: Stanford University, Stanford, California, USA
@@ -198,6 +201,7 @@ Some other past or present contributors are:
 * `Roberto Guidotti`_: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
 * `Rohan Thomas Jepegnanam`_: Cognitive Neuroscience & Clinical Phenomenology Lab, Christian Medical College, Vellore, India
 * `Ronald Phlypo`_: Lyon area, France
+* `Ruben Dörfel`_: Karolinska Institutet
 * `Ryan Hammonds`_: UC San Diego, San Diego, California, USA
 * `Rémi Gau`_: Inria, Saclay, France
 * `Sachin Patalasingh`_

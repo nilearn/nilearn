@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 
 from nilearn._base import NilearnBaseEstimator
-from nilearn.typing import Verbose
+from nilearn.nilearn_typing import Verbose
 
 
 def _has_rich() -> bool:
