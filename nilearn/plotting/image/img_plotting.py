@@ -478,14 +478,15 @@ def plot_img(
 
     Examples
     --------
+
     .. plot::
 
         >>> from nilearn.plotting.image.img_plotting import plot_img, show
         >>> from nilearn.datasets import load_sample_motor_activation_image
-
-        # just to have a 3D image with some structure
+        >>>
+        >>> # just to have a 3D image with some structure
         >>> data = load_sample_motor_activation_image()
-
+        >>>
         >>> display = plot_img(data, title="Plotting a 3D image with plot_img")
         >>> show()
 
@@ -1999,12 +2000,19 @@ def plot_carpet(
 
     detrend : :obj:`bool`, default=True
         Detrend and z-score the data prior to plotting.
+
     %(output_file)s
+
     %(figure)s
+
     %(axes)s
+
     %(vmin)s
+
     %(vmax)s
+
     %(title)s
+
     %(cmap)s
         default=`gray`.
 
@@ -2042,27 +2050,26 @@ def plot_carpet(
     Examples
     --------
 
-    .. plot
+    .. plot::
 
-        >>> from nilearn.plotting import plot_carpet
-        >>> import matplotlib.pyplot as plt
+        >>> from nilearn.plotting import plot_carpet, show
         >>> from nibabel import Nifti1Image
         >>> import numpy as np
-
+        >>>
         >>> rng = np.random.default_rng(seed=42)
         >>> data = rng.integers(low=0, high=100,
         ...                     size=(12, 12, 12, 100), dtype=np.int32)
         >>> mask = np.ones((12, 12, 12), dtype=bool)
         >>> img = Nifti1Image(data, affine=np.eye(4))
         >>> mask_img = Nifti1Image(mask.astype(np.int8), affine=np.eye(4))
-
-        >>> display = plot_carpet(
+        >>>
+        >>> plot_carpet(
         ...     img,
         ...     mask_img=mask_img,
         ...     title="global patterns over time",
         ... )
-
-        >>> display.show()
+        >>>
+        >>> show()
 
     """
     check_params(locals())
