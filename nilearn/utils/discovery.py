@@ -235,6 +235,16 @@ def all_displays(type_filter=None):
     displays : list of tuples
         List of (name, class), where ``name`` is the display class name as
         string and ``class`` is the actual type of the class.
+
+    Examples
+    --------
+    >>> from nilearn.utils import all_displays
+    >>> displays = all_displays()
+    >>> len(displays)
+    27
+    >>> displays[0]
+    ('BaseAxes', <class 'nilearn.plotting.displays._axes.BaseAxes'>)
+
     """
     if not is_matplotlib_installed():
         return []
