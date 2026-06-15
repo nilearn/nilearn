@@ -327,6 +327,40 @@ def make_first_level_design_matrix(
         holding the computed design matrix, the index being the frames_times
         and each column a regressor.
 
+    Example
+    -------
+
+    >>> import numpy as np
+    >>> from pandas import DataFrame
+    >>> from nilearn.glm.first_level import make_first_level_design_matrix
+    >>> frame_times = np.arange(9)
+    >>> onsets = np.arange(9)
+    >>> duration = np.ones(9)
+    >>> trial_type = [
+    ...  "ET_0", "ET_0", "ET_0", "ET_1", "ET_1", "ET_1", "ET_2", "ET_2", "ET_2"
+    ... ]
+    >>> events = DataFrame({
+    ...     "trial_type": trial_type,
+    ...     "onset": onsets,
+    ...     "duration": duration})
+    >>> design_matrix = make_first_level_design_matrix(
+    ...     frame_times,
+    ...     events,
+    ...     drift_model="polynomial",
+    ...     drift_order=3,
+    ...     hrf_model="glover")
+    >>> design_matrix
+           ET_0      ET_1      ET_2  drift_1   drift_2       drift_3  constant
+    0  0.000000  0.000000  0.000000   -0.500  0.145833 -3.281250e-02       1.0
+    1  0.000544  0.000000  0.000000   -0.375  0.036458  1.640625e-02       1.0
+    2  0.022355  0.000000  0.000000   -0.250 -0.041667  3.046875e-02       1.0
+    3  0.134914  0.000000  0.000000   -0.125 -0.088542  2.109375e-02       1.0
+    4  0.378353  0.000544  0.000000    0.000 -0.104167 -2.775558e-17       1.0
+    5  0.688170  0.022355  0.000000    0.125 -0.088542 -2.109375e-02       1.0
+    6  0.910061  0.134914  0.000000    0.250 -0.041667 -3.046875e-02       1.0
+    7  0.933801  0.378353  0.000544    0.375  0.036458 -1.640625e-02       1.0
+    8  0.770794  0.688170  0.022355    0.500  0.145833  3.281250e-02       1.0
+
     """
     check_params(locals())
     if fir_delays is None:
