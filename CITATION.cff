@@ -110,6 +110,8 @@ authors:
   - given-names: Alice
     family-names: Schiavone
     affiliation: University of Copenhagen
+    orcid: https://orcid.org/my-orcid?orcid=0009-0006-4844-2088
+    website: aliswh.github.io
   - given-names: Anne-Sophie
     family-names: Kieslinger
     website: https://github.com/askieslinger
