@@ -103,6 +103,15 @@ def all_estimators(type_filter=None):
         where ``name`` is the class name as string
         and ``class`` is the actual type of the class.
 
+    Examples
+    --------
+    >>> from nilearn.utils import all_estimators
+    >>> estimators = all_estimators()
+    >>> len(estimators)
+    33
+    >>> estimators[0]
+    ('BaseGLM', <class 'nilearn.glm._base.BaseGLM'>)
+
     """
     # TODO: add GLM?
     allowed_filters = {
