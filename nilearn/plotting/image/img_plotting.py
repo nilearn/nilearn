@@ -2063,7 +2063,7 @@ def plot_carpet(
         >>> img = Nifti1Image(data, affine=np.eye(4))
         >>> mask_img = Nifti1Image(mask.astype(np.int8), affine=np.eye(4))
         >>>
-        >>> plot_carpet(
+        >>> display = plot_carpet(
         ...     img,
         ...     mask_img=mask_img,
         ...     title="global patterns over time",
