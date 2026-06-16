@@ -251,10 +251,11 @@ def all_displays(type_filter=None):
     --------
     >>> from nilearn.utils import all_displays
     >>> displays = all_displays()
-    >>> len(displays)
-    27
-    >>> displays[0]
-    ('BaseAxes', <class 'nilearn.plotting.displays._axes.BaseAxes'>)
+    >>> try:
+    ...     import matplotlib
+    ...     assert len(displays) == 27
+    ... except ImportError:
+    ...     assert len(displays) == 0
 
     """
     if not is_matplotlib_installed():
