@@ -77,6 +77,7 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinx.ext.imgmath",
     "sphinx.ext.intersphinx",
+    "matplotlib.sphinxext.plot_directive",
     "sphinx.ext.linkcode",
     "sphinxcontrib.bibtex",
     "sphinxcontrib.mermaid",
@@ -113,6 +114,13 @@ source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 
 # Generate the plots for the gallery
 plot_gallery = "True"
+
+# Always include the source code
+# when using the ..plot directive from matplotlib
+plot_include_source = True
+plot_formats = ["png"]
+plot_html_show_formats = False
+plot_html_show_source_link = False
 
 # The master toctree document.
 master_doc = "index"
