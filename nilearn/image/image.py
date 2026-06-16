@@ -1146,6 +1146,31 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=True):
         A loaded image with the same file type (and, optionally, header)
         as the reference image.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.image import new_img_like
+    >>>
+    >>> # create a Nifti1Image
+    >>> data1 = np.array([[[0., 0.2, 0.8],
+    ...                   [1.5, 3.0, 0.1],
+    ...                   [0.4, 2.2, 0.0]]])
+    >>> affine = np.diag((4, 3, 2, 1))
+    >>> img1 = Nifti1Image(data1, affine, dtype=np.int32)
+    >>>
+    >>> # create a new image from data2, and we would like to create an
+    >>> # image of the same type with img_1:
+    >>> data2 = np.array([[[0., 0.5, 0.3],
+    ...                   [2.5, 2.0, 0.2],
+    ...                   [0.1, 0.2, 1.0]]])
+    >>> img2 = new_img_like(img1, data2)
+    >>> type(img2)
+    <class 'nibabel.nifti1.Nifti1Image'>
+    >>> np.allclose(img1.affine, img2.affine)
+    True
+
+
     """
     check_params(locals())
 
