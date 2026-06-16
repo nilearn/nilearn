@@ -1158,8 +1158,6 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=True):
     ...                   [0.4, 2.2, 0.0]]])
     >>> affine = np.diag((4, 3, 2, 1))
     >>> img1 = Nifti1Image(data1, affine, dtype=np.int32)
-    >>> type(img1)
-    <class 'nibabel.nifti1.Nifti1Image'>
     >>>
     >>> # create a new image from data2, and we would like to create an
     >>> # image of the same type with img_1:
