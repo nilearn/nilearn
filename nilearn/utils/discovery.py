@@ -185,13 +185,10 @@ def all_functions():
     Examples
     --------
     >>> from nilearn.utils import all_functions
+    >>>
     >>> functions = all_functions()
-    >>> try:
-    ...     import matplotlib
-    ...
-    ...     assert len(functions) == 173
-    ... except ImportError:
-    ...     assert len(functions) == 138
+    >>> functions[4][0]
+    'binarize_img'
 
     """
     all_functions = []
