@@ -211,6 +211,8 @@
 
 .. _Manon Pietrantoni: https://github.com/ManonP38
 
+.. _Marco Flores: https://github.com/marco7877
+
 .. _Martin Perez-Guevara: https://github.com/MartinPerez
 
 .. _Martin Wegrzyn: https://github.com/mwegrzyn
