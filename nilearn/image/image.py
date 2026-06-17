@@ -718,6 +718,7 @@ def crop_img(
 
         >>> import numpy as np
         >>> from nibabel import Nifti1Image
+        >>> affine = np.diag((4, 3, 2, 1))
         >>> data = np.zeros((5, 6, 7))
         >>> data[2:4, 1:5, 3:6] = 1
         >>> data[1, 1:5, 3:6] = 0.49
