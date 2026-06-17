@@ -15,7 +15,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.glm.first_level import check_design_matrix
+from nilearn.glm._utils import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.nilearn_typing import ColorBar, OutputFile, Title
 from nilearn.plotting.displays._slicers import save_figure_if_needed

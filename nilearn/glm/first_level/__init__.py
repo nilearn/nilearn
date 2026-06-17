@@ -1,5 +1,5 @@
 from nilearn.glm.first_level.design_matrix import (
-    check_design_matrix,
+    check_design_matrix,  # TODO (nilearn >= 0.16) remove
     make_first_level_design_matrix,
 )
 from nilearn.glm.first_level.first_level import (

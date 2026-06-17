@@ -12,6 +12,7 @@ from scipy.stats import norm
 
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.glm._utils import (
+    check_design_matrix,
     full_rank,
     multiple_fast_inverse,
     multiple_mahalanobis,
@@ -269,3 +270,40 @@ def test_pad_f_contrast(rng, val):
     con_val = np.array(val)
     padded_contrast = pad_contrast(con_val, theta, stat_type="F")
     assert_array_equal(padded_contrast, [[1, 0, 0, 0], [0, 1, 0, 0]])
+
+
+def test_design_matrix_no_experimental_paradigm(frame_times):
+    """Test design matrix creation \
+        when no experimental paradigm is provided.
+    """
+    _, X, names = check_design_matrix(
+        make_first_level_design_matrix(
+            frame_times, drift_model="polynomial", drift_order=3
+        )
+    )
+    assert len(names) == 4
+    x = np.linspace(-0.5, 0.5, len(frame_times))
+    assert_almost_equal(X[:, 0], x)
+
+
+def test_design_matrix_regressors_provided_manually(rng, frame_times):
+    # test design matrix creation when regressors are provided manually
+    ax = rng.standard_normal(size=(len(frame_times), 4))
+    _, X, names = check_design_matrix(
+        make_first_level_design_matrix(
+            frame_times, drift_model="polynomial", drift_order=3, add_regs=ax
+        )
+    )
+    assert_almost_equal(X[:, 0], ax[:, 0])
+    assert len(names) == 8
+    assert X.shape[1] == 8
+
+    # with pandas Dataframe
+    axdf = pd.DataFrame(ax)
+    _, X1, names = check_design_matrix(
+        make_first_level_design_matrix(
+            frame_times, drift_model="polynomial", drift_order=3, add_regs=axdf
+        )
+    )
+    assert_almost_equal(X1[:, 0], ax[:, 0])
+    assert_array_equal(names[:4], np.arange(4))

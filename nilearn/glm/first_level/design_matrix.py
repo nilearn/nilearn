@@ -439,6 +439,8 @@ def check_design_matrix(design_matrix):
     """Check that the provided DataFrame is indeed a valid design matrix \
     descriptor, and returns a triplet of fields.
 
+    .. nilearn_deprecated:: 0.14.0
+
     Parameters
     ----------
     design matrix : :obj:`pandas.DataFrame`
@@ -454,14 +456,16 @@ def check_design_matrix(design_matrix):
 
     names : array of shape (n_events,), dtype='f'
         Per-event onset time (in seconds)
-
     """
-    if len(design_matrix.columns) == 0:
-        raise ValueError("The design_matrix dataframe cannot be empty.")
-    names = list(design_matrix.keys())
-    frame_times = design_matrix.index
-    matrix = design_matrix.to_numpy()
-    return frame_times, matrix, names
+    # TODO (nilearn >= 0.16.0) remove
+    from nilearn.glm._utils import check_design_matrix as _check_design_matrix
+
+    warn(
+        "'check_design_matrix' is deprecated and will be removed in Nilearn >= 0.16.0",
+        stacklevel=2,
+        category=FutureWarning,
+    )
+    return _check_design_matrix(design_matrix)
 
 
 def make_second_level_design_matrix(subjects_label, confounds=None):

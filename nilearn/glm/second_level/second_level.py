@@ -29,6 +29,7 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
+from nilearn.glm._utils import check_design_matrix
 from nilearn.glm.contrasts import (
     compute_contrast,
     expression_to_contrast_vector,
@@ -75,7 +76,7 @@ def _check_second_level_input(
     "df_object", "pd_series", "nii_object", "surf_img_object", "flm_object"
 ]:
     """Check second_level_input type."""
-    _check_design_matrix(design_matrix)
+    check_design_matrix(design_matrix)
 
     input_type = _check_input_type(second_level_input)
     _check_input_as_type(
@@ -332,18 +333,6 @@ def _check_first_level_contrast(
             " then first_level_contrast is mandatory. "
             "It corresponds to the second_level_contrast argument "
             "of the compute_contrast method of FirstLevelModel."
-        )
-
-
-def _check_design_matrix(design_matrix) -> None:
-    """Check design_matrix type."""
-    if design_matrix is not None and not isinstance(
-        design_matrix, (str, Path, pd.DataFrame)
-    ):
-        raise TypeError(
-            "'design_matrix' must be a "
-            "str, pathlib.Path or a pandas.DataFrame.\n"
-            f"Got {design_matrix.__class__.__name__}"
         )
 
 
