@@ -375,37 +375,35 @@ def butterworth(
 
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
     >>> import numpy as np
     >>> from nilearn.signal import butterworth
     >>>
     >>> # generate a single time series:
     >>> signals = np.random.default_rng(42).standard_normal(size=40)
-    >>> signals
-    array([ 0.30471708, -1.03998411,  0.7504512 ,  0.94056472, -1.95103519,
-       -1.30217951,  0.1278404 , -0.31624259, -0.01680116, -0.85304393,
-        0.87939797,  0.77779194,  0.0660307 ,  1.12724121,  0.46750934,
-       -0.85929246,  0.36875078, -0.9588826 ,  0.8784503 , -0.04992591,
-       -0.18486236, -0.68092954,  1.22254134, -0.15452948, -0.42832782,
-       -0.35213355,  0.53230919,  0.36544406,  0.41273261,  0.430821  ,
-        2.1416476 , -0.40641502, -0.51224273, -0.81377273,  0.61597942,
-        1.12897229, -0.11394746, -0.84015648, -0.82448122,  0.65059279])
+    >>> # create a copy of the signals as butterworth changes the input
+    >>> # array
+    >>> signals_cp = signals.copy()
     >>>
     >>> # apply Butterworth filter to the signal
-    >>> out_single = butterworth(
-    ...     signals,
+    >>> filtered_signals = butterworth(
+    ...     signals_cp,
     ...     sampling_rate=1,
     ...     low_pass=0.25,
     ...     high_pass=0.12
     ... )
-    >>> out_single
-    array([-0.00387227,  0.12901242,  0.31678537,  0.17587538, -0.30539068,
-       -0.42487857,  0.07103356,  0.4372345 ,  0.14872438, -0.29114584,
-       -0.28066136,  0.03575272,  0.2497217 ,  0.23549829,  0.00563778,
-       -0.29583205, -0.28408217,  0.12811932,  0.35505399,  0.01004171,
-       -0.32756961, -0.05561865,  0.34964323,  0.16991239, -0.26572873,
-       -0.24219459,  0.03786906,  0.00665222, -0.06229504,  0.30456186,
-        0.54545509, -0.09903007, -0.96157962, -0.67382096,  0.63501409,
-        1.28493056,  0.36221723, -1.03068083, -1.22482944, -0.00444314])
+    >>>
+    >>> # plot both signals and filtered_signals
+    >>> fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
+    >>> ax1.plot(signals) #doctest: +SKIP
+    >>> ax1.set_title("Initial signals") #doctest: +SKIP
+    >>> ax1.grid(True)
+    >>>
+    >>> ax2.plot(filtered_signals) #doctest: +SKIP
+    >>> ax2.set_title("Filtered signals") #doctest: +SKIP
+    >>> ax2.grid(True)
+    >>> plt.show()
+    >>> plt.close()
 
     """
     check_params(locals())
