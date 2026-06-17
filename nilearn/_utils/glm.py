@@ -5,9 +5,52 @@ import numpy as np
 import pandas as pd
 
 from nilearn._utils.helpers import stringify_path
+from nilearn._utils.param_validation import check_is_of_allowed_type
 
 
-def check_and_load_tables(tables_to_check, var_name):
+def check_design_matrix(design_matrix, output_as=None):
+    """Check that the provided DataFrame is indeed a valid design matrix \
+    descriptor, and returns a triplet of fields.
+
+    Parameters
+    ----------
+    design matrix : :obj:`pandas.DataFrame`
+        Describes a design matrix.
+
+    Returns
+    -------
+    frame_times : array of shape (n_frames,),
+        Sampling times of the design matrix in seconds.
+
+    matrix : array of shape (n_frames, n_regressors), dtype='f'
+        Numerical values for the design matrix.
+
+    names : array of shape (n_events,), dtype='f'
+        Per-event onset time (in seconds)
+    """
+    if design_matrix is not None:
+        check_is_of_allowed_type(
+            design_matrix, (str, Path, pd.DataFrame), "design_matrix"
+        )
+
+    design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
+
+    if len(design_matrix.columns) == 0:
+        raise ValueError("The design_matrix dataframe cannot be empty.")
+
+    if output_as == "pd":
+        return design_matrix
+
+    names = list(design_matrix.keys())
+    frame_times = design_matrix.index
+    matrix = design_matrix.to_numpy()
+    return frame_times, matrix, names
+
+
+def check_and_load_tables(
+    tables_to_check,
+    var_name,
+):
     """Load tables.
 
        Tables will be 'loaded'
@@ -64,7 +107,7 @@ def check_and_load_tables(tables_to_check, var_name):
     return tables
 
 
-def _read_events_table(table_path):
+def _read_events_table(table_path: str | Path) -> pd.DataFrame:
     """Load the contents of the event file specified by `table_path`\
        to a pandas.DataFrame.
 

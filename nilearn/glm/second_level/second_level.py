@@ -18,7 +18,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.glm import check_and_load_tables, check_design_matrix
 from nilearn._utils.logger import find_stack_level, readable_time
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -29,7 +29,6 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
-from nilearn.glm._utils import check_design_matrix
 from nilearn.glm.contrasts import (
     compute_contrast,
     expression_to_contrast_vector,
@@ -666,9 +665,7 @@ class SecondLevelModel(BaseGLM):
                 subjects_label, confounds
             )
         elif isinstance(design_matrix, (str, Path, pd.DataFrame)):
-            design_matrix = check_and_load_tables(
-                design_matrix, "design_matrix"
-            )[0]
+            design_matrix = check_design_matrix(design_matrix, output_as="pd")
         self.design_matrix_ = design_matrix
 
         if isinstance(self.second_level_input_, list):

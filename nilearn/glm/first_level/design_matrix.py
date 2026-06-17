@@ -458,10 +458,13 @@ def check_design_matrix(design_matrix):
         Per-event onset time (in seconds)
     """
     # TODO (nilearn >= 0.16.0) remove
-    from nilearn.glm._utils import check_design_matrix as _check_design_matrix
+    from nilearn._utils.glm import check_design_matrix as _check_design_matrix
 
     warn(
-        "'check_design_matrix' is deprecated and will be removed in Nilearn >= 0.16.0",
+        (
+            "'check_design_matrix' is deprecated "
+            "and will be removed in Nilearn >= 0.16.0"
+        ),
         stacklevel=2,
         category=FutureWarning,
     )

@@ -17,7 +17,7 @@ from numpy.testing import (
 )
 
 from nilearn._utils.data_gen import basic_paradigm
-from nilearn.glm._utils import check_design_matrix
+from nilearn._utils.glm import check_design_matrix
 from nilearn.glm.first_level.design_matrix import (
     _convolve_regressors,
     make_first_level_design_matrix,

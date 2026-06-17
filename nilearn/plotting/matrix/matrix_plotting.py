@@ -10,12 +10,11 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.glm import check_and_load_tables, check_design_matrix
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.glm._utils import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.nilearn_typing import ColorBar, OutputFile, Title
 from nilearn.plotting.displays._slicers import save_figure_if_needed
@@ -384,8 +383,6 @@ def plot_design_matrix(
         The axes used for plotting.
 
     """
-    design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
-
     _, X, names = check_design_matrix(design_matrix)
     # normalize the values per column for better visualization
     if rescale:
@@ -592,9 +589,7 @@ def plot_design_matrix_correlation(
     """
     check_params(locals())
 
-    design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
-
-    check_design_matrix(design_matrix)
+    design_matrix = check_design_matrix(design_matrix, output_as="pd")
 
     cmap_name = cmap if isinstance(cmap, str) else cmap.name
     ALLOWED_CMAP = ["RdBu_r", "bwr", "seismic_r"]

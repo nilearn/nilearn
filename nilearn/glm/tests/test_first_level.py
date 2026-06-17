@@ -30,10 +30,10 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
+from nilearn._utils.glm import check_design_matrix
 from nilearn._utils.helpers import is_matplotlib_installed, is_windows_platform
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.exceptions import MeshDimensionError
-from nilearn.glm._utils import check_design_matrix
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import FirstLevelModel, mean_scaling, run_glm
 from nilearn.glm.first_level.design_matrix import (
