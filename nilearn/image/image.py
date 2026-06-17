@@ -702,52 +702,46 @@ def crop_img(
 
     Returns
     -------
-    Niimg-like object or :obj:`tuple`
-        Cropped version of the input image and, if `return_offset=True`,
-        a tuple of :py:class:`slice` representing the voxels from the original
-        image kept in the cropped volume, i.e.:
-        *[slice(dim1_first_voxel, dim1_last_voxel - 1, None),
-        slice(dim2_first_voxel, dim2_last_voxel - 1, None), ...,
-        slice(dimN_first_voxel, dimN_last_voxel - 1, None)]*
-
+    cropped_im : Niimg-like object
+        Cropped version of the input image
         If the specified image is empty, the original image will be returned.
+
+    offset :  tuple of :py:class:`slice`
+        Returned if ``return_offset=True``.
+        Represents the voxels from the original
+        image kept in the cropped volume.
+        For example:
+
+        .. code-block:: python
+
+            [
+                slice(dim1_first_voxel, dim1_last_voxel - 1, None),
+                slice(dim2_first_voxel, dim2_last_voxel - 1, None),
+                ...,
+                slice(dimN_first_voxel, dimN_last_voxel - 1, None),
+            ]
 
     Examples
     --------
-    .. plot::
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>>
+    >>> affine = np.diag((4, 3, 2, 1))
+    >>> data = np.zeros((5, 6, 7))
+    >>> data[2:4, 1:5, 3:6] = 1
+    >>> data[1, 1:5, 3:6] = 0.49
+    >>>
+    >>> img = Nifti1Image(data, affine=affine)
+    >>> img.shape
+    (5, 6, 7)
+    >>>
+    >>> cropped_img, offset = crop_img(img, return_offset=True)
+    >>>
+    >>> cropped_img.shape
+    (5, 6, 5)
+    >>> offset
+    (slice(0, 5, None), slice(0, 6, None), slice(2, 7, None))
 
-        >>> import numpy as np
-        >>> from nibabel import Nifti1Image
-        >>> affine = np.diag((4, 3, 2, 1))
-        >>> data = np.zeros((5, 6, 7))
-        >>> data[2:4, 1:5, 3:6] = 1
-        >>> data[1, 1:5, 3:6] = 0.49
-        >>> img = Nifti1Image(data, affine=affine)
-        >>> img.shape
-        (5, 6, 7)
-        >>> cropped_img, offset = crop_img(img, return_offset=True)
-        >>> cropped_img.shape
-        (5, 6, 5)
-        >>> offset
-        (slice(np.int64(0), np.int64(5), None),
-         slice(np.int64(0), np.int64(6), None),
-         slice(np.int64(2), np.int64(7), None))
-        >>>
-        >>> cropped_img, offset = crop_img(img, return_offset=True, rtol=0.5)
-        >>> cropped_img.shape
-        (4, 6, 5)
-        >>> offset
-        (slice(np.int64(1), np.int64(5), None),
-         slice(np.int64(0), np.int64(6), None),
-         slice(np.int64(2), np.int64(7), None))
-        >>>
-        >>> cropped_img, offset = crop_img(img, return_offset=True, pad=False)
-        >>> cropped_img.shape
-        (3, 4, 3)
-        >>> offset
-        (slice(np.int64(1), np.int64(4), None),
-         slice(np.int64(1), np.int64(5), None),
-         slice(np.int64(3), np.int64(6), None))
     """
     check_params(locals())
 
