@@ -172,7 +172,7 @@ def get_bids_files(
     modality_folder="*",
     filters=None,
     sub_folder=True,
-):
+) -> list[str]:
     """Search for files in a :term:`BIDS` dataset following given constraints.
 
     This utility function allows to filter files in the :term:`BIDS` dataset by
@@ -235,6 +235,32 @@ def get_bids_files(
     files : :obj:`list` of :obj:`str`
         List of file paths found.
 
+    Examples
+    --------
+    >>> from pathlib import Path
+    >>> from nilearn.interfaces.bids import get_bids_files
+    >>> bids_path = Path("my_bids_folder")
+    >>> bids_func_dir = bids_path / "sub-01" / "ses-01" / "func"
+
+    Create a fake fMRI NIfTI file.
+
+    >>> bids_func_dir.mkdir(parents=True, exist_ok=True)
+    >>> _ = ( bids_func_dir
+    ...    / "sub-01_ses-01_task-finger_run-01_bold.nii.gz"
+    ...    ).touch()
+
+    Searching for finger tapping task fMRI files.
+
+    >>> bids_files = get_bids_files(
+    ...    bids_path,
+    ...    file_tag='bold',
+    ...    file_type='nii.gz',
+    ...    sub_label='01',
+    ...    modality_folder='func',
+    ...    filters=[('task','finger')],
+    ... )
+    >>> len(bids_files)
+    1
     """
     main_path = Path(main_path)
     if sub_folder:

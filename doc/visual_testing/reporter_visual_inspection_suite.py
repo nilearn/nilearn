@@ -441,7 +441,12 @@ def _generate_masker_report_files(
     masker.reports = True
     masker.fit(data)
     report = masker.generate_report(**kwargs)
-    verbose_save(report, f"{masker_class_name}_fitted.html", (1200, 750))
+
+    filename = f"{masker_class_name}_fitted.html"
+    if "engine" in kwargs:
+        filename = f"{masker_class_name}_{kwargs['engine']}_fitted.html"
+
+    verbose_save(report, filename, (1200, 750))
 
     return unfitted_report, report
 
@@ -675,8 +680,10 @@ def main(args=sys.argv):
     t0 = time.time()
 
     report_nifti_masker(build_type)
+    report_nifti_masker(build_type, engine="brainsprite")
     report_nifti_maps_masker(build_type)
     report_nifti_labels_masker(build_type)
+    report_nifti_labels_masker(build_type, engine="brainsprite")
     report_sphere_masker(build_type)
     report_surface_masker(build_type)
     report_surface_label_masker(build_type)
