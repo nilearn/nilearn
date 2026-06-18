@@ -811,9 +811,7 @@ def test_design_matrix_path(img_3d_mni, tmp_path, filename, sep):
 @pytest.mark.parametrize("design_matrix", ["foo", Path("foo")])
 def test_design_matrix_error_path(img_3d_mni, design_matrix):
     second_level_input = [img_3d_mni, img_3d_mni, img_3d_mni]
-    with pytest.raises(
-        ValueError, match=r"Tables to load can only be TSV or CSV."
-    ):
+    with pytest.raises(ValueError, match="The file 'foo' does not exist"):
         SecondLevelModel().fit(
             second_level_input=second_level_input, design_matrix=design_matrix
         )
