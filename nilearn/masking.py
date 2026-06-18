@@ -536,10 +536,13 @@ def compute_background_mask(
 
     %(border_size)s
         default=2.
+
     %(connected)s
         default=False.
+
     %(opening)s
         default=False.
+
     %(target_affine)s
 
         .. note::
@@ -551,6 +554,7 @@ def compute_background_mask(
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(memory)s
+
     %(verbose0)s
 
     Returns
@@ -562,16 +566,31 @@ def compute_background_mask(
     --------
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
-    >>> from nilearn.masking import compute_epi_mask
-    >>> affine = np.eye(4)
-    >>> data = np.random.rand(2,3,4)
-
-    Set background to zero:
-
+    >>> from nilearn.masking import compute_background_mask
+    >>>
+    >>> data = np.random.default_rng(42).random((2,3,4))
+    >>>
+    >>> # Set background to zero:
     >>> data[0:3,0:2,0:3] = 0
-    >>> img = Nifti1Image(data,affine)
+    >>> data.round(decimals=3)
+    array([[[0.   , 0.   , 0.   , 0.697],
+            [0.   , 0.   , 0.   , 0.786],
+            [0.128, 0.45 , 0.371, 0.927]],
+           [[0.   , 0.   , 0.   , 0.227],
+            [0.   , 0.   , 0.   , 0.632],
+            [0.758, 0.355, 0.971, 0.893]]])
+    >>>
+    >>> img = Nifti1Image(data, affine=np.eye(4))
+    >>>
     >>> background_mask = compute_background_mask(img)
-    >>> print(background_mask.get_fdata())
+    >>>
+    >>> background_mask.get_fdata()
+    array([[[0., 0., 0., 1.],
+            [0., 0., 0., 1.],
+            [1., 1., 1., 1.]],
+           [[0., 0., 0., 1.],
+            [0., 0., 0., 1.],
+            [1., 1., 1., 1.]]])
     """
     check_params(locals())
     logger.log("Background mask computation", verbose)
