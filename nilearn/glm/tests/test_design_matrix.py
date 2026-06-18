@@ -70,17 +70,6 @@ def design_matrix_light(
     return matrix, names
 
 
-@pytest.fixture
-def n_frames() -> int:
-    return 128
-
-
-@pytest.fixture
-def frame_times(n_frames) -> np.ndarray:
-    t_r = 1.0
-    return np.linspace(0, (n_frames - 1) * t_r, n_frames)
-
-
 def test_deprecation_check_design_matrix(frame_times):
     """Test deprecation check_design_matrix.
 

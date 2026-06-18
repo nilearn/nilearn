@@ -849,6 +849,22 @@ def surface_glm_data():
     return _make_surface_img_and_design
 
 
+# ------------------------ GLM -----------------------------#
+
+
+@pytest.fixture
+def n_frames() -> int:
+    """Return number of volumes in a GLM run."""
+    return 128
+
+
+@pytest.fixture
+def frame_times(n_frames) -> np.ndarray:
+    """Return timing of each volume in GLM run."""
+    t_r = 1.0
+    return np.linspace(0, (n_frames - 1) * t_r, n_frames)
+
+
 # ------------------------ PLOTTING ------------------------#
 
 

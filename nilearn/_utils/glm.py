@@ -8,7 +8,7 @@ from nilearn._utils.helpers import stringify_path
 from nilearn._utils.param_validation import check_is_of_allowed_type
 
 
-def check_design_matrix(design_matrix, output_as=None):
+def check_design_matrix(design_matrix, output_as=None, name="design_matrix"):
     """Check that the provided DataFrame is indeed a valid design matrix \
     descriptor, and returns a triplet of fields.
 
@@ -28,15 +28,12 @@ def check_design_matrix(design_matrix, output_as=None):
     names : array of shape (n_events,), dtype='f'
         Per-event onset time (in seconds)
     """
-    if design_matrix is not None:
-        check_is_of_allowed_type(
-            design_matrix, (str, Path, pd.DataFrame), "design_matrix"
-        )
+    check_is_of_allowed_type(design_matrix, (str, Path, pd.DataFrame), name)
 
-    design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
+    design_matrix = check_and_load_tables(design_matrix, name)[0]
 
     if len(design_matrix.columns) == 0:
-        raise ValueError("The design_matrix dataframe cannot be empty.")
+        raise ValueError("Design matrices dataframe cannot be empty.")
 
     if output_as == "pd":
         return design_matrix
@@ -44,13 +41,11 @@ def check_design_matrix(design_matrix, output_as=None):
     names = list(design_matrix.keys())
     frame_times = design_matrix.index
     matrix = design_matrix.to_numpy()
+
     return frame_times, matrix, names
 
 
-def check_and_load_tables(
-    tables_to_check,
-    var_name,
-):
+def check_and_load_tables(tables_to_check, var_name):
     """Load tables.
 
        Tables will be 'loaded'
@@ -79,6 +74,7 @@ def check_and_load_tables(
     ------
     TypeError
     If any of the elements in `tables_to_check` does not have a correct type.
+
     ValueError
     If a specified path in `tables_to_check`
     cannot be loaded to a pandas.DataFrame.

@@ -75,7 +75,8 @@ def _check_second_level_input(
     "df_object", "pd_series", "nii_object", "surf_img_object", "flm_object"
 ]:
     """Check second_level_input type."""
-    check_design_matrix(design_matrix)
+    if design_matrix is not None:
+        check_design_matrix(design_matrix)
 
     input_type = _check_input_type(second_level_input)
     _check_input_as_type(
