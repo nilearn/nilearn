@@ -36,7 +36,7 @@ def plot_img_comparison(
     output_dir=None,
     axes=None,
     colorbar=True,
-) -> list:
+) -> list[float]:
     """Create plots to compare two lists of images and measure correlation.
 
     The first plot displays linear correlation between :term:`voxel` values.
@@ -93,7 +93,7 @@ def plot_img_comparison(
 
     Returns
     -------
-    corrs : list
+    corrs : list[float]
         Pearson correlation between the images.
 
     """
