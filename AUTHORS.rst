@@ -102,6 +102,7 @@ Some other past or present contributors are:
 * `Florent Pollet`_: ENS Paris-Saclay, Saclay, France
 * `Franz Liem`_
 * `François Paugam`_
+* `Gabriele Amorosino`_: Department of Psychology, The University of Texas at Austin, TX, USA
 * `Gael Varoquaux`_: Inria, Saclay, France
 * `Gilles de Hollander`_: Vrije Universiteit, Amsterdam, The Netherlands
 * `Greg Kiar`_: Child Mind Institute
@@ -151,7 +152,7 @@ Some other past or present contributors are:
 * `Loic Tetrel`_
 * `Luz Paz`_
 * `Manon Pietrantoni`_
-* `Marco Flores`_: Basque Center on Cognition Brain and Language, Spain
+* `Marco Flores`_: Basque Center on Cognition Brain and Language
 * `Martin Perez-Guevara`_: Criteo, France
 * `Martin Wegrzyn`_: Bielefeld University, Bielefeld, Germany
 * `Mathias Goncalves`_: Stanford University, Stanford, California, USA
