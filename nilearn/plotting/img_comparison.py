@@ -6,6 +6,7 @@ from typing import get_args
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import gridspec
+from matplotlib.figure import Figure
 from scipy import stats
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP
@@ -35,7 +36,7 @@ def plot_img_comparison(
     output_dir=None,
     axes=None,
     colorbar=True,
-):
+) -> list:
     """Create plots to compare two lists of images and measure correlation.
 
     The first plot displays linear correlation between :term:`voxel` values.
@@ -92,7 +93,7 @@ def plot_img_comparison(
 
     Returns
     -------
-    corrs : :class:`numpy.ndarray`
+    corrs : list
         Pearson correlation between the images.
 
     """
@@ -157,7 +158,7 @@ def plot_img_comparison(
                 "Images are not shape-compatible",
                 stacklevel=find_stack_level(),
             )
-            return
+            return []
 
         corr = stats.pearsonr(ref_data, src_data)[0]
         corrs.append(corr)
@@ -188,7 +189,8 @@ def plot_img_comparison(
                 cb = fig.colorbar(hb, ax=ax1)
                 cb.set_label("log10(N)")
 
-            x = np.linspace(*lims[:2], num=gridsize)
+            start, stop = lims[:2]
+            x = np.linspace(start, stop, num=gridsize)
 
             ax1.plot(x, x, linestyle="--", c="grey")
             ax1.set_title(f"Pearson's R: {corr:.2f}")
@@ -230,7 +232,7 @@ def plot_bland_altman(
     gridsize=100,
     lims=None,
     output_file: OutputFile = None,
-):
+) -> Figure:
     """Create a Bland-Altman plot between 2 images.
 
     Plot the the 2D distribution of voxel-wise differences
@@ -306,6 +308,11 @@ def plot_bland_altman(
         If ``None`` is passed values are determined based on the data.
 
     %(output_file)s
+
+    Returns
+    -------
+    figure : :class:`matplotlib.figure.Figure`
+        Plot Figure object.
 
     Notes
     -----
