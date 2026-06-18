@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -9,8 +10,10 @@ from nilearn._utils.param_validation import check_is_of_allowed_type
 
 
 def validate_design_matrix(
-    design_matrix, output_as=None, name="design_matrix"
-):
+    design_matrix: str | Path | pd.DataFrame,
+    output_as: Literal[None, "pd"] = None,
+    name: str = "design_matrix",
+) -> pd.DataFrame | tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Check that the provided DataFrame is indeed a valid design matrix \
     descriptor, and returns a triplet of fields.
 
@@ -32,17 +35,19 @@ def validate_design_matrix(
     """
     check_is_of_allowed_type(design_matrix, (str, Path, pd.DataFrame), name)
 
-    design_matrix = check_and_load_tables(design_matrix, name)[0]
+    loaded_design_matrix: pd.DataFrame = check_and_load_tables(
+        design_matrix, name
+    )[0]
 
-    if len(design_matrix.columns) == 0:
+    if len(loaded_design_matrix.columns) == 0:
         raise ValueError("Design matrices dataframe cannot be empty.")
 
     if output_as == "pd":
-        return design_matrix
+        return loaded_design_matrix
 
-    names = list(design_matrix.keys())
-    frame_times = design_matrix.index
-    matrix = design_matrix.to_numpy()
+    names = list(loaded_design_matrix.keys())
+    frame_times = loaded_design_matrix.index
+    matrix = loaded_design_matrix.to_numpy()
 
     return frame_times, matrix, names
 
