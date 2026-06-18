@@ -5,8 +5,8 @@ from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nilearn._utils.glm import (
     check_and_load_tables,
-    check_design_matrix,
     coerce_to_dict,
+    validate_design_matrix,
 )
 from nilearn.glm.first_level import make_first_level_design_matrix
 
@@ -15,7 +15,7 @@ def test_design_matrix_no_experimental_paradigm(frame_times):
     """Test design matrix creation \
         when no experimental paradigm is provided.
     """
-    _, X, names = check_design_matrix(
+    _, X, names = validate_design_matrix(
         make_first_level_design_matrix(
             frame_times, drift_model="polynomial", drift_order=3
         )
@@ -26,9 +26,9 @@ def test_design_matrix_no_experimental_paradigm(frame_times):
 
 
 def test_design_matrix_regressors_provided_manually(rng, frame_times):
-    # test design matrix creation when regressors are provided manually
+    """Test design matrix creation when regressors are provided manually."""
     ax = rng.standard_normal(size=(len(frame_times), 4))
-    _, X, names = check_design_matrix(
+    _, X, names = validate_design_matrix(
         make_first_level_design_matrix(
             frame_times, drift_model="polynomial", drift_order=3, add_regs=ax
         )
@@ -39,7 +39,7 @@ def test_design_matrix_regressors_provided_manually(rng, frame_times):
 
     # with pandas Dataframe
     axdf = pd.DataFrame(ax)
-    _, X1, names = check_design_matrix(
+    _, X1, names = validate_design_matrix(
         make_first_level_design_matrix(
             frame_times, drift_model="polynomial", drift_order=3, add_regs=axdf
         )

@@ -17,7 +17,7 @@ from numpy.testing import (
 )
 
 from nilearn._utils.data_gen import basic_paradigm
-from nilearn._utils.glm import check_design_matrix
+from nilearn._utils.glm import validate_design_matrix
 from nilearn.glm.first_level.design_matrix import (
     _convolve_regressors,
     make_first_level_design_matrix,
@@ -66,7 +66,7 @@ def design_matrix_light(
         add_reg_names,
         min_onset,
     )
-    _, matrix, names = check_design_matrix(dmtx)
+    _, matrix, names = validate_design_matrix(dmtx)
     return matrix, names
 
 
@@ -397,8 +397,8 @@ def test_csv_io(tmp_path, frame_times):
     DM.to_csv(path)
     DM2 = pd.read_csv(path, index_col=0)
 
-    _, matrix, names = check_design_matrix(DM)
-    _, matrix_, names_ = check_design_matrix(DM2)
+    _, matrix, names = validate_design_matrix(DM)
+    _, matrix_, names_ = validate_design_matrix(DM2)
     assert_almost_equal(matrix, matrix_)
     assert names == names_
 
@@ -413,7 +413,7 @@ def test_compare_design_matrix_to_spm(block_duration, array):
     X1 = make_first_level_design_matrix(
         frame_times, events, drift_model=None, hrf_model="spm"
     )
-    _, matrix, _ = check_design_matrix(X1)
+    _, matrix, _ = validate_design_matrix(X1)
 
     spm_design_matrix = DESIGN_MATRIX[array]
 

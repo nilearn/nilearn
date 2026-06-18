@@ -8,7 +8,9 @@ from nilearn._utils.helpers import stringify_path
 from nilearn._utils.param_validation import check_is_of_allowed_type
 
 
-def check_design_matrix(design_matrix, output_as=None, name="design_matrix"):
+def validate_design_matrix(
+    design_matrix, output_as=None, name="design_matrix"
+):
     """Check that the provided DataFrame is indeed a valid design matrix \
     descriptor, and returns a triplet of fields.
 

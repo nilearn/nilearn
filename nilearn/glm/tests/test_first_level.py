@@ -30,7 +30,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.glm import check_design_matrix
+from nilearn._utils.glm import validate_design_matrix
 from nilearn._utils.helpers import is_matplotlib_installed, is_windows_platform
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.exceptions import MeshDimensionError
@@ -1006,7 +1006,7 @@ def test_first_level_design_creation(shape_4d_default):
     events = basic_paradigm()
     model = model.fit(fmri_data[0], events)
 
-    frame1, X1, names1 = check_design_matrix(model.design_matrices_[0])
+    frame1, X1, names1 = validate_design_matrix(model.design_matrices_[0])
 
     # check design computation is identical
     n_scans = get_data(fmri_data[0]).shape[3]
@@ -1017,7 +1017,7 @@ def test_first_level_design_creation(shape_4d_default):
         frame_times, events, drift_model=drift_model, drift_order=drift_order
     )
 
-    frame2, X2, names2 = check_design_matrix(design)
+    frame2, X2, names2 = validate_design_matrix(design)
 
     assert_array_equal(frame1, frame2)
     assert_array_equal(X1, X2)

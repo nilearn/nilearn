@@ -457,7 +457,7 @@ def check_design_matrix(design_matrix):
         Per-event onset time (in seconds)
     """
     # TODO (nilearn >= 0.16.0) remove
-    from nilearn._utils.glm import check_design_matrix as _check_design_matrix
+    from nilearn._utils.glm import validate_design_matrix
 
     warn(
         (
@@ -467,7 +467,7 @@ def check_design_matrix(design_matrix):
         stacklevel=2,
         category=FutureWarning,
     )
-    return _check_design_matrix(design_matrix)
+    return validate_design_matrix(design_matrix)
 
 
 def make_second_level_design_matrix(subjects_label, confounds=None):

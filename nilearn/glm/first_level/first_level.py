@@ -20,7 +20,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.glm import check_and_load_tables, check_design_matrix
+from nilearn._utils.glm import check_and_load_tables, validate_design_matrix
 from nilearn._utils.logger import find_stack_level, readable_time
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -650,7 +650,9 @@ class FirstLevelModel(BaseGLM):
                 design_matrices = [design_matrices]
 
             design_matrices = [
-                check_design_matrix(x, output_as="pd", name="design_matrices")
+                validate_design_matrix(
+                    x, output_as="pd", name="design_matrices"
+                )
                 for x in design_matrices
             ]
 
@@ -1463,7 +1465,9 @@ def _check_events_file_uses_tab_separators(events_files):
                 ) from e
 
 
-def _check_run_tables(run_imgs, tables_, tables_name) -> list[pd.DataFrame]:
+def _check_run_tables(
+    run_imgs, tables_, tables_name
+) -> list[pd.DataFrame | np.ndarray]:
     """Check fMRI runs and corresponding tables to raise error if necessary."""
     _check_length_match(run_imgs, tables_, "run_imgs", tables_name)
 
