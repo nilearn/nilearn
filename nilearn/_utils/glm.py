@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Literal
+from typing import Literal, overload
 
 import numpy as np
 import pandas as pd
@@ -9,29 +9,57 @@ from nilearn._utils.helpers import stringify_path
 from nilearn._utils.param_validation import check_is_of_allowed_type
 
 
+@overload
+def validate_design_matrix(
+    design_matrix: str | Path | pd.DataFrame,
+    output_as: Literal["pd"],
+    name: str = ...,
+) -> pd.DataFrame: ...
+
+
+@overload
+def validate_design_matrix(
+    design_matrix: str | Path | pd.DataFrame,
+    output_as: None = ...,
+    name: str = ...,
+) -> tuple[pd.Index, np.ndarray, list]: ...
+
+
 def validate_design_matrix(
     design_matrix: str | Path | pd.DataFrame,
     output_as: Literal[None, "pd"] = None,
     name: str = "design_matrix",
-) -> pd.DataFrame | tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> pd.DataFrame | tuple[pd.Index, np.ndarray, list]:
     """Check that the provided DataFrame is indeed a valid design matrix \
-    descriptor, and returns a triplet of fields.
+    descriptor.
 
     Parameters
     ----------
-    design matrix : :obj:`pandas.DataFrame`
+    design_matrix : :obj:`str`, :obj:`pathlib.Path` or :obj:`pandas.DataFrame`
         Describes a design matrix.
+        Can be a TSV or CSV file, or a path to one.
+
+    output_as : ``None`` or ``"pd"``, default=None
+        If ``"pd"``, the loaded design matrix is returned as a
+        :obj:`pandas.DataFrame`. Otherwise, a triplet of fields
+        (``frame_times``, ``matrix``, ``names``) is returned.
+
+    name : :obj:`str`, default="design_matrix"
+        Name of the ``design_matrix`` argument, used in error messages.
 
     Returns
     -------
-    frame_times : array of shape (n_frames,),
+    loaded_design_matrix : :obj:`pandas.DataFrame`
+        Returned only when ``output_as="pd"``.
+
+    frame_times : :obj:`pandas.Index` of shape (n_frames,)
         Sampling times of the design matrix in seconds.
 
-    matrix : array of shape (n_frames, n_regressors), dtype='f'
+    matrix : :obj:`numpy.ndarray` of shape (n_frames, n_regressors)
         Numerical values for the design matrix.
 
-    names : array of shape (n_events,), dtype='f'
-        Per-event onset time (in seconds)
+    names : :obj:`list` of shape (n_regressors,)
+        Names of the design matrix columns.
     """
     check_is_of_allowed_type(design_matrix, (str, Path, pd.DataFrame), name)
 
