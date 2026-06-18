@@ -351,9 +351,7 @@ def test_plot_design_matrix_correlation_smoke_path(tmp_path):
 
 def test_plot_design_matrix_correlation_errors(mat):
     """Test plot_design_matrix_correlation errors."""
-    with pytest.raises(
-        ValueError, match=r"Tables to load can only be TSV or CSV."
-    ):
+    with pytest.raises(ValueError, match="The file 'foo' does not exist"):
         plot_design_matrix_correlation("foo")
 
     with pytest.raises(ValueError, match=r"dataframe cannot be empty."):
