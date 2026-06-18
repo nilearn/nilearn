@@ -70,7 +70,12 @@ def validate_design_matrix(
     if len(loaded_design_matrix.columns) == 0:
         raise ValueError("Design matrices dataframe cannot be empty.")
 
-    if output_as == "pd":
+    if output_as is not None:
+        if output_as != "pd":
+            raise ValueError(
+                f"'output_as' must be None or 'pd'. Got : {output_as}"
+            )
+
         return loaded_design_matrix
 
     names = list(loaded_design_matrix.keys())
@@ -160,6 +165,10 @@ def _read_events_table(table_path: str | Path) -> pd.DataFrame:
     If file loading fails.
     """
     table_path = Path(table_path)
+
+    if not table_path.exists():
+        raise ValueError(f"The file '{table_path!s}' does not exist.")
+
     if table_path.suffix == ".tsv":
         loaded = pd.read_csv(table_path, sep="\t")
     elif table_path.suffix == ".csv":

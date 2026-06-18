@@ -11,7 +11,39 @@ from nilearn._utils.glm import (
 from nilearn.glm.first_level import make_first_level_design_matrix
 
 
-def test_design_matrix_no_experimental_paradigm(frame_times):
+def test_validate_design_matrix_error(frame_times):
+    """Test validate_design_matrix errors."""
+    with pytest.raises(TypeError, match="'design_matrix' must be of type"):
+        validate_design_matrix(1)
+
+    with pytest.raises(ValueError, match="The file 'foo' does not exist"):
+        validate_design_matrix("foo")
+
+    with pytest.raises(
+        ValueError, match="Design matrices dataframe cannot be empty"
+    ):
+        validate_design_matrix(pd.DataFrame())
+
+    design_matrix = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3
+    )
+
+    with pytest.raises(ValueError, match="'output_as' must be None or 'pd'"):
+        validate_design_matrix(design_matrix, output_as="foo")
+
+
+def test_validate_design_matrix_dataframe_output(frame_times):
+    """Test output validate_design_matrix."""
+    design_matrix = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3
+    )
+
+    X = validate_design_matrix(design_matrix, output_as="pd")
+
+    assert isinstance(X, pd.DataFrame)
+
+
+def test_validate_design_matrix_no_experimental_paradigm(frame_times):
     """Test design matrix creation \
         when no experimental paradigm is provided.
     """
@@ -25,7 +57,7 @@ def test_design_matrix_no_experimental_paradigm(frame_times):
     assert_almost_equal(X[:, 0], x)
 
 
-def test_design_matrix_regressors_provided_manually(rng, frame_times):
+def test_validate_design_matrix_regressors(rng, frame_times):
     """Test design matrix creation when regressors are provided manually."""
     ax = rng.standard_normal(size=(len(frame_times), 4))
     _, X, names = validate_design_matrix(
@@ -50,18 +82,14 @@ def test_design_matrix_regressors_provided_manually(rng, frame_times):
 
 def test_img_table_checks():
     """Check tables type and that can be loaded."""
-    with pytest.raises(
-        ValueError, match=r"Tables to load can only be TSV or CSV."
-    ):
+    with pytest.raises(ValueError, match=r"The file '.csv' does not exist."):
         check_and_load_tables([".csv", ".csv"], "")
     with pytest.raises(
         TypeError,
         match="can only be a pandas DataFrame, a Path object or a string",
     ):
         check_and_load_tables([[], pd.DataFrame()], "")
-    with pytest.raises(
-        ValueError, match=r"Tables to load can only be TSV or CSV."
-    ):
+    with pytest.raises(ValueError, match=r"The file '.csv' does not exist."):
         check_and_load_tables([".csv", pd.DataFrame()], "")
 
 
