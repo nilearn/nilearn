@@ -13,11 +13,13 @@ from matplotlib.colors import (
     ListedColormap,
     Normalize,
 )
+from matplotlib.figure import Figure
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_threshold
+from nilearn.nilearn_typing import OutputFile
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
     check_threshold_not_negative,
@@ -27,7 +29,7 @@ from nilearn.plotting._utils import (
 )
 
 
-def save_figure_if_needed(fig, output_file):
+def save_figure_if_needed(fig: Figure, output_file: OutputFile) -> None:
     """Save figure if an output file value is given.
 
     Create output path if required.
