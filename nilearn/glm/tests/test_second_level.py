@@ -258,7 +258,7 @@ def test_check_second_level_input(shape_4d_default):
     with pytest.raises(
         TypeError, match="Got object type <class 'int'> at idx 1"
     ):
-        _check_second_level_input(["foo", 1], pd.DataFrame({"foo", [1, 2]}))
+        _check_second_level_input(["foo", 1], pd.DataFrame({"foo": [1, 2]}))
 
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default]
@@ -277,7 +277,9 @@ def test_check_second_level_input(shape_4d_default):
     with pytest.raises(
         TypeError, match="Got object type <class 'function'> at idx 1"
     ):
-        _check_second_level_input([*input_models, obj], pd.DataFrame())
+        _check_second_level_input(
+            [*input_models, obj], pd.DataFrame({"foo": [1, 2]})
+        )
 
 
 def test_check_second_level_input_list_wrong_type():
@@ -311,7 +313,7 @@ def test_check_second_level_input_dataframe():
         "'subject_label', 'map_name' and 'effects_map_path'",
     ):
         _check_second_level_input(
-            pd.DataFrame(columns=["foo", "bar"]), pd.DataFrame()
+            pd.DataFrame(columns=["foo", "bar"]), pd.DataFrame({"foo": [1]})
         )
 
     with pytest.raises(
@@ -325,7 +327,7 @@ def test_check_second_level_input_dataframe():
                     "effects_map_path": ["c", "d"],
                 }
             ),
-            pd.DataFrame(),
+            pd.DataFrame({"foo": [1]}),
         )
 
 
@@ -347,7 +349,7 @@ def test_check_second_level_input_confounds(shape_4d_default):
     ):
         _check_second_level_input(
             input_models * 2,
-            pd.DataFrame(),
+            design_matrix=pd.DataFrame({"foo": [1, 2]}),
             confounds=pd.DataFrame({"foo": [1, 2]}),
         )
 
@@ -361,7 +363,7 @@ def test_check_second_level_input_design_matrix(shape_3d_default):
         shapes=[(*shape_3d_default, 1)]
     )
 
-    _check_second_level_input(fmri_data[0], pd.DataFrame())
+    _check_second_level_input(fmri_data[0], pd.DataFrame({"foo": [1]}))
 
     with pytest.raises(
         ValueError,
