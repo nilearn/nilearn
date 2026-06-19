@@ -13,6 +13,8 @@ It is not a minimalistic example, as it strives to be didactic. It is not
 meant to be copied to analyze new data: many of the steps are unnecessary.
 """
 
+# We ignore some warnings that would otherwise
+# be thrown when reading images.
 import warnings
 
 warnings.filterwarnings(
@@ -86,7 +88,7 @@ show()
 # Load the behavioral labels
 # ..........................
 #
-# Now that the brain images are converted to a data matrix, we can apply
+# Now that the brain images can be converted to a data matrix, we can apply
 # machine-learning to them, for instance to predict the task that the subject
 # was doing. The behavioral labels are stored in a CSV file, separated by
 # spaces.
@@ -103,7 +105,8 @@ print(behavioral)
 # experimental condition: the type of object that was presented to the
 # subject. This is what we are going to try to predict.
 conditions = behavioral["labels"]
-print(conditions)
+print(conditions.value_counts())
+
 
 # %%
 # Restrict the analysis to cats and faces
@@ -214,6 +217,8 @@ decoder.fit(fmri_niimgs_train, conditions_train)
 
 prediction = decoder.predict(fmri_niimgs_test)
 
+# %%
+#
 # The prediction accuracy is calculated on the test data: this is the accuracy
 # of our model on examples it hasn't seen to examine how well the model
 # performs in general.
@@ -246,7 +251,8 @@ for fold, (train, test) in enumerate(cv.split(conditions), start=1):
         len(conditions[test])
     )
     print(
-        f"CV Fold {fold:01d} | Prediction Accuracy: {prediction_accuracy:.3f}"
+        f"CV Fold {fold:01d} | "
+        f"Prediction Accuracy: {prediction_accuracy:.3f}\n"
     )
 
 # %%
@@ -265,6 +271,7 @@ decoder = Decoder(
     scoring="accuracy",
     screening_percentile=100,
     verbose=1,
+    n_jobs=2,
 )
 decoder.fit(fmri_niimgs, conditions)
 
@@ -306,10 +313,11 @@ decoder = Decoder(
     cv=cv,
     screening_percentile=100,
     verbose=1,
+    n_jobs=2,
 )
 decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
-print(f"{decoder.cv_scores_=}")
+print(f"{decoder.cv_scores_['face']=}")
 
 # %%
 # Inspecting the model weights
@@ -321,21 +329,22 @@ print(f"{decoder.cv_scores_=}")
 # ......................................
 #
 # We retrieve the SVC discriminating weights
-coef_ = decoder.coef_
-print(f"{coef_=}")
+# (we round it to make it more readable).
+print(f"{decoder.coef_.round(decimals=3)=}")
 
 # %%
-# It's a numpy array with only one coefficient per voxel:
-print(f"{coef_.shape=}")
+# It's a numpy array with only one coefficient per voxel.
+print(f"{decoder.coef_.shape=}")
 
 # %%
 # To get the Nifti image of these coefficients, we only need to retrieve the
-# `coef_img_` in the decoder and select the class
+# ``coef_img_`` in the decoder and select the class.
 
 coef_img = decoder.coef_img_["face"]
 
 # %%
-# coef_img is now a NiftiImage.  We can save the coefficients as a nii.gz file:
+# ``coef_img`` is now a NiftiImage.
+# We can save the coefficients as a nii.gz file.
 from pathlib import Path
 
 output_dir = Path.cwd() / "results" / "plot_decoding_tutorial"
@@ -347,7 +356,7 @@ decoder.coef_img_["face"].to_filename(output_dir / "haxby_svc_weights.nii.gz")
 # Plotting the :term:`SVM` weights
 # ................................
 #
-# We can plot the weights, using the subject's anatomical as a background
+# We can plot the weights, using the subject's anatomical as a background.
 from nilearn.plotting import view_img
 
 view_img(
@@ -378,11 +387,23 @@ dummy_decoder = Decoder(
     cv=cv,
     screening_percentile=100,
     verbose=1,
+    n_jobs=2,
 )
 dummy_decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
-# Now, we can compare these scores by simply taking a mean over folds
-print(f"{dummy_decoder.cv_scores_=}")
+# %%
+# Now, we can compare these scores by simply taking a mean over folds.
+import numpy as np
+
+print(
+    f"decoder: {np.mean(decoder.cv_scores_['face']).round(decimals=3)} "
+    f"+:- {np.std(decoder.cv_scores_['face']).round(decimals=3)}"
+)
+print(
+    "dummy_decoder: "
+    f"{np.mean(dummy_decoder.cv_scores_['face']).round(decimals=3)} "
+    f"+:- {np.std(dummy_decoder.cv_scores_['face']).round(decimals=3)}"
+)
 
 # %%
 # References
