@@ -1111,7 +1111,9 @@ def _downcast_from_int64_if_possible(data):
 
 
 @fill_doc
-def new_img_like(ref_niimg, data, affine=None, copy_header=True):
+def new_img_like(
+    ref_niimg, data, affine=None, copy_header=True
+) -> Nifti1Image | SurfaceImage:
     """Create a new image of the same class as the reference image.
 
     Parameters
