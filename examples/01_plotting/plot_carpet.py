@@ -17,7 +17,6 @@ from a 4D functional image.
 # see the :ref:`dataset description <adhd_dataset>`.
 #
 from nilearn.datasets import fetch_adhd
-from nilearn.plotting import plot_carpet
 
 adhd_dataset = fetch_adhd(n_subjects=1)
 
@@ -29,9 +28,10 @@ print(
 # %%
 # Deriving a mask
 # ---------------
+#
+# Build an EPI-based mask because we have no anatomical data
 from nilearn import masking
 
-# Build an EPI-based mask because we have no anatomical data
 mask_img = masking.compute_epi_mask(adhd_dataset.func[0])
 
 # %%
@@ -39,36 +39,65 @@ mask_img = masking.compute_epi_mask(adhd_dataset.func[0])
 # -------------------------------------
 import matplotlib.pyplot as plt
 
-display = plot_carpet(
+from nilearn.plotting import plot_carpet, show
+
+plot_carpet(
     adhd_dataset.func[0],
     mask_img,
     t_r=adhd_dataset.t_r,
     title="global patterns over time",
 )
 
-display.show()
+show()
 
 # %%
 # Deriving a label-based mask
 # ---------------------------
-# Create a gray matter/white matter/cerebrospinal fluid mask from
-# ICBM152 tissue probability maps.
+#
+# Carpet plots can also be organized,
+# by sorting voxels in different regions of interest.
+# To demonstrate this,
+# let's create and visualize
+# a gray matter/white matter/cerebrospinal fluid mask
+# from ICBM152 tissue probability maps.
 import numpy as np
 
 from nilearn import image
 from nilearn.datasets import fetch_icbm152_2009
+from nilearn.plotting import plot_roi
 
 atlas = fetch_icbm152_2009()
-atlas_img = image.concat_imgs((atlas["gm"], atlas["wm"], atlas["csf"]))
-map_labels = {"Gray Matter": 1, "White Matter": 2, "Cerebrospinal Fluid": 3}
+
+atlas_img = image.concat_imgs(
+    (
+        atlas["gm"],
+        atlas["wm"],
+        atlas["csf"],
+    )
+)
+
+map_labels = {
+    "Gray Matter": 1,
+    "White Matter": 2,
+    "Cerebrospinal Fluid": 3,
+}
 
 atlas_data = atlas_img.get_fdata()
+
 discrete_version = np.argmax(atlas_data, axis=3) + 1
 discrete_version[np.max(atlas_data, axis=3) == 0] = 0
+
 discrete_atlas_img = image.new_img_like(
     atlas_img, discrete_version.astype(np.float32)
 )
 
+plot_roi(
+    discrete_atlas_img,
+    cmap="tab10",
+    title="gray matter / white matter / cerebrospinal fluid masks",
+)
+
+show()
 
 # %%
 # Visualizing global patterns, separated by tissue type
@@ -84,6 +113,6 @@ display = plot_carpet(
     title="global patterns over time separated by tissue type",
 )
 
-plt.show()
+show()
 
 # sphinx_gallery_dummy_images=1
