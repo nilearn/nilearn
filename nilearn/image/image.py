@@ -2411,7 +2411,9 @@ def concat_imgs(
     return new_img_like(first_niimg, data, first_niimg.affine)
 
 
-def largest_connected_component_img(imgs):
+def largest_connected_component_img(
+    imgs,
+) -> Nifti1Image | list[Nifti1Image]:
     """Return the largest connected component of an image or list of images.
 
     .. nilearn_versionadded:: 0.3.1
