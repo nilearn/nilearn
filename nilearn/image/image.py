@@ -926,7 +926,7 @@ def mean_img(
     )
 
 
-def swap_img_hemispheres(img):
+def swap_img_hemispheres(img) -> Nifti1Image:
     """Perform swapping of hemispheres in the indicated NIfTI image.
 
        Use case: synchronizing ROIs across hemispheres.
