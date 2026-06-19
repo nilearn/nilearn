@@ -6,7 +6,8 @@ A common quality control step for functional MRI data is to visualize the data
 over time in a carpet plot (also known as a Power plot or a grayplot).
 
 The :func:`~nilearn.plotting.plot_carpet()` function generates a carpet plot
-from a 4D functional image.
+from a 4D functional image,
+where each row in the plot is the time-series for a given voxel.
 
 This figure was originally developed in :footcite:t:`Power2017`.
 """
