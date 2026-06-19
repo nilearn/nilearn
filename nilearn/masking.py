@@ -330,12 +330,16 @@ def compute_epi_mask(
 
     %(lower_cutoff)s
         default=0.2.
+
     %(upper_cutoff)s
         default=0.85.
+
     %(connected)s
         default=True.
+
     %(opening)s
         default=2.
+
     ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and infs)
         found in the images will be replaced by zeros
@@ -344,6 +348,7 @@ def compute_epi_mask(
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
+
     %(target_affine)s
 
         .. note::
@@ -368,19 +373,27 @@ def compute_epi_mask(
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
     >>> from nilearn.masking import compute_epi_mask
-    >>> affine = np.eye(4)
+    >>>
     >>> mean = 10
-    >>> std_dev = .9
-    >>> data = np.random.normal(loc=mean, scale=std_dev, size=(10, 10, 10, 10))
+    >>> std_dev = 0.9
+    >>> data = np.random.default_rng(42).normal(loc=mean,
+    ...     scale=std_dev,
+    ...     size=(10, 10, 10, 10),
+    ...     )
+    >>>
     >>> # Visual inspection of data histogram
-    >>> hist, _=np.histogram(data, bins=10)
-    >>> print(hist)
-    >>> img = Nifti1Image(data, affine)
-    >>> img_mask = compute_epi_mask(img,lower_cutoff=.1, upper_cutoff=.9)
+    >>> hist, _= np.histogram(data, bins=10)
+    >>> hist
+    array([   2,   43,  270, 1275, 2707, 3228, 1809,  562,   96,    8])
+    >>>
+    >>> img = Nifti1Image(data, affine=np.eye(4))
+    >>>
+    >>> img_mask = compute_epi_mask(img, opening=False)
+    >>>
     >>> # Counting masked values
-    >>> mask_count=np.count_nonzero(img_mask.get_fdata())
-    >>> print(f" masked {mask_count} from 10000 voxels")
-
+    >>> mask_count = np.count_nonzero(img_mask.get_fdata())
+    >>> mask_count
+    677
     """
     check_params(locals())
     logger.log("EPI mask computation", verbose)
