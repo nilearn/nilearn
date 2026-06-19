@@ -964,7 +964,7 @@ def swap_img_hemispheres(img):
     return out_img
 
 
-def index_img(imgs, index):
+def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
     """Indexes into a image in the last dimension.
 
     Common use cases include extracting an image out of `img` or
