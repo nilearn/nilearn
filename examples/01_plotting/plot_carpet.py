@@ -7,6 +7,8 @@ over time in a carpet plot (also known as a Power plot or a grayplot).
 
 The :func:`~nilearn.plotting.plot_carpet()` function generates a carpet plot
 from a 4D functional image.
+
+This figure was originally developed in :footcite:t:`Power2017`.
 """
 
 # %%
@@ -114,5 +116,12 @@ display = plot_carpet(
 )
 
 show()
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::
+#
 
 # sphinx_gallery_dummy_images=1
