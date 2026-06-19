@@ -3053,7 +3053,7 @@ def check_niimg_4d(
     niimg: Any,
     return_iterator: Literal[False, True] = False,
     dtype: Any = None,
-):
+) -> Nifti1Image | Iterable[Nifti1Image]:
     """Check that niimg is a proper 4D niimg-like object and load it.
 
     Parameters
