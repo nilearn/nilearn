@@ -369,14 +369,14 @@ def compute_epi_mask(
     >>> from nibabel import Nifti1Image
     >>> from nilearn.masking import compute_epi_mask
     >>> affine = np.eye(4)
-    >>> mean=10
-    >>> std_dev=.9
-    >>> data = np.random.normal(loc=mean,scale=std_dev,size=(10,10,10,10))
+    >>> mean = 10
+    >>> std_dev = .9
+    >>> data = np.random.normal(loc=mean, scale=std_dev, size=(10, 10, 10, 10))
     >>> # Visual inspection of data histogram
-    >>> hist,_=np.histogram(data,bins=10)
+    >>> hist, _=np.histogram(data, bins=10)
     >>> print(hist)
-    >>> img = Nifti1Image(data,affine)
-    >>> img_mask = compute_epi_mask(img,lower_cutoff=.1,upper_cutoff=.9)
+    >>> img = Nifti1Image(data, affine)
+    >>> img_mask = compute_epi_mask(img,lower_cutoff=.1, upper_cutoff=.9)
     >>> # Counting masked values
     >>> mask_count=np.count_nonzero(img_mask.get_fdata())
     >>> print(f" masked {mask_count} from 10000 voxels")
@@ -589,7 +589,7 @@ def compute_background_mask(
     >>> data = np.random.default_rng(42).random((2,3,4))
     >>>
     >>> # Set background to zero:
-    >>> data[0:3,0:2,0:3] = 0
+    >>> data[0:3, 0:2, 0:3] = 0
     >>> data.round(decimals=3)
     array([[[0.   , 0.   , 0.   , 0.697],
             [0.   , 0.   , 0.   , 0.786],
