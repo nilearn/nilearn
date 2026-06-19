@@ -810,7 +810,7 @@ def mean_img(
     verbose=0,
     n_jobs=1,
     copy_header=True,
-):
+) -> Nifti1Image | SurfaceImage:
     """Compute the mean over images.
 
     This can be a mean over time or the 4th dimension for a volume,
