@@ -419,7 +419,9 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
 
 
 @fill_doc
-def smooth_img(imgs, fwhm):
+def smooth_img(
+    imgs, fwhm
+) -> Nifti1Image | SurfaceImage | list[Nifti1Image] | list[SurfaceImage]:
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of `arr`.
