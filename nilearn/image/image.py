@@ -2487,7 +2487,7 @@ def largest_connected_component_img(imgs):
     return ret[0] if single_img else ret
 
 
-def copy_img(img):
+def copy_img(img) -> Nifti1Image:
     """Copy an image to a nibabel.Nifti1Image.
 
     Parameters
