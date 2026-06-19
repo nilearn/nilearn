@@ -2231,7 +2231,7 @@ def concat_imgs(
     memory_level=0,
     auto_resample=False,
     verbose=0,
-):
+) -> Nifti1Image | SurfaceImage:
     """Concatenate a list of images of varying lengths.
 
     The image list can contain:
@@ -2311,12 +2311,13 @@ def concat_imgs(
         if len(niimgs) == 1:
             return niimgs[0]
 
+        niimgs = list(niimgs)
         for i, img in enumerate(niimgs):
             check_polymesh_equal(img.mesh, niimgs[0].mesh)
             niimgs[i] = at_least_2d(img)
 
         if dtype is None:
-            dtype = extract_data(niimgs[0]).dtype
+            dtype = get_surface_data(niimgs[0]).dtype
 
         output_data = {}
         for part in niimgs[0].data.parts:
@@ -2343,7 +2344,10 @@ def concat_imgs(
 
     iterator, literator = itertools.tee(iter(niimgs))
     try:
-        first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
+        first_niimg = check_niimg(
+            next(literator),
+            ensure_ndim=ndim,  # type: ignore[arg-type]
+        )
     except StopIteration as e:
         raise TypeError("Cannot concatenate empty objects") from e
     except DimensionError as exc:
@@ -2366,7 +2370,10 @@ def concat_imgs(
     for niimg in literator:
         # We check the dimensionality of the niimg
         try:
-            niimg = check_niimg(niimg, ensure_ndim=ndim)
+            niimg = check_niimg(
+                niimg,
+                ensure_ndim=ndim,  # type: ignore[arg-type]
+            )
         except DimensionError as exc:
             # Keep track of the additional dimension in the error
             exc.increment_stack_counter()
@@ -2376,7 +2383,9 @@ def concat_imgs(
     target_shape = first_niimg.shape[:3]
     if dtype is None:
         dtype = _get_data(first_niimg).dtype
-    data = np.ndarray((*target_shape, sum(lengths)), order="F", dtype=dtype)
+    data: np.ndarray = np.ndarray(
+        (*target_shape, sum(lengths)), order="F", dtype=dtype
+    )
     cur_4d_index = 0
     for index, (size, niimg) in enumerate(
         zip(
