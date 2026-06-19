@@ -1,5 +1,8 @@
+from typing import cast
+
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.conftest import (
@@ -8,6 +11,7 @@ from nilearn.decomposition.tests.conftest import (
 )
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
 
@@ -105,6 +109,7 @@ def test_dict_learning(
         assert recovered_maps >= 2
 
 
+@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_component_sign(
@@ -130,5 +135,9 @@ def test_component_sign(
     check_decomposition_estimator(dict_learning, data_type)
 
     for mp in iter_img(dict_learning.components_img_):
-        mp = get_data(mp) if data_type == "nifti" else get_surface_data(mp)
-        assert np.sum(mp[mp <= 0]) <= np.sum(mp[mp > 0])
+        data = (
+            get_data(cast(Nifti1Image, mp))
+            if data_type == "nifti"
+            else get_surface_data(cast(SurfaceImage, mp))
+        )
+        assert np.sum(data[data <= 0]) <= np.sum(data[data > 0])

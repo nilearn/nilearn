@@ -10,7 +10,7 @@ import functools
 import inspect
 import warnings
 from pathlib import Path
-from typing import overload
+from typing import cast, overload
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,6 +20,7 @@ from matplotlib import get_backend
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.gridspec import GridSpecFromSubplotSpec
 from matplotlib.ticker import MaxNLocator
+from nibabel import Nifti1Image
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import logger
@@ -1210,7 +1211,7 @@ def plot_prob_atlas(
     for map_img, color, thr in zip(
         iter_img(maps_img), color_list, threshold, strict=False
     ):
-        data = get_data(map_img)
+        data = get_data(cast(Nifti1Image, map_img))
         # To threshold or choose the level of the contours
         thr = check_threshold(
             thr, data, percentile_func=fast_abs_percentile, name="threshold"

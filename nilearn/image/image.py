@@ -9,7 +9,7 @@ import glob
 import itertools
 import math
 import warnings
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, TypeGuard, get_args, overload
@@ -1049,7 +1049,7 @@ def _index_img(img: Nifti1Image, index):
     return new_img_like(img, data, img.affine)
 
 
-def iter_img(imgs):
+def iter_img(imgs) -> Iterator[Nifti1Image | SurfaceImage]:
     """Iterate over images.
 
     Could be along the the 4th dimension for 4D Niimg-like object
@@ -1075,7 +1075,7 @@ def iter_img(imgs):
             index_img(imgs, i) for i in range(at_least_2d(imgs).shape[1])
         )
         return output
-    return check_niimg_4d(imgs, return_iterator=True)
+    return iter(check_niimg_4d(imgs, return_iterator=True))
 
 
 def _downcast_from_int64_if_possible(data):
