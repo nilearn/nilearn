@@ -78,8 +78,8 @@ show()
 # Haxby study is available:
 mask_filename = haxby_dataset.mask_vt[0]
 
-# Let's visualize it, using the subject's anatomical image as a
-# background
+# Let's visualize it,
+# using the subject's anatomical image as a background
 plot_roi(mask_filename, bg_img=haxby_dataset.anat[0], cmap="Paired")
 
 show()
