@@ -14,6 +14,7 @@ See :ref:`plotting` for more details.
 # %%
 # Data fetcher
 # ------------
+#
 # Retrieve destrieux parcellation in fsaverage5 space from nilearn
 # and create a :obj:`~nilearn.surface.SurfaceImage` instance with it.
 from nilearn.datasets import (
@@ -33,14 +34,17 @@ destrieux_atlas = SurfaceImage(
     },
 )
 
+# %%
 # Retrieve fsaverage5 surface dataset for the plotting background.
 # It contains the surface template as pial and inflated version.
 fsaverage_meshes = load_fsaverage()
 
+# %%
 # The fsaverage meshes contains the FileMesh objects:
 print(f"{fsaverage_meshes['pial'].parts['left']=}")
 print(f"{fsaverage_meshes['inflated'].parts['left']=}")
 
+# %%
 # The fsaverage data contains file names pointing to the file locations
 # The sulcal depth maps will be used for shading.
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
@@ -49,33 +53,38 @@ print(f"{fsaverage_sulcal=}")
 # %%
 # Visualization
 # -------------
-
-# %%
+#
 # Destrieux parcellation on pial surface
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 from nilearn.plotting import plot_surf_roi, show
 
+common_plotting_params = {
+    "roi_map": destrieux_atlas,
+    "hemi": "left",
+    "bg_on_data": True,
+    "bg_map": fsaverage_sulcal,
+    "colorbar": False,
+}
+
 plot_surf_roi(
-    roi_map=destrieux_atlas,
-    hemi="left",
     view="lateral",
-    bg_map=fsaverage_sulcal,
-    bg_on_data=True,
     title="Destrieux parcellation on sulcal surface",
+    **common_plotting_params,
 )
+
+show()
 
 # %%
 # Destrieux parcellation on inflated surface with different views
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 for view in ["lateral", "posterior", "ventral"]:
     plot_surf_roi(
         surf_mesh=fsaverage_meshes["inflated"],
-        roi_map=destrieux_atlas,
-        hemi="left",
         view=view,
-        bg_map=fsaverage_sulcal,
-        bg_on_data=True,
         title=f"Destrieux parcellation on inflated surface\n{view} view",
+        **common_plotting_params,
     )
 
 show()
@@ -83,25 +92,28 @@ show()
 # %%
 # Destrieux parcellation with custom view: explicitly set angle
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 elev, azim = 210.0, 90.0  # appropriate for visualizing, e.g., the OTS
+
 plot_surf_roi(
     surf_mesh=fsaverage_meshes["inflated"],
-    roi_map=destrieux_atlas,
-    hemi="left",
     view=(elev, azim),
-    bg_map=fsaverage_sulcal,
-    bg_on_data=True,
     title="Arbitrary view of Destrieux parcellation",
+    **common_plotting_params,
 )
+
+show()
 
 # %%
 # Display connectome from surface parcellation
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 # The following code extracts 3D coordinates of surface parcels
 # (also known as labels in the Freesurfer naming convention).
 # To do so we get the pial surface of fsaverage subject,
 # get the :term:`vertices<vertex>` contained in each parcel
 # and compute the mean location to obtain the coordinates.
+#
 import numpy as np
 
 from nilearn.plotting import plot_connectome, view_connectome
@@ -118,13 +130,17 @@ for hemi in ["left", "right"]:
 # 3D coordinates of parcels
 coordinates = np.array(coordinates)
 
+# %%
 # We now make a synthetic connectivity matrix that connects labels
 # between left and right hemispheres.
+#
+
 n_parcels = len(coordinates)
 corr = np.zeros((n_parcels, n_parcels))
 n_parcels_hemi = n_parcels // 2
 corr[np.arange(n_parcels_hemi), np.arange(n_parcels_hemi) + n_parcels_hemi] = 1
 corr = corr + corr.T
+
 
 plot_connectome(
     adjacency_matrix=corr,
@@ -137,10 +153,15 @@ show()
 # %%
 # 3D visualization in a web browser
 # ---------------------------------
+#
+# view_surf with plotly
+# ^^^^^^^^^^^^^^^^^^^^^
+#
 # An alternative to :func:`~nilearn.plotting.plot_surf_roi` is to use
 # :func:`~nilearn.plotting.view_surf`
 # for more interactive visualizations in a web browser.
 # See :ref:`interactive-surface-plotting` for more details.
+#
 from nilearn.plotting import view_surf
 
 view = view_surf(
@@ -157,6 +178,9 @@ view
 # view.open_in_browser()
 
 # %%
+# view_surf with niivue
+# ^^^^^^^^^^^^^^^^^^^^^
+#
 # Note that you can also specify "niivue"
 # as plotting engine to visualize surfaces.
 #
@@ -167,25 +191,23 @@ view = view_surf(
     symmetric_cmap=False,
     engine="niivue",
 )
-# In a notebook, if ``view`` is the output of a cell,
-# it will be displayed below the cell
 view
 
-# uncomment this to open the plot in a web browser:
-# view.open_in_browser()
 
 # %%
+# view_connectome
+# ^^^^^^^^^^^^^^^
+#
 # you can also use :func:`~nilearn.plotting.view_connectome`
 # to open an interactive view of the connectome.
+#
 view = view_connectome(
     corr,
     coordinates,
     edge_threshold="90%",
 )
-
-# uncomment this to open the plot in a web browser:
-# view.open_in_browser()
 view
+
 
 # %%
 # References
