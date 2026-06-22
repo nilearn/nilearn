@@ -1059,6 +1059,14 @@ def _index_img(img: Nifti1Image, index):
     return new_img_like(img, data, img.affine)
 
 
+@overload
+def iter_img(imgs: SurfaceImage) -> Iterator[SurfaceImage]: ...
+
+
+@overload
+def iter_img(imgs: NiimgLike) -> Iterator[Nifti1Image]: ...
+
+
 def iter_img(imgs) -> Iterator[Nifti1Image | SurfaceImage]:
     """Iterate over images.
 
