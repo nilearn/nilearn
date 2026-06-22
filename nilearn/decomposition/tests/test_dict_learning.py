@@ -11,7 +11,6 @@ from nilearn.decomposition.tests.conftest import (
 )
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
 
@@ -138,6 +137,6 @@ def test_component_sign(
         data = (
             get_data(cast(Nifti1Image, mp))
             if data_type == "nifti"
-            else get_surface_data(cast(SurfaceImage, mp))
+            else get_surface_data(mp)
         )
         assert np.sum(data[data <= 0]) <= np.sum(data[data > 0])
