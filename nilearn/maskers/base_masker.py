@@ -6,7 +6,7 @@ import json
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
-from typing import Any, cast, overload
+from typing import Any, overload
 
 import numpy as np
 from joblib import Memory
@@ -475,14 +475,15 @@ class BaseMasker(_BaseMasker):
 
         # ensure that the mask_img_ is a 3D binary image
         tmp = check_niimg(self.mask_img, atleast_4d=True)
+
         mask_data = safe_get_data(tmp, ensure_finite=True)
         mask = mask_data.astype(bool).all(axis=3)
-        mask_img_ = new_img_like(cast(Nifti1Image, self.mask_img), mask)
+        mask_img_ = new_img_like(tmp, mask)
 
         # Just check that the mask is valid
         load_mask_img(mask_img_)
         if imgs is not None:
-            check_compatibility_mask_and_images(self.mask_img, imgs)
+            check_compatibility_mask_and_images(mask_img_, imgs)
 
         return mask_img_
 
