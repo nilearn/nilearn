@@ -966,6 +966,14 @@ def swap_img_hemispheres(img) -> Nifti1Image:
     return out_img
 
 
+@overload
+def index_img(imgs: SurfaceImage, index) -> SurfaceImage: ...
+
+
+@overload
+def index_img(imgs: NiimgLike, index) -> Nifti1Image: ...
+
+
 def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
     """Indexes into a image in the last dimension.
 
