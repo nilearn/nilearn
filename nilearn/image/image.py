@@ -740,7 +740,9 @@ def crop_img(
     >>> cropped_img.shape
     (5, 6, 5)
     >>> offset
-    (slice(0, 5, None), slice(0, 6, None), slice(2, 7, None))
+    (slice(np.int64(0), np.int64(5), None),
+     slice(np.int64(0), np.int64(6), None),
+     slice(np.int64(2), np.int64(7), None))
 
     """
     check_params(locals())
