@@ -2087,6 +2087,30 @@ def clean_img(
              [-0.167,  0.333, -0.167]],
             [[-0.167,  0.333, -0.167],
              [-0.167,  0.333, -0.167]]]])
+
+    .. plot::
+
+        >>>    import numpy as np
+        >>>    from nibabel import Nifti1Image
+        >>>    from nilearn.image import clean_img
+        >>>
+        >>>    t = np.linspace(1, 30, 100)
+        >>>    signal = np.cos(t) * 2 + t - 1
+        ...             + np.random.default_rng(42).normal(size=t.shape)
+        >>>
+        >>>    raw_data = np.broadcast_to(signal, (2, 2, 2, 100))
+        >>>    raw_img = Nifti1Image(raw_data, affine=np.eye(4))
+        >>>
+        >>>    cleaned_img = clean_img(raw_img,
+        >>>                            low_pass=0.2,
+        ...                            t_r = 1,
+        ...                            standardize=None)
+        >>>    cleaned_data = cleaned_img.get_fdata()
+        >>>
+        >>>    plt.plot(t, raw_data[1, 1, 1], color="red")
+        >>>    plt.plot(t, cleaned_data[1, 1, 1], color="green")
+        >>>    plt.legend(["raw", "cleaned"])
+        >>>    plt.show()
     """
     check_params(locals())
     # Avoid circular import
