@@ -1112,6 +1112,24 @@ def _downcast_from_int64_if_possible(data):
     return data
 
 
+@overload
+def new_img_like(
+    ref_niimg: SurfaceImage,
+    data,
+    affine=...,
+    copy_header: bool = ...,
+) -> SurfaceImage: ...
+
+
+@overload
+def new_img_like(
+    ref_niimg: NiimgLike | Iterable[NiimgLike],
+    data,
+    affine=...,
+    copy_header: bool = ...,
+) -> Nifti1Image: ...
+
+
 @fill_doc
 def new_img_like(
     ref_niimg, data, affine=None, copy_header=True
