@@ -804,6 +804,28 @@ def _compute_surface_mean(imgs: SurfaceImage) -> SurfaceImage:
     return new_img_like(imgs, data=data)
 
 
+@overload
+def mean_img(
+    imgs: SurfaceImage | Iterable[SurfaceImage],
+    target_affine=...,
+    target_shape=...,
+    verbose=...,
+    n_jobs=...,
+    copy_header: bool = ...,
+) -> SurfaceImage: ...
+
+
+@overload
+def mean_img(
+    imgs: NiimgLike | Iterable[NiimgLike],
+    target_affine=...,
+    target_shape=...,
+    verbose=...,
+    n_jobs=...,
+    copy_header: bool = ...,
+) -> Nifti1Image: ...
+
+
 @fill_doc
 def mean_img(
     imgs,
