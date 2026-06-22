@@ -418,6 +418,26 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     return arr
 
 
+@overload
+def smooth_img(imgs: SurfaceImage, fwhm) -> SurfaceImage: ...
+
+
+@overload
+def smooth_img(imgs: NiimgLike, fwhm) -> Nifti1Image: ...
+
+
+@overload
+def smooth_img(
+    imgs: list[SurfaceImage] | tuple[SurfaceImage, ...], fwhm
+) -> list[SurfaceImage]: ...
+
+
+@overload
+def smooth_img(
+    imgs: list[NiimgLike] | tuple[NiimgLike, ...], fwhm
+) -> list[Nifti1Image]: ...
+
+
 @fill_doc
 def smooth_img(
     imgs, fwhm
