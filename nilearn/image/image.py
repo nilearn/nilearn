@@ -2282,6 +2282,30 @@ def load_img(
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 
 
+@overload
+def concat_imgs(
+    niimgs: list[SurfaceImage] | tuple[SurfaceImage, ...],
+    dtype=...,
+    ensure_ndim=...,
+    memory=...,
+    memory_level=...,
+    auto_resample=...,
+    verbose=...,
+) -> SurfaceImage: ...
+
+
+@overload
+def concat_imgs(
+    niimgs: NiimgLike | Iterable[NiimgLike],
+    dtype=...,
+    ensure_ndim=...,
+    memory=...,
+    memory_level=...,
+    auto_resample=...,
+    verbose=...,
+) -> Nifti1Image: ...
+
+
 @fill_doc
 def concat_imgs(
     niimgs,
