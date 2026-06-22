@@ -2495,6 +2495,16 @@ def concat_imgs(
     return new_img_like(first_niimg, data, first_niimg.affine)
 
 
+@overload
+def largest_connected_component_img(imgs: NiimgLike) -> Nifti1Image: ...
+
+
+@overload
+def largest_connected_component_img(
+    imgs: list[NiimgLike] | tuple[NiimgLike, ...],
+) -> list[Nifti1Image]: ...
+
+
 def largest_connected_component_img(
     imgs,
 ) -> Nifti1Image | list[Nifti1Image]:
