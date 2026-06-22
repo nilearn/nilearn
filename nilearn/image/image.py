@@ -427,21 +427,17 @@ def smooth_img(imgs: NiimgLike, fwhm) -> Nifti1Image: ...
 
 
 @overload
-def smooth_img(
-    imgs: list[SurfaceImage] | tuple[SurfaceImage, ...], fwhm
-) -> list[SurfaceImage]: ...
+def smooth_img(imgs: Iterable[SurfaceImage], fwhm) -> list[SurfaceImage]: ...
 
 
 @overload
-def smooth_img(
-    imgs: list[NiimgLike] | tuple[NiimgLike, ...], fwhm
-) -> list[Nifti1Image]: ...
+def smooth_img(imgs: Iterable[NiimgLike], fwhm) -> list[Nifti1Image]: ...
 
 
 @fill_doc
 def smooth_img(
     imgs, fwhm
-) -> Nifti1Image | SurfaceImage | list[Nifti1Image] | list[SurfaceImage]:
+) -> NiimgLike | SurfaceImage | list[NiimgLike] | list[SurfaceImage]:
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of `arr`.
@@ -1135,7 +1131,7 @@ def iter_img(imgs) -> Iterator[Nifti1Image | SurfaceImage]:
             index_img(imgs, i) for i in range(at_least_2d(imgs).shape[1])
         )
         return output
-    return iter(check_niimg_4d(imgs, return_iterator=True))
+    return check_niimg_4d(imgs, return_iterator=True)
 
 
 def _downcast_from_int64_if_possible(data):
@@ -2304,7 +2300,7 @@ def load_img(
 
 @overload
 def concat_imgs(
-    niimgs: list[SurfaceImage] | tuple[SurfaceImage, ...],
+    niimgs: SurfaceImage | Iterable[SurfaceImage],
     dtype=...,
     ensure_ndim=...,
     memory=...,
@@ -2911,7 +2907,7 @@ def check_niimg(
     dtype=...,
     return_iterator: Literal[True] = ...,
     wildcards=...,
-) -> Iterable[Nifti1Image]: ...
+) -> Iterator[Nifti1Image]: ...
 
 
 @fill_doc
@@ -3170,7 +3166,7 @@ def check_niimg_4d(
     niimg: Any,
     return_iterator: Literal[True] = ...,
     dtype: Any = ...,
-) -> Iterable[Nifti1Image]: ...
+) -> Iterator[Nifti1Image]: ...
 
 
 @fill_doc
@@ -3178,7 +3174,7 @@ def check_niimg_4d(
     niimg: Any,
     return_iterator: Literal[False, True] = False,
     dtype: Any = None,
-) -> Nifti1Image | Iterable[Nifti1Image]:
+) -> Nifti1Image | Iterator[Nifti1Image]:
     """Check that niimg is a proper 4D niimg-like object and load it.
 
     Parameters
