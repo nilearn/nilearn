@@ -740,9 +740,7 @@ def crop_img(
     >>> cropped_img.shape
     (5, 6, 5)
     >>> offset
-    (slice(np.int64(0), np.int64(5), None),
-     slice(np.int64(0), np.int64(6), None),
-     slice(np.int64(2), np.int64(7), None))
+    (slice(0, 5, None), slice(0, 6, None), slice(2, 7, None))
 
     """
     check_params(locals())
@@ -775,7 +773,9 @@ def crop_img(
         start = np.maximum(start - 1, 0)
         end = np.minimum(end + 1, data.shape[:3])
 
-    slices = list(map(slice, start, end))[:3]
+    slices = list(map(slice, [int(x) for x in start], [int(x) for x in end]))[
+        :3
+    ]
     cropped_im = _crop_img_to(img, slices, copy=copy, copy_header=copy_header)
     return (cropped_im, tuple(slices)) if return_offset else cropped_im
 
