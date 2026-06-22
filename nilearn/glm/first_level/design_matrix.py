@@ -327,9 +327,8 @@ def make_first_level_design_matrix(
         holding the computed design matrix, the index being the frames_times
         and each column a regressor.
 
-    Example
-    -------
-
+    Examples
+    --------
     >>> import numpy as np
     >>> from pandas import DataFrame
     >>> from nilearn.glm.first_level import make_first_level_design_matrix
