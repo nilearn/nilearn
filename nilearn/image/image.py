@@ -455,8 +455,11 @@ def smooth_img(
 
     Returns
     -------
-    Niimg-like object, :obj:~nilearn.surface.SurfaceImage.
-    Smoothed input image or surface.
+    :obj:`~nibabel.nifti1.Nifti1Image`, :obj:`~nilearn.surface.SurfaceImage`, \
+        :obj:`list` of :obj:`~nibabel.nifti1.Nifti1Image`, or :obj:`list` \
+        of :obj:`~nilearn.surface.SurfaceImage`
+        Smoothed input image(s) or surface(s).
+        A :obj:`list` is returned if ``imgs`` was passed as an iterable.
 
     Examples
     --------
@@ -2536,7 +2539,8 @@ def largest_connected_component_img(
 
     Returns
     -------
-    3D Niimg-like object or list of
+    :obj:`~nibabel.nifti1.Nifti1Image` or :obj:`list` of \
+        :obj:`~nibabel.nifti1.Nifti1Image`
         Image or list of images containing the largest connected component.
 
     Notes
@@ -2609,7 +2613,7 @@ def copy_img(img) -> Nifti1Image:
 
     Returns
     -------
-    img_copy : image
+    img_copy : :obj:`~nibabel.nifti1.Nifti1Image`
         copy of input (data, affine and header)
 
     Examples
