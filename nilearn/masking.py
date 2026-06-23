@@ -337,7 +337,7 @@ def compute_epi_mask(
     target_shape=None,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a brain mask from :term:`fMRI` data in 3D or \
     4D :class:`numpy.ndarray`.
 
