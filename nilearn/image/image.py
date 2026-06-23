@@ -3236,7 +3236,7 @@ def check_niimg_4d(
     >>> from nilearn.image import check_niimg_4d
     >>> checked_img = check_niimg_4d(img_4d)
     >>>
-    >>> Now let's try with a 3D image
+    >>> # Now let's try with a 3D image.
     >>> from nibabel import Nifti1Image
     >>> img_3d = Nifti1Image(
     ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
