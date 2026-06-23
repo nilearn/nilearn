@@ -892,3 +892,9 @@ authors:
     family-names: Nájera
     website: https://github.com/Titan-C
     affiliation: Checkmk
+  - given-names: Marco
+    family-names: Bedini
+    website: https://github.com/mbedini
+    affiliation: Institut de Neurosciences de la Timone, University of Aix-Marseille, France
+    email: marco.bedini4@gmail.com
+    orcid: https://orcid.org/0000-0002-2018-5175
