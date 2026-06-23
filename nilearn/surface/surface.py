@@ -787,16 +787,16 @@ def vol_to_surf(
     --------
     When both the pial and white matter surface are available, the recommended
     approach is to provide the `inner_mesh` to rely on the 'depth' sampling
-    strategy::
+    strategy.
 
-     >>> from nilearn import datasets, surface
-     >>> fsaverage = datasets.fetch_surf_fsaverage("fsaverage5")
-     >>> img = datasets.load_mni152_template(2)
-     >>> surf_data = surface.vol_to_surf(
-     ...     img,
-     ...     surf_mesh=fsaverage["pial_left"],
-     ...     inner_mesh=fsaverage["white_left"],
-     ... )
+    >>> from nilearn import datasets, surface
+    >>> fsaverage = datasets.fetch_surf_fsaverage("fsaverage5")
+    >>> img = datasets.load_mni152_template(2)
+    >>> surf_data = surface.vol_to_surf(
+    ...     img,
+    ...     surf_mesh=fsaverage["pial_left"],
+    ...     inner_mesh=fsaverage["white_left"],
+    ... )
 
     """
     # avoid circular import
@@ -2012,7 +2012,7 @@ class SurfaceImage:
         >>> from nilearn.surface import SurfaceImage
         >>> from nilearn.datasets import load_fsaverage
         >>> from nilearn.datasets import load_sample_motor_activation_image
-
+        >>>
         >>> fsavg = load_fsaverage()
         >>> vol_img = load_sample_motor_activation_image()
         >>> img = SurfaceImage.from_volume(fsavg["white_matter"], vol_img)
