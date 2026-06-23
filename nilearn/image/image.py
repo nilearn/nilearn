@@ -2097,6 +2097,8 @@ def clean_img(
 
         >>> import numpy as np
         >>> from nibabel import Nifti1Image
+        >>> from matplotlib import pyplot as plt
+        >>>
         >>> from nilearn.image import clean_img
         >>>
         >>> # Create a nifti image where each voxel
@@ -2110,15 +2112,15 @@ def clean_img(
         >>> # Clean the image with a low pass filter
         >>> # and plot the results.
         >>> cleaned_img = clean_img(raw_img,
-        >>>                         low_pass=0.2,
+        ...                         low_pass=0.2,
         ...                         t_r = 1,
         ...                         standardize=None)
         >>>
         >>> cleaned_data = cleaned_img.get_fdata()
         >>>
-        >>> plt.plot(t, raw_data[1, 1, 1], color="red")
-        >>> plt.plot(t, cleaned_data[1, 1, 1], color="green")
-        >>> plt.legend(["raw", "cleaned"])
+        >>> fig = plt.plot(t, raw_data[1, 1, 1], color="red")
+        >>> fig = plt.plot(t, cleaned_data[1, 1, 1], color="green")
+        >>> leg = plt.legend(["raw", "cleaned"])
         >>> plt.show()
     """
     check_params(locals())
