@@ -714,7 +714,8 @@ def crop_img(
         Toggles adding 1-voxel of 0s around the border.
 
     return_offset : :obj:`bool`, default=False
-        Specifies whether to return a tuple of the removed padding.
+        Specifies whether to return the voxels from the
+        original image that are kept in the output.
 
     %(copy_header)s
 
@@ -722,13 +723,46 @@ def crop_img(
 
     Returns
     -------
-    Niimg-like object or :obj:`tuple`
-        Cropped version of the input image and, if `return_offset=True`,
-        a tuple of tuples representing the number of voxels
-        removed (before, after) the cropped volumes, i.e.:
-        *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
-
+    cropped_im : Niimg-like object
+        Cropped version of the input image
         If the specified image is empty, the original image will be returned.
+
+    offset :  tuple of :py:class:`slice`
+        Returned if ``return_offset=True``.
+        Represents the voxels from the original
+        image kept in the cropped volume.
+        For example:
+
+        .. code-block:: python
+
+            [
+                slice(dim1_first_voxel, dim1_last_voxel - 1, None),
+                slice(dim2_first_voxel, dim2_last_voxel - 1, None),
+                ...,
+                slice(dimN_first_voxel, dimN_last_voxel - 1, None),
+            ]
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>>
+    >>> affine = np.diag((4, 3, 2, 1))
+    >>> data = np.zeros((5, 6, 7))
+    >>> data[2:4, 1:5, 3:6] = 1
+    >>> data[1, 1:5, 3:6] = 0.49
+    >>>
+    >>> img = Nifti1Image(data, affine=affine)
+    >>> img.shape
+    (5, 6, 7)
+    >>>
+    >>> cropped_img, offset = crop_img(img, return_offset=True)
+    >>>
+    >>> cropped_img.shape
+    (5, 6, 5)
+    >>> offset
+    (slice(0, 5, None), slice(0, 6, None), slice(2, 7, None))
+
     """
     check_params(locals())
 
@@ -760,7 +794,9 @@ def crop_img(
         start = np.maximum(start - 1, 0)
         end = np.minimum(end + 1, data.shape[:3])
 
-    slices = list(map(slice, start, end))[:3]
+    slices = list(map(slice, [int(x) for x in start], [int(x) for x in end]))[
+        :3
+    ]
     cropped_im = _crop_img_to(img, slices, copy=copy, copy_header=copy_header)
     return (cropped_im, tuple(slices)) if return_offset else cropped_im
 

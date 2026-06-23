@@ -355,6 +355,8 @@
 
 .. _Tharun K: https://github.com/tharun634
 
+.. _Thibault de Varax: https://github.com/thibaultdvx
+
 .. _Thiti Premrudeepreechacharn: https://tpremrud.github.io/
 
 .. _Thomas Bazeille: https://github.com/thomasbazeille
