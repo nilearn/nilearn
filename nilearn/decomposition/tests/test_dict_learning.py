@@ -108,7 +108,6 @@ def test_dict_learning(
         assert recovered_maps >= 2
 
 
-@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_component_sign(
