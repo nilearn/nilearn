@@ -552,7 +552,7 @@ def compute_background_mask(
     target_shape=None,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a brain mask for the images by guessing \
     the value of the background from the border of the image.
 
