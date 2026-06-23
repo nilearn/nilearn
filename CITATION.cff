@@ -517,6 +517,12 @@ authors:
     family-names: Flores
     website: https://github.com/marco7877
     affiliation: Basque Center on Cognition Brain and Language
+  - given-names: Marco
+    family-names: Bedini
+    website: https://github.com/mbedini
+    affiliation: Institut de Neurosciences de la Timone, University of Aix-Marseille, France
+    email: marco.bedini4@gmail.com
+    orcid: https://orcid.org/0000-0002-2018-5175
   - given-names: Martin
     family-names: Perez-Guevara
     website: https://github.com/MartinPerez
@@ -892,9 +898,3 @@ authors:
     family-names: Nájera
     website: https://github.com/Titan-C
     affiliation: Checkmk
-  - given-names: Marco
-    family-names: Bedini
-    website: https://github.com/mbedini
-    affiliation: Institut de Neurosciences de la Timone, University of Aix-Marseille, France
-    email: marco.bedini4@gmail.com
-    orcid: https://orcid.org/0000-0002-2018-5175
