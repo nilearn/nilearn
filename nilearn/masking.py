@@ -670,7 +670,7 @@ def compute_multi_background_mask(
     n_jobs=1,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a common mask for several runs or subjects of data.
 
     Uses the mask-finding algorithms to extract masks for each run
