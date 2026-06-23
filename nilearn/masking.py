@@ -756,7 +756,7 @@ def compute_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-):
+) -> Nifti1Image:
     """Compute the whole-brain, grey-matter or white-matter mask.
 
     This mask is calculated using MNI152 1mm-resolution template mask onto the
