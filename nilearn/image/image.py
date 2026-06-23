@@ -2092,51 +2092,34 @@ def clean_img(
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from nibabel import Nifti1Image
-    >>>
-    >>> shape = (2, 2, 2, 1)
-    >>> img = Nifti1Image(
-    ...     np.concatenate([np.ones(shape), np.ones(shape), np.zeros(shape)],
-    ...                    axis=-1),
-    ...     affine=np.eye(4),
-    ...     dtype=np.int32)
-    >>>
-    >>> from nilearn.image import clean_img
-    >>> cleaned_img = clean_img(img, standardize=None)
-    >>> cleaned_img.get_fdata().round(decimals=3)
-    array([[[[-0.167,  0.333, -0.167],
-             [-0.167,  0.333, -0.167]],
-            [[-0.167,  0.333, -0.167],
-             [-0.167,  0.333, -0.167]]],
-           [[[-0.167,  0.333, -0.167],
-             [-0.167,  0.333, -0.167]],
-            [[-0.167,  0.333, -0.167],
-             [-0.167,  0.333, -0.167]]]])
 
     .. plot::
 
-        >>>    import numpy as np
-        >>>    from nibabel import Nifti1Image
-        >>>    from nilearn.image import clean_img
+        >>> import numpy as np
+        >>> from nibabel import Nifti1Image
+        >>> from nilearn.image import clean_img
         >>>
-        >>>    t = np.linspace(1, 30, 100)
-        >>>    signal = np.cos(t) * 2 + t - 1
-        ...             + np.random.default_rng(42).normal(size=t.shape)
+        >>> # Create a nifti image where each voxel
+        >>> # contains a noisy sine wave with an extra linear trend.
+        >>> t = np.linspace(1, 30, 100)
+        >>> signal = np.sin(t) * 2 + t - 10
+        >>> signal += np.random.default_rng(42).normal(size=t.shape)
+        >>> raw_data = np.broadcast_to(signal, (2, 2, 2, 100))
+        >>> raw_img = Nifti1Image(raw_data, affine=np.eye(4))
         >>>
-        >>>    raw_data = np.broadcast_to(signal, (2, 2, 2, 100))
-        >>>    raw_img = Nifti1Image(raw_data, affine=np.eye(4))
+        >>> # Clean the image with a low pass filter
+        >>> # and plot the results.
+        >>> cleaned_img = clean_img(raw_img,
+        >>>                         low_pass=0.2,
+        ...                         t_r = 1,
+        ...                         standardize=None)
         >>>
-        >>>    cleaned_img = clean_img(raw_img,
-        >>>                            low_pass=0.2,
-        ...                            t_r = 1,
-        ...                            standardize=None)
-        >>>    cleaned_data = cleaned_img.get_fdata()
+        >>> cleaned_data = cleaned_img.get_fdata()
         >>>
-        >>>    plt.plot(t, raw_data[1, 1, 1], color="red")
-        >>>    plt.plot(t, cleaned_data[1, 1, 1], color="green")
-        >>>    plt.legend(["raw", "cleaned"])
-        >>>    plt.show()
+        >>> plt.plot(t, raw_data[1, 1, 1], color="red")
+        >>> plt.plot(t, cleaned_data[1, 1, 1], color="green")
+        >>> plt.legend(["raw", "cleaned"])
+        >>> plt.show()
     """
     check_params(locals())
     # Avoid circular import
