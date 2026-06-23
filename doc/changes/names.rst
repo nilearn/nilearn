@@ -213,6 +213,8 @@
 
 .. _Marco Flores: https://github.com/marco7877
 
+.. _Marco Bedini: https://github.com/mbedini
+
 .. _Martin Perez-Guevara: https://github.com/MartinPerez
 
 .. _Martin Wegrzyn: https://github.com/mwegrzyn
