@@ -138,6 +138,8 @@ Enhancements
 
 - :bdg-primary:`Doc` Add API documentation for :class:`~nilearn.connectome.ConnectivityMeasure` to elaborate the requirement for customized ``cov_estimator`` and extra test to ensure the user input is a valid sklearn estimator (:gh:`6074` by `Hao-Ting Wang`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.crop_img` function (:gh:`6316` by `Thibault de Varax`_).
+
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for nine utility functions in the public API: :func:`~nilearn.connectome.cov_to_corr`, :func:`~nilearn.connectome.prec_to_partial`, :func:`~nilearn.glm.expression_to_contrast_vector`, :func:`~nilearn.glm.fdr_threshold`, :func:`~nilearn.glm.first_level.glover_dispersion_derivative`, :func:`~nilearn.glm.first_level.glover_hrf`, :func:`~nilearn.glm.first_level.glover_time_derivative`, :func:`~nilearn.glm.first_level.mean_scaling` and :func:`~nilearn.interfaces.bids.parse_bids_filename` (:gh:`6259` and :gh:`6262` by `Laura Piñero Roig`_).
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.masking.compute_background_mask` (:gh:`6303` by `Marco Flores`_).
