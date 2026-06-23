@@ -2,8 +2,8 @@
 
 .. include:: names.rst
 
-0.14.0.dev
-==========
+0.14.0
+======
 
 ..
     Each changelog entry should begin with one of the following badges:
@@ -17,8 +17,6 @@
 
 HIGHLIGHTS
 ----------
-
-- Nilearn can leverage scikit-learn's Array API-supported estimators to speed up neuroimaging ML analyses using GPU acceleration. See :ref:`user guide page <gpu_usage>`.
 
 .. warning::
 
@@ -48,6 +46,16 @@ HIGHLIGHTS
 
        kaleido.get_chrome_sync()
 
+- Nilearn can leverage scikit-learn's Array API-supported estimators to speed up neuroimaging ML analyses using GPU acceleration. See :ref:`user guide page <gpu_usage>`.
+
+- Fix order of vertices and data for ``fsaverage3`` and ``fsaverage4`` datasets.
+
+- All maskers can now output to pandas or polars dataframe when using ``transform`` or accept such dataframes as input to ``inverse_transform``.
+
+- Accessing the maskers from ``nilearn.input_data`` is no longer possible, they now must be accessed via :mod:`nilearn.maskers`.
+
+- Interactive visualization with :func:`~plotting.view_surf` can now be done using `niivue <https://niivue.com/>`_ as a backend engine.
+
 
 NEW
 ---
@@ -58,20 +66,6 @@ Fixes
 - :bdg-success:`API` Fix bug when ``confounds_strategy=None`` in :func:`~glm.first_level.first_level_from_bids` (:gh:`6247` by `Pierre-Louis Barbarant`_).
 
 - :bdg-dark:`Code` Ensure that maskers ``inverse_transform`` can accept pandas or polars dataframe as input (:gh:`6175` by `Rémi Gau`_).
-
-- :bdg-secondary:`Maint` Allow local installation with ``uv sync`` (:gh:`6024` by `Mathieu Dugré`_)
-
-- :bdg-primary:`Doc` Rewrite :class:`~nilearn.decoding.Decoder` :ref:`example <sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py>` with incorrect nested cross-validation implementation (:gh:`6059` by `Michelle Wang`_).
-
-- :bdg-info:`Plotting` Fix ``nilearn.plotting.view_img`` resampling of non-isotropic images when no background image is used (:gh:`6031` by `Michelle Wang`_).
-
-- :bdg-dark:`Code` Disallow boolean dtype for estimators. (:gh:`6271` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Better checks of dtype for :class:`~surface.SurfaceImage` and :class:`~nilearn.surface.PolyData`. (:gh:`6271` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Ensure that estimators that accept images can work will several datatypes as input and that their methods can output arrays or images of the requested datatype (:gh:`5511` by `Rémi Gau`_).
-
-- :bdg-info:`Plotting` Fix bug introduced in ``0.13.0`` while plotting single valued data with :func:`~nilearn.plotting.plot_roi`.  (:gh:`6122` by `Hande Gözükan`_).
 
 - :bdg-dark:`Code` Keep values equal to threshold while thresholding image with :func:`~nilearn.image.threshold_img`.  (:gh:`6130` by `Hande Gözükan`_).
 
@@ -91,9 +85,24 @@ Fixes
 
 - :bdg-dark:`Code` Fix missing subjects in ADHD dataset phenotypic data. (:gh:`6250` by `Hande Gözükan`_).
 
-- :bdg-info:`Plotting` Fix colors while plotting ROI contours with ``nilearn.plotting.plot_roi`` (:gh:`6245` by `Hande Gözükan`_).
+- :bdg-dark:`Code` Disallow boolean dtype for estimators. (:gh:`6271` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Better checks of dtype for :class:`~surface.SurfaceImage` and :class:`~nilearn.surface.PolyData`. (:gh:`6271` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Ensure that estimators that accept images can work with several datatypes as input and that their methods can output arrays or images of the requested datatype (:gh:`5511` by `Rémi Gau`_).
+
+- :bdg-primary:`Doc` Rewrite :class:`~nilearn.decoding.Decoder` :ref:`example <sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py>` with incorrect nested cross-validation implementation (:gh:`6059` by `Michelle Wang`_).
 
 - :bdg-primary:`Doc` Fix several typos and grammatical errors in the :ref:`introduction tutorial to fMRI decoding <sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py>` (:gh:`6269` by `Kosei Tanno`_).
+
+- :bdg-secondary:`Maint` Allow local installation with ``uv sync`` (:gh:`6024` by `Mathieu Dugré`_)
+
+- :bdg-info:`Plotting` Fix ``nilearn.plotting.view_img`` resampling of non-isotropic images when no background image is used (:gh:`6031` by `Michelle Wang`_).
+
+- :bdg-info:`Plotting` Fix bug introduced in ``0.13.0`` while plotting single valued data with :func:`~nilearn.plotting.plot_roi`.  (:gh:`6122` by `Hande Gözükan`_).
+
+- :bdg-info:`Plotting` Fix colors while plotting ROI contours with ``nilearn.plotting.plot_roi`` (:gh:`6245` by `Hande Gözükan`_).
+
 
 Enhancements
 ------------
@@ -165,6 +174,16 @@ Enhancements
 Changes
 -------
 
+- :bdg-dark:`Code` Remove aggressive garbage collection in safe_get_data for performance, mainly in CI. (:gh:`6039` by `Basile Pinsard`_).
+
+- :bdg-dark:`Code` Ensure input images of :class:`~.glm.first_level.FirstLevelModel` and :class:`~.glm.second_level.SecondLevelModel` have same field of view (for nifti) or compatible meshes (for surfaces) (:gh:`6254` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Ensure implicit mask of :class:`~.glm.first_level.FirstLevelModel` is computed on data from all runs (:gh:`6254` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Ensure input of :class:`~.glm.second_level.SecondLevelModel` cannot be a 5D volume image or list of 2D surface images (:gh:`6254` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` For some input of :class:`~.glm.second_level.SecondLevelModel` check at fit time that number of images match number of row in design matrix (:gh:`6254` by `Rémi Gau`_).
+
 - :bdg-danger:`Deprecation` The function ``nilearn.datasets.utils.load_sample_motor_activation_image`` and ``nilearn.datasets.fetch_neurovault_motor_task`` were removed. Use :func:`~datasets.load_sample_motor_activation_image` instead (:gh:`5995` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The private functions ``nilearn._utils.niimg_conversions.check_niimg*`` have been removed, please use their public equivalent :func:`~image.check_niimg`, :func:`~image.check_niimg_3d` and :func:`~image.check_niimg_4d` (:gh:`5995` by `Rémi Gau`_).
@@ -179,8 +198,6 @@ Changes
 
 - :bdg-danger:`Deprecation` The ``"z_score"`` value for the ``standardize`` parameter is no longer supported. Use ``standardize="z_score_sample"`` instead (:gh:`5995` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Remove aggressive garbage collection in safe_get_data for performance, mainly in CI. (:gh:`6039` by `Basile Pinsard`_).
-
 - :bdg-secondary:`Maint` Refactor and speed up tests for :func:`~plotting.view_img` (:gh:`6072` by `Michelle Wang`_)
 
 - :bdg-secondary:`Maint` Several optional dependencies (``dev``, ``test``, ``doc``...) have been swapped in favor of `dependency groups <https://packaging.python.org/en/latest/specifications/dependency-groups>`_, so they will no longer work when installing Nilearn from pypi. When installing locally, instead of ``pip install '.[dev]'`` do ``pip install . --group dev`` (:gh:`6108` by `Rémi Gau`_).
@@ -188,11 +205,3 @@ Changes
 - :bdg-secondary:`Maint` The optional dependency ``plotly`` has been removed in favor of ``plotting``, so instead of ``pip install 'nilearn[plotly]'`` do ``pip install 'nilearn[plotting]`` (:gh:`6108` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` update fsaverage3 and fsaverage3 datasets on the open-science framework (OSF) with correctly ordered vertices (see :gh:`6127`), add Talairach and AAL atlas to OSF as fall back url in case the primary one fails (:gh:`6246` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Ensure input images of :class:`~.glm.first_level.FirstLevelModel` and :class:`~.glm.second_level.SecondLevelModel` have same field of view (for nifti) or compatible meshes (for surfaces) (:gh:`6254` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Ensure implicit mask of :class:`~.glm.first_level.FirstLevelModel` is computed on data from all runs (:gh:`6254` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Ensure input of :class:`~.glm.second_level.SecondLevelModel` cannot be a 5D volume image or list of 2D surface images (:gh:`6254` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` For some input of :class:`~.glm.second_level.SecondLevelModel` check at fit time that number of images match number of row in design matrix (:gh:`6254` by `Rémi Gau`_).

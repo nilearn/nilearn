@@ -429,6 +429,56 @@ This is also useful for writing unit tests.
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
 
+Examples in docstrings
+^^^^^^^^^^^^^^^^^^^^^^
+
+Where possible an ``Examples`` section should be present in the docstring
+of a public function or method.
+
+To facilitate users to copy-paste those examples,
+they should be written as single block
+with inline comments.
+
+So it is better to do:
+
+      >>> # Generate some signal
+      >>> import numpy as np
+      >>> t = np.linspace(1, 10, 2000)
+      >>> signal = np.cos(t)
+      >>>
+      >>> # Plot it
+      >>> import matplotlib.pyplot as plt
+      >>> plt.plot(t, signal)
+      >>> plt.show()
+
+Than to do:
+
+      Generate some signal
+
+      >>> import numpy as np
+      >>> t = np.linspace(1, 10, 2000)
+      >>> signal = np.cos(t)
+
+      Plot it
+
+      >>> import matplotlib.pyplot as plt
+      >>> plt.plot(t, signal)
+      >>> plt.show()
+
+The latter can still be used to break several independent examples.
+
+Thanks to the `plot_directive <https://matplotlib.org/stable/api/sphinxext_plot_directive_api.html>`_
+from matplotlib,
+it is possible to plot the output of an example directly in the HTML documentation::
+
+  .. plot::
+
+    import matplotlib.pyplot as plt
+    plt.plot([1, 2, 3], [4, 5, 6])
+    plt.title("A plotting example")
+
+
+
 APIs of nilearn objects
 ^^^^^^^^^^^^^^^^^^^^^^^
 
