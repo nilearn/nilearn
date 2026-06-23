@@ -224,6 +224,7 @@ Some other past or present contributors are:
 * `Taylor Hanayik`_: QuantCo
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
 * `Tharun K`_
+* `Thibault de Varax`_: Aramis lab, Paris Brain Institute
 * `Thiti Premrudeepreechacharn`_
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA

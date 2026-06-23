@@ -548,6 +548,7 @@ def test_crop_img_to():
 
 
 def test_crop_img():
+    """Check that correct part was extracted."""
     data = np.zeros((5, 6, 7))
     data[2:4, 1:5, 3:6] = 1
     affine = np.diag((4, 3, 2, 1))
@@ -556,15 +557,30 @@ def test_crop_img():
     cropped_img = crop_img(img)
 
     # correction for padding with "-1"
-    # check that correct part was extracted:
-    # This also corrects for padding
     assert (get_data(cropped_img)[1:-1, 1:-1, 1:-1] == 1).all()
     assert cropped_img.shape == (2 + 2, 4 + 2, 3 + 2)
 
 
+def test_crop_img_return_offset():
+    """Check values of returner offset."""
+    data = np.zeros((5, 6, 7))
+    data[2:4, 1:5, 3:6] = 1
+    affine = np.diag((4, 3, 2, 1))
+    img = Nifti1Image(data, affine=affine)
+
+    _, offset = crop_img(img, return_offset=True)
+
+    assert offset == (
+        slice(np.int64(1), np.int64(5), None),
+        slice(np.int64(0), np.int64(6), None),
+        slice(np.int64(2), np.int64(7), None),
+    )
+
+
 def test_crop_img_copied_header(img_4d_mni_tr2):
-    # Test equality of header fields between input and output
-    # create zero padded data
+    """Test equality of header fields between input and output
+    create zero padded data.
+    """
     data = np.zeros((10, 10, 10, 10))
     data[0:4, 0:4, 0:4, :] = 1
     # replace the img_4d_mni_tr2 values with data
@@ -608,6 +624,21 @@ def test_crop_threshold_tolerance(affine_eye):
     cropped_img = crop_img(img)
 
     assert cropped_img.shape == active_shape
+
+
+def test_crop_img_threshold_tolerance_2():
+    """Test rtol so that voxels with value 0.5 are not croppable."""
+    data = np.zeros((5, 6, 7))
+    data[2:4, 1:5, 3:6] = 1
+    data[1, 1:5, 3:6] = 0.5
+    affine = np.diag((4, 3, 2, 1))
+    img = Nifti1Image(data, affine=affine)
+
+    cropped_img = crop_img(img, rtol=0.49)
+
+    assert (get_data(cropped_img)[2:-1, 1:-1, 1:-1] == 1).all()
+    assert (get_data(cropped_img)[1, 1:-1, 1:-1] == 0.5).all()
+    assert cropped_img.shape == (1 + 2 + 2, 4 + 2, 3 + 2)
 
 
 @pytest.mark.parametrize("pad", [True, False])
