@@ -991,31 +991,31 @@ def index_img(imgs, index):
 
     Examples
     --------
-    First we concatenate two MNI152 images to create a 4D-image::
+    First we concatenate two MNI152 images to create a 4D-image:
 
-     >>> from nilearn import datasets
-     >>> from nilearn.image import concat_imgs, index_img
-     >>> joint_mni_image = concat_imgs([datasets.load_mni152_template(),
-     ...                                datasets.load_mni152_template()])
-     >>> print(joint_mni_image.shape)
-     (197, 233, 189, 2)
+    >>> from nilearn import datasets
+    >>> from nilearn.image import concat_imgs, index_img
+    >>> joint_mni_image = concat_imgs(
+    ...     [datasets.load_mni152_template(), datasets.load_mni152_template()]
+    ... )
+    >>> print(joint_mni_image.shape)
+    (197, 233, 189, 2)
 
-    We can now select one slice from the last dimension of this 4D-image::
+    We can now select one slice from the last dimension of this 4D-image:
 
-     >>> single_mni_image = index_img(joint_mni_image, 1)
-     >>> print(single_mni_image.shape)
-     (197, 233, 189)
+    >>> single_mni_image = index_img(joint_mni_image, 1)
+    >>> print(single_mni_image.shape)
+    (197, 233, 189)
 
-    We can also select multiple frames using the `slice` constructor::
+    We can also select multiple frames using the `slice` constructor:
 
-     >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
-     >>> print(five_mni_images.shape)
-     (197, 233, 189, 5)
+    >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
+    >>> print(five_mni_images.shape)
+    (197, 233, 189, 5)
 
-     >>> first_three_images = index_img(five_mni_images,
-     ...                                slice(0, 3))
-     >>> print(first_three_images.shape)
-     (197, 233, 189, 3)
+    >>> first_three_images = index_img(five_mni_images, slice(0, 3))
+    >>> print(first_three_images.shape)
+    (197, 233, 189, 3)
 
     """
     if isinstance(imgs, SurfaceImage):
@@ -1145,6 +1145,31 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=True):
     Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object
         A loaded image with the same file type (and, optionally, header)
         as the reference image.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.image import new_img_like
+    >>>
+    >>> # create a Nifti1Image
+    >>> data1 = np.array([[[0., 0.2, 0.8],
+    ...                   [1.5, 3.0, 0.1],
+    ...                   [0.4, 2.2, 0.0]]])
+    >>> affine = np.diag((4, 3, 2, 1))
+    >>> img1 = Nifti1Image(data1, affine, dtype=np.int32)
+    >>>
+    >>> # create a new image from data2, and we would like to create an
+    >>> # image of the same type with img_1:
+    >>> data2 = np.array([[[0., 0.5, 0.3],
+    ...                   [2.5, 2.0, 0.2],
+    ...                   [0.1, 0.2, 1.0]]])
+    >>> img2 = new_img_like(img1, data2)
+    >>> type(img2)
+    <class 'nibabel.nifti1.Nifti1Image'>
+    >>> np.allclose(img1.affine, img2.affine)
+    True
+
 
     """
     check_params(locals())
@@ -1674,20 +1699,20 @@ def math_img(
 
     Examples
     --------
-    Let's load an image using nilearn datasets module::
-
-     >>> from nilearn import datasets
-     >>> anatomical_image = datasets.load_mni152_template()
-
-    Now we can use any numpy function on this image::
-
-     >>> from nilearn.image import math_img
-     >>> log_img = math_img("np.log(img)", img=anatomical_image)
-
-    We can also apply mathematical operations on several images::
-
-     >>> result_img = math_img("img1 + img2",
-     ...                       img1=anatomical_image, img2=log_img)
+    >>> # Let's load an image using nilearn datasets module.
+    >>>
+    >>> from nilearn import datasets
+    >>> anatomical_image = datasets.load_mni152_template()
+    >>>
+    >>> # Now we can use any numpy function on this image.
+    >>>
+    >>> from nilearn.image import math_img
+    >>> log_img = math_img("np.log(img)", img=anatomical_image)
+    >>>
+    >>> # We can also apply mathematical operations on several images.
+    >>>
+    >>> result_img = math_img("img1 + img2",
+    ...                       img1=anatomical_image, img2=log_img)
 
     The result image will have the same shape and affine as the input images;
     but might have different header information, specifically the TR value,
@@ -1695,12 +1720,13 @@ def math_img(
 
     .. nilearn_versionadded:: 0.10.4
 
-    We can also copy the header from one of the input images using
-    ``copy_header_from``::
+        We can also copy the header from one of the input images using
+        ``copy_header_from``.
 
-     >>> result_img_with_header = math_img("img1 + img2",
-     ...                                   img1=anatomical_image, img2=log_img,
-     ...                                   copy_header_from="img1")
+        >>> result_img_with_header = math_img("img1 + img2",
+        ...                                   img1=anatomical_image,
+        ...                                   img2=log_img,
+        ...                                   copy_header_from="img1")
 
 
     """

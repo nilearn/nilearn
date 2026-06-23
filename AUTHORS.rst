@@ -153,6 +153,7 @@ Some other past or present contributors are:
 * `Luz Paz`_
 * `Manon Pietrantoni`_
 * `Marco Flores`_: Basque Center on Cognition Brain and Language
+* `Marco Bedini`_: Institut de Neurosciences de la Timone, University of Aix-Marseille, France
 * `Martin Perez-Guevara`_: Criteo, France
 * `Martin Wegrzyn`_: Bielefeld University, Bielefeld, Germany
 * `Mathias Goncalves`_: Stanford University, Stanford, California, USA
