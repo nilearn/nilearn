@@ -188,7 +188,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
 # Utilities to compute masks
 #
 @fill_doc
-def intersect_masks(mask_imgs, threshold=0.5, connected=True):
+def intersect_masks(mask_imgs, threshold=0.5, connected=True) -> Nifti1Image:
     """Compute intersection of several masks.
 
     Given a list of input mask images, generate the output image which
