@@ -212,6 +212,38 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     -------
     grp_mask : 3D :class:`nibabel.nifti1.Nifti1Image`
         Intersection of all masks.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.masking import intersect_masks
+    >>>
+    >>> mask1 = np.array([[[0, 1, 1], [0, 1, 1], [0, 1, 1]]])
+    >>> mask_img1 = Nifti1Image(mask1, affine=np.eye(4), dtype=np.int32)
+    >>>
+    >>> mask2 = np.array([[[0, 0, 0], [0, 1, 1], [1, 0, 0]]])
+    >>> mask_img2 = Nifti1Image(mask2, affine=np.eye(4), dtype=np.int32)
+    >>>
+    >>> # Compute union with threshold=0
+    >>> mask_union = intersect_masks(
+    ...     [mask_img1, mask_img2], threshold=0, connected=True
+    ... )
+    >>> # Check output
+    >>> mask_union.get_fdata()
+    array([[[0., 1., 1.],
+            [0., 1., 1.],
+            [1., 1., 1.]]])
+    >>>
+    >>> # Compute intersection with threshold=1
+    >>> mask_intersection = intersect_masks(
+    ...     [mask_img1, mask_img2], threshold=1, connected=True
+    ... )
+    >>> # Check output
+    >>> mask_intersection.get_fdata()
+    array([[[0., 0., 0.],
+            [0., 1., 1.],
+            [0., 0., 0.]]])
     """
     check_params(locals())
 
