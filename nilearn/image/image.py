@@ -9,7 +9,7 @@ import glob
 import itertools
 import math
 import warnings
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, TypeGuard, get_args, overload
@@ -418,8 +418,26 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     return arr
 
 
+@overload
+def smooth_img(imgs: SurfaceImage, fwhm) -> SurfaceImage: ...
+
+
+@overload
+def smooth_img(imgs: NiimgLike, fwhm) -> Nifti1Image: ...
+
+
+@overload
+def smooth_img(imgs: Iterable[SurfaceImage], fwhm) -> list[SurfaceImage]: ...
+
+
+@overload
+def smooth_img(imgs: Iterable[NiimgLike], fwhm) -> list[Nifti1Image]: ...
+
+
 @fill_doc
-def smooth_img(imgs, fwhm):
+def smooth_img(
+    imgs, fwhm
+) -> NiimgLike | SurfaceImage | list[NiimgLike] | list[SurfaceImage]:
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of `arr`.
@@ -437,8 +455,11 @@ def smooth_img(imgs, fwhm):
 
     Returns
     -------
-    Niimg-like object, :obj:~nilearn.surface.SurfaceImage.
-    Smoothed input image or surface.
+    :obj:`~nibabel.nifti1.Nifti1Image`, :obj:`~nilearn.surface.SurfaceImage`, \
+        :obj:`list` of :obj:`~nibabel.nifti1.Nifti1Image`, or :obj:`list` \
+        of :obj:`~nilearn.surface.SurfaceImage`
+        Smoothed input image(s) or surface(s).
+        A :obj:`list` is returned if ``imgs`` was passed as an iterable.
 
     Examples
     --------
@@ -691,7 +712,8 @@ def crop_img(
         Toggles adding 1-voxel of 0s around the border.
 
     return_offset : :obj:`bool`, default=False
-        Specifies whether to return a tuple of the removed padding.
+        Specifies whether to return the voxels from the
+        original image that are kept in the output.
 
     %(copy_header)s
 
@@ -699,13 +721,46 @@ def crop_img(
 
     Returns
     -------
-    Niimg-like object or :obj:`tuple`
-        Cropped version of the input image and, if `return_offset=True`,
-        a tuple of tuples representing the number of voxels
-        removed (before, after) the cropped volumes, i.e.:
-        *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
-
+    cropped_im : Niimg-like object
+        Cropped version of the input image
         If the specified image is empty, the original image will be returned.
+
+    offset :  tuple of :py:class:`slice`
+        Returned if ``return_offset=True``.
+        Represents the voxels from the original
+        image kept in the cropped volume.
+        For example:
+
+        .. code-block:: python
+
+            [
+                slice(dim1_first_voxel, dim1_last_voxel - 1, None),
+                slice(dim2_first_voxel, dim2_last_voxel - 1, None),
+                ...,
+                slice(dimN_first_voxel, dimN_last_voxel - 1, None),
+            ]
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>>
+    >>> affine = np.diag((4, 3, 2, 1))
+    >>> data = np.zeros((5, 6, 7))
+    >>> data[2:4, 1:5, 3:6] = 1
+    >>> data[1, 1:5, 3:6] = 0.49
+    >>>
+    >>> img = Nifti1Image(data, affine=affine)
+    >>> img.shape
+    (5, 6, 7)
+    >>>
+    >>> cropped_img, offset = crop_img(img, return_offset=True)
+    >>>
+    >>> cropped_img.shape
+    (5, 6, 5)
+    >>> offset
+    (slice(0, 5, None), slice(0, 6, None), slice(2, 7, None))
+
     """
     check_params(locals())
 
@@ -737,7 +792,9 @@ def crop_img(
         start = np.maximum(start - 1, 0)
         end = np.minimum(end + 1, data.shape[:3])
 
-    slices = list(map(slice, start, end))[:3]
+    slices = list(map(slice, [int(x) for x in start], [int(x) for x in end]))[
+        :3
+    ]
     cropped_im = _crop_img_to(img, slices, copy=copy, copy_header=copy_header)
     return (cropped_im, tuple(slices)) if return_offset else cropped_im
 
@@ -800,6 +857,28 @@ def _compute_surface_mean(imgs: SurfaceImage) -> SurfaceImage:
     return new_img_like(imgs, data=data)
 
 
+@overload
+def mean_img(
+    imgs: SurfaceImage | Iterable[SurfaceImage],
+    target_affine=...,
+    target_shape=...,
+    verbose=...,
+    n_jobs=...,
+    copy_header: bool = ...,
+) -> SurfaceImage: ...
+
+
+@overload
+def mean_img(
+    imgs: NiimgLike | Iterable[NiimgLike],
+    target_affine=...,
+    target_shape=...,
+    verbose=...,
+    n_jobs=...,
+    copy_header: bool = ...,
+) -> Nifti1Image: ...
+
+
 @fill_doc
 def mean_img(
     imgs,
@@ -808,7 +887,7 @@ def mean_img(
     verbose=0,
     n_jobs=1,
     copy_header=True,
-):
+) -> Nifti1Image | SurfaceImage:
     """Compute the mean over images.
 
     This can be a mean over time or the 4th dimension for a volume,
@@ -923,7 +1002,7 @@ def mean_img(
     )
 
 
-def swap_img_hemispheres(img):
+def swap_img_hemispheres(img) -> Nifti1Image:
     """Perform swapping of hemispheres in the indicated NIfTI image.
 
        Use case: synchronizing ROIs across hemispheres.
@@ -963,7 +1042,15 @@ def swap_img_hemispheres(img):
     return out_img
 
 
-def index_img(imgs, index):
+@overload
+def index_img(imgs: SurfaceImage, index) -> SurfaceImage: ...
+
+
+@overload
+def index_img(imgs: NiimgLike, index) -> Nifti1Image: ...
+
+
+def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
     """Indexes into a image in the last dimension.
 
     Common use cases include extracting an image out of `img` or
@@ -1044,7 +1131,15 @@ def _index_img(img: Nifti1Image, index):
     return new_img_like(img, data, img.affine)
 
 
-def iter_img(imgs):
+@overload
+def iter_img(imgs: SurfaceImage) -> Iterator[SurfaceImage]: ...
+
+
+@overload
+def iter_img(imgs: NiimgLike) -> Iterator[Nifti1Image]: ...
+
+
+def iter_img(imgs) -> Iterator[Nifti1Image | SurfaceImage]:
     """Iterate over images.
 
     Could be along the the 4th dimension for 4D Niimg-like object
@@ -1105,8 +1200,28 @@ def _downcast_from_int64_if_possible(data):
     return data
 
 
+@overload
+def new_img_like(
+    ref_niimg: SurfaceImage,
+    data,
+    affine=...,
+    copy_header: bool = ...,
+) -> SurfaceImage: ...
+
+
+@overload
+def new_img_like(
+    ref_niimg: NiimgLike | Iterable[NiimgLike],
+    data,
+    affine=...,
+    copy_header: bool = ...,
+) -> Nifti1Image: ...
+
+
 @fill_doc
-def new_img_like(ref_niimg, data, affine=None, copy_header=True):
+def new_img_like(
+    ref_niimg, data, affine=None, copy_header=True
+) -> Nifti1Image | SurfaceImage:
     """Create a new image of the same class as the reference image.
 
     Parameters
@@ -2213,6 +2328,30 @@ def load_img(
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 
 
+@overload
+def concat_imgs(
+    niimgs: SurfaceImage | Iterable[SurfaceImage],
+    dtype=...,
+    ensure_ndim=...,
+    memory=...,
+    memory_level=...,
+    auto_resample=...,
+    verbose=...,
+) -> SurfaceImage: ...
+
+
+@overload
+def concat_imgs(
+    niimgs: NiimgLike | Iterable[NiimgLike],
+    dtype=...,
+    ensure_ndim=...,
+    memory=...,
+    memory_level=...,
+    auto_resample=...,
+    verbose=...,
+) -> Nifti1Image: ...
+
+
 @fill_doc
 def concat_imgs(
     niimgs,
@@ -2222,7 +2361,7 @@ def concat_imgs(
     memory_level=0,
     auto_resample=False,
     verbose=0,
-):
+) -> Nifti1Image | SurfaceImage:
     """Concatenate a list of images of varying lengths.
 
     The image list can contain:
@@ -2300,12 +2439,13 @@ def concat_imgs(
         if len(niimgs) == 1:
             return niimgs[0]
 
+        niimgs = list(niimgs)
         for i, img in enumerate(niimgs):
             check_polymesh_equal(img.mesh, niimgs[0].mesh)
             niimgs[i] = at_least_2d(img)
 
         if dtype is None:
-            dtype = extract_data(niimgs[0]).dtype
+            dtype = get_surface_data(niimgs[0]).dtype
 
         output_data = {}
         for part in niimgs[0].data.parts:
@@ -2332,7 +2472,10 @@ def concat_imgs(
 
     iterator, literator = itertools.tee(iter(niimgs))
     try:
-        first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
+        first_niimg = check_niimg(
+            next(literator),
+            ensure_ndim=ndim,  # type: ignore[arg-type]
+        )
     except StopIteration as e:
         raise TypeError("Cannot concatenate empty objects") from e
     except DimensionError as exc:
@@ -2355,7 +2498,10 @@ def concat_imgs(
     for niimg in literator:
         # We check the dimensionality of the niimg
         try:
-            niimg = check_niimg(niimg, ensure_ndim=ndim)
+            niimg = check_niimg(
+                niimg,
+                ensure_ndim=ndim,  # type: ignore[arg-type]
+            )
         except DimensionError as exc:
             # Keep track of the additional dimension in the error
             exc.increment_stack_counter()
@@ -2365,7 +2511,9 @@ def concat_imgs(
     target_shape = first_niimg.shape[:3]
     if dtype is None:
         dtype = _get_data(first_niimg).dtype
-    data = np.ndarray((*target_shape, sum(lengths)), order="F", dtype=dtype)
+    data: np.ndarray = np.ndarray(
+        (*target_shape, sum(lengths)), order="F", dtype=dtype
+    )
     cur_4d_index = 0
     for index, (size, niimg) in enumerate(
         zip(
@@ -2391,7 +2539,19 @@ def concat_imgs(
     return new_img_like(first_niimg, data, first_niimg.affine)
 
 
-def largest_connected_component_img(imgs):
+@overload
+def largest_connected_component_img(imgs: NiimgLike) -> Nifti1Image: ...
+
+
+@overload
+def largest_connected_component_img(
+    imgs: list[NiimgLike] | tuple[NiimgLike, ...],
+) -> list[Nifti1Image]: ...
+
+
+def largest_connected_component_img(
+    imgs,
+) -> Nifti1Image | list[Nifti1Image]:
     """Return the largest connected component of an image or list of images.
 
     .. nilearn_versionadded:: 0.3.1
@@ -2404,7 +2564,8 @@ def largest_connected_component_img(imgs):
 
     Returns
     -------
-    3D Niimg-like object or list of
+    :obj:`~nibabel.nifti1.Nifti1Image` or :obj:`list` of \
+        :obj:`~nibabel.nifti1.Nifti1Image`
         Image or list of images containing the largest connected component.
 
     Notes
@@ -2467,7 +2628,7 @@ def largest_connected_component_img(imgs):
     return ret[0] if single_img else ret
 
 
-def copy_img(img):
+def copy_img(img) -> Nifti1Image:
     """Copy an image to a nibabel.Nifti1Image.
 
     Parameters
@@ -2477,7 +2638,7 @@ def copy_img(img):
 
     Returns
     -------
-    img_copy : image
+    img_copy : :obj:`~nibabel.nifti1.Nifti1Image`
         copy of input (data, affine and header)
 
     Examples
@@ -2768,7 +2929,7 @@ def check_niimg(
     dtype=...,
     return_iterator: Literal[True] = ...,
     wildcards=...,
-) -> Iterable[Nifti1Image]: ...
+) -> Iterator[Nifti1Image]: ...
 
 
 @fill_doc
@@ -3017,7 +3178,7 @@ def check_niimg_4d(
     niimg: Any,
     return_iterator: Literal[True] = ...,
     dtype: Any = ...,
-) -> Iterable[Nifti1Image]: ...
+) -> Iterator[Nifti1Image]: ...
 
 
 @fill_doc
@@ -3025,7 +3186,7 @@ def check_niimg_4d(
     niimg: Any,
     return_iterator: Literal[False, True] = False,
     dtype: Any = None,
-):
+) -> Nifti1Image | Iterator[Nifti1Image]:
     """Check that niimg is a proper 4D niimg-like object and load it.
 
     Parameters

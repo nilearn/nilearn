@@ -1350,6 +1350,7 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig) -> None:
     n_samples = 30
     idx = _rng().permutation(n_samples)
 
+    new_X: Nifti1Image | SurfaceImage
     if isinstance(X, SurfaceImage):
         data = {
             x: _rng().random((v.shape[0], n_samples))

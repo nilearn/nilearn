@@ -213,6 +213,8 @@
 
 .. _Marco Flores: https://github.com/marco7877
 
+.. _Marco Bedini: https://github.com/mbedini
+
 .. _Martin Perez-Guevara: https://github.com/MartinPerez
 
 .. _Martin Wegrzyn: https://github.com/mwegrzyn
@@ -352,6 +354,8 @@
 .. _Taylor Salo: https://tsalo.github.io/
 
 .. _Tharun K: https://github.com/tharun634
+
+.. _Thibault de Varax: https://github.com/thibaultdvx
 
 .. _Thiti Premrudeepreechacharn: https://tpremrud.github.io/
 

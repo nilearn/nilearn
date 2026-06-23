@@ -153,6 +153,7 @@ Some other past or present contributors are:
 * `Luz Paz`_
 * `Manon Pietrantoni`_
 * `Marco Flores`_: Basque Center on Cognition Brain and Language
+* `Marco Bedini`_: Institut de Neurosciences de la Timone, University of Aix-Marseille, France
 * `Martin Perez-Guevara`_: Criteo, France
 * `Martin Wegrzyn`_: Bielefeld University, Bielefeld, Germany
 * `Mathias Goncalves`_: Stanford University, Stanford, California, USA
@@ -223,6 +224,7 @@ Some other past or present contributors are:
 * `Taylor Hanayik`_: QuantCo
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
 * `Tharun K`_
+* `Thibault de Varax`_: Aramis lab, Paris Brain Institute
 * `Thiti Premrudeepreechacharn`_
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA

@@ -517,6 +517,12 @@ authors:
     family-names: Flores
     website: https://github.com/marco7877
     affiliation: Basque Center on Cognition Brain and Language
+  - given-names: Marco
+    family-names: Bedini
+    website: https://github.com/mbedini
+    affiliation: Institut de Neurosciences de la Timone, University of Aix-Marseille, France
+    email: marco.bedini4@gmail.com
+    orcid: https://orcid.org/0000-0002-2018-5175
   - given-names: Martin
     family-names: Perez-Guevara
     website: https://github.com/MartinPerez
@@ -829,6 +835,10 @@ authors:
   - given-names: Tharun
     family-names: K
     website: https://github.com/tharun634
+  - given-names: Thibault de
+    family-names: Varax
+    affiliation: Aramis lab, Paris Brain Institute
+    website: https://github.com/thibaultdvx
   - given-names: Thiti
     family-names: Premrudeepreechacharn
     website: https://tpremrud.github.io/
