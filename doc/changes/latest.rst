@@ -115,25 +115,29 @@ Enhancements
 
 - :bdg-success:`API` Extend the list of estimators supported by :class:`~nilearn.decoding.SearchLight` (:gh:`6215` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Implement ``set_output`` for multi maskers to extract data to pandas or polars dataframe (:gh:`6175` by `Rémi Gau`_).
-
-- :bdg-info:`Plotting` Allow string threshold in ``nilearn.plotting.plot_*`` functions (:gh:`5982` by `Saeed Babadi`_).
-
-- :bdg-success:`Doc` Add an example to the plot_carpet function (:gh:`6065` by `Johanna Bayer`_).
-
-- :bdg-dark:`Code` Add surface support to :func:`~nilearn.image.smooth_img` (:gh:`3267` by `Jason D. Yeatman`_ and `Noah C. Benson`_ ).
-
 - :bdg-success:`API` Add a public method to access the fitted mask of GLM instances (:gh:`5981` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Added ``screening_n_features`` parameter to :class:`~nilearn.decoding.Decoder`,  :class:`~nilearn.decoding.DecoderRegressor`, :class:`~nilearn.decoding.FREMClassifier`,  and :class:`~nilearn.decoding.FREMRegressor`.
 
 - :bdg-success:`API` Support pathlike objects for ``cmap`` argument in :func:`~plotting.plot_surf_roi` (:gh:`5981` by `Joseph Paillard`_).
 
-- :bdg-info:`Plotting` Add example showing how to use TemplateFlow to make surface plots and change volume template (:gh:`5968` by `Joseph Paillard`_ and `Rémi Gau`_).
+- :bdg-dark:`Code` Implement ``set_output`` for multi maskers to extract data to pandas or polars dataframe (:gh:`6175` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add surface support to :func:`~nilearn.image.smooth_img` (:gh:`3267` by `Jason D. Yeatman`_ and `Noah C. Benson`_ ).
+
+- :bdg-dark:`Code` Added ``screening_n_features`` parameter to :class:`~nilearn.decoding.Decoder`,  :class:`~nilearn.decoding.DecoderRegressor`, :class:`~nilearn.decoding.FREMClassifier`,  and :class:`~nilearn.decoding.FREMRegressor`.
 
 - :bdg-primary:`Doc` Added a :ref:`user guide page <gpu_usage>` to demonstrate speedup using GPU (:gh:`5958` by `Himanshu Aggarwal`_ and `Elizabeth DuPre`_).
 
+- :bdg-primary:`Doc` Unify estimator documentation to explicitly accept scikit-learn compatible objects and add cross-links to the developer guide (:gh:`6181` by `Xichun Xu`_).
+
+- :bdg-primary:`Doc` Add API documentation for :class:`~nilearn.connectome.ConnectivityMeasure` to elaborate the requirement for customized ``cov_estimator`` and extra test to ensure the user input is a valid sklearn estimator (:gh:`6074` by `Hao-Ting Wang`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.plotting.plot_carpet` (:gh:`6065` by `Johanna Bayer`_), :func:`~nilearn.image.crop_img` (:gh:`6316` by `Thibault de Varax`_), :func:`~nilearn.connectome.cov_to_corr`, :func:`~nilearn.connectome.prec_to_partial`, :func:`~nilearn.glm.expression_to_contrast_vector`, :func:`~nilearn.glm.fdr_threshold`, :func:`~nilearn.glm.first_level.glover_dispersion_derivative`, :func:`~nilearn.glm.first_level.glover_hrf`, :func:`~nilearn.glm.first_level.glover_time_derivative`, :func:`~nilearn.glm.first_level.mean_scaling` and :func:`~nilearn.interfaces.bids.parse_bids_filename` (:gh:`6259` and :gh:`6262` by `Laura Piñero Roig`_), :func:`~nilearn.masking.compute_background_mask` and :func:`~nilearn.glm.first_level.make_first_level_design_matrix` (:gh:`6303` and :gh:`6320` by `Marco Flores`_), :func:`~nilearn.image.largest_connected_component_img` (:gh:`6283` by `Bastien Cagna`_), :func:`~nilearn.image.threshold_img` (:gh:`6280` by `Fernanda Ponce`_), :func:`~nilearn.image.clean_img` (:gh:`6312` by `Nirmitee Mulay`_), :func:`~nilearn.masking.intersect_masks` (:gh:`6318` by `Marco Bedini`_), :func:`~nilearn.interfaces.bids.get_bids_files` (:gh:`6317` by `Gabriele Amorosino`_), :func:`~nilearn.image.smooth_img`, :func:`~nilearn.glm.threshold_stats_img`, :func:`~nilearn.image.check_niimg`, :func:`~nilearn.image.check_niimg_3d` and	:func:`~nilearn.image.check_niimg_4d`, :func:`~nilearn.regions.signals_to_img_labels` (:gh:`6302`, :gh:`6297`, :gh:`6286` and :gh:`6306`  by `Hande Gözükan`_), :func:`~nilearn.image.copy_img` (:gh:`6299` by `Ruben Dörfel`_).
+
 - :bdg-secondary:`Maint` Add list of badges to changelog template on :ref:`maintenance_process` page (:gh:`6084` by `Michelle Wang`_).
+
+- :bdg-info:`Plotting` Allow string threshold in ``nilearn.plotting.plot_*`` functions (:gh:`5982` by `Saeed Babadi`_).
+
+- :bdg-info:`Plotting` Add example showing how to use TemplateFlow to make surface plots and change volume template (:gh:`5968` by `Joseph Paillard`_ and `Rémi Gau`_).
 
 - :bdg-info:`Plotting`  Add opacity slider on :func:`~plotting.view_img` (:gh:`6107` by `Rémi Gau`_).
 
@@ -143,44 +147,11 @@ Enhancements
 
 - :bdg-info:`Plotting` Add ``node_labels`` parameter to :func:`~plotting.view_connectome` (:gh:`6153` by `Rishika Kapil`_).
 
-- :bdg-primary:`Doc` Unify estimator documentation to explicitly accept scikit-learn compatible objects and add cross-links to the developer guide (:gh:`6181` by `Xichun Xu`_).
-
-- :bdg-primary:`Doc` Add API documentation for :class:`~nilearn.connectome.ConnectivityMeasure` to elaborate the requirement for customized ``cov_estimator`` and extra test to ensure the user input is a valid sklearn estimator (:gh:`6074` by `Hao-Ting Wang`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.crop_img` function (:gh:`6316` by `Thibault de Varax`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for nine utility functions in the public API: :func:`~nilearn.connectome.cov_to_corr`, :func:`~nilearn.connectome.prec_to_partial`, :func:`~nilearn.glm.expression_to_contrast_vector`, :func:`~nilearn.glm.fdr_threshold`, :func:`~nilearn.glm.first_level.glover_dispersion_derivative`, :func:`~nilearn.glm.first_level.glover_hrf`, :func:`~nilearn.glm.first_level.glover_time_derivative`, :func:`~nilearn.glm.first_level.mean_scaling` and :func:`~nilearn.interfaces.bids.parse_bids_filename` (:gh:`6259` and :gh:`6262` by `Laura Piñero Roig`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.masking.compute_background_mask` (:gh:`6303` by `Marco Flores`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.image.largest_connected_component_img` (:gh:`6283` by `Bastien Cagna`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.threshold_img` (:gh:`6280` by `Fernanda Ponce`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.clean_img` (:gh:`6312` by `Nirmitee Mulay`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.masking.intersect_masks` (:gh:`6318` by `Marco Bedini`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.interfaces.bids.get_bids_files` (:gh:`6317` by `Gabriele Amorosino`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.smooth_img` function (:gh:`6302` by `Hande Gözükan`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.copy_img` (:gh:`6299` by `Ruben Dörfel`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.smooth_img` function (:gh:`6302` by `Hande Gözükan`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.glm.threshold_stats_img` function (:gh:`6297` by `Hande Gözükan`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.check_niimg`, :func:`~nilearn.image.check_niimg_3d` and	:func:`~nilearn.image.check_niimg_4d` functions (:gh:`6286` by `Hande Gözükan`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring section for  :func:`~nilearn.regions.signals_to_img_labels` function (:gh:`6306` by `Hande Gözükan`_).
-
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.glm.first_level.make_first_level_design_matrix` (:gh:`6320` by `Marco Flores`_).
 
 Changes
 -------
 
-- :bdg-dark:`Code` Remove aggressive garbage collection in safe_get_data for performance, mainly in CI. (:gh:`6039` by `Basile Pinsard`_).
+- :bdg-dark:`Code` Remove aggressive garbage collection in ``safe_get_data`` for performance, mainly in CI. (:gh:`6039` by `Basile Pinsard`_).
 
 - :bdg-dark:`Code` Ensure input images of :class:`~.glm.first_level.FirstLevelModel` and :class:`~.glm.second_level.SecondLevelModel` have same field of view (for nifti) or compatible meshes (for surfaces) (:gh:`6254` by `Rémi Gau`_).
 
