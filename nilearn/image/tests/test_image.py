@@ -57,6 +57,7 @@ from nilearn.image.image import (
     concat_imgs,
     copy_img,
     crop_img,
+    extract_data,
     get_data,
     high_variance_confounds,
     index_img,
@@ -73,7 +74,7 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface.surface import SurfaceImage, extract_data
+from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import (
     assert_polymesh_equal,
@@ -818,6 +819,12 @@ def test_index_img_volume():
         expected_data_3d = get_data(img_4d)[..., i]
         assert_array_equal(get_data(this_img), expected_data_3d)
         assert_array_equal(this_img.affine, img_4d.affine)
+
+
+def test_extract_data_wrong_input():
+    """Check that only SurfaceImage is accepted as input."""
+    with pytest.raises(TypeError, match="must be of type"):
+        extract_data(1, index=1)
 
 
 @pytest.mark.parametrize("length", [20])
