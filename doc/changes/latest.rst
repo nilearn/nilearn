@@ -48,13 +48,16 @@ HIGHLIGHTS
 
 - Nilearn can leverage scikit-learn's Array API-supported estimators to speed up neuroimaging ML analyses using GPU acceleration. See :ref:`user guide page <gpu_usage>`.
 
-- Fix order of vertices and data for ``fsaverage3`` and ``fsaverage4`` datasets.
+- Interactive visualization with :func:`~plotting.view_surf` can now be done using `niivue <https://niivue.com/>`_ as a backend engine.
 
 - All maskers can now output to pandas or polars dataframe when using ``transform`` or accept such dataframes as input to ``inverse_transform``.
 
+- :func:`~nilearn.image.smooth_img` can now work with surfaces.
+
+- Fix order of vertices and data for ``fsaverage3`` and ``fsaverage4`` datasets.
+
 - Accessing the maskers from ``nilearn.input_data`` is no longer possible, they now must be accessed via :mod:`nilearn.maskers`.
 
-- Interactive visualization with :func:`~plotting.view_surf` can now be done using `niivue <https://niivue.com/>`_ as a backend engine.
 
 
 NEW
