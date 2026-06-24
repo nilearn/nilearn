@@ -2196,6 +2196,40 @@ def clean_img(
     --------
         nilearn.signal.clean
 
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>> from nibabel import Nifti1Image
+        >>>
+        >>> from nilearn.image import clean_img
+        >>>
+        >>> # Create a nifti image where each voxel
+        >>> # contains a noisy sine wave with an extra linear trend.
+        >>> t = np.linspace(1, 30, 100)
+        >>> signal = np.sin(t) * 2 + t - 10
+        >>> signal += np.random.default_rng(42).normal(size=t.shape)
+        >>> raw_data = np.broadcast_to(signal, (2, 2, 2, 100))
+        >>> raw_img = Nifti1Image(raw_data, affine=np.eye(4))
+        >>>
+        >>> # Clean the image with a low pass filter.
+        >>> cleaned_img = clean_img(raw_img,
+        ...                         low_pass=0.2,
+        ...                         t_r = 1,
+        ...                         standardize=None)
+        >>>
+        >>> # Plot the results (if matplotlib is installed)
+        >>> try:
+        ...     from matplotlib import pyplot as plt
+        ...     cleaned_data = cleaned_img.get_fdata()
+        ...     fig = plt.plot(t, raw_data[1, 1, 1], color="red")
+        ...     fig = plt.plot(t, cleaned_data[1, 1, 1], color="green")
+        ...     leg = plt.legend(["raw", "cleaned"])
+        ...     plt.show()
+        ... except:
+        ...     pass
     """
     check_params(locals())
     # Avoid circular import
