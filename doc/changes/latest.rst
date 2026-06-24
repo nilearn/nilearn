@@ -171,6 +171,8 @@ Enhancements
 Changes
 -------
 
+- :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.masking` (:gh:`XXXX` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.image` (:gh:`6338` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The function ``nilearn.datasets.utils.load_sample_motor_activation_image`` and ``nilearn.datasets.fetch_neurovault_motor_task`` were removed. Use :func:`~datasets.load_sample_motor_activation_image` instead (:gh:`5995` by `Rémi Gau`_).
