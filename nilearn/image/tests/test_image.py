@@ -45,6 +45,7 @@ from nilearn.conftest import (
 from nilearn.exceptions import DimensionError
 from nilearn.image.image import (
     _crop_img_to,
+    _extract_data,
     _fast_smooth_array,
     _mris_fwhm_to_niters,
     _smooth_surface_img,
@@ -57,7 +58,6 @@ from nilearn.image.image import (
     concat_imgs,
     copy_img,
     crop_img,
-    extract_data,
     get_data,
     high_variance_confounds,
     index_img,
@@ -824,7 +824,7 @@ def test_index_img_volume():
 def test_extract_data_wrong_input():
     """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="must be of type"):
-        extract_data(1, index=1)
+        _extract_data(1, index=1)
 
 
 @pytest.mark.parametrize(

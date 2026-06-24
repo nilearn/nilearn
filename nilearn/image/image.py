@@ -1106,7 +1106,7 @@ def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
     """
     if isinstance(imgs, SurfaceImage):
         imgs.data._check_ndims(2, var_name="imgs")
-        return new_img_like(imgs, data=extract_data(imgs, index))
+        return new_img_like(imgs, data=_extract_data(imgs, index))
 
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr
@@ -1115,7 +1115,7 @@ def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
     return _index_img(imgs, index)
 
 
-def extract_data(img: SurfaceImage, index) -> dict[Any, np.ndarray]:
+def _extract_data(img: SurfaceImage, index) -> dict[Any, np.ndarray]:
     """Extract data of a SurfaceImage a specified indices.
 
     Parameters
