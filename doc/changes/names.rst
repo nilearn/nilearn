@@ -265,6 +265,8 @@
 
 .. _Nikhil Krish: https://github.com/NIkhilgKrish
 
+.. _Nirmitee Mulay: https://github.com/nirmitee-mulay
+
 .. _Noah C. Benson: https://nben.net/
 
 .. _Oliver Warrington: https://github.com/OliverWarrington
