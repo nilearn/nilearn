@@ -827,33 +827,40 @@ def test_extract_data_wrong_input():
         extract_data(1, index=1)
 
 
-@pytest.mark.parametrize("length", [20])
 @pytest.mark.parametrize(
-    "index, expected_n_samples",
+    "index, expected_values_left",
     [
-        ([*range(20)], 20),
-        (slice(2, 8, 2), 3),
-        ([1, 2, 3, 2], 4),
-        (np.asarray([1, 2, 3, 2]), 4),
+        ([*range(8)], [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 28.0]),
+        (slice(2, 8, 2), [8.0, 16.0, 24.0]),
+        ([1, 2, 3, 2], [4.0, 8.0, 12.0, 8.0]),
+        (np.asarray([1, 2, 3, 2]), [4.0, 8.0, 12.0, 8.0]),
         (
-            ((np.arange(20) % 3) == 1).tolist(),
-            7,
+            ((np.arange(8) % 3) == 1).tolist(),
+            [4.0, 16.0, 28.0],
         ),  # boolean indexing with array
-        ((np.arange(20) % 3) == 1, 7),  # boolean indexing with array
+        (
+            (np.arange(8) % 3) == 1,
+            [4.0, 16.0, 28.0],
+        ),  # boolean indexing with array
     ],
 )
-def test_index_img_surface(surf_img_2d, length, index, expected_n_samples):
-    """Test index_img with surface data."""
-    input_img = surf_img_2d(length)
+def test_index_img_surface(surf_img_2d, index, expected_values_left):
+    """Test index_img with surface data.
+
+    We only check the content of the first vertex of the left part:
+    this is deterministic because of how the fixture surf_img_2d
+    generates data.
+    """
+    input_img = surf_img_2d(8)
     this_img = index_img(input_img, index)
 
-    assert this_img.data._n_samples == expected_n_samples
+    assert this_img.data._n_samples == len(expected_values_left)
 
     assert_polymesh_equal(this_img.mesh, input_img.mesh)
 
-    expected_data_3d = extract_data(input_img, index)
-    for hemi, value in this_img.data.parts.items():
-        assert_array_equal(value, expected_data_3d[hemi])
+    assert_array_equal(
+        this_img.data.parts["left"][0], np.asarray(expected_values_left)
+    )
 
 
 def test_index_img_error_volume_4d(affine_eye):
