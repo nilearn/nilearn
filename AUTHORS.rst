@@ -179,6 +179,7 @@ Some other past or present contributors are:
 * `Neelay Shah`_: Max Planck Institute for Intelligent Systems, Germany
 * `Nicolas Gensollen`_: Inria, Paris, France
 * `Nikhil Krish`_: University of Texas, Austin
+* `Nirmitee Mulay`_: BCBL, Spain
 * `Noah C. Benson`_: University of Washington, Seattle, Washington, USA
 * `Oliver Warrington`_: Wellcome Centre for Human Neuroimaging, UCL, London, UK
 * `Oscar Esteban`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
