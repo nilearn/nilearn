@@ -56,6 +56,8 @@ HIGHLIGHTS
 
 - Fix order of vertices and data for ``fsaverage3`` and ``fsaverage4`` datasets.
 
+- Many functions now include an ``Examples`` section.
+
 - Accessing the maskers from ``nilearn.input_data`` is no longer possible, they now must be accessed via :mod:`nilearn.maskers`.
 
 
