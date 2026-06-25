@@ -188,7 +188,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
 # Utilities to compute masks
 #
 @fill_doc
-def intersect_masks(mask_imgs, threshold=0.5, connected=True):
+def intersect_masks(mask_imgs, threshold=0.5, connected=True) -> Nifti1Image:
     """Compute intersection of several masks.
 
     Given a list of input mask images, generate the output image which
@@ -337,7 +337,7 @@ def compute_epi_mask(
     target_shape=None,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a brain mask from :term:`fMRI` data in 3D or \
     4D :class:`numpy.ndarray`.
 
@@ -458,7 +458,7 @@ def compute_multi_epi_mask(
     n_jobs=1,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a common mask for several runs or subjects of :term:`fMRI` data.
 
     Uses the mask-finding algorithms to extract masks for each run
@@ -552,7 +552,7 @@ def compute_background_mask(
     target_shape=None,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a brain mask for the images by guessing \
     the value of the background from the border of the image.
 
@@ -670,7 +670,7 @@ def compute_multi_background_mask(
     n_jobs=1,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a common mask for several runs or subjects of data.
 
     Uses the mask-finding algorithms to extract masks for each run
@@ -756,7 +756,7 @@ def compute_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-):
+) -> Nifti1Image:
     """Compute the whole-brain, grey-matter or white-matter mask.
 
     This mask is calculated using MNI152 1mm-resolution template mask onto the
@@ -831,7 +831,7 @@ def compute_multi_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-):
+) -> Nifti1Image:
     """Compute the whole-brain, grey-matter or white-matter mask \
     for a list of images.
 
