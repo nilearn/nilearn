@@ -413,8 +413,6 @@ def _generate_masker_report_files_partial(masker, **kwargs) -> HTMLReport:
         (1200, 750),
     )
 
-    _generate_dummy_html(filenames=[f"{masker_class_name}_fitted.html"])
-
     return unfitted_report
 
 
@@ -611,11 +609,6 @@ def report_surface_maps_masker(build_type):
             engine="matplotlib",
             displayed_maps=[6, 2],
         )
-        verbose_save(
-            matplotlib_reports,
-            "SurfaceMapsMasker_fitted_matplotlib.html",
-            (1200, 750),
-        )
 
         print("Use plotly")
         masker = clone(masker)
@@ -624,9 +617,6 @@ def report_surface_maps_masker(build_type):
             surface_stat_image,
             engine="plotly",
             displayed_maps=[6, 2],
-        )
-        verbose_save(
-            plotly_reports, "SurfaceMapsMasker_fitted_plotly.html", (1200, 750)
         )
 
         return empty_report, matplotlib_reports, plotly_reports
