@@ -413,6 +413,8 @@ def _generate_masker_report_files_partial(masker, **kwargs) -> HTMLReport:
         (1200, 750),
     )
 
+    _generate_dummy_html(filenames=[f"{masker_class_name}_fitted.html"])
+
     return unfitted_report
 
 
