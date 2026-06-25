@@ -1209,7 +1209,7 @@ def _validate_mesh(mesh) -> None:
 
 
 # function to figure out datatype and load data
-def load_surf_mesh(surf_mesh):
+def load_surf_mesh(surf_mesh) -> "InMemoryMesh":
     """Load a surface :term:`mesh` geometry.
 
     Parameters
