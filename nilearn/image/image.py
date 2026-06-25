@@ -183,13 +183,18 @@ def check_volume_for_fit(imgs) -> None:
             raise ValueError("The image is empty.")
 
 
-def get_data(img: NiimgLike) -> np.ndarray:
+def get_data(img: NiimgLike | SpatialImage) -> np.ndarray:
     """Get the image data as a :class:`numpy.ndarray`.
 
     Parameters
     ----------
     img : Niimg-like object or iterable of Niimg-like objects
         See :ref:`extracting_data`.
+        Besides :class:`~nibabel.nifti1.Nifti1Image`, any other
+        :class:`~nibabel.spatialimages.SpatialImage` subtype accepted
+        by nibabel (e.g. :class:`~nibabel.nifti2.Nifti2Image`,
+        :class:`~nibabel.freesurfer.mghformat.MGHImage`,
+        :class:`~nibabel.analyze.AnalyzeImage`) is also accepted.
 
     Returns
     -------
