@@ -6,14 +6,15 @@ import pathlib
 import warnings
 from collections.abc import Iterable, Mapping
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 import numpy as np
 import pandas as pd
 import sklearn.cluster
 import sklearn.preprocessing
-from nibabel import Nifti1Image, gifti, load, nifti1
 from nibabel import freesurfer as fs
+from nibabel import gifti, load, nifti1
+from nibabel.spatialimages import SpatialImage
 from scipy import interpolate, sparse
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import connected_components
@@ -954,9 +955,14 @@ def load_surf_data(surf_data) -> np.ndarray:
             )
 
             if surf_data.endswith(("nii", "nii.gz", "mgz")):
-                data_part = np.squeeze(
-                    get_vol_data(cast(Nifti1Image, load(surf_data)))
-                )
+                loaded_img = load(surf_data)
+                if not isinstance(loaded_img, SpatialImage):
+                    raise TypeError(
+                        "Data given cannot be loaded because it is"
+                        " not compatible with nibabel format:\n"
+                        f"{surf_data!r}"
+                    )
+                data_part = np.squeeze(get_vol_data(loaded_img))
             elif surf_data.endswith(("area", "curv", "sulc", "thickness")):
                 data_part = fs.io.read_morph_data(surf_data)
             elif surf_data.endswith("annot"):
