@@ -60,7 +60,7 @@ def engine_warning(engine: str) -> None:
     if engine == "matplolib":
         option = "plotting"
     elif engine == "plotly":
-        option = "plotly"
+        option = "matplolib, plotly"
     message = (
         f"'{engine}' is not installed. To be able to use '{engine}' as "
         "plotting engine for 'nilearn.plotting' package:\n"
