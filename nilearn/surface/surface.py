@@ -620,7 +620,7 @@ def vol_to_surf(
     mask_img=None,
     inner_mesh=None,
     depth=None,
-):
+) -> np.ndarray:
     """Extract surface data from a Nifti image.
 
     .. nilearn_versionadded:: 0.4.0
