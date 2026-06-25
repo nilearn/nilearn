@@ -6,14 +6,14 @@ import pathlib
 import warnings
 from collections.abc import Iterable, Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
 import sklearn.cluster
 import sklearn.preprocessing
+from nibabel import Nifti1Image, gifti, load, nifti1
 from nibabel import freesurfer as fs
-from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import connected_components
@@ -908,7 +908,7 @@ def _stringify(word_list):
 
 
 # function to figure out datatype and load data
-def load_surf_data(surf_data):
+def load_surf_data(surf_data) -> np.ndarray:
     """Load data to be represented on a surface mesh.
 
     Parameters
@@ -954,7 +954,9 @@ def load_surf_data(surf_data):
             )
 
             if surf_data.endswith(("nii", "nii.gz", "mgz")):
-                data_part = np.squeeze(get_vol_data(load(surf_data)))
+                data_part = np.squeeze(
+                    get_vol_data(cast(Nifti1Image, load(surf_data)))
+                )
             elif surf_data.endswith(("area", "curv", "sulc", "thickness")):
                 data_part = fs.io.read_morph_data(surf_data)
             elif surf_data.endswith("annot"):
