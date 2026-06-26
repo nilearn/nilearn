@@ -60,7 +60,6 @@ from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
     compute_adjacency_matrix,
-    extract_data,
     find_surface_clusters,
 )
 from nilearn.surface.surface import get_data as get_surface_data
@@ -183,13 +182,18 @@ def check_volume_for_fit(imgs) -> None:
             raise ValueError("The image is empty.")
 
 
-def get_data(img: NiimgLike) -> np.ndarray:
+def get_data(img: NiimgLike | SpatialImage) -> np.ndarray:
     """Get the image data as a :class:`numpy.ndarray`.
 
     Parameters
     ----------
     img : Niimg-like object or iterable of Niimg-like objects
         See :ref:`extracting_data`.
+        Besides :class:`~nibabel.nifti1.Nifti1Image`, any other
+        :class:`~nibabel.spatialimages.SpatialImage` subtype accepted
+        by nibabel (e.g. :class:`~nibabel.nifti2.Nifti2Image`,
+        :class:`~nibabel.freesurfer.mghformat.MGHImage`,
+        :class:`~nibabel.analyze.AnalyzeImage`) is also accepted.
 
     Returns
     -------
@@ -1102,13 +1106,54 @@ def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
     """
     if isinstance(imgs, SurfaceImage):
         imgs.data._check_ndims(2, var_name="imgs")
-        return new_img_like(imgs, data=extract_data(imgs, index))
+        return new_img_like(imgs, data=_extract_data(imgs, index))
 
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr
     if hasattr(index, "values") and hasattr(index, "iloc"):
         index = index.to_numpy().flatten()
     return _index_img(imgs, index)
+
+
+def _extract_data(img: SurfaceImage, index) -> dict[Any, np.ndarray]:
+    """Extract data of a SurfaceImage a specified indices.
+
+    Parameters
+    ----------
+    img : SurfaceImage object
+
+    index : Any type compatible with numpy array indexing
+        Used for indexing the 2D data array in the 2nd dimension.
+
+    Returns
+    -------
+    a dict where each value contains the data extracted
+    for each part
+    """
+    check_is_of_allowed_type(img, (SurfaceImage,), "img")
+    mesh = img.mesh
+    data = img.data
+    data._check_parts()
+
+    if isinstance(index, np.ndarray):
+        return {hemi: data.parts[hemi][:, index].copy() for hemi in data.parts}
+
+    if isinstance(index, int):
+        last_dim = 1
+    elif isinstance(index, slice):
+        start, stop, step = index.indices(data._n_samples)
+        last_dim = max(0, (stop - start + (step - 1)) // step)
+    elif all(isinstance(x, bool) for x in index):
+        last_dim = sum(index)
+    else:
+        last_dim = len(index)
+
+    return {
+        hemi: data.parts[hemi][:, index]
+        .copy()
+        .reshape(mesh.parts[hemi].n_vertices, last_dim)
+        for hemi in data.parts
+    }
 
 
 def _index_img(img: Nifti1Image, index):
