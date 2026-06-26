@@ -128,10 +128,13 @@ readme = "README.rst"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
-plotting = [
+# keep plotly as a separate optional extra dependency because of its size
+plotly = [
     "kaleido>=1.1.0",
-    "matplotlib>=3.8.0",
     "plotly>=6.1.1"
+]
+plotting = [
+    "matplotlib>=3.8.0"
 ]
 
 [project.urls]
