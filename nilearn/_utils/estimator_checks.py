@@ -27,6 +27,7 @@ import warnings
 from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory, mkdtemp
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -1762,7 +1763,9 @@ def check_img_estimator_pickle(estimator_orig) -> None:
         if isinstance(unpickled_result, np.ndarray):
             assert_allclose_dense_sparse(result[method], unpickled_result)
         elif isinstance(unpickled_result, SurfaceImage):
-            assert_surface_image_equal(result[method], unpickled_result)
+            assert_surface_image_equal(
+                cast(SurfaceImage, result[method]), unpickled_result
+            )
         elif isinstance(unpickled_result, Nifti1Image):
             check_imgs_equal(result[method], unpickled_result)
 
