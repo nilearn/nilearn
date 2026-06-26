@@ -5,6 +5,8 @@
 0.14.0
 ======
 
+**Released June 2026**
+
 ..
     Each changelog entry should begin with one of the following badges:
     - :bdg-primary:`Doc`
