@@ -104,13 +104,13 @@ If you want to install matplotlib:
 
 .. code-block:: bash
 
-    python -m pip install nilearn[plotting]
+    python -m pip install 'nilearn[plotting]'
 
 If you want to install matplotlib and plotly:
 
 .. code-block:: bash
 
-    python -m pip install nilearn[plotting, plotly]
+    python -m pip install 'nilearn[plotting, plotly]'
 
 Development version
 -------------------
