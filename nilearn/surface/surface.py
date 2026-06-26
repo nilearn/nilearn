@@ -13,6 +13,7 @@ import sklearn.cluster
 import sklearn.preprocessing
 from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
+from nibabel.spatialimages import SpatialImage
 from scipy import interpolate, sparse
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import connected_components
@@ -619,7 +620,7 @@ def vol_to_surf(
     mask_img=None,
     inner_mesh=None,
     depth=None,
-):
+) -> np.ndarray:
     """Extract surface data from a Nifti image.
 
     .. nilearn_versionadded:: 0.4.0
@@ -907,7 +908,7 @@ def _stringify(word_list):
 
 
 # function to figure out datatype and load data
-def load_surf_data(surf_data):
+def load_surf_data(surf_data) -> np.ndarray:
     """Load data to be represented on a surface mesh.
 
     Parameters
@@ -953,7 +954,14 @@ def load_surf_data(surf_data):
             )
 
             if surf_data.endswith(("nii", "nii.gz", "mgz")):
-                data_part = np.squeeze(get_vol_data(load(surf_data)))
+                loaded_img = load(surf_data)
+                if not isinstance(loaded_img, SpatialImage):
+                    raise TypeError(
+                        "Data given cannot be loaded because it is"
+                        " not compatible with nibabel format:\n"
+                        f"{surf_data!r}"
+                    )
+                data_part = np.squeeze(get_vol_data(loaded_img))
             elif surf_data.endswith(("area", "curv", "sulc", "thickness")):
                 data_part = fs.io.read_morph_data(surf_data)
             elif surf_data.endswith("annot"):
@@ -1206,7 +1214,7 @@ def _validate_mesh(mesh) -> None:
 
 
 # function to figure out datatype and load data
-def load_surf_mesh(surf_mesh):
+def load_surf_mesh(surf_mesh) -> "InMemoryMesh":
     """Load a surface :term:`mesh` geometry.
 
     Parameters
