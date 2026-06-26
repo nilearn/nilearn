@@ -45,6 +45,7 @@ from nilearn.conftest import (
 from nilearn.exceptions import DimensionError
 from nilearn.image.image import (
     _crop_img_to,
+    _extract_data,
     _fast_smooth_array,
     _mris_fwhm_to_niters,
     _smooth_surface_img,
@@ -73,7 +74,7 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface.surface import SurfaceImage, extract_data
+from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import (
     assert_polymesh_equal,
@@ -820,33 +821,46 @@ def test_index_img_volume():
         assert_array_equal(this_img.affine, img_4d.affine)
 
 
-@pytest.mark.parametrize("length", [20])
+def test_extract_data_wrong_input():
+    """Check that only SurfaceImage is accepted as input."""
+    with pytest.raises(TypeError, match="must be of type"):
+        _extract_data(1, index=1)
+
+
 @pytest.mark.parametrize(
-    "index, expected_n_samples",
+    "index, expected_values_left",
     [
-        ([*range(20)], 20),
-        (slice(2, 8, 2), 3),
-        ([1, 2, 3, 2], 4),
-        (np.asarray([1, 2, 3, 2]), 4),
+        ([*range(8)], [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 28.0]),
+        (slice(2, 8, 2), [8.0, 16.0, 24.0]),
+        ([1, 2, 3, 2], [4.0, 8.0, 12.0, 8.0]),
+        (np.asarray([1, 2, 3, 2]), [4.0, 8.0, 12.0, 8.0]),
         (
-            ((np.arange(20) % 3) == 1).tolist(),
-            7,
+            ((np.arange(8) % 3) == 1).tolist(),
+            [4.0, 16.0, 28.0],
         ),  # boolean indexing with array
-        ((np.arange(20) % 3) == 1, 7),  # boolean indexing with array
+        (
+            (np.arange(8) % 3) == 1,
+            [4.0, 16.0, 28.0],
+        ),  # boolean indexing with array
     ],
 )
-def test_index_img_surface(surf_img_2d, length, index, expected_n_samples):
-    """Test index_img with surface data."""
-    input_img = surf_img_2d(length)
+def test_index_img_surface(surf_img_2d, index, expected_values_left):
+    """Test index_img with surface data.
+
+    We only check the content of the first vertex of the left part:
+    this is deterministic because of how the fixture surf_img_2d
+    generates data.
+    """
+    input_img = surf_img_2d(8)
     this_img = index_img(input_img, index)
 
-    assert this_img.data._n_samples == expected_n_samples
+    assert this_img.data._n_samples == len(expected_values_left)
 
     assert_polymesh_equal(this_img.mesh, input_img.mesh)
 
-    expected_data_3d = extract_data(input_img, index)
-    for hemi, value in this_img.data.parts.items():
-        assert_array_equal(value, expected_data_3d[hemi])
+    assert_array_equal(
+        this_img.data.parts["left"][0], np.asarray(expected_values_left)
+    )
 
 
 def test_index_img_error_volume_4d(affine_eye):
