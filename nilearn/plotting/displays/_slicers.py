@@ -1142,7 +1142,6 @@ class BaseSlicer:
                 edgecolor=edgecolor,
                 **kwargs,
             )
-            plt.close(self.frame_axes.figure)
 
 
 class _MultiDSlicer(BaseSlicer):

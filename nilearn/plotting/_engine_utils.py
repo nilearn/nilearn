@@ -53,7 +53,6 @@ def save_figure_if_needed(fig: Figure, output_file: OutputFile) -> None:
             )
         else:
             fig.savefig(output_file)
-            plt.close(fig)
 
 
 @fill_doc
