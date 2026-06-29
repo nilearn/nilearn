@@ -98,6 +98,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Warn when :func:`~image.check_niimg` (and :func:`~image.check_niimg_3d`, :func:`~image.check_niimg_4d`) load a non-:class:`~nibabel.nifti1.Nifti1Image` :class:`~nibabel.spatialimages.SpatialImage`, as most of Nilearn is only thoroughly tested with :class:`~nibabel.nifti1.Nifti1Image` objects (:gh:`XXXX` by `Rémi Gau`_).
+
 - :bdg-success:`API` Allow the ``mask_img`` parameter to :func:`~glm.first_level.first_level_from_bids` to take the value ``"derivatives"`` to generate a mask from the masks in BIDS derivative to use in the model (:gh:`5981` by `Rémi Gau`_).
 
 - :bdg-success:`API` The parameter ``estimator_args`` was added to all decoding estimators to allow to pass parameters directly to the underlying Scikit-Learn estimators (:gh:`5641` by `Rémi Gau`_).
