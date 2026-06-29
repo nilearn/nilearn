@@ -11,7 +11,7 @@ from matplotlib.colors import ListedColormap
 from matplotlib.transforms import Bbox
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level, log
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data, is_binary_niimg, safe_get_data
 from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, get_data, new_img_like, reorder_img
@@ -1119,14 +1119,20 @@ class BaseSlicer:
 
         """
         if filename is None:
-            log("Please specify a valid filename: {filename=}.", verbose=1)
+            warnings.warn(
+                "Please specify a valid filename: {filename=}.",
+                stacklevel=find_stack_level(),
+            )
             return
 
         output_file = Path(filename)
         try:
             output_file.parent.mkdir(exist_ok=True, parents=True)
         except Exception:
-            log("Please specify a valid file path: {filename=}.", verbose=1)
+            warnings.warn(
+                "Please specify a valid file path: {filename=}.",
+                stacklevel=find_stack_level(),
+            )
         else:
             facecolor = edgecolor = "k" if self._black_bg else "w"
             self.frame_axes.figure.savefig(

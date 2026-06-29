@@ -17,7 +17,7 @@ from matplotlib.figure import Figure
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
-from nilearn._utils.logger import find_stack_level, log
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
 from nilearn.nilearn_typing import OutputFile
 from nilearn.plotting._utils import (
@@ -47,7 +47,10 @@ def save_figure_if_needed(fig: Figure, output_file: OutputFile) -> None:
         try:
             output_file.parent.mkdir(exist_ok=True, parents=True)
         except Exception:
-            log("Please specify a valid file path: {output_file=}.", verbose=1)
+            warn(
+                "Please specify a valid file path: {output_file=}.",
+                stacklevel=find_stack_level(),
+            )
         else:
             fig.savefig(output_file)
             plt.close(fig)
