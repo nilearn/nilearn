@@ -3054,6 +3054,8 @@ def check_niimg(
         and that :func:`nilearn.image.get_data` returns a result,
         raise :obj:`TypeError` otherwise.
 
+        %(non_nifti_image_admonition)s
+
     ensure_ndim : {3, 4, None}, default=None
         Indicate the dimensionality of the expected niimg.
         An error is raised if the niimg is of another dimensionality.
@@ -3204,6 +3206,8 @@ def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
         :func:`nilearn.image.get_data` returns a result,
         raise :obj:`TypeError` otherwise.
 
+        %(non_nifti_image_admonition)s
+
     %(dtype)s
 
     Returns
@@ -3308,6 +3312,8 @@ def check_niimg_4d(
         If it is an object, check if the affine attribute present
         and that :func:`nilearn.image.get_data` returns a result,
         raise :obj:`TypeError` otherwise.
+
+        %(non_nifti_image_admonition)s
 
     return_iterator : :obj:`bool`, default=False
         If True, an iterator of 3D images is returned.

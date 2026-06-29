@@ -872,6 +872,27 @@ n_perm : :obj:`int`, default=10000
     one gets in the p-values estimation.
 """
 
+non_nifti_image_admonition = """
+
+    .. admonition:: Support for non-Nifti images
+
+        This function accepts and preserves the class
+        of any :class:`nibabel.spatialimages.SpatialImage`
+        (for example :class:`~nibabel.nifti2.Nifti2Image`,
+        :class:`~nibabel.freesurfer.mghformat.MGHImage`,
+        or :class:`~nibabel.analyze.AnalyzeImage`),
+        not only :class:`~nibabel.nifti1.Nifti1Image`.
+
+        However, most of Nilearn is only thoroughly tested with
+        :class:`~nibabel.nifti1.Nifti1Image` objects.
+        Using another :class:`~nibabel.spatialimages.SpatialImage`
+        format may lead to unexpected behavior in downstream functions.
+        See :gh:`3469` for more information.
+
+"""
+
+docdict["non_nifti_image_admonition"] = non_nifti_image_admonition
+
 # opening
 docdict["opening"] = """
 opening : :obj:`bool` or :obj:`int`, optional

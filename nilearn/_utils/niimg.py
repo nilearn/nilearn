@@ -8,6 +8,7 @@ from warnings import warn
 import numpy as np
 from nibabel import Nifti1Image, is_proxy, load, spatialimages
 
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import get_target_dtype
@@ -97,6 +98,7 @@ def ensure_finite_data(
     return data
 
 
+@fill_doc
 def load_niimg(niimg, dtype=None):
     """Load a niimg, check if it is a nibabel SpatialImage and cast if needed.
 
@@ -105,6 +107,8 @@ def load_niimg(niimg, dtype=None):
     niimg : Niimg-like object
         See :ref:`extracting_data`.
         Image to load.
+
+        %(non_nifti_image_admonition)s
 
     %(dtype)s
 
@@ -138,6 +142,19 @@ def load_niimg(niimg, dtype=None):
             )
             if copy_header:
                 niimg.header.set_data_dtype(target_dtype)
+
+    if not isinstance(
+        niimg, Nifti1Image
+    ) and not niimg.__class__.__name__.startswith("_"):
+        warn(
+            f"Loaded image is a {niimg.__class__.__name__}, "
+            "not a Nifti1Image. Most of Nilearn is only thoroughly "
+            "tested with Nifti1Image objects, "
+            "so downstream behavior may be affected. "
+            "See https://github.com/nilearn/nilearn/issues/3469 "
+            "for more information.",
+            stacklevel=find_stack_level(),
+        )
 
     return niimg
 
