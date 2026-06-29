@@ -53,7 +53,7 @@ masker.fit(func_filename)
 #
 #   You can also note that after fitting,
 #   the HTML representation of the estimator looks different
-#   than before before fitting.
+#   than before fitting.
 #
 masker
 
@@ -65,7 +65,7 @@ masker
 # for this functional image by plotting the mask.
 #
 # We get the estimated mask from the ``mask_img_`` attribute of the masker:
-# the final ``_`` ofd this attribute name means it was generated
+# the final ``_`` of this attribute name means it was generated
 # by the :meth:`~nilearn.maskers.NiftiMasker.fit` method.
 #
 # We can then plot it using the :func:`~nilearn.plotting.plot_roi` function
@@ -112,6 +112,18 @@ print(fmri_masked.shape)
 
 # %%
 # ``fmri_masked`` is now a 2D numpy array, (n_voxels x n_time_points).
+
+# %%
+# Output to dataframe
+# -------------------
+#
+# You can also use 'set_output()' to decide the output format of 'transform'.
+# If you want to output to a DataFrame, you can choose 'pandas' or 'polars'.
+#
+masker.set_output(transform="pandas")
+fmri_masked = masker.transform(func_filename)
+print(fmri_masked.head)
+
 
 # %%
 # Run an algorithm and visualize the results

@@ -12,7 +12,9 @@ UNFITTED_MSG = (
 )
 
 MISSING_ENGINE_MSG = (
-    "\nNo plotting back-end detected.\nReport will be missing figures."
+    "\nNo plotting back-end detected. Report will be missing figures.\n"
+    "Install back-ends with:\n"
+    "    pip install 'nilearn[plotting, plotly]'"
 )
 
 

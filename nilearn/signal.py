@@ -27,7 +27,7 @@ from nilearn._utils.param_validation import (
     check_run_sample_masks,
 )
 from nilearn.exceptions import AllVolumesRemovedError
-from nilearn.typing import (
+from nilearn.nilearn_typing import (
     HighPass,
     LowPass,
     NonNullScalar,
@@ -328,7 +328,7 @@ def butterworth(
     padtype="odd",
     padlen=None,
     copy=False,
-):
+) -> np.ndarray:
     """Apply a low-pass, high-pass or band-pass \
     `Butterworth filter <https://en.wikipedia.org/wiki/Butterworth_filter>`_.
 

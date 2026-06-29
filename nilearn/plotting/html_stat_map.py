@@ -7,7 +7,7 @@ import json
 import warnings
 from base64 import b64encode
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any, Literal
 
 import matplotlib
 import numpy as np
@@ -32,13 +32,10 @@ from nilearn.image import (
     resample_img,
     resample_to_img,
 )
+from nilearn.nilearn_typing import Threshold
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
-from nilearn.typing import Threshold
-
-if TYPE_CHECKING:
-    from nibabel import Nifti1Image
 
 
 def _data_to_sprite(

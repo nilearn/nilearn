@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 
 from nilearn._base import NilearnBaseEstimator
-from nilearn.typing import Verbose
+from nilearn.nilearn_typing import Verbose
 
 
 def _has_rich() -> bool:
@@ -132,8 +132,8 @@ def compose_err_msg(msg: str, **kwargs) -> str:
     updated_msg : string
         msg, with "key: value" appended. Only string values are appended.
 
-    Example
-    -------
+    Examples
+    --------
     >>> compose_err_msg('Error message with arguments...', arg_num=123, \
         arg_str='filename.nii', arg_bool=True)
     'Error message with arguments...\\narg_str: filename.nii'

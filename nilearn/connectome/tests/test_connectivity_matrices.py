@@ -44,7 +44,8 @@ N_SUBJECTS = 5
 
 
 ESTIMATORS_TO_CHECK = [
-    ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
+    ConnectivityMeasure(cov_estimator=EmpiricalCovariance()),
+    ConnectivityMeasure(),
 ]
 
 if SKLEARN_LT_1_6:
@@ -648,6 +649,18 @@ def test_connectivity_measure_errors():
         match=r"Tangent space parametrization .* only be .* group of subjects",
     ):
         conn_measure.fit_transform([np.ones((100, 40))])
+
+    # invalid cov_estimator
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"'cov_estimator' must be an estimator with '.fit\(\)' and "
+            "'.covariance_'"
+        ),
+    ):
+        ConnectivityMeasure(cov_estimator="not_an_estimator").fit(
+            [np.ones((100, 40)), np.ones((100, 40))]
+        )
 
 
 @pytest.mark.parametrize(

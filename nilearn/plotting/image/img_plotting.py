@@ -45,6 +45,16 @@ from nilearn.image import (
 )
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
+from nilearn.nilearn_typing import (
+    Annotate,
+    ColorBar,
+    DisplayMode,
+    DrawCross,
+    OutputFile,
+    Radiological,
+    ResamplingInterpolation,
+    Title,
+)
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
@@ -56,16 +66,6 @@ from nilearn.plotting.displays import OrthoSlicer, get_projector, get_slicer
 from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.image.utils import MNI152TEMPLATE, load_anat
 from nilearn.signal import clean
-from nilearn.typing import (
-    Annotate,
-    ColorBar,
-    DisplayMode,
-    DrawCross,
-    OutputFile,
-    Radiological,
-    ResamplingInterpolation,
-    Title,
-)
 
 
 def show() -> None:
@@ -458,13 +458,13 @@ def plot_img(
     ValueError
         if the specified threshold is a negative number
 
-    .. note::
+    Notes
+    -----
+    This is a low-level function. For most use cases, other plotting
+    functions might be more appropriate and easier to use.
 
-        This is a low-level function. For most use cases, other plotting
-        functions might be more appropriate and easier to use.
-
-    .. seealso::
-
+    See Also
+    --------
         :func:`~nilearn.plotting.plot_anat`
             To simply plot anatomical images
         :func:`~nilearn.plotting.plot_epi`
@@ -478,14 +478,17 @@ def plot_img(
 
     Examples
     --------
-    >>> from nilearn.plotting.image.img_plotting import plot_img, show
-    >>> from nilearn.datasets import load_sample_motor_activation_image
 
-    # just to have a 3D image with some structure
-    >>> data = load_sample_motor_activation_image()
+    .. plot::
 
-    >>> display = plot_img(data, title="Plotting a 3D image with plot_img")
-    >>> show()
+        >>> from nilearn.plotting.image.img_plotting import plot_img, show
+        >>> from nilearn.datasets import load_sample_motor_activation_image
+        >>>
+        >>> # just to have a 3D image with some structure
+        >>> data = load_sample_motor_activation_image()
+        >>>
+        >>> display = plot_img(data, title="Plotting a 3D image with plot_img")
+        >>> show()
 
     """
     check_params(locals())
@@ -1997,12 +2000,19 @@ def plot_carpet(
 
     detrend : :obj:`bool`, default=True
         Detrend and z-score the data prior to plotting.
+
     %(output_file)s
+
     %(figure)s
+
     %(axes)s
+
     %(vmin)s
+
     %(vmax)s
+
     %(title)s
+
     %(cmap)s
         default=`gray`.
 
@@ -2033,32 +2043,33 @@ def plot_carpet(
     In cases of long acquisitions (>800 volumes), the data will be downsampled
     to have fewer than 800 volumes before being plotted.
 
-    Examples
-    --------
-    >>> from nilearn.plotting import plot_carpet
-    >>> import matplotlib.pyplot as plt
-    >>> from nibabel import Nifti1Image
-    >>> import numpy as np
-
-    >>> rng = np.random.default_rng(seed=42)
-    >>> data = rng.integers(low=0, high=100,
-    ...                     size=(12, 12, 12, 100), dtype=np.int32)
-    >>> mask = np.ones((12, 12, 12), dtype=bool)
-    >>> img = Nifti1Image(data, affine=np.eye(4))
-    >>> mask_img = Nifti1Image(mask.astype(np.int8), affine=np.eye(4))
-
-    >>> display = plot_carpet(
-    ...     img,
-    ...     mask_img=mask_img,
-    ...     title="global patterns over time",
-    ... )
-
-    >>> display.show()
-
-
     References
     ----------
     .. footbibliography::
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_carpet, show
+        >>> from nibabel import Nifti1Image
+        >>> import numpy as np
+        >>>
+        >>> rng = np.random.default_rng(seed=42)
+        >>> data = rng.integers(low=0, high=100,
+        ...                     size=(12, 12, 12, 100), dtype=np.int32)
+        >>> mask = np.ones((12, 12, 12), dtype=bool)
+        >>> img = Nifti1Image(data, affine=np.eye(4))
+        >>> mask_img = Nifti1Image(mask.astype(np.int8), affine=np.eye(4))
+        >>>
+        >>> display = plot_carpet(
+        ...     img,
+        ...     mask_img=mask_img,
+        ...     title="global patterns over time",
+        ... )
+        >>>
+        >>> show()
 
     """
     check_params(locals())

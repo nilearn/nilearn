@@ -22,6 +22,7 @@ from nilearn.surface.surface import (
     PolyMesh,
     SurfaceImage,
     _choose_kind,
+    _gifti_img_to_data,
     _gifti_img_to_mesh,
     _interpolation_sampling,
     _load_surf_files_gifti_gzip,
@@ -38,7 +39,6 @@ from nilearn.surface.surface import (
     check_surf_img,
     compute_adjacency_matrix,
     data_to_gifti,
-    extract_data,
     find_surface_clusters,
     get_data,
     load_surf_data,
@@ -117,6 +117,88 @@ def test_load_surf_data_numpy_gt_1pt23():
     """
     fsaverage = datasets.fetch_surf_fsaverage()
     load_surf_data(fsaverage["pial_left"])
+
+
+def test_gifti_img_to_data_preserves_numeric_dtype():
+    """Multi-darray GIFTI with uniform dtype must not return object array.
+
+    Regression test for
+    https://github.com/nilearn/nilearn/issues/5525#issuecomment-4646130161
+
+    _gifti_img_to_data previously forced dtype=object for
+    any multi-darray GIFTI, causing downstream failures (e.g. np.isfinite)
+    when the dtype was preserved through the masker pipeline.
+    """
+    n_vertices = 20
+    n_timepoints = 5
+    darrays = [
+        gifti.GiftiDataArray(
+            data=np.ones(n_vertices, dtype=np.float32),
+            datatype="NIFTI_TYPE_FLOAT32",
+        )
+        for _ in range(n_timepoints)
+    ]
+    gii = gifti.GiftiImage(darrays=darrays)
+
+    data = _gifti_img_to_data(gii)
+
+    assert data.dtype != object, (
+        "Expected a numeric dtype, got object. "
+        "Downstream np.isfinite calls will fail on object arrays."
+    )
+    assert data.dtype == np.float32
+    assert data.shape == (n_vertices, n_timepoints)
+
+
+def test_polydata_casts_object_dtype_with_warning():
+    """PolyData must warn and cast to float32 when given object-dtype data.
+
+    Regression test for
+    https://github.com/nilearn/nilearn/issues/5525#issuecomment-4646130161
+
+    Object dtype propagated silently through the masker
+    pipeline (fit_transform to inverse_transform) and caused np.isfinite to
+    fail inside threshold_img.
+    """
+    data = np.ones((10, 3), dtype=object)
+
+    with pytest.warns(UserWarning, match="Object dtype is not supported"):
+        pd = PolyData(left=data)
+    assert pd.parts["left"].dtype == np.float32
+
+    with pytest.warns(UserWarning, match="Object dtype is not supported"):
+        pd = PolyData(left=np.ones((10, 3), dtype=np.float32), dtype=object)
+    assert pd.parts["left"].dtype == np.float32
+
+
+def test_surface_image_casts_object_dtype_with_warning(surf_mesh):
+    """SurfaceImage warns and casts to float32 when data has object dtype."""
+    data = {
+        hemi: np.ones((part.n_vertices, 3), dtype=object)
+        for hemi, part in surf_mesh.parts.items()
+    }
+
+    with pytest.warns(UserWarning, match="Object dtype is not supported"):
+        img = SurfaceImage(mesh=surf_mesh, data=data)
+    for part in img.data.parts.values():
+        assert part.dtype == np.float32
+
+
+@pytest.mark.parametrize("dtype", [1, 1.5, "foo"])
+def test_dtype_error(surf_mesh, dtype):
+    """Check dtype errors.
+
+    Note the errors are raised by numpy.
+    """
+    with pytest.raises(TypeError, match=r"understood|data type"):
+        PolyData(left=np.ones((10, 3)), dtype=dtype)
+
+    data = {
+        hemi: np.ones((part.n_vertices, 3))
+        for hemi, part in surf_mesh.parts.items()
+    }
+    with pytest.raises(TypeError, match=r"understood|data type"):
+        SurfaceImage(mesh=surf_mesh, data=data, dtype=dtype)
 
 
 def test_load_surf_data_array():
@@ -1123,6 +1205,7 @@ def test_load_save_data_1d(rng, tmp_path, surf_mesh):
         np.int64,
         np.float32,
         np.float64,
+        bool,
     ],
 )
 def test_save_dtype(surf_img_1d, tmp_path, dtype):
@@ -1201,12 +1284,6 @@ def test_get_min_max(surf_img_2d):
     assert vmax == 10
 
 
-def test_extract_data_wrong_input():
-    """Check that only SurfaceImage is accepted as input."""
-    with pytest.raises(TypeError, match="must be of type"):
-        extract_data(1, index=1)
-
-
 def test_get_data(surf_img_1d):
     """Check that getting data from image or polydata gives same result."""
     data_from_image = get_data(surf_img_1d)
@@ -1246,12 +1323,17 @@ def test_check_surf_img(surf_img_1d, surf_img_2d):
 
 
 def test_check_surf_img_dtype(surf_img_1d):
-    """Check dtype of SurfaceImage can be set at init."""
+    """Check dtype of SurfaceImage can be set at init.
+
+    Check private attribute _dtype of PolyData is set.
+    """
     data = {
         "left": np.ones(surf_img_1d.data.parts["left"].shape, dtype="float32"),
         "right": np.ones(surf_img_1d.data.parts["right"].shape, dtype="int32"),
     }
     new_img = SurfaceImage(surf_img_1d.mesh, data, dtype=np.int32)
+
+    assert new_img.data._dtype == np.int32
 
     for k in surf_img_1d.data.parts:
         assert new_img.data.parts[k].dtype != surf_img_1d.data.parts[k].dtype

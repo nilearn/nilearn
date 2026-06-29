@@ -112,7 +112,7 @@ fmri_glm
 #
 #   After fitting,
 #   the HTML representation of the estimator looks different
-#   than before before fitting.
+#   than before fitting.
 #
 fmri_glm = fmri_glm.fit(fmri_img, events)
 fmri_glm

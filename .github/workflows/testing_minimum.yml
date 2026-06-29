@@ -69,7 +69,7 @@ jobs:
 
         -   name: Install nilearn
             run: |
-                pip install .[plotting] --group test
+                pip install .[plotting,plotly] --group test
                 pip install ${{ matrix.min_dep }}
 
         -   name: Run tests

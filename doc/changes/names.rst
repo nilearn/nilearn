@@ -47,6 +47,8 @@
 
 .. _Basile Pinsard: https://github.com/bpinsard
 
+.. _Bastien Cagna: https://github.com/bastiencagna
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -101,11 +103,15 @@
 
 .. _Fabian Pedregosa: https://github.com/fabianp
 
+.. _Fernanda Ponce: https://github.com/ferponcem
+
 .. _Florent Pollet: https://florian6973.github.io/
 
 .. _Franz Liem: https://github.com/fliem
 
 .. _François Paugam: https://github.com/FrancoisPgm
+
+.. _Gabriele Amorosino: https://github.com/gamorosino
 
 .. _Gael Varoquaux: https://gael-varoquaux.info/
 
@@ -185,6 +191,8 @@
 
 .. _Konstantin Shmelkov: https://github.com/kshmelkov
 
+.. _Kosei Tanno: https://github.com/KoseiTanno
+
 .. _Kshitij Chawla: https://github.com/kchawla-pi
 
 .. _Kun CHEN: https://chenkun.me
@@ -202,6 +210,10 @@
 .. _Luz Paz: https://github.com/luzpaz
 
 .. _Manon Pietrantoni: https://github.com/ManonP38
+
+.. _Marco Flores: https://github.com/marco7877
+
+.. _Marco Bedini: https://github.com/mbedini
 
 .. _Martin Perez-Guevara: https://github.com/MartinPerez
 
@@ -253,6 +265,8 @@
 
 .. _Nikhil Krish: https://github.com/NIkhilgKrish
 
+.. _Nirmitee Mulay: https://github.com/nirmitee-mulay
+
 .. _Noah C. Benson: https://nben.net/
 
 .. _Oliver Warrington: https://github.com/OliverWarrington
@@ -299,6 +313,8 @@
 
 .. _Ronald Phlypo: https://github.com/rphlypo
 
+.. _Ruben Dörfel: https://rdoerfel.github.io/
+
 .. _Ryan Hammonds: https://github.com/ryanhammonds
 
 .. _Rémi Gau: https://github.com/Remi-Gau
@@ -340,6 +356,8 @@
 .. _Taylor Salo: https://tsalo.github.io/
 
 .. _Tharun K: https://github.com/tharun634
+
+.. _Thibault de Varax: https://github.com/thibaultdvx
 
 .. _Thiti Premrudeepreechacharn: https://tpremrud.github.io/
 
