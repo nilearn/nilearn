@@ -328,7 +328,7 @@ def butterworth(
     padtype="odd",
     padlen=None,
     copy=False,
-):
+) -> np.ndarray:
     """Apply a low-pass, high-pass or band-pass \
     `Butterworth filter <https://en.wikipedia.org/wiki/Butterworth_filter>`_.
 

@@ -594,8 +594,8 @@ def report_surface_maps_masker(build_type):
     if build_type == "partial":
         _generate_dummy_html(
             filenames=[
-                "SurfaceMapsMasker_fitted_plotly.html",
-                "SurfaceMapsMasker_fitted_matplotlib.html",
+                "SurfaceMapsMasker_matplotlib_fitted.html",
+                "SurfaceMapsMasker_plotly_fitted.html",
             ]
         )
         return _generate_masker_report_files_partial(masker), None
@@ -611,11 +611,6 @@ def report_surface_maps_masker(build_type):
             engine="matplotlib",
             displayed_maps=[6, 2],
         )
-        verbose_save(
-            matplotlib_reports,
-            "SurfaceMapsMasker_fitted_matplotlib.html",
-            (1200, 750),
-        )
 
         print("Use plotly")
         masker = clone(masker)
@@ -624,9 +619,6 @@ def report_surface_maps_masker(build_type):
             surface_stat_image,
             engine="plotly",
             displayed_maps=[6, 2],
-        )
-        verbose_save(
-            plotly_reports, "SurfaceMapsMasker_fitted_plotly.html", (1200, 750)
         )
 
         return empty_report, matplotlib_reports, plotly_reports
