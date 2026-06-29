@@ -1127,16 +1127,16 @@ class BaseSlicer:
             output_file.parent.mkdir(exist_ok=True, parents=True)
         except Exception:
             log("Please specify a valid file path: {filename=}.", verbose=1)
-
-        facecolor = edgecolor = "k" if self._black_bg else "w"
-        self.frame_axes.figure.savefig(
-            filename,
-            dpi=dpi,
-            facecolor=facecolor,
-            edgecolor=edgecolor,
-            **kwargs,
-        )
-        plt.close(self.frame_axes.figure)
+        else:
+            facecolor = edgecolor = "k" if self._black_bg else "w"
+            self.frame_axes.figure.savefig(
+                filename,
+                dpi=dpi,
+                facecolor=facecolor,
+                edgecolor=edgecolor,
+                **kwargs,
+            )
+            plt.close(self.frame_axes.figure)
 
 
 class _MultiDSlicer(BaseSlicer):

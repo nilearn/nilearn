@@ -48,9 +48,9 @@ def save_figure_if_needed(fig: Figure, output_file: OutputFile) -> None:
             output_file.parent.mkdir(exist_ok=True, parents=True)
         except Exception:
             log("Please specify a valid file path: {output_file=}.", verbose=1)
-
-        fig.savefig(output_file)
-        plt.close(fig)
+        else:
+            fig.savefig(output_file)
+            plt.close(fig)
 
 
 @fill_doc
