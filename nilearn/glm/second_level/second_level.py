@@ -37,27 +37,19 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
-from nilearn.image import (
-    check_niimg,
-    concat_imgs,
-    iter_img,
-    mean_img,
-    new_img_like,
 from nilearn.image.image import (
     check_niimg,
     check_same_fov,
     concat_imgs,
     iter_img,
     mean_img,
+    new_img_like,
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.mass_univariate import permuted_ols
-from nilearn.surface.surface import SurfaceImage
 from nilearn.nilearn_typing import NiimgLike
-from nilearn.surface.surface import (
-    SurfaceImage,
-)
+from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 
 

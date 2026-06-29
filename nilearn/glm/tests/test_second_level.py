@@ -848,7 +848,7 @@ def test_design_matrix_error_type(img_3d_mni, design_matrix):
 
 
 def test_fmri_img_inputs_errors(confounds):
-    # prepare correct input
+    """Test errors for incorrect inputs."""
     _, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
     fmri_data = fmri_data[0]
 
