@@ -25,7 +25,7 @@ uv sync
 ```
 
 ```bash
-pip install -e ".[plotting]" --group dev  # Dev install with plotting dependencies
+pip install -e ".[plotting,plotly]" --group dev  # Dev install with plotting dependencies
 pre-commit install              # Install git hooks
 ```
 

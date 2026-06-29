@@ -57,10 +57,14 @@ def set_mpl_backend() -> None:
 
 
 def engine_warning(engine: str) -> None:
+    if engine == "matplolib":
+        option = "plotting"
+    elif engine == "plotly":
+        option = "matplolib, plotly"
     message = (
         f"'{engine}' is not installed. To be able to use '{engine}' as "
         "plotting engine for 'nilearn.plotting' package:\n"
-        " pip install 'nilearn[plotting]'"
+        f" pip install 'nilearn[{option}]'"
     )
     warn(message, stacklevel=find_stack_level())
 
