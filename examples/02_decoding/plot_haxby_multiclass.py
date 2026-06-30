@@ -29,20 +29,17 @@ print(f"Functional nifti images are located at: {func_filename}")
 # %%
 # We load the behavioral data that we will predict and
 # remove the rest condition, as it is of no interest to us.
+
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
+
+non_rest = labels["labels"] != "rest"
+labels = labels[non_rest]
 
 y = labels["labels"]
 run = labels["chunks"]
 n_runs = len(np.unique(run))
 
-non_rest = y != "rest"
-y = y[non_rest]
-
-# %%
-# We get the labels of the numerical conditions represented by the vector y
-# and we sort the conditions by the order of appearance.
-unique_conditions, order = np.unique(y, return_index=True)
-unique_conditions = unique_conditions[np.argsort(order)]
+print(pd.crosstab(y, run))
 
 # %%
 # Prepare the :term:`fMRI` data
@@ -148,6 +145,12 @@ show()
 from sklearn.metrics import confusion_matrix
 
 from nilearn.plotting import plot_matrix
+
+# %%
+# We get the labels of the numerical conditions represented by the vector y
+# and we sort the conditions by the order of appearance.
+unique_conditions, order = np.unique(y, return_index=True)
+unique_conditions = unique_conditions[np.argsort(order)]
 
 svc_ovo.fit(X[run < 10], y[run < 10])
 y_pred_ovo = svc_ovo.predict(X[run >= 10])
