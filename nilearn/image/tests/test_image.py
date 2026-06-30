@@ -2239,6 +2239,65 @@ def test_check_niimg_bool_error(img_3d_zeros_eye):
         check_niimg(img_3d_zeros_eye, dtype=bool)
 
 
+@pytest.mark.ai_generated
+@pytest.mark.parametrize(
+    "check_function,ndim",
+    [(check_niimg, 3), (check_niimg_3d, 3), (check_niimg_4d, 4)],
+)
+@pytest.mark.parametrize("image_class", [MGHImage, AnalyzeImage])
+def test_check_niimg_non_nifti_warning(
+    check_function,
+    ndim,
+    image_class,
+    shape_3d_default,
+    shape_4d_default,
+    affine_eye,
+):
+    """Check that a warning is raised for non-Nifti images.
+
+    check_niimg, check_niimg_3d and check_niimg_4d accept and preserve any
+    nibabel SpatialImage, but most of Nilearn is only thoroughly tested
+    with Nifti1Image. See gh-3469.
+    """
+    shape = shape_3d_default if ndim == 3 else shape_4d_default
+    array = np.random.default_rng(0).random(shape).astype("f4")
+    img = image_class(array, affine=affine_eye)
+
+    with pytest.warns(UserWarning, match="not a Nifti1Image"):
+        check_function(img)
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize(
+    "check_function,ndim",
+    [(check_niimg, 3), (check_niimg_3d, 3), (check_niimg_4d, 4)],
+)
+@pytest.mark.parametrize("image_class", [Nifti1Image, Nifti2Image])
+def test_check_niimg_no_warning_for_nifti(
+    check_function,
+    ndim,
+    image_class,
+    shape_3d_default,
+    shape_4d_default,
+    affine_eye,
+):
+    """Check that no non-Nifti warning is raised for Nifti1Image \
+       and Nifti2Image.
+
+    Nifti2Image is a subclass of Nifti1Image in nibabel, so it shares the
+    same tested code paths and should not trigger the warning.
+    """
+    shape = shape_3d_default if ndim == 3 else shape_4d_default
+    array = np.random.default_rng(0).random(shape).astype("f4")
+    img = image_class(array, affine=affine_eye)
+
+    with warnings.catch_warnings(record=True) as recorded:
+        warnings.simplefilter("always")
+        check_function(img)
+
+    assert not any("not a Nifti1Image" in str(w.message) for w in recorded)
+
+
 @pytest.mark.thread_unsafe
 def test_check_niimg_return_iterator_4d_input(
     img_3d_zeros_eye, img_4d_zeros_eye
