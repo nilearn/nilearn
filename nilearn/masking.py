@@ -188,7 +188,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
 # Utilities to compute masks
 #
 @fill_doc
-def intersect_masks(mask_imgs, threshold=0.5, connected=True):
+def intersect_masks(mask_imgs, threshold=0.5, connected=True) -> Nifti1Image:
     """Compute intersection of several masks.
 
     Given a list of input mask images, generate the output image which
@@ -212,6 +212,38 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     -------
     grp_mask : 3D :class:`nibabel.nifti1.Nifti1Image`
         Intersection of all masks.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.masking import intersect_masks
+    >>>
+    >>> mask1 = np.array([[[0, 1, 1], [0, 1, 1], [0, 1, 1]]])
+    >>> mask_img1 = Nifti1Image(mask1, affine=np.eye(4), dtype=np.int32)
+    >>>
+    >>> mask2 = np.array([[[0, 0, 0], [0, 1, 1], [1, 0, 0]]])
+    >>> mask_img2 = Nifti1Image(mask2, affine=np.eye(4), dtype=np.int32)
+    >>>
+    >>> # Compute union with threshold=0
+    >>> mask_union = intersect_masks(
+    ...     [mask_img1, mask_img2], threshold=0, connected=True
+    ... )
+    >>> # Check output
+    >>> mask_union.get_fdata()
+    array([[[0., 1., 1.],
+            [0., 1., 1.],
+            [1., 1., 1.]]])
+    >>>
+    >>> # Compute intersection with threshold=1
+    >>> mask_intersection = intersect_masks(
+    ...     [mask_img1, mask_img2], threshold=1, connected=True
+    ... )
+    >>> # Check output
+    >>> mask_intersection.get_fdata()
+    array([[[0., 0., 0.],
+            [0., 1., 1.],
+            [0., 0., 0.]]])
     """
     check_params(locals())
 
@@ -305,7 +337,7 @@ def compute_epi_mask(
     target_shape=None,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a brain mask from :term:`fMRI` data in 3D or \
     4D :class:`numpy.ndarray`.
 
@@ -426,7 +458,7 @@ def compute_multi_epi_mask(
     n_jobs=1,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a common mask for several runs or subjects of :term:`fMRI` data.
 
     Uses the mask-finding algorithms to extract masks for each run
@@ -520,7 +552,7 @@ def compute_background_mask(
     target_shape=None,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a brain mask for the images by guessing \
     the value of the background from the border of the image.
 
@@ -638,7 +670,7 @@ def compute_multi_background_mask(
     n_jobs=1,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a common mask for several runs or subjects of data.
 
     Uses the mask-finding algorithms to extract masks for each run
@@ -724,7 +756,7 @@ def compute_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-):
+) -> Nifti1Image:
     """Compute the whole-brain, grey-matter or white-matter mask.
 
     This mask is calculated using MNI152 1mm-resolution template mask onto the
@@ -799,7 +831,7 @@ def compute_multi_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-):
+) -> Nifti1Image:
     """Compute the whole-brain, grey-matter or white-matter mask \
     for a list of images.
 
