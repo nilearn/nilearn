@@ -872,7 +872,7 @@ n_perm : :obj:`int`, default=10000
     one gets in the p-values estimation.
 """
 
-non_nifti_image_admonition = """
+docdict["non_nifti_image_admonition"] = """
 
     .. admonition:: Support for non-Nifti images
 
@@ -890,8 +890,6 @@ non_nifti_image_admonition = """
         See :gh:`3469` for more information.
 
 """
-
-docdict["non_nifti_image_admonition"] = non_nifti_image_admonition
 
 # opening
 docdict["opening"] = """
