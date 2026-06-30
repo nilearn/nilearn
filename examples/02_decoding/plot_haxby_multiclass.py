@@ -31,15 +31,15 @@ print(f"Functional nifti images are located at: {func_filename}")
 # remove the rest condition, as it is of no interest to us.
 
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
+print(pd.crosstab(labels["labels"], labels["chunks"]))
 
 non_rest = labels["labels"] != "rest"
-labels = labels[non_rest]
 
-y = labels["labels"]
+y = labels["labels"][non_rest]
+
 run = labels["chunks"]
 n_runs = len(np.unique(run))
 
-print(pd.crosstab(y, run))
 
 # %%
 # Prepare the :term:`fMRI` data
@@ -138,45 +138,53 @@ plt.title("Prediction: accuracy score")
 show()
 
 # %%
-# Plot the confusion matrices
-# ---------------------------
-# We fit on the first 10 runs and plot a confusion matrix on the last 2 runs.
+# Plot the cross-validated confusion matrices
+# --------------------------------------------
+# Instead of fitting on a single train/test split, we use
+# :func:`sklearn.model_selection.cross_val_predict` with the same
+# leave-one-run-out cross-validation as above to get, for each sample,
+# a prediction made by a model that never saw that sample during training.
+# We can then build a single confusion matrix from those out-of-fold
+# predictions for the whole dataset.
+
+from sklearn.model_selection import cross_val_predict
+
+y_pred_ovo = cross_val_predict(svc_ovo, X, y, cv=cv, groups=run, verbose=1)
+
+y_pred_ova = cross_val_predict(svc_ova, X, y, cv=cv, groups=run, verbose=1)
+
+# %%
+# We get the labels of the numerical conditions represented by the vector y
+# and we sort the conditions by the order of appearance.
 
 from sklearn.metrics import confusion_matrix
 
 from nilearn.plotting import plot_matrix
 
-# %%
-# We get the labels of the numerical conditions represented by the vector y
-# and we sort the conditions by the order of appearance.
 unique_conditions, order = np.unique(y, return_index=True)
 unique_conditions = unique_conditions[np.argsort(order)]
 
-svc_ovo.fit(X[run < 10], y[run < 10])
-y_pred_ovo = svc_ovo.predict(X[run >= 10])
-
 im = plot_matrix(
-    confusion_matrix(y_pred_ovo, y[run >= 10]),
+    confusion_matrix(y_pred_ovo, y),
     labels=unique_conditions,
     title="Confusion matrix: One vs One",
     cmap="inferno",
     figure=(6, 5),
     auto_fit=False,
+    vmax=108,
 )
 ax = im.axes
 ax.set_ylabel("True label")
 ax.set_xlabel("Predicted label")
 
-svc_ova.fit(X[run < 10], y[run < 10])
-y_pred_ova = svc_ova.predict(X[run >= 10])
-
 im = plot_matrix(
-    confusion_matrix(y_pred_ova, y[run >= 10]),
+    confusion_matrix(y_pred_ova, y),
     labels=unique_conditions,
     title="Confusion matrix: One vs All",
     cmap="inferno",
     figure=(6, 5),
     auto_fit=False,
+    vmax=108,
 )
 ax = im.axes
 ax.set_ylabel("True label")
