@@ -88,6 +88,7 @@ svc_ovo = OneVsOneClassifier(
         ]
     )
 )
+svc_ovo
 
 # %%
 svc_ova = OneVsRestClassifier(
@@ -98,6 +99,7 @@ svc_ova = OneVsRestClassifier(
         ]
     )
 )
+svc_ova
 
 # %%
 # Now we compute cross-validation scores
@@ -114,9 +116,11 @@ cv = LeaveOneGroupOut()
 
 # %%
 cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=cv, verbose=1, groups=run)
+cv_scores_ovo
 
 # %%
 cv_scores_ova = cross_val_score(svc_ova, X, y, cv=cv, verbose=1, groups=run)
+cv_scores_ova
 
 # %%
 print("OvO:", cv_scores_ovo.mean().round(decimals=3))
