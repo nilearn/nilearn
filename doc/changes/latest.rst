@@ -100,6 +100,8 @@ Enhancements
 
 - :bdg-primary:`Doc`added jupyterlite option in the documentation (:gh:`6033` by `Hugo Delhaye`_).
 
+- :bdg-success:`API` Allow the ``mask_img`` parameter to :func:`~glm.first_level.first_level_from_bids` to take the value ``"derivatives"`` to generate a mask from the masks in BIDS derivative to use in the model (:gh:`5981` by `Rémi Gau`_).
+
 - :bdg-success:`API` The parameter ``estimator_args`` was added to all decoding estimators to allow to pass parameters directly to the underlying Scikit-Learn estimators (:gh:`5641` by `Rémi Gau`_).
 
 - :bdg-success:`API` :class:`~nilearn.decoding.SearchLight` now has a ``random_state`` and ``estimator_args`` to pass to the underlying estimator (:gh:`6020` by `Rémi Gau`_).
@@ -138,11 +140,21 @@ Enhancements
 
 - :bdg-primary:`Doc` Add API documentation for :class:`~nilearn.connectome.ConnectivityMeasure` to elaborate the requirement for customized ``cov_estimator`` and extra test to ensure the user input is a valid sklearn estimator (:gh:`6074` by `Hao-Ting Wang`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.crop_img` function (:gh:`6316` by `Thibault de Varax`_).
+
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for nine utility functions in the public API: :func:`~nilearn.connectome.cov_to_corr`, :func:`~nilearn.connectome.prec_to_partial`, :func:`~nilearn.glm.expression_to_contrast_vector`, :func:`~nilearn.glm.fdr_threshold`, :func:`~nilearn.glm.first_level.glover_dispersion_derivative`, :func:`~nilearn.glm.first_level.glover_hrf`, :func:`~nilearn.glm.first_level.glover_time_derivative`, :func:`~nilearn.glm.first_level.mean_scaling` and :func:`~nilearn.interfaces.bids.parse_bids_filename` (:gh:`6259` and :gh:`6262` by `Laura Piñero Roig`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.masking.compute_background_mask` (:gh:`6303` by `Marco Flores`_).
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.image.largest_connected_component_img` (:gh:`6283` by `Bastien Cagna`_).
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.threshold_img` (:gh:`6280` by `Fernanda Ponce`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.clean_img` (:gh:`6312` by `Nirmitee Mulay`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.masking.intersect_masks` (:gh:`6318` by `Marco Bedini`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.interfaces.bids.get_bids_files` (:gh:`6317` by `Gabriele Amorosino`_).
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.smooth_img` function (:gh:`6302` by `Hande Gözükan`_).
 
@@ -154,9 +166,18 @@ Enhancements
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.image.check_niimg`, :func:`~nilearn.image.check_niimg_3d` and	:func:`~nilearn.image.check_niimg_4d` functions (:gh:`6286` by `Hande Gözükan`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for  :func:`~nilearn.regions.signals_to_img_labels` function (:gh:`6306` by `Hande Gözükan`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.glm.first_level.make_first_level_design_matrix` (:gh:`6320` by `Marco Flores`_).
 
 Changes
 -------
+
+- :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.signal` and :mod:`nilearn.surface` (:gh:`6353` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.masking` (:gh:`6345` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.image` (:gh:`6338` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The function ``nilearn.datasets.utils.load_sample_motor_activation_image`` and ``nilearn.datasets.fetch_neurovault_motor_task`` were removed. Use :func:`~datasets.load_sample_motor_activation_image` instead (:gh:`5995` by `Rémi Gau`_).
 
@@ -178,7 +199,7 @@ Changes
 
 - :bdg-secondary:`Maint` Several optional dependencies (``dev``, ``test``, ``doc``...) have been swapped in favor of `dependency groups <https://packaging.python.org/en/latest/specifications/dependency-groups>`_, so they will no longer work when installing Nilearn from pypi. When installing locally, instead of ``pip install '.[dev]'`` do ``pip install . --group dev`` (:gh:`6108` by `Rémi Gau`_).
 
-- :bdg-secondary:`Maint` The optional dependency ``plotly`` has been removed in favor of ``plotting``, so instead of ``pip install 'nilearn[plotly]'`` do ``pip install 'nilearn[plotting]`` (:gh:`6108` by `Rémi Gau`_).
+- :bdg-secondary:`Maint` The optional dependency ``plotly`` has been removed in favor of ``plotting``, so instead of ``pip install 'nilearn[plotly]'`` do ``pip install 'nilearn[plotting]'`` (:gh:`6108` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` update fsaverage3 and fsaverage3 datasets on the open-science framework (OSF) with correctly ordered vertices (see :gh:`6127`), add Talairach and AAL atlas to OSF as fall back url in case the primary one fails (:gh:`6246` by `Rémi Gau`_).
 

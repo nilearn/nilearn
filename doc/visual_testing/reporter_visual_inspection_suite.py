@@ -441,7 +441,12 @@ def _generate_masker_report_files(
     masker.reports = True
     masker.fit(data)
     report = masker.generate_report(**kwargs)
-    verbose_save(report, f"{masker_class_name}_fitted.html", (1200, 750))
+
+    filename = f"{masker_class_name}_fitted.html"
+    if "engine" in kwargs:
+        filename = f"{masker_class_name}_{kwargs['engine']}_fitted.html"
+
+    verbose_save(report, filename, (1200, 750))
 
     return unfitted_report, report
 
@@ -589,8 +594,8 @@ def report_surface_maps_masker(build_type):
     if build_type == "partial":
         _generate_dummy_html(
             filenames=[
-                "SurfaceMapsMasker_fitted_plotly.html",
-                "SurfaceMapsMasker_fitted_matplotlib.html",
+                "SurfaceMapsMasker_matplotlib_fitted.html",
+                "SurfaceMapsMasker_plotly_fitted.html",
             ]
         )
         return _generate_masker_report_files_partial(masker), None
@@ -606,11 +611,6 @@ def report_surface_maps_masker(build_type):
             engine="matplotlib",
             displayed_maps=[6, 2],
         )
-        verbose_save(
-            matplotlib_reports,
-            "SurfaceMapsMasker_fitted_matplotlib.html",
-            (1200, 750),
-        )
 
         print("Use plotly")
         masker = clone(masker)
@@ -619,9 +619,6 @@ def report_surface_maps_masker(build_type):
             surface_stat_image,
             engine="plotly",
             displayed_maps=[6, 2],
-        )
-        verbose_save(
-            plotly_reports, "SurfaceMapsMasker_fitted_plotly.html", (1200, 750)
         )
 
         return empty_report, matplotlib_reports, plotly_reports
@@ -675,8 +672,10 @@ def main(args=sys.argv):
     t0 = time.time()
 
     report_nifti_masker(build_type)
+    report_nifti_masker(build_type, engine="brainsprite")
     report_nifti_maps_masker(build_type)
     report_nifti_labels_masker(build_type)
+    report_nifti_labels_masker(build_type, engine="brainsprite")
     report_sphere_masker(build_type)
     report_surface_masker(build_type)
     report_surface_label_masker(build_type)

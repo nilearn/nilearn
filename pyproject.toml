@@ -109,10 +109,11 @@ dependencies = [
     "numpy>=1.26.0",
     "pandas>=2.3.0",
     "requests>=2.33.0",
-    # scikit-learn version 1.7.0 has a bug that prevents _repr_html_ to run
-    # correctly
+    # sklearn 1.7.0 has a bug that prevents _repr_html_ to run correctly
     # https://scikit-learn.org/stable/whats_new/v1.7.html#sklearn-base
-    "scikit-learn>=1.5.0,!=1.7.0",
+    # sklearn 1.9.0 creates sluggish HTML representation of estimators with many features
+    # https://github.com/scikit-learn/scikit-learn/issues/34203
+    "scikit-learn>=1.5.0,!=1.7.0,!=1.9.0",
     "jinja2>=3.1.6",
     "scipy>=1.11.1",
     "packaging>=26.0.0"
@@ -130,10 +131,13 @@ readme = "README.rst"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
-plotting = [
+# keep plotly as a separate optional extra dependency because of its size
+plotly = [
     "kaleido>=1.1.0",
-    "matplotlib>=3.8.0",
     "plotly>=6.1.1"
+]
+plotting = [
+    "matplotlib>=3.8.0"
 ]
 
 [project.urls]

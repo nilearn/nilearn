@@ -111,6 +111,8 @@
 
 .. _François Paugam: https://github.com/FrancoisPgm
 
+.. _Gabriele Amorosino: https://github.com/gamorosino
+
 .. _Gael Varoquaux: https://gael-varoquaux.info/
 
 .. _Gilles de Hollander: https://github.com/Gilles86
@@ -209,6 +211,10 @@
 
 .. _Manon Pietrantoni: https://github.com/ManonP38
 
+.. _Marco Flores: https://github.com/marco7877
+
+.. _Marco Bedini: https://github.com/mbedini
+
 .. _Martin Perez-Guevara: https://github.com/MartinPerez
 
 .. _Martin Wegrzyn: https://github.com/mwegrzyn
@@ -258,6 +264,8 @@
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
 
 .. _Nikhil Krish: https://github.com/NIkhilgKrish
+
+.. _Nirmitee Mulay: https://github.com/nirmitee-mulay
 
 .. _Noah C. Benson: https://nben.net/
 
@@ -348,6 +356,8 @@
 .. _Taylor Salo: https://tsalo.github.io/
 
 .. _Tharun K: https://github.com/tharun634
+
+.. _Thibault de Varax: https://github.com/thibaultdvx
 
 .. _Thiti Premrudeepreechacharn: https://tpremrud.github.io/
 
