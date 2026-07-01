@@ -2,8 +2,11 @@
 
 import warnings
 
+import numpy as np
+import pandas as pd
+
 from nilearn._utils.logger import find_stack_level
-from nilearn.interfaces.fmriprep import load_confounds
+from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 
 # defining a preset strategy with python dictionary:
 # key:
@@ -49,7 +52,12 @@ preset_strategies = {
 }
 
 
-def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
+def load_confounds_strategy(
+    img_files, denoise_strategy="simple", **kwargs
+) -> tuple[
+    pd.DataFrame | list[pd.DataFrame] | None,
+    np.ndarray | list[np.ndarray | None] | None,
+]:
     """
     Use preset strategy to load confounds from :term:`fMRIPrep`.
 
@@ -209,13 +217,14 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     .. footbibliography::
 
     """
-    default_parameters = preset_strategies.get(denoise_strategy, False)
-    if not default_parameters:
+    default_parameters = preset_strategies.get(denoise_strategy)
+    if default_parameters is None:
         raise KeyError(
             f"Provided strategy '{denoise_strategy}' is not a "
             "preset strategy. Valid strategy: "
             f"{preset_strategies.keys()}"
         )
+    assert isinstance(default_parameters, dict)
 
     check_parameters = list(default_parameters.keys())
     check_parameters.remove("strategy")
