@@ -173,7 +173,7 @@ Enhancements
 Changes
 -------
 
-- :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.regions` (:gh:`XXXX` by `Rémi Gau`_).
+- :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.regions` (:gh:`6369` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.signal` and :mod:`nilearn.surface` (:gh:`6353` by `Rémi Gau`_).
 
