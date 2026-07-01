@@ -2441,7 +2441,9 @@ def _get_confounds(
             c.iloc[0] = c.iloc[0].fillna(0.0)
         return confounds
 
-    confounds, _ = load_confounds(img_files=imgs, **kwargs_load_confounds)
+    confounds, _ = load_confounds(  # type: ignore[assignment]
+        img_files=imgs, **kwargs_load_confounds
+    )
 
     return confounds
 

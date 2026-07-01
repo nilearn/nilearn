@@ -2,6 +2,7 @@
 
 import warnings
 
+import numpy as np
 import pandas as pd
 
 from nilearn._utils.logger import find_stack_level
@@ -113,7 +114,10 @@ def load_confounds(
     ica_aroma="full",
     tedana="aggressive",
     demean=True,
-):
+) -> tuple[
+    pd.DataFrame | list[pd.DataFrame] | None,
+    np.ndarray | list[np.ndarray | None] | None,
+]:
     """
     Use confounds from :term:`fMRIPrep`.
 
@@ -378,7 +382,7 @@ def load_confounds(
 
     # If no strategy was provided, return None for confounds
     if len(strategy) == 0:
-        confounds_out = None
+        confounds_out = None  # type: ignore[assignment]
 
     return confounds_out, sample_mask_out
 
