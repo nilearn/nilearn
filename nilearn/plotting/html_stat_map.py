@@ -7,7 +7,7 @@ import json
 import warnings
 from base64 import b64encode
 from io import BytesIO
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import matplotlib
 import numpy as np
@@ -62,7 +62,9 @@ def _data_to_sprite(
     ncolumns = int(np.ceil(nx / float(nrows)))
 
     sprite = np.zeros((nrows * nz, ncolumns * ny))
-    indrow, indcol = np.where(np.ones((nrows, ncolumns)))
+    indrow, indcol = cast(
+        tuple[np.ndarray, np.ndarray], np.where(np.ones((nrows, ncolumns)))
+    )
 
     if radiological:
         for xx in range(nx):
