@@ -6,6 +6,11 @@ import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
+from typing import TYPE_CHECKING, overload
+
+if TYPE_CHECKING:
+    from nilearn.glm.first_level import FirstLevelModel
+    from nilearn.glm.second_level import SecondLevelModel
 
 from nilearn import __version__
 from nilearn._utils import logger
@@ -100,6 +105,30 @@ def _generate_dataset_description(out_file, model_level) -> None:
         json.dump(dataset_description, f_obj, indent=4, sort_keys=True)
 
 
+@overload
+def save_glm_to_bids(
+    model: FirstLevelModel,
+    contrasts=...,
+    first_level_contrast=...,
+    contrast_types=...,
+    out_dir=...,
+    prefix=...,
+    **kwargs,
+) -> FirstLevelModel: ...
+
+
+@overload
+def save_glm_to_bids(
+    model: SecondLevelModel,
+    contrasts=...,
+    first_level_contrast=...,
+    contrast_types=...,
+    out_dir=...,
+    prefix=...,
+    **kwargs,
+) -> SecondLevelModel: ...
+
+
 @fill_doc
 def save_glm_to_bids(
     model,
@@ -109,7 +138,7 @@ def save_glm_to_bids(
     out_dir=".",
     prefix=None,
     **kwargs,
-):
+) -> FirstLevelModel | SecondLevelModel:
     """Save :term:`GLM` results to :term:`BIDS`-like files.
 
     .. nilearn_versionadded:: 0.9.2
