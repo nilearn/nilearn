@@ -7,6 +7,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import scipy.stats as sps
+from nibabel import Nifti1Image
 
 from nilearn._utils import logger
 from nilearn._utils.logger import find_stack_level
@@ -19,7 +20,7 @@ DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
 
 
-def expression_to_contrast_vector(expression, design_columns):
+def expression_to_contrast_vector(expression, design_columns) -> np.ndarray:
     """Convert a string describing a :term:`contrast` \
        to a :term:`contrast` vector.
 
@@ -54,7 +55,7 @@ def expression_to_contrast_vector(expression, design_columns):
         np.eye(len(design_columns)), columns=design_columns
     )
     try:
-        contrast_vector = eye_design.eval(
+        contrast_vector = eye_design.eval(  # type: ignore[union-attr, assignment]
             expression, engine="python"
         ).to_numpy()
     except pd.errors.UndefinedVariableError as e:
@@ -75,7 +76,9 @@ def expression_to_contrast_vector(expression, design_columns):
     return contrast_vector
 
 
-def compute_contrast(labels, regression_result, con_val, stat_type=None):
+def compute_contrast(
+    labels, regression_result, con_val, stat_type=None
+) -> "Contrast":
     """Compute the specified :term:`contrast` given an estimated glm.
 
     Parameters
@@ -451,7 +454,12 @@ def compute_fixed_effects(
     mask=None,
     precision_weighted=False,
     dofs=None,
-):
+) -> tuple[
+    Nifti1Image | SurfaceImage,
+    Nifti1Image | SurfaceImage,
+    Nifti1Image | SurfaceImage,
+    Nifti1Image | SurfaceImage,
+]:
     """Compute the fixed effects, given images of effects and variance.
 
     Parameters
