@@ -324,8 +324,9 @@ def img_to_signals_labels(
         Corresponding labels for each signal. signal[:, n] was extracted from
         the region with label labels[n].
 
-    masked_atlas : Niimg-like object
+    masked_atlas : :class:`nibabel.nifti1.Nifti1Image`
         Regions definition as labels after applying the mask.
+        Only returned when ``return_masked_atlas=True``.
 
     See Also
     --------
@@ -541,7 +542,7 @@ def img_to_signals_maps(
         Signals extracted from each region.
         Shape is: (scans number, number of regions intersecting mask)
 
-    labels : :obj:`list`
+    labels : :obj:`list` of :obj:`int`
         maps_img[..., labels[n]] is the region that has been used to extract
         signal region_signals[:, n].
 

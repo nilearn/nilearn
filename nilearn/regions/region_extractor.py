@@ -187,13 +187,15 @@ def connected_regions(
 
     Returns
     -------
-    regions_extracted_img : :class:`nibabel.nifti1.Nifti1Image`
+    regions_extracted_img : :class:`nibabel.nifti1.Nifti1Image` or None
         Gives the image in 4D of extracted brain regions.
         Each 3D image consists of only one separated region.
+        Returns None if no supra-threshold regions are found.
 
-    index_of_each_map : :class:`numpy.ndarray`
-        An array of list of indices where each index denotes the identity
+    index_of_each_map : :obj:`list` of :obj:`int` or None
+        List of indices where each index denotes the identity
         of each extracted region to their family of brain maps.
+        Returns None if no supra-threshold regions are found.
 
     See Also
     --------
