@@ -171,6 +171,8 @@ Enhancements
 Changes
 -------
 
+- :bdg-secondary:`Maint` Annotate ``D103`` per-file-ignores in ``pyproject.toml`` with error counts, drop entries that no longer have any violation, and add missing docstrings to the flagged test functions and fixtures (:gh:`6372` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.signal` and :mod:`nilearn.surface` (:gh:`6353` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.masking` (:gh:`6345` by `Rémi Gau`_).
