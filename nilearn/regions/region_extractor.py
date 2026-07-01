@@ -6,6 +6,7 @@ import warnings
 from copy import deepcopy
 
 import numpy as np
+from nibabel import Nifti1Image
 from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
 
@@ -147,7 +148,7 @@ def connected_regions(
     extract_type="local_regions",
     smoothing_fwhm=6,
     mask_img=None,
-):
+) -> tuple[Nifti1Image, list[int]] | tuple[None, None]:
     """Extract brain connected regions into separate regions.
 
     .. note::
@@ -589,7 +590,7 @@ class RegionExtractor(NiftiMapsMasker):
 
 def connected_label_regions(
     labels_img, min_size=None, connect_diag=True, labels=None
-):
+) -> Nifti1Image | tuple[Nifti1Image, list[str]]:
     """Extract connected regions from a brain atlas image \
     defined by labels (integers).
 
