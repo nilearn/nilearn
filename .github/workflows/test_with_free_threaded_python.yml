@@ -53,7 +53,7 @@ jobs:
                 os: [macos-latest]
                 env: [free_threaded]
         steps:
-        -   uses: actions/checkout@v6
+        -   uses: actions/checkout@v7
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v7
         -   name: Setup python
