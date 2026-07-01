@@ -371,8 +371,6 @@ def get_clusters_table(
     """
     check_params(locals())
 
-    is_volume = not isinstance(stat_img, SurfaceImage)
-
     stat_img = threshold_img(
         img=stat_img,
         threshold=stat_threshold,
@@ -380,9 +378,9 @@ def get_clusters_table(
         two_sided=two_sided,
     )
 
-    if is_volume:
+    if not isinstance(stat_img, SurfaceImage):
         return _get_clusters_table_volume(
-            cast(Nifti1Image, stat_img),
+            stat_img,
             stat_threshold,
             cluster_threshold=cluster_threshold,
             two_sided=two_sided,
@@ -399,7 +397,7 @@ def get_clusters_table(
         )
 
     return _get_clusters_table_surface(
-        cast(SurfaceImage, stat_img),
+        stat_img,
         stat_threshold,
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
@@ -495,7 +493,7 @@ def _get_clusters_table_surface(
             clusters, label_map = cast(
                 tuple[pd.DataFrame, list[SurfaceImage]],
                 _get_clusters_table_surface(
-                    cast(SurfaceImage, temp_stat_map),
+                    temp_stat_map,
                     stat_threshold * sign,
                     cluster_threshold=cluster_threshold,
                     two_sided=False,
