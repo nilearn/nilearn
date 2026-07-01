@@ -441,29 +441,48 @@ with inline comments.
 
 So it is better to do:
 
-      >>> # Generate some signal
+      >>> # Create a 4D image with one volume of ones and one of zeros
       >>> import numpy as np
-      >>> t = np.linspace(1, 10, 2000)
-      >>> signal = np.cos(t)
+      >>> from nibabel import Nifti1Image
+      >>> shape = (2, 2, 2, 1)
+      >>> img = Nifti1Image(np.concatenate([np.ones(shape),
+      ...                                   np.zeros(shape)],
+      ...                                  axis=-1),
+      ...                   affine=np.eye(4),
+      ...                   dtype=np.int32)
       >>>
-      >>> # Plot it
-      >>> import matplotlib.pyplot as plt
-      >>> plt.plot(t, signal)
-      >>> plt.show()
+      >>> # Compute the mean image and get its content as a numpy array
+      >>> from nilearn.image import mean_img
+      >>> mean_image = mean_img(img)
+      >>> mean_image.get_fdata()
+      array([[[0.5, 0.5],
+                  [0.5, 0.5]],
+            [[0.5, 0.5],
+                  [0.5, 0.5]]])
 
 Than to do:
 
-      Generate some signal
 
-      >>> import numpy as np
-      >>> t = np.linspace(1, 10, 2000)
-      >>> signal = np.cos(t)
+    Create a 4D image with one volume of ones and one of zeros
 
-      Plot it
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> shape = (2, 2, 2, 1)
+    >>> img = Nifti1Image(np.concatenate([np.ones(shape),
+    ...                                   np.zeros(shape)],
+    ...                                  axis=-1),
+    ...                   affine=np.eye(4),
+    ...                   dtype=np.int32)
 
-      >>> import matplotlib.pyplot as plt
-      >>> plt.plot(t, signal)
-      >>> plt.show()
+    Compute the mean image and get its content as a numpy array
+
+    >>> from nilearn.image import mean_img
+    >>> mean_image = mean_img(img)
+    >>> mean_image.get_fdata()
+    array([[[0.5, 0.5],
+            [0.5, 0.5]],
+           [[0.5, 0.5],
+            [0.5, 0.5]]])
 
 The latter can still be used to break several independent examples.
 
