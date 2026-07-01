@@ -243,7 +243,7 @@ def make_first_level_design_matrix(
     add_reg_names=None,
     min_onset=-24,
     oversampling=50,
-):
+) -> pd.DataFrame:
     """Generate a design matrix from the input parameters.
 
     Parameters
@@ -460,7 +460,9 @@ def check_design_matrix(design_matrix):
     return frame_times, matrix, names
 
 
-def make_second_level_design_matrix(subjects_label, confounds=None):
+def make_second_level_design_matrix(
+    subjects_label, confounds=None
+) -> pd.DataFrame:
     """Set up a second level design.
 
     Construct a design matrix with an intercept and subject specific confounds.
