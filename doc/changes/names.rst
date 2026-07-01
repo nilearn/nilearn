@@ -131,6 +131,8 @@
 
 .. _Himanshu Aggarwal: https://github.com/man-shu
 
+.. _Hugo Delhaye: https://github.com/HugoDelhaye
+
 .. _Ian Abenes: https://github.com/boredStats
 
 .. _Idrissa Traore: https://github.com/badrinini
