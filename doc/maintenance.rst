@@ -157,7 +157,7 @@ Javascript
 
 HTML outputs (for report or some interactive figures) are tested using Javascript.
 
-This requires to have `node and npm <https://nodejs.org>`_ installed
+This requires to have `node and npm <https://nodejs.org/en>`_ installed
 (see ``package.json`` to know the minimum required version).
 
 Those tests can be run with tox.
@@ -188,7 +188,7 @@ tox run -e update_js
 
 .. note::
 
-    This requires to have `node and npm <https://nodejs.org>`_ installed.
+    This requires to have `node and npm <https://nodejs.org/en>`_ installed.
 
 Datasets
 ========

@@ -491,9 +491,6 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     -----
     %(fetcher_note)s
 
-    This dataset is available on the `brainliner website
-    <http://brainliner.jp/restrictedProject.atr>`_
-
     See `additional information
     <https://bicr.atr.jp//dni/en/downloads/\
     fmri-data-set-for-visual-image-reconstruction/>`_

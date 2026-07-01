@@ -245,6 +245,7 @@ linkcheck_ignore = [
     r"https://rrid.site/data/record.*",
     r"https://sites.wustl.edu/oasisbrains.*",
     r"https://www.cambridge.org/be/universitypress.*",
+    r"https://www.talairach.org/.*"
     r"../../_static/notebook_reports_.*",
     "http://brainomics.cea.fr/localizer/",
     "https://childmind.org/science/global-open-science/healthy-brain-network/",
@@ -447,7 +448,7 @@ extlinks = {
     "sklearn": ("https://scikit-learn.org/stable/%s", None),
     "inria": ("https://team.inria.fr/%s", None),
     "nilearn-gh": ("https://github.com/nilearn/nilearn/%s", None),
-    "neurostars": ("https://neurostars.org/tag/nilearn/%s", None),
+    "neurostars": ("https://neurostars.org/tag/nilearn/19%s", None),
     "nipy": ("https://nipy.org/%s", None),
 }
 
