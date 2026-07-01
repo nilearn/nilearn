@@ -463,26 +463,26 @@ So it is better to do:
 Than to do:
 
 
-    Create a 4D image with one volume of ones and one of zeros
+      Create a 4D image with one volume of ones and one of zeros
 
-    >>> import numpy as np
-    >>> from nibabel import Nifti1Image
-    >>> shape = (2, 2, 2, 1)
-    >>> img = Nifti1Image(np.concatenate([np.ones(shape),
-    ...                                   np.zeros(shape)],
-    ...                                  axis=-1),
-    ...                   affine=np.eye(4),
-    ...                   dtype=np.int32)
+      >>> import numpy as np
+      >>> from nibabel import Nifti1Image
+      >>> shape = (2, 2, 2, 1)
+      >>> img = Nifti1Image(np.concatenate([np.ones(shape),
+      ...                                   np.zeros(shape)],
+      ...                                  axis=-1),
+      ...                   affine=np.eye(4),
+      ...                   dtype=np.int32)
 
-    Compute the mean image and get its content as a numpy array
+      Compute the mean image and get its content as a numpy array
 
-    >>> from nilearn.image import mean_img
-    >>> mean_image = mean_img(img)
-    >>> mean_image.get_fdata()
-    array([[[0.5, 0.5],
-            [0.5, 0.5]],
-           [[0.5, 0.5],
-            [0.5, 0.5]]])
+      >>> from nilearn.image import mean_img
+      >>> mean_image = mean_img(img)
+      >>> mean_image.get_fdata()
+      array([[[0.5, 0.5],
+                  [0.5, 0.5]],
+            [[0.5, 0.5],
+                  [0.5, 0.5]]])
 
 The latter can still be used to break several independent examples.
 
@@ -490,11 +490,11 @@ Thanks to the `plot_directive <https://matplotlib.org/stable/api/sphinxext_plot_
 from matplotlib,
 it is possible to plot the output of an example directly in the HTML documentation::
 
-  .. plot::
+      .. plot::
 
-    import matplotlib.pyplot as plt
-    plt.plot([1, 2, 3], [4, 5, 6])
-    plt.title("A plotting example")
+            import matplotlib.pyplot as plt
+            plt.plot([1, 2, 3], [4, 5, 6])
+            plt.title("A plotting example")
 
 
 
