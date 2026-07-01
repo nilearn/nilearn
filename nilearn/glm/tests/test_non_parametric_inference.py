@@ -13,7 +13,6 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_fmri_data_and_design,
 )
-from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import non_parametric_inference
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
@@ -387,7 +386,7 @@ def test_contrast_computation_errors(rng, n_subjects):
     # passing null contrast should give back a value error
     with pytest.raises(
         ValueError,
-        match=("Second_level_contrast must be a valid"),
+        match=("'second_level_contrast' must be a valid"),
     ):
         non_parametric_inference(
             second_level_input=Y,
@@ -397,7 +396,7 @@ def test_contrast_computation_errors(rng, n_subjects):
         )
     with pytest.raises(
         ValueError,
-        match=("Second_level_contrast must be a valid"),
+        match=("'second_level_contrast' must be a valid"),
     ):
         non_parametric_inference(
             second_level_input=Y,
@@ -468,8 +467,13 @@ def test_with_surface_images_2d_mask(surf_img_2d, surf_mask_1d, n_subjects):
     )
 
 
-def test_with_surface_images_smoothing(surf_img_1d, n_subjects):
-    """Throw warnings for non implemented features for surface."""
+@pytest.mark.thread_unsafe
+@pytest.mark.parametrize("kwargs", [{}, {"threshold": 0.001}])
+@pytest.mark.parametrize("smoothing_fwhm", [0, 6])
+def test_with_surface_images_smoothing(
+    surf_img_1d, n_subjects, smoothing_fwhm, kwargs
+):
+    """Test smoothing surface and cluster level inference."""
     second_level_input = [surf_img_1d for _ in range(n_subjects)]
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
@@ -478,25 +482,24 @@ def test_with_surface_images_smoothing(surf_img_1d, n_subjects):
         second_level_input=second_level_input,
         design_matrix=design_matrix,
         n_perm=N_PERM,
-        smoothing_fwhm=6,
+        smoothing_fwhm=smoothing_fwhm,
+        **kwargs,
     )
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.parametrize("kwargs", [{"tfce": True}, {"threshold": 0.001}])
-def test_with_surface_images_warnings(surf_img_1d, n_subjects, kwargs):
-    """Throw warnings for non implemented features for surface."""
+def test_with_surface_images_tfce_not_implemented_error(
+    surf_img_1d, n_subjects
+):
+    """Raise not implemented error when using TFCE with surface."""
     second_level_input = [surf_img_1d for _ in range(n_subjects)]
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
-    with pytest.warns(
-        NotImplementedWarning,
-        match="Cluster level inference not yet implemented for surface data.",
-    ):
+    with pytest.raises(NotImplementedError):
         non_parametric_inference(
             second_level_input=second_level_input,
             design_matrix=design_matrix,
             n_perm=N_PERM,
-            **kwargs,
+            tfce=True,
         )
