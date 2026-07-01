@@ -4,6 +4,7 @@ import collections.abc
 import numbers
 import warnings
 from copy import deepcopy
+from typing import overload
 
 import numpy as np
 from nibabel import Nifti1Image
@@ -586,6 +587,24 @@ class RegionExtractor(NiftiMapsMasker):
         super().fit(imgs)
 
         return self
+
+
+@overload
+def connected_label_regions(
+    labels_img,
+    min_size: float | None = ...,
+    connect_diag: bool = ...,
+    labels: None = ...,
+) -> Nifti1Image: ...
+
+
+@overload
+def connected_label_regions(
+    labels_img,
+    min_size: float | None = ...,
+    connect_diag: bool = ...,
+    labels: list[str] | np.ndarray = ...,
+) -> tuple[Nifti1Image, list[str]]: ...
 
 
 def connected_label_regions(

@@ -7,6 +7,7 @@ or as weights in one image per region (maps).
 
 import warnings
 from functools import partial
+from typing import Literal, overload
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -224,6 +225,34 @@ def _get_labels_data(
 
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
+@overload
+def img_to_signals_labels(
+    imgs,
+    labels_img,
+    mask_img=...,
+    background_label=...,
+    order=...,
+    strategy=...,
+    keep_masked_labels=...,
+    return_masked_atlas: Literal[True] = ...,
+    n_jobs=...,
+) -> tuple[np.ndarray, list, Nifti1Image]: ...
+
+
+@overload
+def img_to_signals_labels(
+    imgs,
+    labels_img,
+    mask_img=...,
+    background_label=...,
+    order=...,
+    strategy=...,
+    keep_masked_labels=...,
+    return_masked_atlas: Literal[False] = ...,
+    n_jobs=...,
+) -> tuple[np.ndarray, list]: ...
+
+
 @fill_doc
 def img_to_signals_labels(
     imgs,
