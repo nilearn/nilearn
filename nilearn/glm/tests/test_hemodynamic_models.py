@@ -36,11 +36,13 @@ HRF_MODELS = [
 
 @pytest.fixture
 def expected_integral(hrf_model):
+    """Return the expected integral for the given hrf model."""
     return 1 if hrf_model in [spm_hrf, glover_hrf] else 0
 
 
 @pytest.fixture
 def expected_length(t_r):
+    """Return the expected hrf kernel length for the given TR."""
     return int(32 / t_r * 50)
 
 

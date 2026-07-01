@@ -21,10 +21,13 @@ from nilearn.decoding.space_net import SpaceNetClassifier, SpaceNetRegressor
     ],
 )
 @pytest.mark.parametrize("estimator", [SpaceNetClassifier, SpaceNetRegressor])
+@pytest.mark.ai_generated
 def test_get_params(penalty, param, estimator):
-    # Issue #12 (on github) reported that our objects
-    # get_params() methods returned empty dicts.
+    """Test that get_params() does not return an empty dict.
 
+    Issue #12 (on github) reported that our objects
+    get_params() methods returned empty dicts.
+    """
     kwargs = {}
     m = estimator(
         mask="dummy",
