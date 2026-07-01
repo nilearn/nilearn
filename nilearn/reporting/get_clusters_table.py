@@ -24,7 +24,7 @@ from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
-from nilearn.nilearn_typing import ClusterThreshold, NiimgLike
+from nilearn.nilearn_typing import ClusterThreshold, NiimgLike, NonNullScalar
 from nilearn.surface.surface import SurfaceImage, find_surface_clusters
 
 
@@ -218,10 +218,10 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
 @overload
 def get_clusters_table(
     stat_img: NiimgLike,
-    stat_threshold: float | int | np.floating | np.integer,
+    stat_threshold: NonNullScalar,
     cluster_threshold: ClusterThreshold = ...,
     two_sided: bool = ...,
-    min_distance: float | int | np.floating | np.integer = ...,
+    min_distance: NonNullScalar = ...,
     return_label_maps: Literal[False] = ...,
 ) -> pd.DataFrame: ...
 
@@ -229,10 +229,10 @@ def get_clusters_table(
 @overload
 def get_clusters_table(
     stat_img: NiimgLike,
-    stat_threshold: float | int | np.floating | np.integer,
+    stat_threshold: NonNullScalar,
     cluster_threshold: ClusterThreshold = ...,
     two_sided: bool = ...,
-    min_distance: float | int | np.floating | np.integer = ...,
+    min_distance: NonNullScalar = ...,
     return_label_maps: Literal[True] = ...,
 ) -> tuple[pd.DataFrame, list[Nifti1Image]]: ...
 
@@ -240,10 +240,10 @@ def get_clusters_table(
 @overload
 def get_clusters_table(
     stat_img: SurfaceImage,
-    stat_threshold: float | int | np.floating | np.integer,
+    stat_threshold: NonNullScalar,
     cluster_threshold: ClusterThreshold = ...,
     two_sided: bool = ...,
-    min_distance: float | int | np.floating | np.integer = ...,
+    min_distance: NonNullScalar = ...,
     return_label_maps: Literal[False] = ...,
 ) -> pd.DataFrame: ...
 
@@ -251,10 +251,10 @@ def get_clusters_table(
 @overload
 def get_clusters_table(
     stat_img: SurfaceImage,
-    stat_threshold: float | int | np.floating | np.integer,
+    stat_threshold: NonNullScalar,
     cluster_threshold: ClusterThreshold = ...,
     two_sided: bool = ...,
-    min_distance: float | int | np.floating | np.integer = ...,
+    min_distance: NonNullScalar = ...,
     return_label_maps: Literal[True] = ...,
 ) -> tuple[pd.DataFrame, list[SurfaceImage]]: ...
 
@@ -262,10 +262,10 @@ def get_clusters_table(
 @fill_doc
 def get_clusters_table(
     stat_img: NiimgLike | SurfaceImage,
-    stat_threshold: float | int | np.floating | np.integer,
+    stat_threshold: NonNullScalar,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
-    min_distance: float | int | np.floating | np.integer = 8.0,
+    min_distance: NonNullScalar = 8.0,
     return_label_maps: bool = False,
 ) -> pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image | SurfaceImage]]:
     """Create pandas dataframe with img cluster statistics.
@@ -409,7 +409,7 @@ def get_clusters_table(
 
 def _get_clusters_table_surface(
     stat_img: SurfaceImage,
-    stat_threshold: float | int | np.floating | np.integer,
+    stat_threshold: NonNullScalar,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
     return_label_maps: bool = False,
@@ -521,10 +521,10 @@ def _get_clusters_table_surface(
 
 def _get_clusters_table_volume(
     stat_img: Nifti1Image,
-    stat_threshold: float | int | np.floating | np.integer,
+    stat_threshold: NonNullScalar,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
-    min_distance: float | int | np.floating | np.integer = 8.0,
+    min_distance: NonNullScalar = 8.0,
     return_label_maps: bool = False,
 ) -> pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image | SurfaceImage]]:
     """Generate cluster table for volume data.
