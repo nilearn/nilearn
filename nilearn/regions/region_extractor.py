@@ -654,9 +654,10 @@ def connected_label_regions(
     new_labels_img : :class:`nibabel.nifti1.Nifti1Image`
         A new image comprising of regions extracted on an input labels_img.
 
-    new_labels : :obj:`list`, optional
-        If labels are provided, new labels assigned to region extracted will
-        be returned. Otherwise, only new labels image will be returned.
+    new_labels : :obj:`list` of :obj:`str`
+        If ``labels`` are provided,
+        new labels assigned to region extracted will be returned.
+        Otherwise, only ``new_labels_img`` will be returned.
 
     See Also
     --------

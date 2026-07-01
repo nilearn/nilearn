@@ -433,7 +433,7 @@ def signals_to_img_labels(
     -------
     img : :class:`nibabel.nifti1.Nifti1Image`
         Reconstructed image. dtype is that of "signals", affine and shape are
-        those of labels_img.
+        those of ``labels_img``.
 
     See Also
     --------
@@ -645,7 +645,7 @@ def signals_to_img_maps(
     Returns
     -------
     img : :class:`nibabel.nifti1.Nifti1Image`
-        Reconstructed image. affine and shape are those of maps_img.
+        Reconstructed image. Affine and shape are those of ``maps_img``.
 
     See Also
     --------
