@@ -4,7 +4,6 @@ obtain fixed effect results.
 
 import warnings
 from collections.abc import Sequence
-from pathlib import Path
 from typing import overload
 
 import numpy as np
@@ -17,6 +16,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface import SurfaceImage
 
 DEF_TINY = 1e-50
@@ -463,20 +463,20 @@ def compute_fixed_effects(
 
 @overload
 def compute_fixed_effects(
-    contrast_imgs: list[Nifti1Image | str | Path],
-    variance_imgs: list[Nifti1Image | str | Path],
-    mask: Nifti1Image | NiftiMasker | None = ...,
+    contrast_imgs: list[NiimgLike],
+    variance_imgs: list[NiimgLike],
+    mask: NiimgLike | NiftiMasker | None = ...,
     precision_weighted: bool = ...,
     dofs: Sequence[float] | np.ndarray | None = ...,
 ) -> tuple[Nifti1Image, Nifti1Image, Nifti1Image, Nifti1Image]: ...
 
 
 def compute_fixed_effects(
-    contrast_imgs,
-    variance_imgs,
-    mask=None,
+    contrast_imgs: list[SurfaceImage] | list[NiimgLike],
+    variance_imgs: list[SurfaceImage] | list[NiimgLike],
+    mask: SurfaceImage | SurfaceMasker | NiimgLike | NiftiMasker | None = None,
     precision_weighted=False,
-    dofs=None,
+    dofs: Sequence[float] | np.ndarray | None = None,
 ) -> tuple[
     Nifti1Image | SurfaceImage,
     Nifti1Image | SurfaceImage,
