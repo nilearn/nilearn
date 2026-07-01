@@ -235,7 +235,7 @@ def img_to_signals_labels(
     keep_masked_labels=False,
     return_masked_atlas=True,
     n_jobs=1,
-):
+) -> tuple[np.ndarray, list] | tuple[np.ndarray, list, Nifti1Image]:
     """Extract region signals from image.
 
     This function is applicable to regions defined by labels.
@@ -364,7 +364,7 @@ def img_to_signals_labels(
 
 def signals_to_img_labels(
     signals, labels_img, mask_img=None, background_label=0, order="F"
-):
+) -> Nifti1Image:
     """Create image from region signals defined as labels.
 
     The same region signal is used for each :term:`voxel` of the
@@ -481,7 +481,9 @@ def signals_to_img_labels(
 
 
 @fill_doc
-def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
+def img_to_signals_maps(
+    imgs, maps_img, mask_img=None, keep_masked_maps=False
+) -> tuple[np.ndarray, list[int]]:
     """Extract region signals from image.
 
     This function is applicable to regions defined by maps.
@@ -584,7 +586,9 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
     return region_signals, list(maps)
 
 
-def signals_to_img_maps(region_signals, maps_img, mask_img=None):
+def signals_to_img_maps(
+    region_signals, maps_img, mask_img=None
+) -> Nifti1Image:
     """Create image from region signals defined as maps.
 
     region_signals, mask_img must have the same shapes and affines.
