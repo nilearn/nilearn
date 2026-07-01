@@ -62,7 +62,7 @@ from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 
 
-def mean_scaling(Y, axis=0):
+def mean_scaling(Y, axis=0) -> tuple[np.ndarray, np.ndarray]:
     """Scaling of the data to have percent of baseline change \
     along the specified axis.
 
@@ -151,7 +151,7 @@ def _yule_walker(x, order):
 @fill_doc
 def run_glm(
     Y, X, noise_model="ar1", bins=100, n_jobs=1, verbose=0, random_state=None
-):
+) -> tuple[np.ndarray, dict[str | float, RegressionResults]]:
     """:term:`GLM` fit for an :term:`fMRI` data matrix.
 
     Parameters
