@@ -267,7 +267,9 @@ def get_clusters_table(
     two_sided: bool = False,
     min_distance: NonNullScalar = 8.0,
     return_label_maps: bool = False,
-) -> pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image | SurfaceImage]]:
+) -> (
+    pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image] | list[SurfaceImage]]
+):
     """Create pandas dataframe with img cluster statistics.
 
     This function should work on any statistical maps where more extreme values
@@ -412,7 +414,7 @@ def _get_clusters_table_surface(
     two_sided: bool = False,
     return_label_maps: bool = False,
     offset: int = 1,
-) -> pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image | SurfaceImage]]:
+) -> pd.DataFrame | tuple[pd.DataFrame, list[SurfaceImage]]:
     """Generate cluster table for surface data.
 
     When two_sided is True, this function calls itself recursively
@@ -430,7 +432,7 @@ def _get_clusters_table_surface(
     """
     data = {}
     all_clusters = []
-    label_maps: list[Nifti1Image | SurfaceImage] = []
+    label_maps: list[SurfaceImage] = []
 
     if not two_sided:
         cols = [
@@ -524,7 +526,7 @@ def _get_clusters_table_volume(
     two_sided: bool = False,
     min_distance: NonNullScalar = 8.0,
     return_label_maps: bool = False,
-) -> pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image | SurfaceImage]]:
+) -> pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image]]:
     """Generate cluster table for volume data.
 
     For parameters, see `get_clusters_table`.
@@ -534,7 +536,7 @@ def _get_clusters_table_volume(
 
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
 
-    label_maps: list[Nifti1Image | SurfaceImage] = []
+    label_maps: list[Nifti1Image] = []
 
     # check that stat_img is niimg-like object and 3D
     stat_img = check_niimg_3d(stat_img)
