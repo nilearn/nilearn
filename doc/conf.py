@@ -107,7 +107,7 @@ except ImportError:
     # e.g. the doc-min-dependencies build
     warnings.warn(
         "jupyterlite_sphinx is not installed, you need to install it "
-        "if you want JupyterLite links to appear in each example",
+        "if you want JupyterLite links to appear in the API documentation",
         stacklevel=2,
     )
     with_jupyterlite = False
