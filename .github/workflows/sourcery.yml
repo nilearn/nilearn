@@ -4,7 +4,7 @@
 # If some potential refactoring are found it opens a pull-request.
 #
 # Requires a ``SOURCERY_TOKEN`` that can be obtained from
-# logging into `the sourcery website <https://sourcery.ai/>`_
+# logging into `the sourcery website <https://www.sourcery.ai/>`_
 # with your github account.
 #
 ###

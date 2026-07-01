@@ -491,10 +491,6 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     -----
     %(fetcher_note)s
 
-    See `additional information
-    <https://bicr.atr.jp//dni/en/downloads/\
-    fmri-data-set-for-visual-image-reconstruction/>`_
-
     """
     check_params(locals())
 
