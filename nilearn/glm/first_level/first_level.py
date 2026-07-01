@@ -1530,7 +1530,12 @@ def first_level_from_bids(
     minimize_memory=True,
     derivatives_folder="derivatives",
     **kwargs,
-):
+) -> tuple[
+    list[FirstLevelModel],
+    list[list[str] | list[SurfaceImage]],
+    list[list[pd.DataFrame]],
+    list[list[pd.DataFrame] | None],
+]:
     """Create FirstLevelModel objects and fit arguments \
        from a :term:`BIDS` dataset.
 
