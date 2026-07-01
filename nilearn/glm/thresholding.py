@@ -4,6 +4,7 @@ discovery rate control, false discovery proportion in clusters.
 """
 
 import warnings
+from typing import overload
 
 import numpy as np
 from nibabel import Nifti1Image
@@ -28,7 +29,9 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.nilearn_typing import (
     ClusterThreshold,
     HeightControl,
+    NiimgLike,
     NonNullScalar,
+    Scalar,
 )
 from nilearn.surface.surface import SurfaceImage, check_surf_img
 
@@ -134,6 +137,26 @@ def fdr_threshold(z_vals, alpha) -> float:
     n_samples = len(p_vals)
     pos = p_vals < alpha * np.linspace(1 / n_samples, 1, n_samples)
     return z_vals_[pos][-1] - 1.0e-12 if pos.any() else np.inf
+
+
+@overload
+def cluster_level_inference(
+    stat_img: SurfaceImage,
+    mask_img: SurfaceImage | None = ...,
+    threshold: float | int | list[float | int] = ...,
+    alpha: float = ...,
+    verbose: int = ...,
+) -> SurfaceImage: ...
+
+
+@overload
+def cluster_level_inference(
+    stat_img: NiimgLike,
+    mask_img: NiimgLike | None = ...,
+    threshold: float | int | list[float | int] = ...,
+    alpha: float = ...,
+    verbose: int = ...,
+) -> Nifti1Image: ...
 
 
 @fill_doc
@@ -324,7 +347,7 @@ def threshold_stats_img(
     stat_img=None,
     mask_img=None,
     alpha=0.001,
-    threshold: float | int | np.floating | np.integer | None = None,
+    threshold: Scalar = None,
     height_control: HeightControl = "fpr",
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = True,
