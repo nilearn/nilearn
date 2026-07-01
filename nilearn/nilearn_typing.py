@@ -28,7 +28,8 @@ from numpy import ndarray
 from numpy.typing import DTypeLike
 
 Integer: TypeAlias = int | np.integer
-NonNullScalar: TypeAlias = float | np.floating | Integer
+Float: TypeAlias = float | np.floating
+NonNullScalar: TypeAlias = Float | Integer
 Scalar: TypeAlias = NonNullScalar | None
 
 Annotate: TypeAlias = bool
@@ -72,7 +73,7 @@ HrfModel: TypeAlias = str | Callable | list | None
 HighPass: TypeAlias = Scalar
 KeepMaskedLabels: TypeAlias = bool
 KeepMaskedMaps: TypeAlias = bool
-LowerCutoff: TypeAlias = float | np.floating
+LowerCutoff: TypeAlias = Float
 LowPass: TypeAlias = Scalar
 MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
 MemoryLevel: TypeAlias = Integer
@@ -82,7 +83,7 @@ NiimgLike: TypeAlias = Nifti1Image | str | Path
 Opening: TypeAlias = bool | Integer
 OutputFile: TypeAlias = str | pathlib.Path | None
 Radiological: TypeAlias = bool
-RandomState: TypeAlias = np.floating | Integer | np.random.RandomState | None
+RandomState: TypeAlias = NonNullScalar | np.random.RandomState | None
 ResamplingInterpolation: TypeAlias = Literal["continuous", "nearest"]
 Resolution: TypeAlias = Integer | None
 Resume: TypeAlias = bool
@@ -120,11 +121,11 @@ Threshold: TypeAlias = Scalar | str
 Tfce: TypeAlias = bool
 Title: TypeAlias = str | None
 Tr: TypeAlias = Scalar
-Transparency: TypeAlias = float | np.floating | Integer | NiimgLike | None
+Transparency: TypeAlias = Float | Integer | NiimgLike | None
 TransparencyRange: TypeAlias = list | tuple | None
 TwoSidedTest: TypeAlias = bool
 Url: TypeAlias = str | None
-UpperCutoff: TypeAlias = float | np.floating
+UpperCutoff: TypeAlias = Float
 Verbose: TypeAlias = bool | Integer
 Vmin: TypeAlias = Scalar
 Vmax: TypeAlias = Scalar
