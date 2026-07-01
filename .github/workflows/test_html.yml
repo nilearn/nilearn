@@ -56,7 +56,7 @@ jobs:
             run: date +%m > month_num;
 
         -   name: Get cache from a previous doc build
-            uses: actions/cache/restore@v5
+            uses: actions/cache/restore@v6
             with:
                 path: nilearn_data
                 key: data_cache-DocumentationBuilder_month-${{ hashFiles('month_num') }}
