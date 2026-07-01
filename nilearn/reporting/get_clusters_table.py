@@ -5,6 +5,7 @@ import warnings
 from collections import OrderedDict
 from decimal import Decimal
 from string import ascii_lowercase
+from typing import Literal, overload
 
 import numpy as np
 import pandas as pd
@@ -23,7 +24,7 @@ from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
-from nilearn.nilearn_typing import ClusterThreshold
+from nilearn.nilearn_typing import ClusterThreshold, NiimgLike
 from nilearn.surface.surface import SurfaceImage, find_surface_clusters
 
 
@@ -214,9 +215,53 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
     return ijk, vals
 
 
+@overload
+def get_clusters_table(
+    stat_img: NiimgLike,
+    stat_threshold: float | int | np.floating | np.integer,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    min_distance: float | int | np.floating | np.integer = ...,
+    return_label_maps: Literal[False] = ...,
+) -> pd.DataFrame: ...
+
+
+@overload
+def get_clusters_table(
+    stat_img: NiimgLike,
+    stat_threshold: float | int | np.floating | np.integer,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    min_distance: float | int | np.floating | np.integer = ...,
+    return_label_maps: Literal[True] = ...,
+) -> tuple[pd.DataFrame, list[Nifti1Image]]: ...
+
+
+@overload
+def get_clusters_table(
+    stat_img: SurfaceImage,
+    stat_threshold: float | int | np.floating | np.integer,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    min_distance: float | int | np.floating | np.integer = ...,
+    return_label_maps: Literal[False] = ...,
+) -> pd.DataFrame: ...
+
+
+@overload
+def get_clusters_table(
+    stat_img: SurfaceImage,
+    stat_threshold: float | int | np.floating | np.integer,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    min_distance: float | int | np.floating | np.integer = ...,
+    return_label_maps: Literal[True] = ...,
+) -> tuple[pd.DataFrame, list[SurfaceImage]]: ...
+
+
 @fill_doc
 def get_clusters_table(
-    stat_img,
+    stat_img: NiimgLike | SurfaceImage,
     stat_threshold: float | int | np.floating | np.integer,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
