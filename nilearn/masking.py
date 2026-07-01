@@ -602,7 +602,7 @@ def compute_background_mask(
     >>>
     >>> data = np.random.default_rng(42).random((2,3,4))
     >>>
-    >>> # Set background to zero:
+    >>> # Set background to zero.
     >>> data[0:3,0:2,0:3] = 0
     >>> data.round(decimals=3)
     array([[[0.   , 0.   , 0.   , 0.697],
@@ -1155,7 +1155,7 @@ def unmask(
     >>> from nilearn.image import get_data
     >>>
     >>> # Define a 2x2x1 mask, so that it can be displayed in 2D.
-    >>> # The two nonzero entries mark the in-mask voxels:
+    >>> # The two nonzero entries mark the in-mask voxels.
     >>> mask_data = np.array([[[1], [0]],
     ...                       [[1], [0]]])
     >>> mask_img = nib.Nifti1Image(mask_data.astype("uint8"), np.eye(4))

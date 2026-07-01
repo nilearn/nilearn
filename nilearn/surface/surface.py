@@ -595,7 +595,7 @@ class SurfaceImage:
         >>> from nilearn.surface import SurfaceImage
         >>> from nilearn.datasets import load_fsaverage
         >>> from nilearn.datasets import load_sample_motor_activation_image
-
+        >>>
         >>> fsavg = load_fsaverage()
         >>> vol_img = load_sample_motor_activation_image()
         >>> img = SurfaceImage.from_volume(fsavg["white_matter"], vol_img)
