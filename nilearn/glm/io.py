@@ -6,7 +6,7 @@ import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 if TYPE_CHECKING:
     from nilearn.glm.first_level import FirstLevelModel
@@ -103,6 +103,30 @@ def _generate_dataset_description(out_file, model_level) -> None:
 
     with out_file.open("w") as f_obj:
         json.dump(dataset_description, f_obj, indent=4, sort_keys=True)
+
+
+@overload
+def save_glm_to_bids(
+    model: "FirstLevelModel",
+    contrasts=...,
+    first_level_contrast=...,
+    contrast_types=...,
+    out_dir=...,
+    prefix=...,
+    **kwargs,
+) -> "FirstLevelModel": ...
+
+
+@overload
+def save_glm_to_bids(
+    model: "SecondLevelModel",
+    contrasts=...,
+    first_level_contrast=...,
+    contrast_types=...,
+    out_dir=...,
+    prefix=...,
+    **kwargs,
+) -> "SecondLevelModel": ...
 
 
 @fill_doc
