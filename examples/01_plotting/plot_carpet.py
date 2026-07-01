@@ -64,6 +64,7 @@ show()
 # a gray matter/white matter/cerebrospinal fluid mask
 # from ICBM152 tissue probability maps.
 import numpy as np
+from matplotlib import colors
 
 from nilearn import image
 from nilearn.datasets import fetch_icbm152_2009
@@ -94,9 +95,18 @@ discrete_atlas_img = image.new_img_like(
     atlas_img, discrete_version.astype(np.float32)
 )
 
+cmap = colors.LinearSegmentedColormap.from_list(
+    "3_colors",
+    [
+        "#1b9e77",
+        "#d95f02",
+        "#7570b3",
+    ],
+    N=4,
+)
 plot_roi(
     discrete_atlas_img,
-    cmap="tab10",
+    cmap=cmap,
     title="gray matter / white matter / cerebrospinal fluid masks",
 )
 
@@ -114,6 +124,7 @@ display = plot_carpet(
     mask_labels=map_labels,
     axes=ax,
     title="global patterns over time separated by tissue type",
+    cmap_labels=cmap,
 )
 
 show()
