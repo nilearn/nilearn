@@ -5,7 +5,7 @@ import warnings
 from collections import OrderedDict
 from decimal import Decimal
 from string import ascii_lowercase
-from typing import Literal, overload
+from typing import Literal, cast, overload
 
 import numpy as np
 import pandas as pd
@@ -382,7 +382,7 @@ def get_clusters_table(
 
     if is_volume:
         return _get_clusters_table_volume(
-            stat_img,
+            cast(Nifti1Image, stat_img),
             stat_threshold,
             cluster_threshold=cluster_threshold,
             two_sided=two_sided,
@@ -399,7 +399,7 @@ def get_clusters_table(
         )
 
     return _get_clusters_table_surface(
-        stat_img,
+        cast(SurfaceImage, stat_img),
         stat_threshold,
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
@@ -408,13 +408,13 @@ def get_clusters_table(
 
 
 def _get_clusters_table_surface(
-    stat_img,
-    stat_threshold,
+    stat_img: SurfaceImage,
+    stat_threshold: float | int | np.floating | np.integer,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
     return_label_maps: bool = False,
-    offset=1,
-):
+    offset: int = 1,
+) -> pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image | SurfaceImage]]:
     """Generate cluster table for surface data.
 
     When two_sided is True, this function calls itself recursively
@@ -432,7 +432,7 @@ def _get_clusters_table_surface(
     """
     data = {}
     all_clusters = []
-    label_maps = []
+    label_maps: list[Nifti1Image | SurfaceImage] = []
 
     if not two_sided:
         cols = [
@@ -492,13 +492,16 @@ def _get_clusters_table_surface(
                 cluster_threshold=cluster_threshold,
                 two_sided=False,
             )
-            clusters, label_map = _get_clusters_table_surface(
-                temp_stat_map,
-                stat_threshold * sign,
-                cluster_threshold=cluster_threshold,
-                two_sided=False,
-                return_label_maps=True,
-                offset=offset,
+            clusters, label_map = cast(
+                tuple[pd.DataFrame, list[SurfaceImage]],
+                _get_clusters_table_surface(
+                    cast(SurfaceImage, temp_stat_map),
+                    stat_threshold * sign,
+                    cluster_threshold=cluster_threshold,
+                    two_sided=False,
+                    return_label_maps=True,
+                    offset=offset,
+                ),
             )
 
             offset += len(clusters)
@@ -517,13 +520,13 @@ def _get_clusters_table_surface(
 
 
 def _get_clusters_table_volume(
-    stat_img,
+    stat_img: Nifti1Image,
     stat_threshold: float | int | np.floating | np.integer,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
     min_distance: float | int | np.floating | np.integer = 8.0,
     return_label_maps: bool = False,
-):
+) -> pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image | SurfaceImage]]:
     """Generate cluster table for volume data.
 
     For parameters, see `get_clusters_table`.
@@ -533,7 +536,7 @@ def _get_clusters_table_volume(
 
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
 
-    label_maps = []
+    label_maps: list[Nifti1Image | SurfaceImage] = []
 
     # check that stat_img is niimg-like object and 3D
     stat_img = check_niimg_3d(stat_img)
