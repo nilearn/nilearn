@@ -75,7 +75,7 @@ def has_non_finite(data: np.ndarray) -> tuple[bool, np.ndarray]:
     Besides boolean value, return the mask.
     """
     non_finite_mask = ~np.isfinite(data)
-    has_not_finite = non_finite_mask.any()
+    has_not_finite = bool(non_finite_mask.any())
     return has_not_finite, non_finite_mask
 
 
