@@ -7,7 +7,9 @@ from numpy.testing import assert_almost_equal
 from nilearn.decoding._proximal_operators import prox_l1, prox_tvl1
 
 
+@pytest.mark.ai_generated
 def test_prox_l1_nonexpansiveness(rng, n_features=10):
+    """Test that prox_l1 is strongly non-expansive."""
     x = rng.standard_normal((n_features, 1))
     tau = 0.3
     s = prox_l1(x.copy(), tau)
@@ -23,9 +25,11 @@ def test_prox_l1_nonexpansiveness(rng, n_features=10):
 
 @pytest.mark.parametrize("ndim", range(3, 4))
 @pytest.mark.parametrize("weight", np.logspace(-10, 10, num=10))
+@pytest.mark.ai_generated
 def test_prox_tvl1_approximates_prox_l1_for_lasso(
     rng, ndim, weight, size=15, decimal=4, dgap_tol=1e-7
 ):
+    """Test that prox_tvl1 approximates prox_l1 in the pure LASSO case."""
     l1_ratio = 1.0  # pure LASSO
 
     shape = [size] * ndim
@@ -48,7 +52,9 @@ def test_prox_tvl1_approximates_prox_l1_for_lasso(
 
 
 @pytest.mark.parametrize("verbose", [0, 1])
+@pytest.mark.ai_generated
 def test_prox_tvl1_verbose(rng, verbose):
+    """Test that prox_tvl1 runs with different verbosity levels."""
     l1_ratio = 1.0  # pure LASSO
 
     size = 15

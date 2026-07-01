@@ -33,7 +33,9 @@ from nilearn.surface.utils import assert_surface_mesh_equal
         ([100, "bar"], False),
     ],
 )
+@pytest.mark.ai_generated
 def test_check_view_is_valid(view, is_valid):
+    """Test that _check_view_is_valid accepts or rejects the given view."""
     assert _check_view_is_valid(view) is is_valid
 
 
@@ -46,7 +48,9 @@ def test_check_view_is_valid(view, is_valid):
         ("lft", False),
     ],
 )
+@pytest.mark.ai_generated
 def test_check_hemisphere_is_valid(hemi, is_valid):
+    """Test that _check_hemisphere_is_valid accepts or rejects hemi."""
     assert _check_hemisphere_is_valid(hemi) is is_valid
 
 
@@ -233,7 +237,9 @@ def test_bg_data_error():
         get_bg_data(bg_map, len(bg_map) - 1)
 
 
+@pytest.mark.ai_generated
 def test_get_faces_on_edge_matplotlib(in_memory_mesh):
+    """Test that get_faces_on_edge raises on non-contiguous parcellation."""
     _, faces = load_surf_mesh(in_memory_mesh)
     with pytest.raises(
         ValueError, match=(r"Vertices in parcellation do not form region.")
