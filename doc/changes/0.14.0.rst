@@ -116,8 +116,6 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-primary:`Doc`added jupyterlite option in the documentation (:gh:`6033` by `Hugo Delhaye`_).
-
 - :bdg-success:`API` Allow the ``mask_img`` parameter to :func:`~glm.first_level.first_level_from_bids` to take the value ``"derivatives"`` to generate a mask from the masks in BIDS derivative to use in the model (:gh:`5981` by `Rémi Gau`_).
 
 - :bdg-success:`API` The parameter ``estimator_args`` was added to all decoding estimators to allow to pass parameters directly to the underlying Scikit-Learn estimators (:gh:`5641` by `Rémi Gau`_).
@@ -137,6 +135,8 @@ Enhancements
 - :bdg-dark:`Code` Added ``screening_n_features`` parameter to :class:`~nilearn.decoding.Decoder`,  :class:`~nilearn.decoding.DecoderRegressor`, :class:`~nilearn.decoding.FREMClassifier`,  and :class:`~nilearn.decoding.FREMRegressor`.
 
 - :bdg-dark:`Code` Improve type annotations to :mod:`nilearn.signal`, :mod:`nilearn.surface`,  :mod:`nilearn.masking` and :mod:`nilearn.image` (:gh:`6353`, :gh:`6338` and :gh:`6345` by `Rémi Gau`_).
+
+- :bdg-primary:`Doc`added jupyterlite option in the documentation (:gh:`6033` by `Hugo Delhaye`_).
 
 - :bdg-primary:`Doc` Added a :ref:`user guide page <gpu_usage>` to demonstrate speedup using GPU (:gh:`5958` by `Himanshu Aggarwal`_ and `Elizabeth DuPre`_).
 
