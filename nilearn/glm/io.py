@@ -107,26 +107,26 @@ def _generate_dataset_description(out_file, model_level) -> None:
 
 @overload
 def save_glm_to_bids(
-    model: "FirstLevelModel",
+    model: FirstLevelModel,
     contrasts=...,
     first_level_contrast=...,
     contrast_types=...,
     out_dir=...,
     prefix=...,
     **kwargs,
-) -> "FirstLevelModel": ...
+) -> FirstLevelModel: ...
 
 
 @overload
 def save_glm_to_bids(
-    model: "SecondLevelModel",
+    model: SecondLevelModel,
     contrasts=...,
     first_level_contrast=...,
     contrast_types=...,
     out_dir=...,
     prefix=...,
     **kwargs,
-) -> "SecondLevelModel": ...
+) -> SecondLevelModel: ...
 
 
 @fill_doc
@@ -138,7 +138,7 @@ def save_glm_to_bids(
     out_dir=".",
     prefix=None,
     **kwargs,
-) -> "FirstLevelModel | SecondLevelModel":
+) -> FirstLevelModel | SecondLevelModel:
     """Save :term:`GLM` results to :term:`BIDS`-like files.
 
     .. nilearn_versionadded:: 0.9.2
