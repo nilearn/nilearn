@@ -8,7 +8,7 @@ from string import ascii_lowercase
 
 import numpy as np
 import pandas as pd
-from nibabel import affines
+from nibabel import Nifti1Image, affines
 from scipy.ndimage import (
     center_of_mass,
     generate_binary_structure,
@@ -222,7 +222,7 @@ def get_clusters_table(
     two_sided: bool = False,
     min_distance: float | int | np.floating | np.integer = 8.0,
     return_label_maps: bool = False,
-):
+) -> pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image | SurfaceImage]]:
     """Create pandas dataframe with img cluster statistics.
 
     This function should work on any statistical maps where more extreme values
