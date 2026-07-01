@@ -3,6 +3,9 @@ obtain fixed effect results.
 """
 
 import warnings
+from collections.abc import Sequence
+from pathlib import Path
+from typing import overload
 
 import numpy as np
 import pandas as pd
@@ -446,6 +449,26 @@ def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
     if contrast is None:
         raise ValueError("All contrasts provided were null contrasts.")
     return contrast * (1.0 / n_contrasts)
+
+
+@overload
+def compute_fixed_effects(
+    contrast_imgs: list[SurfaceImage],
+    variance_imgs: list[SurfaceImage],
+    mask: SurfaceImage | SurfaceMasker | None = ...,
+    precision_weighted: bool = ...,
+    dofs: Sequence[float] | np.ndarray | None = ...,
+) -> tuple[SurfaceImage, SurfaceImage, SurfaceImage, SurfaceImage]: ...
+
+
+@overload
+def compute_fixed_effects(
+    contrast_imgs: list[Nifti1Image | str | Path],
+    variance_imgs: list[Nifti1Image | str | Path],
+    mask: Nifti1Image | NiftiMasker | None = ...,
+    precision_weighted: bool = ...,
+    dofs: Sequence[float] | np.ndarray | None = ...,
+) -> tuple[Nifti1Image, Nifti1Image, Nifti1Image, Nifti1Image]: ...
 
 
 def compute_fixed_effects(
