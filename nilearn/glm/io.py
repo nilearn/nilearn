@@ -6,6 +6,11 @@ import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from nilearn.glm.first_level import FirstLevelModel
+    from nilearn.glm.second_level import SecondLevelModel
 
 from nilearn import __version__
 from nilearn._utils import logger
@@ -109,7 +114,7 @@ def save_glm_to_bids(
     out_dir=".",
     prefix=None,
     **kwargs,
-):
+) -> "FirstLevelModel | SecondLevelModel":
     """Save :term:`GLM` results to :term:`BIDS`-like files.
 
     .. nilearn_versionadded:: 0.9.2
