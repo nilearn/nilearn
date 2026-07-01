@@ -6,6 +6,7 @@ discovery rate control, false discovery proportion in clusters.
 import warnings
 
 import numpy as np
+from nibabel import Nifti1Image
 from scipy.ndimage import label
 from scipy.stats import norm
 
@@ -24,7 +25,11 @@ from nilearn.image import (
     threshold_img,
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.nilearn_typing import ClusterThreshold, HeightControl
+from nilearn.nilearn_typing import (
+    ClusterThreshold,
+    HeightControl,
+    NonNullScalar,
+)
 from nilearn.surface.surface import SurfaceImage, check_surf_img
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
@@ -95,7 +100,7 @@ def _true_positive_fraction(z_vals, hommel_value, alpha):
     return proportion_true_discoveries
 
 
-def fdr_threshold(z_vals, alpha):
+def fdr_threshold(z_vals, alpha) -> float:
     """Return the Benjamini-Hochberg FDR threshold for the input z_vals.
 
     Parameters
@@ -138,7 +143,7 @@ def cluster_level_inference(
     threshold: float | int | list[float | int] = 3.0,
     alpha=0.05,
     verbose: int = 0,
-):
+) -> Nifti1Image | SurfaceImage:
     """Report the proportion of active voxels for all clusters \
     defined by the input threshold.
 
@@ -323,7 +328,7 @@ def threshold_stats_img(
     height_control: HeightControl = "fpr",
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = True,
-):
+) -> tuple[Nifti1Image | SurfaceImage | None, NonNullScalar]:
     """Compute the required threshold level and return the thresholded map.
 
     Parameters
@@ -390,10 +395,13 @@ def threshold_stats_img(
 
     Returns
     -------
-    thresholded_map : Nifti1Image,
+    thresholded_map : :class:`nibabel.nifti1.Nifti1Image` \
+            or :obj:`~nilearn.surface.SurfaceImage` or None
         The stat_map thresholded at the prescribed voxel- and cluster-level.
+        Returns None when ``stat_img`` is None and ``height_control``
+        is ``'fpr'`` or None.
 
-    threshold : :obj:`float`
+    threshold : :obj:`float` or :class:`numpy.floating`
         The voxel-level threshold used actually.
 
     Notes
@@ -483,6 +491,7 @@ def threshold_stats_img(
     # In this case, and if stat_img is None, we return
     if stat_img is None:
         if height_control in ["fpr", None]:
+            assert threshold is not None
             return None, threshold
         else:
             raise ValueError(
@@ -525,4 +534,5 @@ def threshold_stats_img(
         copy=True,
     )
 
+    assert threshold is not None
     return stat_img, threshold
