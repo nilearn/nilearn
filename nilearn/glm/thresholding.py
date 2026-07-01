@@ -342,6 +342,42 @@ def _cluster_level_inference_volume(
     return masker.inverse_transform(proportion_true_discoveries)
 
 
+@overload
+def threshold_stats_img(
+    stat_img: SurfaceImage,
+    mask_img: SurfaceImage | None = ...,
+    alpha: float = ...,
+    threshold: Scalar = ...,
+    height_control: HeightControl = ...,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+) -> tuple[SurfaceImage, NonNullScalar]: ...
+
+
+@overload
+def threshold_stats_img(
+    stat_img: NiimgLike,
+    mask_img: NiimgLike | None = ...,
+    alpha: float = ...,
+    threshold: Scalar = ...,
+    height_control: HeightControl = ...,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+) -> tuple[Nifti1Image, NonNullScalar]: ...
+
+
+@overload
+def threshold_stats_img(
+    stat_img: None = ...,
+    mask_img: NiimgLike | None = ...,
+    alpha: float = ...,
+    threshold: Scalar = ...,
+    height_control: HeightControl = ...,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+) -> tuple[None, NonNullScalar]: ...
+
+
 @fill_doc
 def threshold_stats_img(
     stat_img=None,
