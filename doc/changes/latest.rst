@@ -193,6 +193,8 @@ Changes
 
 - :bdg-danger:`Deprecation` The ``"z_score"`` value for the ``standardize`` parameter is no longer supported. Use ``standardize="z_score_sample"`` instead (:gh:`5995` by `Rémi Gau`_).
 
+- :bdg-danger:`Deprecation` The function ``check_design_matrix`` is deprecated and will be removed in Nilearn >=0.16.0 (:gh:`6334` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Remove aggressive garbage collection in safe_get_data for performance, mainly in CI. (:gh:`6039` by `Basile Pinsard`_).
 
 - :bdg-secondary:`Maint` Refactor and speed up tests for :func:`~plotting.view_img` (:gh:`6072` by `Michelle Wang`_)

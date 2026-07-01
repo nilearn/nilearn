@@ -17,9 +17,9 @@ from numpy.testing import (
 )
 
 from nilearn._utils.data_gen import basic_paradigm
+from nilearn._utils.glm import validate_design_matrix
 from nilearn.glm.first_level.design_matrix import (
     _convolve_regressors,
-    check_design_matrix,
     make_first_level_design_matrix,
     make_second_level_design_matrix,
 )
@@ -66,56 +66,23 @@ def design_matrix_light(
         add_reg_names,
         min_onset,
     )
-    _, matrix, names = check_design_matrix(dmtx)
+    _, matrix, names = validate_design_matrix(dmtx)
     return matrix, names
 
 
-@pytest.fixture
-def n_frames() -> int:
-    return 128
+def test_deprecation_check_design_matrix(frame_times):
+    """Test deprecation check_design_matrix.
 
-
-@pytest.fixture
-def frame_times(n_frames) -> np.ndarray:
-    t_r = 1.0
-    return np.linspace(0, (n_frames - 1) * t_r, n_frames)
-
-
-def test_design_matrix_no_experimental_paradigm(frame_times):
-    """Test design matrix creation \
-        when no experimental paradigm is provided.
+    TODO (nilearn >= 0.16.0) remove
     """
-    _, X, names = check_design_matrix(
-        make_first_level_design_matrix(
-            frame_times, drift_model="polynomial", drift_order=3
-        )
+    from nilearn.glm.first_level.design_matrix import (
+        check_design_matrix as cdm,
     )
-    assert len(names) == 4
-    x = np.linspace(-0.5, 0.5, len(frame_times))
-    assert_almost_equal(X[:, 0], x)
 
-
-def test_design_matrix_regressors_provided_manually(rng, frame_times):
-    # test design matrix creation when regressors are provided manually
-    ax = rng.standard_normal(size=(len(frame_times), 4))
-    _, X, names = check_design_matrix(
-        make_first_level_design_matrix(
-            frame_times, drift_model="polynomial", drift_order=3, add_regs=ax
-        )
-    )
-    assert_almost_equal(X[:, 0], ax[:, 0])
-    assert len(names) == 8
-    assert X.shape[1] == 8
-
-    # with pandas Dataframe
-    axdf = pd.DataFrame(ax)
-    _, X1, names = check_design_matrix(
-        make_first_level_design_matrix(
-            frame_times, drift_model="polynomial", drift_order=3, add_regs=axdf
-        )
-    )
-    assert_almost_equal(X1[:, 0], ax[:, 0])
-    assert_array_equal(names[:4], np.arange(4))
+    with pytest.warns(
+        FutureWarning, match="'check_design_matrix' is deprecated"
+    ):
+        cdm(make_first_level_design_matrix(frame_times))
 
 
 def test_design_matrix_regressors_provided_manually_errors(rng, frame_times):
@@ -430,8 +397,8 @@ def test_csv_io(tmp_path, frame_times):
     DM.to_csv(path)
     DM2 = pd.read_csv(path, index_col=0)
 
-    _, matrix, names = check_design_matrix(DM)
-    _, matrix_, names_ = check_design_matrix(DM2)
+    _, matrix, names = validate_design_matrix(DM)
+    _, matrix_, names_ = validate_design_matrix(DM2)
     assert_almost_equal(matrix, matrix_)
     assert names == names_
 
@@ -446,7 +413,7 @@ def test_compare_design_matrix_to_spm(block_duration, array):
     X1 = make_first_level_design_matrix(
         frame_times, events, drift_model=None, hrf_model="spm"
     )
-    _, matrix, _ = check_design_matrix(X1)
+    _, matrix, _ = validate_design_matrix(X1)
 
     spm_design_matrix = DESIGN_MATRIX[array]
 

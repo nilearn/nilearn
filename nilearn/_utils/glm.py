@@ -1,10 +1,88 @@
 from collections.abc import Iterable
 from pathlib import Path
+from typing import Literal, overload
 
 import numpy as np
 import pandas as pd
 
 from nilearn._utils.helpers import stringify_path
+from nilearn._utils.param_validation import check_is_of_allowed_type
+
+
+@overload
+def validate_design_matrix(
+    design_matrix: str | Path | pd.DataFrame,
+    output_as: Literal["pd"],
+    name: str = ...,
+) -> pd.DataFrame: ...
+
+
+@overload
+def validate_design_matrix(
+    design_matrix: str | Path | pd.DataFrame,
+    output_as: None = ...,
+    name: str = ...,
+) -> tuple[pd.Index, np.ndarray, list]: ...
+
+
+def validate_design_matrix(
+    design_matrix: str | Path | pd.DataFrame,
+    output_as: Literal[None, "pd"] = None,
+    name: str = "design_matrix",
+) -> pd.DataFrame | tuple[pd.Index, np.ndarray, list]:
+    """Check that the provided DataFrame is indeed a valid design matrix \
+    descriptor.
+
+    Parameters
+    ----------
+    design_matrix : :obj:`str`, :obj:`pathlib.Path` or :obj:`pandas.DataFrame`
+        Describes a design matrix.
+        Can be a TSV or CSV file, or a path to one.
+
+    output_as : ``None`` or ``"pd"``, default=None
+        If ``"pd"``, the loaded design matrix is returned as a
+        :obj:`pandas.DataFrame`. Otherwise, a triplet of fields
+        (``frame_times``, ``matrix``, ``names``) is returned.
+
+    name : :obj:`str`, default="design_matrix"
+        Name of the ``design_matrix`` argument, used in error messages.
+
+    Returns
+    -------
+    loaded_design_matrix : :obj:`pandas.DataFrame`
+        Returned only when ``output_as="pd"``.
+
+    frame_times : :obj:`pandas.Index` of shape (n_frames,)
+        Sampling times of the design matrix in seconds.
+
+    matrix : :obj:`numpy.ndarray` of shape (n_frames, n_regressors)
+        Numerical values for the design matrix.
+
+    names : :obj:`list` of shape (n_regressors,)
+        Names of the design matrix columns.
+    """
+    check_is_of_allowed_type(design_matrix, (str, Path, pd.DataFrame), name)
+
+    loaded_design_matrix: pd.DataFrame = check_and_load_tables(
+        design_matrix, name
+    )[0]
+
+    if len(loaded_design_matrix.columns) == 0:
+        raise ValueError("Design matrices dataframe cannot be empty.")
+
+    if output_as is not None:
+        if output_as != "pd":
+            raise ValueError(
+                f"'output_as' must be None or 'pd'. Got : {output_as}"
+            )
+
+        return loaded_design_matrix
+
+    names = list(loaded_design_matrix.keys())
+    frame_times = loaded_design_matrix.index
+    matrix = loaded_design_matrix.to_numpy()
+
+    return frame_times, matrix, names
 
 
 def check_and_load_tables(tables_to_check, var_name):
@@ -36,6 +114,7 @@ def check_and_load_tables(tables_to_check, var_name):
     ------
     TypeError
     If any of the elements in `tables_to_check` does not have a correct type.
+
     ValueError
     If a specified path in `tables_to_check`
     cannot be loaded to a pandas.DataFrame.
@@ -64,7 +143,7 @@ def check_and_load_tables(tables_to_check, var_name):
     return tables
 
 
-def _read_events_table(table_path):
+def _read_events_table(table_path: str | Path) -> pd.DataFrame:
     """Load the contents of the event file specified by `table_path`\
        to a pandas.DataFrame.
 
@@ -86,6 +165,10 @@ def _read_events_table(table_path):
     If file loading fails.
     """
     table_path = Path(table_path)
+
+    if not table_path.exists():
+        raise ValueError(f"The file '{table_path!s}' does not exist.")
+
     if table_path.suffix == ".tsv":
         loaded = pd.read_csv(table_path, sep="\t")
     elif table_path.suffix == ".csv":

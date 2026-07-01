@@ -251,12 +251,14 @@ def test_check_second_level_input(shape_4d_default):
         match="A second level model requires a list with at "
         "least two first level models or niimgs",
     ):
-        _check_second_level_input([FirstLevelModel()], pd.DataFrame())
+        _check_second_level_input(
+            [FirstLevelModel()], pd.DataFrame({"foo": [1]})
+        )
 
     with pytest.raises(
         TypeError, match="Got object type <class 'int'> at idx 1"
     ):
-        _check_second_level_input(["foo", 1], pd.DataFrame())
+        _check_second_level_input(["foo", 1], pd.DataFrame({"foo": [1, 2]}))
 
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default]
@@ -275,7 +277,9 @@ def test_check_second_level_input(shape_4d_default):
     with pytest.raises(
         TypeError, match="Got object type <class 'function'> at idx 1"
     ):
-        _check_second_level_input([*input_models, obj], pd.DataFrame())
+        _check_second_level_input(
+            [*input_models, obj], pd.DataFrame({"foo": [1, 2]})
+        )
 
 
 def test_check_second_level_input_list_wrong_type():
@@ -287,7 +291,9 @@ def test_check_second_level_input_list_wrong_type():
     model = SecondLevelModel()
     second_level_input = [1, 2]
     with pytest.raises(TypeError, match="'second_level_input' must be"):
-        model.fit(second_level_input)
+        model.fit(
+            second_level_input, design_matrix=pd.DataFrame({"foo": [1, 2]})
+        )
 
 
 def test_check_second_level_input_unfit_model():
@@ -296,7 +302,7 @@ def test_check_second_level_input_unfit_model():
     ):
         _check_second_level_input(
             [FirstLevelModel(subject_label=f"sub_{i}") for i in range(1, 3)],
-            pd.DataFrame(),
+            design_matrix=pd.DataFrame({"foo": range(1, 3)}),
         )
 
 
@@ -307,7 +313,7 @@ def test_check_second_level_input_dataframe():
         "'subject_label', 'map_name' and 'effects_map_path'",
     ):
         _check_second_level_input(
-            pd.DataFrame(columns=["foo", "bar"]), pd.DataFrame()
+            pd.DataFrame(columns=["foo", "bar"]), pd.DataFrame({"foo": [1]})
         )
 
     with pytest.raises(
@@ -321,7 +327,7 @@ def test_check_second_level_input_dataframe():
                     "effects_map_path": ["c", "d"],
                 }
             ),
-            pd.DataFrame(),
+            pd.DataFrame({"foo": [1]}),
         )
 
 
@@ -342,7 +348,9 @@ def test_check_second_level_input_confounds(shape_4d_default):
         "objects need to provide the attribute 'subject_label'",
     ):
         _check_second_level_input(
-            input_models * 2, pd.DataFrame(), confounds=pd.DataFrame()
+            input_models * 2,
+            design_matrix=pd.DataFrame({"foo": [1, 2]}),
+            confounds=pd.DataFrame({"foo": [1, 2]}),
         )
 
 
@@ -355,7 +363,7 @@ def test_check_second_level_input_design_matrix(shape_3d_default):
         shapes=[(*shape_3d_default, 1)]
     )
 
-    _check_second_level_input(fmri_data[0], pd.DataFrame())
+    _check_second_level_input(fmri_data[0], pd.DataFrame({"foo": [1]}))
 
     with pytest.raises(
         ValueError,
@@ -803,9 +811,7 @@ def test_design_matrix_path(img_3d_mni, tmp_path, filename, sep):
 @pytest.mark.parametrize("design_matrix", ["foo", Path("foo")])
 def test_design_matrix_error_path(img_3d_mni, design_matrix):
     second_level_input = [img_3d_mni, img_3d_mni, img_3d_mni]
-    with pytest.raises(
-        ValueError, match=r"Tables to load can only be TSV or CSV."
-    ):
+    with pytest.raises(ValueError, match="The file 'foo' does not exist"):
         SecondLevelModel().fit(
             second_level_input=second_level_input, design_matrix=design_matrix
         )

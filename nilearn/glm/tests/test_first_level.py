@@ -30,13 +30,13 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
+from nilearn._utils.glm import validate_design_matrix
 from nilearn._utils.helpers import is_matplotlib_installed, is_windows_platform
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.exceptions import MeshDimensionError
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import FirstLevelModel, mean_scaling, run_glm
 from nilearn.glm.first_level.design_matrix import (
-    check_design_matrix,
     make_first_level_design_matrix,
 )
 from nilearn.glm.first_level.first_level import (
@@ -1006,7 +1006,7 @@ def test_first_level_design_creation(shape_4d_default):
     events = basic_paradigm()
     model = model.fit(fmri_data[0], events)
 
-    frame1, X1, names1 = check_design_matrix(model.design_matrices_[0])
+    frame1, X1, names1 = validate_design_matrix(model.design_matrices_[0])
 
     # check design computation is identical
     n_scans = get_data(fmri_data[0]).shape[3]
@@ -1017,7 +1017,7 @@ def test_first_level_design_creation(shape_4d_default):
         frame_times, events, drift_model=drift_model, drift_order=drift_order
     )
 
-    frame2, X2, names2 = check_design_matrix(design)
+    frame2, X2, names2 = validate_design_matrix(design)
 
     assert_array_equal(frame1, frame2)
     assert_array_equal(X1, X2)
@@ -1427,18 +1427,17 @@ def test_check_run_tables_errors():
     """Check high level wrapper keeps behavior."""
     with pytest.raises(ValueError, match=r"len.* does not match len.*"):
         _check_run_tables([""] * 2, [""], "")
-    with pytest.raises(
-        ValueError, match=r"Tables to load can only be TSV or CSV."
-    ):
+
+    with pytest.raises(ValueError, match=r"The file '.csv' does not exist"):
         _check_run_tables([""] * 2, [".csv", ".csv"], "")
+
     with pytest.raises(
         TypeError,
         match="can only be a pandas DataFrame, a Path object or a string",
     ):
         _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
-    with pytest.raises(
-        ValueError, match=r"Tables to load can only be TSV or CSV."
-    ):
+
+    with pytest.raises(ValueError, match=r"The file '.csv' does not exist"):
         _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")
 
 
