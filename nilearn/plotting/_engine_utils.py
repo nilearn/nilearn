@@ -30,7 +30,7 @@ from nilearn.plotting._utils import (
 
 
 def save_figure_if_needed(fig: Figure, output_file: OutputFile) -> None:
-    """Save figure if an output file value is given.
+    """Save figure if a valid output file value is given.
 
     Create output path if required.
 
