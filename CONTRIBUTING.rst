@@ -429,6 +429,75 @@ This is also useful for writing unit tests.
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
 
+Examples in docstrings
+^^^^^^^^^^^^^^^^^^^^^^
+
+Where possible an ``Examples`` section should be present in the docstring
+of a public function or method.
+
+To facilitate users to copy-paste those examples,
+they should be written as single block
+with inline comments.
+
+So it is better to do:
+
+      >>> # Create a 4D image with one volume of ones and one of zeros
+      >>> import numpy as np
+      >>> from nibabel import Nifti1Image
+      >>> shape = (2, 2, 2, 1)
+      >>> img = Nifti1Image(np.concatenate([np.ones(shape),
+      ...                                   np.zeros(shape)],
+      ...                                  axis=-1),
+      ...                   affine=np.eye(4),
+      ...                   dtype=np.int32)
+      >>>
+      >>> # Compute the mean image and get its content as a numpy array
+      >>> from nilearn.image import mean_img
+      >>> mean_image = mean_img(img)
+      >>> mean_image.get_fdata()
+      array([[[0.5, 0.5],
+                  [0.5, 0.5]],
+            [[0.5, 0.5],
+                  [0.5, 0.5]]])
+
+Than to do:
+
+
+      Create a 4D image with one volume of ones and one of zeros
+
+      >>> import numpy as np
+      >>> from nibabel import Nifti1Image
+      >>> shape = (2, 2, 2, 1)
+      >>> img = Nifti1Image(np.concatenate([np.ones(shape),
+      ...                                   np.zeros(shape)],
+      ...                                  axis=-1),
+      ...                   affine=np.eye(4),
+      ...                   dtype=np.int32)
+
+      Compute the mean image and get its content as a numpy array
+
+      >>> from nilearn.image import mean_img
+      >>> mean_image = mean_img(img)
+      >>> mean_image.get_fdata()
+      array([[[0.5, 0.5],
+                  [0.5, 0.5]],
+            [[0.5, 0.5],
+                  [0.5, 0.5]]])
+
+The latter can still be used to break several independent examples.
+
+Thanks to the `plot_directive <https://matplotlib.org/stable/api/sphinxext_plot_directive_api.html>`_
+from matplotlib,
+it is possible to plot the output of an example directly in the HTML documentation::
+
+      .. plot::
+
+            import matplotlib.pyplot as plt
+            plt.plot([1, 2, 3], [4, 5, 6])
+            plt.title("A plotting example")
+
+
+
 APIs of nilearn objects
 ^^^^^^^^^^^^^^^^^^^^^^^
 
