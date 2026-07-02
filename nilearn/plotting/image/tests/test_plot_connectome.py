@@ -177,7 +177,7 @@ def test_plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
     "matrix",
     [
         np.array([[1.0, 2], [0.4, 1.0]]),
-        np.ma.masked_array(
+        np.ma.MaskedArray(
             np.array([[1.0, 2.0], [2.0, 1.0]]), [[False, True], [False, False]]
         ),
     ],

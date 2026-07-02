@@ -16,6 +16,9 @@ dev = [
 doc = [
     "docutils>=0.17",
     "furo>=2024.8.6",
+    "jupyterlite-pyodide-kernel>=0.7.2",
+    "jupyterlite-sphinx>=0.22.1",
+    "marimo>=0.12.0",
     "memory_profiler>=0.61",  # measuring memory during docs building
     "myst-parser>=3.0.1",
     "numpydoc>=1.8.0",
@@ -23,11 +26,10 @@ doc = [
     "sphinx>=7.4.7",
     "sphinx-copybutton>=0.5.2",
     "sphinx-design>=0.6.1",
+    "sphinxcontrib-mermaid>=1.0.0",
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
     "sphinxext-opengraph>=0.9.1",
-    "sphinxcontrib-mermaid>=1.0.0",
-    "marimo>=0.12.0",
     "templateflow>=25.0.0",
     "pyarrow>=13.0.0"  # mostly to avoid some warnings in pandas
 ]
@@ -107,10 +109,11 @@ dependencies = [
     "numpy>=1.26.0",
     "pandas>=2.3.0",
     "requests>=2.33.0",
-    # scikit-learn version 1.7.0 has a bug that prevents _repr_html_ to run
-    # correctly
+    # sklearn 1.7.0 has a bug that prevents _repr_html_ to run correctly
     # https://scikit-learn.org/stable/whats_new/v1.7.html#sklearn-base
-    "scikit-learn>=1.5.0,!=1.7.0",
+    # sklearn 1.9.0 creates sluggish HTML representation of estimators with many features
+    # https://github.com/scikit-learn/scikit-learn/issues/34203
+    "scikit-learn>=1.5.0,!=1.7.0,!=1.9.0",
     "jinja2>=3.1.6",
     "scipy>=1.11.1",
     "packaging>=26.0.0"
@@ -128,10 +131,13 @@ readme = "README.rst"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
-plotting = [
+# keep plotly as a separate optional extra dependency because of its size
+plotly = [
     "kaleido>=1.1.0",
-    "matplotlib>=3.8.0",
     "plotly>=6.1.1"
+]
+plotting = [
+    "matplotlib>=3.8.0"
 ]
 
 [project.urls]
