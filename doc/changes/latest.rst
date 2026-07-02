@@ -6,14 +6,15 @@
 =========
 
 ..
-Each changelog entry should begin with one of the following badges:
-- :bdg-primary:`Doc`
-- :bdg-secondary:`Maint`
-- :bdg-success:`API`
-- :bdg-info:`Plotting`
-- :bdg-warning:`Test`
-- :bdg-danger:`Deprecation`
-- :bdg-dark:`Code`
+    Each changelog entry should begin with one of the following badges:
+
+    - :bdg-primary:`Doc`
+    - :bdg-secondary:`Maint`
+    - :bdg-success:`API`
+    - :bdg-info:`Plotting`
+    - :bdg-warning:`Test`
+    - :bdg-danger:`Deprecation`
+    - :bdg-dark:`Code`
 
 NEW
 ---
@@ -25,6 +26,8 @@ Enhancements
 ------------
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.regions.img_to_signals_labels` function (:gh:`6315` by `Hande Gözükan`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.iter_img` (:gh:`6304` by `Ruben Dörfel`_).
 
 Changes
 -------

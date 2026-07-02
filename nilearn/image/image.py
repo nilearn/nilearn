@@ -1187,7 +1187,7 @@ def iter_img(imgs: NiimgLike) -> Iterator[Nifti1Image]: ...
 def iter_img(imgs) -> Iterator[Nifti1Image | SurfaceImage]:
     """Iterate over images.
 
-    Could be along the the 4th dimension for 4D Niimg-like object
+    Could be along the 4th dimension for 4D Niimg-like object
     or the 2nd dimension for 2D Surface images..
 
     Parameters
@@ -1203,6 +1203,34 @@ def iter_img(imgs) -> Iterator[Nifti1Image | SurfaceImage]:
     See Also
     --------
     nilearn.image.index_img
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.image import iter_img
+    >>>
+    >>> # Create dummy 4D image.
+    >>> affine = np.eye(4)
+    >>> data = np.ones((3, 3, 3, 2))
+    >>>
+    >>> # Set different values for each 3D image in 4D series.
+    >>> for i in range(data.shape[-1]):
+    ...     data[:, :, :, i] = data[:, :, :, i] * i
+    >>>
+    >>> # Create 4D Nifti Image and print the shape of the data.
+    >>> img_4d = Nifti1Image(data, affine)
+    >>> f"{img_4d.__class__.__name__} with shape= {img_4d.shape}"
+    'Nifti1Image with shape= (3, 3, 3, 2)'
+    >>>
+    >>> # iter_img creates a generator object.
+    >>> all_images = iter_img(img_4d)
+    >>> type(all_images)
+    <class 'generator'>
+    >>>
+    >>> # Let's check its content.
+    >>> [f"{x.__class__.__name__} with shape= {x.shape}" for x in all_images]
+    ['Nifti1Image with shape= (3, 3, 3)', 'Nifti1Image with shape= (3, 3, 3)']
 
     """
     if isinstance(imgs, SurfaceImage):
