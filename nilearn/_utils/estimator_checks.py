@@ -114,7 +114,7 @@ from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition import DictLearning
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.decomposition.tests.conftest import (
-    _canica_components_volume,
+    _canica_components_volume_n,
     _make_volume_data_from_components,
 )
 from nilearn.exceptions import DimensionError, MeshDimensionError
@@ -784,12 +784,15 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
             n_timepoints = 200
 
         decomp_input = _make_volume_data_from_components(
-            _canica_components_volume(_shape_3d_large()),
+            _canica_components_volume_n(
+                _shape_3d_large(), estimator.n_components
+            ),
             _affine_eye(),
             _shape_3d_large(),
             _rng(),
             n_subjects=n_subjects,
             n_timepoints=n_timepoints,
+            noise_level=1.0,
         )
 
         return decomp_input[0], None
