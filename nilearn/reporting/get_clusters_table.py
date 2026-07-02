@@ -370,6 +370,25 @@ def get_clusters_table(
 
         .. nilearn_versionadded:: 0.10.1
 
+    Examples
+    --------
+    >>> from nilearn.datasets import load_sample_motor_activation_image
+    >>> from nilearn.reporting import get_clusters_table
+    >>>
+    >>> img = load_sample_motor_activation_image()
+    >>> table = get_clusters_table(img,
+    ...                            stat_threshold = 4,
+    ...                            cluster_threshold = 20,
+    ...                            two_sided = True,
+    ... )
+    >>> table.head()
+    Cluster   ID     X     Y     Z  Peak Stat Cluster Size (mm3)
+    0          1  42.0 -19.0  19.0   7.941345               7722
+    1         1a  33.0  -7.0  -2.0   7.905312
+    2         1b  42.0  -1.0  13.0   5.470704
+    3          2  39.0 -22.0  58.0   7.941345              36936
+    4         2a   6.0 -10.0  52.0   7.941345
+
     """
     check_params(locals())
 
