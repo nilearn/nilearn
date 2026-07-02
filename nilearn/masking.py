@@ -406,26 +406,24 @@ def compute_epi_mask(
     >>> from nibabel import Nifti1Image
     >>> from nilearn.masking import compute_epi_mask
     >>>
-    >>> mean = 10
-    >>> std_dev = 0.9
-    >>> data = np.random.default_rng(42).normal(loc=mean,
-    ...     scale=std_dev,
-    ...     size=(10, 10, 10, 10),
-    ...     )
-    >>>
-    >>> # Visual inspection of data histogram
-    >>> hist, _= np.histogram(data, bins=10)
-    >>> hist
-    array([   2,   43,  270, 1275, 2707, 3228, 1809,  562,   96,    8])
-    >>>
+    >>> # Let's create an image where only the center contains data.
+    >>> data = data = np.random.default_rng(42).normal(size=(9, 9, 9))
+    >>> data[3:-2, 3:-2, 3:-2] = 10
+    >>> data[5:6, 5:6, 5:6] = 11
     >>> img = Nifti1Image(data, affine=np.eye(4))
     >>>
+    >>> # Let's extract a mask from it
+    >>> # and confirm we only have 1 an 0 in it.
     >>> img_mask = compute_epi_mask(img, opening=False)
+    >>> np.unique(img_mask.get_fdata())
+    array([0., 1.])
     >>>
-    >>> # Counting masked values
-    >>> mask_count = np.count_nonzero(img_mask.get_fdata())
-    >>> mask_count
-    677
+    >>> # The number of voxels in the mask should be close
+    >>> # to the number of voxels with data in the original image.
+    >>> np.sum(img.get_fdata()>2)
+    np.int64(76)
+    >>> np.sum(img_mask.get_fdata()>0)
+    np.int64(73)
     """
     check_params(locals())
     logger.log("EPI mask computation", verbose)
