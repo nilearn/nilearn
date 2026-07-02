@@ -375,35 +375,35 @@ def butterworth(
 
     Examples
     --------
-    >>> import matplotlib.pyplot as plt
-    >>> import numpy as np
-    >>> from nilearn.signal import butterworth
-    >>>
-    >>> # generate a single time series:
-    >>> signals = np.random.default_rng(42).standard_normal(size=40)
-    >>> # create a copy of the signals as butterworth changes the input
-    >>> # array
-    >>> signals_cp = signals.copy()
-    >>>
-    >>> # apply Butterworth filter to the signal
-    >>> filtered_signals = butterworth(
-    ...     signals_cp,
-    ...     sampling_rate=1,
-    ...     low_pass=0.25,
-    ...     high_pass=0.12
-    ... )
-    >>>
-    >>> # plot both signals and filtered_signals
-    >>> fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
-    >>> ax1.plot(signals) #doctest: +SKIP
-    >>> ax1.set_title("Initial signals") #doctest: +SKIP
-    >>> ax1.grid(True)
-    >>>
-    >>> ax2.plot(filtered_signals) #doctest: +SKIP
-    >>> ax2.set_title("Filtered signals") #doctest: +SKIP
-    >>> ax2.grid(True)
-    >>> plt.show()
-    >>> plt.close()
+
+    .. plot::
+
+        >>> import numpy as np
+        >>> from nilearn.signal import butterworth
+        >>>
+        >>> # Generate a single time series
+        >>> # and apply Butterworth filter to the signal.
+        >>> signals = np.random.default_rng(42).standard_normal(size=40)
+        >>> filtered_signals = butterworth(
+        ...     signals,
+        ...     sampling_rate=1,
+        ...     low_pass=0.25,
+        ...     high_pass=0.12,
+        ...     copy=True
+        ... )
+        >>>
+        >>> # Plot both signals and filtered_signals
+        >>> # (if matplotlib is installed).
+        >>> try:
+        ...     import matplotlib.pyplot as plt
+        ...
+        ...     fig = plt.plot(signals, color="red")
+        ...     fig = plt.plot(filtered_signals, color="green")
+        ...     leg = plt.legend(["Initial signals", "Filtered signals"])
+        ...     plt.grid(True)
+        ...     plt.show()
+        ... except:
+        ...     pass
 
     """
     check_params(locals())
