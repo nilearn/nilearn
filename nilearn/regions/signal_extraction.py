@@ -305,6 +305,41 @@ def img_to_signals_labels(
     nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels images
         e.g. clusters
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.regions.signal_extraction import img_to_signals_labels
+    >>>
+    >>> # Create a label image with definitions for 3 regions.
+    >>> labels_data = np.array(
+    ...     [[[1, 2], [1, 2]], [[3, 3], [3, 3]]], dtype=np.int32
+    ... )
+    >>> labels_img = Nifti1Image(labels_data, np.eye(4))
+    >>>
+    >>> # Create data where the average values of regions 1, 2, 3
+    >>> # is 0, 1 and 2 respectively.
+    >>> img_data = np.asarray(
+    ...     [
+    ...         [[[0.3], [0.1]], [[-0.3], [1.9]]],
+    ...         [[[2.0], [2.0]], [[2.0], [2.0]]],
+    ...     ]
+    ... )
+    >>> img = Nifti1Image(img_data, np.eye(4))
+    >>>
+    >>> # Extract mean region signals from the image.
+    >>> mean_signals, _, _ = img_to_signals_labels(img, labels_img)
+    >>> mean_signals
+    array([[0., 1., 2.]])
+    >>>
+    >>> # We could also extract some other statistics
+    >>> # (like the maximum) from each region.
+    >>> maximum_signals, _, _ = img_to_signals_labels(
+    ...     img, labels_img, strategy="maximum"
+    ... )
+    >>> maximum_signals
+    array([[0.3, 1.9, 2. ]])
+
     """
     check_params(locals())
 
