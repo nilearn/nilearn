@@ -5,6 +5,8 @@
 What's new
 ==========
 
+.. _latest:
+.. include:: latest.rst
 .. _v0.14.0:
 .. include:: 0.14.0.rst
 .. _v0.13.1:
