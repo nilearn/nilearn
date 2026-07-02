@@ -2,8 +2,9 @@
 The haxby dataset: different multi-class strategies
 ===================================================
 
-We compare one vs all and one vs one multi-class strategies: the overall
-cross-validated accuracy and the confusion matrix.
+In this example,
+we compare one vs all and one vs one multi-class strategies:
+the overall cross-validated accuracy and the confusion matrix.
 
 """
 
@@ -11,53 +12,56 @@ import numpy as np
 import pandas as pd
 
 from nilearn import datasets
-from nilearn.plotting import plot_matrix, show
 
 # %%
 # Load the Haxby data dataset
 # ---------------------------
 
-
-# By default 2nd subject from haxby datasets will be fetched.
 haxby_dataset = datasets.fetch_haxby()
-
-# Print basic information on the dataset
-print(f"Mask nifti images are located at: {haxby_dataset.mask}")
-print(f"Functional nifti images are located at: {haxby_dataset.func[0]}")
 
 func_filename = haxby_dataset.func[0]
 mask_filename = haxby_dataset.mask
 
-# Load the behavioral data that we will predict
+print(f"Mask nifti images are located at: {mask_filename}")
+print(f"Functional nifti images are located at: {func_filename}")
+
+
+# %%
+# We load the behavioral data that we will predict and
+# remove the rest condition, as it is of no interest to us.
+
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
-y = labels["labels"]
+print(pd.crosstab(labels["labels"], labels["chunks"]))
+
+non_rest = labels["labels"] != "rest"
+
+y = labels["labels"][non_rest]
+
 run = labels["chunks"]
+n_runs = len(np.unique(run))
 
-# Remove the rest condition, it is not very interesting
-non_rest = y != "rest"
-y = y[non_rest]
-
-# Get the labels of the numerical conditions represented by the vector y
-unique_conditions, order = np.unique(y, return_index=True)
-# Sort the conditions by the order of appearance
-unique_conditions = unique_conditions[np.argsort(order)]
 
 # %%
 # Prepare the :term:`fMRI` data
 # -----------------------------
+# We extract the data with a NiftiMasker.
+# For decoding, standardizing is often very important,
+# so we set ``standardize="zscore_sample"``.
+
 from nilearn.maskers import NiftiMasker
 
-# For decoding, standardizing is often very important
 nifti_masker = NiftiMasker(
     mask_img=mask_filename,
     runs=run,
     smoothing_fwhm=4,
     memory="nilearn_cache",
+    standardize="zscore_sample",
     memory_level=1,
     verbose=1,
 )
 X = nifti_masker.fit_transform(func_filename)
 
+# %%
 # Remove the "rest" condition
 X = X[non_rest]
 run = run[non_rest]
@@ -65,14 +69,17 @@ run = run[non_rest]
 # %%
 # Build the decoders, using scikit-learn
 # --------------------------------------
+# Nilearn does not have dedicate multiclass estimators,
+# so we rely on those from sklearn.
 # Here we use a Support Vector Classification, with a linear kernel,
-# and a simple feature selection step
+# and a simple feature selection step.
 
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
 
+# %%
 svc_ovo = OneVsOneClassifier(
     Pipeline(
         [
@@ -81,7 +88,9 @@ svc_ovo = OneVsOneClassifier(
         ]
     )
 )
+svc_ovo
 
+# %%
 svc_ova = OneVsRestClassifier(
     Pipeline(
         [
@@ -90,55 +99,100 @@ svc_ova = OneVsRestClassifier(
         ]
     )
 )
+svc_ova
 
 # %%
 # Now we compute cross-validation scores
 # --------------------------------------
-from sklearn.model_selection import cross_val_score
+# The :term:`fMRI` data is acquired by runs,
+# and the noise is autocorrelated in a given run.
+# Hence, it is better to predict across runs when doing cross-validation.
+# To leave a run out, pass the cross-validator object
+# to the cv parameter of decoder.
 
-cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=5, verbose=1)
+from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
 
-cv_scores_ova = cross_val_score(svc_ova, X, y, cv=5, verbose=1)
+cv = LeaveOneGroupOut()
 
-print("OvO:", cv_scores_ovo.mean())
-print("OvA:", cv_scores_ova.mean())
+# %%
+cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=cv, verbose=1, groups=run)
+cv_scores_ovo
+
+# %%
+cv_scores_ova = cross_val_score(svc_ova, X, y, cv=cv, verbose=1, groups=run)
+cv_scores_ova
+
+# %%
+print("OvO:", cv_scores_ovo.mean().round(decimals=3))
+print("OvA:", cv_scores_ova.mean().round(decimals=3))
 
 # %%
 # Plot barplots of the prediction scores
 # --------------------------------------
+
 from matplotlib import pyplot as plt
+
+from nilearn.plotting import show
 
 plt.figure(figsize=(4, 3))
 plt.boxplot([cv_scores_ova, cv_scores_ovo])
 plt.xticks([1, 2], ["One vs All", "One vs One"])
 plt.title("Prediction: accuracy score")
 
+show()
+
 # %%
-# Plot a confusion matrix
-# -----------------------
-# We fit on the first 10 runs and plot a confusion matrix on the
-# last 2 runs
+# Plot the cross-validated confusion matrices
+# --------------------------------------------
+# Instead of fitting on a single train/test split, we use
+# :func:`sklearn.model_selection.cross_val_predict` with the same
+# leave-one-run-out cross-validation as above to get, for each sample,
+# a prediction made by a model that never saw that sample during training.
+# We can then build a single confusion matrix from those out-of-fold
+# predictions for the whole dataset.
+
+from sklearn.model_selection import cross_val_predict
+
+y_pred_ovo = cross_val_predict(svc_ovo, X, y, cv=cv, groups=run, verbose=1)
+
+y_pred_ova = cross_val_predict(svc_ova, X, y, cv=cv, groups=run, verbose=1)
+
+# %%
+# We get the labels of the numerical conditions represented by the vector y
+# and we sort the conditions by the order of appearance.
+
 from sklearn.metrics import confusion_matrix
 
-svc_ovo.fit(X[run < 10], y[run < 10])
-y_pred_ovo = svc_ovo.predict(X[run >= 10])
+from nilearn.plotting import plot_matrix
 
-plot_matrix(
-    confusion_matrix(y_pred_ovo, y[run >= 10]),
+unique_conditions, order = np.unique(y, return_index=True)
+unique_conditions = unique_conditions[np.argsort(order)]
+
+im = plot_matrix(
+    confusion_matrix(y_pred_ovo, y),
     labels=unique_conditions,
     title="Confusion matrix: One vs One",
     cmap="inferno",
+    figure=(6, 5),
+    auto_fit=False,
+    vmax=108,
 )
+ax = im.axes
+ax.set_ylabel("True label")
+ax.set_xlabel("Predicted label")
 
-svc_ova.fit(X[run < 10], y[run < 10])
-y_pred_ova = svc_ova.predict(X[run >= 10])
-
-plot_matrix(
-    confusion_matrix(y_pred_ova, y[run >= 10]),
+im = plot_matrix(
+    confusion_matrix(y_pred_ova, y),
     labels=unique_conditions,
     title="Confusion matrix: One vs All",
     cmap="inferno",
+    figure=(6, 5),
+    auto_fit=False,
+    vmax=108,
 )
+ax = im.axes
+ax.set_ylabel("True label")
+ax.set_xlabel("Predicted label")
 
 show()
 
