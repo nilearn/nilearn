@@ -17,7 +17,7 @@ from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, get_data, new_img_like, reorder_img
 from nilearn.image.image import _check_fov
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
-from nilearn.nilearn_typing import NiimgLike
+from nilearn.nilearn_typing import NiimgLike, OutputFile
 from nilearn.plotting._engine_utils import create_colorbar_for_fig
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
@@ -1101,12 +1101,12 @@ class BaseSlicer:
         """
         plt.close(self.frame_axes.figure.number)
 
-    def savefig(self, filename, dpi=None, **kwargs) -> None:
+    def savefig(self, filename: OutputFile, dpi=None, **kwargs) -> None:
         """Save the figure to a file.
 
         Parameters
         ----------
-        filename : :obj:`str`
+        filename : :obj:`str` or :obj:`pathlib.Path`
             The file name to save to. Its extension determines the
             file type, typically '.png', '.svg' or '.pdf'.
 
@@ -1118,14 +1118,30 @@ class BaseSlicer:
             :func:`matplotlib.pyplot.savefig`.
 
         """
-        facecolor = edgecolor = "k" if self._black_bg else "w"
-        self.frame_axes.figure.savefig(
-            filename,
-            dpi=dpi,
-            facecolor=facecolor,
-            edgecolor=edgecolor,
-            **kwargs,
-        )
+        if filename is None:
+            warnings.warn(
+                "Please specify a valid filename: {filename=}.",
+                stacklevel=find_stack_level(),
+            )
+            return
+
+        output_file = Path(filename)
+        try:
+            output_file.parent.mkdir(exist_ok=True, parents=True)
+        except Exception:
+            warnings.warn(
+                "Please specify a valid file path: {filename=}.",
+                stacklevel=find_stack_level(),
+            )
+        else:
+            facecolor = edgecolor = "k" if self._black_bg else "w"
+            self.frame_axes.figure.savefig(
+                filename,
+                dpi=dpi,
+                facecolor=facecolor,
+                edgecolor=edgecolor,
+                **kwargs,
+            )
 
 
 class _MultiDSlicer(BaseSlicer):
@@ -2688,37 +2704,3 @@ def get_slicer(display_mode):
 
     """
     return get_create_display_fun(display_mode, SLICERS)
-
-
-def save_figure_if_needed(fig, output_file):
-    """Save figure if an output file value is given.
-
-    Create output path if required.
-
-    Parameters
-    ----------
-    fig: figure, axes, or display instance
-
-    output_file: str, Path or None
-
-    Returns
-    -------
-    None if ``output_file`` is None, ``fig`` otherwise.
-
-    """
-    if output_file is None:
-        return fig
-
-    output_file = Path(output_file)
-    output_file.parent.mkdir(exist_ok=True, parents=True)
-
-    if not isinstance(fig, (plt.Figure, BaseSlicer)):
-        fig = fig.figure
-
-    fig.savefig(output_file)
-    if isinstance(fig, plt.Figure):
-        plt.close(fig)
-    else:
-        fig.close()
-
-    return None

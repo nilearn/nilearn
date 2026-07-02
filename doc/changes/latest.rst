@@ -29,3 +29,5 @@ Enhancements
 
 Changes
 -------
+
+- :bdg-dark:`Code` Update plotting functions to return figure or axes instead of None when an output file is specified to save the figure (:gh:`6272` by `Hande Gözükan`_).
