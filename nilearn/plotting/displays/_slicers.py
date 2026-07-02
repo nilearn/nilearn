@@ -17,7 +17,7 @@ from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, get_data, new_img_like, reorder_img
 from nilearn.image.image import _check_fov
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
-from nilearn.nilearn_typing import NiimgLike
+from nilearn.nilearn_typing import NiimgLike, OutputFile
 from nilearn.plotting._engine_utils import create_colorbar_for_fig
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
@@ -1101,12 +1101,12 @@ class BaseSlicer:
         """
         plt.close(self.frame_axes.figure.number)
 
-    def savefig(self, filename, dpi=None, **kwargs) -> None:
+    def savefig(self, filename: OutputFile, dpi=None, **kwargs) -> None:
         """Save the figure to a file.
 
         Parameters
         ----------
-        filename : :obj:`str`
+        filename : :obj:`str` or :obj:`pathlib.Path`
             The file name to save to. Its extension determines the
             file type, typically '.png', '.svg' or '.pdf'.
 

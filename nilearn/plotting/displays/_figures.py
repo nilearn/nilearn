@@ -10,6 +10,7 @@ from nilearn._utils.helpers import (
     is_sphinx_build,
 )
 from nilearn._utils.logger import find_stack_level
+from nilearn.nilearn_typing import OutputFile
 from nilearn.plotting.surface._utils import DEFAULT_HEMI, get_faces_on_edge
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data, load_surf_data
@@ -127,7 +128,9 @@ class PlotlySurfaceFigure(SurfaceFigure):
             else:
                 self.figure.show(renderer=renderer)
 
-    def savefig(self, output_file=None, **savefig_kwargs) -> None:  # noqa: ARG002
+    def savefig(
+        self, output_file: OutputFile = None, **savefig_kwargs
+    ) -> None:
         """Save the figure to file.
 
         Parameters
@@ -143,7 +146,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                 self.output_file = output_file
 
             try:
-                self.figure.write_image(self.output_file)
+                self.figure.write_image(self.output_file, **savefig_kwargs)
             except RuntimeError as e:
                 kaleido_spec = find_spec("kaleido")
                 if "Kaleido requires Google Chrome" in str(e) or kaleido_spec:
