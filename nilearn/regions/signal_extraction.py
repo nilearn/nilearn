@@ -328,16 +328,16 @@ def img_to_signals_labels(
     >>> img = Nifti1Image(img_data, np.eye(4))
     >>>
     >>> # Extract mean region signals from the image.
-    >>> signals, labels, masked_atlas = img_to_signals_labels(img, labels_img)
-    >>> signals
+    >>> mean_signals, _, _ = img_to_signals_labels(img, labels_img)
+    >>> mean_signals
     array([[0., 1., 2.]])
     >>>
     >>> # We could also extract some other statistics
     >>> # (like the maximum) from each region.
-    >>> signals, labels, masked_atlas = img_to_signals_labels(
+    >>> maximum_signals, _, _ = img_to_signals_labels(
     ...     img, labels_img, strategy="maximum"
     ... )
-    >>> signals
+    >>> maximum_signals
     array([[0.3, 1.9, 2. ]])
 
     """
