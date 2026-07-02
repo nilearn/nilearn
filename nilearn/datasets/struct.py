@@ -866,7 +866,7 @@ def fetch_surf_fsaverage(
     :func:`~nilearn.datasets.load_fsaverage_data`
     to access fsaverage data as :obj:`~nilearn.surface.SurfaceImage`.
 
-    .. nilearn_versionchanged:: 0.14.0dev
+    .. nilearn_versionchanged:: 0.14.0
 
         The data for fsaverage3 and fsaverage4 have been updated
         to have their vertices in the same order as fsaverage5-7.

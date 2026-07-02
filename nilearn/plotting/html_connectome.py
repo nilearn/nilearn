@@ -306,7 +306,7 @@ def view_connectome(
         or None, default=None
         Labels for the nodes.
 
-        .. nilearn_versionadded:: 0.14.0dev
+        .. nilearn_versionadded:: 0.14.0
 
     Returns
     -------

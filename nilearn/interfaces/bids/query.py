@@ -239,18 +239,16 @@ def get_bids_files(
     --------
     >>> from pathlib import Path
     >>> from nilearn.interfaces.bids import get_bids_files
-    >>> bids_path = Path("my_bids_folder")
+    >>> bids_path = Path("tmp") / "my_bids_folder"
     >>> bids_func_dir = bids_path / "sub-01" / "ses-01" / "func"
-
-    Create a fake fMRI NIfTI file.
-
+    >>>
+    >>> # Create a fake fMRI NIfTI file.
     >>> bids_func_dir.mkdir(parents=True, exist_ok=True)
     >>> _ = ( bids_func_dir
     ...    / "sub-01_ses-01_task-finger_run-01_bold.nii.gz"
     ...    ).touch()
-
-    Searching for finger tapping task fMRI files.
-
+    >>>
+    >>> # Searching for finger tapping task fMRI files.
     >>> bids_files = get_bids_files(
     ...    bids_path,
     ...    file_tag='bold',
