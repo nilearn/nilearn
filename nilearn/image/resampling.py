@@ -134,15 +134,15 @@ def coord_transform(x, y, z, affine):
 
     Examples
     --------
-    Transform data from coordinates to brain space. The "affine" matrix
-    can be found as the ".affine" attribute of a nifti image, or using
-    the "get_affine()" method for older nibabel installations::
-
-        >>> from nilearn import datasets, image
-        >>> niimg = datasets.load_mni152_template()
-        >>> # Find the MNI coordinates of the voxel (50, 50, 50)
-        >>> image.coord_transform(50, 50, 50, niimg.affine)
-        (-48.0, -84.0, -22.0)
+    >>> # Transform data from coordinates to brain space.
+    >>> # The "affine" matrix can be found
+    >>> # as the ".affine" attribute of a nifti image,
+    >>> # or using the "get_affine()" method for older nibabel installations
+    >>> from nilearn import datasets, image
+    >>> niimg = datasets.load_mni152_template()
+    >>> # Find the MNI coordinates of the voxel (50, 50, 50)
+    >>> image.coord_transform(50, 50, 50, niimg.affine)
+    (-48.0, -84.0, -22.0)
 
     """
     squeeze = not hasattr(x, "__iter__")
@@ -457,9 +457,8 @@ def resample_img(
 
     Examples
     --------
-    Resample an image with 1 mm voxels onto a 2 mm voxel grid
-    by passing only a target affine:
-
+    >>> # Resample an image with 1 mm voxels onto a 2 mm voxel grid
+    >>> # by passing only a target affine.
     >>> import numpy as np
     >>> import nibabel as nib
     >>> from nilearn import image
@@ -475,10 +474,9 @@ def resample_img(
             [0., 0., 2.]])
     >>> resampled.shape
     (3, 3, 3)
-
-    To control the output dimensions exactly, pass `target_shape`
-    alongside the affine:
-
+    >>>
+    >>> # To control the output dimensions exactly,
+    >>> # pass ``target_shape`` alongside the affine.
     >>> resampled = image.resample_img(
     ...     img, target_affine=np.eye(4) * 2, target_shape=(2, 2, 2)
     ... )
@@ -826,9 +824,8 @@ def resample_to_img(
 
     Examples
     --------
-    Resample a source image to match the shape and affine of a
-    target image:
-
+    >>> # Resample a source image to match the shape
+    >>> # and affine of a target image
     >>> import numpy as np
     >>> import nibabel as nib
     >>> from nilearn import image
@@ -846,10 +843,9 @@ def resample_to_img(
     array([[2., 0., 0.],
           [0., 2., 0.],
           [0., 0., 2.]])
-
-    The resampled image inherits the shape and affine of the
-    target image:
-
+    >>>
+    >>> # The resampled image inherits the shape
+    >>> # and affine of the target image.
     >>> np.array_equal(resampled.affine, target_img.affine)
     True
     >>> resampled.shape == target_img.shape
