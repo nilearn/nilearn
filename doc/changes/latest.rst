@@ -7,6 +7,7 @@
 
 ..
     Each changelog entry should begin with one of the following badges:
+
     - :bdg-primary:`Doc`
     - :bdg-secondary:`Maint`
     - :bdg-success:`API`
@@ -25,6 +26,8 @@ Enhancements
 ------------
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section to :func:`~nilearn.utils.all_displays`, :func:`~nilearn.utils.all_estimators`, :func:`~nilearn.utils.all_functions` (:gh:`6322`, :gh:`6324`, :gh:`6325` by `Alice Schiavone`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.iter_img` (:gh:`6304` by `Ruben Dörfel`_).
 
 Changes
 -------
