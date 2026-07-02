@@ -1121,27 +1121,21 @@ class BaseSlicer:
         if filename is None:
             warnings.warn(
                 "Please specify a valid filename: {filename=}.",
+                UserWarning,
                 stacklevel=find_stack_level(),
             )
             return
 
         output_file = Path(filename)
-        try:
-            output_file.parent.mkdir(exist_ok=True, parents=True)
-        except Exception:
-            warnings.warn(
-                "Please specify a valid file path: {filename=}.",
-                stacklevel=find_stack_level(),
-            )
-        else:
-            facecolor = edgecolor = "k" if self._black_bg else "w"
-            self.frame_axes.figure.savefig(
-                filename,
-                dpi=dpi,
-                facecolor=facecolor,
-                edgecolor=edgecolor,
-                **kwargs,
-            )
+        output_file.parent.mkdir(exist_ok=True, parents=True)
+        facecolor = edgecolor = "k" if self._black_bg else "w"
+        self.frame_axes.figure.savefig(
+            filename,
+            dpi=dpi,
+            facecolor=facecolor,
+            edgecolor=edgecolor,
+            **kwargs,
+        )
 
 
 class _MultiDSlicer(BaseSlicer):
