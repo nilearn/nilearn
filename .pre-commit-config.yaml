@@ -151,5 +151,5 @@ repos:
     hooks:
     -   id: mypy
         files: nilearn
-        additional_dependencies: [numpy, nibabel, requests, pandas-stubs, lxml-stubs, types-requests]
+        additional_dependencies: [numpy>=1.26.0, nibabel>=5.2.0, requests>=2.33.0, pandas-stubs, lxml-stubs, types-requests]
         args: [--config-file, pyproject.toml, --pretty]
