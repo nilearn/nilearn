@@ -80,7 +80,7 @@ def test_plotly_show(plotly, renderer):
 
 
 @pytest.mark.slow
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 @pytest.mark.skipif(
     not is_kaleido_installed(),
     reason="Kaleido is not installed; required for this test.",

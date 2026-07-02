@@ -53,7 +53,7 @@ class CacheMixinTest(CacheMixin):
         self._cache(f)
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_cache_mixin_with_expand_user():
     # Test the memory cache is correctly created when using ~.
@@ -70,7 +70,7 @@ def test_cache_mixin_with_expand_user():
             shutil.rmtree(expand_cache_dir)
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 def test_cache_mixin_without_expand_user():
     # Test the memory cache is correctly created when using ~.
     cache_dir = "~/nilearn_data/test_cache"

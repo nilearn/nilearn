@@ -81,12 +81,13 @@ def test_plot_roi_view_type_error(matplotlib_pyplot):
         demo_plot_roi(view_type="flled")
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 @pytest.mark.slow
 def test_demo_plot_roi_output_file(matplotlib_pyplot, tmp_path):
     """Tests plot_roi file saving capabilities."""
     filename = tmp_path / "test.png"
     out = demo_plot_roi(output_file=filename)
+    assert (tmp_path / "test.png").exists()
     assert out is None
 
 

@@ -96,7 +96,7 @@ def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_rand_eye):
     plt.close()
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 @pytest.mark.parametrize("display_mode", ["x", "y", "z"])
 def test_plot_functions_same_cut(display_mode, img_3d_rand_eye, tmp_path):
     """Make sure that passing several times the same cut for stacked slicers
@@ -249,7 +249,7 @@ def test_plot_symmetric_colorbar_threshold(
     plt.close()
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.thread_unsafe(reason="relies on disk access")
 @pytest.mark.parametrize("plot_func", [plot_stat_map])
 @pytest.mark.parametrize(
     "threshold, expected_ticks",
