@@ -187,8 +187,14 @@ def all_functions():
     >>> from nilearn.utils import all_functions
     >>>
     >>> functions = all_functions()
-    >>> functions[4][0]
-    'binarize_img'
+    >>>
+    >>> # Several functions are only accessible if matplotlib is installed.
+    >>> try:
+    ...     import matplotlib
+    ...
+    ...     assert len(functions) == 172, len(functions)
+    ... except ImportError:
+    ...     assert len(functions) == 138, len(functions)
 
     """
     all_functions = []
@@ -248,6 +254,8 @@ def all_displays(type_filter=None):
     --------
     >>> from nilearn.utils import all_displays
     >>> displays = all_displays()
+    >>>
+    >>> # Displays are only accessible if matplotlib is installed.
     >>> try:
     ...     import matplotlib
     ...     assert len(displays) == 27
