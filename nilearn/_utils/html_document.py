@@ -147,7 +147,7 @@ class HTMLDocument:
                 stacklevel=find_stack_level(),
             )
 
-    def resize(self, width, height):
+    def resize(self, width: int, height: int):
         """Resize the document displayed.
 
         Parameters
