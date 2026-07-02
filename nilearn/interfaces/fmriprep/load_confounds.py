@@ -31,6 +31,20 @@ ConfoundStrategy = Literal[
     "non_steady_state",
 ]
 
+ConfoundModel = Literal["basic", "power2", "derivatives", "full"]
+
+CompcorType = Literal[
+    "anat_combined",
+    "anat_separated",
+    "temporal",
+    "temporal_anat_combined",
+    "temporal_anat_separated",
+]
+
+IcaAromaType = Literal["full", "basic"]
+
+TedanaType = Literal["aggressive", "non-aggressive"]
+
 # Global variables listing the admissible types of noise components
 ALL_CONFOUNDS: list[ConfoundStrategy] = list(get_args(ConfoundStrategy))
 
@@ -107,16 +121,16 @@ def _check_error(missing) -> None:
 def load_confounds(
     img_files: str,
     strategy: tuple[ConfoundStrategy, ...] | list[ConfoundStrategy] = ...,
-    motion: str = ...,
+    motion: ConfoundModel = ...,
     scrub: int = ...,
     fd_threshold: float = ...,
     std_dvars_threshold: float = ...,
-    wm_csf: str = ...,
-    global_signal: str = ...,
-    compcor: str = ...,
+    wm_csf: ConfoundModel = ...,
+    global_signal: ConfoundModel = ...,
+    compcor: CompcorType = ...,
     n_compcor: str | int = ...,
-    ica_aroma: str = ...,
-    tedana: str = ...,
+    ica_aroma: IcaAromaType = ...,
+    tedana: TedanaType = ...,
     demean: bool = ...,
 ) -> tuple[pd.DataFrame | None, np.ndarray | None]: ...
 
@@ -125,16 +139,16 @@ def load_confounds(
 def load_confounds(
     img_files: list[str] | list[list[str]],
     strategy: tuple[ConfoundStrategy, ...] | list[ConfoundStrategy] = ...,
-    motion: str = ...,
+    motion: ConfoundModel = ...,
     scrub: int = ...,
     fd_threshold: float = ...,
     std_dvars_threshold: float = ...,
-    wm_csf: str = ...,
-    global_signal: str = ...,
-    compcor: str = ...,
+    wm_csf: ConfoundModel = ...,
+    global_signal: ConfoundModel = ...,
+    compcor: CompcorType = ...,
     n_compcor: str | int = ...,
-    ica_aroma: str = ...,
-    tedana: str = ...,
+    ica_aroma: IcaAromaType = ...,
+    tedana: TedanaType = ...,
     demean: bool = ...,
 ) -> tuple[list[pd.DataFrame] | None, list[np.ndarray | None]]: ...
 
@@ -146,16 +160,16 @@ def load_confounds(
         "high_pass",
         "wm_csf",
     ),
-    motion: str = "full",
+    motion: ConfoundModel = "full",
     scrub: int = 5,
     fd_threshold: float = 0.5,
     std_dvars_threshold: float = 1.5,
-    wm_csf: str = "basic",
-    global_signal: str = "basic",
-    compcor: str = "anat_combined",
+    wm_csf: ConfoundModel = "basic",
+    global_signal: ConfoundModel = "basic",
+    compcor: CompcorType = "anat_combined",
     n_compcor: str | int = "all",
-    ica_aroma: str = "full",
-    tedana: str = "aggressive",
+    ica_aroma: IcaAromaType = "full",
+    tedana: TedanaType = "aggressive",
     demean: bool = True,
 ) -> tuple[
     pd.DataFrame | list[pd.DataFrame] | None,
@@ -323,8 +337,6 @@ def load_confounds(
             `~desc-optcom_bold.nii.gz`.
             If non-aggresive is selected all the components classified as
             either rejected or accepted will be returned as a pandas DataFrame
-
-
 
     demean : :obj:`bool`, default=True
         If True, the confounds are standardized to a zero mean (over time).
