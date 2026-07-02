@@ -85,7 +85,7 @@ class _MultiPCA(_BaseDecomposition):
 
     %(dtype)s
 
-        ..versionadded:: 0.14.0dev
+        ..versionadded:: 0.14.0
 
     memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
