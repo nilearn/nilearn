@@ -415,9 +415,8 @@ def threshold_stats_img(
     ...                   [1.5, 3.0, 0.1],
     ...                   [0.4, 2.2, 0.0]]])
     >>> img = Nifti1Image(data, affine=np.eye(4))
-
-    Now let's threshold the image:
-
+    >>>
+    >>> # Now let's threshold the image.
     >>> from nilearn.glm import threshold_stats_img
     >>> from nilearn.image import get_data
     >>> thresholded_img, _ = threshold_stats_img(
