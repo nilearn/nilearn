@@ -43,8 +43,8 @@ def save_figure_if_needed(fig: Figure, output_file: OutputFile) -> None:
         file path to save the figure
     """
     if output_file is not None:
-        output_file = Path(output_file)
         try:
+            output_file = Path(output_file)
             output_file.parent.mkdir(exist_ok=True, parents=True)
         except Exception:
             warn(
