@@ -39,7 +39,6 @@ from nilearn.surface.surface import (
     check_surf_img,
     compute_adjacency_matrix,
     data_to_gifti,
-    extract_data,
     find_surface_clusters,
     get_data,
     load_surf_data,
@@ -1283,12 +1282,6 @@ def test_get_min_max(surf_img_2d):
 
     assert vmin == -3.5
     assert vmax == 10
-
-
-def test_extract_data_wrong_input():
-    """Check that only SurfaceImage is accepted as input."""
-    with pytest.raises(TypeError, match="must be of type"):
-        extract_data(1, index=1)
 
 
 def test_get_data(surf_img_1d):

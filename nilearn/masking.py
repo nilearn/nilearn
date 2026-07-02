@@ -188,7 +188,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
 # Utilities to compute masks
 #
 @fill_doc
-def intersect_masks(mask_imgs, threshold=0.5, connected=True):
+def intersect_masks(mask_imgs, threshold=0.5, connected=True) -> Nifti1Image:
     """Compute intersection of several masks.
 
     Given a list of input mask images, generate the output image which
@@ -212,6 +212,38 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     -------
     grp_mask : 3D :class:`nibabel.nifti1.Nifti1Image`
         Intersection of all masks.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.masking import intersect_masks
+    >>>
+    >>> mask1 = np.array([[[0, 1, 1], [0, 1, 1], [0, 1, 1]]])
+    >>> mask_img1 = Nifti1Image(mask1, affine=np.eye(4), dtype=np.int32)
+    >>>
+    >>> mask2 = np.array([[[0, 0, 0], [0, 1, 1], [1, 0, 0]]])
+    >>> mask_img2 = Nifti1Image(mask2, affine=np.eye(4), dtype=np.int32)
+    >>>
+    >>> # Compute union with threshold=0
+    >>> mask_union = intersect_masks(
+    ...     [mask_img1, mask_img2], threshold=0, connected=True
+    ... )
+    >>> # Check output
+    >>> mask_union.get_fdata()
+    array([[[0., 1., 1.],
+            [0., 1., 1.],
+            [1., 1., 1.]]])
+    >>>
+    >>> # Compute intersection with threshold=1
+    >>> mask_intersection = intersect_masks(
+    ...     [mask_img1, mask_img2], threshold=1, connected=True
+    ... )
+    >>> # Check output
+    >>> mask_intersection.get_fdata()
+    array([[[0., 0., 0.],
+            [0., 1., 1.],
+            [0., 0., 0.]]])
     """
     check_params(locals())
 
@@ -305,7 +337,7 @@ def compute_epi_mask(
     target_shape=None,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a brain mask from :term:`fMRI` data in 3D or \
     4D :class:`numpy.ndarray`.
 
@@ -362,6 +394,7 @@ def compute_epi_mask(
     -------
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
+
     """
     check_params(locals())
     logger.log("EPI mask computation", verbose)
@@ -425,7 +458,7 @@ def compute_multi_epi_mask(
     n_jobs=1,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a common mask for several runs or subjects of :term:`fMRI` data.
 
     Uses the mask-finding algorithms to extract masks for each run
@@ -519,7 +552,7 @@ def compute_background_mask(
     target_shape=None,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a brain mask for the images by guessing \
     the value of the background from the border of the image.
 
@@ -535,10 +568,13 @@ def compute_background_mask(
 
     %(border_size)s
         default=2.
+
     %(connected)s
         default=False.
+
     %(opening)s
         default=False.
+
     %(target_affine)s
 
         .. note::
@@ -550,12 +586,43 @@ def compute_background_mask(
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(memory)s
+
     %(verbose0)s
 
     Returns
     -------
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.masking import compute_background_mask
+    >>>
+    >>> data = np.random.default_rng(42).random((2,3,4))
+    >>>
+    >>> # Set background to zero.
+    >>> data[0:3,0:2,0:3] = 0
+    >>> data.round(decimals=3)
+    array([[[0.   , 0.   , 0.   , 0.697],
+            [0.   , 0.   , 0.   , 0.786],
+            [0.128, 0.45 , 0.371, 0.927]],
+           [[0.   , 0.   , 0.   , 0.227],
+            [0.   , 0.   , 0.   , 0.632],
+            [0.758, 0.355, 0.971, 0.893]]])
+    >>>
+    >>> img = Nifti1Image(data, affine=np.eye(4))
+    >>>
+    >>> background_mask = compute_background_mask(img)
+    >>>
+    >>> background_mask.get_fdata()
+    array([[[0., 0., 0., 1.],
+            [0., 0., 0., 1.],
+            [1., 1., 1., 1.]],
+           [[0., 0., 0., 1.],
+            [0., 0., 0., 1.],
+            [1., 1., 1., 1.]]])
     """
     check_params(locals())
     logger.log("Background mask computation", verbose)
@@ -603,7 +670,7 @@ def compute_multi_background_mask(
     n_jobs=1,
     memory=None,
     verbose=0,
-):
+) -> Nifti1Image:
     """Compute a common mask for several runs or subjects of data.
 
     Uses the mask-finding algorithms to extract masks for each run
@@ -689,7 +756,7 @@ def compute_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-):
+) -> Nifti1Image:
     """Compute the whole-brain, grey-matter or white-matter mask.
 
     This mask is calculated using MNI152 1mm-resolution template mask onto the
@@ -764,7 +831,7 @@ def compute_multi_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-):
+) -> Nifti1Image:
     """Compute the whole-brain, grey-matter or white-matter mask \
     for a list of images.
 
@@ -1079,6 +1146,29 @@ def unmask(
           Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
         - X.ndim == 1:
           Shape: (mask.shape[0], mask.shape[1], mask.shape[2])
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import nibabel as nib
+    >>> from nilearn.masking import unmask
+    >>> from nilearn.image import get_data
+    >>>
+    >>> # Define a 2x2x1 mask, so that it can be displayed in 2D.
+    >>> # The two nonzero entries mark the in-mask voxels.
+    >>> mask_data = np.array([[[1], [0]],
+    ...                       [[1], [0]]])
+    >>> mask_img = nib.Nifti1Image(mask_data.astype("uint8"), np.eye(4))
+    >>> get_data(mask_img)[:, :, 0]
+    array([[1, 0],
+           [1, 0]], dtype=uint8)
+    >>>
+    >>> # Provide previously masked data as a 1D array and bring it back to 3D.
+    >>> signal_1d = np.array([10.0, 20.0])
+    >>> image_3d = unmask(signal_1d, mask_img)
+    >>> get_data(image_3d)[:, :, 0]
+    array([[10.,  0.],
+           [20.,  0.]])
     """
     # Handle lists. This can be a list of other lists / arrays, or a list or
     # numbers. In the latter case skip.
