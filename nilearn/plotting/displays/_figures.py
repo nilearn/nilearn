@@ -40,23 +40,6 @@ class SurfaceFigure:
         """Show the figure."""
         raise NotImplementedError
 
-    def _check_output_file(self, output_file=None):
-        """If an output file is provided, \
-        set it as the new default output file.
-
-        Parameters
-        ----------
-        output_file : :obj:`str` or None, default=None
-            Path to output file.
-        """
-        if output_file is None:
-            if self.output_file is None:
-                raise ValueError(
-                    "You must provide an output file name to save the figure."
-                )
-        else:
-            self.output_file = output_file
-
     def add_contours(self):
         """Draw boundaries around roi."""
         raise NotImplementedError
@@ -140,7 +123,6 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         savefig_kwargs:
         """
-        self._check_output_file(output_file=output_file)
         if self.figure is not None:
             if output_file is not None:
                 self.output_file = output_file
