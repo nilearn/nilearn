@@ -234,7 +234,6 @@ def test_plotting_functions_with_display_mode_tiled(plot_func, img_3d_mni):
         (9.9, [-10, -9.9, 0, 9.9, 10]),
     ],
 )
-@pytest.mark.ai_generated
 def test_plot_symmetric_colorbar_threshold(
     tmp_path, plot_func, threshold, expected_ticks
 ):
@@ -267,7 +266,6 @@ def test_plot_symmetric_colorbar_threshold(
         (9.96, [0, 10]),
     ],
 )
-@pytest.mark.ai_generated
 def test_plot_asymmetric_colorbar_threshold(
     tmp_path, plot_func, threshold, expected_ticks
 ):

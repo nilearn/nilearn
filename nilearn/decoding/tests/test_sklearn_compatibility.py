@@ -21,7 +21,6 @@ from nilearn.decoding.space_net import SpaceNetClassifier, SpaceNetRegressor
     ],
 )
 @pytest.mark.parametrize("estimator", [SpaceNetClassifier, SpaceNetRegressor])
-@pytest.mark.ai_generated
 def test_get_params(penalty, param, estimator):
     """Test that get_params() does not return an empty dict.
 

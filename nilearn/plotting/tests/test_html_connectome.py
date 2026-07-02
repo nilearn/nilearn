@@ -10,7 +10,6 @@ from nilearn.plotting.tests.test_js_plotting_utils import (
 )
 
 
-@pytest.mark.ai_generated
 def test_prepare_line():
     """Test that _prepare_line pads edges and nodes with separators."""
     e = np.asarray([0, 1, 2, 3], dtype=int)
@@ -28,7 +27,6 @@ def test_prepare_line():
         (["cyan", "red", "blue"], ["#00ffff", "#ff0000", "#0000ff"]),
     ],
 )
-@pytest.mark.ai_generated
 def test_prepare_colors_for_markers(node_color, expected_marker_colors):
     """Test that _prepare_colors_for_markers maps colors per node."""
     number_of_nodes = 3
@@ -50,7 +48,6 @@ def _make_connectome():
     return adj, coord
 
 
-@pytest.mark.ai_generated
 def test_get_connectome():
     """Test that _get_connectome encodes the connectome coordinates."""
     adj, coord = _make_connectome()

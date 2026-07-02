@@ -489,7 +489,6 @@ def test_plot_surf_surface_colorbar_plotly(
 @pytest.mark.parametrize("symmetric_cmap", [True, False])
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("title", [None, "Foo"])
-@pytest.mark.ai_generated
 def test_plot_img_on_surf(bg_on_data, symmetric_cmap, colorbar, title):
     """Test plot_img_on_surf with various display options."""
     stat_img = load_sample_motor_activation_image()
