@@ -43,16 +43,9 @@ def save_figure_if_needed(fig: Figure, output_file: OutputFile) -> None:
         file path to save the figure
     """
     if output_file is not None:
-        try:
-            output_file = Path(output_file)
-            output_file.parent.mkdir(exist_ok=True, parents=True)
-        except Exception:
-            warn(
-                "Please specify a valid file path: {output_file=}.",
-                stacklevel=find_stack_level(),
-            )
-        else:
-            fig.savefig(output_file)
+        output_file = Path(output_file)
+        output_file.parent.mkdir(exist_ok=True, parents=True)
+        fig.savefig(output_file)
 
 
 @fill_doc
