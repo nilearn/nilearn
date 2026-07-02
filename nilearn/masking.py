@@ -422,7 +422,7 @@ def compute_epi_mask(
     >>> # to the number of voxels with data in the original image.
     >>> np.sum(img.get_fdata() > 2)
     np.int64(76)
-    >>> np.sum(img_mask.get_fdata()>0)
+    >>> np.sum(img_mask.get_fdata() > 0)
     np.int64(73)
     """
     check_params(locals())
