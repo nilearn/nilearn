@@ -31,4 +31,3 @@ Changes
 -------
 
 - :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.glm` (:gh:`6370` by `Rémi Gau`_).
-
