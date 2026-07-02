@@ -32,7 +32,7 @@ ConfoundStrategy = Literal[
 ]
 
 # Global variables listing the admissible types of noise components
-all_confounds = [
+ALL_CONFOUNDS = [
     "motion",
     "high_pass",
     "wm_csf",
@@ -45,7 +45,7 @@ all_confounds = [
 ]
 
 # extra parameters needed for each noise component
-component_parameters = {
+COMPONENT_PARAMETERS = {
     "motion": ["motion"],
     "wm_csf": ["wm_csf"],
     "global_signal": ["global_signal"],
@@ -91,7 +91,7 @@ def _check_strategy(strategy) -> None:
                 "will not have additional effect.",
                 stacklevel=find_stack_level(),
             )
-        check_parameter_in_allowed(conf, all_confounds, "confounds")
+        check_parameter_in_allowed(conf, ALL_CONFOUNDS, "confounds")
 
     # high pass filtering must be present if using fmriprep compcor outputs
     if ("compcor" in strategy) and ("high_pass" not in strategy):
@@ -608,7 +608,7 @@ def _load_noise_component(confounds_raw, component, missing, **kargs):
         confounds file or confounds json file.
     """
     try:
-        need_params = component_parameters.get(component)
+        need_params = COMPONENT_PARAMETERS.get(component)
         if need_params:
             params = {param: kargs.get(param) for param in need_params}
             loaded_confounds = getattr(components, f"_load_{component}")(
