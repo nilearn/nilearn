@@ -48,6 +48,10 @@ TedanaType = Literal["aggressive", "non-aggressive"]
 # Global variables listing the admissible types of noise components
 ALL_CONFOUNDS: list[ConfoundStrategy] = list(get_args(ConfoundStrategy))
 
+CONFOUND_MODEL: list[ConfoundModel] = list(get_args(ConfoundModel))
+
+COMPCOR_TYPES: list[CompcorType] = list(get_args(CompcorType))
+
 # extra parameters needed for each noise component
 COMPONENT_PARAMETERS = {
     "motion": ["motion"],
@@ -76,8 +80,8 @@ def _check_strategy(strategy) -> None:
     """
     if (not isinstance(strategy, tuple)) and (not isinstance(strategy, list)):
         raise ValueError(
-            "strategy needs to be a tuple or list of strings"
-            f" A {strategy.__class__.__name__} was provided instead."
+            "strategy needs to be a tuple or list of strings. "
+            f"A {strategy.__class__.__name__} was provided instead."
         )
 
     if len(strategy) == 0:
@@ -95,7 +99,7 @@ def _check_strategy(strategy) -> None:
                 "will not have additional effect.",
                 stacklevel=find_stack_level(),
             )
-        check_parameter_in_allowed(conf, ALL_CONFOUNDS, "confounds")
+        check_parameter_in_allowed(conf, ALL_CONFOUNDS, "strategy")
 
     # high pass filtering must be present if using fmriprep compcor outputs
     if ("compcor" in strategy) and ("high_pass" not in strategy):
@@ -390,6 +394,20 @@ def load_confounds(
 
     """
     _check_strategy(strategy)
+    if "motion" in strategy:
+        check_parameter_in_allowed(motion, CONFOUND_MODEL, "motion")
+    if "wm_csf" in strategy:
+        check_parameter_in_allowed(wm_csf, CONFOUND_MODEL, "wm_csf")
+    if "global_signal" in strategy:
+        check_parameter_in_allowed(
+            global_signal, CONFOUND_MODEL, "global_signal"
+        )
+    if "tedana" in strategy:
+        check_parameter_in_allowed(
+            tedana, ["aggressive", "non-aggressive"], "tedana"
+        )
+    if "compcor" in strategy:
+        check_parameter_in_allowed(compcor, COMPCOR_TYPES, "compcor")
 
     if "tedana" in strategy and len(strategy) > 1:
         tedana_warning = (
@@ -437,7 +455,7 @@ def load_confounds(
 
     # If no strategy was provided, return None for confounds
     if len(strategy) == 0:
-        confounds_out = None  # type: ignore[assignment]
+        return None, sample_mask_out
 
     return confounds_out, sample_mask_out
 
@@ -479,7 +497,7 @@ def _load_confounds_for_single_image_file(
     # Check for tedana
     flag_tedana = ("tedana" in strategy) and (kwargs.get("tedana"))
 
-    # make sure that if you use tedana we uset flag_full_aroma
+    # make sure that if you use tedana we unset flag_full_aroma
     if flag_tedana:
         flag_full_aroma = False
 

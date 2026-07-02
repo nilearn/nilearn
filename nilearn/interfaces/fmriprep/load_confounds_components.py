@@ -119,13 +119,6 @@ def _load_tedana(confounds_files, tedana):
     pandas.DataFrame
         DataFrame of TEDANA regressors.
     """
-    if tedana not in ["aggressive", "non-aggressive"]:
-        raise ValueError(
-            "Please select a valid option 'aggresive' or 'non-aggressive' "
-            "when using TEDANA strategy. "
-            f"Current input: {tedana}"
-        )
-
     if tedana == "aggressive":
         return _tedana_strategy(
             ["rejected"],
