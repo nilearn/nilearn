@@ -1209,29 +1209,28 @@ def iter_img(imgs) -> Iterator[Nifti1Image | SurfaceImage]:
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
     >>> from nilearn.image import iter_img
-
-    Create dummy 4D image:
-
+    >>>
+    >>> # Create dummy 4D image.
     >>> affine = np.eye(4)
     >>> data = np.ones((3, 3, 3, 2))
-
-    Set different values for each 3D image in 4D series:
-
+    >>>
+    >>> # Set different values for each 3D image in 4D series.
     >>> for i in range(data.shape[-1]):
-    ...     data[:,:,:,i] = data[:,:,:,i] * i
-
-    Create 4D Nifti Image and print the shape of the data
-
+    ...     data[:, :, :, i] = data[:, :, :, i] * i
+    >>>
+    >>> # Create 4D Nifti Image and print the shape of the data.
     >>> img_4d = Nifti1Image(data, affine)
-    >>> img_4d_data = img_4d.get_fdata()
-    >>> print(f"Original Shape: {img_4d_data.shape}")
-
-    Create iter object and iterate through 4th dimension
-    returns a 3D NiftiImage that can be used for stats:
-
-    >>> for img in iter_img(img_4d):
-    ...     img_data = img.get_fdata()
-    ...     print(f"Mean: {np.mean(img_data)}; Shape: {img_data.shape}")
+    >>> f"{img_4d.__class__.__name__} with shape= {img_4d.shape}"
+    'Nifti1Image with shape= (3, 3, 3, 2)'
+    >>>
+    >>> # iter_img creates a generator object.
+    >>> all_images = iter_img(img_4d)
+    >>> type(all_images)
+    <class 'generator'>
+    >>>
+    >>> # Let's check its content.
+    >>> [f"{x.__class__.__name__} with shape= {x.shape}" for x in all_images]
+    ['Nifti1Image with shape= (3, 3, 3)', 'Nifti1Image with shape= (3, 3, 3)']
 
     """
     if isinstance(imgs, SurfaceImage):
