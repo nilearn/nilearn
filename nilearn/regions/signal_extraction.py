@@ -311,41 +311,34 @@ def img_to_signals_labels(
     >>> from nibabel import Nifti1Image
     >>> from nilearn.regions.signal_extraction import img_to_signals_labels
     >>>
-    >>> # create image data
-    >>> img_data = np.array(
-    ...     [
-    ...         [
-    ...             [[0.30471708, 0.94056472], [-1.03998411, -1.95103519]],
-    ...             [[0.30471708, 0.94056472], [-1.03998411, -1.95103519]],
-    ...         ],
-    ...         [
-    ...             [[0.7504512, -1.30217951], [0.7504512, -1.30217951]],
-    ...             [[0.7504512, -1.30217951], [0.7504512, -1.30217951]],
-    ...         ],
-    ...     ]
-    ... )
-    >>> img = Nifti1Image(img_data, np.eye(4))
-    >>>
-    >>> # create labels image with definitions for 3 regions
+    >>> # Create a label image with definitions for 3 regions.
     >>> labels_data = np.array(
     ...     [[[1, 2], [1, 2]], [[3, 3], [3, 3]]], dtype=np.int32
     ... )
     >>> labels_img = Nifti1Image(labels_data, np.eye(4))
     >>>
-    >>> # extract region signals from image
+    >>> # Create data where the average values of regions 1, 2, 3
+    >>> # is 0, 1 and 2 respectively.
+    >>> img_data = np.asarray(
+    ...     [
+    ...         [[[0.3], [0.1]], [[-0.3], [1.9]]],
+    ...         [[[2.0], [2.0]], [[2.0], [2.0]]],
+    ...     ]
+    ... )
+    >>> img = Nifti1Image(img_data, np.eye(4))
+    >>>
+    >>> # Extract mean region signals from the image.
     >>> signals, labels, masked_atlas = img_to_signals_labels(img, labels_img)
     >>> signals
-    array([[ 0.30471708, -1.03998411,  0.7504512 ],
-       [ 0.94056472, -1.95103519, -1.30217951]])
-    >>> labels
-    [np.int32(1), np.int32(2), np.int32(3)]
-    >>> from nilearn.image import get_data
-    >>> atlas_data = get_data(masked_atlas)
-    >>> atlas_data
-    array([[[1, 2],
-        [1, 2]],
-       [[3, 3],
-        [3, 3]]], dtype=int8)
+    array([[0., 1., 2.]])
+    >>>
+    >>> # We could also extract some other statistics
+    >>> # (like the maximum) from each region.
+    >>> signals, labels, masked_atlas = img_to_signals_labels(
+    ...     img, labels_img, strategy="maximum"
+    ... )
+    >>> signals
+    array([[0.3, 1.9, 2. ]])
 
     """
     check_params(locals())
