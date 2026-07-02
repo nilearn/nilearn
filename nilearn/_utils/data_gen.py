@@ -942,7 +942,7 @@ def create_fake_bids_dataset(
     n_vertices=0,
     n_voxels=4,
     spaces=None,
-):
+) -> Path:
     """Create a fake :term:`BIDS` dataset directory with dummy files.
 
     Returns fake dataset directory name.
