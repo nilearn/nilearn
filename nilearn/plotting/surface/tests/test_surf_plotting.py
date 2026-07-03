@@ -296,7 +296,7 @@ def test_plot_surf_error_when_kaleido_missing(
     """Test if nilearn.plotting.surface.surf_plotting.plot_surf raises
     ImportError when engine is 'plotly' and kaleido is not installed.
     """
-    with pytest.raises(ImportError, match="Saving figures"):
+    with pytest.raises(RuntimeError, match="Kaleido and Google Chrome are"):
         # Plot with non None output file
         plot_surf(
             in_memory_mesh,
