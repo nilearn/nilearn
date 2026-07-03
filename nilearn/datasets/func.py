@@ -1095,17 +1095,17 @@ def fetch_localizer_button_task(
 
 @fill_doc
 def fetch_abide_pcp(
-    data_dir=None,
-    n_subjects=None,
-    pipeline="cpac",
-    band_pass_filtering=False,
-    global_signal_regression=False,
-    derivatives=None,
-    quality_checked=True,
-    url=None,
-    verbose=1,
-    **kwargs,
-):
+    data_dir: DataDir = None,
+    n_subjects: int | None = None,
+    pipeline: Literal["cpac", "css", "dparsf", "niak"] = "cpac",
+    band_pass_filtering: bool = False,
+    global_signal_regression: bool = False,
+    derivatives: list[str] | str | None = None,
+    quality_checked: bool = True,
+    url: Url = None,
+    verbose: Verbose = 1,
+    **kwargs: Any,
+) -> Bunch[str, Any]:
     """Fetch ABIDE dataset.
 
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
@@ -1340,9 +1340,9 @@ def fetch_abide_pcp(
             for line in pheno_f
         )
     # bytes (encode()) needed for python 2/3 compat with numpy
-    pheno = "\n".join(pheno).encode()
-    pheno = BytesIO(pheno)
-    pheno = pd.read_csv(pheno, comment="$")
+    pheno = "\n".join(pheno).encode()  # type: ignore[assignment]
+    pheno = BytesIO(pheno)  # type: ignore[assignment, arg-type]
+    pheno = pd.read_csv(pheno, comment="$")  # type: ignore[assignment, call-overload]
 
     # First, filter subjects with no filename
     pheno = pheno[pheno["FILE_ID"] != "no_filename"]
@@ -1351,7 +1351,7 @@ def fetch_abide_pcp(
     pheno = pheno[user_filter]
 
     # Go into specific data folder and url
-    data_dir = data_dir / pipeline / strategy
+    data_dir = data_dir / pipeline / strategy  # type: ignore[operator]
     url = f"{url}/Outputs/{pipeline}/{strategy}"
 
     # Get the files
@@ -1368,7 +1368,7 @@ def fetch_abide_pcp(
         ext = ".1D" if derivative.startswith("rois") else ".nii.gz"
         files = []
         for file_id in file_ids:
-            file_ = [
+            file_: list[tuple[str, str, dict[str, str]]] = [
                 (
                     f"{file_id}_{derivative}{ext}",
                     "/".join(
@@ -1432,13 +1432,13 @@ def _load_mixed_gambles(zmap_imgs):
 
 @fill_doc
 def fetch_mixed_gambles(
-    n_subjects=1,
-    data_dir=None,
-    url=None,
-    resume=True,
-    return_raw_data=False,
-    verbose=1,
-):
+    n_subjects: int = 1,
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    return_raw_data: bool = False,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Fetch Jimura "mixed gambles" dataset.
 
     See the :ref:`dataset description <mixed_gamble_maps>`
@@ -1523,13 +1523,17 @@ def fetch_mixed_gambles(
 
 @fill_doc
 def fetch_megatrawls_netmats(
-    dimensionality=100,
-    timeseries="eigen_regression",
-    matrices="partial_correlation",
-    data_dir=None,
-    resume=True,
-    verbose=1,
-):
+    dimensionality: int = 100,
+    timeseries: Literal[
+        "multiple_spatial_regression", "eigen_regression"
+    ] = "eigen_regression",
+    matrices: Literal["full_correlation", "partial_correlation"] = (
+        "partial_correlation"
+    ),
+    data_dir: DataDir = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and return Network Matrices data \
     from MegaTrawls release in HCP.
 
@@ -1774,8 +1778,12 @@ def nki_ids():
 
 @fill_doc
 def fetch_surf_nki_enhanced(
-    n_subjects=10, data_dir=None, url=None, resume=True, verbose=1
-):
+    n_subjects: int | None = 10,
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
@@ -1863,7 +1871,7 @@ def fetch_surf_nki_enhanced(
     )[0]
 
     # Load the csv file
-    phenotypic = pd.read_csv(
+    phenotypic = pd.read_csv(  # type: ignore[assignment]
         phenotypic,
         header=1,
         names=["Subject", "Age", "Dominant Hand", "Sex"],
@@ -1925,7 +1933,7 @@ def load_nki(
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
-    verbose=1,
+    verbose: Verbose = 1,
 ) -> list[SurfaceImage]:
     """Load NKI enhanced surface data into a surface object.
 
@@ -2147,13 +2155,13 @@ def _fetch_development_fmri_functional(
 
 @fill_doc
 def fetch_development_fmri(
-    n_subjects=None,
-    reduce_confounds=True,
-    data_dir=None,
-    resume=True,
-    verbose=1,
+    n_subjects: int | None = None,
+    reduce_confounds: bool = True,
+    data_dir: DataDir = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
     age_group: Literal["adults", "child", "both"] = "both",
-):
+) -> Bunch[str, Any]:
     """Fetch movie watching based brain development dataset (fMRI).
 
     The data is downsampled to 4mm resolution for convenience
