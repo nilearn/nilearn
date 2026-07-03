@@ -271,7 +271,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal: bool = False) -> np.ndarray:
     return symmetric[..., tril_mask] / scaling[tril_mask]
 
 
-def vec_to_sym_matrix(vec, diagonal=None):
+def vec_to_sym_matrix(vec, diagonal=None) -> np.ndarray:
     """Return the symmetric matrix given its flattened lower triangular part.
 
     Acts on the last dimension of the array if not 1-dimensional.
