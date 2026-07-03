@@ -33,7 +33,7 @@ warnings.filterwarnings(
 # -------------------------
 # We fetch the data a single subject for analysis.
 # We also find the names of the different categories of stimuli,
-# identify in which run they were presented.
+# and identify in which run they were presented.
 
 import pandas as pd
 
@@ -62,14 +62,12 @@ task_data = index_img(func_filename, task_mask)
 # -------------------------------
 #
 # The classifier used here is a support vector classifier (svc).
-# We use
-# :class:`~nilearn.decoding.Decoder` and specify the classifier.
-# We are using the ``svc_l1`` here because it is intra subject.
-# We will be doing a 'leave one run out' for cross validation.
+# We use :class:`~nilearn.decoding.Decoder`
+# with a ``svc_l1`` estimator because it is intra subject.
+# The mask of the region of interest is passed directly to the Decoder.
 #
-# We use Nilearn's NiftiMasker to extract and standardize
-# the data from the nifti timeseries:
-# the masker can directly be passed to the decoder object.
+# We will be doing a 'leave one run out' for cross validation
+# by using LeaveOneGroupOut and passing the run labels at fit time.
 #
 # We will use :class:`~nilearn.decoding.Decoder`
 # with a "dummy_classifier" to estimate a baseline.
@@ -79,9 +77,6 @@ import numpy as np
 from sklearn.model_selection import LeaveOneGroupOut
 
 from nilearn.decoding import Decoder
-from nilearn.maskers import NiftiMasker
-
-cv = LeaveOneGroupOut()
 
 mask_names = ["mask_vt", "mask_face", "mask_house"]
 
@@ -92,7 +87,6 @@ for mask_name in mask_names:
     print(f"Working on {mask_name}")
 
     mask_filename = haxby_dataset[mask_name][0]
-    masker = NiftiMasker(mask_img=mask_filename, standardize="zscore_sample")
 
     mask_scores[mask_name] = {}
     mask_chance_scores[mask_name] = {}
@@ -104,8 +98,8 @@ for mask_name in mask_names:
 
         decoder = Decoder(
             estimator="svc_l1",
-            cv=cv,
-            mask=masker,
+            cv=LeaveOneGroupOut(),
+            mask=mask_filename,
             scoring="roc_auc",
             screening_percentile=100,
             standardize="zscore_sample",
@@ -120,8 +114,8 @@ for mask_name in mask_names:
 
         dummy_classifier = Decoder(
             estimator="dummy_classifier",
-            cv=cv,
-            mask=masker,
+            cv=LeaveOneGroupOut(),
+            mask=mask_filename,
             scoring="roc_auc",
             screening_percentile=100,
             standardize="zscore_sample",
