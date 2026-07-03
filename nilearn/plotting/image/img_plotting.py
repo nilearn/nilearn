@@ -299,9 +299,7 @@ def _plot_img_with_bg(
     if title is not None and title != "":
         display.title(title)
 
-    if output_file is not None:
-        display.savefig(output_file)
-
+    save_figure_if_needed(display, output_file)
     return display
 
 
@@ -936,9 +934,7 @@ def plot_roi(
             display, img, cmap=cmap, alpha=alpha, linewidths=linewidths
         )
 
-    if output_file is not None:
-        display.savefig(output_file)
-
+    save_figure_if_needed(display, output_file)
     return display
 
 
@@ -1224,8 +1220,7 @@ def plot_prob_atlas(
                 xycoords="axes fraction",
             )
 
-    if output_file is not None:
-        display.savefig(output_file)
+    save_figure_if_needed(display, output_file)
     return display
 
 
@@ -1590,8 +1585,7 @@ def plot_glass_brain(
     if stat_map_img is None and "l" in display.axes:
         display.axes["l"].ax.invert_xaxis()
 
-    if output_file is not None:
-        display.savefig(output_file)
+    save_figure_if_needed(display, output_file)
     return display
 
 
@@ -1729,9 +1723,7 @@ def plot_connectome(
         colorbar=colorbar,
     )
 
-    if output_file is not None:
-        display.savefig(output_file)
-
+    save_figure_if_needed(display, output_file)
     return display
 
 
@@ -1896,8 +1888,7 @@ def plot_markers(
         display._colorbar = True
         display._show_colorbar(cmap=node_cmap, norm=norm)
 
-    if output_file is not None:
-        display.savefig(output_file)
+    save_figure_if_needed(display, output_file)
     return display
 
 
