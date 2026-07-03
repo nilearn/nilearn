@@ -473,7 +473,12 @@ def miyawaki2008_file_mask():
 
 
 @fill_doc
-def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_miyawaki2008(
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and loads Miyawaki et al. 2008 dataset (153MB).
 
     See :footcite:t:`Miyawaki2008`.
@@ -629,15 +634,15 @@ ALLOWED_CONTRASTS = list(CONTRAST_NAME_WRAPPER.values())
 
 @fill_doc
 def fetch_localizer_contrasts(
-    contrasts,
-    n_subjects=None,
-    get_tmaps=False,
-    get_masks=False,
-    get_anats=False,
-    data_dir=None,
-    resume=True,
-    verbose=1,
-):
+    contrasts: list[str],
+    n_subjects: int | list[int] | None = None,
+    get_tmaps: bool = False,
+    get_masks: bool = False,
+    get_anats: bool = False,
+    data_dir: DataDir = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and load Brainomics/Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
@@ -762,7 +767,7 @@ def fetch_localizer_contrasts(
             Paths to nifti t maps
         - 'masks': :obj:`list` of :obj:`str`
             Paths to nifti files corresponding to the subjects individual masks
-        - 'anats': :obj:`str`
+        - 'anats': :obj:`list` of :obj:`str`
             Path to nifti files corresponding to the subjects structural images
 
     Notes
@@ -785,9 +790,7 @@ def fetch_localizer_contrasts(
 
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
-    if isinstance(n_subjects, numbers.Number) and (
-        (n_subjects > 94) or (n_subjects < 1)
-    ):
+    if isinstance(n_subjects, int) and ((n_subjects > 94) or (n_subjects < 1)):
         warnings.warn(
             "Wrong value for 'n_subjects' (%d). The maximum "
             "value will be used instead ('n_subjects=94').",
@@ -812,17 +815,17 @@ def fetch_localizer_contrasts(
     # Get the dataset OSF index
     dataset_name = "brainomics_localizer"
     index_url = "https://osf.io/hwbm2/download"
-    data_dir = get_dataset_dir(
+    dataset_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
     index_file = fetch_single_file(
-        index_url, data_dir, verbose=verbose, resume=resume
+        index_url, dataset_dir, verbose=verbose, resume=resume
     )
     with index_file.open() as of:
         index = json.load(of)
 
-    if isinstance(n_subjects, numbers.Number):
+    if isinstance(n_subjects, int):
         subject_mask = np.arange(1, n_subjects + 1)
     else:
         subject_mask = np.array(n_subjects)
@@ -839,7 +842,7 @@ def fetch_localizer_contrasts(
     # For more info, see:
     # https://gist.github.com/emdupre/3cb4d564511d495ea6bf89c6a577da74
     root_url = "https://osf.io/download/{0}/"
-    files = {}
+    files: dict[str, list[str | Path]] = {}
     filenames = []
 
     for subject_id, data_type, contrast in itertools.product(
@@ -935,14 +938,14 @@ def fetch_localizer_contrasts(
 
     # Actual data fetching
     fdescr = get_dataset_descr(dataset_name)
-    fetch_files(data_dir, filenames, verbose=verbose)
+    fetch_files(dataset_dir, filenames, verbose=verbose)
     for key, value in files.items():
-        files[key] = [str(data_dir / val) for val in value]
+        files[key] = [str(dataset_dir / val) for val in value]
 
     # Load covariates file
-    participants_file = data_dir / participants_file
+    participants_file = dataset_dir / participants_file
     csv_data = pd.read_csv(participants_file, delimiter="\t")
-    behavioural_file = data_dir / behavioural_file
+    behavioural_file = dataset_dir / behavioural_file
     csv_data2 = pd.read_csv(behavioural_file, delimiter="\t")
     csv_data = csv_data.merge(csv_data2)
     subject_names = csv_data["participant_id"].tolist()
