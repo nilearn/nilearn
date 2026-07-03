@@ -1119,12 +1119,9 @@ class BaseSlicer:
 
         """
         if filename is None:
-            warnings.warn(
-                "Please specify a valid filename: {filename=}.",
-                UserWarning,
-                stacklevel=find_stack_level(),
+            raise ValueError(
+                "You must provide an output file name to save the figure."
             )
-            return
 
         output_file = Path(filename)
         output_file.parent.mkdir(exist_ok=True, parents=True)

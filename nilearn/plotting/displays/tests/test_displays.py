@@ -228,7 +228,7 @@ def test_slicer_save_to_file(slicer, mni152_template_res_2, tmp_path):
     slicer.savefig(path)
     assert path.exists()
 
-    with pytest.warns(UserWarning, match="Please specify a valid filename"):
+    with pytest.raises(ValueError, match="You must provide an output file"):
         slicer.savefig(filename=None)
     slicer.close()
 
