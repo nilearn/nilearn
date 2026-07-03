@@ -5,10 +5,11 @@ import warnings
 from collections import OrderedDict
 from decimal import Decimal
 from string import ascii_lowercase
+from typing import Literal, cast, overload
 
 import numpy as np
 import pandas as pd
-from nibabel import affines
+from nibabel import Nifti1Image, affines
 from scipy.ndimage import (
     center_of_mass,
     generate_binary_structure,
@@ -23,7 +24,7 @@ from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
-from nilearn.nilearn_typing import ClusterThreshold
+from nilearn.nilearn_typing import ClusterThreshold, NiimgLike, NonNullScalar
 from nilearn.surface.surface import SurfaceImage, find_surface_clusters
 
 
@@ -214,14 +215,60 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
     return ijk, vals
 
 
+@overload
+def get_clusters_table(
+    stat_img: NiimgLike,
+    stat_threshold: NonNullScalar,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    min_distance: NonNullScalar = ...,
+    return_label_maps: Literal[False] = ...,
+) -> pd.DataFrame: ...
+
+
+@overload
+def get_clusters_table(
+    stat_img: NiimgLike,
+    stat_threshold: NonNullScalar,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    min_distance: NonNullScalar = ...,
+    return_label_maps: Literal[True] = ...,
+) -> tuple[pd.DataFrame, list[Nifti1Image]]: ...
+
+
+@overload
+def get_clusters_table(
+    stat_img: SurfaceImage,
+    stat_threshold: NonNullScalar,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    min_distance: NonNullScalar = ...,
+    return_label_maps: Literal[False] = ...,
+) -> pd.DataFrame: ...
+
+
+@overload
+def get_clusters_table(
+    stat_img: SurfaceImage,
+    stat_threshold: NonNullScalar,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    min_distance: NonNullScalar = ...,
+    return_label_maps: Literal[True] = ...,
+) -> tuple[pd.DataFrame, list[SurfaceImage]]: ...
+
+
 @fill_doc
 def get_clusters_table(
-    stat_img,
-    stat_threshold: float | int | np.floating | np.integer,
+    stat_img: NiimgLike | SurfaceImage,
+    stat_threshold: NonNullScalar,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
-    min_distance: float | int | np.floating | np.integer = 8.0,
+    min_distance: NonNullScalar = 8.0,
     return_label_maps: bool = False,
+) -> (
+    pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image] | list[SurfaceImage]]
 ):
     """Create pandas dataframe with img cluster statistics.
 
@@ -323,10 +370,27 @@ def get_clusters_table(
 
         .. nilearn_versionadded:: 0.10.1
 
+    Examples
+    --------
+    >>> from nilearn.datasets import load_sample_motor_activation_image
+    >>> from nilearn.reporting import get_clusters_table
+    >>>
+    >>> img = load_sample_motor_activation_image()
+    >>> table = get_clusters_table(img,
+    ...                            stat_threshold = 4,
+    ...                            cluster_threshold = 20,
+    ...                            two_sided = True,
+    ... )
+    >>> table.head()
+    Cluster   ID     X     Y     Z  Peak Stat Cluster Size (mm3)
+    0          1  42.0 -19.0  19.0   7.941345               7722
+    1         1a  33.0  -7.0  -2.0   7.905312
+    2         1b  42.0  -1.0  13.0   5.470704
+    3          2  39.0 -22.0  58.0   7.941345              36936
+    4         2a   6.0 -10.0  52.0   7.941345
+
     """
     check_params(locals())
-
-    is_volume = not isinstance(stat_img, SurfaceImage)
 
     stat_img = threshold_img(
         img=stat_img,
@@ -335,7 +399,7 @@ def get_clusters_table(
         two_sided=two_sided,
     )
 
-    if is_volume:
+    if not isinstance(stat_img, SurfaceImage):
         return _get_clusters_table_volume(
             stat_img,
             stat_threshold,
@@ -363,13 +427,13 @@ def get_clusters_table(
 
 
 def _get_clusters_table_surface(
-    stat_img,
-    stat_threshold,
+    stat_img: SurfaceImage,
+    stat_threshold: NonNullScalar,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
     return_label_maps: bool = False,
-    offset=1,
-):
+    offset: int = 1,
+) -> pd.DataFrame | tuple[pd.DataFrame, list[SurfaceImage]]:
     """Generate cluster table for surface data.
 
     When two_sided is True, this function calls itself recursively
@@ -387,7 +451,7 @@ def _get_clusters_table_surface(
     """
     data = {}
     all_clusters = []
-    label_maps = []
+    label_maps: list[SurfaceImage] = []
 
     if not two_sided:
         cols = [
@@ -447,13 +511,16 @@ def _get_clusters_table_surface(
                 cluster_threshold=cluster_threshold,
                 two_sided=False,
             )
-            clusters, label_map = _get_clusters_table_surface(
-                temp_stat_map,
-                stat_threshold * sign,
-                cluster_threshold=cluster_threshold,
-                two_sided=False,
-                return_label_maps=True,
-                offset=offset,
+            clusters, label_map = cast(
+                tuple[pd.DataFrame, list[SurfaceImage]],
+                _get_clusters_table_surface(
+                    temp_stat_map,
+                    stat_threshold * sign,
+                    cluster_threshold=cluster_threshold,
+                    two_sided=False,
+                    return_label_maps=True,
+                    offset=offset,
+                ),
             )
 
             offset += len(clusters)
@@ -472,13 +539,13 @@ def _get_clusters_table_surface(
 
 
 def _get_clusters_table_volume(
-    stat_img,
-    stat_threshold: float | int | np.floating | np.integer,
+    stat_img: Nifti1Image,
+    stat_threshold: NonNullScalar,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
-    min_distance: float | int | np.floating | np.integer = 8.0,
+    min_distance: NonNullScalar = 8.0,
     return_label_maps: bool = False,
-):
+) -> pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image]]:
     """Generate cluster table for volume data.
 
     For parameters, see `get_clusters_table`.
@@ -488,7 +555,7 @@ def _get_clusters_table_volume(
 
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
 
-    label_maps = []
+    label_maps: list[Nifti1Image] = []
 
     # check that stat_img is niimg-like object and 3D
     stat_img = check_niimg_3d(stat_img)
