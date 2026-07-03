@@ -127,6 +127,11 @@ class PlotlySurfaceFigure(SurfaceFigure):
             if output_file is not None:
                 self.output_file = output_file
 
+            if self.output_file is None:
+                raise ValueError(
+                    "You must provide an output file name to save the figure."
+                )
+
             try:
                 self.figure.write_image(self.output_file, **savefig_kwargs)
             except RuntimeError as e:
