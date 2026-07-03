@@ -44,19 +44,25 @@ from nilearn.datasets._utils import (
 from nilearn.datasets.struct import load_fsaverage
 from nilearn.image import check_niimg, get_data
 from nilearn.interfaces.bids import get_bids_files
-from nilearn.nilearn_typing import AvailableMeshes, DataDir, Verbose
+from nilearn.nilearn_typing import (
+    AvailableMeshes,
+    DataDir,
+    Resume,
+    Url,
+    Verbose,
+)
 from nilearn.surface import SurfaceImage
 
 
 @fill_doc
 def fetch_haxby(
-    data_dir=None,
-    subjects=(2,),
-    fetch_stimuli=False,
-    url=None,
-    resume=True,
-    verbose=1,
-):
+    data_dir: DataDir = None,
+    subjects: int | list[int] | tuple[int] = (2,),
+    fetch_stimuli: bool = False,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and loads complete haxby dataset.
 
     See :footcite:t:`Haxby2001`.
@@ -135,10 +141,16 @@ def fetch_haxby(
     """
     check_params(locals())
 
-    if isinstance(subjects, numbers.Number) and subjects > 6:
-        subjects = 6
+    if not isinstance(subjects, (int, list, tuple)):
+        raise TypeError(
+            "'subjects' must be an int, list of int, "
+            "or a tuple of int. "
+            f"Got {subjects.__class__.__name__}"
+        )
 
-    if subjects is not None and isinstance(subjects, (list, tuple)):
+    if isinstance(subjects, int) and subjects > 6:
+        subjects = 6
+    elif isinstance(subjects, (list, tuple)):
         for sub_id in subjects:
             check_parameter_in_allowed(
                 sub_id, [1, 2, 3, 4, 5, 6], "subject id"
@@ -176,10 +188,7 @@ def fetch_haxby(
     ]
     n_files = len(sub_files)
 
-    if subjects is None:
-        subjects = []
-
-    if isinstance(subjects, numbers.Number):
+    if isinstance(subjects, int):
         subject_mask = np.arange(1, subjects + 1)
     else:
         subject_mask = np.array(subjects)
@@ -285,7 +294,13 @@ def adhd_ids():
 
 
 @fill_doc
-def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
+def fetch_adhd(
+    n_subjects: int | None = 30,
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and load the ADHD :term:`resting-state` dataset.
 
     For more information
@@ -293,10 +308,10 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, default=30
+    n_subjects : :obj:`int` or None, default=30
         The number of subjects to load from maximum of 40 subjects.
-        By default, 30 subjects will be loaded. If None is given,
-        all 40 subjects will be loaded.
+        By default, 30 subjects will be loaded.
+        If None is given, all 40 subjects will be loaded.
 
     %(data_dir)s
 
@@ -369,12 +384,14 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     )[0]
 
     # Load the csv file
-    phenotypic = pd.read_table(phenotypic, delimiter=",")
-    phenotypic["Subject"] = phenotypic["Subject"].apply(lambda x: f"{x:07d}")
+    phenotypic_df = pd.read_table(phenotypic, delimiter=",")
+    phenotypic_df["Subject"] = phenotypic_df["Subject"].apply(
+        lambda x: f"{x:07d}"
+    )
 
     # Keep phenotypic information for selected subjects
-    mask = phenotypic["Subject"].apply(lambda x: str(x) in ids)
-    phenotypic = phenotypic[mask]
+    mask = phenotypic_df["Subject"].apply(lambda x: str(x) in ids)
+    phenotypic_df = phenotypic_df[mask]
 
     # Download dataset files
 
@@ -404,7 +421,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(
         func=functionals,
         confounds=confounds,
-        phenotypic=phenotypic,
+        phenotypic=phenotypic_df,
         description=fdescr,
         t_r=2.0,
     )
@@ -1894,11 +1911,13 @@ def fetch_surf_nki_enhanced(
 @fill_doc
 def load_nki(
     mesh: AvailableMeshes = "fsaverage5",
-    mesh_type="pial",
+    mesh_type: Literal[
+        "pial", "white_matter", "inflated", "sphere", "flat"
+    ] = "pial",
     n_subjects: int = 1,
     data_dir: DataDir = None,
-    url=None,
-    resume: bool = True,
+    url: Url = None,
+    resume: Resume = True,
     verbose=1,
 ) -> list[SurfaceImage]:
     """Load NKI enhanced surface data into a surface object.
