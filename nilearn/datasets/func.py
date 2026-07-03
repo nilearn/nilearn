@@ -986,13 +986,15 @@ def _is_valid_path(path, index, verbose):
 
 
 @fill_doc
-def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, verbose=1):
+def fetch_localizer_calculation_task(
+    n_subjects: int | None = 1, data_dir: DataDir = None, verbose: Verbose = 1
+) -> Bunch[str, Any]:
     """Fetch calculation task contrast maps from the localizer.
 
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, default=1
+    n_subjects : :obj:`int` or None, default=1
         The number of subjects to load. If None is given,
         all 94 subjects are used.
 
@@ -1036,7 +1038,9 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, verbose=1):
 
 
 @fill_doc
-def fetch_localizer_button_task(data_dir=None, verbose=1):
+def fetch_localizer_button_task(
+    data_dir: DataDir = None, verbose: Verbose = 1
+) -> Bunch[str, Any]:
     """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
