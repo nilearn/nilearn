@@ -12,7 +12,7 @@ import re
 import warnings
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
@@ -2126,7 +2126,7 @@ def fetch_development_fmri(
     data_dir=None,
     resume=True,
     verbose=1,
-    age_group="both",
+    age_group: Literal["adults", "child", "both"] = "both",
 ):
     """Fetch movie watching based brain development dataset (fMRI).
 
@@ -2344,7 +2344,9 @@ def _reduce_confounds(regressors, keep_confounds):
 
 
 @fill_doc
-def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
+def fetch_language_localizer_demo_dataset(
+    data_dir: DataDir = None, verbose: Verbose = 1
+) -> Bunch[str, Any]:
     """Download language localizer demo dataset.
 
     For more information
@@ -2380,7 +2382,9 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
 
     main_folder = "fMRI-language-localizer-demo-dataset"
 
-    data_dir = get_dataset_dir(main_folder, data_dir=data_dir, verbose=verbose)
+    dataset_dir = get_dataset_dir(
+        main_folder, data_dir=data_dir, verbose=verbose
+    )
 
     try:
         # The files_spec needed for fetch_files
@@ -2389,9 +2393,9 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
         ]
         # Only download if directory is empty
         # Directory will have been created by the call to get_dataset_dir above
-        if not list(data_dir.iterdir()):
+        if not list(dataset_dir.iterdir()):
             downloaded_files = fetch_files(
-                data_dir, files_spec, resume=True, verbose=verbose
+                dataset_dir, files_spec, resume=True, verbose=verbose
             )
             uncompress_file(downloaded_files[0])
     except Exception:
@@ -2401,22 +2405,28 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
         ]
         # Only download if directory is empty
         # Directory will have been created by the call to get_dataset_dir above
-        if not list(data_dir.iterdir()):
+        if not list(dataset_dir.iterdir()):
             downloaded_files = fetch_files(
-                data_dir, files_spec, resume=True, verbose=verbose
+                dataset_dir, files_spec, resume=True, verbose=verbose
             )
             uncompress_file(downloaded_files[0])
 
-    file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
+    file_list = [
+        str(path) for path in dataset_dir.rglob("*") if path.is_file()
+    ]
 
     description = get_dataset_descr("language_localizer_demo")
     return Bunch(
-        data_dir=str(data_dir), func=sorted(file_list), description=description
+        data_dir=str(dataset_dir),
+        func=sorted(file_list),
+        description=description,
     )
 
 
 @fill_doc
-def fetch_ds000030_urls(data_dir: DataDir = None, verbose: Verbose = 1):
+def fetch_ds000030_urls(
+    data_dir: DataDir = None, verbose: Verbose = 1
+) -> tuple[str, list[str]]:
     """Fetch URLs for files from the ds000030 :term:`BIDS` dataset.
 
     .. nilearn_versionadded:: 0.9.2
