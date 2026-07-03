@@ -121,7 +121,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         kwargs: :obj:`dict`
             Extra keyword arguments are passed to
-            :func:`plotly.graph_objects.Figure.write_image`.
+            `plotly.graph_objects.Figure.write_image`
         """
         if self.figure is not None:
             if output_file is not None:
