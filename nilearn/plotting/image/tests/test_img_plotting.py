@@ -237,6 +237,7 @@ def test_plotting_functions_with_display_mode_tiled(plot_func, img_3d_mni):
 def test_plot_symmetric_colorbar_threshold(
     tmp_path, plot_func, threshold, expected_ticks
 ):
+    """Test colorbar ticks for a symmetric threshold."""
     img_data = np.zeros((10, 10, 10))
     img_data[4:6, 2:4, 4:6] = -10
     img_data[5:7, 3:7, 3:6] = 10
@@ -268,6 +269,7 @@ def test_plot_symmetric_colorbar_threshold(
 def test_plot_asymmetric_colorbar_threshold(
     tmp_path, plot_func, threshold, expected_ticks
 ):
+    """Test colorbar ticks for an asymmetric threshold."""
     img_data = np.zeros((10, 10, 10))
     img_data[4:6, 2:4, 4:6] = 5
     img_data[5:7, 3:7, 3:6] = 10
