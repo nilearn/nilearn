@@ -2416,7 +2416,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
 
 
 @fill_doc
-def fetch_ds000030_urls(data_dir=None, verbose=1):
+def fetch_ds000030_urls(data_dir: DataDir = None, verbose: Verbose = 1):
     """Fetch URLs for files from the ds000030 :term:`BIDS` dataset.
 
     .. nilearn_versionadded:: 0.9.2
@@ -2468,15 +2468,15 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
     DATA_PREFIX = "ds000030/ds000030_R1.0.4/uncompressed"
     FILE_URL = "https://osf.io/86xj7/download"
 
-    data_dir = get_dataset_dir(
+    dataset_dir = get_dataset_dir(
         DATA_PREFIX,
         data_dir=data_dir,
         verbose=verbose,
     )
 
-    final_download_path = data_dir / "urls.json"
+    final_download_path = dataset_dir / "urls.json"
     downloaded_file_path = fetch_files(
-        data_dir=data_dir,
+        data_dir=dataset_dir,
         files=[
             (
                 final_download_path,
@@ -2494,8 +2494,11 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
 
 
 def select_from_index(
-    urls, inclusion_filters=None, exclusion_filters=None, n_subjects=None
-):
+    urls: list[str],
+    inclusion_filters: list[str] | None = None,
+    exclusion_filters: list[str] | None = None,
+    n_subjects: int | None = None,
+) -> list[str]:
     """Select subset of urls with given filters.
 
     Parameters
@@ -2523,7 +2526,7 @@ def select_from_index(
         For example the filter '*task-rest*' would discard all urls
         that contain the 'task-rest' string.
 
-    n_subjects : :obj:`int`, default=None
+    n_subjects : :obj:`int` or None, default=None
         Number of subjects to download from the dataset. All by default.
 
     Returns
@@ -2544,26 +2547,30 @@ def select_from_index(
     # from the url list we infer all available subjects like 'sub-xxx/'
     subject_regex = "sub-[a-z|A-Z|0-9]*[_./]"
 
-    def infer_subjects(urls):
+    def infer_subjects(urls: list[str]) -> list[str]:
         subjects = set()
         for url in urls:
             if "sub-" in url:
-                subjects.add(re.search(subject_regex, url)[0][:-1])
+                tmp = re.search(subject_regex, url)
+                if tmp is not None:
+                    subjects.add(tmp[0][:-1])
         return sorted(subjects)
 
     # We get a list of subjects (for the moment the first n subjects)
     selected_subjects = set(infer_subjects(urls)[:n_subjects])
+
     # We exclude urls of subjects not selected
-    urls = [
-        url
-        for url in urls
-        if "sub-" not in url
-        or re.search(subject_regex, url)[0][:-1] in selected_subjects
-    ]
+    def subject_selected(url: str) -> bool:
+        if "sub-" not in url:
+            return True
+        match = re.search(subject_regex, url)
+        return match is not None and match[0][:-1] in selected_subjects
+
+    urls = [url for url in urls if subject_selected(url)]
     return urls
 
 
-def patch_openneuro_dataset(file_list) -> None:
+def patch_openneuro_dataset(file_list: list[str]) -> None:
     """Add symlinks for files not named according to :term:`BIDS` conventions.
 
     .. warning::
