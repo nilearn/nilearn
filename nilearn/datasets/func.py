@@ -1304,7 +1304,7 @@ def fetch_abide_pcp(
 
     # General file: phenotypic information
     dataset_name = "ABIDE_pcp"
-    data_dir = get_dataset_dir(
+    dataset_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
@@ -1323,7 +1323,9 @@ def fetch_abide_pcp(
     # Fetch the phenotypic file and load it
     csv = "Phenotypic_V1_0b_preprocessed1.csv"
     path_csv = Path(
-        fetch_files(data_dir, [(csv, f"{url}/{csv}", {})], verbose=verbose)[0]
+        fetch_files(dataset_dir, [(csv, f"{url}/{csv}", {})], verbose=verbose)[
+            0
+        ]
     )
 
     # Note: the phenotypic file contains string that contains comma which mess
@@ -1340,29 +1342,28 @@ def fetch_abide_pcp(
             for line in pheno_f
         )
     # bytes (encode()) needed for python 2/3 compat with numpy
-    pheno = "\n".join(pheno).encode()  # type: ignore[assignment]
-    pheno = BytesIO(pheno)  # type: ignore[assignment, arg-type]
-    pheno = pd.read_csv(pheno, comment="$")  # type: ignore[assignment, call-overload]
+    pheno_as_bytes = "\n".join(pheno).encode()
+    pheno_df = pd.read_csv(BytesIO(pheno_as_bytes), comment="$")
 
     # First, filter subjects with no filename
-    pheno = pheno[pheno["FILE_ID"] != "no_filename"]
+    pheno_df = pheno_df[pheno_df["FILE_ID"] != "no_filename"]
     # Apply user defined filters
-    user_filter = filter_columns(pheno, kwargs)
-    pheno = pheno[user_filter]
+    user_filter = filter_columns(pheno_df, kwargs)
+    pheno_df = pheno_df[user_filter]
 
     # Go into specific data folder and url
-    data_dir = data_dir / pipeline / strategy  # type: ignore[operator]
+    dataset_dir = dataset_dir / pipeline / strategy
     url = f"{url}/Outputs/{pipeline}/{strategy}"
 
     # Get the files
-    file_ids = pheno["FILE_ID"].tolist()
+    file_ids = pheno_df["FILE_ID"].tolist()
     if n_subjects is not None:
         file_ids = file_ids[:n_subjects]
-        pheno = pheno[:n_subjects]
+        pheno_df = pheno_df[:n_subjects]
 
     results = {
         "description": get_dataset_descr(dataset_name),
-        "phenotypic": pheno,
+        "phenotypic": pheno_df,
     }
     for derivative in derivatives:
         ext = ".1D" if derivative.startswith("rois") else ".nii.gz"
@@ -1377,7 +1378,7 @@ def fetch_abide_pcp(
                     {},
                 )
             ]
-            files.append(fetch_files(data_dir, file_, verbose=verbose)[0])
+            files.append(fetch_files(dataset_dir, file_, verbose=verbose)[0])
         # Load derivatives if needed
         if ext == ".1D":
             files = [np.loadtxt(f) for f in files]
@@ -1871,15 +1872,15 @@ def fetch_surf_nki_enhanced(
     )[0]
 
     # Load the csv file
-    phenotypic = pd.read_csv(  # type: ignore[assignment]
+    phenotypic_df = pd.read_csv(  # type: ignore[assignment]
         phenotypic,
         header=1,
         names=["Subject", "Age", "Dominant Hand", "Sex"],
     )
 
     # Keep phenotypic information for selected subjects
-    mask = phenotypic["Subject"].apply(lambda x: str(x) in ids)
-    phenotypic = phenotypic[mask]
+    mask = phenotypic_df["Subject"].apply(lambda x: str(x) in ids)
+    phenotypic_df = phenotypic_df[mask]
 
     # Download subjects' datasets
     func_right = []
@@ -1918,7 +1919,7 @@ def fetch_surf_nki_enhanced(
     return Bunch(
         func_left=func_left,
         func_right=func_right,
-        phenotypic=phenotypic,
+        phenotypic=phenotypic_df,
         description=fdescr,
     )
 
