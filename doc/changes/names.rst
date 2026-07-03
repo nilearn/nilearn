@@ -24,6 +24,8 @@
 
 .. _Alexis Thual: https://github.com/alexisthual
 
+.. _Alice Schiavone: https://aliswh.github.io
+
 .. _Alisha Kodibagkar: https://github.com/alishakodibagkar/
 
 
