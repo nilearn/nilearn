@@ -58,6 +58,7 @@ Some other past or present contributors are:
 * `Alexandre Cionca`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
 * `Alexandre Sayal`_: CIBIT, University of Coimbra, Portugal
 * `Alexis Thual`_: Inria, Saclay, France
+* `Alice Schiavone`_: University of Copenhagen
 * `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
 * Amadeus Kanaan
 * `Ana Luisa Pinho`_: Western University, London, Ontario, Canada
