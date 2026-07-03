@@ -462,7 +462,9 @@ def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
     not (is_plotly_installed() and is_kaleido_installed()),
     reason="This test requires plotly and kaleido to be installed",
 )
-@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.mpl_image_compare(
+    tolerance=5, savefig_kwargs={}, deterministic=False
+)
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
