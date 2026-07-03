@@ -13,6 +13,7 @@ from collections.abc import Container
 from copy import copy, deepcopy
 from pathlib import Path
 from tempfile import mkdtemp
+from typing import Any, Literal
 from urllib.parse import urlencode, urljoin
 
 import numpy as np
@@ -27,6 +28,7 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn.image import resample_img
+from nilearn.nilearn_typing import DataDir, Verbose
 
 from ._utils import (
     fetch_single_file,
@@ -2452,8 +2454,8 @@ def _fetch_neurovault_implementation(
     image_filter=_empty_filter,
     collection_ids=None,
     image_ids=None,
-    mode="download_new",
-    data_dir=None,
+    mode: Literal["download_new", "overwrite", "offline"] = "download_new",
+    data_dir: DataDir = None,
     fetch_neurosynth_words=False,
     resample=False,
     interpolation="continuous",
@@ -2506,20 +2508,20 @@ def _fetch_neurovault_implementation(
 
 @fill_doc
 def fetch_neurovault(
-    max_images=_DEFAULT_MAX_IMAGES,
-    collection_terms=None,
+    max_images: int = _DEFAULT_MAX_IMAGES,
+    collection_terms: dict | None = None,
     collection_filter=_empty_filter,
-    image_terms=None,
+    image_terms: dict | None = None,
     image_filter=_empty_filter,
-    mode="download_new",
-    data_dir=None,
-    fetch_neurosynth_words=False,
-    resample=False,
-    vectorize_words=True,
-    timeout=_DEFAULT_TIME_OUT,
-    verbose=3,
+    mode: Literal["download_new", "overwrite", "offline"] = "download_new",
+    data_dir: DataDir = None,
+    fetch_neurosynth_words: bool = False,
+    resample: bool = False,
+    vectorize_words: bool = True,
+    timeout: float = _DEFAULT_TIME_OUT,
+    verbose: Verbose = 3,
     **kwarg_image_filters,
-):
+) -> Bunch[str, Any]:
     """Download data from neurovault.org that match certain criteria.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -2756,14 +2758,14 @@ def fetch_neurovault(
 def fetch_neurovault_ids(
     collection_ids=(),
     image_ids=(),
-    mode="download_new",
-    data_dir=None,
-    fetch_neurosynth_words=False,
-    resample=False,
-    vectorize_words=True,
-    timeout=_DEFAULT_TIME_OUT,
-    verbose=3,
-):
+    mode: Literal["download_new", "overwrite", "offline"] = "download_new",
+    data_dir: DataDir = None,
+    fetch_neurosynth_words: bool = False,
+    resample: bool = False,
+    vectorize_words: bool = True,
+    timeout: float = _DEFAULT_TIME_OUT,
+    verbose: Verbose = 3,
+) -> Bunch[str, Any]:
     """Download specific images and collections from neurovault.org.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -2873,8 +2875,10 @@ def fetch_neurovault_ids(
 
 @fill_doc
 def fetch_neurovault_auditory_computation_task(
-    data_dir=None, verbose=1, timeout=_DEFAULT_TIME_OUT
-):
+    data_dir: DataDir = None,
+    verbose: Verbose = 1,
+    timeout: float = _DEFAULT_TIME_OUT,
+) -> Bunch[str, Any]:
     """Fetch a :term:`contrast` map from :term:`Neurovault` showing \
     the effect of mental subtraction upon auditory instructions.
 
