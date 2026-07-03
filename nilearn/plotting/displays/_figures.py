@@ -111,9 +111,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             else:
                 self.figure.show(renderer=renderer)
 
-    def savefig(
-        self, output_file: OutputFile = None, **savefig_kwargs
-    ) -> None:
+    def savefig(self, output_file: OutputFile = None, **kwargs) -> None:
         """Save the figure to file.
 
         Parameters
@@ -121,7 +119,9 @@ class PlotlySurfaceFigure(SurfaceFigure):
         output_file : :obj:`str` or None, default=None
             Path to output file.
 
-        savefig_kwargs:
+        kwargs: :obj:`dict`
+            Extra keyword arguments are passed to
+            :func:`plotly.graph_objects.Figure.write_image`.
         """
         if self.figure is not None:
             if output_file is not None:
@@ -133,7 +133,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                 )
 
             try:
-                self.figure.write_image(self.output_file, **savefig_kwargs)
+                self.figure.write_image(self.output_file, **kwargs)
             except RuntimeError as e:
                 kaleido_spec = find_spec("kaleido")
                 if "Kaleido requires Google Chrome" in str(e) or kaleido_spec:
