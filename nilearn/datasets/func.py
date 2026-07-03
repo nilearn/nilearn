@@ -12,6 +12,7 @@ import re
 import warnings
 from io import BytesIO
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -43,7 +44,7 @@ from nilearn.datasets._utils import (
 from nilearn.datasets.struct import load_fsaverage
 from nilearn.image import check_niimg, get_data
 from nilearn.interfaces.bids import get_bids_files
-from nilearn.nilearn_typing import AvailableMeshes, DataDir
+from nilearn.nilearn_typing import AvailableMeshes, DataDir, Verbose
 from nilearn.surface import SurfaceImage
 
 
@@ -2828,10 +2829,10 @@ def _download_spm_auditory_data(data_dir, verbose):
 
 @fill_doc
 def fetch_spm_auditory(
-    data_dir=None,
-    data_name="spm_auditory",
-    verbose=1,
-):
+    data_dir: DataDir = None,
+    data_name: str = "spm_auditory",
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Fetch :term:`SPM` auditory single-subject data.
 
     See :footcite:t:`spm_auditory`.
@@ -2876,23 +2877,25 @@ def fetch_spm_auditory(
     """
     check_params(locals())
 
-    data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
+    dataset_dir = get_dataset_dir(
+        data_name, data_dir=data_dir, verbose=verbose
+    )
 
-    if not (data_dir / "MoAEpilot" / "sub-01").exists():
-        _download_spm_auditory_data(data_dir, verbose)
+    if not (dataset_dir / "MoAEpilot" / "sub-01").exists():
+        _download_spm_auditory_data(dataset_dir, verbose)
 
     anat = get_bids_files(
-        main_path=data_dir / "MoAEpilot",
+        main_path=dataset_dir / "MoAEpilot",
         modality_folder="anat",
         file_tag="T1w",
     )[0]
     func = get_bids_files(
-        main_path=data_dir / "MoAEpilot",
+        main_path=dataset_dir / "MoAEpilot",
         modality_folder="func",
         file_tag="bold",
     )
     events = get_bids_files(
-        main_path=data_dir / "MoAEpilot",
+        main_path=dataset_dir / "MoAEpilot",
         modality_folder="func",
         file_tag="events",
     )[0]
@@ -3049,10 +3052,10 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
 
 @fill_doc
 def fetch_spm_multimodal_fmri(
-    data_dir=None,
-    data_name="spm_multimodal_fmri",
-    verbose=1,
-):
+    data_dir: DataDir = None,
+    data_name: str = "spm_multimodal_fmri",
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Fetcher for Multi-modal Face Dataset.
 
     For more information,
@@ -3099,9 +3102,11 @@ def fetch_spm_multimodal_fmri(
     """
     check_params(locals())
 
-    data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
+    dataset_dir = get_dataset_dir(
+        data_name, data_dir=data_dir, verbose=verbose
+    )
     subject_id = "sub001"
-    subject_dir = data_dir / subject_id
+    subject_dir = dataset_dir / subject_id
 
     description = get_dataset_descr("spm_multimodal")
 
@@ -3109,7 +3114,7 @@ def fetch_spm_multimodal_fmri(
     data = _glob_spm_multimodal_fmri_data(subject_dir, verbose)
     if data is None:
         # No. Download the data
-        data = _download_data_spm_multimodal(data_dir, subject_dir, verbose)
+        data = _download_data_spm_multimodal(dataset_dir, subject_dir, verbose)
 
     data.description = description
     data.t_r = 2
@@ -3117,7 +3122,9 @@ def fetch_spm_multimodal_fmri(
 
 
 @fill_doc
-def fetch_fiac_first_level(data_dir=None, verbose=1):
+def fetch_fiac_first_level(
+    data_dir: DataDir = None, verbose: Verbose = 1
+) -> Bunch[str, Any]:
     """Download a first-level fiac :term:`fMRI` dataset (2 runs).
 
     For more information
@@ -3150,14 +3157,14 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     """
     check_params(locals())
 
-    data_dir = get_dataset_dir(
+    dataset_dir = get_dataset_dir(
         "fiac_nilearn.glm", data_dir=data_dir, verbose=verbose
     )
 
     def _glob_fiac_data(verbose):
         """Glob data from subject_dir."""
         _subject_data = {}
-        subject_dir = data_dir / "nipy-data-0.2/data/fiac/fiac0"
+        subject_dir = dataset_dir / "nipy-data-0.2/data/fiac/fiac0"
         for run in [1, 2]:
             # glob func data for session
             session_func = subject_dir / f"run{int(run)}.nii.gz"
@@ -3204,8 +3211,8 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     logger.log("Data absent, downloading...", verbose=verbose)
     url = "https://nipy.org/data-packages/nipy-data-0.2.tar.gz"
 
-    archive_path = data_dir / Path(url).name
-    fetch_single_file(url, data_dir)
+    archive_path = dataset_dir / Path(url).name
+    fetch_single_file(url, dataset_dir)
     try:
         uncompress_file(archive_path)
     except Exception:
