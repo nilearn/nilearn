@@ -41,21 +41,15 @@ def test_plotly_surface_figure_savefig_error(plotly):
         )
 
 
-@pytest.mark.skipif(
-    not is_kaleido_installed(),
-    reason="Kaleido is not installed; required for this test.",
-)
-def test_plotly_surface_figure():
+def test_plotly_surface_figure(plotly):
     """Test ValueError when saving a PlotlySurfaceFigure without specifying
     output file.
     """
-    ps = PlotlySurfaceFigure()
+    ps = PlotlySurfaceFigure(plotly.graph_objects.Figure())
     assert ps.output_file is None
-    assert ps.figure is None
-    ps.show()
+
     with pytest.raises(ValueError, match="You must provide an output file"):
         ps.savefig()
-    ps.savefig("foo.png")
 
 
 @pytest.mark.skipif(
