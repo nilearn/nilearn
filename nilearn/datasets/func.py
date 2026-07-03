@@ -23,6 +23,7 @@ from sklearn.utils import Bunch
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -42,9 +43,8 @@ from nilearn.datasets._utils import (
 from nilearn.datasets.struct import load_fsaverage
 from nilearn.image import check_niimg, get_data
 from nilearn.interfaces.bids import get_bids_files
+from nilearn.nilearn_typing import AvailableMeshes, DataDir
 from nilearn.surface import SurfaceImage
-
-from .._utils.numpy_conversions import csv_to_array
 
 
 @fill_doc
@@ -1892,14 +1892,14 @@ def fetch_surf_nki_enhanced(
 
 @fill_doc
 def load_nki(
-    mesh="fsaverage5",
+    mesh: AvailableMeshes = "fsaverage5",
     mesh_type="pial",
-    n_subjects=1,
-    data_dir=None,
+    n_subjects: int = 1,
+    data_dir: DataDir = None,
     url=None,
-    resume=True,
+    resume: bool = True,
     verbose=1,
-):
+) -> list[SurfaceImage]:
     """Load NKI enhanced surface data into a surface object.
 
     For more information
@@ -3222,7 +3222,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
 
 @functools.lru_cache
-def load_sample_motor_activation_image():
+def load_sample_motor_activation_image() -> str:
     """Load a single functional image showing motor activations.
 
     Returns

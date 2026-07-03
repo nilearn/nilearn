@@ -998,7 +998,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
 
 @fill_doc
-def fetch_coords_power_2011():
+def fetch_coords_power_2011() -> Bunch[str, pd.DataFrame | str]:
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
     See :footcite:t:`Power2011`.
@@ -1022,11 +1022,9 @@ def fetch_coords_power_2011():
     dataset_name = "power_2011"
     fdescr = get_dataset_descr(dataset_name)
     csv = PACKAGE_DIRECTORY / "data" / "power_2011.csv"
-    params = {"rois": pd.read_csv(csv), "description": fdescr}
-    params["rois"] = params["rois"].rename(
-        columns={c: c.lower() for c in params["rois"].columns}
-    )
-
+    rois = pd.read_csv(csv)
+    rois = rois.rename(columns={c: c.lower() for c in rois.columns})
+    params = {"rois": rois, "description": fdescr}
     return Bunch(**params)
 
 
@@ -1642,7 +1640,7 @@ def fetch_atlas_basc_multiscale_2015(
 
 
 @fill_doc
-def fetch_coords_dosenbach_2010(ordered_regions=True):
+def fetch_coords_dosenbach_2010(ordered_regions: bool = True) -> Bunch:
     """Load the Dosenbach et al 160 ROIs.
 
     These ROIs cover much of the cerebral cortex
@@ -1702,7 +1700,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
 
 
 @fill_doc
-def fetch_coords_seitzman_2018(ordered_regions=True):
+def fetch_coords_seitzman_2018(ordered_regions: bool = True) -> Bunch:
     """Load the Seitzman et al. 300 ROIs.
 
     These ROIs cover cortical, subcortical and cerebellar regions and are

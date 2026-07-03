@@ -18,7 +18,6 @@ To expand the functionality of check_params you need to:
 
 import pathlib
 from collections.abc import Callable
-from pathlib import Path
 from typing import Literal, TypeAlias
 
 import numpy as np
@@ -32,6 +31,14 @@ NonNullScalar: TypeAlias = float | np.floating | Integer
 Scalar: TypeAlias = NonNullScalar | None
 
 Annotate: TypeAlias = bool
+AvailableMeshes: TypeAlias = Literal[
+    "fsaverage3",
+    "fsaverage4",
+    "fsaverage5",
+    "fsaverage6",
+    "fsaverage7",
+    "fsaverage",
+]
 BgOnData: TypeAlias = bool
 BorderSize: TypeAlias = Integer
 ColorBar: TypeAlias = bool
@@ -78,7 +85,7 @@ MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
 MemoryLevel: TypeAlias = Integer
 NJobs: TypeAlias = Integer
 NPerm: TypeAlias = Integer
-NiimgLike: TypeAlias = Nifti1Image | str | Path
+NiimgLike: TypeAlias = Nifti1Image | str | pathlib.Path
 Opening: TypeAlias = bool | Integer
 OutputFile: TypeAlias = str | pathlib.Path | None
 Radiological: TypeAlias = bool
