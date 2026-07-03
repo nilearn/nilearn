@@ -1640,7 +1640,9 @@ def fetch_atlas_basc_multiscale_2015(
 
 
 @fill_doc
-def fetch_coords_dosenbach_2010(ordered_regions: bool = True) -> Bunch:
+def fetch_coords_dosenbach_2010(
+    ordered_regions: bool = True,
+) -> Bunch[str, str | pd.DataFrame | list[str] | np.ndarray]:
     """Load the Dosenbach et al 160 ROIs.
 
     These ROIs cover much of the cerebral cortex
@@ -1700,7 +1702,9 @@ def fetch_coords_dosenbach_2010(ordered_regions: bool = True) -> Bunch:
 
 
 @fill_doc
-def fetch_coords_seitzman_2018(ordered_regions: bool = True) -> Bunch:
+def fetch_coords_seitzman_2018(
+    ordered_regions: bool = True,
+) -> Bunch[str, str | pd.DataFrame | np.ndarray]:
     """Load the Seitzman et al. 300 ROIs.
 
     These ROIs cover cortical, subcortical and cerebellar regions and are

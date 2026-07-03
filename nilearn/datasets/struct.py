@@ -526,7 +526,7 @@ def load_mni152_wm_mask(
 @fill_doc
 def fetch_icbm152_brain_gm_mask(
     data_dir: DataDir = None,
-    threshold=0.2,
+    threshold: float = 0.2,
     resume: Resume = True,
     n_iter: int = 2,
     verbose: Verbose = 1,
