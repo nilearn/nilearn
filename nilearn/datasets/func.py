@@ -2599,11 +2599,11 @@ def patch_openneuro_dataset(file_list) -> None:
 
 @fill_doc
 def fetch_openneuro_dataset(
-    urls=None,
-    data_dir=None,
-    dataset_version="ds000030_R1.0.4",
-    verbose=1,
-):
+    urls: list[str] | None = None,
+    data_dir: DataDir = None,
+    dataset_version: str = "ds000030_R1.0.4",
+    verbose: Verbose = 1,
+) -> tuple[str, list[str]]:
     """Download OpenNeuro :term:`BIDS` dataset.
 
     This function specifically downloads files from a series of URLs.
@@ -2682,7 +2682,7 @@ def fetch_openneuro_dataset(
             f"{DATASET_VERSION.split('_')[0]}/{DATASET_VERSION}/uncompressed"
         )
         orig_data_dir = data_dir
-        data_dir = get_dataset_dir(
+        dataset_dir = get_dataset_dir(
             data_prefix,
             data_dir=data_dir,
             verbose=verbose,
@@ -2696,14 +2696,14 @@ def fetch_openneuro_dataset(
         data_prefix = (
             f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
         )
-        data_dir = get_dataset_dir(
+        dataset_dir = get_dataset_dir(
             data_prefix,
             data_dir=data_dir,
             verbose=verbose,
         )
 
     # The files_spec needed for fetch_files
-    files_spec = []
+    files_spec: list[tuple[Path, str, dict]] = []
     files_dir = []
 
     # Check that data prefix is found in each URL
@@ -2718,7 +2718,7 @@ def fetch_openneuro_dataset(
 
     for url in urls:
         url_path = url.split(data_prefix + "/")[1]
-        file_dir = data_dir / url_path
+        file_dir = dataset_dir / url_path
         files_spec.append((file_dir.name, url, {}))
         files_dir.append(file_dir.parent)
 
@@ -2751,7 +2751,9 @@ def fetch_openneuro_dataset(
 
 
 @fill_doc
-def fetch_localizer_first_level(data_dir=None, verbose=1):
+def fetch_localizer_first_level(
+    data_dir: DataDir = None, verbose: Verbose = 1
+) -> Bunch[str, Any]:
     """Download a first-level localizer :term:`fMRI` dataset.
 
     For more information
