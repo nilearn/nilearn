@@ -183,7 +183,7 @@ report
 #
 # The NiftiMasker calls the :func:`nilearn.masking.compute_epi_mask` function
 # to compute the mask from the EPI.
-# It has two important parameters: lower_cutoff and upper_cutoff.
+# It has two important parameters: ``lower_cutoff`` and ``upper_cutoff``.
 # These set the grey-value bounds
 # in which the masking algorithm will search for its threshold
 # (0 being the minimum of the image and 1 the maximum).
@@ -243,7 +243,7 @@ report
 # After mask computation: extracting time series
 # ----------------------------------------------
 #
-# We extract time series detrended and non-detrended.
+# We extract detrended and non-detrended time series.
 trended_data = NiftiMasker(mask_strategy="epi", verbose=1).fit_transform(
     epi_img
 )
@@ -253,13 +253,13 @@ detrended_data = NiftiMasker(
 
 # %%
 # Once extracted,
-# the timeseries are numpy arrays, so we can manipulate them with numpy
+# the timeseries are numpy arrays, so we can use numpy operations on them.
 print(
-    f"Trended: mean {np.mean(trended_data):.2f}, "
+    f"Trended:\tmean {np.mean(trended_data):.2f},\t"
     f"std {np.std(trended_data):.2f}"
 )
 print(
-    f"Detrended: mean {np.mean(detrended_data):.2f}, "
+    f"Detrended:\tmean {np.mean(detrended_data):.2f},\t"
     f"std {np.std(detrended_data):.2f}"
 )
 
