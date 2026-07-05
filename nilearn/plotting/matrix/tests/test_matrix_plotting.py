@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from nilearn._utils.helpers import is_gil_enabled
+from nilearn.conftest import _n_regions
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
@@ -23,13 +24,15 @@ from nilearn.plotting.matrix.matrix_plotting import (
 
 
 @pytest.fixture
-def mat():
-    return np.zeros((10, 10))
+def mat(n_regions) -> np.ndarray:
+    """Return a dummy matrix for plotting."""
+    return np.zeros((n_regions, n_regions))
 
 
 @pytest.fixture
-def labels():
-    return [str(i) for i in range(10)]
+def labels(n_regions) -> list[str]:
+    """Return a list of dummy labels."""
+    return [str(i) for i in range(n_regions)]
 
 
 ##############################################################################
@@ -40,6 +43,7 @@ def labels():
     "fig,axes", [("foo", "bar"), (1, 2), plt.subplots(1, 1, figsize=(7, 5))]
 )
 def test_sanitize_figure_and_axes_error(fig, axes):
+    """Test that passing both figure and axes raises a ValueError."""
     with pytest.raises(
         ValueError,
         match=(r"Parameters figure and axes cannot be specified together."),
@@ -58,24 +62,26 @@ def test_sanitize_figure_and_axes_error(fig, axes):
     ],
 )
 def test_sanitize_figure_and_axes(fig, axes, expected):
+    """Test _sanitize_figure_and_axes with various figure/axes inputs."""
     fig2, axes2, own_fig = _sanitize_figure_and_axes(fig, axes)
     assert isinstance(fig2, plt.Figure)
     assert isinstance(axes2, plt.Axes)
     assert own_fig == expected
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
-    "matrix, labels, reorder",
+    "labels, reorder",
     [
-        (np.zeros((10, 10)), [0, 1, 2], False),
-        (np.zeros((10, 10)), None, True),
-        (np.zeros((10, 10)), [str(i) for i in range(10)], " "),
+        ([0, 1, 2], False),
+        (None, True),
+        ([str(i) for i in range(_n_regions())], " "),
     ],
 )
-def test_matrix_plotting_errors(matrix, labels, reorder):
+def test_matrix_plotting_errors(labels, reorder, mat):
     """Test invalid input values for plot_matrix."""
     with pytest.raises(ValueError):
-        plot_matrix(matrix, labels=labels, reorder=reorder)
+        plot_matrix(mat, labels=labels, reorder=reorder)
 
 
 @pytest.mark.thread_unsafe
@@ -93,6 +99,7 @@ def test_matrix_plotting_with_labels_and_different_tri(mat, labels, tri):
             assert tick.label1.get_text() == label
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("title", ["foo", "foo bar", " ", None])
 def test_matrix_plotting_set_title(mat, labels, title):
     """Test setting title with plot_matrix."""
@@ -105,8 +112,9 @@ def test_matrix_plotting_set_title(mat, labels, title):
         assert ax._axes.title.get_text() == title
 
 
+@pytest.mark.thread_unsafe
 def test_matrix_plotting_reorder(matplotlib_pyplot, mat, labels):  # noqa: ARG001
-    # test if reordering with default linkage works
+    """Test that reordering with default linkage works."""
     idx = [2, 3, 5]
     # make symmetric matrix of similarities so we can get a block
     for perm in permutations(idx, 2):
@@ -127,6 +135,7 @@ def test_matrix_plotting_reorder(matplotlib_pyplot, mat, labels):  # noqa: ARG00
     ax = plot_matrix(mat, labels=labels, reorder="complete")
 
 
+@pytest.mark.thread_unsafe
 def test_plot_matrix_empty_labels():
     """When all labels are empty, they are turned to None.
 
@@ -160,6 +169,7 @@ def test_save_design_matrix(tmp_path):
     assert (tmp_path / "dmtx.pdf").exists()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("suffix, sep", [(".csv", ","), (".tsv", "\t")])
 def test_plot_design_matrix_path_str(tmp_path, suffix, sep):
     """Test plot_design_matrix directly from file."""
@@ -294,6 +304,7 @@ def test_save_contrast_matrix(tmp_path):
     assert (tmp_path / "contrast.pdf").exists()
 
 
+@pytest.mark.thread_unsafe
 def test_show_contrast_matrix_axes():
     """Test poassing axes to plot_contrast_matrix."""
     frame_times = np.linspace(0, 127 * 1.0, 128)

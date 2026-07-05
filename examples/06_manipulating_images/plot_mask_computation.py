@@ -74,7 +74,7 @@ masker.fit(miyawaki_filename)
 #
 #   You can also note that after fitting,
 #   the HTML representation of the estimator looks different
-#   than before before fitting.
+#   than before fitting.
 #
 masker
 

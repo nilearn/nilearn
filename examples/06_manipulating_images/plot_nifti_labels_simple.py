@@ -56,12 +56,16 @@ masker = NiftiLabelsMasker(atlas.maps, lut=atlas.lut, verbose=1)
 #
 # We need to call fit prior to generating the mask.
 # We can then generate a report to visualize the atlas.
+# Here we use the 'brainsprite' engine
+# that gives an interactive vizualtion
+# instead of the static one generated
+# by the matplotlib engine.
 #
 # .. include:: ../../../examples/report_note.rst
 #
 masker.fit()
 
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
@@ -93,7 +97,7 @@ print(f"{signals.shape=}")
 # ----------------------------
 #
 # You can use 'set_output()' to decide the output format of 'transform'.
-# If you want to output to a DataFrame, you an choose pandas and polars.
+# If you want to output to a DataFrame, you can choose 'pandas' or 'polars'.
 #
 masker.set_output(transform="pandas")
 signals_df = masker.transform(func_filename)

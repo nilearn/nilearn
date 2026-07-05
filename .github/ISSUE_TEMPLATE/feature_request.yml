@@ -8,7 +8,9 @@ description: Got an idea for a new feature, or changing an existing one? This is
 
 title: '[ENH] '
 
-labels: [Enhancement]
+labels: [Needs Triage]
+
+type: Enhancement
 
 body:
 

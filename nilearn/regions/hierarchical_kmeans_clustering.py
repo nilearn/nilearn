@@ -339,6 +339,9 @@ class HierarchicalKMeans(
 
         self.sizes_ = sizes
         self.n_clusters = len(sizes)
+
+        self._n_features_out = self.n_clusters
+
         return self
 
     def __sklearn_is_fitted__(self) -> bool:
@@ -362,8 +365,7 @@ class HierarchicalKMeans(
         Returns
         -------
         X_red : : :obj:`numpy.ndarray`, \
-            :obj:`pandas.DataFrame` or \
-            `polars.DataFrame`
+            :obj:`pandas.DataFrame` or polars.DataFrame
             Data reduced with agglomerated signal for each cluster.
 
         The type of the output is determined by ``set_output()``:
@@ -418,6 +420,7 @@ class HierarchicalKMeans(
         """
         check_is_fitted(self)
 
+        X_red = check_array(X_red, estimator=self)
         X_red = X_red.T
         inverse = self.labels_
         if self.scaling:

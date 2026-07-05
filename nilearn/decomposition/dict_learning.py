@@ -6,6 +6,7 @@ constitutes output maps
 """
 
 import warnings
+from typing import get_args
 
 import numpy as np
 from sklearn.decomposition import dict_learning_online
@@ -19,8 +20,8 @@ from nilearn._utils.param_validation import (
     sanitize_verbose,
 )
 from nilearn.maskers import MultiNiftiMasker, MultiSurfaceMasker
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface import SurfaceImage
-from nilearn.typing import NiimgLike
 
 from ._base import _BaseDecomposition
 from .canica import CanICA
@@ -89,7 +90,7 @@ class DictLearning(_BaseDecomposition):
     %(mask_decomposition)s
 
     %(smoothing_fwhm)s
-        Default=4mm.
+        default=4mm.
 
     %(standardize_true)s
 
@@ -112,6 +113,10 @@ class DictLearning(_BaseDecomposition):
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
+
     %(target_affine)s
 
         .. note::
@@ -124,7 +129,7 @@ class DictLearning(_BaseDecomposition):
 
     %(mask_strategy)s
 
-        Default='epi'.
+        default='epi'.
 
         .. note::
             These strategies are only relevant for Nifti images and the
@@ -179,6 +184,7 @@ class DictLearning(_BaseDecomposition):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -199,6 +205,7 @@ class DictLearning(_BaseDecomposition):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             target_affine=target_affine,
             target_shape=target_shape,
             mask_strategy=mask_strategy,
@@ -324,7 +331,7 @@ class DictLearning(_BaseDecomposition):
                     MultiSurfaceMasker,
                     SurfaceImage,
                     MultiNiftiMasker,
-                    *NiimgLike,
+                    *get_args(NiimgLike),
                 ),
                 "mask",
             )

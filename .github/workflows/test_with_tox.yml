@@ -117,7 +117,7 @@ jobs:
                     env: pytest_mpl
 
         steps:
-        -   uses: actions/checkout@v6
+        -   uses: actions/checkout@v7
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -153,9 +153,16 @@ jobs:
                 tox run --list-dependencies -e ${{ matrix.env }} -- ${tests_to_run}
                 tox run -e plot_test_timing
 
+        -   name: Upload figures comparison
+            if: ${{ failure() &&  matrix.env == 'pytest_mpl'}}
+            uses: actions/upload-artifact@v7
+            with:
+                name: figure_diff
+                path: results
+
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
                 path: |
@@ -165,21 +172,21 @@ jobs:
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
 
         -   name: Upload html coverage
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_htmlcov
                 path: htmlcov
 
         -   name: Upload coverage to CodeCov
             if: success()
-            uses: codecov/codecov-action@v5
+            uses: codecov/codecov-action@v7
             with:
                 flags: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.env }}
                 token: ${{ secrets.CODECOV_TOKEN }}
@@ -205,7 +212,7 @@ jobs:
                 env: [pre]
 
         steps:
-        -   uses: actions/checkout@v6
+        -   uses: actions/checkout@v7
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -243,7 +250,7 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
                 path: |
@@ -253,7 +260,7 @@ jobs:
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v6
+            uses: actions/upload-artifact@v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
@@ -279,7 +286,7 @@ jobs:
                 env: [flaky]
 
         steps:
-        -   uses: actions/checkout@v6
+        -   uses: actions/checkout@v7
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}

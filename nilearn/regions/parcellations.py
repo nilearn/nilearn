@@ -17,17 +17,28 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     sanitize_verbose,
 )
 from nilearn.decomposition._multi_pca import _MultiPCA
-from nilearn.image.image import iter_check_niimg
+from nilearn.image.image import iter_check_niimg, new_img_like
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
 from nilearn.maskers.surface_labels_masker import signals_to_surf_img_labels
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
 from nilearn.regions.rena_clustering import ReNA, make_edges_surface
 from nilearn.surface import SurfaceImage
+
+
+def _apply_img_dtype(img, signals, dtype):
+    """Convert img data and header to target dtype derived from signals."""
+    target_dtype = get_target_dtype(signals.dtype, dtype)
+    if target_dtype is None:
+        target_dtype = signals.dtype
+    img = new_img_like(img, img.get_fdata().astype(target_dtype))
+    img.set_data_dtype(target_dtype)
+    return img
 
 
 def _connectivity_surface(mask_img):
@@ -224,7 +235,7 @@ class Parcellations(_MultiPCA):
         Number of parcels to divide the data into.
 
     %(random_state)s
-        Default=0.
+        default=0.
 
     mask : Niimg-like object,  \
         :obj:`~nilearn.maskers.NiftiMasker` or \
@@ -243,7 +254,7 @@ class Parcellations(_MultiPCA):
         for surface images, all the vertices will be used.
 
     %(smoothing_fwhm)s
-        Default=4.0.
+        default=4.0.
 
     %(standardize_false)s
 
@@ -257,7 +268,7 @@ class Parcellations(_MultiPCA):
             This parameter is passed to :func:`nilearn.signal.clean`.
             Please see the related documentation for details.
 
-        Default=False.
+        default=False.
 
     %(low_pass)s
 
@@ -301,7 +312,7 @@ class Parcellations(_MultiPCA):
              :func:`nilearn.masking.compute_epi_mask`, or
              :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='epi'.
+        default='epi'.
 
     mask_args : :obj:`dict`, default=None
         If mask is None, these are additional parameters passed to
@@ -623,6 +634,7 @@ class Parcellations(_MultiPCA):
                 memory=self.memory_,
                 memory_level=self.memory_level,
                 verbose=self.verbose,
+                dtype=self.dtype,
             )
         else:
             imgs_list = iter_check_niimg(imgs, atleast_4d=True)
@@ -639,6 +651,7 @@ class Parcellations(_MultiPCA):
                 memory=self.memory_,
                 memory_level=self.memory_level,
                 verbose=self.verbose,
+                dtype=self.dtype,
             )
 
         region_signals = Parallel(n_jobs=self.n_jobs)(
@@ -739,6 +752,10 @@ class Parcellations(_MultiPCA):
                 )(each_signal, self.labels_img_, self.mask_img_)
                 for each_signal in signals
             )
+            imgs = [
+                _apply_img_dtype(img, each_signal, self.dtype)
+                for img, each_signal in zip(imgs, signals, strict=False)
+            ]
 
         return imgs[0] if single_subject else imgs
 
@@ -781,5 +798,11 @@ class Parcellations(_MultiPCA):
                     f"Expected {expected_shape}.\n"
                     f"Got {signals.shape}."
                 )
+
+        if signals.dtype == bool:
+            warnings.warn(
+                "Casting boolean input to int32", stacklevel=find_stack_level()
+            )
+            signals = signals.astype(np.int32)
 
         return signals

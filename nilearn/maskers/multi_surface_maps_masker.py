@@ -52,6 +52,10 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
 
     %(t_r)s
 
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
+
     %(memory)s
 
     %(memory_level1)s
@@ -105,6 +109,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         n_jobs=1,
@@ -113,23 +118,6 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         cmap=DEFAULT_SEQUENTIAL_CMAP,
         clean_args=None,
     ):
-        self.maps_img = maps_img
-        self.mask_img = mask_img
-        self.allow_overlap = allow_overlap
-        self.smoothing_fwhm = smoothing_fwhm
-        self.standardize = standardize
-        self.standardize_confounds = standardize_confounds
-        self.high_variance_confounds = high_variance_confounds
-        self.detrend = detrend
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.memory = memory
-        self.memory_level = memory_level
-        self.verbose = verbose
-        self.reports = reports
-        self.cmap = cmap
-        self.clean_args = clean_args
         super().__init__(
             maps_img=maps_img,
             mask_img=mask_img,
@@ -142,6 +130,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
@@ -171,10 +160,11 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         if imgs is not None:
             self._check_imgs(imgs)

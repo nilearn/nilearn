@@ -24,8 +24,8 @@ from nilearn.image import (
     threshold_img,
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.nilearn_typing import ClusterThreshold, HeightControl
 from nilearn.surface.surface import SurfaceImage, check_surf_img
-from nilearn.typing import ClusterThreshold, HeightControl
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
 
@@ -110,6 +110,14 @@ def fdr_threshold(z_vals, alpha):
     -------
     threshold : :obj:`float`
         FDR-controling threshold from the Benjamini-Hochberg procedure.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm import fdr_threshold
+    >>> z_vals = np.array([4.0, 3.5, 2.8, 2.5, 1.9, 1.2])
+    >>> float(np.round(fdr_threshold(z_vals, alpha=0.05), 2))
+    1.9
 
     """
     if alpha < 0 or alpha > 1:
@@ -348,7 +356,7 @@ def threshold_stats_img(
 
               The given value should be within the range of minimum and maximum
               intensity of the input image.
-              All intensities in the interval ``[-threshold, threshold]``
+              All intensities in the interval ``(-threshold, threshold)``
               will be set to zero.
 
             - When ``two_sided`` is False:
@@ -357,16 +365,16 @@ def threshold_stats_img(
 
                 It should be greater than the minimum intensity
                 of the input data.
-                All intensities greater than or equal
-                to the specified threshold will be set to zero.
+                All intensities greater than the specified threshold will be
+                set to zero.
                 All other intensities keep their original values.
 
               - If the threshold is positive:
 
                 It should be less than the maximum intensity
                 of the input data.
-                All intensities less than or equal
-                to the specified threshold will be set to zero.
+                All intensities less than the specified threshold will be set
+                to zero.
                 All other intensities keep their original values.
 
     height_control : :obj:`str`, or None, default='fpr'
@@ -398,6 +406,28 @@ def threshold_stats_img(
     nilearn.image.threshold_img :
         Apply an explicit voxel-level (and optionally cluster-level) threshold
         without correction.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> data = np.array([[[0., 0.2, 0.8],
+    ...                   [1.5, 3.0, 0.1],
+    ...                   [0.4, 2.2, 0.0]]])
+    >>> img = Nifti1Image(data, affine=np.eye(4))
+    >>>
+    >>> # Now let's threshold the image.
+    >>> from nilearn.glm import threshold_stats_img
+    >>> from nilearn.image import get_data
+    >>> thresholded_img, _ = threshold_stats_img(
+    ...     img, threshold=1,
+    ...     height_control=None
+    ...  )
+    >>> data = get_data(thresholded_img)
+    >>> data
+    array([[[0. , 0. , 0. ],
+        [1.5, 3. , 0. ],
+        [0. , 2.2, 0. ]]])
 
     """
     if height_control is None:

@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
@@ -9,6 +10,8 @@ from sklearn.utils import Bunch
 
 from nilearn._utils.helpers import is_windows_platform
 from nilearn.datasets.struct import (
+    _apply_mesh_mapping,
+    _get_mesh_mapping,
     fetch_icbm152_2009,
     fetch_icbm152_brain_gm_mask,
     fetch_oasis_vbm,
@@ -155,8 +158,6 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path):
 @pytest.mark.parametrize(
     "mesh",
     [
-        "fsaverage3",
-        "fsaverage4",
         "fsaverage5",
         "fsaverage6",
         "fsaverage7",
@@ -164,6 +165,11 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path):
     ],
 )
 def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
+    """Test nilearn.datasets.fetch_surf_fsaverage for fsaverage5 to fsaverage7.
+
+    TODO: "fsaverage3" and "fsaverage4" should be added after the data with
+    correct order is updated in OSF.
+    """
     # Define attribute list that nilearn meshs should contain
     # (each attribute should eventually map to a _.gii.gz file
     # named after the attribute)
@@ -183,10 +189,8 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
         for side in ["left", "right"]
     }
 
-    # Mock fsaverage3, 4, 6, 7 download (with actual url)
+    # Mock fsaverage6 and 7 download (with actual url)
     fs_urls = [
-        "https://osf.io/azhdf/download",
-        "https://osf.io/28uma/download",
         "https://osf.io/jzxyr/download",
         "https://osf.io/svf8k/download",
     ]
@@ -223,3 +227,91 @@ def test_load_fsaverage_data_errors():
         load_fsaverage_data(mesh_type="foo")
     with pytest.raises(ValueError, match="'data_type' must be one of"):
         load_fsaverage_data(data_type="foo")
+
+
+def test_get_mesh_mapping():
+    """Test nilearn.datasets.struct._get_mesh_mapping."""
+    arr = np.array(
+        [
+            [-38.7, -19.3, 67.2],
+            [-9.7, -9.2, 46.6],
+            [-24.0, 43.1, 23.9],
+            [-59.9, 0.0, 9.0],
+            [-50.6, -49.4, 47.8],
+            [-16.7, -69.1, 61.3],
+            [-20.2, -62.7, 6.2],
+            [-2.5, 9.4, -4.6],
+            [-29.0, 23.4, -6.7],
+            [-54.5, -22.9, -6.7],
+            [-36.6, -87.1, -1.8],
+        ]
+    )
+
+    arr2 = np.array(
+        [
+            [-38.7, -19.3, 67.2],
+            [-16.7, -69.1, 61.3],
+            [-9.7, -9.2, 46.6],
+            [-24.0, 43.1, 23.9],
+            [-59.9, 0.0, 9.0],
+            [-50.6, -49.4, 47.8],
+            [-36.6, -87.1, -1.8],
+            [-20.2, -62.7, 6.2],
+            [-2.5, 9.4, -4.6],
+            [-29.0, 23.4, -6.7],
+            [-54.5, -22.9, -6.7],
+            [-35.2, -25.0, -25.6],
+            [-55.2, -7.4, 38.7],
+            [-38.6, 23.4, 24.3],
+            [-30.0, 11.1, 56.6],
+            [-49.8, -28.2, 53.7],
+        ]
+    )
+
+    mapping = _get_mesh_mapping(arr, arr2)
+
+    assert np.array_equal(
+        mapping, np.array([0, 5, 1, 2, 3, 4, 10, 6, 7, 8, 9])
+    )
+
+
+def test_apply_mesh_mapping():
+    """Test nilearn.datasets.struct._apply_mesh_mapping."""
+    mapping = [0, 5, 1, 2, 3, 4, 10, 6, 7, 8, 9]
+
+    arr = np.array(
+        [
+            [-38.7, -19.3, 67.2],
+            [-9.7, -9.2, 46.6],
+            [-24.0, 43.1, 23.9],
+            [-59.9, 0.0, 9.0],
+            [-50.6, -49.4, 47.8],
+            [-16.7, -69.1, 61.3],
+            [-20.2, -62.7, 6.2],
+            [-2.5, 9.4, -4.6],
+            [-29.0, 23.4, -6.7],
+            [-54.5, -22.9, -6.7],
+            [-36.6, -87.1, -1.8],
+        ]
+    )
+
+    reordered, _ = _apply_mesh_mapping(mapping, arr, None)
+
+    assert np.array_equal(
+        reordered,
+        np.array(
+            [
+                [-38.7, -19.3, 67.2],
+                [-16.7, -69.1, 61.3],
+                [-9.7, -9.2, 46.6],
+                [-24.0, 43.1, 23.9],
+                [-59.9, 0.0, 9.0],
+                [-50.6, -49.4, 47.8],
+                [-36.6, -87.1, -1.8],
+                [-20.2, -62.7, 6.2],
+                [-2.5, 9.4, -4.6],
+                [-29.0, 23.4, -6.7],
+                [-54.5, -22.9, -6.7],
+            ]
+        ),
+    )

@@ -25,11 +25,15 @@ More specifically:
 # %%
 # Fetch openneuro :term:`BIDS` dataset
 # ------------------------------------
-# We download one subject from the stopsignal task
-# in the ds000030 V4 :term:`BIDS` dataset available in openneuro.
+# We download one subject from the ``stopsignal`` task
+# in the ds000030 :term:`BIDS` dataset available in openneuro.
 # This dataset contains the necessary information to run a statistical analysis
 # using Nilearn. The dataset also contains statistical results from a previous
 # FSL analysis that we can employ for comparison with the Nilearn estimation.
+#
+# For more information,
+# see the :ref:`dataset description <ds000030>`.
+#
 from nilearn.datasets import (
     fetch_ds000030_urls,
     fetch_openneuro_dataset,
@@ -86,6 +90,7 @@ derivatives_folder = "derivatives/fmriprep"
     data_dir,
     task_label,
     space_label,
+    mask_img="derivatives",
     smoothing_fwhm=5.0,
     derivatives_folder=derivatives_folder,
     n_jobs=2,

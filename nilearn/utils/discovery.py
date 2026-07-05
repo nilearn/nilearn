@@ -28,7 +28,7 @@ _MODULE_TO_IGNORE = {
 
 def _skip_module(module_name: str):
     module_parts = module_name.split(".")
-    return bool(
+    return (
         any(part in _MODULE_TO_IGNORE for part in module_parts)
         or "._" in module_name
     )
@@ -103,6 +103,15 @@ def all_estimators(type_filter=None):
         where ``name`` is the class name as string
         and ``class`` is the actual type of the class.
 
+    Examples
+    --------
+    >>> from nilearn.utils import all_estimators
+    >>> estimators = all_estimators()
+    >>> len(estimators)
+    33
+    >>> estimators[0]
+    ('BaseGLM', <class 'nilearn.glm._base.BaseGLM'>)
+
     """
     # TODO: add GLM?
     allowed_filters = {
@@ -173,6 +182,20 @@ def all_functions():
         where ``name`` is the function name as string
         and ``function`` is the actual function.
 
+    Examples
+    --------
+    >>> from nilearn.utils import all_functions
+    >>>
+    >>> functions = all_functions()
+    >>>
+    >>> # Several functions are only accessible if matplotlib is installed.
+    >>> try:
+    ...     import matplotlib
+    ...
+    ...     assert len(functions) == 172, len(functions)
+    ... except ImportError:
+    ...     assert len(functions) == 138, len(functions)
+
     """
     all_functions = []
     # Ignore deprecation warnings triggered at import time and from walking
@@ -226,6 +249,19 @@ def all_displays(type_filter=None):
     displays : list of tuples
         List of (name, class), where ``name`` is the display class name as
         string and ``class`` is the actual type of the class.
+
+    Examples
+    --------
+    >>> from nilearn.utils import all_displays
+    >>> displays = all_displays()
+    >>>
+    >>> # Displays are only accessible if matplotlib is installed.
+    >>> try:
+    ...     import matplotlib
+    ...     assert len(displays) == 27
+    ... except ImportError:
+    ...     assert len(displays) == 0
+
     """
     if not is_matplotlib_installed():
         return []

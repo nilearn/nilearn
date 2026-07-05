@@ -42,22 +42,24 @@ build
 dist/
 nilearn/_version.py
 
+
 # notebooks
 .ipynb_checkpoints
 
 # virtual environment
-env/
-venv/
+env*/
+venv*/
 
 # testing
+.nyc_output
+.puppeteerEndpoint
 .pytest_cache
+*diff.png
+report*.html
 tests_to_run.txt
-# do not use report*.html below
-# otherwise some of the report*.html files used in masker reports
-# are ignored from package build
-report.html
-report_doc.html
-report_slow.html
+tests/js/*.html
+tests/js/*.png
+
 
 # CI benchmark
 maint_tools/*_runs_timing.*
@@ -80,18 +82,22 @@ doc/modules/generated_reports/*.html
 doc/modules/description
 doc/sg_execution_times.rst
 doc/themes/nilearn/static/jquery.js
+doc/jupyterlite_contents/auto_examples
+doc/.jupyterlite.doit.db
+doc/tmp.html
 log.txt
 build.txt
 pattern.txt
 examples.txt
 gitlog.txt
 merge.txt
+__marimo__
+tmp.html
 
 # examples
 results/
 
 # node
-package.json
 package-lock.json
 
 # pydeps output

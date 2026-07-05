@@ -47,6 +47,7 @@ authors:
     affiliation: Inria, Saclay, France
     email: ahmad.chamma@inria.fr
     orcid: https://orcid.org/0000-0003-0975-133X
+
   - given-names: Aina
     family-names: Frau-Pascual
     website: https://github.com/ainafp
@@ -87,6 +88,11 @@ authors:
     family-names: Thual
     website: https://github.com/alexisthual
     affiliation: Inria, Saclay, France
+  - given-names: Alice
+    family-names: Schiavone
+    affiliation: University of Copenhagen
+    orcid: https://orcid.org/0009-0006-4844-2088
+    website: https://aliswh.github.io
   - given-names: Alisha
     family-names: Kodibagkar
     website: https://github.com/alishakodibagkar/
@@ -136,6 +142,11 @@ authors:
     family-names: Pinsard
     website: https://github.com/bpinsard
     affiliation: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
+  - given-names: Bastien
+    family-names: Cagna
+    website: https://github.com/bastiencagna
+    affiliation: CATI, APHP, Paris, France
+    orcid: https://orcid.org/0009-0005-4243-5234
   - given-names: Ben
     family-names: Cipollini
     website: https://github.com/bcipolli
@@ -159,6 +170,11 @@ authors:
     website: https://github.com/chlohamp
     affiliation: Florida International University, Miami, United States
     orcid: https://orcid.org/0009-0005-1212-9324
+  - given-names: Chris
+    family-names: Rorden
+    website: https://github.com/neurolabusc
+    affiliation: University of South Carolina, USA
+
   - given-names: Chris
     family-names: Gorgolewski
     website: https://chrisgorgolewski.org/
@@ -254,6 +270,11 @@ authors:
     website: https://github.com/fabianp
     affiliation: '@google, Geneva, Switzerland'
     orcid: https://orcid.org/0000-0003-4025-3953
+  - given-names: Fernanda
+    family-names: Ponce
+    website: https://github.com/ferponcem
+    affiliation: Université Paris-Saclay, Inria, Saclay, France
+    orcid: https://orcid.org/0000-0001-7142-0975
   - given-names: Florent
     family-names: Pollet
     website: https://florian6973.github.io/
@@ -265,6 +286,12 @@ authors:
     family-names: Paugam
     website: https://github.com/FrancoisPgm
     orcid: https://orcid.org/0000-0002-8161-7699
+  - given-names: Gabriele
+    family-names: Amorosino
+    website: https://github.com/gamorosino
+    affiliation: Department of Psychology, The University of Texas at Austin, TX, USA
+    email: g.amorosino@gmail.com
+    orcid: https://orcid.org/0000-0003-2789-5193
   - given-names: Gael
     family-names: Varoquaux
     website: https://gael-varoquaux.info/
@@ -316,6 +343,12 @@ authors:
     affiliation: Inria, Saclay, France
     email: himanshu.aggarwal@inria.fr
     orcid: https://orcid.org/0000-0003-2451-0470
+  - given-names: Hugo
+    family-names: Delhaye
+    website: https://github.com/HugoDelhaye
+    affiliation: SIMEXP, Université de Montréal, Montréal, Canada
+    email: hugo.delhaye@umontreal.ca
+    orcid: https://orcid.org/0009-0002-8540-6394
   - given-names: Ian
     family-names: Abenes
     website: https://github.com/boredStats
@@ -376,7 +409,7 @@ authors:
   - given-names: Jerome
     family-names: Dockes
     website: https://jeromedockes.github.io/
-    affiliation: Origami lab, McGill University, Montréal, Canada
+    affiliation: Probabl
   - given-names: Jerome-Alexis
     family-names: Chevalier
     website: https://github.com/ja-che
@@ -449,6 +482,9 @@ authors:
   - given-names: Konstantin
     family-names: Shmelkov
     website: https://github.com/kshmelkov
+  - given-names: Kosei
+    family-names: Tanno
+    website: https://github.com/KoseiTanno
   - given-names: Kshitij
     family-names: Chawla
     website: https://github.com/kchawla-pi
@@ -461,6 +497,11 @@ authors:
     affiliation: University of Macau, Macau, China
     email: yc17307@um.edu.mo
     orcid: https://orcid.org/0000-0002-9138-3195
+  - given-names: Laura
+    family-names: Piñero Roig
+    website: https://github.com/laurapiro17
+    affiliation: University of Barcelona, Barcelona, Spain
+    orcid: https://orcid.org/0009-0008-3390-4029
   - given-names: Lee
     family-names: Newberg
     website: https://github.com/Leengit
@@ -483,6 +524,16 @@ authors:
   - given-names: Manon
     family-names: Pietrantoni
     website: https://github.com/ManonP38
+  - given-names: Marco
+    family-names: Flores
+    website: https://github.com/marco7877
+    affiliation: Basque Center on Cognition Brain and Language
+  - given-names: Marco
+    family-names: Bedini
+    website: https://github.com/mbedini
+    affiliation: Institut de Neurosciences de la Timone, University of Aix-Marseille, France
+    email: marco.bedini4@gmail.com
+    orcid: https://orcid.org/0000-0002-2018-5175
   - given-names: Martin
     family-names: Perez-Guevara
     website: https://github.com/MartinPerez
@@ -595,6 +646,12 @@ authors:
     family-names: Krish
     website: https://github.com/NIkhilgKrish
     affiliation: University of Texas, Austin
+  - given-names: Nirmitee
+    family-names: Mulay
+    website: https://github.com/nirmitee-mulay
+    affiliation: BCBL, Spain
+    orcid: https://orcid.org/0000-0002-3360-4973
+    email: nirmiteemulay@gmail.com
   - given-names: Noah C.
     family-names: Benson
     website: https://nben.net/
@@ -673,6 +730,10 @@ authors:
     family-names: Meudec
     website: https://github.com/RaphaelMeudec
     affiliation: Inria, Saclay, France
+  - given-names: Rishika
+    family-names: Kapil
+    website: https://github.com/RishikaKaps
+    affiliation: Thapar Institute of Engineering and Technology
   - given-names: Robert
     family-names: Luke
     website: https://github.com/rob-luke
@@ -694,6 +755,11 @@ authors:
     family-names: Phlypo
     website: https://github.com/rphlypo
     affiliation: Lyon area, France
+  - given-names: Ruben
+    family-names: Dörfel
+    website: https://rdoerfel.github.io/
+    affiliation: Karolinska Institutet
+    orcid: https://orcid.org/0000-0002-5920-5102
   - given-names: Ryan
     family-names: Hammonds
     website: https://github.com/ryanhammonds
@@ -701,12 +767,15 @@ authors:
   - given-names: Rémi
     family-names: Gau
     website: https://github.com/Remi-Gau
-    affiliation: Origami lab, McGill University, Montréal, Canada
+    affiliation: Inria, Saclay, France
     orcid: https://orcid.org/0000-0002-1535-9767
     email: remi.gau2@mcgill.ca
   - given-names: Sachin
     family-names: Patalasingh
     website: https://github.com/sachin-bsai
+  - given-names: Saeed
+    family-names: Babadi
+    website: https://github.com/saeed-neuro
   - given-names: Sage
     family-names: Hahn
     website: https://github.com/sahahn
@@ -770,6 +839,11 @@ authors:
     email: tarunsamanta77@gmail.com
     orcid: https://orcid.org/0000-0003-1630-8993
   - given-names: Taylor
+    family-names: Hanayik
+    website: https://github.com/hanayik
+    affiliation: QuantCo
+
+  - given-names: Taylor
     family-names: Salo
     website: https://tsalo.github.io/
     affiliation: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
@@ -778,6 +852,10 @@ authors:
   - given-names: Tharun
     family-names: K
     website: https://github.com/tharun634
+  - given-names: Thibault de
+    family-names: Varax
+    affiliation: Aramis lab, Paris Brain Institute
+    website: https://github.com/thibaultdvx
   - given-names: Thiti
     family-names: Premrudeepreechacharn
     website: https://tpremrud.github.io/
@@ -812,6 +890,10 @@ authors:
     family-names: Fritsch
     website: https://github.com/VirgileFritsch
     affiliation: Inria, Saclay, France
+  - given-names: Xichun
+    family-names: Xu
+    website: https://github.com/XichunXu
+    affiliation: Oregon State University, Corvallis, Oregon, USA
   - given-names: Yaroslav
     family-names: Halchenko
     website: https://github.com/yarikoptic

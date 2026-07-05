@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#   "nilearn[plotting]>=0.12",
+#   "nilearn[plotting,plotly]>=0.12",
 #    "numpydoc",
 #    "rich",
 # ]
@@ -236,18 +236,18 @@ def get_missing(docstring: str, values=None) -> list[tuple[str, str, str]]:
 
 def function_has_return_value(node: ast.AST) -> bool:
     """Return True if function contains a return statement with a value."""
-    for subnode in ast.walk(node):
-        if isinstance(subnode, ast.Return) and subnode.value is not None:
-            return True
-    return False
+    return any(
+        isinstance(subnode, ast.Return) and subnode.value is not None
+        for subnode in ast.walk(node)
+    )
 
 
 def function_has_yield(node: ast.AST) -> bool:
     """Return True if function contains a yield statement."""
-    for subnode in ast.walk(node):
-        if isinstance(subnode, (ast.Yield, ast.YieldFrom)):
-            return True
-    return False
+    return any(
+        isinstance(subnode, (ast.Yield, ast.YieldFrom))
+        for subnode in ast.walk(node)
+    )
 
 
 def has_none_return_annotation(node: ast.FunctionDef) -> bool:
@@ -294,7 +294,8 @@ def check_returns_yields_and_annotation(
 
     np_docstring = NumpyDocString(docstring)
 
-    # function returns / yields a value → must have Returns / Yields section
+    # if the function returns (or yields) a value
+    # then its docstring must have Returns (or Yields) section
     if has_return_value or has_yield:
         if has_yield and bool(np_docstring["Yields"]):
             print(
@@ -309,7 +310,8 @@ def check_returns_yields_and_annotation(
                 "- [red]missing Return section in docstring"
             )
 
-    # no return & no yield → must be annotated as -> None
+    # if the function does not return or yield anything
+    # then its return type annotation must be None
     elif not has_none_return_annotation(ast_node):
         print(
             f"{filename}:{ast_node.lineno} "

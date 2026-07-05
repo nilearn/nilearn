@@ -1,7 +1,9 @@
 """Tests saving glm to bids."""
 
 import json
+import re
 import warnings
+from html import unescape
 
 import numpy as np
 import pandas as pd
@@ -72,7 +74,12 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
 
     contrasts = {"effects of interest": np.eye(rk)}
     contrast_types = {"effects of interest": "F"}
-    with warnings.catch_warnings(record=True) as warning_list:
+    with (
+        warnings.catch_warnings(record=True) as warning_list,
+        pytest.warns(
+            FutureWarning, match="the default 'threshold' will be set to"
+        ),
+    ):
         save_glm_to_bids(
             model=single_run_model,
             contrasts=contrasts,
@@ -81,12 +88,6 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
             prefix=prefix,
             height_control=None,
         )
-
-        # TODO (nilearn >= 0.15.0) remove
-        n_future_warnings = len(
-            [x for x in warning_list if issubclass(x.category, FutureWarning)]
-        )
-        assert n_future_warnings == 1
 
         n_no_contrasts_warnings = len(
             [
@@ -428,20 +429,26 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
         "run-1_contrast-bbbMinusAaa_design.png",
     ]
 
-    with (tmp_path / "report.html").open("r") as f:
+    with (tmp_path / "report.html").open("r", encoding="utf-8") as f:
         content = f.read()
+        # remove iframe part from content and unescape
+        indices = [match.start() for match in re.finditer('"', content)]
+        content = content[indices[0] + 1 : indices[1]]
+        content = unescape(content)
         assert "BBB-AAA" in content
-        for file in EXPECTED_FILENAMES:
-            assert f'src="{file}"' in content
+        if is_matplotlib_installed():
+            for file in EXPECTED_FILENAMES:
+                assert f'src="{file}"' in content
 
     report = model.generate_report(**KWARGS)
 
     report.save_as_html(tmp_path / "new_report.html")
 
     assert "BBB-AAA" in report.__str__()
-    for file in EXPECTED_FILENAMES:
-        assert f'src="{tmp_path / file}"' in report.__str__()
-        assert f'src="{file}"' not in report.__str__()
+    if is_matplotlib_installed():
+        for file in EXPECTED_FILENAMES:
+            assert f'src="{tmp_path / file}"' in report.__str__()
+            assert f'src="{file}"' not in report.__str__()
 
 
 @pytest.mark.slow
@@ -512,9 +519,23 @@ def test_save_glm_to_bids_infer_filenames(tmp_path, kwargs):
     # 2 sessions with 2 runs each
     assert len(model._reporting_data["run_imgs"]) == 4
 
-    model = save_glm_to_bids(
-        model=model, out_dir=tmp_path / "output", contrasts=["c0"], **kwargs
-    )
+    if kwargs == {"height_control": None}:
+        with pytest.warns(
+            FutureWarning, match="the default 'threshold' will be set to"
+        ):
+            model = save_glm_to_bids(
+                model=model,
+                out_dir=tmp_path / "output",
+                contrasts=["c0"],
+                **kwargs,
+            )
+    else:
+        model = save_glm_to_bids(
+            model=model,
+            out_dir=tmp_path / "output",
+            contrasts=["c0"],
+            **kwargs,
+        )
 
     EXPECTED_FILENAME_ENDINGS = [
         "sub-01_task-main_space-MNI_contrast-c0_stat-z_statmap.nii.gz",

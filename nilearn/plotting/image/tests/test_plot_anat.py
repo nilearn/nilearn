@@ -6,6 +6,7 @@ import pytest
 from nilearn.plotting import plot_anat
 
 
+@pytest.mark.thread_unsafe
 def test_plot_anat_3d_img(img_3d_mni, tmp_path):
     """Smoke test for plot_anat."""
     filename = tmp_path / "test.png"

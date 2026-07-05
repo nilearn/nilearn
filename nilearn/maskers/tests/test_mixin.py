@@ -96,7 +96,7 @@ def test_masker_reporting_true(masker, img_func, kwargs):
     masker = clone(masker)
 
     # check masker at initialization
-    assert masker._report_content["warning_messages"] == []
+    assert masker._report_warnings == []
 
     # check masker report before fit
     generate_and_check_masker_report(masker, **kwargs)
@@ -132,6 +132,8 @@ def test_masker_reporting_true(masker, img_func, kwargs):
     assert match in str(report)
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
 @pytest.mark.parametrize(
     "masker, img_func",
     [
@@ -166,7 +168,7 @@ def test_masker_reporting_false(masker, img_func):
     # check masker at initialization
     assert masker._report_content is not None
     assert masker._report_content["description"] is not None
-    assert masker._report_content["warning_messages"] == []
+    assert masker._report_warnings == []
     assert masker._report_content["summary"] == {}
     assert masker._has_report_data() is False
 

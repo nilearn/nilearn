@@ -55,12 +55,12 @@ def rotation(theta, phi):
 
 
 @pytest.fixture
-def shape():
+def shape() -> tuple[int, int, int, int]:
     return SHAPE
 
 
 @pytest.fixture
-def data(rng, shape):
+def data(rng, shape) -> np.ndarray:
     return rng.random(shape)
 
 
