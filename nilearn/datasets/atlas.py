@@ -69,7 +69,9 @@ class Atlas(Bunch):
         template=None,
         **kwargs,
     ):
-        assert atlas_type in ["probabilistic", "deterministic"]
+        check_parameter_in_allowed(
+            atlas_type, ["probabilistic", "deterministic"], "atlas_type"
+        )
 
         # TODO: improve
         if template is None:
