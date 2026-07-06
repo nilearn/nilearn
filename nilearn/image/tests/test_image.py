@@ -211,18 +211,17 @@ def test_get_data(tmp_path, shape_3d_default):
     assert len(data.shape) == 4
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "image_class", [Nifti1Image, Nifti2Image, MGHImage, AnalyzeImage]
 )
-def test_get_data_spatial_image_subtypes(image_class, shape_3d_default):
+def test_get_data_spatial_image_subtypes(rng, image_class, shape_3d_default):
     """Check get_data works with any nibabel SpatialImage subtype.
 
     get_data delegates to check_niimg, which accepts any object
     that is an instance of nibabel.spatialimages.SpatialImage,
     not only Nifti1Image.
     """
-    array = np.random.default_rng(0).random(shape_3d_default).astype("float32")
+    array = rng.random(shape_3d_default).astype("float32")
     img = image_class(array, affine=np.eye(4))
 
     data = get_data(img)
