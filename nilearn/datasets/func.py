@@ -26,6 +26,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
     check_parameter_in_allowed,
     check_params,
 )
@@ -57,7 +58,7 @@ from nilearn.surface import SurfaceImage
 @fill_doc
 def fetch_haxby(
     data_dir: DataDir = None,
-    subjects: int | list[int] | tuple[int] = (2,),
+    subjects: int | list[int] | tuple[int] | None = (2,),
     fetch_stimuli: bool = False,
     url: Url = None,
     resume: Resume = True,
@@ -70,17 +71,22 @@ def fetch_haxby(
     Parameters
     ----------
     %(data_dir)s
-    subjects : :obj:`list` or :obj:`tuple` or :obj:`int`, default=(2,)
+
+    subjects : :obj:`list` or :obj:`tuple` or :obj:`int` or None, default=(2,)
         Either a list of subjects or the number of subjects to load,
         from 1 to 6.
         By default, 2nd subject will be loaded.
         Empty list returns no subject data.
+        None will load all subjects.
 
     fetch_stimuli : :obj:`bool`, default=False
         Indicate if stimuli images must be downloaded.
         They will be presented as a dictionary of categories.
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -141,20 +147,18 @@ def fetch_haxby(
     """
     check_params(locals())
 
-    if not isinstance(subjects, (int, list, tuple)):
-        raise TypeError(
-            "'subjects' must be an int, list of int, "
-            "or a tuple of int. "
-            f"Got {subjects.__class__.__name__}"
-        )
-
-    if isinstance(subjects, int) and subjects > 6:
+    if subjects is not None:
+        check_is_of_allowed_type(subjects, (int, list, tuple), "subjects")
+    if (subjects is None) or (isinstance(subjects, int) and subjects > 6):
         subjects = 6
-    elif isinstance(subjects, (list, tuple)):
+    if isinstance(subjects, (list, tuple)):
         for sub_id in subjects:
             check_parameter_in_allowed(
                 sub_id, [1, 2, 3, 4, 5, 6], "subject id"
             )
+        subject_mask = np.array(subjects)
+    if isinstance(subjects, int):
+        subject_mask = np.arange(1, subjects + 1)
 
     dataset_name = "haxby2001"
     data_dir = get_dataset_dir(
@@ -187,11 +191,6 @@ def fetch_haxby(
         "anat.nii.gz",
     ]
     n_files = len(sub_files)
-
-    if isinstance(subjects, int):
-        subject_mask = np.arange(1, subjects + 1)
-    else:
-        subject_mask = np.array(subjects)
 
     files = [
         (
@@ -1433,7 +1432,7 @@ def _load_mixed_gambles(zmap_imgs):
 
 @fill_doc
 def fetch_mixed_gambles(
-    n_subjects: int = 1,
+    n_subjects: int | None = 1,
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -1447,13 +1446,18 @@ def fetch_mixed_gambles(
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, default=1
-        The number of subjects to load. If ``None`` is given, all the
-        subjects are used.
+    n_subjects : :obj:`int` or None, default=1
+        The number of subjects to load.
+        If ``None`` is given, all the subjects are used.
+
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
+
     return_raw_data : :obj:`bool`, default=False
         If ``False``, then the data will transformed into an ``(X, y)``
         pair, suitable for machine learning routines. ``X`` is a list
@@ -1487,12 +1491,15 @@ def fetch_mixed_gambles(
     """
     check_params(locals())
 
+    if n_subjects is None:
+        n_subjects = 16
     if n_subjects > 16:
         warnings.warn(
             "Warning: there are only 16 subjects!",
             stacklevel=find_stack_level(),
         )
         n_subjects = 16
+
     if url is None:
         url = (
             "https://www.nitrc.org/frs/download.php/7229/"
@@ -1503,22 +1510,29 @@ def fetch_mixed_gambles(
         (f"zmaps{os.sep}sub{int(j + 1):03}_zmaps.nii.gz", url, opts)
         for j in range(n_subjects)
     ]
+
     data_dir = get_dataset_dir(
         "jimura_poldrack_2012_zmaps", data_dir=data_dir, verbose=verbose
     )
+
     zmap_fnames = fetch_files(data_dir, files, resume=resume, verbose=verbose)
+
     subject_id = pd.DataFrame(
         {"subject_id": np.repeat(np.arange(n_subjects), 6 * 8).tolist()}
     )
+
     description = get_dataset_descr("mixed_gambles")
+
     data = Bunch(
         zmaps=zmap_fnames, subject_id=subject_id, description=description
     )
+
     if not return_raw_data:
         X, y, mask_img = _load_mixed_gambles(
             check_niimg(data.zmaps, return_iterator=True)
         )
         data.zmaps, data.gain, data.mask_img = X, y, mask_img
+
     return data
 
 
@@ -1797,8 +1811,9 @@ def fetch_surf_nki_enhanced(
     ----------
     n_subjects : :obj:`int`, default=10
         The number of subjects to load from maximum of 102 subjects.
-        By default, 10 subjects will be loaded. If None is given,
-        all 102 subjects will be loaded.
+        By default, 10 subjects will be loaded.
+        If None is given, all 102 subjects will be loaded.
+
     %(data_dir)s
 
     %(url)s
@@ -1930,7 +1945,7 @@ def load_nki(
     mesh_type: Literal[
         "pial", "white_matter", "inflated", "sphere", "flat"
     ] = "pial",
-    n_subjects: int = 1,
+    n_subjects: int | None = 1,
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
