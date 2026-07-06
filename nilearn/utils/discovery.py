@@ -188,13 +188,8 @@ def all_functions():
     >>>
     >>> functions = all_functions()
     >>>
-    >>> # Several functions are only accessible if matplotlib is installed.
-    >>> try:
-    ...     import matplotlib
-    ...
-    ...     assert len(functions) == 172, len(functions)
-    ... except ImportError:
-    ...     assert len(functions) == 138, len(functions)
+    >>> print(f"Nilearn's API has {len(functions)} public functions.")
+    Nilearn's API has 172 public functions.
 
     """
     all_functions = []
@@ -253,14 +248,11 @@ def all_displays(type_filter=None):
     Examples
     --------
     >>> from nilearn.utils import all_displays
+    >>>
     >>> displays = all_displays()
     >>>
-    >>> # Displays are only accessible if matplotlib is installed.
-    >>> try:
-    ...     import matplotlib
-    ...     assert len(displays) == 27
-    ... except ImportError:
-    ...     assert len(displays) == 0
+    >>> print(f"Nilearn's API has {len(displays)} display functions.")
+    Nilearn's API has 27 display functions.
 
     """
     if not is_matplotlib_installed():
