@@ -88,6 +88,11 @@ authors:
     family-names: Thual
     website: https://github.com/alexisthual
     affiliation: Inria, Saclay, France
+  - given-names: Alice
+    family-names: Schiavone
+    affiliation: University of Copenhagen
+    orcid: https://orcid.org/0009-0006-4844-2088
+    website: https://aliswh.github.io
   - given-names: Alisha
     family-names: Kodibagkar
     website: https://github.com/alishakodibagkar/

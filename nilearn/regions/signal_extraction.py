@@ -7,6 +7,7 @@ or as weights in one image per region (maps).
 
 import warnings
 from functools import partial
+from typing import Literal, overload
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -224,6 +225,34 @@ def _get_labels_data(
 
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
+@overload
+def img_to_signals_labels(
+    imgs,
+    labels_img,
+    mask_img=...,
+    background_label=...,
+    order=...,
+    strategy=...,
+    keep_masked_labels=...,
+    return_masked_atlas: Literal[True] = ...,
+    n_jobs=...,
+) -> tuple[np.ndarray, list, Nifti1Image]: ...
+
+
+@overload
+def img_to_signals_labels(
+    imgs,
+    labels_img,
+    mask_img=...,
+    background_label=...,
+    order=...,
+    strategy=...,
+    keep_masked_labels=...,
+    return_masked_atlas: Literal[False] = ...,
+    n_jobs=...,
+) -> tuple[np.ndarray, list]: ...
+
+
 @fill_doc
 def img_to_signals_labels(
     imgs,
@@ -235,7 +264,7 @@ def img_to_signals_labels(
     keep_masked_labels=False,
     return_masked_atlas=True,
     n_jobs=1,
-):
+) -> tuple[np.ndarray, list] | tuple[np.ndarray, list, Nifti1Image]:
     """Extract region signals from image.
 
     This function is applicable to regions defined by labels.
@@ -295,8 +324,9 @@ def img_to_signals_labels(
         Corresponding labels for each signal. signal[:, n] was extracted from
         the region with label labels[n].
 
-    masked_atlas : Niimg-like object
+    masked_atlas : :class:`nibabel.nifti1.Nifti1Image`
         Regions definition as labels after applying the mask.
+        Only returned when ``return_masked_atlas=True``.
 
     See Also
     --------
@@ -304,6 +334,41 @@ def img_to_signals_labels(
     nilearn.regions.img_to_signals_maps
     nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels images
         e.g. clusters
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.regions.signal_extraction import img_to_signals_labels
+    >>>
+    >>> # Create a label image with definitions for 3 regions.
+    >>> labels_data = np.array(
+    ...     [[[1, 2], [1, 2]], [[3, 3], [3, 3]]], dtype=np.int32
+    ... )
+    >>> labels_img = Nifti1Image(labels_data, np.eye(4))
+    >>>
+    >>> # Create data where the average values of regions 1, 2, 3
+    >>> # is 0, 1 and 2 respectively.
+    >>> img_data = np.asarray(
+    ...     [
+    ...         [[[0.3], [0.1]], [[-0.3], [1.9]]],
+    ...         [[[2.0], [2.0]], [[2.0], [2.0]]],
+    ...     ]
+    ... )
+    >>> img = Nifti1Image(img_data, np.eye(4))
+    >>>
+    >>> # Extract mean region signals from the image.
+    >>> mean_signals, _, _ = img_to_signals_labels(img, labels_img)
+    >>> mean_signals
+    array([[0., 1., 2.]])
+    >>>
+    >>> # We could also extract some other statistics
+    >>> # (like the maximum) from each region.
+    >>> maximum_signals, _, _ = img_to_signals_labels(
+    ...     img, labels_img, strategy="maximum"
+    ... )
+    >>> maximum_signals
+    array([[0.3, 1.9, 2. ]])
 
     """
     check_params(locals())
@@ -364,7 +429,7 @@ def img_to_signals_labels(
 
 def signals_to_img_labels(
     signals, labels_img, mask_img=None, background_label=0, order="F"
-):
+) -> Nifti1Image:
     """Create image from region signals defined as labels.
 
     The same region signal is used for each :term:`voxel` of the
@@ -403,7 +468,7 @@ def signals_to_img_labels(
     -------
     img : :class:`nibabel.nifti1.Nifti1Image`
         Reconstructed image. dtype is that of "signals", affine and shape are
-        those of labels_img.
+        those of ``labels_img``.
 
     See Also
     --------
@@ -481,7 +546,9 @@ def signals_to_img_labels(
 
 
 @fill_doc
-def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
+def img_to_signals_maps(
+    imgs, maps_img, mask_img=None, keep_masked_maps=False
+) -> tuple[np.ndarray, list[int]]:
     """Extract region signals from image.
 
     This function is applicable to regions defined by maps.
@@ -510,7 +577,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
         Signals extracted from each region.
         Shape is: (scans number, number of regions intersecting mask)
 
-    labels : :obj:`list`
+    labels : :obj:`list` of :obj:`int`
         maps_img[..., labels[n]] is the region that has been used to extract
         signal region_signals[:, n].
 
@@ -584,7 +651,9 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
     return region_signals, list(maps)
 
 
-def signals_to_img_maps(region_signals, maps_img, mask_img=None):
+def signals_to_img_maps(
+    region_signals, maps_img, mask_img=None
+) -> Nifti1Image:
     """Create image from region signals defined as maps.
 
     region_signals, mask_img must have the same shapes and affines.
@@ -611,7 +680,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     Returns
     -------
     img : :class:`nibabel.nifti1.Nifti1Image`
-        Reconstructed image. affine and shape are those of maps_img.
+        Reconstructed image. Affine and shape are those of ``maps_img``.
 
     See Also
     --------

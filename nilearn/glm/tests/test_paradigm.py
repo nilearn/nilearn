@@ -30,6 +30,7 @@ from ._testing import (
 
 
 def test_check_events():
+    """Test that check_events sets trial_type and modulation correctly."""
     events = basic_paradigm()
     events_copy = check_events(events)
 

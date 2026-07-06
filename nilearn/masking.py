@@ -362,12 +362,16 @@ def compute_epi_mask(
 
     %(lower_cutoff)s
         default=0.2.
+
     %(upper_cutoff)s
         default=0.85.
+
     %(connected)s
         default=True.
+
     %(opening)s
         default=2.
+
     ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and infs)
         found in the images will be replaced by zeros
@@ -376,6 +380,7 @@ def compute_epi_mask(
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
+
     %(target_affine)s
 
         .. note::
@@ -395,6 +400,30 @@ def compute_epi_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.masking import compute_epi_mask
+    >>>
+    >>> # Let's create an image where only the center contains data.
+    >>> data = data = np.random.default_rng(42).normal(size=(9, 9, 9))
+    >>> data[3:-2, 3:-2, 3:-2] = 10
+    >>> data[5:6, 5:6, 5:6] = 11
+    >>> img = Nifti1Image(data, affine=np.eye(4))
+    >>>
+    >>> # Let's extract a mask from it
+    >>> # and confirm we only have 1 an 0 in it.
+    >>> img_mask = compute_epi_mask(img, opening=False)
+    >>> np.unique(img_mask.get_fdata())
+    array([0., 1.])
+    >>>
+    >>> # The number of voxels in the mask should be close
+    >>> # to the number of voxels with data in the original image.
+    >>> np.sum(img.get_fdata() > 2)
+    np.int64(76)
+    >>> np.sum(img_mask.get_fdata() > 0)
+    np.int64(73)
     """
     check_params(locals())
     logger.log("EPI mask computation", verbose)
@@ -602,8 +631,8 @@ def compute_background_mask(
     >>>
     >>> data = np.random.default_rng(42).random((2,3,4))
     >>>
-    >>> # Set background to zero.
-    >>> data[0:3,0:2,0:3] = 0
+    >>> # Set background to zero:
+    >>> data[0:3, 0:2, 0:3] = 0
     >>> data.round(decimals=3)
     array([[[0.   , 0.   , 0.   , 0.697],
             [0.   , 0.   , 0.   , 0.786],

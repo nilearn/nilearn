@@ -490,6 +490,7 @@ def test_plot_surf_surface_colorbar_plotly(
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("title", [None, "Foo"])
 def test_plot_img_on_surf(bg_on_data, symmetric_cmap, colorbar, title):
+    """Test plot_img_on_surf with various display options."""
     stat_img = load_sample_motor_activation_image()
     fig, _ = plot_img_on_surf(
         stat_map=stat_img,
@@ -665,6 +666,7 @@ def test_plot_event_x_lim(rng):
 
 @pytest.fixture
 def matrix_to_plot(rng):
+    """Return a random 50x50 matrix to plot."""
     return rng.random((50, 50)) * 10 - 5
 
 
