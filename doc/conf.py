@@ -528,6 +528,7 @@ if with_jupyterlite:
 # Jupyterlite specific code
 import matplotlib
 import pandas
+await piplite.install(scikit-learn==1.8.0, index_urls='https://pypi.anaconda.org/scientific-python-nightly-wheels/simple')",
 %pip install -q nilearn
 """
 
