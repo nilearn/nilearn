@@ -1,5 +1,7 @@
 """Functions for generating BIDS-compliant GLM outputs."""
 
+from __future__ import annotations
+
 import inspect
 import json
 import warnings
