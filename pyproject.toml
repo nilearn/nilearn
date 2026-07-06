@@ -347,6 +347,9 @@ module = [
 ]
 
 [tool.pytest.ini_options]
+# We do not run doctests systematically with "--doctest-modules".
+# This is because some doctests outside of nilearn.plotting require matplotlib
+# and would lead to import errors when run without the plotting dependencies.
 addopts = "-ra --strict-config --strict-markers --showlocals --capture=no -v --template=maint_tools/templates/index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 # see https://docs.pytest.org/en/stable/how-to/capture-warnings.html#controlling-warnings
