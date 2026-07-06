@@ -2110,8 +2110,8 @@ def fetch_atlas_surf_destrieux(
     lut = generate_atlas_look_up_table(
         "fetch_atlas_surf_destrieux", name=labels
     )
-    check_look_up_table(lut=lut, atlas=annot_left[0], verbose=verbose)  # type: ignore[arg-type]
-    check_look_up_table(lut=lut, atlas=annot_right[0], verbose=verbose)  # type: ignore[arg-type]
+    check_look_up_table(lut=lut, atlas=annot_left[0], verbose=verbose)
+    check_look_up_table(lut=lut, atlas=annot_right[0], verbose=verbose)
 
     return Bunch(
         labels=labels,
