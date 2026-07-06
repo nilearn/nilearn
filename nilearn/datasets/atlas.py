@@ -248,12 +248,12 @@ def fetch_atlas_difumo(
 
     dataset_name = "difumo_atlases"
 
-    data_dir = get_dataset_dir(
+    dataset_dir = get_dataset_dir(
         dataset_name=dataset_name, data_dir=data_dir, verbose=verbose
     )
 
     # Download the zip file, first
-    files_ = fetch_files(data_dir, files, verbose=verbose, resume=resume)
+    files_ = fetch_files(dataset_dir, files, verbose=verbose, resume=resume)
     labels = pd.read_csv(files_[0])
     labels = labels.rename(columns={c: c.lower() for c in labels.columns})
 
@@ -261,7 +261,7 @@ def fetch_atlas_difumo(
     readme_files = [
         ("README.md", "https://osf.io/4k9bf/download", {"move": "README.md"})
     ]
-    if not (data_dir / "README.md").exists():  # type: ignore[operator]
+    if not (dataset_dir / "README.md").exists():
         fetch_files(data_dir, readme_files, verbose=verbose, resume=resume)
 
     return Atlas(
@@ -1186,20 +1186,6 @@ def fetch_atlas_smith_2009(
 
     atlas_type = "probabilistic"
 
-    if url is None:
-        check_parameter_in_allowed(mirror, ["origin", "nitrc"], "mirror")
-        if mirror == "origin":
-            url = "https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/"
-        elif mirror == "nitrc":
-            url = [  # type: ignore[assignment]
-                "https://www.nitrc.org/frs/download.php/7730/",
-                "https://www.nitrc.org/frs/download.php/7729/",
-                "https://www.nitrc.org/frs/download.php/7731/",
-                "https://www.nitrc.org/frs/download.php/7726/",
-                "https://www.nitrc.org/frs/download.php/7728/",
-                "https://www.nitrc.org/frs/download.php/7727/",
-            ]
-
     files = {
         "rsn20": "rsn20.nii.gz",
         "rsn10": "PNAS_Smith09_rsn10.nii.gz",
@@ -1209,8 +1195,23 @@ def fetch_atlas_smith_2009(
         "bm70": "bm70.nii.gz",
     }
 
-    if isinstance(url, str):
-        url = [url] * len(files)  # type: ignore[assignment]
+    if url is None:
+        check_parameter_in_allowed(mirror, ["origin", "nitrc"], "mirror")
+        if mirror == "origin":
+            list_url = [
+                "https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/"
+            ] * len(files)
+        elif mirror == "nitrc":
+            list_url = [
+                "https://www.nitrc.org/frs/download.php/7730/",
+                "https://www.nitrc.org/frs/download.php/7729/",
+                "https://www.nitrc.org/frs/download.php/7731/",
+                "https://www.nitrc.org/frs/download.php/7726/",
+                "https://www.nitrc.org/frs/download.php/7728/",
+                "https://www.nitrc.org/frs/download.php/7727/",
+            ]
+    elif isinstance(url, str):
+        list_url = [url] * len(files)
 
     dataset_name = "smith_2009"
     data_dir = get_dataset_dir(
@@ -1223,7 +1224,7 @@ def fetch_atlas_smith_2009(
     key_index = list(files).index(key)
 
     file: list[tuple[str, str, dict[str, str]]] = [
-        (files[key], url[key_index] + files[key], {})  # type: ignore[index]
+        (files[key], list_url[key_index] + files[key], {})
     ]
     data = fetch_files(data_dir, file, resume=resume, verbose=verbose)
 
@@ -1569,6 +1570,8 @@ def fetch_atlas_aal(
         xml_tree = ElementTree.parse(labels_file)
         root = xml_tree.getroot()
         for label in root.iter("label"):
+            if label.find("name") is None or label.find("index") is None:
+                continue
             indices.append(label.find("index").text)  # type: ignore[union-attr, arg-type]
             labels.append(label.find("name").text)  # type: ignore[union-attr, arg-type]
     else:
@@ -2447,19 +2450,21 @@ def fetch_atlas_schaefer_2018(
     )
 
     if base_url is None:
-        base_url = (
+        url = (
             "https://raw.githubusercontent.com/ThomasYeoLab/CBIG/"
             "v0.14.3-Update_Yeo2011_Schaefer2018_labelname/"
             "stable_projects/brain_parcellation/"
             "Schaefer2018_LocalGlobal/Parcellations/MNI/"
         )
+    else:
+        url = base_url
 
     labels_file_template = "Schaefer2018_{}Parcels_{}Networks_order.txt"
     img_file_template = (
         "Schaefer2018_{}Parcels_{}Networks_order_FSLMNI152_{}mm.nii.gz"
     )
     files: list[tuple[str, str, dict[str, str]]] = [
-        (f, base_url + f, {})  # type: ignore[operator]
+        (f, url + f, {})
         for f in [
             labels_file_template.format(n_rois, yeo_networks),
             img_file_template.format(n_rois, yeo_networks, resolution_mm),
