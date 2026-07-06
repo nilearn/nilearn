@@ -393,18 +393,22 @@ def plot_design_matrix(
         >>> from nilearn.glm.first_level import make_first_level_design_matrix
         >>> from nilearn.plotting import plot_design_matrix
         >>> from nilearn.plotting.image.img_plotting import show
+        >>>
         >>> #creating a design matrix
+        >>>
         >>> frame_times = np.arange(9)
         >>> onsets = np.arange(9)
-        >>> duration = np.linspace(1,9,9)
-        >>> trial_type=["ET_0", "ET_0", "ET_0",
+        >>> duration = np.linspace(1, 9, 9)
+        >>> trial_type = ["ET_0", "ET_0", "ET_0",
         ...             "ET_1", "ET_1", "ET_1",
         ...             "ET_2", "ET_2", "ET_2"]
-        >>> events= DataFrame({"trial_type": trial_type,
+        >>> events = DataFrame({"trial_type": trial_type,
         ...                    "onset": onsets,
         ...                    "duration": duration})
         >>> design_matrix = make_first_level_design_matrix(frame_times, events)
-        >>> ax=plot_design_matrix(design_matrix)
+        >>>
+        >>> ax = plot_design_matrix(design_matrix)
+        >>>
         >>> show()
 
 
