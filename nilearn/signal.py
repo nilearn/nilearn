@@ -394,16 +394,14 @@ def butterworth(
         >>>
         >>> # Plot both signals and filtered_signals
         >>> # (if matplotlib is installed).
-        >>> try:
-        ...     import matplotlib.pyplot as plt
-        ...
-        ...     fig = plt.plot(signals, color="red")
-        ...     fig = plt.plot(filtered_signals, color="green")
-        ...     leg = plt.legend(["Initial signals", "Filtered signals"])
-        ...     plt.grid(True)
-        ...     plt.show()
-        ... except:
-        ...     pass
+        >>> import matplotlib.pyplot as plt
+        >>>
+        >>> fig = plt.plot(signals, color="red")
+        >>> fig = plt.plot(filtered_signals, color="green")
+        >>> leg = plt.legend(["Initial signals", "Filtered signals"])
+        >>> plt.grid(True)
+        >>> plt.show()
+
 
     """
     check_params(locals())
