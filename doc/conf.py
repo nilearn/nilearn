@@ -510,6 +510,7 @@ sphinx_gallery_conf = {
 
 if with_jupyterlite:
     global_enable_try_examples = True
+    jupyterlite_bind_ipynb_suffix = False
     try_examples_global_button_text = "Try it in your browser!"
     try_examples_global_warning_text = (
         "Running the nilearn examples in JupyterLite is experimental"
