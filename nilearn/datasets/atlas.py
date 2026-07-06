@@ -5,6 +5,7 @@ import re
 import shutil
 from pathlib import Path
 from tempfile import mkdtemp
+from typing import Any, Literal
 from xml.etree import ElementTree
 
 import numpy as np
@@ -32,6 +33,81 @@ from nilearn.datasets._utils import (
     get_dataset_dir,
 )
 from nilearn.image import check_niimg, new_img_like, reorder_img
+from nilearn.nilearn_typing import DataDir, Resume, Url, Verbose
+
+
+class Atlas(Bunch):
+    """Sub class of Bunch to help standardize atlases.
+
+    Parameters
+    ----------
+    maps : Niimg-like object or SurfaceImage object
+        single image or list of images for that atlas
+
+    description : str
+        atlas description
+
+    atlas_type: {"deterministic", "probabilistic"}
+
+    labels: list of str
+        labels for the atlas
+
+    lut: pandas.DataFrame
+        look up table for the atlas
+
+    template: str
+        name of the template used for the atlas
+    """
+
+    def __init__(
+        self,
+        maps,
+        description,
+        atlas_type,
+        labels=None,
+        lut=None,
+        template=None,
+        **kwargs,
+    ):
+        assert atlas_type in ["probabilistic", "deterministic"]
+
+        # TODO: improve
+        if template is None:
+            template = "MNI?"
+
+        if atlas_type == "probabilistic":
+            if labels is None:
+                super().__init__(
+                    maps=maps,
+                    description=description,
+                    atlas_type=atlas_type,
+                    template=template,
+                    **kwargs,
+                )
+            else:
+                super().__init__(
+                    maps=maps,
+                    labels=labels,
+                    description=description,
+                    atlas_type=atlas_type,
+                    template=template,
+                    **kwargs,
+                )
+
+            return None
+
+        check_look_up_table(lut=lut, atlas=maps, verbose=1)
+
+        super().__init__(
+            maps=maps,
+            labels=lut.name.to_list(),
+            description=description,
+            lut=lut,
+            atlas_type=atlas_type,
+            template=template,
+            **kwargs,
+        )
+
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -69,12 +145,12 @@ def rgb_to_hex_lookup(
 
 @fill_doc
 def fetch_atlas_difumo(
-    dimension=64,
-    resolution_mm=2,
-    data_dir=None,
-    resume=True,
-    verbose=1,
-):
+    dimension: Literal[64, 128, 256, 512, 1024] = 64,
+    resolution_mm: Literal[2, 3] = 2,
+    data_dir: DataDir = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Atlas:
     """Fetch DiFuMo brain atlas.
 
     Dictionaries of Functional Modes, or “DiFuMo”, can serve as
@@ -185,7 +261,7 @@ def fetch_atlas_difumo(
     readme_files = [
         ("README.md", "https://osf.io/4k9bf/download", {"move": "README.md"})
     ]
-    if not (data_dir / "README.md").exists():
+    if not (data_dir / "README.md").exists():  # type: ignore[operator]
         fetch_files(data_dir, readme_files, verbose=verbose, resume=resume)
 
     return Atlas(
@@ -199,13 +275,13 @@ def fetch_atlas_difumo(
 
 @fill_doc
 def fetch_atlas_craddock_2012(
-    data_dir=None,
-    url=None,
-    resume=True,
-    verbose=1,
-    homogeneity="spatial",
-    grp_mean=True,
-):
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+    homogeneity: Literal["spatial", "temporal", "random"] = "spatial",
+    grp_mean: bool = True,
+) -> Atlas:
     """Download and return file names \
        for the Craddock 2012 :term:`parcellation`.
 
@@ -315,12 +391,12 @@ def fetch_atlas_craddock_2012(
 
 @fill_doc
 def fetch_atlas_destrieux_2009(
-    lateralized=True,
-    data_dir=None,
-    url=None,
-    resume=True,
-    verbose=1,
-):
+    lateralized: bool = True,
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Atlas:
     """Download and load the Destrieux cortical \
     :term:`deterministic atlas<Deterministic atlas>` (dated 2009).
 
@@ -408,8 +484,12 @@ def fetch_atlas_destrieux_2009(
 
 @fill_doc
 def fetch_atlas_harvard_oxford(
-    atlas_name, data_dir=None, symmetric_split=False, resume=True, verbose=1
-):
+    atlas_name: str,
+    data_dir: DataDir = None,
+    symmetric_split: bool = False,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Atlas:
     """Load Harvard-Oxford parcellations from FSL.
 
     This function downloads Harvard Oxford atlas packaged from FSL 5.0
@@ -595,8 +675,12 @@ def fetch_atlas_harvard_oxford(
 
 @fill_doc
 def fetch_atlas_juelich(
-    atlas_name, data_dir=None, symmetric_split=False, resume=True, verbose=1
-):
+    atlas_name: str,
+    data_dir: DataDir = None,
+    symmetric_split: bool = False,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Atlas:
     """Load Juelich parcellations from FSL.
 
     This function downloads Juelich atlas packaged from FSL 5.0
@@ -915,7 +999,12 @@ def _compute_symmetric_split(source, atlas_niimg, names):
 
 
 @fill_doc
-def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_atlas_msdl(
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Atlas:
     """Download and load the MSDL brain :term:`Probabilistic atlas`.
 
     It can be downloaded at :footcite:t:`atlas_msdl`, and cited
@@ -1030,14 +1119,14 @@ def fetch_coords_power_2011() -> Bunch[str, pd.DataFrame | str]:
 
 @fill_doc
 def fetch_atlas_smith_2009(
-    data_dir=None,
-    url=None,
-    resume=True,
-    verbose=1,
-    mirror="origin",
-    dimension=10,
-    resting=True,
-):
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+    mirror: Literal["origin", "nitrc"] = "origin",
+    dimension: Literal[10, 20, 70] = 10,
+    resting: bool = True,
+) -> Atlas:
     """Download and load the Smith :term:`ICA` and BrainMap \
     :term:`Probabilistic atlas` (2009).
 
@@ -1102,7 +1191,7 @@ def fetch_atlas_smith_2009(
         if mirror == "origin":
             url = "https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/"
         elif mirror == "nitrc":
-            url = [
+            url = [  # type: ignore[assignment]
                 "https://www.nitrc.org/frs/download.php/7730/",
                 "https://www.nitrc.org/frs/download.php/7729/",
                 "https://www.nitrc.org/frs/download.php/7731/",
@@ -1121,7 +1210,7 @@ def fetch_atlas_smith_2009(
     }
 
     if isinstance(url, str):
-        url = [url] * len(files)
+        url = [url] * len(files)  # type: ignore[assignment]
 
     dataset_name = "smith_2009"
     data_dir = get_dataset_dir(
@@ -1133,7 +1222,9 @@ def fetch_atlas_smith_2009(
     key = f"{'rsn' if resting else 'bm'}{dimension}"
     key_index = list(files).index(key)
 
-    file = [(files[key], url[key_index] + files[key], {})]
+    file: list[tuple[str, str, dict[str, str]]] = [
+        (files[key], url[key_index] + files[key], {})  # type: ignore[index]
+    ]
     data = fetch_files(data_dir, file, resume=resume, verbose=verbose)
 
     return Atlas(
@@ -1145,13 +1236,13 @@ def fetch_atlas_smith_2009(
 
 @fill_doc
 def fetch_atlas_yeo_2011(
-    data_dir=None,
-    url=None,
-    resume=True,
-    verbose=1,
-    n_networks=7,
-    thickness="thick",
-):
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+    n_networks: Literal[7, 17] = 7,
+    thickness: Literal["thin", "thick"] = "thick",
+) -> Atlas:
     """Download and return file names for the Yeo 2011 :term:`parcellation`.
 
     This function retrieves the so-called yeo
@@ -1319,8 +1410,12 @@ def _update_lut_freesurder(lut):
 
 @fill_doc
 def fetch_atlas_aal(
-    version="3v2", data_dir=None, url=None, resume=True, verbose=1
-):
+    version: Literal["3v2", "SPM12", "SPM5", "SPM8"] = "3v2",
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Atlas:
     """Download and returns the AAL template for :term:`SPM` 12.
 
     For more information
@@ -1474,14 +1569,14 @@ def fetch_atlas_aal(
         xml_tree = ElementTree.parse(labels_file)
         root = xml_tree.getroot()
         for label in root.iter("label"):
-            indices.append(label.find("index").text)
-            labels.append(label.find("name").text)
+            indices.append(label.find("index").text)  # type: ignore[union-attr, arg-type]
+            labels.append(label.find("name").text)  # type: ignore[union-attr, arg-type]
     else:
         with Path(labels_file).open() as fp:
             for line in fp:
-                _, label, index = line.strip().split("\t")
+                _, label, index = line.strip().split("\t")  # type: ignore[assignment]
                 indices.append(index)
-                labels.append(label)
+                labels.append(label)  # type: ignore[arg-type]
         fdescr = fdescr.replace("SPM 12", version)
 
     return Atlas(
@@ -1501,13 +1596,13 @@ def fetch_atlas_aal(
 
 @fill_doc
 def fetch_atlas_basc_multiscale_2015(
-    data_dir=None,
-    url=None,
-    resume=True,
-    verbose=1,
-    resolution=7,
-    version="sym",
-):
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+    resolution: Literal[7, 12, 20, 36, 64, 122, 197, 325, 444] = 7,
+    version: Literal["sym", "asym"] = "sym",
+) -> Atlas:
     """Download and load multiscale functional brain parcellations.
 
     This :term:`Deterministic atlas` includes group brain parcellations
@@ -1792,7 +1887,12 @@ def fetch_coords_seitzman_2018(
 
 
 @fill_doc
-def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_atlas_allen_2011(
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and return file names for the Allen and MIALAB :term:`ICA` \
     :term:`Probabilistic atlas` (dated 2011).
 
@@ -1905,8 +2005,11 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
 @fill_doc
 def fetch_atlas_surf_destrieux(
-    data_dir=None, url=None, resume=True, verbose=1
-):
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and load Destrieux et al, 2010 cortical \
     :term:`Deterministic atlas`.
 
@@ -1999,8 +2102,8 @@ def fetch_atlas_surf_destrieux(
     lut = generate_atlas_look_up_table(
         "fetch_atlas_surf_destrieux", name=labels
     )
-    check_look_up_table(lut=lut, atlas=annot_left[0], verbose=verbose)
-    check_look_up_table(lut=lut, atlas=annot_right[0], verbose=verbose)
+    check_look_up_table(lut=lut, atlas=annot_left[0], verbose=verbose)  # type: ignore[arg-type]
+    check_look_up_table(lut=lut, atlas=annot_right[0], verbose=verbose)  # type: ignore[arg-type]
 
     return Bunch(
         labels=labels,
@@ -2084,7 +2187,11 @@ def _download_talairach(talairach_dir, verbose) -> None:
 
 
 @fill_doc
-def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
+def fetch_atlas_talairach(
+    level_name: Literal["hemisphere", "lobe", "gyrus", "tissue", "ba"],
+    data_dir: DataDir = None,
+    verbose: Verbose = 1,
+) -> Atlas:
     """Download the Talairach :term:`Deterministic atlas`.
 
     For more information,
@@ -2160,8 +2267,10 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
 @fill_doc
 def fetch_atlas_pauli_2017(
-    atlas_type="probabilistic", data_dir=None, verbose=1
-):
+    atlas_type: Literal["probabilistic", "deterministic"] = "probabilistic",
+    data_dir: DataDir = None,
+    verbose: Verbose = 1,
+) -> Atlas:
     """Download the Pauli et al. (2017) atlas.
 
     This atlas has 12 subcortical nodes in total. See
@@ -2248,14 +2357,14 @@ def fetch_atlas_pauli_2017(
 
 @fill_doc
 def fetch_atlas_schaefer_2018(
-    n_rois=400,
-    yeo_networks=7,
-    resolution_mm=1,
-    data_dir=None,
-    base_url=None,
-    resume=True,
-    verbose=1,
-):
+    n_rois: Literal[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000] = 400,
+    yeo_networks: Literal[7, 17] = 7,
+    resolution_mm: Literal[1, 2] = 1,
+    data_dir: DataDir = None,
+    base_url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Atlas:
     """Download and return file names for the Schaefer 2018 parcellation.
 
     .. nilearn_versionadded:: 0.5.1
@@ -2349,8 +2458,8 @@ def fetch_atlas_schaefer_2018(
     img_file_template = (
         "Schaefer2018_{}Parcels_{}Networks_order_FSLMNI152_{}mm.nii.gz"
     )
-    files = [
-        (f, base_url + f, {})
+    files: list[tuple[str, str, dict[str, str]]] = [
+        (f, base_url + f, {})  # type: ignore[operator]
         for f in [
             labels_file_template.format(n_rois, yeo_networks),
             img_file_template.format(n_rois, yeo_networks, resolution_mm),
@@ -2380,76 +2489,3 @@ def fetch_atlas_schaefer_2018(
         atlas_type=atlas_type,
         template="MNI152NLin6Asym",
     )
-
-
-class Atlas(Bunch):
-    """Sub class of Bunch to help standardize atlases.
-
-    Parameters
-    ----------
-    maps : Niimg-like object or SurfaceImage object
-        single image or list of images for that atlas
-
-    description : str
-        atlas description
-
-    atlas_type: {"deterministic", "probabilistic"}
-
-    labels: list of str
-        labels for the atlas
-
-    lut: pandas.DataFrame
-        look up table for the atlas
-
-    template: str
-        name of the template used for the atlas
-    """
-
-    def __init__(
-        self,
-        maps,
-        description,
-        atlas_type,
-        labels=None,
-        lut=None,
-        template=None,
-        **kwargs,
-    ):
-        assert atlas_type in ["probabilistic", "deterministic"]
-
-        # TODO: improve
-        if template is None:
-            template = "MNI?"
-
-        if atlas_type == "probabilistic":
-            if labels is None:
-                super().__init__(
-                    maps=maps,
-                    description=description,
-                    atlas_type=atlas_type,
-                    template=template,
-                    **kwargs,
-                )
-            else:
-                super().__init__(
-                    maps=maps,
-                    labels=labels,
-                    description=description,
-                    atlas_type=atlas_type,
-                    template=template,
-                    **kwargs,
-                )
-
-            return None
-
-        check_look_up_table(lut=lut, atlas=maps, verbose=1)
-
-        super().__init__(
-            maps=maps,
-            labels=lut.name.to_list(),
-            description=description,
-            lut=lut,
-            atlas_type=atlas_type,
-            template=template,
-            **kwargs,
-        )
