@@ -1570,10 +1570,15 @@ def fetch_atlas_aal(
         xml_tree = ElementTree.parse(labels_file)
         root = xml_tree.getroot()
         for label in root.iter("label"):
-            if label.find("name") is None or label.find("index") is None:
+            if (
+                (idx := label.find("index")) is None
+                or (name := label.find("name")) is None
+                or idx.text is None
+                or name.text is None
+            ):
                 continue
-            indices.append(label.find("index").text)  # type: ignore[union-attr, arg-type]
-            labels.append(label.find("name").text)  # type: ignore[union-attr, arg-type]
+            indices.append(idx.text)
+            labels.append(name.text)
     else:
         with Path(labels_file).open() as fp:
             for line in fp:
