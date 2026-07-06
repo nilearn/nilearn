@@ -1569,10 +1569,10 @@ def fetch_atlas_aal(
     if version in ("SPM12", "3v2"):
         xml_tree = ElementTree.parse(labels_file)
         root = xml_tree.getroot()
-        for label in root.iter("label"):
+        for lbl in root.iter("label"):
             if (
-                (idx := label.find("index")) is None
-                or (name := label.find("name")) is None
+                (idx := lbl.find("index")) is None
+                or (name := lbl.find("name")) is None
                 or idx.text is None
                 or name.text is None
             ):
@@ -1582,9 +1582,9 @@ def fetch_atlas_aal(
     else:
         with Path(labels_file).open() as fp:
             for line in fp:
-                _, label, index = line.strip().split("\t")  # type: ignore[assignment]
+                _, label, index = line.strip().split("\t")
                 indices.append(index)
-                labels.append(label)  # type: ignore[arg-type]
+                labels.append(label)
         fdescr = fdescr.replace("SPM 12", version)
 
     return Atlas(

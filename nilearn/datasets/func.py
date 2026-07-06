@@ -1887,7 +1887,7 @@ def fetch_surf_nki_enhanced(
     )[0]
 
     # Load the csv file
-    phenotypic_df = pd.read_csv(  # type: ignore[assignment]
+    phenotypic_df = pd.read_csv(
         phenotypic,
         header=1,
         names=["Subject", "Age", "Dominant Hand", "Sex"],
