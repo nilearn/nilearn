@@ -39,8 +39,7 @@ def save_figure_if_needed(fig: Figure, output_file: OutputFile) -> None:
     fig:  :class:`matplotlib.figure.Figure`
         figure to save
 
-    output_file: str, Path or None
-        file path to save the figure
+    %(output_file)s
     """
     if output_file is not None:
         output_file = Path(output_file)

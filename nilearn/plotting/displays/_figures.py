@@ -116,7 +116,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Parameters
         ----------
-        output_file : :obj:`str` or None, default=None
+        %(output_file)s
             Path to output file.
 
         kwargs: :obj:`dict`
