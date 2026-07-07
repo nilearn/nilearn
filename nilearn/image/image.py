@@ -2293,16 +2293,15 @@ def clean_img(
         ...                         t_r = 1,
         ...                         standardize=None)
         >>>
-        >>> # Plot the results (if matplotlib is installed)
-        >>> try:
-        ...     from matplotlib import pyplot as plt
-        ...     cleaned_data = cleaned_img.get_fdata()
-        ...     fig = plt.plot(t, raw_data[1, 1, 1], color="red")
-        ...     fig = plt.plot(t, cleaned_data[1, 1, 1], color="green")
-        ...     leg = plt.legend(["raw", "cleaned"])
-        ...     plt.show()
-        ... except:
-        ...     pass
+        >>> # Plot the results
+        >>> from matplotlib import pyplot as plt
+        >>>
+        >>> cleaned_data = cleaned_img.get_fdata()
+        >>> fig = plt.plot(t, raw_data[1, 1, 1], color="red")
+        >>> fig = plt.plot(t, cleaned_data[1, 1, 1], color="green")
+        >>> leg = plt.legend(["raw", "cleaned"])
+        >>> plt.show()
+
     """
     check_params(locals())
     # Avoid circular import
