@@ -19,10 +19,9 @@ import numpy as np
 import pandas as pd
 
 from nilearn._utils.param_validation import check_parameter_in_allowed
-
-from .load_confounds_compcor import find_compcor
-from .load_confounds_scrub import optimize_scrub
-from .load_confounds_utils import (
+from nilearn.interfaces.fmriprep.load_confounds_compcor import find_compcor
+from nilearn.interfaces.fmriprep.load_confounds_scrub import optimize_scrub
+from nilearn.interfaces.fmriprep.load_confounds_utils import (
     MissingConfoundError,
     add_suffix,
     check_params_confounds,
