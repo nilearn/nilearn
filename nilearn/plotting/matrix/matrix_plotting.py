@@ -393,9 +393,7 @@ def plot_design_matrix(
         >>> from nilearn.glm.first_level import make_first_level_design_matrix
         >>> from nilearn.plotting import plot_design_matrix, show
         >>>
-        >>>
         >>> # creating a design matrix
-        >>>
         >>> frame_times = np.arange(9)
         >>> onsets = np.arange(9)
         >>> duration = np.linspace(1, 9, 9)
