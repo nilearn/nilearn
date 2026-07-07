@@ -502,11 +502,15 @@ sphinx_gallery_conf = {
     },
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
     "within_subsection_order": "ExampleTitleSortKey",
+    # Disallow jupyterlite for examples in gallery
+    # as most of them requires loading too much data in the browser
+    "jupyterlite": None,
 }
 
 
 if with_jupyterlite:
     global_enable_try_examples = True
+    jupyterlite_bind_ipynb_suffix = False
     try_examples_global_button_text = "Try it in your browser!"
     try_examples_global_warning_text = (
         "Running the nilearn examples in JupyterLite is experimental"
@@ -521,11 +525,11 @@ if with_jupyterlite:
     # and https://github.com/pyodide/micropip/issues/223 by installing the
     # dependencies first, and then nilearn from Anaconda.org.
     try_examples_preamble = """
-    # Jupyterlite specific code
-    import matplotlib
-    import pandas
-    %pip install -q nilearn
-    """
+# Jupyterlite specific code
+import matplotlib
+import pandas
+%pip install -q nilearn
+"""
 
 mermaid_version = "11.4.0"
 
