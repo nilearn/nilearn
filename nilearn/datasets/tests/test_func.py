@@ -939,7 +939,8 @@ def test_fetch_openneuro_dataset(tmp_path):
         urls, tmp_path, dataset_version
     )
 
-    assert isinstance(datadir, str)
+    # https://github.com/nilearn/nilearn/issues/6388
+    assert datadir == str(data_dir)
     assert isinstance(dl_files, list)
     assert len(dl_files) == 9
 
