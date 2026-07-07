@@ -285,7 +285,9 @@ def test_passing_of_ncuts_in_find_cut_slices(n_cuts, img_mask_mni):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.ai_generated
 def test_singleton_ax_dim(affine_eye):
+    """Test find_cut_slices on images with a singleton spatial dimension."""
     for axis, direction in enumerate("xyz"):
         shape = [5, 6, 7]
         shape[axis] = 1
@@ -313,7 +315,9 @@ def test_tranform_cut_coords_n_cuts(affine_eye, direction):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.ai_generated
 def test_find_cuts_empty_mask_no_crash(affine_eye):
+    """Test that find_xyz_cut_coords warns and falls back on an empty mask."""
     img = Nifti1Image(np.ones((2, 2, 2)), affine_eye)
     mask_img = compute_epi_mask(img)
     with pytest.warns(UserWarning):
@@ -322,8 +326,9 @@ def test_find_cuts_empty_mask_no_crash(affine_eye):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.ai_generated
 def test_fast_abs_percentile_no_index_error_find_cuts(affine_eye):
-    # check that find_cuts functions are safe
+    """Test that find_xyz_cut_coords does not raise an IndexError."""
     data = np.array([[[1.0, 2.0], [3.0, 4.0]], [[0.0, 0.0], [0.0, 0.0]]])
     img = Nifti1Image(data, affine_eye)
     assert len(find_xyz_cut_coords(img)) == 3
@@ -472,7 +477,9 @@ def test_find_parcellation_cut_coords_error(img_3d_mni):
         )
 
 
+@pytest.mark.ai_generated
 def test_find_parcellation_cut_coords_hemispheres(affine_mni):
+    """Test find_parcellation_cut_coords with a hemisphere filter."""
     # Create a mock labels_img object
     data = np.zeros((10, 10, 10))
     data[2:5, 2:5, 2:5] = 1  # left hemisphere

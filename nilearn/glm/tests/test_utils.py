@@ -26,7 +26,11 @@ from nilearn.glm.first_level import (
 from nilearn.maskers import NiftiMasker
 
 
+@pytest.mark.ai_generated
 def test_full_rank(rng):
+    """Test that full_rank leaves full-rank matrices unchanged and warns \
+    on singular ones.
+    """
     n, p = 10, 5
     X = rng.standard_normal(size=(n, p))
     X_, _ = full_rank(X)
@@ -43,7 +47,9 @@ def test_full_rank(rng):
     assert_array_almost_equal(X, X_)
 
 
+@pytest.mark.ai_generated
 def test_z_score_t_values(rng):
+    """Test z_score against z-scores derived from Student's t p-values."""
     # Randomly draw samples from the standard Student's t distribution
     t_val = rng.standard_t(10, size=10)
     # Estimate the p-values using the Survival Function (SF)
@@ -75,7 +81,9 @@ def test_z_score_t_values(rng):
     assert_array_almost_equal(norm.sf(z_score(p_val)), p_val)
 
 
+@pytest.mark.ai_generated
 def test_z_score_f_values(rng):
+    """Test z_score against z-scores derived from F-distribution p-values."""
     # Randomly draw samples from the F distribution
     f_val = rng.f(1, 48, size=10)
     # Estimate the p-values using the Survival Function (SF)
@@ -118,7 +126,9 @@ def test_z_score_f_values(rng):
 
 
 @pytest.mark.slow
+@pytest.mark.ai_generated
 def test_z_score_opposite_contrast(rng):
+    """Test that z-scores of opposite contrasts are numerically opposite."""
     fmri, mask = generate_fake_fmri(
         shape=(50, 20, 50), length=96, random_state=rng
     )
@@ -162,7 +172,9 @@ def test_z_score_opposite_contrast(rng):
         )
 
 
+@pytest.mark.ai_generated
 def test_mahalanobis(rng):
+    """Test multiple_mahalanobis against a direct 1D computation."""
     n = 50
     x = rng.uniform(size=n) / n
     A = rng.uniform(size=(n, n)) / n
@@ -172,7 +184,9 @@ def test_mahalanobis(rng):
     assert_almost_equal(mah, multiple_mahalanobis(x, A), decimal=1)
 
 
+@pytest.mark.ai_generated
 def test_mahalanobis2(rng):
+    """Test multiple_mahalanobis against a direct computation on 3D input."""
     n = 50
     x = rng.standard_normal(size=(n, 3))
     Aa = np.zeros([n, n, 3])
@@ -187,7 +201,9 @@ def test_mahalanobis2(rng):
     assert np.allclose(mah, f_mah)
 
 
+@pytest.mark.ai_generated
 def test_mahalanobis_errors():
+    """Test that multiple_mahalanobis raises on inconsistent shapes."""
     effect = np.zeros((1, 2, 3))
     cov = np.zeros((3, 3, 3))
 
@@ -203,7 +219,9 @@ def test_mahalanobis_errors():
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.ai_generated
 def test_multiple_fast_inv(rng):
+    """Test multiple_fast_inverse against scipy's inv on stacked matrices."""
     shape = (10, 20, 20)
     X = rng.standard_normal(size=shape)
     X_inv_ref = np.zeros(shape)
@@ -215,7 +233,9 @@ def test_multiple_fast_inv(rng):
     assert_almost_equal(X_inv_ref, X_inv)
 
 
+@pytest.mark.ai_generated
 def test_multiple_fast_inverse_errors():
+    """Test that multiple_fast_inverse raises on non-invertible matrices."""
     shape = (2, 2, 2)
     X = np.zeros(shape)
 
@@ -229,7 +249,9 @@ def test_multiple_fast_inverse_errors():
         multiple_fast_inverse(X)
 
 
+@pytest.mark.ai_generated
 def test_pos_recipr():
+    """Test positive_reciprocal on arrays, matrices, and lists."""
     X = np.array([2, 1, -1, 0], dtype=np.int8)
     eX = np.array([0.5, 1, 0, 0])
     Y = positive_reciprocal(X)

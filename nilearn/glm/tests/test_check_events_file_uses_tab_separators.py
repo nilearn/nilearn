@@ -7,6 +7,7 @@ from nilearn.glm.first_level.first_level import (
 
 
 def make_data_for_test_runs():
+    """Return dummy event data and a mapping of delimiter names to chars."""
     data_for_temp_datafile = [
         ["csf", "constant", "linearTrend", "wm"],
         [13343.032102491035, 1.0, 0.0, 9486.199545677482],
@@ -42,7 +43,9 @@ def _run_test_for_invalid_separator(filepath, delimiter_name):
         assert result is None
 
 
+@pytest.mark.ai_generated
 def test_for_invalid_separator(tmp_path):
+    """Test that non-tab/comma delimited events files raise a ValueError."""
     data_for_temp_datafile, delimiters = make_data_for_test_runs()
     for delimiter_name, delimiter_char in delimiters.items():
         temp_tsv_file = (
@@ -58,7 +61,9 @@ def test_for_invalid_separator(tmp_path):
         )
 
 
+@pytest.mark.ai_generated
 def test_with_2d_dataframe():
+    """Test that a 2D events DataFrame passes the separator check."""
     data_for_pandas_dataframe, _ = make_data_for_test_runs()
     events_pandas_dataframe = pd.DataFrame(data_for_pandas_dataframe)
     result = _check_events_file_uses_tab_separators(
@@ -67,7 +72,9 @@ def test_with_2d_dataframe():
     assert result is None
 
 
+@pytest.mark.ai_generated
 def test_with_1d_dataframe():
+    """Test that a 1D events DataFrame passes the separator check."""
     data_for_pandas_dataframe, _ = make_data_for_test_runs()
     for dataframe_ in data_for_pandas_dataframe:
         events_pandas_dataframe = pd.DataFrame(dataframe_)
@@ -77,13 +84,17 @@ def test_with_1d_dataframe():
         assert result is None
 
 
+@pytest.mark.ai_generated
 def test_for_invalid_filepath():
+    """Test that a nonexistent file path passes the separator check."""
     filepath = "junk_file_path.csv"
     result = _check_events_file_uses_tab_separators(events_files=filepath)
     assert result is None
 
 
+@pytest.mark.ai_generated
 def test_for_pandas_dataframe():
+    """Test that an arbitrary events DataFrame passes the separator check."""
     events_pandas_dataframe = pd.DataFrame([["a", "b", "c"], [0, 1, 2]])
     result = _check_events_file_uses_tab_separators(
         events_files=events_pandas_dataframe
@@ -91,7 +102,9 @@ def test_for_pandas_dataframe():
     assert result is None
 
 
+@pytest.mark.ai_generated
 def test_binary_bytearray_of_ints_data_error(tmp_path):
+    """Test that a binary events file raises a ValueError."""
     temp_data_bytearray_from_ints = bytearray([0, 1, 0, 11, 10])
     temp_bin_file = tmp_path / "temp_bin.bin"
     with temp_bin_file.open("wb") as temp_bin_obj:

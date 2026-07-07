@@ -44,7 +44,9 @@ def test_pad_contrast_matrix():
     )
 
 
+@pytest.mark.ai_generated
 def test_sanitize_labels():
+    """Test that sanitize_labels validates length and accepts array-likes."""
     labs = ["foo", "bar"]
     with pytest.raises(
         ValueError,
@@ -58,7 +60,9 @@ def test_sanitize_labels():
 
 
 @pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)
+@pytest.mark.ai_generated
 def test_sanitize_reorder(reorder):
+    """Test that sanitize_reorder maps True to 'average' and passes others."""
     if reorder is not True:
         assert sanitize_reorder(reorder) == reorder
     else:
@@ -66,7 +70,9 @@ def test_sanitize_reorder(reorder):
 
 
 @pytest.mark.parametrize("reorder", [None, "foo", 2])
+@pytest.mark.ai_generated
 def test_sanitize_reorder_error(reorder):
+    """Test that sanitize_reorder rejects invalid reorder values."""
     with pytest.raises(
         ValueError, match=("Parameter reorder needs to be one of")
     ):
@@ -74,11 +80,15 @@ def test_sanitize_reorder_error(reorder):
 
 
 @pytest.mark.parametrize("tri", VALID_TRI_VALUES)
+@pytest.mark.ai_generated
 def test_sanitize_tri(tri):
+    """Test that sanitize_tri accepts all valid tri values."""
     sanitize_tri(tri)
 
 
 @pytest.mark.parametrize("tri", [None, "foo", 2])
+@pytest.mark.ai_generated
 def test_sanitize_tri_error(tri):
+    """Test that sanitize_tri rejects invalid tri values."""
     with pytest.raises(ValueError, match="'tri' must be one of"):
         sanitize_tri(tri)

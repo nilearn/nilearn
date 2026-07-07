@@ -28,7 +28,9 @@ from nilearn.surface.surface import (
 )
 
 
+@pytest.mark.ai_generated
 def test_check_mesh():
+    """Test that check_mesh_is_fsaverage validates and resolves meshes."""
     mesh = check_mesh_is_fsaverage("fsaverage5")
     assert mesh is check_mesh_is_fsaverage(mesh)
     with pytest.raises(ValueError):
@@ -42,7 +44,9 @@ def test_check_mesh():
     assert mesh is check_mesh_is_fsaverage(mesh)
 
 
+@pytest.mark.ai_generated
 def test_full_brain_info(mni152_template_res_2):
+    """Test that _full_brain_info returns the expected mesh/color keys."""
     surfaces = fetch_surf_fsaverage()
 
     info = _full_brain_info(mni152_template_res_2, surfaces)
@@ -72,7 +76,9 @@ def test_full_brain_info(mni152_template_res_2):
 
 
 @pytest.mark.engines(["plotly", "niivue"])
+@pytest.mark.ai_generated
 def test_fill_html_template(tmp_path, mni152_template_res_2, engine):
+    """Test _fill_html_template for a single mesh and a full-brain info."""
     fsaverage = fetch_surf_fsaverage()
     surf_mesh = load_surf_mesh(fsaverage["pial_right"])
     surf_map = surf_mesh.coordinates[:, 0]
@@ -103,7 +109,9 @@ def test_fill_html_template(tmp_path, mni152_template_res_2, engine):
 
 @pytest.mark.single_process
 @pytest.mark.engines(["plotly", "niivue"])
+@pytest.mark.ai_generated
 def test_view_surf(tmp_path, rng, engine):
+    """Test view_surf with various map, threshold, and title combinations."""
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
     surf_map = mesh.coordinates[:, 0]
@@ -154,7 +162,9 @@ def test_view_surf(tmp_path, rng, engine):
     check_html_surface_plots(tmp_path, html, engine=engine)
 
 
+@pytest.mark.ai_generated
 def test_view_surf_errors():
+    """Test that view_surf raises on mismatched map/mesh shapes."""
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
 
@@ -226,7 +236,9 @@ def test_view_img_on_surf_clipped_image(tmp_path, mni152_template_res_2):
     reason="This test requires plotly to be installed",
 )
 @pytest.mark.thread_unsafe
+@pytest.mark.ai_generated
 def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):
+    """Test view_img_on_surf with a file path or Path-like input."""
     view_img_on_surf(img_3d_mni_as_file)
     view_img_on_surf(str(img_3d_mni_as_file))
 
@@ -235,7 +247,9 @@ def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):
     not is_plotly_installed(),
     reason="This test requires plotly to be installed",
 )
+@pytest.mark.ai_generated
 def test_view_img_on_surf_errors(img_3d_mni):
+    """Test that view_img_on_surf rejects 4D-stacked image lists."""
     with pytest.raises(DimensionError):
         view_img_on_surf([img_3d_mni, img_3d_mni])
 

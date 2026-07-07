@@ -79,7 +79,9 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
         ([1 / 3, 11 / 3, 11 / 3, 10 / 3], 11),
     ],
 )
+@pytest.mark.ai_generated
 def test_adjust_small_clusters(test_list, n_clusters):
+    """Test that _adjust_small_clusters rounds sizes to nonzero integers."""
     test_list = np.asarray(test_list)
 
     assert np.sum(test_list) == n_clusters
@@ -93,7 +95,9 @@ def test_adjust_small_clusters(test_list, n_clusters):
 
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
+@pytest.mark.ai_generated
 def test_hierarchical_k_means():
+    """Test that hierarchical_k_means recovers the expected cluster labels."""
     X = [[10, -10, 30], [12, -8, 24]]
     truth_labels = np.tile([0, 1, 2], 5)
     X = np.tile(X, 5).T
@@ -103,7 +107,9 @@ def test_hierarchical_k_means():
 
 
 @pytest.mark.single_process
+@pytest.mark.ai_generated
 def test_transform():
+    """Test that HierarchicalKMeans.transform reduces to n_clusters."""
     n_samples = 15
     n_clusters = 8
     data_img, mask_img = generate_fake_fmri(
@@ -118,7 +124,9 @@ def test_transform():
 
 
 @pytest.mark.single_process
+@pytest.mark.ai_generated
 def test_inverse_transform():
+    """Test that HierarchicalKMeans.inverse_transform restores input shape."""
     n_samples = 15
     n_clusters = 8
     data_img, mask_img = generate_fake_fmri(
@@ -135,7 +143,9 @@ def test_inverse_transform():
 
 @pytest.mark.slow
 @pytest.mark.parametrize("n_clusters", [None, -2, 0, "2"])
+@pytest.mark.ai_generated
 def test_error_n_clusters(n_clusters):
+    """Test that HierarchicalKMeans rejects invalid n_clusters values."""
     n_samples = 15
     data_img, mask_img = generate_fake_fmri(
         shape=(10, 11, 12), length=n_samples
@@ -152,7 +162,9 @@ def test_error_n_clusters(n_clusters):
 
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
+@pytest.mark.ai_generated
 def test_scaling():
+    """Test that scaling weights inverse_transform output by cluster size."""
     n_samples = 15
     n_clusters = 8
     data_img, mask_img = generate_fake_fmri(
@@ -209,7 +221,9 @@ def test_surface(
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("img_type", ["surface", "volume"])
+@pytest.mark.ai_generated
 def test_n_clusters_warning(img_type, rng):
+    """Test that HierarchicalKMeans warns when n_clusters exceeds features."""
     n_samples = 15
     if img_type == "surface":
         mesh = {

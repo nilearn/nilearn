@@ -12,7 +12,9 @@ from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
 from nilearn.datasets.tests.conftest import Response
 
 
+@pytest.mark.ai_generated
 def test_sender_key_order(request_mocker):
+    """Test that the most recently added url_mapping entry takes priority."""
     request_mocker.url_mapping["*message.txt"] = "message"
     resp = requests.get("https://example.org/message.txt")
 
@@ -30,7 +32,9 @@ def test_sender_key_order(request_mocker):
     assert resp.text == "new message"
 
 
+@pytest.mark.ai_generated
 def test_loading_from_archive_contents(tmp_path):
+    """Test that mocked zip/tar responses extract to the expected files."""
     expected_contents = sorted(
         [
             Path("README.txt"),
@@ -72,7 +76,9 @@ def test_loading_from_archive_contents(tmp_path):
         assert labels_file.read_bytes() == b""
 
 
+@pytest.mark.ai_generated
 def test_sender_regex(request_mocker):
+    """Test url_mapping with regex patterns and callables as values."""
     url = "https://example.org/info?key=value&name=nilearn"
     pattern = re.compile(
         r".*example.org/(?P<section>.*)\?.*name=(?P<name>[^&]+)"
@@ -99,7 +105,9 @@ def test_sender_regex(request_mocker):
         resp.raise_for_status()
 
 
+@pytest.mark.ai_generated
 def test_sender_status(request_mocker):
+    """Test url_mapping with plain integer status codes as values."""
     request_mocker.url_mapping["*good"] = 200
     request_mocker.url_mapping["*forbidden"] = 403
     resp = requests.get("https://example.org/good")
@@ -120,13 +128,17 @@ class _MyError(Exception):
     pass
 
 
+@pytest.mark.ai_generated
 def test_sender_exception(request_mocker):
+    """Test that an exception in url_mapping is raised on request."""
     request_mocker.url_mapping["*bad"] = _MyError("abc")
     with pytest.raises(_MyError, match="abc"):
         requests.get("ftp:example.org/bad")
 
 
+@pytest.mark.ai_generated
 def test_sender_img(request_mocker, tmp_path):
+    """Test url_mapping with a nifti image as value."""
     request_mocker.url_mapping["*"] = generate_fake_fmri()[0]
     resp = requests.get("ftp:example.org/download")
     file_path = tmp_path / "img.nii.gz"
@@ -141,7 +153,9 @@ class _MyResponse(Response):
         return '{"count": 1}'
 
 
+@pytest.mark.ai_generated
 def test_sender_response(request_mocker):
+    """Test url_mapping with Response instances and callables as values."""
     request_mocker.url_mapping["*example.org/a"] = _MyResponse("", "")
 
     def f(match, request):  # noqa: ARG001
@@ -159,7 +173,9 @@ def test_sender_response(request_mocker):
     assert resp.headers["cookie"] == "abc"
 
 
+@pytest.mark.ai_generated
 def test_sender_path(request_mocker, tmp_path):
+    """Test url_mapping with a path or path string as value."""
     file_path = tmp_path / "readme.txt"
     with file_path.open("w") as f:
         f.write("hello")
@@ -175,13 +191,17 @@ def test_sender_path(request_mocker, tmp_path):
     assert resp.text == "hello"
 
 
+@pytest.mark.ai_generated
 def test_sender_bad_input(request_mocker):
+    """Test that an unsupported url_mapping value type raises TypeError."""
     request_mocker.url_mapping["*"] = 2.5
     with pytest.raises(TypeError):
         requests.get("https://example.org")
 
 
+@pytest.mark.ai_generated
 def test_dict_to_archive(tmp_path):
+    """Test that dict_to_archive and list_to_archive build valid archives."""
     subdir = tmp_path / "tmp"
     subdir.mkdir()
     (subdir / "labels.csv").touch()

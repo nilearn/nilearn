@@ -13,15 +13,19 @@ from nilearn.glm import ARModel, OLSModel, SimpleRegressionResults
 
 @pytest.fixture()
 def X(rng) -> np.ndarray:  # noqa: N802
+    """Return a random 40x10 design matrix."""
     return rng.standard_normal(size=(40, 10))
 
 
 @pytest.fixture()
 def Y(rng) -> np.ndarray:  # noqa: N802
+    """Return a random 40x10 array of observations."""
     return rng.standard_normal(size=(40, 10))
 
 
+@pytest.mark.ai_generated
 def test_ols(X, Y):
+    """Test that OLSModel fits and produces outputs of the expected shape."""
     model = OLSModel(design=X)
     results = model.fit(Y)
     assert results.df_residuals == 30
@@ -29,7 +33,9 @@ def test_ols(X, Y):
     assert results.predicted.shape[0] == 40
 
 
+@pytest.mark.ai_generated
 def test_ar(X, Y):
+    """Test that ARModel fits and produces outputs of the expected shape."""
     model = ARModel(design=X, rho=0.4)
     results = model.fit(Y)
     assert results.df_residuals == 30
@@ -37,10 +43,12 @@ def test_ar(X, Y):
     assert results.predicted.shape[0] == 40
 
 
+@pytest.mark.ai_generated
 def test_residuals(X, Y):
-    # If design matrix contains an intercept, the
-    # mean of the residuals should be 0 (short of
-    # some numerical rounding errors)
+    """Test that residuals have zero mean when design has an intercept.
+
+    Short of some numerical rounding errors.
+    """
     X[:, 0] = 1
     model = OLSModel(design=X)
     results = model.fit(Y)
@@ -48,13 +56,16 @@ def test_residuals(X, Y):
     assert len(results.whitened_residuals) == 40
 
 
+@pytest.mark.ai_generated
 def test_predicted_r_square(X, Y):
+    """Test that a fully-determined OLS fit has r_square of 1.
+
+    Signal of 10 elements should be completely predicted by 10
+    predictors, short of some numerical rounding errors.
+    """
     Xshort = X.copy()[:10, :]
     Yshort = Y.copy()[:10]
 
-    # Signal of 10 elements should be completely
-    # predicted by 10 predictors (short of some numerical
-    # rounding errors)
     model = OLSModel(design=Xshort)
     results = model.fit(Yshort)
     assert_almost_equal(results.residuals.sum(), 0)
@@ -62,21 +73,27 @@ def test_predicted_r_square(X, Y):
     assert_almost_equal(results.r_square, 1.0)
 
 
+@pytest.mark.ai_generated
 def test_ols_degenerate(X, Y):
+    """Test that OLSModel's degrees of freedom account for collinearity."""
     X[:, 0] = X[:, 1] + X[:, 2]
     model = OLSModel(design=X)
     results = model.fit(Y)
     assert results.df_residuals == 31
 
 
+@pytest.mark.ai_generated
 def test_ar_degenerate(X, Y):
+    """Test that ARModel's degrees of freedom account for collinearity."""
     X[:, 0] = X[:, 1] + X[:, 2]
     model = ARModel(design=X, rho=0.9)
     results = model.fit(Y)
     assert results.df_residuals == 31
 
 
+@pytest.mark.ai_generated
 def test_simple_results(X, Y):
+    """Test that SimpleRegressionResults matches the full results object."""
     model = OLSModel(X)
     results = model.fit(Y)
 

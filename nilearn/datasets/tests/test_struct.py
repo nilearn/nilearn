@@ -34,7 +34,9 @@ from nilearn.datasets.tests._testing import (
 from nilearn.surface import PolyMesh, SurfaceImage
 
 
+@pytest.mark.ai_generated
 def test_fetch_icbm152_2009(tmp_path, request_mocker, capsys):
+    """Test that fetch_icbm152_2009 returns the expected file paths."""
     dataset = fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
 
     check_type_fetcher(dataset)
@@ -126,7 +128,9 @@ def test_fetch_oasis_vbm_dartel_false(tmp_path, request_mocker, capsys):
     ],
 )
 @pytest.mark.parametrize("resolution", [None, 2])
+@pytest.mark.ai_generated
 def test_load_mni152(func, resolution):
+    """Test that MNI152 loaders return an image with the expected shape."""
     img = func(resolution=resolution)
 
     assert isinstance(img, Nifti1Image)
@@ -144,7 +148,9 @@ def test_load_mni152(func, resolution):
     assert img.header.get_zooms() == expected_zooms
 
 
+@pytest.mark.ai_generated
 def test_fetch_icbm152_brain_gm_mask(tmp_path):
+    """Test that fetch_icbm152_brain_gm_mask returns a grey matter mask."""
     dataset = fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
     load_mni152_template(resolution=2).to_filename(dataset.gm)
     grey_matter_img = fetch_icbm152_brain_gm_mask(
@@ -217,7 +223,9 @@ def test_fetch_load_fsaverage():
     assert result.pial.parts["left"].n_vertices == nb_vertices_fsaverage5
 
 
+@pytest.mark.ai_generated
 def test_load_fsaverage_data_smoke():
+    """Test that load_fsaverage_data returns a SurfaceImage."""
     assert isinstance(load_fsaverage_data(), SurfaceImage)
 
 
