@@ -7,7 +7,6 @@ import pytest
 from nilearn.plotting import plot_prob_atlas
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "params",
@@ -38,7 +37,6 @@ def test_plot_prob_atlas(
         plot_prob_atlas(img_maps, colorbar=colorbar, **params)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_plot_prob_atlas_radiological_view(matplotlib_pyplot, img_4d_rand_eye):
     """Smoke test for radiological view."""

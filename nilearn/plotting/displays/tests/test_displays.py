@@ -339,7 +339,6 @@ def test_user_given_cmap_with_colorbar(mni152_template_res_2):
     oslicer.close()
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("display", [OrthoSlicer, LYRZProjector])
 def test_data_complete_mask(affine_eye, display):
     """Test for a special case due to matplotlib 2.1.0.
@@ -485,7 +484,6 @@ def test_display_slicers_transparency_warning(
     display.title(f"display mode is {name}")
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
 @pytest.mark.parametrize(
     "display,name", zip(PROJECTORS, PROJECTOR_KEYS, strict=False)
