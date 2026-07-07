@@ -395,7 +395,7 @@ def plot_design_matrix(
         >>> from nilearn.plotting.image.img_plotting import show
         >>>
         >>>
-        >>> #creating a design matrix
+        >>> # creating a design matrix
         >>>
         >>> frame_times = np.arange(9)
         >>> onsets = np.arange(9)
