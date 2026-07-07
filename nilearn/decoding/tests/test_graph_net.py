@@ -20,8 +20,7 @@ from nilearn.decoding.space_net_solvers import (
     mfista,
 )
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
-
-from .test_same_api import to_niimgs
+from nilearn.decoding.tests.test_same_api import to_niimgs
 
 
 def _make_data(task="regression", size=4):

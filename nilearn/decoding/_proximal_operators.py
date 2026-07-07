@@ -7,8 +7,7 @@ import numpy as np
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
-
-from ._objective_functions import (
+from nilearn.decoding._objective_functions import (
     divergence_id,
     gradient_id,
     tv_l1_from_gradient,

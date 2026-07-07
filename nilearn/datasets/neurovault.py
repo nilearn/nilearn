@@ -27,15 +27,14 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.image import resample_img
-from nilearn.nilearn_typing import DataDir, Verbose
-
-from ._utils import (
+from nilearn.datasets._utils import (
     fetch_single_file,
     get_dataset_descr,
     get_dataset_dir,
     logger,
 )
+from nilearn.image import resample_img
+from nilearn.nilearn_typing import DataDir, Verbose
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")

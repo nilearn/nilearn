@@ -9,9 +9,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.masking import unmask_from_to_3d_array
-
-from ._objective_functions import (
+from nilearn.decoding._objective_functions import (
     divergence,
     gradient,
     gradient_id,
@@ -22,13 +20,14 @@ from ._objective_functions import (
     squared_loss,
     squared_loss_grad,
 )
-from ._proximal_operators import (
+from nilearn.decoding._proximal_operators import (
     prox_l1,
     prox_l1_with_intercept,
     prox_tvl1,
     prox_tvl1_with_intercept,
 )
-from .fista import mfista
+from nilearn.decoding.fista import mfista
+from nilearn.masking import unmask_from_to_3d_array
 
 
 def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
