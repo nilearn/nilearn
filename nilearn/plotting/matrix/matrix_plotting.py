@@ -391,8 +391,7 @@ def plot_design_matrix(
         >>> import numpy as np
         >>> from pandas import DataFrame
         >>> from nilearn.glm.first_level import make_first_level_design_matrix
-        >>> from nilearn.plotting import plot_design_matrix
-        >>> from nilearn.plotting.image.img_plotting import show
+        >>> from nilearn.plotting import plot_design_matrix, show
         >>>
         >>>
         >>> # creating a design matrix
