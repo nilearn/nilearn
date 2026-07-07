@@ -2814,7 +2814,7 @@ def fetch_openneuro_dataset(
 
     patch_openneuro_dataset(downloaded)
 
-    return str(data_dir), sorted(downloaded)
+    return str(dataset_dir), sorted(downloaded)
 
 
 @fill_doc
