@@ -1,4 +1,5 @@
 """Benchmarks for TFCE."""
+
 import numpy as np
 from scipy.ndimage import gaussian_filter
 
@@ -8,7 +9,7 @@ from ..utils import _rng
 
 
 class BaseBenchMarkTFCE:
-    """Base for benchmarking differen TFCE implementations."""
+    """Base for benchmarking different TFCE implementations."""
 
     def setup(
         self,
