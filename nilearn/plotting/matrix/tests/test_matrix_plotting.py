@@ -162,7 +162,7 @@ def test_save_design_matrix(tmp_path):
     ax = plot_design_matrix(dmtx, output_file=tmp_path / "dmtx.png")
 
     assert (tmp_path / "dmtx.png").exists()
-    assert ax is None
+    assert ax is not None
 
     plot_design_matrix(dmtx, output_file=tmp_path / "dmtx.pdf")
 
@@ -229,7 +229,7 @@ def test_show_event_plot(tmp_path):
     fig = plot_event(model_event, output_file=tmp_path / "event.png")
 
     assert (tmp_path / "event.png").exists()
-    assert fig is None
+    assert fig is not None
 
     plot_event(model_event, output_file=tmp_path / "event.pdf")
 
@@ -297,7 +297,7 @@ def test_save_contrast_matrix(tmp_path):
     )
     assert (tmp_path / "contrast.png").exists()
 
-    assert ax is None
+    assert ax is not None
 
     plot_contrast_matrix(contrast, dmtx, output_file=tmp_path / "contrast.pdf")
 

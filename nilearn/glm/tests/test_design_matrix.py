@@ -23,8 +23,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
     make_second_level_design_matrix,
 )
-
-from ._testing import (
+from nilearn.glm.tests._testing import (
     block_paradigm,
     design_with_negative_onsets,
     modulated_block_paradigm,
