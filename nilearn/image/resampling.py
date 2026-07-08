@@ -5,7 +5,7 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 
 import numbers
 import warnings
-from typing import overload
+from typing import Literal, overload
 
 import numpy as np
 from nibabel import Nifti1Image
@@ -27,6 +27,12 @@ from nilearn.image import (
     copy_img,
     crop_img,
     new_img_like,
+)
+from nilearn.nilearn_typing import (
+    CopyHeader,
+    NiimgLike,
+    TargetAffine,
+    TargetShape,
 )
 
 ###############################################################################
@@ -103,18 +109,27 @@ def from_matrix_vector(matrix, vector):
 
 @overload
 def coord_transform(
-    x: float, y: float, z: float, affine
+    x: float,
+    y: float,
+    z: float,
+    affine: np.ndarray,
 ) -> tuple[float, float, float]: ...
 
 
 @overload
 def coord_transform(
-    x: np.ndarray, y: np.ndarray, z: np.ndarray, affine
+    x: np.ndarray,
+    y: np.ndarray,
+    z: np.ndarray,
+    affine: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]: ...
 
 
 def coord_transform(
-    x, y, z, affine
+    x: float | np.ndarray,
+    y: float | np.ndarray,
+    z: float | np.ndarray,
+    affine: np.ndarray,
 ) -> tuple[float, float, float] | tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Convert the x, y, z coordinates from one image space to another space.
 
@@ -154,8 +169,11 @@ def coord_transform(
     >>> # The "affine" matrix can be found
     >>> # as the ".affine" attribute of a nifti image,
     >>> # or using the "get_affine()" method for older nibabel installations
+    >>>
     >>> from nilearn import datasets, image
+    >>>
     >>> niimg = datasets.load_mni152_template()
+    >>>
     >>> # Find the MNI coordinates of the voxel (50, 50, 50)
     >>> image.coord_transform(50, 50, 50, niimg.affine)
     (-48.0, -84.0, -22.0)
@@ -163,20 +181,27 @@ def coord_transform(
     """
     squeeze = not hasattr(x, "__iter__")
     return_number = isinstance(x, numbers.Number)
-    x = np.asanyarray(x)
-    shape = x.shape
+
+    x_as_array = np.asanyarray(x)
+    shape = x_as_array.shape
+    
     coords = np.c_[
         np.atleast_1d(x).flat,
         np.atleast_1d(y).flat,
         np.atleast_1d(z).flat,
         np.ones_like(np.atleast_1d(z).flat),
     ].T
-    x, y, z, _ = np.dot(affine, coords)
+    x_as_array, y_as_array, z_as_array, _ = np.dot(affine, coords)
+
     if return_number:
-        return x.item(), y.item(), z.item()
+        return x_as_array.item(), y_as_array.item(), z_as_array.item()
     if squeeze:
-        return x.squeeze(), y.squeeze(), z.squeeze()
-    return np.reshape(x, shape), np.reshape(y, shape), np.reshape(z, shape)
+        return x_as_array.squeeze(), y_as_array.squeeze(), z_as_array.squeeze()
+    return (
+        np.reshape(x_as_array, shape),
+        np.reshape(y_as_array, shape),
+        np.reshape(z_as_array, shape),
+    )
 
 
 def get_bounds(shape, affine) -> list[tuple[np.float64, np.float64]]:
@@ -361,16 +386,16 @@ def _resample_one_img(
 
 @fill_doc
 def resample_img(
-    img,
-    target_affine=None,
-    target_shape=None,
-    interpolation="continuous",
-    copy=True,
-    order="F",
-    clip=True,
-    fill_value=0,
-    force_resample=True,
-    copy_header=True,
+    img: NiimgLike,
+    target_affine: TargetAffine = None,
+    target_shape: TargetShape = None,
+    interpolation: Literal["continuous", "linear", "nearest"] = "continuous",
+    copy: bool = True,
+    order: Literal["F", "C"] = "F",
+    clip: bool = True,
+    fill_value: float = 0.0,
+    force_resample: bool = True,
+    copy_header: CopyHeader = True,
 ) -> Nifti1Image:
     """Resample a Niimg-like object.
 
@@ -386,9 +411,9 @@ def resample_img(
     %(target_shape)s
         See notes.
 
-    interpolation : :obj:`str`, default='continuous'
-        Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
-        method.
+    interpolation : {'continuous', 'linear', 'nearest'}, default='continuous'
+        Can be 'continuous', 'linear', or 'nearest'.
+        Indicates the resample method.
 
     copy : :obj:`bool`, default=True
         If True, guarantees that output array has no memory in common with
@@ -406,7 +431,7 @@ def resample_img(
         value when extrapolating out of field of view.
         If False no clip is performed.
 
-    fill_value : :obj:`float`, default=0
+    fill_value : :obj:`float`, default=0.0
         Use a fill value for points outside of input volume.
 
     force_resample : :obj:`bool`, default=True
@@ -500,6 +525,7 @@ def resample_img(
     (2, 2, 2)
     """
     check_params(locals())
+
     _check_resample_img_inputs(target_shape, target_affine, interpolation)
 
     img = stringify_path(img)
@@ -772,15 +798,15 @@ def _get_resampled_data_dtype(data, interpolation, A):
 
 @fill_doc
 def resample_to_img(
-    source_img,
-    target_img,
-    interpolation="continuous",
-    copy=True,
-    order="F",
-    clip=False,
-    fill_value=0,
-    force_resample=True,
-    copy_header=True,
+    source_img: NiimgLike,
+    target_img: NiimgLike,
+    interpolation: Literal["continuous", "linear", "nearest"] = "continuous",
+    copy: bool = True,
+    order: Literal["F", "C"] = "F",
+    clip: bool = False,
+    fill_value: float = 0.0,
+    force_resample: bool = True,
+    copy_header: CopyHeader = True,
 ) -> Nifti1Image:
     """Resample a Niimg-like source image on a target Niimg-like image.
 
@@ -798,9 +824,9 @@ def resample_to_img(
         See :ref:`extracting_data`.
         Reference image taken for resampling.
 
-    interpolation : :obj:`str`, default='continuous'
-        Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
-        method.
+    interpolation : {'continuous', 'linear', 'nearest'}, default='continuous'
+        Can be 'continuous', 'linear', or 'nearest'.
+        Indicates the resample method.
 
     copy : :obj:`bool`, default=True
         If True, guarantees that output array has no memory in common with
@@ -841,17 +867,22 @@ def resample_to_img(
     --------
     >>> # Resample a source image to match the shape
     >>> # and affine of a target image
+    >>>
     >>> import numpy as np
     >>> import nibabel as nib
-    >>> from nilearn import image
+    >>> from nilearn.image import resample_to_img
+    >>>
     >>> source_data = np.zeros((4, 4, 4))
     >>> source_img = nib.Nifti1Image(source_data, affine=np.eye(4))
+    >>>
     >>> target_data = np.zeros((2, 2, 2))
     >>> target_img = nib.Nifti1Image(
     ...     target_data,
     ...     affine=np.eye(4) * 2,  # 2 mm voxels
     ... )
-    >>> resampled = image.resample_to_img(source_img, target_img)
+    >>>
+    >>> resampled = resample_to_img(source_img, target_img)
+    >>>
     >>> resampled.shape
     (2, 2, 2)
     >>> resampled.affine[:3, :3]
@@ -891,7 +922,11 @@ def resample_to_img(
 
 
 @fill_doc
-def reorder_img(img, resample=None, copy_header=True) -> Nifti1Image:
+def reorder_img(
+    img: NiimgLike,
+    resample: Literal["continuous", "linear", "nearest"] | None = None,
+    copy_header: CopyHeader = True,
+) -> Nifti1Image:
     """Return an image with the affine diagonal (by permuting axes).
 
     The orientation of the new image will be RAS (Right, Anterior, Superior).
