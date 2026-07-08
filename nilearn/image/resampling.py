@@ -7,6 +7,7 @@ import numbers
 import warnings
 
 import numpy as np
+from nibabel import Nifti1Image
 from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
@@ -99,7 +100,9 @@ def from_matrix_vector(matrix, vector):
     return t
 
 
-def coord_transform(x, y, z, affine):
+def coord_transform(
+    x, y, z, affine
+) -> tuple[float, float, float] | tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Convert the x, y, z coordinates from one image space to another space.
 
     Parameters
@@ -355,7 +358,7 @@ def resample_img(
     fill_value=0,
     force_resample=True,
     copy_header=True,
-):
+) -> Nifti1Image:
     """Resample a Niimg-like object.
 
     Parameters
@@ -544,9 +547,9 @@ def resample_img(
         offset = target_affine[:3, :3].dot([xmin, ymin, zmin])
         target_affine[:3, 3] = offset
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = (
-            (0, xmax - xmin),
-            (0, ymax - ymin),
-            (0, zmax - zmin),
+            (np.float64(0), xmax - xmin),
+            (np.float64(0), ymax - ymin),
+            (np.float64(0), zmax - zmin),
         )
 
     # if target_shape is not given (always the case with 3x3
@@ -617,13 +620,12 @@ def resample_img(
         ]
 
         # If image are not fully overlapping, place only portion of image.
-        slices = [
+        slices = tuple(
             slice(np.max((0, index[0])), np.min((dimsize, index[1])))
             for dimsize, index in zip(
                 resampled_data.shape, indices, strict=False
             )
-        ]
-        slices = tuple(slices)
+        )
 
         # ensure the source image being placed isn't larger than the dest
         subset_indices = tuple(slice(0, s.stop - s.start) for s in slices)
@@ -766,7 +768,7 @@ def resample_to_img(
     fill_value=0,
     force_resample=True,
     copy_header=True,
-):
+) -> Nifti1Image:
     """Resample a Niimg-like source image on a target Niimg-like image.
 
     No registration is performed: the image should already be aligned.
@@ -876,7 +878,7 @@ def resample_to_img(
 
 
 @fill_doc
-def reorder_img(img, resample=None, copy_header=True):
+def reorder_img(img, resample=None, copy_header=True) -> Nifti1Image:
     """Return an image with the affine diagonal (by permuting axes).
 
     The orientation of the new image will be RAS (Right, Anterior, Superior).
