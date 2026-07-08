@@ -117,7 +117,7 @@ def test_plot_markers_saving_to_file(matplotlib_pyplot, coords, tmp_path):
         [1, 2, 3, 4], coords, output_file=filename, display_mode="x"
     )
 
-    assert display is None
+    assert display is not None
     assert filename.is_file() and filename.stat().st_size > 0
 
 

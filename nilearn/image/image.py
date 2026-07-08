@@ -275,7 +275,7 @@ def high_variance_confounds(
     nilearn.signal.high_variance_confounds
 
     """
-    from .. import masking
+    from nilearn import masking
 
     check_compatibility_mask_and_images(mask_img, imgs)
 
@@ -808,7 +808,7 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
 
     See mean_img for details about the API.
     """
-    from . import resampling
+    from nilearn.image.resampling import resample_img
 
     input_repr = repr_niimgs(imgs, shorten=True)
 
@@ -826,7 +826,7 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
         mean_data = mean_data.mean(axis=-1)
     else:
         mean_data = mean_data.copy()
-    mean_data = resampling.resample_img(
+    mean_data = resample_img(
         Nifti1Image(mean_data, affine),
         target_affine=target_affine,
         target_shape=target_shape,
@@ -1032,7 +1032,7 @@ def swap_img_hemispheres(img) -> Nifti1Image:
     Note that this does not require a change of the affine matrix.
 
     """
-    from .resampling import reorder_img
+    from nilearn.image import reorder_img
 
     # Check input is really a path to a nifti file or a nifti object
     img = check_niimg_3d(img)
@@ -2715,7 +2715,7 @@ def largest_connected_component_img(
            [[0., 0., 1., 1.],
             [0., 0., 1., 1.]]])
     """
-    from .._utils.ndimage import largest_connected_component
+    from nilearn._utils.ndimage import largest_connected_component
 
     imgs = stringify_path(imgs)
     if hasattr(imgs, "__iter__") and not isinstance(imgs, str):

@@ -290,7 +290,7 @@ def _resample_one_img(
             # array
             data = data.copy()
         # data[not_finite] = 0
-        from ..masking import extrapolate_out_mask
+        from nilearn.masking import extrapolate_out_mask
 
         data = extrapolate_out_mask(
             data, np.logical_not(non_finite_mask), iterations=2
@@ -924,7 +924,7 @@ def reorder_img(img, resample=None, copy_header=True):
         [0., 0., 1., 0.],
         [0., 0., 0., 1.]])
     """
-    from .image import new_img_like
+    from nilearn.image import new_img_like
 
     check_params(locals())
     img = check_niimg(img)
