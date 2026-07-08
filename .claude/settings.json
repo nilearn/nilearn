@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /home/remi-gau/github/tmp/nilearn commit -m ' *)",
+      "Bash(git -C /home/remi-gau/github/tmp/nilearn fetch origin maint/resampling-return-type-annotations)",
+      "Bash(git -C /home/remi-gau/github/tmp/nilearn log --oneline origin/maint/resampling-return-type-annotations -5)",
+      "Bash(git -C /home/remi-gau/github/tmp/nilearn log --oneline HEAD -5)",
+      "Bash(git -C /home/remi-gau/github/tmp/nilearn show fff7a5c62)",
+      "Bash(git -C /home/remi-gau/github/tmp/nilearn pull --rebase origin maint/resampling-return-type-annotations)",
+      "Bash(.venv/bin/python -m mypy --config-file pyproject.toml /tmp/reveal_test.py)",
+      "Bash(.venv/bin/python -m pre_commit run mypy --files /tmp/reveal_test.py)",
+      "Bash(/home/remi-gau/.cache/pre-commit/reposdk3aktx/py_env-python3.14/bin/python -c ' *)",
+      "Bash(cp nilearn/image/resampling.py /tmp/resampling_backup.py)",
+      "Bash(cp /tmp/resampling_backup.py nilearn/image/resampling.py *)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  }
+}

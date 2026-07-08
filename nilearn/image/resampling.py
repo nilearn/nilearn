@@ -536,6 +536,14 @@ def resample_img(
 
     img = check_niimg(img)
 
+    # noop case: nothing was requested.
+    if target_affine is None and target_shape is None:
+        return copy_img(img) if copy else img
+    # _check_resample_img_inputs already rejected
+    # target_shape being given without target_affine,
+    # so target_affine is guaranteed non-None here.
+    target_affine = np.asarray(target_affine)
+
     # If later on we want to impute sform using qform add this condition
     # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771  # noqa: E501
     if hasattr(img, "get_sform"):  # NIfTI images only
@@ -547,14 +555,6 @@ def resample_img(
                 "Results may not be as expected.",
                 stacklevel=find_stack_level(),
             )
-
-    # noop case: nothing was requested.
-    if target_affine is None and target_shape is None:
-        return copy_img(img) if copy else img
-
-    # _check_resample_img_inputs already rejected target_shape being given
-    # without target_affine, so target_affine is guaranteed non-None here.
-    target_affine = np.asarray(target_affine)
 
     # noop case: image is already in the requested space.
     if _resampling_not_needed(img, target_affine, target_shape):
@@ -718,17 +718,12 @@ def resample_img(
 def _resampling_not_needed(
     img: Nifti1Image, target_affine: np.ndarray, target_shape: TargetShape
 ) -> bool:
-    """Check if resampling needed based on input image and requested FOV.
-
-    ``target_affine`` is assumed to already be non-None here: the caller
-    handles the case where neither ``target_affine`` nor ``target_shape``
-    was requested.
-    """
+    """Check if resampling needed based on input image and requested FOV."""
     shape = img.shape
     affine = img.affine
 
     if (
-        np.shape(target_affine) == np.shape(affine)
+        target_affine.shape == np.shape(affine)
         and np.allclose(target_affine, affine)
         and np.array_equal(np.asarray(target_shape), shape)
     ):
