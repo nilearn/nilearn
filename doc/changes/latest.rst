@@ -44,6 +44,8 @@ Enhancements
 Changes
 -------
 
+- :bdg-dark:`Code` Add return type annotations to the public methods of :class:`~surface.FileMesh`, :class:`~surface.InMemoryMesh`, :class:`~surface.PolyData`, :class:`~surface.PolyMesh`, :class:`~surface.SurfaceImage`, and :class:`~surface.SurfaceMesh` (:gh:`XXXX` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.glm` (:gh:`6370` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.regions` (:gh:`6369` by `Rémi Gau`_).
