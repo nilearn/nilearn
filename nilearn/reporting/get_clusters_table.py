@@ -650,8 +650,7 @@ def _get_clusters_table_volume(
                     subpeak_ijk[:, 2],
                     stat_img.affine,
                 )
-            ).tolist()
-            subpeak_xyz = np.array(subpeak_xyz).T
+            ).T
 
             # Only report peak and, at most, top 3 subpeaks.
             n_subpeaks = np.min((len(subpeak_vals), 4))

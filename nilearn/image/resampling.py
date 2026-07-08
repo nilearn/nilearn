@@ -5,6 +5,7 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 
 import numbers
 import warnings
+from typing import overload
 
 import numpy as np
 from nibabel import Nifti1Image
@@ -98,6 +99,18 @@ def from_matrix_vector(matrix, vector):
     t[nin, nout] = 1.0
     t[0:nin, nout] = vector
     return t
+
+
+@overload
+def coord_transform(
+    x: float, y: float, z: float, affine
+) -> tuple[float, float, float]: ...
+
+
+@overload
+def coord_transform(
+    x: np.ndarray, y: np.ndarray, z: np.ndarray, affine
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]: ...
 
 
 def coord_transform(
