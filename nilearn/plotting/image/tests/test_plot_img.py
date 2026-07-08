@@ -33,7 +33,6 @@ def _testdata_3d_for_plotting_for_resampling(img, binary):
     return Nifti1Image(data, affine)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_display_methods(matplotlib_pyplot, img_3d_mni):
@@ -106,7 +105,6 @@ def test_plot_img_with_resampling(matplotlib_pyplot, binary_img, img_3d_mni):
     display.add_edges(img, color="c")
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_display_methods_with_display_mode_tiled(
