@@ -79,7 +79,6 @@ def test_plotly_show(plotly, renderer):
     assert f"image/{key}" in mock_display.call_args.args[0]
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(
     not is_kaleido_installed(),
