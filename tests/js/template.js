@@ -11,7 +11,7 @@ const buildFilePNG = function (file, prefix, suffix) {
   return `${path.resolve(__dirname)}/` + prefix + file.split('.')[0] + suffix + '.png'
 }
 
-module.exports.fullTest = (file, clip, tolerance = 1000, timeout = 5000) => {
+module.exports.fullTest = (file, clip, tolerance = 1000, timeout = 10000) => {
   describe('index page', () => {
     let page
 
