@@ -111,7 +111,6 @@ def test_identity_resample_array_like(
         tuple(_affine_eye().tolist()),
     ],
 )
-@pytest.mark.ai_generated
 def test_resample_img_target_affine_array_like_with_target_shape(
     data, affine_eye, target_affine
 ):
