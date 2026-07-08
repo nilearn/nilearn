@@ -186,8 +186,11 @@ def fetch_atlas_difumo(
     resolution_mm : :obj:`int`, default=2mm
         The resolution in mm of the atlas to fetch. Valid options
         available are {2, 3}.
+
     %(data_dir)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -264,7 +267,7 @@ def fetch_atlas_difumo(
         ("README.md", "https://osf.io/4k9bf/download", {"move": "README.md"})
     ]
     if not (dataset_dir / "README.md").exists():
-        fetch_files(data_dir, readme_files, verbose=verbose, resume=resume)
+        fetch_files(dataset_dir, readme_files, verbose=verbose, resume=resume)
 
     return Atlas(
         maps=files_[1],
