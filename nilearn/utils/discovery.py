@@ -2,6 +2,7 @@
 
 import inspect
 import pkgutil
+from collections.abc import Callable
 from importlib import import_module
 from operator import itemgetter
 from pathlib import Path
@@ -75,7 +76,7 @@ def _get_all_classes():
     return all_classes
 
 
-def all_estimators(type_filter=None):
+def all_estimators(type_filter=None) -> list[tuple[str, type]]:
     """Get a list of all estimators from `nilearn`.
 
     This function crawls the module and gets all classes that inherit
@@ -172,7 +173,7 @@ def _is_checked_function(item):
     )
 
 
-def all_functions():
+def all_functions() -> list[tuple[str, Callable]]:
     """Get a list of all functions from `nilearn`.
 
     Returns
@@ -224,7 +225,7 @@ def all_functions():
     return sorted(set(all_functions), key=itemgetter(0))
 
 
-def all_displays(type_filter=None):
+def all_displays(type_filter=None) -> list[tuple[str, type]]:
     """Get a list of all 'displays' objects from `nilearn`.
 
     Parameters
