@@ -54,20 +54,7 @@ def matplotlib_cm_to_niivue_cm(
         )
         return None
 
-    name = None
-    spec = None
-    reverse = False
-
-    if isinstance(cmap, str):
-        name = cmap
-        spec = plt.get_cmap(name)
-    else:
-        spec = cmap
-        name = cmap.name
-
-    if name.endswith("_r"):
-        name = name[:-2]
-        reverse = True
+    spec = plt.get_cmap(cmap) if isinstance(cmap, str) else cmap
 
     n_nodes = 255
     colors = spec(np.linspace(0, 1, 2 * n_nodes))
@@ -77,10 +64,6 @@ def matplotlib_cm_to_niivue_cm(
     js["G"] = (255 * colors[..., 1]).astype(int).tolist()
     js["B"] = (255 * colors[..., 2]).astype(int).tolist()
     js["A"] = [64 for _ in range(2 * n_nodes)]
-
-    if reverse:
-        for k in js:
-            js[k] = js[k][::-1]
 
     js_pos = {k: v[n_nodes:] for k, v in js.items()}
     js_neg = {k: v[:n_nodes][::-1] for k, v in js.items()}
