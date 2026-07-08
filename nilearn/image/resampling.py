@@ -735,27 +735,32 @@ def _resampling_not_needed(
     )
 
 
-def _check_resample_img_inputs(target_shape, target_affine, interpolation):
-    # Do as many checks as possible before loading data, to avoid potentially
-    # costly calls before raising an exception.
-    if target_shape is not None and target_affine is None:
-        raise ValueError(
-            "If target_shape is specified, target_affine should"
-            " be specified too."
-        )
+def _check_resample_img_inputs(
+    target_shape: TargetShape,
+    target_affine: TargetAffine,
+    interpolation: Literal["continuous", "linear", "nearest"],
+):
+    """Do as many checks as possible before loading data,
+    to avoid potentially costly calls before raising an exception.
+    """
+    if target_shape is not None:
+        if len(target_shape) != 3:
+            raise ValueError(
+                "The shape specified should be the shape of "
+                "the 3D grid, and thus of length 3. "
+                f"{target_shape} was specified."
+            )
 
-    if target_shape is not None and len(target_shape) != 3:
-        raise ValueError(
-            "The shape specified should be the shape of "
-            "the 3D grid, and thus of length 3. "
-            f"{target_shape} was specified."
-        )
-
-    if target_shape is not None and np.shape(target_affine) == (3, 3):
-        raise ValueError(
-            "Given target shape without anchor vector: "
-            "Affine shape should be (4, 4) and not (3, 3)"
-        )
+        if target_affine is None:
+            raise ValueError(
+                "If target_shape is specified, target_affine should"
+                " be specified too."
+            )
+        elif np.shape(target_affine) == (3, 3):
+            raise ValueError(
+                "Given target shape without anchor vector: "
+                "'target_affine' shape should be (4, 4) and not (3, 3)"
+            )
 
     allowed_interpolations = ("continuous", "linear", "nearest")
     check_parameter_in_allowed(
