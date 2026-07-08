@@ -46,8 +46,20 @@ class SurfaceMesh(abc.ABC):
     # TODO those are properties are for compatibility with plot_surf_img.
     # But they should probably become functions as they can take some time to
     # return or even fail
-    coordinates: np.ndarray
-    faces: np.ndarray
+    #
+    # Declared as read-only here: FileMesh only supports reading its
+    # coordinates and faces from disk, so subclasses must not be required
+    # to support assignment. InMemoryMesh adds a setter on top of this,
+    # which is a compatible widening of the contract.
+    @property
+    @abc.abstractmethod
+    def coordinates(self) -> np.ndarray:
+        """Get x, y, z, values for each mesh vertex."""
+
+    @property
+    @abc.abstractmethod
+    def faces(self) -> np.ndarray:
+        """Get array of adjacent vertices."""
 
     def __repr__(self) -> str:
         return (
@@ -86,10 +98,6 @@ class InMemoryMesh(SurfaceMesh):
 
     n_vertices: int
 
-    coordinates: np.ndarray
-
-    faces: np.ndarray
-
     def __init__(self, coordinates, faces) -> None:
         if not isinstance(coordinates, np.ndarray) or not isinstance(
             faces, np.ndarray
@@ -98,10 +106,28 @@ class InMemoryMesh(SurfaceMesh):
                 "Mesh coordinates and faces must be numpy arrays.\n"
                 f"Got {type(coordinates)=} and {type(faces)=}."
             )
-        self.coordinates = coordinates
-        self.faces = faces
+        self._coordinates = coordinates
+        self._faces = faces
         self.n_vertices = coordinates.shape[0]
         _validate_mesh(self)
+
+    @property
+    def coordinates(self) -> np.ndarray:
+        """Get x, y, z, values for each mesh vertex."""
+        return self._coordinates
+
+    @coordinates.setter
+    def coordinates(self, value: np.ndarray) -> None:
+        self._coordinates = value
+
+    @property
+    def faces(self) -> np.ndarray:
+        """Get array of adjacent vertices."""
+        return self._faces
+
+    @faces.setter
+    def faces(self, value: np.ndarray) -> None:
+        self._faces = value
 
     def __getitem__(self, index) -> np.ndarray:
         if index == 0:
@@ -158,7 +184,7 @@ class FileMesh(SurfaceMesh):
         self.n_vertices = load_surf_mesh(self.file_path).coordinates.shape[0]
 
     @property
-    def coordinates(self) -> np.ndarray:  # type: ignore[override]
+    def coordinates(self) -> np.ndarray:
         """Get x, y, z, values for each mesh vertex.
 
         Returns
@@ -170,7 +196,7 @@ class FileMesh(SurfaceMesh):
         return mesh.coordinates
 
     @property
-    def faces(self) -> np.ndarray:  # type: ignore[override]
+    def faces(self) -> np.ndarray:
         """Get array of adjacent vertices.
 
         Returns
