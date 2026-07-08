@@ -734,7 +734,6 @@ def _get_small_fake_talairach():
     return serialize_niimg(img, gzipped=False)
 
 
-@pytest.mark.slow
 def test_fetch_atlas_talairach(tmp_path, request_mocker, capsys):
     request_mocker.url_mapping["*talairach.nii"] = _get_small_fake_talairach()
     level_values = np.ones((81, 3)) * [0, 1, 2]

@@ -10,3 +10,16 @@ updates:
     labels:
     -   Dependencies
     -   Infrastructure
+    groups:
+        actions-infrastructure:
+            patterns:
+            -   actions/*
+
+-   package-ecosystem: npm
+    directory: /
+    schedule:
+        interval: quarterly
+    groups:
+        npm:
+            patterns:
+            -   '*'

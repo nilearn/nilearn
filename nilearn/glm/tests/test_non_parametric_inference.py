@@ -16,11 +16,10 @@ from nilearn._utils.data_gen import (
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import non_parametric_inference
+from nilearn.glm.tests.conftest import SHAPE, fake_fmri_data
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.reporting import get_clusters_table
-
-from .conftest import SHAPE, fake_fmri_data
 
 N_PERM = 5
 
