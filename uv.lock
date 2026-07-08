@@ -2211,12 +2211,10 @@ dependencies = [
     {name = "jinja2"},
     {name = "joblib"},
     {name = "nibabel"},
-    {name = "numpy"},
     {name = "packaging"},
     {name = "pandas"},
     {name = "requests"},
-    {name = "scikit-learn"},
-    {name = "scipy"}
+    {name = "scikit-learn"}
 ]
 name = "nilearn"
 source = {editable = "."}
@@ -2291,11 +2289,9 @@ min = [
     {name = "jinja2"},
     {name = "joblib"},
     {name = "nibabel"},
-    {name = "numpy"},
     {name = "pandas"},
     {name = "requests"},
-    {name = "scikit-learn"},
-    {name = "scipy"}
+    {name = "scikit-learn"}
 ]
 min-plotting = [
     {name = "jinja2"},
@@ -2303,12 +2299,10 @@ min-plotting = [
     {name = "kaleido"},
     {name = "matplotlib"},
     {name = "nibabel"},
-    {name = "numpy"},
     {name = "pandas"},
     {name = "plotly"},
     {name = "requests"},
-    {name = "scikit-learn"},
-    {name = "scipy"}
+    {name = "scikit-learn"}
 ]
 rich = [
     {name = "rich"}
@@ -2364,13 +2358,11 @@ requires-dist = [
     {name = "kaleido", marker = "extra == 'plotly'", specifier = ">=1.1.0"},
     {name = "matplotlib", marker = "extra == 'plotting'", specifier = ">=3.8.0"},
     {name = "nibabel", specifier = ">=5.2.0"},
-    {name = "numpy", specifier = ">=1.26.0"},
     {name = "packaging", specifier = ">=26.0.0"},
     {name = "pandas", specifier = ">=2.3.0"},
     {name = "plotly", marker = "extra == 'plotly'", specifier = ">=6.1.1"},
     {name = "requests", specifier = ">=2.33.0"},
-    {name = "scikit-learn", specifier = ">=1.5.0,!=1.7.0,!=1.9.0"},
-    {name = "scipy", specifier = ">=1.11.1"}
+    {name = "scikit-learn", specifier = ">=1.5.0,!=1.7.0,!=1.9.0"}
 ]
 
 [package.metadata.requires-dev]
@@ -2433,11 +2425,9 @@ min = [
     {name = "jinja2", specifier = "==3.1.6"},
     {name = "joblib", specifier = "==1.2.0"},
     {name = "nibabel", specifier = "==5.2.0"},
-    {name = "numpy", specifier = "==1.26.0"},
     {name = "pandas", specifier = "==2.3.0"},
     {name = "requests", specifier = "==2.33.0"},
-    {name = "scikit-learn", specifier = "==1.5.0,!=1.7.0"},
-    {name = "scipy", specifier = "==1.11.1"}
+    {name = "scikit-learn", specifier = "==1.5.0,!=1.7.0"}
 ]
 min-plotting = [
     {name = "jinja2", specifier = "==3.1.6"},
@@ -2445,12 +2435,10 @@ min-plotting = [
     {name = "kaleido", specifier = "==1.1.0"},
     {name = "matplotlib", specifier = "==3.8.0"},
     {name = "nibabel", specifier = "==5.2.0"},
-    {name = "numpy", specifier = "==1.26.0"},
     {name = "pandas", specifier = "==2.3.0"},
     {name = "plotly", specifier = "==6.1.1"},
     {name = "requests", specifier = "==2.33.0"},
-    {name = "scikit-learn", specifier = "==1.5.0,!=1.7.0"},
-    {name = "scipy", specifier = "==1.11.1"}
+    {name = "scikit-learn", specifier = "==1.5.0,!=1.7.0"}
 ]
 rich = [{name = "rich", specifier = ">=3.0.0"}]
 style = [{name = "pre-commit"}]
