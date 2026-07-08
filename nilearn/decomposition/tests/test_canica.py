@@ -29,7 +29,6 @@ def test_threshold_bound_error(canica_data_single_img):
         canica.fit(canica_data_single_img)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_percentile_range(rng, canica_data_single_img):
     """Test that a warning is given when thresholds are stressed."""
@@ -88,7 +87,6 @@ def test_canica_square_img(
     assert_array_almost_equal(K_abs, 0, 1)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_component_sign(canica_data, data_type):
     """Check sign of extracted components.

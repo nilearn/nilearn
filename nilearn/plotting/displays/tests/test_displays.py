@@ -223,8 +223,13 @@ def test_slicer_save_to_file(slicer, mni152_template_res_2, tmp_path):
     slicer.add_overlay(mni152_template_res_2, cmap="gray", colorbar=True)
     assert slicer.brain_color == (0.5, 0.5, 0.5)
     assert not slicer.black_bg
+    path = tmp_path / "out.png"
     # Forcing a layout here, to test the locator code
-    slicer.savefig(tmp_path / "out.png")
+    slicer.savefig(path)
+    assert path.exists()
+
+    with pytest.raises(ValueError, match="You must provide an output file"):
+        slicer.savefig(filename=None)
     slicer.close()
 
 
@@ -339,7 +344,6 @@ def test_user_given_cmap_with_colorbar(mni152_template_res_2):
     oslicer.close()
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("display", [OrthoSlicer, LYRZProjector])
 def test_data_complete_mask(affine_eye, display):
     """Test for a special case due to matplotlib 2.1.0.
@@ -485,7 +489,6 @@ def test_display_slicers_transparency_warning(
     display.title(f"display mode is {name}")
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
 @pytest.mark.parametrize(
     "display,name", zip(PROJECTORS, PROJECTOR_KEYS, strict=False)

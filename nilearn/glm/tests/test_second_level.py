@@ -37,12 +37,11 @@ from nilearn.glm.second_level.second_level import (
     _process_second_level_input_as_firstlevelmodels,
     _sort_input_dataframe,
 )
+from nilearn.glm.tests.conftest import SHAPE, _confounds, fake_fmri_data
 from nilearn.image import concat_imgs, get_data
 from nilearn.maskers import NiftiMasker
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_surface_image_equal
-
-from .conftest import SHAPE, _confounds, fake_fmri_data
 
 ESTIMATORS_TO_CHECK = [SecondLevelModel()]
 
