@@ -107,6 +107,43 @@ def test_identity_resample_array_like(
 @pytest.mark.parametrize(
     "target_affine",
     [
+        _affine_eye().tolist(),
+        tuple(_affine_eye().tolist()),
+    ],
+)
+@pytest.mark.xfail(
+    reason=(
+        "target_affine as a list or tuple raises an AttributeError when "
+        "target_shape is also given: _check_resample_img_inputs accesses "
+        "target_affine.shape before target_affine has been converted to "
+        "a numpy array."
+    ),
+    raises=AttributeError,
+    strict=True,
+)
+@pytest.mark.ai_generated
+def test_resample_img_target_affine_array_like_with_target_shape(
+    data, affine_eye, target_affine
+):
+    """target_affine as list/tuple should work together with target_shape.
+
+    Regression test: currently raises AttributeError because
+    _check_resample_img_inputs calls target_affine.shape before
+    target_affine has been converted to a numpy array.
+    """
+    resampled = resample_img(
+        Nifti1Image(data, affine_eye),
+        target_affine=target_affine,
+        target_shape=(2, 2, 2),
+        interpolation="nearest",
+    )
+
+    assert resampled.shape[:3] == (2, 2, 2)
+
+
+@pytest.mark.parametrize(
+    "target_affine",
+    [
         [1, 2, 3],
         [[1, 2, 3]],
         _affine_eye().ravel(),
