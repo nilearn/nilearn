@@ -76,7 +76,9 @@ def _get_all_classes():
     return all_classes
 
 
-def all_estimators(type_filter=None) -> list[tuple[str, type]]:
+def all_estimators(
+    type_filter=None,
+) -> list[tuple[str, type[NilearnBaseEstimator]]]:
     """Get a list of all estimators from `nilearn`.
 
     This function crawls the module and gets all classes that inherit
