@@ -1,6 +1,10 @@
 """Configuration and extra fixtures for pytest."""
 
 import inspect
+from collections.abc import Callable, Generator
+from pathlib import Path
+from types import ModuleType
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -75,7 +79,7 @@ def pytest_configure(config):  # noqa: ARG001
 
 
 @pytest.fixture(autouse=True)
-def close_all():
+def close_all() -> Generator[None, None, None]:
     """Close all matplotlib figures."""
     yield
     if matplotlib is not None:
@@ -92,7 +96,7 @@ def _rng(seed=42):
 
 
 @pytest.fixture()
-def rng():
+def rng() -> np.random.Generator:
     """Return a seeded random number generator."""
     return _rng()
 
@@ -116,7 +120,7 @@ def _affine_mni() -> np.ndarray:
 
 
 @pytest.fixture()
-def affine_mni():
+def affine_mni() -> np.ndarray:
     """Return an affine corresponding to 2mm isotropic MNI template."""
     return _affine_mni()
 
@@ -130,7 +134,7 @@ def _affine_eye() -> np.ndarray:
 
 
 @pytest.fixture()
-def affine_eye():
+def affine_eye() -> np.ndarray:
     """Return an identity matrix affine."""
     return _affine_eye()
 
@@ -183,25 +187,25 @@ def _shape_4d_long():
 
 
 @pytest.fixture()
-def shape_3d_default():
+def shape_3d_default() -> tuple[int, int, int]:
     """Return default shape for a 3D image."""
     return _shape_3d_default()
 
 
 @pytest.fixture
-def shape_3d_large():
+def shape_3d_large() -> tuple[int, int, int]:
     """Shape usually used for maps images."""
     return _shape_3d_large()
 
 
 @pytest.fixture()
-def shape_4d_default():
+def shape_4d_default() -> tuple[int, int, int, int]:
     """Return default shape for a 4D image."""
     return _shape_4d_default()
 
 
 @pytest.fixture()
-def shape_4d_long():
+def shape_4d_long() -> tuple[int, int, int, int]:
     """Return long shape for a 4D image."""
     return _shape_4d_long()
 
@@ -229,7 +233,7 @@ def _img_3d_rand(affine=None):
 
 
 @pytest.fixture()
-def img_3d_rand_eye():
+def img_3d_rand_eye() -> Nifti1Image:
     """Return random 3D Nifti1Image in MNI space."""
     return _img_3d_rand()
 
@@ -245,13 +249,13 @@ def _img_3d_mni(affine=None):
 
 
 @pytest.fixture()
-def img_3d_mni():
+def img_3d_mni() -> Nifti1Image:
     """Return a default random 3D Nifti1Image in MNI space."""
     return _img_3d_mni()
 
 
 @pytest.fixture()
-def img_3d_mni_as_file(tmp_path):
+def img_3d_mni_as_file(tmp_path) -> Path:
     """Return path to a random 3D Nifti1Image in MNI space saved to disk."""
     filename = tmp_path / "img.nii"
     _img_3d_mni().to_filename(filename)
@@ -271,7 +275,7 @@ def _img_3d_zeros(shape=None, affine=None):
 
 
 @pytest.fixture
-def img_3d_zeros_eye():
+def img_3d_zeros_eye() -> Nifti1Image:
     """Return a zeros-filled 3D Nifti1Image (identity affine)."""
     return _img_3d_zeros()
 
@@ -289,13 +293,13 @@ def _img_3d_ones(shape=None, affine=None):
 
 
 @pytest.fixture
-def img_3d_ones_eye():
+def img_3d_ones_eye() -> Nifti1Image:
     """Return a ones-filled 3D Nifti1Image (identity affine)."""
     return _img_3d_ones()
 
 
 @pytest.fixture
-def img_3d_ones_mni():
+def img_3d_ones_mni() -> Nifti1Image:
     """Return a ones-filled 3D Nifti1Image (identity affine)."""
     return _img_3d_ones(shape=_shape_3d_default(), affine=_affine_mni())
 
@@ -312,7 +316,7 @@ def _img_mask_mni():
 
 
 @pytest.fixture
-def img_mask_mni():
+def img_mask_mni() -> Nifti1Image:
     """Return a 3D nifti mask in MNI space with some 1s in the center."""
     return _img_mask_mni()
 
@@ -323,7 +327,7 @@ def _img_mask_eye():
 
 
 @pytest.fixture
-def img_mask_eye():
+def img_mask_eye() -> Nifti1Image:
     """Return a 3D nifti mask with identity affine with 1s in the center."""
     return _img_mask_eye()
 
@@ -364,37 +368,37 @@ def _img_4d_mni(shape=None, affine=None):
 
 
 @pytest.fixture
-def img_4d_zeros_eye():
+def img_4d_zeros_eye() -> Nifti1Image:
     """Return a default zeros filled 4D Nifti1Image (identity affine)."""
     return _img_4d_zeros()
 
 
 @pytest.fixture
-def img_4d_ones_eye():
+def img_4d_ones_eye() -> Nifti1Image:
     """Return a default ones filled 4D Nifti1Image (identity affine)."""
     return _img_ones(_shape_4d_default(), _affine_eye())
 
 
 @pytest.fixture
-def img_4d_rand_eye():
+def img_4d_rand_eye() -> Nifti1Image:
     """Return a default random filled 4D Nifti1Image (identity affine)."""
     return _img_4d_rand_eye()
 
 
 @pytest.fixture
-def img_4d_mni():
+def img_4d_mni() -> Nifti1Image:
     """Return a default random filled 4D Nifti1Image."""
     return _img_4d_mni()
 
 
 @pytest.fixture
-def img_4d_rand_eye_medium():
+def img_4d_rand_eye_medium() -> Nifti1Image:
     """Return a default random filled 4D Nifti1Image of medium length."""
     return _img_4d_rand_eye_medium()
 
 
 @pytest.fixture
-def img_4d_long_mni(rng, shape_4d_long, affine_mni):
+def img_4d_long_mni(rng, shape_4d_long, affine_mni) -> Nifti1Image:
     """Return a default random filled long 4D Nifti1Image."""
     return Nifti1Image(rng.uniform(size=shape_4d_long), affine=affine_mni)
 
@@ -403,7 +407,7 @@ def img_4d_long_mni(rng, shape_4d_long, affine_mni):
 
 
 @pytest.fixture()
-def img_atlas(shape_3d_default, affine_mni):
+def img_atlas(shape_3d_default, affine_mni) -> dict[str, Any]:
     """Return an atlas and its labels."""
     atlas = np.ones(shape_3d_default, dtype="int32")
     atlas[2:5, :, :] = 2
@@ -472,7 +476,7 @@ def generate_regions_ts(n_features, n_regions) -> np.ndarray:
 
 
 @pytest.fixture
-def n_regions():
+def n_regions() -> int:
     """Return a default number of regions for maps."""
     return _n_regions()
 
@@ -533,7 +537,7 @@ def img_labels(n_regions) -> Nifti1Image:
 
 
 @pytest.fixture
-def length():
+def length() -> int:
     """Return a default length for 4D images."""
     return 10
 
@@ -565,7 +569,7 @@ def img_fmri(shape_3d_default, affine_eye, length, rng) -> Nifti1Image:
 
 # ------------------------ SURFACE ------------------------#
 @pytest.fixture
-def single_mesh(rng):
+def single_mesh(rng) -> list[np.ndarray]:
     """Create random coordinates and faces for a single mesh.
 
     This does not generate meaningful surfaces.
@@ -576,7 +580,7 @@ def single_mesh(rng):
 
 
 @pytest.fixture
-def in_memory_mesh(single_mesh):
+def in_memory_mesh(single_mesh) -> InMemoryMesh:
     """Create a random InMemoryMesh.
 
     This does not generate meaningful surfaces.
@@ -615,7 +619,7 @@ def _make_mesh():
 
 
 @pytest.fixture()
-def surf_mesh():
+def surf_mesh() -> PolyMesh:
     """Return _make_mesh as a function allowing it to be used as a fixture."""
     return _make_mesh()
 
@@ -634,7 +638,7 @@ def _make_surface_img(n_samples=1):
 
 
 @pytest.fixture
-def surf_img_2d():
+def surf_img_2d() -> Callable[..., SurfaceImage]:
     """Return a 2D SurfaceImage.
 
     The shape of the data will be (n_vertices, n_samples).
@@ -655,7 +659,7 @@ def _surf_img_1d():
 
 
 @pytest.fixture
-def surf_img_1d():
+def surf_img_1d() -> SurfaceImage:
     """Return a 1D SurfaceImage.
 
     The shape of the data will be (n_vertices,).
@@ -664,7 +668,7 @@ def surf_img_1d():
 
 
 @pytest.fixture
-def surf_img_ones_1d(surf_mesh):
+def surf_img_ones_1d(surf_mesh) -> SurfaceImage:
     """Return a 1D SurfaceImage with only 1."""
     data = {
         "left": np.ones((surf_mesh.parts["left"].n_vertices, 1)),
@@ -701,7 +705,7 @@ def _surf_mask_1d():
 
 
 @pytest.fixture
-def surf_mask_1d():
+def surf_mask_1d() -> SurfaceImage:
     """Create a sample surface mask using the sample mesh.
     This will create a mask with n_zeros zeros (default is 4) and the
     rest ones.
@@ -712,7 +716,7 @@ def surf_mask_1d():
 
 
 @pytest.fixture
-def surf_mask_2d():
+def surf_mask_2d() -> Callable[..., SurfaceImage]:
     """Create a sample surface mask using the sample mesh.
     This will create a mask with n_zeros zeros (default is 4) and the
     rest ones.
@@ -724,7 +728,7 @@ def surf_mask_2d():
 
 
 @pytest.fixture
-def surf_label_img(surf_mesh):
+def surf_label_img(surf_mesh) -> SurfaceImage:
     """Return a sample surface label image using the sample mesh.
     Has two regions with values 0 and 1 respectively.
     """
@@ -736,7 +740,7 @@ def surf_label_img(surf_mesh):
 
 
 @pytest.fixture
-def surf_three_labels_img(surf_mesh):
+def surf_three_labels_img(surf_mesh) -> SurfaceImage:
     """Return a sample surface label image using the sample mesh.
     Has 3 regions with values 0, 1 and 2.
     """
@@ -803,7 +807,7 @@ def _flip_surf_img_parts(poly_obj):
 
 
 @pytest.fixture
-def flip_surf_img_parts():
+def flip_surf_img_parts() -> Callable[..., Any]:
     """Flip hemispheres of a surface image data or mesh."""
     return _flip_surf_img_parts
 
@@ -816,7 +820,7 @@ def _flip_surf_img(img):
 
 
 @pytest.fixture
-def flip_surf_img():
+def flip_surf_img() -> Callable[..., SurfaceImage]:
     """Flip hemispheres of a surface image."""
     return _flip_surf_img
 
@@ -831,7 +835,7 @@ def _drop_surf_img_part(img, part_name="right"):
 
 
 @pytest.fixture
-def drop_surf_img_part():
+def drop_surf_img_part() -> Callable[..., SurfaceImage]:
     """Remove one hemisphere from a SurfaceImage."""
     return _drop_surf_img_part
 
@@ -844,7 +848,7 @@ def _make_surface_img_and_design(n_samples=5):
 
 
 @pytest.fixture()
-def surface_glm_data():
+def surface_glm_data() -> Callable[..., tuple[SurfaceImage, pd.DataFrame]]:
     """Create a surface image and design matrix for testing."""
     return _make_surface_img_and_design
 
@@ -853,7 +857,7 @@ def surface_glm_data():
 
 
 @pytest.fixture(scope="function")
-def matplotlib_pyplot():
+def matplotlib_pyplot() -> Generator[ModuleType, None, None]:
     """Set up and teardown fixture for matplotlib.
 
     This fixture checks if we can import matplotlib. If not, the tests will be
@@ -872,7 +876,7 @@ def matplotlib_pyplot():
 
 
 @pytest.fixture(scope="function")
-def plotly():
+def plotly() -> Generator[ModuleType, None, None]:
     """Check if we can import plotly.
 
     If not, the tests will be skipped.
@@ -888,7 +892,7 @@ def plotly():
 
 
 @pytest.fixture
-def transparency_image(rng, affine_mni):
+def transparency_image(rng, affine_mni) -> Nifti1Image:
     """Return 3D image to use as transparency image.
 
     Make sure that values are not just between 0 and 1.

@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 from sklearn import clone
 
@@ -24,7 +26,9 @@ from nilearn.maskers.tests.test_html_report import (
 
 
 @pytest.fixture
-def masker(request, img_maps, surf_maps_img, img_labels, surf_label_img):
+def masker(
+    request, img_maps, surf_maps_img, img_labels, surf_label_img
+) -> Any:
     """Fixture to construct a masker instance with proper input."""
     cls, arg, reports = request.param
 

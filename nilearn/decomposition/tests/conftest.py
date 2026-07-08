@@ -1,6 +1,7 @@
 """Fixtures for decomposition tests."""
 
 import warnings
+from collections.abc import Generator
 
 import numpy as np
 import pytest
@@ -26,7 +27,7 @@ N_COMPONENTS = 4
 
 
 @pytest.fixture(autouse=True)
-def suppress_specific_decoding_warning():
+def suppress_specific_decoding_warning() -> Generator[None, None, None]:
     """Ignore internal decoding warnings."""
     with warnings.catch_warnings():
         messages = "Objective did not converge.*|"

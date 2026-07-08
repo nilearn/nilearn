@@ -3,7 +3,7 @@
 import platform
 import re
 import warnings
-from collections.abc import Iterable
+from collections.abc import Generator, Iterable
 from pathlib import Path
 
 import joblib
@@ -162,12 +162,12 @@ def _mean_ground_truth(imgs):
 
 
 @pytest.fixture(scope="session")
-def smooth_array_data():
+def smooth_array_data() -> np.ndarray:
     return _new_data_for_smooth_array()
 
 
 @pytest.fixture(scope="session")
-def stat_img_test_data():
+def stat_img_test_data() -> Nifti1Image:
     shape = (20, 20, 30)
     affine = _affine_eye()
     data = np.zeros(shape, dtype="int32")
@@ -2363,7 +2363,9 @@ def test_check_niimg_wildcards(affine_eye, shape, wildcards, tmp_path):
 
 
 @pytest.fixture
-def img_in_home_folder(img_3d_mni):
+def img_in_home_folder(
+    img_3d_mni,
+) -> Generator[Nifti1Image, None, None]:
     """Create a test file in the home folder.
 
     Teardown: use yield instead of return to make sure the file
@@ -2458,7 +2460,7 @@ def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
 
 
 @pytest.fixture
-def set_expand_path_wildcards():
+def set_expand_path_wildcards() -> Generator[None, None, None]:
     """Toggles EXPAND_PATH_WILDCARDS before and after a test."""
     # Test when global variable is set to False => no globbing allowed
     ni.EXPAND_PATH_WILDCARDS = False

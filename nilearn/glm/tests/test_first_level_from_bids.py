@@ -30,7 +30,7 @@ def _inputs_for_new_bids_dataset():
 
 
 @pytest.fixture(scope="session")
-def bids_dataset(tmp_path_factory):
+def bids_dataset(tmp_path_factory) -> Path:
     """Create a fake BIDS dataset for testing purposes.
 
     Only use if the dataset does not need to me modified.

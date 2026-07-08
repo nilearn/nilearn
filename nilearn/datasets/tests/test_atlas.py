@@ -3,7 +3,9 @@
 import itertools
 import re
 import xml.etree.ElementTree as ET
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -180,7 +182,7 @@ def _test_atlas_instance_should_match_data(atlas, is_symm):
 
 
 @pytest.fixture
-def fsl_fetcher(name):
+def fsl_fetcher(name) -> Callable[..., Any]:
     return (
         fetch_atlas_juelich
         if name == "Juelich"
@@ -201,7 +203,7 @@ def test_fetch_atlas_fsl_errors(prob, fsl_fetcher, tmp_path):
 
 
 @pytest.fixture
-def atlas_data():
+def atlas_data() -> np.ndarray:
     # Create false atlas
     atlas_data = np.zeros((10, 10, 10), dtype="int32")
     # Create an interhemispheric map
@@ -540,7 +542,7 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker, capsys):
 
 
 @pytest.fixture
-def aal_archive_root(version):
+def aal_archive_root(version) -> Path:
     if version == "SPM12":
         return Path("aal", "atlas")
     else:

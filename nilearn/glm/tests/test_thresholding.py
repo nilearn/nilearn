@@ -62,7 +62,7 @@ def _data_norm_isf(shape):
 
 
 @pytest.fixture
-def data_norm_isf(shape_3d_default):
+def data_norm_isf(shape_3d_default) -> np.ndarray:
     return _data_norm_isf(shape_3d_default)
 
 

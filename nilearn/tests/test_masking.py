@@ -641,7 +641,7 @@ def test_unmask_error_shape(rng, affine_eye, shape_4d_default):
 
 
 @pytest.fixture
-def img_2d_mask_bottom_right(affine_eye):
+def img_2d_mask_bottom_right(affine_eye) -> Nifti1Image:
     """Return 3D nifti binary mask image with bottom right filled.
 
     +---+---+---+---+
@@ -661,7 +661,7 @@ def img_2d_mask_bottom_right(affine_eye):
 
 
 @pytest.fixture
-def img_2d_mask_center(affine_eye):
+def img_2d_mask_center(affine_eye) -> Nifti1Image:
     """Return 3D nifti binary mask image with center filled.
 
     +---+---+---+---+
