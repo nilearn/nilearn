@@ -19,7 +19,7 @@ module.exports.fullTest = (file, clip, tolerance = 1000, timeout = 5000) => {
       page = await __BROWSER__.newPage()
 
       await page.goto('http://localhost:8080/' + file)
-      await page.waitForTimeout(timeout)
+      await new Promise(resolve => setTimeout(resolve, timeout - 2000))
     }, timeout)
 
     afterAll(async () => {
