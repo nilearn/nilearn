@@ -24,6 +24,8 @@ Fixes
 
 - :bdg-secondary:`Maint` Add return type annotations and :obj:`~typing.overload` signatures to :func:`~connectome.vec_to_sym_matrix`, :func:`~connectome.group_sparse_covariance`, and :func:`~reporting.get_clusters_table` (:gh:`6368` by `Rémi Gau`_).
 
+- :bdg-secondary:`Maint` Pin ``pixelmatch`` to ``^5.3.0`` as later major versions are ESM-only and break ``npm run test`` (``SyntaxError: Unexpected token 'export'``); also stop Dependabot from bumping it to a new major version until the JS test suite is migrated to ESM (:gh:`6405` by `Rémi Gau`_).
+
 Enhancements
 ------------
 

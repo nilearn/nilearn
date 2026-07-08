@@ -23,3 +23,11 @@ updates:
         npm:
             patterns:
             -   '*'
+    ignore:
+        # pixelmatch v6+ is ESM-only ("type": "module"), but tests/js/template.js
+        # uses require('pixelmatch'), which breaks Jest with
+        # "SyntaxError: Unexpected token 'export'".
+        # Stay on the 5.x line until the JS test suite is migrated to ESM.
+    -   dependency-name: pixelmatch
+        update-types:
+        -   version-update:semver-major
