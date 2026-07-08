@@ -372,6 +372,37 @@ def butterworth(
     -------
     filtered_signals : :class:`numpy.ndarray`
         Signals filtered according to the given parameters.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>> from nilearn.signal import butterworth
+        >>>
+        >>> # Generate a single time series
+        >>> # and apply Butterworth filter to the signal.
+        >>> signals = np.random.default_rng(42).standard_normal(size=40)
+        >>> filtered_signals = butterworth(
+        ...     signals,
+        ...     sampling_rate=1,
+        ...     low_pass=0.25,
+        ...     high_pass=0.12,
+        ...     copy=True
+        ... )
+        >>>
+        >>> # Plot both signals and filtered_signals
+        >>> # (if matplotlib is installed).
+        >>> import matplotlib.pyplot as plt
+        >>>
+        >>> fig = plt.plot(signals, color="red")
+        >>> fig = plt.plot(filtered_signals, color="green")
+        >>> leg = plt.legend(["Initial signals", "Filtered signals"])
+        >>> plt.grid(True)
+        >>> plt.show()
+
+
     """
     check_params(locals())
     if low_pass is None and high_pass is None:
