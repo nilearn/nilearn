@@ -223,8 +223,13 @@ def test_slicer_save_to_file(slicer, mni152_template_res_2, tmp_path):
     slicer.add_overlay(mni152_template_res_2, cmap="gray", colorbar=True)
     assert slicer.brain_color == (0.5, 0.5, 0.5)
     assert not slicer.black_bg
+    path = tmp_path / "out.png"
     # Forcing a layout here, to test the locator code
-    slicer.savefig(tmp_path / "out.png")
+    slicer.savefig(path)
+    assert path.exists()
+
+    with pytest.raises(ValueError, match="You must provide an output file"):
+        slicer.savefig(filename=None)
     slicer.close()
 
 

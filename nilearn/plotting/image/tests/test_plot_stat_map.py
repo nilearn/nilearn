@@ -41,7 +41,7 @@ def test_save_plot_stat_map(matplotlib_pyplot, params, img_3d_mni, tmp_path):
 
     display = plot_stat_map(img_3d_mni, output_file=filename, **params)
 
-    assert display is None
+    assert display is not None
 
     display = plot_stat_map(img_3d_mni, **params)
 
