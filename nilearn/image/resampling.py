@@ -715,7 +715,9 @@ def resample_img(
     )
 
 
-def _resampling_not_needed(img, target_affine, target_shape):
+def _resampling_not_needed(
+    img: Nifti1Image, target_affine: np.ndarray, target_shape: TargetShape
+) -> bool:
     """Check if resampling needed based on input image and requested FOV.
 
     ``target_affine`` is assumed to already be non-None here: the caller
@@ -728,12 +730,13 @@ def _resampling_not_needed(img, target_affine, target_shape):
     if (
         np.shape(target_affine) == np.shape(affine)
         and np.allclose(target_affine, affine)
-        and np.array_equal(target_shape, shape)
+        and np.array_equal(np.asarray(target_shape), shape)
     ):
         return True
 
-    return np.all(np.array(target_shape) == shape[:3]) and np.allclose(
-        target_affine, affine
+    return bool(
+        np.all(np.array(target_shape) == shape[:3])
+        and np.allclose(target_affine, affine)
     )
 
 
