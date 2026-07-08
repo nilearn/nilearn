@@ -184,7 +184,7 @@ def coord_transform(
 
     x_as_array = np.asanyarray(x)
     shape = x_as_array.shape
-    
+
     coords = np.c_[
         np.atleast_1d(x).flat,
         np.atleast_1d(y).flat,
@@ -556,6 +556,12 @@ def resample_img(
 
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
+
+    # _check_resample_img_inputs requires target_affine when target_shape is
+    # given, and _resampling_not_needed already returned above when both
+    # target_affine and target_shape are None: target_affine cannot be None
+    # here.
+    assert target_affine is not None
 
     # We now know that some resampling must be done.
     # The value of "copy" is of no importance:
