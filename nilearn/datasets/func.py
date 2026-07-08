@@ -824,10 +824,11 @@ def fetch_localizer_contrasts(
     with index_file.open() as of:
         index = json.load(of)
 
-    if isinstance(n_subjects, int):
-        subject_mask = np.arange(1, n_subjects + 1)
-    else:
-        subject_mask = np.array(n_subjects)
+    subject_mask = (
+        np.arange(1, n_subjects + 1)
+        if isinstance(n_subjects, int)
+        else np.asarray(n_subjects)
+    )
     subject_ids = [f"S{int(s):02}" for s in subject_mask]
 
     data_types = ["cmaps"]

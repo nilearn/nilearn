@@ -1879,7 +1879,7 @@ def fetch_coords_seitzman_2018(
         i, region = r.split("=")
         region_mapping[int(i)] = region
 
-    anatomical = np.genfromtxt(anatomical_file, skip_header=1, encoding=None)
+    anatomical = np.genfromtxt(anatomical_file, skip_header=1)
     anatomical_names = np.array([region_mapping[a] for a in anatomical])
 
     rois = pd.concat([rois, pd.DataFrame(anatomical_names)], axis=1)
