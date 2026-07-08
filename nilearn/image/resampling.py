@@ -548,20 +548,17 @@ def resample_img(
                 stacklevel=find_stack_level(),
             )
 
-    # noop cases
+    # noop case: nothing was requested.
+    if target_affine is None and target_shape is None:
+        return copy_img(img) if copy else img
+
+    # _check_resample_img_inputs already rejected target_shape being given
+    # without target_affine, so target_affine is guaranteed non-None here.
+    target_affine = np.asarray(target_affine)
+
+    # noop case: image is already in the requested space.
     if _resampling_not_needed(img, target_affine, target_shape):
-        if copy:
-            img = copy_img(img)
-        return img
-
-    if target_affine is not None:
-        target_affine = np.asarray(target_affine)
-
-    # _check_resample_img_inputs requires target_affine when target_shape is
-    # given, and _resampling_not_needed already returned above when both
-    # target_affine and target_shape are None: target_affine cannot be None
-    # here.
-    assert target_affine is not None
+        return copy_img(img) if copy else img
 
     # We now know that some resampling must be done.
     # The value of "copy" is of no importance:
@@ -719,19 +716,21 @@ def resample_img(
 
 
 def _resampling_not_needed(img, target_affine, target_shape):
-    """Check if resampling needed based on input image and requested FOV."""
+    """Check if resampling needed based on input image and requested FOV.
+
+    ``target_affine`` is assumed to already be non-None here: the caller
+    handles the case where neither ``target_affine`` nor ``target_shape``
+    was requested.
+    """
     shape = img.shape
     affine = img.affine
 
-    if (target_affine is None and target_shape is None) or (
+    if (
         np.shape(target_affine) == np.shape(affine)
         and np.allclose(target_affine, affine)
         and np.array_equal(target_shape, shape)
     ):
         return True
-
-    if target_affine is not None:
-        target_affine = np.asarray(target_affine)
 
     return np.all(np.array(target_shape) == shape[:3]) and np.allclose(
         target_affine, affine
