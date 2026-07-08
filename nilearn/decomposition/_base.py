@@ -550,16 +550,29 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         self.masker_.memory_level = self.memory_level
-        # Only propagate float dtypes to masker_ (used for fitting/SVD).
-        # Integer dtypes would collapse float data to uniform integers,
-        # zeroing out PCA components after centering.
+        # The masker_ must always produce float data for PCA/ICA.
+        # Integer dtypes would collapse zscore values (+/-0 to 3) to 0 after
+        # rounding, zeroing out PCA components. This applies to:
+        #   - explicit integer dtypes (int32, int64, …)
+        #   - 'auto', which inherits the input image dtype (possibly integer)
+        #   - None, which falls back to the input image dtype (same risk)
         # The transform output dtype is handled by maps_masker_ instead.
         _dtype_is_int = (
             self.dtype is not None
             and self.dtype != "auto"
             and np.dtype(self.dtype).kind != "f"
         )
-        self.masker_.dtype = None if _dtype_is_int else self.dtype
+        # masker_ must produce float data for PCA/ICA and for
+        # inverse_transform (used to build components_img_). Integer dtypes
+        # round float components to 0, making maps_masker_.fit() fail with
+        # "maps_img contains no map". Only preserve an explicit float dtype;
+        # in all other cases use float32.
+        _is_explicit_float = (
+            self.dtype is not None
+            and self.dtype != "auto"
+            and np.dtype(self.dtype).kind == "f"
+        )
+        self.masker_.dtype = self.dtype if _is_explicit_float else "float32"
 
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
