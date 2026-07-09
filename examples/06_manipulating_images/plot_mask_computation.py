@@ -21,7 +21,7 @@ underlying routine that extract masks from EPI
 # Computing a mask from the background
 # ------------------------------------
 #
-# The default strategy to compute a mask, like the NiftiMasker,
+# The default strategy to compute a mask
 # is to try to detect the background.
 #
 # With data that has already been masked this should work well,
@@ -76,7 +76,6 @@ masker.fit(miyawaki_filename)
 #   the HTML representation of the estimator looks different
 #   than before fitting.
 #
-masker
 
 # %%
 # Visualize the mask
@@ -123,13 +122,13 @@ report
 # ------------------------------------------
 #
 # From raw :term:`EPI` data, there is no uniform background,
-# and a different strategy is necessary
+# and a different strategy is necessary.
 #
 
 # %%
 # Fetch the dataset
 # ^^^^^^^^^^^^^^^^^
-# Here we getch the movie watching based brain development fMRI dataset
+# Here we fetch the movie watching based brain development fMRI dataset
 # and once again do some basic visualization of the data.
 #
 # Here we only work with the first 100 volumes of the image
