@@ -309,36 +309,26 @@ def _resample_one_img(
             stacklevel=find_stack_level(),
         )
 
-    # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore", message=".*has changed in SciPy 0.18.*"
-        )
-        # The resampling itself
-        affine_transform(
-            data,
+    # The resampling itself
+    affine_transform(
+        data,
+        A,
+        offset=b,
+        output_shape=target_shape,
+        output=out,
+        cval=fill_value,
+        order=interpolation_order,
+    )
+
+    if has_not_finite:
+        # We need to resample the mask of not_finite values
+        not_finite = affine_transform(
+            non_finite_mask,
             A,
             offset=b,
             output_shape=target_shape,
-            output=out,
-            cval=fill_value,
-            order=interpolation_order,
+            order=0,
         )
-
-    if has_not_finite:
-        # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore", message=".*has changed in SciPy 0.18.*"
-            )
-            # We need to resample the mask of not_finite values
-            not_finite = affine_transform(
-                non_finite_mask,
-                A,
-                offset=b,
-                output_shape=target_shape,
-                order=0,
-            )
         out[not_finite] = np.nan
     return out
 
