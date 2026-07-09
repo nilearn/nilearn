@@ -677,7 +677,6 @@ def test_crop_image_empty_image(affine_eye, pad):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 @pytest.mark.parametrize("images_to_mean", _images_to_mean())
 def test_mean_img(images_to_mean, tmp_path):
     affine = np.diag((4, 3, 2, 1))
@@ -932,7 +931,6 @@ def test_iter_img_3d_imag_error(affine_eye):
         iter_img(img_3d)
 
 
-@pytest.mark.slow
 def test_iter_img(tmp_path):
     img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
 
@@ -1261,7 +1259,6 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_threshold_img(affine_eye):
     """Smoke test for threshold_img with valid threshold inputs."""
     shape = (10, 20, 30)

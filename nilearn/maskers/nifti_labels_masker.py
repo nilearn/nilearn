@@ -871,7 +871,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         %(img_inv_transform_nifti)s
 
         """
-        from ..regions import signal_extraction
+        from nilearn.regions import signal_extraction
 
         check_is_fitted(self)
 
