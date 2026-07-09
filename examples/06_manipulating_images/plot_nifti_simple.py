@@ -35,6 +35,7 @@ masker = NiftiMasker(
     memory="nilearn_cache",
     memory_level=1,
     smoothing_fwhm=8,
+    standardize="zscore_sample",
 )
 
 # %%
@@ -105,7 +106,7 @@ report
 # We extract the data from the nifti image. By default this will return a 2D
 # NumPy array with shape (n_samples, n_features).
 #
-fmri_masked = masker.transform(func_filename, standardize="zscore_sample")
+fmri_masked = masker.transform(func_filename)
 print(fmri_masked.shape)
 
 # %%
@@ -117,7 +118,7 @@ print(fmri_masked.shape)
 # If you want to output to a DataFrame, you can choose
 # ``"pandas"`` or ``"polars"``.
 #
-masker.set_output(transform="pandas", standardize="zscore_sample")
+masker.set_output(transform="pandas")
 fmri_masked = masker.transform(func_filename)
 print(fmri_masked.head())
 
