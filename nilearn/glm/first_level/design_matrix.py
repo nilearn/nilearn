@@ -365,6 +365,7 @@ def make_first_level_design_matrix(
     # check that additional regressor specification is correct
     n_add_regs = 0
     if add_regs is not None:
+        add_regs_: np.ndarray
         if isinstance(add_regs, pd.DataFrame):
             add_regs_ = add_regs.to_numpy()
             add_reg_names = add_regs.columns.tolist()
