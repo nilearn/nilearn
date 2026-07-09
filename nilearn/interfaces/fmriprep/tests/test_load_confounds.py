@@ -1,5 +1,4 @@
 import re
-from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -379,7 +378,7 @@ SUFFIXES = np.array(["", "_derivative1", "_power2", "_derivative1_power2"])
 
 
 @pytest.fixture
-def expected_suffixes(motion) -> Any:
+def expected_suffixes(motion):
     """Return expected suffix."""
     expectation = {
         "basic": slice(1),
@@ -387,7 +386,7 @@ def expected_suffixes(motion) -> Any:
         "power2": np.array([True, False, True, False]),
         "full": slice(4),
     }
-    return SUFFIXES[expectation[motion]]  # type: ignore[call-overload]
+    return SUFFIXES[expectation[motion]]
 
 
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])

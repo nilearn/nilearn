@@ -27,7 +27,7 @@ N_COMPONENTS = 4
 
 
 @pytest.fixture(autouse=True)
-def suppress_specific_decoding_warning() -> Generator[None, None, None]:
+def suppress_specific_decomposition_warning() -> Generator[None, None, None]:
     """Ignore internal decoding warnings."""
     with warnings.catch_warnings():
         messages = "Objective did not converge.*|"

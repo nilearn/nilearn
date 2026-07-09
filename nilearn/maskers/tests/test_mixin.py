@@ -1,6 +1,5 @@
-from typing import Any
-
 import pytest
+from nibabel import Nifti1Image
 from sklearn import clone
 
 from nilearn._utils.helpers import is_gil_enabled
@@ -23,12 +22,13 @@ from nilearn.maskers import (
 from nilearn.maskers.tests.test_html_report import (
     generate_and_check_masker_report,
 )
+from nilearn.surface import SurfaceImage
 
 
 @pytest.fixture
 def masker(
     request, img_maps, surf_maps_img, img_labels, surf_label_img
-) -> Any:
+) -> SurfaceImage | Nifti1Image:
     """Fixture to construct a masker instance with proper input."""
     cls, arg, reports = request.param
 

@@ -1,5 +1,3 @@
-from typing import Any
-
 import pandas as pd
 import pytest
 
@@ -12,7 +10,7 @@ from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
 
 
 @pytest.fixture
-def expected_parameters(strategy_keywords) -> Any:
+def expected_parameters(strategy_keywords: str):
     """Return expected parameters for a given strategy."""
     expectation = {
         "compcor": {"compcor": "anat_combined", "n_compcor": 6},
@@ -22,8 +20,7 @@ def expected_parameters(strategy_keywords) -> Any:
         return expectation[strategy_keywords]
     elif strategy_keywords != "high_pass":
         return {strategy_keywords: "full"}
-    else:
-        return False
+    return False
 
 
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
