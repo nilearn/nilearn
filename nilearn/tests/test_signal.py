@@ -1359,7 +1359,7 @@ def test_clean_psc_butterworth(rng):
         )
 
 
-def _assert_correlation_almost_1(signal_1, signal_2):
+def _assert_correlation_almost_1(signal_1, signal_2) -> None:
     """Check that correlation between 2 signals equal to 1."""
     assert_almost_equal(
         np.corrcoef(signal_1[:, 0], signal_2[:, 0])[0, 1],

@@ -111,7 +111,9 @@ def decomposition_masker(
     ).fit()
 
 
-def _decomposition_images_surface(rng, decomposition_mesh, with_activation):
+def _decomposition_images_surface(
+    rng, decomposition_mesh, with_activation
+) -> list[Nifti1Image | SurfaceImage]:
     return [
         _decomposition_img(
             "surface",

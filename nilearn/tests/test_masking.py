@@ -51,7 +51,7 @@ def _simu_img():
     return img, mask, conf
 
 
-def _cov_conf(tseries, conf):
+def _cov_conf(tseries, conf) -> np.ndarray:
     conf_n = StandardScaler().fit_transform(conf)
     _ = StandardScaler().fit_transform(tseries)
     cov_mat = np.dot(tseries.T, conf_n)

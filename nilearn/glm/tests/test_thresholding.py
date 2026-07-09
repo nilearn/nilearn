@@ -56,7 +56,7 @@ def test_fdr_error(rng):
         fdr_threshold(x, 1.5)
 
 
-def _data_norm_isf(shape):
+def _data_norm_isf(shape) -> np.ndarray:
     p = np.prod(shape)
     return norm.isf(np.linspace(1.0 / p, 1.0 - 1.0 / p, p)).reshape(shape)
 
