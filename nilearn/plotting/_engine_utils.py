@@ -2,6 +2,7 @@
 multiple modules in nilearn.plotting package.
 """
 
+from pathlib import Path
 from warnings import warn
 
 import matplotlib.pyplot as plt
@@ -12,11 +13,13 @@ from matplotlib.colors import (
     ListedColormap,
     Normalize,
 )
+from matplotlib.figure import Figure
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
+from nilearn.nilearn_typing import OutputFile
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
     check_threshold_not_negative,
@@ -24,6 +27,24 @@ from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
 )
+
+
+def save_figure_if_needed(fig: Figure, output_file: OutputFile) -> None:
+    """Save figure if a valid output file value is given.
+
+    Create output path if required.
+
+    Parameters
+    ----------
+    fig:  :class:`matplotlib.figure.Figure`
+        figure to save
+
+    %(output_file)s
+    """
+    if output_file is not None:
+        output_file = Path(output_file)
+        output_file.parent.mkdir(exist_ok=True, parents=True)
+        fig.savefig(output_file)
 
 
 @fill_doc
