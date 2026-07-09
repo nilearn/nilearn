@@ -46,7 +46,7 @@ Enhancements
 Changes
 -------
 
-- :bdg-dark:`Code` Add return type annotations to public functions in ``nilearn._utils.data_gen`` (:gh:`XXXX` by `Rémi Gau`_).
+- :bdg-dark:`Code` Add type annotations to the public functions in ``nilearn._utils.data_gen`` (:gh:`6420` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add return type annotations to :func:`~image.coord_transform`, :func:`~image.reorder_img`, :func:`~image.resample_img`, and :func:`~image.resample_to_img` (:gh:`6408` by `Rémi Gau`_).
 
