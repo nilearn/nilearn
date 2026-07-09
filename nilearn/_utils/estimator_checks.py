@@ -1901,7 +1901,7 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
                 if hasattr(estimator, "memory"):
                     estimator.memory = memory
 
-                input_dtype = np.dtype(input_dtype)  # type: ignore[call-overload]
+                input_np_dtype = np.dtype(cast(Any, input_dtype))
 
                 X, y = generate_data_to_fit(estimator)
                 if (
@@ -1915,12 +1915,12 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
                 if isinstance(X, Nifti1Image):
                     data = get_data(X)
                     X = Nifti1Image(
-                        data.astype(input_dtype),
+                        data.astype(input_np_dtype),
                         affine=_affine_eye(),
-                        dtype=input_dtype,
+                        dtype=input_np_dtype,
                     )
                 else:
-                    X.data._set_dtype(input_dtype)
+                    X.data._set_dtype(input_np_dtype)
 
                 estimator = fit_estimator(estimator, X, y)
 
@@ -1934,9 +1934,9 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
                 if not isinstance(result, list):
                     result = [result]
 
-                target_dtype = get_target_dtype(input_dtype, dtype)
+                target_dtype = get_target_dtype(input_np_dtype, dtype)
                 if target_dtype is None:
-                    target_dtype = input_dtype
+                    target_dtype = input_np_dtype
 
                 for s in result:
                     output_dtype = s.dtype
@@ -1999,12 +1999,12 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
                 if hasattr(estimator, "memory"):
                     estimator.memory = memory
 
-                input_dtype = np.dtype(input_dtype)  # type: ignore[call-overload]
+                input_np_dtype = np.dtype(cast(Any, input_dtype))
 
                 X, y = generate_data_to_fit(estimator)
                 if (
                     isinstance(estimator, NiftiMasker)
-                    and input_dtype == np.int32
+                    and input_np_dtype == np.int32
                 ):
                     # Needed for NiftiMasker because the default strategy
                     # returns an empty mask
@@ -2013,12 +2013,12 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
                 if isinstance(X, Nifti1Image):
                     data = get_data(X)
                     X = Nifti1Image(
-                        data.astype(input_dtype),
+                        data.astype(input_np_dtype),
                         affine=_affine_eye(),
-                        dtype=input_dtype,
+                        dtype=input_np_dtype,
                     )
                 else:
-                    X.data._set_dtype(input_dtype)
+                    X.data._set_dtype(input_np_dtype)
 
                 estimator = fit_estimator(estimator, X, y)
 
@@ -2401,24 +2401,24 @@ def check_decoder_empty_data_messages(estimator_orig) -> None:
     )
 
     data = np.zeros((64, 64, 0))
-    X = Nifti1Image(data, np.eye(4))
+    X_as_vol = Nifti1Image(data, np.eye(4))
 
     y = _rng().random(y.shape)
 
     with pytest.raises(ValueError, match="empty"):
-        estimator.fit(X, y)
+        estimator.fit(X_as_vol, y)
 
     estimator = clone(estimator_orig)
 
     imgs = _make_surface_img(n_samples)
-    data = {  # type: ignore[assignment]
+    surf_data = {
         part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
         for part in imgs.data.parts
     }
-    X = SurfaceImage(imgs.mesh, data)  # type: ignore[assignment]
+    X_as_surf = SurfaceImage(imgs.mesh, surf_data)
 
     with pytest.raises(ValueError, match="empty"):
-        estimator.fit(X, y)
+        estimator.fit(X_as_surf, y)
 
 
 def check_decoder_compatibility_mask_image(estimator_orig) -> None:
@@ -2459,15 +2459,16 @@ def check_decoder_compatibility_mask_image(estimator_orig) -> None:
         if not hasattr(estimator, method):
             continue
 
-        input = (_make_surface_img(3),)
+        input_data: tuple[SurfaceImage] | tuple[SurfaceImage, Any]
+        input_data = (_make_surface_img(3),)
         if method == "score":
-            input = (_make_surface_img(3), y)  # type: ignore[assignment]
+            input_data = (_make_surface_img(3), y)
 
         with pytest.raises(
             TypeError,
             match=("Mask and input images must be of compatible types"),
         ):
-            getattr(estimator, method)(*input)
+            getattr(estimator, method)(*input_data)
 
 
 def check_decoder_with_surface_data(estimator_orig) -> None:
@@ -3082,6 +3083,8 @@ def check_masker_transformer_sample_mask(estimator_orig) -> None:
 
     assert signal_1.ndim == 2
 
+    sample_mask: np.ndarray | list[list[int]] | list[list[bool]]
+
     # index sample to keep
     sample_mask = np.asarray([1, 2, 4])
 
@@ -3101,14 +3104,14 @@ def check_masker_transformer_sample_mask(estimator_orig) -> None:
     assert_array_equal(signal_2, signal_3)
 
     # list of explicit index
-    sample_mask = [[1, 2, 4]]  # type: ignore[assignment]
+    sample_mask = [[1, 2, 4]]
 
     signal_4 = estimator.transform(input_img, sample_mask=sample_mask)
 
     assert_array_equal(signal_2, signal_4)
 
     # list of logical index
-    sample_mask = [[False, True, True, False, True]]  # type: ignore[assignment]
+    sample_mask = [[False, True, True, False, True]]
 
     signal_5 = estimator.transform(input_img, sample_mask=sample_mask)
 
