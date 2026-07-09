@@ -677,7 +677,7 @@ def surf_img_ones_1d(surf_mesh) -> SurfaceImage:
     return SurfaceImage(surf_mesh, data)
 
 
-def _make_surface_mask(n_zeros=4):
+def _make_surface_mask(n_zeros: int = 4) -> SurfaceImage:
     mesh = _make_mesh()
     data = {}
     for key, val in mesh.parts.items():

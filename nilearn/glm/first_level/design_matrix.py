@@ -369,7 +369,7 @@ def make_first_level_design_matrix(
             add_regs_ = add_regs.to_numpy()
             add_reg_names = add_regs.columns.tolist()
         else:
-            add_regs_ = np.atleast_2d(add_regs)
+            add_regs_ = np.atleast_2d(add_regs)  # type: ignore[assignment]
 
         if np.any(np.isnan(add_regs_.ravel())):
             raise ValueError("Extra regressors contain NaN values.")
