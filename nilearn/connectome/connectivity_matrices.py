@@ -248,16 +248,14 @@ def sym_matrix_to_vec(symmetric, discard_diagonal: bool = False) -> np.ndarray:
     >>> sym_matrix = np.array([[1.0, 2.0, 3.0],
     ...                        [2.0, 1.0, 5.0],
     ...                        [3.0, 5.0, 1.0]])
-
-    Diagonal elements (all 1.0 here) are divided by sqrt(2):
-
+    >>>
+    >>> # Diagonal elements (all 1.0 here) are divided by sqrt(2).
     >>> from nilearn.connectome import sym_matrix_to_vec
     >>> vec = sym_matrix_to_vec(sym_matrix)
     >>> vec
     array([0.70710678, 2. , 0.70710678, 3. , 5. , 0.70710678])
-
-    Discard_diagonal=True drops the diagonal entries entirely:
-
+    >>>
+    >>> # Discard_diagonal=True drops the diagonal entries entirely.
     >>> vec_no_diag = sym_matrix_to_vec(sym_matrix, discard_diagonal=True)
     >>> vec_no_diag
     array([2., 3., 5.])
@@ -273,7 +271,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal: bool = False) -> np.ndarray:
     return symmetric[..., tril_mask] / scaling[tril_mask]
 
 
-def vec_to_sym_matrix(vec, diagonal=None):
+def vec_to_sym_matrix(vec, diagonal=None) -> np.ndarray:
     """Return the symmetric matrix given its flattened lower triangular part.
 
     Acts on the last dimension of the array if not 1-dimensional.
@@ -311,11 +309,11 @@ def vec_to_sym_matrix(vec, diagonal=None):
 
     Examples
     --------
-    Create a vector representing the flattened lower triangular part
-    (including the diagonal) of a symmetric matrix
+    >>> # Create a vector representing the flattened lower triangular part
+    >>> # (including the diagonal) of a symmetric matrix
     >>> import numpy as np
     >>> vec = np.arange(1, 7)
-
+    >>>
     >>> from nilearn.connectome import vec_to_sym_matrix
     >>> sym = vec_to_sym_matrix(vec)
     >>> sym

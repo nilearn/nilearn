@@ -182,6 +182,15 @@ def all_functions():
         where ``name`` is the function name as string
         and ``function`` is the actual function.
 
+    Examples
+    --------
+    >>> from nilearn.utils import all_functions
+    >>>
+    >>> functions = all_functions()
+    >>>
+    >>> print(f"Nilearn's API has {len(functions)} public functions.")
+    Nilearn's API has 172 public functions.
+
     """
     all_functions = []
     # Ignore deprecation warnings triggered at import time and from walking
@@ -239,12 +248,11 @@ def all_displays(type_filter=None):
     Examples
     --------
     >>> from nilearn.utils import all_displays
+    >>>
     >>> displays = all_displays()
-    >>> try:
-    ...     import matplotlib
-    ...     assert len(displays) == 27
-    ... except ImportError:
-    ...     assert len(displays) == 0
+    >>>
+    >>> print(f"Nilearn's API has {len(displays)} display functions.")
+    Nilearn's API has 27 display functions.
 
     """
     if not is_matplotlib_installed():

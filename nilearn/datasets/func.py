@@ -12,6 +12,7 @@ import re
 import warnings
 from io import BytesIO
 from pathlib import Path
+from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
@@ -23,7 +24,9 @@ from sklearn.utils import Bunch
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
     check_parameter_in_allowed,
     check_params,
 )
@@ -42,20 +45,25 @@ from nilearn.datasets._utils import (
 from nilearn.datasets.struct import load_fsaverage
 from nilearn.image import check_niimg, get_data
 from nilearn.interfaces.bids import get_bids_files
+from nilearn.nilearn_typing import (
+    AvailableMeshes,
+    DataDir,
+    Resume,
+    Url,
+    Verbose,
+)
 from nilearn.surface import SurfaceImage
-
-from .._utils.numpy_conversions import csv_to_array
 
 
 @fill_doc
 def fetch_haxby(
-    data_dir=None,
-    subjects=(2,),
-    fetch_stimuli=False,
-    url=None,
-    resume=True,
-    verbose=1,
-):
+    data_dir: DataDir = None,
+    subjects: int | list[int] | tuple[int] | None = (2,),
+    fetch_stimuli: bool = False,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and loads complete haxby dataset.
 
     See :footcite:t:`Haxby2001`.
@@ -63,17 +71,22 @@ def fetch_haxby(
     Parameters
     ----------
     %(data_dir)s
-    subjects : :obj:`list` or :obj:`tuple` or :obj:`int`, default=(2,)
+
+    subjects : :obj:`list` or :obj:`tuple` or :obj:`int` or None, default=(2,)
         Either a list of subjects or the number of subjects to load,
         from 1 to 6.
         By default, 2nd subject will be loaded.
         Empty list returns no subject data.
+        None will load all subjects.
 
     fetch_stimuli : :obj:`bool`, default=False
         Indicate if stimuli images must be downloaded.
         They will be presented as a dictionary of categories.
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -134,14 +147,18 @@ def fetch_haxby(
     """
     check_params(locals())
 
-    if isinstance(subjects, numbers.Number) and subjects > 6:
+    if subjects is not None:
+        check_is_of_allowed_type(subjects, (int, list, tuple), "subjects")
+    if (subjects is None) or (isinstance(subjects, int) and subjects > 6):
         subjects = 6
-
-    if subjects is not None and isinstance(subjects, (list, tuple)):
+    if isinstance(subjects, (list, tuple)):
         for sub_id in subjects:
             check_parameter_in_allowed(
                 sub_id, [1, 2, 3, 4, 5, 6], "subject id"
             )
+        subject_mask = np.array(subjects)
+    if isinstance(subjects, int):
+        subject_mask = np.arange(1, subjects + 1)
 
     dataset_name = "haxby2001"
     data_dir = get_dataset_dir(
@@ -174,14 +191,6 @@ def fetch_haxby(
         "anat.nii.gz",
     ]
     n_files = len(sub_files)
-
-    if subjects is None:
-        subjects = []
-
-    if isinstance(subjects, numbers.Number):
-        subject_mask = np.arange(1, subjects + 1)
-    else:
-        subject_mask = np.array(subjects)
 
     files = [
         (
@@ -284,7 +293,13 @@ def adhd_ids():
 
 
 @fill_doc
-def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
+def fetch_adhd(
+    n_subjects: int | None = 30,
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and load the ADHD :term:`resting-state` dataset.
 
     For more information
@@ -292,10 +307,10 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, default=30
+    n_subjects : :obj:`int` or None, default=30
         The number of subjects to load from maximum of 40 subjects.
-        By default, 30 subjects will be loaded. If None is given,
-        all 40 subjects will be loaded.
+        By default, 30 subjects will be loaded.
+        If None is given, all 40 subjects will be loaded.
 
     %(data_dir)s
 
@@ -368,12 +383,14 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     )[0]
 
     # Load the csv file
-    phenotypic = pd.read_table(phenotypic, delimiter=",")
-    phenotypic["Subject"] = phenotypic["Subject"].apply(lambda x: f"{x:07d}")
+    phenotypic_df = pd.read_table(phenotypic, delimiter=",")
+    phenotypic_df["Subject"] = phenotypic_df["Subject"].apply(
+        lambda x: f"{x:07d}"
+    )
 
     # Keep phenotypic information for selected subjects
-    mask = phenotypic["Subject"].apply(lambda x: str(x) in ids)
-    phenotypic = phenotypic[mask]
+    mask = phenotypic_df["Subject"].apply(lambda x: str(x) in ids)
+    phenotypic_df = phenotypic_df[mask]
 
     # Download dataset files
 
@@ -403,7 +420,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(
         func=functionals,
         confounds=confounds,
-        phenotypic=phenotypic,
+        phenotypic=phenotypic_df,
         description=fdescr,
         t_r=2.0,
     )
@@ -455,7 +472,12 @@ def miyawaki2008_file_mask():
 
 
 @fill_doc
-def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_miyawaki2008(
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and loads Miyawaki et al. 2008 dataset (153MB).
 
     See :footcite:t:`Miyawaki2008`.
@@ -490,13 +512,6 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     Notes
     -----
     %(fetcher_note)s
-
-    This dataset is available on the `brainliner website
-    <http://brainliner.jp/restrictedProject.atr>`_
-
-    See `additional information
-    <https://bicr.atr.jp//dni/en/downloads/\
-    fmri-data-set-for-visual-image-reconstruction/>`_
 
     """
     check_params(locals())
@@ -618,15 +633,15 @@ ALLOWED_CONTRASTS = list(CONTRAST_NAME_WRAPPER.values())
 
 @fill_doc
 def fetch_localizer_contrasts(
-    contrasts,
-    n_subjects=None,
-    get_tmaps=False,
-    get_masks=False,
-    get_anats=False,
-    data_dir=None,
-    resume=True,
-    verbose=1,
-):
+    contrasts: list[str],
+    n_subjects: int | list[int] | None = None,
+    get_tmaps: bool = False,
+    get_masks: bool = False,
+    get_anats: bool = False,
+    data_dir: DataDir = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and load Brainomics/Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
@@ -751,7 +766,7 @@ def fetch_localizer_contrasts(
             Paths to nifti t maps
         - 'masks': :obj:`list` of :obj:`str`
             Paths to nifti files corresponding to the subjects individual masks
-        - 'anats': :obj:`str`
+        - 'anats': :obj:`list` of :obj:`str`
             Path to nifti files corresponding to the subjects structural images
 
     Notes
@@ -774,9 +789,7 @@ def fetch_localizer_contrasts(
 
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
-    if isinstance(n_subjects, numbers.Number) and (
-        (n_subjects > 94) or (n_subjects < 1)
-    ):
+    if isinstance(n_subjects, int) and ((n_subjects > 94) or (n_subjects < 1)):
         warnings.warn(
             "Wrong value for 'n_subjects' (%d). The maximum "
             "value will be used instead ('n_subjects=94').",
@@ -801,17 +814,17 @@ def fetch_localizer_contrasts(
     # Get the dataset OSF index
     dataset_name = "brainomics_localizer"
     index_url = "https://osf.io/hwbm2/download"
-    data_dir = get_dataset_dir(
+    dataset_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
     index_file = fetch_single_file(
-        index_url, data_dir, verbose=verbose, resume=resume
+        index_url, dataset_dir, verbose=verbose, resume=resume
     )
     with index_file.open() as of:
         index = json.load(of)
 
-    if isinstance(n_subjects, numbers.Number):
+    if isinstance(n_subjects, int):
         subject_mask = np.arange(1, n_subjects + 1)
     else:
         subject_mask = np.array(n_subjects)
@@ -828,7 +841,7 @@ def fetch_localizer_contrasts(
     # For more info, see:
     # https://gist.github.com/emdupre/3cb4d564511d495ea6bf89c6a577da74
     root_url = "https://osf.io/download/{0}/"
-    files = {}
+    files: dict[str, list[str | Path]] = {}
     filenames = []
 
     for subject_id, data_type, contrast in itertools.product(
@@ -924,14 +937,14 @@ def fetch_localizer_contrasts(
 
     # Actual data fetching
     fdescr = get_dataset_descr(dataset_name)
-    fetch_files(data_dir, filenames, verbose=verbose)
+    fetch_files(dataset_dir, filenames, verbose=verbose)
     for key, value in files.items():
-        files[key] = [str(data_dir / val) for val in value]
+        files[key] = [str(dataset_dir / val) for val in value]
 
     # Load covariates file
-    participants_file = data_dir / participants_file
+    participants_file = dataset_dir / participants_file
     csv_data = pd.read_csv(participants_file, delimiter="\t")
-    behavioural_file = data_dir / behavioural_file
+    behavioural_file = dataset_dir / behavioural_file
     csv_data2 = pd.read_csv(behavioural_file, delimiter="\t")
     csv_data = csv_data.merge(csv_data2)
     subject_names = csv_data["participant_id"].tolist()
@@ -972,13 +985,15 @@ def _is_valid_path(path, index, verbose):
 
 
 @fill_doc
-def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, verbose=1):
+def fetch_localizer_calculation_task(
+    n_subjects: int | None = 1, data_dir: DataDir = None, verbose: Verbose = 1
+) -> Bunch[str, Any]:
     """Fetch calculation task contrast maps from the localizer.
 
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, default=1
+    n_subjects : :obj:`int` or None, default=1
         The number of subjects to load. If None is given,
         all 94 subjects are used.
 
@@ -1022,7 +1037,9 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, verbose=1):
 
 
 @fill_doc
-def fetch_localizer_button_task(data_dir=None, verbose=1):
+def fetch_localizer_button_task(
+    data_dir: DataDir = None, verbose: Verbose = 1
+) -> Bunch[str, Any]:
     """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
@@ -1077,17 +1094,17 @@ def fetch_localizer_button_task(data_dir=None, verbose=1):
 
 @fill_doc
 def fetch_abide_pcp(
-    data_dir=None,
-    n_subjects=None,
-    pipeline="cpac",
-    band_pass_filtering=False,
-    global_signal_regression=False,
-    derivatives=None,
-    quality_checked=True,
-    url=None,
-    verbose=1,
-    **kwargs,
-):
+    data_dir: DataDir = None,
+    n_subjects: int | None = None,
+    pipeline: Literal["cpac", "css", "dparsf", "niak"] = "cpac",
+    band_pass_filtering: bool = False,
+    global_signal_regression: bool = False,
+    derivatives: list[str] | str | None = None,
+    quality_checked: bool = True,
+    url: Url = None,
+    verbose: Verbose = 1,
+    **kwargs: Any,
+) -> Bunch[str, Any]:
     """Fetch ABIDE dataset.
 
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
@@ -1286,7 +1303,7 @@ def fetch_abide_pcp(
 
     # General file: phenotypic information
     dataset_name = "ABIDE_pcp"
-    data_dir = get_dataset_dir(
+    dataset_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
@@ -1305,7 +1322,9 @@ def fetch_abide_pcp(
     # Fetch the phenotypic file and load it
     csv = "Phenotypic_V1_0b_preprocessed1.csv"
     path_csv = Path(
-        fetch_files(data_dir, [(csv, f"{url}/{csv}", {})], verbose=verbose)[0]
+        fetch_files(dataset_dir, [(csv, f"{url}/{csv}", {})], verbose=verbose)[
+            0
+        ]
     )
 
     # Note: the phenotypic file contains string that contains comma which mess
@@ -1322,35 +1341,34 @@ def fetch_abide_pcp(
             for line in pheno_f
         )
     # bytes (encode()) needed for python 2/3 compat with numpy
-    pheno = "\n".join(pheno).encode()
-    pheno = BytesIO(pheno)
-    pheno = pd.read_csv(pheno, comment="$")
+    pheno_as_bytes = "\n".join(pheno).encode()
+    pheno_df = pd.read_csv(BytesIO(pheno_as_bytes), comment="$")
 
     # First, filter subjects with no filename
-    pheno = pheno[pheno["FILE_ID"] != "no_filename"]
+    pheno_df = pheno_df[pheno_df["FILE_ID"] != "no_filename"]
     # Apply user defined filters
-    user_filter = filter_columns(pheno, kwargs)
-    pheno = pheno[user_filter]
+    user_filter = filter_columns(pheno_df, kwargs)
+    pheno_df = pheno_df[user_filter]
 
     # Go into specific data folder and url
-    data_dir = data_dir / pipeline / strategy
+    dataset_dir = dataset_dir / pipeline / strategy
     url = f"{url}/Outputs/{pipeline}/{strategy}"
 
     # Get the files
-    file_ids = pheno["FILE_ID"].tolist()
+    file_ids = pheno_df["FILE_ID"].tolist()
     if n_subjects is not None:
         file_ids = file_ids[:n_subjects]
-        pheno = pheno[:n_subjects]
+        pheno_df = pheno_df[:n_subjects]
 
     results = {
         "description": get_dataset_descr(dataset_name),
-        "phenotypic": pheno,
+        "phenotypic": pheno_df,
     }
     for derivative in derivatives:
         ext = ".1D" if derivative.startswith("rois") else ".nii.gz"
         files = []
         for file_id in file_ids:
-            file_ = [
+            file_: list[tuple[str, str, dict[str, str]]] = [
                 (
                     f"{file_id}_{derivative}{ext}",
                     "/".join(
@@ -1359,7 +1377,7 @@ def fetch_abide_pcp(
                     {},
                 )
             ]
-            files.append(fetch_files(data_dir, file_, verbose=verbose)[0])
+            files.append(fetch_files(dataset_dir, file_, verbose=verbose)[0])
         # Load derivatives if needed
         if ext == ".1D":
             files = [np.loadtxt(f) for f in files]
@@ -1414,13 +1432,13 @@ def _load_mixed_gambles(zmap_imgs):
 
 @fill_doc
 def fetch_mixed_gambles(
-    n_subjects=1,
-    data_dir=None,
-    url=None,
-    resume=True,
-    return_raw_data=False,
-    verbose=1,
-):
+    n_subjects: int | None = 1,
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    return_raw_data: bool = False,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Fetch Jimura "mixed gambles" dataset.
 
     See the :ref:`dataset description <mixed_gamble_maps>`
@@ -1428,13 +1446,18 @@ def fetch_mixed_gambles(
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, default=1
-        The number of subjects to load. If ``None`` is given, all the
-        subjects are used.
+    n_subjects : :obj:`int` or None, default=1
+        The number of subjects to load.
+        If ``None`` is given, all the subjects are used.
+
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
+
     return_raw_data : :obj:`bool`, default=False
         If ``False``, then the data will transformed into an ``(X, y)``
         pair, suitable for machine learning routines. ``X`` is a list
@@ -1468,12 +1491,15 @@ def fetch_mixed_gambles(
     """
     check_params(locals())
 
+    if n_subjects is None:
+        n_subjects = 16
     if n_subjects > 16:
         warnings.warn(
             "Warning: there are only 16 subjects!",
             stacklevel=find_stack_level(),
         )
         n_subjects = 16
+
     if url is None:
         url = (
             "https://www.nitrc.org/frs/download.php/7229/"
@@ -1484,34 +1510,45 @@ def fetch_mixed_gambles(
         (f"zmaps{os.sep}sub{int(j + 1):03}_zmaps.nii.gz", url, opts)
         for j in range(n_subjects)
     ]
+
     data_dir = get_dataset_dir(
         "jimura_poldrack_2012_zmaps", data_dir=data_dir, verbose=verbose
     )
+
     zmap_fnames = fetch_files(data_dir, files, resume=resume, verbose=verbose)
+
     subject_id = pd.DataFrame(
         {"subject_id": np.repeat(np.arange(n_subjects), 6 * 8).tolist()}
     )
+
     description = get_dataset_descr("mixed_gambles")
+
     data = Bunch(
         zmaps=zmap_fnames, subject_id=subject_id, description=description
     )
+
     if not return_raw_data:
         X, y, mask_img = _load_mixed_gambles(
             check_niimg(data.zmaps, return_iterator=True)
         )
         data.zmaps, data.gain, data.mask_img = X, y, mask_img
+
     return data
 
 
 @fill_doc
 def fetch_megatrawls_netmats(
-    dimensionality=100,
-    timeseries="eigen_regression",
-    matrices="partial_correlation",
-    data_dir=None,
-    resume=True,
-    verbose=1,
-):
+    dimensionality: int = 100,
+    timeseries: Literal[
+        "multiple_spatial_regression", "eigen_regression"
+    ] = "eigen_regression",
+    matrices: Literal["full_correlation", "partial_correlation"] = (
+        "partial_correlation"
+    ),
+    data_dir: DataDir = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and return Network Matrices data \
     from MegaTrawls release in HCP.
 
@@ -1756,8 +1793,12 @@ def nki_ids():
 
 @fill_doc
 def fetch_surf_nki_enhanced(
-    n_subjects=10, data_dir=None, url=None, resume=True, verbose=1
-):
+    n_subjects: int | None = 10,
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
@@ -1770,8 +1811,9 @@ def fetch_surf_nki_enhanced(
     ----------
     n_subjects : :obj:`int`, default=10
         The number of subjects to load from maximum of 102 subjects.
-        By default, 10 subjects will be loaded. If None is given,
-        all 102 subjects will be loaded.
+        By default, 10 subjects will be loaded.
+        If None is given, all 102 subjects will be loaded.
+
     %(data_dir)s
 
     %(url)s
@@ -1845,15 +1887,15 @@ def fetch_surf_nki_enhanced(
     )[0]
 
     # Load the csv file
-    phenotypic = pd.read_csv(
+    phenotypic_df = pd.read_csv(  # type: ignore[assignment]
         phenotypic,
         header=1,
         names=["Subject", "Age", "Dominant Hand", "Sex"],
     )
 
     # Keep phenotypic information for selected subjects
-    mask = phenotypic["Subject"].apply(lambda x: str(x) in ids)
-    phenotypic = phenotypic[mask]
+    mask = phenotypic_df["Subject"].apply(lambda x: str(x) in ids)
+    phenotypic_df = phenotypic_df[mask]
 
     # Download subjects' datasets
     func_right = []
@@ -1892,21 +1934,23 @@ def fetch_surf_nki_enhanced(
     return Bunch(
         func_left=func_left,
         func_right=func_right,
-        phenotypic=phenotypic,
+        phenotypic=phenotypic_df,
         description=fdescr,
     )
 
 
 @fill_doc
 def load_nki(
-    mesh="fsaverage5",
-    mesh_type="pial",
-    n_subjects=1,
-    data_dir=None,
-    url=None,
-    resume=True,
-    verbose=1,
-):
+    mesh: AvailableMeshes = "fsaverage5",
+    mesh_type: Literal[
+        "pial", "white_matter", "inflated", "sphere", "flat"
+    ] = "pial",
+    n_subjects: int | None = 1,
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+) -> list[SurfaceImage]:
     """Load NKI enhanced surface data into a surface object.
 
     For more information
@@ -2127,13 +2171,13 @@ def _fetch_development_fmri_functional(
 
 @fill_doc
 def fetch_development_fmri(
-    n_subjects=None,
-    reduce_confounds=True,
-    data_dir=None,
-    resume=True,
-    verbose=1,
-    age_group="both",
-):
+    n_subjects: int | None = None,
+    reduce_confounds: bool = True,
+    data_dir: DataDir = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+    age_group: Literal["adults", "child", "both"] = "both",
+) -> Bunch[str, Any]:
     """Fetch movie watching based brain development dataset (fMRI).
 
     The data is downsampled to 4mm resolution for convenience
@@ -2350,7 +2394,9 @@ def _reduce_confounds(regressors, keep_confounds):
 
 
 @fill_doc
-def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
+def fetch_language_localizer_demo_dataset(
+    data_dir: DataDir = None, verbose: Verbose = 1
+) -> Bunch[str, Any]:
     """Download language localizer demo dataset.
 
     For more information
@@ -2386,7 +2432,9 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
 
     main_folder = "fMRI-language-localizer-demo-dataset"
 
-    data_dir = get_dataset_dir(main_folder, data_dir=data_dir, verbose=verbose)
+    dataset_dir = get_dataset_dir(
+        main_folder, data_dir=data_dir, verbose=verbose
+    )
 
     try:
         # The files_spec needed for fetch_files
@@ -2395,9 +2443,9 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
         ]
         # Only download if directory is empty
         # Directory will have been created by the call to get_dataset_dir above
-        if not list(data_dir.iterdir()):
+        if not list(dataset_dir.iterdir()):
             downloaded_files = fetch_files(
-                data_dir, files_spec, resume=True, verbose=verbose
+                dataset_dir, files_spec, resume=True, verbose=verbose
             )
             uncompress_file(downloaded_files[0])
     except Exception:
@@ -2407,22 +2455,28 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
         ]
         # Only download if directory is empty
         # Directory will have been created by the call to get_dataset_dir above
-        if not list(data_dir.iterdir()):
+        if not list(dataset_dir.iterdir()):
             downloaded_files = fetch_files(
-                data_dir, files_spec, resume=True, verbose=verbose
+                dataset_dir, files_spec, resume=True, verbose=verbose
             )
             uncompress_file(downloaded_files[0])
 
-    file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
+    file_list = [
+        str(path) for path in dataset_dir.rglob("*") if path.is_file()
+    ]
 
     description = get_dataset_descr("language_localizer_demo")
     return Bunch(
-        data_dir=str(data_dir), func=sorted(file_list), description=description
+        data_dir=str(dataset_dir),
+        func=sorted(file_list),
+        description=description,
     )
 
 
 @fill_doc
-def fetch_ds000030_urls(data_dir=None, verbose=1):
+def fetch_ds000030_urls(
+    data_dir: DataDir = None, verbose: Verbose = 1
+) -> tuple[str, list[str]]:
     """Fetch URLs for files from the ds000030 :term:`BIDS` dataset.
 
     .. nilearn_versionadded:: 0.9.2
@@ -2474,15 +2528,15 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
     DATA_PREFIX = "ds000030/ds000030_R1.0.4/uncompressed"
     FILE_URL = "https://osf.io/86xj7/download"
 
-    data_dir = get_dataset_dir(
+    dataset_dir = get_dataset_dir(
         DATA_PREFIX,
         data_dir=data_dir,
         verbose=verbose,
     )
 
-    final_download_path = data_dir / "urls.json"
+    final_download_path = dataset_dir / "urls.json"
     downloaded_file_path = fetch_files(
-        data_dir=data_dir,
+        data_dir=dataset_dir,
         files=[
             (
                 final_download_path,
@@ -2500,8 +2554,11 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
 
 
 def select_from_index(
-    urls, inclusion_filters=None, exclusion_filters=None, n_subjects=None
-):
+    urls: list[str],
+    inclusion_filters: list[str] | None = None,
+    exclusion_filters: list[str] | None = None,
+    n_subjects: int | None = None,
+) -> list[str]:
     """Select subset of urls with given filters.
 
     Parameters
@@ -2529,7 +2586,7 @@ def select_from_index(
         For example the filter '*task-rest*' would discard all urls
         that contain the 'task-rest' string.
 
-    n_subjects : :obj:`int`, default=None
+    n_subjects : :obj:`int` or None, default=None
         Number of subjects to download from the dataset. All by default.
 
     Returns
@@ -2550,26 +2607,30 @@ def select_from_index(
     # from the url list we infer all available subjects like 'sub-xxx/'
     subject_regex = "sub-[a-z|A-Z|0-9]*[_./]"
 
-    def infer_subjects(urls):
+    def infer_subjects(urls: list[str]) -> list[str]:
         subjects = set()
         for url in urls:
             if "sub-" in url:
-                subjects.add(re.search(subject_regex, url)[0][:-1])
+                tmp = re.search(subject_regex, url)
+                if tmp is not None:
+                    subjects.add(tmp[0][:-1])
         return sorted(subjects)
 
     # We get a list of subjects (for the moment the first n subjects)
     selected_subjects = set(infer_subjects(urls)[:n_subjects])
+
     # We exclude urls of subjects not selected
-    urls = [
-        url
-        for url in urls
-        if "sub-" not in url
-        or re.search(subject_regex, url)[0][:-1] in selected_subjects
-    ]
+    def subject_selected(url: str) -> bool:
+        if "sub-" not in url:
+            return True
+        match = re.search(subject_regex, url)
+        return match is not None and match[0][:-1] in selected_subjects
+
+    urls = [url for url in urls if subject_selected(url)]
     return urls
 
 
-def patch_openneuro_dataset(file_list) -> None:
+def patch_openneuro_dataset(file_list: list[str]) -> None:
     """Add symlinks for files not named according to :term:`BIDS` conventions.
 
     .. warning::
@@ -2605,11 +2666,11 @@ def patch_openneuro_dataset(file_list) -> None:
 
 @fill_doc
 def fetch_openneuro_dataset(
-    urls=None,
-    data_dir=None,
-    dataset_version="ds000030_R1.0.4",
-    verbose=1,
-):
+    urls: list[str] | None = None,
+    data_dir: DataDir = None,
+    dataset_version: str = "ds000030_R1.0.4",
+    verbose: Verbose = 1,
+) -> tuple[str, list[str]]:
     """Download OpenNeuro :term:`BIDS` dataset.
 
     This function specifically downloads files from a series of URLs.
@@ -2688,7 +2749,7 @@ def fetch_openneuro_dataset(
             f"{DATASET_VERSION.split('_')[0]}/{DATASET_VERSION}/uncompressed"
         )
         orig_data_dir = data_dir
-        data_dir = get_dataset_dir(
+        dataset_dir = get_dataset_dir(
             data_prefix,
             data_dir=data_dir,
             verbose=verbose,
@@ -2702,14 +2763,14 @@ def fetch_openneuro_dataset(
         data_prefix = (
             f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
         )
-        data_dir = get_dataset_dir(
+        dataset_dir = get_dataset_dir(
             data_prefix,
             data_dir=data_dir,
             verbose=verbose,
         )
 
     # The files_spec needed for fetch_files
-    files_spec = []
+    files_spec: list[tuple[Path, str, dict]] = []
     files_dir = []
 
     # Check that data prefix is found in each URL
@@ -2724,7 +2785,7 @@ def fetch_openneuro_dataset(
 
     for url in urls:
         url_path = url.split(data_prefix + "/")[1]
-        file_dir = data_dir / url_path
+        file_dir = dataset_dir / url_path
         files_spec.append((file_dir.name, url, {}))
         files_dir.append(file_dir.parent)
 
@@ -2753,11 +2814,13 @@ def fetch_openneuro_dataset(
 
     patch_openneuro_dataset(downloaded)
 
-    return str(data_dir), sorted(downloaded)
+    return str(dataset_dir), sorted(downloaded)
 
 
 @fill_doc
-def fetch_localizer_first_level(data_dir=None, verbose=1):
+def fetch_localizer_first_level(
+    data_dir: DataDir = None, verbose: Verbose = 1
+) -> Bunch[str, Any]:
     """Download a first-level localizer :term:`fMRI` dataset.
 
     For more information
@@ -2835,10 +2898,10 @@ def _download_spm_auditory_data(data_dir, verbose):
 
 @fill_doc
 def fetch_spm_auditory(
-    data_dir=None,
-    data_name="spm_auditory",
-    verbose=1,
-):
+    data_dir: DataDir = None,
+    data_name: str = "spm_auditory",
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Fetch :term:`SPM` auditory single-subject data.
 
     See :footcite:t:`spm_auditory`.
@@ -2883,23 +2946,25 @@ def fetch_spm_auditory(
     """
     check_params(locals())
 
-    data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
+    dataset_dir = get_dataset_dir(
+        data_name, data_dir=data_dir, verbose=verbose
+    )
 
-    if not (data_dir / "MoAEpilot" / "sub-01").exists():
-        _download_spm_auditory_data(data_dir, verbose)
+    if not (dataset_dir / "MoAEpilot" / "sub-01").exists():
+        _download_spm_auditory_data(dataset_dir, verbose)
 
     anat = get_bids_files(
-        main_path=data_dir / "MoAEpilot",
+        main_path=dataset_dir / "MoAEpilot",
         modality_folder="anat",
         file_tag="T1w",
     )[0]
     func = get_bids_files(
-        main_path=data_dir / "MoAEpilot",
+        main_path=dataset_dir / "MoAEpilot",
         modality_folder="func",
         file_tag="bold",
     )
     events = get_bids_files(
-        main_path=data_dir / "MoAEpilot",
+        main_path=dataset_dir / "MoAEpilot",
         modality_folder="func",
         file_tag="events",
     )[0]
@@ -3056,10 +3121,10 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
 
 @fill_doc
 def fetch_spm_multimodal_fmri(
-    data_dir=None,
-    data_name="spm_multimodal_fmri",
-    verbose=1,
-):
+    data_dir: DataDir = None,
+    data_name: str = "spm_multimodal_fmri",
+    verbose: Verbose = 1,
+) -> Bunch[str, Any]:
     """Fetcher for Multi-modal Face Dataset.
 
     For more information,
@@ -3106,9 +3171,11 @@ def fetch_spm_multimodal_fmri(
     """
     check_params(locals())
 
-    data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
+    dataset_dir = get_dataset_dir(
+        data_name, data_dir=data_dir, verbose=verbose
+    )
     subject_id = "sub001"
-    subject_dir = data_dir / subject_id
+    subject_dir = dataset_dir / subject_id
 
     description = get_dataset_descr("spm_multimodal")
 
@@ -3116,7 +3183,7 @@ def fetch_spm_multimodal_fmri(
     data = _glob_spm_multimodal_fmri_data(subject_dir, verbose)
     if data is None:
         # No. Download the data
-        data = _download_data_spm_multimodal(data_dir, subject_dir, verbose)
+        data = _download_data_spm_multimodal(dataset_dir, subject_dir, verbose)
 
     data.description = description
     data.t_r = 2
@@ -3124,7 +3191,9 @@ def fetch_spm_multimodal_fmri(
 
 
 @fill_doc
-def fetch_fiac_first_level(data_dir=None, verbose=1):
+def fetch_fiac_first_level(
+    data_dir: DataDir = None, verbose: Verbose = 1
+) -> Bunch[str, Any]:
     """Download a first-level fiac :term:`fMRI` dataset (2 runs).
 
     For more information
@@ -3157,14 +3226,14 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     """
     check_params(locals())
 
-    data_dir = get_dataset_dir(
+    dataset_dir = get_dataset_dir(
         "fiac_nilearn.glm", data_dir=data_dir, verbose=verbose
     )
 
     def _glob_fiac_data(verbose):
         """Glob data from subject_dir."""
         _subject_data = {}
-        subject_dir = data_dir / "nipy-data-0.2/data/fiac/fiac0"
+        subject_dir = dataset_dir / "nipy-data-0.2/data/fiac/fiac0"
         for run in [1, 2]:
             # glob func data for session
             session_func = subject_dir / f"run{int(run)}.nii.gz"
@@ -3211,8 +3280,8 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     logger.log("Data absent, downloading...", verbose=verbose)
     url = "https://nipy.org/data-packages/nipy-data-0.2.tar.gz"
 
-    archive_path = data_dir / Path(url).name
-    fetch_single_file(url, data_dir)
+    archive_path = dataset_dir / Path(url).name
+    fetch_single_file(url, dataset_dir)
     try:
         uncompress_file(archive_path)
     except Exception:
@@ -3229,7 +3298,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
 
 @functools.lru_cache
-def load_sample_motor_activation_image():
+def load_sample_motor_activation_image() -> str:
     """Load a single functional image showing motor activations.
 
     Returns

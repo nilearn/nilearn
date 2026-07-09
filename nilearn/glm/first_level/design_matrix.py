@@ -243,7 +243,7 @@ def make_first_level_design_matrix(
     add_reg_names=None,
     min_onset=-24,
     oversampling=50,
-):
+) -> pd.DataFrame:
     """Generate a design matrix from the input parameters.
 
     Parameters
@@ -451,6 +451,27 @@ def check_design_matrix(design_matrix):
     names : array of shape (n_events,), dtype='f'
         Per-event onset time (in seconds)
 
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from nilearn.glm.first_level import check_design_matrix
+    >>>
+    >>> # Create a mock design matrix.
+    >>> design_matrix = pd.DataFrame(
+    ...     data={"col1": [1, 2], "col2": [3, 4]},
+    ...     index=[3, 4],
+    ... )
+    >>>
+    >>> # Check the design matrix.
+    >>> frame_times, matrix, names = check_design_matrix(design_matrix)
+    >>> frame_times
+    Index([3, 4], dtype='int64')
+    >>> matrix
+    array([[1, 3],
+           [2, 4]])
+    >>> names
+    ['col1', 'col2']
+
     """
     if len(design_matrix.columns) == 0:
         raise ValueError("The design_matrix dataframe cannot be empty.")
@@ -460,7 +481,9 @@ def check_design_matrix(design_matrix):
     return frame_times, matrix, names
 
 
-def make_second_level_design_matrix(subjects_label, confounds=None):
+def make_second_level_design_matrix(
+    subjects_label, confounds=None
+) -> pd.DataFrame:
     """Set up a second level design.
 
     Construct a design matrix with an intercept and subject specific confounds.

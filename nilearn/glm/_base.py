@@ -183,7 +183,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         """Transform element-wise residuals to the same shape \
         as the input image.
 
-        .. nilearn_deprecated:: 0.14.0dev
+        .. nilearn_deprecated:: 0.14.0
 
         """
         # TODO (nilearn>=0.16.0) remove the method
@@ -219,7 +219,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         """Transform element-wise predicted to the same shape \
         as the input image.
 
-        .. nilearn_deprecated:: 0.14.0dev
+        .. nilearn_deprecated:: 0.14.0
 
         """
         # TODO (nilearn>=0.16.0) remove the method
@@ -255,7 +255,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         """Transform element-wise r-squared to the same shape \
         as the input image.
 
-        .. nilearn_deprecated:: 0.14.0dev
+        .. nilearn_deprecated:: 0.14.0
 
         """
         # TODO (nilearn>=0.16.0) remove the method

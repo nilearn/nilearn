@@ -19,10 +19,9 @@ import numpy as np
 import pandas as pd
 
 from nilearn._utils.param_validation import check_parameter_in_allowed
-
-from .load_confounds_compcor import find_compcor
-from .load_confounds_scrub import optimize_scrub
-from .load_confounds_utils import (
+from nilearn.interfaces.fmriprep.load_confounds_compcor import find_compcor
+from nilearn.interfaces.fmriprep.load_confounds_scrub import optimize_scrub
+from nilearn.interfaces.fmriprep.load_confounds_utils import (
     MissingConfoundError,
     add_suffix,
     check_params_confounds,
@@ -119,13 +118,6 @@ def _load_tedana(confounds_files, tedana):
     pandas.DataFrame
         DataFrame of TEDANA regressors.
     """
-    if tedana not in ["aggressive", "non-aggressive"]:
-        raise ValueError(
-            "Please select a valid option 'aggresive' or 'non-aggressive' "
-            "when using TEDANA strategy. "
-            f"Current input: {tedana}"
-        )
-
     if tedana == "aggressive":
         return _tedana_strategy(
             ["rejected"],

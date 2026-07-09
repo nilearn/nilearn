@@ -3,7 +3,7 @@
 import functools
 import warnings
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal, get_args
 
 import numpy as np
 import pandas as pd
@@ -26,6 +26,14 @@ from nilearn.datasets._utils import (
     get_dataset_dir,
 )
 from nilearn.image import check_niimg, get_data, new_img_like, resampling
+from nilearn.nilearn_typing import (
+    AvailableMeshes,
+    DataDir,
+    Resolution,
+    Resume,
+    Url,
+    Verbose,
+)
 from nilearn.surface.surface import (
     FileMesh,
     PolyMesh,
@@ -53,8 +61,16 @@ WM_MNI152_FILE_PATH = (
 FSAVERAGE5_PATH = PACKAGE_DIRECTORY / "data" / "fsaverage5"
 
 
+AVAILABLE_MESHES: tuple[AvailableMeshes] = tuple(get_args(AvailableMeshes))
+
+
 @fill_doc
-def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_icbm152_2009(
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
+):
     """Download and load the ICBM152 template (dated 2009).
 
     For more information
@@ -177,7 +193,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
 @functools.lru_cache(maxsize=3)
 @fill_doc
-def load_mni152_template(resolution=None) -> Nifti1Image:
+def load_mni152_template(resolution: Resolution = None) -> Nifti1Image:
     """Load the MNI152 skullstripped T1 template.
 
     This function takes the skullstripped,
@@ -236,7 +252,7 @@ def load_mni152_template(resolution=None) -> Nifti1Image:
 
 
 @fill_doc
-def load_mni152_gm_template(resolution=None):
+def load_mni152_gm_template(resolution: Resolution = None) -> Nifti1Image:
     """Load the MNI152 grey-matter template.
 
     This function takes the re-scaled 1mm-resolution version of the grey-matter
@@ -292,7 +308,7 @@ def load_mni152_gm_template(resolution=None):
 
 
 @fill_doc
-def load_mni152_wm_template(resolution=None):
+def load_mni152_wm_template(resolution: Resolution = None) -> Nifti1Image:
     """Load the MNI152 white-matter template.
 
     This function takes the re-scaled 1mm-resolution version of the
@@ -349,7 +365,9 @@ def load_mni152_wm_template(resolution=None):
 
 
 @fill_doc
-def load_mni152_brain_mask(resolution=None, threshold=0.2):
+def load_mni152_brain_mask(
+    resolution: Resolution = None, threshold: float = 0.2
+) -> Nifti1Image:
     """Load the MNI152 whole-brain mask.
 
     This function takes the whole-brain MNI152 T1 template and threshold it,
@@ -394,7 +412,9 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
 
 @fill_doc
-def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
+def load_mni152_gm_mask(
+    resolution: Resolution = None, threshold: float = 0.2, n_iter: int = 2
+) -> Nifti1Image:
     """Load the MNI152 grey-matter mask.
 
     This function takes the grey-matter MNI152 template and threshold it, in
@@ -448,7 +468,9 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
 
 @fill_doc
-def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
+def load_mni152_wm_mask(
+    resolution: Resolution = None, threshold: float = 0.2, n_iter: int = 2
+) -> Nifti1Image:
     """Load the MNI152 white-matter mask.
 
     This function takes the white-matter MNI152 template and threshold it, in
@@ -503,7 +525,11 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
 @fill_doc
 def fetch_icbm152_brain_gm_mask(
-    data_dir=None, threshold=0.2, resume=True, n_iter=2, verbose=1
+    data_dir: DataDir = None,
+    threshold: float = 0.2,
+    resume: Resume = True,
+    n_iter: int = 2,
+    verbose: Verbose = 1,
 ):
     """Download ICBM152 template first, then loads the 'gm' mask.
 
@@ -627,12 +653,12 @@ def oasis_missing_subjects():
 
 @fill_doc
 def fetch_oasis_vbm(
-    n_subjects=None,
-    dartel_version=True,
-    data_dir=None,
-    url=None,
-    resume=True,
-    verbose=1,
+    n_subjects: int | None = None,
+    dartel_version: bool = True,
+    data_dir: DataDir = None,
+    url: Url = None,
+    resume: Resume = True,
+    verbose: Verbose = 1,
 ):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
@@ -648,7 +674,7 @@ def fetch_oasis_vbm(
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, default=None
+    n_subjects : :obj:`int` or None, default=None
         The number of subjects to load. If None is given, all the
         subjects are used.
 
@@ -807,8 +833,12 @@ def fetch_oasis_vbm(
             for s in range(1, 457)
             if s not in missing_subjects
         ]
-    file_names_extvars = [("oasis_cross-sectional.csv", url_csv, {})]
-    file_names_dua = [("data_usage_agreement.txt", url_dua, {})]
+    file_names_extvars: list[tuple[str, str, dict]] = [
+        ("oasis_cross-sectional.csv", url_csv, {})
+    ]
+    file_names_dua: list[tuple[str, str, dict]] = [
+        ("data_usage_agreement.txt", url_dua, {})
+    ]
     # restrict to user-specified number of subjects
     file_names_gm = file_names_gm[:n_subjects]
     file_names_wm = file_names_wm[:n_subjects]
@@ -854,7 +884,8 @@ def fetch_oasis_vbm(
 
 @fill_doc
 def fetch_surf_fsaverage(
-    mesh: str = "fsaverage5", data_dir=None
+    mesh: AvailableMeshes = "fsaverage5",
+    data_dir: DataDir = None,
 ) -> Bunch[str, Any]:
     """Download a Freesurfer fsaverage surface.
 
@@ -866,7 +897,7 @@ def fetch_surf_fsaverage(
     :func:`~nilearn.datasets.load_fsaverage_data`
     to access fsaverage data as :obj:`~nilearn.surface.SurfaceImage`.
 
-    .. nilearn_versionchanged:: 0.14.0dev
+    .. nilearn_versionchanged:: 0.14.0
 
         The data for fsaverage3 and fsaverage4 have been updated
         to have their vertices in the same order as fsaverage5-7.
@@ -915,18 +946,9 @@ def fetch_surf_fsaverage(
     """
     check_params(locals())
 
-    available_meshes = (
-        "fsaverage3",
-        "fsaverage4",
-        "fsaverage5",
-        "fsaverage6",
-        "fsaverage7",
-        "fsaverage",
-    )
-
-    if mesh not in available_meshes:
+    if mesh not in AVAILABLE_MESHES:
         raise ValueError(
-            f"'mesh' should be one of {available_meshes}; "
+            f"'mesh' should be one of {AVAILABLE_MESHES}; "
             f"{mesh!r} was provided"
         )
 
@@ -1121,7 +1143,9 @@ def _fetch_surf_fsaverage5() -> Bunch[str, str]:
     return Bunch(**data)
 
 
-def _fetch_surf_fsaverage(dataset_name, data_dir=None) -> Bunch[str, str]:
+def _fetch_surf_fsaverage(
+    dataset_name, data_dir: DataDir = None
+) -> Bunch[str, str]:
     """Ship fsaverage{3,4,6,7} meshes.
 
     These meshes can be used for visualization purposes, but also to run
@@ -1176,7 +1200,8 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None) -> Bunch[str, str]:
 
 @fill_doc
 def load_fsaverage(
-    mesh: str = "fsaverage5", data_dir=None
+    mesh: AvailableMeshes = "fsaverage5",
+    data_dir: DataDir = None,
 ) -> Bunch[str, PolyMesh]:
     """Load fsaverage for both hemispheres as PolyMesh objects.
 
@@ -1226,8 +1251,18 @@ def load_fsaverage(
 
 @fill_doc
 def load_fsaverage_data(
-    mesh="fsaverage5", mesh_type="pial", data_type="sulcal", data_dir=None
-):
+    mesh: AvailableMeshes = "fsaverage5",
+    mesh_type: Literal[
+        "pial", "white_matter", "inflated", "sphere", "flat"
+    ] = "pial",
+    data_type: Literal[
+        "curvature",
+        "sulcal",
+        "thickness",
+        "area",
+    ] = "sulcal",
+    data_dir: DataDir = None,
+) -> SurfaceImage:
     """Return freesurfer data on an fsaverage mesh as a SurfaceImage.
 
     .. nilearn_versionadded:: 0.11.0

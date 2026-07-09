@@ -222,7 +222,6 @@ def check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse):
     assert_array_less(np.diff(all_mse.mean(1)), 0)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("model_intercept", [True, False])
 def test_permuted_ols_check_h0_noeffect_labelswap_centered(model_intercept):
     """Check distributions of permutations when tested vars are centered."""
@@ -240,7 +239,6 @@ def test_permuted_ols_check_h0_noeffect_labelswap_centered(model_intercept):
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
 
 
-@pytest.mark.slow
 def test_permuted_ols_check_h0_noeffect_labelswap_uncentered():
     """Check distributions of permutations when tested vars are uncentered."""
     # create dummy design with no effect
@@ -256,7 +254,6 @@ def test_permuted_ols_check_h0_noeffect_labelswap_uncentered():
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
 
 
-@pytest.mark.slow
 def test_permuted_ols_check_h0_noeffect_signswap():
     """Check that h0 is close to the theoretical distribution \
     for permuted OLS with sign swap.
@@ -634,7 +631,6 @@ def test_two_sided_recover_positive_and_negative_effects():
     )
 
 
-@pytest.mark.slow
 def test_tfce_smoke_legacy_smoke():
     """Check tfce output of dict with or without permutations."""
     (
@@ -693,7 +689,6 @@ def test_tfce_smoke_legacy_smoke():
     assert out["h0_max_tfce"].size == n_perm
 
 
-@pytest.mark.slow
 def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     """Test combinations of parameters related to cluster-level inference."""
     target_var, tested_var = cluster_level_design

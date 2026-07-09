@@ -17,8 +17,7 @@ from nilearn.glm.first_level.experimental_paradigm import (
     check_events,
     handle_modulation_of_duplicate_events,
 )
-
-from ._testing import (
+from nilearn.glm.tests._testing import (
     block_paradigm,
     design_with_nan_durations,
     design_with_nan_onsets,
@@ -30,6 +29,7 @@ from ._testing import (
 
 
 def test_check_events():
+    """Test that check_events sets trial_type and modulation correctly."""
     events = basic_paradigm()
     events_copy = check_events(events)
 
