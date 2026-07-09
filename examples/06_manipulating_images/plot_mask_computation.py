@@ -21,8 +21,7 @@ underlying routine that extract masks from EPI
 # Computing a mask from the background
 # ------------------------------------
 #
-# The default strategy to compute a mask
-# is to try to detect the background.
+# The default strategy to compute a mask is to try to detect the background.
 #
 # With data that has already been masked this should work well,
 # as it relies on a homogeneous background
@@ -58,7 +57,7 @@ show()
 # Let's use the NiftiMasker with its defaults parameters.
 from nilearn.maskers import NiftiMasker
 
-masker = NiftiMasker(verbose=1)
+masker = NiftiMasker()
 
 # %%
 #
@@ -108,7 +107,9 @@ show()
 # by generating a masker report.
 # This can be done using
 # the :meth:`~nilearn.maskers.NiftiMasker.generate_report` method.
-report = masker.generate_report()
+# Using the 'brainsprite' engine enables interactive exploration of the mask
+# in the report.
+report = masker.generate_report(engine="brainsprite")
 
 # %%
 #
@@ -154,9 +155,9 @@ show()
 # We need to specify an ``'epi'`` mask_strategy,
 # as this is raw :term:`EPI` data
 
-masker = NiftiMasker(mask_strategy="epi", verbose=1)
+masker = NiftiMasker(mask_strategy="epi")
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
@@ -171,9 +172,9 @@ report
 # on the outer voxel layers of the mask,
 # which can for example remove remaining skull parts in the image.
 
-masker = NiftiMasker(mask_strategy="epi", mask_args={"opening": 10}, verbose=1)
+masker = NiftiMasker(mask_strategy="epi", mask_args={"opening": 10})
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
@@ -193,10 +194,9 @@ report
 masker = NiftiMasker(
     mask_strategy="epi",
     mask_args={"upper_cutoff": 0.9, "lower_cutoff": 0.8, "opening": False},
-    verbose=1,
 )
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
@@ -210,9 +210,9 @@ report
 # depending on whether the whole-brain, gray matter,
 # or white matter template should be used.
 
-masker = NiftiMasker(mask_strategy="whole-brain-template", verbose=1)
+masker = NiftiMasker(mask_strategy="whole-brain-template")
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
@@ -231,11 +231,9 @@ report
 
 import numpy as np
 
-masker = NiftiMasker(
-    mask_strategy="epi", target_affine=np.eye(3) * 8, verbose=1
-)
+masker = NiftiMasker(mask_strategy="epi", target_affine=np.eye(3) * 8)
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
@@ -243,9 +241,9 @@ report
 # ----------------------------------------------
 #
 # We extract detrended and non-detrended time series.
-trended_data = NiftiMasker(mask_strategy="epi", verbose=1).fit_transform(
-    epi_img
-)
+trended_data = NiftiMasker(
+    mask_strategy="epi", verbose=1, standardize="zscore_sample"
+).fit_transform(epi_img)
 detrended_data = NiftiMasker(
     mask_strategy="epi", detrend=True, verbose=1
 ).fit_transform(epi_img)
