@@ -3,13 +3,15 @@
 import itertools
 import json
 import string
+from collections.abc import Collection, Sequence
 from pathlib import Path
-from typing import overload
+from typing import TypeAlias, overload
 
 import numpy as np
 import pandas as pd
 import scipy.signal
 from nibabel import Nifti1Image, gifti
+from numpy.typing import DTypeLike
 from scipy.ndimage import binary_dilation
 from sklearn.utils import check_random_state
 
@@ -27,10 +29,21 @@ from nilearn.interfaces.bids.utils import (
 from nilearn.interfaces.fmriprep.tests._testing import get_legal_confound
 from nilearn.maskers.nifti_masker import NiftiMasker
 from nilearn.masking import unmask
+from nilearn.nilearn_typing import Verbose
+
+# nilearn.nilearn_typing.RandomState does not include np.random.Generator,
+# but this module routinely threads a np.random.Generator (as produced by
+# np.random.default_rng) through as `random_state`.
+RandomState: TypeAlias = (
+    int | np.random.RandomState | np.random.Generator | None
+)
 
 
 def generate_mni_space_img(
-    n_scans=1, res=30, random_state=0, mask_dilation=2
+    n_scans: int = 1,
+    res: int = 30,
+    random_state: RandomState = 0,
+    mask_dilation: int | None = 2,
 ) -> tuple[Nifti1Image, Nifti1Image]:
     """Generate MNI space img.
 
@@ -73,7 +86,7 @@ def generate_mni_space_img(
 
 
 def generate_timeseries(
-    n_timepoints: int, n_features: int, random_state=0
+    n_timepoints: int, n_features: int, random_state: RandomState = 0
 ) -> np.ndarray:
     """Generate some random timeseries.
 
@@ -99,12 +112,12 @@ def generate_timeseries(
 
 
 def generate_regions_ts(
-    n_features,
-    n_regions,
-    overlap=0,
-    random_state=0,
-    window="boxcar",
-    negative_regions=False,
+    n_features: int,
+    n_regions: int,
+    overlap: int = 0,
+    random_state: RandomState = 0,
+    window: str | None = "boxcar",
+    negative_regions: bool = False,
 ) -> np.ndarray:
     """Generate some regions as timeseries.
 
@@ -169,14 +182,14 @@ def generate_regions_ts(
 
 
 def generate_maps(
-    shape,
-    n_regions,
-    overlap=0,
-    border=1,
-    window="boxcar",
-    random_state=0,
-    affine=None,
-    negative_regions=False,
+    shape: tuple[int, int, int],
+    n_regions: int,
+    overlap: int = 0,
+    border: int = 1,
+    window: str | None = "boxcar",
+    random_state: RandomState = 0,
+    affine: np.ndarray | None = None,
+    negative_regions: bool = False,
 ) -> tuple[Nifti1Image, Nifti1Image]:
     """Generate a 4D volume containing several maps.
 
@@ -233,12 +246,12 @@ def generate_maps(
 
 
 def generate_labeled_regions(
-    shape,
-    n_regions,
-    random_state=0,
-    labels=None,
-    affine=None,
-    dtype="int32",
+    shape: tuple[int, int, int],
+    n_regions: int,
+    random_state: RandomState = 0,
+    labels: Collection[int] | None = None,
+    affine: np.ndarray | None = None,
+    dtype: DTypeLike = "int32",
 ) -> Nifti1Image:
     """Generate a 3D volume with labeled regions.
 
@@ -299,7 +312,7 @@ def generate_fake_fmri(
     n_blocks: None = ...,
     block_size: int = ...,
     block_type: str = ...,
-    random_state=...,
+    random_state: RandomState = ...,
 ) -> tuple[Nifti1Image, Nifti1Image]: ...
 
 
@@ -313,7 +326,7 @@ def generate_fake_fmri(
     n_blocks: int,
     block_size: int = ...,
     block_type: str = ...,
-    random_state=...,
+    random_state: RandomState = ...,
 ) -> tuple[Nifti1Image, Nifti1Image, np.ndarray]: ...
 
 
@@ -325,7 +338,7 @@ def generate_fake_fmri(
     n_blocks: int | None = None,
     block_size: int = 3,
     block_type: str = "classification",
-    random_state=0,
+    random_state: RandomState = 0,
 ) -> (
     tuple[Nifti1Image, Nifti1Image]
     | tuple[Nifti1Image, Nifti1Image, np.ndarray]
@@ -458,7 +471,10 @@ def generate_fake_fmri(
 
 
 def generate_fake_fmri_data_and_design(
-    shapes, rk=3, affine=None, random_state=0
+    shapes: list[tuple[int, int, int, int]],
+    rk: int = 3,
+    affine: np.ndarray | None = None,
+    random_state: RandomState = 0,
 ) -> tuple[Nifti1Image, list[Nifti1Image], list[pd.DataFrame]]:
     """Generate random :term:`fMRI` time series \
     and design matrices of given shapes.
@@ -514,7 +530,11 @@ def generate_fake_fmri_data_and_design(
 
 
 def write_fake_fmri_data_and_design(
-    shapes, rk=3, affine=None, random_state=0, file_path=None
+    shapes: list[tuple[int, int, int, int]],
+    rk: int = 3,
+    affine: np.ndarray | None = None,
+    random_state: RandomState = 0,
+    file_path: str | Path | None = None,
 ) -> tuple[Path, list[str], list[str]]:
     """Generate random :term:`fMRI` data \
     and design matrices and write them to disk.
@@ -612,9 +632,9 @@ def _write_fake_bold_gifti(
 
 def write_fake_bold_img(
     file_path: str | Path,
-    shape,
-    affine=None,
-    random_state=0,
+    shape: Sequence[int],
+    affine: np.ndarray | None = None,
+    random_state: RandomState = 0,
     mask_file_path: Path | str | None = None,
 ) -> str | Path:
     """Generate a random image of given shape and write it to disk.
@@ -698,13 +718,13 @@ def _generate_signals_from_precisions(
 
 
 def generate_group_sparse_gaussian_graphs(
-    n_subjects=5,
-    n_features=30,
-    min_n_samples=30,
-    max_n_samples=50,
-    density=0.1,
-    random_state=0,
-    verbose=0,
+    n_subjects: int = 5,
+    n_features: int = 30,
+    min_n_samples: int = 30,
+    max_n_samples: int = 50,
+    density: float = 0.1,
+    random_state: RandomState = 0,
+    verbose: Verbose = 0,
 ) -> tuple[list[np.ndarray], list[np.ndarray], np.ndarray]:
     """Generate signals drawn from a sparse Gaussian graphical model.
 
@@ -799,7 +819,9 @@ def generate_group_sparse_gaussian_graphs(
     return signals, precisions, topology
 
 
-def basic_paradigm(condition_names_have_spaces=False) -> pd.DataFrame:
+def basic_paradigm(
+    condition_names_have_spaces: bool = False,
+) -> pd.DataFrame:
     """Generate basic paradigm.
 
     Parameters
@@ -874,7 +896,11 @@ def _basic_confounds(length, random_state=0):
     return confounds
 
 
-def add_metadata_to_bids_dataset(bids_path, metadata, json_file=None) -> Path:
+def add_metadata_to_bids_dataset(
+    bids_path: str | Path,
+    metadata: dict,
+    json_file: str | Path | None = None,
+) -> Path:
     """Add JSON file with specific metadata to BIDS dataset.
 
     Note no "BIDS validation" are performed on the metadata,
@@ -919,9 +945,9 @@ def add_metadata_to_bids_dataset(bids_path, metadata, json_file=None) -> Path:
 
 
 def generate_random_img(
-    shape,
-    affine=None,
-    random_state=0,
+    shape: tuple[int, int, int] | tuple[int, int, int, int],
+    affine: np.ndarray | None = None,
+    random_state: RandomState = 0,
 ) -> tuple[Nifti1Image, Nifti1Image]:
     """Create a random 3D or 4D image with a given shape and affine.
 
@@ -962,19 +988,19 @@ def generate_random_img(
 
 
 def create_fake_bids_dataset(
-    base_dir=None,
-    n_sub=10,
-    n_ses=2,
-    tasks=None,
-    n_runs=None,
-    with_derivatives=True,
-    with_confounds=True,
-    confounds_tag="desc-confounds_timeseries",
-    random_state=0,
-    entities=None,
-    n_vertices=0,
-    n_voxels=4,
-    spaces=None,
+    base_dir: str | Path | None = None,
+    n_sub: int = 10,
+    n_ses: int = 2,
+    tasks: list[str] | None = None,
+    n_runs: Sequence[int] | None = None,
+    with_derivatives: bool = True,
+    with_confounds: bool = True,
+    confounds_tag: str | None = "desc-confounds_timeseries",
+    random_state: RandomState = 0,
+    entities: dict[str, list[str]] | None = None,
+    n_vertices: int = 0,
+    n_voxels: int = 4,
+    spaces: Sequence[str] | None = None,
 ) -> Path:
     """Create a fake :term:`BIDS` dataset directory with dummy files.
 
