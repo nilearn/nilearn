@@ -2756,6 +2756,7 @@ def check_masker_compatibility_mask_image(estimator_orig) -> None:
     """
     estimator = clone(estimator_orig)
 
+    mask_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         mask_img = _img_mask_mni()
         input_img = _make_surface_img()
@@ -2852,6 +2853,7 @@ def check_masker_mask_img(estimator_orig) -> None:
     """
     estimator = clone(estimator_orig)
 
+    binary_mask_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
@@ -3241,6 +3243,7 @@ def check_masker_fit_with_empty_mask(estimator_orig) -> None:
     """Check mask that excludes all voxels raise an error."""
     estimator = clone(estimator_orig)
 
+    mask_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         mask_img = _img_3d_zeros()
         imgs = [_img_3d_rand()]
@@ -3267,6 +3270,7 @@ def check_masker_fit_with_non_finite_in_mask(estimator_orig) -> None:
     """
     estimator = clone(estimator_orig)
 
+    mask_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         # _shape_3d_large() is used,
         # this test would fail for RegionExtractor otherwise
@@ -3353,7 +3357,9 @@ def check_masker_inverse_transform(estimator_orig) -> None:
         imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
 
         mask_shape = (15, 16, 17)
-        mask_img = Nifti1Image(np.ones(mask_shape), _affine_eye())
+        mask_img: Nifti1Image | SurfaceImage = Nifti1Image(
+            np.ones(mask_shape), _affine_eye()
+        )
 
         if isinstance(estimator, NiftiSpheresMasker):
             tmp = mask_img.shape
