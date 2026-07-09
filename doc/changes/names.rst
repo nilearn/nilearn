@@ -24,6 +24,8 @@
 
 .. _Alexis Thual: https://github.com/alexisthual
 
+.. _Alice Schiavone: https://aliswh.github.io
+
 .. _Alisha Kodibagkar: https://github.com/alishakodibagkar/
 
 
@@ -130,6 +132,8 @@
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
 .. _Himanshu Aggarwal: https://github.com/man-shu
+
+.. _Hugo Delhaye: https://github.com/HugoDelhaye
 
 .. _Ian Abenes: https://github.com/boredStats
 

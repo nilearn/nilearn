@@ -2,8 +2,8 @@
 :term:`BIDS` format data.
 """
 
-from .glm import save_glm_to_bids
-from .query import get_bids_files, parse_bids_filename
+from nilearn.interfaces.bids.glm import save_glm_to_bids
+from nilearn.interfaces.bids.query import get_bids_files, parse_bids_filename
 
 __all__ = [
     "get_bids_files",

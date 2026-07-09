@@ -9,13 +9,10 @@ import collections.abc
 import functools
 import inspect
 import warnings
-from pathlib import Path
-from typing import overload
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib import __version__ as mpl_version
 from matplotlib import get_backend
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.gridspec import GridSpecFromSubplotSpec
@@ -33,7 +30,6 @@ from nilearn._utils.param_validation import (
     check_params,
     check_threshold,
 )
-from nilearn._utils.versions import compare_version
 from nilearn.image import (
     check_niimg_3d,
     check_niimg_4d,
@@ -56,14 +52,20 @@ from nilearn.nilearn_typing import (
     Title,
 )
 from nilearn.plotting import cm
-from nilearn.plotting._engine_utils import create_colormap_from_lut
+from nilearn.plotting._engine_utils import (
+    create_colormap_from_lut,
+    save_figure_if_needed,
+)
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
     check_threshold_not_negative,
     get_colorbar_and_data_ranges,
 )
-from nilearn.plotting.displays import OrthoSlicer, get_projector, get_slicer
-from nilearn.plotting.displays._slicers import save_figure_if_needed
+from nilearn.plotting.displays import (
+    BaseSlicer,
+    get_projector,
+    get_slicer,
+)
 from nilearn.plotting.image.utils import MNI152TEMPLATE, load_anat
 from nilearn.signal import clean
 
@@ -201,11 +203,10 @@ def _plot_img_with_bg(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or \
-        :class:`~nilearn.plotting.displays.OrthoProjector` or None
-        An instance of the OrthoSlicer or OrthoProjector class depending on the
-        function defined in ``display_factory``. If ``output_file`` is defined,
-        None is returned.
+    display : :class:`~nilearn.plotting.displays.BaseSlicer` or \
+        :class:`~nilearn.plotting.displays.OrthoProjector`
+        An instance of the BaseSlicer or OrthoProjector class depending on the
+        function defined in ``display_factory``.
 
     Raises
     ------
@@ -298,61 +299,8 @@ def _plot_img_with_bg(
     if title is not None and title != "":
         display.title(title)
 
-    return save_figure_if_needed(display, output_file)
-
-
-@overload
-def plot_img(
-    img,
-    output_file: None = None,
-    cut_coords=...,
-    display_mode=...,
-    figure=...,
-    axes=...,
-    title=...,
-    threshold=...,
-    annotate=...,
-    draw_cross=...,
-    black_bg=...,
-    colorbar=...,
-    cbar_tick_format=...,
-    resampling_interpolation=...,
-    bg_img=...,
-    vmin=...,
-    vmax=...,
-    radiological=...,
-    decimals=...,
-    cmap=...,
-    transparency=...,
-    transparency_range=...,
-) -> OrthoSlicer: ...
-
-
-@overload
-def plot_img(
-    img,
-    output_file: str | Path,
-    cut_coords=...,
-    display_mode=...,
-    figure=...,
-    axes=...,
-    title=...,
-    threshold=...,
-    annotate=...,
-    draw_cross=...,
-    black_bg=...,
-    colorbar=...,
-    cbar_tick_format=...,
-    resampling_interpolation=...,
-    bg_img=...,
-    vmin=...,
-    vmax=...,
-    radiological=...,
-    decimals=...,
-    cmap=...,
-    transparency=...,
-    transparency_range=...,
-) -> None: ...
+    save_figure_if_needed(display, output_file)
+    return display
 
 
 @fill_doc
@@ -380,7 +328,7 @@ def plot_img(
     transparency=None,
     transparency_range=None,
     **kwargs,
-) -> OrthoSlicer | None:
+) -> BaseSlicer:
     """Plot cuts of a given image.
 
     By default Frontal, Axial, and Lateral.
@@ -449,9 +397,8 @@ def plot_img(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
-        An instance of the OrthoSlicer class. If ``output_file`` is defined,
-        None is returned.
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`
+        An instance of the BaseSlicer class.
 
     Raises
     ------
@@ -547,7 +494,7 @@ def plot_anat(
     vmin=None,
     vmax=None,
     **kwargs,
-) -> OrthoSlicer | None:
+) -> BaseSlicer:
     """Plot cuts of an anatomical image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -606,9 +553,8 @@ def plot_anat(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
-        An instance of the OrthoSlicer class. If ``output_file`` is defined,
-        None is returned.
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`
+        An instance of the BaseSlicer class.
 
     Raises
     ------
@@ -677,7 +623,7 @@ def plot_epi(
     vmax=None,
     radiological: Radiological = False,
     **kwargs,
-) -> OrthoSlicer | None:
+) -> BaseSlicer:
     """Plot cuts of an :term:`EPI` image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -729,9 +675,8 @@ def plot_epi(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
-        An instance of the OrthoSlicer class. If ``output_file`` is defined,
-        None is returned.
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`
+        An instance of the BaseSlicer class.
 
     Notes
     -----
@@ -766,7 +711,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
 
     Parameters
     ----------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer`, object
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`, object
         An object with background image on which contours are shown.
 
     roi_img : Niimg-like object
@@ -786,7 +731,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer`, object
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`, object
         Contours displayed on the background image.
 
     """
@@ -838,7 +783,7 @@ def plot_roi(
     linewidths=2.5,
     radiological: Radiological = False,
     **kwargs,
-) -> OrthoSlicer | None:
+) -> BaseSlicer:
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -920,9 +865,8 @@ def plot_roi(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
-        An instance of the OrthoSlicer class. If ``output_file`` is defined,
-        None is returned.
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`
+        An instance of the BaseSlicer class.
 
     Raises
     ------
@@ -964,7 +908,6 @@ def plot_roi(
         img=roi_img,
         bg_img=bg_img,
         cut_coords=cut_coords,
-        output_file=output_file,
         display_mode=display_mode,
         figure=figure,
         axes=axes,
@@ -991,6 +934,7 @@ def plot_roi(
             display, img, cmap=cmap, alpha=alpha, linewidths=linewidths
         )
 
+    save_figure_if_needed(display, output_file)
     return display
 
 
@@ -1018,7 +962,7 @@ def plot_prob_atlas(
     alpha=0.7,
     radiological: Radiological = False,
     **kwargs,
-) -> OrthoSlicer | None:
+) -> BaseSlicer:
     """Plot a :term:`Probabilistic atlas` onto the anatomical image \
     by default :term:`MNI` template.
 
@@ -1115,9 +1059,8 @@ def plot_prob_atlas(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
-        An instance of the OrthoSlicer class. If ``output_file`` is defined,
-        None is returned.
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`
+        An instance of the BaseSlicer class.
 
     Raises
     ------
@@ -1277,7 +1220,8 @@ def plot_prob_atlas(
                 xycoords="axes fraction",
             )
 
-    return save_figure_if_needed(display, output_file)
+    save_figure_if_needed(display, output_file)
+    return display
 
 
 @fill_doc
@@ -1306,7 +1250,7 @@ def plot_stat_map(
     transparency=None,
     transparency_range=None,
     **kwargs,
-) -> OrthoSlicer | None:
+) -> BaseSlicer:
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -1380,9 +1324,8 @@ def plot_stat_map(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
-        An instance of the OrthoSlicer class. If ``output_file`` is defined,
-        None is returned.
+    display : :class:`~nilearn.plotting.displays.BaseSlicer`
+        An instance of the BaseSlicer class.
 
     Raises
     ------
@@ -1560,9 +1503,8 @@ def plot_glass_brain(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
-        An instance of the OrthoProjector class. If ``output_file`` is defined,
-        None is returned.
+    display : :class:`~nilearn.plotting.displays.OrthoProjector`
+        An instance of the OrthoProjector class.
 
     Raises
     ------
@@ -1619,7 +1561,6 @@ def plot_glass_brain(
 
     display = _plot_img_with_bg(
         img=stat_map_img,
-        output_file=output_file,
         display_mode=display_mode,
         figure=figure,
         axes=axes,
@@ -1644,6 +1585,7 @@ def plot_glass_brain(
     if stat_map_img is None and "l" in display.axes:
         display.axes["l"].ax.invert_xaxis()
 
+    save_figure_if_needed(display, output_file)
     return display
 
 
@@ -1742,9 +1684,8 @@ def plot_connectome(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
-        An instance of the OrthoProjector class. If ``output_file`` is defined,
-        None is returned.
+    display : :class:`~nilearn.plotting.displays.OrthoProjector`
+        An instance of the OrthoProjector class.
 
     See Also
     --------
@@ -1782,7 +1723,8 @@ def plot_connectome(
         colorbar=colorbar,
     )
 
-    return save_figure_if_needed(display, output_file)
+    save_figure_if_needed(display, output_file)
+    return display
 
 
 @fill_doc
@@ -1865,9 +1807,8 @@ def plot_markers(
 
     Returns
     -------
-    display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
-        An instance of the OrthoProjector class. If ``output_file`` is defined,
-        None is returned.
+    display : :class:`~nilearn.plotting.displays.OrthoProjector`
+        An instance of the OrthoProjector class.
     """
     check_params(locals())
 
@@ -1947,7 +1888,8 @@ def plot_markers(
         display._colorbar = True
         display._show_colorbar(cmap=node_cmap, norm=norm)
 
-    return save_figure_if_needed(display, output_file)
+    save_figure_if_needed(display, output_file)
+    return display
 
 
 @fill_doc
@@ -2190,9 +2132,7 @@ def plot_carpet(
         else:
             ax0.set_yticks([])
 
-        # Carpet plot
-        if compare_version(mpl_version, ">=", "3.8.0rc1"):
-            axes.remove()  # remove axes for newer versions of mpl
+        axes.remove()
         axes = plt.subplot(gs[1])  # overwrites axes with older versions of mpl
         axes.imshow(
             data.T,
@@ -2247,4 +2187,5 @@ def plot_carpet(
         axes.spines["left"].set_position(("outward", buffer))
         axes.set_ylabel("voxels")
 
-    return save_figure_if_needed(figure, output_file)
+    save_figure_if_needed(figure, output_file)
+    return figure

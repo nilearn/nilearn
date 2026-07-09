@@ -117,7 +117,6 @@ def test_plot_functions_same_cut(display_mode, img_3d_rand_eye, tmp_path):
         plt.close()
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
 def test_plot_threshold_for_uint8(affine_eye, plot_func):
@@ -185,7 +184,6 @@ def test_plot_with_nans(plot_func, img_3d_mni):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "plot_func", [plot_roi, plot_stat_map, plot_glass_brain]
 )
@@ -220,7 +218,6 @@ def test_plotting_functions_with_display_mode_tiled(plot_func, img_3d_mni):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
 @pytest.mark.parametrize(
     "threshold, expected_ticks",
@@ -237,6 +234,7 @@ def test_plotting_functions_with_display_mode_tiled(plot_func, img_3d_mni):
 def test_plot_symmetric_colorbar_threshold(
     tmp_path, plot_func, threshold, expected_ticks
 ):
+    """Test colorbar ticks for a symmetric threshold."""
     img_data = np.zeros((10, 10, 10))
     img_data[4:6, 2:4, 4:6] = -10
     img_data[5:7, 3:7, 3:6] = 10
@@ -268,6 +266,7 @@ def test_plot_symmetric_colorbar_threshold(
 def test_plot_asymmetric_colorbar_threshold(
     tmp_path, plot_func, threshold, expected_ticks
 ):
+    """Test colorbar ticks for an asymmetric threshold."""
     img_data = np.zeros((10, 10, 10))
     img_data[4:6, 2:4, 4:6] = 5
     img_data[5:7, 3:7, 3:6] = 10
@@ -280,7 +279,6 @@ def test_plot_asymmetric_colorbar_threshold(
     plt.close()
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
 @pytest.mark.parametrize("vmax", [None, 0])

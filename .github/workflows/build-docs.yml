@@ -134,7 +134,7 @@ jobs:
         needs: [check_skip_flags]
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
 
         -   name: Check whether the citation metadata from CITATION.cff is valid
             uses: citation-file-format/cffconvert-github-action@2.0.0
@@ -147,7 +147,7 @@ jobs:
         needs: [check_skip_flags]
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v7
         -   uses: actions/setup-python@v6
@@ -171,7 +171,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
             with:
                   # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -214,7 +214,7 @@ jobs:
 
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
             with:
                   # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -254,7 +254,7 @@ jobs:
         -   name: Get cache from a previous attempts on this PR or branch
             if: steps.cache-key.outputs.restore == 'true'
             id: restore-previous-run
-            uses: actions/cache/restore@v5
+            uses: actions/cache/restore@v6
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{
@@ -269,7 +269,7 @@ jobs:
             if: ${{ steps.build-type.outputs.build == 'html-strict' && steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit
                 != 'true' }}
             id: restore-previous-full-build
-            uses: actions/cache@v5
+            uses: actions/cache@v6
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
@@ -278,7 +278,7 @@ jobs:
                   # only run it if we did not get the data from a previous attempt
             if: ${{ steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit != 'true' && steps.restore-previous-full-build.outputs.cache-hit
                 != 'true' }}
-            uses: actions/cache@v5
+            uses: actions/cache@v6
             with:
                 path: |
                     nilearn_data/adhd
@@ -305,7 +305,7 @@ jobs:
                 python doc/get_data_examples.py $BUILD_TYPE
 
         -   name: Save cache to pass to build_docs job
-            uses: actions/cache/save@v5
+            uses: actions/cache/save@v6
             if: always()
             with:
                 path: nilearn_data
@@ -346,7 +346,7 @@ jobs:
                 docker-images: true
                 swap-storage: true
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
             with:
                   # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -365,7 +365,7 @@ jobs:
             run: date +%m > month_num;
 
         -   name: Get data from the get_data job
-            uses: actions/cache@v5
+            uses: actions/cache@v6
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{
@@ -460,7 +460,7 @@ jobs:
         if: ${{ contains(fromJSON('["push", "workflow_dispatch", "schedule", "release"]'), github.event_name)}}
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
             with:
                 fetch-depth: 0
 

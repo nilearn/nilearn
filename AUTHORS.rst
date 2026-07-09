@@ -58,6 +58,7 @@ Some other past or present contributors are:
 * `Alexandre Cionca`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
 * `Alexandre Sayal`_: CIBIT, University of Coimbra, Portugal
 * `Alexis Thual`_: Inria, Saclay, France
+* `Alice Schiavone`_: University of Copenhagen
 * `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
 * Amadeus Kanaan
 * `Ana Luisa Pinho`_: Western University, London, Ontario, Canada
@@ -112,6 +113,7 @@ Some other past or present contributors are:
 * `Hande Gözükan`_: Inria, Saclay, France
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
 * `Himanshu Aggarwal`_: Inria, Saclay, France
+* `Hugo Delhaye`_: SIMEXP, Université de Montréal, Montréal, Canada
 * `Ian Abenes`_
 * `Idrissa Traore`_: IMT Atlantique, Brest, France
 * `Jake Vogel`_: Department of Clinical Sciences, SciLifeLab, Lund University, Lund, Sweden
