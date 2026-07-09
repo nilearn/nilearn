@@ -41,6 +41,8 @@ Enhancements
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.regions.img_to_signals_labels` function (:gh:`6315` by `Hande Gözükan`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.plotting.plot_design_matrix_correlation` function (:gh:`6415` by `Nirmitee Mulay`_).
+
 Changes
 -------
 
