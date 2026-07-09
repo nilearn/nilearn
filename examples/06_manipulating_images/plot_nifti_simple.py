@@ -103,8 +103,9 @@ report
 # Preprocess data with the NiftiMasker
 # ------------------------------------
 #
-# We extract the data from the nifti image. By default this will return a 2D
-# NumPy array with shape (n_samples, n_features).
+# We extract the data from the nifti image.
+# By default this will return a 2D NumPy array
+# with shape (n_samples, n_features).
 #
 fmri_masked = masker.transform(func_filename)
 print(fmri_masked.shape)
