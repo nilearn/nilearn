@@ -767,6 +767,7 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
         return X, y
 
     elif is_masker(estimator):
+        imgs: Nifti1Image | SurfaceImage
         if accept_niimg_input(estimator):
             imgs = Nifti1Image(
                 _rng().random(_shape_3d_large()) + 10.0,
@@ -2629,6 +2630,7 @@ def check_masker_detrending(estimator_orig) -> None:
     """
     estimator = clone(estimator_orig)
 
+    input_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
@@ -2658,6 +2660,7 @@ def check_masker_standardization(estimator_orig) -> None:
     if not is_gil_enabled():
         pytest.xfail("May fail without the GIL")
 
+    input_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator_orig):
         signals = _rng().standard_normal(
             size=(np.prod(_shape_3d_default()), n_samples)
@@ -2757,6 +2760,7 @@ def check_masker_compatibility_mask_image(estimator_orig) -> None:
     estimator = clone(estimator_orig)
 
     mask_img: Nifti1Image | SurfaceImage
+    input_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         mask_img = _img_mask_mni()
         input_img = _make_surface_img()
@@ -2774,7 +2778,7 @@ def check_masker_compatibility_mask_image(estimator_orig) -> None:
         mask = np.zeros(_shape_3d_large(), dtype=np.int8)
         mask[1:-1, 1:-1, 1:-1] = 1
         mask_img = Nifti1Image(mask, _affine_eye())
-        image_to_transform = _make_surface_img()
+        image_to_transform: Nifti1Image | SurfaceImage = _make_surface_img()
     else:
         mask_img = _make_surface_mask()
         image_to_transform = _img_3d_mni()
@@ -2819,7 +2823,7 @@ def check_masker_mask_img_from_imgs(estimator_orig) -> None:
     if accept_niimg_input(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
-        input_img = Nifti1Image(
+        input_img: Nifti1Image | SurfaceImage = Nifti1Image(
             _rng().random(_shape_3d_large()), _affine_eye()
         )
 
@@ -2854,6 +2858,8 @@ def check_masker_mask_img(estimator_orig) -> None:
     estimator = clone(estimator_orig)
 
     binary_mask_img: Nifti1Image | SurfaceImage
+    non_binary_mask_img: Nifti1Image | SurfaceImage
+    input_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
@@ -2945,6 +2951,7 @@ def check_masker_clean(estimator_orig) -> None:
     """
     estimator = clone(estimator_orig)
 
+    input_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
@@ -2982,6 +2989,7 @@ def check_masker_transformer(estimator_orig) -> None:
         assert next(iter(tmp)) == "imgs"
         assert "X" not in tmp
 
+    input_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
@@ -3244,6 +3252,7 @@ def check_masker_fit_with_empty_mask(estimator_orig) -> None:
     estimator = clone(estimator_orig)
 
     mask_img: Nifti1Image | SurfaceImage
+    imgs: list[Nifti1Image] | SurfaceImage
     if accept_niimg_input(estimator):
         mask_img = _img_3d_zeros()
         imgs = [_img_3d_rand()]
@@ -3271,6 +3280,7 @@ def check_masker_fit_with_non_finite_in_mask(estimator_orig) -> None:
     estimator = clone(estimator_orig)
 
     mask_img: Nifti1Image | SurfaceImage
+    imgs: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         # _shape_3d_large() is used,
         # this test would fail for RegionExtractor otherwise
@@ -3354,7 +3364,9 @@ def check_masker_inverse_transform(estimator_orig) -> None:
         # using different shape for imgs, mask
         # to force resampling
         input_shape = (28, 29, 30)
-        imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
+        imgs: Nifti1Image | SurfaceImage = Nifti1Image(
+            _rng().random(input_shape), _affine_eye()
+        )
 
         mask_shape = (15, 16, 17)
         mask_img: Nifti1Image | SurfaceImage = Nifti1Image(
@@ -3399,6 +3411,7 @@ def check_masker_inverse_transform(estimator_orig) -> None:
 
         if accept_niimg_input(estimator):
             actual_shape = new_imgs.shape
+            assert isinstance(imgs, Nifti1Image)
             assert_array_almost_equal(imgs.affine, new_imgs.affine)
         else:
             actual_shape = new_imgs.data.shape
@@ -4077,6 +4090,8 @@ def check_multimasker_with_confounds(estimator_orig) -> None:
 
     length = _img_4d_rand_eye_medium().shape[3]
 
+    input_imgs: list[Nifti1Image] | list[SurfaceImage]
+    single_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         input_imgs = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
         single_img = _img_4d_rand_eye_medium()
@@ -4127,6 +4142,8 @@ def check_multimasker_transformer_sample_mask(estimator_orig) -> None:
 
     length = _img_4d_rand_eye_medium().shape[3]
 
+    input_imgs: list[Nifti1Image] | list[SurfaceImage]
+    single_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         input_imgs = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
         single_img = _img_4d_rand_eye_medium()
@@ -4344,6 +4361,7 @@ def check_masker_generate_report(estimator_orig) -> None:
     if not is_gil_enabled():
         pytest.xfail("May fail without the GIL")
 
+    input_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         input_img = _img_3d_rand()
     else:
@@ -4379,6 +4397,7 @@ def check_masker_generate_report(estimator_orig) -> None:
 def check_masker_generate_report_constant(estimator_orig) -> None:
     """Check report is constant across calls."""
     estimator = clone(estimator_orig)
+    input_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         input_img = _img_3d_rand()
     else:
@@ -4473,6 +4492,7 @@ def check_masker_generate_report_false(estimator_orig) -> None:
 
     estimator.reports = False
 
+    input_img: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
@@ -4499,6 +4519,7 @@ def check_multimasker_generate_report(estimator_orig) -> None:
     if not is_gil_enabled():
         pytest.xfail("May fail without the GIL")
 
+    input_img: list[Nifti1Image] | list[SurfaceImage]
     if accept_niimg_input(estimator):
         input_img = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
     else:

@@ -624,7 +624,7 @@ def surf_mesh() -> PolyMesh:
     return _make_mesh()
 
 
-def _make_surface_img(n_samples=1):
+def _make_surface_img(n_samples: int = 1) -> SurfaceImage:
     """Create data with increasing values for each vertex."""
     mesh = _make_mesh()
     data = {}
