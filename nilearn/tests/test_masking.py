@@ -51,7 +51,7 @@ def _simu_img():
     return img, mask, conf
 
 
-def _cov_conf(tseries, conf):
+def _cov_conf(tseries, conf) -> np.ndarray:
     conf_n = StandardScaler().fit_transform(conf)
     _ = StandardScaler().fit_transform(tseries)
     cov_mat = np.dot(tseries.T, conf_n)
@@ -641,7 +641,7 @@ def test_unmask_error_shape(rng, affine_eye, shape_4d_default):
 
 
 @pytest.fixture
-def img_2d_mask_bottom_right(affine_eye):
+def img_2d_mask_bottom_right(affine_eye) -> Nifti1Image:
     """Return 3D nifti binary mask image with bottom right filled.
 
     +---+---+---+---+
@@ -661,7 +661,7 @@ def img_2d_mask_bottom_right(affine_eye):
 
 
 @pytest.fixture
-def img_2d_mask_center(affine_eye):
+def img_2d_mask_center(affine_eye) -> Nifti1Image:
     """Return 3D nifti binary mask image with center filled.
 
     +---+---+---+---+

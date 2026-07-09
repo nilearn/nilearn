@@ -142,7 +142,7 @@ def test_get_index_from_direction_exception():
 
 
 @pytest.fixture
-def cut_coords(name):
+def cut_coords(name) -> int | tuple[int, ...] | list[int]:
     """Select appropriate cut coords."""
     if name == "mosaic":
         return 3
