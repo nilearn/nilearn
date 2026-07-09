@@ -648,7 +648,7 @@ def plot_design_matrix_correlation(
         >>>
         >>> design_matrix = make_first_level_design_matrix(frame_times, events)
         >>>
-        >>> plot_design_matrix_correlation(design_matrix)
+        >>> ax = plot_design_matrix_correlation(design_matrix)
         >>> show()
     """
     check_params(locals())
