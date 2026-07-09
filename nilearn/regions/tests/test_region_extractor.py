@@ -26,12 +26,12 @@ from nilearn.regions.region_extractor import (
 
 
 @pytest.fixture
-def negative_regions():
+def negative_regions() -> bool:
     return False
 
 
 @pytest.fixture
-def dummy_map(shape_3d_default, n_regions):
+def dummy_map(shape_3d_default, n_regions) -> Nifti1Image:
     """Generate a small dummy map.
 
     Use for error testing
@@ -40,7 +40,7 @@ def dummy_map(shape_3d_default, n_regions):
 
 
 @pytest.fixture
-def map_img_3d(rng, affine_eye, shape_3d_default):
+def map_img_3d(rng, affine_eye, shape_3d_default) -> Nifti1Image:
     map_img = np.zeros(shape_3d_default) + 0.1 * rng.standard_normal(
         size=shape_3d_default
     )
@@ -51,7 +51,7 @@ N_REGIONS = 3
 
 
 @pytest.fixture
-def maps(negative_regions, n_regions, shape_3d_large):
+def maps(negative_regions, n_regions, shape_3d_large) -> Nifti1Image:
     return generate_maps(
         shape=shape_3d_large,
         n_regions=n_regions,
@@ -61,7 +61,9 @@ def maps(negative_regions, n_regions, shape_3d_large):
 
 
 @pytest.fixture
-def maps_and_mask(n_regions, shape_3d_large):
+def maps_and_mask(
+    n_regions, shape_3d_large
+) -> tuple[Nifti1Image, Nifti1Image]:
     return generate_maps(
         shape=shape_3d_large, n_regions=n_regions, random_state=42
     )

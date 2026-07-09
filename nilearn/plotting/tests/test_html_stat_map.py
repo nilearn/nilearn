@@ -6,9 +6,9 @@ import pytest
 from matplotlib import pyplot as plt
 from nibabel import Nifti1Image
 
-from nilearn import image
 from nilearn.conftest import _img_3d_rand
 from nilearn.image import get_data, new_img_like
+from nilearn.image.resampling import to_matrix_vector
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.html_stat_map import (
     StatMapView,
@@ -41,7 +41,7 @@ def check_html_view_img(html_view, title=None):
         assert f"<title>Nilearn - {title}</title>" in str(html_view)
 
 
-def _simulate_img(affine=None):
+def _simulate_img(affine=None) -> tuple[Nifti1Image, np.ndarray]:
     """Simulate data with one "spot".
 
     Returns
@@ -58,13 +58,13 @@ def _simulate_img(affine=None):
     return img, data
 
 
-def _check_affine(affine):
+def _check_affine(affine) -> None:
     """Check positive, isotropic, near-diagonal affine."""
     assert affine[0, 0] == affine[1, 1]
     assert affine[2, 2] == affine[1, 1]
     assert affine[0, 0] > 0
 
-    A, _ = image.resampling.to_matrix_vector(affine)
+    A, _ = to_matrix_vector(affine)
     assert np.all((np.abs(A) > 0.001).sum(axis=0) == 1), (
         "the affine transform was not near-diagonal"
     )
@@ -388,7 +388,7 @@ def test_view_img_3d(img_3d_mni, view_img_kwargs, expected_output_title):
 def test_view_img_4d(img_3d_mni):
     """Test for 4D images."""
     # convert into 4D (with only 1 timepoint)
-    img_4d_mni = image.new_img_like(
+    img_4d_mni = new_img_like(
         img_3d_mni, get_data(img_3d_mni)[:, :, :, np.newaxis]
     )
     html_view = view_img(img_4d_mni)
