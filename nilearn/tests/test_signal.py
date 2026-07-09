@@ -730,13 +730,13 @@ def test_clean_runs():
 
 
 @pytest.fixture
-def signals():
+def signals() -> np.ndarray:
     """Return generic signal."""
     return generate_signals(n_features=41, n_confounds=5, length=45)[0]
 
 
 @pytest.fixture
-def confounds():
+def confounds() -> np.ndarray:
     """Return generic condounds."""
     return generate_signals(n_features=41, n_confounds=5, length=45)[2]
 
@@ -1359,7 +1359,7 @@ def test_clean_psc_butterworth(rng):
         )
 
 
-def _assert_correlation_almost_1(signal_1, signal_2):
+def _assert_correlation_almost_1(signal_1, signal_2) -> None:
     """Check that correlation between 2 signals equal to 1."""
     assert_almost_equal(
         np.corrcoef(signal_1[:, 0], signal_2[:, 0])[0, 1],

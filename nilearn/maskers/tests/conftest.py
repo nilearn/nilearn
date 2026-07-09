@@ -9,7 +9,7 @@ from nilearn.surface import SurfaceImage
 
 
 @pytest.fixture
-def data_1(shape_3d_default):
+def data_1(shape_3d_default) -> np.ndarray:
     """Return 3D zeros with a few 10 in the center."""
     data = np.zeros(shape_3d_default)
     data[2:-2, 2:-2, 2:-2] = 10
@@ -17,13 +17,13 @@ def data_1(shape_3d_default):
 
 
 @pytest.fixture
-def mask_img_1(data_1, affine_eye):
+def mask_img_1(data_1, affine_eye) -> Nifti1Image:
     """Return a mask image."""
     return Nifti1Image(data_1.astype("uint8"), affine_eye)
 
 
 @pytest.fixture
-def shape_mask():
+def shape_mask() -> tuple[int, int, int]:
     """Shape for masks."""
     return (13, 14, 15)
 

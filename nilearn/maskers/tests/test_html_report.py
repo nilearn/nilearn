@@ -6,6 +6,7 @@ should go into nilearn/_utils/estimator_checks.
 
 from collections import Counter
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -120,19 +121,21 @@ def generate_and_check_masker_report(
 
 
 @pytest.fixture
-def niftimapsmasker_inputs():
+def niftimapsmasker_inputs() -> dict[str, Any]:
     """Return inputs for nifti maps masker."""
     return {"maps_img": _img_maps(n_regions=3)}
 
 
 @pytest.fixture
-def labels(n_regions):
+def labels(n_regions) -> list[str]:
     """Return labels for label masker."""
     return ["background"] + [f"region_{i}" for i in range(1, n_regions + 1)]
 
 
 @pytest.fixture
-def input_parameters(masker_class, img_mask_eye, labels, img_labels):
+def input_parameters(
+    masker_class, img_mask_eye, labels, img_labels
+) -> dict[str, Any] | None:
     """Define inputs for each type masker."""
     if masker_class in (NiftiMasker, MultiNiftiMasker):
         return {"mask_img": img_mask_eye}
@@ -157,6 +160,7 @@ def input_parameters(masker_class, img_mask_eye, labels, img_labels):
         }
     if masker_class is SurfaceMapsMasker:
         return {"maps_img": _surf_maps_img()}
+    return None
 
 
 @pytest.mark.slow

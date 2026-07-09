@@ -25,7 +25,7 @@ def make_data_for_test_runs():
     return data_for_temp_datafile, delimiters
 
 
-def _create_test_file(temp_csv, test_data, delimiter):
+def _create_test_file(temp_csv, test_data, delimiter) -> None:
     test_data = pd.DataFrame(test_data)
     test_data.to_csv(temp_csv, sep=delimiter)
 
