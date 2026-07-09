@@ -573,9 +573,8 @@ def test_4d_affine_bounding_box_error(affine_eye, force_resample):
 def test_raises_upon_3x3_affine_and_no_shape(affine_eye, force_resample):
     img = Nifti1Image(np.zeros([8, 9, 10]), affine=affine_eye)
     message = (
-        "Given target shape without anchor "
-        "vector: Affine shape should be \\(4, 4\\) and "
-        "not \\(3, 3\\)"
+        "Given target shape without anchor vector: "
+        "'target_affine' shape should be \\(4, 4\\) and not \\(3, 3\\)"
     )
     with pytest.raises(ValueError, match=message):
         resample_img(
