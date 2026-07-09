@@ -627,6 +627,7 @@ def plot_design_matrix_correlation(
     --------
 
     .. plot::
+    
         >>> import numpy as np
         >>> from pandas import DataFrame
         >>> from nilearn.glm.first_level import make_first_level_design_matrix
@@ -647,7 +648,7 @@ def plot_design_matrix_correlation(
         >>>
         >>> design_matrix = make_first_level_design_matrix(frame_times, events)
         >>>
-        >>> ax = plot_design_matrix_correlation(design_matrix)
+        >>> plot_design_matrix_correlation(design_matrix)
         >>> show()
     """
     check_params(locals())
