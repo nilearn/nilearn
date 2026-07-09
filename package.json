@@ -6,9 +6,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@niivue/niivue": "0.69.0",
-    "jquery": "4.0.0",
-    "plotly.js-gl3d-dist-min": "3.7.0"
+    "@niivue/niivue": "0.68.1",
+    "jquery": "3.6.0",
+    "plotly.js-gl3d-dist-min": "1.50.1"
   },
   "devDependencies": {
     "express": "^5.2.1",
