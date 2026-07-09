@@ -4,6 +4,7 @@ import itertools
 import json
 import string
 from pathlib import Path
+from typing import overload
 
 import numpy as np
 import pandas as pd
@@ -28,7 +29,9 @@ from nilearn.maskers.nifti_masker import NiftiMasker
 from nilearn.masking import unmask
 
 
-def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
+def generate_mni_space_img(
+    n_scans=1, res=30, random_state=0, mask_dilation=2
+) -> tuple[Nifti1Image, Nifti1Image]:
     """Generate MNI space img.
 
     Parameters
@@ -102,7 +105,7 @@ def generate_regions_ts(
     random_state=0,
     window="boxcar",
     negative_regions=False,
-):
+) -> np.ndarray:
     """Generate some regions as timeseries.
 
     Parameters
@@ -174,7 +177,7 @@ def generate_maps(
     random_state=0,
     affine=None,
     negative_regions=False,
-):
+) -> tuple[Nifti1Image, Nifti1Image]:
     """Generate a 4D volume containing several maps.
 
     Parameters
@@ -287,6 +290,33 @@ def generate_labeled_regions(
     return Nifti1Image(data, affine)
 
 
+@overload
+def generate_fake_fmri(
+    shape: tuple[int, int, int] = ...,
+    length: int = ...,
+    kind: str = ...,
+    affine: np.ndarray | None = ...,
+    n_blocks: None = ...,
+    block_size: int = ...,
+    block_type: str = ...,
+    random_state=...,
+) -> tuple[Nifti1Image, Nifti1Image]: ...
+
+
+@overload
+def generate_fake_fmri(
+    shape: tuple[int, int, int] = ...,
+    length: int = ...,
+    kind: str = ...,
+    affine: np.ndarray | None = ...,
+    *,
+    n_blocks: int,
+    block_size: int = ...,
+    block_type: str = ...,
+    random_state=...,
+) -> tuple[Nifti1Image, Nifti1Image, np.ndarray]: ...
+
+
 def generate_fake_fmri(
     shape: tuple[int, int, int] = (10, 11, 12),
     length: int = 17,
@@ -296,6 +326,9 @@ def generate_fake_fmri(
     block_size: int = 3,
     block_type: str = "classification",
     random_state=0,
+) -> (
+    tuple[Nifti1Image, Nifti1Image]
+    | tuple[Nifti1Image, Nifti1Image, np.ndarray]
 ):
     """Generate a signal which can be used for testing.
 
@@ -426,7 +459,7 @@ def generate_fake_fmri(
 
 def generate_fake_fmri_data_and_design(
     shapes, rk=3, affine=None, random_state=0
-):
+) -> tuple[Nifti1Image, list[Nifti1Image], list[pd.DataFrame]]:
     """Generate random :term:`fMRI` time series \
     and design matrices of given shapes.
 
@@ -482,7 +515,7 @@ def generate_fake_fmri_data_and_design(
 
 def write_fake_fmri_data_and_design(
     shapes, rk=3, affine=None, random_state=0, file_path=None
-):
+) -> tuple[Path, list[str], list[str]]:
     """Generate random :term:`fMRI` data \
     and design matrices and write them to disk.
 
@@ -578,12 +611,12 @@ def _write_fake_bold_gifti(
 
 
 def write_fake_bold_img(
-    file_path,
+    file_path: str | Path,
     shape,
     affine=None,
     random_state=0,
     mask_file_path: Path | str | None = None,
-):
+) -> str | Path:
     """Generate a random image of given shape and write it to disk.
 
     Parameters
@@ -766,7 +799,7 @@ def generate_group_sparse_gaussian_graphs(
     return signals, precisions, topology
 
 
-def basic_paradigm(condition_names_have_spaces=False):
+def basic_paradigm(condition_names_have_spaces=False) -> pd.DataFrame:
     """Generate basic paradigm.
 
     Parameters
@@ -841,7 +874,7 @@ def _basic_confounds(length, random_state=0):
     return confounds
 
 
-def add_metadata_to_bids_dataset(bids_path, metadata, json_file=None):
+def add_metadata_to_bids_dataset(bids_path, metadata, json_file=None) -> Path:
     """Add JSON file with specific metadata to BIDS dataset.
 
     Note no "BIDS validation" are performed on the metadata,
@@ -889,7 +922,7 @@ def generate_random_img(
     shape,
     affine=None,
     random_state=0,
-):
+) -> tuple[Nifti1Image, Nifti1Image]:
     """Create a random 3D or 4D image with a given shape and affine.
 
     Parameters
@@ -1444,7 +1477,7 @@ def _write_bids_raw_func(
     fields["suffix"] = "events"
     fields["extension"] = "tsv"
     events_path = func_path / create_bids_filename(fields)
-    basic_paradigm().to_csv(events_path, sep="\t", index=None)
+    basic_paradigm().to_csv(events_path, sep="\t", index=False)
 
 
 def _write_bids_derivative_func(
