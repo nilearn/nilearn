@@ -3309,6 +3309,7 @@ def check_masker_smooth(estimator_orig) -> None:
 
     assert hasattr(estimator, "smoothing_fwhm")
 
+    imgs: Nifti1Image | SurfaceImage
     if accept_niimg_input(estimator):
         imgs = _img_3d_rand()
     else:

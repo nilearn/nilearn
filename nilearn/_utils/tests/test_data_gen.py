@@ -98,7 +98,7 @@ def _bids_path_template(
     space=None,
     desc=None,
     extra_entity=None,
-):
+) -> str:
     """Create a BIDS filepath from a template.
 
     File path is relative to the BIDS root folder.
