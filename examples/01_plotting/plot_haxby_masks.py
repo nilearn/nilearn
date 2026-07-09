@@ -2,8 +2,7 @@
 Plot Haxby masks
 ================
 
-Small script to show how to plot several masks
-at the same time.
+Small script to show how to plot several masks at the same time.
 """
 
 # %%
@@ -22,7 +21,10 @@ print(
 # %%
 # Plot the masks
 # --------------
+# Here we will generate a single legend using the trick described on
+# https://matplotlib.org/2.0.2/users/legend_guide.html
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 
 mask_vt_filename = haxby_dataset.mask_vt[0]
 mask_house_filename = haxby_dataset.mask_house[0]
@@ -52,11 +54,6 @@ for mask, color in zip(masks, colors, strict=False):
         levels=[0],
         colors=[color],
     )
-
-# %%
-# We generate a legend using the trick described on
-# https://matplotlib.org/2.0.2/users/legend_guide.html
-from matplotlib.patches import Rectangle
 
 p_v = Rectangle((0, 0), 1, 1, fc="red")
 p_h = Rectangle((0, 0), 1, 1, fc="blue")
