@@ -115,7 +115,7 @@ show()
 # %%
 # Visualizing global patterns, separated by tissue type
 # -----------------------------------------------------
-fig, ax = plt.subplots(figsize=(10, 10))
+fig, ax = plt.subplots(figsize=(12, 10))
 
 display = plot_carpet(
     adhd_dataset.func[0],
