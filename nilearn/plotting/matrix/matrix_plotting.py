@@ -316,6 +316,7 @@ def plot_contrast_matrix(
     axes : :class:`matplotlib.axes.Axes`
         Figure object.
 
+
     """
     check_params(locals())
 
@@ -385,6 +386,33 @@ def plot_design_matrix(
     -------
     axes : :class:`matplotlib.axes.Axes`
         The axes used for plotting.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>> from pandas import DataFrame
+        >>> from nilearn.glm.first_level import make_first_level_design_matrix
+        >>> from nilearn.plotting import plot_design_matrix, show
+        >>>
+        >>> # creating a design matrix
+        >>> frame_times = np.arange(9)
+        >>> onsets = np.arange(9)
+        >>> duration = np.linspace(1, 9, 9)
+        >>> trial_type = ["ET_0", "ET_0", "ET_0",
+        ...             "ET_1", "ET_1", "ET_1",
+        ...             "ET_2", "ET_2", "ET_2"]
+        >>> events = DataFrame({"trial_type": trial_type,
+        ...                    "onset": onsets,
+        ...                    "duration": duration})
+        >>> design_matrix = make_first_level_design_matrix(frame_times, events)
+        >>>
+        >>> ax = plot_design_matrix(design_matrix)
+        >>>
+        >>> show()
+
 
     """
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]

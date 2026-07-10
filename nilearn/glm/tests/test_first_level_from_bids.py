@@ -21,7 +21,7 @@ from nilearn.interfaces.bids import get_bids_files
 from nilearn.surface import SurfaceImage
 
 
-def _inputs_for_new_bids_dataset():
+def _inputs_for_new_bids_dataset() -> tuple[int, int, list[str], list[int]]:
     n_sub = 2
     n_ses = 2
     tasks = ["main"]
@@ -30,7 +30,7 @@ def _inputs_for_new_bids_dataset():
 
 
 @pytest.fixture(scope="session")
-def bids_dataset(tmp_path_factory):
+def bids_dataset(tmp_path_factory) -> Path:
     """Create a fake BIDS dataset for testing purposes.
 
     Only use if the dataset does not need to me modified.
@@ -42,7 +42,7 @@ def bids_dataset(tmp_path_factory):
     )
 
 
-def _new_bids_dataset(base_dir=None):
+def _new_bids_dataset(base_dir=None) -> Path:
     """Create a new BIDS dataset for testing purposes.
 
     Use if the dataset needs to be modified after creation.
@@ -57,7 +57,7 @@ def _new_bids_dataset(base_dir=None):
 
 def _check_output_first_level_from_bids(
     n_sub, models, imgs, events, confounds
-):
+) -> None:
     assert len(models) == n_sub
     assert all(isinstance(model, FirstLevelModel) for model in models)
 

@@ -24,11 +24,11 @@ Fixes
 
 - :bdg-dark:`Code` Fix masker verbosity so higher ``verbose`` levels no longer produce less output than lower ones (:gh:`XXXX` by `Fabricio Cravo`_).
 
-<<<<<<< annotate-interfaces-fsl
+- :bdg-dark:`Code` Fix :func:`~image.resample_img` raising an ``AttributeError`` instead of resampling correctly when ``target_affine`` is passed as a :obj:`list` or :obj:`tuple` together with ``target_shape`` (:gh:`6408` by `Rémi Gau`_).
+
 - :bdg-secondary:`Maint` Add return type annotations to :func:`~interfaces.fsl.get_design_from_fslmat`, :func:`~interfaces.bids.parse_bids_filename`, :func:`~interfaces.fmriprep.load_confounds`, and :func:`~interfaces.fmriprep.load_confounds_strategy` (:gh:`6362` by `Rémi Gau`_).
-=======
+
 - :bdg-secondary:`Maint` Add return type annotations and :obj:`~typing.overload` signatures to :func:`~connectome.vec_to_sym_matrix`, :func:`~connectome.group_sparse_covariance`, and :func:`~reporting.get_clusters_table` (:gh:`6368` by `Rémi Gau`_).
->>>>>>> main
 
 Enhancements
 ------------
@@ -39,12 +39,22 @@ Enhancements
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.iter_img` (:gh:`6304` by `Ruben Dörfel`_).
 
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.plotting.plot_design_matrix` (:gh:`6380` by `Nirmitee Mulay`_).
+
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.signal.butterworth` function (:gh:`6311` by `Hande Gözükan`_).
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.regions.img_to_signals_labels` function (:gh:`6315` by `Hande Gözükan`_).
 
 Changes
 -------
+
+- :bdg-secondary:`Maint` Replace the ``nilearn/connectome`` ``D103`` glob ignore in ``pyproject.toml`` with per-file entries, add missing docstrings to test functions and fixtures in files that had 10 or fewer ``D103`` errors, and drop their now-unnecessary per-file ignores (:gh:`6406` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add return type annotations to :func:`~image.coord_transform`, :func:`~image.reorder_img`, :func:`~image.resample_img`, and :func:`~image.resample_to_img` (:gh:`6408` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add return type annotations to :func:`~utils.all_displays`, :func:`~utils.all_estimators`, and :func:`~utils.all_functions` (:gh:`6409` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.glm` (:gh:`6370` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.regions` (:gh:`6369` by `Rémi Gau`_).
 

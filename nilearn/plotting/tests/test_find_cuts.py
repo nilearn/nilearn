@@ -286,6 +286,7 @@ def test_passing_of_ncuts_in_find_cut_slices(n_cuts, img_mask_mni):
 
 @pytest.mark.thread_unsafe
 def test_singleton_ax_dim(affine_eye):
+    """Test find_cut_slices on images with a singleton spatial dimension."""
     for axis, direction in enumerate("xyz"):
         shape = [5, 6, 7]
         shape[axis] = 1
@@ -314,16 +315,23 @@ def test_tranform_cut_coords_n_cuts(affine_eye, direction):
 
 @pytest.mark.thread_unsafe
 def test_find_cuts_empty_mask_no_crash(affine_eye):
+    """Test that find_xyz_cut_coords warns and falls back on an empty mask."""
     img = Nifti1Image(np.ones((2, 2, 2)), affine_eye)
     mask_img = compute_epi_mask(img)
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning,
+        match=(
+            r"Could not determine cut coords: "
+            r"Provided mask is empty. Returning center of mass instead."
+        ),
+    ):
         cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
     assert_array_equal(cut_coords, [0.5, 0.5, 0.5])
 
 
 @pytest.mark.thread_unsafe
 def test_fast_abs_percentile_no_index_error_find_cuts(affine_eye):
-    # check that find_cuts functions are safe
+    """Test that find_xyz_cut_coords does not raise an IndexError."""
     data = np.array([[[1.0, 2.0], [3.0, 4.0]], [[0.0, 0.0], [0.0, 0.0]]])
     img = Nifti1Image(data, affine_eye)
     assert len(find_xyz_cut_coords(img)) == 3
@@ -339,7 +347,7 @@ def _parcellation_3_roi(
     x_map_c,
     y_map_c,
     z_map_c,
-):
+) -> np.ndarray:
     """Return data defining 3 parcellations."""
     data = np.zeros((100, 100, 100))
 
@@ -473,6 +481,7 @@ def test_find_parcellation_cut_coords_error(img_3d_mni):
 
 
 def test_find_parcellation_cut_coords_hemispheres(affine_mni):
+    """Test find_parcellation_cut_coords with a hemisphere filter."""
     # Create a mock labels_img object
     data = np.zeros((10, 10, 10))
     data[2:5, 2:5, 2:5] = 1  # left hemisphere
@@ -495,7 +504,7 @@ def test_find_parcellation_cut_coords_hemispheres(affine_mni):
 
 def _proba_parcellation_2_roi(
     x_map_a, y_map_a, z_map_a, x_map_b, y_map_b, z_map_b
-):
+) -> np.ndarray:
     """Return data defining probabilistic atlas with 2 rois."""
     arr1 = np.zeros((100, 100, 100))
     arr1[

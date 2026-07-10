@@ -51,7 +51,7 @@ N_REGIONS = 8
 N_TIMEPOINTS = 17
 
 
-def _make_label_data(shape=None):
+def _make_label_data(shape=None) -> np.ndarray:
     if shape is None:
         shape = _shape_3d_default()
     labels_data = np.zeros(shape, dtype="int32")
@@ -67,24 +67,26 @@ def _make_label_data(shape=None):
     return labels_data
 
 
-def _create_mask_with_3_regions_from_labels_data(labels_data, affine):
+def _create_mask_with_3_regions_from_labels_data(
+    labels_data, affine
+) -> Nifti1Image:
     """Create a mask containing only 3 regions."""
     mask_data = (labels_data == 1) + (labels_data == 2) + (labels_data == 5)
     return Nifti1Image(mask_data.astype(np.int8), affine)
 
 
 @pytest.fixture
-def labels_data():
+def labels_data() -> np.ndarray:
     return _make_label_data()
 
 
 @pytest.fixture
-def labels_img():
+def labels_img() -> Nifti1Image:
     return Nifti1Image(_make_label_data(_shape_3d_default()), _affine_eye())
 
 
 @pytest.fixture
-def mask_img():
+def mask_img() -> Nifti1Image:
     mask_data = np.zeros(_shape_3d_default())
     mask_data[1:-1, 1:-1, 1:-1] = 1
     return Nifti1Image(mask_data, _affine_eye())
@@ -96,14 +98,14 @@ def signals() -> np.ndarray:
 
 
 @pytest.fixture
-def fmri_img():
+def fmri_img() -> Nifti1Image:
     return generate_fake_fmri(shape=_shape_3d_default(), affine=_affine_eye())[
         0
     ]
 
 
 @pytest.fixture
-def labeled_regions():
+def labeled_regions() -> Nifti1Image:
     labels = list(range(N_REGIONS + 1))  # 0 is background
     return generate_labeled_regions(
         shape=_shape_3d_default(), n_regions=N_REGIONS, labels=labels
@@ -112,7 +114,7 @@ def labeled_regions():
 
 def _all_voxel_of_each_region_have_same_values(
     data, labels_data, n_regions, signals
-):
+) -> None:
     for n in range(1, n_regions + 1):
         sigs = data[labels_data == n, :]
         assert_almost_equal(sigs[0, :], signals[:, n - 1])

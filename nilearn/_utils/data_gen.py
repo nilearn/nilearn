@@ -236,7 +236,7 @@ def generate_labeled_regions(
     labels=None,
     affine=None,
     dtype="int32",
-):
+) -> Nifti1Image:
     """Generate a 3D volume with labeled regions.
 
     Parameters
@@ -263,7 +263,7 @@ def generate_labeled_regions(
 
     Returns
     -------
-    Niimg-like object
+    Nifti1Image
         Data has shape "shape", containing region labels.
 
     """
@@ -942,7 +942,7 @@ def create_fake_bids_dataset(
     n_vertices=0,
     n_voxels=4,
     spaces=None,
-):
+) -> Path:
     """Create a fake :term:`BIDS` dataset directory with dummy files.
 
     Returns fake dataset directory name.

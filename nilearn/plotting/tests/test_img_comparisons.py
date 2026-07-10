@@ -14,7 +14,7 @@ from nilearn.plotting import plot_bland_altman, plot_img_comparison
 # ruff: noqa: ARG001
 
 
-def _mask():
+def _mask() -> Nifti1Image:
     affine = _affine_mni()
     data_positive = np.zeros((7, 7, 3))
     data_positive[1:-1, 2:-1, 1:] = 1
