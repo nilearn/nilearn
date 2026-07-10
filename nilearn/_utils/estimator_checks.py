@@ -3656,6 +3656,7 @@ def check_masker_verbose(estimator_orig) -> None:
     if isinstance(estimator, _MultiMixin):
         return
 
+    imgs: Nifti1Image | SurfaceImage | list
     if accept_niimg_input(estimator):
         imgs = _img_4d_rand_eye_medium()
     else:
