@@ -47,7 +47,6 @@ gives::
 """
 
 
-@pytest.mark.ai_generated
 def test_model():
     """Test basics about the model fit, checking against R results."""
     # Check we fit the mean
@@ -59,7 +58,6 @@ def test_model():
     assert_array_almost_equal(pcts, [-1.6970, -0.6667, 0, 0.6667, 1.6970], 4)
 
 
-@pytest.mark.ai_generated
 def test_t_contrast():
     """Test individual t-values and t-contrasts against R."""
     assert_array_almost_equal(RESULTS.t(0), 3.25)
@@ -69,7 +67,6 @@ def test_t_contrast():
     assert_array_almost_equal(RESULTS.Tcontrast([0, 1]).t, 7.181, 3)
 
 
-@pytest.mark.ai_generated
 def test_t_contrast_errors():
     """Test that malformed t-contrasts warn or raise as expected."""
     match = "t contrasts should be of length P=.*, but it has length .*"
@@ -77,6 +74,7 @@ def test_t_contrast_errors():
         RESULTS.Tcontrast([1])
     with pytest.raises(ValueError, match=match):
         RESULTS.Tcontrast([1, 0, 0])
+
     # And shape
     with pytest.raises(
         ValueError, match="t contrasts should have only one row"
@@ -84,7 +82,6 @@ def test_t_contrast_errors():
         RESULTS.Tcontrast(np.array([1, 0])[:, None])
 
 
-@pytest.mark.ai_generated
 def test_t_output():
     """Test that Tcontrast only returns the requested outputs."""
     exp_t = RESULTS.t(0)
@@ -122,7 +119,6 @@ def test_t_output():
     assert_array_almost_equal(res.sd, exp_sd)
 
 
-@pytest.mark.ai_generated
 def test_f_output():
     """Test Fcontrast with a list, an array, and a matrix, against R."""
     res = RESULTS.Fcontrast([1, 0])
@@ -141,7 +137,6 @@ def test_f_output():
     assert_array_almost_equal(31.06, res.F, 2)
 
 
-@pytest.mark.ai_generated
 def test_f_output_errors():
     """Test that malformed F-contrasts raise a ValueError."""
     match = (
@@ -156,7 +151,6 @@ def test_f_output_errors():
         RESULTS.Fcontrast(np.array([1, 0])[:, None])
 
 
-@pytest.mark.ai_generated
 def test_f_output_new_api():
     """Test that Fcontrast exposes effect and covariance attributes."""
     res = RESULTS.Fcontrast([1, 0])
@@ -165,7 +159,6 @@ def test_f_output_new_api():
     assert_array_almost_equal(res.covariance, RESULTS.vcov()[0][0])
 
 
-@pytest.mark.ai_generated
 def test_conf_int():
     """Test that conf_int returns consistent lower and upper bounds."""
     lower_, upper_ = RESULTS.conf_int()

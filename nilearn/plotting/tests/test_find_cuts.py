@@ -314,12 +314,17 @@ def test_tranform_cut_coords_n_cuts(affine_eye, direction):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.ai_generated
 def test_find_cuts_empty_mask_no_crash(affine_eye):
     """Test that find_xyz_cut_coords warns and falls back on an empty mask."""
     img = Nifti1Image(np.ones((2, 2, 2)), affine_eye)
     mask_img = compute_epi_mask(img)
-    with pytest.warns(UserWarning, match="foo"):
+    with pytest.warns(
+        UserWarning,
+        match=(
+            r"Could not determine cut coords: "
+            r"Provided mask is empty. Returning center of mass instead."
+        ),
+    ):
         cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
     assert_array_equal(cut_coords, [0.5, 0.5, 0.5])
 

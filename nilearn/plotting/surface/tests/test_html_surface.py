@@ -28,23 +28,29 @@ from nilearn.surface.surface import (
 )
 
 
-@pytest.mark.ai_generated
 def test_check_mesh():
     """Test that check_mesh_is_fsaverage validates and resolves meshes."""
     mesh = check_mesh_is_fsaverage("fsaverage5")
+
     assert mesh is check_mesh_is_fsaverage(mesh)
-    with pytest.raises(ValueError):
+
+    with pytest.raises(ValueError, match="'mesh' should be one of"):
         check_mesh_is_fsaverage("fsaverage2")
+
     mesh.pop("pial_left")
-    with pytest.raises(ValueError):
+
+    with pytest.raises(
+        ValueError, match="is missing from the provided mesh dictionary"
+    ):
         check_mesh_is_fsaverage(mesh)
-    with pytest.raises(TypeError):
+
+    with pytest.raises(TypeError, match="'mesh' must be of type"):
         check_mesh_is_fsaverage(load_surf_mesh(mesh["pial_right"]))
+
     mesh = fetch_surf_fsaverage()
     assert mesh is check_mesh_is_fsaverage(mesh)
 
 
-@pytest.mark.ai_generated
 def test_full_brain_info(mni152_template_res_2):
     """Test that _full_brain_info returns the expected mesh/color keys."""
     surfaces = fetch_surf_fsaverage()
@@ -76,7 +82,6 @@ def test_full_brain_info(mni152_template_res_2):
 
 
 @pytest.mark.engines(["plotly", "niivue"])
-@pytest.mark.ai_generated
 def test_fill_html_template(tmp_path, mni152_template_res_2, engine):
     """Test _fill_html_template for a single mesh and a full-brain info."""
     fsaverage = fetch_surf_fsaverage()
@@ -109,7 +114,6 @@ def test_fill_html_template(tmp_path, mni152_template_res_2, engine):
 
 @pytest.mark.single_process
 @pytest.mark.engines(["plotly", "niivue"])
-@pytest.mark.ai_generated
 def test_view_surf(tmp_path, rng, engine):
     """Test view_surf with various map, threshold, and title combinations."""
     fsaverage = fetch_surf_fsaverage()
@@ -162,16 +166,17 @@ def test_view_surf(tmp_path, rng, engine):
     check_html_surface_plots(tmp_path, html, engine=engine)
 
 
-@pytest.mark.ai_generated
 def test_view_surf_errors():
     """Test that view_surf raises on mismatched map/mesh shapes."""
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
 
-    with pytest.raises(ValueError):
+    match = "Mismatch between number of nodes .* size of surface data"
+
+    with pytest.raises(ValueError, match=match):
         view_surf(mesh, mesh.coordinates[::2, 0])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         view_surf(
             mesh, mesh.coordinates[:, 0], bg_map=mesh.coordinates[::2, 0]
         )
@@ -236,7 +241,6 @@ def test_view_img_on_surf_clipped_image(tmp_path, mni152_template_res_2):
     reason="This test requires plotly to be installed",
 )
 @pytest.mark.thread_unsafe
-@pytest.mark.ai_generated
 def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):
     """Test view_img_on_surf with a file path or Path-like input."""
     view_img_on_surf(img_3d_mni_as_file)
@@ -247,7 +251,6 @@ def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):
     not is_plotly_installed(),
     reason="This test requires plotly to be installed",
 )
-@pytest.mark.ai_generated
 def test_view_img_on_surf_errors(img_3d_mni):
     """Test that view_img_on_surf rejects 4D-stacked image lists."""
     with pytest.raises(DimensionError):

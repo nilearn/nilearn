@@ -77,7 +77,6 @@ def to_niimgs(X, dim) -> tuple[Nifti1Image, Nifti1Image]:
     return Nifti1Image(X, affine), Nifti1Image(mask.astype(np.float64), affine)
 
 
-@pytest.mark.ai_generated
 def test_same_energy_calculus_pure_lasso(rng):
     """Test that squared_loss matches spatial-grad energy for pure lasso."""
     X, y, w, mask = _make_data(rng=rng, masked=True)
@@ -96,7 +95,6 @@ def test_same_energy_calculus_pure_lasso(rng):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.ai_generated
 def test_lipschitz_constant_loss_mse(rng):
     """Test the Lipschitz constant of the squared loss gradient."""
     X, _, _, mask = _make_data(rng=rng, masked=True)
@@ -111,7 +109,6 @@ def test_lipschitz_constant_loss_mse(rng):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.ai_generated
 def test_lipschitz_constant_loss_logreg(rng):
     """Test the Lipschitz constant of the logistic loss gradient."""
     X, _, _, mask = _make_data(rng=rng, masked=True)
@@ -321,7 +318,6 @@ def test_graph_net_and_tv_same_for_pure_l1_spacenet_regressor(
 @pytest.mark.slow
 @pytest.mark.parametrize("penalty", ["graph-net", "tv-l1"])
 @pytest.mark.parametrize("cls", [SpaceNetRegressor, SpaceNetClassifier])
-@pytest.mark.ai_generated
 def test_coef_shape(penalty, cls):
     """Test that SpaceNet estimators expose a coef_ per class/target."""
     iris = load_iris()
