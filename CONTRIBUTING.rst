@@ -1213,6 +1213,11 @@ the benchmarks only for those versions by doing:
 
       asv run -b load_img HASHFILE:hashestobenchmark.txt
 
+Note that versions older than 0.11.0 cannot be benchmarked this way:
+their ``nilearn/__init__.py`` imports ``pkg_resources``,
+which was removed from ``setuptools>=81``,
+the version pip installs by default in the virtualenv asv builds.
+
 If you want to update this file you can use
 to list the shasum of all tags
 that you can then edit to only keep the versions
@@ -1251,6 +1256,17 @@ For naming benchmarks, try to follow the following rules:
   via the command line: ``asv run -b nifti_masker``
   would run all the benchmarks for the NiftiMasker.
 
+- if the benchmark exercises a function or class that was added recently,
+  import it locally inside ``setup()`` rather than at the top of the module.
+  All benchmarks in a given file share that file's module-level imports,
+  so a single top-level import of a function that does not exist yet
+  in an older nilearn version (e.g. when benchmarking past releases with
+  ``HASHFILE:hashestobenchmark.txt``) will fail to import the whole module,
+  and every other benchmark in that file will be reported as failed too,
+  even though they do not rely on the missing function.
+  A local import inside ``setup()`` confines the failure to that one
+  benchmark. See ``BenchMarkAllEstimators`` in
+  ``asv_benchmarks/benchmarks/discovery.py`` for a concrete example.
 
 Maintenance
 ===========
