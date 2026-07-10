@@ -97,6 +97,7 @@ else:
         return_expected_failed_checks,
     )
 
+    @pytest.mark.slow
     @parametrize_with_checks(
         estimators=ESTIMATORS_TO_CHECK,
         expected_failed_checks=return_expected_failed_checks,
