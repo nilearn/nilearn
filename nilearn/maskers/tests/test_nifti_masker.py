@@ -335,7 +335,7 @@ def test_compute_epi_mask(affine_eye):
 
 
 @pytest.fixture
-def expected_mask(mask_args):
+def expected_mask(mask_args) -> np.ndarray:
     """Create an expected mask."""
     mask = np.zeros((9, 9, 5))
     if mask_args == {}:

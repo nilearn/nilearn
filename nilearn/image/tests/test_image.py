@@ -3,7 +3,7 @@
 import platform
 import re
 import warnings
-from collections.abc import Iterable
+from collections.abc import Generator, Iterable
 from pathlib import Path
 
 import joblib
@@ -100,14 +100,16 @@ NON_EYE_AFFINE = np.array(
 )
 
 
-def _new_data_for_smooth_array():
+def _new_data_for_smooth_array() -> np.ndarray:
     # Impulse in 3D
     data = np.zeros((40, 41, 42))
     data[20, 20, 20] = 1
     return data
 
 
-def _make_largest_cc_img_test_data():
+def _make_largest_cc_img_test_data() -> tuple[
+    Nifti1Image, Nifti1Image, tuple[tuple[int, int, int], tuple[int, int, int]]
+]:
     shapes = ((10, 11, 12), (13, 14, 15))
     regions = [1, 3]
 
@@ -116,7 +118,9 @@ def _make_largest_cc_img_test_data():
     return img1, img2, shapes
 
 
-def _images_to_mean():
+def _images_to_mean() -> tuple[
+    list[Nifti1Image], list[Nifti1Image], list[Nifti1Image], list[Nifti1Image]
+]:
     """Return a mixture of 4D and 3D images."""
     rng = _rng()
 
@@ -139,7 +143,7 @@ def _images_to_mean():
     return imgs
 
 
-def _check_fwhm(data, affine, fwhm):
+def _check_fwhm(data, affine, fwhm) -> None:
     """Expect a full-width at half maximum of fwhm / voxel_size."""
     vmax = data.max()
     above_half_max = data > 0.5 * vmax
@@ -151,7 +155,7 @@ def _check_fwhm(data, affine, fwhm):
         assert_equal(proj.sum(), fwhm / np.abs(affine[axis, axis]))
 
 
-def _mean_ground_truth(imgs):
+def _mean_ground_truth(imgs) -> np.ndarray:
     arrays = []
     for img in imgs:
         img = get_data(img)
@@ -162,12 +166,12 @@ def _mean_ground_truth(imgs):
 
 
 @pytest.fixture(scope="session")
-def smooth_array_data():
+def smooth_array_data() -> np.ndarray:
     return _new_data_for_smooth_array()
 
 
 @pytest.fixture(scope="session")
-def stat_img_test_data():
+def stat_img_test_data() -> Nifti1Image:
     shape = (20, 20, 30)
     affine = _affine_eye()
     data = np.zeros(shape, dtype="int32")
@@ -1136,7 +1140,7 @@ def test_input_in_threshold_img_several_timepoints(
     _check_thresholded_output(original_image, thr_img, threshold)
 
 
-def _check_thresholded_output(input, output, threshold):
+def _check_thresholded_output(input, output, threshold) -> None:
     """Check data was properly thresholed.
 
     Assumes:
@@ -2363,7 +2367,9 @@ def test_check_niimg_wildcards(affine_eye, shape, wildcards, tmp_path):
 
 
 @pytest.fixture
-def img_in_home_folder(img_3d_mni):
+def img_in_home_folder(
+    img_3d_mni,
+) -> Generator[Nifti1Image, None, None]:
     """Create a test file in the home folder.
 
     Teardown: use yield instead of return to make sure the file
@@ -2458,7 +2464,7 @@ def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
 
 
 @pytest.fixture
-def set_expand_path_wildcards():
+def set_expand_path_wildcards() -> Generator[None, None, None]:
     """Toggles EXPAND_PATH_WILDCARDS before and after a test."""
     # Test when global variable is set to False => no globbing allowed
     ni.EXPAND_PATH_WILDCARDS = False

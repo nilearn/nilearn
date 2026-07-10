@@ -15,7 +15,7 @@ from nilearn.mass_univariate.tests._testing import (
 
 
 @pytest.fixture
-def null():
+def null() -> list[int]:
     """Return a dummy null distribution that can be reused across tests."""
     return [-10, -9, -9, -3, -2, -1, -1, 0, 1, 1, 1, 2, 3, 3, 4, 4, 7, 8, 8, 9]
 
@@ -151,7 +151,7 @@ def test_null_to_p_array(rng):
 
 
 @pytest.fixture
-def _arr4d():
+def _arr4d() -> np.ndarray:
     _arr4d = np.zeros((10, 10, 10, 1))
     _arr4d[:2, :2, :2, 0] = 5  # 8-voxel cluster, high intensity
     _arr4d[7:, 7:, 7:, 0] = 1  # 27-voxel cluster, low intensity

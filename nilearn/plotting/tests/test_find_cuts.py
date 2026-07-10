@@ -347,7 +347,7 @@ def _parcellation_3_roi(
     x_map_c,
     y_map_c,
     z_map_c,
-):
+) -> np.ndarray:
     """Return data defining 3 parcellations."""
     data = np.zeros((100, 100, 100))
 
@@ -504,7 +504,7 @@ def test_find_parcellation_cut_coords_hemispheres(affine_mni):
 
 def _proba_parcellation_2_roi(
     x_map_a, y_map_a, z_map_a, x_map_b, y_map_b, z_map_b
-):
+) -> np.ndarray:
     """Return data defining probabilistic atlas with 2 rois."""
     arr1 = np.zeros((100, 100, 100))
     arr1[
