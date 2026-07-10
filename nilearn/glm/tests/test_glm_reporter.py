@@ -500,6 +500,7 @@ def test_drift_order_in_params(contrasts):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.single_process
 def test_flm_generate_report_surface_data(rng):
     """Generate report from flm fitted surface.
 
