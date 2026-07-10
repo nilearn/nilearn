@@ -180,15 +180,12 @@ def filter_and_extract(
 def mask_logger(step, img=None, verbose=0) -> None:
     """Log similar messages for all maskers."""
     repr = None
+
     if img is not None:
-        repr = img.__repr__()
-        if not isinstance(img, SurfaceImage) and not (
-            isinstance(img, list) and isinstance(img[0], SurfaceImage)
-        ):
-            if verbose > 1:
-                repr = repr_niimgs(img, shorten=True)
-            elif verbose > 2:
-                repr = repr_niimgs(img, shorten=False)
+        if verbose == 1:
+            repr = repr_niimgs(img, shorten=True)
+        elif verbose > 1:
+            repr = repr_niimgs(img, shorten=False)
 
     messages = {
         "cleaning": "Cleaning extracted signals",
