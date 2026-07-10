@@ -1906,7 +1906,7 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
                 X, y = generate_data_to_fit(estimator)
                 if (
                     isinstance(estimator, NiftiMasker)
-                    and input_dtype == np.int32
+                    and input_np_dtype == np.int32
                 ):
                     # Needed for NiftiMasker because the default strategy
                     # returns an empty mask
