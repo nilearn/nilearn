@@ -9,6 +9,14 @@
 # Step-wise details:
 #
 # - First it installs `asv <https://asv.readthedocs.io/en/latest/index.html>`_.
+# - On a pull request, the checkout is pinned to the actual HEAD commit of
+#   the PR branch (rather than the synthetic PR merge commit), and the
+#   benchmarks are run for that commit as well as for the tip of the
+#   upstream ``main`` branch, so the two can be compared. Since the PR
+#   branch may live on a fork that is not reachable from the ``repo`` URL
+#   configured in ``asv.conf.json``, asv is temporarily pointed at the
+#   already checked out local clone instead (it contains both commits,
+#   as the checkout step fetches full history).
 # - Then it sets up the SSH key to access the
 #   `benchmarks <https://github.com/nilearn/benchmarks>`_ repo,
 #   pulls it, and copies the results dir into the current dir. We will append
@@ -80,6 +88,9 @@ jobs:
             with:
                   # fetch all branches and tags
                 fetch-depth: 0
+                  # on a pull request, check out the actual HEAD of the PR
+                  # branch instead of the default synthetic merge commit
+                ref: ${{ github.event.pull_request.head.sha || github.sha }}
         -   uses: actions/setup-python@v6
             with:
                 python-version: ${{ env.MIN_PYTHON }}
@@ -119,9 +130,36 @@ jobs:
                 asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
         -   name: Edit asv-machine.json to a custom machine name
             run: python ../build_tools/github/set_machine_name.py fv-az1113-357
-        -   name: Run all benchmarks on the latest commit
+        -   name: Prepare comparison of PR HEAD against upstream main (PR only)
+            if: github.event_name == 'pull_request'
             run: |
-                asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                # make sure the upstream main branch is available locally
+                git fetch origin main
+                MAIN_SHA=$(git rev-parse origin/main)
+                PR_SHA=$(git rev-parse HEAD)
+                echo "$MAIN_SHA" > pr_hashes.txt
+                echo "$PR_SHA" >> pr_hashes.txt
+                cat pr_hashes.txt
+
+                # the PR branch may live on a fork that is not reachable
+                # from the "repo" URL configured in asv.conf.json, so point
+                # asv at the local checkout instead, which already has both
+                # commits (thanks to the fetch-depth: 0 checkout)
+                sed -i 's#"repo": "https://github.com/nilearn/nilearn.git"#"repo": ".."#' asv.conf.json
+        -   name: Run a single benchmark on the latest commit
+            if: github.event_name != 'pull_request'
+            # TODO: restrict to "-b NiftiMaskerBenchmark" temporarily while
+            # debugging this workflow in CI. Remove this filter to go back
+            # to running the full benchmark suite.
+            run: |
+                asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 -b "NiftiMaskerBenchmark" 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+        -   name: Run a single benchmark on the PR HEAD and upstream main (PR only)
+            if: github.event_name == 'pull_request'
+            # TODO: restrict to "-b NiftiMaskerBenchmark" temporarily while
+            # debugging this workflow in CI. Remove this filter to go back
+            # to running the full benchmark suite.
+            run: |
+                asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 -b "NiftiMaskerBenchmark" HASHFILE:pr_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
         -   name: Create html with all results
             run: |
                 asv publish
