@@ -234,7 +234,7 @@ def generate_maps(
     mask = np.zeros(shape, dtype=np.int8)
     mask[border:-border, border:-border, border:-border] = 1
     ts = generate_regions_ts(
-        mask.sum(),
+        int(mask.sum()),
         n_regions,
         overlap=overlap,
         random_state=random_state,
@@ -802,10 +802,13 @@ def generate_group_sparse_gaussian_graphs(
     # Returns the topology matrix of precision matrices.
     topology += np.eye(*topology.shape)
     topology = np.dot(topology.T, topology)
-    topology = topology > 0
-    assert np.all(topology == topology.T)
+    topology_mask = topology > 0
+    assert np.all(topology_mask == topology_mask.T)
     logger.log(
-        f"Sparsity: {1.0 * topology.sum() / topology.shape[0] ** 2:f}",
+        (
+            "Sparsity: "
+            f"{1.0 * topology_mask.sum() / topology_mask.shape[0] ** 2:f}"
+        ),
         verbose=verbose,
     )
 
@@ -816,7 +819,7 @@ def generate_group_sparse_gaussian_graphs(
         max_n_samples=max_n_samples,
         random_state=rand_gen,
     )
-    return signals, precisions, topology
+    return signals, precisions, topology_mask
 
 
 def basic_paradigm(
