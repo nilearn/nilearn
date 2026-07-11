@@ -105,6 +105,8 @@
 
 .. _Fabian Pedregosa: https://github.com/fabianp
 
+.. _Fabricio Cravo: https://fabriciocravo.github.io/
+
 .. _Fernanda Ponce: https://github.com/ferponcem
 
 .. _Florent Pollet: https://florian6973.github.io/
