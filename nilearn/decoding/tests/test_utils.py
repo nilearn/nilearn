@@ -172,8 +172,10 @@ def test_check_unsupported_estimator(estimator):
         )
 
     expected_warning = (
-        "Use a custom estimator at your own risk "
-        "of the process not working as intended."
+        "Use a custom estimator at your own risk of the process not working "
+        "as intended. Nilearn cannot define a default tuning param_grid for "
+        "custom estimators; when using a Decoder, provide param_grid to tune "
+        "its hyperparameters."
     )
     custom_estimator = RandomForestClassifier()
     with pytest.warns(UserWarning, match=expected_warning):

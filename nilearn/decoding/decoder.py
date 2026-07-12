@@ -49,11 +49,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
-from nilearn.decoding._utils import (
-    SUPPORTED_ESTIMATORS,
-    check_feature_screening,
-    validate_estimator,
-)
+from nilearn.decoding._utils import check_feature_screening, validate_estimator
 from nilearn.image import check_niimg
 from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
@@ -70,10 +66,8 @@ def _check_param_grid(estimator, X, y, param_grid=None):
 
     Parameters
     ----------
-    estimator : str
-        The estimator to choose among:
-        %(classifier_options)s
-        %(regressor_options)s
+    estimator : scikit-learn compatible estimator object
+        The estimator for which to check the parameter grid.
 
     X : list of Niimg-like objects
         See :ref:`extracting_data`.
@@ -95,8 +89,9 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         useful to avoid exploring parameter combinations that make no sense
         or have no effect. See scikit-learn documentation for more information.
 
-        For Dummy estimators, parameter grid defaults to empty as these
-        estimators do not have hyperparameters to grid search.
+        For custom estimator objects and Dummy estimators, the parameter grid
+        defaults to empty. Provide ``param_grid`` to tune a custom estimator's
+        hyperparameters.
 
     Returns
     -------
@@ -122,10 +117,8 @@ def _default_param_grid(estimator, X, y):
 
     Parameters
     ----------
-    estimator : str
-        The estimator to choose among:
-        %(classifier_options)s
-        %(regressor_options)s
+    estimator : scikit-learn compatible estimator object
+        The estimator for which to generate the parameter grid.
 
     X : list of Niimg-like objects
         See :ref:`extracting_data`.
@@ -144,7 +137,9 @@ def _default_param_grid(estimator, X, y):
     """
     param_grid = {}
 
-    # validate estimator
+    # Custom estimator objects are accepted by ``validate_estimator``. Nilearn
+    # does not know which of their parameters can be safely tuned, so use an
+    # empty grid unless the user explicitly provides one.
     if isinstance(estimator, (DummyClassifier, DummyRegressor)):
         if estimator.strategy == "constant":
             message = (
@@ -163,19 +158,7 @@ def _default_param_grid(estimator, X, y):
             LassoCV,
         ),
     ):
-        # TODO
-        # we technically allow any estimator object
-        # to be passed to _BaseEstimator, Decoder, DecoderRegressor...
-        # but here we throw a warning
-        # that says the estimator must be one of the above:
-        # this inconsistency should probably be resolved
-        # or documented.
-        tmp = list(SUPPORTED_ESTIMATORS["classifier"].keys()) + list(
-            SUPPORTED_ESTIMATORS["regressor"].keys()
-        )
-        raise TypeError(
-            f"Invalid estimator. The supported estimators are: {tmp}"
-        )
+        return param_grid
 
     # use l1_min_c to get lower bound for estimators with L1 penalty
     if hasattr(estimator, "penalty") and (estimator.penalty == "l1"):
@@ -480,7 +463,9 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
-        For Dummy estimators, parameter grid defaults to empty dictionary.
+        For Dummy estimators and custom estimator objects, parameter grid
+        defaults to an empty dictionary. To tune a custom estimator's
+        hyperparameters, provide ``param_grid`` explicitly.
 
     clustering_percentile : int, float, in the [0, 100], default=100
         Percentile of features to keep after clustering. If it is lower
@@ -1173,8 +1158,9 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
-        For DummyClassifier, parameter grid defaults to empty dictionary, class
-        predictions are estimated using default strategy.
+        For DummyClassifier and custom estimator objects, parameter grid
+        defaults to an empty dictionary. To tune a custom estimator's
+        hyperparameters, provide ``param_grid`` explicitly.
 
     %(screening_percentile)s
 
@@ -1361,8 +1347,9 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
-        For DummyRegressor, parameter grid defaults to empty dictionary, class
-        predictions are estimated using default strategy.
+        For DummyRegressor and custom estimator objects, parameter grid
+        defaults to an empty dictionary. To tune a custom estimator's
+        hyperparameters, provide ``param_grid`` explicitly.
 
     %(screening_percentile)s
 
@@ -1533,6 +1520,9 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         parameters to sequences of allowed values.
 
         None or an empty dict signifies default parameters.
+
+        For custom estimator objects, ``None`` uses an empty parameter grid.
+        Provide ``param_grid`` explicitly to tune their hyperparameters.
 
         A sequence of dicts signifies a sequence of grids to search, and is
         useful to avoid exploring parameter combinations that make no sense
@@ -1713,6 +1703,9 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         parameters to sequences of allowed values.
 
         None or an empty dict signifies default parameters.
+
+        For custom estimator objects, ``None`` uses an empty parameter grid.
+        Provide ``param_grid`` explicitly to tune their hyperparameters.
 
         A sequence of dicts signifies a sequence of grids to search, and is
         useful to avoid exploring parameter combinations that make no sense

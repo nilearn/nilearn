@@ -401,8 +401,10 @@ def validate_estimator(
             )
 
         warnings.warn(
-            "Use a custom estimator at your own risk "
-            "of the process not working as intended.",
+            "Use a custom estimator at your own risk of the process not "
+            "working as intended. Nilearn cannot define a default tuning "
+            "param_grid for custom estimators; when using a Decoder, provide "
+            "param_grid to tune its hyperparameters.",
             stacklevel=find_stack_level(),
         )
 

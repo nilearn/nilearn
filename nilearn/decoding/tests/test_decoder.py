@@ -24,13 +24,13 @@ from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import (
     LassoCV,
     LogisticRegressionCV,
     RidgeClassifierCV,
     RidgeCV,
+    SGDClassifier,
 )
 from sklearn.metrics import (
     accuracy_score,
@@ -331,15 +331,35 @@ def test_check_param_grid_replacement(rand_x_y, param_grid_input):
             assert params in ParameterGrid(param_grid_input)
 
 
-@pytest.mark.parametrize("estimator", ["log_l1", RandomForestClassifier()])
-def test_check_param_grid_non_supported_estimator_error(rand_x_y, estimator):
-    """Raise the error when using a non supported estimator."""
+@pytest.mark.parametrize("param_grid", [None, {"alpha": [0.0001, 0.001]}])
+def test_check_param_grid_custom_estimator(rand_x_y, param_grid):
+    """Use an empty or user-provided grid for a custom estimator."""
     X, Y = rand_x_y
 
-    with pytest.raises(
-        TypeError, match=r"Invalid estimator. The supported estimators are:"
-    ):
-        _check_param_grid(estimator, X, Y, None)
+    estimator = SGDClassifier(random_state=0)
+    checked_param_grid = _check_param_grid(estimator, X, Y, param_grid)
+
+    assert checked_param_grid == ({} if param_grid is None else param_grid)
+
+
+@pytest.mark.parametrize("param_grid", [None, {"alpha": [0.0001, 0.001]}])
+def test_decoder_custom_estimator_param_grid(
+    binary_classification_data, param_grid
+):
+    """Fit a Decoder with a custom classifier and optional parameter grid."""
+    X, y, mask = binary_classification_data
+    decoder = Decoder(
+        estimator=SGDClassifier(loss="log_loss", random_state=0),
+        mask=mask,
+        param_grid=param_grid,
+        cv=2,
+        screening_percentile=100,
+    )
+
+    with pytest.warns(UserWarning, match="param_grid"):
+        decoder.fit(X, y)
+
+    assert hasattr(decoder, "coef_")
 
 
 def test_check_parameter_grid_is_empty(rand_x_y):
