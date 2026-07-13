@@ -22,7 +22,7 @@ NEW
 Fixes
 -----
 
-- :bdg-dark:`Code` Fix the ``build-docs`` GitHub Actions workflow so the monthly dataset cache is only saved once per month instead of on every run, which was causing it to be evicted from the repository's Actions cache quota and forcing datasets such as ``development_fmri`` and ``difumo_atlases`` to be re-downloaded live from OSF, a frequent source of flaky ``test_html`` and ``build-docs`` failures (:gh:`XXXX` by `Rémi Gau`_).
+- :bdg-dark:`Code` Fix the ``build-docs`` GitHub Actions workflow so the monthly dataset cache is only saved once per month instead of on every run, which was causing it to be evicted from the repository's Actions cache quota and forcing datasets such as ``development_fmri`` and ``difumo_atlases`` to be re-downloaded live from OSF, a frequent source of flaky ``test_html`` and ``build-docs`` failures (:gh:`6425` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix :func:`~image.resample_img` raising an ``AttributeError`` instead of resampling correctly when ``target_affine`` is passed as a :obj:`list` or :obj:`tuple` together with ``target_shape`` (:gh:`6408` by `Rémi Gau`_).
 
