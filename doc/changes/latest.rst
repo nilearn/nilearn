@@ -31,6 +31,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-primary:`Doc` Clarify the "Performance monitoring" section of ``CONTRIBUTING.rst``, extend ``asv_benchmarks/hashestobenchmark.txt`` with all major releases since 0.8, and add benchmarks for :func:`~nilearn.plotting.plot_design_matrix_correlation` and :func:`~nilearn.utils.all_estimators` demonstrating the local-import pattern needed when benchmarking functions absent from older nilearn versions (:gh:`6422` by `Rémi Gau`_).
+
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.masking.compute_epi_mask` (:gh:`6306` by `Marco Flores`_).
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section to :func:`~nilearn.utils.all_displays`, :func:`~nilearn.utils.all_estimators`, :func:`~nilearn.utils.all_functions` (:gh:`6322`, :gh:`6324`, :gh:`6325` by `Alice Schiavone`_).
