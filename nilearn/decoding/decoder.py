@@ -137,9 +137,6 @@ def _default_param_grid(estimator, X, y):
     """
     param_grid = {}
 
-    # Custom estimator objects are accepted by ``validate_estimator``. Nilearn
-    # does not know which of their parameters can be safely tuned, so use an
-    # empty grid unless the user explicitly provides one.
     if isinstance(estimator, (DummyClassifier, DummyRegressor)):
         if estimator.strategy == "constant":
             message = (
@@ -158,6 +155,13 @@ def _default_param_grid(estimator, X, y):
             LassoCV,
         ),
     ):
+        # Custom estimator objects are accepted by ``validate_estimator``.
+        # Nilearn does not know which of their parameters can be safely tuned.
+        warnings.warn(
+            "Nilearn cannot define a default tuning param_grid for custom "
+            "estimators. Provide param_grid to tune its hyperparameters.",
+            stacklevel=find_stack_level(),
+        )
         return param_grid
 
     # use l1_min_c to get lower bound for estimators with L1 penalty

@@ -337,7 +337,11 @@ def test_check_param_grid_custom_estimator(rand_x_y, param_grid):
     X, Y = rand_x_y
 
     estimator = SGDClassifier(random_state=0)
-    checked_param_grid = _check_param_grid(estimator, X, Y, param_grid)
+    if param_grid is None:
+        with pytest.warns(UserWarning, match="param_grid"):
+            checked_param_grid = _check_param_grid(estimator, X, Y, param_grid)
+    else:
+        checked_param_grid = _check_param_grid(estimator, X, Y, param_grid)
 
     assert checked_param_grid == ({} if param_grid is None else param_grid)
 
@@ -356,7 +360,8 @@ def test_decoder_custom_estimator_param_grid(
         screening_percentile=100,
     )
 
-    with pytest.warns(UserWarning, match="param_grid"):
+    expected_warning = "param_grid" if param_grid is None else "own risk"
+    with pytest.warns(UserWarning, match=expected_warning):
         decoder.fit(X, y)
 
     assert hasattr(decoder, "coef_")
