@@ -41,6 +41,12 @@ concurrency:
 # Force to use color
 env:
     FORCE_COLOR: true
+      # Must match the path used to restore the "Get cache from a previous
+      # doc build" step below, otherwise the restored data is never found by
+      # nilearn's fetchers (which default to ~/nilearn_data) and everything
+      # gets re-downloaded from the network on every run regardless of
+      # whether the cache was actually restored.
+    NILEARN_DATA: ${{ github.workspace }}/nilearn_data
 
 jobs:
 

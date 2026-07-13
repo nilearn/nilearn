@@ -22,6 +22,8 @@ NEW
 Fixes
 -----
 
+- :bdg-warning:`Test` Fix the ``test_html`` GitHub Actions workflow to set ``NILEARN_DATA`` to the same path used to restore its dataset cache, since without it nilearn's fetchers default to ``~/nilearn_data`` instead and every dataset was silently re-downloaded from the network on every run regardless of whether the cache was restored (:gh:`XXXX` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Fix the ``build-docs`` GitHub Actions workflow so the monthly dataset cache is only saved once per month, by a full build, instead of on every run, which was causing it to be evicted from the repository's Actions cache quota (or frozen with only a partial-build subset of the data) and forcing datasets such as ``development_fmri`` and ``difumo_atlases`` to be re-downloaded live from OSF, a frequent source of flaky ``test_html`` and ``build-docs`` failures (:gh:`6425` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix :func:`~image.resample_img` raising an ``AttributeError`` instead of resampling correctly when ``target_affine`` is passed as a :obj:`list` or :obj:`tuple` together with ``target_shape`` (:gh:`6408` by `Rémi Gau`_).
