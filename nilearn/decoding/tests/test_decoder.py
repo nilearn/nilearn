@@ -83,6 +83,15 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 
 N_SAMPLES = 80
 
+_CUSTOM_ESTIMATOR_WARNING = (
+    "Use a custom estimator at your own risk "
+    "of the process not working as intended."
+)
+_CUSTOM_PARAM_GRID_WARNING = (
+    "Nilearn cannot define a default tuning 'param_grid' for custom "
+    "estimators. Provide 'param_grid' to tune its hyperparameters."
+)
+
 ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 
@@ -338,7 +347,7 @@ def test_check_param_grid_custom_estimator(rand_x_y, param_grid):
 
     estimator = SGDClassifier(random_state=0)
     if param_grid is None:
-        with pytest.warns(UserWarning, match="param_grid"):
+        with pytest.warns(UserWarning, match=_CUSTOM_PARAM_GRID_WARNING):
             checked_param_grid = _check_param_grid(estimator, X, Y, param_grid)
     else:
         checked_param_grid = _check_param_grid(estimator, X, Y, param_grid)
@@ -360,7 +369,11 @@ def test_decoder_custom_estimator_param_grid(
         screening_percentile=100,
     )
 
-    expected_warning = "param_grid" if param_grid is None else "own risk"
+    expected_warning = (
+        _CUSTOM_PARAM_GRID_WARNING
+        if param_grid is None
+        else _CUSTOM_ESTIMATOR_WARNING
+    )
     with pytest.warns(UserWarning, match=expected_warning):
         decoder.fit(X, y)
 
