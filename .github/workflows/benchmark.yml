@@ -166,6 +166,13 @@ jobs:
                 echo "$PR_SHA" >> pr_hashes.txt
                 cat pr_hashes.txt
 
+                # the checkout is a detached HEAD (pinned to the PR HEAD
+                # sha), so there is no local branch named "main" yet. asv
+                # needs one, since asv.conf.json declares "branches":
+                # ["main"] and resolves it against whatever "repo" points
+                # to (see below). This does not touch the current checkout.
+                git branch -f main origin/main
+
                 # the PR branch may live on a fork that is not reachable
                 # from the "repo" URL configured in asv.conf.json, so point
                 # asv at the local checkout instead, which already has both
