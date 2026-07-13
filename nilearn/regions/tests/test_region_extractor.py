@@ -411,7 +411,7 @@ def test_zeros_affine_diagonal(affine_eye, n_regions, rng):
         shape=[40, 40, 40],
         n_regions=n_regions,
         affine=affine,
-        random_state=rng,
+        rand_gen=rng,
     )
 
     extract_ratio = RegionExtractor(
