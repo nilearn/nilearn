@@ -228,6 +228,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap_centered(
 ):
     """Check distributions of permutations when tested vars are centered."""
     # create dummy design with no effect
+    rng = np.random.RandomState(0)
     target_var = rng.randn(N_SAMPLES, 1)
 
     centered_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
@@ -243,7 +244,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap_centered(
 def test_permuted_ols_check_h0_noeffect_labelswap_uncentered(rng):
     """Check distributions of permutations when tested vars are uncentered."""
     # create dummy design with no effect
-    target_var = rng.randn(N_SAMPLES, 1)
+    target_var = rng.normal(size=(N_SAMPLES, 1))
 
     uncentered_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
 
@@ -262,7 +263,7 @@ def test_permuted_ols_check_h0_noeffect_signswap(rng):
         (= t(n_samples - dof)).
     """
     # create dummy design with no effect
-    target_var = rng.randn(N_SAMPLES, 1)
+    target_var = rng.normal(size=(N_SAMPLES, 1))
 
     n_regressors = 1
     tested_var = np.ones((N_SAMPLES, n_regressors))

@@ -1091,7 +1091,7 @@ def create_fake_bids_dataset(
         Creates a directory with dummy files.
 
     """
-    rand_gen = np.random.default_rng(rand_gen)
+    rng = np.random.default_rng(rand_gen)
 
     if base_dir is None:
         base_dir = Path()
@@ -1131,7 +1131,7 @@ def create_fake_bids_dataset(
         n_runs=n_runs,
         entities=entities,
         n_voxels=n_voxels,
-        rand_gen=rand_gen,
+        rand_gen=rng,
     )
 
     if with_derivatives:
@@ -1147,7 +1147,7 @@ def create_fake_bids_dataset(
             confounds_tag=confounds_tag,
             entities=entities,
             n_voxels=n_voxels,
-            rand_gen=rand_gen,
+            rand_gen=rng,
             n_vertices=n_vertices,
             spaces=spaces,
         )
