@@ -66,17 +66,21 @@ def generate_mni_space_img(
         Generated mask in MNI space.
 
     """
-    rand_gen = np.random.default_rng(rand_gen)
     mask_img = load_mni152_brain_mask(resolution=res)
     masker = NiftiMasker(mask_img).fit()
+
     n_voxels = get_data(mask_img).sum()
-    data = rand_gen.standard_normal((n_scans, n_voxels))
+    rng = np.random.default_rng(rand_gen)
+    data = rng.standard_normal((n_scans, n_voxels))
+
     if mask_dilation is not None and mask_dilation > 0:
         mask_img = new_img_like(
             mask_img,
             binary_dilation(get_data(mask_img), iterations=mask_dilation),
         )
+
     inverse_img = masker.inverse_transform(data)
+
     return inverse_img, mask_img
 
 
@@ -103,8 +107,8 @@ def generate_timeseries(
         Generated time series.
 
     """
-    rand_gen = np.random.default_rng(rand_gen)
-    return rand_gen.standard_normal((n_timepoints, n_features))
+    rng = np.random.default_rng(rand_gen)
+    return rng.standard_normal((n_timepoints, n_features))
 
 
 def generate_regions_ts(
@@ -148,17 +152,18 @@ def generate_regions_ts(
         shape (n_features, n_regions)
 
     """
-    rand_gen = np.random.default_rng(rand_gen)
     if window is None:
         window = "boxcar"
 
     assert n_features > n_regions
 
+    rng = np.random.default_rng(rand_gen)
+
     # Compute region boundaries indices.
     # Start at 1 to avoid getting an empty region
     boundaries = np.zeros(n_regions + 1)
     boundaries[-1] = n_features
-    boundaries[1:-1] = rand_gen.permutation(np.arange(1, n_features))[
+    boundaries[1:-1] = rng.permutation(np.arange(1, n_features))[
         : n_regions - 1
     ]
     boundaries.sort()
@@ -171,7 +176,7 @@ def generate_regions_ts(
         end = int(min(n_features, boundaries[n + 1] + overlap_end))
         win = scipy.signal.get_window(window, end - start)
         win /= win.mean()  # unity mean
-        if negative_regions and rand_gen.choice(a=[True, False]):
+        if negative_regions and rng.choice(a=[True, False]):
             win = -1 * win
         regions[n, start:end] = win
 
@@ -404,11 +409,10 @@ def generate_fake_fmri(
     width = [s // 2 for s in shape]
     shift = [s // 4 for s in shape]
 
-    rand_gen = np.random.default_rng(rand_gen)
+    rng = np.random.default_rng(rand_gen)
+
     if kind == "noise":
-        signals = rand_gen.integers(
-            256, size=([*width, length]), dtype=np.int32
-        )
+        signals = rng.integers(256, size=([*width, length]), dtype=np.int32)
     elif kind == "step":
         signals = np.ones([*width, length], dtype=np.int32)
         signals[..., : length // 2] = 0.5
@@ -441,22 +445,20 @@ def generate_fake_fmri(
             f"{length} is too small "
             f"to put {n_blocks} blocks of size {block_size}"
         )
-    t_start = (
-        rand_gen.integers(0, rest_max_size, 1)[0] if rest_max_size > 0 else 0
-    )
+    t_start = rng.integers(0, rest_max_size, 1)[0] if rest_max_size > 0 else 0
     for block in range(n_blocks):
         if block_type == "classification":
             # Select a random voxel and add some signal to the background
-            voxel_idx = rand_gen.integers(0, flat_fmri.shape[0], 1)[0]
-            trials_effect = (rand_gen.random(block_size) + 1) * 3.0
+            voxel_idx = rng.integers(0, flat_fmri.shape[0], 1)[0]
+            trials_effect = (rng.random(block_size) + 1) * 3.0
         else:
             # Select the voxel in the image center and add some signal
             # that increases with each block
             voxel_idx = flat_fmri.shape[0] // 2
-            trials_effect = (rand_gen.random(block_size) + 1) * block
+            trials_effect = (rng.random(block_size) + 1) * block
         t_rest = 0
         if rest_max_size > 0:
-            t_rest = rand_gen.integers(0, rest_max_size, 1)[0]
+            t_rest = rng.integers(0, rest_max_size, 1)[0]
         flat_fmri[voxel_idx, t_start : t_start + block_size] += trials_effect
         target[t_start : t_start + block_size] = block + 1
         t_start += t_rest + block_size
@@ -509,22 +511,20 @@ def generate_fake_fmri_data_and_design(
         affine = np.eye(4)
     fmri_data = []
     design_matrices = []
-    rand_gen = np.random.default_rng(rand_gen)
+
+    rng = np.random.default_rng(rand_gen)
+
     for shape in shapes:
-        data = rand_gen.standard_normal(shape)
+        data = rng.standard_normal(shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
-        columns = rand_gen.choice(
+        columns = rng.choice(
             list(string.ascii_lowercase), size=rk, replace=False
         )
         design_matrices.append(
-            pd.DataFrame(
-                rand_gen.standard_normal((shape[3], rk)), columns=columns
-            )
+            pd.DataFrame(rng.standard_normal((shape[3], rk)), columns=columns)
         )
-    mask = Nifti1Image(
-        (rand_gen.random(shape[:3]) > 0.5).astype(np.int8), affine
-    )
+    mask = Nifti1Image((rng.random(shape[:3]) > 0.5).astype(np.int8), affine)
     return mask, fmri_data, design_matrices
 
 
@@ -619,8 +619,8 @@ def _write_fake_bold_gifti(
         Output file path.
 
     """
-    rand_gen = np.random.default_rng(rand_gen)
-    data = rand_gen.standard_normal((n_time_points, n_vertices))
+    rng = np.random.default_rng(rand_gen)
+    data = rng.standard_normal((n_time_points, n_vertices))
     darray = gifti.GiftiDataArray(data=data, datatype="NIFTI_TYPE_FLOAT32")
     gii = gifti.GiftiImage(darrays=[darray])
     gii.to_filename(file_path)
@@ -661,8 +661,8 @@ def write_fake_bold_img(
     """
     if affine is None:
         affine = np.eye(4)
-    rand_gen = np.random.default_rng(rand_gen)
-    data = rand_gen.standard_normal(shape)
+    rng = np.random.default_rng(rand_gen)
+    data = rng.standard_normal(shape)
     data[1:-1, 1:-1, 1:-1] += 100
     Nifti1Image(data, affine).to_filename(file_path)
 
@@ -705,16 +705,16 @@ def _generate_signals_from_precisions(
         (sample number, precisions[n].shape[0]).
 
     """
-    rand_gen = np.random.default_rng(rand_gen)
+    rng = np.random.default_rng(rand_gen)
 
     signals: list[np.ndarray] = []
-    n_samples = rand_gen.integers(
+    n_samples = rng.integers(
         min_n_samples, high=max_n_samples, size=len(precisions), endpoint=True
     )
 
     mean = np.zeros(precisions[0].shape[0])
     signals.extend(
-        rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n,))
+        rng.multivariate_normal(mean, np.linalg.inv(prec), (n,))
         for n, prec in zip(n_samples, precisions, strict=False)
     )
     return signals
@@ -768,13 +768,13 @@ def generate_group_sparse_gaussian_graphs(
         and signals.
 
     """
-    rand_gen = np.random.default_rng(rand_gen)
+    rng = np.random.default_rng(rand_gen)
     # Generate topology (upper triangular binary matrix, with zeros on the
     # diagonal)
     topology = np.empty((n_features, n_features))
     topology[:, :] = np.triu(
         (
-            rand_gen.integers(
+            rng.integers(
                 0, high=int(1.0 / density), size=n_features * n_features
             )
         ).reshape(n_features, n_features)
@@ -788,7 +788,7 @@ def generate_group_sparse_gaussian_graphs(
     for _ in range(n_subjects):
         # See also sklearn.datasets.samples_generator.make_sparse_spd_matrix
         prec = topology.copy()
-        prec[mask] = rand_gen.uniform(low=0.1, high=0.8, size=(mask.sum()))
+        prec[mask] = rng.uniform(low=0.1, high=0.8, size=(mask.sum()))
         prec += np.eye(prec.shape[0])
         prec = np.dot(prec.T, prec)
 
@@ -887,7 +887,7 @@ def _basic_confounds(length, rand_gen: RandomStateOrGen = 0):
         'trans_x', 'trans_y', 'trans_z'.
 
     """
-    rand_gen = np.random.default_rng(rand_gen)
+    rng = np.random.default_rng(rand_gen)
     columns = [
         "csf",
         "white_matter",
@@ -899,7 +899,7 @@ def _basic_confounds(length, rand_gen: RandomStateOrGen = 0):
         "trans_y",
         "trans_z",
     ]
-    data = rand_gen.random((length, len(columns)))
+    data = rng.random((length, len(columns)))
     confounds = pd.DataFrame(data, columns=columns)
     return confounds
 
