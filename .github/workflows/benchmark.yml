@@ -209,33 +209,18 @@ jobs:
 
         -   name: Run all benchmarks on the latest commit
             if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-            # TODO: remove this "-b" filter once the "Fail if any benchmark
-            # reported as failed" step below has been confirmed to
-            # actually fail CI (it currently targets a benchmark in
-            # tmp_ci_failure_check.py that always fails on purpose; delete
-            # that file too when removing this filter).
             run: |
-                asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 -b "BenchMarkIntentionalCIFailure" 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
 
         -   name: Run all benchmarks on the PR HEAD and upstream main (PR only)
             if: github.event_name == 'pull_request'
-            # TODO: remove this "-b" filter once the "Fail if any benchmark
-            # reported as failed" step below has been confirmed to
-            # actually fail CI (it currently targets a benchmark in
-            # tmp_ci_failure_check.py that always fails on purpose; delete
-            # that file too when removing this filter).
             run: |
-                asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 -b "BenchMarkIntentionalCIFailure" HASHFILE:pr_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 HASHFILE:pr_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
 
         -   name: Run all benchmarks on main HEAD and latest release (push only)
             if: github.event_name == 'push'
-            # TODO: remove this "-b" filter once the "Fail if any benchmark
-            # reported as failed" step below has been confirmed to
-            # actually fail CI (it currently targets a benchmark in
-            # tmp_ci_failure_check.py that always fails on purpose; delete
-            # that file too when removing this filter).
             run: |
-                asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 -b "BenchMarkIntentionalCIFailure" HASHFILE:main_release_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 HASHFILE:main_release_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
 
         -   name: Fail if any benchmark reported as failed
             # asv run keeps going and exits 0 even when individual
