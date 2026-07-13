@@ -122,12 +122,11 @@ def test_z_score_f_values(rng):
         assert_array_almost_equal(z_score(p, one_minus_pvalue=cdf), z)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("add_regs_i", [0, 20])
 def test_z_score_opposite_contrast(rng, add_regs_i):
     """Test that z-scores of opposite contrasts are numerically opposite."""
     fmri, mask = generate_fake_fmri(
-        shape=(50, 20, 50), length=96, random_state=rng
+        shape=(50, 20, 50), length=96, rand_gen=rng
     )
 
     nifti_masker = NiftiMasker(mask_img=mask, standardize=None)

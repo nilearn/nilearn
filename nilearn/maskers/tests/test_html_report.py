@@ -163,7 +163,6 @@ def input_parameters(
     return None
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
@@ -229,7 +228,6 @@ def test_displayed_maps_error(masker_class, input_parameters, displayed_maps):
             masker.generate_report(displayed_maps=displayed_maps)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
@@ -252,7 +250,6 @@ def test_displayed_maps_warning_too_many(
             masker.generate_report(displayed_maps=displayed_maps)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
@@ -288,7 +285,6 @@ def test_nifti_spheres_masker_report_1_sphere(
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_nifti_labels_masker_report_no_image_for_fit(
     img_3d_rand_eye, n_regions, labels, img_labels
 ):
@@ -325,7 +321,6 @@ EXPECTED_COLUMNS = [
 
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
-@pytest.mark.slow
 def test_nifti_labels_masker_report(
     img_3d_rand_eye,
     img_mask_eye,
@@ -392,7 +387,6 @@ def test_nifti_labels_masker_report(
         )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
 def test_nifti_labels_masker_report_cut_coords(
@@ -414,7 +408,6 @@ def test_nifti_labels_masker_report_cut_coords(
     assert display.cut_coords == display_data.cut_coords
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
     """Test for NiftiMasker reports with 4D data."""
@@ -443,7 +436,6 @@ def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_nifti_masker_overlaid_report(
     matplotlib_pyplot,  # noqa: ARG001
     img_fmri,
@@ -504,7 +496,6 @@ def test_nifti_label_masker_brainsprite(
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_multi_nifti_masker_generate_report_mask(
     img_3d_ones_eye, shape_3d_default, affine_eye
 ):
@@ -524,7 +515,6 @@ def test_multi_nifti_masker_generate_report_mask(
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_multi_nifti_masker_generate_report_imgs_and_mask(
     shape_3d_default, affine_eye, img_fmri
 ):
