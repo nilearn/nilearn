@@ -157,8 +157,8 @@ def _default_param_grid(estimator, X, y):
         # Custom estimator objects are accepted by ``validate_estimator``.
         # Nilearn does not know which of their parameters can be safely tuned.
         warnings.warn(
-            "Nilearn cannot define a default tuning param_grid for custom "
-            "estimators. Provide param_grid to tune its hyperparameters.",
+            "Nilearn cannot define a default tuning 'param_grid' for custom "
+            "estimators. Provide 'param_grid' to tune its hyperparameters.",
             stacklevel=find_stack_level(),
         )
         return param_grid
