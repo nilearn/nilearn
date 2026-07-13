@@ -276,9 +276,13 @@ jobs:
                 python doc/get_data_examples.py $BUILD_TYPE
 
         -   name: Save monthly data cache
-                  # Only save if this month's cache did not already exist,
-                  # so later runs restore it instead of each saving their own.
-            if: steps.restore-monthly-cache.outputs.cache-hit != 'true'
+                  # Only save from a full build, and only if this month's
+                  # cache did not already exist, so the shared cache always
+                  # holds the full dataset superset instead of being frozen
+                  # with just the partial-build subset by whichever PR run
+                  # happens to be first each month.
+            if: ${{ steps.restore-monthly-cache.outputs.cache-hit != 'true' && contains(fromJSON('["full", "html", "html-strict"]'), steps.build-type.outputs.build)
+                }}
             uses: actions/cache/save@v6
             with:
                 path: nilearn_data
