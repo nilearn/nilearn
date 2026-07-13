@@ -17,6 +17,13 @@
 #   configured in ``asv.conf.json``, asv is temporarily pointed at the
 #   already checked out local clone instead (it contains both commits,
 #   as the checkout step fetches full history).
+# - On a push to ``main`` (typically a merged PR), the benchmarks are run
+#   for the ``main`` HEAD and for the most recent git tag (the latest
+#   stable release), and this comparison *overwrites* whatever was
+#   previously published on the
+#   `benchmarks <https://github.com/nilearn/benchmarks>`_ repo, rather
+#   than being appended to the historical results used by the
+#   schedule/manual runs.
 # - Then it sets up the SSH key to access the
 #   `benchmarks <https://github.com/nilearn/benchmarks>`_ repo,
 #   pulls it, and copies the results dir into the current dir. We will append
@@ -43,6 +50,10 @@
 name: Run and deploy Nilearn benchmarks
 
 on:
+    push:
+        branches:
+        -   main
+
     pull_request:
         branches:
         -   '*'
@@ -67,7 +78,10 @@ on:
     workflow_dispatch:
 
 concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
+      # include the event name so that, e.g., a "push" run (which
+      # overwrites the published benchmarks) and a "schedule" run (which
+      # appends to them) on the same ref do not cancel one another
+    group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
     cancel-in-progress: true
 
 env:
@@ -110,8 +124,19 @@ jobs:
                 chmod 600 ~/.ssh/github_actions
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
+        -   name: Clone benchmarks repo (push to main, results not merged)
+            # On a push, the previous results are intentionally not copied
+            # into "results": this run only ever compares main HEAD against
+            # the latest release and overwrites what is published, instead
+            # of appending to the accumulated history.
+            if: github.event_name == 'push'
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+            run: |
+                git clone git@github.com:nilearn/benchmarks.git benchmarks_repo
+
         -   name: Pull previous results from benchmarks repo
-            if: github.event_name != 'pull_request'
+            if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -146,8 +171,21 @@ jobs:
                 # asv at the local checkout instead, which already has both
                 # commits (thanks to the fetch-depth: 0 checkout)
                 sed -i 's#"repo": "https://github.com/nilearn/nilearn.git"#"repo": ".."#' asv.conf.json
+        -   name: Prepare comparison of main HEAD against latest release (push only)
+            if: github.event_name == 'push'
+            run: |
+                # main and its release tags are both reachable from the
+                # configured "repo" URL, no need to point asv at the local
+                # checkout here (unlike for the PR comparison above)
+                git fetch --tags
+                LATEST_TAG=$(git describe --tags --abbrev=0)
+                MAIN_SHA=$(git rev-parse HEAD)
+                TAG_SHA=$(git rev-parse "${LATEST_TAG}^{commit}")
+                echo "$TAG_SHA" > main_release_hashes.txt
+                echo "$MAIN_SHA" >> main_release_hashes.txt
+                cat main_release_hashes.txt
         -   name: Run a single benchmark on the latest commit
-            if: github.event_name != 'pull_request'
+            if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
             # TODO: restrict to "-b NiftiMaskerBenchmark" temporarily while
             # debugging this workflow in CI. Remove this filter to go back
             # to running the full benchmark suite.
@@ -160,6 +198,13 @@ jobs:
             # to running the full benchmark suite.
             run: |
                 asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 -b "NiftiMaskerBenchmark" HASHFILE:pr_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+        -   name: Run a single benchmark on main HEAD and latest release (push only)
+            if: github.event_name == 'push'
+            # TODO: restrict to "-b NiftiMaskerBenchmark" temporarily while
+            # debugging this workflow in CI. Remove this filter to go back
+            # to running the full benchmark suite.
+            run: |
+                asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 -b "NiftiMaskerBenchmark" HASHFILE:main_release_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
         -   name: Create html with all results
             run: |
                 asv publish
@@ -172,7 +217,7 @@ jobs:
                     ./asv_benchmarks/results
                 compression-level: 9
         -   name: Push new results and logs back to benchmarks repo
-            if: github.event_name != 'pull_request'
+            if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -185,7 +230,7 @@ jobs:
                 git commit --message "Update benchmark results and logs (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin main
         -   name: Push html to gh-pages branch
-            if: github.event_name != 'pull_request'
+            if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -194,4 +239,35 @@ jobs:
                 cp -r ../html/* .
                 git add .
                 git commit --message "Update benchmark HTML (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+                git push origin gh-pages
+
+        -   name: Overwrite results and logs on benchmarks repo (push only)
+            # Unlike the schedule/manual runs above, a push run only ever
+            # contains the main-vs-latest-release comparison, and it
+            # replaces (rather than extends) what was previously published.
+            if: github.event_name == 'push'
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+            run: |
+                cd benchmarks_repo
+                rm -rf results
+                cp -r ../results .
+                mkdir -p logs
+                cp -r ../log_${{ github.event.repository.updated_at }}_${{ github.run_number }} ./logs/log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                git config --global user.name "GitHub Actions"
+                git config --global user.email "actions@github.com"
+                git add -A
+                git commit --message "Overwrite benchmark results with main vs latest release comparison (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+                git push origin main
+        -   name: Overwrite html on gh-pages branch (push only)
+            if: github.event_name == 'push'
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+            run: |
+                cd benchmarks_repo
+                git checkout gh-pages
+                rm -rf ./*
+                cp -r ../html/* .
+                git add -A
+                git commit --message "Overwrite benchmark HTML with main vs latest release comparison (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin gh-pages
