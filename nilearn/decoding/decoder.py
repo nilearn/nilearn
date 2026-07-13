@@ -49,7 +49,11 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
-from nilearn.decoding._utils import check_feature_screening, validate_estimator
+from nilearn.decoding._utils import (
+    SUPPORTED_ESTIMATORS,
+    check_feature_screening,
+    validate_estimator,
+)
 from nilearn.image import check_niimg
 from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
@@ -136,6 +140,11 @@ def _default_param_grid(estimator, X, y):
     dict has size 1 for linear models.
     """
     param_grid = {}
+    supported_estimators = tuple(
+        config["estimator"]
+        for estimator_config in SUPPORTED_ESTIMATORS.values()
+        for config in estimator_config.values()
+    )
 
     if isinstance(estimator, (DummyClassifier, DummyRegressor)):
         if estimator.strategy == "constant":
@@ -144,17 +153,7 @@ def _default_param_grid(estimator, X, y):
                 ' "most_frequent", "prior", "stratified"'
             )
             raise NotImplementedError(message)
-    elif not isinstance(
-        estimator,
-        (
-            LogisticRegressionCV,
-            LinearSVC,
-            RidgeCV,
-            RidgeClassifierCV,
-            SVR,
-            LassoCV,
-        ),
-    ):
+    elif not isinstance(estimator, supported_estimators):
         # Custom estimator objects are accepted by ``validate_estimator``.
         # Nilearn does not know which of their parameters can be safely tuned.
         warnings.warn(
