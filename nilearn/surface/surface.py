@@ -4,7 +4,7 @@ import abc
 import gzip
 import pathlib
 import warnings
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from pathlib import Path
 
 import numpy as np
@@ -46,10 +46,22 @@ class SurfaceMesh(abc.ABC):
     # TODO those are properties are for compatibility with plot_surf_img.
     # But they should probably become functions as they can take some time to
     # return or even fail
-    coordinates: np.ndarray
-    faces: np.ndarray
+    #
+    # Declared as read-only here: FileMesh only supports reading its
+    # coordinates and faces from disk, so subclasses must not be required
+    # to support assignment. InMemoryMesh adds a setter on top of this,
+    # which is a compatible widening of the contract.
+    @property
+    @abc.abstractmethod
+    def coordinates(self) -> np.ndarray:
+        """Get x, y, z, values for each mesh vertex."""
 
-    def __repr__(self):
+    @property
+    @abc.abstractmethod
+    def faces(self) -> np.ndarray:
+        """Get array of adjacent vertices."""
+
+    def __repr__(self) -> str:
         return (
             f"<{self.__class__.__name__} with "
             f"{self.n_vertices} vertices and "
@@ -86,11 +98,7 @@ class InMemoryMesh(SurfaceMesh):
 
     n_vertices: int
 
-    coordinates: np.ndarray
-
-    faces: np.ndarray
-
-    def __init__(self, coordinates, faces):
+    def __init__(self, coordinates, faces) -> None:
         if not isinstance(coordinates, np.ndarray) or not isinstance(
             faces, np.ndarray
         ):
@@ -98,12 +106,30 @@ class InMemoryMesh(SurfaceMesh):
                 "Mesh coordinates and faces must be numpy arrays.\n"
                 f"Got {type(coordinates)=} and {type(faces)=}."
             )
-        self.coordinates = coordinates
-        self.faces = faces
+        self._coordinates = coordinates
+        self._faces = faces
         self.n_vertices = coordinates.shape[0]
         _validate_mesh(self)
 
-    def __getitem__(self, index):
+    @property
+    def coordinates(self) -> np.ndarray:
+        """Get x, y, z, values for each mesh vertex."""
+        return self._coordinates
+
+    @coordinates.setter
+    def coordinates(self, value: np.ndarray) -> None:
+        self._coordinates = value
+
+    @property
+    def faces(self) -> np.ndarray:
+        """Get array of adjacent vertices."""
+        return self._faces
+
+    @faces.setter
+    def faces(self, value: np.ndarray) -> None:
+        self._faces = value
+
+    def __getitem__(self, index) -> np.ndarray:
         if index == 0:
             return self.coordinates
         elif index == 1:
@@ -134,7 +160,7 @@ class InMemoryMesh(SurfaceMesh):
         area = 0.5 * np.sqrt(np.sum(cross_prod**2, axis=1))
         return np.sum(area)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[np.ndarray]:
         return iter([self.coordinates, self.faces])
 
 
@@ -153,12 +179,12 @@ class FileMesh(SurfaceMesh):
 
     file_path: pathlib.Path
 
-    def __init__(self, file_path):
+    def __init__(self, file_path) -> None:
         self.file_path = pathlib.Path(file_path)
         self.n_vertices = load_surf_mesh(self.file_path).coordinates.shape[0]
 
     @property
-    def coordinates(self):
+    def coordinates(self) -> np.ndarray:
         """Get x, y, z, values for each mesh vertex.
 
         Returns
@@ -170,7 +196,7 @@ class FileMesh(SurfaceMesh):
         return mesh.coordinates
 
     @property
-    def faces(self):
+    def faces(self) -> np.ndarray:
         """Get array of adjacent vertices.
 
         Returns
@@ -181,7 +207,7 @@ class FileMesh(SurfaceMesh):
         _validate_mesh(mesh)
         return mesh.faces
 
-    def loaded(self):
+    def loaded(self) -> InMemoryMesh:
         """Load surface mesh into memory.
 
         Returns
@@ -237,7 +263,7 @@ class PolyMesh:
 
         self.n_vertices = sum(p.n_vertices for p in self.parts.values())
 
-    def to_filename(self, filename):
+    def to_filename(self, filename) -> None:
         """Save mesh to gifti.
 
         Parameters
@@ -319,7 +345,7 @@ class PolyData:
     ValueError: Cannot create an empty PolyData. ...
     """
 
-    def __init__(self, left=None, right=None, dtype=None):
+    def __init__(self, left=None, right=None, dtype=None) -> None:
         if left is None and right is None:
             raise ValueError(
                 "Cannot create an empty PolyData. "
@@ -375,7 +401,7 @@ class PolyData:
             )
 
     @property
-    def shape(self):
+    def shape(self) -> tuple[int, ...]:
         """Shape of the data."""
         self._check_parts()
         if len(self.parts) == 1:
@@ -400,7 +426,7 @@ class PolyData:
         else:
             return shape[1]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.shape}>"
 
     def _get_min_max(self):
@@ -535,7 +561,7 @@ class SurfaceImage:
         shape of the surface data array
     """
 
-    def __init__(self, mesh, data, dtype=None):
+    def __init__(self, mesh, data, dtype=None) -> None:
         """Create a SurfaceImage instance."""
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
 
@@ -554,7 +580,7 @@ class SurfaceImage:
         _check_data_and_mesh_compat(self.mesh, self.data)
 
     @property
-    def shape(self):
+    def shape(self) -> tuple[int, ...]:
         """Shape of the data."""
         return self.data.shape
 
@@ -564,7 +590,7 @@ class SurfaceImage:
     @classmethod
     def from_volume(
         cls, mesh, volume_img, inner_mesh=None, **vol_to_surf_kwargs
-    ):
+    ) -> "SurfaceImage":
         """Create surface image from volume image.
 
         Parameters
@@ -2093,19 +2119,19 @@ def get_data(img, ensure_finite: bool = False) -> np.ndarray:
         Concatenated data across hemispheres.
     """
     if isinstance(img, SurfaceImage):
-        data = img.data
+        poly_data = img.data
     elif isinstance(img, PolyData):
-        data = img
+        poly_data = img
     else:
         raise TypeError(
             f"Expected PolyData or SurfaceImage. Got {img.__class__.__name__}."
         )
 
-    data = np.concatenate(list(data.parts.values()), axis=0)
+    concatenated_data = np.concatenate(list(poly_data.parts.values()), axis=0)
 
     if ensure_finite:
-        return ensure_finite_data(data)
-    return data
+        return ensure_finite_data(concatenated_data)
+    return concatenated_data
 
 
 def compute_adjacency_matrix(mesh: InMemoryMesh, values="ones", dtype=None):

@@ -57,6 +57,7 @@ from nilearn.nilearn_typing import (
 )
 from nilearn.surface.surface import (
     FileMesh,
+    PolyData,
     SurfaceImage,
     at_least_2d,
     compute_adjacency_matrix,
@@ -851,6 +852,7 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
 
 def _compute_surface_mean(imgs: SurfaceImage) -> SurfaceImage:
     """Compute mean of a single surface image over its 2nd dimension."""
+    data: PolyData | dict[str, np.ndarray]
     if len(imgs.shape) < 2 or imgs.shape[1] < 2:
         data = imgs.data
     else:

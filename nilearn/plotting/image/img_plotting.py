@@ -1930,6 +1930,7 @@ def plot_carpet(
         If ``mask_img`` corresponds to an atlas, then this dictionary maps
         values from the ``mask_img`` to labels. Dictionary keys are labels
         and values are values within the atlas.
+
     %(t_r)s
 
         .. note::
