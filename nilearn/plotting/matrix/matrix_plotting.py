@@ -636,7 +636,7 @@ def plot_design_matrix_correlation(
         >>>
         >>> #creating a design matrix
         >>>
-        >>> frame_times = np.arange(9)
+        >>> frame_times = np.arange(25)
         >>> onsets = np.arange(9)
         >>> duration = np.linspace(1, 9, 9)
         >>> trial_type = ["ET_0", "ET_0", "ET_0",
