@@ -1160,22 +1160,18 @@ Performance monitoring
 ----------------------
 
 Nilearn includes performance monitoring in the
-library using `asv <https://asv.readthedocs.io/en/latest/index.html>`_
-benchmarks. The goal is two-fold:
+library using `asv <https://asv.readthedocs.io/en/latest/index.html>`_ benchmarks.
+The goal is two-fold:
 
-- To track the performance over time and flag regressions due to changes in the
-  codebase.
+- To track the performance over time and flag regressions due to changes in the codebase.
 - To compare the performance of different implementations of an algorithm
-  (for example, loading an image using :func:`nilearn.image.load_img` vs.
-  :func:`nibabel.loadsave.load`).
+  (for example, loading an image using :func:`nilearn.image.load_img` vs. :func:`nibabel.loadsave.load`).
 
-A collection of these benchmarks are located in the ``nilearn/asv_benchmarks``
-directory. Currently, we run them on GitHub CI regularly on the latest commit
-of the main branch. The results are available on
-`nilearn.github.io/benchmarks/ <https://nilearn.github.io/benchmarks/>`_.
+A collection of these benchmarks are located in the ``nilearn/asv_benchmarks`` directory.
+Currently, we run them on GitHub CI regularly on the latest commit of the main branch.
+The results are available on `nilearn.github.io/benchmarks/ <https://nilearn.github.io/benchmarks/>`_.
 
-To run these benchmarks locally, you will need to install
-the asv package:
+To run these benchmarks locally, you will need to install the asv package:
 
 .. code-block:: bash
 
@@ -1205,9 +1201,9 @@ You can also track the performance of a specific benchmark over, say,
 
       asv run 0.10.0..main -b load_img --steps 5
 
-There is also a ```hashestobenchmark.txt`` file with the shasum of the git tag of several
-of the last versions of nilearn that will allow you to run
-the benchmarks only for those versions by doing:
+There is also a ```hashestobenchmark.txt`` file
+with the shasum of the git tag of several of the last versions of nilearn
+that will allow you to run the benchmarks only for those versions by doing:
 
 .. code-block:: bash
 
@@ -1259,14 +1255,13 @@ For naming benchmarks, try to follow the following rules:
 - if the benchmark exercises a function or class that was added recently,
   import it locally inside ``setup()`` rather than at the top of the module.
   All benchmarks in a given file share that file's module-level imports,
-  so a single top-level import of a function that does not exist yet
-  in an older nilearn version (e.g. when benchmarking past releases with
-  ``HASHFILE:hashestobenchmark.txt``) will fail to import the whole module,
+  so a single top-level import of a function that does not exist yet in an older nilearn version
+  (for example when benchmarking past releases with ``HASHFILE:hashestobenchmark.txt``)
+  will fail to import the whole module,
   and every other benchmark in that file will be reported as failed too,
   even though they do not rely on the missing function.
-  A local import inside ``setup()`` confines the failure to that one
-  benchmark. See ``BenchMarkAllEstimators`` in
-  ``asv_benchmarks/benchmarks/discovery.py`` for a concrete example.
+  A local import inside ``setup()`` confines the failure to that one benchmark.
+  See ``BenchMarkAllEstimators`` in ``asv_benchmarks/benchmarks/discovery.py`` for a concrete example.
 
 Maintenance
 ===========
