@@ -41,7 +41,22 @@
 #   ``-ev`` makes sure any errors are printed in detail and all the output can
 #   be seen in the logs.
 # - Then we create the HTML with all the results via ``asv publish``.
-# - We upload the results as artifacts so that we can download them later.
+# - We upload the ``env``, ``html`` and ``results`` directories as a single
+#   artifact so that we can download them later, e.g. to inspect the
+#   results of a PR run without waiting for them to be deployed.
+#   To view them after downloading and unzipping the artifact, the ``html``
+#   directory it contains cannot simply be opened in a browser (it needs
+#   its data served over HTTP, not opened as local ``file://`` pages).
+#   Instead, either:
+#
+#   - run ``python -m http.server`` from inside the unzipped ``html``
+#     directory, then open the printed URL (e.g. http://localhost:8000)
+#     in a browser; or
+#   - if `asv <https://asv.readthedocs.io/en/latest/index.html>`_ is
+#     installed, run ``asv preview`` from the unzipped directory that
+#     contains both ``html`` and ``results`` (this also works from a local
+#     ``asv_benchmarks`` checkout after running ``asv publish``, as
+#     described in ``CONTRIBUTING.rst``).
 # - Then we push the new results back to the
 #   `benchmarks <https://github.com/nilearn/benchmarks>`_  repo. This will
 #   automatically deploy the new results to
@@ -215,6 +230,16 @@ jobs:
         -   name: Create html with all results
             run: |
                 asv publish
+          # After downloading and unzipping this artifact, the "html"
+          # directory it contains cannot simply be opened in a browser (it
+          # needs its data served over HTTP, not opened as local "file://"
+          # pages). Instead, either:
+          # - run "python -m http.server" from inside the unzipped "html"
+          #   directory, then open the printed URL (e.g.
+          #   http://localhost:8000) in a browser; or
+          # - if asv (https://asv.readthedocs.io/en/latest/index.html) is
+          #   installed, run "asv preview" from the unzipped directory that
+          #   contains both "html" and "results".
         -   uses: actions/upload-artifact@v7
             with:
                 name: Upload asv benchmark results as artifacts
