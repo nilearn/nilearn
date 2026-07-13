@@ -258,15 +258,7 @@ jobs:
             run: date +%m > month_num;
 
         -   name: Restore monthly data cache
-                  # A single cache shared by every workflow run in a given month.
-                  # It is only (re)saved once per month (see the save step below),
-                  # so PR/push runs never write their own copy of this ~4GB+
-                  # dataset cache. Doing so on every run used to evict this
-                  # shared entry as soon as the repository-wide 10GB Actions
-                  # cache quota was hit, which is why datasets like
-                  # ``development_fmri`` or ``difumo_atlases`` would
-                  # intermittently be missing and have to be re-downloaded live
-                  # from OSF (a frequent source of flaky 403/503 errors).
+                  # Shared by every run this month; only saved once (see below).
             if: steps.cache-key.outputs.restore == 'true'
             id: restore-monthly-cache
             uses: actions/cache/restore@v6
