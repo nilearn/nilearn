@@ -33,9 +33,8 @@ gm_imgs = np.array(dataset_files.gray_matter_maps)
 from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
-rng = check_random_state(42)
 gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
-    gm_imgs, age, train_size=0.6, random_state=rng
+    gm_imgs, age, train_size=0.6, random_state=check_random_state(42)
 )
 
 # Sort test data for better visualization (trend, etc.)

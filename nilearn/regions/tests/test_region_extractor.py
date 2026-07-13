@@ -51,21 +51,21 @@ N_REGIONS = 3
 
 
 @pytest.fixture
-def maps(negative_regions, n_regions, shape_3d_large) -> Nifti1Image:
+def maps(negative_regions, n_regions, shape_3d_large, rng) -> Nifti1Image:
     return generate_maps(
         shape=shape_3d_large,
         n_regions=n_regions,
-        random_state=42,
+        rand_gen=rng,
         negative_regions=negative_regions,
     )[0]
 
 
 @pytest.fixture
 def maps_and_mask(
-    n_regions, shape_3d_large
+    n_regions, shape_3d_large, rng
 ) -> tuple[Nifti1Image, Nifti1Image]:
     return generate_maps(
-        shape=shape_3d_large, n_regions=n_regions, random_state=42
+        shape=shape_3d_large, n_regions=n_regions, rand_gen=rng
     )
 
 
@@ -116,7 +116,7 @@ else:
                 maps_img=generate_maps(
                     shape=_shape_3d_large(),
                     n_regions=2,
-                    random_state=42,
+                    rand_gen=42,
                     affine=_affine_eye(),
                 )[0]
             )
@@ -404,11 +404,14 @@ def test_high_resolution_image(affine_eye, n_regions, shape_3d_large):
 
 
 @pytest.mark.thread_unsafe
-def test_zeros_affine_diagonal(affine_eye, n_regions):
+def test_zeros_affine_diagonal(affine_eye, n_regions, rng):
     affine = affine_eye
     affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines
     maps, _ = generate_maps(
-        shape=[40, 40, 40], n_regions=n_regions, affine=affine, random_state=42
+        shape=[40, 40, 40],
+        n_regions=n_regions,
+        affine=affine,
+        random_state=rng,
     )
 
     extract_ratio = RegionExtractor(

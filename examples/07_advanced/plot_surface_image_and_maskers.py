@@ -192,7 +192,7 @@ show()
 from nilearn.decoding import Decoder
 
 # create some random labels
-rng = np.random.RandomState(0)
+rng = np.random.default_rng(0)
 n_time_points = surf_img_nki.shape[1]
 y = rng.choice(
     [0, 1],

@@ -642,9 +642,8 @@ def test_glm_ar_estimates_errors(rng):
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("random_state", [3, np.random.RandomState(42)])
-def test_glm_random_state(random_state):
+def test_glm_random_state(rng, random_state):
     """Test that the random state is passed to the run_glm."""
-    rng = np.random.RandomState(42)
     n, p, q = 33, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 

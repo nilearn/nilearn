@@ -53,7 +53,7 @@ from nilearn.plotting import show
 # A function to generate data
 # ---------------------------
 def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
-    generator = check_random_state(random_state)
+    generator = np.random.default_rng(check_random_state(random_state))
     roi_size = 2  # size / 3
     smooth_X = 1
     # Coefs

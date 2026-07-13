@@ -12,6 +12,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpydoc.docscrape import NumpyDocString
 from scipy.signal import get_window
+from sklearn.utils import check_random_state
 
 from nilearn._utils.helpers import is_gil_enabled, is_matplotlib_installed
 from nilearn.masking import unmask
@@ -92,7 +93,7 @@ def close_all() -> Generator[None, None, None]:
 
 
 def _rng(seed=42):
-    return np.random.default_rng(seed)
+    return np.random.default_rng(check_random_state(seed))
 
 
 @pytest.fixture()
