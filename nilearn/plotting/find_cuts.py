@@ -2,6 +2,7 @@
 
 import numbers
 import warnings
+from collections.abc import Sequence
 from typing import Literal
 
 import numpy as np
@@ -38,7 +39,7 @@ def find_xyz_cut_coords(
     img,
     mask_img: NiimgLike | None = None,
     activation_threshold: float | None = None,
-) -> list[float]:
+) -> Sequence[float]:
     """Find the center of the largest activation connected component.
 
     Parameters
