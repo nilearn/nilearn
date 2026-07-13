@@ -48,6 +48,8 @@ Enhancements
 Changes
 -------
 
+- :bdg-dark:`Code` Add type annotations to the public functions in ``nilearn._utils.data_gen`` (:gh:`6420` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Add return type annotations to the public methods of :class:`~surface.FileMesh`, :class:`~surface.InMemoryMesh`, :class:`~surface.PolyData`, :class:`~surface.PolyMesh`, :class:`~surface.SurfaceImage`, and :class:`~surface.SurfaceMesh` (:gh:`6410` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` Replace the ``nilearn/connectome`` ``D103`` glob ignore in ``pyproject.toml`` with per-file entries, add missing docstrings to test functions and fixtures in files that had 10 or fewer ``D103`` errors, and drop their now-unnecessary per-file ignores (:gh:`6406` by `Rémi Gau`_).

@@ -297,7 +297,7 @@ def test_compute_background_mask_errors_warnings(affine_eye):
 
 def test_compute_brain_mask():
     """Test compute_brain_mask."""
-    img, _ = data_gen.generate_mni_space_img(res=8, random_state=0)
+    img, _ = data_gen.generate_mni_space_img(res=8, rand_gen=0)
 
     brain_mask = compute_brain_mask(img, threshold=0.2, verbose=1)
     gm_mask = compute_brain_mask(img, threshold=0.2, mask_type="gm")
@@ -325,7 +325,7 @@ def test_compute_brain_mask():
         compute_brain_mask(img, threshold=1)
 
     # Check that masks obtained from same FOV are the same
-    img1, _ = data_gen.generate_mni_space_img(res=8, random_state=1)
+    img1, _ = data_gen.generate_mni_space_img(res=8, rand_gen=1)
     mask_img1 = compute_brain_mask(img1, verbose=1, threshold=0.2)
 
     assert (brain_data == get_data(mask_img1)).all()
@@ -868,12 +868,12 @@ def test_compute_multi_brain_mask_error():
 def test_compute_multi_brain_mask():
     """Check results are the same if affine is the same."""
     imgs1 = [
-        data_gen.generate_mni_space_img(res=9, random_state=0)[0],
-        data_gen.generate_mni_space_img(res=9, random_state=1)[0],
+        data_gen.generate_mni_space_img(res=9, rand_gen=0)[0],
+        data_gen.generate_mni_space_img(res=9, rand_gen=1)[0],
     ]
     imgs2 = [
-        data_gen.generate_mni_space_img(res=9, random_state=2)[0],
-        data_gen.generate_mni_space_img(res=9, random_state=3)[0],
+        data_gen.generate_mni_space_img(res=9, rand_gen=2)[0],
+        data_gen.generate_mni_space_img(res=9, rand_gen=3)[0],
     ]
     mask1 = compute_multi_brain_mask(imgs1, threshold=0.2, verbose=1)
     mask2 = compute_multi_brain_mask(imgs2, threshold=0.2)

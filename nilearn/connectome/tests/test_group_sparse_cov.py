@@ -72,7 +72,7 @@ def test_group_sparse_covariance(rng):
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=rng,
+        rand_gen=rng,
     )
 
     alpha = 0.1
@@ -98,7 +98,7 @@ def test_group_sparse_covariance_with_probe_function(rng, duality_gap):
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=rng,
+        rand_gen=rng,
     )
 
     alpha = 0.1
@@ -160,7 +160,7 @@ def test_group_sparse_covariance_check_consistency_between_classes(rng):
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=rng,
+        rand_gen=rng,
     )
 
     # Check consistency between classes
@@ -183,7 +183,7 @@ def test_group_sparse_covariance_errors(rng):
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=rng,
+        rand_gen=rng,
     )
 
     alpha = 0.1
@@ -215,7 +215,7 @@ def test_group_sparse_covariance_cross_validation(
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=rng,
+        rand_gen=rng,
     )
 
     gsc = GroupSparseCovarianceCV(

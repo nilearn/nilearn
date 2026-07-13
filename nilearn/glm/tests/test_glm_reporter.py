@@ -145,7 +145,7 @@ def contrasts(rk) -> np.ndarray:
 @pytest.fixture()
 def flm(rk) -> FirstLevelModel:
     """Generate a fitted first level model."""
-    shapes = ((7, 7, 7, 5),)
+    shapes = [(7, 7, 7, 5)]
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
     )
@@ -158,7 +158,7 @@ def flm(rk) -> FirstLevelModel:
 @pytest.fixture()
 def slm() -> SecondLevelModel:
     """Generate a fitted second level model."""
-    shapes = ((7, 7, 7, 1),)
+    shapes = [(7, 7, 7, 1)]
     _, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
     model = SecondLevelModel()
     Y = [fmri_data[0]] * 2
