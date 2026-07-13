@@ -74,7 +74,6 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-@pytest.mark.slow
 def test_nifti_labels_masker(
     affine_eye, shape_3d_default, n_regions, length, img_labels
 ):
@@ -431,7 +430,6 @@ def test_nifti_labels_masker_resampling_to_data(affine_eye, n_regions, length):
     assert_array_equal(masker.labels_img_.affine, affine2)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("resampling_target", ["data", "labels"])
 def test_nifti_labels_masker_resampling(
     affine_eye,
@@ -483,7 +481,6 @@ def test_nifti_labels_masker_resampling(
     assert_array_equal(get_data(compressed_img), get_data(compressed_img2))
 
 
-@pytest.mark.slow
 def test_nifti_labels_masker_resampling_to_labels(
     affine_eye, shape_3d_default, n_regions, length
 ):
@@ -526,7 +523,6 @@ def test_nifti_labels_masker_resampling_to_labels(
     assert fmri11_img_r.shape == ((*masker.labels_img_.shape[:3], length))
 
 
-@pytest.mark.slow
 def test_nifti_labels_masker_resampling_to_clipped_labels(
     affine_eye, shape_3d_default, n_regions, length
 ):
@@ -584,7 +580,6 @@ def test_nifti_labels_masker_resampling_to_clipped_labels(
     assert fmri11_img_r.shape == ((*masker.labels_img_.shape[:3], length))
 
 
-@pytest.mark.slow
 def test_nifti_labels_masker_resampling_to_none(
     affine_eye, length, shape_3d_default, img_labels
 ):
@@ -615,7 +610,6 @@ def test_nifti_labels_masker_resampling_to_none(
         masker.fit_transform(fmri_img)
 
 
-@pytest.mark.slow
 def test_nifti_labels_masker_with_mask(
     shape_3d_default, affine_eye, length, img_labels
 ):
@@ -909,7 +903,6 @@ def test_regions_id_names_lut(affine_eye, shape_3d_default):
     check_lut(masker, expected_lut)
 
 
-@pytest.mark.slow
 def test_regions_id_names_lut_too_few(affine_eye, shape_3d_default):
     """Check passing LUT with too few entries."""
     atlas = np.zeros((8, 8, 8))
@@ -1028,7 +1021,6 @@ def test_check_labels_errors(shape_3d_default, affine_eye):
         masker.fit()
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "background",
     [
@@ -1092,7 +1084,6 @@ def test_region_names(
     )
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "background",
     [None, "background", "Background"],
@@ -1250,7 +1241,6 @@ def test_more_labels_than_actual_region_in_atlas(
     assert len(masker.lut_) == n_regions + 1
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("background", [None, "Background"])
 def test_pass_lut(
     shape_3d_default, affine_eye, n_regions, img_labels, tmp_path, background
@@ -1301,7 +1291,6 @@ def test_pass_lut_error(n_regions, img_labels):
         NiftiLabelsMasker(img_labels, lut=lut, labels=region_names).fit()
 
 
-@pytest.mark.slow
 def test_no_background(n_regions, img_labels, shape_3d_default, affine_eye):
     """Test label image with no background."""
     region_names = generate_labels(n_regions + 1, background=None)
