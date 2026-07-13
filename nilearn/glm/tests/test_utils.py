@@ -122,7 +122,6 @@ def test_z_score_f_values(rng):
         assert_array_almost_equal(z_score(p, one_minus_pvalue=cdf), z)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("add_regs_i", [0, 20])
 def test_z_score_opposite_contrast(rng, add_regs_i):
     """Test that z-scores of opposite contrasts are numerically opposite."""

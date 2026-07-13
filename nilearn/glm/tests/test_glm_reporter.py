@@ -166,7 +166,6 @@ def slm() -> SecondLevelModel:
     return model.fit(Y, design_matrix=X)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
     """Check presence message of no activation found.
@@ -184,7 +183,6 @@ def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_flm_report_invalid_param(flm, contrasts):
     """Check if a warning is raised when first_level_contrast is specified to
     generate_report.
@@ -225,7 +223,6 @@ def test_flm_reporting_no_contrasts(flm, tmp_path):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_flm_reporting_several_contrasts(flm, tmp_path, rk):
     """Test for model report can be generated with no contrasts."""
     c0 = np.zeros((1, rk))
@@ -244,7 +241,6 @@ def test_flm_reporting_several_contrasts(flm, tmp_path, rk):
     )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("height_control", ["fdr", "bonferroni", None])
 def test_generate_report_height_control(
@@ -293,7 +289,6 @@ def test_generate_report_error_cluster_threshold(flm):
         flm.generate_report(cluster_threshold=-10)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("display_mode", [None, "glass", "ortho"])
 def test_generate_report_error_plot_type(flm, contrasts, display_mode):
     """Check errors when wrong plot type is requested."""
@@ -305,7 +300,6 @@ def test_generate_report_error_plot_type(flm, contrasts, display_mode):
         )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_generate_report_warning_glass_cut_coords(flm, contrasts):
     """Check cut_coords not used with glass brain."""
@@ -318,7 +312,6 @@ def test_generate_report_warning_glass_cut_coords(flm, contrasts):
         )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 # TODO (nilearn >= 0.15) add None to height_control parametrization
@@ -336,7 +329,6 @@ def test_slm_reporting_method(slm, height_control):
     )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_slm_with_flm_as_inputs(flm, contrasts):
@@ -360,7 +352,6 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
     )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
@@ -389,7 +380,6 @@ def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
     )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 def test_report_plot_type(flm, plot_type, contrasts):
@@ -403,7 +393,6 @@ def test_report_plot_type(flm, plot_type, contrasts):
     )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
@@ -420,7 +409,6 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
     )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_report_invalid_plot_type(flm, contrasts):
     """Check errors when wrong plot type is requested."""
@@ -431,7 +419,6 @@ def test_report_invalid_plot_type(flm, contrasts):
         )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_masking_first_level_model(contrasts):
     """Check that using NiftiMasker when instantiating FirstLevelModel \
@@ -458,7 +445,6 @@ def test_masking_first_level_model(contrasts):
     )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_fir_delays_in_params(contrasts):
     """Check that fir_delays is in the report when hrf_model is fir.
@@ -489,7 +475,6 @@ def test_fir_delays_in_params(contrasts):
     )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_drift_order_in_params(contrasts):
     """Check that drift_order is in the report when parameter is drift_model is
@@ -514,8 +499,8 @@ def test_drift_order_in_params(contrasts):
     )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
+@pytest.mark.single_process
 def test_flm_generate_report_surface_data(rng):
     """Generate report from flm fitted surface.
 
@@ -562,7 +547,6 @@ def test_flm_generate_report_surface_data_error(
         model.generate_report("c0", bg_img=img_3d_mni)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_carousel_several_runs(
     matplotlib_pyplot,  # noqa: ARG001
@@ -598,7 +582,6 @@ def test_carousel_several_runs(
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_report_make_glm_deprecation_warning(flm, contrasts):
     """Test deprecation warning for nilearn.reporting.make_glm_report.
 

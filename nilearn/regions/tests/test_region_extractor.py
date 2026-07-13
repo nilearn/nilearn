@@ -357,7 +357,6 @@ def test_two_sided(maps):
     )
 
 
-@pytest.mark.slow
 def test_strategy_percentile(maps_and_mask):
     maps, mask_img = maps_and_mask
 
