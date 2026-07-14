@@ -70,6 +70,7 @@ def _check_affine(affine) -> None:
     )
 
 
+@pytest.mark.ai_generated
 def test_data_to_sprite():
     """Check that _data_to_sprite tiles slices as expected."""
     # Simulate data and turn into sprite
@@ -95,6 +96,7 @@ def test_data_to_sprite():
     assert (sprite == gtruth).all(), "simulated sprite not as expected"
 
 
+@pytest.mark.ai_generated
 def test_threshold_data():
     """Check _threshold_data with auto, None, positive and zero thresholds."""
     data = np.arange(-3, 4)
@@ -173,6 +175,7 @@ def test_save_cmap(cmap, n_colors):
     assert np.allclose(img, expected, atol=0.1)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_mask_stat_map():
     """Check _mask_stat_map with no threshold and a zero threshold."""
@@ -188,6 +191,7 @@ def test_mask_stat_map():
     assert np.min((data == 0) == get_data(mask_img))
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_load_bg_img(affine_eye):
     """Check load_bg_img returns a positive isotropic near-diagonal affine."""
@@ -209,6 +213,7 @@ def test_load_bg_img(affine_eye):
     _check_affine(bg_img.affine)
 
 
+@pytest.mark.ai_generated
 def test_get_bg_mask_and_cmap():
     """Non-regression test for issue #3120.
 
@@ -219,6 +224,7 @@ def test_get_bg_mask_and_cmap():
     assert (mask == np.zeros(img.shape, dtype=bool)).all()
 
 
+@pytest.mark.ai_generated
 def test_resample_stat_map(affine_eye):
     """Check _resample_stat_map resamples stat and mask to bg resolution."""
     # Start with simple simulated data
@@ -251,6 +257,7 @@ def test_resample_stat_map(affine_eye):
     )
 
 
+@pytest.mark.ai_generated
 def test_json_view_params(affine_eye):
     """Check that _json_view_params generates the expected structure."""
     # Try to generate some sprite parameters
@@ -274,6 +281,7 @@ def test_json_view_params(affine_eye):
     assert params["overlay"]["opacity"] == 0.5
 
 
+@pytest.mark.ai_generated
 def test_json_view_size():
     """Check that _json_view_size computes the expected viewer dimensions."""
     # Build some minimal sprite Parameters
@@ -320,6 +328,7 @@ def _get_data_and_json_view(black_bg, cbar, radiological):
     return data, json_view
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("cbar", [True, False])
 @pytest.mark.parametrize("radiological", [True, False])
@@ -332,6 +341,7 @@ def test_json_view_data(black_bg, cbar, radiological):
     assert isinstance(json_view["cm_base64"], str)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("cbar", [True, False])
 @pytest.mark.parametrize("radiological", [True, False])
@@ -358,6 +368,7 @@ def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
     check_html_view_img(html_view)
 
 
+@pytest.mark.ai_generated
 def test_get_cut_slices(affine_eye):
     """Check _get_cut_slices with automatic, manual and rescaled affines."""
     # Generate simple simulated data with one "spot"
@@ -425,6 +436,7 @@ def test_view_img_non_isotropic():
     check_html_view_img(html_view)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "affine,is_isotropic",
     [
@@ -459,6 +471,7 @@ def test_is_isotropic(affine, is_isotropic):
     assert _is_isotropic(affine) == is_isotropic
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "voxel_size,expected_affine",
     [
