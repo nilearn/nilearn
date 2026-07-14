@@ -175,8 +175,8 @@ def _squared_loss_derivative_lipschitz_constant(
     of the Graph-Net regression problem (squared_loss + grad_weight*grad) \
     via power method.
     """
-    rng = np.random.RandomState(42)
-    a = rng.randn(X.shape[1])
+    rng = np.random.default_rng(42)
+    a = rng.normal(size=X.shape[1])
     a /= sqrt(np.dot(a, a))
     adjoint_mask = np.tile(mask, [mask.ndim] + [1] * mask.ndim)
 
@@ -218,8 +218,8 @@ def _logistic_derivative_lipschitz_constant(
     # data_constant = sp.linalg.norm(X, 2) ** 2
     data_constant = logistic_loss_lipschitz_constant(X)
 
-    rng = np.random.RandomState(42)
-    a = rng.randn(X.shape[1])
+    rng = np.random.default_rng(42)
+    a = rng.normal(size=X.shape[1])
     a /= sqrt(np.dot(a, a))
     grad_buffer = np.zeros(mask.shape)
     for _ in range(n_iterations):
