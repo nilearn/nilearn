@@ -52,6 +52,20 @@
 #     (this also works from a local ``asv_benchmarks`` checkout after running ``asv publish``, as described in ``CONTRIBUTING.rst``).
 # - Then we push the new results back to the `benchmarks <https://github.com/nilearn/benchmarks>`_ repo.
 #   This will automatically deploy the new results to `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
+#
+# A second, independent set of jobs benchmarks the fixed list of release
+# commits in ``asv_benchmarks/hashestobenchmark.txt`` (see ``CONTRIBUTING.rst``).
+# Running the full suite for several commits one after another in a single
+# job is slow, so this is split into a matrix job (one commit per matrix
+# entry, run in parallel on separate runners) followed by a job that
+# downloads every matrix entry's results and combines them into a single
+# viewable ``asv publish`` output.
+# For now this only uploads that combined view as a workflow artifact;
+# see `issue 5966 <https://github.com/nilearn/nilearn/issues/5966>`_ for
+# the plan to eventually publish it (overwriting the previous one) to the
+# `benchmarks <https://github.com/nilearn/benchmarks>`_ repo as well, so a
+# PR or main HEAD can easily be compared against the last few stable
+# releases.
 ###
 name: Run and deploy Nilearn benchmarks
 
@@ -306,3 +320,146 @@ jobs:
                 git add -A
                 git commit --message "Overwrite benchmark HTML with main vs latest release comparison (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin gh-pages
+
+      # TODO: this job and the two below are temporarily also triggered on
+      # pull_request, and restricted to "-b NiftiMaskerBenchmark", to
+      # validate the matrix + merge mechanism in CI. Once confirmed,
+      # remove "pull_request" from all three "if:" conditions below and
+      # drop the "-b" filter in the "Run all benchmarks for this commit"
+      # step.
+    list-history-commits:
+        if: |
+            github.repository == 'nilearn/nilearn' &&
+            (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request')
+        runs-on: ubuntu-24.04
+        outputs:
+            commits: ${{ steps.list.outputs.commits }}
+
+        steps:
+        -   uses: actions/checkout@v7
+
+        -   id: list
+              # one matrix entry per non-empty, non-comment line
+            run: |
+                python3 -c "
+                import json
+                with open('asv_benchmarks/hashestobenchmark.txt') as f:
+                    commits = [line.strip() for line in f if line.strip()]
+                print('commits=' + json.dumps(commits))
+                " >> "$GITHUB_OUTPUT"
+
+    benchmark-history:
+        needs: list-history-commits
+        if: needs.list-history-commits.outputs.commits != '[]'
+        runs-on: ubuntu-24.04
+        strategy:
+              # keep benchmarking the other commits even if one fails
+            fail-fast: false
+            matrix:
+                commit: ${{ fromJson(needs.list-history-commits.outputs.commits) }}
+        defaults:
+            run:
+                working-directory: ./asv_benchmarks
+
+        steps:
+        -   uses: actions/checkout@v7
+
+        -   uses: actions/setup-python@v6
+            with:
+                python-version: ${{ env.MIN_PYTHON }}
+
+        -   name: Install asv
+            run: |
+                pip install --upgrade pip
+                pip install asv
+                pip install nilearn
+
+        -   name: Get all the machine info
+            run: asv machine --yes
+
+        -   name: Edit asv-machine.json to a custom machine name
+            run: python ../build_tools/github/set_machine_name.py fv-az1113-357
+
+        -   name: Run all benchmarks for this commit
+              # "<commit>^!" is git's syntax for "just this one commit"
+            run: |
+                asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 -b "NiftiMaskerBenchmark" "${{ matrix.commit }}^!" 2>&1 | tee log_${{ matrix.commit }}
+
+        -   name: Fail if any benchmark reported as failed
+            run: |
+                if grep -q "asv: benchmark failed" log_${{ matrix.commit }}; then
+                    echo "::error::One or more benchmarks failed for commit ${{ matrix.commit }}, see the excerpt(s) below"
+                    grep -B 5 "asv: benchmark failed" log_${{ matrix.commit }}
+                    exit 1
+                fi
+
+        -   uses: actions/upload-artifact@v7
+            with:
+                name: history-results-${{ matrix.commit }}
+                path: ./asv_benchmarks/results
+                compression-level: 9
+
+    combine-history:
+        needs: benchmark-history
+        runs-on: ubuntu-24.04
+        defaults:
+            run:
+                working-directory: ./asv_benchmarks
+
+        steps:
+        -   uses: actions/checkout@v7
+
+        -   uses: actions/setup-python@v6
+            with:
+                python-version: ${{ env.MIN_PYTHON }}
+
+        -   name: Install asv
+            run: |
+                pip install --upgrade pip
+                pip install asv
+
+        -   name: Download every commit's results
+            uses: actions/download-artifact@v8
+            with:
+                pattern: history-results-*
+                path: ./asv_benchmarks/downloaded_results
+
+        -   name: Merge per-commit results into a single results directory
+              # "benchmarks.json" (the benchmark suite definition) is
+              # identical across matrix entries, since they all ran the
+              # same benchmark code against different nilearn commits, so
+              # any one copy of it is kept.
+              # The per-commit, per-machine result files are all distinct
+              # and are combined into one shared machine directory.
+            run: |
+                python3 -c "
+                import glob
+                import os
+                import shutil
+
+                os.makedirs('results', exist_ok=True)
+
+                for artifact_dir in glob.glob('downloaded_results/history-results-*'):
+                    suite_definition = os.path.join(artifact_dir, 'benchmarks.json')
+                    if os.path.exists(suite_definition):
+                        shutil.copy(suite_definition, 'results/benchmarks.json')
+
+                    for machine_dir in glob.glob(os.path.join(artifact_dir, '*')):
+                        if not os.path.isdir(machine_dir):
+                            continue
+                        dest = os.path.join('results', os.path.basename(machine_dir))
+                        os.makedirs(dest, exist_ok=True)
+                        for f in glob.glob(os.path.join(machine_dir, '*.json')):
+                            shutil.copy(f, dest)
+                "
+
+        -   name: Create html with the combined results
+            run: asv publish
+
+        -   uses: actions/upload-artifact@v7
+            with:
+                name: Upload combined history benchmark results as an artifact
+                path: |
+                    ./asv_benchmarks/html
+                    ./asv_benchmarks/results
+                compression-level: 9

@@ -52,6 +52,8 @@ Enhancements
 Changes
 -------
 
+- :bdg-secondary:`Maint` Add a matrix job to the benchmark CI workflow that benchmarks each commit in ``asv_benchmarks/hashestobenchmark.txt`` in parallel, then combines the results into a single viewable artifact, instead of benchmarking them one after another in a single, slow job (:gh:`6430` by `Rémi Gau`_).
+
 - :bdg-secondary:`Maint` Drop nilearn versions older than 0.11.0 from ``asv_benchmarks/hashestobenchmark.txt`` (they cannot currently be benchmarked, see ``CONTRIBUTING.rst``), make the benchmark CI workflow fail when a benchmark reports as failed instead of silently ignoring it, fix an always-failing ``IndexImgBenchmark`` slice bound that this newly surfaced, and reorganize ``asv_benchmarks/benchmarks/glm`` to mirror the structure of :mod:`nilearn.glm` (:gh:`6426` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add type annotations to the public functions in ``nilearn._utils.data_gen`` (:gh:`6420` by `Rémi Gau`_).
