@@ -7,10 +7,12 @@ https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-f
 
 from collections import OrderedDict
 
-import matplotlib as mpl
 import numpy as np
 import pandas as pd
 import pytest
+
+pytest.importorskip("matplotlib")
+import matplotlib as mpl
 
 from nilearn.datasets import (
     load_fsaverage_data,
@@ -19,6 +21,11 @@ from nilearn.datasets import (
 )
 from nilearn.glm._reporting_utils import _stat_map_to_png
 from nilearn.glm.thresholding import threshold_stats_img
+
+pytest.importorskip(
+    "matplotlib",
+    reason="Matplotlib is not installed; required to run the tests!",
+)
 
 
 @pytest.mark.slow
@@ -42,14 +49,28 @@ def test_stat_map_to_png_volume(
     """Check figures plotting for GLM report."""
     alpha = 0.001
 
-    thresholded_img, threshold = threshold_stats_img(
-        stat_img=load_sample_motor_activation_image(),
-        threshold=threshold,
-        alpha=alpha,
-        cluster_threshold=cluster_threshold,
-        height_control=height_control,
-        two_sided=two_sided,
-    )
+    if height_control is None and threshold == 3:
+        with pytest.warns(
+            FutureWarning,
+            match="nilearn version>=0.15, the default 'threshold' will be set",
+        ):
+            thresholded_img, threshold = threshold_stats_img(
+                stat_img=load_sample_motor_activation_image(),
+                threshold=threshold,
+                alpha=alpha,
+                cluster_threshold=cluster_threshold,
+                height_control=height_control,
+                two_sided=two_sided,
+            )
+    else:
+        thresholded_img, threshold = threshold_stats_img(
+            stat_img=load_sample_motor_activation_image(),
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            two_sided=two_sided,
+        )
 
     table_details = OrderedDict()
     table_details.update({"Threshold Z": np.around(threshold, 3)})
@@ -78,7 +99,6 @@ def test_stat_map_to_png_volume(
 
 @pytest.mark.thread_unsafe
 @pytest.mark.mpl_image_compare
-@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize(
     "height_control, two_sided, threshold",
     [
@@ -117,15 +137,17 @@ def test_stat_map_to_png_surface(
         orient="index",
     )
 
-    _, fig = _stat_map_to_png(
-        stat_img=thresholded_img,
-        threshold=threshold,
-        bg_img=surf_img,
-        cut_coords=None,
-        display_mode="ortho",
-        plot_type="slice",
-        table_details=table_details,
-        two_sided=two_sided,
-    )
+    mpl_rc = mpl.rc_context({"axes.autolimit_mode": "data"})
+    with mpl_rc:
+        _, fig = _stat_map_to_png(
+            stat_img=thresholded_img,
+            threshold=threshold,
+            bg_img=surf_img,
+            cut_coords=None,
+            display_mode="ortho",
+            plot_type="slice",
+            table_details=table_details,
+            two_sided=two_sided,
+        )
 
     return fig

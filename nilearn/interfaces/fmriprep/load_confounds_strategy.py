@@ -1,9 +1,14 @@
 """Predefined denoising strategies."""
 
 import warnings
+from typing import Literal, overload
+
+import numpy as np
+import pandas as pd
 
 from nilearn._utils.logger import find_stack_level
-from nilearn.interfaces.fmriprep import load_confounds
+from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 
 # defining a preset strategy with python dictionary:
 # key:
@@ -49,7 +54,32 @@ preset_strategies = {
 }
 
 
-def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
+@overload
+def load_confounds_strategy(
+    img_files: str,
+    denoise_strategy=...,
+    **kwargs,
+) -> tuple[pd.DataFrame | None, np.ndarray | None]: ...
+
+
+@overload
+def load_confounds_strategy(
+    img_files: list[str] | list[list[str]],
+    denoise_strategy=...,
+    **kwargs,
+) -> tuple[list[pd.DataFrame] | None, list[np.ndarray | None]]: ...
+
+
+def load_confounds_strategy(
+    img_files,
+    denoise_strategy: Literal[
+        "simple", "scrubbing", "compcor", "ica_aroma"
+    ] = "simple",
+    **kwargs,
+) -> tuple[
+    pd.DataFrame | list[pd.DataFrame] | None,
+    np.ndarray | list[np.ndarray | None] | None,
+]:
     """
     Use preset strategy to load confounds from :term:`fMRIPrep`.
 
@@ -73,7 +103,8 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         - `func.gii`: list of a pair of paths to files, optionally as a list
           of lists.
 
-    denoise_strategy : :obj:`str`, default="simple"
+    denoise_strategy : {"simple", "scrubbing", "compcor", "ica_aroma"}, \
+                       default="simple"
         Name of preset denoising strategies. Each strategy has a set of
         associated configurable parameters. For customiseable parameters,
         please see the table in Notes.
@@ -83,6 +114,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           :footcite:t:`Fox2005`. With the global signal regression,
           this approach can remove confounds
           without compromising the temporal degrees of freedom.
+
         - 'scrubbing': Load confounds for scrubbing described in
           :footcite:t:`Power2012`. This approach can reliably remove the
           impact of high motion volumes in functional connectome, however, it
@@ -90,6 +122,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           timeseries flagged as high motion). One should adjust the threshold
           based on the characteristics of the dataset, or remove high motion
           subjects from the dataset.
+
         - 'compcor': Load confounds using the CompCor strategy from
           :footcite:t:`Behzadi2007`. CompCor estimates noise through principal
           component analysis on regions that are unlikely to contain signal.
@@ -103,7 +136,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           documentation for more details.
 
           .. nilearn_versionadded:: 0.10.3
-            `golobal_signal` is now a tunable parameter for compcor.
+            ``global_signal`` is now a tunable parameter for compcor.
 
         - 'ica_aroma': Load confounds for non-aggresive ICA-AROMA strategy
           described in :footcite:t:`Pruim2015`. The strategy requires
@@ -209,13 +242,11 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     .. footbibliography::
 
     """
-    default_parameters = preset_strategies.get(denoise_strategy, False)
-    if not default_parameters:
-        raise KeyError(
-            f"Provided strategy '{denoise_strategy}' is not a "
-            "preset strategy. Valid strategy: "
-            f"{preset_strategies.keys()}"
-        )
+    check_parameter_in_allowed(
+        denoise_strategy, preset_strategies.keys(), "denoise_strategy"
+    )
+    default_parameters = preset_strategies.get(denoise_strategy)
+    assert isinstance(default_parameters, dict)
 
     check_parameters = list(default_parameters.keys())
     check_parameters.remove("strategy")

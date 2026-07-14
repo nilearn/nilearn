@@ -1,10 +1,12 @@
 """Functions to compare volume or surface images."""
 
 import warnings
+from typing import get_args
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import gridspec
+from matplotlib.figure import Figure
 from scipy import stats
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP
@@ -16,10 +18,10 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.plotting.displays._slicers import save_figure_if_needed
+from nilearn.nilearn_typing import ColorBar, NiimgLike, OutputFile, Title
+from nilearn.plotting._engine_utils import save_figure_if_needed
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
-from nilearn.typing import NiimgLike
 
 
 @fill_doc
@@ -34,7 +36,7 @@ def plot_img_comparison(
     output_dir=None,
     axes=None,
     colorbar=True,
-):
+) -> list[float]:
     """Create plots to compare two lists of images and measure correlation.
 
     The first plot displays linear correlation between :term:`voxel` values.
@@ -91,15 +93,15 @@ def plot_img_comparison(
 
     Returns
     -------
-    corrs : :class:`numpy.ndarray`
+    corrs : list[float]
         Pearson correlation between the images.
 
     """
     check_params(locals())
     # Cast to list
-    if isinstance(ref_imgs, (*NiimgLike, SurfaceImage)):
+    if isinstance(ref_imgs, (*get_args(NiimgLike), SurfaceImage)):
         ref_imgs = [ref_imgs]
-    if isinstance(src_imgs, (*NiimgLike, SurfaceImage)):
+    if isinstance(src_imgs, (*get_args(NiimgLike), SurfaceImage)):
         src_imgs = [src_imgs]
     if not isinstance(ref_imgs, list) or not isinstance(src_imgs, list):
         raise TypeError(
@@ -156,7 +158,7 @@ def plot_img_comparison(
                 "Images are not shape-compatible",
                 stacklevel=find_stack_level(),
             )
-            return
+            return []
 
         corr = stats.pearsonr(ref_data, src_data)[0]
         corrs.append(corr)
@@ -187,7 +189,8 @@ def plot_img_comparison(
                 cb = fig.colorbar(hb, ax=ax1)
                 cb.set_label("log10(N)")
 
-            x = np.linspace(*lims[:2], num=gridsize)
+            start, stop = lims[:2]
+            x = np.linspace(start, stop, num=gridsize)
 
             ax1.plot(x, x, linestyle="--", c="grey")
             ax1.set_title(f"Pearson's R: {corr:.2f}")
@@ -210,7 +213,7 @@ def plot_img_comparison(
             output_file = (
                 output_dir / f"{int(i):04}.png" if output_dir else None
             )
-            save_figure_if_needed(ax1, output_file)
+            save_figure_if_needed(ax1.figure, output_file)
 
     return corrs
 
@@ -223,13 +226,13 @@ def plot_bland_altman(
     ref_label="reference image",
     src_label="source image",
     figure=None,
-    title=None,
+    title: Title = None,
     cmap=DEFAULT_SEQUENTIAL_CMAP,
-    colorbar=True,
+    colorbar: ColorBar = True,
     gridsize=100,
     lims=None,
-    output_file=None,
-):
+    output_file: OutputFile = None,
+) -> Figure:
     """Create a Bland-Altman plot between 2 images.
 
     Plot the the 2D distribution of voxel-wise differences
@@ -305,6 +308,11 @@ def plot_bland_altman(
         If ``None`` is passed values are determined based on the data.
 
     %(output_file)s
+
+    Returns
+    -------
+    figure : :class:`matplotlib.figure.Figure`
+        Plot Figure object.
 
     Notes
     -----
@@ -407,7 +415,8 @@ def plot_bland_altman(
         cb = figure.colorbar(hb, cax=ax4)
         cb.set_label("log10(N)")
 
-    return save_figure_if_needed(figure, output_file)
+    save_figure_if_needed(figure, output_file)
+    return figure
 
 
 def _extract_data_2_images(ref_img, src_img, masker=None):
@@ -471,14 +480,17 @@ def _sanitize_masker(masker, image_type, ref_img):
     Raise exception
     if there is type mismatch between the masker and ref_img.
     """
+    # TODO (nilearn >= 0.15) remove ALL 'standardize=None'
+    # from below
     if masker is None:
         if image_type == "volume":
             masker = NiftiMasker(
                 target_affine=ref_img.affine,
                 target_shape=ref_img.shape,
+                standardize=None,
             )
         else:
-            masker = SurfaceMasker()
+            masker = SurfaceMasker(standardize=None)
 
     check_compatibility_mask_and_images(masker, ref_img)
 
@@ -487,14 +499,20 @@ def _sanitize_masker(masker, image_type, ref_img):
             mask_img=masker,
             target_affine=ref_img.affine,
             target_shape=ref_img.shape,
+            standardize=None,
         )
     elif isinstance(masker, SurfaceImage):
         check_polymesh_equal(ref_img.mesh, masker.mesh)
-        masker = SurfaceMasker(
-            mask_img=masker,
-        )
+        masker = SurfaceMasker(mask_img=masker, standardize=None)
 
     if not masker.__sklearn_is_fitted__():
-        masker.fit(ref_img)
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            masker.fit(ref_img)
 
     return masker

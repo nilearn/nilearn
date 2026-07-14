@@ -1,6 +1,7 @@
 """Masker for surface objects."""
 
 from copy import deepcopy
+from typing import Any, ClassVar
 from warnings import warn
 
 import numpy as np
@@ -14,6 +15,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
@@ -51,6 +53,10 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     %(t_r)s
 
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
+
     %(memory)s
 
     %(memory_level1)s
@@ -84,6 +90,18 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     """
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the input surface image overlaid "
+            "with the outlines of the mask. "
+            "We recommend to inspect the report for the overlap "
+            "between the mask and its input image. "
+        ),
+        "n_vertices": {},
+        # unused but required in HTML template
+        "number_of_regions": None,
+    }
+
     def __init__(
         self,
         mask_img=None,
@@ -95,6 +113,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         verbose=0,
@@ -111,6 +130,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
@@ -118,21 +138,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            # unused but required in HTML template
-            "number_of_regions": None,
-            "summary": {},
-            "warning_messages": [],
-            "n_elements": 0,
-            "coverage": 0,
-        }
+        self._reset_report()
 
     def __sklearn_is_fitted__(self) -> bool:
         return (
@@ -155,11 +161,11 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             if img is not None:
                 warn(
                     f"[{self.__class__.__name__}.fit] "
-                    "Generation of a mask has been"
-                    " requested (img != None) while a mask was"
-                    " given at masker creation. Given mask"
-                    " will be used.",
+                    "Generation of a mask has been requested (imgs != None) "
+                    "while a mask was given at masker creation. "
+                    "Given mask will be used.",
                     stacklevel=find_stack_level(),
+                    category=RuntimeWarning,
                 )
             return
 
@@ -213,10 +219,11 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -313,6 +320,8 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if self.reports:
             self._reporting_data["images"] = imgs
 
+        imgs = self._smooth(imgs)
+
         mask_logger("extracting", verbose=self.verbose)
 
         output = np.empty((1, self.n_elements_))
@@ -322,7 +331,17 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
-        return self._clean(output, confounds, sample_mask)
+        input_type = (
+            imgs.data._dtype
+            if isinstance(imgs, SurfaceImage)
+            else imgs[0].data._dtype
+        )
+        target_dtype = get_target_dtype(input_type, self.dtype)
+        if target_dtype is None:
+            target_dtype = imgs.data._dtype
+
+        output = self._clean(output, confounds, sample_mask)
+        return output.astype(target_dtype)
 
     @fill_doc
     def inverse_transform(self, signals):
@@ -338,7 +357,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        return_1D = signals.ndim < 2
+        return_1D = hasattr(signals, "ndim") and signals.ndim < 2
 
         # do not run sklearn_check as they may cause some failure
         # with some GLM inputs
@@ -348,18 +367,15 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
-            data[part_name] = np.zeros(
-                (mask.shape[0], signals.shape[0]),
-                dtype=signals.dtype,
-            )
+            data[part_name] = np.zeros((mask.shape[0], signals.shape[0]))
             start, stop = self._slices[part_name]
             data[part_name][mask.ravel()] = signals[:, start:stop].T
-            if return_1D:
-                data[part_name] = data[part_name].squeeze()
 
-        return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
+        imgs = SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
-    def _reporting(self) -> None | str:
+        return self._post_process_inverse_transform(signals, imgs, return_1D)
+
+    def _load_report_displays(self) -> None | str:
         """Load displays needed for report.
 
         Returns

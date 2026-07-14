@@ -21,6 +21,7 @@ from nilearn._version import __version__
 from sphinx.domains import changeset
 from sphinx.locale import _
 
+
 # ----------------------------------------------------------------------------
 
 
@@ -77,6 +78,7 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinx.ext.imgmath",
     "sphinx.ext.intersphinx",
+    "matplotlib.sphinxext.plot_directive",
     "sphinx.ext.linkcode",
     "sphinxcontrib.bibtex",
     "sphinxcontrib.mermaid",
@@ -93,6 +95,23 @@ autodoc_default_options = {
     "undoc-members": True,
     "member-order": "bysource",
 }
+
+# try:
+#     import jupyterlite_sphinx
+
+#     extensions.append("jupyterlite_sphinx")
+#     with_jupyterlite = True
+# except ImportError:
+#     # In some cases we don't want to require jupyterlite_sphinx
+#     # to be installed,
+#     # e.g. the doc-min-dependencies build
+#     warnings.warn(
+#         "jupyterlite_sphinx is not installed, you need to install it "
+#         "if you want JupyterLite links to appear in the API documentation",
+#         stacklevel=2,
+#     )
+#     with_jupyterlite = False
+
 
 # Get rid of spurious warnings due to some interaction between
 # autosummary and numpydoc. See
@@ -113,6 +132,13 @@ source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 
 # Generate the plots for the gallery
 plot_gallery = "True"
+
+# Always include the source code
+# when using the ..plot directive from matplotlib
+plot_include_source = True
+plot_formats = ["png"]
+plot_html_show_formats = False
+plot_html_show_source_link = False
 
 # The master toctree document.
 master_doc = "index"
@@ -237,6 +263,7 @@ linkcheck_ignore = [
     r"https://rrid.site/data/record.*",
     r"https://sites.wustl.edu/oasisbrains.*",
     r"https://www.cambridge.org/be/universitypress.*",
+    r"https://www.talairach.org.*",
     r"../../_static/notebook_reports_.*",
     "http://brainomics.cea.fr/localizer/",
     "https://childmind.org/science/global-open-science/healthy-brain-network/",
@@ -248,6 +275,7 @@ linkcheck_ignore = [
     "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
     "https://surfer.nmr.mgh.harvard.edu/",
     "https://www.gin.cnrs.fr/en/tools/aal",
+    "https://www.youtube.com/@nilearnevents5116",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
@@ -411,8 +439,11 @@ html_context = {"build_dev_html": build_dev_html}
 # Output file base name for HTML help builder.
 htmlhelp_basename = "PythonScientic"
 
-# Sphinx copybutton config
-copybutton_prompt_text = ">>> "
+# sphinx-copybutton configurations
+copybutton_prompt_text = (
+    r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+)
+copybutton_prompt_is_regexp = True
 
 trim_doctests_flags = True
 
@@ -436,7 +467,7 @@ extlinks = {
     "sklearn": ("https://scikit-learn.org/stable/%s", None),
     "inria": ("https://team.inria.fr/%s", None),
     "nilearn-gh": ("https://github.com/nilearn/nilearn/%s", None),
-    "neurostars": ("https://neurostars.org/tag/nilearn/%s", None),
+    "neurostars": ("https://neurostars.org/tag/nilearn/19%s", None),
     "nipy": ("https://nipy.org/%s", None),
 }
 
@@ -471,7 +502,34 @@ sphinx_gallery_conf = {
     },
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
     "within_subsection_order": "ExampleTitleSortKey",
+    # # Disallow jupyterlite for examples in gallery
+    # # as most of them requires loading too much data in the browser
+    # "jupyterlite": None,
 }
+
+
+# if with_jupyterlite:
+#     global_enable_try_examples = True
+#     jupyterlite_bind_ipynb_suffix = False
+#     try_examples_global_button_text = "Try it in your browser!"
+#     try_examples_global_warning_text = (
+#         "Running the nilearn examples in JupyterLite is experimental"
+#         " and you may encounter some unexpected behavior.\n\n"
+#         " The main difference is that imports will take a lot longer"
+#         " than usual, for example the first `import nilearn` can take"
+#         " roughly 10-20s.\n\nIf you notice problems, feel free to open"
+#         " an [issue](https://github.com/nilearn/nilearn/issues/new/choose) "
+#         "about it."
+#     )
+#     # Work around https://github.com/jupyterlite/pyodide-kernel/issues/166
+#     # and https://github.com/pyodide/micropip/issues/223 by installing the
+#     # dependencies first, and then nilearn from Anaconda.org.
+#     try_examples_preamble = """
+#     # Jupyterlite specific code
+#     import matplotlib
+#     import pandas
+#     %pip install -q nilearn
+#     """
 
 mermaid_version = "11.4.0"
 

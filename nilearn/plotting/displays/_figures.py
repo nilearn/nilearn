@@ -10,7 +10,7 @@ from nilearn._utils.helpers import (
     is_sphinx_build,
 )
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.versions import is_kaleido_plotly_compatible
+from nilearn.nilearn_typing import OutputFile
 from nilearn.plotting.surface._utils import DEFAULT_HEMI, get_faces_on_edge
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data, load_surf_data
@@ -39,23 +39,6 @@ class SurfaceFigure:
     def show(self):
         """Show the figure."""
         raise NotImplementedError
-
-    def _check_output_file(self, output_file=None):
-        """If an output file is provided, \
-        set it as the new default output file.
-
-        Parameters
-        ----------
-        output_file : :obj:`str` or None, default=None
-            Path to output file.
-        """
-        if output_file is None:
-            if self.output_file is None:
-                raise ValueError(
-                    "You must provide an output file name to save the figure."
-                )
-        else:
-            self.output_file = output_file
 
     def add_contours(self):
         """Draw boundaries around roi."""
@@ -128,23 +111,29 @@ class PlotlySurfaceFigure(SurfaceFigure):
             else:
                 self.figure.show(renderer=renderer)
 
-    def savefig(self, output_file=None, **savefig_kwargs) -> None:  # noqa: ARG002
+    def savefig(self, output_file: OutputFile = None, **kwargs) -> None:
         """Save the figure to file.
 
         Parameters
         ----------
-        output_file : :obj:`str` or None, default=None
+        %(output_file)s
             Path to output file.
 
-        savefig_kwargs:
+        kwargs: :obj:`dict`
+            Extra keyword arguments are passed to
+            :func:`plotly.io.write_image`
         """
-        self._check_output_file(output_file=output_file)
         if self.figure is not None:
             if output_file is not None:
                 self.output_file = output_file
 
+            if self.output_file is None:
+                raise ValueError(
+                    "You must provide an output file name to save the figure."
+                )
+
             try:
-                self.figure.write_image(self.output_file)
+                self.figure.write_image(self.output_file, **kwargs)
             except RuntimeError as e:
                 kaleido_spec = find_spec("kaleido")
                 if "Kaleido requires Google Chrome" in str(e) or kaleido_spec:
@@ -157,7 +146,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                         "the `kaleido_get_chrome` command in command line or "
                         "`kaleido.get_chrome_sync()` function "
                         "in Python."
-                    ) from None
+                    ) from e
                 else:
                     raise e
             except ValueError as e:
@@ -166,15 +155,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                     raise RuntimeError(
                         "Kaleido and Google Chrome are required to save "
                         "plotly figures to disk."
-                    ) from None
-                # TODO remove this check when min supported kaleido version is
-                # >= 1.0.0
-                elif not is_kaleido_plotly_compatible():
-                    raise RuntimeError(
-                        "Incompatible Plotly/Kaleido versions detected:\n "
-                        "Please upgrade Plotly to version 6.1.1 or greater, "
-                        "or downgrade Kaleido to version 0.2.1."
-                    ) from None
+                    ) from e
                 else:
                     raise e
 

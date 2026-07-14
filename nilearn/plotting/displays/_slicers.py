@@ -17,6 +17,7 @@ from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, get_data, new_img_like, reorder_img
 from nilearn.image.image import _check_fov
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
+from nilearn.nilearn_typing import NiimgLike, OutputFile
 from nilearn.plotting._engine_utils import create_colorbar_for_fig
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
@@ -29,7 +30,6 @@ from nilearn.plotting.displays._utils import (
 )
 from nilearn.plotting.displays.edge_detect import edge_map
 from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
-from nilearn.typing import NiimgLike
 
 
 @fill_doc
@@ -259,7 +259,7 @@ class BaseSlicer:
             If ``True``, leave space between the plots.
 
         %(colorbar)s
-            Default=False.
+            default=False.
 
         %(brain_color)s
 
@@ -426,7 +426,7 @@ class BaseSlicer:
                 threshold (in absolute value) are plotted as transparent.
 
         %(colorbar)s
-            Default=False.
+            default=False.
 
         cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
@@ -841,6 +841,12 @@ class BaseSlicer:
             is computed based on the data.
 
         """
+        cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
+        cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
+
+        if cbar_vmin == cbar_vmax:
+            return
+
         # create new  axis for the colorbar
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect
@@ -1095,12 +1101,12 @@ class BaseSlicer:
         """
         plt.close(self.frame_axes.figure.number)
 
-    def savefig(self, filename, dpi=None, **kwargs) -> None:
+    def savefig(self, filename: OutputFile, dpi=None, **kwargs) -> None:
         """Save the figure to a file.
 
         Parameters
         ----------
-        filename : :obj:`str`
+        filename : :obj:`str` or :obj:`pathlib.Path`
             The file name to save to. Its extension determines the
             file type, typically '.png', '.svg' or '.pdf'.
 
@@ -1112,6 +1118,13 @@ class BaseSlicer:
             :func:`matplotlib.pyplot.savefig`.
 
         """
+        if filename is None:
+            raise ValueError(
+                "You must provide an output file name to save the figure."
+            )
+
+        output_file = Path(filename)
+        output_file.parent.mkdir(exist_ok=True, parents=True)
         facecolor = edgecolor = "k" if self._black_bg else "w"
         self.frame_axes.figure.savefig(
             filename,
@@ -1400,13 +1413,14 @@ class OrthoSlicer(_MultiDSlicer):
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
-        coords = {}
-        for direction in "xyz":
-            coords[direction] = (
+        coords = {
+            direction: (
                 cut_coords[self._cut_displayed.index(direction)]
                 if direction in self._cut_displayed
                 else None
             )
+            for direction in "xyz"
+        }
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()
@@ -1729,13 +1743,14 @@ class TiledSlicer(_MultiDSlicer):
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
-        coords = {}
-        for direction in "xyz":
-            coords[direction] = (
+        coords = {
+            direction: (
                 cut_coords[self._cut_displayed.index(direction)]
                 if direction in self._cut_displayed
                 else None
             )
+            for direction in "xyz"
+        }
         x, y, z = coords["x"], coords["y"], coords["z"]
 
         kwargs = kwargs.copy()
@@ -2680,37 +2695,3 @@ def get_slicer(display_mode):
 
     """
     return get_create_display_fun(display_mode, SLICERS)
-
-
-def save_figure_if_needed(fig, output_file):
-    """Save figure if an output file value is given.
-
-    Create output path if required.
-
-    Parameters
-    ----------
-    fig: figure, axes, or display instance
-
-    output_file: str, Path or None
-
-    Returns
-    -------
-    None if ``output_file`` is None, ``fig`` otherwise.
-
-    """
-    if output_file is None:
-        return fig
-
-    output_file = Path(output_file)
-    output_file.parent.mkdir(exist_ok=True, parents=True)
-
-    if not isinstance(fig, (plt.Figure, BaseSlicer)):
-        fig = fig.figure
-
-    fig.savefig(output_file)
-    if isinstance(fig, plt.Figure):
-        plt.close(fig)
-    else:
-        fig.close()
-
-    return None

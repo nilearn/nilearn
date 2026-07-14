@@ -6,8 +6,8 @@ objects of fMRI data analyses.
 import csv
 import inspect
 import time
-import warnings
 from pathlib import Path
+from typing import Literal, get_args
 from warnings import warn
 
 import numpy as np
@@ -21,7 +21,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, readable_time
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -32,7 +32,6 @@ from nilearn._utils.param_validation import (
     check_run_sample_masks,
 )
 from nilearn.datasets import load_fsaverage
-from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -47,7 +46,7 @@ from nilearn.glm.regression import (
     RegressionResults,
     SimpleRegressionResults,
 )
-from nilearn.image import check_niimg, get_data
+from nilearn.image.image import check_niimg, check_same_fov, get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids.query import (
     infer_repetition_time_from_dataset,
@@ -57,11 +56,13 @@ from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.masking import intersect_masks
+from nilearn.nilearn_typing import NiimgLike, Tr
 from nilearn.surface import SurfaceImage
-from nilearn.typing import NiimgLike, Tr
+from nilearn.surface.utils import check_polymesh_equal
 
 
-def mean_scaling(Y, axis=0):
+def mean_scaling(Y, axis=0) -> tuple[np.ndarray, np.ndarray]:
     """Scaling of the data to have percent of baseline change \
     along the specified axis.
 
@@ -80,6 +81,19 @@ def mean_scaling(Y, axis=0):
 
     mean : array of shape (n_voxels,)
         The data mean.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import mean_scaling
+    >>> Y = np.array([[1.0, 2.0, 3.0], [2.0, 4.0, 6.0]])
+    >>> Y_scaled, mean = mean_scaling(Y)
+    >>> Y_scaled.shape
+    (2, 3)
+    >>> mean
+    array([1.5, 3. , 4.5])
+    >>> bool(np.allclose(Y_scaled.mean(axis=0), 0))
+    True
 
     """
     mean = Y.mean(axis=axis)
@@ -137,7 +151,7 @@ def _yule_walker(x, order):
 @fill_doc
 def run_glm(
     Y, X, noise_model="ar1", bins=100, n_jobs=1, verbose=0, random_state=None
-):
+) -> tuple[np.ndarray, dict[str | float, RegressionResults]]:
     """:term:`GLM` fit for an :term:`fMRI` data matrix.
 
     Parameters
@@ -321,7 +335,7 @@ class FirstLevelModel(BaseGLM):
                     are passed at fit time.
 
     %(hrf_model)s
-        Default='glover'.
+        default='glover'.
 
         .. warning::
 
@@ -414,8 +428,8 @@ class FirstLevelModel(BaseGLM):
         1 refers to mean scaling each time point with respect to all voxels &
         (0, 1) refers to scaling with respect to voxels and time,
         which is known as grand mean scaling.
-        Incompatible with standardize (standardize=False is enforced when
-        signal_scaling is not False).
+        Incompatible with standardize (``standardize=None`` is enforced when
+        ``signal_scaling`` is not False).
 
     noise_model : {'ar1', 'ols'}, default='ar1'
         The temporal variance model.
@@ -424,7 +438,6 @@ class FirstLevelModel(BaseGLM):
         If 0, prints nothing
         If 1, prints progress by computation of each run.
         If 2, prints timing details of masker and GLM.
-        If 3, prints masker computation details.
 
     %(n_jobs)s
 
@@ -444,6 +457,11 @@ class FirstLevelModel(BaseGLM):
         of order at least 2 ('ar(N)' with n >= 2).
 
         .. nilearn_versionadded:: 0.9.1
+
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+        .. nilearn_versionadded:: 0.14.0
 
     Attributes
     ----------
@@ -478,6 +496,10 @@ class FirstLevelModel(BaseGLM):
         Values are SimpleRegressionResults corresponding to the voxels,
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
+
+    standardize_ :  any of: 'zscore_sample', 'zscore', 'psc', or None
+        This value may differ from the ``standardize`` parameters
+        as it is set to ``None`` when ``signal_scaling`` is not False.
     """
 
     def __str__(self):
@@ -507,6 +529,7 @@ class FirstLevelModel(BaseGLM):
         minimize_memory=True,
         subject_label=None,
         random_state=None,
+        reports=True,
     ):
         # design matrix parameters
         self.t_r = t_r
@@ -537,6 +560,9 @@ class FirstLevelModel(BaseGLM):
         self.subject_label = subject_label
         self.random_state = random_state
 
+        self.reports = reports
+        self._reset_report()
+
     def _is_first_level_glm(self):
         return True
 
@@ -554,7 +580,8 @@ class FirstLevelModel(BaseGLM):
         ) or (
             isinstance(run_imgs, (list, tuple))
             and not all(
-                isinstance(x, (*NiimgLike, SurfaceImage)) for x in run_imgs
+                isinstance(x, (*get_args(NiimgLike), SurfaceImage))
+                for x in run_imgs
             )
         ):
             input_type = type(run_imgs)
@@ -572,6 +599,12 @@ class FirstLevelModel(BaseGLM):
 
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
+
+        if all(isinstance(x, (str, Path, Nifti1Image)) for x in run_imgs):
+            check_same_fov(*run_imgs, raise_error=True)
+        else:
+            for img in run_imgs[1:]:
+                check_polymesh_equal(run_imgs[0].mesh, img.mesh)
 
         if design_matrices is not None:
             # If design_matrices is provided,
@@ -663,7 +696,7 @@ class FirstLevelModel(BaseGLM):
         elif step == "done":
             msg = (
                 f"Computation of {n_runs} runs done "
-                f"in {int(time_in_second)} seconds."
+                f"in {readable_time(time_in_second)}."
             )
 
         logger.log(
@@ -679,7 +712,7 @@ class FirstLevelModel(BaseGLM):
             dt = time.time() - t0
             # We use a max to avoid a division by zero
             remaining = (100.0 - percent) / max(0.01, percent) * dt
-            remaining = f"{int(remaining)} seconds remaining"
+            remaining = f"{readable_time(remaining)} remaining"
 
         return (
             f"Computing run {run_idx + 1} out of {n_runs} runs ({remaining})."
@@ -950,11 +983,20 @@ class FirstLevelModel(BaseGLM):
 
         self._fit_cache()
 
+        self.standardize_ = self.standardize
+
+        # TODO (nilearn >= 0.15.0) remove if and elif
+        # avoid some FutureWarning the user cannot affect
+        if self.standardize is False:
+            self.standardize_ = None
+        elif self.standardize is True:
+            self.standardize_ = "zscore_sample"
+
         check_parameter_in_allowed(
             self.signal_scaling, {False, 1, (0, 1)}, "signal_scaling"
         )
         if self.signal_scaling in [0, 1, (0, 1)]:
-            self.standardize = False
+            self.standardize_ = None
 
         self.labels_ = None
         self.results_ = None
@@ -969,10 +1011,12 @@ class FirstLevelModel(BaseGLM):
             )
         )
 
+        self._reset_report()
+
         # Initialize masker_ to None such that attribute exists
         self.masker_ = None
 
-        self._prepare_mask(run_imgs[0])
+        self._prepare_mask(run_imgs)
 
         # collect info that may be useful for report generation
         drift_model_str = None
@@ -984,6 +1028,12 @@ class FirstLevelModel(BaseGLM):
             drift_model_str = (
                 f"and a {self.drift_model} drift model ({param_str})"
             )
+
+        self._report_content["reports_at_fit_time"] = self.reports
+        # TODO populate _report_data only if self.reports=True
+        # currently the values in reports_data is used in other places and
+        # tests fail if only populated when reports is True.
+
         self._reporting_data = {
             "trial_types": [],
             "noise_model": self.noise_model,
@@ -997,8 +1047,8 @@ class FirstLevelModel(BaseGLM):
             run_imgs, events, confounds, design_matrices
         )
 
-        self._reporting_data["trial_types"] = set(
-            self._reporting_data["trial_types"]
+        self._reporting_data["trial_types"] = sorted(
+            set(self._reporting_data["trial_types"])
         )
 
         # For each run fit the model and keep only the regression results.
@@ -1186,7 +1236,16 @@ class FirstLevelModel(BaseGLM):
         }
 
     def _get_element_wise_model_attribute(
-        self, attribute, result_as_time_series
+        self,
+        attribute: Literal[
+            "residuals",
+            "normalized_residuals",
+            "predicted",
+            "SSE",
+            "r_square",
+            "MSE",
+        ],
+        result_as_time_series: bool,
     ):
         """Transform RegressionResults instances within a dictionary \
         (whose keys represent the autoregressive coefficient under the 'ar1' \
@@ -1195,10 +1254,9 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        attribute : :obj:`str`
+        attribute : {"residuals", "normalized_residuals", "predicted", \
+                    "SSE", "r_square", "MSE"}
             an attribute of a RegressionResults instance.
-            possible values include: residuals, normalized_residuals,
-            predicted, SSE, r_square, MSE.
 
         result_as_time_series : :obj:`bool`
             whether the RegressionResult attribute has a value
@@ -1217,10 +1275,10 @@ class FirstLevelModel(BaseGLM):
         possible_attributes = [
             prop for prop in all_attributes if "__" not in prop
         ]
-        check_parameter_in_allowed(attribute, possible_attributes, attribute)
+        check_parameter_in_allowed(attribute, possible_attributes, "attribute")
 
         if self.minimize_memory:
-            raise ValueError(
+            raise AttributeError(
                 "To access voxelwise attributes like "
                 "R-squared, residuals, and predictions, "
                 "the `FirstLevelModel`-object needs to store "
@@ -1251,45 +1309,54 @@ class FirstLevelModel(BaseGLM):
 
         return output
 
-    def _prepare_mask(self, run_img):
+    def _prepare_mask(self, run_imgs):
         """Set up the masker.
+
+        If mask_img == False, include all voxels / vertices in GLM.
+        If mask_img is a masker we just check it has been fitted.
+        If mask_img is not a masker,
+        we compute an implicit mask based on all the runs.
+
 
         Parameters
         ----------
-        run_img : Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object
+        run_imgs : Niimg-like object, \
+                   :obj:`list` or :obj:`tuple` of Niimg-like objects, \
+                   SurfaceImage object, \
+                   or :obj:`list` or \
+                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Used for setting up the masker object.
         """
-        masker_type = "nii"
-        if not self._is_volume_glm() or isinstance(run_img, SurfaceImage):
-            masker_type = "surface"
+        first_image = run_imgs[0]
+
+        masker_type = "multi_nii"
+        if not self._is_volume_glm() or isinstance(first_image, SurfaceImage):
+            masker_type = "multi_surface"
 
         # Learn the mask
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
-            if masker_type == "surface":
+            # TODO here we break the sklearn convention
+            # of not changing attributes passed at init
+            # This could probably be improved
+            if masker_type == "multi_surface":
                 surf_data = {
                     part: np.ones(
-                        run_img.data.parts[part].shape[0], dtype=bool
+                        first_image.data.parts[part].shape[0], dtype=bool
                     )
-                    for part in run_img.mesh.parts
+                    for part in first_image.mesh.parts
                 }
-                self.mask_img = SurfaceImage(mesh=run_img.mesh, data=surf_data)
+                self.mask_img = SurfaceImage(
+                    mesh=first_image.mesh, data=surf_data
+                )
             else:
-                ref_img = check_niimg(run_img)
+                ref_img = check_niimg(first_image)
                 self.mask_img = Nifti1Image(
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
 
-        if masker_type == "surface" and self.smoothing_fwhm is not None:
-            warn(
-                "Parameter smoothing_fwhm is not "
-                "yet supported for surface data",
-                NotImplementedWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = 0
+        check_compatibility_mask_and_images(self.mask_img, first_image)
 
-        check_compatibility_mask_and_images(self.mask_img, run_img)
         if (  # deal with self.mask_img as image, str, path, none
             (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
             or
@@ -1302,31 +1369,36 @@ class FirstLevelModel(BaseGLM):
                 and self.masker_ is None
             )
         ):
+            # compute implicit mask based on all runs
+            masker = check_embedded_masker(
+                self, ignore=["high_pass"], masker_type=masker_type
+            )
+            masker.memory_level = self.memory_level
+            if masker_type == "multi_nii":
+                masker.mask_strategy = "epi"
+            masker.fit(run_imgs)
+
+            # reuse mask_img to initialize a non-multi masker
             self.masker_ = check_embedded_masker(
-                self, masker_type, ignore=["high_pass"]
+                self,
+                ignore=["high_pass"],
+                masker_type=masker_type.replace("multi_", ""),
             )
             self.masker_.memory_level = self.memory_level
-
-            if isinstance(self.masker_, NiftiMasker):
+            if masker_type == "multi_nii":
                 self.masker_.mask_strategy = "epi"
-
-            with warnings.catch_warnings():
-                # ignore warning in case the masker
-                # was initialized with a mask image
-                warnings.simplefilter("ignore")
-                self.masker_.fit(run_img)
+            self.masker_.mask_img = masker.mask_img_
+            self.masker_.fit()
 
         else:
             check_is_fitted(self.mask_img)
 
             self.masker_ = self.mask_img
 
-            # TODO (nilearn >= 0.15.0) remove if and elif
-            # avoid some FutureWarning the user cannot affect
-            if self.masker_.standardize is False:
-                self.masker_.standardize = None
-            elif self.masker_.standardize is True:
-                self.masker_.standardize = "zscore_sample"
+        # override value of the masker standardize
+        # with standardize_ that takes into account
+        # whether to do signal_scaling or not
+        self.masker_.standardize = self.standardize_
 
         self.n_elements_ = self.masker_.n_elements_
 
@@ -1458,7 +1530,12 @@ def first_level_from_bids(
     minimize_memory=True,
     derivatives_folder="derivatives",
     **kwargs,
-):
+) -> tuple[
+    list[FirstLevelModel],
+    list[list[str] | list[SurfaceImage]],
+    list[list[pd.DataFrame]],
+    list[list[pd.DataFrame] | None],
+]:
     """Create FirstLevelModel objects and fit arguments \
        from a :term:`BIDS` dataset.
 
@@ -1512,6 +1589,16 @@ def first_level_from_bids(
         Filter examples would be ``('desc', 'preproc')``, ``('dir', 'pa')``
         and ``('run', '10')``.
 
+    mask_img: Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
+             :obj:`~nilearn.maskers.SurfaceMasker`, False \
+             or ``"derivatives"``, or \
+             None, default=None
+        Mask to be used on data.
+        If ``"derivatives"`` is passed, a mask image is generated
+        from the intersection of the relevant mask images
+        of all the runs of a subject
+        and used for the model of that subject.
+
     slice_time_ref : :obj:`float` between ``0.0`` and ``1.0``, or None, \
                      default= None
         This parameter indicates the time of the reference slice used in the
@@ -1528,6 +1615,8 @@ def first_level_from_bids(
 
     kwargs : :obj:`dict`
 
+        .. nilearn_versionadded:: 0.10.3
+
         Keyword arguments to be passed to functions called within this
         function.
 
@@ -1537,12 +1626,61 @@ def first_level_from_bids(
         a specific set of confounds by relying on confound loading strategies
         defined in :func:`~nilearn.interfaces.fmriprep.load_confounds`.
         If no kwargs are passed, ``first_level_from_bids`` will return
-        all the confounds available in the confounds TSV files.
+        all the confounds available in the confounds TSV files. If
+        no confounds are available, or if ``confounds_strategy`` is
+        set to ``None``, a list of ``None`` is returned for the confounds.
 
-        .. nilearn_versionadded:: 0.10.3
+        Please refer to the documentation
+        of :func:`~nilearn.interfaces.fmriprep.load_confounds`
+        for more details on the confounds loading strategies.
+
+    Returns
+    -------
+    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
+        Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
+        corresponds to a subject.
+        All runs from different sessions are considered together
+        for the same subject to run a fixed effects analysis on them.
+
+    models_run_imgs : :obj:`list` of :obj:`list` of Niimg-like objects
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_run_imgs[i][j]`` corresponds to the j\\ :sup:`th` run
+        of the i\\ :sup:`th` subject.
+
+    models_events : :obj:`list` of :obj:`list` of pandas DataFrames
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_events[i][j]`` corresponds to the j\\ :sup:`th` event file
+        of the i\\ :sup:`th` subject.
+
+    models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
+        ``None``
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_confounds[i][j]`` corresponds to the j\\ :sup:`th`
+        confound file of the i\\ :sup:`th` subject.
+
+        .. note::
+
+            Any NaN values on the first row of the loaded confounds
+            will be replaced by 0 to avoid later errors
+            during design matrix creation.
 
     Examples
     --------
+    If you want to load only models, images and events:
+
+    .. code-block:: python
+
+        models, imgs, events, _ = first_level_from_bids(
+            dataset_path=path_to_a_bids_dataset,
+            task_label="TaskName",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=None,
+        )
+
     If you want to only load
     the rotation and translation motion parameters confounds:
 
@@ -1603,37 +1741,6 @@ def first_level_from_bids(
             confounds_std_dvars_threshold=0,
         )
 
-    Please refer to the documentation
-    of :func:`~nilearn.interfaces.fmriprep.load_confounds`
-    for more details on the confounds loading strategies.
-
-    Returns
-    -------
-    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
-        Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
-        corresponds to a subject.
-        All runs from different sessions are considered together
-        for the same subject to run a fixed effects analysis on them.
-
-    models_run_imgs : :obj:`list` of list of Niimg-like objects,
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-
-    models_events : :obj:`list` of list of pandas DataFrames,
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-
-    models_confounds : :obj:`list` of list of pandas DataFrames or ``None``,
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-
-        .. note::
-
-            Any NaN values on the first row of the loaded confounds
-            will be replaced by 0 to avoid later errors
-            during design matrix creation.
-
-
     """
     check_params(locals())
     if memory is None:
@@ -1670,7 +1777,7 @@ def first_level_from_bids(
     if (
         drift_model is not None
         and kwargs_load_confounds is not None
-        and "high_pass" in kwargs_load_confounds.get("strategy")
+        and "high_pass" in kwargs_load_confounds.get("strategy", [])
     ):
         if drift_model == "cosine":
             verb = "duplicate"
@@ -1716,7 +1823,7 @@ def first_level_from_bids(
         filters = _make_bids_files_filter(
             task_label=task_label,
             supported_filters=[*bids_entities()["raw"]],
-            extra_filter=img_filters,
+            extra_filter=[x for x in img_filters if x[0] != "desc"],
             verbose=verbose,
         )
         inferred_t_r = infer_repetition_time_from_dataset(
@@ -1818,7 +1925,7 @@ def first_level_from_bids(
             drift_order=drift_order,
             fir_delays=fir_delays,
             min_onset=min_onset,
-            mask_img=mask_img,
+            mask_img=None if mask_img == "derivatives" else mask_img,
             target_affine=target_affine,
             target_shape=target_shape,
             smoothing_fwhm=smoothing_fwhm,
@@ -1867,6 +1974,22 @@ def first_level_from_bids(
             kwargs_load_confounds=kwargs_load_confounds,
         )
         models_confounds.append(confounds)
+
+        if mask_img == "derivatives":
+            masks = _get_masks_files(
+                derivatives_path=derivatives_path,
+                sub_label=sub_label_,
+                task_label=task_label,
+                space_label=space_label,
+                img_filters=img_filters,
+                imgs=files_to_check,
+                verbose=verbose,
+            )
+            if masks:
+                mask_img = intersect_masks(
+                    masks, threshold=0.5, connected=False
+                )
+                model.mask_img = mask_img
 
     return models, models_run_imgs, models_events, models_confounds
 
@@ -2114,6 +2237,7 @@ def _get_events_files(
         extra_filter=img_filters,
         verbose=verbose,
     )
+
     events = get_bids_files(
         dataset_path,
         modality_folder="func",
@@ -2139,6 +2263,104 @@ def _get_events_files(
         verbose=verbose,
     )
     return events
+
+
+def _get_masks_files(
+    derivatives_path: Path,
+    sub_label: str,
+    task_label: str,
+    space_label: str,
+    img_filters: list[tuple[str, str]],
+    imgs: list[str],
+    verbose: int,
+) -> list[str]:
+    """Get mask images for a given subject, task, space and filters.
+
+    Parameters
+    ----------
+    dataset_path : :obj:`pathlib.Path`
+        Directory of the derivatives BIDS dataset.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like sub-<sub_label>_.
+
+    task_label : :obj:`str`
+        Task label as specified in the file names like _task-<task_label>_.
+
+    task_label : :obj:`str`
+        Space label as specified in the file names like _space-<space_label>_.
+
+    img_filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    imgs : :obj:`list` of :obj:`str`
+        List of fullpath to the preprocessed images
+
+    verbose : :obj:`integer`
+        Indicate the level of verbosity.
+
+    Returns
+    -------
+    events : :obj:`list` of :obj:`str`
+        List of full path to the masks files
+    """
+    if space_label in (None, "", "fsaverage5"):
+        # TODO for surface data?
+        return []
+
+    img_filters = [x for x in img_filters if x[0] != "desc"]
+    filters = _make_bids_files_filter(
+        task_label=task_label,
+        space_label=space_label,
+        supported_filters=bids_entities()["raw"]
+        + bids_entities()["derivatives"],
+        extra_filter=img_filters,
+        verbose=verbose,
+    )
+
+    masks_files = get_bids_files(
+        main_path=derivatives_path,
+        modality_folder="func",
+        file_tag="mask",
+        file_type="nii*",
+        sub_label=sub_label,
+        filters=filters,
+    )
+
+    _report_found_files(
+        files=masks_files,
+        text="masks",
+        sub_label=sub_label,
+        filters=filters,
+        verbose=verbose,
+    )
+    _check_masks_list(masks_files, imgs)
+
+    return masks_files
+
+
+def _check_masks_list(masks_files: list[str], imgs: list[str]) -> None:
+    """Check the number of confounds.tsv files.
+
+    If no file is found, it will be assumed there are none,
+    but if there are any confounds files, there must be one per run.
+
+    Parameters
+    ----------
+    masks_files : :obj:`list` of :obj:`str`
+        List of full path to the mask files
+
+    imgs : :obj:`list` of :obj:`str`
+        List of full path to the preprocessed images
+
+    """
+    if len(masks_files) != len(imgs):
+        warn(
+            f"{len(masks_files)} mask files found "
+            f"for {len(imgs)} bold files. ",
+            stacklevel=find_stack_level(),
+        )
 
 
 def _get_confounds(
@@ -2209,10 +2431,10 @@ def _get_confounds(
     )
     _check_confounds_list(confounds=confounds_files, imgs=imgs)
 
-    if not confounds_files:
+    if not confounds_files or kwargs_load_confounds is None:
         return None
 
-    if kwargs_load_confounds is None:
+    if len(kwargs_load_confounds) == 0:
         confounds = [
             pd.read_csv(c, sep="\t", index_col=None) for c in confounds_files
         ]
@@ -2224,9 +2446,7 @@ def _get_confounds(
             c.iloc[0] = c.iloc[0].fillna(0.0)
         return confounds
 
-    confounds, _ = load_confounds(img_files=imgs, **kwargs_load_confounds)
-
-    return confounds
+    return load_confounds(img_files=imgs, **kwargs_load_confounds)[0]
 
 
 def _check_confounds_list(confounds, imgs) -> None:
@@ -2355,8 +2575,12 @@ def _check_kwargs_load_confounds(**kwargs):
         "demean": True,
     }
 
-    if kwargs.get("confounds_strategy") is None:
+    if "confounds_strategy" in kwargs and kwargs["confounds_strategy"] is None:
+        kwargs.pop("confounds_strategy")
         return None, kwargs
+
+    elif "confounds_strategy" not in kwargs:
+        return {}, kwargs
 
     remaining_kwargs = kwargs.copy()
     kwargs_load_confounds = {}

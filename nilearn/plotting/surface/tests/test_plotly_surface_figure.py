@@ -29,29 +29,27 @@ pytest.importorskip(
     is_kaleido_installed(),
     reason="This test only runs if Plotly is installed, but not kaleido.",
 )
-def test_plotly_surface_figure_savefig_error():
+def test_plotly_surface_figure_savefig_error(plotly):
     """Test that an ImportError is raised when saving \
        a PlotlySurfaceFigure without having kaleido installed.
     """
-    with pytest.raises(ImportError, match="`kaleido` is required"):
-        PlotlySurfaceFigure().savefig()
+    with pytest.raises(
+        RuntimeError, match="Kaleido and Google Chrome are required"
+    ):
+        PlotlySurfaceFigure(plotly.graph_objects.Figure()).savefig(
+            output_file="output.png"
+        )
 
 
-@pytest.mark.skipif(
-    not is_kaleido_installed(),
-    reason="Kaleido is not installed; required for this test.",
-)
-def test_plotly_surface_figure():
+def test_plotly_surface_figure(plotly):
     """Test ValueError when saving a PlotlySurfaceFigure without specifying
     output file.
     """
-    ps = PlotlySurfaceFigure()
+    ps = PlotlySurfaceFigure(plotly.graph_objects.Figure())
     assert ps.output_file is None
-    assert ps.figure is None
-    ps.show()
+
     with pytest.raises(ValueError, match="You must provide an output file"):
         ps.savefig()
-    ps.savefig("foo.png")
 
 
 @pytest.mark.skipif(
@@ -75,7 +73,6 @@ def test_plotly_show(plotly, renderer):
     assert f"image/{key}" in mock_display.call_args.args[0]
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(
     not is_kaleido_installed(),

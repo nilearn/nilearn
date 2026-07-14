@@ -39,7 +39,7 @@ def _tfce_design():
 
     mask_img = Nifti1Image(np.ones((3, 3, 3)), np.eye(4))
     masker = NiftiMasker(mask_img)
-    masker.fit(mask_img)
+    masker.fit()
 
     n_descriptors = np.prod(mask_img.shape)
     n_regressors = 1  # tested_var is 1D
@@ -63,7 +63,9 @@ def ref_score(tested_var, target_var, covars=None):
     return get_tvalue_with_alternative_library(tested_var, target_var, covars)
 
 
-def _create_design(rng, n_samples, n_descriptors, n_regressors):
+def _create_design(
+    rng, n_samples: int, n_descriptors: int, n_regressors: int
+) -> tuple[np.ndarray, np.ndarray, int, int]:
     target_var = rng.standard_normal((n_samples, n_descriptors))
     tested_var = rng.standard_normal((n_samples, n_regressors))
 
@@ -71,7 +73,7 @@ def _create_design(rng, n_samples, n_descriptors, n_regressors):
 
 
 @pytest.fixture
-def design(rng):
+def design(rng) -> tuple[np.ndarray, np.ndarray, int, int]:
     """Return a design to run tests on."""
     return _create_design(
         rng, n_samples=N_SAMPLES, n_descriptors=1, n_regressors=1
@@ -79,28 +81,28 @@ def design(rng):
 
 
 @pytest.fixture
-def dummy_design(rng):
+def dummy_design(rng) -> tuple[np.ndarray, np.ndarray, int, int]:
     """Use to test errors and warnings."""
     return _create_design(rng, n_samples=10, n_descriptors=1, n_regressors=1)
 
 
 @pytest.fixture
-def confounding_vars(rng):
+def confounding_vars(rng) -> np.ndarray:
     """Return normally distributed confounds."""
     return rng.standard_normal((N_SAMPLES, N_COVARS))
 
 
 @pytest.fixture()
-def masker(affine_eye):
+def masker(affine_eye) -> NiftiMasker:
     """Return a default masker."""
     mask_img = Nifti1Image(np.ones((5, 5, 5)), affine_eye)
     masker = NiftiMasker(mask_img)
-    masker.fit(mask_img)
+    masker.fit()
     return masker
 
 
 @pytest.fixture()
-def cluster_level_design(rng):
+def cluster_level_design(rng) -> tuple[np.ndarray, np.ndarray]:
     """Create design for cluster level tests."""
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
     voxel_vars = np.hstack(
@@ -220,7 +222,6 @@ def check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse):
     assert_array_less(np.diff(all_mse.mean(1)), 0)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("model_intercept", [True, False])
 def test_permuted_ols_check_h0_noeffect_labelswap_centered(model_intercept):
     """Check distributions of permutations when tested vars are centered."""
@@ -238,7 +239,6 @@ def test_permuted_ols_check_h0_noeffect_labelswap_centered(model_intercept):
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
 
 
-@pytest.mark.slow
 def test_permuted_ols_check_h0_noeffect_labelswap_uncentered():
     """Check distributions of permutations when tested vars are uncentered."""
     # create dummy design with no effect
@@ -254,7 +254,6 @@ def test_permuted_ols_check_h0_noeffect_labelswap_uncentered():
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
 
 
-@pytest.mark.slow
 def test_permuted_ols_check_h0_noeffect_signswap():
     """Check that h0 is close to the theoretical distribution \
     for permuted OLS with sign swap.
@@ -632,7 +631,6 @@ def test_two_sided_recover_positive_and_negative_effects():
     )
 
 
-@pytest.mark.slow
 def test_tfce_smoke_legacy_smoke():
     """Check tfce output of dict with or without permutations."""
     (
@@ -691,7 +689,6 @@ def test_tfce_smoke_legacy_smoke():
     assert out["h0_max_tfce"].size == n_perm
 
 
-@pytest.mark.slow
 def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     """Test combinations of parameters related to cluster-level inference."""
     target_var, tested_var = cluster_level_design
@@ -821,7 +818,7 @@ def test_cluster_level_parameters_warnings(cluster_level_design, masker):
 
     # output_type is "legacy".
     # raise a deprecation warning, but get the standard output.
-    with pytest.deprecated_call():
+    with pytest.warns(FutureWarning, match="will be removed in version"):
         out = permuted_ols(
             tested_var,
             target_var,
@@ -915,7 +912,7 @@ def test_tfce_smoke_legacy_warnings():
 
     # output_type is "legacy".
     # raise a deprecation warning, but get the standard output.
-    with pytest.deprecated_call():
+    with pytest.warns(FutureWarning, match="will be removed in version"):
         out = permuted_ols(
             tested_var,
             target_var,

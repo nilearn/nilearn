@@ -51,7 +51,7 @@ def _simu_img():
     return img, mask, conf
 
 
-def _cov_conf(tseries, conf):
+def _cov_conf(tseries, conf) -> np.ndarray:
     conf_n = StandardScaler().fit_transform(conf)
     _ = StandardScaler().fit_transform(tseries)
     cov_mat = np.dot(tseries.T, conf_n)
@@ -89,7 +89,6 @@ def test_load_mask_img_surface(surf_mask_1d):
         assert hemi.dtype == "bool"
 
 
-@pytest.mark.slow
 def test_high_variance_confounds():
     """Test high_variance_confounds."""
     img, mask, conf = _simu_img()
@@ -141,7 +140,7 @@ def _confounds_regression(
     "standardize_signal, standardize_confounds, expected",
     [
         # Signal is not standardized
-        (False, True, 10.0 * 10e-10),
+        (None, True, 10.0 * 10e-10),
         # Signal is z-scored with string arg
         ("zscore_sample", True, 10e-10),
         # Signal is psc standardized
@@ -171,7 +170,7 @@ def test_confounds_standardization(
     "standardize_signal",
     [
         # Signal is not standardized
-        False,
+        None,
         # Signal is z-scored with string arg
         "zscore_sample",
         # Signal is psc standardized
@@ -298,7 +297,7 @@ def test_compute_background_mask_errors_warnings(affine_eye):
 
 def test_compute_brain_mask():
     """Test compute_brain_mask."""
-    img, _ = data_gen.generate_mni_space_img(res=8, random_state=0)
+    img, _ = data_gen.generate_mni_space_img(res=8, rand_gen=0)
 
     brain_mask = compute_brain_mask(img, threshold=0.2, verbose=1)
     gm_mask = compute_brain_mask(img, threshold=0.2, mask_type="gm")
@@ -326,7 +325,7 @@ def test_compute_brain_mask():
         compute_brain_mask(img, threshold=1)
 
     # Check that masks obtained from same FOV are the same
-    img1, _ = data_gen.generate_mni_space_img(res=8, random_state=1)
+    img1, _ = data_gen.generate_mni_space_img(res=8, rand_gen=1)
     mask_img1 = compute_brain_mask(img1, verbose=1, threshold=0.2)
 
     assert (brain_data == get_data(mask_img1)).all()
@@ -375,13 +374,33 @@ def test_apply_mask(tmp_path, create_files, affine):
         assert_equal(proj.sum(), 9 / np.abs(affine[axis, axis]))
 
 
-def test_apply_mask_surface(surf_img_2d, surf_mask_1d):
-    """Test apply_mask on surface."""
-    length = 5
-    series = apply_mask(surf_img_2d(length), surf_mask_1d)
+def test_apply_mask_surface(surf_img_1d, surf_mask_1d):
+    """Test apply_mask on surface.
 
-    assert isinstance(series, np.ndarray)
-    assert series.shape[0] == length
+    0 and None should give the same results.
+    Otherwise we expect the data to be smoother.
+    """
+    img_none = apply_mask(surf_img_1d, surf_mask_1d, smoothing_fwhm=None)
+    img_zero = apply_mask(surf_img_1d, surf_mask_1d, smoothing_fwhm=0)
+
+    assert_array_equal(img_none, img_zero)
+
+    smoothed_img = apply_mask(surf_img_1d, surf_mask_1d, smoothing_fwhm=5)
+
+    assert img_zero.max() > smoothed_img.max()
+    assert img_zero.var() > smoothed_img.var()
+
+
+@pytest.mark.parametrize(
+    "smoothing_fwhm", [(0, 1, 2), [0, 1, 2], np.asarray([1])]
+)
+def test_apply_mask_surface_error(surf_img_2d, surf_mask_1d, smoothing_fwhm):
+    """Test error apply_mask on surface."""
+    length = 5
+    with pytest.raises(TypeError, match="must be of type"):
+        apply_mask(
+            surf_img_2d(length), surf_mask_1d, smoothing_fwhm=smoothing_fwhm
+        )
 
 
 def test_apply_mask_nan(affine_eye):
@@ -397,6 +416,21 @@ def test_apply_mask_nan(affine_eye):
     series = apply_mask(data_img, mask_img, smoothing_fwhm=9)
 
     assert np.all(np.isfinite(series))
+
+
+def test_apply_mask_3d_accepted(affine_eye):
+    """Check that 3D data is accepted."""
+    data_3d = Nifti1Image(
+        np.arange(27, dtype="int32").reshape((3, 3, 3)), affine_eye
+    )
+    mask_data_3d = np.zeros((3, 3, 3))
+    mask_data_3d[1, 1, 0] = True
+    mask_data_3d[0, 1, 0] = True
+    mask_data_3d[0, 1, 1] = True
+
+    data_3d = apply_mask(data_3d, Nifti1Image(mask_data_3d, affine_eye))
+
+    assert sorted(data_3d.tolist()) == [3.0, 4.0, 12.0]
 
 
 def test_apply_mask_errors(affine_eye, shape_3d_default):
@@ -416,19 +450,6 @@ def test_apply_mask_errors(affine_eye, shape_3d_default):
 
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG % "4D"):
         apply_mask(data_img, mask_img_4d)
-
-    # Check that 3D data is accepted
-    data_3d = Nifti1Image(
-        np.arange(27, dtype="int32").reshape((3, 3, 3)), affine_eye
-    )
-    mask_data_3d = np.zeros((3, 3, 3))
-    mask_data_3d[1, 1, 0] = True
-    mask_data_3d[0, 1, 0] = True
-    mask_data_3d[0, 1, 1] = True
-
-    data_3d = apply_mask(data_3d, Nifti1Image(mask_data_3d, affine_eye))
-
-    assert sorted(data_3d.tolist()) == [3.0, 4.0, 12.0]
 
     # Check data shape and affine
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG % "2D"):
@@ -542,6 +563,22 @@ def test_unmask_3d_with_files(
     assert_array_equal(t[0], unmasked3D)
 
 
+def test_unmask_retain_datatype(rng, affine_eye, shape_3d_default):
+    """Check that the unmasked image retains the datatype of the data array.
+
+    see https://github.com/nilearn/nilearn/issues/6150
+    """
+    data3D = rng.uniform(size=shape_3d_default)
+    mask = rng.integers(2, size=shape_3d_default, dtype="int32")
+    mask_img = Nifti1Image(mask, affine_eye)
+
+    mask = mask.astype(bool)
+    masked3D = data3D[mask]
+
+    t = unmask([masked3D], mask_img, order="F")
+    assert t[0].get_data_dtype() == data3D.dtype
+
+
 def test_unmask_errors(rng, affine_eye, shape_3d_default):
     """Test unmask errors."""
     # A delta in 3D
@@ -603,7 +640,7 @@ def test_unmask_error_shape(rng, affine_eye, shape_4d_default):
 
 
 @pytest.fixture
-def img_2d_mask_bottom_right(affine_eye):
+def img_2d_mask_bottom_right(affine_eye) -> Nifti1Image:
     """Return 3D nifti binary mask image with bottom right filled.
 
     +---+---+---+---+
@@ -623,7 +660,7 @@ def img_2d_mask_bottom_right(affine_eye):
 
 
 @pytest.fixture
-def img_2d_mask_center(affine_eye):
+def img_2d_mask_center(affine_eye) -> Nifti1Image:
     """Return 3D nifti binary mask image with center filled.
 
     +---+---+---+---+
@@ -685,7 +722,6 @@ def test_intersect_masks_f8(img_2d_mask_bottom_right, img_2d_mask_center):
     assert_array_equal(mask_ab, get_data(mask_ab_change_type))
 
 
-@pytest.mark.slow
 def test_intersect_masks(
     affine_eye, img_2d_mask_bottom_right, img_2d_mask_center
 ):
@@ -816,7 +852,6 @@ def test_compute_multi_epi_mask(affine_eye):
     assert_array_equal(mask_ab, get_data(mask_ab_))
 
 
-@pytest.mark.slow
 def test_compute_multi_brain_mask_error():
     """Check error raised if images with different shapes given as input."""
     imgs = [
@@ -830,16 +865,15 @@ def test_compute_multi_brain_mask_error():
         compute_multi_brain_mask(imgs)
 
 
-@pytest.mark.slow
 def test_compute_multi_brain_mask():
     """Check results are the same if affine is the same."""
     imgs1 = [
-        data_gen.generate_mni_space_img(res=9, random_state=0)[0],
-        data_gen.generate_mni_space_img(res=9, random_state=1)[0],
+        data_gen.generate_mni_space_img(res=9, rand_gen=0)[0],
+        data_gen.generate_mni_space_img(res=9, rand_gen=1)[0],
     ]
     imgs2 = [
-        data_gen.generate_mni_space_img(res=9, random_state=2)[0],
-        data_gen.generate_mni_space_img(res=9, random_state=3)[0],
+        data_gen.generate_mni_space_img(res=9, rand_gen=2)[0],
+        data_gen.generate_mni_space_img(res=9, rand_gen=3)[0],
     ]
     mask1 = compute_multi_brain_mask(imgs1, threshold=0.2, verbose=1)
     mask2 = compute_multi_brain_mask(imgs2, threshold=0.2)

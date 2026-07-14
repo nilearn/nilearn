@@ -27,7 +27,7 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, readable_time
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -36,17 +36,16 @@ from nilearn._utils.param_validation import (
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import adjust_screening_percentile
+from nilearn.decoding.space_net_solvers import (
+    graph_net_logistic,
+    graph_net_squared_loss,
+    tvl1_solver,
+)
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import unmask_from_to_3d_array
 from nilearn.surface import SurfaceImage
-
-from .space_net_solvers import (
-    graph_net_logistic,
-    graph_net_squared_loss,
-    tvl1_solver,
-)
 
 
 def _crop_mask(mask):
@@ -93,7 +92,7 @@ def _univariate_feature_screening(
     %(screening_percentile)s
 
     %(smoothing_fwhm)s
-        Default=2.
+        default=2.
 
     Returns
     -------
@@ -216,7 +215,7 @@ class _EarlyStoppingCallback:
     for scoring.
     """
 
-    def __init__(self, X_test, y_test, is_classif, debias=False, verbose=0):
+    def __init__(self, X_test, y_test, is_classif, verbose, debias=False):
         self.X_test = X_test
         self.y_test = y_test
         self.is_classif = is_classif
@@ -354,13 +353,13 @@ def path_scores(
     train,
     test,
     solver_params,
+    verbose,
     is_classif=False,
     n_alphas=10,
     eps=1e-3,
     key=None,
     debias=False,
     screening_percentile=20,
-    verbose=0,
 ):
     """Compute scores of different alphas in regression \
     and classification used by CV objects.
@@ -495,7 +494,7 @@ def path_scores(
                     mask=mask,
                     init=init,
                     callback=early_stopper,
-                    verbose=max(verbose - 1, 0),
+                    verbose=verbose,
                     **path_solver_params,
                 )
 
@@ -548,7 +547,7 @@ def path_scores(
             y_test,
             is_classif=is_classif,
             debias=debias,
-            verbose=verbose,
+            verbose=max(verbose - 1, 0),
         )._debias(best_w)
 
     if len(test) == 0.0:
@@ -937,7 +936,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
             alphas,
             y_train_mean,
             (cls, fold),
-        ) in Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)(
+        ) in Parallel(n_jobs=self.n_jobs)(
             delayed(self._cache(path_scores, func_memory_level=2))(
                 solver,
                 X,
@@ -954,7 +953,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
                 is_classif=is_classifier(self),
                 key=(cls, fold),
                 debias=self.debias,
-                verbose=self.verbose,
+                verbose=max(self.verbose - 1, 0),
                 screening_percentile=self.screening_percentile_,
             )
             for cls in range(n_problems)
@@ -991,7 +990,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         # report time elapsed
         duration = time.time() - tic
         logger.log(
-            f"Time Elapsed: {duration:.3f} seconds.",
+            f"Time Elapsed: {readable_time(duration)} seconds.",
             self.verbose,
         )
 

@@ -44,9 +44,8 @@ N_SUBJECTS = 5
 
 
 ESTIMATORS_TO_CHECK = [
-    ConnectivityMeasure(
-        cov_estimator=EmpiricalCovariance(), standardize="zscore_sample"
-    )
+    ConnectivityMeasure(cov_estimator=EmpiricalCovariance()),
+    ConnectivityMeasure(),
 ]
 
 if SKLEARN_LT_1_6:
@@ -92,7 +91,6 @@ else:
         check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -165,7 +163,9 @@ def random_spd(p, eig_min, cond, random_state=0):
     return unitary.dot(diag).dot(unitary.T)
 
 
-def _signals(n_subjects=N_SUBJECTS):
+def _signals(
+    n_subjects: int = N_SUBJECTS,
+) -> tuple[list[np.ndarray], np.ndarray]:
     """Generate signals and compute covariances \
     and apply confounds while computing covariances.
     """
@@ -185,12 +185,15 @@ def _signals(n_subjects=N_SUBJECTS):
 
 
 @pytest.fixture
-def signals():
+def signals() -> list[np.ndarray]:
+    """Return a list of signals as arrays."""
     return _signals(N_SUBJECTS)[0]
 
 
 @pytest.fixture
-def signals_and_covariances(cov_estimator):
+def signals_and_covariances(
+    cov_estimator,
+) -> tuple[list[np.ndarray], list[np.ndarray]] | None:
     signals, _ = _signals()
     emp_covs = []
     ledoit_covs = []
@@ -205,6 +208,7 @@ def signals_and_covariances(cov_estimator):
         return signals, ledoit_covs
     elif isinstance(cov_estimator, EmpiricalCovariance):
         return signals, emp_covs
+    return None
 
 
 def test_check_square():
@@ -647,6 +651,18 @@ def test_connectivity_measure_errors():
         match=r"Tangent space parametrization .* only be .* group of subjects",
     ):
         conn_measure.fit_transform([np.ones((100, 40))])
+
+    # invalid cov_estimator
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"'cov_estimator' must be an estimator with '.fit\(\)' and "
+            "'.covariance_'"
+        ),
+    ):
+        ConnectivityMeasure(cov_estimator="not_an_estimator").fit(
+            [np.ones((100, 40)), np.ones((100, 40))]
+        )
 
 
 @pytest.mark.parametrize(

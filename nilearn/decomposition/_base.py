@@ -10,6 +10,7 @@ import warnings
 from math import ceil
 from pathlib import Path
 from string import Template
+from typing import get_args
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -44,9 +45,9 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
-from nilearn.typing import NiimgLike
 
 
 def _warn_ignored_surface_masker_params(estimator) -> None:
@@ -345,6 +346,10 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
+
     %(target_affine)s
 
         .. note::
@@ -357,7 +362,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
     %(mask_strategy)s
 
-        Default='epi'.
+        default='epi'.
         .. note::
 
           These strategies are only relevant for Nifti images and the parameter
@@ -401,6 +406,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -421,6 +427,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.mask_strategy = mask_strategy
@@ -456,7 +463,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
                     SurfaceMasker,
                     SurfaceImage,
                     NiftiMasker,
-                    *NiimgLike,
+                    *get_args(NiimgLike),
                 ),
                 "mask",
             )
@@ -504,9 +511,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             # these classes are meant for list of 4D images
             # (multi-subject), we want it to work also on a single
             # subject, so we hack it.
-            imgs = [
-                imgs,
-            ]
+            imgs = [imgs]
 
         if len(imgs) == 0:
             # Common error that arises from a null glob. Capture
@@ -531,7 +536,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         if self.mask is not None:
             if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)):
                 masker_type = "multi_surface"
-            if isinstance(self.mask, (MultiNiftiMasker, *NiimgLike)):
+            if isinstance(self.mask, (MultiNiftiMasker, *get_args(NiimgLike))):
                 masker_type = "multi_nii"
             elif isinstance(self.mask, SurfaceMasker):
                 masker_type = "surface"
@@ -545,6 +550,17 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         self.masker_.memory_level = self.memory_level
+        # Only propagate float dtypes to masker_ (used for fitting/SVD).
+        # Integer dtypes would collapse float data to uniform integers,
+        # zeroing out PCA components after centering.
+        # The transform output dtype is handled by maps_masker_ instead.
+        _dtype_is_int = (
+            self.dtype is not None
+            and self.dtype != "auto"
+            and np.dtype(self.dtype).kind != "f"
+        )
+        self.masker_.dtype = None if _dtype_is_int else self.dtype
+
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
         if self.masker_.mask_img is None:
@@ -577,6 +593,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             self.maps_masker_ = SurfaceMapsMasker(
                 self.components_img_,
                 self.masker_.mask_img_,
+                dtype=self.dtype,
                 **maps_masker_kwargs,
             )
         else:
@@ -584,9 +601,17 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
                 self.components_img_,
                 self.masker_.mask_img_,
                 resampling_target="maps",
+                dtype=self.dtype,
                 **maps_masker_kwargs,
             )
-        self.maps_masker_.fit()
+
+        try:
+            self.maps_masker_.fit()
+        except ValueError as e:
+            if "maps_img contains no map" in str(e):
+                raise ValueError("No component found in data.") from e
+            else:
+                raise e
 
         return self
 

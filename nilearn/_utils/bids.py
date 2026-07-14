@@ -1,14 +1,20 @@
 import warnings
 
+import numpy as np
 import pandas as pd
 
 from nilearn._utils.logger import find_stack_level
 from nilearn.image.image import get_indices_from_image
+from nilearn.nilearn_typing import Verbose
 
 
 def generate_atlas_look_up_table(
-    function=None, name=None, index=None, strict=False, background_label=None
-):
+    function=None,
+    name=None,
+    index=None,
+    strict: bool = False,
+    background_label: int | float | None = None,
+) -> pd.DataFrame:
     """Generate a BIDS compatible look up table for an atlas.
 
     For a given deterministic atlas supported by Nilearn,
@@ -48,7 +54,7 @@ def generate_atlas_look_up_table(
         If True, an error will be thrown
         if ``name`` and ``index``have different length.
 
-    background_label: str or None, default=None
+    background_label: int or float or None, default=None
         If not None and no 'name' was passed,
         this label is used to describe the background value in the image.
     """
@@ -73,6 +79,20 @@ def generate_atlas_look_up_table(
         index = list(range(len(name)))
     else:
         index = get_indices_from_image(index).tolist()
+
+        if len(index) == 1:
+            if background_label is None:
+                warnings.warn(
+                    (
+                        "The image either contains no label "
+                        "or a single label covering the whole image."
+                    ),
+                    category=UserWarning,
+                    stacklevel=find_stack_level(),
+                )
+            elif index[0] == background_label:
+                raise ValueError("The image contains no label.")
+
     if fname == "fetch_atlas_basc_multiscale_2015":
         index = []
         for x in name:
@@ -122,16 +142,15 @@ def generate_atlas_look_up_table(
         )
 
     # enforce little endian of index column
-    if lut["index"].dtype.byteorder == ">":
-        lut["index"] = lut["index"].astype(
-            lut["index"].dtype.newbyteorder("=")
-        )
+    index_dtype = lut["index"].dtype
+    if isinstance(index_dtype, np.dtype) and index_dtype.byteorder == ">":
+        lut["index"] = lut["index"].astype(index_dtype.newbyteorder("="))
 
     return lut
 
 
 def check_look_up_table(
-    lut: pd.DataFrame, atlas, strict: bool = False, verbose: int = 0
+    lut: pd.DataFrame, atlas, strict: bool = False, verbose: Verbose = 0
 ) -> None:
     """Validate atlas look up table (LUT).
 
@@ -152,8 +171,8 @@ def check_look_up_table(
     strict : bool, default = False
         Errors are raised instead of warnings if strict == True.
 
-    verbose: int
-        No warning thrown if set to 0.
+    verbose: bool | int
+        No warning thrown if Falsy.
 
     Raises
     ------

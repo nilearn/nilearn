@@ -6,6 +6,7 @@ should go into nilearn/_utils/estimator_checks.
 
 from collections import Counter
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -13,6 +14,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
 from nilearn._utils.helpers import (
+    is_gil_enabled,
     is_matplotlib_installed,
     is_plotly_installed,
 )
@@ -55,16 +57,14 @@ def generate_and_check_masker_report(
         warnings_msg_to_check = []
 
     includes = []
-    excludes = []
-
+    excludes = ["Adapted from Pure CSS navbar"]
     # navbar and its css is only for GLM reports
-    excludes.append("Adapted from Pure CSS navbar")
 
     report_at_fit_time = masker._report_content.get(
         "reports_at_fit_time", masker.reports
     )
 
-    if not report_at_fit_time:
+    if not masker.reports:
         warnings_msg_to_check.append(
             "\nReport generation not enabled!\nNo visual outputs created."
         )
@@ -72,6 +72,13 @@ def generate_and_check_masker_report(
         excludes.append(
             "\nReport generation not enabled!\nNo visual outputs created."
         )
+
+    if not report_at_fit_time and masker.__sklearn_is_fitted__():
+        warnings_msg_to_check.append(
+            "\nReport generation was disabled when fit was run."
+        )
+    else:
+        excludes.append("Report generation was disabled when fit was run")
 
     if not report_at_fit_time or not masker.__sklearn_is_fitted__():
         # no image present if reports not requested or masker is not fitted
@@ -87,7 +94,7 @@ def generate_and_check_masker_report(
         if is_matplotlib_installed():
             if accept_surf_img_input(masker):
                 includes.append("data:image/png;base64,")
-            else:
+            elif kwargs.get("engine", "") != "brainsprite":
                 includes.append("data:image/svg+xml;base64,")
 
         else:
@@ -114,19 +121,21 @@ def generate_and_check_masker_report(
 
 
 @pytest.fixture
-def niftimapsmasker_inputs():
+def niftimapsmasker_inputs() -> dict[str, Any]:
     """Return inputs for nifti maps masker."""
     return {"maps_img": _img_maps(n_regions=3)}
 
 
 @pytest.fixture
-def labels(n_regions):
+def labels(n_regions) -> list[str]:
     """Return labels for label masker."""
     return ["background"] + [f"region_{i}" for i in range(1, n_regions + 1)]
 
 
 @pytest.fixture
-def input_parameters(masker_class, img_mask_eye, labels, img_labels):
+def input_parameters(
+    masker_class, img_mask_eye, labels, img_labels
+) -> dict[str, Any] | None:
     """Define inputs for each type masker."""
     if masker_class in (NiftiMasker, MultiNiftiMasker):
         return {"mask_img": img_mask_eye}
@@ -151,9 +160,9 @@ def input_parameters(masker_class, img_mask_eye, labels, img_labels):
         }
     if masker_class is SurfaceMapsMasker:
         return {"maps_img": _surf_maps_img()}
+    return None
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
@@ -169,19 +178,25 @@ def input_parameters(masker_class, img_mask_eye, labels, img_labels):
     ],
 )
 def test_displayed_maps_valid_inputs(
-    masker_class, input_parameters, displayed_maps, expected_displayed_maps
+    matplotlib_pyplot,  # noqa: ARG001
+    masker_class,
+    input_parameters,
+    displayed_maps,
+    expected_displayed_maps,
 ):
     """Test valid inputs for displayed_maps/spheres."""
     masker = masker_class(**input_parameters)
     masker.fit()
 
-    html = masker.generate_report(displayed_maps)
+    if isinstance(masker, NiftiSpheresMasker):
+        html = masker.generate_report(displayed_spheres=displayed_maps)
+    else:
+        html = masker.generate_report(displayed_maps=displayed_maps)
 
     # sphere masker display all spheres on index 0
     # so we must offset by 1
     if isinstance(masker, NiftiSpheresMasker):
-        tmp = [0]
-        tmp.extend([x + 1 for x in expected_displayed_maps])
+        tmp = [0, *[x + 1 for x in expected_displayed_maps]]
         expected_displayed_maps = tmp
 
     assert masker._report_content["displayed_maps"] == expected_displayed_maps
@@ -207,10 +222,12 @@ def test_displayed_maps_error(masker_class, input_parameters, displayed_maps):
             "or a list/array of ints"
         ),
     ):
-        masker.generate_report(displayed_maps)
+        if isinstance(masker, NiftiSpheresMasker):
+            masker.generate_report(displayed_spheres=displayed_maps)
+        else:
+            masker.generate_report(displayed_maps=displayed_maps)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
@@ -227,10 +244,12 @@ def test_displayed_maps_warning_too_many(
         UserWarning,
         match="Report cannot display the following",
     ):
-        masker.generate_report(displayed_maps)
+        if isinstance(masker, NiftiSpheresMasker):
+            masker.generate_report(displayed_spheres=displayed_maps)
+        else:
+            masker.generate_report(displayed_maps=displayed_maps)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
@@ -241,7 +260,10 @@ def test_displayed_maps_warning_int_too_large(masker_class, input_parameters):
     masker = masker_class(**input_parameters)
     masker.fit()
     with pytest.warns(UserWarning, match="was set to 6"):
-        masker.generate_report(7)
+        if isinstance(masker, NiftiSpheresMasker):
+            masker.generate_report(displayed_spheres=7)
+        else:
+            masker.generate_report(displayed_maps=7)
 
 
 @pytest.mark.thread_unsafe
@@ -263,7 +285,6 @@ def test_nifti_spheres_masker_report_1_sphere(
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_nifti_labels_masker_report_no_image_for_fit(
     img_3d_rand_eye, n_regions, labels, img_labels
 ):
@@ -273,7 +294,7 @@ def test_nifti_labels_masker_report_no_image_for_fit(
 
     # No image was provided to fit, regions are plotted using
     # plot_roi such that no contour should be in the image
-    display = masker._reporting()
+    display = masker._load_report_displays()
 
     if not is_matplotlib_installed():
         assert display is None
@@ -284,7 +305,7 @@ def test_nifti_labels_masker_report_no_image_for_fit(
 
     masker.fit(img_3d_rand_eye)
 
-    display = masker._reporting()
+    display = masker._load_report_displays()
     for d in ["x", "y", "z"]:
         assert len(display.axes[d].ax.collections) > 0
         assert len(display.axes[d].ax.collections) <= n_regions
@@ -299,7 +320,7 @@ EXPECTED_COLUMNS = [
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
+@pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
 def test_nifti_labels_masker_report(
     img_3d_rand_eye,
     img_mask_eye,
@@ -314,8 +335,12 @@ def test_nifti_labels_masker_report(
         labels=labels,
         mask_img=img_mask_eye,
         keep_masked_labels=True,
+        standardize=None,
     )
-    masker.fit_transform(img_3d_rand_eye)
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_labels" parameter will be removed'
+    ):
+        masker.fit_transform(img_3d_rand_eye)
 
     assert masker._reporting_data is not None
 
@@ -326,7 +351,9 @@ def test_nifti_labels_masker_report(
     )
 
     generate_and_check_masker_report(
-        masker, extend_includes=["Regions summary"]
+        masker,
+        extend_includes=["Regions summary"],
+        extra_warnings_allowed=True,
     )
 
     # Check that the number of regions is correct
@@ -360,7 +387,6 @@ def test_nifti_labels_masker_report(
         )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
 def test_nifti_labels_masker_report_cut_coords(
@@ -371,16 +397,17 @@ def test_nifti_labels_masker_report_cut_coords(
 ):
     """Test cut coordinate are equal with and without passing data to fit."""
     masker = masker_class(**input_parameters, reports=True)
+
     # Get display without data
     masker.fit()
-    display = masker._reporting()
+    display = masker._load_report_displays()
+
     # Get display with data
     masker.fit(img_3d_rand_eye)
-    display_data = masker._reporting()
+    display_data = masker._load_report_displays()
     assert display.cut_coords == display_data.cut_coords
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
     """Test for NiftiMasker reports with 4D data."""
@@ -409,7 +436,6 @@ def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_nifti_masker_overlaid_report(
     matplotlib_pyplot,  # noqa: ARG001
     img_fmri,
@@ -426,6 +452,7 @@ def test_nifti_masker_overlaid_report(
         mask_strategy="whole-brain-template",
         mask_args={"threshold": 0.0},
         target_affine=np.eye(3),
+        standardize=None,
     )
     masker.fit(img_fmri)
 
@@ -435,7 +462,40 @@ def test_nifti_masker_overlaid_report(
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
+@pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
+def test_nifti_masker_brainsprite(
+    matplotlib_pyplot,  # noqa: ARG001
+    img_fmri,
+):
+    """Check that NiftiMasker work with brainsprite engine."""
+    masker = NiftiMasker(standardize=None)
+    generate_and_check_masker_report(
+        masker, extra_warnings_allowed=True, engine="brainsprite"
+    )
+    masker.fit(img_fmri)
+    generate_and_check_masker_report(
+        masker, extra_warnings_allowed=True, engine="brainsprite"
+    )
+
+
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
+def test_nifti_label_masker_brainsprite(
+    matplotlib_pyplot,  # noqa: ARG001
+    img_labels,
+):
+    """Check that NiftiLabelsMasker work with brainsprite engine."""
+    masker = NiftiLabelsMasker(img_labels, standardize=None)
+    generate_and_check_masker_report(
+        masker, extra_warnings_allowed=True, engine="brainsprite"
+    )
+    masker.fit()
+    generate_and_check_masker_report(
+        masker, extra_warnings_allowed=True, engine="brainsprite"
+    )
+
+
+@pytest.mark.thread_unsafe
 def test_multi_nifti_masker_generate_report_mask(
     img_3d_ones_eye, shape_3d_default, affine_eye
 ):
@@ -445,6 +505,7 @@ def test_multi_nifti_masker_generate_report_mask(
         # to test resampling lines without imgs
         target_affine=affine_eye,
         target_shape=shape_3d_default,
+        standardize=None,
     )
     masker.fit()
 
@@ -454,7 +515,6 @@ def test_multi_nifti_masker_generate_report_mask(
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_multi_nifti_masker_generate_report_imgs_and_mask(
     shape_3d_default, affine_eye, img_fmri
 ):
@@ -465,6 +525,7 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
         # to test resampling lines with imgs
         target_affine=affine_eye,
         target_shape=shape_3d_default,
+        standardize=None,
     )
     masker.fit([img_fmri, img_fmri])
 
@@ -479,7 +540,7 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
 @pytest.mark.thread_unsafe
 def test_surface_masker_mask_img_generate_report(surf_img_1d, surf_mask_1d):
     """Smoke test generate report."""
-    masker = SurfaceMasker(surf_mask_1d, reports=True).fit()
+    masker = SurfaceMasker(surf_mask_1d, reports=True, standardize=None).fit()
 
     assert masker._reporting_data is not None
     assert masker._reporting_data["images"] is None
@@ -498,7 +559,7 @@ def test_surface_masker_minimal_report_no_fit(
 ):
     """Test minimal report generation with no fit."""
     mask = None if empty_mask else surf_mask_1d
-    masker = SurfaceMasker(mask_img=mask, reports=reports)
+    masker = SurfaceMasker(mask_img=mask, reports=reports, standardize=None)
     generate_and_check_masker_report(masker)
 
 
@@ -510,7 +571,7 @@ def test_surface_masker_minimal_report_fit(
 ):
     """Test minimal report generation with fit."""
     mask = None if empty_mask else surf_mask_1d
-    masker = SurfaceMasker(mask_img=mask, reports=reports)
+    masker = SurfaceMasker(mask_img=mask, reports=reports, standardize=None)
     masker.fit_transform(surf_img_1d)
 
     extend_includes = []
@@ -529,7 +590,7 @@ def test_surface_maps_masker_generate_report_engine_error(
     surf_img_2d,
 ):
     """Test error is raised when engine is not 'plotly' or 'matplotlib'."""
-    masker = SurfaceMapsMasker(surf_maps_img)
+    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
     masker.fit_transform(surf_img_2d(10))
     with pytest.raises(
         ValueError,
@@ -544,12 +605,14 @@ def test_surface_maps_masker_generate_report_engine_error(
     reason="Test requires plotly not to be installed.",
 )
 def test_surface_maps_masker_generate_report_engine_no_plotly_warning(
-    surf_maps_img, surf_img_2d
+    matplotlib_pyplot,  # noqa: ARG001
+    surf_maps_img,
+    surf_img_2d,
 ):
     """Test warning is raised when engine selected is plotly but it is not
     installed. Only run when plotly is not installed but matplotlib is.
     """
-    masker = SurfaceMapsMasker(surf_maps_img)
+    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
     masker.fit_transform(surf_img_2d(10))
     with pytest.warns(match="Plotly is not installed"):
         masker.generate_report(engine="plotly", displayed_maps=2)
@@ -581,7 +644,7 @@ def test_surface_maps_masker_generate_report_plotly_out_figure_type(
     """Test that the report has a iframe tag when engine is plotly
     (default).
     """
-    masker = SurfaceMapsMasker(surf_maps_img)
+    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
     masker.fit_transform(surf_img_2d(10))
     report = masker.generate_report(engine="plotly", displayed_maps=2)
 
@@ -600,7 +663,7 @@ def test_surface_maps_masker_generate_report_matplotlib_out_figure_type(
     surf_img_2d,
 ):
     """Test that the report has a img tag when engine is matplotlib."""
-    masker = SurfaceMapsMasker(surf_maps_img)
+    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
     masker.fit_transform(surf_img_2d(10))
     report = masker.generate_report(engine="matplotlib", displayed_maps=2)
 

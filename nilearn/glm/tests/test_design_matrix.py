@@ -23,8 +23,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
     make_second_level_design_matrix,
 )
-
-from ._testing import (
+from nilearn.glm.tests._testing import (
     block_paradigm,
     design_with_negative_onsets,
     modulated_block_paradigm,
@@ -71,12 +70,12 @@ def design_matrix_light(
 
 
 @pytest.fixture
-def n_frames():
+def n_frames() -> int:
     return 128
 
 
 @pytest.fixture
-def frame_times(n_frames):
+def frame_times(n_frames) -> np.ndarray:
     t_r = 1.0
     return np.linspace(0, (n_frames - 1) * t_r, n_frames)
 

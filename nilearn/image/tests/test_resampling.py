@@ -55,13 +55,13 @@ def rotation(theta, phi):
 
 
 @pytest.fixture
-def shape():
+def shape() -> tuple[int, int, int, int]:
     return SHAPE
 
 
 @pytest.fixture
-def data(rng, shape):
-    return rng.random(shape)
+def data(rng, shape) -> np.ndarray:
+    return rng.random(size=shape)
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
@@ -102,6 +102,32 @@ def test_identity_resample_array_like(
     )
 
     assert_almost_equal(data, get_data(rot_img))
+
+
+@pytest.mark.parametrize(
+    "target_affine",
+    [
+        _affine_eye().tolist(),
+        tuple(_affine_eye().tolist()),
+    ],
+)
+def test_resample_img_target_affine_array_like_with_target_shape(
+    data, affine_eye, target_affine
+):
+    """target_affine as list/tuple should work together with target_shape.
+
+    Regression test: used to raise AttributeError because
+    _check_resample_img_inputs called target_affine.shape before
+    target_affine had been converted to a numpy array.
+    """
+    resampled = resample_img(
+        Nifti1Image(data, affine_eye),
+        target_affine=target_affine,
+        target_shape=(2, 2, 2),
+        interpolation="nearest",
+    )
+
+    assert resampled.shape[:3] == (2, 2, 2)
 
 
 @pytest.mark.parametrize(
@@ -547,9 +573,8 @@ def test_4d_affine_bounding_box_error(affine_eye, force_resample):
 def test_raises_upon_3x3_affine_and_no_shape(affine_eye, force_resample):
     img = Nifti1Image(np.zeros([8, 9, 10]), affine=affine_eye)
     message = (
-        "Given target shape without anchor "
-        "vector: Affine shape should be \\(4, 4\\) and "
-        "not \\(3, 3\\)"
+        "Given target shape without anchor vector: "
+        "'target_affine' shape should be \\(4, 4\\) and not \\(3, 3\\)"
     )
     with pytest.raises(ValueError, match=message):
         resample_img(

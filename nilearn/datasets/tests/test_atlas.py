@@ -3,7 +3,9 @@
 import itertools
 import re
 import xml.etree.ElementTree as ET
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -180,7 +182,7 @@ def _test_atlas_instance_should_match_data(atlas, is_symm):
 
 
 @pytest.fixture
-def fsl_fetcher(name):
+def fsl_fetcher(name) -> Callable[..., Any]:
     return (
         fetch_atlas_juelich
         if name == "Juelich"
@@ -201,7 +203,7 @@ def test_fetch_atlas_fsl_errors(prob, fsl_fetcher, tmp_path):
 
 
 @pytest.fixture
-def atlas_data():
+def atlas_data() -> np.ndarray:
     # Create false atlas
     atlas_data = np.zeros((10, 10, 10), dtype="int32")
     # Create an interhemispheric map
@@ -540,7 +542,7 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker, capsys):
 
 
 @pytest.fixture
-def aal_archive_root(version):
+def aal_archive_root(version) -> Path:
     if version == "SPM12":
         return Path("aal", "atlas")
     else:
@@ -588,7 +590,10 @@ def test_fetch_atlas_aal(
     )
     request_mocker.url_mapping[f"*{url_key}*"] = aal_data
 
-    dataset = fetch_atlas_aal(version=version, data_dir=tmp_path, verbose=0)
+    with pytest.warns(UserWarning, match="regions are present in the atlas"):
+        dataset = fetch_atlas_aal(
+            version=version, data_dir=tmp_path, verbose=0
+        )
 
     validate_atlas(dataset)
     assert isinstance(dataset.maps, str)
@@ -710,9 +715,10 @@ def test_fetch_atlas_surf_destrieux(tmp_path, capsys):
     assert bunch.map_left.shape == (4,)
     assert bunch.map_right.shape == (4,)
 
-    check_fetcher_verbosity(
-        fetch_atlas_surf_destrieux, capsys, data_dir=tmp_path
-    )
+    with pytest.warns(UserWarning, match="regions are present in the atlas"):
+        check_fetcher_verbosity(
+            fetch_atlas_surf_destrieux, capsys, data_dir=tmp_path
+        )
 
 
 def _get_small_fake_talairach():
@@ -730,7 +736,6 @@ def _get_small_fake_talairach():
     return serialize_niimg(img, gzipped=False)
 
 
-@pytest.mark.slow
 def test_fetch_atlas_talairach(tmp_path, request_mocker, capsys):
     request_mocker.url_mapping["*talairach.nii"] = _get_small_fake_talairach()
     level_values = np.ones((81, 3)) * [0, 1, 2]
@@ -849,13 +854,14 @@ def test_fetch_atlas_schaefer_2018(
     mock_file = mock_dir / basename
     mock_lut.to_csv(mock_file, sep="\t", header=False)
 
-    data = fetch_atlas_schaefer_2018(
-        n_rois=n_rois,
-        yeo_networks=yeo_networks,
-        resolution_mm=resolution_mm,
-        data_dir=tmp_path,
-        verbose=0,
-    )
+    with pytest.warns(UserWarning, match="regions are present in the atlas"):
+        data = fetch_atlas_schaefer_2018(
+            n_rois=n_rois,
+            yeo_networks=yeo_networks,
+            resolution_mm=resolution_mm,
+            data_dir=tmp_path,
+            verbose=0,
+        )
 
     validate_atlas(data)
 
@@ -870,14 +876,15 @@ def test_fetch_atlas_schaefer_2018(
     assert img.header.get_zooms()[0] == resolution_mm
     assert np.array_equal(np.unique(img.dataobj), np.arange(n_rois + 1))
 
-    check_fetcher_verbosity(
-        fetch_atlas_schaefer_2018,
-        capsys,
-        n_rois=n_rois,
-        yeo_networks=yeo_networks,
-        resolution_mm=resolution_mm,
-        data_dir=tmp_path,
-    )
+    with pytest.warns(UserWarning, match="regions are present in the atlas"):
+        check_fetcher_verbosity(
+            fetch_atlas_schaefer_2018,
+            capsys,
+            n_rois=n_rois,
+            yeo_networks=yeo_networks,
+            resolution_mm=resolution_mm,
+            data_dir=tmp_path,
+        )
 
 
 @pytest.fixture

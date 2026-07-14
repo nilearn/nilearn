@@ -11,6 +11,7 @@ from nilearn.plotting.tests.test_js_plotting_utils import (
 
 
 def test_prepare_line():
+    """Test that _prepare_line pads edges and nodes with separators."""
     e = np.asarray([0, 1, 2, 3], dtype=int)
     n = np.asarray([[0, 1], [0, 2], [2, 3], [8, 9]], dtype=int)
     pe, pn = html_connectome._prepare_line(e, n)
@@ -27,6 +28,7 @@ def test_prepare_line():
     ],
 )
 def test_prepare_colors_for_markers(node_color, expected_marker_colors):
+    """Test that _prepare_colors_for_markers maps colors per node."""
     number_of_nodes = 3
     marker_colors = html_connectome._prepare_colors_for_markers(
         node_color,
@@ -47,6 +49,7 @@ def _make_connectome():
 
 
 def test_get_connectome():
+    """Test that _get_connectome encodes the connectome coordinates."""
     adj, coord = _make_connectome()
     connectome = html_connectome._get_connectome(adj, coord)
     con_x = decode(connectome["_con_x"], "<f4")
@@ -123,6 +126,28 @@ def test_view_connectome(tmp_path, kwargs):
         adj, coord, "85.3%", linewidth=8.5, node_size=np.arange(len(coord))
     )
     check_html_surface_plots(tmp_path, html, False, "connectome-plot")
+
+
+def test_view_connectome_node_labels():
+    """Check that node_labels are correctly passed to view_connectome."""
+    adj, coord = _make_connectome()
+    labels = [f"node_{i}" for i in range(len(coord))]
+
+    html = html_connectome.view_connectome(adj, coord, node_labels=labels)
+    assert "node_0" in html.html
+
+
+def test_view_connectome_errors():
+    """Check view_connectome errors."""
+    adj, coord = _make_connectome()
+
+    with pytest.raises(TypeError, match="'node_labels' must be of type"):
+        html_connectome.view_connectome(adj, coord, node_labels=("node_foo"))
+
+    with pytest.raises(
+        ValueError, match=r"'node_labels' has.*items.*expected"
+    ):
+        html_connectome.view_connectome(adj, coord, node_labels=["node_foo"])
 
 
 @pytest.mark.parametrize(

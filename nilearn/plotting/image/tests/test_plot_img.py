@@ -13,7 +13,7 @@ from nilearn.image import get_data
 from nilearn.plotting import plot_img
 
 
-def _testdata_3d_for_plotting_for_resampling(img, binary):
+def _testdata_3d_for_plotting_for_resampling(img, binary) -> Nifti1Image:
     """Return testing data for resampling tests.
 
     Data can be binarize or not.
@@ -33,7 +33,6 @@ def _testdata_3d_for_plotting_for_resampling(img, binary):
     return Nifti1Image(data, affine)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_display_methods(matplotlib_pyplot, img_3d_mni):
@@ -42,10 +41,11 @@ def test_display_methods(matplotlib_pyplot, img_3d_mni):
     display.add_overlay(img_3d_mni, threshold=0)
     display.add_edges(img_3d_mni, color="c")
     display.add_contours(
-        img_3d_mni, contours=2, linewidth=4, colors=["limegreen", "yellow"]
+        img_3d_mni, levels=2, linewidth=4, colors=["limegreen", "yellow"]
     )
 
 
+@pytest.mark.thread_unsafe
 def test_display_methods_invalid_threshold(matplotlib_pyplot, img_3d_mni):
     """Tests display methods for negative threshold."""
     with pytest.raises(
@@ -59,8 +59,14 @@ def test_display_methods_invalid_threshold(matplotlib_pyplot, img_3d_mni):
     ):
         display = plot_img(img_3d_mni)
         display.add_contours(
-            img_3d_mni, contours=2, linewidth=4, threshold=-1, filled=True
+            img_3d_mni, linewidth=4, threshold=-1, filled=True
         )
+
+
+@pytest.mark.thread_unsafe
+def test_check_string_threshold(matplotlib_pyplot, img_3d_mni):
+    """Checks threshold can be passed as string percentage value."""
+    plot_img(img_3d_mni, threshold="97%")
 
 
 @pytest.mark.thread_unsafe
@@ -72,6 +78,7 @@ def test_plot_with_axes_or_figure(matplotlib_pyplot, img_3d_mni):
     plot_img(img_3d_mni, axes=ax)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_empty_slice(matplotlib_pyplot, affine_mni):
     """Test that things don't crash when we give a map \
        with nothing above threshold. This is only a smoke test.
@@ -93,12 +100,11 @@ def test_plot_img_with_resampling(matplotlib_pyplot, binary_img, img_3d_mni):
     display = plot_img(img)
     display.add_overlay(img)
     display.add_contours(
-        img, contours=2, linewidth=4, colors=["limegreen", "yellow"]
+        img, levels=2, linewidth=4, colors=["limegreen", "yellow"]
     )
     display.add_edges(img, color="c")
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_display_methods_with_display_mode_tiled(
@@ -109,10 +115,11 @@ def test_display_methods_with_display_mode_tiled(
     display.add_overlay(img_3d_mni, threshold=0)
     display.add_edges(img_3d_mni, color="c")
     display.add_contours(
-        img_3d_mni, contours=2, linewidth=4, colors=["limegreen", "yellow"]
+        img_3d_mni, levels=2, linewidth=4, colors=["limegreen", "yellow"]
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("transparency", [-1, 10])
 def test_plot_img_transparency_warning(
     matplotlib_pyplot, img_3d_ones_mni, transparency
@@ -140,6 +147,7 @@ def test_plot_img_transparency_range_error(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_img_transparency_binary_image(
     matplotlib_pyplot,
     shape_3d_default,

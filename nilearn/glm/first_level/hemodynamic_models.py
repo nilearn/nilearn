@@ -61,7 +61,7 @@ def _gamma_difference_hrf(
 
     Returns
     -------
-    hrf : array of shape(length / t_r * oversampling, dtype=float)
+    hrf : array of shape (length / t_r * oversampling, dtype=float)
          hrf sampling on the oversampled time grid
 
     """
@@ -85,7 +85,7 @@ def _gamma_difference_hrf(
     return hrf
 
 
-def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
+def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0) -> np.ndarray:
     """Implement the :term:`SPM` :term:`HRF` model.
 
     Parameters
@@ -93,11 +93,9 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    tr:
+        .. nilearn_versionchanged:: 0.11.0
 
-        .. nilearn_deprecated:: 0.11.0
-
-            Use ``t_r`` instead (see above).
+           The old ``tr`` parameter was replaced by ``t_r``.
 
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
@@ -110,14 +108,24 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     Returns
     -------
-    hrf : array of shape(length / t_r * oversampling, dtype=float)
+    hrf : array of shape (length / t_r * oversampling, dtype=float)
          :term:`HRF` sampling on the oversampled time grid
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import spm_hrf
+    >>> hrf = spm_hrf(t_r=2.0, oversampling=1, time_length=20.0)
+    >>> np.round(hrf, 3).tolist()
+    [0.0, 0.0, 0.161, 0.443, 0.335, 0.139, 0.022, -0.028, -0.04, -0.033]
 
     """
     return _gamma_difference_hrf(t_r, oversampling, time_length, onset)
 
 
-def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
+def glover_hrf(
+    t_r, oversampling=50, time_length=32.0, onset=0.0
+) -> np.ndarray:
     """Implement the Glover :term:`HRF` model.
 
     Parameters
@@ -125,11 +133,9 @@ def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    tr:
+        .. nilearn_versionchanged:: 0.11.0
 
-        .. nilearn_deprecated:: 0.11.0
-
-            Use ``t_r`` instead (see above).
+           The old ``tr`` parameter was replaced by ``t_r``.
 
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
@@ -142,8 +148,16 @@ def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     Returns
     -------
-    hrf : array of shape(length / t_r * oversampling, dtype=float)
+    hrf : array of shape (length / t_r * oversampling, dtype=float)
          :term:`HRF` sampling on the oversampled time grid.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import glover_hrf
+    >>> hrf = glover_hrf(t_r=2.0, oversampling=1, time_length=20.0)
+    >>> np.round(hrf, 3).tolist()
+    [0.0, 0.0, 0.226, 0.741, 0.5, 0.037, -0.181, -0.176, -0.103, -0.045]
 
     """
     return _gamma_difference_hrf(
@@ -196,7 +210,9 @@ def _generic_time_derivative(
     )
 
 
-def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
+def spm_time_derivative(
+    t_r, oversampling=50, time_length=32.0, onset=0.0
+) -> np.ndarray:
     """Implement the :term:`SPM` time derivative :term:`HRF` (dhrf) model.
 
     Parameters
@@ -204,11 +220,9 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    tr:
+        .. nilearn_versionchanged:: 0.11.0
 
-        .. nilearn_deprecated:: 0.11.0
-
-            Use ``t_r`` instead (see above).
+           The old ``tr`` parameter was replaced by ``t_r``.
 
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
@@ -221,8 +235,16 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     Returns
     -------
-    dhrf : array of shape(length / t_r, dtype=float)
+    dhrf : array of shape (length / t_r, dtype=float)
           dhrf sampling on the provided grid
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import spm_time_derivative
+    >>> dhrf = spm_time_derivative(t_r=2.0, oversampling=1, time_length=20.0)
+    >>> np.round(dhrf, 3).tolist()
+    [0.0, 0.0, 0.167, 0.04, -0.091, -0.072, -0.035, -0.013, -0.0, 0.005]
 
     """
     return _generic_time_derivative(
@@ -234,7 +256,9 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     )
 
 
-def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
+def glover_time_derivative(
+    t_r, oversampling=50, time_length=32.0, onset=0.0
+) -> np.ndarray:
     """Implement the Glover time derivative :term:`HRF` (dhrf) model.
 
     Parameters
@@ -242,11 +266,9 @@ def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    tr:
+        .. nilearn_versionchanged:: 0.11.0
 
-        .. nilearn_deprecated:: 0.11.0
-
-            Use ``t_r`` instead (see above).
+           The old ``tr`` parameter was replaced by ``t_r``.
 
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
@@ -259,8 +281,18 @@ def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     Returns
     -------
-    dhrf : array of shape(length / t_r), dtype=float
+    dhrf : array of shape (length / t_r), dtype=float
           dhrf sampling on the provided grid
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import glover_time_derivative
+    >>> dhrf = glover_time_derivative(
+    ...     t_r=2.0, oversampling=1, time_length=20.0
+    ... )
+    >>> np.round(dhrf, 3).tolist()
+    [0.0, 0.0, 0.267, 0.076, -0.215, -0.168, -0.039, 0.027, 0.033, 0.019]
 
     """
     return _generic_time_derivative(
@@ -316,7 +348,7 @@ def _generic_dispersion_derivative(
 
 def spm_dispersion_derivative(
     t_r, oversampling=50, time_length=32.0, onset=0.0
-):
+) -> np.ndarray:
     """Implement the :term:`SPM` dispersion derivative :term:`HRF` model.
 
     Parameters
@@ -324,11 +356,9 @@ def spm_dispersion_derivative(
     t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    tr:
+        .. nilearn_versionchanged:: 0.11.0
 
-        .. nilearn_deprecated:: 0.11.0
-
-            Use ``t_r`` instead (see above).
+           The old ``tr`` parameter was replaced by ``t_r``.
 
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor in seconds.
@@ -341,8 +371,18 @@ def spm_dispersion_derivative(
 
     Returns
     -------
-    dhrf : array of shape(length / tr * oversampling), dtype=float
+    dhrf : array of shape (length / tr * oversampling), dtype=float
           dhrf sampling on the oversampled time grid
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import glover_dispersion_derivative
+    >>> ddhrf = glover_dispersion_derivative(
+    ...     t_r=2.0, oversampling=1, time_length=20.0
+    ... )
+    >>> np.round(ddhrf, 3).tolist()
+    [0.0, -0.0, -0.373, 0.282, 0.295, -0.04, -0.094, -0.048, -0.017, -0.005]
 
     """
     return _generic_dispersion_derivative(
@@ -352,7 +392,7 @@ def spm_dispersion_derivative(
 
 def glover_dispersion_derivative(
     t_r, oversampling=50, time_length=32.0, onset=0.0
-):
+) -> np.ndarray:
     """Implement the Glover dispersion derivative :term:`HRF` model.
 
     Parameters
@@ -360,14 +400,12 @@ def glover_dispersion_derivative(
     t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
+        .. nilearn_versionchanged:: 0.11.0
+
+           The old ``tr`` parameter was replaced by ``t_r``.
+
     oversampling : :obj:`int`, default=50
         Temporal oversampling factor in seconds.
-
-    tr:
-
-        .. nilearn_deprecated:: 0.11.0
-
-            Use ``t_r`` instead (see above).
 
     time_length : :obj:`float`, default=32.0
         :term:`HRF` kernel length, in seconds.
@@ -377,8 +415,18 @@ def glover_dispersion_derivative(
 
     Returns
     -------
-    dhrf : array of shape(length / t_r * oversampling), dtype=float
+    dhrf : array of shape (length / t_r * oversampling), dtype=float
           dhrf sampling on the oversampled time grid
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import glover_dispersion_derivative
+    >>> ddhrf = glover_dispersion_derivative(
+    ...     t_r=2.0, oversampling=1, time_length=20.0
+    ... )
+    >>> np.round(ddhrf, 3).tolist()
+    [0.0, -0.0, -0.373, 0.282, 0.295, -0.04, -0.094, -0.048, -0.017, -0.005]
 
     """
     return _generic_dispersion_derivative(
@@ -700,7 +748,7 @@ def compute_regressor(
     oversampling=50,
     fir_delays=None,
     min_onset=-24,
-):
+) -> tuple[np.ndarray, list[str]]:
     """Convolve regressors with :term:`HRF` model.
 
     Parameters

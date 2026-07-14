@@ -10,9 +10,10 @@ from nibabel import Nifti1Image, is_proxy, load, spatialimages
 
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.numpy_conversions import get_target_dtype
 
 
-def _get_data(img) -> np.ndarray:
+def _get_data(img: Nifti1Image) -> np.ndarray:
     # copy-pasted from
     # https://github.com/nipy/nibabel/blob/de44a10/nibabel/dataobj_images.py#L204
     #
@@ -74,7 +75,7 @@ def has_non_finite(data: np.ndarray) -> tuple[bool, np.ndarray]:
     Besides boolean value, return the mask.
     """
     non_finite_mask = ~np.isfinite(data)
-    has_not_finite = non_finite_mask.any()
+    has_not_finite = bool(non_finite_mask.any())
     return has_not_finite, non_finite_mask
 
 
@@ -94,32 +95,6 @@ def ensure_finite_data(
             )
         data[non_finite_mask] = 0
     return data
-
-
-def _get_target_dtype(dtype, target_dtype):
-    """Return a new dtype if conversion is needed.
-
-    Parameters
-    ----------
-    dtype : dtype
-        Data type of the original data
-
-    target_dtype : {None, dtype, "auto"}
-        If None, no conversion is required. If a type is provided, the
-        function will check if a conversion is needed. The "auto" mode will
-        automatically convert to int32 if dtype is discrete and float32 if it
-        is continuous.
-
-    Returns
-    -------
-    dtype : dtype
-        The data type toward which the original data should be converted.
-    """
-    if target_dtype is None:
-        return None
-    if target_dtype == "auto":
-        target_dtype = np.int32 if dtype.kind == "i" else np.float32
-    return None if target_dtype == dtype else target_dtype
 
 
 def load_niimg(niimg, dtype=None):
@@ -154,7 +129,7 @@ def load_niimg(niimg, dtype=None):
     # avoid loading data if dtype is None
     if dtype is not None:
         img_data = _get_data(niimg)
-        target_dtype = _get_target_dtype(img_data.dtype, dtype)
+        target_dtype = get_target_dtype(img_data.dtype, dtype)
 
         if target_dtype is not None:
             copy_header = niimg.header is not None

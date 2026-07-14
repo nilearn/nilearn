@@ -17,7 +17,7 @@ from nilearn.conftest import _img_maps
 from nilearn.exceptions import DimensionError
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
-ESTIMATORS_TO_CHECK = [MultiNiftiMapsMasker(standardize=None)]
+ESTIMATORS_TO_CHECK = [MultiNiftiMapsMasker()]
 
 if SKLEARN_LT_1_6:
 
@@ -52,7 +52,6 @@ else:
         check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
@@ -60,6 +59,7 @@ else:
             # pass less than the default number of regions
             # to speed up the tests
             MultiNiftiMapsMasker(_img_maps(n_regions=2), standardize=None),
+            MultiNiftiMapsMasker(_img_maps(n_regions=1), standardize=None),
         ]
     ),
 )
@@ -68,7 +68,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-@pytest.mark.slow
+@pytest.mark.parametrize("n_regions", [1, 3])
 def test_multi_nifti_maps_masker(
     affine_eye, length, n_regions, shape_3d_default, img_maps
 ):
@@ -89,7 +89,11 @@ def test_multi_nifti_maps_masker(
         standardize=None,
     )
 
-    signals11 = masker.fit_transform(fmri11_img)
+    with pytest.warns(
+        FutureWarning,
+        match=r'"keep_masked_maps" parameter will be removed in version 0\.15',
+    ):
+        signals11 = masker.fit_transform(fmri11_img)
 
     assert signals11.shape == (length, n_regions)
 
@@ -97,8 +101,10 @@ def test_multi_nifti_maps_masker(
 
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
-
-    signals11_list = masker.fit_transform(signals_input)
+    with pytest.warns(
+        FutureWarning, match=('"keep_masked_maps" parameter will be removed')
+    ):
+        signals11_list = masker.fit_transform(signals_input)
 
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)
@@ -249,7 +255,6 @@ def test_multi_nifti_maps_masker_resampling_error(
         masker.fit()
 
 
-@pytest.mark.slow
 def test_multi_nifti_maps_masker_resampling_to_mask(
     shape_mask,
     affine_eye,
@@ -272,7 +277,10 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
         standardize=None,
     )
 
-    signals = masker.fit_transform([img_fmri, img_fmri])
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_maps" parameter will be removed'
+    ):
+        signals = masker.fit_transform([img_fmri, img_fmri])
 
     assert_almost_equal(masker.mask_img_.affine, mask22_img.affine)
     assert masker.mask_img_.shape == mask22_img.shape
@@ -289,7 +297,6 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
         assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
 
 
-@pytest.mark.slow
 def test_multi_nifti_maps_masker_resampling_to_maps(
     shape_mask,
     affine_eye,
@@ -311,8 +318,10 @@ def test_multi_nifti_maps_masker_resampling_to_maps(
         keep_masked_maps=True,
         standardize=None,
     )
-
-    signals = masker.fit_transform([img_fmri, img_fmri])
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_maps" parameter will be removed'
+    ):
+        signals = masker.fit_transform([img_fmri, img_fmri])
 
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
@@ -329,7 +338,6 @@ def test_multi_nifti_maps_masker_resampling_to_maps(
         assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
 
 
-@pytest.mark.slow
 def test_multi_nifti_maps_masker_resampling_clipped_mask(
     affine_eye, length, n_regions, img_fmri
 ):
@@ -349,8 +357,10 @@ def test_multi_nifti_maps_masker_resampling_clipped_mask(
         keep_masked_maps=True,
         standardize=None,
     )
-
-    signals = masker.fit_transform([img_fmri, img_fmri])
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_maps" parameter will be removed'
+    ):
+        signals = masker.fit_transform([img_fmri, img_fmri])
 
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape

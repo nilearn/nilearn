@@ -1,5 +1,7 @@
 """Test the multi_nifti_labels_masker module."""
 
+import sys
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -20,7 +22,7 @@ from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker
 
-ESTIMATORS_TO_CHECK = [MultiNiftiLabelsMasker(standardize=None)]
+ESTIMATORS_TO_CHECK = [MultiNiftiLabelsMasker()]
 
 if SKLEARN_LT_1_6:
 
@@ -52,12 +54,14 @@ else:
         check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
         estimators=[
-            MultiNiftiLabelsMasker(labels_img=_img_labels(), standardize=None)
+            MultiNiftiLabelsMasker(labels_img=_img_labels(), standardize=None),
+            MultiNiftiLabelsMasker(
+                labels_img=_img_labels(n_regions=1), standardize=None
+            ),
         ]
     ),
 )
@@ -66,7 +70,6 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-@pytest.mark.slow
 def test_multi_nifti_labels_masker(
     affine_eye, n_regions, shape_3d_default, length, img_labels
 ):
@@ -75,7 +78,9 @@ def test_multi_nifti_labels_masker(
         shape_3d_default, affine=affine_eye, length=length
     )
 
-    masker11 = MultiNiftiLabelsMasker(img_labels, resampling_target=None)
+    masker11 = MultiNiftiLabelsMasker(
+        img_labels, resampling_target=None, standardize=None
+    )
 
     # No exception raised here
     signals11 = masker11.fit_transform(fmri11_img)
@@ -96,13 +101,19 @@ def test_multi_nifti_labels_masker(
         keep_masked_labels=True,
         standardize=None,
     )
-    signals11 = masker11.fit_transform(fmri11_img)
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_labels" parameter will be removed'
+    ):
+        signals11 = masker11.fit_transform(fmri11_img)
 
     assert signals11.shape == (length, n_regions)
 
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
-    signals11_list = masker11.fit_transform(signals_input)
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_labels" parameter will be removed'
+    ):
+        signals11_list = masker11.fit_transform(signals_input)
 
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)
@@ -123,7 +134,6 @@ def test_multi_nifti_labels_masker(
         assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
 
-@pytest.mark.slow
 def test_multi_nifti_labels_masker_errors(
     affine_eye, shape_3d_default, length, img_labels
 ):
@@ -139,7 +149,9 @@ def test_multi_nifti_labels_masker_errors(
     )
 
     # Test all kinds of mismatch between shapes and between affines
-    masker11 = MultiNiftiLabelsMasker(img_labels, resampling_target=None)
+    masker11 = MultiNiftiLabelsMasker(
+        img_labels, resampling_target=None, standardize=None
+    )
     masker11.fit()
 
     with pytest.raises(
@@ -189,7 +201,6 @@ def test_multi_nifti_labels_masker_errors_resampling(
         masker.fit()
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("test_values", [[-2.0, -1.0, 0.0, 1.0, 2]])
 @pytest.mark.parametrize(
     "strategy, fn",
@@ -235,7 +246,6 @@ def test_multi_nifti_labels_masker_reduction_strategies(
     assert default_masker.strategy == "mean"
 
 
-@pytest.mark.slow
 def test_multi_nifti_labels_masker_resampling(
     affine_eye, n_regions, length, img_labels
 ):
@@ -264,7 +274,10 @@ def test_multi_nifti_labels_masker_resampling(
 
     fmri11_img = [fmri11_img, fmri11_img]
 
-    signals = masker.fit_transform(fmri11_img)
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_labels" parameter will be removed'
+    ):
+        signals = masker.fit_transform(fmri11_img)
 
     assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
     assert masker.labels_img_.shape == img_labels.shape
@@ -280,7 +293,6 @@ def test_multi_nifti_labels_masker_resampling(
         assert fmri11_img_r.shape == ((*masker.labels_img_.shape[:3], length))
 
 
-@pytest.mark.slow
 def test_multi_nifti_labels_masker_resampling_clipped_labels(
     affine_eye, n_regions, length, img_labels, img_fmri
 ):
@@ -307,7 +319,10 @@ def test_multi_nifti_labels_masker_resampling_clipped_labels(
         standardize=None,
     )
 
-    signals = masker.fit_transform(fmri11_img)
+    with pytest.warns(
+        FutureWarning, match='"keep_masked_labels" parameter will be removed'
+    ):
+        signals = masker.fit_transform(fmri11_img)
 
     assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
     assert masker.labels_img_.shape == img_labels.shape
@@ -328,7 +343,6 @@ def test_multi_nifti_labels_masker_resampling_clipped_labels(
         assert fmri11_img_r.shape == ((*masker.labels_img_.shape[:3], length))
 
 
-@pytest.mark.slow
 def test_multi_nifti_labels_masker_atlas_data_different_fov(
     affine_eye, img_labels, length
 ):
@@ -346,14 +360,19 @@ def test_multi_nifti_labels_masker_atlas_data_different_fov(
     )
 
     fmri22_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
-    masker = MultiNiftiLabelsMasker(img_labels, mask_img=mask22_img)
+    masker = MultiNiftiLabelsMasker(
+        img_labels, mask_img=mask22_img, standardize=None
+    )
 
     masker.fit_transform(fmri22_img)
 
     assert_array_equal(masker.labels_img_.affine, affine2)
 
 
-@pytest.mark.slow
+# TODO (python >= 3.11) remove skipif
+@pytest.mark.skipif(
+    sys.version_info[1] < 11, reason="UserWarning not thrown in py310"
+)
 def test_multi_nifti_labels_masker_resampling_target():
     """Test labels masker with resampling target in 'data', 'labels'.
 
@@ -374,19 +393,36 @@ def test_multi_nifti_labels_masker_resampling_target():
             labels_img=labels_img,
             resampling_target=resampling_target,
             keep_masked_labels=True,
+            standardize=None,
         )
         if resampling_target == "data":
-            with pytest.warns(
-                UserWarning,
-                match=(
-                    "After resampling the label image "
-                    "to the data image, the following "
-                    "labels were removed"
+            with (
+                pytest.warns(
+                    UserWarning,
+                    match=(
+                        "After resampling the label image "
+                        "to the data image, the following "
+                        "labels were removed"
+                    ),
+                ),
+                pytest.warns(
+                    FutureWarning,
+                    match=(
+                        r"In version 0.15.0, "
+                        '"keep_masked_labels" parameter will be removed'
+                    ),
                 ),
             ):
                 signals = masker.fit_transform(fmri_img)
         else:
-            signals = masker.fit_transform(fmri_img)
+            with pytest.warns(
+                FutureWarning,
+                match=(
+                    r"In version 0.15.0, "
+                    '"keep_masked_labels" parameter will be removed'
+                ),
+            ):
+                signals = masker.fit_transform(fmri_img)
 
         resampled_labels_img = masker.labels_img_
         n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
@@ -397,7 +433,11 @@ def test_multi_nifti_labels_masker_resampling_target():
 
         # Test that compressing the image a second time should yield an image
         # with the same data as compressed_img.
-        signals2 = masker.fit_transform(fmri_img)
+        with pytest.warns(
+            FutureWarning,
+            match='"keep_masked_labels" parameter will be removed',
+        ):
+            signals2 = masker.fit_transform(fmri_img)
 
         # inverse transform again
         compressed_img2 = masker.inverse_transform(signals2)

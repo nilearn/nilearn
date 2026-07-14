@@ -1,11 +1,18 @@
 """Functions for generating BIDS-compliant GLM outputs."""
 
+from __future__ import annotations
+
 import inspect
 import json
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
+from typing import TYPE_CHECKING, overload
+
+if TYPE_CHECKING:
+    from nilearn.glm.first_level import FirstLevelModel
+    from nilearn.glm.second_level import SecondLevelModel
 
 from nilearn import __version__
 from nilearn._utils import logger
@@ -100,6 +107,30 @@ def _generate_dataset_description(out_file, model_level) -> None:
         json.dump(dataset_description, f_obj, indent=4, sort_keys=True)
 
 
+@overload
+def save_glm_to_bids(
+    model: FirstLevelModel,
+    contrasts=...,
+    first_level_contrast=...,
+    contrast_types=...,
+    out_dir=...,
+    prefix=...,
+    **kwargs,
+) -> FirstLevelModel: ...
+
+
+@overload
+def save_glm_to_bids(
+    model: SecondLevelModel,
+    contrasts=...,
+    first_level_contrast=...,
+    contrast_types=...,
+    out_dir=...,
+    prefix=...,
+    **kwargs,
+) -> SecondLevelModel: ...
+
+
 @fill_doc
 def save_glm_to_bids(
     model,
@@ -109,7 +140,7 @@ def save_glm_to_bids(
     out_dir=".",
     prefix=None,
     **kwargs,
-):
+) -> FirstLevelModel | SecondLevelModel:
     """Save :term:`GLM` results to :term:`BIDS`-like files.
 
     .. nilearn_versionadded:: 0.9.2
@@ -147,7 +178,7 @@ def save_glm_to_bids(
 
             .. code-block:: python
 
-                contrasts=[
+                contrasts = [
                     np.asarray([1, 0, 0]),
                     np.asarray([0, 1, 0]),
                     np.asarray([1, -1, 0]),
@@ -164,7 +195,7 @@ def save_glm_to_bids(
 
             .. code-block:: python
 
-                contrasts=[
+                contrasts = [
                     "win",
                     "neutral",
                     "win - neutral",
@@ -181,7 +212,7 @@ def save_glm_to_bids(
 
             .. code-block:: python
 
-                contrasts={
+                contrasts = {
                     "WinMinusNeutral": "win - neutral",
                 }
 
@@ -194,7 +225,7 @@ def save_glm_to_bids(
 
             .. code-block:: python
 
-                contrasts={
+                contrasts = {
                     "Win - Neutral": "win - neutral",
                 }
 
@@ -303,7 +334,7 @@ def save_glm_to_bids(
         report_kwargs["cut_coords"],
         report_kwargs["plot_type"],
         first_level_contrast=first_level_contrast,
-        is_first_level_glm=model._is_first_level_glm(),
+        model=model,
     )
 
     contrasts = coerce_to_dict(contrasts)
@@ -430,7 +461,7 @@ def save_glm_to_bids(
             report_kwargs["min_distance"],
             report_kwargs["height_control"],
             report_kwargs["alpha"],
-            is_volume_glm=model._is_volume_glm,
+            is_volume_glm=model._is_volume_glm(),
         )
         table_details = table_details.to_dict()
         with (
@@ -517,7 +548,7 @@ def _write_model_level_statistical_maps(model, out_dir):
         "model_level_mapping"
     ].items():
         for attr, map_name in model_level_mapping.items():
-            img = getattr(model, attr)
+            img = getattr(model, f"{attr}_")
             stat_map_to_save = img[i_run] if isinstance(img, Iterable) else img
             if model._is_volume_glm():
                 stat_map_to_save.to_filename(out_dir / map_name)

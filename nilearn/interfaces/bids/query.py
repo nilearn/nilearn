@@ -3,11 +3,20 @@
 import glob
 import json
 from pathlib import Path
+from typing import TypedDict
 from warnings import warn
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
+
+
+class _BidsFileRef(TypedDict):
+    file_path: str
+    file_basename: str
+    extension: str
+    suffix: str
+    entities: dict[str, str | None]
 
 
 def _get_metadata_from_bids(
@@ -172,7 +181,7 @@ def get_bids_files(
     modality_folder="*",
     filters=None,
     sub_folder=True,
-):
+) -> list[str]:
     """Search for files in a :term:`BIDS` dataset following given constraints.
 
     This utility function allows to filter files in the :term:`BIDS` dataset by
@@ -235,6 +244,30 @@ def get_bids_files(
     files : :obj:`list` of :obj:`str`
         List of file paths found.
 
+    Examples
+    --------
+    >>> from pathlib import Path
+    >>> from nilearn.interfaces.bids import get_bids_files
+    >>> bids_path = Path("tmp") / "my_bids_folder"
+    >>> bids_func_dir = bids_path / "sub-01" / "ses-01" / "func"
+    >>>
+    >>> # Create a fake fMRI NIfTI file.
+    >>> bids_func_dir.mkdir(parents=True, exist_ok=True)
+    >>> _ = ( bids_func_dir
+    ...    / "sub-01_ses-01_task-finger_run-01_bold.nii.gz"
+    ...    ).touch()
+    >>>
+    >>> # Searching for finger tapping task fMRI files.
+    >>> bids_files = get_bids_files(
+    ...    bids_path,
+    ...    file_tag='bold',
+    ...    file_type='nii.gz',
+    ...    sub_label='01',
+    ...    modality_folder='func',
+    ...    filters=[('task','finger')],
+    ... )
+    >>> len(bids_files)
+    1
     """
     main_path = Path(main_path)
     if sub_folder:
@@ -272,7 +305,7 @@ def get_bids_files(
     return files
 
 
-def parse_bids_filename(img_path):
+def parse_bids_filename(img_path) -> _BidsFileRef:
     r"""Return dictionary with parsed information from file path.
 
     Parameters
@@ -300,25 +333,36 @@ def parse_bids_filename(img_path):
         `typical bids filename <https://bids.neuroimaging.io/getting_started/folders_and_files/files.html#filename-template>`_
         for more information.
 
+    Examples
+    --------
+    >>> from nilearn.interfaces.bids import parse_bids_filename
+    >>> ref = parse_bids_filename("sub-01_task-rest_bold.nii.gz")
+    >>> ref["suffix"]
+    'bold'
+    >>> ref["extension"]
+    'nii.gz'
+    >>> ref["entities"] == {"sub": "01", "task": "rest"}
+    True
+
     """
-    reference = {
-        "file_path": img_path,
-        "file_basename": Path(img_path).name,
-    }
-    parts = reference["file_basename"].split("_")
+    file_basename = Path(img_path).name
+    parts = file_basename.split("_")
     suffix, extension = parts[-1].split(".", 1)
 
-    reference["extension"] = extension
-    reference["suffix"] = suffix
-    reference["entities"] = {}
+    entities: dict[str, str | None] = {}
     for part in parts[:-1]:
         entity = part.split("-")[0]
         # In derivatives is not clear if the source file name will
         # be parsed as a field with no value.
         label = None
         if len(part.split("-")) > 1:
-            value = part.split("-")[1]
-            label = value
-        reference["entities"][entity] = label
+            label = part.split("-")[1]
+        entities[entity] = label
 
-    return reference
+    return _BidsFileRef(
+        file_path=img_path,
+        file_basename=file_basename,
+        extension=extension,
+        suffix=suffix,
+        entities=entities,
+    )

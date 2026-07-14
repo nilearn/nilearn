@@ -17,7 +17,6 @@ CORE_DEVS = [
     "Hande Gözükan",
     "Hao-Ting Wang",
     "Himanshu Aggarwal",
-    "Jerome Dockes",
     "Michelle Wang",
     "Mohammad Torabi",
     "Pierre-Louis Barbarant",

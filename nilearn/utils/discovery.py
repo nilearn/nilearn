@@ -2,6 +2,7 @@
 
 import inspect
 import pkgutil
+from collections.abc import Callable
 from importlib import import_module
 from operator import itemgetter
 from pathlib import Path
@@ -28,7 +29,7 @@ _MODULE_TO_IGNORE = {
 
 def _skip_module(module_name: str):
     module_parts = module_name.split(".")
-    return bool(
+    return (
         any(part in _MODULE_TO_IGNORE for part in module_parts)
         or "._" in module_name
     )
@@ -75,7 +76,9 @@ def _get_all_classes():
     return all_classes
 
 
-def all_estimators(type_filter=None):
+def all_estimators(
+    type_filter=None,
+) -> list[tuple[str, type[NilearnBaseEstimator]]]:
     """Get a list of all estimators from `nilearn`.
 
     This function crawls the module and gets all classes that inherit
@@ -102,6 +105,15 @@ def all_estimators(type_filter=None):
         List of (name, class),
         where ``name`` is the class name as string
         and ``class`` is the actual type of the class.
+
+    Examples
+    --------
+    >>> from nilearn.utils import all_estimators
+    >>> estimators = all_estimators()
+    >>> len(estimators)
+    33
+    >>> estimators[0]
+    ('BaseGLM', <class 'nilearn.glm._base.BaseGLM'>)
 
     """
     # TODO: add GLM?
@@ -163,7 +175,7 @@ def _is_checked_function(item):
     )
 
 
-def all_functions():
+def all_functions() -> list[tuple[str, Callable]]:
     """Get a list of all functions from `nilearn`.
 
     Returns
@@ -172,6 +184,15 @@ def all_functions():
         List of ``(name, function)``,
         where ``name`` is the function name as string
         and ``function`` is the actual function.
+
+    Examples
+    --------
+    >>> from nilearn.utils import all_functions
+    >>>
+    >>> functions = all_functions()
+    >>>
+    >>> print(f"Nilearn's API has {len(functions)} public functions.")
+    Nilearn's API has 172 public functions.
 
     """
     all_functions = []
@@ -206,7 +227,7 @@ def all_functions():
     return sorted(set(all_functions), key=itemgetter(0))
 
 
-def all_displays(type_filter=None):
+def all_displays(type_filter=None) -> list[tuple[str, type]]:
     """Get a list of all 'displays' objects from `nilearn`.
 
     Parameters
@@ -226,6 +247,16 @@ def all_displays(type_filter=None):
     displays : list of tuples
         List of (name, class), where ``name`` is the display class name as
         string and ``class`` is the actual type of the class.
+
+    Examples
+    --------
+    >>> from nilearn.utils import all_displays
+    >>>
+    >>> displays = all_displays()
+    >>>
+    >>> print(f"Nilearn's API has {len(displays)} display functions.")
+    Nilearn's API has 27 display functions.
+
     """
     if not is_matplotlib_installed():
         return []

@@ -2,6 +2,7 @@
 
 import warnings
 from copy import deepcopy
+from typing import Any, ClassVar
 
 import numpy as np
 from scipy import ndimage
@@ -14,6 +15,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
@@ -114,6 +116,10 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
     %(t_r)s
 
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
+
     %(memory)s
 
     %(memory_level1)s
@@ -156,6 +162,17 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
     """
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the input surface image overlaid "
+            "with the outlines of the mask. "
+            "We recommend to inspect the report for the overlap "
+            "between the mask and the input image. "
+        ),
+        "n_vertices": {},
+        "number_of_regions": 0,
+    }
+
     def __init__(
         self,
         labels_img=None,
@@ -171,6 +188,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         verbose=0,
@@ -192,6 +210,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
@@ -200,18 +219,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            "number_of_regions": 0,
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
     @fill_doc
     def fit(self, imgs=None, y=None):
@@ -230,10 +238,11 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -269,6 +278,9 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
                 "but not both."
             )
 
+        if np.all(get_data(self.labels_img) == self.background_label):
+            raise ValueError("Image has no label.")
+
         self._fit_cache()
 
         mask_logger("load_regions", self.labels_img, verbose=self.verbose)
@@ -286,12 +298,16 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
                     self.background_label
                 )
 
-            labels_before_mask = {
-                int(x) for x in np.unique(get_data(self.labels_img))
-            }
             labels_after_mask = {
                 int(x) for x in np.unique(get_data(self.labels_img_))
             }
+            if labels_after_mask == {self.background_label}:
+                raise ValueError("Image has no label left after masking.")
+
+            labels_before_mask = {
+                int(x) for x in np.unique(get_data(self.labels_img))
+            }
+
             labels_diff = labels_before_mask - labels_after_mask
             if labels_diff:
                 warnings.warn(
@@ -388,6 +404,9 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
                 x.data._check_n_samples(1, f"imgs[{i}]")
 
         imgs = at_least_2d(imgs)
+
+        imgs = self._smooth(imgs)
+
         img_data = get_data(imgs)
 
         target_datatype = (
@@ -419,7 +438,17 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             )
             region_signals[n] = tmp
 
-        return self._clean(region_signals, confounds, sample_mask)
+        input_type = (
+            imgs.data._dtype
+            if isinstance(imgs, SurfaceImage)
+            else imgs[0].data._dtype
+        )
+        target_dtype = get_target_dtype(input_type, self.dtype)
+        if target_dtype is None:
+            target_dtype = imgs.data._dtype
+
+        region_signals = self._clean(region_signals, confounds, sample_mask)
+        return region_signals.astype(target_dtype)
 
     @fill_doc
     def inverse_transform(self, signals):
@@ -435,7 +464,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        return_1D = signals.ndim < 2
+        return_1D = hasattr(signals, "ndim") and signals.ndim < 2
 
         signals = self._check_array(signals)
 
@@ -448,13 +477,9 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             self.background_label,
         )
 
-        if return_1D:
-            for k, v in imgs.data.parts.items():
-                imgs.data.parts[k] = v.squeeze()
+        return self._post_process_inverse_transform(signals, imgs, return_1D)
 
-        return imgs
-
-    def _reporting(self) -> None | str:
+    def _load_report_displays(self) -> None | str:
         """Load displays needed for report.
 
         Returns

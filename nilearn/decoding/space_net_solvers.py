@@ -9,9 +9,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.masking import unmask_from_to_3d_array
-
-from ._objective_functions import (
+from nilearn.decoding._objective_functions import (
     divergence,
     gradient,
     gradient_id,
@@ -22,13 +20,14 @@ from ._objective_functions import (
     squared_loss,
     squared_loss_grad,
 )
-from ._proximal_operators import (
+from nilearn.decoding._proximal_operators import (
     prox_l1,
     prox_l1_with_intercept,
     prox_tvl1,
     prox_tvl1_with_intercept,
 )
-from .fista import mfista
+from nilearn.decoding.fista import mfista
+from nilearn.masking import unmask_from_to_3d_array
 
 
 def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
@@ -176,8 +175,8 @@ def _squared_loss_derivative_lipschitz_constant(
     of the Graph-Net regression problem (squared_loss + grad_weight*grad) \
     via power method.
     """
-    rng = np.random.RandomState(42)
-    a = rng.randn(X.shape[1])
+    rng = np.random.default_rng(42)
+    a = rng.normal(size=X.shape[1])
     a /= sqrt(np.dot(a, a))
     adjoint_mask = np.tile(mask, [mask.ndim] + [1] * mask.ndim)
 
@@ -219,8 +218,8 @@ def _logistic_derivative_lipschitz_constant(
     # data_constant = sp.linalg.norm(X, 2) ** 2
     data_constant = logistic_loss_lipschitz_constant(X)
 
-    rng = np.random.RandomState(42)
-    a = rng.randn(X.shape[1])
+    rng = np.random.default_rng(42)
+    a = rng.normal(size=X.shape[1])
     a /= sqrt(np.dot(a, a))
     grad_buffer = np.zeros(mask.shape)
     for _ in range(n_iterations):
@@ -337,7 +336,7 @@ def graph_net_squared_loss(
         callback=callback,
         tol=tol,
         max_iter=max_iter,
-        verbose=verbose,
+        verbose=max(verbose - 1, 0),
         init=init,
     )
 
@@ -423,7 +422,7 @@ def graph_net_logistic(
         callback=callback,
         tol=tol,
         max_iter=max_iter,
-        verbose=verbose,
+        verbose=max(verbose - 1, 0),
         init=init,
     )
 

@@ -56,13 +56,13 @@ def test_fdr_error(rng):
         fdr_threshold(x, 1.5)
 
 
-def _data_norm_isf(shape):
+def _data_norm_isf(shape) -> np.ndarray:
     p = np.prod(shape)
     return norm.isf(np.linspace(1.0 / p, 1.0 - 1.0 / p, p)).reshape(shape)
 
 
 @pytest.fixture
-def data_norm_isf(shape_3d_default):
+def data_norm_isf(shape_3d_default) -> np.ndarray:
     return _data_norm_isf(shape_3d_default)
 
 
@@ -86,7 +86,6 @@ def test_threshold_stats_img_warn_threshold_unused(
         assert any("is not used with" in str(x) for x in warnings_list)
 
 
-@pytest.mark.slow
 def test_threshold_stats_img_no_height_control(
     data_norm_isf, img_3d_ones_eye, affine_eye
 ):
@@ -168,7 +167,6 @@ def test_threshold_stats_img_error_cluster_threshold(
         )
 
 
-@pytest.mark.slow
 def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
@@ -274,7 +272,6 @@ def test_hommel(alpha, expected):
     assert _compute_hommel_value(z, alpha=alpha) == expected
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, expected, expected_n_unique_values",
@@ -366,7 +363,6 @@ def test_all_resolution_inference_with_mask(
     assert np.sum(vals > 0) == 8
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "threshold, expected_n_unique_values",
     [
@@ -488,7 +484,6 @@ def test_all_resolution_inference_shape_errors(img_4d_rand_eye, surf_img_2d):
         cluster_level_inference(surf_img_2d(2), threshold=0.5)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("two_sided", [True, False])
 @pytest.mark.parametrize("control", ["fdr", "bonferroni"])
 def test_all_resolution_inference_height_control(
@@ -564,47 +559,55 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     Also check the user of cluster_threshold.
     """
     surf_img_1d.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
-    surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
+    surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 3.0])
 
     # two sided
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=2
+        surf_img_1d, height_control=None, threshold=2.1
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
     assert_equal(
-        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=2, cluster_threshold=2
+        surf_img_1d, height_control=None, threshold=2.1, cluster_threshold=2
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
     assert_equal(
-        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
     # one sided positive
-    result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, two_sided=False
-    )
+    with pytest.warns(
+        FutureWarning,
+        match=r"nilearn version>=0\.15, the default 'threshold'",
+    ):
+        result, _ = threshold_stats_img(
+            surf_img_1d, height_control=None, two_sided=False
+        )
 
-    assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 4.0]))
+    assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
     assert_equal(
-        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
-    result, _ = threshold_stats_img(
-        surf_img_1d,
-        height_control=None,
-        two_sided=False,
-        cluster_threshold=2,
-    )
+    with pytest.warns(
+        FutureWarning,
+        match=r"nilearn version>=0\.15, the default 'threshold'",
+    ):
+        result, _ = threshold_stats_img(
+            surf_img_1d,
+            height_control=None,
+            two_sided=False,
+            cluster_threshold=3,
+        )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 0.0]))
     assert_equal(
-        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
     # one sided negative
@@ -666,21 +669,26 @@ def test_deprecation_threshold(surf_img_1d, height_control, threshold):
     # TODO (nilearn >= 0.15.0)
     # remove
     """
-    with warnings.catch_warnings(record=True) as warning_list:
-        threshold_stats_img(
-            surf_img_1d, height_control=height_control, threshold=threshold
-        )
-
-    n_warnings = len(
-        [x for x in warning_list if issubclass(x.category, FutureWarning)]
-    )
     if height_control is None and threshold == 3.0:
-        assert n_warnings == 1, [str(x) for x in warning_list]
+        with pytest.warns(
+            FutureWarning,
+            match=r"From nilearn version>=0\.15, the default 'threshold'",
+        ):
+            threshold_stats_img(
+                surf_img_1d, height_control=height_control, threshold=threshold
+            )
     else:
+        with warnings.catch_warnings(record=True) as warning_list:
+            threshold_stats_img(
+                surf_img_1d, height_control=height_control, threshold=threshold
+            )
+
+        n_warnings = len(
+            [x for x in warning_list if issubclass(x.category, FutureWarning)]
+        )
         assert n_warnings == 0, [str(x) for x in warning_list]
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", [3, 3.0, 2.9, DEFAULT_Z_THRESHOLD])
 def test_deprecation_threshold_cluster_level_inference(
@@ -692,13 +700,19 @@ def test_deprecation_threshold_cluster_level_inference(
     # remove
     """
     for stat_img in [img_3d_rand_eye, surf_img_1d]:
-        with warnings.catch_warnings(record=True) as warning_list:
-            cluster_level_inference(stat_img, threshold=threshold)
-
-        n_warnings = len(
-            [x for x in warning_list if issubclass(x.category, FutureWarning)]
-        )
         if threshold == 3.0:
-            assert n_warnings == 1
+            with pytest.warns(
+                FutureWarning, match="the default 'threshold' will be set to"
+            ):
+                cluster_level_inference(stat_img, threshold=threshold)
         else:
+            with warnings.catch_warnings(record=True) as warning_list:
+                cluster_level_inference(stat_img, threshold=threshold)
+            n_warnings = len(
+                [
+                    x
+                    for x in warning_list
+                    if issubclass(x.category, FutureWarning)
+                ]
+            )
             assert n_warnings == 0

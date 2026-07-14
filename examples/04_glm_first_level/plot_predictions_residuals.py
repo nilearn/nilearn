@@ -139,7 +139,7 @@ show()
 # Get residuals
 # -------------
 
-resid = masker.fit_transform(fmri_glm.residuals[0])
+resid = masker.fit_transform(fmri_glm.residuals_[0])
 
 
 # %%

@@ -227,7 +227,9 @@ for kind in kinds:
         # build vectorized connectomes for subjects in the train set
         connectomes = connectivity.fit_transform(pooled_subjects[train])
         # fit the classifier
-        classifier = LinearSVC(dual=True).fit(connectomes, classes[train])
+        classifier = LinearSVC(dual=True, random_state=0).fit(
+            connectomes, classes[train]
+        )
         # make predictions for the left-out test subjects
         predictions = classifier.predict(
             connectivity.transform(pooled_subjects[test])

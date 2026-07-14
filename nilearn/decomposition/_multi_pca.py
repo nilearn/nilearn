@@ -7,8 +7,7 @@ import numpy as np
 from sklearn.utils.extmath import randomized_svd
 
 from nilearn._utils.docs import fill_doc
-
-from ._base import _BaseDecomposition
+from nilearn.decomposition._base import _BaseDecomposition
 
 
 @fill_doc
@@ -35,7 +34,7 @@ class _MultiPCA(_BaseDecomposition):
     %(mask_decomposition)s
 
     %(mask_strategy)s
-        Default='epi'.
+        default='epi'.
         .. note::
 
           These strategies are only relevant for Nifti images and the parameter
@@ -83,6 +82,10 @@ class _MultiPCA(_BaseDecomposition):
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
+
     memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
         By default, no caching is done.
@@ -118,6 +121,7 @@ class _MultiPCA(_BaseDecomposition):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -138,6 +142,7 @@ class _MultiPCA(_BaseDecomposition):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             target_affine=target_affine,
             target_shape=target_shape,
             mask_strategy=mask_strategy,

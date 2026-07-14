@@ -79,7 +79,7 @@ def _load_localizer_index():
 
 
 @pytest.fixture()
-def localizer_mocker(request_mocker):
+def localizer_mocker(request_mocker) -> None:
     """Mock the index for localizer dataset."""
     index, tsv_files = _load_localizer_index()
     request_mocker.url_mapping["https://osf.io/hwbm2/download"] = json.dumps(
@@ -136,8 +136,15 @@ def test_fetch_haxby(tmp_path, request_mocker, capsys):
         assert len(haxby.mask_face_little) == 1
         assert len(haxby.mask_house_little) == 1
 
+    check_fetcher_verbosity(func.fetch_haxby, capsys, data_dir=tmp_path)
+
+
+def test_fetch_haxby_subject_with_list(tmp_path, request_mocker):
     # subjects with list
     subjects = [1, 2, 6]
+    request_mocker.url_mapping[re.compile(r".*(subj\d).*\.tar\.gz")] = (
+        _make_haxby_subject_data
+    )
     request_mocker.url_mapping[re.compile(r".*stimuli.*")] = list_to_archive(
         [Path("stimuli", "README")]
     )
@@ -157,14 +164,13 @@ def test_fetch_haxby(tmp_path, request_mocker, capsys):
     assert len(haxby.mask_face_little) == len(subjects)
     assert "stimuli" in haxby
 
+
+def test_fetch_haxby_error(tmp_path):
     subjects = ["a", 8]
     message = "'subject id' must be one of"
-
     for sub_id in subjects:
         with pytest.raises(ValueError, match=message.format(sub_id)):
             func.fetch_haxby(data_dir=tmp_path, subjects=[sub_id])
-
-    check_fetcher_verbosity(func.fetch_haxby, capsys, data_dir=tmp_path)
 
 
 def _adhd_example_subject(match, request):  # noqa: ARG001
@@ -240,18 +246,20 @@ def test_fetch_adhd_edge_cases(tmp_path, request_mocker, subjects):
     )
 
 
-def test_fetch_adhd(tmp_path, request_mocker, capsys):
+@pytest.mark.parametrize("n_subjects", [12, 40])
+def test_fetch_adhd(tmp_path, request_mocker, capsys, n_subjects):
     request_mocker.url_mapping["*metadata.tgz"] = _adhd_metadata()
     request_mocker.url_mapping[re.compile(r".*adhd40_([0-9]+)\.tgz")] = (
         _adhd_example_subject
     )
-    adhd = func.fetch_adhd(data_dir=tmp_path, n_subjects=12, verbose=0)
+    adhd = func.fetch_adhd(data_dir=tmp_path, n_subjects=n_subjects, verbose=0)
 
     assert isinstance(adhd, Bunch)
     check_type_fetcher(adhd)
-    assert len(adhd.func) == 12
-    assert len(adhd.confounds) == 12
-    assert request_mocker.url_count == 13  # Subjects + phenotypic
+    assert len(adhd.func) == n_subjects
+    assert len(adhd.confounds) == n_subjects
+    assert len(adhd.phenotypic) == n_subjects
+    assert request_mocker.url_count == n_subjects + 1  # Subjects + phenotypic
 
     check_fetcher_verbosity(
         func.fetch_adhd, capsys, n_subjects=1, data_dir=tmp_path
@@ -931,7 +939,8 @@ def test_fetch_openneuro_dataset(tmp_path):
         urls, tmp_path, dataset_version
     )
 
-    assert isinstance(datadir, str)
+    # https://github.com/nilearn/nilearn/issues/6388
+    assert datadir == str(data_dir)
     assert isinstance(dl_files, list)
     assert len(dl_files) == 9
 

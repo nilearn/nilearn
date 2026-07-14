@@ -1,13 +1,14 @@
 """Logging facility for nilearn."""
 
 import inspect
+import time
 import traceback
 from pathlib import Path
 
 import numpy as np
 
 from nilearn._base import NilearnBaseEstimator
-from nilearn.typing import Verbose
+from nilearn.nilearn_typing import Verbose
 
 
 def _has_rich() -> bool:
@@ -131,8 +132,8 @@ def compose_err_msg(msg: str, **kwargs) -> str:
     updated_msg : string
         msg, with "key: value" appended. Only string values are appended.
 
-    Example
-    -------
+    Examples
+    --------
     >>> compose_err_msg('Error message with arguments...', arg_num=123, \
         arg_str='filename.nii', arg_bool=True)
     'Error message with arguments...\\narg_str: filename.nii'
@@ -198,3 +199,24 @@ def one_level_deeper() -> int:
     Needs to be in a module that does not start with 'test'
     """
     return find_stack_level()
+
+
+def readable_time(seconds) -> str:
+    """Convert a duration in seconds to a human-readable string.
+
+    The output includes hours, minutes, and seconds as needed, using
+    abbreviated units (HR/HRS, MIN, SEC).
+
+    Parameters
+    ----------
+    seconds : int or float
+        Time duration in seconds.
+
+    Returns
+    -------
+    str
+        Human-readable time string.
+    """
+    seconds = round(seconds)
+
+    return time.strftime("%H HR %M MIN %S SEC", time.gmtime(seconds))
