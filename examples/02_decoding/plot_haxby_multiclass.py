@@ -70,7 +70,7 @@ run = run[non_rest]
 # Build the decoders, using scikit-learn
 # --------------------------------------
 # Nilearn does not have dedicate multiclass estimators,
-# so we rely on those from sklearn.
+# as we can directly use those from sklearn.
 # Here we use a Support Vector Classification, with a linear kernel,
 # and a simple feature selection step.
 
