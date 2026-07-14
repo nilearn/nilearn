@@ -502,7 +502,6 @@ def test_find_parcellation_cut_coords_hemispheres(affine_mni):
     assert labels == [1]
 
 
-@pytest.mark.ai_generated
 def test_find_parcellation_cut_coords_4d_input_with_trailing_dim(
     affine_eye,
 ):
