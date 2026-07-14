@@ -87,7 +87,6 @@ def test_check_estimator_nilearn(estimator, check, name):
     check(estimator)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("n_alphas", range(1, 10))
@@ -116,7 +115,6 @@ def test_space_net_alpha_grid(
     assert_almost_equal(n_alphas, len(alphas))
 
 
-@pytest.mark.ai_generated
 def test_space_net_alpha_grid_same_as_sk():
     """Check alpha grid matches scikit-learn's for the default l1_ratio."""
     iris = load_iris()
@@ -129,7 +127,6 @@ def test_space_net_alpha_grid_same_as_sk():
     )
 
 
-@pytest.mark.ai_generated
 def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
     """Exercise every line of _EarlyStoppingCallback via code fuzzing.
 
@@ -166,11 +163,11 @@ def test_screening_space_net():
     _, mask = to_niimgs(X_, [size] * 3)
 
     for verbose in [0, 1]:
-        with pytest.warns(UserWarning):
+        with pytest.warns(UserWarning, match="Brain mask is smaller than"):
             screening_percentile = adjust_screening_percentile(
                 10, mask, verbose
             )
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="Brain mask is smaller than"):
         screening_percentile = adjust_screening_percentile(10, mask)
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
@@ -178,7 +175,6 @@ def test_screening_space_net():
     assert screening_percentile == 100
 
 
-@pytest.mark.ai_generated
 def test_logistic_path_scores():
     """Check logistic path scores shape and returned coefficients length."""
     iris = load_iris()
@@ -205,7 +201,6 @@ def test_logistic_path_scores():
     assert X.shape[1] + 1 == len(best_w)
 
 
-@pytest.mark.ai_generated
 def test_squared_loss_path_scores():
     """Check squared loss path scores shape and returned coefficients."""
     iris = load_iris()
@@ -232,7 +227,6 @@ def test_squared_loss_path_scores():
     assert X.shape[1] + 1 == len(best_w)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("l1_ratio", [0.99])
 @pytest.mark.parametrize("debias", [True])
 def test_tv_regression_simple(rng, l1_ratio, debias):
@@ -333,7 +327,6 @@ def test_string_params_case(rng, penalty_wrong_case, estimator):
         estimator(penalty=penalty_wrong_case).fit(X, y)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("l1_ratio", [0.01, 0.5, 0.99])
 def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
     """Smoke test fitting SpaceNetRegressor with tv-l1 on a 3D image."""
@@ -359,7 +352,6 @@ def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
     ).fit(X, y)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.slow
 def test_graph_net_classifier_score():
     """Check SpaceNetClassifier score matches accuracy of its predictions."""
@@ -460,7 +452,6 @@ def test_lasso_vs_graph_net():
     assert_almost_equal(graph_net_perf, lasso_perf, decimal=2)
 
 
-@pytest.mark.ai_generated
 def test_crop_mask(rng):
     """Check that _crop_mask tightens the mask without losing voxels."""
     mask = np.zeros((3, 4, 5), dtype=bool)
@@ -474,7 +465,6 @@ def test_crop_mask(rng):
     assert np.prod(tight_mask.shape) <= np.prod(box.shape)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 def test_univariate_feature_screening(
     rng, is_classif, dim=(11, 12, 13), n_samples=10
@@ -503,7 +493,6 @@ def test_univariate_feature_screening(
     assert n_features_ <= n_features
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 def test_space_net_alpha_grid_pure_spatial(rng, is_classif):
     """Check alpha grid has no NaN when l1_ratio=0 (pure spatial penalty)."""
@@ -517,7 +506,6 @@ def test_space_net_alpha_grid_pure_spatial(rng, is_classif):
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("mask_empty", [np.array([]), np.zeros((2, 2, 2))])
 def test_crop_mask_empty_mask(mask_empty):
     """Raise error when _crop_mask is given an empty mask."""
@@ -542,9 +530,9 @@ def test_space_net_one_alpha_no_crash(model):
     ).fit(X, y)
 
 
-@pytest.mark.ai_generated
+# TODO extract into a single test for estimators that accept Y
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
-def test_checking_inputs_length(model):
+def test_check_inputs_length(model):
     """Raise error when X and y have inconsistent numbers of samples."""
     iris = load_iris()
     X, y = iris.data, iris.target
@@ -557,9 +545,6 @@ def test_checking_inputs_length(model):
     with pytest.raises(ValueError, match="inconsistent numbers of samples"):
         model(
             mask=mask,
-            alphas=1.0 / 0.01 / X.shape[0],
-            l1_ratios=1.0,
-            tol=1e-10,
             screening_percentile=100.0,
             standardize="zscore_sample",
         ).fit(

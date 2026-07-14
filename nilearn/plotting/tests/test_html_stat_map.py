@@ -70,7 +70,6 @@ def _check_affine(affine) -> None:
     )
 
 
-
 def test_data_to_sprite():
     """Check that _data_to_sprite tiles slices as expected."""
     # Simulate data and turn into sprite
@@ -210,7 +209,6 @@ def test_load_bg_img(affine_eye):
     _check_affine(bg_img.affine)
 
 
-
 def test_get_bg_mask_and_cmap():
     """Non-regression test for issue #3120.
 
@@ -219,7 +217,6 @@ def test_get_bg_mask_and_cmap():
     img, _ = _simulate_img()
     mask, _ = _get_bg_mask_and_cmap(img, False)
     assert (mask == np.zeros(img.shape, dtype=bool)).all()
-
 
 
 def test_resample_stat_map(affine_eye):
@@ -254,7 +251,6 @@ def test_resample_stat_map(affine_eye):
     )
 
 
-
 def test_json_view_params(affine_eye):
     """Check that _json_view_params generates the expected structure."""
     # Try to generate some sprite parameters
@@ -276,7 +272,6 @@ def test_json_view_params(affine_eye):
     # Just check that a structure was generated,
     # and test a single parameter
     assert params["overlay"]["opacity"] == 0.5
-
 
 
 def test_json_view_size():
@@ -325,7 +320,6 @@ def _get_data_and_json_view(black_bg, cbar, radiological):
     return data, json_view
 
 
-
 @pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("cbar", [True, False])
 @pytest.mark.parametrize("radiological", [True, False])
@@ -336,7 +330,6 @@ def test_json_view_data(black_bg, cbar, radiological):
     assert isinstance(json_view["bg_base64"], str)
     assert isinstance(json_view["stat_map_base64"], str)
     assert isinstance(json_view["cm_base64"], str)
-
 
 
 @pytest.mark.parametrize("black_bg", [True, False])
@@ -362,7 +355,6 @@ def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
 
     html_view = _json_view_to_html(json_view)
     check_html_view_img(html_view)
-
 
 
 def test_get_cut_slices(affine_eye):
@@ -432,7 +424,6 @@ def test_view_img_non_isotropic():
     check_html_view_img(html_view)
 
 
-
 @pytest.mark.parametrize(
     "affine,is_isotropic",
     [
@@ -465,7 +456,6 @@ def test_view_img_non_isotropic():
 def test_is_isotropic(affine, is_isotropic):
     """Check _is_isotropic correctly detects isotropic affines."""
     assert _is_isotropic(affine) == is_isotropic
-
 
 
 @pytest.mark.parametrize(

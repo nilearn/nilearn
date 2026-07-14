@@ -24,7 +24,6 @@ from nilearn.surface.surface import PolyData
 from nilearn.surface.surface import get_data as get_surf_data
 
 
-
 def test_fdr(rng):
     """Check fdr_threshold matches the expected inverse survival value."""
     n = 100
@@ -42,7 +41,6 @@ def test_fdr(rng):
     pvals[0] = 0.007
 
     assert np.isfinite(fdr_threshold(norm.isf(pvals), 0.1))
-
 
 
 def test_fdr_error(rng):
@@ -89,7 +87,6 @@ def test_threshold_stats_img_warn_threshold_unused(
         )
     if height_control is not None:
         assert any("is not used with" in str(x) for x in warnings_list)
-
 
 
 def test_threshold_stats_img_no_height_control(
@@ -145,7 +142,6 @@ def test_threshold_stats_img_no_height_control(
     assert th_map is None
 
 
-
 def test_threshold_stats_img_error_height_control(
     data_norm_isf, img_3d_ones_eye, affine_eye
 ):
@@ -174,7 +170,6 @@ def test_threshold_stats_img_error_cluster_threshold(
         threshold_stats_img(
             stat_img, mask_img=img_3d_ones_eye, cluster_threshold=-10
         )
-
 
 
 def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
@@ -227,7 +222,6 @@ def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
 
     assert threshold > 1.64
     assert th_map is None
-
 
 
 def test_threshold_stats_img_errors(img_3d_rand_eye):
@@ -283,7 +277,6 @@ def test_hommel(alpha, expected):
     z = norm.isf([1.0e-8, 0.01, 0.08, 0.1, 0.5, 0.7, 0.9])
 
     assert _compute_hommel_value(z, alpha=alpha) == expected
-
 
 
 @pytest.mark.thread_unsafe
@@ -360,7 +353,6 @@ def test_all_resolution_inference_surface(
     )
 
 
-
 def test_all_resolution_inference_with_mask(
     img_3d_ones_eye, affine_eye, data_norm_isf
 ):
@@ -428,7 +420,6 @@ def test_all_resolution_inference_surface_mask(surf_img_1d):
     assert np.sum(th_map.data.parts["right"] > 0) == 0
 
 
-
 def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
     """Check cluster_level_inference detects a single active voxel."""
     data = data_norm_isf
@@ -439,7 +430,6 @@ def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
     vals = get_data(th_map)
 
     assert np.sum(vals > 0) == 1
-
 
 
 def test_all_resolution_inference_one_sided(
