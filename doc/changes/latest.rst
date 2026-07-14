@@ -52,7 +52,7 @@ Enhancements
 Changes
 -------
 
-- :bdg-secondary:`Maint` Add a matrix job to the benchmark CI workflow that benchmarks each commit in ``asv_benchmarks/hashestobenchmark.txt`` in parallel, then combines the results into a single viewable artifact, instead of benchmarking them one after another in a single, slow job (:gh:`6430` by `Rémi Gau`_).
+- :bdg-secondary:`Maint` Add a matrix job to the benchmark CI workflow that benchmarks each commit in ``asv_benchmarks/hashestobenchmark.txt`` in parallel, then combines the results into a single viewable artifact, instead of benchmarking them one after another in a single, slow job, and make the version-gated local imports in ``discovery.py`` and ``plotting.py`` raise ``NotImplementedError`` so asv reports them as skipped rather than failed on nilearn versions that lack the benchmarked function (:gh:`6430` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` Drop nilearn versions older than 0.11.0 from ``asv_benchmarks/hashestobenchmark.txt`` (they cannot currently be benchmarked, see ``CONTRIBUTING.rst``), make the benchmark CI workflow fail when a benchmark reports as failed instead of silently ignoring it, fix an always-failing ``IndexImgBenchmark`` slice bound that this newly surfaced, and reorganize ``asv_benchmarks/benchmarks/glm`` to mirror the structure of :mod:`nilearn.glm` (:gh:`6426` by `Rémi Gau`_).
 
