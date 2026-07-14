@@ -42,23 +42,23 @@ from nilearn.datasets import (
 
 _, urls = fetch_ds000030_urls()
 
-exclusion_patterns = [
-    "*group*",
-    "*phenotype*",
-    "*mriqc*",
-    "*parameter_plots*",
-    "*physio_plots*",
-    "*space-fsaverage*",
-    "*space-T1w*",
-    "*dwi*",
-    "*beh*",
-    "*task-bart*",
-    "*task-rest*",
-    "*task-scap*",
-    "*task-task*",
-]
+# Only keep the files for the ``stopsignal`` task that are actually
+# needed for this example: the raw functional data and events,
+# the relevant fMRIPrep derivatives, and the FSL ``stopsignal.feat``
+# derivatives used later on for comparison.
+# Restricting the download with a ``inclusion_filters`` this way,
+# rather than trying to list every folder to exclude,
+# avoids pulling in the (much larger) derivatives
+# of the other tasks acquired for this subject.
+inclusion_patterns = ["*sub-*stopsignal*"]
+# Some fMRIPrep derivatives are also generated in other output spaces
+# that are not used in this example.
+exclusion_patterns = ["*_space-T1w*", "*_space-fsaverage*"]
 urls = select_from_index(
-    urls, exclusion_filters=exclusion_patterns, n_subjects=1
+    urls,
+    inclusion_filters=inclusion_patterns,
+    exclusion_filters=exclusion_patterns,
+    n_subjects=1,
 )
 
 data_dir, _ = fetch_openneuro_dataset(urls=urls)
