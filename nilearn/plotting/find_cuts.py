@@ -438,7 +438,7 @@ def find_parcellation_cut_coords(
 
     # Grab data and affine
     loaded_labels_img = reorder_img(check_niimg_3d(labels_img))
-    labels_data = get_data(labels_img)
+    labels_data = get_data(loaded_labels_img)
     labels_affine = loaded_labels_img.affine
 
     # Grab number of unique values in 3d image

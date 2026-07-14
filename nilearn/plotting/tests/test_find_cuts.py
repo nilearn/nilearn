@@ -502,6 +502,29 @@ def test_find_parcellation_cut_coords_hemispheres(affine_mni):
     assert labels == [1]
 
 
+@pytest.mark.ai_generated
+def test_find_parcellation_cut_coords_4d_input_with_trailing_dim(
+    affine_eye,
+):
+    """Regression test for labels_img with a trailing singleton 4th dim.
+
+    ``check_niimg_3d`` (used to compute ``labels_affine``) squeezes such an
+    image to 3D, but the raw data used to compute ``labels_data`` must be
+    squeezed the same way, otherwise the two become inconsistent and
+    ``center_of_mass`` fails with a shape mismatch.
+
+    See https://github.com/nilearn/nilearn/pull/6416#issuecomment-4968895530
+    """
+    data = np.zeros((10, 10, 10, 1))
+    data[2:5, 2:5, 2:5, 0] = 1
+    data[6:9, 6:9, 6:9, 0] = 2
+    img = Nifti1Image(data, affine_eye)
+
+    coords = find_parcellation_cut_coords(img)
+
+    assert coords.shape == (2, 3)
+
+
 def _proba_parcellation_2_roi(
     x_map_a, y_map_a, z_map_a, x_map_b, y_map_b, z_map_b
 ) -> np.ndarray:
