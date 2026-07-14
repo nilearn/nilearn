@@ -34,6 +34,9 @@
 #   The script ``build_tools/github/set_machine_name.py`` does all this.
 # - Then we run the benchmarks (``asv run``) such that the results are appended to the old results (via ``--append-samples`` parameter).
 #   ``-ev`` makes sure any errors are printed in detail and all the output can be seen in the logs.
+# - ``asv run`` exits 0 and keeps going even when individual benchmarks fail,
+#   so we explicitly grep the log for ``asv: benchmark failed``
+#   and fail the workflow if it is found.
 # - Then we create the HTML with all the results via ``asv publish``.
 # - We upload the ``html`` and ``results`` directories as a single artifact so that we can download them later,
 #   e.g. to inspect the results of a PR run without waiting for them to be deployed.
@@ -218,6 +221,21 @@ jobs:
             if: github.event_name == 'push'
             run: |
                 asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 HASHFILE:main_release_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+
+        -   name: Fail if any benchmark reported as failed
+            # asv run keeps going and exits 0 even when individual
+            # benchmarks fail (it only reports them as "asv: benchmark
+            # failed" in the log), and piping its output through "tee"
+            # above already discards its own exit code regardless.
+            # So check the log content explicitly instead of relying on
+            # the exit code of the "asv run" steps above.
+            run: |
+                LOG_FILE=log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                if grep -q "asv: benchmark failed" "$LOG_FILE"; then
+                    echo "::error::One or more benchmarks failed, see the excerpt(s) below"
+                    grep -B 5 "asv: benchmark failed" "$LOG_FILE"
+                    exit 1
+                fi
 
         -   name: Create html with all results
             run: |
