@@ -71,6 +71,7 @@ def _check_affine(affine) -> None:
 
 
 def test_data_to_sprite():
+    """Check that _data_to_sprite tiles slices as expected."""
     # Simulate data and turn into sprite
     data = np.zeros([8, 8, 8])
     data[2:6, 2:6, 2:6] = 1
@@ -95,6 +96,7 @@ def test_data_to_sprite():
 
 
 def test_threshold_data():
+    """Check _threshold_data with auto, None, positive and zero thresholds."""
     data = np.arange(-3, 4)
 
     # Check that an 'auto' threshold leaves at least one element
@@ -173,6 +175,7 @@ def test_save_cmap(cmap, n_colors):
 
 @pytest.mark.thread_unsafe
 def test_mask_stat_map():
+    """Check _mask_stat_map with no threshold and a zero threshold."""
     # Generate simple simulated data with one "spot"
     img, data = _simulate_img()
 
@@ -187,6 +190,7 @@ def test_mask_stat_map():
 
 @pytest.mark.thread_unsafe
 def test_load_bg_img(affine_eye):
+    """Check load_bg_img returns a positive isotropic near-diagonal affine."""
     # Generate simple simulated data with non-diagonal affine
     affine = affine_eye
     affine[0, 0] = -1
@@ -206,14 +210,17 @@ def test_load_bg_img(affine_eye):
 
 
 def test_get_bg_mask_and_cmap():
-    # non-regression test for issue #3120 (bg image was masked with mni
-    # template mask)
+    """Non-regression test for issue #3120.
+
+    Background image was masked with mni template mask.
+    """
     img, _ = _simulate_img()
     mask, _ = _get_bg_mask_and_cmap(img, False)
     assert (mask == np.zeros(img.shape, dtype=bool)).all()
 
 
 def test_resample_stat_map(affine_eye):
+    """Check _resample_stat_map resamples stat and mask to bg resolution."""
     # Start with simple simulated data
     bg_img, data = _simulate_img()
 
@@ -245,6 +252,7 @@ def test_resample_stat_map(affine_eye):
 
 
 def test_json_view_params(affine_eye):
+    """Check that _json_view_params generates the expected structure."""
     # Try to generate some sprite parameters
     params = _json_view_params(
         shape=[4, 4, 4],
@@ -267,6 +275,7 @@ def test_json_view_params(affine_eye):
 
 
 def test_json_view_size():
+    """Check that _json_view_size computes the expected viewer dimensions."""
     # Build some minimal sprite Parameters
     sprite_params = {"nbSlice": {"X": 4, "Y": 4, "Z": 4}}
     width, height = _json_view_size(sprite_params)
@@ -315,6 +324,7 @@ def _get_data_and_json_view(black_bg, cbar, radiological):
 @pytest.mark.parametrize("cbar", [True, False])
 @pytest.mark.parametrize("radiological", [True, False])
 def test_json_view_data(black_bg, cbar, radiological):
+    """Check that _json_view_data returns the expected base64 fields."""
     _, json_view = _get_data_and_json_view(black_bg, cbar, radiological)
     # Check the presence of critical fields
     assert isinstance(json_view["bg_base64"], str)
@@ -326,6 +336,7 @@ def test_json_view_data(black_bg, cbar, radiological):
 @pytest.mark.parametrize("cbar", [True, False])
 @pytest.mark.parametrize("radiological", [True, False])
 def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
+    """Check that _json_view_to_html builds a valid viewer."""
     data, json_view = _get_data_and_json_view(black_bg, cbar, radiological)
     json_view["params"] = _json_view_params(
         data.shape,
@@ -348,6 +359,7 @@ def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
 
 
 def test_get_cut_slices(affine_eye):
+    """Check _get_cut_slices with automatic, manual and rescaled affines."""
     # Generate simple simulated data with one "spot"
     img, data = _simulate_img()
 
@@ -443,6 +455,7 @@ def test_view_img_non_isotropic():
     ],
 )
 def test_is_isotropic(affine, is_isotropic):
+    """Check _is_isotropic correctly detects isotropic affines."""
     assert _is_isotropic(affine) == is_isotropic
 
 
@@ -455,6 +468,7 @@ def test_is_isotropic(affine, is_isotropic):
     ],
 )
 def test_resample_to_isotropic(voxel_size, expected_affine):
+    """Check _resample_to_isotropic produces the expected isotropic affine."""
     affine = np.diag([-0.5, 1, 2, 1])
     img = _img_3d_rand(affine=affine)
 
