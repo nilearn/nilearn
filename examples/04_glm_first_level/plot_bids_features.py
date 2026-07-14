@@ -51,9 +51,18 @@ _, urls = fetch_ds000030_urls()
 # avoids pulling in the (much larger) derivatives
 # of the other tasks acquired for this subject.
 inclusion_patterns = ["*sub-*stopsignal*"]
-# Some fMRIPrep derivatives are also generated in other output spaces
-# that are not used in this example.
-exclusion_patterns = ["*_space-T1w*", "*_space-fsaverage*"]
+# Some fMRIPrep and FSL derivatives are are not used in that example.
+exclusion_patterns = [
+    "*_space-T1w*",
+    "*_space-fsaverage*",
+    "*cope*gz",
+    "*jpg",
+    "*png",
+    "*txt",
+    "*tiff",
+    "*gif",
+    "*res4D*",
+]
 urls = select_from_index(
     urls,
     inclusion_filters=inclusion_patterns,

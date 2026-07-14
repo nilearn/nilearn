@@ -134,7 +134,17 @@ def _fetch_bids_data():
     # See examples/04_glm_first_level/plot_bids_features.py for the
     # rationale behind these filters.
     inclusion_patterns = ["*sub-*stopsignal*"]
-    exclusion_patterns = ["*_space-T1w*", "*_space-fsaverage*"]
+    exclusion_patterns = [
+        "*_space-T1w*",
+        "*_space-fsaverage*",
+        "*cope*gz",
+        "*jpg",
+        "*png",
+        "*txt",
+        "*tiff",
+        "*gif",
+        "*res4D*",
+    ]
     urls = select_from_index(
         urls,
         inclusion_filters=inclusion_patterns,

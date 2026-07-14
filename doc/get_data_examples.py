@@ -26,14 +26,24 @@ def main(args=sys.argv) -> None:
     # needed by examples/04_glm_first_level/plot_bids_features.py:
     # the raw functional data and events, the relevant fMRIPrep
     # derivatives, and the FSL ``stopsignal.feat`` derivatives used
-    # for comparison. Restricting the download with
+    # for comparison.
+    # Restricting the download with
     # ``inclusion_filters`` this way, rather than trying to list every
     # folder to exclude, avoids pulling in the (much larger)
     # derivatives of the other tasks acquired for this subject.
     inclusion_patterns = ["*sub-*stopsignal*"]
-    # Some fMRIPrep derivatives are also generated in other output
-    # spaces that are not used in that example.
-    exclusion_patterns = ["*_space-T1w*", "*_space-fsaverage*"]
+    # Some fMRIPrep and FSL derivatives are are not used in that example.
+    exclusion_patterns = [
+        "*_space-T1w*",
+        "*_space-fsaverage*",
+        "*cope*gz",
+        "*jpg",
+        "*png",
+        "*txt",
+        "*tiff",
+        "*gif",
+        "*res4D*",
+    ]
     urls = datasets.select_from_index(
         urls,
         inclusion_filters=inclusion_patterns,
