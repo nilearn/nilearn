@@ -1,14 +1,18 @@
 ---
 # Check that the cognitive complexity of the code has not increased.
 #
-# Uses complexipy (https://github.com/rohaquinlop/complexipy) to compute
-# the cognitive complexity of each function in ``nilearn`` and compares it
-# against the base branch of the pull request via ``--diff``.
+# Uses complexipy (https://github.com/rohaquinlop/complexipy) snapshot
+# baselines (see
+# https://rohaquinlop.github.io/complexipy/usage-guide/#snapshot-baselines)
+# to compare the pull request against the base branch:
 #
-# ``--ratchet`` makes the check fail only when a function's complexity
-# regresses past MAX_COMPLEXITY_ALLOWED: functions that are already above
-# the threshold but do not get worse are still allowed, and improvements
-# always pass.
+# 1. A snapshot of the base branch is generated on the fly (recording every
+#    function currently above MAX_COMPLEXITY_ALLOWED) instead of being
+#    committed to the repository, so nothing needs to be kept in sync or
+#    auto-committed back by CI.
+# 2. That snapshot is copied into the pull request checkout, and complexipy
+#    is run there: functions already in the snapshot still pass unless they
+#    got worse, and new functions above the threshold fail.
 #
 ###
 name: Complexity Check
@@ -35,23 +39,32 @@ jobs:
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         steps:
-        -   name: Checkout
+        -   name: Checkout base branch
             uses: actions/checkout@v7
             with:
-                # Need the base branch history for complexipy to diff against.
-                fetch-depth: 0
+                ref: ${{ github.event.pull_request.base.sha }}
+                path: main_branch
+
+        -   name: Checkout pull request
+            uses: actions/checkout@v7
+            with:
+                path: current_branch
 
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v7
             with:
-                python-version: 3.x
+                python-version: '3.13'
 
         -   name: Install complexipy
             run: uv tool install "complexipy>=5.3.0"
 
-        -   name: Check code complexity against the base branch
+        -   name: Create snapshot from the base branch
             run: |
-                complexipy nilearn \
-                    --diff ${{ github.event.pull_request.base.sha }} \
-                    --ratchet \
-                    --max-complexity-allowed ${{ env.MAX_COMPLEXITY_ALLOWED }}
+                cd main_branch
+                complexipy nilearn --snapshot-create --max-complexity-allowed ${{ env.MAX_COMPLEXITY_ALLOWED }}
+                cp complexipy-snapshot.json ../current_branch/
+
+        -   name: Check code complexity against the base branch snapshot
+            run: |
+                cd current_branch
+                complexipy nilearn --max-complexity-allowed ${{ env.MAX_COMPLEXITY_ALLOWED }}

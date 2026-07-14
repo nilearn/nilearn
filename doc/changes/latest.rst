@@ -52,7 +52,7 @@ Enhancements
 Changes
 -------
 
-- :bdg-secondary:`Maint` Add a ``Complexity Check`` GitHub Actions workflow that runs `complexipy <https://github.com/rohaquinlop/complexipy>`_ on pull requests touching ``nilearn/**/*`` and fails only when a function's cognitive complexity regresses past 25 compared to the base branch (:gh:`6066` by `Mathieu Dugré`_ and `Rémi Gau`_).
+- :bdg-secondary:`Maint` Add a ``Complexity Check`` GitHub Actions workflow that uses `complexipy <https://github.com/rohaquinlop/complexipy>`_ snapshot baselines to compare pull requests touching ``nilearn/**/*`` against their base branch, failing only when a function's cognitive complexity regresses past 25 (:gh:`6066` by `Mathieu Dugré`_ and `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` Drop nilearn versions older than 0.11.0 from ``asv_benchmarks/hashestobenchmark.txt`` (they cannot currently be benchmarked, see ``CONTRIBUTING.rst``), make the benchmark CI workflow fail when a benchmark reports as failed instead of silently ignoring it, fix an always-failing ``IndexImgBenchmark`` slice bound that this newly surfaced, and reorganize ``asv_benchmarks/benchmarks/glm`` to mirror the structure of :mod:`nilearn.glm` (:gh:`6426` by `Rémi Gau`_).
 
