@@ -24,7 +24,7 @@ from nilearn.surface.surface import PolyData
 from nilearn.surface.surface import get_data as get_surf_data
 
 
-@pytest.mark.ai_generated
+
 def test_fdr(rng):
     """Check fdr_threshold matches the expected inverse survival value."""
     n = 100
@@ -44,7 +44,7 @@ def test_fdr(rng):
     assert np.isfinite(fdr_threshold(norm.isf(pvals), 0.1))
 
 
-@pytest.mark.ai_generated
+
 def test_fdr_error(rng):
     """Raise error for alpha outside [0, 1]."""
     n = 100
@@ -91,7 +91,7 @@ def test_threshold_stats_img_warn_threshold_unused(
         assert any("is not used with" in str(x) for x in warnings_list)
 
 
-@pytest.mark.ai_generated
+
 def test_threshold_stats_img_no_height_control(
     data_norm_isf, img_3d_ones_eye, affine_eye
 ):
@@ -145,7 +145,7 @@ def test_threshold_stats_img_no_height_control(
     assert th_map is None
 
 
-@pytest.mark.ai_generated
+
 def test_threshold_stats_img_error_height_control(
     data_norm_isf, img_3d_ones_eye, affine_eye
 ):
@@ -176,7 +176,7 @@ def test_threshold_stats_img_error_cluster_threshold(
         )
 
 
-@pytest.mark.ai_generated
+
 def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
     """Check threshold_stats_img with various height_control values."""
     data = data_norm_isf
@@ -229,7 +229,7 @@ def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
     assert th_map is None
 
 
-@pytest.mark.ai_generated
+
 def test_threshold_stats_img_errors(img_3d_rand_eye):
     """Raise errors for invalid stat_img, height_control, and threshold."""
     with pytest.raises(ValueError, match="'stat_img' cannot be None"):
@@ -285,7 +285,7 @@ def test_hommel(alpha, expected):
     assert _compute_hommel_value(z, alpha=alpha) == expected
 
 
-@pytest.mark.ai_generated
+
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, expected, expected_n_unique_values",
@@ -360,7 +360,7 @@ def test_all_resolution_inference_surface(
     )
 
 
-@pytest.mark.ai_generated
+
 def test_all_resolution_inference_with_mask(
     img_3d_ones_eye, affine_eye, data_norm_isf
 ):
@@ -428,7 +428,7 @@ def test_all_resolution_inference_surface_mask(surf_img_1d):
     assert np.sum(th_map.data.parts["right"] > 0) == 0
 
 
-@pytest.mark.ai_generated
+
 def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
     """Check cluster_level_inference detects a single active voxel."""
     data = data_norm_isf
@@ -441,7 +441,7 @@ def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
     assert np.sum(vals > 0) == 1
 
 
-@pytest.mark.ai_generated
+
 def test_all_resolution_inference_one_sided(
     data_norm_isf, img_3d_ones_eye, affine_eye
 ):
