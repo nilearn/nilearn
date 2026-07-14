@@ -131,23 +131,15 @@ def report_flm_adhd_dmn(build_type):
 def _fetch_bids_data():
     _, urls = fetch_ds000030_urls()
 
-    exclusion_patterns = [
-        "*group*",
-        "*phenotype*",
-        "*mriqc*",
-        "*parameter_plots*",
-        "*physio_plots*",
-        "*space-fsaverage*",
-        "*space-T1w*",
-        "*dwi*",
-        "*beh*",
-        "*task-bart*",
-        "*task-rest*",
-        "*task-scap*",
-        "*task-task*",
-    ]
+    # See examples/04_glm_first_level/plot_bids_features.py for the
+    # rationale behind these filters.
+    inclusion_patterns = ["*sub-*stopsignal*"]
+    exclusion_patterns = ["*_space-T1w*", "*_space-fsaverage*"]
     urls = select_from_index(
-        urls, exclusion_filters=exclusion_patterns, n_subjects=1
+        urls,
+        inclusion_filters=inclusion_patterns,
+        exclusion_filters=exclusion_patterns,
+        n_subjects=1,
     )
 
     data_dir, _ = fetch_openneuro_dataset(urls=urls)
