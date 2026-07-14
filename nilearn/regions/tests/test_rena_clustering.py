@@ -56,8 +56,10 @@ else:
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=[ReNA(mask_img=_img_3d_mni(), n_clusters=2)]
+    list(
+        nilearn_check_estimator(
+            estimators=[ReNA(mask_img=_img_3d_mni(), n_clusters=2)]
+        )
     ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001

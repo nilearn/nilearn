@@ -539,6 +539,8 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
 
 def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
     check_is_of_allowed_type(estimators, (list,), "estimators")
+
+    checks_to_run = []
     for est in estimators:
         # TODO (nilearn >= 0.15.0)
         # remove this entire if block
@@ -552,7 +554,9 @@ def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
                 est.standardize = "zscore_sample"
 
         for e, check in nilearn_check_generator(estimator=est):
-            yield e, check, check.__name__
+            checks_to_run.append((e, check, check.__name__))
+
+    return checks_to_run
 
 
 def nilearn_check_generator(estimator: NilearnBaseEstimator):
