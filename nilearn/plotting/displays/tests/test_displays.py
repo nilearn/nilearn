@@ -156,7 +156,7 @@ def cut_coords(name) -> int | tuple[int, ...] | list[int]:
 
 
 @pytest.mark.parametrize(
-    "display,name", zip(SLICERS, SLICER_KEYS, strict=False)
+    "display,name", list(zip(SLICERS, SLICER_KEYS, strict=False))
 )
 def test_display_basics_slicers(
     display, name, mni152_template_res_2, cut_coords
@@ -177,7 +177,7 @@ def test_display_basics_slicers(
 
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
-    "display,name", zip(PROJECTORS, PROJECTOR_KEYS, strict=False)
+    "display,name", list(zip(PROJECTORS, PROJECTOR_KEYS, strict=False))
 )
 def test_display_basics_projectors(
     display, name, mni152_template_res_2, cut_coords
@@ -453,7 +453,7 @@ def test_threshold(threshold, vmin, vmax, expected_results):
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
 @pytest.mark.parametrize(
-    "display,name", zip(SLICERS, SLICER_KEYS, strict=False)
+    "display,name", list(zip(SLICERS, SLICER_KEYS, strict=False))
 )
 def test_display_slicers_transparency(
     display, mni152_template_res_2, name, cut_coords, transparency
@@ -475,7 +475,7 @@ def test_display_slicers_transparency(
 
 @pytest.mark.parametrize("transparency", [-2, 10])
 @pytest.mark.parametrize(
-    "display,name", zip(SLICERS, SLICER_KEYS, strict=False)
+    "display,name", list(zip(SLICERS, SLICER_KEYS, strict=False))
 )
 def test_display_slicers_transparency_warning(
     display, mni152_template_res_2, name, cut_coords, transparency
@@ -491,7 +491,7 @@ def test_display_slicers_transparency_warning(
 
 @pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
 @pytest.mark.parametrize(
-    "display,name", zip(PROJECTORS, PROJECTOR_KEYS, strict=False)
+    "display,name", list(zip(PROJECTORS, PROJECTOR_KEYS, strict=False))
 )
 def test_display_projectors_transparency(
     display, mni152_template_res_2, name, cut_coords, transparency
@@ -513,7 +513,7 @@ def test_display_projectors_transparency(
 
 @pytest.mark.parametrize("transparency", [-2, 10])
 @pytest.mark.parametrize(
-    "display,name", zip(PROJECTORS, PROJECTOR_KEYS, strict=False)
+    "display,name", list(zip(PROJECTORS, PROJECTOR_KEYS, strict=False))
 )
 def test_display_projectors_transparency_warning(
     display, mni152_template_res_2, name, cut_coords, transparency
