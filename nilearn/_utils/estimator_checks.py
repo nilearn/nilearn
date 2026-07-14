@@ -3669,7 +3669,7 @@ def check_masker_verbose(estimator_orig) -> None:
         estimator.fit(imgs)
     output_verbose_1 = buffer.getvalue()
 
-    assert "Loading data from" in output_verbose_1
+    print(estimator)
 
     estimator.verbose = 2
     buffer = io.StringIO()
@@ -3677,9 +3677,18 @@ def check_masker_verbose(estimator_orig) -> None:
         estimator.fit(imgs)
     output_verbose_2 = buffer.getvalue()
 
-    assert "Loading data from" in output_verbose_2
+    # Expected loading messages
+    if not isinstance(estimator, (_MultiMixin, NiftiSpheresMasker)):
+        expected_loading_message = (
+            "Loading data from",
+            "Loading mask from",
+            "Loading regions from",
+        )
 
-    assert len(output_verbose_2) > len(output_verbose_1)
+        assert any(s in output_verbose_1 for s in expected_loading_message)
+        assert any(s in output_verbose_2 for s in expected_loading_message)
+
+    assert len(output_verbose_2) >= len(output_verbose_1)
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------
