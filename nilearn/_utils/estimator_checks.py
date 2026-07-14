@@ -1904,6 +1904,8 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
 
                 if hasattr(estimator, "memory"):
                     estimator.memory = memory
+                    if memory is not None:
+                        estimator.memory_level = 1
 
                 input_np_dtype = np.dtype(cast(Any, input_dtype))
 
@@ -2002,6 +2004,8 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
 
                 if hasattr(estimator, "memory"):
                     estimator.memory = memory
+                    if memory is not None:
+                        estimator.memory_level = 1
 
                 input_np_dtype = np.dtype(cast(Any, input_dtype))
 
