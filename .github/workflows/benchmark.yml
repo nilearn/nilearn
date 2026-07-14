@@ -322,11 +322,9 @@ jobs:
                 git push origin gh-pages
 
       # TODO: this job and the two below are temporarily also triggered on
-      # pull_request, and restricted to "-b NiftiMaskerBenchmark", to
-      # validate the matrix + merge mechanism in CI. Once confirmed,
-      # remove "pull_request" from all three "if:" conditions below and
-      # drop the "-b" filter in the "Run all benchmarks for this commit"
-      # step.
+      # pull_request, to validate the matrix + merge mechanism in CI with
+      # the full benchmark suite. Once confirmed, remove "pull_request"
+      # from all three "if:" conditions below.
     list-history-commits:
         if: |
             github.repository == 'nilearn/nilearn' &&
@@ -383,7 +381,7 @@ jobs:
         -   name: Run all benchmarks for this commit
               # "<commit>^!" is git's syntax for "just this one commit"
             run: |
-                asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 -b "NiftiMaskerBenchmark" "${{ matrix.commit }}^!" 2>&1 | tee log_${{ matrix.commit }}
+                asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 "${{ matrix.commit }}^!" 2>&1 | tee log_${{ matrix.commit }}
 
         -   name: Fail if any benchmark reported as failed
             run: |
