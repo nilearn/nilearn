@@ -1239,6 +1239,19 @@ Adding new benchmarks
 Please see the `asv documentation writing tips <https://asv.readthedocs.io/en/stable/writing_benchmarks.html>`_
 to make sure you understand the basics about how to write benchmarks.
 
+Only benchmark functions and methods that are part of nilearn's public API
+(what a user could import and call directly),
+not private helpers (leading underscore) or implementation details.
+
+The structure of ``asv_benchmarks/benchmarks`` must mirror
+the structure of the ``nilearn`` package itself:
+a benchmark for a function or class living in ``nilearn/glm/first_level/first_level.py``
+belongs in ``asv_benchmarks/benchmarks/glm/first_level/first_level.py``,
+and a benchmark for ``nilearn/glm/io.py`` belongs in ``asv_benchmarks/benchmarks/glm/io.py``.
+This makes it easy to find the benchmark(s) for a given piece of the public API,
+and keeps benchmark files from growing unrelated content
+as nilearn's own modules get reorganized over time.
+
 For naming benchmarks, try to follow the following rules:
 
 - use snake_case instead of CamelCase
