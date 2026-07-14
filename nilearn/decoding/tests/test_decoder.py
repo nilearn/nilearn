@@ -414,10 +414,12 @@ def test_wrap_param_grid_is_none():
     assert _wrap_param_grid(None, "alphas") is None
 
 
+# TODO extract into a single test for estimators that accept Y
 @pytest.mark.parametrize(
     "model", [DecoderRegressor, Decoder, FREMRegressor, FREMClassifier]
 )
 def test_check_inputs_length(model):
+    """Raise error when X and y have inconsistent numbers of samples."""
     iris = load_iris()
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
