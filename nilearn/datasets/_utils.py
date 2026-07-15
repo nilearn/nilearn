@@ -187,10 +187,8 @@ def _chunk_read_(
             msg_level=3,
         )
         total_size = None
-    bytes_so_far = initial_size
 
     use_rich = report_hook and _has_rich()
-
     if use_rich:
         from rich.progress import (
             BarColumn,
@@ -216,28 +214,32 @@ def _chunk_read_(
             completed=initial_size,
         )
         progress.start()
-    else:
-        progress = None
-        t0 = time_last_display = time.time()
+
+    bytes_so_far = initial_size
+
+    t0 = time_last_display = time.time()
 
     try:
         for chunk in response.iter_content(chunk_size):
             bytes_so_far += len(chunk)
+
             if use_rich:
                 progress.update(task_id, completed=bytes_so_far)
+
             elif report_hook:
                 time_last_read = time.time()
-                # Refresh report every second or when download is
-                # finished.
+                # Refresh report every second or when download is finished.
                 if time_last_read > time_last_display + 1.0 or not chunk:
                     _chunk_report_(
                         bytes_so_far, total_size, initial_size, t0, verbose
                     )
                     time_last_display = time_last_read
+
             if chunk:
                 local_file.write(chunk)
             else:
                 break
+
     finally:
         if use_rich:
             progress.stop()
