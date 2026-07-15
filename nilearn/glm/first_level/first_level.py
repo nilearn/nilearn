@@ -2684,7 +2684,7 @@ def _make_bids_files_filter(
     return filters
 
 
-def _check_bids_image_list(imgs, sub_label, filters):
+def _check_bids_image_list(imgs, sub_label, filters) -> None:
     """Check input BIDS images.
 
     Check that:
@@ -2726,7 +2726,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
         "space_label or img_filters"
     )
 
-    run_check_list = []
+    run_check_list: list[tuple[str, str] | str] = []
 
     for img_ in imgs:
         parsed_filename = parse_bids_filename(img_)
