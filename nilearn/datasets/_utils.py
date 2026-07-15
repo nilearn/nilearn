@@ -21,12 +21,13 @@ import requests
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level, readable_time
+from nilearn._utils.logger import _has_rich, find_stack_level, readable_time
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
 from nilearn.datasets.utils import get_data_dirs
+from nilearn.nilearn_typing import Verbose
 
 _REQUESTS_TIMEOUT = (15.1, 61)
 PACKAGE_DIRECTORY = Path(__file__).absolute().parent
@@ -131,12 +132,16 @@ def _chunk_read_(
     response,
     local_file,
     chunk_size=8192,
-    report_hook=None,
+    report_hook: bool = False,
     initial_size=0,
     total_size=None,
-    verbose=1,
+    verbose: Verbose = 1,
 ) -> None:
     """Download a file chunk by chunk and show advancement.
+
+    If ``rich`` is installed, a :class:`rich.progress.Progress` bar is
+    used to display advancement. Otherwise, a fallback text-based report
+    is printed instead (see :func:`_chunk_report_`).
 
     Parameters
     ----------
@@ -184,23 +189,58 @@ def _chunk_read_(
         total_size = None
     bytes_so_far = initial_size
 
-    t0 = time_last_display = time.time()
-    for chunk in response.iter_content(chunk_size):
-        bytes_so_far += len(chunk)
-        time_last_read = time.time()
-        if (
-            report_hook
-            and
-            # Refresh report every second or when download is
-            # finished.
-            (time_last_read > time_last_display + 1.0 or not chunk)
-        ):
-            _chunk_report_(bytes_so_far, total_size, initial_size, t0, verbose)
-            time_last_display = time_last_read
-        if chunk:
-            local_file.write(chunk)
-        else:
-            break
+    use_rich = report_hook and _has_rich()
+
+    if use_rich:
+        from rich.progress import (
+            BarColumn,
+            DownloadColumn,
+            Progress,
+            TextColumn,
+            TimeRemainingColumn,
+            TransferSpeedColumn,
+        )
+
+        description = Path(getattr(local_file, "name", "")).name
+        description = description.removesuffix(".part") or "file"
+        progress = Progress(
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            DownloadColumn(),
+            TransferSpeedColumn(),
+            TimeRemainingColumn(),
+        )
+        task_id = progress.add_task(
+            f"Downloading {description}",
+            total=total_size,
+            completed=initial_size,
+        )
+        progress.start()
+    else:
+        progress = None
+        t0 = time_last_display = time.time()
+
+    try:
+        for chunk in response.iter_content(chunk_size):
+            bytes_so_far += len(chunk)
+            if use_rich:
+                progress.update(task_id, completed=bytes_so_far)
+            elif report_hook:
+                time_last_read = time.time()
+                # Refresh report every second or when download is
+                # finished.
+                if time_last_read > time_last_display + 1.0 or not chunk:
+                    _chunk_report_(
+                        bytes_so_far, total_size, initial_size, t0, verbose
+                    )
+                    time_last_display = time_last_read
+            if chunk:
+                local_file.write(chunk)
+            else:
+                break
+    finally:
+        if use_rich:
+            progress.stop()
 
 
 @fill_doc
@@ -540,7 +580,7 @@ def fetch_single_file(
     md5sum=None,
     username=None,
     password=None,
-    verbose=1,
+    verbose: Verbose = 1,
     session=None,
 ):
     """Load requested file, downloading it if needed or requested.
@@ -658,7 +698,7 @@ def fetch_single_file(
                         _chunk_read_(
                             resp,
                             fh,
-                            report_hook=(verbose > 0),
+                            report_hook=bool(verbose > 0),
                             initial_size=initial_size,
                             verbose=verbose,
                         )
@@ -690,7 +730,7 @@ def fetch_single_file(
                     _chunk_read_(
                         resp,
                         fh,
-                        report_hook=(verbose > 0),
+                        report_hook=bool(verbose > 0),
                         initial_size=initial_size,
                         verbose=verbose,
                     )
