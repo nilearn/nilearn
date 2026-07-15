@@ -84,6 +84,12 @@ repos:
                 doc/ci.jinja
             )$
 
+-   repo: https://github.com/rohaquinlop/complexipy-pre-commit
+    rev: v5.1.0
+    hooks:
+    -   id: complexipy
+        args: [--max-complexity-allowed=75]
+
     # Lint and format Python code
 -   repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.20
