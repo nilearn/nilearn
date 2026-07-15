@@ -1142,11 +1142,12 @@ def test_subject_order_with_labels(tmp_path):
     "kwargs",
     [{}, {"confounds_strategy": None}, {"confounds_strategy": ("motion",)}],
 )
-def test_surface(tmp_path, kwargs):
+@pytest.mark.parametrize("n_runs", [[1], [2], [3]])
+def test_surface(tmp_path, kwargs, n_runs):
     """Test finding and loading Surface data in BIDS dataset."""
     n_sub = 2
     tasks = ["main"]
-    n_runs = [3]
+    n_runs = n_runs
 
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,

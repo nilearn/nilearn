@@ -2478,9 +2478,13 @@ def _get_confounds(
         return confounds
 
     confounds = load_confounds(img_files=imgs, **kwargs_load_confounds)[0]
-    if isinstance(confounds, list):
-        return confounds
-    return [confounds]
+
+    if not isinstance(confounds, list):
+        confounds = [confounds]
+
+    assert len(confounds) == len(imgs)
+
+    return confounds
 
 
 def _check_confounds_list(confounds, imgs) -> None:
