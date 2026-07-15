@@ -1156,6 +1156,8 @@ returned by the ``request_mocker`` pytest fixture, defined in
 ``Sender`` class it contains provide information on how to write a test using
 this fixture. Existing tests can also serve as examples.
 
+.. _performance:
+
 Performance monitoring
 ----------------------
 
