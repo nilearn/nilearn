@@ -66,13 +66,13 @@
 # .. admonition:: Important
 #    :class: warning
 #
-#       Because each matrix entry runs on its own GitHub-hosted runner,
-#       drawn from a pool of different underlying CPU models,
-#       commits compared in this combined view are not guaranteed to have been benchmarked
-#       on the same hardware (unlike the single-job ``benchmark`` job above, where every compared commit shares the same runner).
-#       Any performance difference spotted here should therefore be treated as a lead, not a conclusion,
-#       and confirmed by rerunning the specific benchmark locally for the relevant commits on the same machine,
-#       for example with ``asv run -b <benchmark_name> HASHFILE:hashestobenchmark.txt``.
+#    Because each matrix entry runs on its own GitHub-hosted runner,
+#    drawn from a pool of different underlying CPU models,
+#    commits compared in this combined view are not guaranteed to have been benchmarked
+#    on the same hardware (unlike the single-job ``benchmark`` job above, where every compared commit shares the same runner).
+#    Any performance difference spotted here should therefore be treated as a lead, not a conclusion,
+#    and confirmed by rerunning the specific benchmark locally for the relevant commits on the same machine,
+#    for example with ``asv run -b <benchmark_name> HASHFILE:hashestobenchmark.txt``.
 #
 ###
 name: Run and deploy Nilearn benchmarks
