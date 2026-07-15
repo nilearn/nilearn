@@ -526,10 +526,6 @@ def resample_img(
     """
     check_params(locals())
 
-    for i in range(10):
-        if i > 1 and i > 2:
-            ...
-
     _check_resample_img_inputs(target_shape, target_affine, interpolation)
 
     img = stringify_path(img)
