@@ -22,6 +22,11 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix :func:`~interfaces.bids.get_bids_files` missing
+  subject-level anatomical derivatives in multi-session datasets. Matching
+  session-level anatomical derivatives are preferred, while functional file
+  lookups remain session-specific (:gh:`6291` by `Mohammad Sadeghi Hardengi`_).
+
 - :bdg-dark:`Code` Fix ``examples/04_glm_first_level/plot_bids_features.py``, ``doc/get_data_examples.py``, and ``doc/visual_testing/reporter_visual_inspection_suite.py`` downloading the full FSL derivatives for the ``bart`` and ``taskswitch`` tasks of the ``ds000030`` dataset in addition to ``stopsignal``, because the ``*task-task*`` exclusion filter did not match the ``derivatives/task/sub-*/taskswitch.feat`` folder name; switch to ``inclusion_filters`` to only fetch the files needed for the ``stopsignal`` analysis (:gh:`6432` by `Rémi Gau`_).
 
 - :bdg-warning:`Test` Fix the ``test_html`` GitHub Actions workflow to set ``NILEARN_DATA`` to the same path used to restore its dataset cache, and add ``NILEARN_DATA`` to ``tox.ini``'s shared ``passenv`` list so ``tox`` actually forwards it to the ``generate_html``/``test_html`` environments, since without it nilearn's fetchers default to ``~/nilearn_data`` instead and every dataset was silently re-downloaded from the network on every run regardless of whether the cache was restored (:gh:`6427` by `Rémi Gau`_).

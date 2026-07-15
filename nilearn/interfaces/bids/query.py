@@ -224,6 +224,9 @@ def get_bids_files(
         of the dataset provider. For example the 'func' and 'anat' standard
         folders. If given as the empty string '', files will be searched
         inside the sub-label/ses-label directories.
+        For ``'anat'``, subject-level anatomical derivatives are considered
+        as a fallback in datasets containing session directories. Matching
+        session-level anatomical derivatives take precedence per subject.
 
     filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), \
               default=None
@@ -270,6 +273,7 @@ def get_bids_files(
     1
     """
     main_path = Path(main_path)
+    subject_level_anat_files = []
     if sub_folder:
         files = main_path / "sub-*" / "ses-*"
         session_folder_exists = glob.glob(str(files))
@@ -281,6 +285,15 @@ def get_bids_files(
             / modality_folder
             / f"sub-{sub_label}*_{file_tag}.{file_type}"
         )
+        if modality_folder == "anat" and session_folder_exists:
+            subject_level_anat_files = glob.glob(
+                str(
+                    main_path
+                    / f"sub-{sub_label}"
+                    / "anat"
+                    / f"sub-{sub_label}*_{file_tag}.{file_type}"
+                )
+            )
     else:
         files = main_path / f"*{file_tag}.{file_type}"
 
@@ -288,19 +301,55 @@ def get_bids_files(
     files.sort()
 
     filters = filters or []
-    if filters:
-        files = [parse_bids_filename(file_) for file_ in files]
-        for entity, label in filters:
-            files = [
-                file_
-                for file_ in files
-                if (entity not in file_["entities"] and label == "")
-                or (
-                    entity in file_["entities"]
-                    and file_["entities"][entity] == label
-                )
+    if filters or subject_level_anat_files:
+
+        def _filter_files(
+            files: list[str], filters: list[tuple[str, str]]
+        ) -> list[_BidsFileRef]:
+            parsed_files = [parse_bids_filename(file_) for file_ in files]
+            for entity, label in filters:
+                parsed_files = [
+                    file_
+                    for file_ in parsed_files
+                    if (entity not in file_["entities"] and label == "")
+                    or (
+                        entity in file_["entities"]
+                        and file_["entities"][entity] == label
+                    )
+                ]
+            return parsed_files
+
+        filtered_files = _filter_files(files, filters)
+        if subject_level_anat_files:
+            # Subject-level anatomical derivatives typically do not carry a
+            # session entity. Apply every other requested entity before using
+            # them as a fallback for subjects with no matching session-level
+            # file.
+            subject_level_filters = [
+                filter_ for filter_ in filters if filter_[0] != "ses"
             ]
-        return [ref_file["file_path"] for ref_file in files]
+            filtered_subject_level_anat_files = _filter_files(
+                subject_level_anat_files, subject_level_filters
+            )
+            for entity, label in filters:
+                if entity == "ses":
+                    filtered_subject_level_anat_files = [
+                        file_
+                        for file_ in filtered_subject_level_anat_files
+                        if entity not in file_["entities"]
+                        or file_["entities"][entity] == label
+                    ]
+            session_subjects = {
+                file_["entities"].get("sub") for file_ in filtered_files
+            }
+            filtered_files.extend(
+                file_
+                for file_ in filtered_subject_level_anat_files
+                if file_["entities"].get("sub") not in session_subjects
+            )
+            filtered_files.sort(key=lambda file_: str(file_["file_path"]))
+
+        return [ref_file["file_path"] for ref_file in filtered_files]
 
     return files
 
