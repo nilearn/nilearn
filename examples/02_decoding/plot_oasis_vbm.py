@@ -13,6 +13,11 @@ on the website.
 It has been run through a standard :term:`VBM` pipeline (using SPM8 and
 NewSegment) to create :term:`VBM` maps, which we study here.
 
+.. seealso::
+
+    For more information
+    see the :ref:`dataset description <oasis_maps>`.
+
 Predictive modeling analysis: VBM bio-markers of aging?
 -------------------------------------------------------
 
@@ -36,13 +41,6 @@ to limit the memory usage.
     should be set by nested cross-validation,
     as they impact significantly the prediction score.
 
-
-.. seealso::
-
-    For more information
-    see the :ref:`dataset description <oasis_maps>`.
-
-____
 """
 
 # Use a single variable to control the verbosity of the script.
