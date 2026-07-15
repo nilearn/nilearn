@@ -4,8 +4,10 @@ discovery rate control, false discovery proportion in clusters.
 """
 
 import warnings
+from typing import overload
 
 import numpy as np
+from nibabel import Nifti1Image
 from scipy.ndimage import label
 from scipy.stats import norm
 
@@ -24,8 +26,14 @@ from nilearn.image import (
     threshold_img,
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.nilearn_typing import (
+    ClusterThreshold,
+    HeightControl,
+    NiimgLike,
+    NonNullScalar,
+    Scalar,
+)
 from nilearn.surface.surface import SurfaceImage, check_surf_img
-from nilearn.typing import ClusterThreshold, HeightControl
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
 
@@ -95,7 +103,7 @@ def _true_positive_fraction(z_vals, hommel_value, alpha):
     return proportion_true_discoveries
 
 
-def fdr_threshold(z_vals, alpha):
+def fdr_threshold(z_vals, alpha) -> float:
     """Return the Benjamini-Hochberg FDR threshold for the input z_vals.
 
     Parameters
@@ -131,6 +139,26 @@ def fdr_threshold(z_vals, alpha):
     return z_vals_[pos][-1] - 1.0e-12 if pos.any() else np.inf
 
 
+@overload
+def cluster_level_inference(
+    stat_img: SurfaceImage,
+    mask_img: SurfaceImage | None = ...,
+    threshold: float | int | list[float | int] = ...,
+    alpha: float = ...,
+    verbose: int = ...,
+) -> SurfaceImage: ...
+
+
+@overload
+def cluster_level_inference(
+    stat_img: NiimgLike,
+    mask_img: NiimgLike | None = ...,
+    threshold: float | int | list[float | int] = ...,
+    alpha: float = ...,
+    verbose: int = ...,
+) -> Nifti1Image: ...
+
+
 @fill_doc
 def cluster_level_inference(
     stat_img,
@@ -138,7 +166,7 @@ def cluster_level_inference(
     threshold: float | int | list[float | int] = 3.0,
     alpha=0.05,
     verbose: int = 0,
-):
+) -> Nifti1Image | SurfaceImage:
     """Report the proportion of active voxels for all clusters \
     defined by the input threshold.
 
@@ -314,16 +342,52 @@ def _cluster_level_inference_volume(
     return masker.inverse_transform(proportion_true_discoveries)
 
 
+@overload
+def threshold_stats_img(
+    stat_img: SurfaceImage,
+    mask_img: SurfaceImage | None = ...,
+    alpha: float = ...,
+    threshold: Scalar = ...,
+    height_control: HeightControl = ...,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+) -> tuple[SurfaceImage, NonNullScalar]: ...
+
+
+@overload
+def threshold_stats_img(
+    stat_img: NiimgLike,
+    mask_img: NiimgLike | None = ...,
+    alpha: float = ...,
+    threshold: Scalar = ...,
+    height_control: HeightControl = ...,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+) -> tuple[Nifti1Image, NonNullScalar]: ...
+
+
+@overload
+def threshold_stats_img(
+    stat_img: None = ...,
+    mask_img: NiimgLike | None = ...,
+    alpha: float = ...,
+    threshold: Scalar = ...,
+    height_control: HeightControl = ...,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+) -> tuple[None, NonNullScalar]: ...
+
+
 @fill_doc
 def threshold_stats_img(
     stat_img=None,
     mask_img=None,
     alpha=0.001,
-    threshold: float | int | np.floating | np.integer | None = None,
+    threshold: Scalar = None,
     height_control: HeightControl = "fpr",
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = True,
-):
+) -> tuple[Nifti1Image | SurfaceImage | None, NonNullScalar]:
     """Compute the required threshold level and return the thresholded map.
 
     Parameters
@@ -390,10 +454,13 @@ def threshold_stats_img(
 
     Returns
     -------
-    thresholded_map : Nifti1Image,
+    thresholded_map : :class:`nibabel.nifti1.Nifti1Image` \
+            or :obj:`~nilearn.surface.SurfaceImage` or None
         The stat_map thresholded at the prescribed voxel- and cluster-level.
+        Returns None when ``stat_img`` is None and ``height_control``
+        is ``'fpr'`` or None.
 
-    threshold : :obj:`float`
+    threshold : :obj:`float` or :class:`numpy.floating`
         The voxel-level threshold used actually.
 
     Notes
@@ -406,6 +473,28 @@ def threshold_stats_img(
     nilearn.image.threshold_img :
         Apply an explicit voxel-level (and optionally cluster-level) threshold
         without correction.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> data = np.array([[[0., 0.2, 0.8],
+    ...                   [1.5, 3.0, 0.1],
+    ...                   [0.4, 2.2, 0.0]]])
+    >>> img = Nifti1Image(data, affine=np.eye(4))
+    >>>
+    >>> # Now let's threshold the image.
+    >>> from nilearn.glm import threshold_stats_img
+    >>> from nilearn.image import get_data
+    >>> thresholded_img, _ = threshold_stats_img(
+    ...     img, threshold=1,
+    ...     height_control=None
+    ...  )
+    >>> data = get_data(thresholded_img)
+    >>> data
+    array([[[0. , 0. , 0. ],
+        [1.5, 3. , 0. ],
+        [0. , 2.2, 0. ]]])
 
     """
     if height_control is None:
@@ -460,6 +549,7 @@ def threshold_stats_img(
     # In this case, and if stat_img is None, we return
     if stat_img is None:
         if height_control in ["fpr", None]:
+            assert threshold is not None
             return None, threshold
         else:
             raise ValueError(
@@ -502,4 +592,5 @@ def threshold_stats_img(
         copy=True,
     )
 
+    assert threshold is not None
     return stat_img, threshold

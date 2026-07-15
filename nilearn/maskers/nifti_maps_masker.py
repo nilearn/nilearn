@@ -44,7 +44,7 @@ class _ExtractionFunctor:
         self.keep_masked_maps = keep_masked_maps
 
     def __call__(self, imgs):
-        from ..regions import signal_extraction
+        from nilearn.regions import signal_extraction
 
         return signal_extraction.img_to_signals_maps(
             imgs,
@@ -702,7 +702,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         %(img_inv_transform_nifti)s
 
         """
-        from ..regions import signal_extraction
+        from nilearn.regions import signal_extraction
 
         check_is_fitted(self)
 
@@ -716,6 +716,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             mask_img=self.mask_img_,
         )
 
-        img = self._set_inverse_transform_output_dtype(region_signals, img)
+        img = self._post_process_inverse_transform(region_signals, img)
 
         return img

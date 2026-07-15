@@ -52,7 +52,6 @@ else:
         check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
@@ -69,7 +68,6 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("n_regions", [1, 3])
 def test_multi_nifti_maps_masker(
     affine_eye, length, n_regions, shape_3d_default, img_maps
@@ -257,7 +255,6 @@ def test_multi_nifti_maps_masker_resampling_error(
         masker.fit()
 
 
-@pytest.mark.slow
 def test_multi_nifti_maps_masker_resampling_to_mask(
     shape_mask,
     affine_eye,
@@ -300,7 +297,6 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
         assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
 
 
-@pytest.mark.slow
 def test_multi_nifti_maps_masker_resampling_to_maps(
     shape_mask,
     affine_eye,
@@ -342,7 +338,6 @@ def test_multi_nifti_maps_masker_resampling_to_maps(
         assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
 
 
-@pytest.mark.slow
 def test_multi_nifti_maps_masker_resampling_clipped_mask(
     affine_eye, length, n_regions, img_fmri
 ):

@@ -2,8 +2,8 @@
 Simple example of NiftiMasker use
 =================================
 
-Here is a simple example of automatic mask computation using the nifti masker.
-The mask is computed and visualized.
+Here is a simple example of automatic mask computation using
+:class:`nilearn.maskers.NiftiMasker`. The mask is computed and visualized.
 
 """
 
@@ -25,8 +25,7 @@ print(f"First functional nifti image (4D) is at: {func_filename}")
 # Compute the mask
 # ----------------
 #
-# As the input image is an EPI image,
-# the background is noisy
+# As the input image is an :term:`EPI` image, the background is noisy
 # and we cannot rely on the ``'background'`` masking strategy.
 # We need to use the ``'epi'`` one.
 from nilearn.maskers import NiftiMasker
@@ -36,7 +35,7 @@ masker = NiftiMasker(
     memory="nilearn_cache",
     memory_level=1,
     smoothing_fwhm=8,
-    verbose=1,
+    standardize="zscore_sample",
 )
 
 # %%
@@ -53,9 +52,8 @@ masker.fit(func_filename)
 #
 #   You can also note that after fitting,
 #   the HTML representation of the estimator looks different
-#   than before before fitting.
+#   than before fitting.
 #
-masker
 
 # %%
 # Visualize the mask
@@ -65,7 +63,7 @@ masker
 # for this functional image by plotting the mask.
 #
 # We get the estimated mask from the ``mask_img_`` attribute of the masker:
-# the final ``_`` ofd this attribute name means it was generated
+# the final ``_`` of this attribute name means it was generated
 # by the :meth:`~nilearn.maskers.NiftiMasker.fit` method.
 #
 # We can then plot it using the :func:`~nilearn.plotting.plot_roi` function
@@ -105,22 +103,34 @@ report
 # Preprocess data with the NiftiMasker
 # ------------------------------------
 #
-# We extract the data from the nifti image and turn it into a numpy array.
+# We extract the data from the nifti image.
+# By default this will return a 2D NumPy array
+# with shape (n_samples, n_features).
 #
 fmri_masked = masker.transform(func_filename)
 print(fmri_masked.shape)
 
 # %%
-# ``fmri_masked`` is now a 2D numpy array, (n_voxels x n_time_points).
+# Output to dataframe
+# -------------------
+#
+# You can use :meth:`~nilearn.maskers.NiftiLabelsMasker.set_output`
+# to decide the output format of ``transform``.
+# If you want to output to a DataFrame, you can choose
+# ``"pandas"`` or ``"polars"``.
+#
+masker.set_output(transform="pandas")
+fmri_masked = masker.transform(func_filename)
+print(fmri_masked.head())
+
 
 # %%
 # Run an algorithm and visualize the results
 # ------------------------------------------
 #
-# Given that we now have a numpy array,
-# we can then pass the data the wide range of algorithm.
+# We can pass the extracted data to a wide range of algorithm.
 # Here we will just do an independent component analysis,
-# turned the extracted component back into images
+# turn the extracted component back into images
 # (using :meth:`~nilearn.maskers.NiftiMasker.inverse_transform`),
 # then we will plot the first component.
 #

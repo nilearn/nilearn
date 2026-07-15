@@ -54,8 +54,8 @@ def _simu_img(tmp_path, trend, demean):
     # create random noise and a random mixture of confounds standardized
     # to zero mean and unit variance
     rng = _rng()
-    beta = rng.random((nx * ny * nz, X.shape[1]))
-    tseries_rand = scale(rng.random((nx * ny * nz, nt)), axis=1)
+    beta = rng.random(size=(nx * ny * nz, X.shape[1]))
+    tseries_rand = scale(rng.random(size=(nx * ny * nz, nt)), axis=1)
     # create the confound mixture
     tseries_conf = scale(np.matmul(beta, X.transpose()), axis=1)
 
@@ -90,7 +90,7 @@ def _simu_img(tmp_path, trend, demean):
     return img, mask_conf, mask_rand, test_confounds, sample_mask
 
 
-def _handle_non_steady(confounds):
+def _handle_non_steady(confounds) -> pd.DataFrame:
     """Simulate non steady state correctly while increase the length.
 
     - The first row is non-steady state,
@@ -110,7 +110,7 @@ def _handle_non_steady(confounds):
     )
 
 
-def _regression(confounds, tmp_path):
+def _regression(confounds, tmp_path) -> None:
     """Perform simple regression with NiftiMasker."""
     # Simulate data
     img, mask_conf, _, _, _ = _simu_img(tmp_path, trend=False, demean=False)
@@ -123,7 +123,6 @@ def _regression(confounds, tmp_path):
     assert tseries_clean.shape[0] == confounds.shape[0]
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
 @pytest.mark.filterwarnings("ignore")
 @pytest.mark.parametrize(
@@ -208,7 +207,6 @@ def _corr_tseries(tseries1, tseries2):
     return corr
 
 
-@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore")
 def test_nilearn_standardize_false(tmp_path):
     """Test removing confounds with no standardization."""
@@ -247,7 +245,6 @@ def test_nilearn_standardize_false(tmp_path):
     assert np.mean(tseries_std > 0.9)
 
 
-@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore")
 @pytest.mark.parametrize("standardize_signal", ["zscore_sample", "psc"])
 @pytest.mark.parametrize(
@@ -353,6 +350,30 @@ def test_check_strategy(strategy, message):
         _check_strategy(strategy=strategy)
 
 
+@pytest.mark.parametrize(
+    "strate",
+    [
+        "motion",
+        "wm_csf",
+        "global_signal",
+        "compcor",
+        "ica_aroma",
+        "tedana",
+    ],
+)
+def test_error_wrong_values_for_strategy(tmp_path, strate):
+    """Raise error when wrong value passed for some specific denoising."""
+    img_nii, _ = create_tmp_filepath(
+        tmp_path,
+        copy_confounds=True,
+        copy_json=True,
+    )
+    strategy = (strate, "high_pass") if strate == "compcor" else (strate,)
+    kwargs = {strate: "foo"}
+    with pytest.raises(ValueError, match="must be one of"):
+        load_confounds(img_nii, strategy=strategy, **kwargs)
+
+
 SUFFIXES = np.array(["", "_derivative1", "_power2", "_derivative1_power2"])
 
 
@@ -425,7 +446,7 @@ missing_params = ["trans_y", "trans_x_derivative1", "rot_z_power2"]
 missing_keywords = ["cosine", "global_signal"]
 
 
-def _remove_confounds(conf_file):
+def _remove_confounds(conf_file) -> None:
     legal_confounds = pd.read_csv(conf_file, delimiter="\t", encoding="utf-8")
     remove_columns = []
     for missing_kw in missing_keywords:
@@ -475,19 +496,13 @@ def test_not_found_exception(tmp_path, fmriprep_version):
 
     # loading anat compcor should also raise an error, because the json file is
     # missing for that example dataset
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Could not find associated json file"
+    ):
         load_confounds(
             img_missing_confounds,
             strategy=("high_pass", "compcor"),
             compcor="anat_combined",
-        )
-
-    # catch invalid compcor option
-    with pytest.raises(KeyError):
-        load_confounds(
-            img_missing_confounds,
-            strategy=("high_pass", "compcor"),
-            compcor="blah",
         )
 
 
@@ -507,11 +522,10 @@ def test_not_found_exception_ica_aroma(tmp_path, fmriprep_version):
     # Aggressive ICA-AROMA strategy requires
     # default nifti and noise ICs in confound file
     # correct nifti but missing noise regressor
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(ValueError, match="ica_aroma"):
         load_confounds(
             img_missing_confounds, strategy=("ica_aroma",), ica_aroma="basic"
         )
-    assert "ica_aroma" in exc_info.value.args[0]
 
     # Default nifti
     aroma_nii, _ = create_tmp_filepath(
@@ -520,23 +534,22 @@ def test_not_found_exception_ica_aroma(tmp_path, fmriprep_version):
         bids_fields={"entities": {"sub": "icaAroma"}},
         fmriprep_version=fmriprep_version,
     )
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(ValueError, match="Invalid file type"):
         load_confounds(aroma_nii, strategy=("ica_aroma",), ica_aroma="basic")
-    assert "Invalid file type" in exc_info.value.args[0]
 
     # non aggressive ICA-AROMA strategy requires
     # desc-smoothAROMAnonaggr nifti file
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(ValueError, match="desc-smoothAROMAnonaggr_bold"):
         load_confounds(
             img_missing_confounds, strategy=("ica_aroma",), ica_aroma="full"
         )
-    assert "desc-smoothAROMAnonaggr_bold" in exc_info.value.args[0]
 
     # no confound files along the image file
     (tmp_path / bad_conf).unlink()
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(
+        ValueError, match="Could not find associated confound file"
+    ):
         load_confounds(img_missing_confounds)
-    assert "Could not find associated confound file." in exc_info.value.args[0]
 
 
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
@@ -557,7 +570,7 @@ def test_load_non_nifti(tmp_path):
     # tsv file - unsupported input
     _, tsv = create_tmp_filepath(tmp_path, copy_confounds=True, copy_json=True)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Unsupported input"):
         load_confounds(str(tsv))
 
     # cifti file should be supported
@@ -586,17 +599,17 @@ def test_invalid_filetype(tmp_path, rng):
     add_conf = "sub-14x_task-test_desc-confounds_regressors.tsv"
     legal_confounds, _ = get_legal_confound()
     legal_confounds.to_csv(tmp_path / add_conf, sep="\t", index=False)
-    with pytest.raises(ValueError) as info:
+    with pytest.raises(ValueError, match="more than one"):
         load_confounds(bad_nii)
-    assert "more than one" in str(info.value)
     (tmp_path / add_conf).unlink()  # Remove for the rest of the tests to run
 
     # invalid fmriprep version: confound file with no header (<1.0)
     fake_confounds = rng.random((30, 20))
     np.savetxt(bad_conf, fake_confounds, delimiter="\t")
-    with pytest.raises(ValueError) as error_log:
+    with pytest.raises(
+        ValueError, match="The confound file contains no header"
+    ):
         load_confounds(bad_nii)
-    assert "The confound file contains no header." in str(error_log.value)
 
     # invalid fmriprep version: old camel case header (<1.2)
     legal_confounds, _ = get_legal_confound()
@@ -605,16 +618,15 @@ def test_invalid_filetype(tmp_path, rng):
         to_camel_case(col_name) for col_name in legal_confounds.columns
     ]
     camel_confounds.to_csv(bad_conf, sep="\t", index=False)
-    with pytest.raises(ValueError) as error_log:
+    with pytest.raises(ValueError, match="contains header in camel case"):
         load_confounds(bad_nii)
-    assert "contains header in camel case." in str(error_log.value)
 
     # create a empty nifti file with no associated confound file
     # We only need the path to check this
     no_conf = "no_confound_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz"
     no_confound = tmp_path / no_conf
     no_confound.touch()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="header in camel case"):
         load_confounds(bad_nii)
 
 
@@ -693,19 +705,16 @@ def test_tedana_errors_warnings(tmp_path):
     )
 
     # check that the regular nifti file raises an error
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(
+        ValueError, match=r"Input must be the ~desc-optcom_bold.nii.gz"
+    ):
         load_confounds(regular_nii, strategy=("tedana",))
-    assert (
-        "Input must be the ~desc-optcom_bold.nii.gz" in exc_info.value.args[0]
-    )
 
     # check that the tedana nifti file raises an error with other strategies
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(
+        ValueError, match=r"Invalid file type for the selected 'nii.gz' method"
+    ):
         load_confounds(tedana_nii, strategy=("motion",))
-    assert (
-        "Invalid file type for the selected 'nii.gz' method"
-        in exc_info.value.args[0]
-    )
 
     # check that combining tedana with other strategies raises an warning
     with pytest.warns(UserWarning, match="TEDANA strategy"):
@@ -720,11 +729,6 @@ def test_tedana_errors_warnings(tmp_path):
             strategy=("tedana", "high_pass", "ica_aroma", "global_signal"),
             motion="basic",
         )
-
-    # tedana strategy with invalid option
-    with pytest.raises(ValueError) as exc_info:
-        load_confounds(tedana_nii, strategy=("tedana",), tedana="invalid")
-    assert "Current input: invalid" in exc_info.value.args[0]
 
 
 @pytest.mark.parametrize(

@@ -315,6 +315,10 @@ class _BaseMasker(
         """
         raise NotImplementedError()
 
+    def _check_dtype(self):
+        if self.dtype == bool:
+            raise TypeError("'dtype' cannot be bool")
+
 
 @fill_doc
 class BaseMasker(_BaseMasker):
@@ -337,6 +341,7 @@ class BaseMasker(_BaseMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -470,14 +475,15 @@ class BaseMasker(_BaseMasker):
 
         # ensure that the mask_img_ is a 3D binary image
         tmp = check_niimg(self.mask_img, atleast_4d=True)
+
         mask_data = safe_get_data(tmp, ensure_finite=True)
         mask = mask_data.astype(bool).all(axis=3)
-        mask_img_ = new_img_like(self.mask_img, mask)
+        mask_img_ = new_img_like(tmp, mask)
 
         # Just check that the mask is valid
         load_mask_img(mask_img_)
         if imgs is not None:
-            check_compatibility_mask_and_images(self.mask_img, imgs)
+            check_compatibility_mask_and_images(mask_img_, imgs)
 
         return mask_img_
 
@@ -608,22 +614,24 @@ class BaseMasker(_BaseMasker):
         with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
 
-        img = self._set_inverse_transform_output_dtype(X, img)
+        img = self._post_process_inverse_transform(X, img)
 
         return img
 
-    def _check_array(
-        self, signals: np.ndarray, sklearn_check: bool = True
-    ) -> np.ndarray:
+    def _check_array(self, signals, sklearn_check: bool = True) -> np.ndarray:
         """Check array to inverse transform.
 
         Parameters
         ----------
-        signals : :obj:`numpy.ndarray`
+        signals : array like (numpy array, pandas or polars DataFrame)
 
         sklearn_check : :obj:`bool`
             Run scikit learn check on input
         """
+        if hasattr(signals, "to_numpy"):
+            # convert pandas or polars dataframe to numpy
+            signals = signals.to_numpy().squeeze()
+
         signals = np.atleast_1d(signals)
 
         if sklearn_check:
@@ -643,6 +651,14 @@ class BaseMasker(_BaseMasker):
                 f"Expected {expected_shape}.\n"
                 f"Got {signals.shape}."
             )
+
+        if signals.dtype == bool:
+            target_dtype = self.dtype if self.dtype is not None else np.int32
+            warnings.warn(
+                f"Casting boolean input to {target_dtype}",
+                stacklevel=find_stack_level(),
+            )
+            signals = signals.astype(target_dtype)
 
         return signals
 
@@ -684,7 +700,7 @@ class BaseMasker(_BaseMasker):
         self._reporting_data["stat_map_base64"] = json_view["stat_map_base64"]
         self._reporting_data["params"] = json.dumps(json_view["params"])
 
-    def _set_inverse_transform_output_dtype(
+    def _post_process_inverse_transform(
         self, input: np.ndarray, output: Nifti1Image
     ) -> Nifti1Image:
         """Set dtype for data to return for inverse_transform."""
@@ -826,13 +842,23 @@ class _BaseSurfaceMasker(_BaseMasker):
         if self.reports:
             self._reporting_data["images"] = imgs
 
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+        _wrap_output = (
+            sklearn_output_config is not None
+            and sklearn_output_config.get("transform", "default") != "default"
+        )
+
         if confounds is None and not self.high_variance_confounds:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=FutureWarning)
                 signals = self.transform_single_imgs(
                     imgs, confounds=confounds, sample_mask=sample_mask
                 )
-            return signals.squeeze() if return_1D else signals
+            return (
+                signals.squeeze()
+                if return_1D and not _wrap_output
+                else signals
+            )
 
         # Compute high variance confounds if requested
         all_confounds = []
@@ -851,13 +877,7 @@ class _BaseSurfaceMasker(_BaseMasker):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
-        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
-
-        return (
-            signals.squeeze()
-            if return_1D and sklearn_output_config is not None
-            else signals
-        )
+        return signals.squeeze() if return_1D and not _wrap_output else signals
 
     def _post_process_inverse_transform(
         self, input: np.ndarray, output: SurfaceImage, return_1D: bool
@@ -930,11 +950,15 @@ class _BaseSurfaceMasker(_BaseMasker):
 
         Parameters
         ----------
-        signals : :obj:`numpy.ndarray`
+        signals : array like (numpy array, pandas or polars DataFrame)
 
         sklearn_check : :obj:`bool`
             Run scikit learn check on input
         """
+        if hasattr(signals, "to_numpy"):
+            # convert pandas or polars dataframe to numpy
+            signals = signals.to_numpy()
+
         signals = np.atleast_2d(signals)
 
         if sklearn_check:
@@ -946,6 +970,14 @@ class _BaseSurfaceMasker(_BaseMasker):
                 f"Last dimension should be {self.n_elements_}.\n"
                 f"Got {signals.shape[-1]}."
             )
+
+        if signals.dtype == bool:
+            target_dtype = self.dtype if self.dtype is not None else np.int32
+            warnings.warn(
+                f"Casting boolean input to {target_dtype}",
+                stacklevel=find_stack_level(),
+            )
+            signals = signals.astype(target_dtype)
 
         return signals
 

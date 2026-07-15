@@ -379,7 +379,7 @@ docdict["cv8_5"] = cv.format(8, 5)
 docdict["cvNone_3"] = cv.format("None", 3)
 
 
-# data_dir
+# debias
 docdict["debias"] = """
 debias : :obj:`bool`, default=False
     If set, then the estimated weights maps will be debiased.
@@ -479,9 +479,11 @@ draw_cross : :obj:`bool`, default=True
 docdict["dtype"] = """
 dtype : dtype like, "auto" or None, default=None
     Data type toward which the data should be converted.
-    If "auto", the data will be converted to int32
-    if dtype is discrete and float32 if it is continuous.
+    If "auto", the data will be converted
+    to int32 if dtype is discrete
+    and to float32 if it is continuous.
     If None, data will not be converted to a new data type.
+    ``dtype=bool`` will raise an Exception.
 """
 
 # estimator_args
@@ -489,7 +491,7 @@ docdict["estimator_args"] = """
 estimator_args : dict[str, Any] or None, default=None
     Extra parameters to pass to the scikit-learn estimators.
 
-    .. nilearn_versionadded:: 0.14.0dev
+    .. nilearn_versionadded:: 0.14.0
 """
 
 # extractor / extract_type
@@ -918,7 +920,7 @@ radiological : :obj:`bool`, default=False
 
 # random_state
 docdict["random_state"] = """
-random_state : :obj:`int` or np.random.RandomState, optional
+random_state : :obj:`int` or :obj:`numpy.random.RandomState`, optional
     Pseudo-random number generator state used for random sampling.
 """
 
@@ -1167,15 +1169,20 @@ docdict["second_level_mask"] = docdict["second_level_mask_img"].replace(
 
 # signals for inverse transform
 docdict["signals_inv_transform"] = """
-signals : 1D/2D :obj:`numpy.ndarray`
+signals : 1D/2D :obj:`numpy.ndarray` or :class:`pandas.DataFrame` \
+          or polars.DataFrame
     Extracted signal.
     If a 1D array is provided,
     then the shape should be (number of elements,).
     If a 2D array is provided,
     then the shape should be (number of scans, number of elements).
 """
-docdict["region_signals_inv_transform"] = docdict["signals_inv_transform"]
-docdict["x_inv_transform"] = docdict["signals_inv_transform"]
+docdict["region_signals_inv_transform"] = docdict[
+    "signals_inv_transform"
+].replace("signals : ", "region_signals : ")
+docdict["x_inv_transform"] = docdict["signals_inv_transform"].replace(
+    "signals : ", "X : "
+)
 
 sk_compatible_admonition = """
 
@@ -1357,7 +1364,7 @@ tfce : :obj:`bool`, default=False
 
 # threshold
 docdict["threshold"] = """
-threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
+threshold : :obj:`int` or :obj:`float`, :obj:`str`, None, or 'auto', optional
     If `None` is given, the image is not thresholded.
     If number is given, it must be non-negative. The specified value is used to
     threshold the image: values below the threshold (in absolute value) are
@@ -1835,8 +1842,7 @@ docdict["lut"] = """lut : :obj:`pandas.DataFrame`
 
 
 signals_transform = """signals : :obj:`numpy.ndarray`, \
-            :obj:`pandas.DataFrame` or \
-            `polars.DataFrame`
+            :obj:`pandas.DataFrame` or polars.DataFrame
 
         Signal for each element.
 

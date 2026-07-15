@@ -15,7 +15,7 @@ More specifically:
    (effect/covariance, then contrast estimation).
 4. Inspect GLM reports and save the results to disk.
 
-The result of the analysis are statistical maps that are defined
+The results of the analysis are statistical maps that are defined
 on the brain mesh.
 We display them using Nilearn capabilities.
 

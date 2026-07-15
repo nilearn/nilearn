@@ -417,8 +417,10 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             positions = [
                 np.round(
                     coord_transform(
-                        *seed,
-                        np.linalg.inv(img.affine),  # type: ignore[call-arg]
+                        seed[0],
+                        seed[1],
+                        seed[2],
+                        np.linalg.inv(img.affine),
                     )
                 ).astype(int)
                 for seed in seeds
@@ -695,6 +697,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         img = unmask(img, self.mask_img_)
 
-        img = self._set_inverse_transform_output_dtype(region_signals, img)
+        img = self._post_process_inverse_transform(region_signals, img)
 
         return img

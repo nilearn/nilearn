@@ -27,6 +27,9 @@ from nilearn.maskers import NiftiMasker
 
 
 def test_full_rank(rng):
+    """Test that full_rank leaves full-rank matrices unchanged and warns
+    on singular ones.
+    """
     n, p = 10, 5
     X = rng.standard_normal(size=(n, p))
     X_, _ = full_rank(X)
@@ -44,6 +47,7 @@ def test_full_rank(rng):
 
 
 def test_z_score_t_values(rng):
+    """Test z_score against z-scores derived from Student's t p-values."""
     # Randomly draw samples from the standard Student's t distribution
     t_val = rng.standard_t(10, size=10)
     # Estimate the p-values using the Survival Function (SF)
@@ -76,6 +80,7 @@ def test_z_score_t_values(rng):
 
 
 def test_z_score_f_values(rng):
+    """Test z_score against z-scores derived from F-distribution p-values."""
     # Randomly draw samples from the F distribution
     f_val = rng.f(1, 48, size=10)
     # Estimate the p-values using the Survival Function (SF)
@@ -117,52 +122,57 @@ def test_z_score_f_values(rng):
         assert_array_almost_equal(z_score(p, one_minus_pvalue=cdf), z)
 
 
-@pytest.mark.slow
-def test_z_score_opposite_contrast(rng):
+@pytest.mark.parametrize("add_regs_i", [0, 20])
+def test_z_score_opposite_contrast(rng, add_regs_i):
+    """Test that z-scores of opposite contrasts are numerically opposite."""
     fmri, mask = generate_fake_fmri(
-        shape=(50, 20, 50), length=96, random_state=rng
+        shape=(50, 20, 50), length=96, rand_gen=rng
     )
 
     nifti_masker = NiftiMasker(mask_img=mask, standardize=None)
+
     data = nifti_masker.fit_transform(fmri)
 
     frametimes = np.linspace(0, (96 - 1) * 2, 96)
 
-    for i in [0, 20]:
-        design_matrix = make_first_level_design_matrix(
-            frametimes,
-            hrf_model="spm",
-            add_regs=np.array(data[:, i]).reshape(-1, 1),
-        )
-        c1 = np.array([1] + [0] * (design_matrix.shape[1] - 1))
-        c2 = np.array([0] + [1] + [0] * (design_matrix.shape[1] - 2))
-        contrasts = {"seed1 - seed2": c1 - c2, "seed2 - seed1": c2 - c1}
-        fmri_glm = FirstLevelModel(
-            noise_model="ar1",
-            standardize=False,
-            drift_model="cosine",
-        )
-        fmri_glm.fit(fmri, design_matrices=design_matrix)
-        z_map_seed1_vs_seed2 = fmri_glm.compute_contrast(
-            contrasts["seed1 - seed2"], output_type="z_score"
-        )
-        z_map_seed2_vs_seed1 = fmri_glm.compute_contrast(
-            contrasts["seed2 - seed1"], output_type="z_score"
-        )
+    design_matrix = make_first_level_design_matrix(
+        frametimes,
+        hrf_model="spm",
+        add_regs=np.array(data[:, add_regs_i]).reshape(-1, 1),
+    )
 
-        assert_almost_equal(
-            z_map_seed1_vs_seed2.get_fdata(dtype="float32").min(),
-            -z_map_seed2_vs_seed1.get_fdata(dtype="float32").max(),
-            decimal=10,
-        )
-        assert_almost_equal(
-            z_map_seed1_vs_seed2.get_fdata(dtype="float32").max(),
-            -z_map_seed2_vs_seed1.get_fdata(dtype="float32").min(),
-            decimal=10,
-        )
+    fmri_glm = FirstLevelModel(
+        noise_model="ar1",
+        standardize=False,
+        drift_model="cosine",
+    )
+    fmri_glm.fit(fmri, design_matrices=design_matrix)
+
+    c1 = np.array([1] + [0] * (design_matrix.shape[1] - 1))
+    c2 = np.array([0] + [1] + [0] * (design_matrix.shape[1] - 2))
+    contrasts = {"seed1 - seed2": c1 - c2, "seed2 - seed1": c2 - c1}
+
+    z_map_seed1_vs_seed2 = fmri_glm.compute_contrast(
+        contrasts["seed1 - seed2"], output_type="z_score"
+    )
+    z_map_seed2_vs_seed1 = fmri_glm.compute_contrast(
+        contrasts["seed2 - seed1"], output_type="z_score"
+    )
+
+    assert_almost_equal(
+        z_map_seed1_vs_seed2.get_fdata(dtype="float32").min(),
+        -z_map_seed2_vs_seed1.get_fdata(dtype="float32").max(),
+        decimal=10,
+    )
+    assert_almost_equal(
+        z_map_seed1_vs_seed2.get_fdata(dtype="float32").max(),
+        -z_map_seed2_vs_seed1.get_fdata(dtype="float32").min(),
+        decimal=10,
+    )
 
 
 def test_mahalanobis(rng):
+    """Test multiple_mahalanobis against a direct 1D computation."""
     n = 50
     x = rng.uniform(size=n) / n
     A = rng.uniform(size=(n, n)) / n
@@ -173,6 +183,7 @@ def test_mahalanobis(rng):
 
 
 def test_mahalanobis2(rng):
+    """Test multiple_mahalanobis against a direct computation on 3D input."""
     n = 50
     x = rng.standard_normal(size=(n, 3))
     Aa = np.zeros([n, n, 3])
@@ -188,6 +199,7 @@ def test_mahalanobis2(rng):
 
 
 def test_mahalanobis_errors():
+    """Test that multiple_mahalanobis raises on inconsistent shapes."""
     effect = np.zeros((1, 2, 3))
     cov = np.zeros((3, 3, 3))
 
@@ -204,6 +216,7 @@ def test_mahalanobis_errors():
 
 @pytest.mark.thread_unsafe
 def test_multiple_fast_inv(rng):
+    """Test multiple_fast_inverse against scipy's inv on stacked matrices."""
     shape = (10, 20, 20)
     X = rng.standard_normal(size=shape)
     X_inv_ref = np.zeros(shape)
@@ -216,6 +229,7 @@ def test_multiple_fast_inv(rng):
 
 
 def test_multiple_fast_inverse_errors():
+    """Test that multiple_fast_inverse raises on non-invertible matrices."""
     shape = (2, 2, 2)
     X = np.zeros(shape)
 
@@ -230,6 +244,7 @@ def test_multiple_fast_inverse_errors():
 
 
 def test_pos_recipr():
+    """Test positive_reciprocal on arrays, matrices, and lists."""
     X = np.array([2, 1, -1, 0], dtype=np.int8)
     eX = np.array([0.5, 1, 0, 0])
     Y = positive_reciprocal(X)

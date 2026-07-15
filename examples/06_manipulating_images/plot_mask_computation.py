@@ -21,8 +21,7 @@ underlying routine that extract masks from EPI
 # Computing a mask from the background
 # ------------------------------------
 #
-# The default strategy to compute a mask, like the NiftiMasker,
-# is to try to detect the background.
+# The default strategy to compute a mask is to try to detect the background.
 #
 # With data that has already been masked this should work well,
 # as it relies on a homogeneous background
@@ -58,7 +57,7 @@ show()
 # Let's use the NiftiMasker with its defaults parameters.
 from nilearn.maskers import NiftiMasker
 
-masker = NiftiMasker(verbose=1)
+masker = NiftiMasker()
 
 # %%
 #
@@ -74,9 +73,8 @@ masker.fit(miyawaki_filename)
 #
 #   You can also note that after fitting,
 #   the HTML representation of the estimator looks different
-#   than before before fitting.
+#   than before fitting.
 #
-masker
 
 # %%
 # Visualize the mask
@@ -123,13 +121,13 @@ report
 # ------------------------------------------
 #
 # From raw :term:`EPI` data, there is no uniform background,
-# and a different strategy is necessary
+# and a different strategy is necessary.
 #
 
 # %%
 # Fetch the dataset
 # ^^^^^^^^^^^^^^^^^
-# Here we getch the movie watching based brain development fMRI dataset
+# Here we fetch the movie watching based brain development fMRI dataset
 # and once again do some basic visualization of the data.
 #
 # Here we only work with the first 100 volumes of the image
@@ -155,7 +153,7 @@ show()
 # We need to specify an ``'epi'`` mask_strategy,
 # as this is raw :term:`EPI` data
 
-masker = NiftiMasker(mask_strategy="epi", verbose=1)
+masker = NiftiMasker(mask_strategy="epi")
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -172,7 +170,7 @@ report
 # on the outer voxel layers of the mask,
 # which can for example remove remaining skull parts in the image.
 
-masker = NiftiMasker(mask_strategy="epi", mask_args={"opening": 10}, verbose=1)
+masker = NiftiMasker(mask_strategy="epi", mask_args={"opening": 10})
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -183,7 +181,7 @@ report
 #
 # The NiftiMasker calls the :func:`nilearn.masking.compute_epi_mask` function
 # to compute the mask from the EPI.
-# It has two important parameters: lower_cutoff and upper_cutoff.
+# It has two important parameters: ``lower_cutoff`` and ``upper_cutoff``.
 # These set the grey-value bounds
 # in which the masking algorithm will search for its threshold
 # (0 being the minimum of the image and 1 the maximum).
@@ -194,7 +192,6 @@ report
 masker = NiftiMasker(
     mask_strategy="epi",
     mask_args={"upper_cutoff": 0.9, "lower_cutoff": 0.8, "opening": False},
-    verbose=1,
 )
 masker.fit(epi_img)
 report = masker.generate_report()
@@ -211,7 +208,7 @@ report
 # depending on whether the whole-brain, gray matter,
 # or white matter template should be used.
 
-masker = NiftiMasker(mask_strategy="whole-brain-template", verbose=1)
+masker = NiftiMasker(mask_strategy="whole-brain-template")
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -232,9 +229,7 @@ report
 
 import numpy as np
 
-masker = NiftiMasker(
-    mask_strategy="epi", target_affine=np.eye(3) * 8, verbose=1
-)
+masker = NiftiMasker(mask_strategy="epi", target_affine=np.eye(3) * 8)
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -243,23 +238,23 @@ report
 # After mask computation: extracting time series
 # ----------------------------------------------
 #
-# We extract time series detrended and non-detrended.
-trended_data = NiftiMasker(mask_strategy="epi", verbose=1).fit_transform(
-    epi_img
-)
+# We extract detrended and non-detrended time series.
+trended_data = NiftiMasker(
+    mask_strategy="epi", verbose=1, standardize="zscore_sample"
+).fit_transform(epi_img)
 detrended_data = NiftiMasker(
     mask_strategy="epi", detrend=True, verbose=1
 ).fit_transform(epi_img)
 
 # %%
 # Once extracted,
-# the timeseries are numpy arrays, so we can manipulate them with numpy
+# the timeseries are numpy arrays, so we can use numpy operations on them.
 print(
-    f"Trended: mean {np.mean(trended_data):.2f}, "
+    f"Trended:\tmean {np.mean(trended_data):.2f},\t"
     f"std {np.std(trended_data):.2f}"
 )
 print(
-    f"Detrended: mean {np.mean(detrended_data):.2f}, "
+    f"Detrended:\tmean {np.mean(detrended_data):.2f},\t"
     f"std {np.std(detrended_data):.2f}"
 )
 

@@ -719,7 +719,7 @@ class Parcellations(_MultiPCA):
             Brain image(s).
 
         """
-        from .signal_extraction import signals_to_img_labels
+        from nilearn.regions.signal_extraction import signals_to_img_labels
 
         check_is_fitted(self)
 
@@ -798,5 +798,11 @@ class Parcellations(_MultiPCA):
                     f"Expected {expected_shape}.\n"
                     f"Got {signals.shape}."
                 )
+
+        if signals.dtype == bool:
+            warnings.warn(
+                "Casting boolean input to int32", stacklevel=find_stack_level()
+            )
+            signals = signals.astype(np.int32)
 
         return signals

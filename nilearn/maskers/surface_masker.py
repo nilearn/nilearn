@@ -55,7 +55,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     %(dtype)s
 
-        ..versionadded:: 0.14.0dev
+        ..versionadded:: 0.14.0
 
     %(memory)s
 
@@ -219,6 +219,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
         # Reset report
         # in case where the masker was previously fitted
@@ -356,7 +357,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        return_1D = signals.ndim < 2
+        return_1D = hasattr(signals, "ndim") and signals.ndim < 2
 
         # do not run sklearn_check as they may cause some failure
         # with some GLM inputs

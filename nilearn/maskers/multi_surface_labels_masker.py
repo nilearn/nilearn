@@ -77,7 +77,7 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
 
     %(dtype)s
 
-        ..versionadded:: 0.14.0dev
+        ..versionadded:: 0.14.0
 
     %(memory)s
 
@@ -193,6 +193,7 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
         # Reset report
         # in case where the masker was previously fitted
