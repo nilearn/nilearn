@@ -2432,10 +2432,7 @@ def _get_confounds(
     )
     _check_confounds_list(confounds=confounds_files, imgs=imgs)
 
-    if not confounds_files:
-        return [None] * len(imgs)
-
-    if kwargs_load_confounds is None:
+    if not confounds_files or kwargs_load_confounds is None:
         return [None] * len(imgs)
 
     if len(kwargs_load_confounds) == 0:
