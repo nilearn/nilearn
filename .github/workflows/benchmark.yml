@@ -63,6 +63,15 @@
 # entry, run in parallel on separate runners) followed by a job that
 # downloads every matrix entry's results and combines them into a single
 # viewable ``asv publish`` output.
+# Because each matrix entry runs on its own GitHub-hosted runner, drawn
+# from a pool of different underlying CPU models, commits compared in
+# this combined view are not guaranteed to have been benchmarked on the
+# same hardware (unlike the single-job ``benchmark`` job above, where
+# every compared commit shares the same runner). Any performance
+# difference spotted here should therefore be treated as a lead, not a
+# conclusion, and confirmed by rerunning the specific benchmark locally
+# for the relevant commits on the same machine, e.g. with
+# ``asv run -b <benchmark_name> HASHFILE:hashestobenchmark.txt``.
 # For now this only uploads that combined view as a workflow artifact;
 # see `issue 5966 <https://github.com/nilearn/nilearn/issues/5966>`_ for
 # the plan to eventually publish it (overwriting the previous one) to the
