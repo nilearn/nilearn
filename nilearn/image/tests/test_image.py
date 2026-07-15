@@ -3,7 +3,7 @@
 import platform
 import re
 import warnings
-from collections.abc import Iterable
+from collections.abc import Generator, Iterable
 from pathlib import Path
 
 import joblib
@@ -45,6 +45,7 @@ from nilearn.conftest import (
 from nilearn.exceptions import DimensionError
 from nilearn.image.image import (
     _crop_img_to,
+    _extract_data,
     _fast_smooth_array,
     _mris_fwhm_to_niters,
     _smooth_surface_img,
@@ -73,7 +74,7 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface.surface import SurfaceImage, extract_data
+from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import (
     assert_polymesh_equal,
@@ -99,14 +100,16 @@ NON_EYE_AFFINE = np.array(
 )
 
 
-def _new_data_for_smooth_array():
+def _new_data_for_smooth_array() -> np.ndarray:
     # Impulse in 3D
     data = np.zeros((40, 41, 42))
     data[20, 20, 20] = 1
     return data
 
 
-def _make_largest_cc_img_test_data():
+def _make_largest_cc_img_test_data() -> tuple[
+    Nifti1Image, Nifti1Image, tuple[tuple[int, int, int], tuple[int, int, int]]
+]:
     shapes = ((10, 11, 12), (13, 14, 15))
     regions = [1, 3]
 
@@ -115,7 +118,9 @@ def _make_largest_cc_img_test_data():
     return img1, img2, shapes
 
 
-def _images_to_mean():
+def _images_to_mean() -> tuple[
+    list[Nifti1Image], list[Nifti1Image], list[Nifti1Image], list[Nifti1Image]
+]:
     """Return a mixture of 4D and 3D images."""
     rng = _rng()
 
@@ -138,7 +143,7 @@ def _images_to_mean():
     return imgs
 
 
-def _check_fwhm(data, affine, fwhm):
+def _check_fwhm(data, affine, fwhm) -> None:
     """Expect a full-width at half maximum of fwhm / voxel_size."""
     vmax = data.max()
     above_half_max = data > 0.5 * vmax
@@ -150,7 +155,7 @@ def _check_fwhm(data, affine, fwhm):
         assert_equal(proj.sum(), fwhm / np.abs(affine[axis, axis]))
 
 
-def _mean_ground_truth(imgs):
+def _mean_ground_truth(imgs) -> np.ndarray:
     arrays = []
     for img in imgs:
         img = get_data(img)
@@ -161,12 +166,12 @@ def _mean_ground_truth(imgs):
 
 
 @pytest.fixture(scope="session")
-def smooth_array_data():
+def smooth_array_data() -> np.ndarray:
     return _new_data_for_smooth_array()
 
 
 @pytest.fixture(scope="session")
-def stat_img_test_data():
+def stat_img_test_data() -> Nifti1Image:
     shape = (20, 20, 30)
     affine = _affine_eye()
     data = np.zeros(shape, dtype="int32")
@@ -208,6 +213,24 @@ def test_get_data(tmp_path, shape_3d_default):
     data = get_data(filename.format("*"))
 
     assert len(data.shape) == 4
+
+
+@pytest.mark.parametrize(
+    "image_class", [Nifti1Image, Nifti2Image, MGHImage, AnalyzeImage]
+)
+def test_get_data_spatial_image_subtypes(rng, image_class, shape_3d_default):
+    """Check get_data works with any nibabel SpatialImage subtype.
+
+    get_data delegates to check_niimg, which accepts any object
+    that is an instance of nibabel.spatialimages.SpatialImage,
+    not only Nifti1Image.
+    """
+    array = rng.random(shape_3d_default).astype("float32")
+    img = image_class(array, affine=np.eye(4))
+
+    data = get_data(img)
+
+    assert_array_equal(data, array)
 
 
 def test_high_variance_confounds(shape_3d_default):
@@ -548,6 +571,7 @@ def test_crop_img_to():
 
 
 def test_crop_img():
+    """Check that correct part was extracted."""
     data = np.zeros((5, 6, 7))
     data[2:4, 1:5, 3:6] = 1
     affine = np.diag((4, 3, 2, 1))
@@ -556,15 +580,30 @@ def test_crop_img():
     cropped_img = crop_img(img)
 
     # correction for padding with "-1"
-    # check that correct part was extracted:
-    # This also corrects for padding
     assert (get_data(cropped_img)[1:-1, 1:-1, 1:-1] == 1).all()
     assert cropped_img.shape == (2 + 2, 4 + 2, 3 + 2)
 
 
+def test_crop_img_return_offset():
+    """Check values of returner offset."""
+    data = np.zeros((5, 6, 7))
+    data[2:4, 1:5, 3:6] = 1
+    affine = np.diag((4, 3, 2, 1))
+    img = Nifti1Image(data, affine=affine)
+
+    _, offset = crop_img(img, return_offset=True)
+
+    assert offset == (
+        slice(np.int64(1), np.int64(5), None),
+        slice(np.int64(0), np.int64(6), None),
+        slice(np.int64(2), np.int64(7), None),
+    )
+
+
 def test_crop_img_copied_header(img_4d_mni_tr2):
-    # Test equality of header fields between input and output
-    # create zero padded data
+    """Test equality of header fields between input and output
+    create zero padded data.
+    """
     data = np.zeros((10, 10, 10, 10))
     data[0:4, 0:4, 0:4, :] = 1
     # replace the img_4d_mni_tr2 values with data
@@ -610,6 +649,21 @@ def test_crop_threshold_tolerance(affine_eye):
     assert cropped_img.shape == active_shape
 
 
+def test_crop_img_threshold_tolerance_2():
+    """Test rtol so that voxels with value 0.5 are not croppable."""
+    data = np.zeros((5, 6, 7))
+    data[2:4, 1:5, 3:6] = 1
+    data[1, 1:5, 3:6] = 0.5
+    affine = np.diag((4, 3, 2, 1))
+    img = Nifti1Image(data, affine=affine)
+
+    cropped_img = crop_img(img, rtol=0.49)
+
+    assert (get_data(cropped_img)[2:-1, 1:-1, 1:-1] == 1).all()
+    assert (get_data(cropped_img)[1, 1:-1, 1:-1] == 0.5).all()
+    assert cropped_img.shape == (1 + 2 + 2, 4 + 2, 3 + 2)
+
+
 @pytest.mark.parametrize("pad", [True, False])
 def test_crop_image_empty_image(affine_eye, pad):
     """Test nilearn.image.image.crop_img with empty image specified.
@@ -627,7 +681,6 @@ def test_crop_image_empty_image(affine_eye, pad):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 @pytest.mark.parametrize("images_to_mean", _images_to_mean())
 def test_mean_img(images_to_mean, tmp_path):
     affine = np.diag((4, 3, 2, 1))
@@ -789,33 +842,46 @@ def test_index_img_volume():
         assert_array_equal(this_img.affine, img_4d.affine)
 
 
-@pytest.mark.parametrize("length", [20])
+def test_extract_data_wrong_input():
+    """Check that only SurfaceImage is accepted as input."""
+    with pytest.raises(TypeError, match="must be of type"):
+        _extract_data(1, index=1)
+
+
 @pytest.mark.parametrize(
-    "index, expected_n_samples",
+    "index, expected_values_left",
     [
-        ([*range(20)], 20),
-        (slice(2, 8, 2), 3),
-        ([1, 2, 3, 2], 4),
-        (np.asarray([1, 2, 3, 2]), 4),
+        ([*range(8)], [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 28.0]),
+        (slice(2, 8, 2), [8.0, 16.0, 24.0]),
+        ([1, 2, 3, 2], [4.0, 8.0, 12.0, 8.0]),
+        (np.asarray([1, 2, 3, 2]), [4.0, 8.0, 12.0, 8.0]),
         (
-            ((np.arange(20) % 3) == 1).tolist(),
-            7,
+            ((np.arange(8) % 3) == 1).tolist(),
+            [4.0, 16.0, 28.0],
         ),  # boolean indexing with array
-        ((np.arange(20) % 3) == 1, 7),  # boolean indexing with array
+        (
+            (np.arange(8) % 3) == 1,
+            [4.0, 16.0, 28.0],
+        ),  # boolean indexing with array
     ],
 )
-def test_index_img_surface(surf_img_2d, length, index, expected_n_samples):
-    """Test index_img with surface data."""
-    input_img = surf_img_2d(length)
+def test_index_img_surface(surf_img_2d, index, expected_values_left):
+    """Test index_img with surface data.
+
+    We only check the content of the first vertex of the left part:
+    this is deterministic because of how the fixture surf_img_2d
+    generates data.
+    """
+    input_img = surf_img_2d(8)
     this_img = index_img(input_img, index)
 
-    assert this_img.data._n_samples == expected_n_samples
+    assert this_img.data._n_samples == len(expected_values_left)
 
     assert_polymesh_equal(this_img.mesh, input_img.mesh)
 
-    expected_data_3d = extract_data(input_img, index)
-    for hemi, value in this_img.data.parts.items():
-        assert_array_equal(value, expected_data_3d[hemi])
+    assert_array_equal(
+        this_img.data.parts["left"][0], np.asarray(expected_values_left)
+    )
 
 
 def test_index_img_error_volume_4d(affine_eye):
@@ -869,7 +935,6 @@ def test_iter_img_3d_imag_error(affine_eye):
         iter_img(img_3d)
 
 
-@pytest.mark.slow
 def test_iter_img(tmp_path):
     img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
 
@@ -1075,7 +1140,7 @@ def test_input_in_threshold_img_several_timepoints(
     _check_thresholded_output(original_image, thr_img, threshold)
 
 
-def _check_thresholded_output(input, output, threshold):
+def _check_thresholded_output(input, output, threshold) -> None:
     """Check data was properly thresholed.
 
     Assumes:
@@ -1198,7 +1263,6 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_threshold_img(affine_eye):
     """Smoke test for threshold_img with valid threshold inputs."""
     shape = (10, 20, 30)
@@ -2303,7 +2367,9 @@ def test_check_niimg_wildcards(affine_eye, shape, wildcards, tmp_path):
 
 
 @pytest.fixture
-def img_in_home_folder(img_3d_mni):
+def img_in_home_folder(
+    img_3d_mni,
+) -> Generator[Nifti1Image, None, None]:
     """Create a test file in the home folder.
 
     Teardown: use yield instead of return to make sure the file
@@ -2398,7 +2464,7 @@ def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
 
 
 @pytest.fixture
-def set_expand_path_wildcards():
+def set_expand_path_wildcards() -> Generator[None, None, None]:
     """Toggles EXPAND_PATH_WILDCARDS before and after a test."""
     # Test when global variable is set to False => no globbing allowed
     ni.EXPAND_PATH_WILDCARDS = False

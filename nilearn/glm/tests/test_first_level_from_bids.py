@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
@@ -20,7 +21,7 @@ from nilearn.interfaces.bids import get_bids_files
 from nilearn.surface import SurfaceImage
 
 
-def _inputs_for_new_bids_dataset():
+def _inputs_for_new_bids_dataset() -> tuple[int, int, list[str], list[int]]:
     n_sub = 2
     n_ses = 2
     tasks = ["main"]
@@ -29,7 +30,7 @@ def _inputs_for_new_bids_dataset():
 
 
 @pytest.fixture(scope="session")
-def bids_dataset(tmp_path_factory):
+def bids_dataset(tmp_path_factory) -> Path:
     """Create a fake BIDS dataset for testing purposes.
 
     Only use if the dataset does not need to me modified.
@@ -41,7 +42,7 @@ def bids_dataset(tmp_path_factory):
     )
 
 
-def _new_bids_dataset(base_dir=None):
+def _new_bids_dataset(base_dir=None) -> Path:
     """Create a new BIDS dataset for testing purposes.
 
     Use if the dataset needs to be modified after creation.
@@ -56,7 +57,7 @@ def _new_bids_dataset(base_dir=None):
 
 def _check_output_first_level_from_bids(
     n_sub, models, imgs, events, confounds
-):
+) -> None:
     assert len(models) == n_sub
     assert all(isinstance(model, FirstLevelModel) for model in models)
 
@@ -382,6 +383,32 @@ def test_space_none(tmp_path):
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+
+@pytest.mark.parametrize("mask_img", [None, False, "derivatives"])
+def test_mask_from_derivatives(tmp_path, mask_img):
+    """Test mask is loaded from derivatives."""
+    n_sub = 2
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        spaces=["MNI152NLin2009cAsym"],
+    )
+    models, _, _, _ = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
+        img_filters=[("desc", "preproc")],
+        mask_img=mask_img,
+    )
+
+    for m in models:
+        if mask_img is False:
+            assert m.mask_img is False
+        elif mask_img == "derivatives":
+            assert isinstance(m.mask_img, Nifti1Image)
+        else:
+            assert m.mask_img is None
 
 
 def test_select_one_run_per_session(bids_dataset):

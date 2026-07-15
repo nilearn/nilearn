@@ -57,7 +57,6 @@ else:
         check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -159,7 +158,6 @@ def test_nan(affine_eye):
     assert not mask[:, :, -1].any()
 
 
-@pytest.mark.slow
 def test_matrix_orientation():
     """Test if processing is performed along the correct axis."""
     # the "step" kind generate heavyside-like signals for each voxel.
@@ -184,7 +182,6 @@ def test_matrix_orientation():
     np.testing.assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
 
-@pytest.mark.slow
 def test_mask_4d(shape_3d_default, affine_eye):
     """Test performance with 4D data."""
     # Dummy mask
@@ -234,7 +231,6 @@ def test_mask_4d(shape_3d_default, affine_eye):
     assert_array_equal(data_trans3, data_trans_direct_diff)
 
 
-@pytest.mark.slow
 def test_4d_single_scan(rng, shape_3d_default, affine_eye):
     """Test that list of 4D images with last dim=1 is treated as 3D."""
     shape_3d = (10, 10, 10)
@@ -335,7 +331,7 @@ def test_compute_epi_mask(affine_eye):
 
 
 @pytest.fixture
-def expected_mask(mask_args):
+def expected_mask(mask_args) -> np.ndarray:
     """Create an expected mask."""
     mask = np.zeros((9, 9, 5))
     if mask_args == {}:
@@ -358,7 +354,6 @@ def test_compute_brain_mask_empty_mask_error(strategy):
         masker.fit(img)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "strategy",
     [f"{p}-template" for p in ["whole-brain", "gm", "wm"]],

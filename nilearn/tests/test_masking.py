@@ -51,7 +51,7 @@ def _simu_img():
     return img, mask, conf
 
 
-def _cov_conf(tseries, conf):
+def _cov_conf(tseries, conf) -> np.ndarray:
     conf_n = StandardScaler().fit_transform(conf)
     _ = StandardScaler().fit_transform(tseries)
     cov_mat = np.dot(tseries.T, conf_n)
@@ -89,7 +89,6 @@ def test_load_mask_img_surface(surf_mask_1d):
         assert hemi.dtype == "bool"
 
 
-@pytest.mark.slow
 def test_high_variance_confounds():
     """Test high_variance_confounds."""
     img, mask, conf = _simu_img()
@@ -298,7 +297,7 @@ def test_compute_background_mask_errors_warnings(affine_eye):
 
 def test_compute_brain_mask():
     """Test compute_brain_mask."""
-    img, _ = data_gen.generate_mni_space_img(res=8, random_state=0)
+    img, _ = data_gen.generate_mni_space_img(res=8, rand_gen=0)
 
     brain_mask = compute_brain_mask(img, threshold=0.2, verbose=1)
     gm_mask = compute_brain_mask(img, threshold=0.2, mask_type="gm")
@@ -326,7 +325,7 @@ def test_compute_brain_mask():
         compute_brain_mask(img, threshold=1)
 
     # Check that masks obtained from same FOV are the same
-    img1, _ = data_gen.generate_mni_space_img(res=8, random_state=1)
+    img1, _ = data_gen.generate_mni_space_img(res=8, rand_gen=1)
     mask_img1 = compute_brain_mask(img1, verbose=1, threshold=0.2)
 
     assert (brain_data == get_data(mask_img1)).all()
@@ -641,7 +640,7 @@ def test_unmask_error_shape(rng, affine_eye, shape_4d_default):
 
 
 @pytest.fixture
-def img_2d_mask_bottom_right(affine_eye):
+def img_2d_mask_bottom_right(affine_eye) -> Nifti1Image:
     """Return 3D nifti binary mask image with bottom right filled.
 
     +---+---+---+---+
@@ -661,7 +660,7 @@ def img_2d_mask_bottom_right(affine_eye):
 
 
 @pytest.fixture
-def img_2d_mask_center(affine_eye):
+def img_2d_mask_center(affine_eye) -> Nifti1Image:
     """Return 3D nifti binary mask image with center filled.
 
     +---+---+---+---+
@@ -723,7 +722,6 @@ def test_intersect_masks_f8(img_2d_mask_bottom_right, img_2d_mask_center):
     assert_array_equal(mask_ab, get_data(mask_ab_change_type))
 
 
-@pytest.mark.slow
 def test_intersect_masks(
     affine_eye, img_2d_mask_bottom_right, img_2d_mask_center
 ):
@@ -854,7 +852,6 @@ def test_compute_multi_epi_mask(affine_eye):
     assert_array_equal(mask_ab, get_data(mask_ab_))
 
 
-@pytest.mark.slow
 def test_compute_multi_brain_mask_error():
     """Check error raised if images with different shapes given as input."""
     imgs = [
@@ -868,16 +865,15 @@ def test_compute_multi_brain_mask_error():
         compute_multi_brain_mask(imgs)
 
 
-@pytest.mark.slow
 def test_compute_multi_brain_mask():
     """Check results are the same if affine is the same."""
     imgs1 = [
-        data_gen.generate_mni_space_img(res=9, random_state=0)[0],
-        data_gen.generate_mni_space_img(res=9, random_state=1)[0],
+        data_gen.generate_mni_space_img(res=9, rand_gen=0)[0],
+        data_gen.generate_mni_space_img(res=9, rand_gen=1)[0],
     ]
     imgs2 = [
-        data_gen.generate_mni_space_img(res=9, random_state=2)[0],
-        data_gen.generate_mni_space_img(res=9, random_state=3)[0],
+        data_gen.generate_mni_space_img(res=9, rand_gen=2)[0],
+        data_gen.generate_mni_space_img(res=9, rand_gen=3)[0],
     ]
     mask1 = compute_multi_brain_mask(imgs1, threshold=0.2, verbose=1)
     mask2 = compute_multi_brain_mask(imgs2, threshold=0.2)

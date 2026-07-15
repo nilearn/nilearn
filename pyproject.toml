@@ -16,6 +16,9 @@ dev = [
 doc = [
     "docutils>=0.17",
     "furo>=2024.8.6",
+    "jupyterlite-pyodide-kernel>=0.7.2",
+    "jupyterlite-sphinx>=0.22.1",
+    "marimo>=0.12.0",
     "memory_profiler>=0.61",  # measuring memory during docs building
     "myst-parser>=3.0.1",
     "numpydoc>=1.8.0",
@@ -23,11 +26,10 @@ doc = [
     "sphinx>=7.4.7",
     "sphinx-copybutton>=0.5.2",
     "sphinx-design>=0.6.1",
+    "sphinxcontrib-mermaid>=1.0.0",
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
     "sphinxext-opengraph>=0.9.1",
-    "sphinxcontrib-mermaid>=1.0.0",
-    "marimo>=0.12.0",
     "templateflow>=25.0.0",
     "pyarrow>=13.0.0"  # mostly to avoid some warnings in pandas
 ]
@@ -107,10 +109,11 @@ dependencies = [
     "numpy>=1.26.0",
     "pandas>=2.3.0",
     "requests>=2.33.0",
-    # scikit-learn version 1.7.0 has a bug that prevents _repr_html_ to run
-    # correctly
+    # sklearn 1.7.0 has a bug that prevents _repr_html_ to run correctly
     # https://scikit-learn.org/stable/whats_new/v1.7.html#sklearn-base
-    "scikit-learn>=1.5.0,!=1.7.0",
+    # sklearn 1.9.0 creates sluggish HTML representation of estimators with many features
+    # https://github.com/scikit-learn/scikit-learn/issues/34203
+    "scikit-learn>=1.5.0,!=1.7.0,!=1.9.0",
     "jinja2>=3.1.6",
     "scipy>=1.11.1",
     "packaging>=26.0.0"
@@ -128,10 +131,13 @@ readme = "README.rst"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
-plotting = [
+# keep plotly as a separate optional extra dependency because of its size
+plotly = [
     "kaleido>=1.1.0",
-    "matplotlib>=3.8.0",
     "plotly>=6.1.1"
+]
+plotting = [
+    "matplotlib>=3.8.0"
 ]
 
 [project.urls]
@@ -221,7 +227,7 @@ layers = [
     "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting : nilearn.masking : nilearn.reporting : nilearn.datasets : nilearn.interfaces",
     "nilearn.signal",
     "nilearn._base",
-    "nilearn.typing | nilearn.exceptions | nilearn._utils.versions"
+    "nilearn.nilearn_typing | nilearn.exceptions | nilearn._utils.versions"
 ]
 name = "main architecture"
 type = "layers"
@@ -341,7 +347,10 @@ module = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals --capture=no -v --template=maint_tools/templates/index.html"
+# We do not run doctests systematically with "--doctest-modules".
+# This is because some doctests outside of nilearn.plotting require matplotlib
+# and would lead to import errors when run without the plotting dependencies.
+addopts = "-ra --strict-config --strict-markers --showlocals --capture=no -v --template=maint_tools/templates/index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 # see https://docs.pytest.org/en/stable/how-to/capture-warnings.html#controlling-warnings
 filterwarnings = [
@@ -435,6 +444,7 @@ select = [
     "PLR",
     "RUF",
     "SIM",
+    "TID",
     "UP",
     "W"
 ]
@@ -444,58 +454,27 @@ unfixable = []
 max-complexity = 23
 
 [tool.ruff.lint.per-file-ignores]
-"**/{doc}/*" = ["B018", "D103"]
-"**/{examples}/*" = ["B018", "D103", "D400", "E402"]
+"**/{asv_benchmarks}/*" = ["TID"]
+"**/{doc}/*" = ["B018", "D103"]  # 17 D103 errors to fix
+"**/{examples}/*" = ["B018", "D103", "D400", "E402"]  # 13 D103 errors to fix
 "__init__.py" = ["D104", "E402"]
 "doc/conf.py" = ["I001"]  # ignore sorting because this leads to conflict when running pre-commit locally and in CI
 "nilearn/**/tests/test_*" = ["D100"]
-"nilearn/connectome/**/{tests}/*" = ["D103"]  # 35 errors to fix
+"nilearn/connectome/tests/test_connectivity_matrices.py" = ["D103"]  # 30 errors to fix
 "nilearn/datasets/func.py" = ["PTH211"]  # 1 error
 "nilearn/datasets/tests/conftest.py" = ["D102"]
-"nilearn/datasets/tests/test_atlas.py" = ["D103"]
-"nilearn/datasets/tests/test_func.py" = ["D103"]
-"nilearn/datasets/tests/test_mocking_autoused.py" = ["D103"]
-"nilearn/datasets/tests/test_struct.py" = ["D103"]
-"nilearn/datasets/tests/test_testing.py" = ["D103"]
-"nilearn/datasets/tests/test_utils.py" = ["D103"]
-"nilearn/decoding/tests/test_decoder.py" = ["D103"]
-"nilearn/decoding/tests/test_fista.py" = ["D103"]
-"nilearn/decoding/tests/test_graph_net.py" = ["D103"]
-"nilearn/decoding/tests/test_objective_functions.py" = ["D103"]
-"nilearn/decoding/tests/test_operators.py" = ["D103"]
-"nilearn/decoding/tests/test_same_api.py" = ["D103"]
-"nilearn/decoding/tests/test_searchlight.py" = ["D103"]
-"nilearn/decoding/tests/test_sklearn_compatibility.py" = ["D103"]
-"nilearn/decoding/tests/test_space_net.py" = ["D103"]
-"nilearn/decoding/tests/test_utils.py" = ["D103"]
-"nilearn/glm/tests/test_check_events_file_uses_tab_separators.py" = ["D103"]
-"nilearn/glm/tests/test_contrasts.py" = ["D103"]
-"nilearn/glm/tests/test_design_matrix.py" = ["D103"]
-"nilearn/glm/tests/test_hemodynamic_models.py" = ["D103"]
-"nilearn/glm/tests/test_model.py" = ["D103"]
-"nilearn/glm/tests/test_paradigm.py" = ["D103"]
-"nilearn/glm/tests/test_regression.py" = ["D103"]
-"nilearn/glm/tests/test_second_level.py" = ["D103"]
-"nilearn/glm/tests/test_thresholding.py" = ["D103"]
-"nilearn/glm/tests/test_utils.py" = ["D103"]
-"nilearn/image/tests/test_image.py" = ["D103"]
-"nilearn/image/tests/test_resampling.py" = ["D103"]
-"nilearn/plotting/displays/tests/test_edge_detect.py" = ["D103"]
-"nilearn/plotting/image/tests/test_img_plotting.py" = ["D103"]
-"nilearn/plotting/matrix/tests/test_matrix_plotting.py" = ["D103"]
-"nilearn/plotting/matrix/tests/test_utils.py" = ["D103"]
-"nilearn/plotting/surface/tests/conftest.py" = ["D103"]
-"nilearn/plotting/surface/tests/test_html_surface.py" = ["D103"]
-"nilearn/plotting/surface/tests/test_surf_plotting.py" = ["D103"]
-"nilearn/plotting/surface/tests/test_utils.py" = ["D103"]
-"nilearn/plotting/tests/test_baseline_comparisons.py" = ["D103"]
-"nilearn/plotting/tests/test_cm.py" = ["D103"]
-"nilearn/plotting/tests/test_find_cuts.py" = ["D103"]
-"nilearn/plotting/tests/test_html_connectome.py" = ["D103"]
-"nilearn/plotting/tests/test_html_stat_map.py" = ["D103"]
-"nilearn/plotting/tests/test_img_comparisons.py" = ["D103"]
-"nilearn/regions/**/{tests}/*" = ["D103"]  # 64 errors to fix
-"nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
+"nilearn/datasets/tests/test_atlas.py" = ["D103"]  # 24 errors to fix
+"nilearn/datasets/tests/test_func.py" = ["D103"]  # 37 errors to fix
+"nilearn/decoding/tests/test_decoder.py" = ["D103"]  # 26 errors to fix
+"nilearn/glm/tests/test_contrasts.py" = ["D103"]  # 17 errors to fix
+"nilearn/glm/tests/test_design_matrix.py" = ["D103"]  # 22 errors to fix
+"nilearn/glm/tests/test_second_level.py" = ["D103"]  # 17 errors to fix
+"nilearn/image/tests/test_image.py" = ["D103"]  # 37 errors to fix
+"nilearn/image/tests/test_resampling.py" = ["D103"]  # 29 errors to fix
+"nilearn/regions/tests/test_parcellations.py" = ["D103"]  # 15 errors to fix
+"nilearn/regions/tests/test_region_extractor.py" = ["D103"]  # 20 errors to fix
+"nilearn/regions/tests/test_signal_extraction.py" = ["D103"]  # 20 errors to fix
+"nilearn/surface/tests/test_surface.py" = ["D103"]  # 44 errors to fix
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

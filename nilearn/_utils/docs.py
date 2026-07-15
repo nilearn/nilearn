@@ -379,7 +379,7 @@ docdict["cv8_5"] = cv.format(8, 5)
 docdict["cvNone_3"] = cv.format("None", 3)
 
 
-# data_dir
+# debias
 docdict["debias"] = """
 debias : :obj:`bool`, default=False
     If set, then the estimated weights maps will be debiased.
@@ -491,7 +491,7 @@ docdict["estimator_args"] = """
 estimator_args : dict[str, Any] or None, default=None
     Extra parameters to pass to the scikit-learn estimators.
 
-    .. nilearn_versionadded:: 0.14.0dev
+    .. nilearn_versionadded:: 0.14.0
 """
 
 # extractor / extract_type
@@ -920,7 +920,7 @@ radiological : :obj:`bool`, default=False
 
 # random_state
 docdict["random_state"] = """
-random_state : :obj:`int` or np.random.RandomState, optional
+random_state : :obj:`int` or :obj:`numpy.random.RandomState`, optional
     Pseudo-random number generator state used for random sampling.
 """
 
@@ -1364,7 +1364,7 @@ tfce : :obj:`bool`, default=False
 
 # threshold
 docdict["threshold"] = """
-threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
+threshold : :obj:`int` or :obj:`float`, :obj:`str`, None, or 'auto', optional
     If `None` is given, the image is not thresholded.
     If number is given, it must be non-negative. The specified value is used to
     threshold the image: values below the threshold (in absolute value) are

@@ -743,6 +743,17 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         target_shape = None
         target_affine = None
         if self.resampling_target == "labels":
+            if not check_same_fov(labels_img_, imgs):
+                warnings.warn(
+                    (
+                        "Resampling images at transform time...\n"
+                        "To avoid this warning, make sure to resample the "
+                        "images you want to transform to the shape of the "
+                        "maps or set resampling_target to 'data'."
+                    ),
+                    stacklevel=find_stack_level(),
+                )
+
             target_shape = labels_img_.shape[:3]
             target_affine = labels_img_.affine
 
@@ -860,7 +871,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         %(img_inv_transform_nifti)s
 
         """
-        from ..regions import signal_extraction
+        from nilearn.regions import signal_extraction
 
         check_is_fitted(self)
 

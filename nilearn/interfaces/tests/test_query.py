@@ -131,7 +131,7 @@ def test_infer_slice_timing_start_time_from_dataset(tmp_path):
     assert StartTime == expected_StartTime
 
 
-def _rm_all_json_files_from_bids_dataset(bids_path):
+def _rm_all_json_files_from_bids_dataset(bids_path) -> None:
     """Remove all json and make sure that get_bids_files does not find any."""
     for x in bids_path.glob("**/*.json"):
         x.unlink()

@@ -79,7 +79,7 @@ def _load_localizer_index():
 
 
 @pytest.fixture()
-def localizer_mocker(request_mocker):
+def localizer_mocker(request_mocker) -> None:
     """Mock the index for localizer dataset."""
     index, tsv_files = _load_localizer_index()
     request_mocker.url_mapping["https://osf.io/hwbm2/download"] = json.dumps(
@@ -939,7 +939,8 @@ def test_fetch_openneuro_dataset(tmp_path):
         urls, tmp_path, dataset_version
     )
 
-    assert isinstance(datadir, str)
+    # https://github.com/nilearn/nilearn/issues/6388
+    assert datadir == str(data_dir)
     assert isinstance(dl_files, list)
     assert len(dl_files) == 9
 

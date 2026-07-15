@@ -7,7 +7,7 @@ import json
 import warnings
 from base64 import b64encode
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any, Literal, cast
 
 import matplotlib
 import numpy as np
@@ -32,13 +32,10 @@ from nilearn.image import (
     resample_img,
     resample_to_img,
 )
+from nilearn.nilearn_typing import Threshold
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
-from nilearn.typing import Threshold
-
-if TYPE_CHECKING:
-    from nibabel import Nifti1Image
 
 
 def _data_to_sprite(
@@ -65,7 +62,9 @@ def _data_to_sprite(
     ncolumns = int(np.ceil(nx / float(nrows)))
 
     sprite = np.zeros((nrows * nz, ncolumns * ny))
-    indrow, indcol = np.where(np.ones((nrows, ncolumns)))
+    indrow, indcol = cast(
+        tuple[np.ndarray, np.ndarray], np.where(np.ones((nrows, ncolumns)))
+    )
 
     if radiological:
         for xx in range(nx):
@@ -442,9 +441,9 @@ def _get_bg_mask_and_cmap(bg_img, black_bg: bool):
     bg_mask = np.ma.getmaskarray(get_data(bg_img))
     bg_cmap = copy.copy(matplotlib.pyplot.get_cmap("gray"))
     if black_bg:
-        bg_cmap.set_bad("black")
+        bg_cmap.with_extremes(bad="black")
     else:
-        bg_cmap.set_bad("white")
+        bg_cmap.with_extremes(bad="white")
     return bg_mask, bg_cmap
 
 
