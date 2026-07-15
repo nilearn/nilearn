@@ -1654,6 +1654,15 @@ def first_level_from_bids(
         ``models_events[i][j]`` corresponds to the j\\ :sup:`th` event file
         of the i\\ :sup:`th` subject.
 
+        Currently we only support 2 cases:
+
+        - raw BIDS datasets with one events file per run
+          stored along the bold file
+
+        - raw BIDS dataset with a single events file at its root,
+          (it is then assumed that this events file should be used
+          for all runs and the list contains j copies of the same dataframe)
+
     models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
         ``None``
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
