@@ -725,6 +725,57 @@ def test_with_one_events_missing(tmp_path_factory):
 
 
 @pytest.mark.thread_unsafe
+def test_with_one_events_for_all_runs(tmp_path_factory):
+    """Only one events.tsv in the root of the raw dataset for all runs.
+
+    This should be OK as all runs will then use this event file.
+    """
+    bids_dataset = _new_bids_dataset(
+        tmp_path_factory.mktemp("one_event_missing")
+    )
+    events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
+
+    events = pd.read_table(events_files[0])
+    events.to_csv(bids_dataset / "task-main_events.tsv", sep="\t")
+
+    for x in events_files:
+        Path(x).unlink()
+
+    first_level_from_bids(
+        dataset_path=bids_dataset,
+        task_label="main",
+        space_label="MNI",
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
+    )
+
+
+@pytest.mark.thread_unsafe
+def test_with_one_global_and_one_events_for_all_runs(tmp_path_factory):
+    """Fail when one global events.tsv in the root + one for each run.
+
+    We cannot decide which one should be used for each image
+    """
+    bids_dataset = _new_bids_dataset(
+        tmp_path_factory.mktemp("one_event_missing")
+    )
+    events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
+
+    events = pd.read_table(events_files[0])
+    events.to_csv(bids_dataset / "task-main_events.tsv", sep="\t")
+
+    with pytest.raises(
+        ValueError,
+        match="Same number of event files as the number of runs is expected",
+    ):
+        first_level_from_bids(
+            dataset_path=bids_dataset,
+            task_label="main",
+            space_label="MNI",
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
+        )
+
+
+@pytest.mark.thread_unsafe
 def test_one_confound_missing(tmp_path_factory):
     """There must be only one confound file per image or none.
 
