@@ -224,9 +224,6 @@ def get_bids_files(
         of the dataset provider. For example the 'func' and 'anat' standard
         folders. If given as the empty string '', files will be searched
         inside the sub-label/ses-label directories.
-        For ``'anat'``, subject-level anatomical derivatives are considered
-        as a fallback in datasets containing session directories. Matching
-        session-level anatomical derivatives take precedence per subject.
 
     filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), \
               default=None
@@ -302,56 +299,36 @@ def get_bids_files(
 
     filters = filters or []
     if filters or subject_level_anat_files:
-
-        def _filter_files(
-            files: list[str], filters: list[tuple[str, str]]
-        ) -> list[_BidsFileRef]:
-            parsed_files = [parse_bids_filename(file_) for file_ in files]
-            for entity, label in filters:
-                parsed_files = [
-                    file_
-                    for file_ in parsed_files
-                    if (entity not in file_["entities"] and label == "")
-                    or (
-                        entity in file_["entities"]
-                        and file_["entities"][entity] == label
-                    )
-                ]
-            return parsed_files
-
-        filtered_files = _filter_files(files, filters)
-        if subject_level_anat_files:
-            # Subject-level anatomical derivatives typically do not carry a
-            # session entity. Apply every other requested entity before using
-            # them as a fallback for subjects with no matching session-level
-            # file.
-            subject_level_filters = [
-                filter_ for filter_ in filters if filter_[0] != "ses"
-            ]
-            filtered_subject_level_anat_files = _filter_files(
-                subject_level_anat_files, subject_level_filters
-            )
-            for entity, label in filters:
-                if entity == "ses":
-                    filtered_subject_level_anat_files = [
-                        file_
-                        for file_ in filtered_subject_level_anat_files
-                        if entity not in file_["entities"]
-                        or file_["entities"][entity] == label
-                    ]
-            session_subjects = {
-                file_["entities"].get("sub") for file_ in filtered_files
-            }
+        filtered_files = _filter_bids_files(files, filters)
+        if subject_level_anat_files and not any(
+            entity == "ses" for entity, _ in filters
+        ):
             filtered_files.extend(
-                file_
-                for file_ in filtered_subject_level_anat_files
-                if file_["entities"].get("sub") not in session_subjects
+                _filter_bids_files(subject_level_anat_files, filters)
             )
             filtered_files.sort(key=lambda file_: str(file_["file_path"]))
 
         return [ref_file["file_path"] for ref_file in filtered_files]
 
     return files
+
+
+def _filter_bids_files(
+    files: list[str], filters: list[tuple[str, str]]
+) -> list[_BidsFileRef]:
+    """Filter BIDS files according to their filename entities."""
+    parsed_files = [parse_bids_filename(file_) for file_ in files]
+    for entity, label in filters:
+        parsed_files = [
+            file_
+            for file_ in parsed_files
+            if (entity not in file_["entities"] and label == "")
+            or (
+                entity in file_["entities"]
+                and file_["entities"][entity] == label
+            )
+        ]
+    return parsed_files
 
 
 def parse_bids_filename(img_path) -> _BidsFileRef:

@@ -8,6 +8,7 @@ from nilearn._utils.data_gen import (
     create_fake_bids_dataset,
 )
 from nilearn.interfaces.bids.query import (
+    _filter_bids_files,
     _get_metadata_from_bids,
     get_bids_files,
     infer_repetition_time_from_dataset,
@@ -341,23 +342,36 @@ def _add_bids_file(bids_path, relative_path):
 
 
 @pytest.mark.ai_generated
-def test_get_bids_files_fmriprep_subject_level_anat_fallback(tmp_path):
-    """Find a subject-level anatomical derivative for a requested session."""
+def test_filter_bids_files():
+    """Filter BIDS files according to their filename entities."""
+    files = [
+        "sub-01_ses-test_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
+        "sub-01_ses-retest_space-T1w_desc-brain_T1w.nii.gz",
+    ]
+
+    selection = _filter_bids_files(
+        files,
+        [("ses", "test"), ("space", "MNI152NLin6Asym")],
+    )
+
+    assert selection[0]["file_path"] == files[0]
+
+
+@pytest.mark.ai_generated
+def test_get_bids_files_fmriprep_subject_level_anat(tmp_path):
+    """Find session- and subject-level anatomical derivatives."""
     subject_anat = _add_bids_file(
         tmp_path,
         "sub-01/anat/sub-01_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
     )
-    _add_bids_file(
+    test_anat = _add_bids_file(
         tmp_path,
-        "sub-01/ses-test/func/sub-01_ses-test_task-rest_bold.nii.gz",
+        "sub-01/ses-test/anat/"
+        "sub-01_ses-test_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
     )
-    _add_bids_file(
+    retest_anat = _add_bids_file(
         tmp_path,
-        "sub-01/ses-retest/func/sub-01_ses-retest_task-rest_bold.nii.gz",
-    )
-    _add_bids_file(
-        tmp_path,
-        "sub-01/anat/"
+        "sub-01/ses-retest/anat/"
         "sub-01_ses-retest_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
     )
 
@@ -366,10 +380,11 @@ def test_get_bids_files_fmriprep_subject_level_anat_fallback(tmp_path):
         modality_folder="anat",
         file_tag="T1w",
         file_type="nii.gz",
-        filters=[("ses", "test")],
     )
 
-    assert selection == [str(subject_anat)]
+    assert selection == sorted(
+        [str(subject_anat), str(test_anat), str(retest_anat)]
+    )
 
 
 @pytest.mark.ai_generated
@@ -398,33 +413,8 @@ def test_get_bids_files_fmriprep_session_level_anat(tmp_path):
 
 
 @pytest.mark.ai_generated
-def test_get_bids_files_fmriprep_session_level_anat_takes_precedence(tmp_path):
-    """Prefer a matching session-level anatomical derivative."""
-    subject_anat = _add_bids_file(
-        tmp_path,
-        "sub-01/anat/sub-01_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
-    )
-    session_anat = _add_bids_file(
-        tmp_path,
-        "sub-01/ses-test/anat/"
-        "sub-01_ses-test_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
-    )
-
-    selection = get_bids_files(
-        tmp_path,
-        modality_folder="anat",
-        file_tag="T1w",
-        file_type="nii.gz",
-        filters=[("ses", "test")],
-    )
-
-    assert selection == [str(session_anat)]
-    assert str(subject_anat) not in selection
-
-
-@pytest.mark.ai_generated
 def test_get_bids_files_fmriprep_subject_level_anat_filters(tmp_path):
-    """Apply non-session entities when falling back to subject-level anat."""
+    """Apply filename entity filters to subject-level anatomical files."""
     expected = _add_bids_file(
         tmp_path,
         "sub-01/anat/sub-01_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
@@ -435,7 +425,7 @@ def test_get_bids_files_fmriprep_subject_level_anat_filters(tmp_path):
     )
     _add_bids_file(
         tmp_path,
-        "sub-01/ses-test/func/sub-01_ses-test_task-rest_bold.nii.gz",
+        "sub-01/ses-test/anat/sub-01_ses-test_space-T1w_desc-brain_T1w.nii.gz",
     )
 
     selection = get_bids_files(
@@ -444,7 +434,6 @@ def test_get_bids_files_fmriprep_subject_level_anat_filters(tmp_path):
         file_tag="T1w",
         file_type="nii.gz",
         filters=[
-            ("ses", "test"),
             ("space", "MNI152NLin6Asym"),
             ("desc", "preproc"),
         ],
@@ -455,7 +444,7 @@ def test_get_bids_files_fmriprep_subject_level_anat_filters(tmp_path):
 
 @pytest.mark.ai_generated
 def test_get_bids_files_fmriprep_subject_level_anat_per_subject(tmp_path):
-    """Fall back independently for each subject in a multi-session dataset."""
+    """Find subject-level anatomy for every subject in a multi-session set."""
     session_anat = _add_bids_file(
         tmp_path,
         "sub-01/ses-test/anat/sub-01_ses-test_desc-preproc_T1w.nii.gz",
@@ -464,17 +453,12 @@ def test_get_bids_files_fmriprep_subject_level_anat_per_subject(tmp_path):
         tmp_path,
         "sub-02/anat/sub-02_desc-preproc_T1w.nii.gz",
     )
-    _add_bids_file(
-        tmp_path,
-        "sub-02/ses-test/func/sub-02_ses-test_task-rest_bold.nii.gz",
-    )
-
     selection = get_bids_files(
         tmp_path,
         modality_folder="anat",
         file_tag="T1w",
         file_type="nii.gz",
-        filters=[("ses", "test"), ("desc", "preproc")],
+        filters=[("desc", "preproc")],
     )
 
     assert selection == [str(session_anat), str(subject_anat)]
@@ -489,7 +473,7 @@ def test_get_bids_files_fmriprep_anat_no_match(tmp_path):
     )
     _add_bids_file(
         tmp_path,
-        "sub-01/ses-test/func/sub-01_ses-test_task-rest_bold.nii.gz",
+        "sub-01/ses-test/anat/sub-01_ses-test_space-T1w_desc-preproc_T1w.nii.gz",
     )
 
     selection = get_bids_files(
@@ -501,31 +485,6 @@ def test_get_bids_files_fmriprep_anat_no_match(tmp_path):
     )
 
     assert selection == []
-
-
-@pytest.mark.ai_generated
-def test_get_bids_files_fmriprep_functional_files_remain_session_specific(
-    tmp_path,
-):
-    """Do not use subject-level fallback when looking up functional files."""
-    test_file = _add_bids_file(
-        tmp_path,
-        "sub-01/ses-test/func/sub-01_ses-test_task-rest_bold.nii.gz",
-    )
-    _add_bids_file(
-        tmp_path,
-        "sub-01/ses-retest/func/sub-01_ses-retest_task-rest_bold.nii.gz",
-    )
-
-    selection = get_bids_files(
-        tmp_path,
-        modality_folder="func",
-        file_tag="bold",
-        file_type="nii.gz",
-        filters=[("ses", "test")],
-    )
-
-    assert selection == [str(test_file)]
 
 
 def test_get_bids_files_no_space_entity(tmp_path):

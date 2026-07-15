@@ -22,10 +22,7 @@ NEW
 Fixes
 -----
 
-- :bdg-dark:`Code` Fix :func:`~interfaces.bids.get_bids_files` missing
-  subject-level anatomical derivatives in multi-session datasets. Matching
-  session-level anatomical derivatives are preferred, while functional file
-  lookups remain session-specific (:gh:`6291` by `Mohammad Sadeghi Hardengi`_).
+- :bdg-dark:`Code` Fix :func:`~interfaces.bids.get_bids_files` missing subject-level anatomical derivatives in multi-session datasets (:gh:`6291` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-dark:`Code` Fix ``examples/04_glm_first_level/plot_bids_features.py``, ``doc/get_data_examples.py``, and ``doc/visual_testing/reporter_visual_inspection_suite.py`` downloading the full FSL derivatives for the ``bart`` and ``taskswitch`` tasks of the ``ds000030`` dataset in addition to ``stopsignal``, because the ``*task-task*`` exclusion filter did not match the ``derivatives/task/sub-*/taskswitch.feat`` folder name; switch to ``inclusion_filters`` to only fetch the files needed for the ``stopsignal`` analysis (:gh:`6432` by `Rémi Gau`_).
 
