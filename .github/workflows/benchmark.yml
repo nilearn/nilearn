@@ -55,7 +55,8 @@
 #
 # A second, independent set of jobs, run only on schedule or manual trigger
 # (running the full suite for several commits is too expensive to also run on every pull request),
-# benchmarks the fixed list of release commits in ``asv_benchmarks/hashestobenchmark.txt``(see :ref:`CONTRIBUTING.rst <performance>`).
+# benchmarks the fixed list of release commits in ``asv_benchmarks/hashestobenchmark.txt``
+# (see :ref:`CONTRIBUTING.rst <performance>`).
 # Running the full suite for several commits one after another in a single job is slow,
 # so this is split into a matrix job (one commit per matrix entry, run in parallel on separate runners)
 # followed by a job that downloads every matrix entry's results
