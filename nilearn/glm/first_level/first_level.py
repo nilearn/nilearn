@@ -1534,7 +1534,7 @@ def first_level_from_bids(
     list[FirstLevelModel],
     list[list[str] | list[SurfaceImage]],
     list[list[pd.DataFrame]],
-    list[list[pd.DataFrame] | None],
+    list[list[pd.DataFrame] | list[None]],
 ]:
     """Create FirstLevelModel objects and fit arguments \
        from a :term:`BIDS` dataset.
@@ -2403,7 +2403,7 @@ def _get_confounds(
     confounds : :obj:`list` of :class:`pandas.DataFrame` or \
         :obj:`list` of None
 
-    """   
+    """
     # pop the 'desc' filter
     # it would otherwise trigger some meaningless warnings
     # as desc entity are not supported in BIDS raw datasets
@@ -2433,10 +2433,10 @@ def _get_confounds(
     _check_confounds_list(confounds=confounds_files, imgs=imgs)
 
     if not confounds_files:
-        return [None] *  len(imgs)
-    
+        return [None] * len(imgs)
+
     if kwargs_load_confounds is None:
-        return [None] *  len(imgs)
+        return [None] * len(imgs)
 
     if len(kwargs_load_confounds) == 0:
         confounds = [
@@ -2450,7 +2450,10 @@ def _get_confounds(
             c.iloc[0] = c.iloc[0].fillna(0.0)
         return confounds
 
-    return load_confounds(img_files=imgs, **kwargs_load_confounds)[0]
+    confounds = load_confounds(img_files=imgs, **kwargs_load_confounds)[0]
+    if isinstance(confounds, list):
+        return confounds
+    return [confounds]
 
 
 def _check_confounds_list(confounds, imgs) -> None:
