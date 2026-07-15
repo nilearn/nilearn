@@ -2246,21 +2246,26 @@ def _get_events_files(
         sub_label=sub_label,
         filters=events_filters,
     )
-    if len(events) == 0:
-        # looking for file in the root of the raw data
-        events = get_bids_files(
-            dataset_path,
-            modality_folder="func",
-            file_tag="events",
-            file_type="tsv",
-            sub_label=sub_label,
-            filters=events_filters,
-            sub_folder=False,
-        )
-        if len(events) == 1:
-            # if we found something this means
-            # that all runs haves the same events.tsv
-            events = events * len(imgs)
+
+    # looking for file in the root of the raw data
+    global_events_file = get_bids_files(
+        dataset_path,
+        modality_folder="func",
+        file_tag="events",
+        file_type="tsv",
+        sub_label=sub_label,
+        filters=events_filters,
+        sub_folder=False,
+    )
+
+    if len(events) == 0 and len(global_events_file) == 1:
+        # if we found something this means
+        # that all runs haves the same events.tsv
+        events = global_events_file * len(imgs)
+    else:
+        # otherwise we pull all events together
+        # and let _check_bids_events_list decide what to do
+        events.extend(global_events_file)
 
     _report_found_files(
         files=events,
