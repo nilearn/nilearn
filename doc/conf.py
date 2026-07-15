@@ -96,21 +96,21 @@ autodoc_default_options = {
     "member-order": "bysource",
 }
 
-try:
-    import jupyterlite_sphinx  # noqa: F401
+# try:
+#     import jupyterlite_sphinx
 
-    extensions.append("jupyterlite_sphinx")
-    with_jupyterlite = True
-except ImportError:
-    # In some cases we don't want to require jupyterlite_sphinx
-    # to be installed,
-    # e.g. the doc-min-dependencies build
-    warnings.warn(
-        "jupyterlite_sphinx is not installed, you need to install it "
-        "if you want JupyterLite links to appear in the API documentation",
-        stacklevel=2,
-    )
-    with_jupyterlite = False
+#     extensions.append("jupyterlite_sphinx")
+#     with_jupyterlite = True
+# except ImportError:
+#     # In some cases we don't want to require jupyterlite_sphinx
+#     # to be installed,
+#     # e.g. the doc-min-dependencies build
+#     warnings.warn(
+#         "jupyterlite_sphinx is not installed, you need to install it "
+#         "if you want JupyterLite links to appear in the API documentation",
+#         stacklevel=2,
+#     )
+#     with_jupyterlite = False
 
 
 # Get rid of spurious warnings due to some interaction between
@@ -502,30 +502,34 @@ sphinx_gallery_conf = {
     },
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
     "within_subsection_order": "ExampleTitleSortKey",
+    # # Disallow jupyterlite for examples in gallery
+    # # as most of them requires loading too much data in the browser
+    # "jupyterlite": None,
 }
 
 
-if with_jupyterlite:
-    global_enable_try_examples = True
-    try_examples_global_button_text = "Try it in your browser!"
-    try_examples_global_warning_text = (
-        "Running the nilearn examples in JupyterLite is experimental"
-        " and you may encounter some unexpected behavior.\n\n"
-        " The main difference is that imports will take a lot longer"
-        " than usual, for example the first `import nilearn` can take"
-        " roughly 10-20s.\n\nIf you notice problems, feel free to open"
-        " an [issue](https://github.com/nilearn/nilearn/issues/new/choose) "
-        "about it."
-    )
-    # Work around https://github.com/jupyterlite/pyodide-kernel/issues/166
-    # and https://github.com/pyodide/micropip/issues/223 by installing the
-    # dependencies first, and then nilearn from Anaconda.org.
-    try_examples_preamble = """
-    # Jupyterlite specific code
-    import matplotlib
-    import pandas
-    %pip install -q nilearn
-    """
+# if with_jupyterlite:
+#     global_enable_try_examples = True
+#     jupyterlite_bind_ipynb_suffix = False
+#     try_examples_global_button_text = "Try it in your browser!"
+#     try_examples_global_warning_text = (
+#         "Running the nilearn examples in JupyterLite is experimental"
+#         " and you may encounter some unexpected behavior.\n\n"
+#         " The main difference is that imports will take a lot longer"
+#         " than usual, for example the first `import nilearn` can take"
+#         " roughly 10-20s.\n\nIf you notice problems, feel free to open"
+#         " an [issue](https://github.com/nilearn/nilearn/issues/new/choose) "
+#         "about it."
+#     )
+#     # Work around https://github.com/jupyterlite/pyodide-kernel/issues/166
+#     # and https://github.com/pyodide/micropip/issues/223 by installing the
+#     # dependencies first, and then nilearn from Anaconda.org.
+#     try_examples_preamble = """
+#     # Jupyterlite specific code
+#     import matplotlib
+#     import pandas
+#     %pip install -q nilearn
+#     """
 
 mermaid_version = "11.4.0"
 

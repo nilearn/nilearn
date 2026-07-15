@@ -51,7 +51,6 @@ else:
         check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -280,7 +279,6 @@ def test_is_nifti_spheres_masker_give_nans(rng, affine_eye):
     assert not np.isnan(np.sum(masker.fit_transform(img)))
 
 
-@pytest.mark.slow
 def test_inverse_transform(rng, affine_eye):
     """Applying the sphere_extraction example from above backwards."""
     data = rng.random((3, 3, 3, 5))
