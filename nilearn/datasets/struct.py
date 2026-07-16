@@ -70,7 +70,7 @@ def fetch_icbm152_2009(
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-):
+) -> Bunch:
     """Download and load the ICBM152 template (dated 2009).
 
     For more information
@@ -530,7 +530,7 @@ def fetch_icbm152_brain_gm_mask(
     resume: Resume = True,
     n_iter: int = 2,
     verbose: Verbose = 1,
-):
+) -> Nifti1Image:
     """Download ICBM152 template first, then loads the 'gm' mask.
 
     For more information
@@ -659,7 +659,7 @@ def fetch_oasis_vbm(
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-):
+) -> Bunch:
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
     For more information
