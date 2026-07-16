@@ -1,0 +1,60 @@
+---
+# Compare gallery example images ('sphx_glr_plot_*.png') between the
+# 'stable' and 'dev' builds of the doc published on nilearn.github.io.
+# Gives an idea of how much example outputs visually change across
+# nilearn versions. See https://github.com/nilearn/nilearn/issues/6342
+#
+# Comparison is done via maint_tools/compare_doc_images.js
+###
+name: compare doc images
+
+on:
+    # TODO drop the pull_request trigger once this workflow has been
+    # debugged; workflow_dispatch alone should be enough afterwards.
+    pull_request:
+        branches:
+        -   '*'
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+env:
+    FORCE_COLOR: true
+
+jobs:
+
+    compare_doc_images:
+
+        name: Compare stable vs dev doc images
+
+        runs-on: ubuntu-latest
+
+        steps:
+        -   uses: actions/checkout@v7
+
+        -   uses: actions/setup-node@v6
+            with:
+                node-version: 24
+
+        -   name: Install node dependencies
+            run: npm install
+
+        -   name: Clone nilearn.github.io (sparse, dev/_images + stable/_images only)
+            run: |
+                git clone --depth 1 --filter=blob:none --sparse \
+                    https://github.com/nilearn/nilearn.github.io.git \
+                    tmp/nilearn.github.io
+                git -C tmp/nilearn.github.io sparse-checkout set dev/_images stable/_images
+
+        -   name: Compare doc images
+            run: node maint_tools/compare_doc_images.js
+
+        -   name: Upload diff images
+            if: success() || failure()
+            uses: actions/upload-artifact@v7
+            with:
+                name: doc-image-diffs
+                path: tmp/doc_image_diffs/*.png
+                if-no-files-found: ignore

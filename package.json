@@ -3,7 +3,8 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "compare-doc-images": "node maint_tools/compare_doc_images.js"
   },
   "dependencies": {
     "@niivue/niivue": "0.68.1",
