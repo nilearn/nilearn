@@ -129,7 +129,12 @@ function main () {
 
   const results = toCompare
     .map((name) => compareImage(name, stableDir, devDir))
-    .sort((a, b) => (b.diffRatio || 0) - (a.diffRatio || 0))
+    .sort((a, b) => {
+      if (a.name !== b.name) {
+        return a.name.localeCompare(b.name)
+      }
+      return (b.diffRatio || 0) - (a.diffRatio || 0)
+    })
 
   const changed = results.filter((r) => r.status !== 'unchanged')
   const sizeChanged = results.filter((r) => r.status === 'size-changed')
