@@ -45,10 +45,52 @@ function isIgnored (name, patterns) {
   return patterns.some((pattern) => globToRegExp(pattern).test(name))
 }
 
-// strip the trailing '_<number>.png' index so consecutive outputs of the
-// same example (e.g. sphx_glr_plot_foo_001.png, ..._002.png) are grouped
-function baseName (name) {
-  return name.replace(/_\d+\.png$/, '.png')
+// strip the 'sphx_glr_' prefix and trailing '_<number>.png' index, e.g.
+// 'sphx_glr_plot_foo_001.png' -> 'plot_foo', so consecutive outputs of the
+// same example are grouped and the source example script can be located
+function exampleName (imageName) {
+  return imageName.replace(/^sphx_glr_/, '').replace(/_\d+\.png$/, '')
+}
+
+const examplePathCache = new Map()
+
+// find the path (relative to the 'examples' directory) of the script that
+// generates a given example, by walking the examples/ directory tree
+function findExampleRelPath (name) {
+  if (examplePathCache.has(name)) {
+    return examplePathCache.get(name)
+  }
+
+  const examplesDir = path.join(ROOT, 'examples')
+  let found = null
+
+  function walk (dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = path.join(dir, entry.name)
+      if (found) {
+        return
+      }
+      if (entry.isDirectory()) {
+        walk(fullPath)
+      } else if (entry.name === `${name}.py`) {
+        found = path.relative(examplesDir, fullPath)
+      }
+    }
+  }
+
+  walk(examplesDir)
+  examplePathCache.set(name, found)
+  return found
+}
+
+// build the URL of the dev doc page for a given example, e.g.
+// '01_plotting/plot_haxby_masks.py' ->
+// https://nilearn.github.io/dev/auto_examples/01_plotting/plot_haxby_masks.html#sphx-glr-auto-examples-01-plotting-plot-haxby-masks-py
+function devDocURL (relPath) {
+  const posixPath = relPath.split(path.sep).join('/')
+  const withoutExt = posixPath.replace(/\.py$/, '')
+  const anchor = 'sphx-glr-auto-examples-' + posixPath.replace(/[/_.]/g, '-')
+  return `https://nilearn.github.io/dev/auto_examples/${withoutExt}.html#${anchor}`
 }
 
 function checkClone (stableDir, devDir) {
@@ -149,12 +191,19 @@ function main () {
   console.log(
     `\n${changed.length} image(s) changed beyond tolerance (${DIFF_RATIO_TOLERANCE * 100}% of pixels):\n`
   )
-  let previousBaseName = null
+  let previousExampleName = null
   for (const r of changed) {
-    if (previousBaseName !== null && baseName(r.name) !== previousBaseName) {
-      console.log('')
+    const name = exampleName(r.name)
+    if (name !== previousExampleName) {
+      if (previousExampleName !== null) {
+        console.log('')
+      }
+      const relPath = findExampleRelPath(name)
+      console.log(
+        relPath ? `${name}: ${devDocURL(relPath)}` : `${name}: (example script not found)`
+      )
+      previousExampleName = name
     }
-    previousBaseName = baseName(r.name)
 
     const pct = r.diffRatio === null ? 'n/a' : (r.diffRatio * 100).toFixed(2) + '%'
     console.log(`  [${r.status}] ${r.name} - ${pct} pixels differ`)

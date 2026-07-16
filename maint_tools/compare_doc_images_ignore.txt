@@ -13,3 +13,9 @@
 
 # REASON: order of the components of ICA may vary between runs
 sphx_glr_plot_ica_neurovault_*.png
+
+# REASON: image is output of an ICA, so results may look different between runs
+sphx_glr_plot_nifti_simple_002.png
+
+# REASON: underlying image was changed
+sphx_glr_plot_haxby_masks_001
