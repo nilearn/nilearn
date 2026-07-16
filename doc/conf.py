@@ -612,6 +612,7 @@ class Header(str):
 
         return tmp + extra
 
+
 gen_rst.EXAMPLE_HEADER = Header(header)
 
 # adapting https://github.com/sphinx-doc/sphinx/blob/master/sphinx/domains/changeset.py
@@ -625,6 +626,7 @@ changeset.versionlabel_classes["nilearn_versionadded"] = "added"
 changeset.versionlabel_classes["nilearn_versionchanged"] = "changed"
 changeset.versionlabel_classes["nilearn_deprecated"] = "deprecated"
 changeset.versionlabel_classes["nilearn_versionremoved"] = "removed"
+
 
 def setup(app):
     app.add_directive("nilearn_versionadded", changeset.VersionChange)
