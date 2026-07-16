@@ -1,0 +1,12 @@
+# List of gallery image filenames (or glob patterns using '*') to skip
+# when comparing stable vs dev doc images in compare_doc_images.js.
+#
+# Use this when a diff is expected and accepted,
+# e.g. after intentionally changing the example script that generates an image.
+#
+# One pattern per line.
+# Lines starting with '#' and empty lines are ignored.
+# Patterns are matched against the image basename, e.g.:
+#
+# sphx_glr_plot_ica_neurovault_001.png
+# sphx_glr_plot_ica_neurovault_*.png

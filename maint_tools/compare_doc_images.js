@@ -18,11 +18,32 @@ const ROOT = path.resolve(__dirname, '..')
 const TMP_DIR = path.join(ROOT, 'tmp')
 const CLONE_DIR = path.join(TMP_DIR, 'nilearn.github.io')
 const DIFF_DIR = path.join(TMP_DIR, 'doc_image_diffs')
+const IGNORE_FILE = path.join(__dirname, 'compare_doc_images_ignore.txt')
 
 // per-pixel color threshold, same value used in tests/js/template.js
 const PIXELMATCH_THRESHOLD = 0.2
 // flag images with more than 1% of pixels differing
 const DIFF_RATIO_TOLERANCE = 0.01
+
+function loadIgnorePatterns (filePath) {
+  if (!fs.existsSync(filePath)) {
+    return []
+  }
+  return fs
+    .readFileSync(filePath, 'utf8')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+}
+
+function globToRegExp (pattern) {
+  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+  return new RegExp('^' + escaped.replace(/\*/g, '.*') + '$')
+}
+
+function isIgnored (name, patterns) {
+  return patterns.some((pattern) => globToRegExp(pattern).test(name))
+}
 
 function checkClone (stableDir, devDir) {
   for (const dir of [stableDir, devDir]) {
@@ -89,15 +110,24 @@ function main () {
   const onlyInDev = [...devImages].filter((n) => !stableImages.has(n))
   const shared = [...stableImages].filter((n) => devImages.has(n))
 
-  console.log(`\nCompared ${shared.length} gallery image(s) present in both stable and dev.`)
+  const ignorePatterns = loadIgnorePatterns(IGNORE_FILE)
+  const ignored = shared.filter((n) => isIgnored(n, ignorePatterns))
+  const toCompare = shared.filter((n) => !isIgnored(n, ignorePatterns))
+
+  console.log(`\nCompared ${toCompare.length} gallery image(s) present in both stable and dev.`)
   if (onlyInStable.length) {
     console.log(`${onlyInStable.length} image(s) only in stable (removed in dev).`)
   }
   if (onlyInDev.length) {
     console.log(`${onlyInDev.length} image(s) only in dev (new since stable).`)
   }
+  if (ignored.length) {
+    console.log(
+      `${ignored.length} image(s) ignored per ${path.basename(IGNORE_FILE)}.`
+    )
+  }
 
-  const results = shared
+  const results = toCompare
     .map((name) => compareImage(name, stableDir, devDir))
     .sort((a, b) => (b.diffRatio || 0) - (a.diffRatio || 0))
 
