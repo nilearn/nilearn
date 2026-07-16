@@ -113,9 +113,16 @@ class BenchMarkPlotDesignMatrixCorrelation:
     def setup(self):
         """Set up for all benchmarks."""
         # Imported locally (added in 0.11.0) so that benchmarking older
-        # nilearn versions only fails this benchmark instead of making
+        # nilearn versions only affects this benchmark instead of making
         # the whole module fail to import for every benchmark in this file.
-        from nilearn.plotting import plot_design_matrix_correlation
+        # Raising NotImplementedError (instead of letting ImportError
+        # propagate) makes asv report this as "skipped" rather than
+        # "failed" for those older versions: see asv_runner's
+        # BenchmarkBase.do_setup, which special-cases NotImplementedError.
+        try:
+            from nilearn.plotting import plot_design_matrix_correlation
+        except ImportError as e:
+            raise NotImplementedError from e
 
         self.plot_design_matrix_correlation = plot_design_matrix_correlation
 
