@@ -80,7 +80,7 @@ jobs:
                 if-no-files-found: ignore
 
         -   name: Create issue
-            if: ${{ github.event_name == 'schedule' && steps.compare.outcome != 'success' }}
+            if: ${{ github.event_name != 'pull_request' && steps.compare.outcome != 'success' }}
             uses: JasonEtco/create-an-issue@v2.9.2
             env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
