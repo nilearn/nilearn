@@ -270,7 +270,7 @@ def get_bids_files(
     1
     """
     main_path = Path(main_path)
-    subject_level_anat_files = []
+    subject_level_files = []
     if sub_folder:
         files = main_path / "sub-*" / "ses-*"
         session_folder_exists = glob.glob(str(files))
@@ -282,12 +282,12 @@ def get_bids_files(
             / modality_folder
             / f"sub-{sub_label}*_{file_tag}.{file_type}"
         )
-        if modality_folder == "anat" and session_folder_exists:
-            subject_level_anat_files = glob.glob(
+        if modality_folder in ["anat", "func"] and session_folder_exists:
+            subject_level_files = glob.glob(
                 str(
                     main_path
                     / f"sub-{sub_label}"
-                    / "anat"
+                    / modality_folder
                     / f"sub-{sub_label}*_{file_tag}.{file_type}"
                 )
             )
@@ -298,13 +298,13 @@ def get_bids_files(
     files.sort()
 
     filters = filters or []
-    if filters or subject_level_anat_files:
+    if filters or subject_level_files:
         filtered_files = _filter_bids_files(files, filters)
-        if subject_level_anat_files and not any(
+        if subject_level_files and not any(
             entity == "ses" for entity, _ in filters
         ):
             filtered_files.extend(
-                _filter_bids_files(subject_level_anat_files, filters)
+                _filter_bids_files(subject_level_files, filters)
             )
             filtered_files.sort(key=lambda file_: str(file_["file_path"]))
 
