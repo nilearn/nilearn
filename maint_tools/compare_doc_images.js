@@ -25,6 +25,39 @@ const PIXELMATCH_THRESHOLD = 0.2
 // flag images with more than 1% of pixels differing
 const DIFF_RATIO_TOLERANCE = 0.01
 
+const supportsColor =
+  !process.env.NO_COLOR &&
+  (process.stdout.isTTY || Boolean(process.env.FORCE_COLOR))
+
+/**
+ * Build a colorizer for a given ANSI SGR code.
+ *
+ * @param {string} code - ANSI SGR code, e.g. '1' for bold, '31' for red.
+ * @returns {(text: string) => string} Function wrapping text in the ANSI
+ *   escape sequence, or returning it unchanged if color is not supported.
+ */
+function ansi (code) {
+  return (text) => (supportsColor ? `\x1b[${code}m${text}\x1b[0m` : text)
+}
+
+const style = {
+  bold: ansi('1'),
+  dim: ansi('2'),
+  red: ansi('31'),
+  green: ansi('32'),
+  yellow: ansi('33'),
+  magenta: ansi('35'),
+  cyan: ansi('36')
+}
+
+/**
+ * Load glob patterns from an ignore file.
+ *
+ * @param {string} filePath - Path to the ignore file. One pattern per
+ *   line; blank lines and lines starting with '#' are skipped.
+ * @returns {string[]} The patterns, or an empty array if the file
+ *   doesn't exist.
+ */
 function loadIgnorePatterns (filePath) {
   if (!fs.existsSync(filePath)) {
     return []
@@ -36,26 +69,56 @@ function loadIgnorePatterns (filePath) {
     .filter((line) => line && !line.startsWith('#'))
 }
 
+/**
+ * Convert a glob pattern (only '*' is supported as a wildcard) to a
+ * RegExp matching the whole string.
+ *
+ * @param {string} pattern - Glob pattern, e.g. 'sphx_glr_plot_foo_*.png'.
+ * @returns {RegExp} Equivalent anchored regular expression.
+ */
 function globToRegExp (pattern) {
   const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&')
   return new RegExp('^' + escaped.replace(/\*/g, '.*') + '$')
 }
 
+/**
+ * Check whether a file name matches any of the given glob patterns.
+ *
+ * @param {string} name - File name to test.
+ * @param {string[]} patterns - Glob patterns, as returned by
+ *   {@link loadIgnorePatterns}.
+ * @returns {boolean} Whether `name` matches at least one pattern.
+ */
 function isIgnored (name, patterns) {
   return patterns.some((pattern) => globToRegExp(pattern).test(name))
 }
 
-// strip the 'sphx_glr_' prefix and trailing '_<number>.png' index, e.g.
-// 'sphx_glr_plot_foo_001.png' -> 'plot_foo', so consecutive outputs of the
-// same example are grouped and the source example script can be located
+/**
+ * Derive the example name from one of its gallery image file names, e.g.
+ * 'sphx_glr_plot_foo_001.png' -> 'plot_foo', by stripping the 'sphx_glr_'
+ * prefix and the trailing '_<number>.png' index. Used to group an
+ * example's numbered outputs together and to locate its source script.
+ *
+ * @param {string} imageName - Gallery image file name.
+ * @returns {string} The example's base name.
+ */
 function exampleName (imageName) {
   return imageName.replace(/^sphx_glr_/, '').replace(/_\d+\.png$/, '')
 }
 
 const examplePathCache = new Map()
 
-// find the path (relative to the 'examples' directory) of the script that
-// generates a given example, by walking the examples/ directory tree
+/**
+ * Find the path of the script that generates a given example, by
+ * walking the 'examples/' directory tree. Results are memoized in
+ * `examplePathCache` since the same example is looked up once per
+ * group of changed images.
+ *
+ * @param {string} name - Example base name, as returned by
+ *   {@link exampleName} (without the '.py' extension).
+ * @returns {string|null} Path of the example script, relative to the
+ *   'examples/' directory, or `null` if it could not be found.
+ */
 function findExampleRelPath (name) {
   if (examplePathCache.has(name)) {
     return examplePathCache.get(name)
@@ -83,9 +146,15 @@ function findExampleRelPath (name) {
   return found
 }
 
-// build the URL of the dev doc page for a given example, e.g.
-// '01_plotting/plot_haxby_masks.py' ->
-// https://nilearn.github.io/dev/auto_examples/01_plotting/plot_haxby_masks.html#sphx-glr-auto-examples-01-plotting-plot-haxby-masks-py
+/**
+ * Build the URL of the dev doc page for a given example, e.g.
+ * '01_plotting/plot_haxby_masks.py' ->
+ * https://nilearn.github.io/dev/auto_examples/01_plotting/plot_haxby_masks.html#sphx-glr-auto-examples-01-plotting-plot-haxby-masks-py
+ *
+ * @param {string} relPath - Example script path, relative to the
+ *   'examples/' directory, as returned by {@link findExampleRelPath}.
+ * @returns {string} URL of the example's dev doc page.
+ */
 function devDocURL (relPath) {
   const posixPath = relPath.split(path.sep).join('/')
   const withoutExt = posixPath.replace(/\.py$/, '')
@@ -93,6 +162,14 @@ function devDocURL (relPath) {
   return `https://nilearn.github.io/dev/auto_examples/${withoutExt}.html#${anchor}`
 }
 
+/**
+ * Exit the process with an error if the stable/dev image directories of
+ * the nilearn.github.io clone are missing.
+ *
+ * @param {string} stableDir - Expected path of 'stable/_images'.
+ * @param {string} devDir - Expected path of 'dev/_images'.
+ * @returns {void}
+ */
 function checkClone (stableDir, devDir) {
   for (const dir of [stableDir, devDir]) {
     if (!fs.existsSync(dir)) {
@@ -106,6 +183,13 @@ function checkClone (stableDir, devDir) {
   }
 }
 
+/**
+ * List gallery example images ('sphx_glr_plot_*.png', excluding
+ * thumbnails) in a doc build's '_images' directory.
+ *
+ * @param {string} dir - Path to a '_images' directory.
+ * @returns {string[]} Matching image file names.
+ */
 function listGalleryImages (dir) {
   return fs
     .readdirSync(dir)
@@ -113,6 +197,19 @@ function listGalleryImages (dir) {
     .filter((name) => !name.endsWith('_thumb.png'))
 }
 
+/**
+ * Compare one gallery image between the stable and dev doc builds.
+ * Writes a pixelmatch diff image under `DIFF_DIR` whenever any pixel
+ * differs.
+ *
+ * @param {string} name - Image file name, present in both directories.
+ * @param {string} stableDir - Path to the stable build's '_images'.
+ * @param {string} devDir - Path to the dev build's '_images'.
+ * @returns {{name: string, status: 'size-changed'|'changed'|'unchanged',
+ *   diffRatio: number|null}} Comparison result; `diffRatio` is `null`
+ *   when the two images' dimensions differ (`status: 'size-changed'`),
+ *   since pixelmatch cannot diff images of different sizes.
+ */
 function compareImage (name, stableDir, devDir) {
   const imgStable = PNG.sync.read(fs.readFileSync(path.join(stableDir, name)))
   const imgDev = PNG.sync.read(fs.readFileSync(path.join(devDir, name)))
@@ -145,6 +242,14 @@ function compareImage (name, stableDir, devDir) {
   }
 }
 
+/**
+ * Compare the gallery images of the stable and dev doc builds, print a
+ * report grouped by example, and exit with a non-zero status if any
+ * image's pixel diff exceeds `DIFF_RATIO_TOLERANCE` (dimension-only
+ * changes are reported but don't affect the exit status).
+ *
+ * @returns {void}
+ */
 function main () {
   const stableDir = path.join(CLONE_DIR, 'stable', '_images')
   const devDir = path.join(CLONE_DIR, 'dev', '_images')
@@ -162,16 +267,22 @@ function main () {
   const ignored = shared.filter((n) => isIgnored(n, ignorePatterns))
   const toCompare = shared.filter((n) => !isIgnored(n, ignorePatterns))
 
-  console.log(`\nCompared ${toCompare.length} gallery image(s) present in both stable and dev.`)
+  console.log(
+    `\nCompared ${style.bold(toCompare.length)} gallery image(s) present in both stable and dev.`
+  )
   if (onlyInStable.length) {
-    console.log(`${onlyInStable.length} image(s) only in stable (removed in dev).`)
+    console.log(
+      style.dim(`${onlyInStable.length} image(s) only in stable (removed in dev).`)
+    )
   }
   if (onlyInDev.length) {
-    console.log(`${onlyInDev.length} image(s) only in dev (new since stable).`)
+    console.log(
+      style.dim(`${onlyInDev.length} image(s) only in dev (new since stable).`)
+    )
   }
   if (ignored.length) {
     console.log(
-      `${ignored.length} image(s) ignored per ${path.basename(IGNORE_FILE)}.`
+      style.dim(`${ignored.length} image(s) ignored per ${path.basename(IGNORE_FILE)}.`)
     )
   }
 
@@ -188,9 +299,9 @@ function main () {
   const sizeChanged = results.filter((r) => r.status === 'size-changed')
   const pixelChanged = results.filter((r) => r.status === 'changed')
 
-  console.log(
-    `\n${changed.length} image(s) changed beyond tolerance (${DIFF_RATIO_TOLERANCE * 100}% of pixels):\n`
-  )
+  const changedHeader = `${changed.length} image(s) changed beyond tolerance (${DIFF_RATIO_TOLERANCE * 100}% of pixels):`
+  console.log(`\n${changed.length ? style.bold(changedHeader) : style.green(changedHeader)}\n`)
+
   let previousExampleName = null
   for (const r of changed) {
     const name = exampleName(r.name)
@@ -200,30 +311,37 @@ function main () {
       }
       const relPath = findExampleRelPath(name)
       console.log(
-        relPath ? `${name}: ${devDocURL(relPath)}` : `${name}: (example script not found)`
+        relPath
+          ? `${style.bold(name)}: ${style.cyan(devDocURL(relPath))}`
+          : `${style.bold(name)}: ${style.dim('(example script not found)')}`
       )
       previousExampleName = name
     }
 
-    const pct = r.diffRatio === null ? 'n/a' : (r.diffRatio * 100).toFixed(2) + '%'
-    console.log(`  [${r.status}] ${r.name} - ${pct} pixels differ`)
+    const tag = r.status === 'changed' ? style.yellow(`[${r.status}]`) : style.magenta(`[${r.status}]`)
+    const pct = r.diffRatio === null
+      ? style.dim('n/a')
+      : style[r.diffRatio > 0.05 ? 'red' : 'yellow']((r.diffRatio * 100).toFixed(2) + '%')
+    console.log(`  ${tag} ${r.name} - ${pct} pixels differ`)
   }
 
   if (changed.length) {
-    console.log(`\nDiff images written to ${DIFF_DIR}`)
+    console.log(style.dim(`\nDiff images written to ${DIFF_DIR}`))
   }
 
   if (sizeChanged.length) {
     console.log(
-      `\n${sizeChanged.length} image(s) changed dimensions (ignored for pass/fail).`
+      style.magenta(`\n${sizeChanged.length} image(s) changed dimensions (ignored for pass/fail).`)
     )
   }
 
   if (pixelChanged.length) {
     console.error(
-      `\nFAIL: ${pixelChanged.length} image(s) exceed the pixel diff tolerance.`
+      style.red(style.bold(`\nFAIL: ${pixelChanged.length} image(s) exceed the pixel diff tolerance.`))
     )
     process.exit(1)
+  } else {
+    console.log(style.green('\nPASS: no images exceed the pixel diff tolerance.'))
   }
 }
 

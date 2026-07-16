@@ -11,11 +11,18 @@
 # sphx_glr_plot_ica_neurovault_001.png
 # sphx_glr_plot_ica_neurovault_*.png
 
+# --------------- Changes to ignore for all versions ---------------
+
 # REASON: order of the components of ICA may vary between runs
 sphx_glr_plot_ica_neurovault_*.png
 
 # REASON: image is output of an ICA, so results may look different between runs
 sphx_glr_plot_nifti_simple_002.png
 
+# --------------- Changes to ignore since last version ---------------
+
 # REASON: underlying image was changed
-sphx_glr_plot_haxby_masks_001
+sphx_glr_plot_haxby_masks_001.png
+
+# REASON:
+sphx_glr_plot_single_subject_single_run_*.png

@@ -140,7 +140,9 @@ output_dir = Path.cwd() / "results" / "plot_single_subject_single_run"
 output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
 
-plot_design_matrix(design_matrix, output_file=output_dir / "design_matrix.png")
+fig = plot_design_matrix(
+    design_matrix, output_file=output_dir / "design_matrix.png"
+)
 
 # %%
 # The first column contains the expected response profile of regions which are
