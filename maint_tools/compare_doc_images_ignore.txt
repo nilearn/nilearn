@@ -10,3 +10,6 @@
 #
 # sphx_glr_plot_ica_neurovault_001.png
 # sphx_glr_plot_ica_neurovault_*.png
+
+# REASON: order of the components of ICA may vary between runs
+sphx_glr_plot_ica_neurovault_*.png
