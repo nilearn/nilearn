@@ -60,6 +60,8 @@ Enhancements
 Changes
 -------
 
+- :bdg-secondary:`Maint` Add ``maint_tools/compare_doc_images.js`` and a ``compare_doc_images`` GitHub Actions workflow to diff gallery example images (``sphx_glr_plot_*.png``) between the ``stable`` and ``dev`` doc builds published on nilearn.github.io, reusing the ``pixelmatch``/``pngjs`` setup already used by ``tests/js`` (:gh:`6437` by `Rémi Gau`_).
+
 - :bdg-secondary:`Maint` Drop nilearn versions older than 0.11.0 from ``asv_benchmarks/hashestobenchmark.txt`` (they cannot currently be benchmarked, see ``CONTRIBUTING.rst``), make the benchmark CI workflow fail when a benchmark reports as failed instead of silently ignoring it, fix an always-failing ``IndexImgBenchmark`` slice bound that this newly surfaced, and reorganize ``asv_benchmarks/benchmarks/glm`` to mirror the structure of :mod:`nilearn.glm` (:gh:`6426` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add type annotations to the public functions in ``nilearn._utils.data_gen`` (:gh:`6420` by `Rémi Gau`_).
