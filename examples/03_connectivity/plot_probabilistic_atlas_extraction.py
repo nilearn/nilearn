@@ -18,8 +18,6 @@ different regions, we can visualize the matrix as a graph of
 interaction in a brain. To avoid having too dense a graph, we represent
 only the 20% edges with the highest values.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -28,8 +26,10 @@ only the 20% edges with the highest values.
 from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 
 atlas = fetch_atlas_msdl()
+
 # Loading atlas image stored in 'maps'
 atlas_filename = atlas["maps"]
+
 # Loading atlas data stored in 'labels'
 labels = atlas["labels"]
 
@@ -48,10 +48,10 @@ from nilearn.maskers import NiftiMapsMasker
 
 masker = NiftiMapsMasker(
     maps_img=atlas_filename,
-    standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
-    verbose=5,
+    memory_level=1,
+    verbose=1,
 )
 time_series = masker.fit_transform(data.func[0], confounds=data.confounds)
 
@@ -74,10 +74,7 @@ print(time_series.shape)
 # --------------------------------------
 from nilearn.connectome import ConnectivityMeasure
 
-correlation_measure = ConnectivityMeasure(
-    kind="correlation",
-    standardize="zscore_sample",
-)
+correlation_measure = ConnectivityMeasure(kind="correlation", verbose=1)
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Display the correlation matrix
@@ -88,6 +85,7 @@ from nilearn.plotting import plot_connectome, plot_matrix, show
 # Mask out the major diagonal
 np.fill_diagonal(correlation_matrix, 0)
 plot_matrix(correlation_matrix, labels=labels, vmax=0.8, vmin=-0.8)
+
 # %%
 # And now display the corresponding graph
 # ---------------------------------------
@@ -110,7 +108,7 @@ from nilearn.plotting import view_connectome
 
 view = view_connectome(correlation_matrix, coords, edge_threshold="80%")
 
-# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# In a notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 view
 

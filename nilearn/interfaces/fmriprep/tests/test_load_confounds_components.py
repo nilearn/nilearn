@@ -10,8 +10,8 @@ from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
 
 
 @pytest.fixture
-def expected_parameters(strategy_keywords):
-    """Return expoected parameters for a given strategy."""
+def expected_parameters(strategy_keywords: str):
+    """Return expected parameters for a given strategy."""
     expectation = {
         "compcor": {"compcor": "anat_combined", "n_compcor": 6},
         "ica_aroma": {"ica_aroma": "basic"},
@@ -20,8 +20,7 @@ def expected_parameters(strategy_keywords):
         return expectation[strategy_keywords]
     elif strategy_keywords != "high_pass":
         return {strategy_keywords: "full"}
-    else:
-        return False
+    return False
 
 
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])

@@ -1,18 +1,30 @@
+import itertools
 import warnings
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
+from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
-from sklearn.base import BaseEstimator
+from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import CacheMixin
+from nilearn._base import NilearnBaseEstimator
+from nilearn._utils.cache_mixin import CacheMixin
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.externals import tempita
+from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn.glm._reporting_utils import (
+    GLMReportMixin,
+    get_runwise_dict,
+    make_stat_maps_contrast_clusters,
+    mask_to_plot,
+    sanitize_generate_report_input,
+    turn_into_full_path,
+)
+from nilearn.image import check_niimg
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -20,12 +32,35 @@ from nilearn.surface import SurfaceImage
 FIGURE_FORMAT = "png"
 
 
-class BaseGLM(CacheMixin, BaseEstimator):
+@fill_doc
+class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`.
     """
 
-    def _is_volume_glm(self):
+    _estimator_type = "glm"  # TODO (sklearn >= 1.8) remove
+
+    def _doc_link_url_param_generator(self, *args):  # noqa : ARG002
+        """Return doc URL components for GLM estimators.
+
+        GLM doc URL is slightly different than that of other estimators.
+
+        # TODO (sklearn >= 1.7) remove *args from signature
+        """
+        estimator_name = self.__class__.__name__
+        tmp = list(
+            itertools.takewhile(
+                lambda part: not part.startswith("_"),
+                self.__class__.__module__.split("."),
+            )
+        )
+        estimator_module = ".".join([tmp[0], tmp[1], tmp[2]])
+        return {
+            "estimator_module": estimator_module,
+            "estimator_name": estimator_name,
+        }
+
+    def _is_volume_glm(self) -> bool:
         """Return if model is run on volume data or not."""
         return not (
             (
@@ -38,6 +73,31 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 and isinstance(self.masker_, SurfaceMasker)
             )
         )
+
+    def _is_first_level_glm(self) -> bool:
+        """Return True if this estimator is of type FirstLevelModel; False
+        otherwise.
+        """
+        return False
+
+    @property
+    def _mask_img(self) -> Nifti1Image | SurfaceImage | None:
+        """Return mask image using during fit or mask image passed at init."""
+        if self.__sklearn_is_fitted__():
+            return self.mask_img_
+        if self.mask_img is None:
+            return None
+        try:
+            # load mask_img if is a niiimg-like object
+            return check_niimg(self.mask_img)
+        except Exception:
+            return self.mask_img
+
+    @property
+    def mask_img_(self) -> Nifti1Image | SurfaceImage:
+        """Return mask image using during fit."""
+        check_is_fitted(self)
+        return self.masker_.mask_img_
 
     def _attributes_to_dict(self):
         """Return dict with pertinent model attributes & information.
@@ -83,21 +143,13 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         return model_param
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -106,20 +158,20 @@ class BaseGLM(CacheMixin, BaseEstimator):
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(surf_img=True, niimg_like=True, glm=True)
+        tags.input_tags = InputTags(surf_img=True, niimg_like=True)
+        tags.estimator_type = "glm"
         return tags
 
     # @auto_attr store the value as an object attribute after initial call
     # better performance than @property
     @auto_attr
-    def residuals(self):
-        """Transform voxelwise residuals to the same shape \
-        as the input Nifti1Image(s).
+    def residuals_(self):
+        """Transform element-wise residuals to the same shape \
+        as the input image.
 
         Returns
         -------
-        output : list
-            A list of Nifti1Image(s).
+        list[Nifti1Image] or list[SurfaceImage]
 
         """
         return self._get_element_wise_model_attribute(
@@ -127,14 +179,35 @@ class BaseGLM(CacheMixin, BaseEstimator):
         )
 
     @auto_attr
-    def predicted(self):
-        """Transform voxelwise predicted values to the same shape \
-        as the input Nifti1Image(s).
+    def residuals(self):
+        """Transform element-wise residuals to the same shape \
+        as the input image.
+
+        .. nilearn_deprecated:: 0.14.0
+
+        """
+        # TODO (nilearn>=0.16.0) remove the method
+        warnings.warn(
+            stacklevel=find_stack_level(),
+            category=FutureWarning,
+            message=(
+                "residuals' is deprecated.\n "
+                "It will be removed in Nilearn 0.16.0.\n"
+                "Use 'residuals_' instead."
+            ),
+        )
+        return self.residuals_
+
+    # @auto_attr store the value as an object attribute after initial call
+    # better performance than @property
+    @auto_attr
+    def predicted_(self):
+        """Transform element-wise predicted values to the same shape \
+        as the input image.
 
         Returns
         -------
-        output : list
-            A list of Nifti1Image(s).
+        list[Nifti1Image] or list[SurfaceImage]
 
         """
         return self._get_element_wise_model_attribute(
@@ -142,19 +215,60 @@ class BaseGLM(CacheMixin, BaseEstimator):
         )
 
     @auto_attr
-    def r_square(self):
-        """Transform voxelwise r-squared values to the same shape \
-        as the input Nifti1Image(s).
+    def predicted(self):
+        """Transform element-wise predicted to the same shape \
+        as the input image.
+
+        .. nilearn_deprecated:: 0.14.0
+
+        """
+        # TODO (nilearn>=0.16.0) remove the method
+        warnings.warn(
+            stacklevel=find_stack_level(),
+            category=FutureWarning,
+            message=(
+                "residuals' is deprecated.\n "
+                "It will be removed in Nilearn 0.16.0.\n"
+                "Use 'residuals_' instead."
+            ),
+        )
+        return self.predicted_
+
+    # @auto_attr store the value as an object attribute after initial call
+    # better performance than @property
+    @auto_attr
+    def r_square_(self):
+        """Transform element-wise r-squared values to the same shape \
+        as the input image.
 
         Returns
         -------
-        output : list
-            A list of Nifti1Image(s).
+        list[Nifti1Image] or list[SurfaceImage]
 
         """
         return self._get_element_wise_model_attribute(
             "r_square", result_as_time_series=False
         )
+
+    @auto_attr
+    def r_square(self):
+        """Transform element-wise r-squared to the same shape \
+        as the input image.
+
+        .. nilearn_deprecated:: 0.14.0
+
+        """
+        # TODO (nilearn>=0.16.0) remove the method
+        warnings.warn(
+            stacklevel=find_stack_level(),
+            category=FutureWarning,
+            message=(
+                "residuals' is deprecated.\n "
+                "It will be removed in Nilearn 0.16.0.\n"
+                "Use 'residuals_' instead."
+            ),
+        )
+        return self.r_square_
 
     def _generate_filenames_output(
         self, prefix, contrasts, contrast_types, out_dir, entities_to_drop=None
@@ -171,7 +285,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         and str or Path were used as input files to the GLM
         the output filenames will be based on the input files.
 
-        See nilearn.interfaces.bids.save_glm_to_bids for more details.
+        See nilearn.glm.io.save_glm_to_bids for more details.
 
         Parameters
         ----------
@@ -213,22 +327,17 @@ class BaseGLM(CacheMixin, BaseEstimator):
         contrasts = coerce_to_dict(contrasts)
         for k, v in contrasts.items():
             if not isinstance(k, str):
-                raise ValueError(
+                raise TypeError(
                     f"contrast names must be strings, not {type(k)}"
                 )
 
             if not isinstance(v, (str, np.ndarray, list)):
-                raise ValueError(
+                raise TypeError(
                     "contrast definitions must be strings or array_likes, "
-                    f"not {type(v)}"
+                    f"not {v.__class__.__name__}"
                 )
 
-        entities = {
-            "sub": None,
-            "ses": None,
-            "task": None,
-            "space": None,
-        }
+        entities = {"sub": None, "ses": None, "task": None, "space": None}
 
         if generate_bids_name:
             # try to figure out filename entities from input files
@@ -331,6 +440,129 @@ class BaseGLM(CacheMixin, BaseEstimator):
             "model_level_mapping": model_level_mapping,
         }
 
+    def _get_masker_info(self):
+        masker_info = {}
+
+        if self.__sklearn_is_fitted__():
+            masker_info["n_elements"] = self.masker_._report_content[
+                "n_elements"
+            ]
+            masker_info["coverage"] = (
+                f"{self.masker_._report_content['coverage']:0.1f}"
+            )
+
+        return masker_info
+
+    def _generate_report_content(
+        self,
+        contrasts,
+        bg_img,
+        first_level_contrast,
+        threshold,
+        alpha,
+        cluster_threshold,
+        height_control,
+        two_sided,
+        min_distance,
+        cut_coords,
+        display_mode,
+        plot_type,
+    ):
+        threshold, cut_coords, first_level_contrast, warning_messages = (
+            sanitize_generate_report_input(
+                height_control,
+                threshold,
+                cut_coords,
+                plot_type,
+                first_level_contrast,
+                self,
+            )
+        )
+        for message in warning_messages:
+            self._append_report_warning(message)
+        contrasts = coerce_to_dict(contrasts)
+
+        # If some contrasts are passed
+        # we do not rely on filenames stored in the model.
+        output = None
+        if contrasts is None:
+            output = self._reporting_data.get("filenames")
+            if output is not None and output.get("use_absolute_path", True):
+                output = turn_into_full_path(output, output["dir"])
+
+            self._append_report_warning(
+                "No contrast passed during report generation."
+            )
+
+        bg_img = self._load_bg_img(bg_img, self._is_volume_glm())
+        self._report_content["mask_plot"] = mask_to_plot(self, bg_img)
+        self._report_content.update(self._get_masker_info())
+        self._report_content["results"] = make_stat_maps_contrast_clusters(
+            model=self,
+            contrasts=contrasts,
+            output=output,
+            first_level_contrast=first_level_contrast,
+            threshold_orig=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            bg_img=bg_img,
+            cut_coords=cut_coords,
+            display_mode=display_mode,
+            plot_type=plot_type,
+        )
+        self._report_content["run_wise_dict"] = self._get_runwise_dict(
+            contrasts, output
+        )
+        # for methods writing, only keep the contrast expressed as strings
+        if contrasts is not None:
+            contrasts = [x for x in contrasts.values() if isinstance(x, str)]
+
+        self._report_content["contrasts"] = contrasts
+        self._report_content["reporting_data"] = Bunch(**self._reporting_data)
+
+    def _get_report_statistical_maps(
+        self, contrasts, output, first_level_contrast=None
+    ):
+
+        statistical_maps = {}
+        if self._is_volume_glm() and output is not None:
+            try:
+                statistical_maps = {
+                    contrast_name: output["dir"]
+                    / output["statistical_maps"][contrast_name]["z_score"]
+                    for contrast_name in output["statistical_maps"]
+                }
+            except KeyError:  # pragma: no cover
+                if contrasts is not None:
+                    statistical_maps = self._make_stat_maps(
+                        contrasts,
+                        output_type="z_score",
+                        first_level_contrast=first_level_contrast,
+                    )
+        elif contrasts is not None:
+            statistical_maps = self._make_stat_maps(
+                contrasts,
+                output_type="z_score",
+                first_level_contrast=first_level_contrast,
+            )
+
+        return statistical_maps
+
+    def _get_runwise_dict(self, contrasts, output):
+        design_matrices = None
+
+        if self.__sklearn_is_fitted__():
+            design_matrices = (
+                [self.design_matrix_]
+                if self.__str__() == "Second Level Model"
+                else self.design_matrices_
+            )
+
+        return get_runwise_dict(contrasts, output, design_matrices)
+
 
 def _generate_mask(
     model,
@@ -413,6 +645,7 @@ def _generate_statistical_maps(
                 "p_value",
             ],
             ["effect", stat_type, "variance", "z", "p"],
+            strict=False,
         ):
             fields["entities"]["stat"] = stat_label
             tmp[key] = create_bids_filename(fields, entities_to_include)
@@ -425,7 +658,7 @@ def _generate_statistical_maps(
         fields["extension"] = "json"
         tmp["metadata"] = create_bids_filename(fields, entities_to_include)
 
-        statistical_maps[contrast_name] = tempita.bunch(**tmp)
+        statistical_maps[contrast_name] = Bunch(**tmp)
 
     return statistical_maps
 
@@ -469,11 +702,12 @@ def _generate_model_level_mapping(
         for key, stat_label in zip(
             ["residuals", "r_square"],
             ["errorts", "rsquared"],
+            strict=False,
         ):
             fields["entities"]["stat"] = stat_label
             tmp[key] = create_bids_filename(fields, entities_to_include)
 
-        model_level_mapping[i_run] = tempita.bunch(**tmp)
+        model_level_mapping[i_run] = Bunch(**tmp)
 
     return model_level_mapping
 
@@ -493,7 +727,7 @@ def _generate_design_matrices_dict(
     if generate_bids_name:
         fields["prefix"] = None  # type: ignore[assignment]
 
-    design_matrices_dict = tempita.bunch()
+    design_matrices_dict = Bunch()
 
     for i_run, _ in enumerate(design_matrices):
         if _is_flm_with_single_run(model):
@@ -508,6 +742,7 @@ def _generate_design_matrices_dict(
             for key, suffix in zip(
                 ["design_matrix", "correlation_matrix"],
                 ["design", "corrdesign"],
+                strict=False,
             ):
                 fields["extension"] = extension
                 fields["suffix"] = suffix
@@ -515,7 +750,7 @@ def _generate_design_matrices_dict(
                     fields, entities_to_include
                 )
 
-        design_matrices_dict[i_run] = tempita.bunch(**tmp)
+        design_matrices_dict[i_run] = Bunch(**tmp)
 
     return design_matrices_dict
 
@@ -542,7 +777,7 @@ def _generate_contrasts_dict(
     if generate_bids_name:
         fields["prefix"] = None
 
-    contrasts_dict = tempita.bunch()
+    contrasts_dict = Bunch()
 
     for i_run, _ in enumerate(design_matrices):
         if _is_flm_with_single_run(model):
@@ -561,7 +796,7 @@ def _generate_contrasts_dict(
                 fields, entities_to_include
             )
 
-        contrasts_dict[i_run] = tempita.bunch(**tmp)
+        contrasts_dict[i_run] = Bunch(**tmp)
 
     return contrasts_dict
 
@@ -592,7 +827,7 @@ def _is_flm_with_single_run(model) -> bool:
 def _clean_contrast_name(contrast_name):
     """Remove prohibited characters from name and convert to camelCase.
 
-    .. versionadded:: 0.9.2
+    .. nilearn_versionadded:: 0.9.2
 
     BIDS filenames, in which the contrast name will appear as a
     contrast-<name> key/value pair, must be alphanumeric strings.

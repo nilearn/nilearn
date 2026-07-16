@@ -1,12 +1,18 @@
 """Fixtures for decomposition tests."""
 
-from typing import Union
+import warnings
+from collections.abc import Generator
 
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn.maskers import MultiNiftiMasker, SurfaceMasker
+from nilearn.maskers import (
+    MultiNiftiMasker,
+    MultiSurfaceMasker,
+    NiftiMasker,
+    SurfaceMasker,
+)
 from nilearn.surface import PolyMesh, SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
 
@@ -18,6 +24,19 @@ N_SUBJECTS = 3
 # are changed
 N_SAMPLES = 5
 N_COMPONENTS = 4
+
+
+@pytest.fixture(autouse=True)
+def suppress_specific_decomposition_warning() -> Generator[None, None, None]:
+    """Ignore internal decoding warnings."""
+    with warnings.catch_warnings():
+        messages = "Objective did not converge.*|"
+        warnings.filterwarnings(
+            "ignore",
+            message=messages,
+            category=UserWarning,
+        )
+        yield
 
 
 def _decomposition_mesh() -> PolyMesh:
@@ -40,7 +59,7 @@ def decomposition_mask_img(
     decomposition_mesh: PolyMesh,
     affine_eye: np.ndarray,
     shape_3d_large,
-) -> Union[SurfaceImage, Nifti1Image]:
+) -> SurfaceImage | Nifti1Image:
     """Return a mask for decomposition."""
     if data_type == "surface":
         mask_data = {
@@ -75,51 +94,45 @@ def decomposition_mask_img(
 
 @pytest.fixture
 def decomposition_masker(
-    decomposition_mask_img: Union[SurfaceImage, Nifti1Image],
+    decomposition_mask_img: SurfaceImage | Nifti1Image,
     img_3d_ones_eye: Nifti1Image,
     data_type: str,
-) -> Union[SurfaceMasker, MultiNiftiMasker]:
-    """Return the proper masker for test with volume of surface."""
+) -> MultiSurfaceMasker | MultiNiftiMasker:
+    """Return the proper masker for test with volume of surface.
+
+    Use detrend=True to check how masker parameters are passed to estimators.
+    """
     if data_type == "surface":
-        return SurfaceMasker(mask_img=decomposition_mask_img).fit()
-    return MultiNiftiMasker(mask_img=img_3d_ones_eye).fit()
+        return MultiSurfaceMasker(
+            mask_img=decomposition_mask_img, standardize="zscore_sample"
+        ).fit()
+    return MultiNiftiMasker(
+        mask_img=img_3d_ones_eye, standardize="zscore_sample"
+    ).fit()
 
 
 def _decomposition_images_surface(
     rng, decomposition_mesh, with_activation
-) -> list[SurfaceImage]:
-    surf_imgs = []
-    for _ in range(N_SUBJECTS):
-        data = {
-            "left": rng.standard_normal(
-                size=(
-                    decomposition_mesh.parts["left"].coordinates.shape[0],
-                    N_SAMPLES,
-                )
-            ),
-            "right": rng.standard_normal(
-                size=(
-                    decomposition_mesh.parts["right"].coordinates.shape[0],
-                    N_SAMPLES,
-                )
-            ),
-        }
-        if with_activation:
-            data["left"][2:4, :] += 10
-            data["right"][2:4, :] += 10
-        surf_imgs.append(SurfaceImage(mesh=decomposition_mesh, data=data))
-
-    return surf_imgs
+) -> list[Nifti1Image | SurfaceImage]:
+    return [
+        _decomposition_img(
+            "surface",
+            rng=rng,
+            mesh=decomposition_mesh,
+            with_activation=with_activation,
+        )
+        for _ in range(N_SUBJECTS)
+    ]
 
 
 def _decomposition_img(
     data_type,
     rng,
-    mesh,
-    shape,
-    affine,
+    mesh=None,
+    shape=None,
+    affine=None,
     with_activation: bool = True,
-) -> Union[SurfaceImage, Nifti1Image]:
+) -> SurfaceImage | Nifti1Image:
     """Return a single image for decomposition."""
     if data_type == "surface":
         data = {
@@ -181,7 +194,7 @@ def decomposition_img(
     shape_3d_large,
     affine_eye,
     with_activation: bool = True,
-) -> Union[SurfaceImage, Nifti1Image]:
+) -> SurfaceImage | Nifti1Image:
     """Return a single image for decomposition."""
     return _decomposition_img(
         data_type,
@@ -201,8 +214,8 @@ def canica_data(
     affine_eye,
     decomposition_mesh,
     data_type: str,
-    n_subjects=N_SUBJECTS,
-) -> Union[list[Nifti1Image], list[SurfaceImage]]:
+    n_subjects: int = N_SUBJECTS,
+) -> list[Nifti1Image] | list[SurfaceImage]:
     """Create a "multi-subject" dataset."""
     if data_type == "nifti":
         return _make_volume_data_from_components(
@@ -214,11 +227,15 @@ def canica_data(
         )
 
     else:
-        # TODO for now we generate random data
-        # rather than data based on actual components.
-        return _decomposition_images_surface(
-            rng, decomposition_mesh, with_activation=True
-        )
+        return [
+            _make_surface_data_from_components(
+                _make_canica_components,
+                decomposition_mesh,
+                rng,
+                n_timepoints=200,
+            )
+            for _ in range(n_subjects)
+        ]
 
 
 @pytest.fixture
@@ -232,36 +249,35 @@ def _make_canica_components(
     if data_type == "nifti":
         return _canica_components_volume(shape_3d_large)
 
-    else:
-        shape = (decomposition_mesh.n_vertices, 1)
+    shape = (decomposition_mesh.n_vertices, 1)
 
-        component1 = np.zeros(shape)
-        component1[:5] = 1
-        component1[5:10] = -1
+    component1 = np.zeros(shape)
+    component1[:5] = 1
+    component1[5:10] = -1
 
-        component2 = np.zeros(shape)
-        component2[:5] = 1
-        component2[5:10] = -1
+    component2 = np.zeros(shape)
+    component2[:5] = 1
+    component2[5:10] = -1
 
-        component3 = np.zeros(shape)
-        component3[-5:] = 1
-        component3[-10:-5] = -1
+    component3 = np.zeros(shape)
+    component3[-5:] = 1
+    component3[-10:-5] = -1
 
-        component4 = np.zeros(shape)
-        component4[-5:] = 1
-        component4[-10:-5] = -1
+    component4 = np.zeros(shape)
+    component4[-5:] = 1
+    component4[-10:-5] = -1
 
-        return np.vstack(
-            (
-                component1.ravel(),
-                component2.ravel(),
-                component3.ravel(),
-                component4.ravel(),
-            )
+    return np.vstack(
+        (
+            component1.ravel(),
+            component2.ravel(),
+            component3.ravel(),
+            component4.ravel(),
         )
+    )
 
 
-def _canica_components_volume(shape):
+def _canica_components_volume(shape) -> np.ndarray:
     """Create 4 volume components."""
     component1 = np.zeros(shape)
     component1[:5, :10] = 1
@@ -289,32 +305,75 @@ def _canica_components_volume(shape):
     )
 
 
+def _make_surface_data_from_components(
+    components: np.ndarray,
+    mesh: PolyMesh,
+    rng,
+    n_timepoints: int = 40,
+    weights=None,
+    baseline: float = 100,
+) -> SurfaceImage:
+    """Create a single surface image suitable for DictLearning.
+
+    Parameters
+    ----------
+    components : ndarray of shape (n_components, n_vertices)
+        Spatial component maps over all vertices (left then right).
+
+    mesh : PolyMesh
+
+    rng : numpy random Generator
+
+    n_timepoints : int
+        Number of timepoints.
+
+    weights : None or numpy array (n_timepoints, components.shape[0])
+              default: None
+    """
+    n_components = components.shape[0]
+    n_left = mesh.parts["left"].coordinates.shape[0]
+
+    if weights is None:
+        weights = rng.normal(size=(n_timepoints, n_components))
+
+    data_all = weights @ components + 0.01 * rng.normal(
+        size=(n_timepoints, components.shape[1])
+    )
+    data_all += baseline
+
+    return SurfaceImage(
+        mesh=mesh,
+        data={
+            "left": data_all[:, :n_left].T,
+            "right": data_all[:, n_left:].T,
+        },
+    )
+
+
 def _make_volume_data_from_components(
     components,
     affine,
     shape,
     rng,
-    n_subjects,
-):
+    n_subjects: int,
+    n_timepoints: int = 40,
+    baseline: float = 100,
+) -> list[Nifti1Image]:
     """Create a "multi-subject" dataset of volume data."""
     background = -0.01 * rng.normal(size=shape) - 2
     background = background[..., np.newaxis]
 
     data = []
 
-    # TODO
-    # changing this value leads makes tests overall faster but makes
-    # test_canica_square_img to fail
-    magic_number = 40
-
     for _ in range(n_subjects):
         this_data = np.dot(
-            rng.normal(size=(magic_number, N_COMPONENTS)), components
+            rng.normal(size=(n_timepoints, N_COMPONENTS)), components
         )
         this_data += 0.01 * rng.normal(size=this_data.shape)
+        this_data += baseline
 
         # Get back into 3D for CanICA
-        this_data = np.reshape(this_data, (magic_number, *shape))
+        this_data = np.reshape(this_data, (n_timepoints, *shape))
         this_data = np.rollaxis(this_data, 0, N_COMPONENTS)
 
         # Put the border of the image to zero, to mimic a brain image
@@ -341,12 +400,45 @@ def canica_components(rng, _make_canica_components) -> np.ndarray:
 
 
 @pytest.fixture
-def canica_data_single_img(canica_data) -> Nifti1Image:
+def canica_data_single_img(canica_data) -> Nifti1Image | SurfaceImage:
     """Create a canonical ICA data for testing purposes."""
     return canica_data[0]
 
 
-def check_decomposition_estimator(estimator, data_type):
+@pytest.fixture
+def canica_img(
+    data_type: str,
+    rng,
+    _make_canica_components: np.ndarray,
+    shape_3d_large,
+    affine_eye,
+    decomposition_mesh,
+) -> Nifti1Image | SurfaceImage:
+    """Return a single image with enough timepoints for DictLearning.
+
+    Unlike ``canica_data``, this fixture uses more timepoints so that
+    SVD-reduced features exceed the default ``alpha=10`` regularization
+    used by :class:`~nilearn.decomposition.DictLearning`.
+    """
+    if data_type == "nifti":
+        return _make_volume_data_from_components(
+            _make_canica_components,
+            affine_eye,
+            shape_3d_large,
+            rng,
+            n_subjects=1,
+            n_timepoints=200,
+        )[0]
+
+    return _make_surface_data_from_components(
+        _make_canica_components,
+        decomposition_mesh,
+        rng,
+        n_timepoints=200,
+    )
+
+
+def check_decomposition_estimator(estimator, data_type) -> None:
     """Run several standard checks on decomposition estimators."""
     assert estimator.mask_img_ == estimator.masker_.mask_img_
     assert estimator.components_.shape[0] == estimator.n_components
@@ -354,7 +446,7 @@ def check_decomposition_estimator(estimator, data_type):
     if data_type == "nifti":
         assert isinstance(estimator.mask_img_, Nifti1Image)
         assert isinstance(estimator.components_img_, Nifti1Image)
-        assert isinstance(estimator.masker_, MultiNiftiMasker)
+        assert isinstance(estimator.masker_, NiftiMasker)
         check_shape = (*estimator.mask_img_.shape, estimator.n_components)
 
     elif data_type == "surface":

@@ -7,6 +7,7 @@ on: [status]
 jobs:
     circleci_artifacts_redirector_job:
         runs-on: ubuntu-latest
+        if: "${{ github.event.context == 'ci/circleci: host_docs' }}"
         name: Run CircleCI artifacts redirector
         permissions:
             statuses: write

@@ -1,15 +1,81 @@
 """Tests for private function \
-   nilearn.plotting.img_plotting.get_colorbar_and_data_ranges.
+   nilearn.plotting.image.img_plotting.get_colorbar_and_data_ranges.
 """
+
+import warnings
+from unittest.mock import patch
 
 import numpy as np
 import pytest
 
-from nilearn.plotting._utils import get_colorbar_and_data_ranges
+from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn.plotting._utils import (
+    get_cbar_ticks,
+    get_colorbar_and_data_ranges,
+    set_mpl_backend,
+)
+
+
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Test requires matplotlib to be installed.",
+)
+@patch("matplotlib.use")
+@patch("matplotlib.get_backend", side_effect=["backend_1", "backend_2"])
+def test_should_raise_warning_if_backend_changes(*_):
+    """Check backend values returned by matplotlib.get_backend are different.
+    Warning should be raised to inform user of the backend switch.
+    """
+    with pytest.warns(UserWarning, match="Backend changed to backend_2..."):
+        set_mpl_backend()
+
+
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Test requires matplotlib to be installed.",
+)
+@patch("matplotlib.use")
+@patch("matplotlib.get_backend", side_effect=["backend_1", "backend_1"])
+def test_should_not_raise_warning_if_backend_is_not_changed(*_):
+    """Check backend values returned by matplotlib.get_backend are identical.
+    Warning should not be raised.
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        set_mpl_backend()
+
+
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Test requires matplotlib to be installed.",
+)
+@patch(
+    "matplotlib.use", side_effect=[Exception("Failed to switch backend"), True]
+)
+def test_should_switch_to_agg_backend_if_current_backend_fails(use_mock):
+    """Check first call to `matplotlib.use` raises an exception,
+    hence the default Agg backend should be triggered.
+    """
+    set_mpl_backend()
+
+    assert use_mock.call_count == 2
+    # Check that the most recent call to `matplotlib.use` has arg `Agg`
+    use_mock.assert_called_with("Agg")
+
+
+@pytest.mark.thread_unsafe
+@patch("matplotlib.__version__", "0.0.0")
+def test_should_raise_import_error_for_version_check(matplotlib_pyplot):  # noqa: ARG001
+    """Check error version mpl."""
+    with pytest.raises(ImportError, match="A matplotlib version of at least"):
+        set_mpl_backend()
 
 
 @pytest.fixture
-def data_pos_neg():
+def data_pos_neg() -> np.ndarray:
     """Fixture for data with both positive and negative values."""
     # min: -0.5, max: 3.0
     return np.array(
@@ -18,21 +84,21 @@ def data_pos_neg():
 
 
 @pytest.fixture
-def data_pos(data_pos_neg):
+def data_pos(data_pos_neg) -> np.ndarray:
     """Fixture for data with only positive values."""
     # min: 0.5, max: 3.0
     return np.abs(data_pos_neg)
 
 
 @pytest.fixture
-def data_neg(data_pos_neg):
+def data_neg(data_pos_neg) -> np.ndarray:
     """Fixture for data with only negative values."""
     # min: -3, max: -0.5
     return -np.abs(data_pos_neg)
 
 
 @pytest.fixture
-def data_masked(data_pos_neg):
+def data_masked(data_pos_neg) -> np.ma.MaskedArray:
     """Fixture for data with masked values."""
     # min: -0.5, max: 1.5
     return np.ma.masked_greater(data_pos_neg, 2.0)
@@ -40,12 +106,14 @@ def data_masked(data_pos_neg):
 
 def test_get_colorbar_and_data_ranges_error():
     """Tests for expected errors in get_colorbar_and_data_ranges."""
+    vmin = 0
+    vmax = 1.0
     # incompatible vmin and vmax if symmetric_cbar is True
-    with pytest.raises(ValueError, match="vmin must be equal to -vmax"):
+    with pytest.warns(UserWarning, match=f"Specified {vmin=} and {vmax=}"):
         get_colorbar_and_data_ranges(
             data_pos_neg,
-            vmin=0,
-            vmax=1.0,
+            vmin=vmin,
+            vmax=vmax,
             symmetric_cbar=True,
         )
 
@@ -205,3 +273,90 @@ def test_get_colorbar_and_data_ranges_force_min_stat_map_value(data_pos_neg):
         symmetric_cbar="auto",
         force_min_stat_map_value=0,
     )
+
+
+@pytest.mark.parametrize(
+    "vmin,vmax,threshold,num_ticks,expected",
+    [
+        (0, 0, None, 5, [0]),
+        (0, 0, 0, 5, [0]),
+        (3, 3, None, 5, [3]),
+        (3, 3, 0, 5, [3]),
+        (-3, -3, None, 5, [-3]),
+        (0, 0, 0.5, 5, [0]),
+        (0, 0, None, 5, [0]),
+        (-5, 5, None, 5, [-5, -2.5, 0, 2.5, 5]),
+        (-5, 5, 0, 5, [-5, -2.5, 0, 2.5, 5]),
+        (-3, 5, None, 5, [-3, -1, 0, 1, 3, 5]),
+        (-3, 5, 0, 5, [-3, -1, 0, 1, 3, 5]),
+        (-5, 3, None, 5, [-5, -3, -1, 0, 1, 3]),
+        (0, 3, None, 5, [0, 0.75, 1.5, 2.2, 3]),
+        (-3, 0, None, 5, [-3, -2.2, -1.5, -0.75, 0]),
+        (3, 3, 0.5, 5, [0.5, 3]),
+        (-3, -3, 0.5, 5, [-3, -0.5]),
+        (0, 3, 0.5, 5, [0, 0.5, 1.5, 2.2, 3]),
+        (-7.9, 0, 3, 5, [-7.9, -5.9, -4, -3, 0]),
+        (0, 10, 0.5, 5, [0, 0.5, 2.5, 5, 7.5, 10]),
+        (-3, 0, 0.5, 5, [-3, -2.2, -1.5, -0.5, 0]),
+        (-10, 0, 0.5, 5, [-10, -7.5, -5, -2.5, -0.5, 0]),
+        (-3, 5, 0.5, 5, [-3, -0.5, 0.5, 3, 5]),
+        (-3, 5, 1e-5, 5, [-3, -1, 0, 1, 3, 5]),
+        (-3, 5, 0.5, 7, [-3, -1.7, -0.5, 0, 0.5, 1, 2.3, 3.7, 5]),
+        (-3, 5, 1.5, 7, [-3, -1.5, 0, 1.5, 2.3, 3.7, 5]),
+        (-5, 10, 0.5, 5, [-5, -0.5, 0.5, 2.5, 6.2, 10]),
+        (-5, 10, 2.5, 5, [-5, -2.5, 0, 2.5, 6.25, 10]),
+        (-5, 3, 0.5, 5, [-5, -3, -0.5, 0.5, 3]),
+        (-5, 3, 0.5, 7, [-5, -3.7, -2.3, -1, -0.5, 0, 0.5, 1.7, 3]),
+        (-3, 4, 5, 5, [-5, -3, 0, 4, 5]),
+        (-3, 5, 3.5, 5, [-3.5, -3, 0, 3.5, 5]),
+        (-8, 8, 6, 5, [-8, -6, 0, 6, 8]),
+        (-5, 5, 2.75, 5, [-5, -2.8, 0, 2.8, 5]),
+        (-5, 5, 0.5, 5, [-5, -2.5, -0.5, 0.5, 2.5, 5]),
+        (-5, 5, 2.5, 6, [-5, -2.5, 0, 2.5, 5]),
+        (-10, 10, 0.1, 5, [-10, -5, -0.1, 0.1, 5, 10]),
+        (-10, 10, 1.3, 5, [-10, -5, -1.3, 1.3, 5, 10]),
+        (-10, 10, 2.5, 5, [-10, -5, -2.5, 0, 2.5, 5, 10]),
+        (-10, 10, 3.5, 5, [-10, -3.5, 0, 3.5, 10]),
+        (-10, 10, 7.5, 5, [-10, -7.5, 0, 7.5, 10]),
+    ],
+)
+def test_get_cbar_ticks_threshold(vmin, vmax, threshold, num_ticks, expected):
+    """Test nilearn.plotting._utils.get_cbar_ticks."""
+    ticks = get_cbar_ticks(vmin, vmax, threshold, num_ticks)
+    assert np.allclose(ticks, expected, rtol=1e-02)
+
+
+@pytest.mark.parametrize(
+    "vmin,vmax,cbar_tick_format,expected",
+    [
+        (0, 0, "%i", [0]),
+        (0, 3, "%i", [0, 1, 2, 3]),
+        (0, 4, "%i", [0, 1, 2, 3, 4]),
+        (1, 5, "%i", [1, 2, 3, 4, 5]),
+        (0, 5, "%i", [0, 1, 2, 3, 5]),
+        (0, 10, "%i", [0, 2, 5, 7, 10]),
+        (0, 0, "%.1f", [0]),
+        (0, 1, "%.1f", [0, 0.2, 0.5, 0.8, 1]),
+        (1, 2, "%.1f", [1, 1.2, 1.5, 1.8, 2]),
+        (1.1, 1.2, "%.1f", [1.1, 1.2]),
+        (0, np.nextafter(0, 1), "%.1f", [0.0e000, 5.0e-324]),
+    ],
+)
+def test_get_cbar_ticks_int_tick_format(
+    vmin, vmax, cbar_tick_format, expected
+):
+    """Test nilearn.plotting._utils.get_cbar_ticks for integer tick format."""
+    ticks = get_cbar_ticks(vmin, vmax, tick_format=cbar_tick_format)
+    assert np.allclose(ticks, expected, rtol=1e-02)
+
+
+def test_get_cbar_ticks_int_threshold_float():
+    """Test nilearn.plotting._utils.get_cbar_ticks for when integer tick
+    format with threshold of type float specified.
+    """
+    with pytest.warns(
+        UserWarning, match="You provided a non integer threshold"
+    ):
+        get_cbar_ticks(
+            vmin=3, vmax=5, threshold=2.4, n_ticks=5, tick_format="%i"
+        )

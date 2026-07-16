@@ -8,7 +8,7 @@ Second level models
 
    Second level models in Nilearn are used to perform group-level analyses on :term:`fMRI` data. Once individual
    subjects have been processed in a common space (e.g. :term:`MNI`, Talairach, or subject average), the data can
-   be grouped and statistical tests  performed to make broader inferences on :term:`fMRI` activity. Some common
+   be grouped and statistical tests performed to make broader inferences on :term:`fMRI` activity. Some common
    second level models are one-sample (unpaired or paired) and two-sample t-tests.
 
 

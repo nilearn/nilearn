@@ -50,7 +50,7 @@ cmaps = [
     plotting.cm.black_green,
     plotting.cm.black_pink,
 ]
-for index, cmap in zip([5, 6, 3], cmaps):
+for index, cmap in zip([5, 6, 3], cmaps, strict=False):
     display.add_overlay(image.index_img(atlas_filename, index), cmap=cmap)
 
 plotting.show()

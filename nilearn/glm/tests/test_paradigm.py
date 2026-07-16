@@ -17,8 +17,7 @@ from nilearn.glm.first_level.experimental_paradigm import (
     check_events,
     handle_modulation_of_duplicate_events,
 )
-
-from ._testing import (
+from nilearn.glm.tests._testing import (
     block_paradigm,
     design_with_nan_durations,
     design_with_nan_onsets,
@@ -30,6 +29,7 @@ from ._testing import (
 
 
 def test_check_events():
+    """Test that check_events sets trial_type and modulation correctly."""
     events = basic_paradigm()
     events_copy = check_events(events)
 
@@ -55,22 +55,20 @@ def test_check_events_errors():
     events = basic_paradigm()
     # Errors checkins
     # Wrong type
-    with pytest.raises(
-        TypeError, match="Events should be a Pandas DataFrame."
-    ):
+    with pytest.raises(TypeError, match="must be of type"):
         check_events([])
 
     # Missing onset
     missing_onset = events.drop(columns=["onset"])
     with pytest.raises(
-        ValueError, match="The provided events data has no onset column."
+        ValueError, match=r"The provided events data has no onset column."
     ):
         check_events(missing_onset)
 
     # Missing duration
     missing_duration = events.drop(columns=["duration"])
     with pytest.raises(
-        ValueError, match="The provided events data has no duration column."
+        ValueError, match=r"The provided events data has no duration column."
     ):
         check_events(missing_duration)
 
@@ -104,7 +102,7 @@ def test_check_events_warnings():
             "The following unexpected columns "
             "in events data will be ignored: foo"
         ),
-    ):
+    ) and pytest.warns(UserWarning, match="'trial_type' column not found"):
         events_copy2 = check_events(events)
 
     assert_array_equal(events_copy["trial_type"], events_copy2["trial_type"])

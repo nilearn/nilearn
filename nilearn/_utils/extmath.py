@@ -5,7 +5,7 @@ import numpy as np
 from nilearn._utils import logger
 
 
-def fast_abs_percentile(data, percentile=80):
+def fast_abs_percentile(data: np.ndarray, percentile=80) -> np.ndarray:
     """Implement a fast version of the percentile of the absolute value.
 
     Parameters
@@ -38,7 +38,7 @@ def fast_abs_percentile(data, percentile=80):
     return data[index]
 
 
-def is_spd(M, decimal=15, verbose=1):
+def is_spd(M: np.ndarray, decimal: int = 15) -> bool:
     """Assert that input matrix is symmetric positive definite.
 
     M must be symmetric down to specified decimal places.
@@ -52,8 +52,6 @@ def is_spd(M, decimal=15, verbose=1):
     decimal : int, default=15
         Decimal.
 
-    %(verbose)s
-
     Returns
     -------
     answer : boolean
@@ -61,7 +59,7 @@ def is_spd(M, decimal=15, verbose=1):
 
     """
     if not np.allclose(M, M.T, atol=0, rtol=10**-decimal):
-        logger.log(f"matrix not symmetric to {decimal:d} decimals", verbose)
+        logger.log(f"matrix not symmetric to {decimal:d} decimals", verbose=1)
         return False
 
     eigvalsh = np.linalg.eigvalsh(M)
@@ -69,7 +67,8 @@ def is_spd(M, decimal=15, verbose=1):
 
     if not ispd:
         logger.log(
-            f"matrix has a negative eigenvalue: {eigvalsh.min():.3f}", verbose
+            f"matrix has a negative eigenvalue: {eigvalsh.min():.3f}",
+            verbose=1,
         )
 
     return ispd

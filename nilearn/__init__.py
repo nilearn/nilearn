@@ -24,6 +24,7 @@ datasets                --- Utilities to download NeuroImaging datasets
 decoding                --- Decoding tools and algorithms
 decomposition           --- Includes a subject level variant of the ICA
                             algorithm called Canonical ICA
+exceptions              --- Exceptions and warnings
 glm                     --- Analyzing fMRI data using GLMs
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
@@ -41,10 +42,11 @@ reporting               --- Implements functions useful
                             to report analysis results
 signal                  --- Set of preprocessing functions for time series
 surface                 --- Functions and classes to work with surfaces
+utils                   --- Utilities
 """
 
 try:
-    from ._version import __version__
+    from nilearn._version import __version__
 except ImportError:
     __version__ = "0+unknown"
 
@@ -65,6 +67,7 @@ __all__ = [
     "datasets",
     "decoding",
     "decomposition",
+    "exceptions",
     "glm",
     "image",
     "interfaces",
@@ -76,4 +79,5 @@ __all__ = [
     "reporting",
     "signal",
     "surface",
+    "utils",
 ]

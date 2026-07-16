@@ -8,10 +8,12 @@ import requests
 
 from nilearn import image
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn.datasets.tests import _testing
+from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
+from nilearn.datasets.tests.conftest import Response
 
 
 def test_sender_key_order(request_mocker):
+    """Test that the most recently added url_mapping entry takes priority."""
     request_mocker.url_mapping["*message.txt"] = "message"
     resp = requests.get("https://example.org/message.txt")
 
@@ -30,6 +32,7 @@ def test_sender_key_order(request_mocker):
 
 
 def test_loading_from_archive_contents(tmp_path):
+    """Test that mocked zip/tar responses extract to the expected files."""
     expected_contents = sorted(
         [
             Path("README.txt"),
@@ -72,6 +75,7 @@ def test_loading_from_archive_contents(tmp_path):
 
 
 def test_sender_regex(request_mocker):
+    """Test url_mapping with regex patterns and callables as values."""
     url = "https://example.org/info?key=value&name=nilearn"
     pattern = re.compile(
         r".*example.org/(?P<section>.*)\?.*name=(?P<name>[^&]+)"
@@ -99,6 +103,7 @@ def test_sender_regex(request_mocker):
 
 
 def test_sender_status(request_mocker):
+    """Test url_mapping with plain integer status codes as values."""
     request_mocker.url_mapping["*good"] = 200
     request_mocker.url_mapping["*forbidden"] = 403
     resp = requests.get("https://example.org/good")
@@ -120,12 +125,14 @@ class _MyError(Exception):
 
 
 def test_sender_exception(request_mocker):
+    """Test that an exception in url_mapping is raised on request."""
     request_mocker.url_mapping["*bad"] = _MyError("abc")
     with pytest.raises(_MyError, match="abc"):
         requests.get("ftp:example.org/bad")
 
 
 def test_sender_img(request_mocker, tmp_path):
+    """Test url_mapping with a nifti image as value."""
     request_mocker.url_mapping["*"] = generate_fake_fmri()[0]
     resp = requests.get("ftp:example.org/download")
     file_path = tmp_path / "img.nii.gz"
@@ -135,16 +142,17 @@ def test_sender_img(request_mocker, tmp_path):
     assert img.shape == (10, 11, 12, 17)
 
 
-class _MyResponse(_testing.Response):
+class _MyResponse(Response):
     def json(self):
         return '{"count": 1}'
 
 
 def test_sender_response(request_mocker):
+    """Test url_mapping with Response instances and callables as values."""
     request_mocker.url_mapping["*example.org/a"] = _MyResponse("", "")
 
     def f(match, request):  # noqa: ARG001
-        resp = _testing.Response(b"hello", request.url)
+        resp = Response(b"hello", request.url)
         resp.headers["cookie"] = "abc"
         return resp
 
@@ -159,6 +167,7 @@ def test_sender_response(request_mocker):
 
 
 def test_sender_path(request_mocker, tmp_path):
+    """Test url_mapping with a path or path string as value."""
     file_path = tmp_path / "readme.txt"
     with file_path.open("w") as f:
         f.write("hello")
@@ -175,12 +184,14 @@ def test_sender_path(request_mocker, tmp_path):
 
 
 def test_sender_bad_input(request_mocker):
+    """Test that an unsupported url_mapping value type raises TypeError."""
     request_mocker.url_mapping["*"] = 2.5
     with pytest.raises(TypeError):
         requests.get("https://example.org")
 
 
 def test_dict_to_archive(tmp_path):
+    """Test that dict_to_archive and list_to_archive build valid archives."""
     subdir = tmp_path / "tmp"
     subdir.mkdir()
     (subdir / "labels.csv").touch()
@@ -194,7 +205,7 @@ def test_dict_to_archive(tmp_path):
             length=1, byteorder="big", signed=False
         ),
     }
-    targz = _testing.dict_to_archive(archive_spec)
+    targz = dict_to_archive(archive_spec)
     extract_dir = tmp_path / "extract"
     extract_dir.mkdir()
     archive_path = tmp_path / "archive"
@@ -210,7 +221,7 @@ def test_dict_to_archive(tmp_path):
     with (extract_dir / "empty_data" / "labels.csv").open() as f:
         assert f.read() == ""
 
-    zip_archive = _testing.dict_to_archive(
+    zip_archive = dict_to_archive(
         {"readme.txt": "hello", "archive": targz}, "zip"
     )
     with archive_path.open("wb") as f:
@@ -222,7 +233,7 @@ def test_dict_to_archive(tmp_path):
     ):
         assert f.read() == targz
 
-    from_list = _testing.list_to_archive(archive_spec.keys())
+    from_list = list_to_archive(archive_spec.keys())
     with archive_path.open("wb") as f:
         f.write(from_list)
 

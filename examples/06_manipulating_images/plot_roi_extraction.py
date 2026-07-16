@@ -23,8 +23,6 @@ visualization & results checking be possible at each step.
     for automatic ROI extraction of brain connected networks
     given in 4D image.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -59,7 +57,7 @@ haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print(
-    "First subject anatomical nifti image (3D) located is "
+    "First subject anatomical nifti image (3D) is located "
     f"at: {haxby_dataset.anat[0]}"
 )
 print(
@@ -112,7 +110,7 @@ from nilearn.plotting import plot_epi
 
 # First, compute the voxel-wise mean of smooth EPI image
 # (first argument) using image processing module `image`
-mean_img = image.mean_img(fmri_img, copy_header=True)
+mean_img = image.mean_img(fmri_img)
 # Second, we visualize the mean image with coordinates positioned manually
 plot_epi(mean_img, title="Smoothed mean EPI", cut_coords=cut_coords)
 
@@ -258,7 +256,7 @@ from nilearn.plotting import plot_roi, show
 # values in data type boolean should be converted to int data type at the same
 # time. Otherwise, an error will be raised
 bin_p_values_and_vt_img = new_img_like(
-    fmri_img, bin_p_values_and_vt.astype(int)
+    fmri_img, bin_p_values_and_vt.astype(np.int32)
 )
 # Visualizing goes here with background as computed mean of functional images
 plot_roi(
@@ -288,7 +286,7 @@ dil_bin_p_values_and_vt = binary_dilation(bin_p_values_and_vt)
 # In all new image like, reference image is the same but second argument
 # varies with data specific
 dil_bin_p_values_and_vt_img = new_img_like(
-    fmri_img, dil_bin_p_values_and_vt.astype(int)
+    fmri_img, dil_bin_p_values_and_vt.astype(np.int32)
 )
 # Visualization goes here without 'L', 'R' annotation and coordinates being the
 # same
@@ -313,9 +311,9 @@ from scipy.ndimage import label
 
 labels, _ = label(dil_bin_p_values_and_vt)
 # we take first roi data with labels assigned as integer 1
-first_roi_data = (labels == 5).astype(int)
+first_roi_data = (labels == 5).astype(np.int32)
 # Similarly, second roi data is assigned as integer 2
-second_roi_data = (labels == 3).astype(int)
+second_roi_data = (labels == 3).astype(np.int32)
 # Visualizing the connected components
 # First, we create a Nifti image type from first roi data in a array
 first_roi_img = new_img_like(fmri_img, first_roi_data)
@@ -348,7 +346,11 @@ labels_img = new_img_like(fmri_img, labels)
 # for all the data used here, time series signal processing parameters
 # standardize and detrend are set to False
 masker = NiftiLabelsMasker(
-    labels_img, resampling_target=None, standardize=False, detrend=False
+    labels_img,
+    resampling_target=None,
+    standardize=False,
+    detrend=False,
+    verbose=1,
 )
 
 # %%

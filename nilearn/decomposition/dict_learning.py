@@ -6,16 +6,24 @@ constitutes output maps
 """
 
 import warnings
+from typing import get_args
 
 import numpy as np
 from sklearn.decomposition import dict_learning_online
 from sklearn.linear_model import Ridge
 
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import transfer_deprecated_param_vals
-
-from ._base import _BaseDecomposition
-from .canica import CanICA
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    sanitize_verbose,
+)
+from nilearn.decomposition._base import _BaseDecomposition
+from nilearn.decomposition.canica import CanICA
+from nilearn.maskers import MultiNiftiMasker, MultiSurfaceMasker
+from nilearn.nilearn_typing import NiimgLike
+from nilearn.surface import SurfaceImage
 
 # check_input=False is an optimization available in sklearn.
 sparse_encode_args = {"check_input": False}
@@ -41,23 +49,12 @@ class DictLearning(_BaseDecomposition):
 
     See :footcite:t:`Mensch2016`.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
-    mask : Niimg-like object, :obj:`~nilearn.maskers.MultiNiftiMasker` or \
-           :obj:`~nilearn.surface.SurfaceImage` or \
-           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given, for Nifti images,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters; for surface images, all the vertices will be used.
-
     n_components : :obj:`int`, default=20
         Number of components to extract.
-
-    batch_size : :obj:`int`, default=20
-        The number of samples to take in each batch.
 
     n_epochs : :obj:`float`, default=1
         Number of epochs the algorithm should run on the data.
@@ -65,16 +62,21 @@ class DictLearning(_BaseDecomposition):
     alpha : :obj:`float`, default=10
         Sparsity controlling parameter.
 
-    dict_init : Niimg-like object or \
-           :obj:`~nilearn.surface.SurfaceImage`, optional
-        Initial estimation of dictionary maps. Would be computed from CanICA if
-        not provided.
-
     reduction_ratio : 'auto' or :obj:`float` between 0. and 1., default='auto'
         - Between 0. or 1. : controls data reduction in the temporal domain.
           1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per
           reduced session to be n_components.
+
+    dict_init : Niimg-like object or \
+           :obj:`~nilearn.surface.SurfaceImage` or None, default=None
+        Initial estimation of dictionary maps. Would be computed from CanICA if
+        not provided.
+
+    %(random_state)s
+
+    batch_size : :obj:`int`, default=20
+        The number of samples to take in each batch.
 
     method : {'cd', 'lars'}, default='cd'
         Coding method used by sklearn backend. Below are the possible values.
@@ -84,28 +86,16 @@ class DictLearning(_BaseDecomposition):
         Lasso solution (linear_model.Lasso). Lars will be faster if
         the estimated components are sparse.
 
-    %(random_state)s
+    %(mask_decomposition)s
 
     %(smoothing_fwhm)s
-        Default=4mm.
+        default=4mm.
 
-    standardize : :obj:`bool`, default=True
-        If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
+    %(standardize_true)s
 
-    detrend : :obj:`bool`, default=True
-        If detrend is True, the time-series will be detrended before
-        components extraction.
+    %(standardize_confounds)s
 
-    %(target_affine)s
-
-        .. note::
-            This parameter is passed to :func:`nilearn.image.resample_img`.
-
-    %(target_shape)s
-
-        .. note::
-            This parameter is passed to :func:`nilearn.image.resample_img`.
+    %(detrend)s
 
     %(low_pass)s
 
@@ -122,32 +112,52 @@ class DictLearning(_BaseDecomposition):
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
+
+    %(target_affine)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(target_shape)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
     %(mask_strategy)s
 
-        Default='epi'.
+        default='epi'.
 
         .. note::
             These strategies are only relevant for Nifti images and the
             parameter is ignored for SurfaceImage objects.
 
-    mask_args : :obj:`dict`, optional
+    mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    %(memory)s
-
-    %(memory_level)s
-
     %(n_jobs)s
 
     %(verbose0)s
 
-    %(base_decomposition_attributes)s
+    %(memory)s
 
-    %(multi_pca_attributes)s
+    %(memory_level)s
+
+    %(base_decomposition_fit_attributes)s
+
+    %(multi_pca_fit_attributes)s
+
+    components_init_ : 2D numpy array (n_components x n-voxels or n-vertices)
+        Array of components used for initialization.
+
+    loadings_init_ : 2D numpy array
+        Initial loadings.
 
     References
     ----------
@@ -168,10 +178,12 @@ class DictLearning(_BaseDecomposition):
         mask=None,
         smoothing_fwhm=4,
         standardize=True,
+        standardize_confounds=True,
         detrend=True,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -187,10 +199,12 @@ class DictLearning(_BaseDecomposition):
             mask=mask,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
+            standardize_confounds=standardize_confounds,
             detrend=detrend,
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             target_affine=target_affine,
             target_shape=target_shape,
             mask_strategy=mask_strategy,
@@ -255,9 +269,11 @@ class DictLearning(_BaseDecomposition):
 
         _, n_features = data.shape
 
+        verbose = sanitize_verbose(self.verbose)
+
         logger.log(
             "Computing initial loadings",
-            verbose=self.verbose,
+            verbose=verbose,
         )
         self._init_loadings(data)
 
@@ -267,7 +283,7 @@ class DictLearning(_BaseDecomposition):
 
         logger.log(
             " Learning dictionary",
-            verbose=self.verbose,
+            verbose=verbose,
         )
 
         kwargs = transfer_deprecated_param_vals(
@@ -280,7 +296,7 @@ class DictLearning(_BaseDecomposition):
             batch_size=self.batch_size,
             method=self.method,
             dict_init=dict_init,
-            verbose=max(0, self.verbose - 1),
+            verbose=max(0, verbose - 1),
             random_state=self.random_state,
             return_code=True,
             shuffle=True,
@@ -305,3 +321,16 @@ class DictLearning(_BaseDecomposition):
             )
 
         return self
+
+    def _validate_mask(self):
+        if self.mask is not None:
+            check_is_of_allowed_type(
+                self.mask,
+                (
+                    MultiSurfaceMasker,
+                    SurfaceImage,
+                    MultiNiftiMasker,
+                    *get_args(NiimgLike),
+                ),
+                "mask",
+            )

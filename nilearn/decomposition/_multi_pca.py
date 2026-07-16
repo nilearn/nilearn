@@ -6,9 +6,8 @@ This is a good initialization method for ICA.
 import numpy as np
 from sklearn.utils.extmath import randomized_svd
 
-from nilearn._utils import fill_doc
-
-from ._base import _BaseDecomposition
+from nilearn._utils.docs import fill_doc
+from nilearn.decomposition._base import _BaseDecomposition
 
 
 @fill_doc
@@ -32,32 +31,23 @@ class _MultiPCA(_BaseDecomposition):
 
     %(smoothing_fwhm)s
 
-    mask : Niimg-like object, :obj:`~nilearn.maskers.NiftiMasker` or \
-          :obj:`~nilearn.maskers.MultiNiftiMasker` or \
-           :obj:`~nilearn.surface.SurfaceImage` or \
-           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given, for Nifti images,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters; for surface images, all the vertices will be used.
+    %(mask_decomposition)s
 
     %(mask_strategy)s
-        Default='epi'.
+        default='epi'.
         .. note::
 
           These strategies are only relevant for Nifti images and the parameter
           is ignored for SurfaceImage objects.
 
-    mask_args : dict, optional
+    mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    standardize : boolean, default=False
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+    %(standardize_false)s
 
     standardize_confounds : boolean, default=True
         If standardize_confounds is True, the confounds are z-scored:
@@ -92,6 +82,10 @@ class _MultiPCA(_BaseDecomposition):
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
+
     memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
         By default, no caching is done.
@@ -108,9 +102,9 @@ class _MultiPCA(_BaseDecomposition):
 
     %(verbose0)s
 
-    %(base_decomposition_attributes)s
+    %(base_decomposition_fit_attributes)s
 
-    %(multi_pca_attributes)s
+    %(multi_pca_fit_attributes)s
 
     """
 
@@ -127,6 +121,7 @@ class _MultiPCA(_BaseDecomposition):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -147,6 +142,7 @@ class _MultiPCA(_BaseDecomposition):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             target_affine=target_affine,
             target_shape=target_shape,
             mask_strategy=mask_strategy,
@@ -161,6 +157,8 @@ class _MultiPCA(_BaseDecomposition):
 
     def _raw_fit(self, data):
         """Process unmasked data directly."""
+        self._fit_cache()
+
         if self.do_cca:
             S = np.sqrt(np.sum(data**2, axis=1))
             S[S == 0] = 1

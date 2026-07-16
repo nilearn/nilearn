@@ -17,6 +17,9 @@ Functions
    :template: function.rst
 
    binarize_img
+   check_niimg
+   check_niimg_3d
+   check_niimg_4d
    clean_img
    concat_imgs
    coord_transform

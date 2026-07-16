@@ -14,15 +14,14 @@ import numpy as np
 import pytest
 import requests
 
-from nilearn.datasets import _utils, utils
-from nilearn.datasets.tests._testing import Response
+from nilearn.datasets import _utils
+from nilearn.datasets.tests.conftest import Response
 
 datadir = _utils.PACKAGE_DIRECTORY / "data"
 
 DATASET_NAMES = {
     "ABIDE_pcp",
     "adhd",
-    "bids_langloc",
     "brainomics_localizer",
     "development_fmri",
     "dosenbach_2010",
@@ -148,6 +147,7 @@ def test_get_dataset_dir_write_access(tmp_path):
 
     no_write = tmp_path / "no_write"
     no_write.mkdir(parents=True)
+    no_write.touch("dummy_data.txt")
     no_write.chmod(0o400)
 
     expected_base_dir = tmp_path / "nilearn_shared_data"
@@ -169,7 +169,8 @@ def test_get_dataset_dir_symlink(tmp_path):
     expected_linked_dir = tmp_path / "linked"
     expected_linked_dir.mkdir(parents=True)
     expected_base_dir = tmp_path / "env_data"
-    expected_base_dir.mkdir()
+    expected_base_dir.mkdir(parents=True)
+    expected_base_dir.touch("dummy_data.txt")
     symlink_dir = expected_base_dir / "test"
     symlink_dir.symlink_to(expected_linked_dir)
 
@@ -209,17 +210,29 @@ def test_read_md5_sum_file(tmp_path):
     assert h["/tmp/test"] == "20861c8c3fe177da19a7e9539a5dbac"
 
 
-def test_tree(tmp_path):
-    """Tests nilearn.dataset._utils.tree."""
+@pytest.fixture
+def dir1(tmp_path) -> Path:
+    """Return a temporary 'dir1' directory."""
     dir1 = tmp_path / "dir1"
+    dir1.mkdir()
+    return dir1
+
+
+@pytest.fixture
+def dir2(tmp_path) -> Path:
+    """Return a temporary 'dir2' directory."""
+    dir2 = tmp_path / "dir2"
+    dir2.mkdir()
+    return dir2
+
+
+def test_tree(dir1, dir2, tmp_path):
+    """Tests nilearn.dataset._utils.tree."""
     dir11 = dir1 / "dir11"
     dir12 = dir1 / "dir12"
-    dir2 = tmp_path / "dir2"
 
-    dir1.mkdir()
     dir11.mkdir()
     dir12.mkdir()
-    dir2.mkdir()
 
     (tmp_path / "file1").touch()
     (tmp_path / "file2").touch()
@@ -245,7 +258,22 @@ def test_tree(tmp_path):
     assert tree_[2] == str(tmp_path / "file1")
     assert tree_[3] == str(tmp_path / "file2")
 
-    # test for dictionary return value
+
+def test_tree_dictionary(dir1, dir2, tmp_path):
+    """Tests nilearn.dataset._utils.tree with dictionary return value."""
+    dir11 = dir1 / "dir11"
+    dir12 = dir1 / "dir12"
+
+    dir11.mkdir()
+    dir12.mkdir()
+
+    (tmp_path / "file1").touch()
+    (tmp_path / "file2").touch()
+    (dir1 / "file11").touch()
+    (dir1 / "file12").touch()
+    (dir11 / "file111").touch()
+    (dir2 / "file21").touch()
+
     tree_ = _utils.tree(tmp_path, dictionary=True)
 
     # Check the tree
@@ -261,18 +289,14 @@ def test_tree(tmp_path):
     assert tree_["."] == [str(tmp_path / "file1"), str(tmp_path / "file2")]
 
 
-def test_movetree(tmp_path):
+def test_movetree(dir1, dir2):
     """Tests nilearn.dataset._utils.movetree."""
-    dir1 = tmp_path / "dir1"
     dir111 = dir1 / "dir11"
     dir112 = dir1 / "dir12"
-    dir2 = tmp_path / "dir2"
     dir212 = dir2 / "dir12"
 
-    dir1.mkdir()
     dir111.mkdir()
     dir112.mkdir()
-    dir2.mkdir()
     dir212.mkdir()
 
     (dir1 / "file11").touch()
@@ -283,23 +307,29 @@ def test_movetree(tmp_path):
 
     _utils.movetree(dir1, dir2)
 
-    assert not dir111.exists()
-    assert not dir112.exists()
-    assert not (dir1 / "file11").exists()
-    assert not (dir1 / "file12").exists()
-    assert not (dir111 / "file1111").exists()
-    assert not (dir112 / "file1121").exists()
+    for d in [
+        dir111,
+        dir112,
+        dir1 / "file11",
+        dir1 / "file12",
+        dir111 / "file1111",
+        dir112 / "file1121",
+    ]:
+        assert not d.exists()
 
     dir211 = dir2 / "dir11"
     dir212 = dir2 / "dir12"
 
-    assert dir211.exists()
-    assert dir212.exists()
-    assert (dir2 / "file21").exists()
-    assert (dir2 / "file11").exists()
-    assert (dir2 / "file12").exists()
-    assert (dir211 / "file1111").exists()
-    assert (dir212 / "file1121").exists()
+    for d in [
+        dir211,
+        dir212,
+        dir2 / "file21",
+        dir2 / "file11",
+        dir2 / "file12",
+        dir211 / "file1111",
+        dir212 / "file1121",
+    ]:
+        assert d.exists()
 
 
 def test_filter_columns():
@@ -310,7 +340,8 @@ def test_filter_columns():
     value2 = strings[value1 % 3]
 
     values = np.asarray(
-        list(zip(value1, value2)), dtype=[("INT", int), ("STR", "S1")]
+        list(zip(value1, value2, strict=False)),
+        dtype=[("INT", int), ("STR", "S1")],
     )
 
     f = _utils.filter_columns(values, {"INT": (23, 46)})
@@ -323,7 +354,8 @@ def test_filter_columns():
 
     value1 = value1 % 2
     values = np.asarray(
-        list(zip(value1, value2)), dtype=[("INT", int), ("STR", b"S1")]
+        list(zip(value1, value2, strict=False)),
+        dtype=[("INT", int), ("STR", b"S1")],
     )
 
     # No filter
@@ -455,9 +487,7 @@ def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
 
     request_mocker.url_mapping[url] = get_response
 
-    _utils.fetch_single_file(
-        url=url, data_dir=tmp_path, verbose=1, resume=True
-    )
+    _utils.fetch_single_file(url=url, data_dir=tmp_path, resume=True)
 
     assert file_full.exists()
     assert file_full.read_text() == "Dummy content"  # not overwritten
@@ -487,9 +517,7 @@ def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
     # the default Response from the mocker does not handle Range requests
     request_mocker.url_mapping[url] = "dummy content"
 
-    _utils.fetch_single_file(
-        url=url, data_dir=tmp_path, verbose=1, resume=True
-    )
+    _utils.fetch_single_file(url=url, data_dir=tmp_path, resume=True)
 
     assert (
         "Resuming failed, try to download the whole file."
@@ -619,15 +647,3 @@ def test_naive_ftp_adapter():
         resp = sender.send(
             requests.Request("GET", "ftp://example.com").prepare()
         )
-
-
-def test_load_sample_motor_activation_image():
-    """Test deprecation utils.load_sample_motor_activation_image.
-
-    Remove when when version >= 0.13.
-    """
-    with pytest.warns(
-        DeprecationWarning,
-        match="Please import this function from 'nilearn.datasets.func'",
-    ):
-        utils.load_sample_motor_activation_image()

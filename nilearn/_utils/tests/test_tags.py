@@ -1,17 +1,14 @@
 """Check Nilearn estimators tags."""
 
-from sklearn.base import BaseEstimator
+from nilearn._base import NilearnBaseEstimator
+from nilearn._utils.versions import SKLEARN_LT_1_6
 
-from nilearn._utils.tags import SKLEARN_LT_1_6
 
-
-class NilearnEstimator(BaseEstimator):
+class NilearnEstimator(NilearnBaseEstimator):
     """Dummy estimator that takes surface image but not nifti as inputs."""
 
     def __sklearn_tags__(self):
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 

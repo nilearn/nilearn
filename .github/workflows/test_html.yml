@@ -1,0 +1,91 @@
+---
+# Test that HTML output stay visually constant.
+#
+# - HTML figures and reports are generated either via
+#   ``doc/visual_testing/reporter_visual_inspection_suite.py`` or
+#   ``test/js/generate_html.py``
+# - Javascript tests are run to open the HTML documents,
+#   take a screenshot of it, and compare it to a reference screenshot
+#
+# Most of this is handled via tox: ``tox run -e test_html``
+#
+# Screenshots (reference, current and their difference) are uploaded
+# at the end of the workflow.
+#
+###
+name: test html output
+
+on:
+    push:
+        branches:
+        -   main
+        paths:
+        -   nilearn/**/*
+        -   tox.ini
+        -   pyproject.toml
+        -   .github/workflows/test_html.yml
+    pull_request:
+        branches:
+        -   '*'
+        paths:
+        -   nilearn/**/*
+        -   tox.ini
+        -   pyproject.toml
+        -   .github/workflows/test_html.yml
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+# Force to use color
+env:
+    FORCE_COLOR: true
+      # Must match the path used to restore the "Get cache from a previous
+      # doc build" step below, otherwise the restored data is never found by
+      # nilearn's fetchers (which default to ~/nilearn_data) and everything
+      # gets re-downloaded from the network on every run regardless of
+      # whether the cache was actually restored.
+    NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
+
+jobs:
+
+    test_js:
+
+        name: Test HTML output
+
+        runs-on: ubuntu-latest
+
+        steps:
+        -   uses: actions/checkout@v7
+
+        -   uses: actions/setup-node@v6
+            with:
+                node-version: 24
+
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v7
+            with:
+                python-version: '3.10'
+
+        -   name: Key for cache based on month number
+            run: date +%m > month_num;
+
+        -   name: Get cache from a previous doc build
+            uses: actions/cache/restore@v6
+            with:
+                path: nilearn_data
+                key: data_cache-DocumentationBuilder_month-${{ hashFiles('month_num') }}
+
+        -   name: Install tox
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+
+        -   name: Run test on html output
+            run: tox run -e test_html
+
+        -   name: Upload reference, current and diff images from test
+            if: success() || failure()
+            uses: actions/upload-artifact@v7
+            with:
+                name: image
+                path: tests/js/**/*.png

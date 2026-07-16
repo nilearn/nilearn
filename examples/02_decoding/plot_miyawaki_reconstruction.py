@@ -15,8 +15,6 @@ a multiscale prediction on the images seen by the subject.
     For an encoding approach for the same dataset, see
     :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -60,7 +58,11 @@ t0 = time.time()
 
 # Load and mask fMRI data
 masker = MultiNiftiMasker(
-    mask_img=miyawaki_dataset.mask, detrend=True, standardize=False, n_jobs=2
+    mask_img=miyawaki_dataset.mask,
+    detrend=True,
+    standardize=False,
+    n_jobs=2,
+    verbose=1,
 )
 masker.fit()
 X_train = masker.transform(X_random_filenames)
@@ -122,7 +124,7 @@ yt_big = [np.dot(height_tf, np.dot(m, width_tf)) for m in y_train]
 # Add it to the training set
 y_train = [
     np.r_[y.ravel(), t.ravel(), l.ravel(), b.ravel()]
-    for y, t, l, b in zip(y_train, yt_tall, yt_large, yt_big)
+    for y, t, l, b in zip(y_train, yt_tall, yt_large, yt_big, strict=False)
 ]
 
 y_test = np.asarray(flatten(y_test))

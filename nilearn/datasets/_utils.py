@@ -7,6 +7,7 @@ import hashlib
 import os
 import pickle
 import shutil
+import sys
 import tarfile
 import time
 import urllib
@@ -15,18 +16,24 @@ import zipfile
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import requests
 
-from nilearn._utils import fill_doc, logger
-from nilearn._utils.logger import find_stack_level
-
-from .utils import get_data_dirs
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level, readable_time
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
+from nilearn.datasets.utils import get_data_dirs
 
 _REQUESTS_TIMEOUT = (15.1, 61)
 PACKAGE_DIRECTORY = Path(__file__).absolute().parent
 
 
 ALLOWED_DATA_TYPES = (
+    "area",
     "curvature",
     "sulcal",
     "thickness",
@@ -46,10 +53,6 @@ def md5_hash(string):
     m = hashlib.md5()
     m.update(string.encode("utf-8"))
     return m.hexdigest()
-
-
-def _format_time(t):
-    return f"{t / 60.0:4.1f}min" if t > 60 else f" {t:5.1f}s"
 
 
 def _md5_sum_file(path):
@@ -78,7 +81,9 @@ def read_md5_sum_file(path):
     return hashes
 
 
-def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
+def _chunk_report_(
+    bytes_so_far, total_size, initial_size, t0, verbose
+) -> None:
     """Show downloading percentage.
 
     Parameters
@@ -99,7 +104,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
     """
     if not total_size:
-        logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.")
+        logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.", verbose)
 
     else:
         # Estimate remaining download time
@@ -116,7 +121,8 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
         logger.log(
             f"\rDownloaded {bytes_so_far} of {total_size} bytes "
             f"({total_percent * 100:.1f}%%, "
-            f"{_format_time(time_remaining)} remaining)",
+            f"{readable_time(time_remaining)} remaining)",
+            verbose=verbose,
         )
 
 
@@ -129,7 +135,7 @@ def _chunk_read_(
     initial_size=0,
     total_size=None,
     verbose=1,
-):
+) -> None:
     """Download a file chunk by chunk and show advancement.
 
     Parameters
@@ -143,14 +149,15 @@ def _chunk_read_(
     chunk_size : int, default=8192
         Size of downloaded chunks.
 
-    report_hook : bool, optional
-        Whether or not to show downloading advancement. Default: None
+    report_hook : bool or None, default=None
+        Whether or not to show downloading advancement. default=None
 
     initial_size : int, default=0
         If resuming, indicate the initial size of the file.
 
-    total_size : int, optional
+    total_size : int or None, default=None
         Expected final size of download (None means it is unknown).
+
     %(verbose)s
 
     Returns
@@ -188,7 +195,7 @@ def _chunk_read_(
             # finished.
             (time_last_read > time_last_display + 1.0 or not chunk)
         ):
-            _chunk_report_(bytes_so_far, total_size, initial_size, t0)
+            _chunk_report_(bytes_so_far, total_size, initial_size, t0, verbose)
             time_last_display = time_last_read
         if chunk:
             local_file.write(chunk)
@@ -206,10 +213,13 @@ def get_dataset_dir(
     ----------
     dataset_name : string
         The unique name of the dataset.
+
     %(data_dir)s
-    default_paths : list of string, optional
+
+    default_paths : list of string or None, default=None
         Default system paths in which the dataset may already have been
         installed by a third party software. They will be checked first.
+
     %(verbose)s
 
     Returns
@@ -250,8 +260,22 @@ def get_dataset_dir(
             path = path.resolve()
         if path.exists() and path.is_dir():
             logger.log(
-                f"Dataset found in {path}", verbose=verbose, msg_level=1
+                f"Dataset directory found: {path}",
+                verbose=verbose,
+                msg_level=1,
             )
+            if len(list(path.iterdir())) == 0:
+                logger.log(
+                    " Dataset directory is empty",
+                    verbose=verbose,
+                    msg_level=1,
+                )
+            else:
+                logger.log(
+                    " Note that some files still may be missing.",
+                    verbose=verbose,
+                    msg_level=2,
+                )
             return path
 
     # If not, create a folder in the first writable directory
@@ -280,7 +304,7 @@ def get_dataset_dir(
     )
 
 
-def _add_readme_to_default_data_locations(data_dir=None, verbose=1):
+def _add_readme_to_default_data_locations(data_dir=None, verbose=1) -> None:
     for d in get_data_dirs(data_dir=data_dir):
         file = Path(d) / "README.md"
         if file.parent.exists() and not file.exists():
@@ -309,18 +333,27 @@ def _is_within_directory(directory, target):
     return prefix == str(abs_directory)
 
 
-def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+def _safe_extract(tar, path=".", members=None, *, numeric_owner=False) -> None:
     path = Path(path)
     for member in tar.getmembers():
         member_path = path / member.name
         if not _is_within_directory(path, member_path):
             raise Exception("Attempted Path Traversal in Tar File")
 
-    tar.extractall(path, members, numeric_owner=numeric_owner)
+    # TODO (python >= 3.14) simplify when dropping python 3.14
+    if sys.version_info[1] >= 14:
+        tar.extractall(path, members, numeric_owner=numeric_owner, filter=None)
+    else:
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                category=DeprecationWarning,
+            )
+            tar.extractall(path, members, numeric_owner=numeric_owner)
 
 
 @fill_doc
-def uncompress_file(file_, delete_archive=True, verbose=1):
+def uncompress_file(file_, delete_archive=True, verbose=1) -> None:
     """Uncompress files contained in a data_set.
 
     Parameters
@@ -387,12 +420,12 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
         raise
 
 
-def _filter_column(array, col, criteria):
+def _filter_column(array, col: str, criteria):
     """Return index array matching criteria.
 
     Parameters
     ----------
-    array : numpy array with columns
+    array : array-like with columns
         Array in which data will be filtered.
 
     col : string
@@ -408,8 +441,8 @@ def _filter_column(array, col, criteria):
     # test it across all possible types (pandas, recarray...)
     try:
         array[col]
-    except Exception:
-        raise KeyError(f"Filtering criterion {col} does not exist")
+    except Exception as e:
+        raise KeyError(f"Filtering criterion {col} does not exist") from e
 
     if (
         not isinstance(criteria, str)
@@ -436,7 +469,10 @@ def _filter_column(array, col, criteria):
 
     # Handle strings with different encodings
     if isinstance(criteria, (str, bytes)):
-        criteria = np.array(criteria).astype(array[col].dtype)
+        dtype = array[col].dtype
+        if isinstance(dtype, pd.StringDtype):
+            dtype = "str"
+        criteria = np.array(criteria).astype(dtype)
 
     return array[col] == criteria
 
@@ -457,14 +493,13 @@ def filter_columns(array, filters, combination="and"):
         and "or".
 
     """
+    check_parameter_in_allowed(combination, ["and", "or"], "combination")
     if combination == "and":
         fcomb = np.logical_and
         mask = np.ones(array.shape[0], dtype=bool)
     elif combination == "or":
         fcomb = np.logical_or
         mask = np.zeros(array.shape[0], dtype=bool)
-    else:
-        raise ValueError(f"Combination mode not known: {combination}")
 
     for column in filters:
         mask = fcomb(mask, _filter_column(array, column, filters[column]))
@@ -483,7 +518,7 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
         try:
             data = urllib.request.urlopen(request.url, timeout=timeout)
         except Exception as e:
-            raise requests.RequestException(e.reason)
+            raise requests.RequestException(e.reason) from e
         data.release_conn = data.close
         resp = requests.Response()
         resp.url = data.geturl()
@@ -492,16 +527,16 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
         resp.headers = dict(data.info().items())
         return resp
 
-    def close(self):
+    def close(self) -> None:
         pass
 
 
 @fill_doc
 def fetch_single_file(
     url,
-    data_dir,
-    resume=True,
-    overwrite=False,
+    data_dir: Path,
+    resume: bool = True,
+    overwrite: bool = False,
     md5sum=None,
     username=None,
     password=None,
@@ -513,21 +548,26 @@ def fetch_single_file(
     Parameters
     ----------
     %(url)s
+
     %(data_dir)s
+
     %(resume)s
+
     overwrite : bool, default=False
         If true and file already exists, delete it.
 
-    md5sum : string, optional
+    md5sum : string or None, default=None
         MD5 sum of the file. Checked if download of the file is required.
 
-    username : string, optional
+    username : string or None, default=None
         Username used for basic HTTP authentication.
 
-    password : string, optional
+    password : string or None, default=None
         Password used for basic HTTP authentication.
+
     %(verbose)s
-    session : requests.Session, optional
+
+    session : requests.Session or None, default=None
         Session to use to send requests.
 
     Returns
@@ -664,7 +704,9 @@ def fetch_single_file(
         )
     except requests.RequestException:
         logger.log(
-            f"Error while fetching file {file_name}; dataset fetching aborted."
+            f"Error while fetching file {file_name}; "
+            "dataset fetching aborted.",
+            verbose=verbose,
         )
         raise
     if md5sum is not None and _md5_sum_file(full_name) != md5sum:
@@ -675,13 +717,13 @@ def fetch_single_file(
     return full_name
 
 
-def get_dataset_descr(ds_name):
+def get_dataset_descr(ds_name: str) -> str:
     """Return the description of a dataset."""
     try:
         with (PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst").open(
             "rb"
         ) as rst_file:
-            descr = rst_file.read()
+            descr = rst_file.read().decode("utf-8")
     except OSError:
         descr = ""
 
@@ -691,13 +733,10 @@ def get_dataset_descr(ds_name):
             stacklevel=find_stack_level(),
         )
 
-    if isinstance(descr, bytes):
-        descr = descr.decode("utf-8")
-
-    return descr
+    return str(descr)
 
 
-def movetree(src, dst):
+def movetree(src, dst) -> None:
     """Move entire tree under `src` inside `dst`.
 
     Creates `dst` if it does not already exist.
@@ -747,6 +786,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     Parameters
     ----------
     %(data_dir)s
+
     files : list of (string, string, dict)
         List of files and their corresponding url with dictionary that contains
         options regarding the files. Eg. (file_path, url, opt). If a file_path
@@ -757,9 +797,12 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             * 'uncompress' to indicate that the file is an archive
             * 'md5sum' to check the md5 sum of the file
             * 'overwrite' if the file should be re-downloaded even if it exists
+
     %(resume)s
+
     %(verbose)s
-    session : `requests.Session`, optional
+
+    session : `requests.Session` or None, default=None
         Session to use to send requests.
 
     Returns
@@ -768,6 +811,8 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
         Absolute paths of downloaded files on disk.
 
     """
+    check_params(locals())
+
     if session is None:
         with requests.Session() as sess:
             sess.mount("ftp:", _NaiveFTPAdapter())
@@ -814,6 +859,12 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             overwrite
             or (not target_file.exists() and not temp_target_file.exists())
         ):
+            logger.log(
+                f"Downloading missing file: {target_file}",
+                verbose=verbose,
+                msg_level=2,
+            )
+
             # We may be in a global read-only repository. If so, we cannot
             # download files.
             if not os.access(data_dir, os.W_OK):
@@ -886,7 +937,7 @@ def tree(path, pattern=None, dictionary=False):
     path : string or pathlib.Path
         Path browsed.
 
-    pattern : string, optional
+    pattern : string or None, default=None
         Pattern used to filter files (see fnmatch).
 
     dictionary : boolean, default=False

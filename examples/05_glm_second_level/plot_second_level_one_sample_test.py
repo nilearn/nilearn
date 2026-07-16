@@ -81,7 +81,7 @@ design_matrix = pd.DataFrame(
 # Next, we specify the model and fit it.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2)
+second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2, verbose=1)
 second_level_model = second_level_model.fit(
     second_level_input,
     design_matrix=design_matrix,
@@ -144,7 +144,7 @@ neg_log_pval = math_img(
 #   :func:`~nilearn.mass_univariate.permuted_ols`
 #   is that the one-sample test in non_parametric_inference/permuted_ols
 #   assumes that the distribution is symmetric about 0,
-#   which is is weaker than the SecondLevelModel's assumption that
+#   which is weaker than the SecondLevelModel's assumption that
 #   the null distribution is Gaussian and centered about 0.
 #
 # .. important::
@@ -169,6 +169,7 @@ out_dict = non_parametric_inference(
     smoothing_fwhm=8.0,
     n_jobs=2,
     threshold=0.001,
+    verbose=1,
 )
 
 # %%

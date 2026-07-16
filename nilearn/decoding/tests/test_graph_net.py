@@ -7,7 +7,7 @@ from numpy.testing import assert_almost_equal
 from scipy import linalg
 
 from nilearn.decoding._objective_functions import divergence, gradient
-from nilearn.decoding.space_net import BaseSpaceNet
+from nilearn.decoding.space_net import SpaceNetRegressor
 from nilearn.decoding.space_net_solvers import (
     _graph_net_adjoint_data_function,
     _graph_net_data_function,
@@ -20,8 +20,7 @@ from nilearn.decoding.space_net_solvers import (
     mfista,
 )
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
-
-from .test_same_api import to_niimgs
+from nilearn.decoding.tests.test_same_api import to_niimgs
 
 
 def _make_data(task="regression", size=4):
@@ -234,19 +233,19 @@ def test_logistic_derivative_lipschitz_constant(rng):
         assert gradient_difference <= lipschitz_constant * point_difference
 
 
+@pytest.mark.parametrize("estimator", [SpaceNetRegressor])
 @pytest.mark.parametrize("l1_ratio", np.linspace(0.1, 1, 3))
-def test_max_alpha_squared_loss(l1_ratio):
+def test_max_alpha_squared_loss(estimator, l1_ratio):
     """Tests that models with L1 regularization over the theoretical bound \
     are full of zeros, for logistic regression.
     """
     X, y, _, _, mask_, X_ = _make_data()
 
-    reg = BaseSpaceNet(
+    reg = estimator(
         mask=mask_,
         max_iter=10,
         penalty="graph-net",
-        is_classif=False,
-        verbose=0,
+        standardize="zscore_sample",
     )
 
     reg.l1_ratios = l1_ratio
@@ -270,7 +269,7 @@ def test_tikhonov_regularization_vs_graph_net():
         sp.linalg.pinv(np.dot(X.T, X) + y.size * np.dot(G.T, G)),
         np.dot(X.T, y),
     )
-    graph_net = BaseSpaceNet(
+    graph_net = SpaceNetRegressor(
         mask=mask_,
         alphas=1.0 * X.shape[0],
         l1_ratios=0.0,
@@ -278,7 +277,6 @@ def test_tikhonov_regularization_vs_graph_net():
         fit_intercept=False,
         screening_percentile=100.0,
         standardize=False,
-        verbose=0,
     )
     graph_net.fit(X_, y.copy())
 
@@ -295,6 +293,7 @@ def test_tikhonov_regularization_vs_graph_net():
 
 
 def test_mfista_solver_graph_net_no_l1_term():
+    """Test MFISTA solver for graph-net loss without an l1 term."""
     w = np.zeros(2)
     X = np.array([[1, 0], [0, 4]])
     y = np.array([-10, 20])

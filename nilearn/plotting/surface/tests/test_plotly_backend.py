@@ -3,12 +3,17 @@
 import numpy as np
 import pytest
 
+from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting.surface._plotly_backend import (
     _configure_title,
     _get_camera_view_from_elevation_and_azimut,
     _get_camera_view_from_string_view,
     _get_view_plot_surf,
 )
+from nilearn.plotting.surface._utils import get_surface_backend
+from nilearn.plotting.tests.test_engine_utils import check_colors
+from nilearn.surface.surface import load_surf_data, load_surf_mesh
 
 pytest.importorskip(
     "plotly",
@@ -169,7 +174,7 @@ def test_get_camera_view_from_string_view(full_view):
     nilearn.plotting.surface._plotly_backend._get_camera_view_from_string_view
     returns expected values.
     """
-    hemi, view_name, (elev, azim), expected_camera_view = full_view
+    hemi, view_name, (_, _), expected_camera_view = full_view
     camera_view_string = _get_camera_view_from_string_view(hemi, view_name)
 
     # Check each camera view parameter
@@ -187,7 +192,7 @@ def test_get_camera_view_from_elev_azim(full_view):
     nilearn.plotting.surface._plotly_backend._get_camera_view_from_elevation_and_azimut
     returns expected values.
     """
-    hemi, view_name, (elev, azim), expected_camera_view = full_view
+    _, _, (elev, azim), expected_camera_view = full_view
     camera_view_elev_azim = _get_camera_view_from_elevation_and_azimut(
         (elev, azim)
     )
@@ -250,3 +255,26 @@ def test_get_view_plot_surf_view_errors(hemi, view):
     """
     with pytest.raises(ValueError, match="Invalid view definition"):
         _get_view_plot_surf(hemi, view)
+
+
+def test_one_mesh_info():
+    """Test nilearn.plotting.surface._plotly_backend._one_mesh_info."""
+    fsaverage = fetch_surf_fsaverage()
+    mesh = fsaverage["pial_left"]
+    surf_map = load_surf_data(fsaverage["sulc_left"])
+    mesh = load_surf_mesh(mesh)
+    backend = get_surface_backend("plotly")
+    info = backend._one_mesh_info(
+        surf_map, mesh, "90%", black_bg=True, bg_map=surf_map
+    )
+    assert {"_x", "_y", "_z", "_i", "_j", "_k"}.issubset(
+        info["inflated_both"].keys()
+    )
+    assert len(decode(info["inflated_both"]["_x"], "<f4")) == len(surf_map)
+    assert len(info["vertexcolor_both"]) == len(surf_map)
+    cmax = np.max(np.abs(surf_map))
+    assert (info["cmin"], info["cmax"]) == (-cmax, cmax)
+    assert isinstance(info["cmax"], float)
+    assert info["black_bg"]
+    assert not info["full_brain_mesh"]
+    check_colors(info["colorscale"])

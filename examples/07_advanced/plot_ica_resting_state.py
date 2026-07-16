@@ -17,8 +17,6 @@ the data, as the scikit-learn API enables to exchange them as almost
 black box (though the relevant parameter for brain maps might no longer
 be given by a call to fit_transform).
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -45,7 +43,7 @@ masker = NiftiMasker(
     memory="nilearn_cache",
     memory_level=1,
     mask_strategy="epi",
-    standardize="zscore_sample",
+    verbose=1,
 )
 data_masked = masker.fit_transform(func_filename)
 
@@ -54,7 +52,9 @@ data_masked = masker.fit_transform(func_filename)
 from sklearn.decomposition import FastICA
 
 n_components = 10
-ica = FastICA(n_components=n_components, random_state=42)
+ica = FastICA(
+    n_components=n_components, random_state=42, max_iter=2000, tol=0.01
+)
 components_masked = ica.fit_transform(data_masked.T).T
 
 # Normalize estimated components, for thresholding to make sense
@@ -78,7 +78,7 @@ from nilearn.plotting import plot_stat_map, show
 # Show some interesting components
 
 # Use the mean as a background
-mean_img = image.mean_img(func_filename, copy_header=True)
+mean_img = image.mean_img(func_filename)
 
 plot_stat_map(image.index_img(component_img, 0), mean_img)
 

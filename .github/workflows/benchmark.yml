@@ -1,37 +1,57 @@
 ---
-# TL;DR: this workflow runs the benchmarks on the latest commit on the main
-# and then deploys the updated benchmarks to
+# TL;DR: this workflow runs the benchmarks on the latest commit.
+# It runs on PR.
+# On main, it will also run on a schedule at regular interval
+# or can be triggered manually via the GitHub UI.
+# When run on main it will deploy the updated benchmarks to
 # `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
-# You can trigger it manually via the GitHub UI. It will also run on a schedule
-# at regular interval.
 #
 # Step-wise details:
 #
-# - The benchmarks are set to run at regular intervals via cron.
-# - It can also be triggered manually by adding ``[bm]`` to the commit message.
 # - First it installs `asv <https://asv.readthedocs.io/en/latest/index.html>`_.
-# - Then it sets up the SSH key to access the
-#   `benchmarks <https://github.com/nilearn/benchmarks>`_ repo,
-#   pulls it, and copies the results dir into the current dir. We will append
-#   the new results to these results.
-# - ``asv machine --yes`` then fetches the machine info like CPU, RAM, OS,
-#   etc. and saves it in ``~/.asv-machine.json``, but it gives a unique name
-#   to the machine on every run even if the specs are the same. So we will set
-#   a fixed name for the machine so the legend isn't too overcrowded.
-# - To do this, we edit the ``~/.asv-machine.json`` file to change the machine
-#   name to a fixed name ``fv-az1113-357``. The name is arbitrary and has been
-#   chosen to match the first run. The script
-#   ``build_tools/github/set_machine_name.py`` does all this.
-# - Then we run the benchmarks (``asv run``) such that the results are
-#   appended to the old results (via ``--append-samples`` parameter).
-#   ``-ev`` makes sure any errors are printed in detail and all the output can
-#   be seen in the logs.
+# - On a pull request, the checkout is pinned to the actual HEAD commit of the PR branch
+#   (rather than the synthetic PR merge commit),
+#   and the benchmarks are run for that commit as well as for the tip of the upstream ``main`` branch,
+#   so the two can be compared.
+#   Since the PR branch may live on a fork that is not reachable
+#   from the ``repo`` URL configured in ``asv.conf.json``,
+#   asv is temporarily pointed at the already checked out local clone instead
+#   (it contains both commits, as the checkout step fetches full history).
+# - On a push to ``main`` (typically a merged PR), the benchmarks are run
+#   for the ``main`` HEAD and for the most recent git tag (the latest stable release),
+#   and this comparison *overwrites* whatever was previously published
+#   on the `benchmarks <https://github.com/nilearn/benchmarks>`_ repo,
+#   rather than being appended to the historical results used
+#   by the schedule/manual runs.
+# - Then it sets up the SSH key to access the `benchmarks <https://github.com/nilearn/benchmarks>`_ repo, pulls it,
+#   and copies the results dir into the current dir.
+#   We will append the new results to these results.
+# - ``asv machine --yes`` then fetches the machine info like CPU, RAM, OS, etc. and saves it in ``~/.asv-machine.json``,
+#   but it gives a unique name to the machine on every run even if the specs are the same.
+#   So we will set a fixed name for the machine so the legend isn't too overcrowded.
+# - To do this, we edit the ``~/.asv-machine.json`` file to change the machine name to a fixed name ``fv-az1113-357``.
+#   The name is arbitrary and has been chosen to match the first run.
+#   The script ``build_tools/github/set_machine_name.py`` does all this.
+# - Then we run the benchmarks (``asv run``) such that the results are appended to the old results (via ``--append-samples`` parameter).
+#   ``-ev`` makes sure any errors are printed in detail and all the output can be seen in the logs.
+# - ``asv run`` exits 0 and keeps going even when individual benchmarks fail,
+#   so we explicitly grep the log for ``asv: benchmark failed``
+#   and fail the workflow if it is found.
 # - Then we create the HTML with all the results via ``asv publish``.
-# - We upload the results as artifacts so that we can download them later.
-# - Then we push the new results back to the
-#   `benchmarks <https://github.com/nilearn/benchmarks>`_  repo. This will
-#   automatically deploy the new results to
-#   `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
+# - We upload the ``html`` and ``results`` directories as a single artifact so that we can download them later,
+#   e.g. to inspect the results of a PR run without waiting for them to be deployed.
+#   To view them after downloading and unzipping the artifact,
+#   the ``html`` directory it contains cannot simply be opened in a browser
+#   (it needs its data served over HTTP, not opened as local ``file://`` pages).
+#   Instead, either:
+#
+#   - run ``python -m http.server`` from inside the unzipped ``html`` directory,
+#     then open the printed URL (e.g. http://localhost:8000) in a browser; or
+#   - if `asv <https://asv.readthedocs.io/en/latest/index.html>`_ is installed,
+#     run ``asv preview`` from the unzipped directory that contains both ``html`` and ``results``
+#     (this also works from a local ``asv_benchmarks`` checkout after running ``asv publish``, as described in ``CONTRIBUTING.rst``).
+# - Then we push the new results back to the `benchmarks <https://github.com/nilearn/benchmarks>`_ repo.
+#   This will automatically deploy the new results to `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
 ###
 name: Run and deploy Nilearn benchmarks
 
@@ -39,38 +59,73 @@ on:
     push:
         branches:
         -   main
-    schedule:
-    # every Monday at 9am UTC
-    -   cron: 0 9 * * MON
 
-    workflow_dispatch:  # This enables manual triggering from GitHub UI
+    pull_request:
+        branches:
+        -   '*'
+
+    schedule:
+        # Uses the cron schedule for github actions
+        # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+        #     ┌───────────── minute (0 - 59)
+        #     │ ┌───────────── hour (0 - 23)
+        #     │ │ ┌───────────── day of the month (1 - 31)
+        #     │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+        #     │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     * * * * *
+        # Runs at 00:00, on day 1 of every 3rd month
+    -   cron: 0 0 1 */3 *
+
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
+    workflow_dispatch:
+
+concurrency:
+      # include the event name so that,
+      # e.g., a "push" run (which overwrites the published benchmarks)
+      # and a "schedule" run (which appends to them) on the same ref
+      # do not cancel one another
+    group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+    cancel-in-progress: true
+
+env:
+    FORCE_COLOR: true
+    MIN_PYTHON: 3.10.18
+
 
 jobs:
     benchmark:
-        if: >-
-            (github.event_name == 'workflow_dispatch' ||
-            github.event_name == 'schedule') &&
-            github.repository == 'nilearn/nilearn'
-        # TODO bump to 24.04 when bumping minimum python to 3.10
-        runs-on: ubuntu-22.04
+        if: github.repository == 'nilearn/nilearn'
+        runs-on: ubuntu-24.04
         defaults:
             run:
                 working-directory: ./asv_benchmarks
 
         steps:
-        -   uses: actions/checkout@v4
+        -   uses: actions/checkout@v7
             with:
-                # fetch all branches and tags
+                  # fetch all branches and tags
                 fetch-depth: 0
-        -   uses: actions/setup-python@v5
+                  # on a pull request,
+                  # check out the actual HEAD of the PR branch
+                  # instead of the default synthetic merge commit
+                ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+        -   uses: actions/setup-python@v6
             with:
-                # TODO bump to 3.10 when minimum python is 3.10
-                python-version: 3.9
+                python-version: ${{ env.MIN_PYTHON }}
+
         -   name: Install asv and switch to asv_benchmarks directory
             run: |
                 pip install --upgrade pip
                 pip install asv
+                pip install nilearn
+
         -   name: Add SSH key for benchmarks repo
+            if: github.event_name != 'pull_request'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -80,32 +135,122 @@ jobs:
                 chmod 600 ~/.ssh/github_actions
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
+
+        -   name: Clone benchmarks repo (push to main, results not merged)
+            # On a push, the previous results are intentionally not copied into "results":
+            # this run only ever compares main HEAD against the latest
+            # release and overwrites what is published,
+            # instead of appending to the accumulated history.
+            if: github.event_name == 'push'
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+            run: |
+                git clone git@github.com:nilearn/benchmarks.git benchmarks_repo
+
         -   name: Pull previous results from benchmarks repo
+            if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
                 git clone git@github.com:nilearn/benchmarks.git benchmarks_repo
                 cp -r benchmarks_repo/results .
+
+        -   name: Pull previous results from benchmarks repo (PR fallback)
+            if: github.event_name == 'pull_request'
+            run: |
+                # Use HTTPS for PRs (read-only)
+                git clone https://github.com/nilearn/benchmarks.git benchmarks_repo
+                cp -r benchmarks_repo/results .
+
         -   name: Get all the machine info
             run: |
                 asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+
         -   name: Edit asv-machine.json to a custom machine name
             run: python ../build_tools/github/set_machine_name.py fv-az1113-357
-        -   name: Run all benchmarks on the latest commit
+
+        -   name: Prepare comparison of PR HEAD against upstream main (PR only)
+            if: github.event_name == 'pull_request'
             run: |
-                asv run -ev --append-samples --machine fv-az1113-357 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                # make sure the upstream main branch is available locally
+                git fetch origin main
+                MAIN_SHA=$(git rev-parse origin/main)
+                PR_SHA=$(git rev-parse HEAD)
+                echo "$MAIN_SHA" > pr_hashes.txt
+                echo "$PR_SHA" >> pr_hashes.txt
+                cat pr_hashes.txt
+
+                # the checkout is a detached HEAD (pinned to the PR HEAD sha),
+                # so there is no local branch named "main" yet.
+                # asv needs one,
+                # since asv.conf.json declares "branches": ["main"]
+                # and resolves it against whatever "repo" points to (see below).
+                # This does not touch the current checkout.
+                git branch -f main origin/main
+
+                # the PR branch may live on a fork that is not reachable
+                # from the "repo" URL configured in asv.conf.json,
+                # so point asv at the local checkout instead,
+                # which already has both commits (thanks to the fetch-depth: 0 checkout)
+                sed -i 's#"repo": "https://github.com/nilearn/nilearn.git"#"repo": ".."#' asv.conf.json
+
+        -   name: Prepare comparison of main HEAD against latest release (push only)
+            if: github.event_name == 'push'
+            run: |
+                # main and its release tags are both reachable from the configured "repo" URL,
+                # no need to point asv at the local checkout here (unlike for the PR comparison above)
+                git fetch --tags
+                LATEST_TAG=$(git describe --tags --abbrev=0)
+                MAIN_SHA=$(git rev-parse HEAD)
+                TAG_SHA=$(git rev-parse "${LATEST_TAG}^{commit}")
+                echo "$TAG_SHA" > main_release_hashes.txt
+                echo "$MAIN_SHA" >> main_release_hashes.txt
+                cat main_release_hashes.txt
+
+        -   name: Run all benchmarks on the latest commit
+            if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+            run: |
+                asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+
+        -   name: Run all benchmarks on the PR HEAD and upstream main (PR only)
+            if: github.event_name == 'pull_request'
+            run: |
+                asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 HASHFILE:pr_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+
+        -   name: Run all benchmarks on main HEAD and latest release (push only)
+            if: github.event_name == 'push'
+            run: |
+                asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 HASHFILE:main_release_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+
+        -   name: Fail if any benchmark reported as failed
+            # asv run keeps going and exits 0 even when individual
+            # benchmarks fail (it only reports them as "asv: benchmark
+            # failed" in the log), and piping its output through "tee"
+            # above already discards its own exit code regardless.
+            # So check the log content explicitly instead of relying on
+            # the exit code of the "asv run" steps above.
+            run: |
+                LOG_FILE=log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                if grep -q "asv: benchmark failed" "$LOG_FILE"; then
+                    echo "::error::One or more benchmarks failed, see the excerpt(s) below"
+                    grep -B 5 "asv: benchmark failed" "$LOG_FILE"
+                    exit 1
+                fi
+
         -   name: Create html with all results
             run: |
                 asv publish
-        -   uses: actions/upload-artifact@v4
+
+        -   uses: actions/upload-artifact@v7
             with:
                 name: Upload asv benchmark results as artifacts
                 path: |
-                    ./asv_benchmarks/env
                     ./asv_benchmarks/html
                     ./asv_benchmarks/results
                 compression-level: 9
+
         -   name: Push new results and logs back to benchmarks repo
+            if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -115,9 +260,11 @@ jobs:
                 git config --global user.name "GitHub Actions"
                 git config --global user.email "actions@github.com"
                 git add .
-                git commit -m "Update benchmark results and logs (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+                git commit --message "Update benchmark results and logs (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin main
+
         -   name: Push html to gh-pages branch
+            if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -125,5 +272,37 @@ jobs:
                 git checkout gh-pages
                 cp -r ../html/* .
                 git add .
-                git commit -m "Update benchmark HTML (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+                git commit --message "Update benchmark HTML (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+                git push origin gh-pages
+
+        -   name: Overwrite results and logs on benchmarks repo (push only)
+            # Unlike the schedule/manual runs above,
+            # a push run only ever contains the main-vs-latest-release comparison,
+            # and it replaces (rather than extends) what was previously published.
+            if: github.event_name == 'push'
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+            run: |
+                cd benchmarks_repo
+                rm -rf results
+                cp -r ../results .
+                mkdir -p logs
+                cp -r ../log_${{ github.event.repository.updated_at }}_${{ github.run_number }} ./logs/log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                git config --global user.name "GitHub Actions"
+                git config --global user.email "actions@github.com"
+                git add -A
+                git commit --message "Overwrite benchmark results with main vs latest release comparison (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+                git push origin main
+
+        -   name: Overwrite html on gh-pages branch (push only)
+            if: github.event_name == 'push'
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+            run: |
+                cd benchmarks_repo
+                git checkout gh-pages
+                rm -rf ./*
+                cp -r ../html/* .
+                git add -A
+                git commit --message "Overwrite benchmark HTML with main vs latest release comparison (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin gh-pages

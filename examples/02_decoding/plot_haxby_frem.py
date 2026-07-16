@@ -54,7 +54,7 @@ y_test = conditions[condition_mask_test].to_numpy()
 # Compute the mean EPI to be used for the background of the plotting
 from nilearn.image import mean_img
 
-background_img = mean_img(func_filenames, copy_header=True)
+background_img = mean_img(func_filenames)
 
 # %%
 # Fit FREM
@@ -65,9 +65,7 @@ from nilearn.decoding import FREMClassifier
 # Restrict analysis to within the brain mask
 mask = data_files.mask
 
-decoder = FREMClassifier(
-    mask=mask, cv=10, standardize="zscore_sample", n_jobs=2, verbose=1
-)
+decoder = FREMClassifier(mask=mask, cv=10, n_jobs=2, verbose=1)
 
 # %%
 # Fit model on train data and predict on test data

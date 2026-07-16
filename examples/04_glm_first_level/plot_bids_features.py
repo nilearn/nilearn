@@ -25,11 +25,15 @@ More specifically:
 # %%
 # Fetch openneuro :term:`BIDS` dataset
 # ------------------------------------
-# We download one subject from the stopsignal task
-# in the ds000030 V4 :term:`BIDS` dataset available in openneuro.
+# We download one subject from the ``stopsignal`` task
+# in the ds000030 :term:`BIDS` dataset available in openneuro.
 # This dataset contains the necessary information to run a statistical analysis
 # using Nilearn. The dataset also contains statistical results from a previous
 # FSL analysis that we can employ for comparison with the Nilearn estimation.
+#
+# For more information,
+# see the :ref:`dataset description <ds000030>`.
+#
 from nilearn.datasets import (
     fetch_ds000030_urls,
     fetch_openneuro_dataset,
@@ -38,23 +42,32 @@ from nilearn.datasets import (
 
 _, urls = fetch_ds000030_urls()
 
+# Only keep the files for the ``stopsignal`` task that are actually
+# needed for this example: the raw functional data and events,
+# the relevant fMRIPrep derivatives, and the FSL ``stopsignal.feat``
+# derivatives used later on for comparison.
+# Restricting the download with a ``inclusion_filters`` this way,
+# rather than trying to list every folder to exclude,
+# avoids pulling in the (much larger) derivatives
+# of the other tasks acquired for this subject.
+inclusion_patterns = ["*sub-*stopsignal*"]
+# Some fMRIPrep and FSL derivatives are are not used in that example.
 exclusion_patterns = [
-    "*group*",
-    "*phenotype*",
-    "*mriqc*",
-    "*parameter_plots*",
-    "*physio_plots*",
-    "*space-fsaverage*",
-    "*space-T1w*",
-    "*dwi*",
-    "*beh*",
-    "*task-bart*",
-    "*task-rest*",
-    "*task-scap*",
-    "*task-task*",
+    "*_space-T1w*",
+    "*_space-fsaverage*",
+    "*cope*gz",
+    "*jpg",
+    "*png",
+    "*txt",
+    "*tiff",
+    "*gif",
+    "*res4D*",
 ]
 urls = select_from_index(
-    urls, exclusion_filters=exclusion_patterns, n_subjects=1
+    urls,
+    inclusion_filters=inclusion_patterns,
+    exclusion_filters=exclusion_patterns,
+    n_subjects=1,
 )
 
 data_dir, _ = fetch_openneuro_dataset(urls=urls)
@@ -86,6 +99,7 @@ derivatives_folder = "derivatives/fmriprep"
     data_dir,
     task_label,
     space_label,
+    mask_img="derivatives",
     smoothing_fwhm=5.0,
     derivatives_folder=derivatives_folder,
     n_jobs=2,
@@ -197,10 +211,14 @@ show()
 # Saving model outputs to disk
 # ----------------------------
 #
-# We can now easily save the main results,
-# the model metadata and an HTML report to the disk.
+# It can be useful to quickly generate a portable, ready-to-view report with
+# most of the pertinent information.
+# We can do this by saving the output of the GLM to disk
+# including an HTML report.
+# This is easy to do if you have a fitted model and the list of contrasts,
+# which we do here.
 #
-from nilearn.interfaces.bids import save_glm_to_bids
+from nilearn.glm import save_glm_to_bids
 
 output_dir = Path.cwd() / "results" / "plot_bids_features"
 output_dir.mkdir(exist_ok=True, parents=True)

@@ -12,6 +12,7 @@ from nilearn.decoding.space_net_solvers import (
 @pytest.mark.parametrize("alpha", [0.0, 1e-1, 1e-3])
 @pytest.mark.parametrize("l1_ratio", [0.0, 0.5, 1.0])
 def test_tvl1_from_gradient(rng, alpha, l1_ratio, size=5, n_samples=10):
+    """Check that _tvl1_objective."""
     shape = [size] * 3
     n_voxels = np.prod(shape)
     X = rng.standard_normal((n_samples, n_voxels))
@@ -29,12 +30,14 @@ def test_tvl1_from_gradient(rng, alpha, l1_ratio, size=5, n_samples=10):
 
 
 def test_tvl1_objective_raises_value_error_if_invalid_loss():
-    with pytest.raises(ValueError, match="mse' or 'logistic"):
+    """Check _tvl1_objective raises ValueError if invalid loss is given."""
+    with pytest.raises(ValueError, match="'loss' must be one of"):
         _tvl1_objective(None, None, None, None, None, None, loss="invalidloss")
 
 
 def test_tvl1_solver_raises_value_error_if_invalid_loss():
-    with pytest.raises(ValueError, match="mse' or 'logistic"):
+    """Check tvl1_solver raises ValueError if invalid loss is given."""
+    with pytest.raises(ValueError, match="'loss' must be one of"):
         tvl1_solver(
             np.array([[1]]), None, None, None, None, loss="invalidloss"
         )

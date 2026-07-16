@@ -5,6 +5,8 @@
 0.10.3
 ======
 
+**Released January 2024**
+
 HIGHLIGHTS
 ----------
 

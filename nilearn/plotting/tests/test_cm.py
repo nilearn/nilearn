@@ -1,7 +1,3 @@
-# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-# vi: set ft=python sts=4 ts=4 sw=4 et:
-"""Smoke testing the cm module."""
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -10,12 +6,12 @@ from nilearn.plotting.cm import dim_cmap, mix_colormaps, replace_inside
 
 
 def test_dim_cmap():
-    # This is only a smoke test
+    """Smoke test for dim_cmap."""
     dim_cmap(plt.cm.jet)
 
 
 def test_replace_inside():
-    # This is only a smoke test
+    """Smoke test for replace_inside."""
     replace_inside(plt.cm.jet, plt.cm.hsv, 0.2, 0.8)
     # We also test with gnuplot, which is defined using function
     if hasattr(plt.cm, "gnuplot"):
@@ -23,11 +19,14 @@ def test_replace_inside():
         replace_inside(plt.cm.gnuplot, plt.cm.gnuplot2, 0.2, 0.8)
 
 
+@pytest.mark.thread_unsafe
 def test_cm_preload():
+    """Smoke test that the 'cold_hot' colormap is registered."""
     plt.imshow([list(range(10))], cmap="cold_hot")
 
 
 def test_mix_colormaps(rng):
+    """Test mix_colormaps' shape, transparency, and edge cases."""
     n = 100
 
     # Mixin map's shape should be equal to that of

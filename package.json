@@ -1,0 +1,28 @@
+{
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "@niivue/niivue": "0.68.1",
+    "jquery": "3.6.0",
+    "plotly.js-gl3d-dist-min": "1.50.1"
+  },
+  "devDependencies": {
+    "express": "^5.2.1",
+    "jest": "^30.4.2",
+    "pixelmatch": "^5.3.0",
+    "pngjs": "^7.0.0",
+    "puppeteer": "^25.3.0"
+  },
+  "engines": {
+    "npm": ">=10.8.2",
+    "node": ">=24.0.0"
+  },
+  "allowScripts": {
+    "puppeteer@25.3.0": true,
+    "unrs-resolver@1.12.2": true
+  }
+}

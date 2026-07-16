@@ -19,8 +19,8 @@ def z_score(pvalue, one_minus_pvalue=None):
     pvalue : float or 1-d array shape=(n_pvalues,)
         P-values computed using the survival function.
 
-    one_minus_pvalue : float or 1-d array shape=(n_one_minus_pvalues,), \
-        optional
+    one_minus_pvalue : float, 1-d array shape=(n_one_minus_pvalues,) or None \
+        default=None
         It shall take the value returned
         by /nilearn/glm/contrasts.py::one_minus_pvalue
         which computes the p_value using the cumulative distribution function,
@@ -228,7 +228,7 @@ def pad_contrast(con_val, theta, stat_type):
         theta of RegressionResults instances
         where P is the total number of regressors in the design matrix.
 
-    stat_type : {'t', 'F'}, optional
+    stat_type : {'t', 'F'}
         Type of the :term:`contrast`.
     """
     n_cols = con_val.shape[0] if con_val.ndim == 1 else con_val.shape[1]

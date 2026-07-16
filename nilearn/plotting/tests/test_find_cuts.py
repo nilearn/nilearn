@@ -13,6 +13,7 @@ from nilearn.plotting.find_cuts import (
 )
 
 
+@pytest.mark.thread_unsafe
 def test_find_cut_coords(affine_eye):
     """Test find_xyz_cut_coords."""
     data = np.zeros((100, 100, 100))
@@ -51,6 +52,7 @@ def test_find_cut_coords(affine_eye):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_no_data_exceeds_activation_threshold(affine_eye):
     """Test when no data exceeds the activation threshold.
 
@@ -79,6 +81,7 @@ def test_no_data_exceeds_activation_threshold(affine_eye):
     assert_array_equal(cut_coords, [9.0, 9.0, 9.0])
 
 
+@pytest.mark.thread_unsafe
 def test_warning_all_voxels_masked(affine_eye):
     """Warning when all values are masked.
 
@@ -101,6 +104,7 @@ def test_warning_all_voxels_masked(affine_eye):
     assert_array_equal(cut_coords, [4.5, 4.5, 4.5])
 
 
+@pytest.mark.thread_unsafe
 def test_warning_all_voxels_masked_thresholding(affine_eye):
     """Warn when all values are masked due to thresholding.
 
@@ -128,6 +132,7 @@ def test_warning_all_voxels_masked_thresholding(affine_eye):
     assert_array_equal(cut_coords, [4.5, 4.5, 4.5])
 
 
+@pytest.mark.thread_unsafe
 def test_pseudo_4d_image(rng, shape_3d_default, affine_eye):
     """Check pseudo-4D images as input (i.e., X, Y, Z, 1).
 
@@ -143,6 +148,7 @@ def test_pseudo_4d_image(rng, shape_3d_default, affine_eye):
     assert find_xyz_cut_coords(img_3d) == find_xyz_cut_coords(img_4d)
 
 
+@pytest.mark.thread_unsafe
 def test_empty_image_ac_pc_line(img_3d_zeros_eye):
     """Pass empty image returns coordinates pointing to AC-PC line."""
     with pytest.warns(UserWarning, match="Given img is empty."):
@@ -151,6 +157,7 @@ def test_empty_image_ac_pc_line(img_3d_zeros_eye):
     assert cut_coords == [0.0, 0.0, 0.0]
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("direction", ["x", "z"])
 def test_find_cut_slices(affine_eye, direction):
     """Test find_cut_slices.
@@ -191,6 +198,7 @@ def test_find_cut_slices(affine_eye, direction):
     cuts = find_cut_slices(img, direction=direction, n_cuts=n_cuts, spacing=2)
 
 
+@pytest.mark.thread_unsafe
 def test_find_cut_slices_direction_z():
     """Test find_cut_slices in the z direction.
 
@@ -247,6 +255,7 @@ def test_find_cut_slices_direction_z():
     assert np.diff(cuts).min() != 0.0
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "n_cuts", (0, -2, -10.00034, 0.999999, 0.4, 0.11111111)
 )
@@ -265,6 +274,7 @@ def test_validity_of_ncuts_error_in_find_cut_slices(n_cuts, img_3d_rand_eye):
         find_cut_slices(img_3d_rand_eye, n_cuts=n_cuts)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("n_cuts", (1, 5.0, 0.9999999, 2.000000004))
 def test_passing_of_ncuts_in_find_cut_slices(n_cuts, img_mask_mni):
     """Test valid cut numbers: check if it rounds the floating point inputs."""
@@ -274,7 +284,9 @@ def test_passing_of_ncuts_in_find_cut_slices(n_cuts, img_mask_mni):
     assert_array_equal(cut1, cut2)
 
 
+@pytest.mark.thread_unsafe
 def test_singleton_ax_dim(affine_eye):
+    """Test find_cut_slices on images with a singleton spatial dimension."""
     for axis, direction in enumerate("xyz"):
         shape = [5, 6, 7]
         shape[axis] = 1
@@ -301,16 +313,25 @@ def test_tranform_cut_coords_n_cuts(affine_eye, direction):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_find_cuts_empty_mask_no_crash(affine_eye):
+    """Test that find_xyz_cut_coords warns and falls back on an empty mask."""
     img = Nifti1Image(np.ones((2, 2, 2)), affine_eye)
     mask_img = compute_epi_mask(img)
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning,
+        match=(
+            r"Could not determine cut coords: "
+            r"Provided mask is empty. Returning center of mass instead."
+        ),
+    ):
         cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
     assert_array_equal(cut_coords, [0.5, 0.5, 0.5])
 
 
+@pytest.mark.thread_unsafe
 def test_fast_abs_percentile_no_index_error_find_cuts(affine_eye):
-    # check that find_cuts functions are safe
+    """Test that find_xyz_cut_coords does not raise an IndexError."""
     data = np.array([[[1.0, 2.0], [3.0, 4.0]], [[0.0, 0.0], [0.0, 0.0]]])
     img = Nifti1Image(data, affine_eye)
     assert len(find_xyz_cut_coords(img)) == 3
@@ -326,7 +347,7 @@ def _parcellation_3_roi(
     x_map_c,
     y_map_c,
     z_map_c,
-):
+) -> np.ndarray:
     """Return data defining 3 parcellations."""
     data = np.zeros((100, 100, 100))
 
@@ -452,18 +473,15 @@ def test_find_parcellation_cut_coords_non_trivial_affine():
 
 
 def test_find_parcellation_cut_coords_error(img_3d_mni):
-    """Test error with wrong label_hemisphere name with 'lft'."""
-    error_msg = (
-        "Invalid label_hemisphere name:lft.\nShould be one of "
-        "these 'left' or 'right'."
-    )
-    with pytest.raises(ValueError, match=error_msg):
+    """Test error with wrong label_hemisphere."""
+    with pytest.raises(ValueError, match="'label_hemisphere' must be one of"):
         find_parcellation_cut_coords(
             labels_img=img_3d_mni, label_hemisphere="lft"
         )
 
 
 def test_find_parcellation_cut_coords_hemispheres(affine_mni):
+    """Test find_parcellation_cut_coords with a hemisphere filter."""
     # Create a mock labels_img object
     data = np.zeros((10, 10, 10))
     data[2:5, 2:5, 2:5] = 1  # left hemisphere
@@ -484,9 +502,31 @@ def test_find_parcellation_cut_coords_hemispheres(affine_mni):
     assert labels == [1]
 
 
+def test_find_parcellation_cut_coords_4d_input_with_trailing_dim(
+    affine_eye,
+):
+    """Regression test for labels_img with a trailing singleton 4th dim.
+
+    ``check_niimg_3d`` (used to compute ``labels_affine``) squeezes such an
+    image to 3D, but the raw data used to compute ``labels_data`` must be
+    squeezed the same way, otherwise the two become inconsistent and
+    ``center_of_mass`` fails with a shape mismatch.
+
+    See https://github.com/nilearn/nilearn/pull/6416#issuecomment-4968895530
+    """
+    data = np.zeros((10, 10, 10, 1))
+    data[2:5, 2:5, 2:5, 0] = 1
+    data[6:9, 6:9, 6:9, 0] = 2
+    img = Nifti1Image(data, affine_eye)
+
+    coords = find_parcellation_cut_coords(img)
+
+    assert coords.shape == (2, 3)
+
+
 def _proba_parcellation_2_roi(
     x_map_a, y_map_a, z_map_a, x_map_b, y_map_b, z_map_b
-):
+) -> np.ndarray:
     """Return data defining probabilistic atlas with 2 rois."""
     arr1 = np.zeros((100, 100, 100))
     arr1[

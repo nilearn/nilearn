@@ -10,8 +10,6 @@ We use a calculation task and 20 subjects out of the 94 available.
 The Localizer dataset contains many contrasts and subject-related
 variates.  The user can refer to the
 `plot_localizer_mass_univariate_methods.py` example to see how to use these.
-
-.. include:: ../../../examples/masker_note.rst
 """
 
 from nilearn._utils.helpers import check_matplotlib
@@ -38,7 +36,7 @@ tested_var = np.ones((n_samples, 1))
 # %%
 # Mask data
 nifti_masker = NiftiMasker(
-    smoothing_fwhm=5, memory="nilearn_cache", memory_level=1
+    smoothing_fwhm=5, memory="nilearn_cache", memory_level=1, verbose=1
 )
 cmap_filenames = localizer_dataset.cmaps
 fmri_masked = nifti_masker.fit_transform(cmap_filenames)
@@ -48,7 +46,7 @@ fmri_masked = nifti_masker.fit_transform(cmap_filenames)
 from sklearn.feature_selection import f_regression
 
 # Center=False is used to not remove intercept
-_, pvals_anova = f_regression(fmri_masked, tested_var, center=False)
+_, pvals_anova = f_regression(fmri_masked, tested_var.ravel(), center=False)
 pvals_anova *= fmri_masked.shape[1]
 pvals_anova[np.isnan(pvals_anova)] = 1
 pvals_anova[pvals_anova > 1] = 1
@@ -86,6 +84,5 @@ display = plot_stat_map(
     vmin=threshold,
     title=title,
 )
-
 
 show()

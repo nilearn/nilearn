@@ -35,7 +35,7 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
@@ -48,6 +48,7 @@ from nilearn.glm.first_level.hemodynamic_models import (
     compute_regressor,
     orthogonalize,
 )
+from nilearn.signal import create_cosine_drift
 
 ######################################################################
 # Ancillary functions
@@ -81,53 +82,6 @@ def _poly_drift(order, frame_times):
     return pol
 
 
-def create_cosine_drift(high_pass, frame_times):
-    """Create a cosine drift matrix with frequencies or equal to high_pass.
-
-    Parameters
-    ----------
-    high_pass : :obj:`float`
-        Cut frequency of the high-pass filter in Hz
-
-    frame_times : array of shape (n_scans,)
-        The sampling times in seconds
-
-    Returns
-    -------
-    cosine_drift : array of shape(n_scans, n_drifts)
-        Cosine drifts plus a constant regressor at cosine_drift[:, -1]
-
-    References
-    ----------
-    http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
-
-    """
-    n_frames = len(frame_times)
-    n_times = np.arange(n_frames)
-    dt = (frame_times[-1] - frame_times[0]) / (n_frames - 1)
-    if high_pass * dt >= 0.5:
-        warn(
-            "High-pass filter will span all accessible frequencies "
-            "and saturate the design matrix. "
-            "You may want to reduce the high_pass value."
-            f"The provided value is {high_pass} Hz",
-            stacklevel=find_stack_level(),
-        )
-    order = np.minimum(
-        n_frames - 1, int(np.floor(2 * n_frames * high_pass * dt))
-    )
-    cosine_drift = np.zeros((n_frames, order + 1))
-    normalizer = np.sqrt(2.0 / n_frames)
-
-    for k in range(1, order + 1):
-        cosine_drift[:, k - 1] = normalizer * np.cos(
-            (np.pi / n_frames) * (n_times + 0.5) * k
-        )
-
-    cosine_drift[:, -1] = 1.0
-    return cosine_drift
-
-
 def _none_drift(frame_times):
     """Create an intercept vector.
 
@@ -150,10 +104,10 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     frame_times : array of shape(n_scans),
         list of values representing the desired TRs
 
-    order : :obj:`int`, optional,
+    order : :obj:`int`,
         order of the drift model (in case it is polynomial)
 
-    high_pass : :obj:`float`, optional,
+    high_pass : :obj:`float`
         high-pass frequency in case of a cosine model (in Hz)
 
     Returns
@@ -285,11 +239,11 @@ def make_first_level_design_matrix(
     high_pass=0.01,
     drift_order=1,
     fir_delays=None,
-    add_regs=None,
+    add_regs: np.ndarray | pd.DataFrame | None = None,
     add_reg_names=None,
     min_onset=-24,
     oversampling=50,
-):
+) -> pd.DataFrame:
     """Generate a design matrix from the input parameters.
 
     Parameters
@@ -373,6 +327,36 @@ def make_first_level_design_matrix(
         holding the computed design matrix, the index being the frames_times
         and each column a regressor.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pandas import DataFrame
+    >>> from nilearn.glm.first_level import make_first_level_design_matrix
+    >>> frame_times = np.arange(9)
+    >>> onsets = np.arange(9)
+    >>> duration = np.ones(9)
+    >>> trial_type = [
+    ...  "ET_0", "ET_0", "ET_0", "ET_1", "ET_1", "ET_1", "ET_2", "ET_2", "ET_2"
+    ... ]
+    >>> events = DataFrame({
+    ...     "trial_type": trial_type,
+    ...     "onset": onsets,
+    ...     "duration": duration})
+    >>> design_matrix = make_first_level_design_matrix(
+    ...     frame_times,
+    ...     events)
+    >>> design_matrix.round(decimals=3)
+        ET_0   ET_1   ET_2  constant
+    0  0.000  0.000  0.000       1.0
+    1  0.001  0.000  0.000       1.0
+    2  0.022  0.000  0.000       1.0
+    3  0.135  0.000  0.000       1.0
+    4  0.378  0.001  0.000       1.0
+    5  0.688  0.022  0.000       1.0
+    6  0.910  0.135  0.000       1.0
+    7  0.934  0.378  0.001       1.0
+    8  0.771  0.688  0.022       1.0
+
     """
     check_params(locals())
     if fir_delays is None:
@@ -381,16 +365,21 @@ def make_first_level_design_matrix(
     # check that additional regressor specification is correct
     n_add_regs = 0
     if add_regs is not None:
+        add_regs_as_array: np.ndarray
         if isinstance(add_regs, pd.DataFrame):
-            add_regs_ = add_regs.to_numpy()
+            add_regs_as_array = add_regs.to_numpy()
             add_reg_names = add_regs.columns.tolist()
         else:
-            add_regs_ = np.atleast_2d(add_regs)
-        n_add_regs = add_regs_.shape[1]
-        assert add_regs_.shape[0] == np.size(frame_times), (
+            add_regs_as_array = np.atleast_2d(add_regs)
+
+        if np.any(np.isnan(add_regs_as_array.ravel())):
+            raise ValueError("Extra regressors contain NaN values.")
+
+        n_add_regs = add_regs_as_array.shape[1]
+        assert add_regs_as_array.shape[0] == np.size(frame_times), (
             "Incorrect specification of additional regressors: "
-            f"length of regressors provided: {add_regs_.shape[0]}, number of "
-            f"time-frames: {np.size(frame_times)}."
+            f"length of regressors provided: {add_regs_as_array.shape[0]}, "
+            f"number of time-frames: {np.size(frame_times)}."
         )
 
     # check that additional regressor names are well specified
@@ -420,7 +409,9 @@ def make_first_level_design_matrix(
     if add_regs is not None:
         # add user-supplied regressors and corresponding names
         matrix = (
-            np.hstack((matrix, add_regs)) if matrix is not None else add_regs
+            np.hstack((matrix, add_regs_as_array))
+            if matrix is not None
+            else add_regs_as_array
         )
         names += add_reg_names
 
@@ -463,6 +454,27 @@ def check_design_matrix(design_matrix):
     names : array of shape (n_events,), dtype='f'
         Per-event onset time (in seconds)
 
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from nilearn.glm.first_level import check_design_matrix
+    >>>
+    >>> # Create a mock design matrix.
+    >>> design_matrix = pd.DataFrame(
+    ...     data={"col1": [1, 2], "col2": [3, 4]},
+    ...     index=[3, 4],
+    ... )
+    >>>
+    >>> # Check the design matrix.
+    >>> frame_times, matrix, names = check_design_matrix(design_matrix)
+    >>> frame_times
+    Index([3, 4], dtype='int64')
+    >>> matrix
+    array([[1, 3],
+           [2, 4]])
+    >>> names
+    ['col1', 'col2']
+
     """
     if len(design_matrix.columns) == 0:
         raise ValueError("The design_matrix dataframe cannot be empty.")
@@ -472,7 +484,9 @@ def check_design_matrix(design_matrix):
     return frame_times, matrix, names
 
 
-def make_second_level_design_matrix(subjects_label, confounds=None):
+def make_second_level_design_matrix(
+    subjects_label, confounds=None
+) -> pd.DataFrame:
     """Set up a second level design.
 
     Construct a design matrix with an intercept and subject specific confounds.
@@ -499,6 +513,9 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
     if confounds is not None:
         confounds_name = confounds.columns.tolist()
         confounds_name.remove("subject_label")
+
+        if confounds.isna().to_numpy().any():
+            raise ValueError("Confounds contain NaN values.")
 
     design_columns = [*confounds_name, "intercept"]
     # check column names are unique

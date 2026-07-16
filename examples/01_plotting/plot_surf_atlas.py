@@ -42,7 +42,7 @@ print(f"{fsaverage_meshes['pial'].parts['left']=}")
 print(f"{fsaverage_meshes['inflated'].parts['left']=}")
 
 # The fsaverage data contains file names pointing to the file locations
-# The sulcal depth maps will be is used for shading.
+# The sulcal depth maps will be used for shading.
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
 print(f"{fsaverage_sulcal=}")
 
@@ -62,7 +62,6 @@ plot_surf_roi(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     title="Destrieux parcellation on sulcal surface",
-    darkness=None,
 )
 
 # %%
@@ -77,7 +76,6 @@ for view in ["lateral", "posterior", "ventral"]:
         bg_map=fsaverage_sulcal,
         bg_on_data=True,
         title=f"Destrieux parcellation on inflated surface\n{view} view",
-        darkness=None,
     )
 
 show()
@@ -93,7 +91,6 @@ plot_surf_roi(
     view=(elev, azim),
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    darkness=None,
     title="Arbitrary view of Destrieux parcellation",
 )
 
@@ -151,9 +148,26 @@ view = view_surf(
     surf_map=destrieux_atlas,
     cmap="gist_ncar",
     symmetric_cmap=False,
-    darkness=None,
 )
-# In a Jupyter notebook, if ``view`` is the output of a cell,
+# In a notebook, if ``view`` is the output of a cell,
+# it will be displayed below the cell
+view
+
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
+
+# %%
+# Note that you can also specify "niivue"
+# as plotting engine to visualize surfaces.
+#
+view = view_surf(
+    surf_mesh=fsaverage_meshes["inflated"],
+    surf_map=destrieux_atlas,
+    cmap="gist_ncar",
+    symmetric_cmap=False,
+    engine="niivue",
+)
+# In a notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
 view
 

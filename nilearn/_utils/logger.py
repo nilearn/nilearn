@@ -1,13 +1,17 @@
 """Logging facility for nilearn."""
 
 import inspect
+import time
 import traceback
 from pathlib import Path
 
-from sklearn.base import BaseEstimator
+import numpy as np
+
+from nilearn._base import NilearnBaseEstimator
+from nilearn.nilearn_typing import Verbose
 
 
-def _has_rich():
+def _has_rich() -> bool:
     """Check if rich is installed."""
     try:
         import rich  # noqa: F401
@@ -26,13 +30,13 @@ if _has_rich():
 # The technique used in the log() function only applies to CPython, because
 # it uses the inspect module to walk the call stack.
 def log(
-    msg,
-    verbose=1,
-    object_classes=(BaseEstimator,),
-    stack_level=None,
-    msg_level=1,
-    with_traceback=False,
-):
+    msg: str,
+    verbose: Verbose,
+    object_classes=(NilearnBaseEstimator,),
+    stack_level: int | np.integer | None = None,
+    msg_level: int | np.integer = 1,
+    with_traceback: bool = False,
+) -> None:
     """Display a message to the user, depending on the verbosity level.
 
     This function allows to display some information that references an object
@@ -44,11 +48,11 @@ def log(
     msg : str
         Message to display.
 
-    verbose : int, default=1
-        Current verbosity level. Message is displayed if this value is greater
+    %(verbose)s
+        Message is displayed if this value is greater
         or equal to msg_level.
 
-    object_classes : tuple of type, default=(BaseEstimator, )
+    object_classes : tuple of type, default=(NilearnBaseEstimator, )
         Classes that should appear to emit the message.
 
     stack_level : int or None, default=None
@@ -72,6 +76,11 @@ def log(
     is the one which is most likely to have been written in the user's script.
 
     """
+    if verbose is False:
+        verbose = 0
+    if verbose is True:
+        verbose = 1
+
     if verbose < msg_level:
         return
     if stack_level is None:
@@ -107,7 +116,7 @@ def log(
         traceback.print_exc()
 
 
-def compose_err_msg(msg, **kwargs):
+def compose_err_msg(msg: str, **kwargs) -> str:
     """Append key-value pairs to msg, for display. # noqa: D301.
 
     Parameters
@@ -123,8 +132,8 @@ def compose_err_msg(msg, **kwargs):
     updated_msg : string
         msg, with "key: value" appended. Only string values are appended.
 
-    Example
-    -------
+    Examples
+    --------
     >>> compose_err_msg('Error message with arguments...', arg_num=123, \
         arg_str='filename.nii', arg_bool=True)
     'Error message with arguments...\\narg_str: filename.nii'
@@ -151,18 +160,32 @@ def find_stack_level() -> int:
 
     pkg_dir = Path(nil.__file__).parent
 
+    # list of stack frames to skip
+    skip_list = [
+        Path("sklearn") / "utils" / "_set_output.py",
+        Path("sklearn") / "base.py",
+        Path("joblib") / "memory.py",
+        Path("joblib") / "parallel.py",
+    ]
+
     # https://stackoverflow.com/questions/17407119/python-inspect-stack-is-slow
     frame = inspect.currentframe()
     try:
         n = 0
         while frame:
             filename = inspect.getfile(frame)
+
             is_test_file = Path(filename).name.startswith("test_")
+
             in_nilearn_code = filename.startswith(str(pkg_dir))
-            if not in_nilearn_code or is_test_file:
+            skip = any(str(x) in filename for x in skip_list)
+            if (not in_nilearn_code and not skip) or is_test_file:
                 break
+
             frame = frame.f_back
+
             n += 1
+
     finally:
         # See note in
         # https://docs.python.org/3/library/inspect.html#inspect.Traceback
@@ -170,9 +193,30 @@ def find_stack_level() -> int:
     return n
 
 
-def one_level_deeper():
+def one_level_deeper() -> int:
     """Use for testing find_stack_level.
 
     Needs to be in a module that does not start with 'test'
     """
     return find_stack_level()
+
+
+def readable_time(seconds) -> str:
+    """Convert a duration in seconds to a human-readable string.
+
+    The output includes hours, minutes, and seconds as needed, using
+    abbreviated units (HR/HRS, MIN, SEC).
+
+    Parameters
+    ----------
+    seconds : int or float
+        Time duration in seconds.
+
+    Returns
+    -------
+    str
+        Human-readable time string.
+    """
+    seconds = round(seconds)
+
+    return time.strftime("%H HR %M MIN %S SEC", time.gmtime(seconds))

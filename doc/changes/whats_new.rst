@@ -7,6 +7,14 @@ What's new
 
 .. _latest:
 .. include:: latest.rst
+.. _v0.14.0:
+.. include:: 0.14.0.rst
+.. _v0.13.1:
+.. include:: 0.13.1.rst
+.. _v0.13.0:
+.. include:: 0.13.0.rst
+.. _v0.12.1:
+.. include:: 0.12.1.rst
 .. _v0.12.0:
 .. include:: 0.12.0.rst
 .. _v0.11.1:

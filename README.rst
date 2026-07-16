@@ -81,7 +81,7 @@ With ``conda``:
 
 .. code-block:: bash
 
-    conda create -n nilearn python=3.9
+    conda create -n nilearn python=3.10
     conda activate nilearn
 
 **2. Install nilearn with pip**
@@ -91,7 +91,26 @@ in the proper python environment:
 
 .. code-block:: bash
 
-    python -m pip install -U nilearn
+    python -m pip install nilearn
+
+If you want to upgrade your current version:
+
+.. code-block:: bash
+
+    python -m pip install --upgrade nilearn
+
+Nilearn comes with optional plotting dependencies (matplotlib, plotly).
+If you want to install matplotlib:
+
+.. code-block:: bash
+
+    python -m pip install 'nilearn[plotting]'
+
+If you want to install matplotlib and plotly:
+
+.. code-block:: bash
+
+    python -m pip install 'nilearn[plotting, plotly]'
 
 Development version
 -------------------
@@ -128,7 +147,7 @@ Dependencies
 The required dependencies to use the software are listed
 in the file `pyproject.toml <https://github.com/nilearn/nilearn/blob/main/pyproject.toml>`_.
 
-If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.3.0 is required.
+If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.8.0 is required.
 
 Some plotting functions in Nilearn support both matplotlib and plotly as plotting engines.
 In order to use the plotly engine in these functions,

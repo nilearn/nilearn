@@ -1,20 +1,21 @@
 """Functions for surface visualization."""
 
-from warnings import warn
+from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import pandas as pd
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import fill_doc
-from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
-from nilearn.image import get_data
+from nilearn.image import check_niimg_3d, get_data
+from nilearn.nilearn_typing import ColorBar, OutputFile, Title
+from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
     check_threshold_not_negative,
-    create_colormap_from_lut,
+    get_colorbar_and_data_ranges,
 )
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
@@ -45,29 +46,28 @@ def plot_surf(
     bg_map=None,
     hemi=DEFAULT_HEMI,
     view=None,
-    engine=DEFAULT_ENGINE,
+    engine: Literal["matplotlib", "plotly"] = DEFAULT_ENGINE,
     cmap=None,
     symmetric_cmap=None,
-    colorbar=True,
+    colorbar: ColorBar = True,
     avg_method=None,
     threshold=None,
     alpha=None,
-    bg_on_data=False,
-    darkness=0.7,
+    bg_on_data: bool = False,
     vmin=None,
     vmax=None,
     cbar_vmin=None,
     cbar_vmax=None,
     cbar_tick_format="auto",
-    title=None,
+    title: Title = None,
     title_font_size=None,
-    output_file=None,
+    output_file: OutputFile = None,
     axes=None,
     figure=None,
 ):
     """Plot surfaces with optional background and data.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -100,7 +100,7 @@ def plot_surf(
 
     engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
         Selects which plotting engine will be used by ``plot_surf``.
         Currently, only ``matplotlib`` and ``plotly`` are supported.
@@ -110,12 +110,21 @@ def plot_surf(
             installed.
 
         .. note::
-            To be able to save figures to disk with the ``plotly`` engine, you
-            need to have ``kaleido`` installed.
+            To be able to save figures to disk with ``plotly`` engine
+            you need to have ``kaleido`` installed.
 
-        .. warning::
-            The ``plotly`` engine is new and experimental. Please report bugs
-            that you may encounter.
+            To be able to save images with plotly,
+            make sure that Google Chrome is installed!
+            You can install a compatible Chrome version using
+            the ``kaleido_get_chrome`` command in command line or
+            ``kaleido.get_chrome_sync()`` function
+            in Python.
+
+            .. code-block:: python
+
+                import kaleido
+
+                kaleido.get_chrome_sync()
 
     %(cmap)s
         If `None`, ``matplotlib`` default will be chosen.
@@ -130,13 +139,13 @@ def plot_surf(
         When using ``plotly`` as engine, ``symmetric_cmap`` will default to
         `False` if `None` is passed.
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
-        .. versionchanged:: 0.12.0
+        .. nilearn_versionchanged:: 0.12.0
             Default value changed to None.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     %(avg_method)s
 
@@ -148,7 +157,7 @@ def plot_surf(
         ``"mean"`` if `None` is passed.
 
     %(threshold)s
-        Default=None
+        default=None
 
     alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
@@ -164,9 +173,6 @@ def plot_surf(
         if `None` is passed.
 
     %(bg_on_data)s
-
-    %(darkness)s
-        Default=1.
 
     %(vmin)s
 
@@ -189,12 +195,12 @@ def plot_surf(
             engine.
 
     %(cbar_tick_format)s
-        Default="auto" which will select:
+        default="auto" which will select:
 
         - `'%%.2g'` (scientific notation) with ``matplotlib`` engine.
         - `'.1f'` (rounded floats) with ``plotly`` engine.
 
-        .. versionadded:: 0.7.1
+        .. nilearn_versionadded:: 0.7.1
 
     %(title)s
 
@@ -208,7 +214,7 @@ def plot_surf(
         When using ``plotly`` as engine, ``title_font_size`` will default to
         `18` if `None` is passed.
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
     %(output_file)s
 
@@ -272,7 +278,6 @@ def plot_surf(
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmin=vmin,
         vmax=vmax,
         cbar_vmin=cbar_vmin,
@@ -298,8 +303,8 @@ def plot_surf_contours(
     colors=None,
     legend=False,
     cmap="tab20",
-    title=None,
-    output_file=None,
+    title: Title = None,
+    output_file: OutputFile = None,
     axes=None,
     figure=None,
     **kwargs,
@@ -334,7 +339,7 @@ def plot_surf_contours(
         and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
         Otherwise a warning will be displayed.
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     levels : :obj:`list` of :obj:`int`, or None, default=None
         A list of indices of the regions that are to be outlined.
@@ -346,7 +351,7 @@ def plot_surf_contours(
         Provide `None` as list entry to skip showing the label of that region.
         If `None`, no labels are used.
 
-    colors : :obj:`list` of matplotlib color names or RGBA values, or None,
+    colors : :obj:`list` of matplotlib color names or RGBA values, or None, \
         default=None
         Colors to be used.
 
@@ -354,7 +359,7 @@ def plot_surf_contours(
         Whether to plot a legend of region's labels.
 
     %(cmap)s
-        Default='tab20'.
+        default='tab20'.
 
     %(title)s
 
@@ -381,6 +386,7 @@ def plot_surf_contours(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    check_params(locals())
     roi_map, surf_mesh, _ = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, map_var_name="roi_map"
     )
@@ -412,28 +418,27 @@ def plot_surf_stat_map(
     bg_map=None,
     hemi=DEFAULT_HEMI,
     view=None,
-    engine=DEFAULT_ENGINE,
+    engine: Literal["matplotlib", "plotly"] = DEFAULT_ENGINE,
     cmap=DEFAULT_DIVERGING_CMAP,
-    colorbar=True,
+    colorbar: ColorBar = True,
     avg_method=None,
     threshold=None,
     alpha=None,
-    bg_on_data=False,
-    darkness=0.7,
+    bg_on_data: bool = False,
     vmin=None,
     vmax=None,
     symmetric_cbar="auto",
     cbar_tick_format="auto",
-    title=None,
+    title: Title = None,
     title_font_size=None,
-    output_file=None,
+    output_file: OutputFile = None,
     axes=None,
     figure=None,
     **kwargs,
 ):
     """Plot a stats map on a surface :term:`mesh` with optional background.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -466,7 +471,7 @@ def plot_surf_stat_map(
 
     engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
         Selects which plotting engine will be used by ``plot_surf_stat_map``.
         Currently, only ``matplotlib`` and ``plotly`` are supported.
@@ -476,13 +481,21 @@ def plot_surf_stat_map(
             have ``plotly`` installed.
 
         .. note::
-            To be able to save figures to disk with the ``plotly``
-            engine you need to have ``kaleido`` installed.
+            To be able to save figures to disk with ``plotly`` engine
+            you need to have ``kaleido`` installed.
 
-        .. warning::
-            The ``plotly`` engine is new and experimental.
-            Please report bugs that you may encounter.
+            To be able to save images with plotly,
+            make sure that Google Chrome is installed!
+            You can install a compatible Chrome version using
+            the ``kaleido_get_chrome`` command in command line or
+            ``kaleido.get_chrome_sync()`` function
+            in Python.
 
+            .. code-block:: python
+
+                import kaleido
+
+                kaleido.get_chrome_sync()
 
     %(cmap)s
         default="RdBu_r"
@@ -492,7 +505,7 @@ def plot_surf_stat_map(
         .. note::
             This function uses a symmetric colorbar for the statistical map.
 
-        Default=True.
+        default=True.
 
     %(avg_method)s
 
@@ -503,10 +516,10 @@ def plot_surf_stat_map(
         When using matplotlib as engine,
         `avg_method` will default to ``"mean"`` if ``None`` is passed.
 
-        .. versionadded:: 0.10.3dev
+        .. nilearn_versionadded:: 0.10.3
 
     %(threshold)s
-        Default=None
+        default=None
 
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not the stat_map).
@@ -520,13 +533,6 @@ def plot_surf_stat_map(
 
     %(bg_on_data)s
 
-    %(darkness)s
-        Default=1.
-
-        .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
-
     %(vmin)s
 
     %(vmax)s
@@ -534,19 +540,19 @@ def plot_surf_stat_map(
     %(symmetric_cbar)s
 
     %(cbar_tick_format)s
-        Default="auto" which will select:
+        default="auto" which will select:
 
             - '%%.2g' (scientific notation) with ``matplotlib`` engine.
             - '.1f' (rounded floats) with ``plotly`` engine.
 
-        .. versionadded:: 0.7.1
+        .. nilearn_versionadded:: 0.7.1
 
     %(title)s
 
     title_font_size : :obj:`int`, default=None
         Size of the title font (only implemented for the plotly engine).
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
     %(output_file)s
 
@@ -587,32 +593,31 @@ def plot_surf_stat_map(
     check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     loaded_stat_map = load_surf_data(stat_map)
 
-    backend = get_surface_backend(engine)
     # derive symmetric vmin, vmax and colorbar limits depending on
     # symmetric_cbar settings
-    cbar_vmin, cbar_vmax, vmin, vmax = (
-        backend._adjust_colorbar_and_data_ranges(
-            loaded_stat_map,
-            vmin=vmin,
-            vmax=vmax,
-            symmetric_cbar=symmetric_cbar,
-        )
+    cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
+        loaded_stat_map,
+        vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar,
     )
+    backend = get_surface_backend(engine)
+    if "cbar_vmin" in backend.PARAMS_NOT_IMPLEMENTED:
+        cbar_vmin = None
+        cbar_vmax = None
 
-    fig = plot_surf(
+    fig = backend._plot_surf(
         surf_mesh,
         surf_map=loaded_stat_map,
         bg_map=bg_map,
         hemi=hemi,
         view=view,
-        engine=engine,
         cmap=cmap,
         colorbar=colorbar,
         avg_method=avg_method,
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmin=vmin,
         vmax=vmax,
         cbar_vmin=cbar_vmin,
@@ -636,16 +641,16 @@ def plot_img_on_surf(
     hemispheres=None,
     views=None,
     cmap=DEFAULT_DIVERGING_CMAP,
-    colorbar=True,
+    colorbar: ColorBar = True,
     threshold=None,
-    bg_on_data=False,
-    inflate=False,
+    bg_on_data: bool = False,
+    inflate: bool = False,
     vmin=None,
     vmax=None,
     symmetric_cbar="auto",
     cbar_tick_format="%i",
-    title=None,
-    output_file=None,
+    title: Title = None,
+    output_file: OutputFile = None,
     **kwargs,
 ):
     """Plot multiple views of plot_surf_stat_map \
@@ -689,17 +694,17 @@ def plot_img_on_surf(
         Will default to ``['lateral', 'medial']`` if ``None`` is passed.
 
     %(cmap)s
-        Default="RdBu_r".
+        default="RdBu_r".
 
     %(colorbar)s
 
         .. note::
             This function uses a symmetric colorbar for the statistical map.
 
-        Default=True.
+        default=True.
 
     %(threshold)s
-        Default=None
+        default=None
 
     %(bg_on_data)s
 
@@ -775,7 +780,7 @@ def plot_img_on_surf(
 
     backend = get_surface_backend(DEFAULT_ENGINE)
     # get vmin and vmax for entire data (all hemis)
-    _, _, vmin, vmax = backend._adjust_colorbar_and_data_ranges(
+    _, _, vmin, vmax = get_colorbar_and_data_ranges(
         get_data(stat_map),
         vmin=vmin,
         vmax=vmax,
@@ -785,7 +790,6 @@ def plot_img_on_surf(
     fig = backend._plot_img_on_surf(
         surf,
         surf_mesh=surf_mesh,
-        stat_map=stat_map,
         texture=texture,
         hemis=hemis,
         modes=modes,
@@ -812,27 +816,26 @@ def plot_surf_roi(
     bg_map=None,
     hemi=DEFAULT_HEMI,
     view=None,
-    engine=DEFAULT_ENGINE,
+    engine: Literal["matplotlib", "plotly"] = DEFAULT_ENGINE,
     cmap="gist_ncar",
-    colorbar=True,
+    colorbar: ColorBar = True,
     avg_method=None,
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     cbar_tick_format="auto",
-    title=None,
+    title: Title = None,
     title_font_size=None,
-    output_file=None,
+    output_file: OutputFile = None,
     axes=None,
     figure=None,
     **kwargs,
 ):
     """Plot ROI on a surface :term:`mesh` with optional background.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -863,6 +866,10 @@ def plot_surf_roi(
         correct view, `hemi` should have a value corresponding to `roi_map`
         data.
 
+        .. nilearn_versionchanged :: nilearn 0.13.0
+
+            Negative or non-integer values are no longer allowed.
+
     %(bg_map)s
 
     %(hemi)s
@@ -871,7 +878,7 @@ def plot_surf_roi(
 
     engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
         Selects which plotting engine will be used by ``plot_surf_roi``.
         Currently, only ``matplotlib`` and ``plotly`` are supported.
@@ -884,15 +891,25 @@ def plot_surf_roi(
             To be able to save figures to disk with ``plotly`` engine
             you need to have ``kaleido`` installed.
 
-        .. warning::
-            The ``plotly`` engine is new and experimental.
-            Please report bugs that you may encounter.
+            To be able to save images with plotly,
+            make sure that Google Chrome is installed!
+            You can install a compatible Chrome version using
+            the ``kaleido_get_chrome`` command in command line or
+            ``kaleido.get_chrome_sync()`` function
+            in Python.
+
+            .. code-block:: python
+
+                import kaleido
+
+                kaleido.get_chrome_sync()
+
 
     %(cmap_lut)s
-        Default='gist_ncar'.
+        default='gist_ncar'.
 
     %(colorbar)s
-        Default=True
+        default=True
 
     %(avg_method)s
 
@@ -904,7 +921,7 @@ def plot_surf_roi(
         `avg_method` will default to ``"median"`` if ``None`` is passed.
 
     %(threshold)s
-        Default=None
+        default=None
 
         .. note::
             By default, the regions that are labeled 0 are not thresholded.
@@ -924,31 +941,24 @@ def plot_surf_roi(
 
     %(bg_on_data)s
 
-    %(darkness)s
-        Default=1.
-
-        .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
-
     %(vmin)s
 
     %(vmax)s
 
     %(cbar_tick_format)s
-        Default="auto" which defaults to integers format:
+        default="auto" which defaults to integers format:
 
             - "%%i" for ``matplotlib`` engine.
             - "." for ``plotly`` engine.
 
-        .. versionadded:: 0.7.1
+        .. nilearn_versionadded:: 0.7.1
 
     %(title)s
 
     title_font_size : :obj:`int`, default=None
         Size of the title font (only implemented for the plotly engine).
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
     %(output_file)s
 
@@ -969,6 +979,11 @@ def plot_surf_roi(
 
     kwargs : :obj:`dict`, optional
         Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
+
+    Raises
+    ------
+    ValueError
+        If roi image contains negative or non-integer values.
 
     See Also
     --------
@@ -996,15 +1011,7 @@ def plot_surf_roi(
             f"{roi.ndim} dimensions"
         )
     if (roi < 0).any():
-        # TODO raise ValueError in release 0.13
-        warn(
-            (
-                "Negative values in roi_map will no longer be allowed in"
-                " Nilearn version 0.13"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
+        raise ValueError("Negative values in roi_map are not allowed.")
 
     mesh = load_surf_mesh(surf_mesh)
     if roi.shape[0] != mesh.n_vertices:
@@ -1023,25 +1030,25 @@ def plot_surf_roi(
         vmax = float(1 + np.nanmax(roi))
 
     if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
-        # TODO raise ValueError in release 0.13
-        warn(
-            (
-                "Non-integer values in roi_map will no longer be allowed "
-                "in Nilearn version 0.13"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
+        raise ValueError("Non-integer values in roi_map are not allowed.")
+
+    if (isinstance(cmap, str) and Path(cmap).exists()) or isinstance(
+        cmap, Path
+    ):
+        cmap_path = Path(cmap)
+        sep = "\t" if cmap_path.suffix == ".tsv" else ","
+        cmap = pd.read_csv(cmap, sep=sep)
+
     if isinstance(cmap, pd.DataFrame):
         cmap = create_colormap_from_lut(cmap)
 
-    params = {
-        "avg_method": avg_method,
-        "cbar_tick_format": cbar_tick_format,
-    }
-
     backend = get_surface_backend(engine)
-    backend._adjust_plot_roi_params(params)
+
+    if (
+        avg_method is None
+        and "avg_method" not in backend.PARAMS_NOT_IMPLEMENTED
+    ):
+        avg_method = "median"
 
     fig = backend._plot_surf(
         mesh,
@@ -1051,14 +1058,13 @@ def plot_surf_roi(
         view=view,
         cmap=cmap,
         colorbar=colorbar,
-        avg_method=params["avg_method"],
+        avg_method=avg_method,
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmin=vmin,
         vmax=vmax,
-        cbar_tick_format=params["cbar_tick_format"],
+        cbar_tick_format=cbar_tick_format,
         title=title,
         title_font_size=title_font_size,
         output_file=output_file,

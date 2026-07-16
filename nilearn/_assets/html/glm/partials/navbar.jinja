@@ -1,0 +1,94 @@
+<!-- Adapted from Pure CSS navbar : https://purecss.io/layouts/tucked-menu-vertical/ -->
+<nav class="navbar pure-g fw-bold" id="menu">
+    <script>var unique_id = "UUID-{{ unique_id }}";</script>
+    <div class="pure-u-1 pure-u-lg-1-8">
+        <div class="pure-menu">
+            <a href="#model-details-UUID-{{ unique_id }}" class="pure-menu-heading">Home</a>
+            <a href="#" class="custom-toggle" id="toggle"><s class="bar"></s><s class="bar"></s></a>
+        </div>
+    </div>
+    <div class="pure-u-1 pure-u-lg-1-6">
+        <div class="pure-menu pure-menu-horizontal custom-can-transform">
+            <ul class="pure-menu-list">
+                <li class="pure-menu-item">
+                    <a href="#model-details-UUID-{{ unique_id }}" class="pure-menu-link">Model details</a>
+                </li>
+                {% if run_wise_dict %}
+                    <li class="pure-menu-item">
+                        <a id="navbar-matrix-link-UUID-{{ unique_id }}"
+                           href="#design-matrix-UUID-{{ unique_id }}"
+                           class="pure-menu-link">Design Matrix</a>
+                    </li>
+                {% endif %}
+                {% if results %}
+                    <li class="pure-menu-item">
+                        <a id="navbar-contrasts-link-UUID-{{ unique_id }}"
+                           href="#contrasts-UUID-{{ unique_id }}"
+                           class="pure-menu-link">Contrasts</a>
+                    </li>
+                {% endif %}
+                <li class="pure-menu-item">
+                    <a href="#mask-UUID-{{ unique_id }}" class="pure-menu-link">Mask</a>
+                </li>
+                {% if results %}
+                    <li class="pure-menu-item">
+                        <a href="#statistical-maps-UUID-{{ unique_id }}" class="pure-menu-link">Statistical Maps</a>
+                    </li>
+                {% endif %}
+                <li class="pure-menu-item">
+                    <a href="#about-UUID-{{ unique_id }}" class="pure-menu-link">About</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<script>
+  (function (window, document) {
+    var menu = document.getElementById("menu"),
+      rollback,
+      WINDOW_CHANGE_EVENT =
+        "onorientationchange" in window ? "orientationchange" : "resize";
+
+    function toggleHorizontal() {
+      menu.classList.remove("closing");
+      [].forEach.call(
+        document
+          .getElementById("menu")
+          .querySelectorAll(".custom-can-transform"),
+        function (el) {
+          el.classList.toggle("pure-menu-horizontal");
+        },
+      );
+    }
+
+    function toggleMenu() {
+      // set timeout so that the panel has a chance to roll up
+      // before the menu switches states
+      if (menu.classList.contains("open")) {
+        menu.classList.add("closing");
+        rollBack = setTimeout(toggleHorizontal, 500);
+      } else {
+        if (menu.classList.contains("closing")) {
+          clearTimeout(rollBack);
+        } else {
+          toggleHorizontal();
+        }
+      }
+      menu.classList.toggle("open");
+      document.getElementById("toggle").classList.toggle("x");
+    }
+
+    function closeMenu() {
+      if (menu.classList.contains("open")) {
+        toggleMenu();
+      }
+    }
+
+    document.getElementById("toggle").addEventListener("click", function (e) {
+      toggleMenu();
+      e.preventDefault();
+    });
+
+    window.addEventListener(WINDOW_CHANGE_EVENT, closeMenu);
+  })(this, this.document);
+</script>

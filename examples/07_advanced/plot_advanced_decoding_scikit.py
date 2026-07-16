@@ -14,8 +14,6 @@ stimuli on :footcite:t:`Haxby2001` dataset,
 focusing on distinguishing two categories:
 face and cat images.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -82,9 +80,9 @@ masker = NiftiMasker(
     mask_img=mask_filename,
     runs=run_label,
     smoothing_fwhm=4,
-    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
+    verbose=1,
 )
 fmri_masked = masker.fit_transform(fmri_niimgs)
 
@@ -169,7 +167,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 
 feature_selection = SelectPercentile(f_classif, percentile=10)
-linear_svc = LinearSVC(dual=True)
+linear_svc = LinearSVC(dual=True, random_state=0)
 anova_svc = Pipeline([("anova", feature_selection), ("svc", linear_svc)])
 
 # We can use our ``anova_svc`` object exactly as we were using our ``svc``
@@ -211,10 +209,12 @@ print(
 )
 
 # We apply the inverse of masking on these to make a 4D image that we can plot
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 weight_img = masker.inverse_transform(full_coef)
 plot_stat_map(weight_img, title="Anova+SVC weights")
+
+show()
 
 # %%
 # Going further with scikit-learn
@@ -240,7 +240,7 @@ anova_lda = Pipeline([("anova", feature_selection), ("LDA", lda)])
 import numpy as np
 
 cv_scores = cross_val_score(
-    anova_lda, fmri_masked, conditions, cv=cv, verbose=1, groups=run_label
+    anova_lda, fmri_masked, conditions, cv=cv, groups=run_label
 )
 classification_accuracy = np.mean(cv_scores)
 n_conditions = len(set(conditions))  # number of target classes
