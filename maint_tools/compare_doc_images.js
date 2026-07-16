@@ -45,6 +45,12 @@ function isIgnored (name, patterns) {
   return patterns.some((pattern) => globToRegExp(pattern).test(name))
 }
 
+// strip the trailing '_<number>.png' index so consecutive outputs of the
+// same example (e.g. sphx_glr_plot_foo_001.png, ..._002.png) are grouped
+function baseName (name) {
+  return name.replace(/_\d+\.png$/, '.png')
+}
+
 function checkClone (stableDir, devDir) {
   for (const dir of [stableDir, devDir]) {
     if (!fs.existsSync(dir)) {
@@ -143,7 +149,13 @@ function main () {
   console.log(
     `\n${changed.length} image(s) changed beyond tolerance (${DIFF_RATIO_TOLERANCE * 100}% of pixels):\n`
   )
+  let previousBaseName = null
   for (const r of changed) {
+    if (previousBaseName !== null && baseName(r.name) !== previousBaseName) {
+      console.log('')
+    }
+    previousBaseName = baseName(r.name)
+
     const pct = r.diffRatio === null ? 'n/a' : (r.diffRatio * 100).toFixed(2) + '%'
     console.log(`  [${r.status}] ${r.name} - ${pct} pixels differ`)
   }
