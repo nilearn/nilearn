@@ -102,6 +102,8 @@ function main () {
     .sort((a, b) => (b.diffRatio || 0) - (a.diffRatio || 0))
 
   const changed = results.filter((r) => r.status !== 'unchanged')
+  const sizeChanged = results.filter((r) => r.status === 'size-changed')
+  const pixelChanged = results.filter((r) => r.status === 'changed')
 
   console.log(
     `\n${changed.length} image(s) changed beyond tolerance (${DIFF_RATIO_TOLERANCE * 100}% of pixels):\n`
@@ -113,6 +115,19 @@ function main () {
 
   if (changed.length) {
     console.log(`\nDiff images written to ${DIFF_DIR}`)
+  }
+
+  if (sizeChanged.length) {
+    console.log(
+      `\n${sizeChanged.length} image(s) changed dimensions (ignored for pass/fail).`
+    )
+  }
+
+  if (pixelChanged.length) {
+    console.error(
+      `\nFAIL: ${pixelChanged.length} image(s) exceed the pixel diff tolerance.`
+    )
+    process.exit(1)
   }
 }
 
