@@ -57,8 +57,14 @@ def generate_and_check_masker_report(
         warnings_msg_to_check = []
 
     includes = []
-    excludes = ["Adapted from Pure CSS navbar"]
-    # navbar and its css is only for GLM reports
+
+    excludes = [
+        # navbar and its css is only for GLM reports
+        "Adapted from Pure CSS navbar",
+        # if Slicer is present in report it probably means one figure was not
+        # converted to svg before being embedded in the HTML
+        "Slicer",
+    ]
 
     report_at_fit_time = masker._report_content.get(
         "reports_at_fit_time", masker.reports
