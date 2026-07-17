@@ -34,11 +34,7 @@ Fixes
 
 - :bdg-primary:`Doc` Fix the "View this page" and "Edit this page" buttons leading to a 404 on autosummary-generated API reference pages (e.g. :func:`~image.concat_imgs`), by hiding them there since those ``.rst`` files are generated at build time and never committed to the repository (:gh:`6435` by `Rémi Gau`_).
 
-- :bdg-secondary:`Maint` Add return type annotations to :func:`~interfaces.fsl.get_design_from_fslmat`, :func:`~interfaces.bids.parse_bids_filename`, :func:`~interfaces.fmriprep.load_confounds`, and :func:`~interfaces.fmriprep.load_confounds_strategy` (:gh:`6362` by `Rémi Gau`_).
-
 - :bdg-dark:`Code` Allow :func:`~glm.first_level.first_level_from_bids` to work with BIDS dataset that have a single events file in the root of the dataset for all runs (:gh:`6278` by `Rémi Gau`_).
-
-- :bdg-secondary:`Maint` Add return type annotations and :obj:`~typing.overload` signatures to :func:`~connectome.vec_to_sym_matrix`, :func:`~connectome.group_sparse_covariance`, and :func:`~reporting.get_clusters_table` (:gh:`6368` by `Rémi Gau`_).
 
 Enhancements
 ------------
@@ -60,22 +56,12 @@ Enhancements
 Changes
 -------
 
+- :bdg-dark:`Code` Add return type annotations (and :obj:`~typing.overload` signatures where the return type depends on the arguments given) across the codebase, as part of the ongoing effort tracked in :gh:`3568`: public functions in :mod:`nilearn.glm` (:gh:`6370`) and :mod:`nilearn.regions` (:gh:`6369`); :func:`~connectome.vec_to_sym_matrix`, :func:`~connectome.group_sparse_covariance`, :func:`~reporting.get_clusters_table` (:gh:`6368`); :func:`~interfaces.fsl.get_design_from_fslmat`, :func:`~interfaces.bids.parse_bids_filename`, :func:`~interfaces.fmriprep.load_confounds`, :func:`~interfaces.fmriprep.load_confounds_strategy` (:gh:`6362`); :func:`~image.coord_transform`, :func:`~image.reorder_img`, :func:`~image.resample_img`, :func:`~image.resample_to_img` (:gh:`6408`); :func:`~utils.all_displays`, :func:`~utils.all_estimators`, :func:`~utils.all_functions` (:gh:`6409`); the public methods of :class:`~surface.FileMesh`, :class:`~surface.InMemoryMesh`, :class:`~surface.PolyData`, :class:`~surface.PolyMesh`, :class:`~surface.SurfaceImage`, :class:`~surface.SurfaceMesh` (:gh:`6410`); the public functions of ``nilearn._utils.data_gen`` (:gh:`6420`); :func:`~datasets.fetch_icbm152_2009`, :func:`~datasets.fetch_icbm152_brain_gm_mask`, :func:`~datasets.fetch_oasis_vbm`, :func:`~image.crop_img`, :func:`~plotting.plot_carpet`, and internal helpers ``nilearn.conftest.check_parameters_doctring``, ``nilearn.conftest.check_methods_docstring``, ``nilearn.image.image.smooth_array``, ``nilearn.surface.surface.combine_hemispheres_meshes`` (:gh:`6438`); and :func:`~glm.first_level.check_design_matrix`, :func:`~glm.second_level.non_parametric_inference`, :func:`~mass_univariate.permuted_ols`, :func:`~plotting.find_cut_slices` (:gh:`6439`) (by `Rémi Gau`_).
+
 - :bdg-secondary:`Maint` Add a matrix job to the benchmark CI workflow that benchmarks each commit in ``asv_benchmarks/hashestobenchmark.txt`` in parallel, then combines the results into a single viewable artifact, instead of benchmarking them one after another in a single, slow job, and make the version-gated local imports in ``discovery.py`` and ``plotting.py`` raise ``NotImplementedError`` so asv reports them as skipped rather than failed on nilearn versions that lack the benchmarked function (:gh:`6430` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` Drop nilearn versions older than 0.11.0 from ``asv_benchmarks/hashestobenchmark.txt`` (they cannot currently be benchmarked, see ``CONTRIBUTING.rst``), make the benchmark CI workflow fail when a benchmark reports as failed instead of silently ignoring it, fix an always-failing ``IndexImgBenchmark`` slice bound that this newly surfaced, and reorganize ``asv_benchmarks/benchmarks/glm`` to mirror the structure of :mod:`nilearn.glm` (:gh:`6426` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Add type annotations to the public functions in ``nilearn._utils.data_gen`` (:gh:`6420` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Add return type annotations to the public methods of :class:`~surface.FileMesh`, :class:`~surface.InMemoryMesh`, :class:`~surface.PolyData`, :class:`~surface.PolyMesh`, :class:`~surface.SurfaceImage`, and :class:`~surface.SurfaceMesh` (:gh:`6410` by `Rémi Gau`_).
-
 - :bdg-secondary:`Maint` Replace the ``nilearn/connectome`` ``D103`` glob ignore in ``pyproject.toml`` with per-file entries, add missing docstrings to test functions and fixtures in files that had 10 or fewer ``D103`` errors, and drop their now-unnecessary per-file ignores (:gh:`6406` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Add return type annotations to :func:`~image.coord_transform`, :func:`~image.reorder_img`, :func:`~image.resample_img`, and :func:`~image.resample_to_img` (:gh:`6408` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Add return type annotations to :func:`~utils.all_displays`, :func:`~utils.all_estimators`, and :func:`~utils.all_functions` (:gh:`6409` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.glm` (:gh:`6370` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Add return type annotations to public functions in :mod:`nilearn.regions` (:gh:`6369` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Update plotting functions to return figure or axes instead of None when an output file is specified to save the figure (:gh:`6272` by `Hande Gözükan`_).

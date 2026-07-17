@@ -6,7 +6,7 @@ import operator
 import time
 import warnings
 from pathlib import Path
-from typing import Literal
+from typing import Literal, overload
 
 import numpy as np
 import pandas as pd
@@ -960,6 +960,46 @@ class SecondLevelModel(BaseGLM):
         return self.masker_.inverse_transform(voxelwise_attribute)
 
 
+@overload
+def non_parametric_inference(
+    second_level_input,
+    confounds=...,
+    design_matrix=...,
+    second_level_contrast=...,
+    first_level_contrast=...,
+    mask=...,
+    smoothing_fwhm=...,
+    model_intercept=...,
+    n_perm=...,
+    two_sided_test=...,
+    random_state=...,
+    n_jobs=...,
+    verbose=...,
+    threshold: None = ...,
+    tfce: Literal[False] = ...,
+) -> Nifti1Image | SurfaceImage: ...
+
+
+@overload
+def non_parametric_inference(
+    second_level_input,
+    confounds=...,
+    design_matrix=...,
+    second_level_contrast=...,
+    first_level_contrast=...,
+    mask=...,
+    smoothing_fwhm=...,
+    model_intercept=...,
+    n_perm=...,
+    two_sided_test=...,
+    random_state=...,
+    n_jobs=...,
+    verbose=...,
+    threshold=...,
+    tfce: bool = ...,
+) -> dict[str, Nifti1Image | SurfaceImage]: ...
+
+
 @fill_doc
 def non_parametric_inference(
     second_level_input,
@@ -977,7 +1017,7 @@ def non_parametric_inference(
     verbose=0,
     threshold=None,
     tfce=False,
-):
+) -> Nifti1Image | SurfaceImage | dict[str, Nifti1Image | SurfaceImage]:
     """Generate p-values corresponding to the contrasts provided \
     based on permutation testing.
 
