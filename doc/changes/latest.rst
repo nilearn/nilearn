@@ -60,6 +60,8 @@ Enhancements
 Changes
 -------
 
+- :bdg-dark:`Code` Add return type annotations to :func:`~datasets.fetch_icbm152_2009`, :func:`~datasets.fetch_icbm152_brain_gm_mask`, :func:`~datasets.fetch_oasis_vbm`, :func:`~image.crop_img`, :func:`~plotting.plot_carpet`, and to internal helpers ``nilearn.conftest.check_parameters_doctring``, ``nilearn.conftest.check_methods_docstring``, ``nilearn.image.image.smooth_array``, and ``nilearn.surface.surface.combine_hemispheres_meshes`` (:gh:`XXXX` by `Rémi Gau`_).
+
 - :bdg-secondary:`Maint` Drop nilearn versions older than 0.11.0 from ``asv_benchmarks/hashestobenchmark.txt`` (they cannot currently be benchmarked, see ``CONTRIBUTING.rst``), make the benchmark CI workflow fail when a benchmark reports as failed instead of silently ignoring it, fix an always-failing ``IndexImgBenchmark`` slice bound that this newly surfaced, and reorganize ``asv_benchmarks/benchmarks/glm`` to mirror the structure of :mod:`nilearn.glm` (:gh:`6426` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add type annotations to the public functions in ``nilearn._utils.data_gen`` (:gh:`6420` by `Rémi Gau`_).
