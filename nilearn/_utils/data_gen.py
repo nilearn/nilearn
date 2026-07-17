@@ -117,7 +117,7 @@ def generate_regions_ts(
     overlap: int = 0,
     rand_gen: RandomStateOrGen = 0,
     window: str | None = "boxcar",
-    negative_regions: bool = False,
+    negative_regions: bool = True,
 ) -> np.ndarray:
     """Generate some regions as timeseries.
 
@@ -191,7 +191,7 @@ def generate_maps(
     window: str | None = "boxcar",
     rand_gen: RandomStateOrGen = 0,
     affine: np.ndarray | None = None,
-    negative_regions: bool = False,
+    negative_regions: bool = True,
 ) -> tuple[Nifti1Image, Nifti1Image]:
     """Generate a 4D volume containing several maps.
 
