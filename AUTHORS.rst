@@ -63,6 +63,7 @@ Some other past or present contributors are:
 * Amadeus Kanaan
 * `Ana Luisa Pinho`_: Western University, London, Ontario, Canada
 * `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
+* `Andrew Chen`_
 * `Andrés Hoyos Idrobo`_: Rakuten, France
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
 * `Anupriya Kumari`_: Indian Institute of Technology, Roorkee, India

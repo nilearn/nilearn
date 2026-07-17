@@ -833,9 +833,7 @@ def test_compute_multi_epi_mask(affine_eye):
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", MaskWarning)
-        with pytest.raises(
-            ValueError, match="cannot convert float NaN to integer"
-        ):
+        with pytest.raises(ValueError, match="do not have the same shape"):
             compute_multi_epi_mask([mask_a_img, mask_b_img])
 
     mask_ab = np.zeros((4, 4, 1), dtype=bool)
