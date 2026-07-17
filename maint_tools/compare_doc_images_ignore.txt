@@ -24,5 +24,8 @@ sphx_glr_plot_nifti_simple_002.png
 # REASON: underlying image was changed
 sphx_glr_plot_haxby_masks_001.png
 
-# REASON:
+# REASON: example was reworked
 sphx_glr_plot_single_subject_single_run_*.png
+
+# REASON: example was reworked
+sphx_glr_plot_carpet_002.png

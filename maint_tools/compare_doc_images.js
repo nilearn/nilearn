@@ -243,6 +243,26 @@ function compareImage (name, stableDir, devDir) {
 }
 
 /**
+ * Print a labeled, sorted list of image file names, e.g. images only
+ * found in one of the two doc builds, which can be a sign that an
+ * example failed to build, was renamed, or was added/removed.
+ *
+ * @param {string} label - Describes what the listed images have in
+ *   common, e.g. 'only in dev (new since stable)'.
+ * @param {string[]} names - Image file names to list.
+ * @returns {void}
+ */
+function printFileList (label, names) {
+  if (!names.length) {
+    return
+  }
+  console.log(style.yellow(`\n${names.length} image(s) ${label}:`))
+  for (const name of [...names].sort()) {
+    console.log(style.yellow(`  ${name}`))
+  }
+}
+
+/**
  * Compare the gallery images of the stable and dev doc builds, print a
  * report grouped by example, and exit with a non-zero status if any
  * image's pixel diff exceeds `DIFF_RATIO_TOLERANCE` (dimension-only
@@ -270,16 +290,8 @@ function main () {
   console.log(
     `\nCompared ${style.bold(toCompare.length)} gallery image(s) present in both stable and dev.`
   )
-  if (onlyInStable.length) {
-    console.log(
-      style.dim(`${onlyInStable.length} image(s) only in stable (removed in dev).`)
-    )
-  }
-  if (onlyInDev.length) {
-    console.log(
-      style.dim(`${onlyInDev.length} image(s) only in dev (new since stable).`)
-    )
-  }
+  printFileList('only in stable (removed in dev)', onlyInStable)
+  printFileList('only in dev (new since stable)', onlyInDev)
   if (ignored.length) {
     console.log(
       style.dim(`${ignored.length} image(s) ignored per ${path.basename(IGNORE_FILE)}.`)
