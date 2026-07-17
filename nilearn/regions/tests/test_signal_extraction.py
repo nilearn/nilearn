@@ -379,6 +379,30 @@ def test_signals_extraction_with_labels_without_mask(
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.ai_generated
+@pytest.mark.parametrize(
+    "label_values", [[10, 20, 30], [100, 150, 200, 256, 300, 400]]
+)
+def test_masked_atlas_keeps_the_label_values(affine_eye, label_values):
+    """The masked atlas must carry the same labels it reports.
+
+    Real atlases label well past 127, and Schaefer-400 goes to 400, so casting
+    the atlas to int8 wraps those labels around; 256 lands on the background.
+    """
+    labels_data = np.zeros((6, 6, 6), dtype=np.int32)
+    for i, label_value in enumerate(label_values):
+        labels_data[i, 0, 0] = label_value
+    signals_data = np.ones((6, 6, 6, 1))
+
+    _, labels, masked_atlas = img_to_signals_labels(
+        imgs=Nifti1Image(signals_data, affine_eye),
+        labels_img=Nifti1Image(labels_data, affine_eye),
+        return_masked_atlas=True,
+    )
+
+    assert set(np.unique(get_data(masked_atlas))) - {0} == set(labels)
+
+
 def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
     signals, labels_img
 ):

@@ -306,7 +306,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         labels_data[np.logical_not(mask_data)] = self.background_label
         region_ids_after_masking = np.unique(labels_data).tolist()
         masked_atlas = Nifti1Image(
-            labels_data.astype(np.int8), self.labels_img_.affine
+            labels_data.astype(np.int32), self.labels_img_.affine
         )
         removed_region_ids = [
             region_id
