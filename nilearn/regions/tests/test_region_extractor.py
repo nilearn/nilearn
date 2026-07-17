@@ -525,6 +525,40 @@ def test_connected_label_regions_check_labels(img_labels):
     assert len(new_labels) <= len(labels)
 
 
+@pytest.mark.ai_generated
+@pytest.mark.thread_unsafe
+@pytest.mark.parametrize(
+    "label_values",
+    [
+        [1, 2, 3, 4],  # contiguous, as the other fixtures use
+        [17, 34, 51, 68],  # sparse, as real atlases are
+    ],
+)
+def test_connected_label_regions_names_follow_label_order(
+    affine_eye, label_values
+):
+    """Names must be assigned in the order of the unique labels.
+
+    The docstring asks callers to order names to match the unique labels, and
+    np.unique returns them sorted, so iteration must stay sorted too.
+    """
+    data = np.zeros((12, 12, 12), dtype=np.int32)
+    for i, label_value in enumerate(label_values):
+        data[i, 0, 0] = label_value
+    labels_img = Nifti1Image(data, affine_eye)
+
+    names = [f"n{label_value}" for label_value in sorted(label_values)]
+
+    extracted, new_names = connected_label_regions(labels_img, labels=names)
+
+    extracted_data = get_data(extracted)
+    for new_label, name in enumerate(new_names, start=1):
+        position = np.argwhere(extracted_data == new_label)[0]
+        original_label = data[tuple(position)]
+
+        assert name == f"n{original_label}"
+
+
 @pytest.mark.thread_unsafe
 def test_connected_label_regions_check_labels_as_numpy_array(img_labels):
     """Test the names of the brain regions given in labels."""
