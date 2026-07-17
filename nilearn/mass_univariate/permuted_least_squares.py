@@ -4,6 +4,7 @@ with OLS and permutation test.
 
 import time
 import warnings
+from typing import Literal, overload
 
 import joblib
 import numpy as np
@@ -292,6 +293,43 @@ def _permuted_ols_on_chunk(
         tfce_scores_as_ranks_part,
         h0_tfce_part,
     )
+
+
+@overload
+def permuted_ols(
+    tested_vars,
+    target_vars,
+    confounding_vars=...,
+    model_intercept=...,
+    n_perm=...,
+    two_sided_test=...,
+    random_state=...,
+    n_jobs=...,
+    verbose=...,
+    masker=...,
+    tfce=...,
+    threshold=...,
+    output_type: Literal["dict"] = ...,
+) -> dict[str, np.ndarray]: ...
+
+
+@overload
+def permuted_ols(
+    tested_vars,
+    target_vars,
+    confounding_vars=...,
+    model_intercept=...,
+    n_perm=...,
+    two_sided_test=...,
+    random_state=...,
+    n_jobs=...,
+    verbose=...,
+    masker=...,
+    tfce=...,
+    threshold=...,
+    *,
+    output_type: Literal["legacy"],
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]: ...
 
 
 @fill_doc
