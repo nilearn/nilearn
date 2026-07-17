@@ -397,6 +397,24 @@ def test_smooth_array_integer_input_conserves_mass(affine_eye, dtype):
     assert smoothed.sum() == pytest.approx(200, rel=1e-3)
 
 
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("dtype", ["uint8", "uint16", "int16", "int32"])
+def test_smooth_img_integer_input_conserves_mass(affine_eye, dtype):
+    """Same as the smooth_array test above, through the public API.
+
+    smooth_img passes the image data through at its stored dtype, and uint8 is
+    what masks and atlases are stored as, so this is the path a user actually
+    takes.
+    """
+    data = np.zeros((9, 9, 9), dtype=dtype)
+    data[4, 4, 4] = 200
+    img = Nifti1Image(data, affine_eye)
+
+    smoothed = smooth_img(img, fwhm=4)
+
+    assert get_data(smoothed).sum() == pytest.approx(200, rel=1e-3)
+
+
 @pytest.mark.parametrize("create_files", (False, True))
 def test_smooth_img(tmp_path, create_files):
     """Checks added functionalities compared to image._smooth_array()."""
