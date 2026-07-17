@@ -770,7 +770,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
         if not keep_empty and sums[n] == 0:
             continue
         trimmed_maps[mask, p] = maps[mask, n]
-        maps_mask[trimmed_maps[..., p] > 0] = 1
+        maps_mask[trimmed_maps[..., p] != 0] = 1
         p += 1
 
     indices = (
