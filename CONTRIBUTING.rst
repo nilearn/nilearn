@@ -1156,6 +1156,8 @@ returned by the ``request_mocker`` pytest fixture, defined in
 ``Sender`` class it contains provide information on how to write a test using
 this fixture. Existing tests can also serve as examples.
 
+.. _performance:
+
 Performance monitoring
 ----------------------
 
@@ -1274,6 +1276,14 @@ For naming benchmarks, try to follow the following rules:
   and every other benchmark in that file will be reported as failed too,
   even though they do not rely on the missing function.
   A local import inside ``setup()`` confines the failure to that one benchmark.
+
+  Catch the ``ImportError`` and re-raise it as ``NotImplementedError``
+  instead of letting it propagate as-is.
+  asv treats a ``NotImplementedError`` raised in ``setup()`` as "this benchmark
+  does not apply here" and reports it as *skipped*,
+  whereas any other exception (including a bare ``ImportError``) is reported as *failed*,
+  which the CI benchmark workflow treats as a hard failure
+  (see the "Fail if any benchmark reported as failed" step).
   See ``BenchMarkAllEstimators`` in ``asv_benchmarks/benchmarks/discovery.py`` for a concrete example.
 
 Maintenance
