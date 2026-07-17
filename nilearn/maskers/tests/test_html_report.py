@@ -457,7 +457,12 @@ def test_nifti_masker_overlaid_report(
     masker.fit(img_fmri)
 
     generate_and_check_masker_report(
-        masker, extend_includes=['<div class="overlay">']
+        masker,
+        extend_includes=['<div class="overlay">'],
+        # overlay should be an actual image
+        # not the string representation of a slicer
+        # regression test for https://github.com/nilearn/nilearn/issues/6418
+        extend_excludes=["nilearn.plotting.displays._slicers.OrthoSlicer"],
     )
 
 

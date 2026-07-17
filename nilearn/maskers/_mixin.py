@@ -529,16 +529,20 @@ class MaskerReportMixin(ReportMixin):
 
     def _generate_report_htmls(self):
         """Generate report figure htmls and summary htmls."""
-        report_content = self._report_content
-
         figure, embeded_images = self._generate_figure_htmls()
-        report_content["figure"] = figure
-        report_content["content"] = embeded_images
+        self._report_content["figure"] = figure
+        self._report_content["content"] = embeded_images
 
         # _generate_figure_htmls should be called before setting summary_html
         summary = self._report_content.get("summary", None)
         if summary is not None:
-            report_content["summary_html"] = self._get_summary_html(summary)
+            self._report_content["summary_html"] = self._get_summary_html(
+                summary
+            )
+
+        # for Niftimasker
+        if overlay := self._report_content.get("overlay", None):
+            self._report_content["overlay_html"] = self._embed_img(overlay)
 
     def _generate_figure_htmls(self):
         """Generate image htmls using partial template for masker figures."""
