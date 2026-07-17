@@ -22,7 +22,6 @@ NEW
 Fixes
 -----
 
-- :bdg-dark:`Code` Fix the deprecated ``nilearn.interfaces.bids.save_glm_to_bids`` redirect silently returning ``None`` instead of the fitted model, because it called the relocated :func:`~glm.save_glm_to_bids` without returning its result (:gh:`6439` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix ``examples/04_glm_first_level/plot_bids_features.py``, ``doc/get_data_examples.py``, and ``doc/visual_testing/reporter_visual_inspection_suite.py`` downloading the full FSL derivatives for the ``bart`` and ``taskswitch`` tasks of the ``ds000030`` dataset in addition to ``stopsignal``, because the ``*task-task*`` exclusion filter did not match the ``derivatives/task/sub-*/taskswitch.feat`` folder name; switch to ``inclusion_filters`` to only fetch the files needed for the ``stopsignal`` analysis (:gh:`6432` by `Rémi Gau`_).
 
