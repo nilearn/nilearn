@@ -22,6 +22,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix the deprecated ``nilearn.interfaces.bids.save_glm_to_bids`` redirect silently returning ``None`` instead of the fitted model, because it called the relocated :func:`~glm.save_glm_to_bids` without returning its result (:gh:`XXXX` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Fix ``examples/04_glm_first_level/plot_bids_features.py``, ``doc/get_data_examples.py``, and ``doc/visual_testing/reporter_visual_inspection_suite.py`` downloading the full FSL derivatives for the ``bart`` and ``taskswitch`` tasks of the ``ds000030`` dataset in addition to ``stopsignal``, because the ``*task-task*`` exclusion filter did not match the ``derivatives/task/sub-*/taskswitch.feat`` folder name; switch to ``inclusion_filters`` to only fetch the files needed for the ``stopsignal`` analysis (:gh:`6432` by `Rémi Gau`_).
 
 - :bdg-warning:`Test` Fix the ``test_html`` GitHub Actions workflow to set ``NILEARN_DATA`` to the same path used to restore its dataset cache, and add ``NILEARN_DATA`` to ``tox.ini``'s shared ``passenv`` list so ``tox`` actually forwards it to the ``generate_html``/``test_html`` environments, since without it nilearn's fetchers default to ``~/nilearn_data`` instead and every dataset was silently re-downloaded from the network on every run regardless of whether the cache was restored (:gh:`6427` by `Rémi Gau`_).
@@ -61,6 +63,8 @@ Changes
 -------
 
 - :bdg-dark:`Code` Add return type annotations to :func:`~datasets.fetch_icbm152_2009`, :func:`~datasets.fetch_icbm152_brain_gm_mask`, :func:`~datasets.fetch_oasis_vbm`, :func:`~image.crop_img`, :func:`~plotting.plot_carpet`, and to internal helpers ``nilearn.conftest.check_parameters_doctring``, ``nilearn.conftest.check_methods_docstring``, ``nilearn.image.image.smooth_array``, and ``nilearn.surface.surface.combine_hemispheres_meshes`` (:gh:`6438` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add return type annotations to :func:`~glm.first_level.check_design_matrix`, :func:`~glm.second_level.non_parametric_inference`, and :func:`~mass_univariate.permuted_ols` (:gh:`XXXX` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` Drop nilearn versions older than 0.11.0 from ``asv_benchmarks/hashestobenchmark.txt`` (they cannot currently be benchmarked, see ``CONTRIBUTING.rst``), make the benchmark CI workflow fail when a benchmark reports as failed instead of silently ignoring it, fix an always-failing ``IndexImgBenchmark`` slice bound that this newly surfaced, and reorganize ``asv_benchmarks/benchmarks/glm`` to mirror the structure of :mod:`nilearn.glm` (:gh:`6426` by `Rémi Gau`_).
 

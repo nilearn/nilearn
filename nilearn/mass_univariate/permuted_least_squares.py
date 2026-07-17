@@ -309,7 +309,7 @@ def permuted_ols(
     tfce=False,
     threshold=None,
     output_type="dict",
-):
+) -> dict[str, np.ndarray] | tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Massively univariate group analysis with permuted OLS.
 
     Tested variates are independently fitted to target variates descriptors
@@ -734,7 +734,7 @@ def permuted_ols(
             return np.asarray([]), scores_original_data.T, np.asarray([])
 
         out = {"t": scores_original_data.T}
-        if tfce:
+        if tfce and tfce_original_data is not None:
             out["tfce"] = tfce_original_data.T
         return out
 

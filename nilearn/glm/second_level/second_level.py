@@ -977,7 +977,7 @@ def non_parametric_inference(
     verbose=0,
     threshold=None,
     tfce=False,
-):
+) -> Nifti1Image | SurfaceImage | dict[str, Nifti1Image | SurfaceImage]:
     """Generate p-values corresponding to the contrasts provided \
     based on permutation testing.
 

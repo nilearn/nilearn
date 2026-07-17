@@ -434,7 +434,9 @@ def make_first_level_design_matrix(
     return design_matrix
 
 
-def check_design_matrix(design_matrix):
+def check_design_matrix(
+    design_matrix: pd.DataFrame,
+) -> tuple[pd.Index, np.ndarray, list[str]]:
     """Check that the provided DataFrame is indeed a valid design matrix \
     descriptor, and returns a triplet of fields.
 
