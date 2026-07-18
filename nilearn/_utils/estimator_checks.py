@@ -3677,7 +3677,6 @@ def check_masker_verbose(estimator_orig) -> None:
         estimator.fit(imgs)
     output_verbose_1 = buffer.getvalue()
 
-    print(estimator)
 
     estimator.verbose = 2
     buffer = io.StringIO()
