@@ -33,6 +33,8 @@
 
 .. _Anand Joshi: https://github.com/ajoshiusc
 
+.. _Andrew Chen: https://github.com/chuenchen309
+
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
 
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
