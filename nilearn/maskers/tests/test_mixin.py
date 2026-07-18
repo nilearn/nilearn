@@ -47,7 +47,6 @@ def masker(
         return cls(img, reports=reports)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize(

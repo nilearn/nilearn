@@ -2,6 +2,8 @@
 
 import numbers
 import warnings
+from collections.abc import Sequence
+from typing import Literal
 
 import numpy as np
 from scipy.ndimage import center_of_mass, find_objects, label
@@ -23,6 +25,7 @@ from nilearn.image import (
 )
 from nilearn.image.image import smooth_array
 from nilearn.image.resampling import coord_transform
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.plotting._utils import check_threshold_not_negative
 
 ###############################################################################
@@ -32,7 +35,11 @@ from nilearn.plotting._utils import check_threshold_not_negative
 DEFAULT_CUT_COORDS = (0.0, 0.0, 0.0)
 
 
-def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
+def find_xyz_cut_coords(
+    img,
+    mask_img: NiimgLike | None = None,
+    activation_threshold: float | None = None,
+) -> Sequence[float]:
     """Find the center of the largest activation connected component.
 
     Parameters
@@ -44,9 +51,9 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         An optional brain mask, provided mask_img should not be empty.
 
     activation_threshold : :obj:`float` or None, default=None
-        The lower threshold to the positive activation. If None, the
-        activation threshold is computed using the 80% percentile of
-        the absolute value of the map.
+        The lower threshold to the positive activation.
+        If None, the activation threshold is computed
+        using the 80% percentile of the absolute value of the map.
 
     Returns
     -------
@@ -83,16 +90,15 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         ).tolist()
 
     # Retrieve optional mask
+    mask = None
     if mask_img is not None:
-        mask_img = check_niimg_3d(mask_img)
-        mask = safe_get_data(mask_img)
-        if not np.allclose(mask_img.affine, img.affine):
+        loaded_mask_img = check_niimg_3d(mask_img)
+        mask = safe_get_data(loaded_mask_img)
+        if not np.allclose(loaded_mask_img.affine, img.affine):
             raise ValueError(
-                f"Mask affine:\n{mask_img.affine}\n "
+                f"Mask affine:\n{loaded_mask_img.affine}\n "
                 f"is different from img affine:\n{img.affine}"
             )
-    else:
-        mask = None
 
     # To speed up computations, we work with partial views of the array,
     # and keep track of the offset
@@ -145,11 +151,11 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
             coord_transform(x_map, y_map, z_map, img.affine)
         ).tolist()
     if activation_threshold is None:
-        activation_threshold = fast_abs_percentile(
-            my_map[my_map != 0].ravel(), 80
+        activation_threshold = float(
+            fast_abs_percentile(my_map[my_map != 0].ravel(), 80)
         )
     try:
-        eps = 2 * np.finfo(activation_threshold).eps
+        eps = float(2 * np.finfo(activation_threshold).eps)
     except ValueError:
         # The above will fail for exact types, eg integers
         eps = 1e-15
@@ -387,11 +393,11 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
 
 
 def find_parcellation_cut_coords(
-    labels_img,
+    labels_img: NiimgLike,
     background_label=0,
-    return_label_names=False,
-    label_hemisphere="left",
-):
+    return_label_names: bool = False,
+    label_hemisphere: Literal["left", "right"] = "left",
+) -> np.ndarray | tuple[np.ndarray, list[float]]:
     """Return coordinates of center of mass of 3D :term:`parcellation` atlas.
 
     Parameters
@@ -431,9 +437,9 @@ def find_parcellation_cut_coords(
     )
 
     # Grab data and affine
-    labels_img = reorder_img(check_niimg_3d(labels_img))
-    labels_data = get_data(labels_img)
-    labels_affine = labels_img.affine
+    loaded_labels_img = reorder_img(check_niimg_3d(labels_img))
+    labels_data = get_data(loaded_labels_img)
+    labels_affine = loaded_labels_img.affine
 
     # Grab number of unique values in 3d image
     unique_labels = np.unique(labels_data)
@@ -449,8 +455,8 @@ def find_parcellation_cut_coords(
 
         # Grab hemispheres separately
         x, y, z = coord_transform(0, 0, 0, np.linalg.inv(labels_affine))
-        left_hemi = get_data(labels_img).copy() == cur_label
-        right_hemi = get_data(labels_img).copy() == cur_label
+        left_hemi = get_data(loaded_labels_img).copy() == cur_label
+        right_hemi = get_data(loaded_labels_img).copy() == cur_label
         left_hemi[int(x) :] = 0
         right_hemi[: int(x)] = 0
 
@@ -488,7 +494,7 @@ def find_parcellation_cut_coords(
         return np.array(coords)
 
 
-def find_probabilistic_atlas_cut_coords(maps_img):
+def find_probabilistic_atlas_cut_coords(maps_img: NiimgLike) -> np.ndarray:
     """Return coordinates of center \
        :term:`probabilistic atlas<Probabilistic atlas>` 4D image.
 

@@ -544,6 +544,8 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
 
 def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
     check_is_of_allowed_type(estimators, (list,), "estimators")
+
+    checks_to_run = []
     for est in estimators:
         # TODO (nilearn >= 0.15.0)
         # remove this entire if block
@@ -557,7 +559,9 @@ def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
                 est.standardize = "zscore_sample"
 
         for e, check in nilearn_check_generator(estimator=est):
-            yield e, check, check.__name__
+            checks_to_run.append((e, check, check.__name__))
+
+    return checks_to_run
 
 
 def nilearn_check_generator(estimator: NilearnBaseEstimator):
@@ -1906,6 +1910,8 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
 
                 if hasattr(estimator, "memory"):
                     estimator.memory = memory
+                    if memory is not None:
+                        estimator.memory_level = 1
 
                 input_np_dtype = np.dtype(cast(Any, input_dtype))
 
@@ -2004,6 +2010,8 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
 
                 if hasattr(estimator, "memory"):
                     estimator.memory = memory
+                    if memory is not None:
+                        estimator.memory_level = 1
 
                 input_np_dtype = np.dtype(cast(Any, input_dtype))
 
@@ -2857,7 +2865,7 @@ def check_masker_mask_img(estimator_orig) -> None:
     If a mask is passed at construction,
     then mask_img_ should be a valid mask after fit.
 
-    When verbose maskers should mention they are loading a mask.
+    If verbose is higher than zero, maskers should mention they are loading a mask.
 
     Maskers should be fittable
     even when passing a non-binary image
@@ -3669,7 +3677,6 @@ def check_masker_verbose(estimator_orig) -> None:
         estimator.fit(imgs)
     output_verbose_1 = buffer.getvalue()
 
-    print(estimator)
 
     estimator.verbose = 2
     buffer = io.StringIO()

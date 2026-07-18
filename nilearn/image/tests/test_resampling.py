@@ -61,7 +61,7 @@ def shape() -> tuple[int, int, int, int]:
 
 @pytest.fixture
 def data(rng, shape) -> np.ndarray:
-    return rng.random(shape)
+    return rng.random(size=shape)
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
