@@ -231,7 +231,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         self.n_jobs = n_jobs
 
     def _fit(self, imgs):
-
         mask_logger("load_data", img=imgs, verbose=self.verbose)
 
         # Compute the mask if not given by the user
