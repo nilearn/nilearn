@@ -3685,7 +3685,8 @@ def check_masker_verbose(estimator_orig) -> None:
     output_verbose_2 = buffer.getvalue()
 
     # Expected loading messages
-    if not isinstance(estimator, (_MultiMixin, NiftiSpheresMasker)):
+    # TODO: cover NiftiSpheresMasker
+    if not isinstance(estimator, (NiftiSpheresMasker)):
         expected_loading_message = (
             "Loading data from",
             "Loading mask from",
