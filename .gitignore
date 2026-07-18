@@ -106,3 +106,4 @@ nilearn.svg
 # uv
 uv.lock
 .python-version
+.complexipy_cache/
