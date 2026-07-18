@@ -2865,7 +2865,7 @@ def check_masker_mask_img(estimator_orig) -> None:
     If a mask is passed at construction,
     then mask_img_ should be a valid mask after fit.
 
-    When verbose maskers should mention they are loading a mask.
+    If verbose is higher than zero, maskers should mention they are loading a mask.
 
     Maskers should be fittable
     even when passing a non-binary image
