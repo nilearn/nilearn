@@ -301,7 +301,7 @@ def get_bids_files(
     if filters or subject_level_files:
         filtered_files = _filter_bids_files(files, filters)
         if subject_level_files and not any(
-            entity == "ses" for entity, _ in filters
+            entity == "ses" and label != "" for entity, label in filters
         ):
             filtered_files.extend(
                 _filter_bids_files(subject_level_files, filters)

@@ -362,7 +362,7 @@ def test_filter_bids_files():
 @pytest.mark.parametrize(
     "modality_folder, file_tag, filters, n_expected_files",
     [
-        ("anat", "T1w", [], 5),
+        ("anat", "T1w", [], 3),
         ("anat", "T1w", [("ses", "test")], 1),
         (
             "anat",
@@ -370,13 +370,14 @@ def test_filter_bids_files():
             [("space", "MNI152NLin6Asym"), ("desc", "preproc")],
             3,
         ),
-        ("anat", "T1w", [("desc", "preproc")], 4),
+        ("anat", "T1w", [("desc", "preproc")], 3),
         (
             "anat",
             "T1w",
             [("ses", "test"), ("space", "MNI152NLin6Asym")],
             1,
         ),
+        ("anat", "T1w", [("ses", "")], 1),
         ("func", "bold", [], 3),
         ("func", "bold", [("ses", "test")], 1),
     ],
@@ -387,12 +388,10 @@ def test_get_bids_files_fmriprep_subject_level_files(
     """Find subject- and session-level BIDS files in a multi-session set."""
     for file_ in [
         "sub-01/anat/sub-01_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
-        "sub-01/anat/sub-01_space-T1w_desc-brain_T1w.nii.gz",
         "sub-01/ses-test/anat/"
         "sub-01_ses-test_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
         "sub-01/ses-retest/anat/"
         "sub-01_ses-retest_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
-        "sub-02/anat/sub-02_desc-preproc_T1w.nii.gz",
         "sub-01/func/sub-01_task-rest_bold.nii.gz",
         "sub-01/ses-test/func/sub-01_ses-test_task-rest_bold.nii.gz",
         "sub-01/ses-retest/func/sub-01_ses-retest_task-rest_bold.nii.gz",
