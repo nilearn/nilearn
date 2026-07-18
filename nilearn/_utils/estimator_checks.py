@@ -3685,16 +3685,14 @@ def check_masker_verbose(estimator_orig) -> None:
     output_verbose_2 = buffer.getvalue()
 
     # Expected loading messages
-    # TODO: cover NiftiSpheresMasker
-    if not isinstance(estimator, (NiftiSpheresMasker)):
-        expected_loading_message = (
-            "Loading data from",
-            "Loading mask from",
-            "Loading regions from",
-        )
+    expected_loading_message = (
+        "Loading data from",
+        "Loading mask from",
+        "Loading regions from",
+    )
 
-        assert any(s in output_verbose_1 for s in expected_loading_message)
-        assert any(s in output_verbose_2 for s in expected_loading_message)
+    assert any(s in output_verbose_1 for s in expected_loading_message)
+    assert any(s in output_verbose_2 for s in expected_loading_message)
 
     assert len(output_verbose_2) >= len(output_verbose_1)
 
