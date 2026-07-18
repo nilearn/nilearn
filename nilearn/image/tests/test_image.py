@@ -379,7 +379,6 @@ def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
         smooth_array(smooth_array_data, affine, fwhm=0.0)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("dtype", ["uint8", "uint16", "int16", "int32"])
 def test_smooth_img_integer_input_conserves_mass(affine_eye, dtype):
     """Smoothing an integer image through the public API must not truncate.
