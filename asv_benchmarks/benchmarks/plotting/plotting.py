@@ -2,7 +2,10 @@
 
 # ruff: noqa: ARG002
 
+import string
+
 import numpy as np
+import pandas as pd
 
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting import (
@@ -15,7 +18,7 @@ from nilearn.plotting import (
     plot_surf_stat_map,
 )
 
-from ..utils import generate_fake_fmri
+from ..utils import _rng, generate_fake_fmri
 
 PLOTTING_FUNCS_3D = [
     plot_img,
@@ -99,3 +102,42 @@ class BenchMarkPlottingSurface:
             self.surf_stat_map,
             engine=engine,
         )
+
+
+class BenchMarkPlotDesignMatrixCorrelation:
+    """Check plotting of design matrix correlation."""
+
+    length = 100
+    rank = 10
+
+    def setup(self):
+        """Set up for all benchmarks."""
+        # Imported locally (added in 0.11.0) so that benchmarking older
+        # nilearn versions only affects this benchmark instead of making
+        # the whole module fail to import for every benchmark in this file.
+        # Raising NotImplementedError (instead of letting ImportError
+        # propagate) makes asv report this as "skipped" rather than
+        # "failed" for those older versions: see asv_runner's
+        # BenchmarkBase.do_setup, which special-cases NotImplementedError.
+        try:
+            from nilearn.plotting import plot_design_matrix_correlation
+        except ImportError as e:
+            raise NotImplementedError from e
+
+        self.plot_design_matrix_correlation = plot_design_matrix_correlation
+
+        rng = _rng()
+        columns = rng.choice(
+            list(string.ascii_lowercase), size=self.rank, replace=False
+        )
+        self.design_matrix = pd.DataFrame(
+            rng.standard_normal((self.length, self.rank)), columns=columns
+        )
+
+    def time_plot_design_matrix_correlation(self):
+        """Check time."""
+        self.plot_design_matrix_correlation(self.design_matrix)
+
+    def peakmem_plot_design_matrix_correlation(self):
+        """Check peak memory."""
+        self.plot_design_matrix_correlation(self.design_matrix)

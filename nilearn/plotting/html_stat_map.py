@@ -441,9 +441,9 @@ def _get_bg_mask_and_cmap(bg_img, black_bg: bool):
     bg_mask = np.ma.getmaskarray(get_data(bg_img))
     bg_cmap = copy.copy(matplotlib.pyplot.get_cmap("gray"))
     if black_bg:
-        bg_cmap.set_bad("black")
+        bg_cmap.with_extremes(bad="black")
     else:
-        bg_cmap.set_bad("white")
+        bg_cmap.with_extremes(bad="white")
     return bg_mask, bg_cmap
 
 

@@ -1073,6 +1073,8 @@ def test_plot_surf_roi_default_arguments(
     # To avoid extra warnings
     if engine == "plotly":
         avg_method = None
+    else:
+        symmetric_cmap = None
 
     plot_surf_roi(
         surface_image_roi.mesh,
