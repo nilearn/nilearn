@@ -196,6 +196,11 @@ your using, you can pass a dictionary to ``param_grid`` argument. It must contai
 values for the suitable argument name. For example SVC has a parameter ``C``.
 By default, the values tried for ``C`` are [1,10,100].
 
+You may also pass a scikit-learn-compatible estimator object. Nilearn only
+defines default grids for its supported estimators. For a custom estimator,
+``param_grid=None`` uses the estimator's default parameters without tuning;
+provide ``param_grid`` explicitly to tune its hyperparameters.
+
 .. note::
   ``param_grid`` can only be used for hyper-parameters related to the estimator
   itself (e.g. ``C`` for SVC, ``alpha`` for Ridge, etc.). If you wish to tune

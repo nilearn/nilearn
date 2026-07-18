@@ -25,6 +25,7 @@ from nilearn.surface.surface import get_data as get_surf_data
 
 
 def test_fdr(rng):
+    """Check fdr_threshold matches the expected inverse survival value."""
     n = 100
     x = np.linspace(0.5 / n, 1.0 - 0.5 / n, n)
     x[:10] = 0.0005
@@ -43,6 +44,7 @@ def test_fdr(rng):
 
 
 def test_fdr_error(rng):
+    """Raise error for alpha outside [0, 1]."""
     n = 100
     x = np.linspace(0.5 / n, 1.0 - 0.5 / n, n)
     x[:10] = 0.0005
@@ -63,6 +65,7 @@ def _data_norm_isf(shape) -> np.ndarray:
 
 @pytest.fixture
 def data_norm_isf(shape_3d_default) -> np.ndarray:
+    """Return normal inverse survival function data of default 3D shape."""
     return _data_norm_isf(shape_3d_default)
 
 
@@ -89,6 +92,7 @@ def test_threshold_stats_img_warn_threshold_unused(
 def test_threshold_stats_img_no_height_control(
     data_norm_isf, img_3d_ones_eye, affine_eye
 ):
+    """Check threshold_stats_img with height_control=None and no map."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -141,6 +145,7 @@ def test_threshold_stats_img_no_height_control(
 def test_threshold_stats_img_error_height_control(
     data_norm_isf, img_3d_ones_eye, affine_eye
 ):
+    """Raise error for invalid height_control value."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -168,6 +173,7 @@ def test_threshold_stats_img_error_cluster_threshold(
 
 
 def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
+    """Check threshold_stats_img with various height_control values."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -219,6 +225,7 @@ def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
 
 
 def test_threshold_stats_img_errors(img_3d_rand_eye):
+    """Raise errors for invalid stat_img, height_control, and threshold."""
     with pytest.raises(ValueError, match="'stat_img' cannot be None"):
         threshold_stats_img(None, None, alpha=0.05, height_control="fdr")
 
@@ -288,6 +295,7 @@ def test_hommel(alpha, expected):
 def test_all_resolution_inference(
     data_norm_isf, affine_eye, kwargs, expected, expected_n_unique_values
 ):
+    """Check cluster_level_inference with various threshold kwargs."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -348,6 +356,7 @@ def test_all_resolution_inference_surface(
 def test_all_resolution_inference_with_mask(
     img_3d_ones_eye, affine_eye, data_norm_isf
 ):
+    """Check cluster_level_inference with a mask_img."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -412,6 +421,7 @@ def test_all_resolution_inference_surface_mask(surf_img_1d):
 
 
 def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
+    """Check cluster_level_inference detects a single active voxel."""
     data = data_norm_isf
     data[3, 6, 7] = 10
     stat_img = Nifti1Image(data, affine_eye)
@@ -425,6 +435,7 @@ def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
 def test_all_resolution_inference_one_sided(
     data_norm_isf, img_3d_ones_eye, affine_eye
 ):
+    """Check threshold_stats_img with two_sided=False."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)

@@ -22,23 +22,33 @@ def main(args=sys.argv) -> None:
     datasets.fetch_atlas_schaefer_2018()
 
     _, urls = datasets.fetch_ds000030_urls()
+    # Only keep the files for the ``stopsignal`` task that are actually
+    # needed by examples/04_glm_first_level/plot_bids_features.py:
+    # the raw functional data and events, the relevant fMRIPrep
+    # derivatives, and the FSL ``stopsignal.feat`` derivatives used
+    # for comparison.
+    # Restricting the download with
+    # ``inclusion_filters`` this way, rather than trying to list every
+    # folder to exclude, avoids pulling in the (much larger)
+    # derivatives of the other tasks acquired for this subject.
+    inclusion_patterns = ["*sub-*stopsignal*"]
+    # Some fMRIPrep and FSL derivatives are are not used in that example.
     exclusion_patterns = [
-        "*group*",
-        "*phenotype*",
-        "*mriqc*",
-        "*parameter_plots*",
-        "*physio_plots*",
-        "*space-fsaverage*",
-        "*space-T1w*",
-        "*dwi*",
-        "*beh*",
-        "*task-bart*",
-        "*task-rest*",
-        "*task-scap*",
-        "*task-task*",
+        "*_space-T1w*",
+        "*_space-fsaverage*",
+        "*cope*gz",
+        "*jpg",
+        "*png",
+        "*txt",
+        "*tiff",
+        "*gif",
+        "*res4D*",
     ]
     urls = datasets.select_from_index(
-        urls, exclusion_filters=exclusion_patterns, n_subjects=1
+        urls,
+        inclusion_filters=inclusion_patterns,
+        exclusion_filters=exclusion_patterns,
+        n_subjects=1,
     )
     datasets.fetch_openneuro_dataset(urls=urls)
 
