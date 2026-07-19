@@ -7,8 +7,7 @@ import numpy as np
 from sklearn.utils.extmath import randomized_svd
 
 from nilearn._utils.docs import fill_doc
-
-from ._base import _BaseDecomposition
+from nilearn.decomposition._base import _BaseDecomposition
 
 
 @fill_doc

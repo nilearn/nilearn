@@ -1,3 +1,6 @@
+from collections.abc import Callable
+from typing import Any
+
 import numpy as np
 import pytest
 import scipy.stats as st
@@ -47,7 +50,7 @@ def test_expression_to_contrast_vector_error():
 
 
 @pytest.fixture
-def set_up_glm():
+def set_up_glm() -> Callable[..., Any]:
     def _set_up_glm(rng, noise_model, bins=100):
         n, p, q = 100, 80, 10
         X, Y = (

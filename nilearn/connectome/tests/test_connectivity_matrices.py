@@ -91,7 +91,6 @@ else:
         check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -192,7 +191,9 @@ def signals() -> list[np.ndarray]:
 
 
 @pytest.fixture
-def signals_and_covariances(cov_estimator):
+def signals_and_covariances(
+    cov_estimator,
+) -> tuple[list[np.ndarray], list[np.ndarray]] | None:
     signals, _ = _signals()
     emp_covs = []
     ledoit_covs = []
@@ -207,6 +208,7 @@ def signals_and_covariances(cov_estimator):
         return signals, ledoit_covs
     elif isinstance(cov_estimator, EmpiricalCovariance):
         return signals, emp_covs
+    return None
 
 
 def test_check_square():

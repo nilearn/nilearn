@@ -62,7 +62,7 @@ from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 
 
-def mean_scaling(Y, axis=0):
+def mean_scaling(Y, axis=0) -> tuple[np.ndarray, np.ndarray]:
     """Scaling of the data to have percent of baseline change \
     along the specified axis.
 
@@ -151,7 +151,7 @@ def _yule_walker(x, order):
 @fill_doc
 def run_glm(
     Y, X, noise_model="ar1", bins=100, n_jobs=1, verbose=0, random_state=None
-):
+) -> tuple[np.ndarray, dict[str | float, RegressionResults]]:
     """:term:`GLM` fit for an :term:`fMRI` data matrix.
 
     Parameters
@@ -1530,7 +1530,12 @@ def first_level_from_bids(
     minimize_memory=True,
     derivatives_folder="derivatives",
     **kwargs,
-):
+) -> tuple[
+    list[FirstLevelModel],
+    list[list[str] | list[SurfaceImage]],
+    list[list[pd.DataFrame]],
+    list[list[pd.DataFrame] | None],
+]:
     """Create FirstLevelModel objects and fit arguments \
        from a :term:`BIDS` dataset.
 
@@ -1648,6 +1653,15 @@ def first_level_from_bids(
         fit function of their respective model.
         ``models_events[i][j]`` corresponds to the j\\ :sup:`th` event file
         of the i\\ :sup:`th` subject.
+
+        Currently we only support 2 cases:
+
+        - raw BIDS datasets with one events file per run
+          stored along the bold file
+
+        - raw BIDS dataset with a single events file at its root,
+          (it is then assumed that this events file should be used
+          for all runs and the list contains j copies of the same dataframe)
 
     models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
         ``None``
@@ -2241,6 +2255,27 @@ def _get_events_files(
         sub_label=sub_label,
         filters=events_filters,
     )
+
+    # looking for file in the root of the raw data
+    global_events_file = get_bids_files(
+        dataset_path,
+        modality_folder="func",
+        file_tag="events",
+        file_type="tsv",
+        sub_label=sub_label,
+        filters=events_filters,
+        sub_folder=False,
+    )
+
+    if len(events) == 0 and len(global_events_file) == 1:
+        # if we found something this means
+        # that all runs haves the same events.tsv
+        events = global_events_file * len(imgs)
+    else:
+        # otherwise we pull all events together
+        # and let _check_bids_events_list decide what to do
+        events.extend(global_events_file)
+
     _report_found_files(
         files=events,
         text="events",
@@ -2441,9 +2476,7 @@ def _get_confounds(
             c.iloc[0] = c.iloc[0].fillna(0.0)
         return confounds
 
-    confounds, _ = load_confounds(img_files=imgs, **kwargs_load_confounds)
-
-    return confounds
+    return load_confounds(img_files=imgs, **kwargs_load_confounds)[0]
 
 
 def _check_confounds_list(confounds, imgs) -> None:
@@ -2770,6 +2803,17 @@ def _check_bids_events_list(
             "as the number of runs is expected."
         )
     _check_trial_type(events=events)
+
+    # all events file are the same
+    # or we have single event file that does not
+    # contain the sub entity:
+    # we have a single event file in the root of the dataset
+    if len(events) > 1 and all(x == events[0] for x in events):
+        return None
+    elif len(events) == 1:
+        ref = parse_bids_filename(events[0])
+        if "sub" not in ref["entities"]:
+            return None
 
     supported_filters = [
         "sub",

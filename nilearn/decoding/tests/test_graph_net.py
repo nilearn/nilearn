@@ -20,8 +20,7 @@ from nilearn.decoding.space_net_solvers import (
     mfista,
 )
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
-
-from .test_same_api import to_niimgs
+from nilearn.decoding.tests.test_same_api import to_niimgs
 
 
 def _make_data(task="regression", size=4):
@@ -255,7 +254,6 @@ def test_max_alpha_squared_loss(estimator, l1_ratio):
     assert_almost_equal(reg.coef_, 0.0)
 
 
-@pytest.mark.slow
 def test_tikhonov_regularization_vs_graph_net():
     """Test one of the extreme cases of Graph-Net.
 

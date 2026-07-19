@@ -379,7 +379,7 @@ docdict["cv8_5"] = cv.format(8, 5)
 docdict["cvNone_3"] = cv.format("None", 3)
 
 
-# data_dir
+# debias
 docdict["debias"] = """
 debias : :obj:`bool`, default=False
     If set, then the estimated weights maps will be debiased.
@@ -920,7 +920,7 @@ radiological : :obj:`bool`, default=False
 
 # random_state
 docdict["random_state"] = """
-random_state : :obj:`int` or np.random.RandomState, optional
+random_state : :obj:`int` or :obj:`numpy.random.RandomState`, optional
     Pseudo-random number generator state used for random sampling.
 """
 

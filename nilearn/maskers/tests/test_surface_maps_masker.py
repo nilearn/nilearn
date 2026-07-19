@@ -47,7 +47,6 @@ else:
         check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -184,7 +183,7 @@ def test_surface_maps_masker_mask_img_masks_all_maps_error(surf_mesh):
 
 
 @pytest.fixture
-def non_overlapping_maps(surf_mesh):
+def non_overlapping_maps(surf_mesh) -> SurfaceImage:
     """Generate maps with non-overlapping regions.
 
     Each vertex belongs to only 1 region.
@@ -212,7 +211,7 @@ def non_overlapping_maps(surf_mesh):
 
 
 @pytest.fixture
-def overlapping_maps(surf_mesh):
+def overlapping_maps(surf_mesh) -> SurfaceImage:
     """Generate maps with overlapping regions.
 
     Some vertices have non null value for 2 different regions.
