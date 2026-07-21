@@ -8,6 +8,7 @@ from nilearn._utils.data_gen import (
     create_fake_bids_dataset,
 )
 from nilearn.interfaces.bids.query import (
+    _filter_bids_files,
     _get_metadata_from_bids,
     get_bids_files,
     infer_repetition_time_from_dataset,
@@ -331,6 +332,82 @@ def test_get_bids_files_fmriprep(tmp_path):
     )
 
     assert len(selection) == 12 * n_sub
+
+
+def _add_bids_file(bids_path, relative_path):
+    file_path = bids_path / relative_path
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.touch()
+    return file_path
+
+
+@pytest.mark.ai_generated
+def test_filter_bids_files():
+    """Filter BIDS files according to their filename entities."""
+    files = [
+        "sub-01_ses-test_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
+        "sub-01_ses-retest_space-T1w_desc-brain_T1w.nii.gz",
+    ]
+
+    selection = _filter_bids_files(
+        files,
+        [("ses", "test"), ("space", "MNI152NLin6Asym")],
+    )
+
+    assert len(selection) == 1
+    assert selection[0]["file_path"] == files[0]
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize(
+    "modality_folder, file_tag, filters, n_expected_files",
+    [
+        ("anat", "T1w", [], 3),
+        ("anat", "T1w", [("ses", "test")], 1),
+        (
+            "anat",
+            "T1w",
+            [("space", "MNI152NLin6Asym"), ("desc", "preproc")],
+            3,
+        ),
+        ("anat", "T1w", [("desc", "preproc")], 3),
+        (
+            "anat",
+            "T1w",
+            [("ses", "test"), ("space", "MNI152NLin6Asym")],
+            1,
+        ),
+        ("anat", "T1w", [("ses", "")], 1),
+        ("anat", "T1w", [("ses", "")], 1),
+        ("func", "bold", [], 3),
+        ("func", "bold", [("ses", "test")], 1),
+    ],
+)
+def test_get_bids_files_fmriprep_subject_level_files(
+    tmp_path, modality_folder, file_tag, filters, n_expected_files
+):
+    """Find subject- and session-level BIDS files in a multi-session set."""
+    for file_ in [
+        "sub-01/anat/sub-01_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
+        "sub-01/ses-test/anat/"
+        "sub-01_ses-test_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
+        "sub-01/ses-retest/anat/"
+        "sub-01_ses-retest_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
+        "sub-01/func/sub-01_task-rest_bold.nii.gz",
+        "sub-01/ses-test/func/sub-01_ses-test_task-rest_bold.nii.gz",
+        "sub-01/ses-retest/func/sub-01_ses-retest_task-rest_bold.nii.gz",
+    ]:
+        _add_bids_file(tmp_path, file_)
+
+    selection = get_bids_files(
+        tmp_path,
+        modality_folder=modality_folder,
+        file_tag=file_tag,
+        file_type="nii.gz",
+        filters=filters,
+    )
+
+    assert len(selection) == n_expected_files
 
 
 def test_get_bids_files_no_space_entity(tmp_path):

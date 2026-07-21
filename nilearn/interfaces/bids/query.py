@@ -270,6 +270,7 @@ def get_bids_files(
     1
     """
     main_path = Path(main_path)
+    subject_level_files = []
     if sub_folder:
         files = main_path / "sub-*" / "ses-*"
         session_folder_exists = glob.glob(str(files))
@@ -281,6 +282,15 @@ def get_bids_files(
             / modality_folder
             / f"sub-{sub_label}*_{file_tag}.{file_type}"
         )
+        if modality_folder in ["anat", "func"] and session_folder_exists:
+            subject_level_files = glob.glob(
+                str(
+                    main_path
+                    / f"sub-{sub_label}"
+                    / modality_folder
+                    / f"sub-{sub_label}*_{file_tag}.{file_type}"
+                )
+            )
     else:
         files = main_path / f"*{file_tag}.{file_type}"
 
@@ -288,21 +298,37 @@ def get_bids_files(
     files.sort()
 
     filters = filters or []
-    if filters:
-        files = [parse_bids_filename(file_) for file_ in files]
-        for entity, label in filters:
-            files = [
-                file_
-                for file_ in files
-                if (entity not in file_["entities"] and label == "")
-                or (
-                    entity in file_["entities"]
-                    and file_["entities"][entity] == label
-                )
-            ]
-        return [ref_file["file_path"] for ref_file in files]
+    if filters or subject_level_files:
+        filtered_files = _filter_bids_files(files, filters)
+        if subject_level_files and not any(
+            entity == "ses" and label != "" for entity, label in filters
+        ):
+            filtered_files.extend(
+                _filter_bids_files(subject_level_files, filters)
+            )
+            filtered_files.sort(key=lambda file_: str(file_["file_path"]))
+
+        return [ref_file["file_path"] for ref_file in filtered_files]
 
     return files
+
+
+def _filter_bids_files(
+    files: list[str], filters: list[tuple[str, str]]
+) -> list[_BidsFileRef]:
+    """Filter BIDS files according to their filename entities."""
+    parsed_files = [parse_bids_filename(file_) for file_ in files]
+    for entity, label in filters:
+        parsed_files = [
+            file_
+            for file_ in parsed_files
+            if (entity not in file_["entities"] and label == "")
+            or (
+                entity in file_["entities"]
+                and file_["entities"][entity] == label
+            )
+        ]
+    return parsed_files
 
 
 def parse_bids_filename(img_path) -> _BidsFileRef:
