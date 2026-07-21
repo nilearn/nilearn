@@ -341,7 +341,6 @@ def _add_bids_file(bids_path, relative_path):
     return file_path
 
 
-@pytest.mark.ai_generated
 def test_filter_bids_files():
     """Filter BIDS files according to their filename entities."""
     files = [
@@ -358,7 +357,6 @@ def test_filter_bids_files():
     assert selection[0]["file_path"] == files[0]
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "modality_folder, file_tag, filters, n_expected_files",
     [
