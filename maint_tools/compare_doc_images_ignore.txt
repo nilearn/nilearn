@@ -1,0 +1,31 @@
+# List of gallery image filenames (or glob patterns using '*') to skip
+# when comparing stable vs dev doc images in compare_doc_images.js.
+#
+# Use this when a diff is expected and accepted,
+# e.g. after intentionally changing the example script that generates an image.
+#
+# One pattern per line.
+# Lines starting with '#' and empty lines are ignored.
+# Patterns are matched against the image basename, e.g.:
+#
+# sphx_glr_plot_ica_neurovault_001.png
+# sphx_glr_plot_ica_neurovault_*.png
+
+# --------------- Changes to ignore for all versions ---------------
+
+# REASON: order of the components of ICA may vary between runs
+sphx_glr_plot_ica_neurovault_*.png
+
+# REASON: image is output of an ICA, so results may look different between runs
+sphx_glr_plot_nifti_simple_002.png
+
+# --------------- Changes to ignore since last version ---------------
+
+# REASON: underlying image was changed
+sphx_glr_plot_haxby_masks_001.png
+
+# REASON: example was reworked
+sphx_glr_plot_single_subject_single_run_*.png
+
+# REASON: example was reworked
+sphx_glr_plot_carpet_002.png
