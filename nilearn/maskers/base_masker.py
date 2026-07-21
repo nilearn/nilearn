@@ -180,11 +180,38 @@ def filter_and_extract(
 def mask_logger(step, img=None, verbose=0) -> None:
     """Log similar messages for all maskers."""
     repr = None
+
+    def _compact_list_repr(elements, max_display=3):
+        """Bounded compact repr of a list."""
+        if len(elements) <= max_display:
+            body = ", ".join(e.__repr__() for e in elements)
+        else:
+            body = (
+                f"{elements[0].__repr__()},\n        "
+                + f"...\n {elements[-1].__repr__()}"
+            )
+        return f"[{body}]"
+
     if img is not None:
-        repr = img.__repr__()
-        if verbose > 1:
+        is_surface = isinstance(img, SurfaceImage) or (
+            isinstance(img, list) and img and isinstance(img[0], SurfaceImage)
+        )
+        is_list = isinstance(img, list)
+
+        if (verbose == 1 and is_list and not is_surface) or (
+            is_list and is_surface
+        ):
+            # Bounded compact repr for any list at verbose 1,
+            # and for surface lists at any verbose (avoids repr_niimgs)
+            repr = _compact_list_repr(img)
+        elif (is_surface and not is_list) or (
+            verbose == 1 and not is_list and not is_surface
+        ):
+            # Single surface at any verbose, and single nifti at verbose 1
+            repr = img.__repr__()
+        elif verbose == 2:
             repr = repr_niimgs(img, shorten=True)
-        elif verbose > 2:
+        elif verbose >= 3:
             repr = repr_niimgs(img, shorten=False)
 
     messages = {
