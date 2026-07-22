@@ -452,26 +452,6 @@ def test_wrap_param_grid_is_none():
     assert _wrap_param_grid(None, "alphas") is None
 
 
-# TODO extract into a single test for estimators that accept Y
-@pytest.mark.parametrize(
-    "model", [DecoderRegressor, Decoder, FREMRegressor, FREMClassifier]
-)
-def test_check_inputs_length(model):
-    """Raise error when X and y have inconsistent numbers of samples."""
-    iris = load_iris()
-    X, y = iris.data, iris.target
-    y = 2 * (y > 0) - 1
-    X_, mask = to_niimgs(X, (2, 2, 2))
-
-    # Remove ten samples from y
-    y = y[:-10]
-
-    with pytest.raises(ValueError, match="inconsistent numbers of samples"):
-        model(
-            mask=mask, screening_percentile=100.0, standardize="zscore_sample"
-        ).fit(X_, y)
-
-
 def test_parallel_fit(rand_x_y):
     """Check that results of _parallel_fit is the same \
     for different controlled param_grid.

@@ -153,7 +153,6 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
             w *= 0.0
 
 
-@pytest.mark.ai_generated
 def test_screening_space_net():
     """Check screening percentile is corrected to 100% for a small mask."""
     size = 4
@@ -528,29 +527,6 @@ def test_space_net_one_alpha_no_crash(model):
         alphas=None,
         standardize="zscore_sample",
     ).fit(X, y)
-
-
-# TODO extract into a single test for estimators that accept Y
-@pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
-def test_check_inputs_length(model):
-    """Raise error when X and y have inconsistent numbers of samples."""
-    iris = load_iris()
-    X, y = iris.data, iris.target
-    y = 2 * (y > 0) - 1
-    X_, mask = to_niimgs(X, (2, 2, 2))
-
-    # Remove ten samples from y
-    y = y[:-10]
-
-    with pytest.raises(ValueError, match="inconsistent numbers of samples"):
-        model(
-            mask=mask,
-            screening_percentile=100.0,
-            standardize="zscore_sample",
-        ).fit(
-            X_,
-            y,
-        )
 
 
 def test_targets_in_y_space_net_regressor():
