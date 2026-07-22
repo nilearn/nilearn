@@ -109,9 +109,6 @@ anats_all_subjects_smooth.to_filename(
 plotting.show()
 
 # %%
-# |
-#
-# ______
 #
 # To recap, all the nilearn tools can take data as filenames or
 # glob-style patterns or in-memory objects, and return brain

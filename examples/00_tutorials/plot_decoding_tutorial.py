@@ -428,6 +428,5 @@ print(
 #
 #   * :ref:`space_net`
 #
-# ______________
 
 # sphinx_gallery_dummy_images=1
