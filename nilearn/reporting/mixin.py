@@ -358,7 +358,11 @@ class ReportMixin:
 
     @abc.abstractmethod
     def generate_report(
-        self, engine="matplotlib", title: str | None = None, **kwargs
+        self,
+        engine="matplotlib",
+        title: str | None = None,
+        report_dims: tuple[int, int] | None = None,
+        **kwargs,
     ) -> HTMLReport:
         """Generate an HTML report for this object.
 
@@ -376,6 +380,11 @@ class ReportMixin:
 
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
+
+        report_dims : Sequence[:obj:`int`, :obj:`int`] or None, default=None
+            Specifies width, height (in pixels) of report window.
+            Can be set after report creation
+            using ``report.width``, ``report.height``.
 
         kwargs : :obj:`dict` [ :obj:`str` , Any]
             Dictionary of key-word arguments necessary for report generation.
