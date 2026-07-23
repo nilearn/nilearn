@@ -40,7 +40,6 @@ fig = view_img_on_surf(load_sample_motor_activation_image())
 fig.resize(WIDTH, HEIGHT)
 fig.save_as_html(output_path / "view_img_on_surf.html")
 
-
 fsaverage = load_fsaverage("fsaverage5")
 destrieux = fetch_atlas_surf_destrieux()
 destrieux_atlas = SurfaceImage(
