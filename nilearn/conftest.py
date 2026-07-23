@@ -427,7 +427,9 @@ def _n_regions() -> int:
     return 9
 
 
-def generate_regions_ts(n_features, n_regions) -> np.ndarray:
+def generate_regions_ts(
+    n_features, n_regions, negative_regions=True
+) -> np.ndarray:
     """Generate some regions as timeseries.
 
     adapted from nilearn._utils.data_gen.generate_regions_ts
@@ -470,6 +472,8 @@ def generate_regions_ts(n_features, n_regions) -> np.ndarray:
         end = int(min(n_features, boundaries[n + 1] + overlap_end))
         win = get_window(window, end - start)
         win /= win.mean()  # unity mean
+        if negative_regions and rand_gen.choice(a=[True, False]):
+            win = -1 * win
         regions[n, start:end] = win
 
     return regions
