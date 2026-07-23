@@ -9,8 +9,8 @@ dev = [
     {include-group = "doc"},
     {include-group = "style"},
     {include-group = "rich"},
-    "tox>=4",
-    "tox-uv"
+    "tox>=4.0.0",
+    "tox-uv>=1.0.0"
 ]
 # Requirements necessary for building the documentation
 doc = [
@@ -36,14 +36,14 @@ doc = [
 min = [
     "joblib==1.2.0",
     "nibabel==5.2.0",
-    "numpy==1.26.0",
     "pandas==2.3.0",
     "requests==2.33.0",
     # scikit-learn version 1.7.0 has a bug that prevents _repr_html_ to run
     # correctly
     # https://scikit-learn.org/stable/whats_new/v1.7.html#sklearn-base
-    "scikit-learn==1.5.0,!=1.7.0",
-    "scipy==1.11.1",
+    # sklearn 1.9.0 creates sluggish HTML representation of estimators with many features
+    # https://github.com/scikit-learn/scikit-learn/issues/34203
+    "scikit-learn==1.5.0,!=1.7.0,!=1.9.0",
     "jinja2==3.1.6"
 ]
 min_plotting = [
@@ -55,7 +55,7 @@ min_plotting = [
 # For prettier printing
 rich = ["rich>=3.0.0"]
 # Applying style guide
-style = ['pre-commit']
+style = ['pre-commit>=4.0.0']
 test = [
     {include-group = "test_common"},
     "coverage>=7.0.0",
@@ -106,7 +106,6 @@ classifiers = [
 dependencies = [
     "joblib>=1.2.0",
     "nibabel>=5.2.0",
-    "numpy>=1.26.0",
     "pandas>=2.3.0",
     "requests>=2.33.0",
     # sklearn 1.7.0 has a bug that prevents _repr_html_ to run correctly
@@ -115,7 +114,6 @@ dependencies = [
     # https://github.com/scikit-learn/scikit-learn/issues/34203
     "scikit-learn>=1.5.0,!=1.7.0,!=1.9.0",
     "jinja2>=3.1.6",
-    "scipy>=1.11.1",
     "packaging>=26.0.0"
 ]
 description = "Statistical learning for neuroimaging in Python"

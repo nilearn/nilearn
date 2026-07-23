@@ -104,7 +104,6 @@ package-lock.json
 nilearn.svg
 
 # uv
-uv.lock
 .python-version
 
 # complexipy
