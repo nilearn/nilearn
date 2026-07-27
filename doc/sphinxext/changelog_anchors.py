@@ -2,18 +2,23 @@
 
 ``doc/changes/whats_new.rst`` concatenates every per-release changelog
 fragment (``doc/changes/<version>.rst``), each of which repeats the same
-subsection titles (``Fixes``, ``Changes``, ``Enhancements``, ...). Docutils
-only gives the first occurrence of a repeated heading a readable id; every
-later one falls back to a sequential ``id123``-style id whose value shifts
-whenever a new release is inserted earlier in the document (see
-https://github.com/nilearn/nilearn/issues/6456).
+subsection titles (``Fixes``, ``Changes``, ``Enhancements``, ...).
+Docutils only gives the first occurrence
+of a repeated heading a readable id;
+every later one falls back to a sequential ``id123``-style id
+whose value shifts whenever a new release
+is inserted earlier in the document
+(see https://github.com/nilearn/nilearn/issues/6456).
 
-This module rewrites the changelog fragments in place, right before Sphinx
-reads them, inserting an explicit ``.. _v<version>-<subsection>:`` label
-before each subsection heading. The label is derived purely from the
-fragment's own version heading and the subsection text, so it never needs to
-be hand-maintained: it is recomputed from scratch on every doc build and is
-idempotent (re-running it is a no-op).
+This module rewrites the changelog fragments in place,
+right before Sphinx reads them,
+inserting an explicit ``.. _v<version>-<subsection>:`` label
+before each subsection heading.
+The label is derived purely from the fragment's own version heading
+and the subsection text,
+so it never needs to be hand-maintained:
+it is recomputed from scratch on every doc build
+and is idempotent (re-running it is a no-op).
 """
 
 import re
