@@ -45,7 +45,7 @@ from numpydoc.docscrape import NumpyDocString
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import is_classifier, is_regressor
-from sklearn.datasets import make_classification, make_regression
+from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import _safe_indexing
@@ -572,9 +572,9 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
     # TODO (sklearn >= 1.6.0) simplify
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
-        requires_y = isinstance(estimator, _BaseDecoder)
+        requires_y = isinstance(estimator, (_BaseDecoder, BaseSpaceNet))
     else:
-        requires_y = getattr(tags.target_tags, "required", False)
+        requires_y = getattr(tags.target_tags, "required", True)
 
     yield (clone(estimator), check_doc_attributes)
     yield (clone(estimator), check_set_output)
@@ -611,6 +611,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
 
         if requires_y:
             yield (clone(estimator), check_img_estimator_requires_y_none)
+            yield (clone(estimator), check_inputs_length)
 
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
@@ -2179,6 +2180,24 @@ def check_img_estimator_requires_y_none(estimator_orig) -> None:
     except ValueError as ve:
         if all(msg not in str(ve) for msg in expected_err_msgs):
             raise ve
+
+
+def check_inputs_length(estimator_orig) -> None:
+    """Raise error when X and y have inconsistent numbers of samples."""
+    estimator = clone(estimator_orig)
+
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    y = 2 * (y > 0) - 1
+    X_, mask = to_niimgs(X, (2, 2, 2))
+
+    # Remove ten samples from y
+    y = y[:-10]
+
+    estimator.mask = mask
+
+    with pytest.raises(ValueError, match="inconsistent numbers of samples"):
+        estimator.fit(X_, y)
 
 
 def check_img_estimator_fit_score_takes_y(estimator_orig) -> None:
