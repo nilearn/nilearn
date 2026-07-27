@@ -379,6 +379,24 @@ def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
         smooth_array(smooth_array_data, affine, fwhm=0.0)
 
 
+@pytest.mark.parametrize("dtype", ["uint8", "uint16", "int16", "int32"])
+def test_smooth_img_integer_input_conserves_mass(affine_eye, dtype):
+    """Smoothing an integer image through the public API must not truncate.
+
+    Regression test for #6440. gaussian_filter1d is called with output=arr, so
+    the float result is written back into an integer buffer in place and
+    truncated once per axis, which loses most of the signal. uint8 is what
+    masks and atlases are stored as on disk, so smooth_img takes that path.
+    """
+    data = np.zeros((9, 9, 9), dtype=dtype)
+    data[4, 4, 4] = 200
+    img = Nifti1Image(data, affine_eye)
+
+    smoothed = smooth_img(img, fwhm=4)
+
+    assert get_data(smoothed).sum() == pytest.approx(200, rel=1e-3)
+
+
 @pytest.mark.parametrize("create_files", (False, True))
 def test_smooth_img(tmp_path, create_files):
     """Checks added functionalities compared to image._smooth_array()."""
