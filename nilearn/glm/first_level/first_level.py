@@ -1654,6 +1654,15 @@ def first_level_from_bids(
         ``models_events[i][j]`` corresponds to the j\\ :sup:`th` event file
         of the i\\ :sup:`th` subject.
 
+        Currently we only support 2 cases:
+
+        - raw BIDS datasets with one events file per run
+          stored along the bold file
+
+        - raw BIDS dataset with a single events file at its root,
+          (it is then assumed that this events file should be used
+          for all runs and the list contains j copies of the same dataframe)
+
     models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
         ``None``
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
@@ -2246,6 +2255,27 @@ def _get_events_files(
         sub_label=sub_label,
         filters=events_filters,
     )
+
+    # looking for file in the root of the raw data
+    global_events_file = get_bids_files(
+        dataset_path,
+        modality_folder="func",
+        file_tag="events",
+        file_type="tsv",
+        sub_label=sub_label,
+        filters=events_filters,
+        sub_folder=False,
+    )
+
+    if len(events) == 0 and len(global_events_file) == 1:
+        # if we found something this means
+        # that all runs haves the same events.tsv
+        events = global_events_file * len(imgs)
+    else:
+        # otherwise we pull all events together
+        # and let _check_bids_events_list decide what to do
+        events.extend(global_events_file)
+
     _report_found_files(
         files=events,
         text="events",
@@ -2773,6 +2803,17 @@ def _check_bids_events_list(
             "as the number of runs is expected."
         )
     _check_trial_type(events=events)
+
+    # all events file are the same
+    # or we have single event file that does not
+    # contain the sub entity:
+    # we have a single event file in the root of the dataset
+    if len(events) > 1 and all(x == events[0] for x in events):
+        return None
+    elif len(events) == 1:
+        ref = parse_bids_filename(events[0])
+        if "sub" not in ref["entities"]:
+            return None
 
     supported_filters = [
         "sub",
