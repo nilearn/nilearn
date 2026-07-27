@@ -376,6 +376,7 @@ def test_filter_bids_files():
             1,
         ),
         ("anat", "T1w", [("ses", "")], 1),
+        ("anat", "T1w", [("ses", "")], 1),
         ("func", "bold", [], 3),
         ("func", "bold", [("ses", "test")], 1),
     ],
