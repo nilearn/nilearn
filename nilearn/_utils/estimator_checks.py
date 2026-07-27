@@ -331,7 +331,7 @@ def return_expected_failed_checks(
         "check_readonly_memmap_input": "TODO",
     }
 
-    expected_failed_checks |= unapplicable_checks()
+    expected_failed_checks |= inapplicable_checks()
 
     if hasattr(estimator, "transform"):
         expected_failed_checks |= {
@@ -401,7 +401,7 @@ def return_expected_failed_checks(
     return expected_failed_checks
 
 
-def unapplicable_checks() -> dict[str, str]:
+def inapplicable_checks() -> dict[str, str]:
     """Return sklearn checks that do not apply for nilearn estimators \
        when they take images as input.
     """
@@ -532,7 +532,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
             ),
         }
 
-    expected_failed_checks |= unapplicable_checks()
+    expected_failed_checks |= inapplicable_checks()
 
     return expected_failed_checks
 
@@ -866,7 +866,7 @@ def check_verbose(estimator) -> None:
 
 
 def check_set_output(estimator_orig) -> None:
-    """Check that set_ouput can be used.
+    """Check that set_output can be used.
 
     Check that:
     - by default we transform to numpy array
@@ -1239,7 +1239,7 @@ def check_verbosity_embedded_masker(estimator_orig) -> None:
     if not isinstance(estimator, (SearchLight, SecondLevelModel)):
         assert "Extracting region signals" in outputs[2]
 
-    # specific fo GLM
+    # specific for GLM
     if is_glm(estimator):
         for verbose in [1, 2, 3]:
             assert re.search(r"Computation of .* done in", outputs[verbose])
@@ -2582,7 +2582,7 @@ def check_decoder_estimator_args(estimator_orig) -> None:
 def check_decoder_screening_n_features(estimator_orig) -> None:
     """Set screening_n_features gives the requested number of weights / CV.
 
-    screening_n_features determines the number of seelcted features per CV
+    screening_n_features determines the number of selected features per CV
     so we only run a single CV.
     """
     estimator = clone(estimator_orig)

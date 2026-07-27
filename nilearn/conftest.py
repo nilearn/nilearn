@@ -759,7 +759,7 @@ def _surf_maps_img(n_regions: int = 6) -> SurfaceImage:
     """
     if n_regions > 6 or n_regions < 1:
         raise ValueError(
-            f"'n_regions' must be  in interaval '[1, 6]'. Got {n_regions=}."
+            f"'n_regions' must be  in interval '[1, 6]'. Got {n_regions=}."
         )
     data = {
         "left": np.asarray(
