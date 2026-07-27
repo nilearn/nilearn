@@ -37,11 +37,7 @@ BENCHMARKED_SUBPACKAGES = {
 # rather than trying to guess which benchmarks could be affected.
 RUN_EVERYTHING_ON_CHANGES_TO = [
     "nilearn/_utils",
-    "nilearn/conftest.py",
-    "nilearn/exceptions.py",
     "nilearn/signal.py",
-    "nilearn/nilearn_typing.py",
-    "nilearn/_assets",
     "asv_benchmarks/benchmarks/_utils.py",
     "asv_benchmarks/asv.conf.json",
     ".github/workflows/benchmark.yml",
