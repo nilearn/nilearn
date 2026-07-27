@@ -353,7 +353,9 @@ def _fast_smooth_array(arr):
 
 
 @fill_doc
-def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
+def smooth_array(
+    arr, affine, fwhm=None, ensure_finite: bool = True, copy: bool = True
+) -> np.ndarray:
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of `arr`.
@@ -657,7 +659,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
 
     Returns
     -------
-    Niimg-like object
+    Nifti1Image
         Cropped version of the input image.
 
     offset : :obj:`list`, optional
@@ -689,8 +691,13 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
 
 @fill_doc
 def crop_img(
-    img, rtol=1e-8, copy=True, pad=True, return_offset=False, copy_header=True
-):
+    img,
+    rtol=1e-8,
+    copy: bool = True,
+    pad: bool = True,
+    return_offset: bool = False,
+    copy_header: bool = True,
+) -> Nifti1Image | tuple[Nifti1Image, tuple[slice, ...]]:
     """Crops an image as much as possible.
 
     Will crop `img`, removing as many zero entries as possible without
@@ -726,7 +733,7 @@ def crop_img(
 
     Returns
     -------
-    cropped_im : Niimg-like object
+    cropped_im : Nifti1Image
         Cropped version of the input image
         If the specified image is empty, the original image will be returned.
 
@@ -782,7 +789,7 @@ def crop_img(
 
     # Sets full range if no data are found along the axis
     if coords.shape[1] == 0:
-        start, end = [0, 0, 0], list(data.shape)
+        start, end = np.array([0, 0, 0]), np.array(data.shape[:3])
         pad = False
         warnings.warn(
             f"No values above {rtol}. Returning original image.",
