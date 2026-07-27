@@ -376,7 +376,6 @@ def test_filter_bids_files():
             1,
         ),
         ("anat", "T1w", [("ses", "")], 1),
-        ("anat", "T1w", [("ses", "")], 1),
         ("func", "bold", [], 3),
         ("func", "bold", [("ses", "test")], 1),
     ],
@@ -404,6 +403,8 @@ def test_get_bids_files_fmriprep_subject_level_files(
         file_type="nii.gz",
         filters=filters,
     )
+
+    print(selection)
 
     assert len(selection) == n_expected_files
 
