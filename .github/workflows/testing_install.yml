@@ -32,7 +32,7 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
-        name: check install on ${{ matrix.os }} with latest package versions
+        name: check install on ${{ matrix.os }} with oldest python
         defaults:
             run:
                 shell: bash
@@ -68,7 +68,7 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
-        name: check install on ${{ matrix.os }} with latest package versions
+        name: check uv sync on ${{ matrix.os }} with oldest python
         defaults:
             run:
                 shell: bash
