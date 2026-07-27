@@ -13,7 +13,7 @@ from ..glm import BaseBenchMarkFLM
 class BenchMarkFirstLevelModel(BaseBenchMarkFLM):
     """Benchmarks for FLM with different image sizes."""
 
-    # try different combinations run length, n_runs, minimze_memory
+    # try different combinations run length, n_runs, minimize_memory
     param_names = ("length_n_runs", "minimize_memory")
     params: ClassVar[tuple[list[tuple[int, int]], list[bool]]] = (
         [(250, 2), (500, 1)],

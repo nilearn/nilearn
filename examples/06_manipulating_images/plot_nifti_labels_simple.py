@@ -82,7 +82,7 @@ report = masker.generate_report()
 report
 
 # %%
-# Process the data with the NiftiLablesMasker
+# Process the data with the NiftiLabelsMasker
 # -------------------------------------------
 #
 # In order to extract the signals, we need to call transform on the

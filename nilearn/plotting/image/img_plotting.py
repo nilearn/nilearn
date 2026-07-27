@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import get_backend
 from matplotlib.colors import LinearSegmentedColormap, Normalize
+from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpecFromSubplotSpec
 from matplotlib.ticker import MaxNLocator
 
@@ -49,6 +50,7 @@ from nilearn.nilearn_typing import (
     OutputFile,
     Radiological,
     ResamplingInterpolation,
+    Standardize,
     Title,
 )
 from nilearn.plotting import cm
@@ -1907,8 +1909,8 @@ def plot_carpet(
     title: Title = None,
     cmap="gray",
     cmap_labels="gist_ncar",
-    standardize=True,
-):
+    standardize: Standardize = True,
+) -> Figure:
     """Plot an image representation of :term:`voxel` intensities across time.
 
     This figure is also known as a "grayplot" or "Power plot".

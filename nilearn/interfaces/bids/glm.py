@@ -4,11 +4,16 @@ TODO: (nilearn >=0.15.0) remove
 """
 
 import warnings
+from typing import TYPE_CHECKING
 
 from nilearn._utils.logger import find_stack_level
 
+if TYPE_CHECKING:
+    from nilearn.glm.first_level import FirstLevelModel
+    from nilearn.glm.second_level import SecondLevelModel
 
-def save_glm_to_bids(*args, **kwgars):
+
+def save_glm_to_bids(*args, **kwgars) -> "FirstLevelModel | SecondLevelModel":
     """Redirect to save_glm_to_bids from nilearn.glm."""
     from nilearn.glm.io import save_glm_to_bids as sgtb
 
@@ -23,4 +28,4 @@ def save_glm_to_bids(*args, **kwgars):
         category=FutureWarning,
         stacklevel=find_stack_level(),
     )
-    sgtb(*args, **kwgars)
+    return sgtb(*args, **kwgars)

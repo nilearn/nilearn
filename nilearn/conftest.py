@@ -763,7 +763,7 @@ def _surf_maps_img(n_regions: int = 6) -> SurfaceImage:
     """
     if n_regions > 6 or n_regions < 1:
         raise ValueError(
-            f"'n_regions' must be  in interaval '[1, 6]'. Got {n_regions=}."
+            f"'n_regions' must be  in interval '[1, 6]'. Got {n_regions=}."
         )
     data = {
         "left": np.asarray(
@@ -942,7 +942,7 @@ def check_obj_docstring(obj) -> None:
     check_methods_docstring(obj.__class__)
 
 
-def check_parameters_doctring(parameters, doc_dict):
+def check_parameters_doctring(parameters, doc_dict) -> None:
     """Check if all parameters are documented without duplicates and extras."""
     documented = []
     for param in doc_dict:
@@ -965,7 +965,7 @@ def check_parameters_doctring(parameters, doc_dict):
     assert len(documented) == len(set(documented))
 
 
-def check_methods_docstring(cls):
+def check_methods_docstring(cls) -> None:
     """Check if all public functions and parameters are documented."""
     for name, member in cls.__dict__.items():
         if name.startswith("_"):

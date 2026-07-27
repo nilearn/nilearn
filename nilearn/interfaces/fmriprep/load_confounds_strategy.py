@@ -138,7 +138,7 @@ def load_confounds_strategy(
           .. nilearn_versionadded:: 0.10.3
             ``global_signal`` is now a tunable parameter for compcor.
 
-        - 'ica_aroma': Load confounds for non-aggresive ICA-AROMA strategy
+        - 'ica_aroma': Load confounds for non-aggressive ICA-AROMA strategy
           described in :footcite:t:`Pruim2015`. The strategy requires
           :term:`fMRIPrep` outputs generated with `--use-aroma` suffixed with
           `desc-smoothAROMAnonaggr_bold`. ICA-AROMA increases the run time of
