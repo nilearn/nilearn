@@ -444,7 +444,7 @@ def smooth_img(imgs: Iterable[NiimgLike], fwhm) -> list[Nifti1Image]: ...
 @fill_doc
 def smooth_img(
     imgs, fwhm
-) -> NiimgLike | SurfaceImage | list[NiimgLike] | list[SurfaceImage]:
+) -> Nifti1Image | SurfaceImage | list[Nifti1Image] | list[SurfaceImage]:
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of `arr`.
@@ -2038,7 +2038,7 @@ def binarize_img(
     mask_img: SurfaceImage | NiimgLike | None = ...,
     two_sided: bool = ...,
     copy_header: bool = ...,
-) -> NiimgLike: ...
+) -> Nifti1Image: ...
 
 
 @fill_doc
@@ -2048,7 +2048,7 @@ def binarize_img(
     mask_img: SurfaceImage | NiimgLike | None = None,
     two_sided: bool = False,
     copy_header: bool = True,
-) -> SurfaceImage | NiimgLike:
+) -> SurfaceImage | Nifti1Image:
     """Binarize an image such that its values are either 0 or 1.
 
     .. nilearn_versionadded:: 0.8.1
