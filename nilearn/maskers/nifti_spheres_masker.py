@@ -503,6 +503,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         )
 
         if imgs is not None:
+            mask_logger("load_data", img=imgs, verbose=self.verbose)
+
             if self.reports:
                 if self.mask_img_ is not None:
                     resampl_imgs = self._cache(resample_img)(
@@ -513,6 +515,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     )
                 else:
                     resampl_imgs = imgs
+
                 # Store 1 timepoint to pass to reporter
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
         elif self.reports:  # imgs not provided to fit

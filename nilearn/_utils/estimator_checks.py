@@ -120,8 +120,13 @@ from nilearn.decomposition.tests.conftest import (
 from nilearn.exceptions import DimensionError, MeshDimensionError
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
-from nilearn.image import get_data, index_img, new_img_like
-from nilearn.image.image import check_imgs_equal
+from nilearn.image.image import (
+    check_imgs_equal,
+    get_data,
+    index_img,
+    iter_img,
+    new_img_like,
+)
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     NiftiLabelsMasker,
@@ -655,6 +660,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
             clone(estimator),
             check_masker_transformer_high_variance_confounds,
         )
+        yield (clone(estimator), check_masker_verbose)
 
         if isinstance(estimator, NiftiMasker):
             # TODO enforce for other maskers
@@ -2859,6 +2865,8 @@ def check_masker_mask_img(estimator_orig) -> None:
     If a mask is passed at construction,
     then mask_img_ should be a valid mask after fit.
 
+    If verbose > 0, maskers should mention they are loading a mask.
+
     Maskers should be fittable
     even when passing a non-binary image
     with multiple samples (4D for volume, 2D for surface) as mask.
@@ -2913,7 +2921,14 @@ def check_masker_mask_img(estimator_orig) -> None:
     estimator = clone(estimator)
     estimator.mask_img = binary_mask_img
 
-    estimator.fit()
+    # when verbose masker says it's loading a mask
+    estimator.verbose = 1
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        estimator.fit()
+    output = buffer.getvalue()
+    assert "Loading mask" in output
+
     ref_mask_img_ = estimator.mask_img_
 
     estimator = clone(estimator)
@@ -3633,6 +3648,52 @@ def check_masker_joblib_cache(estimator_orig) -> None:
     # imgs return by inverse_transform impossible to save
     if accept_niimg_input(estimator):
         out_img.to_filename(cachedir / "test.nii")
+
+
+def check_masker_verbose(estimator_orig) -> None:
+    """Check verbose behavior for maskers.
+
+    Masker should mention they are loading data.
+
+    Output to stdout should be longer with verbose = 2
+    than when verbose = 1 when fitting list of images
+    """
+    estimator = clone(estimator_orig)
+
+    # TODO determine what the behavior of multi masker should be
+    if isinstance(estimator, _MultiMixin):
+        return
+
+    imgs: Nifti1Image | SurfaceImage | list
+    if accept_niimg_input(estimator):
+        imgs = _img_4d_rand_eye_medium()
+    else:
+        imgs = _make_surface_img(100)
+    imgs = list(iter_img(imgs))
+
+    estimator.verbose = 1
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        estimator.fit(imgs)
+    output_verbose_1 = buffer.getvalue()
+
+    estimator.verbose = 2
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        estimator.fit(imgs)
+    output_verbose_2 = buffer.getvalue()
+
+    # Expected loading messages
+    expected_loading_message = (
+        "Loading data from",
+        "Loading mask from",
+        "Loading regions from",
+    )
+
+    assert any(s in output_verbose_1 for s in expected_loading_message)
+    assert any(s in output_verbose_2 for s in expected_loading_message)
+
+    assert len(output_verbose_2) >= len(output_verbose_1)
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------
