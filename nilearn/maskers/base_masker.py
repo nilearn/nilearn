@@ -305,7 +305,7 @@ class _BaseMasker(
 
     @property
     def _n_features_out(self):
-        """Needed by sklearn machinery for set_ouput."""
+        """Needed by sklearn machinery for set_output."""
         return self.n_elements_
 
     @abc.abstractmethod
@@ -416,7 +416,7 @@ class BaseMasker(_BaseMasker):
 
     @property
     def _n_features_out(self):
-        """Needed by sklearn machinery for set_ouput."""
+        """Needed by sklearn machinery for set_output."""
         return self.n_elements_
 
     def _get_masker_params(self, ignore: None | list[str] = None, deep=False):

@@ -354,7 +354,7 @@ Associated entry in ``CITATION.cff``:
         - given-names: Dimitri Papadopoulos
           family-names: Orfanos
           website: https://github.com/DimitriPapadopoulos
-          affiliation: NeuroSpin, C.E.A., Université Paris-Saclay, Gif-sur-Yvette, France
+          affiliation: NeuroSpin, CEA, Université Paris-Saclay, Gif-sur-Yvette, France
           orcid: https://orcid.org/0000-0002-1242-8990
 
 
@@ -1194,7 +1194,7 @@ use the following command:
 
       asv run -b load_img
 
-This will run any benchmarck with ``load_img`` in the name.
+This will run any benchmark with ``load_img`` in the name.
 
 You can also track the performance of a specific benchmark over, say,
 5 equally spaced commits, until release 0.10.0, like this:

@@ -117,7 +117,7 @@ def fdr_threshold(z_vals, alpha) -> float:
     Returns
     -------
     threshold : :obj:`float`
-        FDR-controling threshold from the Benjamini-Hochberg procedure.
+        FDR-controlling threshold from the Benjamini-Hochberg procedure.
 
     Examples
     --------
