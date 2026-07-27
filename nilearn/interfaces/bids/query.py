@@ -300,9 +300,7 @@ def get_bids_files(
     filters = filters or []
     if filters or subject_level_files:
         filtered_files = _filter_bids_files(files, filters)
-        if subject_level_files and not any(
-            entity == "ses" and label != "" for entity, label in filters
-        ):
+        if subject_level_files:
             filtered_files.extend(
                 _filter_bids_files(subject_level_files, filters)
             )
@@ -322,7 +320,8 @@ def _filter_bids_files(
         parsed_files = [
             file_
             for file_ in parsed_files
-            if (entity not in file_["entities"] and label == "")
+            # skip file if it has entity and label = ""
+            if (label == "" and entity not in file_["entities"])
             or (
                 entity in file_["entities"]
                 and file_["entities"][entity] == label

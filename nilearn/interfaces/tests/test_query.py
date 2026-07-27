@@ -346,6 +346,7 @@ def test_filter_bids_files():
     files = [
         "sub-01_ses-test_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
         "sub-01_ses-retest_space-T1w_desc-brain_T1w.nii.gz",
+        "sub-01_space-T1w_desc-brain_T1w.nii.gz",
     ]
 
     selection = _filter_bids_files(
@@ -355,6 +356,14 @@ def test_filter_bids_files():
 
     assert len(selection) == 1
     assert selection[0]["file_path"] == files[0]
+
+    selection = _filter_bids_files(
+        files,
+        [("ses", "")],
+    )
+
+    assert len(selection) == 1
+    assert selection[0]["file_path"] == files[2]
 
 
 @pytest.mark.parametrize(
@@ -403,8 +412,6 @@ def test_get_bids_files_fmriprep_subject_level_files(
         file_type="nii.gz",
         filters=filters,
     )
-
-    print(selection)
 
     assert len(selection) == n_expected_files
 
