@@ -216,7 +216,7 @@ Some other past or present contributors are:
 * `Salma Bougacha`_
 * `Sam Buck Johnson`_
 * `Sami Jawhar`_
-* `Sanjana Soni`_: Goverment Engineering College, Bilaspur, India
+* `Sanjana Soni`_: Government Engineering College, Bilaspur, India
 * `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
 * `Sin Kim`_: Korea Advanced Institute of Science and Technology: Daejeon, KR
 * `Sourav Singh`_

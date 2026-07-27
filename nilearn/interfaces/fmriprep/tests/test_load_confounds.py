@@ -769,7 +769,7 @@ def test_sample_mask(
     reg, mask = load_confounds(regular_nii, strategy=("motion",))
     assert mask is None
 
-    # When no volumes needs removing (very liberal motion threshould)
+    # When no volumes needs removing (very liberal motion threshold)
     reg, mask = load_confounds(
         regular_nii, strategy=("motion", "scrub"), scrub=0, fd_threshold=4
     )

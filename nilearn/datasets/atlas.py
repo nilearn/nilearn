@@ -2314,7 +2314,7 @@ def fetch_atlas_pauli_2017(
 
         - %(labels)s
             The list contains values for both
-            :term:`probabilitic<Probabilistic atlas>` and
+            :term:`probabilistic<Probabilistic atlas>` and
             :term:`deterministic<Deterministic atlas>` types.
 
         - %(description)s
