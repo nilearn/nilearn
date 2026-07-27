@@ -398,8 +398,8 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
             stacklevel=find_stack_level(),
         )
         fwhm = None
-    if arr.dtype.kind == "i":
-        if arr.dtype == np.int64:
+    if arr.dtype.kind in ("i", "u"):
+        if arr.dtype in (np.int64, np.uint64):
             arr = arr.astype(np.float64)
         else:
             arr = arr.astype(np.float32)  # We don't need crazy precision.
