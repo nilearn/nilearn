@@ -33,6 +33,8 @@
 
 .. _Anand Joshi: https://github.com/ajoshiusc
 
+.. _Andrew Chen: https://github.com/chuenchen309
+
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
 
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
@@ -104,6 +106,8 @@
 .. _Evan Edmond: https://evan.science/
 
 .. _Fabian Pedregosa: https://github.com/fabianp
+
+.. _Fabricio Cravo: https://fabriciocravo.github.io/
 
 .. _Fernanda Ponce: https://github.com/ferponcem
 
