@@ -419,7 +419,7 @@ class BaseMasker(_BaseMasker):
         """Needed by sklearn machinery for set_ouput."""
         return self.n_elements_
 
-    def _get_masker_params(self, ignore: None | list[str] = None, deep=False):
+    def _get_masker_params(self, ignore: list[str] | None = None, deep=False):
         """Get parameters for this masker.
 
         Very similar to the BaseEstimator.get_params() from sklearn
@@ -458,7 +458,7 @@ class BaseMasker(_BaseMasker):
     @overload
     def _load_mask(self, imgs: Nifti1Image) -> Nifti1Image: ...
 
-    def _load_mask(self, imgs) -> None | Nifti1Image:
+    def _load_mask(self, imgs) -> Nifti1Image | None:
         """Load and validate mask if one passed at init.
 
         Returns
@@ -757,7 +757,7 @@ class _BaseSurfaceMasker(_BaseMasker):
     @overload
     def _load_mask(self, imgs: SurfaceImage) -> SurfaceImage: ...
 
-    def _load_mask(self, imgs) -> None | SurfaceImage:
+    def _load_mask(self, imgs) -> SurfaceImage | None:
         """Load and validate mask if one passed at init.
 
         Returns

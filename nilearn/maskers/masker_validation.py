@@ -24,7 +24,7 @@ def get_params(
         NiftiMasker | SurfaceMasker | MultiNiftiMasker | MultiSurfaceMasker
     ],
     instance: NilearnBaseEstimator,
-    ignore: None | list[str] = None,
+    ignore: list[str] | None = None,
 ) -> dict[str, Any]:
     """Retrieve the initialization parameters corresponding to a class.
 
