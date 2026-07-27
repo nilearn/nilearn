@@ -1,9 +1,7 @@
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.14.1dev
-=========
+Version 0.14.1dev
+=================
 
 ..
     Each changelog entry should begin with one of the following badges:
@@ -41,6 +39,8 @@ Fixes
 - :bdg-dark:`Code` Allow :func:`~glm.first_level.first_level_from_bids` to work with BIDS dataset that have a single events file in the root of the dataset for all runs (:gh:`6278` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` Add return type annotations and :obj:`~typing.overload` signatures to :func:`~connectome.vec_to_sym_matrix`, :func:`~connectome.group_sparse_covariance`, and :func:`~reporting.get_clusters_table` (:gh:`6368` by `Rémi Gau`_).
+
+- :bdg-primary:`Doc` Fix changelog anchors on ``changes/whats_new.html`` drifting to a different entry after every release, by renaming each release heading to ``Version X.Y.Z`` so it always gets a stable id (numeric-only headings like ``0.14.0`` could not be turned into a valid HTML id and fell back to a position-dependent counter), and by adding a Sphinx extension that inserts a stable, version-scoped anchor before every ``Fixes``/``Enhancements``/``Changes``/... subsection at build time (:gh:`6456` by `Rémi Gau`_).
 
 Enhancements
 ------------
