@@ -7,7 +7,7 @@ from nibabel import Nifti1Image
 
 from nilearn.maskers import NiftiMasker
 
-from ..utils import Benchmark, load
+from .._utils import Benchmark, load
 
 
 def apply_mask(

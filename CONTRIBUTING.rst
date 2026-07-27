@@ -1284,7 +1284,7 @@ For naming benchmarks, try to follow the following rules:
   whereas any other exception (including a bare ``ImportError``) is reported as *failed*,
   which the CI benchmark workflow treats as a hard failure
   (see the "Fail if any benchmark reported as failed" step).
-  See ``BenchMarkAllEstimators`` in ``asv_benchmarks/benchmarks/discovery.py`` for a concrete example.
+  See ``BenchMarkAllEstimators`` in ``asv_benchmarks/benchmarks/utils/discovery.py`` for a concrete example.
 
 Maintenance
 ===========

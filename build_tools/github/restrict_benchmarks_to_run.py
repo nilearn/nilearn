@@ -19,21 +19,17 @@ from restrict_tests_to_run import restrict_tests
 with contextlib.suppress(Exception):
     from rich import print
 
-# nilearn subpackages that currently have asv benchmark coverage,
-# mapped to the "-b" regex used to select their benchmarks.
+# nilearn subpackages that currently have asv benchmark coverage.
 # Since asv_benchmarks/benchmarks mirrors nilearn's own package
 # structure (see CONTRIBUTING.rst), the subpackage name is also the
-# benchmark module prefix, except for "nilearn/utils": its benchmarks
-# live in discovery.py rather than a nested utils/ directory, because
-# "utils" was already taken by asv_benchmarks/benchmarks/utils.py, the
-# suite's shared fixtures.
+# "-b" regex to use to select their benchmarks.
 BENCHMARKED_SUBPACKAGES = {
-    "nilearn/glm": "glm",
-    "nilearn/image": "image",
-    "nilearn/maskers": "maskers",
-    "nilearn/mass_univariate": "mass_univariate",
-    "nilearn/plotting": "plotting",
-    "nilearn/utils": "discovery",
+    "glm",
+    "image",
+    "maskers",
+    "mass_univariate",
+    "plotting",
+    "utils",
 }
 
 # Changes to any of these affect the benchmark suite itself, or things
@@ -46,7 +42,7 @@ RUN_EVERYTHING_ON_CHANGES_TO = [
     "nilearn/signal.py",
     "nilearn/nilearn_typing.py",
     "nilearn/_assets",
-    "asv_benchmarks/benchmarks/utils.py",
+    "asv_benchmarks/benchmarks/_utils.py",
     "asv_benchmarks/asv.conf.json",
     ".github/workflows/benchmark.yml",
 ]
@@ -90,15 +86,12 @@ def restrict_benchmarks(changed_files: list[str]) -> list[str] | None:
     ):
         return None
 
-    subpackages_to_test = restrict_tests(changed_files)
+    subpackages_to_test = {
+        subpackage.removeprefix("nilearn/")
+        for subpackage in restrict_tests(changed_files)
+    }
 
-    return sorted(
-        {
-            benchmark_prefix
-            for subpackage, benchmark_prefix in BENCHMARKED_SUBPACKAGES.items()
-            if subpackage in subpackages_to_test
-        }
-    )
+    return sorted(BENCHMARKED_SUBPACKAGES & subpackages_to_test)
 
 
 def print_to_file(
@@ -171,21 +164,21 @@ try:
             ([], []),
             (
                 ["nilearn/glm/first_level/first_level.py"],
-                ["discovery", "glm"],
+                ["glm", "utils"],
             ),
             (
                 ["nilearn/maskers/nifti_masker.py"],
-                ["discovery", "glm", "image", "maskers", "plotting"],
+                ["glm", "image", "maskers", "plotting", "utils"],
             ),
             (
                 ["nilearn/mass_univariate/permuted_least_squares.py"],
-                ["discovery", "glm", "mass_univariate"],
+                ["glm", "mass_univariate", "utils"],
             ),
             # decoding itself is not benchmarked, but it is a top layer,
             # whose changes always also affect the highest layer (utils)
-            (["nilearn/decoding/decoder.py"], ["discovery"]),
+            (["nilearn/decoding/decoder.py"], ["utils"]),
             (["nilearn/_utils/data_gen.py"], None),
-            (["asv_benchmarks/benchmarks/utils.py"], None),
+            (["asv_benchmarks/benchmarks/_utils.py"], None),
         ],
     )
     def test_restrict_benchmarks(changed_files, expected_benchmarks_to_run):
