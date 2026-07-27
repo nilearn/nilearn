@@ -799,7 +799,6 @@ def test_trim_maps_half_regions(shape_3d_default):
     assert_equal(np.asarray(list(range(4))), maps_i_indices)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("weight", [3.0, -3.0])
 def test_trim_maps_support_covers_negative_weights(shape_3d_default, weight):
     """A kept map must contribute its voxels to the support, whatever its sign.
