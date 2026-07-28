@@ -33,6 +33,50 @@ def test_is_valid_path():
 
 
 @pytest.mark.parametrize(
+    ("subjects", "max_subjects", "kwargs", "expected"),
+    [
+        (None, 6, {}, 6),
+        (2, 6, {}, 2),
+        (0, 6, {}, 0),
+        (-1, 6, {}, -1),
+        ([1, 3], 6, {"subject_list_types": (list,)}, [1, 3]),
+        ((1, 3), 6, {"subject_list_types": (tuple,)}, (1, 3)),
+    ],
+)
+def test_validate_subjects(subjects, max_subjects, kwargs, expected):
+    assert (
+        func._validate_subjects(subjects, max_subjects, **kwargs) == expected
+    )
+
+
+@pytest.mark.parametrize("subjects", [0, -1, 7])
+def test_validate_subjects_invalid_count_uses_max(subjects):
+    with pytest.warns(UserWarning, match="Only 6 subjects are available"):
+        result = func._validate_subjects(
+            subjects,
+            max_subjects=6,
+            min_subjects=1,
+            warning_message="Only 6 subjects are available.",
+        )
+
+    assert result == 6
+
+
+@pytest.mark.parametrize("subjects", [[0], [7], ["1"]])
+def test_validate_subjects_invalid_subject_id(subjects):
+    with pytest.raises(ValueError, match="'subject id' must be one of"):
+        func._validate_subjects(
+            subjects, max_subjects=6, subject_list_types=(list,)
+        )
+
+
+@pytest.mark.parametrize("subjects", [True, 1.0, "1", [1]])
+def test_validate_subjects_invalid_type(subjects):
+    with pytest.raises(TypeError, match="'n_subjects' must be of type"):
+        func._validate_subjects(subjects, max_subjects=6)
+
+
+@pytest.mark.parametrize(
     "fn",
     [
         func.fetch_localizer_first_level,
@@ -163,6 +207,16 @@ def test_fetch_haxby_subject_with_list(tmp_path, request_mocker):
     assert len(haxby.mask_vt) == len(subjects)
     assert len(haxby.mask_face_little) == len(subjects)
     assert "stimuli" in haxby
+
+
+def test_fetch_haxby_subject_with_tuple(tmp_path, request_mocker):
+    request_mocker.url_mapping[re.compile(r".*(subj\d).*\.tar\.gz")] = (
+        _make_haxby_subject_data
+    )
+
+    haxby = func.fetch_haxby(data_dir=tmp_path, subjects=(1, 2), verbose=0)
+
+    assert len(haxby.func) == 2
 
 
 def test_fetch_haxby_error(tmp_path):
@@ -385,6 +439,13 @@ def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  #
         "S03",
         "S05",
     ]
+
+
+@pytest.mark.parametrize("subjects", [(1, 2), [0], [95]])
+def test_fetch_localizer_contrasts_invalid_subjects(subjects):
+    exception = TypeError if isinstance(subjects, tuple) else ValueError
+    with pytest.raises(exception):
+        func.fetch_localizer_contrasts(["checkerboard"], n_subjects=subjects)
 
 
 def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: ARG001
@@ -808,14 +869,21 @@ def test_fetch_development_fmri_phenotype(request_mocker):
 
 def test_fetch_development_fmri_invalid_n_subjects():
     max_subjects = 155
-    n_subjects = func._set_invalid_n_subjects_to_max(
-        n_subjects=None, max_subjects=max_subjects, age_group="adult"
+    n_subjects = func._validate_subjects(
+        subjects=None, max_subjects=max_subjects
     )
 
     assert n_subjects == max_subjects
     with pytest.warns(UserWarning, match="Wrong value for n_subjects="):
-        func._set_invalid_n_subjects_to_max(
-            n_subjects=-1, max_subjects=max_subjects, age_group="adult"
+        func._validate_subjects(
+            subjects=-1,
+            max_subjects=max_subjects,
+            min_subjects=1,
+            warning_message=(
+                "Wrong value for n_subjects=-1. "
+                "The maximum value (for age_group=adult) "
+                "will be used instead: n_subjects=155."
+            ),
         )
 
 
