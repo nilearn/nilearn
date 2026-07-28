@@ -50,6 +50,8 @@ Enhancements
 Changes
 -------
 
+- :bdg-dark:`Code` Centralize subject-selection validation used by functional dataset fetchers (:gh:`6462` by `Mohammad Sadeghi Hardengi`_).
+
 - :bdg-dark:`Code` Add ``asv`` benchmark for TFCE computation (:gh:`6394` by `Fabricio Cravo`_).
 
 - :bdg-dark:`Code` Update plotting functions to return figure or axes instead of None when an output file is specified to save the figure (:gh:`6272` by `Hande Gözükan`_).
