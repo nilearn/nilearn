@@ -437,7 +437,7 @@ html_context = {"build_dev_html": build_dev_html}
 # html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "PythonScientic"
+htmlhelp_basename = "PythonScientific"
 
 # sphinx-copybutton configurations
 copybutton_prompt_text = (

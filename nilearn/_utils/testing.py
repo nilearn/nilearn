@@ -101,7 +101,7 @@ def serialize_niimg(img, gzipped=True):
 
 def write_imgs_to_path(
     *imgs,
-    file_path: None | Path = None,
+    file_path: Path | None = None,
     create_files: bool = True,
     use_wildcards: bool = False,
 ):

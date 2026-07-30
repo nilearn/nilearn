@@ -287,7 +287,7 @@ _generate_markdown_file("deterministic_atlases.md", dict_for_df)
 #
 
 # dict to define fetching options for each atlas
-probablistic_atlases = {
+probabilistic_atlases = {
     "Allen (2011)": {"fn": fetch_atlas_allen_2011},
     "Craddock (2012)": {
         "fn": fetch_atlas_craddock_2012,
@@ -320,7 +320,7 @@ probablistic_atlases = {
 
 dict_for_df = {"name": [], "image": []}
 
-for display_name, details in probablistic_atlases.items():
+for display_name, details in probabilistic_atlases.items():
     fn = details["fn"]
     params = details.get("params", {})
 
@@ -337,7 +337,7 @@ for display_name, details in probablistic_atlases.items():
     params_str = ""
     for k, v in params.items():
         params_str += f"_{k}-{v}"
-    output_file = output_dir / f"probablistic_atlas_{name}{params_str}.png"
+    output_file = output_dir / f"probabilistic_atlas_{name}{params_str}.png"
 
     if GENERATE_FIG:
         plot_prob_atlas(

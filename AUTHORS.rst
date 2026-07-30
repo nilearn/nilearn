@@ -63,6 +63,7 @@ Some other past or present contributors are:
 * Amadeus Kanaan
 * `Ana Luisa Pinho`_: Western University, London, Ontario, Canada
 * `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
+* `Andrew Chen`_
 * `Andrés Hoyos Idrobo`_: Rakuten, France
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
 * `Anupriya Kumari`_: Indian Institute of Technology, Roorkee, India
@@ -99,6 +100,7 @@ Some other past or present contributors are:
 * `Eric Larson`_: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
 * `Evan Edmond`_: University of Oxford, Oxford, UK
 * `Fabian Pedregosa`_: @google, Geneva, Switzerland
+* `Fabricio Cravo`_: NeuroPRISM, Northeastern University
 * `Fernanda Ponce`_: Université Paris-Saclay, Inria, Saclay, France
 * `Florent Pollet`_: ENS Paris-Saclay, Saclay, France
 * `Franz Liem`_
@@ -214,7 +216,7 @@ Some other past or present contributors are:
 * `Salma Bougacha`_
 * `Sam Buck Johnson`_
 * `Sami Jawhar`_
-* `Sanjana Soni`_: Goverment Engineering College, Bilaspur, India
+* `Sanjana Soni`_: Government Engineering College, Bilaspur, India
 * `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
 * `Sin Kim`_: Korea Advanced Institute of Science and Technology: Daejeon, KR
 * `Sourav Singh`_

@@ -88,7 +88,7 @@ haxby_labels = run_target["labels"]
 # using a Gaussian function with 4mm to 12mm
 # :term:`full-width at half-maximum<FWHM>` (this is where the ``fwhm``
 # parameter below comes from). The function :func:`~nilearn.image.smooth_img`
-# accounts for potential anisotropy in the image affine (i.e., non-indentical
+# accounts for potential anisotropy in the image affine (i.e., non-identical
 # :term:`voxel` size in all the three dimensions). Analogous to the
 # majority of nilearn functions, :func:`~nilearn.image.smooth_img` can
 # also use file names as input parameters.
