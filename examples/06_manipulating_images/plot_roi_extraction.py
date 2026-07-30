@@ -82,7 +82,9 @@ haxby_labels = run_target["labels"]
 # %%
 # Build a statistical test to find voxels of interest
 # ---------------------------------------------------
-# **Smoothing**: Functional MRI data have a low signal-to-noise ratio.
+# Smoothing
+# ^^^^^^^^^
+# Functional MRI data have a low signal-to-noise ratio.
 # When using methods that are not robust to noise, it is useful to apply a
 # spatial filtering kernel on the data. Such data smoothing is usually applied
 # using a Gaussian function with 4mm to 12mm
@@ -125,7 +127,9 @@ fmri_data = get_data(fmri_img)
 fmri_data.shape
 
 # %%
-# **Selecting features using T-test**: The Student's t-test
+# Selecting features using a T-test
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# The Student's t-test
 # (:func:`scipy.stats.ttest_ind`) is an established method to determine whether
 # two distributions have a different mean value.
 # It can be used to compare voxel
@@ -178,14 +182,18 @@ plot_stat_map(
 )
 
 # %%
-# **Selecting features using f_classif**: It is also possible to use the
+# Selecting features using f_classif
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# It is also possible to use the
 # :func:`sklearn.feature_selection.f_classif` function, which works for
 # feature selection in multi-class settings.
 
 # %%
 # Build a mask from this statistical map (Improving the quality of the mask)
 # --------------------------------------------------------------------------
-# **Thresholding** - We build the t-map to have better representation of voxels
+# Thresholding
+# ^^^^^^^^^^^^
+# We build the t-map to have better representation of voxels
 # of interest, where voxels with lower p-values correspond to the most intense
 # voxels. This can be done easily by applying a threshold to a t-map data in
 # array.
@@ -217,8 +225,9 @@ plot_stat_map(
 # The idea of using these operations are to have more compact or sparser blobs.
 
 # %%
-# **Binarization** and **Intersection** with Ventral Temporal (VT) mask - We
-# now want to restrict our investigation to the VT area. The corresponding
+# Binarization and Intersection with Ventral Temporal (VT) mask
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# We now want to restrict our investigation to the VT area. The corresponding
 # spatial mask is provided in ``haxby_dataset.mask_vt``. We want to compute the
 # intersection of this provided mask with our self-computed mask.
 
@@ -260,7 +269,9 @@ plot_roi(
 )
 
 # %%
-# **Dilation** - Thresholded functional brain images often contain scattered
+# Dilation
+# ^^^^^^^^
+# Thresholded functional brain images often contain scattered
 # voxels across the brain. To consolidate such brain images towards
 # more compact shapes, we use a `morphological dilation
 # <https://en.wikipedia.org/wiki/Dilation_(morphology)>`_.
@@ -294,7 +305,9 @@ plot_roi(
 # the scipy Python library.
 
 # %%
-# **Identification of connected components** - The function
+# Identification of connected components
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# The function
 # :func:`scipy.ndimage.label` from the scipy Python library identifies
 # immediately neighboring voxels in our voxels mask. It assigns a separate
 # integer label to each one of them.
