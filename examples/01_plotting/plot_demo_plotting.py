@@ -54,7 +54,7 @@ plotting.plot_stat_map(
 
 # %%
 # It's also possible to visualize volumes in a LR-flipped "radiological" view
-# Just set radiological=True
+# by setting radiological=True:
 plotting.plot_stat_map(
     stat_img,
     threshold=3,
@@ -79,19 +79,19 @@ view = view_img(stat_img, threshold=3)
 view
 
 # %%
-# uncomment this to open the plot in a web browser:
+# Uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 
 # %%
 # It's also possible to visualize volumes in a LR-flipped "radiological" view
-# Just set radiological=True
+# by setting radiological=True:
 view_radio = view_img(
     stat_img, threshold=3, title="radiological view", radiological=True
 )
 view_radio
 
 # %%
-# uncomment this to open the plot in a web browser:
+# Uncomment this to open the plot in a web browser:
 # view_radio.open_in_browser()
 
 # %%
