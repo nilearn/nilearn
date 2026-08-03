@@ -51,14 +51,20 @@ def generate_and_check_masker_report(
 ) -> HTMLReport:
     """Generate and check content of masker report.
 
-    See check_report fo details about the parameters.
+    See check_report for details about the parameters.
     """
     if warnings_msg_to_check is None:
         warnings_msg_to_check = []
 
     includes = []
-    excludes = ["Adapted from Pure CSS navbar"]
-    # navbar and its css is only for GLM reports
+
+    excludes = [
+        # navbar and its css is only for GLM reports
+        "Adapted from Pure CSS navbar",
+        # if Slicer is present in report it probably means one figure was not
+        # converted to svg before being embedded in the HTML
+        "Slicer",
+    ]
 
     report_at_fit_time = masker._report_content.get(
         "reports_at_fit_time", masker.reports
@@ -457,7 +463,12 @@ def test_nifti_masker_overlaid_report(
     masker.fit(img_fmri)
 
     generate_and_check_masker_report(
-        masker, extend_includes=['<div class="overlay">']
+        masker,
+        extend_includes=['<div class="overlay">'],
+        # overlay should be an actual image
+        # not the string representation of a slicer
+        # regression test for https://github.com/nilearn/nilearn/issues/6418
+        extend_excludes=["nilearn.plotting.displays._slicers.OrthoSlicer"],
     )
 
 

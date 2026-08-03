@@ -529,31 +529,35 @@ class MaskerReportMixin(ReportMixin):
 
     def _generate_report_htmls(self):
         """Generate report figure htmls and summary htmls."""
-        report_content = self._report_content
-
         figure, embeded_images = self._generate_figure_htmls()
-        report_content["figure"] = figure
-        report_content["content"] = embeded_images
+        self._report_content["figure"] = figure
+        self._report_content["content"] = embeded_images
 
         # _generate_figure_htmls should be called before setting summary_html
         summary = self._report_content.get("summary", None)
         if summary is not None:
-            report_content["summary_html"] = self._get_summary_html(summary)
+            self._report_content["summary_html"] = self._get_summary_html(
+                summary
+            )
+
+        # for Niftimasker
+        if overlay := self._report_content.get("overlay", None):
+            self._report_content["overlay_html"] = self._embed_img(overlay)
 
     def _generate_figure_htmls(self):
         """Generate image htmls using partial template for masker figures."""
-        embeded_images = None
+        embedded_images = None
         image = self._load_report_displays()
         if image is None:
-            embeded_images = None
+            embedded_images = None
         elif not isinstance(image, list):
-            embeded_images = self._embed_img(image)
+            embedded_images = self._embed_img(image)
         elif all(x is None for x in image):
-            embeded_images = None
+            embedded_images = None
         else:
-            embeded_images = [self._embed_img(i) for i in image]
+            embedded_images = [self._embed_img(i) for i in image]
 
-        content = embeded_images
+        content = embedded_images
         if not isinstance(content, list):
             content = [content]
 
@@ -564,7 +568,7 @@ class MaskerReportMixin(ReportMixin):
             displayed_maps=self._report_content["displayed_maps"],
             unique_id=self._report_content["unique_id"],
         )
-        return tpl_rendered, embeded_images
+        return tpl_rendered, embedded_images
 
     @abc.abstractmethod
     def _load_report_displays(self):

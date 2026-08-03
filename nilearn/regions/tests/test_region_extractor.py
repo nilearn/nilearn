@@ -589,7 +589,7 @@ def test_connected_label_regions_check_labels_as_numpy_array(img_labels):
 
 
 @pytest.mark.thread_unsafe
-def test_connected_label_regions_unknonw_labels(
+def test_connected_label_regions_unknown_labels(
     img_labels, affine_eye, shape_3d_default
 ):
     """If unknown/negative integers are provided as labels in img_labels, \

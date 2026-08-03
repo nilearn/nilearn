@@ -185,8 +185,7 @@ report
 # These set the grey-value bounds
 # in which the masking algorithm will search for its threshold
 # (0 being the minimum of the image and 1 the maximum).
-# We will here increase the lower cutoff
-# to enforce selection of those voxels
+# We will here increase the lower cutoff to enforce selection of those voxels
 # that appear as bright in the :term:`EPI` image.
 
 masker = NiftiMasker(
