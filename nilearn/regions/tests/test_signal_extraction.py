@@ -378,8 +378,6 @@ def test_signals_extraction_with_labels_without_mask(
     assert labels_r == list(range(1, 9))
 
 
-@pytest.mark.thread_unsafe
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "label_values", [[10, 20, 30], [100, 150, 200, 256, 300, 400]]
 )
