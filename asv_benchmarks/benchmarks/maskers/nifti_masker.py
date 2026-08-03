@@ -14,7 +14,7 @@ def apply_mask(
     mask: Nifti1Image,
     img: Nifti1Image,
     implementation: Literal["nilearn", "numpy"],
-    nifti_masker_params: None | dict[str, Any] = None,
+    nifti_masker_params: dict[str, Any] | None = None,
 ):
     """Apply a mask to an image using nilearn or numpy.
 

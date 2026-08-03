@@ -675,7 +675,7 @@ def check_region_names_after_fit(
         masker: NiftiLabelsMasker
 
         signals: np.ndarray
-            output of fit_transfrom from the masker
+            output of fit_transform from the masker
 
         region_names: list[str]
             list of regions names expected after fit

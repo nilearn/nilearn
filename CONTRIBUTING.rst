@@ -354,7 +354,7 @@ Associated entry in ``CITATION.cff``:
         - given-names: Dimitri Papadopoulos
           family-names: Orfanos
           website: https://github.com/DimitriPapadopoulos
-          affiliation: NeuroSpin, C.E.A., Université Paris-Saclay, Gif-sur-Yvette, France
+          affiliation: NeuroSpin, CEA, Université Paris-Saclay, Gif-sur-Yvette, France
           orcid: https://orcid.org/0000-0002-1242-8990
 
 
@@ -604,21 +604,21 @@ This is implemented via a pre-commit hook.
 
 .. _pre_commit:
 
-Pre-commit
-----------
+Pre-commit/Prek
+---------------
 
-We use `pre-commit <https://pre-commit.com/>`__
+We use `prek <https://prek.j178.dev/>`__
 to run a set of linters and autoformatters on the codebase.
 
-To install pre-commit, run:
+To install prek, run:
 
 .. code-block:: bash
 
-      pip install pre-commit
+      pip install prek
 
 .. note::
 
-      Pre-commit will already be installed if you installed
+      Prek will already be installed if you installed
       the ``dev`` or ``style`` developers dependencies of nilearn
       with::
 
@@ -632,9 +632,9 @@ Then run the following to install the pre-commit hooks:
 
 .. code-block:: bash
 
-      pre-commit install
+      prek install
 
-Pre-commit will then run all those hooks on the files you have staged for commit.
+Prek will then run all those hooks on the files you have staged for commit.
 Note that if some of those hooks fail you may have to edit some files and stage them again.
 
 Tests
@@ -931,12 +931,13 @@ The installed version will also reflect any changes you make to your code.
 
       pytest nilearn
 
-5. (optional) install `pre-commit <https://pre-commit.com/#usage>`_ hooks
+
+5. (optional) install `prek <https://prek.j178.dev>`_ hooks
    to run the linter and other checks before each commit:
 
 .. code-block:: bash
 
-      pre-commit install
+      prek install
 
 
 Contributing
@@ -970,7 +971,7 @@ Here are the key steps you need to go through to contribute code to ``nilearn``:
 
         ruff format <path_to_edited_file>
 
-    Note that if you installed pre-commit and the pre-commit hooks,
+    Note that if you installed prek and the pre-commit hooks,
     those commands will be run automatically before each commit.
 
 4. commit your changes on this branch (don't forget to write tests!)
@@ -1156,6 +1157,8 @@ returned by the ``request_mocker`` pytest fixture, defined in
 ``Sender`` class it contains provide information on how to write a test using
 this fixture. Existing tests can also serve as examples.
 
+.. _performance:
+
 Performance monitoring
 ----------------------
 
@@ -1192,7 +1195,7 @@ use the following command:
 
       asv run -b load_img
 
-This will run any benchmarck with ``load_img`` in the name.
+This will run any benchmark with ``load_img`` in the name.
 
 You can also track the performance of a specific benchmark over, say,
 5 equally spaced commits, until release 0.10.0, like this:
@@ -1274,6 +1277,14 @@ For naming benchmarks, try to follow the following rules:
   and every other benchmark in that file will be reported as failed too,
   even though they do not rely on the missing function.
   A local import inside ``setup()`` confines the failure to that one benchmark.
+
+  Catch the ``ImportError`` and re-raise it as ``NotImplementedError``
+  instead of letting it propagate as-is.
+  asv treats a ``NotImplementedError`` raised in ``setup()`` as "this benchmark
+  does not apply here" and reports it as *skipped*,
+  whereas any other exception (including a bare ``ImportError``) is reported as *failed*,
+  which the CI benchmark workflow treats as a hard failure
+  (see the "Fail if any benchmark reported as failed" step).
   See ``BenchMarkAllEstimators`` in ``asv_benchmarks/benchmarks/discovery.py`` for a concrete example.
 
 Maintenance

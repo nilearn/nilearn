@@ -80,7 +80,7 @@ def test_null_to_p_float_1_tailed_lower_tailed(
 @pytest.mark.parametrize(
     "test_values, expected_p_value", [(9, 0.05), (-9, 0.95), (0, 0.65)]
 )
-def test_null_to_p_float_1_tailed_uppper_tailed(
+def test_null_to_p_float_1_tailed_upper_tailed(
     test_values, expected_p_value, null
 ):
     """Test null_to_p with single float input upper-tailed."""
