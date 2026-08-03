@@ -136,7 +136,7 @@ def data_butterworth_single_timeseries(rng) -> np.ndarray:
 def data_butterworth_multiple_timeseries(
     rng, data_butterworth_single_timeseries
 ) -> np.ndarray:
-    """Generate mutltiple timeseries for butterworth tests."""
+    """Generate multiple timeseries for butterworth tests."""
     n_features = 20000
     n_samples = 100
     data = rng.standard_normal(size=(n_samples, n_features))
@@ -494,7 +494,7 @@ def test_clean_detrending():
     This test is inspired from Scipy docstring of detrend function.
 
     - clean should not modify inputs
-    - check effect when fintie results requested
+    - check effect when finite results requested
     """
     n_samples = 21
     n_features = 501  # Must be higher than 500
@@ -760,7 +760,7 @@ def test_clean_confounds_errors(signals):
         clean(signals[:-1, :], confounds=filename1)
 
 
-def test_clean_errros(signals):
+def test_clean_errors(signals):
     """Test error handling."""
     with pytest.raises(
         ValueError,
@@ -1106,14 +1106,14 @@ def test_clean_finite_no_inplace_mod():
     # n_features  Must be higher than 500
     n_features = 501
     x_orig, _, _ = generate_signals(n_features=n_features, length=n_samples)
-    x_orig_inital_copy = x_orig.copy()
+    x_orig_initial_copy = x_orig.copy()
 
     x_orig_with_nans = x_orig.copy()
     x_orig_with_nans[0, 0] = np.nan
     x_orig_with_nans_initial_copy = x_orig_with_nans.copy()
 
     _ = clean(x_orig)
-    assert array_equal(x_orig, x_orig_inital_copy)
+    assert array_equal(x_orig, x_orig_initial_copy)
 
     _ = clean(x_orig_with_nans, ensure_finite=True)
     assert np.isnan(x_orig_with_nans_initial_copy[0, 0])
