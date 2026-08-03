@@ -22,6 +22,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix :func:`~regions.connected_label_regions` attaching the names given in ``labels`` to the wrong regions, because the sorted labels from ``np.unique`` were put through a ``set`` before being zipped against the names; contiguous labels happened to survive that, but the sparse labels real atlases use did not (:gh:`6445` by `Andrew Chen`_).
+
 - :bdg-dark:`Code` Fix :class:`~maskers.NiftiMapsMasker` silently extracting a zero signal for a map whose weights are negative, because ``_trim_maps`` decides which maps to keep sign-agnostically with ``abs()`` but then builds their support with ``> 0``, so a kept negative map covered no voxel; this matters for the signed ICA and statistical maps the masker targets (:gh:`6443` by `Andrew Chen`_).
 
 - :bdg-dark:`Code` Fix :func:`~image.smooth_img` and ``smooth_array`` truncating the smoothed signal for unsigned integer input, because only signed integers were promoted to float before ``gaussian_filter1d`` wrote its float result back into the input buffer in place; unsigned is the common case since ``uint8`` is the standard on-disk dtype for masks and atlases (:gh:`6440` by `Andrew Chen`_).

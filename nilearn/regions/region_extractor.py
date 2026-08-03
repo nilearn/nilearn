@@ -695,10 +695,9 @@ def connected_label_regions(
             "integers assigned as labels."
         )
 
-    unique_labels = set(check_unique_labels)
-    # check for background label indicated as 0
-    if np.any(check_unique_labels == 0):
-        unique_labels.remove(0)
+    # np.unique returns them sorted; keep that order, since the names in
+    # labels are expected to match it. Background label 0 is not a region.
+    unique_labels = check_unique_labels[check_unique_labels != 0]
 
     if labels is not None:
         if not isinstance(labels, collections.abc.Iterable) or isinstance(
