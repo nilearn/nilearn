@@ -22,6 +22,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix a bug in :func:`~plotting.view_img` where the background colormap was not being applied correctly. (:gh:`6466` by `Pierre-Louis Barbarant`_).
+
 - :bdg-dark:`Code` Fix :func:`~image.smooth_img` and ``smooth_array`` truncating the smoothed signal for unsigned integer input, because only signed integers were promoted to float before ``gaussian_filter1d`` wrote its float result back into the input buffer in place; unsigned is the common case since ``uint8`` is the standard on-disk dtype for masks and atlases (:gh:`6440` by `Andrew Chen`_).
 
 - :bdg-dark:`Code` Allow custom scikit-learn-compatible estimators in decoders to use an empty default parameter grid, and clarify how to use ``param_grid`` to tune them (:gh:`6227` by `Mohammad Sadeghi Hardengi`_).
