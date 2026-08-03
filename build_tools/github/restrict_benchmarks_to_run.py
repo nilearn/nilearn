@@ -41,6 +41,7 @@ RUN_EVERYTHING_ON_CHANGES_TO = [
     "asv_benchmarks/benchmarks/_utils.py",
     "asv_benchmarks/asv.conf.json",
     ".github/workflows/benchmark.yml",
+    "pyproject.toml",
 ]
 
 # A "-b" regex that never matches any benchmark name, used when some
@@ -87,7 +88,18 @@ def restrict_benchmarks(changed_files: list[str]) -> list[str] | None:
         for subpackage in restrict_tests(changed_files)
     }
 
-    return sorted(BENCHMARKED_SUBPACKAGES & subpackages_to_test)
+    # a benchmark that was itself added or modified must always run,
+    # regardless of whether the nilearn code it exercises also changed
+    benchmarks_changed = {
+        subpackage
+        for subpackage in BENCHMARKED_SUBPACKAGES
+        for f in changed_files
+        if f.startswith(f"asv_benchmarks/benchmarks/{subpackage}/")
+    }
+
+    return sorted(
+        (BENCHMARKED_SUBPACKAGES & subpackages_to_test) | benchmarks_changed
+    )
 
 
 def print_to_file(
@@ -175,6 +187,22 @@ try:
             (["nilearn/decoding/decoder.py"], ["utils"]),
             (["nilearn/_utils/data_gen.py"], None),
             (["asv_benchmarks/benchmarks/_utils.py"], None),
+            (["pyproject.toml"], None),
+            # a benchmark added/modified on its own, with no nilearn
+            # change, must still run
+            (
+                ["asv_benchmarks/benchmarks/plotting/plotting.py"],
+                ["plotting"],
+            ),
+            # both: the nilearn-side ripple-up and the direct benchmark
+            # change are combined
+            (
+                [
+                    "nilearn/glm/first_level/first_level.py",
+                    "asv_benchmarks/benchmarks/maskers/nifti_masker.py",
+                ],
+                ["glm", "maskers", "utils"],
+            ),
         ],
     )
     def test_restrict_benchmarks(changed_files, expected_benchmarks_to_run):

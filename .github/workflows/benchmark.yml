@@ -99,6 +99,7 @@ on:
         -   build_tools/github/restrict_tests_to_run.py
         -   build_tools/github/set_machine_name.py
         -   .github/workflows/benchmark.yml
+        -   pyproject.toml
 
     pull_request:
         branches:
@@ -110,6 +111,7 @@ on:
         -   build_tools/github/restrict_tests_to_run.py
         -   build_tools/github/set_machine_name.py
         -   .github/workflows/benchmark.yml
+        -   pyproject.toml
 
     schedule:
         # Uses the cron schedule for github actions
