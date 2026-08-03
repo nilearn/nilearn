@@ -1,10 +1,10 @@
 """Give changelog subsections stable, version-scoped HTML anchors.
 
 ``doc/changes/whats_new.rst`` concatenates every per-release changelog
-fragment (``doc/changes/<version>.rst``), each of which repeats the same
-subsection titles (``Fixes``, ``Changes``, ``Enhancements``, ...).
-Docutils only gives the first occurrence
-of a repeated heading a readable id;
+fragment (``doc/changes/<version>.rst``),
+each of which repeats the same subsection titles
+(``Fixes``, ``Changes``, ``Enhancements``, ...).
+Docutils only gives the first occurrence of a repeated heading a readable id;
 every later one falls back to a sequential ``id123``-style id
 whose value shifts whenever a new release
 is inserted earlier in the document
@@ -29,17 +29,22 @@ SUB_UNDERLINE = re.compile(r"^[\-^]{3,}$")
 GENERATED_LABEL = re.compile(r"^\.\. _v[0-9][\w.-]*:$")
 
 
-def _slugify(text):
+def _slugify(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
 
 
-def _version_prefix(title):
+def _version_prefix(title: str) -> str:
+    """Add version prefix and remove dev suffix."""
     version = re.sub(r"^version\s+", "", title.strip(), flags=re.IGNORECASE)
     version = re.sub(r"dev$", "", version, flags=re.IGNORECASE)
     return "v" + _slugify(version)
 
 
-def _strip_generated_labels(lines):
+def _strip_generated_labels(lines) -> list[str]:
+    """Skip eventual generated labels from a previous run.
+
+    This way they are not added twice.
+    """
     out = []
     i = 0
     n = len(lines)
@@ -56,7 +61,7 @@ def _strip_generated_labels(lines):
     return out
 
 
-def _insert_labels(lines):
+def _insert_labels(lines: list[str]) -> list[str]:
     out = []
     prefix = None
     used = set()
@@ -67,6 +72,7 @@ def _insert_labels(lines):
         is_heading = i + 1 < n and title
 
         if is_heading and TOP_UNDERLINE.match(lines[i + 1].strip()):
+            # store prefix to use for the following subsections
             prefix = _version_prefix(title)
             used = set()
             out.append(lines[i])
@@ -90,17 +96,20 @@ def _insert_labels(lines):
     return out
 
 
-def _process(path):
+def _process(path: Path) -> None:
+    """Update anchors of subsection titles in a single changelog file."""
     original = path.read_text(encoding="utf-8")
     lines = original.splitlines()
     lines = _strip_generated_labels(lines)
     lines = _insert_labels(lines)
     updated = "\n".join(lines) + "\n"
+    # Only save the files if it was modified
     if updated != original:
         path.write_text(updated, encoding="utf-8")
 
 
 def insert_changelog_anchors(app):
+    """Update anchors of subsection titles in all changelog files."""
     changes_dir = Path(app.srcdir) / "changes"
     if not changes_dir.is_dir():
         return
