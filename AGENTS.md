@@ -12,7 +12,7 @@ and visualization, built on top of scikit-learn.
 
 Never commit directly to `main`. Always work on a feature branch.
 
-Fix any remaining issues flagged by pre-commit before committing again.
+Fix any remaining issues flagged by prek before committing again.
 
 ## Commands
 
@@ -26,7 +26,7 @@ uv sync
 
 ```bash
 pip install -e ".[plotting,plotly]" --group dev  # Dev install with plotting dependencies
-pre-commit install              # Install git hooks
+prek install              # Install git hooks
 ```
 
 ### Testing
@@ -44,7 +44,7 @@ tox -e min                              # Minimum supported dependencies
 ### Linting, formatting & architecture validation
 
 ```bash
-pre-commit run --all-files # Run all pre-commit hooks
+prek run --all-files # Run all pre-commit hooks
 ```
 
 ### Documentation
