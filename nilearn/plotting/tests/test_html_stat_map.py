@@ -218,6 +218,12 @@ def test_get_bg_mask_and_cmap():
     mask, _ = _get_bg_mask_and_cmap(img, False)
     assert (mask == np.zeros(img.shape, dtype=bool)).all()
 
+    # Non-regression test for issue #6465
+    _, black_bg_cmap = _get_bg_mask_and_cmap(img, True)
+    assert black_bg_cmap._rgba_bad == (0.0, 0.0, 0.0, 1.0)
+    _, white_bg_cmap = _get_bg_mask_and_cmap(img, False)
+    assert white_bg_cmap._rgba_bad == (1.0, 1.0, 1.0, 1.0)
+
 
 def test_resample_stat_map(affine_eye):
     """Check _resample_stat_map resamples stat and mask to bg resolution."""
