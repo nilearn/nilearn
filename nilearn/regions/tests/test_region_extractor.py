@@ -525,8 +525,6 @@ def test_connected_label_regions_check_labels(img_labels):
     assert len(new_labels) <= len(labels)
 
 
-@pytest.mark.ai_generated
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "label_values",
     [
