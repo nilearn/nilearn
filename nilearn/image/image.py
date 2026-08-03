@@ -535,8 +535,8 @@ def _smooth_surface_img(
 
     Parameters
     ----------
-    imgs : SurfaceImage
-        The surface whose is to be smoothed.
+    img : SurfaceImage
+        The surface to be smoothed.
         In the case of 2D data, each sample is smoothed independently.
 
     iterations : :obj:`tuple` of :obj:`int` >=0

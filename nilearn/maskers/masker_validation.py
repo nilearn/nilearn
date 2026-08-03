@@ -90,7 +90,7 @@ def check_embedded_masker(
 
     Parameters
     ----------
-    instance : object, instance of NilearnBaseEstimator
+    estimator : object, instance of NilearnBaseEstimator
         The object that gives us the values of the parameters
 
     masker_type : {"multi_nii", "nii", "surface", "multi_surface"}

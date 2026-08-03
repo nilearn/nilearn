@@ -44,18 +44,18 @@ def plot_img_comparison(
 
     Parameters
     ----------
-    ref_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
+    ref_imgs : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
               or a :obj:`list` of \
               3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Reference image.
 
-    src_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
+    src_imgs : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
               or a :obj:`list` of \
               3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Source image.
         Its type must match that of the ``ref_img``.
         If the source image is Niimg-Like,
-        it will be resampled to match that or the source image.
+        it will be resampled to match that of the reference image.
 
     masker : 3D Niimg-like binary mask or \
             :obj:`~nilearn.maskers.NiftiMasker` or \
@@ -266,7 +266,7 @@ def plot_bland_altman(
         Source image.
         Its type must match that of the ``ref_img``.
         If the source image is Niimg-Like,
-        it will be resampled to match that or the source image.
+        it will be resampled to match that of the reference image.
 
     masker : 3D Niimg-like binary mask or \
             :obj:`~nilearn.maskers.NiftiMasker` or \
@@ -430,7 +430,7 @@ def _extract_data_2_images(ref_img, src_img, masker=None):
     src_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Source image. Its type must match that of the ``ref_img``.
         If the source image is Niimg-Like,
-        it will be resampled to match that or the source image.
+        it will be resampled to match that of the reference image.
 
     masker : 3D Niimg-like binary mask or \
             :obj:`~nilearn.maskers.NiftiMasker` or \
