@@ -4,6 +4,8 @@ More generic tests (those that apply to all maskers)
 should go into nilearn/_utils/estimator_checks.
 """
 
+import json
+import re
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -474,6 +476,7 @@ def test_nifti_masker_overlaid_report(
 
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
+@pytest.mark.ai_generated
 def test_nifti_masker_brainsprite(
     matplotlib_pyplot,  # noqa: ARG001
     img_fmri,
@@ -484,9 +487,34 @@ def test_nifti_masker_brainsprite(
         masker, extra_warnings_allowed=True, engine="brainsprite"
     )
     masker.fit(img_fmri)
-    generate_and_check_masker_report(
+    first_report = generate_and_check_masker_report(
         masker, extra_warnings_allowed=True, engine="brainsprite"
     )
+    second_report = generate_and_check_masker_report(
+        masker, extra_warnings_allowed=True, engine="brainsprite"
+    )
+
+    configs = []
+    combined_html = f"{first_report}{second_report}"
+    for report in (first_report, second_report):
+        config_match = re.search(r"brainsprite\((\{.*\})\);", str(report))
+        assert config_match is not None
+        config = json.loads(config_match.group(1))
+        configs.append(config)
+
+        for element_id in (
+            config["canvas"],
+            config["sprite"],
+            config["overlay"]["sprite"],
+            config["colorMap"]["img"],
+        ):
+            assert f'id="{element_id}"' in str(report)
+            assert combined_html.count(f'id="{element_id}"') == 1
+
+    assert configs[0]["canvas"] != configs[1]["canvas"]
+    assert configs[0]["sprite"] != configs[1]["sprite"]
+    assert configs[0]["overlay"]["sprite"] != configs[1]["overlay"]["sprite"]
+    assert configs[0]["colorMap"]["img"] != configs[1]["colorMap"]["img"]
 
 
 @pytest.mark.thread_unsafe
