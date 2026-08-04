@@ -5,11 +5,6 @@
 # or can be triggered manually via the GitHub UI.
 # When run on main it will deploy the updated benchmarks to
 # `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
-# The push and pull_request triggers are restricted to paths that could
-# plausibly affect the benchmarks, so pushes/PRs that only touch, e.g.,
-# the ``doc`` folder do not trigger this workflow at all
-# (schedule and workflow_dispatch are unaffected, since path filters
-# only apply to push/pull_request).
 #
 # Step-wise details:
 #
