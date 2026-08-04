@@ -72,7 +72,7 @@ plotting.plot_img(more_smooth_anat_img)
 # First let's fetch Haxby dataset for subject 1 and 2
 from nilearn import datasets
 
-haxby = datasets.fetch_haxby(subjects=[1, 2])
+haxby = datasets.fetch_haxby(n_subjects=[1, 2])
 
 # %%
 # Now we can find the anatomical images from both

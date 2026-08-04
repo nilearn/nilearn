@@ -24,7 +24,7 @@ a few false negative.
 from nilearn import datasets, image
 from nilearn.plotting import plot_stat_map, show
 
-haxby_dataset = datasets.fetch_haxby(subjects=[2])
+haxby_dataset = datasets.fetch_haxby(n_subjects=[2])
 
 # print basic information on the dataset
 print(f"Mask nifti image (3D) is located at: {haxby_dataset.mask}")

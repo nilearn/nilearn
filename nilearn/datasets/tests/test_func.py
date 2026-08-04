@@ -149,13 +149,13 @@ def _make_haxby_subject_data(match, response):  # noqa: ARG001
     return list_to_archive(Path(match.group(1), f) for f in sub_files)
 
 
-@pytest.mark.parametrize("subjects", [None, 7])
-def test_fetch_haxby_more_than_6(tmp_path, request_mocker, subjects):
+@pytest.mark.parametrize("n_subjects", [None, 7])
+def test_fetch_haxby_more_than_6(tmp_path, request_mocker, n_subjects):
     """Test edge cases to extend coverage."""
     request_mocker.url_mapping[re.compile(r".*(subj\d).*\.tar\.gz")] = (
         _make_haxby_subject_data
     )
-    func.fetch_haxby(data_dir=tmp_path, subjects=subjects)
+    func.fetch_haxby(data_dir=tmp_path, n_subjects=n_subjects)
 
 
 def test_fetch_haxby(tmp_path, request_mocker, capsys):
@@ -163,7 +163,7 @@ def test_fetch_haxby(tmp_path, request_mocker, capsys):
         _make_haxby_subject_data
     )
     for i in range(1, 6):
-        haxby = func.fetch_haxby(data_dir=tmp_path, subjects=[i], verbose=0)
+        haxby = func.fetch_haxby(data_dir=tmp_path, n_subjects=[i], verbose=0)
         # subject_data + (md5 + mask if first subj)
 
         assert isinstance(haxby, Bunch)
@@ -194,7 +194,7 @@ def test_fetch_haxby_subject_with_list(tmp_path, request_mocker):
     )
 
     haxby = func.fetch_haxby(
-        data_dir=tmp_path, subjects=subjects, fetch_stimuli=True, verbose=0
+        data_dir=tmp_path, n_subjects=subjects, fetch_stimuli=True, verbose=0
     )
 
     assert len(haxby.func) == len(subjects)
@@ -214,9 +214,24 @@ def test_fetch_haxby_subject_with_tuple(tmp_path, request_mocker):
         _make_haxby_subject_data
     )
 
-    haxby = func.fetch_haxby(data_dir=tmp_path, subjects=(1, 2), verbose=0)
+    haxby = func.fetch_haxby(data_dir=tmp_path, n_subjects=(1, 2), verbose=0)
 
     assert len(haxby.func) == 2
+
+
+@pytest.mark.parametrize("subjects", [None, (1, 2)])
+def test_fetch_haxby_deprecated_subjects(tmp_path, request_mocker, subjects):
+    request_mocker.url_mapping[re.compile(r".*(subj\d).*\.tar\.gz")] = (
+        _make_haxby_subject_data
+    )
+
+    with pytest.warns(FutureWarning, match='parameter "subjects"'):
+        haxby = func.fetch_haxby(
+            data_dir=tmp_path, subjects=subjects, verbose=0
+        )
+
+    expected_subjects = 6 if subjects is None else len(subjects)
+    assert len(haxby.func) == expected_subjects
 
 
 def test_fetch_haxby_error(tmp_path):
@@ -224,7 +239,7 @@ def test_fetch_haxby_error(tmp_path):
     message = "'subject id' must be one of"
     for sub_id in subjects:
         with pytest.raises(ValueError, match=message.format(sub_id)):
-            func.fetch_haxby(data_dir=tmp_path, subjects=[sub_id])
+            func.fetch_haxby(data_dir=tmp_path, n_subjects=[sub_id])
 
 
 def _adhd_example_subject(match, request):  # noqa: ARG001
@@ -870,13 +885,13 @@ def test_fetch_development_fmri_phenotype(request_mocker):
 def test_fetch_development_fmri_invalid_n_subjects():
     max_subjects = 155
     n_subjects = func._validate_subjects(
-        subjects=None, max_subjects=max_subjects
+        n_subjects=None, max_subjects=max_subjects
     )
 
     assert n_subjects == max_subjects
     with pytest.warns(UserWarning, match="Wrong value for n_subjects="):
         func._validate_subjects(
-            subjects=-1,
+            n_subjects=-1,
             max_subjects=max_subjects,
             min_subjects=1,
             warning_message=(

@@ -22,6 +22,7 @@ from sklearn.utils import Bunch
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import (
@@ -59,45 +60,45 @@ _SubjectSelection = TypeVar(
 
 
 def _validate_subjects(
-    subjects: _SubjectSelection | None,
+    n_subjects: _SubjectSelection | None,
     max_subjects: int,
     *,
-    parameter_name: str = "n_subjects",
     subject_list_types: tuple[type, ...] = (),
     min_subjects: int | None = None,
     warning_message: str | None = None,
 ) -> _SubjectSelection | int:
     """Validate and normalize a dataset subject selection."""
-    if subjects is not None:
+    if n_subjects is not None:
         check_is_of_allowed_type(
-            subjects, (int, *subject_list_types), parameter_name
+            n_subjects, (int, *subject_list_types), "n_subjects"
         )
 
-    if subjects is None:
+    if n_subjects is None:
         return max_subjects
 
-    if isinstance(subjects, (list, tuple)):
-        for subject_id in subjects:
+    if isinstance(n_subjects, (list, tuple)):
+        for subject_id in n_subjects:
             check_parameter_in_allowed(
                 subject_id, list(range(1, max_subjects + 1)), "subject id"
             )
-        return subjects
+        return n_subjects
 
-    invalid_subjects = subjects > max_subjects or (
-        min_subjects is not None and subjects < min_subjects
+    invalid_subjects = n_subjects > max_subjects or (
+        min_subjects is not None and n_subjects < min_subjects
     )
     if not invalid_subjects:
-        return subjects
+        return n_subjects
 
     if warning_message is not None:
         warnings.warn(warning_message, stacklevel=find_stack_level())
     return max_subjects
 
 
+@rename_parameters({"subjects": "n_subjects"}, end_version="0.16.0")
 @fill_doc
 def fetch_haxby(
     data_dir: DataDir = None,
-    subjects: int | list[int] | tuple[int, ...] | None = (2,),
+    n_subjects: int | list[int] | tuple[int, ...] | None = (2,),
     fetch_stimuli: bool = False,
     url: Url = None,
     resume: Resume = True,
@@ -107,11 +108,15 @@ def fetch_haxby(
 
     See :footcite:t:`Haxby2001`.
 
+    .. nilearn_versionchanged:: 0.15.0
+
+        The ``subjects`` parameter was renamed to ``n_subjects``.
+
     Parameters
     ----------
     %(data_dir)s
 
-    subjects : :obj:`list` or :obj:`tuple` or :obj:`int` or None, default=(2,)
+    n_subjects : :obj:`list` | :obj:`tuple` | :obj:`int` | None, default=(2,)
         Either a list of subjects or the number of subjects to load,
         from 1 to 6.
         By default, 2nd subject will be loaded.
@@ -186,16 +191,15 @@ def fetch_haxby(
     """
     check_params(locals())
 
-    subjects = _validate_subjects(
-        subjects,
+    n_subjects = _validate_subjects(
+        n_subjects,
         max_subjects=6,
-        parameter_name="subjects",
         subject_list_types=(list, tuple),
     )
-    if isinstance(subjects, (list, tuple)):
-        subject_mask = np.array(subjects)
-    if isinstance(subjects, int):
-        subject_mask = np.arange(1, subjects + 1)
+    if isinstance(n_subjects, (list, tuple)):
+        subject_mask = np.array(n_subjects)
+    if isinstance(n_subjects, int):
+        subject_mask = np.arange(1, n_subjects + 1)
 
     dataset_name = "haxby2001"
     data_dir = get_dataset_dir(
@@ -245,7 +249,7 @@ def fetch_haxby(
 
     files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    if subjects == 6 or np.any(subject_mask == 6):
+    if n_subjects == 6 or np.any(subject_mask == 6):
         files.append(None)  # None value because subject 6 has no anat
 
     kwargs = {}

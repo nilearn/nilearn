@@ -50,7 +50,7 @@ Enhancements
 Changes
 -------
 
-- :bdg-dark:`Code` Centralize subject-selection validation used by functional dataset fetchers (:gh:`6462` by `Mohammad Sadeghi Hardengi`_).
+- :bdg-success:`API` Rename the ``subjects`` parameter of :func:`~nilearn.datasets.fetch_haxby` to ``n_subjects``, retain ``subjects`` as a deprecated alias, and centralize subject-selection validation used by functional dataset fetchers (:gh:`6462` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-dark:`Code` Add ``asv`` benchmark for TFCE computation (:gh:`6394` by `Fabricio Cravo`_).
 
