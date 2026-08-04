@@ -1101,12 +1101,12 @@ class BaseSlicer:
         """
         plt.close(self.frame_axes.figure.number)
 
-    def savefig(self, filename: OutputFile, dpi=None, **kwargs) -> None:
+    def savefig(self, output_file: OutputFile, dpi=None, **kwargs) -> None:
         """Save the figure to a file.
 
         Parameters
         ----------
-        filename : :obj:`str` or :obj:`pathlib.Path`
+        output_file : :obj:`str` or :obj:`pathlib.Path`
             The file name to save to. Its extension determines the
             file type, typically '.png', '.svg' or '.pdf'.
 
@@ -1118,16 +1118,18 @@ class BaseSlicer:
             :func:`matplotlib.pyplot.savefig`.
 
         """
-        if filename is None:
+        check_params(locals())
+
+        if output_file is None:
             raise ValueError(
                 "You must provide an output file name to save the figure."
             )
 
-        output_file = Path(filename)
+        output_file = Path(output_file)
         output_file.parent.mkdir(exist_ok=True, parents=True)
         facecolor = edgecolor = "k" if self._black_bg else "w"
         self.frame_axes.figure.savefig(
-            filename,
+            output_file,
             dpi=dpi,
             facecolor=facecolor,
             edgecolor=edgecolor,
