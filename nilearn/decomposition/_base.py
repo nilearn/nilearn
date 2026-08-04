@@ -89,6 +89,7 @@ def _warn_ignored_surface_masker_params(estimator) -> None:
         )
 
 
+@fill_doc
 def _fast_svd(X, n_components, random_state=None):
     """Automatically switch between randomized and lapack SVD (heuristic \
     of scikit-learn).
@@ -149,6 +150,7 @@ def _fast_svd(X, n_components, random_state=None):
     return U, S, V
 
 
+@fill_doc
 def _mask_and_reduce(
     masker,
     imgs,
@@ -712,6 +714,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             data, self.components_, per_component=per_component
         )
 
+    @fill_doc
     def score(self, imgs, y=None, confounds=None, per_component=False):
         """Score function based on explained variance on imgs.
 

@@ -633,6 +633,7 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
     return niters
 
 
+@fill_doc
 def _crop_img_to(img, slices, copy=True, copy_header=True):
     """Crops an image to a smaller size.
 
@@ -1427,6 +1428,7 @@ def new_img_like(
     return klass(data, affine, header=header)
 
 
+@fill_doc
 def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     """Apply cluster-extent thresholding to voxel-wise thresholded array.
 

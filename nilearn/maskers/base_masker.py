@@ -292,7 +292,6 @@ def sanitize_displayed_maps(
     return estimator, displayed_maps
 
 
-@fill_doc
 class _BaseMasker(
     MaskerReportMixin,
     TransformerMixin,
@@ -712,6 +711,7 @@ class BaseMasker(_BaseMasker):
         return output
 
 
+@fill_doc
 class _BaseSurfaceMasker(_BaseMasker):
     """Class from which all surface maskers should inherit."""
 

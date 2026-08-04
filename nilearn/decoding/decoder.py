@@ -64,7 +64,6 @@ from nilearn.surface import SurfaceImage
 _MIN_N_FEATURES_FOR_SCREENING = 100
 
 
-@fill_doc
 def _check_param_grid(estimator, X, y, param_grid=None):
     """Check param_grid and return sensible default if param_grid is None.
 

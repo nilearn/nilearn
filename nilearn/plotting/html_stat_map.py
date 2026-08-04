@@ -136,6 +136,7 @@ def _threshold_data(data: np.ndarray, threshold: Any = None):
     return data, mask, threshold
 
 
+@fill_doc
 def _save_sprite(
     data,
     output_sprite,

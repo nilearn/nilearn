@@ -29,6 +29,7 @@ from nilearn.mass_univariate._utils import (
 )
 
 
+@fill_doc
 def _permuted_ols_on_chunk(
     scores_original_data,
     tested_vars,

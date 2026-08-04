@@ -8,6 +8,7 @@ from warnings import warn
 import numpy as np
 from nibabel import Nifti1Image, is_proxy, load, spatialimages
 
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import get_target_dtype
@@ -97,6 +98,7 @@ def ensure_finite_data(
     return data
 
 
+@fill_doc
 def load_niimg(niimg, dtype=None):
     """Load a niimg, check if it is a nibabel SpatialImage and cast if needed.
 

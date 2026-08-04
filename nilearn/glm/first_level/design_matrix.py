@@ -134,6 +134,7 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     return drift, names
 
 
+@fill_doc
 def _convolve_regressors(
     events,
     hrf_model,

@@ -112,6 +112,7 @@ def _check_shape_and_affine_compatibility(img1, img2=None, dim=None):
     return True
 
 
+@fill_doc
 def _get_labels_data(
     target_img,
     labels_img,
