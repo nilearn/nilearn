@@ -311,7 +311,7 @@ def get_confounds_file(image_file, flag_full_aroma, flag_tedana):
     flag_full_aroma : :obj:`bool`
         True if the input is a full ICA-AROMA output, False otherwise.
 
-    flag_tedata : :obj:`bool`
+    flag_tedana : :obj:`bool`
         True if the input is a TEDANA optimally combined output,
         False otherwise.
 
@@ -489,7 +489,7 @@ def _check_images(image_file, flag_full_aroma, flag_tedana: bool) -> None:
     flag_full_aroma : bool
         True if the input is a full ICA-AROMA output, False otherwise.
 
-    flag_tedata : :obj:`bool`
+    flag_tedana : :obj:`bool`
         True if the input is a TEDANA optimally combined output
 
     Raises

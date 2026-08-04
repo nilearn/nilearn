@@ -42,6 +42,8 @@ Fixes
 
 - :bdg-secondary:`Maint` Add return type annotations and :obj:`~typing.overload` signatures to :func:`~connectome.vec_to_sym_matrix`, :func:`~connectome.group_sparse_covariance`, and :func:`~reporting.get_clusters_table` (:gh:`6368` by `Rémi Gau`_).
 
+- :bdg-primary:`Doc` Fix eleven docstrings naming a parameter the function does not take, including the typos ``lispchitz_constant`` and ``flag_tedata``, and a pair of neighbouring helpers documenting each other's parameter names (:gh:`6474` by `Anton Karpov`_).
+
 
 Enhancements
 ------------
