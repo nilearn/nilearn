@@ -1101,6 +1101,10 @@ class BaseSlicer:
         """
         plt.close(self.frame_axes.figure.number)
 
+    @rename_parameters(
+    {"filename": "output_file"},
+    end_version="0.17.0"
+)
     def savefig(self, output_file: OutputFile, dpi=None, **kwargs) -> None:
         """Save the figure to a file.
 
