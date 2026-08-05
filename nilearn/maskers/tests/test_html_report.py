@@ -481,7 +481,7 @@ def test_nifti_masker_brainsprite(
     matplotlib_pyplot,  # noqa: ARG001
     img_fmri,
 ):
-    """Check that NiftiMasker work with brainsprite engine."""
+    """Check that NiftiMasker Brainsprite reports use unique DOM IDs."""
     masker = NiftiMasker(standardize=None)
     generate_and_check_masker_report(
         masker, extra_warnings_allowed=True, engine="brainsprite"
