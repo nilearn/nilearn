@@ -1,62 +1,19 @@
 """
-Beta-Series Modeling for Task-Based Functional Connectivity and Decoding
-========================================================================
+Beta-Series Modeling for Task-Based Functional Connectivity
+===========================================================
 
-This example shows how to run beta series :term:`GLM` models, which are a
-common modeling approach for a variety of analyses of task-based :term:`fMRI`
-data with an event-related task design, including
-:term:`functional connectivity`, :term:`decoding <Decoding>`, and
-representational similarity analysis.
+This example shows how to run :term:`beta`-series :term:`GLM` models,
+which are a common modeling approach for a variety of analyses of
+task-based :term:`fMRI` data with an event-related task design,
+including :term:`functional connectivity`, :term:`decoding <Decoding>`,
+and Representational Similarity Analysis (RSA).
 
-Beta series models fit trial-wise conditions, which allow users to create
-"time series" of these trial-wise maps, which can be substituted for the
-typical time series used in :term:`resting-state`
-:term:`functional connectivity` analyses.
-Generally, these models are most useful for event-related task designs,
-while other modeling approaches, such as psychophysiological interactions
-(PPIs), tend to perform better in block designs, depending on the type of
-analysis.
-See :footcite:t:`Cisler2014` for more information about this,
-in the context of :term:`functional connectivity` analyses.
-
-Two of the most well-known beta series modeling methods are
-Least Squares- All (LSA) (:footcite:t:`Rissman2004`) and
-Least Squares- Separate (LSS)
-(:footcite:t:`Mumford2012,Turner2012`).
-In LSA, a single :term:`GLM` is run, in which each trial of each condition of
-interest is separated out into its own condition within the design matrix.
-In LSS, each trial of each condition of interest has its own :term:`GLM`,
-in which the targeted trial receives its own column within the design matrix,
-but everything else remains the same as the standard model.
-Trials are then looped across, and many GLMs are fitted,
-with the :term:`Parameter Estimate` map extracted from each :term:`GLM`
-to build the LSS beta series.
-
-.. topic:: Choosing the right model for your analysis
-
-    We have chosen not to reproduce analyses systematically comparing beta
-    series modeling approaches in nilearn's documentation;
-    however, we do incorporate recommendations from the literature.
-    Rather than taking these recommendations at face value, please refer back
-    to the original publications and any potential updates to the literature,
-    when possible.
-
-    First, as mentioned above, according to :footcite:t:`Cisler2014`,
-    beta series models are most appropriate for event-related task designs.
-    For block designs, a PPI model is better suited- at least for
-    functional connectivity analyses.
-
-    According to :footcite:t:`Abdulrahman2016`,
-    the decision between LSA and LSS should be based on three factors:
-    inter-trial variability, scan noise, and stimulus onset timing.
-    While :footcite:t:`Mumford2012` proposes LSS as a tool
-    primarily for fast event-related designs (i.e., ones with short inter-trial
-    intervals), :footcite:t:`Abdulrahman2016` finds, in simulations,
-    that LSA performs better than LSS when trial variability is greater
-    than scan noise, even in fast designs.
-
+First, we compare the standard :term:`GLM` modeling approach
+to two common beta-series modeling approaches,
+Least Squares All (LSA) and Least Squares Separate (LSS).
+Then, we show how to use the resulting beta-series for a simple
+task-based functional connectivity analysis.
 """
-# sphinx_gallery_thumbnail_number = -2
 
 # %%
 # Prepare data and analysis parameters
@@ -73,6 +30,9 @@ from nilearn.plotting import plot_design_matrix, plot_stat_map, show
 
 data = fetch_language_localizer_demo_dataset()
 
+# find the first subject's functional run, confounds, and events file
+# and use them to instantiate a
+# :class:`~nilearn.glm.first_level.FirstLevelModel`
 models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
     dataset_path=data.data_dir,
     task_label="languagelocalizer",
@@ -82,30 +42,36 @@ models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
     n_jobs=2,
 )
 
-# Grab the first subject's model, functional file, and events DataFrame
-standard_glm = models[0]
-fmri_file = models_run_imgs[0][0]
-events_df = events_dfs[0][0]
+# Grab the first subject's FirstLevelModel object
+for _idx, model in enumerate(models):
+    standard_glm = model
 
-# We will use first_level_from_bids's parameters for the other models
-glm_parameters = standard_glm.get_params()
+    # Multiple fMRI runs (and accompanying event files) may
+    # support a single subject's FirstLevelModel,
+    # so we loop through. Note that for this dataset,
+    # we expect only one run per subject.
+    for run_imgs, events in zip(
+        models_run_imgs[_idx], events_dfs[_idx], strict=False
+    ):
+        fmri_file = run_imgs
+        events_df = events
 
-# We need to override one parameter (signal_scaling)
-# with the value of scaling_axis
-glm_parameters["signal_scaling"] = standard_glm.signal_scaling
+# we can verify that only one fMRI run was found for
+# this subject as expected
+print("fmri_file:", fmri_file)
 
 # %%
 # Define the standard model
 # -------------------------
-# Here, we create a basic :term:`GLM` for this run, which we can use to
-# highlight differences between the standard modeling approach and beta series
-# models.
+# Here, we create a basic :term:`GLM` for this one run,
+# which we can use to highlight differences between standard
+# event-modeling approach and beta-series models.
+#
 # We will just use the one created by
 # :func:`~nilearn.glm.first_level.first_level_from_bids`.
 import matplotlib.pyplot as plt
 
-print("Fit model")
-
+# Fit the model
 standard_glm.fit(fmri_file, events_df)
 
 # The standard design matrix has one column for each condition, along with
@@ -114,25 +80,36 @@ fig, ax = plt.subplots(figsize=(5, 10))
 plot_design_matrix(standard_glm.design_matrices_[0], axes=ax)
 show()
 
-# %%
-# Define the LSA model
-# --------------------
-# We will now create a Least Squares All (LSA) model.
-# This involves a simple transformation, where each trial of interest receives
-# its own unique trial type.
-# It's important to ensure that the original trial types can be inferred from
-# the updated trial-wise trial types, in order to collect the resulting
-# beta maps into condition-wise beta series.
-print("Define and fit LSA")
+# We will reuse the parameters supplied above to
+# `first_level_from_bids` for all other models, so
+# we can extract these directly from the `standard_glm`
+# object.
+glm_parameters = standard_glm.get_params()
 
-# Transform the DataFrame for LSA
+# We need to override one parameter (signal_scaling)
+# with the value of scaling_axis
+glm_parameters["signal_scaling"] = standard_glm.signal_scaling
+
+# %%
+# Define the Least Squares-All (LSA) model
+# ----------------------------------------
+# We will now create a Least Squares-All (LSA) model.
+# This involves creating a new condition in the design matrix
+# for each trial of interest
+# It's important to ensure that the original conditions can be inferred from
+# the new trial-wise conditions, in order to collect the resulting
+# :term:`beta` maps into condition-wise beta-series.
+# Here, we will do this using a unique delimiter (``__``),
+# which should not be present in the original condition names.
+
+# Transform the data frame for LSA
 lsa_events_df = events_df.copy()
 conditions = lsa_events_df["trial_type"].unique()
 condition_counter = dict.fromkeys(conditions, 0)
 for i_trial, trial in lsa_events_df.iterrows():
     trial_condition = trial["trial_type"]
     condition_counter[trial_condition] += 1
-    # We use a unique delimiter here (``__``) that shouldn't be in the
+    # We use a unique delimiter here (``__``) which shouldn't be in the
     # original condition names
     trial_name = f"{trial_condition}__{condition_counter[trial_condition]:03d}"
     lsa_events_df.loc[i_trial, "trial_type"] = trial_name
@@ -154,27 +131,27 @@ lsa_beta_maps = {cond: [] for cond in events_df["trial_type"].unique()}
 trialwise_conditions = lsa_events_df["trial_type"].unique()
 for condition in trialwise_conditions:
     beta_map = lsa_glm.compute_contrast(condition, output_type="effect_size")
-    # Drop the trial number from the condition name to get the original name
+    # Drop the trial number from the condition name to get the original name,
+    # splitting on our delimiter (``__``)
     condition_name = condition.split("__")[0]
     lsa_beta_maps[condition_name].append(beta_map)
 
-# We can concatenate the lists of 3D maps into a single 4D beta series for
-# each condition, if we want
+# We concatenate the lists of 3D maps into a single 4D beta-series for
+# each condition
 lsa_beta_maps = {
     name: concat_imgs(maps) for name, maps in lsa_beta_maps.items()
 }
 
 # %%
-# Define the LSS models
-# ---------------------
-# We will now create a separate Least Squares Separate (LSS) model for each
-# trial of interest.
-# The transformation is much like the LSA approach, except that we only
-# relabel *one* trial in the DataFrame.
-# We loop through the trials, create a version of the DataFrame where the
-# targeted trial has a unique trial type, fit the model to that DataFrame,
-# and finally collect the targeted trial's beta map for the beta series.
-print("Define and fit LSS")
+# Define the Least Squares-Separate (LSS) models
+# ----------------------------------------------
+# We next create a separate Least Squares-Separate (LSS) model,
+# one for each trial in the conditions of interest.
+# Thisis much like the LSA approach,
+# except that we only relabel *one* trial in the `events_df` data frame.
+# We loop through the trials, create a version of the data frame where the
+# targeted trial has a unique trial type, fit the model to that data frame,
+# and finally collect the targeted trial's beta map for the beta-series.
 
 
 def lss_transformer(events_df, row_number):
@@ -182,22 +159,23 @@ def lss_transformer(events_df, row_number):
 
     Parameters
     ----------
-    df : pandas.DataFrame
+    df : pandas.data frame
         BIDS-compliant events file information.
     row_number : int
-        Row number in the DataFrame.
+        Row number in the data frame.
         This indexes the trial that will be isolated.
 
     Returns
     -------
-    df : pandas.DataFrame
-        Update events information, with the select trial's trial type isolated.
+    df : pandas.data frame
+        Update events information,
+        with the selected trial's trial type isolated.
     trial_name : str
         Name of the isolated trial's trial type.
     """
     events_df = events_df.copy()
 
-    # Determine which number trial it is *within the condition*
+    # Determine which number trial it is *within the condition of interest*
     trial_condition = events_df.loc[row_number, "trial_type"]
     trial_type_series = events_df["trial_type"]
     trial_type_series = trial_type_series.loc[
@@ -206,18 +184,18 @@ def lss_transformer(events_df, row_number):
     trial_type_list = trial_type_series.index.tolist()
     trial_number = trial_type_list.index(row_number)
 
-    # We use a unique delimiter here (``__``) that shouldn't be in the
+    # We again use a unique delimiter here (``__``) that shouldn't be in the
     # original condition names.
     # Technically, all you need is for the requested trial to have a unique
-    # 'trial_type' *within* the dataframe, rather than across models.
+    # 'trial_type' *within* the data frame, rather than across models.
     # However, we may want to have meaningful 'trial_type's (e.g., 'Left_001')
-    # across models, so that you could track individual trials across models.
+    # across models, so that we could track individual trials across models.
     trial_name = f"{trial_condition}__{trial_number:03d}"
     events_df.loc[row_number, "trial_type"] = trial_name
     return events_df, trial_name
 
 
-# Loop through the trials of interest and transform the DataFrame for LSS
+# Loop through the trials of interest and transform the data frame for LSS
 lss_beta_maps = {cond: [] for cond in events_df["trial_type"].unique()}
 lss_design_matrices = []
 
@@ -228,7 +206,7 @@ for i_trial in range(events_df.shape[0]):
     lss_glm = FirstLevelModel(**glm_parameters)
     lss_glm.fit(fmri_file, lss_events_df)
 
-    # We will save the design matrices across trials to show them later
+    # We save the design matrices across trials to visualize them later
     lss_design_matrices.append(lss_glm.design_matrices_[0])
 
     beta_map = lss_glm.compute_contrast(
@@ -236,20 +214,21 @@ for i_trial in range(events_df.shape[0]):
         output_type="effect_size",
     )
 
-    # Drop the trial number from the condition name to get the original name
+    # Drop the trial number from the condition name to get the original name,
+    # splitting on our delimiter (``__``)
     condition_name = trial_condition.split("__")[0]
     lss_beta_maps[condition_name].append(beta_map)
 
-# We can concatenate the lists of 3D maps into a single 4D beta series for
-# each condition, if we want
+# We again concatenate the lists of 3D maps into a single 4D beta-series for
+# each condition
 lss_beta_maps = {
     name: concat_imgs(maps) for name, maps in lss_beta_maps.items()
 }
 
 # %%
-# Show the design matrices for the first few trials
-# `````````````````````````````````````````````````
-fig, axes = plt.subplots(ncols=3, figsize=(20, 10))
+# Show the LSS design matrices for the first few trials
+# `````````````````````````````````````````````````````
+fig, axes = plt.subplots(ncols=3, figsize=(40, 20))
 for i_trial in range(3):
     plot_design_matrix(
         lss_design_matrices[i_trial],
@@ -260,10 +239,8 @@ for i_trial in range(3):
 show()
 
 # %%
-# Compare the three modeling approaches
-# -------------------------------------
-print("Compare models")
-
+# Compare design matrices from the three modeling approaches
+# ----------------------------------------------------------
 DM_TITLES = ["Standard GLM", "LSA Model", "LSS Model (Trial 1)"]
 DESIGN_MATRICES = [
     standard_glm.design_matrices_[0],
@@ -273,7 +250,7 @@ DESIGN_MATRICES = [
 
 fig, axes = plt.subplots(
     ncols=3,
-    figsize=(20, 10),
+    figsize=(40, 20),
     gridspec_kw={"width_ratios": [1, 2, 1]},
 )
 
@@ -284,23 +261,24 @@ for i_ax, _ in enumerate(axes):
 show()
 
 # %%
-# Applications of beta series
+# Applications of beta-series
 # ---------------------------
-# Beta series can be used much like :term:`resting-state` data,
+# Beta-series can be used much like :term:`resting-state` data,
 # though generally with vastly reduced degrees of freedom
 # than a typical :term:`resting-state` run,
 # given that the number of trials should always be less
-# than the number of volumes in a functional MRI run.
+# than the number of volumes in a :term:`fMRI` run.
 #
-# Two common applications of beta series are
+# Two common applications of beta-series are
 # to :term:`functional connectivity` and decoding analyses.
-# For an example of a beta series applied to decoding, see
+# For an example of a beta-series applied to decoding, see
 # :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py`.
-# Here, we show how the beta series can be applied to functional connectivity
+# Here, we show how the beta-series can be applied to functional connectivity
 # analysis.
-# In the following section, we perform a quick task-based functional
-# connectivity analysis of each of the two task conditions
-# ('language' and 'string'), using the LSS beta series.
+#
+# In the following section, we perform a task-based functional
+# connectivity analysis using one of the two task conditions
+# ('string') from the LSS beta-series.
 # This section is based on
 # :ref:`sphx_glr_auto_examples_03_connectivity\
 # _plot_seed_to_voxel_correlation.py`,
@@ -310,12 +288,10 @@ import numpy as np
 
 from nilearn.maskers import NiftiMasker, NiftiSpheresMasker
 
-print("Apply beta series")
-
 # Coordinate taken from Neurosynth's 'language' meta-analysis
 coords = [(-54, -42, 3)]
 
-# Initialize maskers for the seed and the rest of the brain
+# Initialize masker for the "language"seed
 seed_masker = NiftiSpheresMasker(
     coords,
     radius=8,
@@ -325,6 +301,7 @@ seed_masker = NiftiSpheresMasker(
     verbose=1,
 )
 
+# Initialize a separate masker for the whole brain
 brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
@@ -333,19 +310,7 @@ brain_masker = NiftiMasker(
     verbose=1,
 )
 
-# Perform the seed-to-voxel correlation for the LSS 'language' beta series
-lang_seed_beta_series = seed_masker.fit_transform(lss_beta_maps["language"])
-lang_beta_series = brain_masker.fit_transform(lss_beta_maps["language"])
-lang_corrs = (
-    np.dot(
-        lang_beta_series.T,
-        lang_seed_beta_series,
-    )
-    / lang_seed_beta_series.shape[0]
-)
-language_connectivity_img = brain_masker.inverse_transform(lang_corrs.T)
-
-# Same but now for the LSS 'string' beta series
+# Perform the seed-to-voxel correlation for the LSS 'string' beta-series
 string_seed_beta_series = seed_masker.fit_transform(lss_beta_maps["string"])
 string_beta_series = brain_masker.fit_transform(lss_beta_maps["string"])
 string_corrs = (
@@ -358,38 +323,25 @@ string_corrs = (
 string_connectivity_img = brain_masker.inverse_transform(string_corrs.T)
 
 # Show both correlation maps
-fig, axes = plt.subplots(figsize=(10, 8), nrows=2)
-
-display = plot_stat_map(
-    language_connectivity_img,
-    threshold=0.5,
-    vmax=1,
-    cut_coords=coords[0],
-    title="Language",
-    figure=fig,
-    axes=axes[0],
-)
-display.add_markers(
-    marker_coords=coords,
-    marker_color="g",
-    marker_size=300,
-)
+fig, ax = plt.subplots(figsize=(10, 8))
 
 display = plot_stat_map(
     string_connectivity_img,
-    threshold=0.5,
-    vmax=1,
+    threshold=0.05,
+    vmax=0.25,
     cut_coords=coords[0],
     title="String",
     figure=fig,
-    axes=axes[1],
+    axes=ax,
 )
 display.add_markers(
     marker_coords=coords,
     marker_color="g",
     marker_size=300,
 )
-fig.suptitle("LSS Beta Series Functional Connectivity")
+fig.suptitle(
+    "Least Squares-Separate (LSS) Beta-Series Functional Connectivity"
+)
 
 show()
 
