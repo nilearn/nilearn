@@ -28,8 +28,8 @@ development_dataset = fetch_development_fmri(n_subjects=60)
 #
 # We then use the :class:`~nilearn.maskers.MultiNiftiMapsMasker` object
 # to extract time series from the pre-defined ROIs for each subject.
-# We could do this iteratively for each subject using
-# `:class:`~nilearn.maskers.NiftiMapsMasker`,
+# We could instead do this iteratively for each subject
+# using :class:`~nilearn.maskers.NiftiMapsMasker` objects,
 # but :class:`~nilearn.maskers.MultiNiftiMapsMasker` allows to
 # extract time series for all subjects in a single step.
 
@@ -62,14 +62,15 @@ masked_data = masker.fit_transform(
 # Since our goal is to compare different kinds of connectivity,
 # we will define three different kinds of connectivity matrices,
 # (i.e., "correlation", "partial correlation", "tangent")
-# using the `kind` parameter.
+# using the ``kind`` parameter.
 #
-# To do this, we will use a :class:`~sklearn.pipeline.Pipeline` to
+# To do this, we will use a scikit-learn :class:`~sklearn.pipeline.Pipeline` to
 # combine the connectivity measure and the classifier into a single object.
 # Specifically, we will create a composite estimator with
 # :func:`~nilearn.connectome.ConnectivityMeasure` and
 # :class:`sklearn.model_selection.GridSearchCV` to perform a grid search
-# over the parameters for our classifier, a :class:`sklearn.svm.LinearSVC`.
+# over the ``C`` regularization parameter for our
+# classifier, a :class:`sklearn.svm.LinearSVC`.
 
 # prepare the classification pipeline
 from sklearn.dummy import DummyClassifier
@@ -108,13 +109,16 @@ param_grid = [
 # %%
 # Rather than evaluating on the whole sample of 60 subjects,
 # we want to cross-validate our model.
+# We can directly pass the Pipeline object we defined above to
+# a cross-validation estimator.
+#
 # Given the unbalanced sampling of age groups in
 # :func:`~nilearn.datasets.fetch_development_fmri`,
 # we will use stratified cross-validation to preserve the proportion of
 # each age group in the training and testing sets.
-# We will define 30 random splits of the subjects into training/testing sets,
-# with 10 subjects in the test set for each split using
-# :class:`sklearn.model_selection.StratifiedShuffleSplit`.
+# We will define 30 random,
+# stratified splits of the subjects into training and testing sets,
+# using :class:`sklearn.model_selection.StratifiedShuffleSplit`.
 
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import LabelEncoder
@@ -136,7 +140,7 @@ mean_scores = gs.cv_results_["mean_test_score"]
 scores_std = gs.cv_results_["std_test_score"]
 
 # %%
-# display the results
+# Finally, we display the classification accuracy results:
 import matplotlib.pyplot as plt
 
 plt.figure(figsize=(6, 4), constrained_layout=True)
@@ -156,7 +160,7 @@ plt.gca().set_axisbelow(True)
 # much larger cohorts and replicated across several datasets.
 # :footcite:t:`Dadi2019` showed
 # that across many cohorts and clinical questions,
-# the tangent kind should be preferred.
+# tangent functional connectivity should be preferred.
 
 plt.show()
 
