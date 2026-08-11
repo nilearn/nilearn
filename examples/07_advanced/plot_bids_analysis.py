@@ -32,7 +32,8 @@ More specifically, this example will be divided into three sections:
 # files ``preproc.nii`` and their accompanying ``confounds.tsv`` files.
 #
 # For more information on this dataset, see
-# the :func:`nilearn.datasets.language_localizer_dataset` description.
+# the :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`
+# description.
 #
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
@@ -211,6 +212,7 @@ report_slm = second_level_model.generate_report(
     contrasts="intercept",
     first_level_contrast="language - string",
     threshold=p001_unc,
+    height_control=None,
     display_mode="x",
 )
 
