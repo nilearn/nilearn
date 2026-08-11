@@ -2,21 +2,22 @@
 Advanced decoding using scikit-learn
 ====================================
 
-This tutorial opens the box of decoding pipelines beyond the
+This tutorial opens the box of decoding pipelines, beyond the
 functionalities provided by the
-:class:`~nilearn.decoding.Decoder` object
+:class:`~nilearn.decoding.Decoder` object.
 First, we reproduce basic functionalities of the
 :class:`~nilearn.decoding.Decoder`
-object via direct calls to scikit-learn functions.
+object via direct calls to the underlying scikit-learn functions.
 Next, we give pointers towards integrating other scikit-learn
 estimators directly.
+
 If some concepts seem unclear,
 please refer to the :ref:`documentation on decoding <decoding_intro>`
 and in particular to the :ref:`advanced section <going_further>`.
 As in many other examples, we decode the visual category of
 stimuli in the :footcite:t:`Haxby2001` dataset,
 focusing on distinguishing two categories:
-face and cat images.
+"face" and "cat" images.
 
 """
 
@@ -24,15 +25,14 @@ face and cat images.
 # Retrieve and load the :term:`fMRI` data from the Haxby study
 # ------------------------------------------------------------
 #
-# First download the data
-# .......................
-#
-
+# Download the data
+# .................
 # The :func:`~nilearn.datasets.fetch_haxby` function will download the
 # Haxby dataset object, whose attributes include
-# the fMRI images as Niimg objects (`func`)
-# a spatial mask (`mask_vt`),
-# and a CSV with the visual category label for each image (`session_target`).
+# the fMRI images as Niimg objects (``func``)
+# a spatial mask (``mask_vt``),
+# and a CSV with the visual category label for each image (``session_target``).
+
 from nilearn import datasets
 
 haxby_dataset = datasets.fetch_haxby()
@@ -46,7 +46,7 @@ behavioral = pd.read_csv(haxby_dataset.session_target[0], delimiter=" ")
 behavioral
 
 # %%
-# We keep only a images from the conditions of interest (cats and faces).
+# We keep only a images from the conditions of interest ("cat" and "face").
 from nilearn.image import index_img
 
 conditions = behavioral["labels"]
@@ -64,8 +64,7 @@ run_label = behavioral["chunks"][condition_mask]
 # Importing a classifier
 # ......................
 # We can import many predictive models from scikit-learn that can be used in a
-# decoding pipelines. They are all used with the same `fit()` and `predict()`
-# functions.
+# decoding pipelines. They all support a ``.fit()`` method.
 # Let's define a Support Vector Classifier
 # (or :sklearn:`SVC <modules/svm.html>`).
 
@@ -112,8 +111,8 @@ print(f"SVC accuracy: {cv_scores.mean():.3f}")
 # ..................................
 # You can change many parameters of the cross_validation, such as:
 #
-# * using a different cross-validation scheme;
-#   for example, :func:`sklearn.model_selection.LeaveOneGroupOut`
+# * using a different
+#   :sklearn:`cross-validation scheme <modules/cross_validation.html>`
 #
 # * speeding up the computation by using `n_jobs = -1`, which will spread the
 #   computation equally across all processors.
@@ -165,14 +164,14 @@ null_cv_scores = permutation_test_score(
 print(f"Permutation test score: {null_cv_scores.mean():.3f}")
 
 # %%
-# Decoding without a mask: Anova-SVM in scikit-learn
+# Decoding without a mask: ANOVA-SVM in scikit-learn
 # --------------------------------------------------
 # We can also implement feature selection before decoding.
 # To perform the feature selection, we need to import
 # the :mod:`sklearn.feature_selection` module and use
 # :func:`sklearn.feature_selection.f_classif`, a simple F-score
 # based feature selection (a.k.a.
-# `Anova <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_).
+# `ANOVA <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_).
 #
 # We can then chain both steps (feature selection and decoding)
 # into one composite estimator using
@@ -188,14 +187,14 @@ linear_svc = LinearSVC(dual=True, random_state=0)
 anova_svc = Pipeline([("anova", feature_selection), ("svc", linear_svc)])
 
 # %%
-# We can now use our Pipeline `anova_svc` object exactly
-# as we were using our `svc` estimator previously.
+# We can now use our Pipeline ``anova_svc`` object exactly
+# as we were using our ``svc`` estimator previously.
 # Previously, we used :func:`sklearn.model_selection.cross_val_score`
 # to return the cross-validated decoding scores.
 # However, we now want to investigate our model's feature selection
 # via its weights.
 # We can use :func:`sklearn.model_selection.cross_validate` function
-# with `return_estimator = True` to save the estimator.
+# with ``return_estimator = True`` to save the estimator.
 from sklearn.model_selection import cross_validate
 
 fitted_pipeline = cross_validate(
@@ -222,7 +221,7 @@ print(
 )
 
 # %%
-# Next, we use the `inverse_transform` function to
+# Next, we use the ``inverse_transform`` function to
 # invert the feature selection step
 # and put these coefficients in the right place in
 # our `(n_timepoints, n_voxels)` 2D array.
@@ -234,13 +233,13 @@ print(
 )
 
 # %%
-# Finally, we apply the `inverse_transform` function
+# Finally, we apply the ``inverse_transform`` function
 # of our :class:`~nilearn.maskers.NiftiMasker` object
 # to re-create a 4D Niimg that we can visualize
 from nilearn.plotting import plot_stat_map, show
 
 weight_img = masker.inverse_transform(full_coef)
-plot_stat_map(weight_img, title="Anova+SVC weights")
+plot_stat_map(weight_img, title="ANOVA+SVC weights")
 
 show()
 
@@ -257,9 +256,9 @@ show()
 # ..............................
 # To change the prediction engine, we just need to import it and use in our
 # pipeline instead of the SVC.
-# We can try Fisher's
+# For example, we can try Fisher's
 # :sklearn:`Linear Discriminant Analysis (LDA)
-# <auto_examples/decomposition/plot_pca_vs_lda.html>`
+# <auto_examples/decomposition/plot_pca_vs_lda.html>`.
 
 # Construct the new estimator object and use it in a new Pipeline
 # after feature-selection with ANOVA, as before
@@ -286,7 +285,9 @@ print(
 # Changing the feature selection
 # ..............................
 # Let's say that you want a more sophisticated feature selection;
-# for example, a Recursive Feature Elimination (RFE) before a SVC.
+# for example,
+# a Recursive Feature Elimination (:class:`~sklearn.feature_selection.RFE`)
+# before a SVC.
 # We can simply follow the same principle as we did in changing
 # the prediction engine.
 
