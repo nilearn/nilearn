@@ -24,7 +24,7 @@ More specifically, this example will be divided into three sections:
 # -------------------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative
 # purposes. It contains only the necessary
-# information for each subjectto run a statistical analysis using Nilearn.
+# information for each subject to run a statistical analysis using Nilearn.
 # Each of the raw data folders  contain ``bold.json`` and ``events.tsv`` files,
 # indicating :term:`fMRI` metadata and the timing of the task events,
 # respectively.
