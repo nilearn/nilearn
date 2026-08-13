@@ -18,10 +18,10 @@ a time dependence exists between observations within the same run
 (see :footcite:t:`Winkler2014` for more detailed explanations).
 
 The example shows the small differences that exist between
-Bonferroni-corrected (:term:`FPR`) p-values computed using an
+Bonferroni-corrected (:term:`FPR correction`) p-values computed using an
 F-test in scikit-learn with
 :func:`~sklearn.feature_selection.f_regression` and
-family-wise corrected (:term:`FWER`) p-values obtained with
+family-wise corrected (:term:`FWER correction`) p-values obtained with
 with :func:`~nilearn.mass_univariate.permuted_ols` ; i.e.,
 from the permutation test combined with a max-type procedure,
 following the approach of :footcite:t:`Anderson2001`.
