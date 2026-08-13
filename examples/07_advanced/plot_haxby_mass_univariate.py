@@ -103,7 +103,7 @@ for s in range(n_runs):
         # Identify indices for each condition of interest
         # and take the average of the associated fMRI volumes.
         indices = run_subset.loc[run_subset["labels"] == condition].index
-        grouped_fmri_masked.append(fmri_masked[indices].mean(0))
+        grouped_fmri_masked.append(fmri_masked[indices].mean(axis=0))
         grouped_conditions_encoded.append(le.transform([condition]))
 
 grouped_fmri_masked = np.asarray(grouped_fmri_masked)
