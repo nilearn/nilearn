@@ -197,7 +197,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             If length 1, the properties defined in that element will be used
             to draw all requested contours.
 
-        elevations : :obj:`float`, default=0.1
+        elevation : :obj:`float`, default=0.1
             Controls how high above the face each boundary should be placed.
             0.0 implies directly on boundary, and higher values are farther
             above the face. This is useful for avoiding overlap of surface

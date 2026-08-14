@@ -39,7 +39,7 @@ def calculate_tfce(
         Step size for TFCE calculation.
         If set to 'auto', use 100 steps, as is done in fslmaths.
         A good alternative is 0.1 for z and t maps, as in [1]_.
-    two_sided_test : :obj:`bool`, default=False
+    two_sided_test : :obj:`bool`, default=True
         Whether to assess both positive and negative clusters (True) or just
         positive ones (False).
 
