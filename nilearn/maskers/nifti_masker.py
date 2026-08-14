@@ -146,6 +146,8 @@ def filter_and_mask(
         Signals extracted using the provided mask. It is a scikit-learn
         friendly 2D array with shape n_sample x n_features.
 
+    .. do not check for missing parameters in docstring
+
     Notes
     -----
     For all other parameters refer to NiftiMasker documentation.

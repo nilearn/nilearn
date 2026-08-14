@@ -144,6 +144,8 @@ def create_colormap_from_lut(cmap, default_cmap="gist_ncar"):
     cmap : pd.DataFrame
         DataFrame with columns 'index', 'name', and 'color' (hex values)
 
+    default_cmap : :obj:`str`
+
     Returns
     -------
     colormap (LinearSegmentedColormap): A Matplotlib colormap

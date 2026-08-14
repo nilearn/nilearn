@@ -429,8 +429,7 @@ display_mode : {"ortho", "tiled", "mosaic", "x", \
 """
 
 # displayed_maps
-docdict["displayed_maps"] = """
-displayed_maps : :obj:`int`, \
+docdict["displayed_maps"] = """displayed_maps : :obj:`int`, \
                   :class:`~numpy.ndarray` or :obj:`list` of :obj:`int`, \
                   or "all", default=10
     Indicates which maps will be displayed in the HTML report.
@@ -679,6 +678,11 @@ img : Niimg-like object
 # imgs
 docdict["imgs"] = """
 imgs : :obj:`list` of Niimg-like objects
+    See :ref:`extracting_data`.
+"""
+
+docdict["imgs_list"] = """
+imgs_list : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
 """
 
@@ -1337,7 +1341,7 @@ target_shape : :obj:`tuple` or :obj:`list` or None, default=None
 
 """
 
-# threshold
+# tfce
 docdict["tfce"] = """
 tfce : :obj:`bool`, default=False
     Whether to calculate :term:`TFCE`

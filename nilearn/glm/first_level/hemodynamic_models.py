@@ -321,6 +321,8 @@ def _generic_dispersion_derivative(
     dt : :obj:`float`, default=0.01
         Dispersion step for the derivative.
 
+    .. do not check for missing parameters in docstring
+
     Notes
     -----
     See ``_gamma_difference_hrf`` for the other parameters description.

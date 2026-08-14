@@ -16,7 +16,6 @@
 
 import ast
 import re
-import warnings
 from contextlib import suppress
 from pathlib import Path
 
@@ -103,14 +102,16 @@ def main() -> None:
 
     print()
 
-    if UNDOCUMENTED_PARAMS:
+    if (
+        UNDOCUMENTED_PARAMS
+        or EXTRA_PARAMS
+        or DUPLICATE_PARAMS
+        or MISSING_SPACE_BEFORE_COLON
+    ):
         message = ["Docstring parameters do not match signature for:"]
-        message.append("Undocumented parameter(s):")
-        message.extend(f"  - {x}" for x in UNDOCUMENTED_PARAMS)
-        warnings.warn("\n".join(message), stacklevel=2)
-
-    if EXTRA_PARAMS or DUPLICATE_PARAMS or MISSING_SPACE_BEFORE_COLON:
-        message = ["Docstring parameters do not match signature for:"]
+        if UNDOCUMENTED_PARAMS:
+            message.append("Undocumented parameter(s):")
+            message.extend(f"  - {x}" for x in UNDOCUMENTED_PARAMS)
         if EXTRA_PARAMS:
             message.append("Extra documented parameter(s) not in signature:")
             message.extend(f"  - {x}" for x in EXTRA_PARAMS)
@@ -329,11 +330,11 @@ def check_parameters_docstring(
     docstring = ast.get_docstring(ast_node, clean=False)
     if docstring is None:
         return
-    docstring = expand_doc_templates(docstring)
-
     parameters = get_parameters(ast_node)
     if not parameters:
         return
+
+    docstring = expand_doc_templates(docstring)
 
     doc = NumpyDocString(docstring)
     if not doc["Parameters"]:
@@ -343,7 +344,7 @@ def check_parameters_docstring(
 
     documented = []
     for param in doc["Parameters"]:
-        if param.name.startswith("_"):
+        if param.name.startswith("_") or param.name.startswith(".. "):
             continue
         if not param.type:
             if ":" in param.name:
@@ -358,17 +359,19 @@ def check_parameters_docstring(
                 f"{filename}:{ast_node.lineno} - {ast_node.name} "
                 f"- [red]missing type for parameter '{param.name}'"
             )
+        if "kwargs" in param.name or "fit_params" in param.name:
+            continue
         documented.extend(name.strip() for name in param.name.split(","))
 
-    undocumented = [
-        p for p in parameters if p not in documented and "kwarg" not in p
+    parameters = [
+        p for p in parameters if "kwargs" not in p and "fit_params" not in p
     ]
-    extras = [
-        p for p in documented if p not in parameters and "kwarg" not in p
-    ]
-    duplicates = {
-        p for p in documented if documented.count(p) > 1 and "kwarg" not in p
-    }
+
+    undocumented = []
+    if "do not check for missing parameters in docstring" not in docstring:
+        undocumented = [p for p in parameters if p not in documented]
+    extras = [p for p in documented if p not in parameters]
+    duplicates = {p for p in documented if documented.count(p) > 1}
 
     if undocumented:
         UNDOCUMENTED_PARAMS.append(

@@ -2890,6 +2890,8 @@ def fetch_neurovault_auditory_computation_task(
 
     %(verbose)s
 
+    timeout : float, default=10.0
+
     Returns
     -------
     data : Bunch

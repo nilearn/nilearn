@@ -155,6 +155,10 @@ def is_binary_niimg(
         See :ref:`extracting_data`.
         Image to test.
 
+    block_size : :obj:`int`, default = 1_000_000
+
+    accept_non_finite : :obj:`bool`, default = True
+
     Returns
     -------
     is_binary : Boolean

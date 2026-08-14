@@ -81,7 +81,7 @@ class _MultiMixin:
 
         Parameters
         ----------
-        %(imgs)s
+        %(imgs_list)s
             Images to process.
 
         %(confounds_multi)s

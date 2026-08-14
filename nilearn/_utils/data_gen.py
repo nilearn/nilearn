@@ -197,6 +197,8 @@ def generate_maps(
 
     Parameters
     ----------
+    shape : :obj:`tuple` of :obj:`int`
+
     n_regions : :obj:`int`
         Number of regions to generate.
 
@@ -639,7 +641,7 @@ def write_fake_bold_img(
 
     Parameters
     ----------
-    file_path : :obj:`str`
+    file_path : :obj:`str` or :obj:`filepath.Path`
         Output file path.
 
     shape : :obj:`tuple` of :obj:`int`
@@ -652,6 +654,9 @@ def write_fake_bold_img(
     rand_gen : :obj:`int`, :obj:`numpy.random.RandomState` \
         or :obj:`numpy.random.Generator`
         default=0
+
+    mask_file_path : :obj:`str` or :obj:`filepath.Path` or None, default=None
+        Output file path.
 
     Returns
     -------
@@ -1483,6 +1488,8 @@ def _write_bids_raw_func(
     func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
+    fields : :obj:`dict` of :obj:`str`
+
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.
 
@@ -1532,6 +1539,8 @@ def _write_bids_derivative_func(
     ----------
     func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
+
+    fields : :obj:`dict` of :obj:`str`
 
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.

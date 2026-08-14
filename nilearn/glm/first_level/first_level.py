@@ -1634,6 +1634,8 @@ def first_level_from_bids(
         of :func:`~nilearn.interfaces.fmriprep.load_confounds`
         for more details on the confounds loading strategies.
 
+    .. do not check for missing parameters in docstring
+
     Returns
     -------
     models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
@@ -1675,6 +1677,11 @@ def first_level_from_bids(
             Any NaN values on the first row of the loaded confounds
             will be replaced by 0 to avoid later errors
             during design matrix creation.
+
+    Notes
+    -----
+    See :class:`~glm.first_level.FirstLevelModel` for further details
+    on other parameters.
 
     Examples
     --------

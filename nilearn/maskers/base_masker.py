@@ -75,6 +75,8 @@ def filter_and_extract(
         If any other parameter is needed, a functor or a partial
         function must be provided.
 
+    .. do not check for missing parameters in docstring
+
     Returns
     -------
     signals : 1D or 2D numpy array
