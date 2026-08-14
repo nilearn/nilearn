@@ -470,14 +470,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         defaults to an empty dictionary. To tune a custom estimator's
         hyperparameters, provide ``param_grid`` explicitly.
 
-    clustering_percentile : int, float, in the [0, 100], default=100
-        Percentile of features to keep after clustering. If it is lower
-        than 100, a ReNA clustering is performed as a first step of fit
-        to agglomerate similar features together. ReNA is typically efficient
-        for clustering_percentile equal to 10. Only used with
-        :class:`nilearn.decoding.FREMClassifier` and
-        :class:`nilearn.decoding.FREMRegressor`.
-
     %(screening_percentile)s
 
     scoring : str, callable or None,
@@ -1538,14 +1530,14 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         in closed interval [0, 100] \
         default=10
         Used to perform a fast ReNA clustering on input data as a first step of
-        fit. It agglomerates similar features together to reduce their number
-        by this percentile. ReNA is typically efficient for cluster_percentile
-        equal to 10.
+        fit.
+        It agglomerates similar features together to reduce their number
+        by this percentile.
+        ReNA is typically efficient for cluster_percentile equal to 10.
 
     %(screening_percentile)s
 
     %(screening_n_features)s
-
 
     scoring : :obj:`str`, callable or None, default= 'r2'
 
@@ -1564,7 +1556,9 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
     %(standardize_true)s
 
     %(target_affine)s
+
     %(target_shape)s
+
     %(mask_strategy)s
 
         .. note::
@@ -1577,11 +1571,17 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_brain_mask`.
 
         default='background'.
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
+
     %(memory)s
+
     %(memory_level)s
+
     %(n_jobs)s
 
     %(verbose0)s
@@ -1721,9 +1721,10 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         in closed interval [0, 100], \
         default=10
         Used to perform a fast ReNA clustering on input data as a first step of
-        fit. It agglomerates similar features together to reduce their number
-        down to this percentile. ReNA is typically efficient for
-        cluster_percentile equal to 10.
+        fit.
+        It agglomerates similar features together to reduce their number
+        down to this percentile.
+        ReNA is typically efficient for cluster_percentile equal to 10.
 
     screening_percentile : :obj:`int`, :obj:`float`, \
         in closed interval [0, 100], \
@@ -1735,7 +1736,6 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         scores.
 
     %(screening_n_features)s
-
 
     scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1752,6 +1752,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     %(standardize_true)s
 
     %(target_affine)s
+
     %(target_shape)s
 
     %(mask_strategy)s
@@ -1768,10 +1769,15 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         default='background'.
 
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
+
     %(memory)s
+
     %(memory_level)s
+
     %(n_jobs)s
 
     %(verbose0)s
