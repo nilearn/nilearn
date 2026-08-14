@@ -692,6 +692,7 @@ class BaseMasker(_BaseMasker):
             bg_img=bg_img,
             cmap=self.cmap if cmap is None else cmap,
             symmetric_cmap=False,
+            unique_id=self._report_content["unique_id"],
         )
 
         self._reporting_data["bg_base64"] = json_view["bg_base64"]

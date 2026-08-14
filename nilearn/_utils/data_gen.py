@@ -691,7 +691,7 @@ def _generate_signals_from_precisions(
         A list of precision matrices. Every matrix must be square (with the
         same size) and positive definite.
 
-    min_samples, max_samples : :obj:`int`, optional
+    min_n_samples, max_n_samples : :obj:`int`, optional
         The number of samples drawn for each timeseries is taken at random
         between these two numbers. Defaults are 50 and 100.
 

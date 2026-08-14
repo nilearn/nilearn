@@ -44,12 +44,12 @@ def plot_img_comparison(
 
     Parameters
     ----------
-    ref_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
+    ref_imgs : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
               or a :obj:`list` of \
               3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Reference image.
 
-    src_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
+    src_imgs : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
               or a :obj:`list` of \
               3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Source image.
