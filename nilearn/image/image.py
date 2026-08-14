@@ -535,7 +535,7 @@ def _smooth_surface_img(
 
     Parameters
     ----------
-    imgs : SurfaceImage
+    img : SurfaceImage
         The surface whose is to be smoothed.
         In the case of 2D data, each sample is smoothed independently.
 

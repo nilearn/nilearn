@@ -39,6 +39,8 @@
 
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
 
+.. _Anton Karpov: https://github.com/karpovantonme
+
 .. _Anupriya Kumari: https://github.com/anupriyakkumari
 
 .. _Ariel Rokem: https://arokem.org/
