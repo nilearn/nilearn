@@ -343,8 +343,14 @@ class ReportMixin:
         return html_report
 
     def _set_brainsprite_data(self):
+        from nilearn.plotting.html_stat_map import _get_brainsprite_html_ids
+
+        report_content = self._report_content
+        report_content["html_ids"] = _get_brainsprite_html_ids(
+            report_content["unique_id"]
+        )
+
         if self._has_report_data():
-            report_content = self._report_content
             report_content["bg_base64"] = self._reporting_data["bg_base64"]
             report_content["cm_base64"] = self._reporting_data["cm_base64"]
             report_content["params"] = self._reporting_data["params"]
