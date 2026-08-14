@@ -20,6 +20,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix the masked atlas returned by :func:`~regions.img_to_signals_labels` and exposed as ``NiftiLabelsMasker.region_atlas_`` being cast to ``int8``, which wrapped every label above 127 around and aliased label 256 onto the background; atlases such as Schaefer-400 label well past that (:gh:`6447` by `Andrew Chen`_).
+
 - :bdg-info:`Plotting` Fix Brainsprite figures becoming blank or incorrect when multiple masker reports are embedded in the same HTML document by giving each viewer unique DOM element IDs (:gh:`6419` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-dark:`Code` Fix :func:`~regions.connected_label_regions` attaching the names given in ``labels`` to the wrong regions, because the sorted labels from ``np.unique`` were put through a ``set`` before being zipped against the names; contiguous labels happened to survive that, but the sparse labels real atlases use did not (:gh:`6445` by `Andrew Chen`_).
