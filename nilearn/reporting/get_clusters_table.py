@@ -446,6 +446,8 @@ def _get_clusters_table_surface(
         Useful when calling recursively
         for two-sided thresholding.
 
+    Notes
+    -----
     For other parameters, see `get_clusters_table`.
 
     """
@@ -725,7 +727,7 @@ def clustering_params_to_dataframe(
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
 
-    is_volume_glm: bool
+    is_volume_glm : bool
         True if we are dealing with volume data.
 
     Returns

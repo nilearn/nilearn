@@ -799,7 +799,7 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        n_scans: int
+        n_scans : int
 
         events : list of pandas.DataFrame
 
@@ -1589,7 +1589,7 @@ def first_level_from_bids(
         Filter examples would be ``('desc', 'preproc')``, ``('dir', 'pa')``
         and ``('run', '10')``.
 
-    mask_img: Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
+    mask_img : Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
              :obj:`~nilearn.maskers.SurfaceMasker`, False \
              or ``"derivatives"``, or \
              None, default=None
@@ -2046,6 +2046,7 @@ def _list_valid_subjects(derivatives_path, sub_labels) -> list[str]:
     return sorted(set(sub_labels_exist))
 
 
+@fill_doc
 def _report_found_files(files, text, sub_label, filters, verbose) -> None:
     """Print list of files found for a given subject and filter.
 
@@ -2063,6 +2064,8 @@ def _report_found_files(files, text, sub_label, filters, verbose) -> None:
     filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters are of the form (field, label).
         Only one filter per field allowed.
+
+    %(verbose)s
 
     """
     unordered_list_string = "\n\t- ".join(files)
@@ -2313,9 +2316,6 @@ def _get_masks_files(
 
     sub_label : :obj:`str`
         Subject label as specified in the file names like sub-<sub_label>_.
-
-    task_label : :obj:`str`
-        Task label as specified in the file names like _task-<task_label>_.
 
     task_label : :obj:`str`
         Space label as specified in the file names like _space-<space_label>_.
@@ -2756,6 +2756,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
             run_check_list.append(run)
 
 
+@fill_doc
 def _check_bids_events_list(
     events, imgs, sub_label, task_label, dataset_path, events_filters, verbose
 ) -> None:
@@ -2787,6 +2788,8 @@ def _check_bids_events_list(
     events_filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters of the form (field, label) used to select the files.
         See :func:`get_bids_files`.
+
+    %(verbose)s
 
     """
     if not events:

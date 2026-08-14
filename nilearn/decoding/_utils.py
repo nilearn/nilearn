@@ -368,10 +368,10 @@ def validate_estimator(
         in which the estimator to validate
         is embedded
 
-    estimator_args: dict or None
+    estimator_args : dict or None
         extra args to pass when instantiating the embedded estimator
 
-    verbose:
+    verbose :
         used to adjust the verbosity of the embedded estimator
     """
     if not isinstance(estimator, str):

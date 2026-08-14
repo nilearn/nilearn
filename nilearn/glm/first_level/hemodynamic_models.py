@@ -321,7 +321,9 @@ def _generic_dispersion_derivative(
     dt : :obj:`float`, default=0.01
         Dispersion step for the derivative.
 
-    See _gamma_difference_hrf for the other parameters description.
+    Notes
+    -----
+    See ``_gamma_difference_hrf`` for the other parameters description.
     """
     return _compute_derivative_from_values(
         _gamma_difference_hrf(

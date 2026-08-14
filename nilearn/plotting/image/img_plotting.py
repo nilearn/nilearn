@@ -1496,8 +1496,6 @@ def plot_glass_brain(
 
     %(transparency)s
 
-    %(transparency_range)s
-
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via

@@ -81,6 +81,7 @@ def read_md5_sum_file(path):
     return hashes
 
 
+@fill_doc
 def _chunk_report_(
     bytes_so_far, total_size, initial_size, t0, verbose
 ) -> None:
@@ -101,6 +102,8 @@ def _chunk_report_(
     initial_size : int
         If resuming, indicate the initial size of the file.
         If not resuming, set to zero.
+
+    %(verbose)s
 
     """
     if not total_size:

@@ -140,13 +140,15 @@ def filter_and_mask(
     imgs : 3D/4D Niimg-like object
         Images to be masked. Can be 3-dimensional or 4-dimensional.
 
-    For all other parameters refer to NiftiMasker documentation.
-
     Returns
     -------
     signals : 2D numpy array
         Signals extracted using the provided mask. It is a scikit-learn
         friendly 2D array with shape n_sample x n_features.
+
+    Notes
+    -----
+    For all other parameters refer to NiftiMasker documentation.
 
     """
     if memory is None:

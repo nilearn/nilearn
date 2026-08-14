@@ -638,6 +638,9 @@ class Pattern(_SpecialValue):
     to, any value for which ``re.match(pattern, value, flags)`` is
     ``True``.
 
+    See the documentation for the standard library ``re`` module for
+    more information.
+
     Parameters
     ----------
     pattern : str
@@ -661,8 +664,6 @@ class Pattern(_SpecialValue):
     nilearn.datasets.neurovault.NotIn,
     nilearn.datasets.neurovault.Contains,
     nilearn.datasets.neurovault.NotContains.
-
-    Documentation for standard library ``re`` module.
 
     Examples
     --------
@@ -734,8 +735,9 @@ class ResultFilter:
         A ``metadata`` dictionary will be blocked by the filter if
         `callable_filter` does not return ``True`` for ``metadata``.
 
-    As an alternative to the `query_terms` dictionary parameter,
-    key, value pairs can be passed as keyword arguments.
+    kwargs :
+        As an alternative to the `query_terms` dictionary parameter,
+        key, value pairs can be passed as keyword arguments.
 
     Attributes
     ----------
@@ -1217,8 +1219,9 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
 
     %(verbose3)s
 
-    Keyword arguments are passed on to
-    ``sklearn.feature_extraction.DictVectorizer``.
+    kwargs :
+        Keyword arguments are passed on to
+        ``sklearn.feature_extraction.DictVectorizer``.
 
     Returns
     -------

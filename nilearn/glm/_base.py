@@ -297,7 +297,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
                 of (:obj:`str` or array of shape (n_col)) or :obj:`dict`
                 Contrast definitions.
 
-        contrast_types ::obj:`dict` of :obj:`str`
+        contrast_types : :obj:`dict` of :obj:`str`
             An optional dictionary mapping some
             or all of the :term:`contrast` names to
             specific contrast types ('t' or 'F').

@@ -114,8 +114,9 @@ def _estimator_fit(data, estimator, method=None):
         MiniBatchKMeans or AgglomerativeClustering.
 
     method : str,
-    {'kmeans', 'ward', 'complete', 'average', 'rena', 'hierarchical_kmeans'},
-    default=None
+        {'kmeans', 'ward', 'complete', 'average', 'rena',
+        'hierarchical_kmeans'},
+        default=None
 
         A method to choose between for brain parcellations.
 

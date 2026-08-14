@@ -1768,13 +1768,13 @@ def _apply_threshold(img_data, two_sided, cutoff_threshold):
 
     Parameters
     ----------
-    img_data: np.ndarray or SurfaceImage
+    img_data : np.ndarray or SurfaceImage
 
     two_sided : :obj:`bool`, default=True
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-    cutoff_threshold: :obj:`int`
+    cutoff_threshold : :obj:`int`
         Effective threshold returned by check_threshold.
 
     Returns

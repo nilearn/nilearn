@@ -442,7 +442,7 @@ def check_design_matrix(
 
     Parameters
     ----------
-    design matrix : :obj:`pandas.DataFrame`
+    design_matrix : :obj:`pandas.DataFrame`
         Describes a design matrix.
 
     Returns

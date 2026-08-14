@@ -47,15 +47,15 @@ class Atlas(Bunch):
     description : str
         atlas description
 
-    atlas_type: {"deterministic", "probabilistic"}
+    atlas_type : {"deterministic", "probabilistic"}
 
-    labels: list of str
+    labels : list of str
         labels for the atlas
 
-    lut: pandas.DataFrame
+    lut : pandas.DataFrame
         look up table for the atlas
 
-    template: str
+    template : str
         name of the template used for the atlas
     """
 

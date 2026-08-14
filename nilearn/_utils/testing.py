@@ -115,7 +115,7 @@ def write_imgs_to_path(
         Several Nifti images. Every format understood by nibabel.save is
         accepted.
 
-    file_path: pathlib.Path
+    file_path : pathlib.Path
         Output directory
 
     create_files : bool

@@ -519,7 +519,6 @@ def make_stat_maps_contrast_clusters(
     cut_coords,
     display_mode,
     plot_type,
-    # clusters_tsvs,
 ):
     """Populate a smaller HTML sub-template with the proper values, \
     make a list containing one or more of such components \
@@ -530,19 +529,6 @@ def make_stat_maps_contrast_clusters(
 
     Parameters
     ----------
-    stat_img : dictionary of Niimg-like object or SurfaceImage, or None
-       Statistical image (presumably in z scale)
-       whenever height_control is 'fpr' or None,
-       stat_img=None is acceptable.
-       If it is 'fdr' or 'bonferroni',
-       an error is raised if stat_img is None.
-
-    mask_img: Nifti or Surface image
-        Mask used during the fit of the model.
-
-    contrasts_plots : Dict[str, str]
-        Contains contrast names & HTML code of the contrast's PNG plot.
-
     threshold_orig : float
        Desired threshold in z-scale.
        This is used only if height_control is None
@@ -588,8 +574,6 @@ def make_stat_maps_contrast_clusters(
 
     plot_type : string {'slice', 'glass'}
         The type of plot to be drawn.
-
-    clusters_tsvs : dictionary of path of to tsv files
 
     Returns
     -------

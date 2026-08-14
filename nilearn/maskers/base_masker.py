@@ -75,13 +75,15 @@ def filter_and_extract(
         If any other parameter is needed, a functor or a partial
         function must be provided.
 
-    For all other parameters refer to NiftiMasker documentation
-
     Returns
     -------
     signals : 1D or 2D numpy array
         Signals extracted using the extraction function. It is a scikit-learn
         friendly 2D array with shape n_samples x n_features.
+
+    Notes
+    -----
+    For all other parameters refer to NiftiMasker documentation
 
     """
     if memory is None:

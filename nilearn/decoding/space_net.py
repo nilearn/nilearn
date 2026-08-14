@@ -405,7 +405,7 @@ def path_scores(
         Indicates whether the loss is a classification loss or a
         regression loss.
 
-    key: ??? TODO: Add description.
+    key : ??? TODO: Add description.
 
     %(debias)s
 

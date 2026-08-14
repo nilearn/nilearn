@@ -106,9 +106,6 @@ def _graph_net_data_function(X, w, mask, grad_weight):
     X : ndarray, shape (n_samples, n_features)
         Design matrix.
 
-    y : ndarray, shape (n_samples,)
-        Target / response vector.
-
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
@@ -145,9 +142,6 @@ def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
     ----------
     X : ndarray, shape (n_samples, n_features)
         Design matrix.
-
-    y : ndarray, shape (n_samples,)
-        Target / response vector.
 
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.

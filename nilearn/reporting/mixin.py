@@ -144,7 +144,7 @@ class ReportMixin:
 
         Parameters
         ----------
-        warning: str
+        warning : str
             warning to be added to the list of warnings.
         """
         self._report_content["warning_messages"].append(warning)

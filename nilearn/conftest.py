@@ -918,7 +918,7 @@ def check_obj_docstring(obj) -> None:
 
     Parameters
     ----------
-    obj: :obj:`object`
+    obj : :obj:`object`
         Instance of the class to check
     """
     obj_doc = NumpyDocString(inspect.getdoc(obj.__class__))

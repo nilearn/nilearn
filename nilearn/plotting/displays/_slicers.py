@@ -206,7 +206,7 @@ class BaseSlicer:
 
         Parameters
         ----------
-        bounds:
+        bounds :
             valid bounds for the cut coordinates
 
         %(cut_coords)s
@@ -784,7 +784,7 @@ class BaseSlicer:
 
         Parameters
         ----------
-        data: ndarray
+        data : ndarray
             data to be thresholded
 
         %(threshold)s

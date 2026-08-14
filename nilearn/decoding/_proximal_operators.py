@@ -134,10 +134,6 @@ def prox_tvl1(
         If True, uses a FISTA loop to perform the optimization.
         if False, uses an ISTA loop.
 
-    callback : callable
-        Callable that takes the local variables at each
-        steps. Useful for tracking.
-
     init : array of shape as im
         Starting point for the optimization.
 

@@ -1203,7 +1203,7 @@ def _mock_bids_dataset(
 
     Parameters
     ----------
-    base_dir : :obj:`pathlib.Path`
+    bids_path : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1298,7 +1298,7 @@ def _mock_bids_derivatives(
 
     Parameters
     ----------
-    base_dir : :obj:`pathlib.Path`
+    bids_path : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1483,10 +1483,6 @@ def _write_bids_raw_func(
     func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
-    file_id : :obj:`str`
-        Root of the BIDS filename:
-        typically basename without the BIDS suffix and extension.
-
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.
 
@@ -1536,10 +1532,6 @@ def _write_bids_derivative_func(
     ----------
     func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
-
-    file_id : :obj:`str`
-        Root of the BIDS filename:
-        typically basename without the BIDS suffix and extension.
 
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.

@@ -2241,7 +2241,7 @@ def find_surface_clusters(
     mask : (n_vertices,) array_like of bool
         Boolean mask, True where vertex is part of a cluster.
 
-    offset: int, default=1
+    offset : int, default=1
         Base value to use to index the different clusters.
 
     Returns

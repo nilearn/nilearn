@@ -36,7 +36,7 @@ def save_figure_if_needed(fig: Figure, output_file: OutputFile) -> None:
 
     Parameters
     ----------
-    fig:  :class:`matplotlib.figure.Figure`
+    fig :  :class:`matplotlib.figure.Figure`
         figure to save
 
     %(output_file)s
@@ -64,7 +64,7 @@ def threshold_cmap(
     threshold : :obj:`float`  or obj:`int`
         A positive value to be used as threshold
 
-    threshold_color: :obj:`tuple`, default=(0.5, 0.5, 0.5, 1.0)
+    threshold_color : :obj:`tuple`, default=(0.5, 0.5, 0.5, 1.0)
         Color to be used for thresholded values. Default value is an average
         gray color.
 
