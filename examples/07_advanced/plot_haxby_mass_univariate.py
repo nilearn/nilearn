@@ -138,7 +138,16 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 # Calculate scikit-learn F-scores, for comparison
 # -----------------------------------------------
 #
-# F-test does not allow to observe the effect sign (pure two-sided test)
+# The F-test quantifies the strength of linear dependencies between
+# the beta maps and the occurrence of stimuli, at the voxel level.
+# Assuming that no such effect exists,
+# it follows a Fisher distribution,
+# which yields p-values that can be used to assert significance.
+# Note however that the F-test considers voxels in isolation
+# and thus misses effects distributed across voxels.
+# Also note that the F-test does not allow us to observe
+# the effect sign (pure two-sided test).
+
 from sklearn.feature_selection import f_regression
 
 # f_regression implicitly adds intercept
@@ -146,10 +155,15 @@ _, pvals_bonferroni = f_regression(
     grouped_fmri_masked,
     grouped_conditions_encoded.ravel(),
 )
+
+# calculate the negative log of the p-values
+# for equivalent visualization with
+# :func:`~nilearn.mass_univariate.permuted_ols`
 pvals_bonferroni *= fmri_masked.shape[1]
 pvals_bonferroni[np.isnan(pvals_bonferroni)] = 1
 pvals_bonferroni[pvals_bonferroni > 1] = 1
 neg_log_pvals_bonferroni = -np.log10(pvals_bonferroni)
+
 neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_bonferroni
 )
@@ -157,13 +171,21 @@ neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
 # %%
 # Visualize the results
 # ---------------------
+#
+# Since we are plotting negative log p-values and
+# using a threshold equal to 1,
+# it corresponds to corrected p-values lower than 10%,
+# meaning that there is less than 10% probability to
+# make a single false discovery
+# (i.e., a 90% chance that we make no false discovery at all).
+
 
 from nilearn.image import get_data
 
 # Use the fMRI mean image as a surrogate of anatomical data
 mean_fmri_img = image.mean_img(func_filename)
 
-threshold = -np.log10(0.1)  # 10% corrected
+threshold = 1  # 10% corrected
 
 vmax = min(signed_neg_log_pvals.max(), neg_log_pvals_bonferroni.max())
 
