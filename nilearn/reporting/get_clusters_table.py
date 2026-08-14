@@ -446,6 +446,8 @@ def _get_clusters_table_surface(
         Useful when calling recursively
         for two-sided thresholding.
 
+    .. do not check for missing parameters in docstring
+
     Notes
     -----
     For other parameters, see `get_clusters_table`.

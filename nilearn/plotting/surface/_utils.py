@@ -294,6 +294,10 @@ def check_surface_plotting_inputs(
 
     %(bg_map)s
 
+    map_var_name : str, default="surf_map"
+
+    mesh_var_name : str, default="surf_mesh"
+
     Returns
     -------
     surf_map : :obj:`numpy.ndarray`

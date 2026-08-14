@@ -2325,6 +2325,9 @@ def _get_masks_files(
         Subject label as specified in the file names like sub-<sub_label>_.
 
     task_label : :obj:`str`
+        Space label as specified in the file names like _task-<task_label>_.
+
+    space_label : :obj:`str`
         Space label as specified in the file names like _space-<space_label>_.
 
     img_filters : :obj:`list` of :obj:`tuple` (str, str)

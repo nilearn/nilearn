@@ -45,6 +45,8 @@ def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
+    mask : ndarray
+
     grad_weight : float
         l1_ratio * alpha.
 
@@ -78,6 +80,8 @@ def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
+    mask : ndarray
+
     grad_weight : float
         l1_ratio * alpha
 
@@ -108,6 +112,8 @@ def _graph_net_data_function(X, w, mask, grad_weight):
 
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
+
+    mask : ndarray
 
     grad_weight : float
         l1_ratio * alpha.
@@ -145,6 +151,8 @@ def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
 
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
+
+    adjoint_mask : ndarray
 
     grad_weight : float
         l1_ratio * alpha.
@@ -522,6 +530,9 @@ def tvl1_solver(
         Lipschitz constant (i.e an upper bound of) of gradient of smooth part
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.
+
+    init : ndarray or None, default=None
+        Initialization vector for the prox.
 
     callback : callable(dict) -> :obj:`bool`, default=None
         Function called at the end of every energy descendent iteration of the

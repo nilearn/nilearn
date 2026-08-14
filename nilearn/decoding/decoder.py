@@ -982,6 +982,8 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         y : ndarray, shape = (n_samples, )
             Vector of responses.
 
+        n_problems : int
+
         Returns
         -------
         coefs : dict

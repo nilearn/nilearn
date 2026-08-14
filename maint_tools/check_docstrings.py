@@ -359,18 +359,26 @@ def check_parameters_docstring(
                 f"{filename}:{ast_node.lineno} - {ast_node.name} "
                 f"- [red]missing type for parameter '{param.name}'"
             )
-        if "kwargs" in param.name or "fit_params" in param.name:
+        if (
+            param.name == "args"
+            or "kwargs" in param.name
+            or "fit_params" in param.name
+        ):
             continue
         documented.extend(name.strip() for name in param.name.split(","))
 
     parameters = [
-        p for p in parameters if "kwargs" not in p and "fit_params" not in p
+        p
+        for p in parameters
+        if p != "args" and "kwargs" not in p and "fit_params" not in p
     ]
 
     undocumented = []
     if "do not check for missing parameters in docstring" not in docstring:
         undocumented = [p for p in parameters if p not in documented]
+
     extras = [p for p in documented if p not in parameters]
+
     duplicates = {p for p in documented if documented.count(p) > 1}
 
     if undocumented:

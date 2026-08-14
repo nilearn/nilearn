@@ -106,6 +106,8 @@ def prox_tvl1(
         but it is cast into an ndarray of floats for the computation
         of the denoised image.
 
+    l1_ratio : float, default=0.05
+
     weight : float, default=50.0
         Denoising weight. The greater ``weight``, the more denoising (at
         the expense of fidelity to ``input``)
@@ -302,12 +304,19 @@ def prox_tvl1_with_intercept(
 
     Parameters
     ----------
+    w : ndarray, shape (w_size,)
+        The point at which the prox is being computed
+
+    shape
+
+    l1_ratio : float
+
     weight : float
        Weight in prox. This would be something like `alpha_ * stepsize`,
        where `alpha_` is the effective (i.e. re-scaled) alpha.
 
-    w : ndarray, shape (w_size,)
-        The point at which the prox is being computed
+    dgap_tol : float
+        Dual-gap tolerance for TV-L1 prox operator approximation loop.
 
     init : ndarray, shape (w_size - 1,), default=None
         Initialization vector for the prox.
@@ -315,9 +324,6 @@ def prox_tvl1_with_intercept(
     %(max_iter5000)s
 
     %(verbose0)s
-
-    dgap_tol : float
-        Dual-gap tolerance for TV-L1 prox operator approximation loop.
 
     """
     check_params(locals())

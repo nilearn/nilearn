@@ -219,6 +219,8 @@ class CacheMixin:
             The memory_level from which caching must be enabled for the wrapped
             function.
 
+        shelve : bool
+
         Returns
         -------
         mem : joblib.MemorizedFunc, wrapped in _ShelvedFunc if shelving

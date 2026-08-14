@@ -65,6 +65,9 @@ def log(
         Verbosity level at and above which message should be displayed to the
         user. Most of the time this parameter can be left unchanged.
 
+    with_traceback : bool
+        Print traceback in the log.
+
     Notes
     -----
     This function does tricky things to ensure that the proper object is

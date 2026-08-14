@@ -284,6 +284,8 @@ def check_feature_screening(
         If is_classification is True, it indicates that a classification task
         is performed. Otherwise, a regression task is performed.
 
+    %(screening_n_features)s
+
     %(verbose0)s
 
     Returns

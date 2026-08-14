@@ -529,6 +529,14 @@ def make_stat_maps_contrast_clusters(
 
     Parameters
     ----------
+    model : FirstLevelModel or SecondLevelModel
+
+    contrasts : dict of contrasts definitions
+
+    output : path to contrast maps
+
+    %(first_level_contrast)s
+
     threshold_orig : float
        Desired threshold in z-scale.
        This is used only if height_control is None
