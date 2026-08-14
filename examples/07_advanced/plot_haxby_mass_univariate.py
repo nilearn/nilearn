@@ -27,7 +27,7 @@ from the permutation test combined with a max-type procedure,
 following the approach of :footcite:t:`Anderson2001`.
 
 We find that Bonferroni correction is a bit more conservative,
-as revealed by the presence of fewer false negatives.
+as revealed by the higher detection rate.
 """
 
 # %%
