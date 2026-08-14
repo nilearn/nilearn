@@ -8,6 +8,7 @@ from typing import Any, Literal, get_args, get_origin
 import numpy as np
 
 from nilearn import nilearn_typing
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 
 
