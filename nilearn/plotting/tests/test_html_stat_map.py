@@ -1,4 +1,6 @@
 import base64
+import json
+import re
 from io import BytesIO
 
 import numpy as np
@@ -15,6 +17,7 @@ from nilearn.plotting.html_stat_map import (
     _bytes_io_to_base64,
     _data_to_sprite,
     _get_bg_mask_and_cmap,
+    _get_brainsprite_html_ids,
     _get_cut_slices,
     _is_isotropic,
     _json_view_data,
@@ -257,6 +260,7 @@ def test_resample_stat_map(affine_eye):
     )
 
 
+@pytest.mark.ai_generated
 def test_json_view_params(affine_eye):
     """Check that _json_view_params generates the expected structure."""
     # Try to generate some sprite parameters
@@ -266,6 +270,7 @@ def test_json_view_params(affine_eye):
         vmin=0,
         vmax=1,
         cut_slices=[1, 1, 1],
+        html_ids=_get_brainsprite_html_ids("test-viewer"),
         black_bg=True,
         opacity=0.5,
         draw_cross=False,
@@ -278,6 +283,10 @@ def test_json_view_params(affine_eye):
     # Just check that a structure was generated,
     # and test a single parameter
     assert params["overlay"]["opacity"] == 0.5
+    assert params["canvas"] == "3Dviewer-test-viewer"
+    assert params["sprite"] == "spriteImg-test-viewer"
+    assert params["overlay"]["sprite"] == "overlayImg-test-viewer"
+    assert params["colorMap"]["img"] == "colorMap-test-viewer"
 
 
 def test_json_view_size():
@@ -341,15 +350,19 @@ def test_json_view_data(black_bg, cbar, radiological):
 @pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("cbar", [True, False])
 @pytest.mark.parametrize("radiological", [True, False])
+@pytest.mark.ai_generated
 def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
     """Check that _json_view_to_html builds a valid viewer."""
     data, json_view = _get_data_and_json_view(black_bg, cbar, radiological)
+    html_ids = _get_brainsprite_html_ids("test-viewer")
+    json_view["html_ids"] = html_ids
     json_view["params"] = _json_view_params(
         data.shape,
         affine_eye,
         vmin=0,
         vmax=1,
         cut_slices=[1, 1, 1],
+        html_ids=html_ids,
         black_bg=True,
         opacity=1,
         draw_cross=True,
@@ -361,6 +374,58 @@ def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
 
     html_view = _json_view_to_html(json_view)
     check_html_view_img(html_view)
+
+
+@pytest.mark.ai_generated
+def test_brainsprite_viewers_have_unique_element_ids():
+    """Check that multiple viewers bind to their own HTML elements."""
+    img, _ = _simulate_img()
+    views = [
+        view_img(img, resampling_interpolation="nearest"),
+        view_img(img, resampling_interpolation="nearest"),
+    ]
+    configs = []
+    all_dom_ids = []
+
+    for view in views:
+        config_match = re.search(r"brainsprite\((\{.*\})\);", str(view))
+        assert config_match is not None
+        config = json.loads(config_match.group(1))
+        configs.append(config)
+
+        element_ids = [
+            config["canvas"],
+            config["sprite"],
+            config["overlay"]["sprite"],
+            config["colorMap"]["img"],
+        ]
+        for element_id in element_ids:
+            assert f'id="{element_id}"' in str(view)
+
+        dom_ids = set(
+            re.findall(
+                r'id="((?:div_viewer|3Dviewer|spriteImg|overlayImg|'
+                r'colorMap|opacity|demo)-[^"]+)"',
+                str(view),
+            )
+        )
+        assert len(dom_ids) == 7
+        all_dom_ids.append(dom_ids)
+
+    first_ids = {
+        configs[0]["canvas"],
+        configs[0]["sprite"],
+        configs[0]["overlay"]["sprite"],
+        configs[0]["colorMap"]["img"],
+    }
+    second_ids = {
+        configs[1]["canvas"],
+        configs[1]["sprite"],
+        configs[1]["overlay"]["sprite"],
+        configs[1]["colorMap"]["img"],
+    }
+    assert first_ids.isdisjoint(second_ids)
+    assert all_dom_ids[0].isdisjoint(all_dom_ids[1])
 
 
 def test_get_cut_slices(affine_eye):
