@@ -11,6 +11,7 @@ from matplotlib.colors import ListedColormap
 from matplotlib.transforms import Bbox
 
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data, is_binary_niimg, safe_get_data
 from nilearn._utils.param_validation import check_params
