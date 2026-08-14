@@ -8,7 +8,6 @@ from typing import Any, Literal, get_args, get_origin
 import numpy as np
 
 from nilearn import nilearn_typing
-from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 
 
@@ -222,7 +221,6 @@ TYPE_MAPS = {
 }
 
 
-@fill_doc
 def check_params(fn_dict) -> None:
     """Check types of inputs passed to a function / method / class.
 
