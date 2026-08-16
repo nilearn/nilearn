@@ -10,8 +10,7 @@
 Docstrings in nilearn can contain placeholders like ``%(smoothing_fwhm)s``
 that ``@fill_doc`` expands at import time. When the decorator is missing the
 placeholder survives into the docstring, so ``help()`` and editor tooltips
-show the raw ``%(name)s`` to the reader. The rendered documentation does not
-show it, which is why these went unnoticed.
+show the raw ``%(name)s`` to the reader.
 
 This script checks three things and exits with a non zero status if any of
 them fails, so that CI catches regressions:
