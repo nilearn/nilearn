@@ -21,6 +21,17 @@ them fails, so that CI catches regressions:
 - a docstring uses a parameter from ``TYPE_MAPS`` but ``check_params`` is
   never called
 
+The third one is about a promise rather than about rendering. A parameter
+from ``TYPE_MAPS`` is one nilearn validates the type of at run time, and
+``check_params`` is what performs that validation. A docstring that documents
+such a parameter while the function never calls ``check_params`` promises a
+check that nobody makes.
+
+A placeholder wrapped in double backticks is quoted rather than used, so it is
+stripped before any of this. ``check_params`` itself is the reason: its
+docstring explains what a template looks like by writing ``%(data_dir)s`` in
+prose, and there is nothing there for ``@fill_doc`` to expand.
+
 Private modules are included on purpose: their docstrings are what a
 developer reads through ``help()``.
 """
@@ -36,6 +47,8 @@ from rich import print
 from utils import list_classes, list_functions, list_modules
 
 from nilearn._utils.param_validation import TYPE_MAPS
+
+INLINE_LITERAL = re.compile(r"``[^`\n]*``")
 
 MISSING_DECORATOR = "missing @fill_doc decorator"
 UNNEEDED_DECORATOR = "@fill_doc decorator not needed"
@@ -109,9 +122,9 @@ def check_fill_doc_decorator(
     expand_docstring = False
     check_params_needed = False
     if docstring:
-        expand_docstring = bool(re.search(r"\%\(", docstring))
+        expand_docstring = bool(re.search(r"\%\(", expandable(docstring)))
         check_params_needed = bool(
-            re.search(check_params_docstring_regex, docstring)
+            re.search(check_params_docstring_regex, expandable(docstring))
         )
 
     if isinstance(ast_node, ast.ClassDef):
@@ -120,10 +133,12 @@ def check_fill_doc_decorator(
             for meth_def in list_functions(ast_node)
         ]
         expand_docstring = expand_docstring or any(
-            re.search(r"\%\(", x) for x in methods_docstrings if x is not None
+            re.search(r"\%\(", expandable(x))
+            for x in methods_docstrings
+            if x is not None
         )
         check_params_needed = check_params_needed or any(
-            re.search(check_params_docstring_regex, x)
+            re.search(check_params_docstring_regex, expandable(x))
             for x in methods_docstrings
             if x is not None
         )
@@ -153,6 +168,15 @@ def check_fill_doc_decorator(
         )
 
     return errors
+
+
+def expandable(docstring: str) -> str:
+    """Return the docstring without the placeholders that are only quoted.
+
+    ``%(data_dir)s`` inside double backticks is a mention of a template, not a
+    template, and ``@fill_doc`` leaves it alone.
+    """
+    return INLINE_LITERAL.sub("", docstring)
 
 
 def contains_check_params_call(node: ast.AST) -> bool:
