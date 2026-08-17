@@ -106,18 +106,18 @@ def prox_tvl1(
         but it is cast into an ndarray of floats for the computation
         of the denoised image.
 
-    l1_ratio : float, default=0.05
+    l1_ratio : :obj:`float`, default=0.05
 
-    weight : float, default=50.0
+    weight : :obj:`float`, default=50.0
         Denoising weight. The greater ``weight``, the more denoising (at
         the expense of fidelity to ``input``)
 
-    dgap_tol : float, default=5.0e-5
+    dgap_tol : :obj:`float`, default=5.0e-5
         Precision required. The distance to the exact solution is computed
         by the dual gap of the optimization problem and rescaled by the
         squared l2 norm of the image (for contrast invariance).
 
-    x_tol : float or None, default=None
+    x_tol : :obj:`float` or None, default=None
         The maximal relative difference between input and output. If
         specified, this specifies a stopping criterion on x, rather than
         the dual gap.
@@ -132,7 +132,7 @@ def prox_tvl1(
 
     %(verbose0)s
 
-    fista : bool, default=True
+    fista : :obj:`bool`, default=True
         If True, uses a FISTA loop to perform the optimization.
         if False, uses an ISTA loop.
 
@@ -309,13 +309,13 @@ def prox_tvl1_with_intercept(
 
     shape
 
-    l1_ratio : float
+    l1_ratio : :obj:`float`
 
-    weight : float
+    weight : :obj:`float`
        Weight in prox. This would be something like `alpha_ * stepsize`,
        where `alpha_` is the effective (i.e. re-scaled) alpha.
 
-    dgap_tol : float
+    dgap_tol : :obj:`float`
         Dual-gap tolerance for TV-L1 prox operator approximation loop.
 
     init : ndarray, shape (w_size - 1,), default=None

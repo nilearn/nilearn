@@ -49,7 +49,7 @@ def generate_signals(
     length : int, optional
         number of samples for every signal.
 
-    same_variance : bool, optional
+    same_variance : :obj:`bool`, optional
         if True, every column of "signals" have a unit variance. Otherwise,
         a random amplitude is applied.
 

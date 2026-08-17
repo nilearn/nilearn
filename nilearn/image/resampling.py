@@ -221,7 +221,7 @@ def get_bounds(shape, affine) -> list[tuple[np.float64, np.float64]]:
 
     Returns
     -------
-    coord : list of tuples
+    coord : :obj:`list` of tuples
         coord[i] is a 2-tuple giving minimal and maximal coordinates along
         i-th axis.
 
@@ -259,7 +259,7 @@ def get_mask_bounds(img):
 
     Returns
     -------
-    xmin, xmax, ymin, ymax, zmin, zmax : floats
+    xmin, xmax, ymin, ymax, zmin, zmax : :obj:`float`s
         The world-space bounds (field of view) occupied by the
         non-zero values in the image
 

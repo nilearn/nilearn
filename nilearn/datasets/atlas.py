@@ -44,18 +44,18 @@ class Atlas(Bunch):
     maps : Niimg-like object or SurfaceImage object
         single image or list of images for that atlas
 
-    description : str
+    description : :obj:`str`
         atlas description
 
     atlas_type : {"deterministic", "probabilistic"}
 
-    labels : list of str
+    labels : :obj:`list` of str
         labels for the atlas
 
     lut : pandas.DataFrame
         look up table for the atlas
 
-    template : str
+    template : :obj:`str`
         name of the template used for the atlas
     """
 

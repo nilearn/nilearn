@@ -2097,10 +2097,10 @@ def _fetch_development_fmri_functional(
 
     Returns
     -------
-    func : list of str (Nifti files)
+    func : :obj:`list` of str (Nifti files)
         Paths to functional MRI data (4D) for each subject.
 
-    regressors : list of str (tsv files)
+    regressors : :obj:`list` of str (tsv files)
         Paths to regressors related to each subject.
 
     """
@@ -3145,9 +3145,11 @@ def fetch_spm_multimodal_fmri(
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are:
 
-        - 'func1' : list of :obj:`str`. Paths to functional images for run 1
+        - 'func1' : :obj:`list` of :obj:`str`.
+          Paths to functional images for run 1
 
-        - 'func2' : list of :obj:`str`. Paths to functional images for run 2
+        - 'func2' : :obj:`list` of :obj:`str`.
+          Paths to functional images for run 2
 
         - 'events1' : :obj:`str`. Path to onsets TSV file for run 1
 

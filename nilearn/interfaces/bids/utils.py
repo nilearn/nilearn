@@ -80,7 +80,7 @@ def create_bids_filename(
                       "desc": "preproc"}
         }.
 
-    entities_to_include : list of str or None
+    entities_to_include : :obj:`list` of str or None
         If None is passed, all raw BIDS entities but not derivatives
         are supported.
 

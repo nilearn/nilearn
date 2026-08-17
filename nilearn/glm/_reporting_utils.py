@@ -471,7 +471,7 @@ def mask_to_plot(model, bg_img):
 
     Returns
     -------
-    mask_plot : str
+    mask_plot : :obj:`str`
         PNG Image for the mask plot.
 
     """
@@ -537,18 +537,18 @@ def make_stat_maps_contrast_clusters(
 
     %(first_level_contrast)s
 
-    threshold_orig : float
+    threshold_orig : :obj:`float`
        Desired threshold in z-scale.
        This is used only if height_control is None
 
-    alpha : float
+    alpha : :obj:`float`
         Number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
 
     %(cluster_threshold)s
 
-    height_control : string
+    height_control : :obj:`str`ing
         False positive control meaning of cluster forming
         threshold: 'fpr' or 'fdr' or 'bonferroni' or None.
 
@@ -556,7 +556,7 @@ def make_stat_maps_contrast_clusters(
         Whether to employ two-sided thresholding or to evaluate positive values
         only.
 
-    min_distance : float, default=8
+    min_distance : :obj:`float`, default=8
         For display purposes only.
         Minimum distance between subpeaks in mm.
 
@@ -569,7 +569,7 @@ def make_stat_maps_contrast_clusters(
 
     %(cut_coords)s
 
-    display_mode : string
+    display_mode : :obj:`str`ing
         Choose the direction of the cuts:
         'x' - sagittal, 'y' - coronal, 'z' - axial,
         'l' - sagittal left hemisphere only,
@@ -580,7 +580,7 @@ def make_stat_maps_contrast_clusters(
         'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
         'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
 
-    plot_type : string {'slice', 'glass'}
+    plot_type : :obj:`str`ing {'slice', 'glass'}
         The type of plot to be drawn.
 
     Returns
@@ -765,7 +765,7 @@ def _stat_map_to_png(
        Statistical image (presumably in z scale),
        to be plotted as slices or glass brain.
 
-    threshold : float
+    threshold : :obj:`float`
        Desired threshold in z-scale.
 
     bg_img : Niimg-like object
@@ -777,7 +777,7 @@ def _stat_map_to_png(
 
     %(cut_coords)s
 
-    display_mode : string
+    display_mode : :obj:`str`ing
         Choose the direction of the cuts:
         'x' - sagittal, 'y' - coronal, 'z' - axial,
         'l' - sagittal left hemisphere only,
@@ -788,7 +788,7 @@ def _stat_map_to_png(
         'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
         'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
 
-    plot_type : string {'slice', 'glass'}
+    plot_type : :obj:`str`ing {'slice', 'glass'}
         The type of plot to be drawn.
 
     table_details : pandas.Dataframe
@@ -801,7 +801,7 @@ def _stat_map_to_png(
 
     Returns
     -------
-    stat_map_png : string
+    stat_map_png : :obj:`str`ing
         PNG Image Data representing a statistical map.
 
     fig : matplotlib figure

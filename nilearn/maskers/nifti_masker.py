@@ -82,10 +82,10 @@ def make_brain_mask_func(mask_type: str, multi: bool = False):
 
     Parameters
     ----------
-    mask_type : str
+    mask_type : :obj:`str`
         Type of masking function to return.
 
-    multi : bool
+    multi : :obj:`bool`
         Whether to return functions for multimasker or not.
     """
 
@@ -411,7 +411,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        displays : List of :class:`~matplotlib.figure.Figure`
+        displays : :obj:`list` of :class:`~matplotlib.figure.Figure`
             A list of all displays to be rendered.
             Returns None when masker is not fitted
         """

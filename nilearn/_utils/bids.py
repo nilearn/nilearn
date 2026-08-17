@@ -50,7 +50,7 @@ def generate_atlas_look_up_table(
         If a Niimg like or SurfaceImage is passed,
         then a LUT is generated for this image.
 
-    strict : bool, default=False
+    strict : :obj:`bool`, default=False
         If True, an error will be thrown
         if ``name`` and ``index``have different length.
 
@@ -168,10 +168,10 @@ def check_look_up_table(
 
     atlas : Niimg like object or SurfaceImage or numpy array
 
-    strict : bool, default = False
+    strict : :obj:`bool`, default = False
         Errors are raised instead of warnings if strict == True.
 
-    verbose : bool | int
+    verbose : :obj:`bool` | int
         No warning thrown if Falsy.
 
     Raises

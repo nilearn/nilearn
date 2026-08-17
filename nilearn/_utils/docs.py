@@ -1691,7 +1691,7 @@ coef_ : ndarray, shape\
 coef_img_ : nifti image
     Masked model coefficients
 
-cv_ : list of pairs of lists
+cv_ : :obj:`list` of pairs of lists
     Each pair is the list of indices for the train and test samples
     for the corresponding fold.
 
@@ -1723,7 +1723,7 @@ n_elements_ : :obj:`int`
 
     .. nilearn_versionadded:: 0.12.1
 
-screening_percentile_ : float
+screening_percentile_ : :obj:`float`
     Screening percentile corrected according to volume of mask,
     relative to the volume of standard brain.
 

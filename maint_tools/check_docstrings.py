@@ -25,7 +25,6 @@ from rich import print
 from utils import list_classes, list_functions, list_modules
 
 from nilearn._utils.docs import _indentcount_lines, docdict, docdict_indented
-from nilearn._utils.param_validation import TYPE_MAPS
 
 # Docstring parameters that do not match the function, class or method
 # signature, grouped by the kind of problem found.

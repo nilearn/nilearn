@@ -46,7 +46,7 @@ class ReportMixin:
         - title : title to be used for the report
         - page_title : title for browser page; generated from title
         - engine : engine to generate plots
-        - has_plotting_engine : bool value to indicate if matplotlib is
+        - has_plotting_engine : :obj:`bool` value to indicate if matplotlib is
           installed
         - docstring : docstring of estimator
         - parameters : estimator parameters
@@ -144,7 +144,7 @@ class ReportMixin:
 
         Parameters
         ----------
-        warning : str
+        warning : :obj:`str`
             warning to be added to the list of warnings.
         """
         self._report_content["warning_messages"].append(warning)
@@ -296,7 +296,7 @@ class ReportMixin:
 
         Returns
         -------
-        embed : str
+        embed : :obj:`str`
             Binary image string.
 
         """

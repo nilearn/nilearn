@@ -119,7 +119,7 @@ def cache(
         be cached or not (if user_memory_level is equal of greater than
         func_memory_level the function is cached).
 
-    shelve : bool, default=False
+    shelve : :obj:`bool`, default=False
         Whether to return a joblib MemorizedResult, callable by a .get()
         method, instead of the return value of func.
 
@@ -221,7 +221,7 @@ class CacheMixin:
             The memory_level from which caching must be enabled for the wrapped
             function.
 
-        shelve : bool
+        shelve : :obj:`bool`
 
         Returns
         -------

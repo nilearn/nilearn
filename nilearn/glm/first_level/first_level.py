@@ -801,9 +801,9 @@ class FirstLevelModel(BaseGLM):
         ----------
         n_scans : int
 
-        events : list of pandas.DataFrame
+        events : :obj:`list` of pandas.DataFrame
 
-        confounds : list of pandas.DataFrame or numpy.arrays
+        confounds : :obj:`list` of pandas.DataFrame or numpy.arrays
 
         run_idx : int
         """
@@ -1638,7 +1638,8 @@ def first_level_from_bids(
 
     Returns
     -------
-    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
+    models : :obj:`list` \
+        of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
         Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
         corresponds to a subject.
         All runs from different sessions are considered together

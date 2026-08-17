@@ -433,7 +433,7 @@ class BaseMasker(_BaseMasker):
         ignore : None or list of strings
             Names of the parameters that are not returned.
 
-        deep : bool, default=True
+        deep : :obj:`bool`, default=True
             If True, will return the parameters for this estimator
             and contained subobjects that are estimators.
 

@@ -177,9 +177,9 @@ def check_estimator(
 
     Parameters
     ----------
-    estimators : list of estimator object
+    estimators : :obj:`list` of estimator object
         Estimator instance to check.
-    valid : bool, default=True
+    valid : :obj:`bool`, default=True
         Whether to return only the valid checks or not.
     """
     # TODO (sklearn >= 1.6.0) remove this function

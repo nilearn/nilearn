@@ -37,7 +37,7 @@ def _check_lipschitz_continuous(
       continuity (i.e. it corresponds to the size of the vector that `f`
       takes as an argument).
 
-    lipschitz_constant : float,
+    lipschitz_constant : :obj:`float`,
       Constant associated to the Lipschitz continuity.
 
     n_trials : int,
@@ -135,7 +135,7 @@ def mfista(
     w : ndarray, shape (w_size,)
        A minimizer for `f + g`.
 
-    solver_info : float
+    solver_info : :obj:`float`
         Solver information, for warm starting.
 
     cost : array of floats

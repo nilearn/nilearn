@@ -521,7 +521,7 @@ class GlassBrainAxes(BaseAxes):
         vmax=None,
         directed=False,
         **kwargs,
-    ):
+    ) -> None:
         """Plot lines.
 
         Parameters

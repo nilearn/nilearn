@@ -72,7 +72,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     estimator : scikit-learn compatible estimator object
         The estimator for which to check the parameter grid.
 
-    X : list of Niimg-like objects
+    X : :obj:`list` of Niimg-like objects
         See :ref:`extracting_data`.
         Data on which model is to be fitted. If this is a list,
         the affine is considered the same for all.
@@ -123,7 +123,7 @@ def _default_param_grid(estimator, X, y):
     estimator : scikit-learn compatible estimator object
         The estimator for which to generate the parameter grid.
 
-    X : list of Niimg-like objects
+    X : :obj:`list` of Niimg-like objects
         See :ref:`extracting_data`.
         Data on which model is to be fitted. If this is a list,
         the affine is considered the same for all.
@@ -214,7 +214,7 @@ def _wrap_param_grid(param_grid, param_name):
     param_grid : dict of str to sequence, or sequence of such
         The parameter grid to wrap, as a dictionary mapping estimator
         parameters to sequences of allowed values.
-    param_name : str
+    param_name : :obj:`str`
         Name of parameter whose sequence of values should be wrapped
 
     Returns
@@ -265,9 +265,9 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
     param_grid : dict of str to sequence, or sequence of such
         The parameter grid to process, as a dictionary mapping estimator
         parameters to sequences of allowed values.
-    key_to_replace : str
+    key_to_replace : :obj:`str`
         Name of parameter to replace
-    new_key : str
+    new_key : :obj:`str`
         New parameter name. If this key already exists in the parameter grid,
         it is overwritten
 
@@ -471,7 +471,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
     %(screening_percentile)s
 
-    scoring : str, callable or None,
+    scoring : :obj:`str`, callable or None,
              default=None
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
@@ -595,7 +595,8 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         Parameters
         ----------
-        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
+        X : :obj:`list` of Niimg-like >
+            or :obj:`~nilearn.surface.SurfaceImage` objects
             See :ref:`extracting_data`.
             Data on which model is to be fitted.
             If this is a list,
@@ -850,7 +851,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         Returns
         -------
-        score : float
+        score : :obj:`float`
             Prediction score.
 
         """
@@ -965,7 +966,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         Parameters
         ----------
-        parallel_fit_outputs : list of tuples,
+        parallel_fit_outputs : :obj:`list` of tuples,
             each tuple contains results of
             one _parallel_fit for each cv fold (and each classification in the
             case of multiclass classification).

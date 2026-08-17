@@ -220,7 +220,7 @@ def _group_iter_search_light(
     groups : array-like
         group label for each sample for cross validation.
 
-    scoring : string or callable
+    scoring : :obj:`str`ing or callable
         Scoring strategy to use. See the scikit-learn documentation.
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is

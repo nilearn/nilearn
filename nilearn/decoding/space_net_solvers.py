@@ -47,7 +47,7 @@ def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
 
     mask : ndarray
 
-    grad_weight : float
+    grad_weight : :obj:`float`
         l1_ratio * alpha.
 
     Returns
@@ -82,7 +82,7 @@ def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
 
     mask : ndarray
 
-    grad_weight : float
+    grad_weight : :obj:`float`
         l1_ratio * alpha
 
     Returns
@@ -115,7 +115,7 @@ def _graph_net_data_function(X, w, mask, grad_weight):
 
     mask : ndarray
 
-    grad_weight : float
+    grad_weight : :obj:`float`
         l1_ratio * alpha.
 
     Returns
@@ -154,7 +154,7 @@ def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
 
     adjoint_mask : ndarray
 
-    grad_weight : float
+    grad_weight : :obj:`float`
         l1_ratio * alpha.
 
     Returns
@@ -286,7 +286,7 @@ def graph_net_squared_loss(
     w : ndarray, shape (n_features,)
         Solution vector.
 
-    solver_info : float
+    solver_info : :obj:`float`
         Solver information, for warm start.
 
     objective : array of floats
@@ -549,7 +549,7 @@ def tvl1_solver(
     objective : array of floats
         Objective function (fval) computed on every iteration.
 
-    solver_info : float
+    solver_info : :obj:`float`
         Solver information, for warm start.
 
     """

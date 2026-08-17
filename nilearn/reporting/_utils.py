@@ -21,7 +21,7 @@ def dataframe_to_html(df: pd.DataFrame, precision: int, **kwargs) -> str:
 
     Returns
     -------
-    html_table : String
+    html_table : :obj:`str`ing
         Code for HTML table.
 
     """

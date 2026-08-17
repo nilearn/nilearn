@@ -35,7 +35,7 @@ def as_ndarray(
     arr : array-like
         input array. Any value accepted by numpy.asarray is valid.
 
-    copy : bool
+    copy : :obj:`bool`
         if True, force a copy of the array. Always True when arr is a memmap.
 
     dtype : any numpy dtype
@@ -100,10 +100,10 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
 
     Parameters
     ----------
-    csv_path : string or pathlib.Path
+    csv_path : :obj:`str`ing or pathlib.Path
         Path of the CSV file to load.
 
-    delimiters : string
+    delimiters : :obj:`str`ing
         Each character of the delimiters string is a potential delimiters for
         the CSV file.
 
