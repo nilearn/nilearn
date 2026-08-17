@@ -2634,6 +2634,7 @@ def _check_kwargs_load_confounds(**kwargs):
     return kwargs_load_confounds, remaining_kwargs
 
 
+@fill_doc
 def _make_bids_files_filter(
     task_label,
     space_label=None,

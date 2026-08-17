@@ -104,6 +104,7 @@ def _map_eigenvalues(function, symmetric):
     return _form_symmetric(function, eigenvalues, eigenvectors)
 
 
+@fill_doc
 def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     """Compute the geometric mean of symmetric positive definite matrices.
 

@@ -7,12 +7,14 @@ from pathlib import Path
 from joblib import Memory
 
 import nilearn
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 
 MEMORY_CLASSES = (Memory,)
 
 
+@fill_doc
 def check_memory(memory, verbose=0):
     """Ensure an instance of a joblib.Memory object.
 

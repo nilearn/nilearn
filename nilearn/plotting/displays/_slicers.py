@@ -118,6 +118,7 @@ class BaseSlicer:
         raise NotImplementedError()
 
     @classmethod
+    @fill_doc
     def _check_cut_coords_in_bounds(cls, img, cut_coords) -> None:
         """
         Check if the cut coordinates is within the image bounds.
@@ -180,6 +181,7 @@ class BaseSlicer:
         raise NotImplementedError()
 
     @classmethod
+    @fill_doc
     def _sanitize_cut_coords(cls, cut_coords):
         """Sanitize the cut coordinates.
 
@@ -199,6 +201,7 @@ class BaseSlicer:
         raise NotImplementedError()
 
     @classmethod
+    @fill_doc
     def _get_coords_in_bounds(cls, bounds, cut_coords):
         """Return a list that has boolean values corresponding to each cut
         coordinate indicating if it is within the bounds of its direction or
@@ -779,6 +782,7 @@ class BaseSlicer:
         return transparency, transparency_affine
 
     @classmethod
+    @fill_doc
     def _threshold(cls, data, threshold=None, vmin=None, vmax=None):
         """Threshold the data.
 

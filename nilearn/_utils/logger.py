@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 
 from nilearn._base import NilearnBaseEstimator
+from nilearn._utils.docs import fill_doc
 from nilearn.nilearn_typing import Verbose
 
 
@@ -29,6 +30,7 @@ if _has_rich():
 
 # The technique used in the log() function only applies to CPython, because
 # it uses the inspect module to walk the call stack.
+@fill_doc
 def log(
     msg: str,
     verbose: Verbose,

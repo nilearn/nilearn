@@ -29,6 +29,7 @@ from nilearn.plotting._utils import (
 )
 
 
+@fill_doc
 def save_figure_if_needed(fig: Figure, output_file: OutputFile) -> None:
     """Save figure if a valid output file value is given.
 
