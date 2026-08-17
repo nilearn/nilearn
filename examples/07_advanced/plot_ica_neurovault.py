@@ -120,7 +120,7 @@ term_weights = term_weights[is_usable, :]
 # Run :term:`ICA` and map components to terms
 # -------------------------------------------
 # Once we have all statistical images processed into a single 2D matrix,
-# we can use :func:`~sklearn.decomposition.FastICA`
+# we can use :class:`sklearn.decomposition.FastICA`
 # to extract :term:`ICA` components for this sample of images.
 #
 # In this example, we are using a very small number of images
