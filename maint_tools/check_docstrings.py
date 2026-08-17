@@ -9,8 +9,21 @@
 """Utility to check dostrings.
 
 - checks docstrings of functions, classes and methods
-- checks for:
-    - find missing :obj:`` in doc string type
+
+  - no undocumented parameters
+  - no extra (documented but nonexistent) parameters
+  - no duplicate parameter entries
+  - each documented parameter has a type
+  - some functions do not list all their parameters
+    but point to some other part of the API for more information ;
+    a comment should be added to disable this script flagging
+    this as an error
+
+
+  - find missing :obj:`` in doc string type
+
+  - missing return annotation
+  - mismatch between Return section and Type annotation
 
 The fill_doc checks live in check_filldoc.py.
 """
@@ -25,6 +38,10 @@ from rich import print
 from utils import list_classes, list_functions, list_modules
 
 from nilearn._utils.docs import _indentcount_lines, docdict, docdict_indented
+
+IGNORE_MISSING_PARAM_IN_DOCSTRING_COMMENT = (
+    "do not check for missing parameters in docstring"
+)
 
 # Docstring parameters that do not match the function, class or method
 # signature, grouped by the kind of problem found.
@@ -278,7 +295,7 @@ def check_parameters_docstring(
     ]
 
     undocumented = []
-    if "do not check for missing parameters in docstring" not in docstring:
+    if IGNORE_MISSING_PARAM_IN_DOCSTRING_COMMENT not in docstring:
         undocumented = [p for p in parameters if p not in documented]
 
     extras = [p for p in documented if p not in parameters]
