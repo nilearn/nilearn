@@ -33,7 +33,7 @@ def generate_and_check_glm_report(
 ) -> HTMLReport:
     """Generate and check content of masker report.
 
-    See check_report fo details about the parameters.
+    See check_report for details about the parameters.
     """
     if warnings_msg_to_check is None:
         warnings_msg_to_check = []

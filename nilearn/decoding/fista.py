@@ -15,6 +15,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
 
 
+@fill_doc
 def _check_lipschitz_continuous(
     f, ndim, lipschitz_constant, n_trials=10, random_state=42
 ) -> None:
@@ -36,7 +37,7 @@ def _check_lipschitz_continuous(
       continuity (i.e. it corresponds to the size of the vector that `f`
       takes as an argument).
 
-    lispchitz_constant : float,
+    lipschitz_constant : float,
       Constant associated to the Lipschitz continuity.
 
     n_trials : int,

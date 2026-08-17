@@ -15,6 +15,7 @@ from numpy.typing import DTypeLike
 from scipy.ndimage import binary_dilation
 
 from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn.datasets.struct import load_mni152_brain_mask
 from nilearn.image.image import get_data, new_img_like
@@ -690,7 +691,7 @@ def _generate_signals_from_precisions(
         A list of precision matrices. Every matrix must be square (with the
         same size) and positive definite.
 
-    min_samples, max_samples : :obj:`int`, optional
+    min_n_samples, max_n_samples : :obj:`int`, optional
         The number of samples drawn for each timeseries is taken at random
         between these two numbers. Defaults are 50 and 100.
 
@@ -720,6 +721,7 @@ def _generate_signals_from_precisions(
     return signals
 
 
+@fill_doc
 def generate_group_sparse_gaussian_graphs(
     n_subjects: int = 5,
     n_features: int = 30,

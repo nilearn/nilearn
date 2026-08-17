@@ -353,7 +353,9 @@ def _fast_smooth_array(arr):
 
 
 @fill_doc
-def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
+def smooth_array(
+    arr, affine, fwhm=None, ensure_finite: bool = True, copy: bool = True
+) -> np.ndarray:
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of `arr`.
@@ -398,8 +400,8 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
             stacklevel=find_stack_level(),
         )
         fwhm = None
-    if arr.dtype.kind == "i":
-        if arr.dtype == np.int64:
+    if arr.dtype.kind in ("i", "u"):
+        if arr.dtype in (np.int64, np.uint64):
             arr = arr.astype(np.float64)
         else:
             arr = arr.astype(np.float32)  # We don't need crazy precision.
@@ -442,7 +444,7 @@ def smooth_img(imgs: Iterable[NiimgLike], fwhm) -> list[Nifti1Image]: ...
 @fill_doc
 def smooth_img(
     imgs, fwhm
-) -> NiimgLike | SurfaceImage | list[NiimgLike] | list[SurfaceImage]:
+) -> Nifti1Image | SurfaceImage | list[Nifti1Image] | list[SurfaceImage]:
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of `arr`.
@@ -533,8 +535,8 @@ def _smooth_surface_img(
 
     Parameters
     ----------
-    imgs : SurfaceImage
-        The surface whose is to be smoothed.
+    img : SurfaceImage
+        The surface to be smoothed.
         In the case of 2D data, each sample is smoothed independently.
 
     iterations : :obj:`tuple` of :obj:`int` >=0
@@ -631,6 +633,7 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
     return niters
 
 
+@fill_doc
 def _crop_img_to(img, slices, copy=True, copy_header=True):
     """Crops an image to a smaller size.
 
@@ -657,7 +660,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
 
     Returns
     -------
-    Niimg-like object
+    Nifti1Image
         Cropped version of the input image.
 
     offset : :obj:`list`, optional
@@ -689,8 +692,13 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
 
 @fill_doc
 def crop_img(
-    img, rtol=1e-8, copy=True, pad=True, return_offset=False, copy_header=True
-):
+    img,
+    rtol=1e-8,
+    copy: bool = True,
+    pad: bool = True,
+    return_offset: bool = False,
+    copy_header: bool = True,
+) -> Nifti1Image | tuple[Nifti1Image, tuple[slice, ...]]:
     """Crops an image as much as possible.
 
     Will crop `img`, removing as many zero entries as possible without
@@ -726,7 +734,7 @@ def crop_img(
 
     Returns
     -------
-    cropped_im : Niimg-like object
+    cropped_im : Nifti1Image
         Cropped version of the input image
         If the specified image is empty, the original image will be returned.
 
@@ -782,7 +790,7 @@ def crop_img(
 
     # Sets full range if no data are found along the axis
     if coords.shape[1] == 0:
-        start, end = [0, 0, 0], list(data.shape)
+        start, end = np.array([0, 0, 0]), np.array(data.shape[:3])
         pad = False
         warnings.warn(
             f"No values above {rtol}. Returning original image.",
@@ -1420,6 +1428,7 @@ def new_img_like(
     return klass(data, affine, header=header)
 
 
+@fill_doc
 def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     """Apply cluster-extent thresholding to voxel-wise thresholded array.
 
@@ -2031,7 +2040,7 @@ def binarize_img(
     mask_img: SurfaceImage | NiimgLike | None = ...,
     two_sided: bool = ...,
     copy_header: bool = ...,
-) -> NiimgLike: ...
+) -> Nifti1Image: ...
 
 
 @fill_doc
@@ -2041,7 +2050,7 @@ def binarize_img(
     mask_img: SurfaceImage | NiimgLike | None = None,
     two_sided: bool = False,
     copy_header: bool = True,
-) -> SurfaceImage | NiimgLike:
+) -> SurfaceImage | Nifti1Image:
     """Binarize an image such that its values are either 0 or 1.
 
     .. nilearn_versionadded:: 0.8.1

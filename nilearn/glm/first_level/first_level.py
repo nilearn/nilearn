@@ -2308,7 +2308,7 @@ def _get_masks_files(
 
     Parameters
     ----------
-    dataset_path : :obj:`pathlib.Path`
+    derivatives_path : :obj:`pathlib.Path`
         Directory of the derivatives BIDS dataset.
 
     sub_label : :obj:`str`
@@ -2552,7 +2552,7 @@ def _check_args_first_level_from_bids(
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
-    derivatives_path : :obj:`str`
+    derivatives_folder : :obj:`str`
         Fullpath of the BIDS dataset derivative folder.
 
     """
@@ -2632,6 +2632,7 @@ def _check_kwargs_load_confounds(**kwargs):
     return kwargs_load_confounds, remaining_kwargs
 
 
+@fill_doc
 def _make_bids_files_filter(
     task_label,
     space_label=None,

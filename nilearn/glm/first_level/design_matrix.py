@@ -134,6 +134,7 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     return drift, names
 
 
+@fill_doc
 def _convolve_regressors(
     events,
     hrf_model,
@@ -434,7 +435,9 @@ def make_first_level_design_matrix(
     return design_matrix
 
 
-def check_design_matrix(design_matrix):
+def check_design_matrix(
+    design_matrix: pd.DataFrame,
+) -> tuple[pd.Index, np.ndarray, list[str]]:
     """Check that the provided DataFrame is indeed a valid design matrix \
     descriptor, and returns a triplet of fields.
 

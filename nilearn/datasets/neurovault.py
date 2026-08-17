@@ -935,6 +935,7 @@ def _append_filters_to_query(query, filters):
     return new_query
 
 
+@fill_doc
 def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
     """Given an URL, get the HTTP response and transform it to python dict.
 
@@ -1017,6 +1018,7 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
     return batch
 
 
+@fill_doc
 def _scroll_server_results(
     url,
     local_filter=_empty_filter,
@@ -1107,6 +1109,7 @@ def _scroll_server_results(
                     yield result
 
 
+@fill_doc
 def _yield_from_url_list(url_list, timeout=_DEFAULT_TIME_OUT, verbose=3):
     """Get metadata coming from an explicit list of URLs.
 
@@ -1142,6 +1145,7 @@ def _yield_from_url_list(url_list, timeout=_DEFAULT_TIME_OUT, verbose=3):
             yield batch["results"][0]
 
 
+@fill_doc
 def _simple_download(url, target_file, temp_dir, verbose=3):
     """Wrap around ``utils.fetch_single_file``.
 

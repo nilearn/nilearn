@@ -1,10 +1,8 @@
 
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.6.0
-=====
+Version 0.6.0
+=============
 
 **Released December 2019**
 
@@ -67,8 +65,8 @@ FIXES
 
 **Lots of other fixes in documentation and examples.** More detailed change list follows:
 
-0.6.0rc
-=======
+Version 0.6.0rc
+===============
 
 NEW
 ---
@@ -125,8 +123,8 @@ The following people contributed to this release (in alphabetical order):
 * `Ryan Hammonds`_
 
 
-0.6.0b0
-=======
+Version 0.6.0b0
+===============
 
 **Released November 2019**
 
@@ -167,8 +165,8 @@ The following people contributed to this release (in alphabetical order):
 * `Kshitij Chawla`_
 * `Roberto Guidotti`_
 
-0.6.0a0
-=======
+Version 0.6.0a0
+===============
 
 **Released October 2019**
 

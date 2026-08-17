@@ -5,6 +5,7 @@ import numpy as np
 from scipy import linalg
 from scipy.spatial import distance_matrix
 
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     is_plotly_installed,
     is_sphinx_build,
@@ -45,6 +46,7 @@ class SurfaceFigure:
         raise NotImplementedError
 
 
+@fill_doc
 class PlotlySurfaceFigure(SurfaceFigure):
     """Implementation of a surface figure obtained with `plotly` engine.
 
@@ -111,6 +113,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             else:
                 self.figure.show(renderer=renderer)
 
+    @fill_doc
     def savefig(self, output_file: OutputFile = None, **kwargs) -> None:
         """Save the figure to file.
 
@@ -197,7 +200,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             If length 1, the properties defined in that element will be used
             to draw all requested contours.
 
-        elevations : :obj:`float`, default=0.1
+        elevation : :obj:`float`, default=0.1
             Controls how high above the face each boundary should be placed.
             0.0 implies directly on boundary, and higher values are farther
             above the face. This is useful for avoiding overlap of surface

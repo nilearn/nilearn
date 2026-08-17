@@ -67,6 +67,7 @@ warnings.filterwarnings(
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
+    "changelog_anchors",
     "gh_substitutions",
     "myst_parser",
     "numpydoc",
@@ -190,6 +191,15 @@ exclude_patterns = [
     "tune_toc.rst",
     "includes/big_toc_css.rst",
     "includes/bigger_toc_css.rst",
+    # Per-version changelog fragments are only ever meant to be pulled into
+    # changes/whats_new.rst via ".. include::"; building them as their own
+    # standalone pages as well duplicates every anchor they define and
+    # trips Sphinx's duplicate-label warning.
+    *(
+        str(p.relative_to(Path(__file__).parent))
+        for p in Path(__file__).parent.glob("changes/*.rst")
+        if p.name not in ("whats_new.rst", "names.rst")
+    ),
 ]
 
 # List of directories, relative to source directory, that shouldn't be
@@ -437,7 +447,7 @@ html_context = {"build_dev_html": build_dev_html}
 # html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "PythonScientic"
+htmlhelp_basename = "PythonScientific"
 
 # sphinx-copybutton configurations
 copybutton_prompt_text = (

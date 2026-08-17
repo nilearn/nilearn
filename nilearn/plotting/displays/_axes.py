@@ -508,6 +508,7 @@ class GlassBrainAxes(BaseAxes):
 
         self.ax.scatter(xdata, ydata, s=marker_size, c=marker_color, **kwargs)
 
+    @fill_doc
     def _add_lines(
         self,
         line_coords,

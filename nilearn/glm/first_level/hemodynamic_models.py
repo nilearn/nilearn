@@ -642,6 +642,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     return names
 
 
+@fill_doc
 def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
     """Return the list of matching kernels \
     given the specification of the hemodynamic model and time parameters.
