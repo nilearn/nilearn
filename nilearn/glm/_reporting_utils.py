@@ -173,9 +173,9 @@ class GLMReportMixin(ReportMixin):
                 or numpy array of ints or floats.
 
             Contrasts are passed to ``contrast_def`` for FirstLevelModel
-            (:func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast`)
+            (:meth:`nilearn.glm.first_level.FirstLevelModel.compute_contrast`)
             & second_level_contrast for SecondLevelModel
-            (:func:`nilearn.glm.second_level.SecondLevelModel.compute_contrast`)
+            (:meth:`nilearn.glm.second_level.SecondLevelModel.compute_contrast`)
 
         %(first_level_contrast)s
 

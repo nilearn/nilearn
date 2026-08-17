@@ -508,12 +508,10 @@ class MaskerReportMixin(ReportMixin):
 
             - For NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker,
               MultiSurfaceMapsMasker :
-
-                  %(displayed_maps)s
+              %(displayed_maps)s
 
             - For NiftiSpheresMasker :
-
-                  %(displayed_spheres)s
+              %(displayed_spheres)s
 
         Returns
         -------

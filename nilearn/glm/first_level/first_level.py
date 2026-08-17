@@ -1681,7 +1681,7 @@ def first_level_from_bids(
 
     Notes
     -----
-    See :class:`~glm.first_level.FirstLevelModel` for further details
+    See :obj:`~nilearn.glm.first_level.FirstLevelModel` for further details
     on other parameters.
 
     Examples
