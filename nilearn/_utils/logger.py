@@ -126,7 +126,7 @@ def compose_err_msg(msg: str, **kwargs) -> str:
 
     Parameters
     ----------
-    msg : :obj:`str`ing
+    msg : :obj:`str`
         Arbitrary message.
 
     kwargs : dict, optional
@@ -134,7 +134,7 @@ def compose_err_msg(msg: str, **kwargs) -> str:
 
     Returns
     -------
-    updated_msg : :obj:`str`ing
+    updated_msg : :obj:`str`
         msg, with "key: value" appended. Only string values are appended.
 
     Examples

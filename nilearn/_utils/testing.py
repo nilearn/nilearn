@@ -130,7 +130,7 @@ def write_imgs_to_path(
 
     Returns
     -------
-    filenames : :obj:`str`ing or list of strings
+    filenames : :obj:`str` or list of strings
         Filename(s) where input images have been written. If a single image
         has been given as input, a single string is returned. Otherwise, a
         list of string is returned.
@@ -185,7 +185,7 @@ def skip_if_running_tests(msg="") -> None:
 
     Parameters
     ----------
-    msg : :obj:`str`ing, default=""
+    msg : :obj:`str`, default=""
         The message issued when a test is skipped.
 
     """
