@@ -100,10 +100,10 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
 
     Parameters
     ----------
-    csv_path : :obj:`str`ing or pathlib.Path
+    csv_path : :obj:`str` or pathlib.Path
         Path of the CSV file to load.
 
-    delimiters : :obj:`str`ing
+    delimiters : :obj:`str`
         Each character of the delimiters string is a potential delimiters for
         the CSV file.
 

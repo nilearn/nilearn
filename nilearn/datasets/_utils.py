@@ -165,7 +165,7 @@ def _chunk_read_(
 
     Returns
     -------
-    data : :obj:`str`ing
+    data : :obj:`str`
         The downloaded file.
 
     """
@@ -214,7 +214,7 @@ def get_dataset_dir(
 
     Parameters
     ----------
-    dataset_name : :obj:`str`ing
+    dataset_name : :obj:`str`
         The unique name of the dataset.
 
     %(data_dir)s
@@ -361,7 +361,7 @@ def uncompress_file(file_, delete_archive=True, verbose=1) -> None:
 
     Parameters
     ----------
-    file_ : :obj:`str`ing
+    file_ : :obj:`str`
         Path of file to be uncompressed.
 
     delete_archive : :obj:`bool`, default=True
@@ -431,7 +431,7 @@ def _filter_column(array, col: str, criteria):
     array : array-like with columns
         Array in which data will be filtered.
 
-    col : :obj:`str`ing
+    col : :obj:`str`
         Name of the column.
 
     criteria : integer (or float), pair of integers, string or list of these
@@ -491,7 +491,7 @@ def filter_columns(array, filters, combination="and"):
     filters : :obj:`list` of criteria
         See _filter_column.
 
-    combination : :obj:`str`ing {'and', 'or'}, default='and'
+    combination : :obj:`str` {'and', 'or'}, default='and'
         String describing the combination operator. Possible values are "and"
         and "or".
 
@@ -559,13 +559,13 @@ def fetch_single_file(
     overwrite : :obj:`bool`, default=False
         If true and file already exists, delete it.
 
-    md5sum : :obj:`str`ing or None, default=None
+    md5sum : :obj:`str` or None, default=None
         MD5 sum of the file. Checked if download of the file is required.
 
-    username : :obj:`str`ing or None, default=None
+    username : :obj:`str` or None, default=None
         Username used for basic HTTP authentication.
 
-    password : :obj:`str`ing or None, default=None
+    password : :obj:`str` or None, default=None
         Password used for basic HTTP authentication.
 
     %(verbose)s
@@ -937,10 +937,10 @@ def tree(path, pattern=None, dictionary=False):
 
     Parameters
     ----------
-    path : :obj:`str`ing or pathlib.Path
+    path : :obj:`str` or pathlib.Path
         Path browsed.
 
-    pattern : :obj:`str`ing or None, default=None
+    pattern : :obj:`str` or None, default=None
         Pattern used to filter files (see fnmatch).
 
     dictionary : :obj:`bool`, default=False

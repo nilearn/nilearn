@@ -108,7 +108,7 @@ def coerce_to_dict(input_arg):
 
     Parameters
     ----------
-    input_arg : :obj:`str`ing or Collection[str or Int or Sequence[Int]]
+    input_arg : :obj:`str` or Collection[str or Int or Sequence[Int]]
      or Dict[str, str or np.array] or None
         Can be of the form:
          'string'

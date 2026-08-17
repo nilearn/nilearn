@@ -93,7 +93,7 @@ def plot_img_comparison(
 
     Returns
     -------
-    corrs : :obj:`list`[float]
+    corrs : :obj:`list` of :obj:`float`
         Pearson correlation between the images.
 
     """

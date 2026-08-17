@@ -259,7 +259,7 @@ def get_mask_bounds(img):
 
     Returns
     -------
-    xmin, xmax, ymin, ymax, zmin, zmax : :obj:`float`s
+    xmin, xmax, ymin, ymax, zmin, zmax : :obj:`float`
         The world-space bounds (field of view) occupied by the
         non-zero values in the image
 

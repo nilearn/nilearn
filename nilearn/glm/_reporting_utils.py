@@ -548,7 +548,7 @@ def make_stat_maps_contrast_clusters(
 
     %(cluster_threshold)s
 
-    height_control : :obj:`str`ing
+    height_control : :obj:`str`
         False positive control meaning of cluster forming
         threshold: 'fpr' or 'fdr' or 'bonferroni' or None.
 
@@ -569,7 +569,7 @@ def make_stat_maps_contrast_clusters(
 
     %(cut_coords)s
 
-    display_mode : :obj:`str`ing
+    display_mode : :obj:`str`
         Choose the direction of the cuts:
         'x' - sagittal, 'y' - coronal, 'z' - axial,
         'l' - sagittal left hemisphere only,
@@ -580,7 +580,7 @@ def make_stat_maps_contrast_clusters(
         'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
         'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
 
-    plot_type : :obj:`str`ing {'slice', 'glass'}
+    plot_type : :obj:`str` {'slice', 'glass'}
         The type of plot to be drawn.
 
     Returns
@@ -777,7 +777,7 @@ def _stat_map_to_png(
 
     %(cut_coords)s
 
-    display_mode : :obj:`str`ing
+    display_mode : :obj:`str`
         Choose the direction of the cuts:
         'x' - sagittal, 'y' - coronal, 'z' - axial,
         'l' - sagittal left hemisphere only,
@@ -788,7 +788,7 @@ def _stat_map_to_png(
         'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
         'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
 
-    plot_type : :obj:`str`ing {'slice', 'glass'}
+    plot_type : :obj:`str` {'slice', 'glass'}
         The type of plot to be drawn.
 
     table_details : pandas.Dataframe
@@ -801,7 +801,7 @@ def _stat_map_to_png(
 
     Returns
     -------
-    stat_map_png : :obj:`str`ing
+    stat_map_png : :obj:`str`
         PNG Image Data representing a statistical map.
 
     fig : matplotlib figure
