@@ -19,12 +19,11 @@ from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
     sanitize_verbose,
 )
+from nilearn.decomposition._base import _BaseDecomposition
+from nilearn.decomposition.canica import CanICA
 from nilearn.maskers import MultiNiftiMasker, MultiSurfaceMasker
 from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface import SurfaceImage
-
-from ._base import _BaseDecomposition
-from .canica import CanICA
 
 # check_input=False is an optimization available in sklearn.
 sparse_encode_args = {"check_input": False}
@@ -115,7 +114,7 @@ class DictLearning(_BaseDecomposition):
 
     %(dtype)s
 
-        ..versionadded:: 0.14.0dev
+        ..versionadded:: 0.14.0
 
     %(target_affine)s
 

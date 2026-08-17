@@ -142,7 +142,7 @@ def group_sparse_covariance(
     probe_function=None,
     precisions_init=None,
     debug=False,
-):
+) -> tuple[np.ndarray, np.ndarray]:
     """Compute sparse precision matrices and covariance matrices.
 
     The precision matrices returned by this function are sparse, and share a

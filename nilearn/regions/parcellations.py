@@ -719,7 +719,7 @@ class Parcellations(_MultiPCA):
             Brain image(s).
 
         """
-        from .signal_extraction import signals_to_img_labels
+        from nilearn.regions.signal_extraction import signals_to_img_labels
 
         check_is_fitted(self)
 

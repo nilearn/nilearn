@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import copy
 import json
+import uuid
 import warnings
 from base64 import b64encode
 from io import BytesIO
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import matplotlib
 import numpy as np
@@ -62,7 +63,9 @@ def _data_to_sprite(
     ncolumns = int(np.ceil(nx / float(nrows)))
 
     sprite = np.zeros((nrows * nz, ncolumns * ny))
-    indrow, indcol = np.where(np.ones((nrows, ncolumns)))
+    indrow, indcol = cast(
+        tuple[np.ndarray, np.ndarray], np.where(np.ones((nrows, ncolumns)))
+    )
 
     if radiological:
         for xx in range(nx):
@@ -134,6 +137,7 @@ def _threshold_data(data: np.ndarray, threshold: Any = None):
     return data, mask, threshold
 
 
+@fill_doc
 def _save_sprite(
     data,
     output_sprite,
@@ -343,12 +347,31 @@ def _resample_stat_map(
     return stat_map_img, mask_img
 
 
+def _get_brainsprite_html_ids(
+    unique_id: str | None = None,
+) -> dict[str, str]:
+    """Return unique HTML element IDs for a Brainsprite viewer."""
+    if unique_id is None:
+        unique_id = uuid.uuid4().hex
+
+    return {
+        "viewer": f"div_viewer-{unique_id}",
+        "canvas": f"3Dviewer-{unique_id}",
+        "sprite": f"spriteImg-{unique_id}",
+        "overlay": f"overlayImg-{unique_id}",
+        "color_map": f"colorMap-{unique_id}",
+        "opacity": f"opacity-{unique_id}",
+        "opacity_value": f"demo-{unique_id}",
+    }
+
+
 def _json_view_params(
     shape,
     affine,
     vmin,
     vmax,
     cut_slices,
+    html_ids,
     black_bg=False,
     opacity=1,
     draw_cross=True,
@@ -380,11 +403,11 @@ def _json_view_params(
         vmax = vmax.tolist()  # json does not deal with numpy array
 
     params = {
-        "canvas": "3Dviewer",
-        "sprite": "spriteImg",
+        "canvas": html_ids["canvas"],
+        "sprite": html_ids["sprite"],
         "nbSlice": {"X": shape[0], "Y": shape[1], "Z": shape[2]},
         "overlay": {
-            "sprite": "overlayImg",
+            "sprite": html_ids["overlay"],
             "nbSlice": {"X": shape[0], "Y": shape[1], "Z": shape[2]},
             "opacity": opacity,
         },
@@ -405,7 +428,11 @@ def _json_view_params(
     }
 
     if colorbar:
-        params["colorMap"] = {"img": "colorMap", "min": vmin, "max": vmax}
+        params["colorMap"] = {
+            "img": html_ids["color_map"],
+            "min": vmin,
+            "max": vmax,
+        }
     return params
 
 
@@ -439,9 +466,9 @@ def _get_bg_mask_and_cmap(bg_img, black_bg: bool):
     bg_mask = np.ma.getmaskarray(get_data(bg_img))
     bg_cmap = copy.copy(matplotlib.pyplot.get_cmap("gray"))
     if black_bg:
-        bg_cmap.set_bad("black")
+        bg_cmap = bg_cmap.with_extremes(bad="black")
     else:
-        bg_cmap.set_bad("white")
+        bg_cmap = bg_cmap.with_extremes(bad="white")
     return bg_mask, bg_cmap
 
 
@@ -529,6 +556,7 @@ def _json_view_to_html(
     html_view = view_img_tpl.render(
         page_title=json_view["params"]["title"] or "Slice viewer",
         params=json.dumps(json_view["params"]),
+        html_ids=json_view["html_ids"],
         bg_base64=json_view["bg_base64"],
         cm_base64=json_view["cm_base64"],
         stat_map_base64=json_view["stat_map_base64"],
@@ -744,6 +772,7 @@ def create_brainsprite(
     opacity=1,
     radiological=False,
     show_lr=True,
+    unique_id=None,
 ) -> dict[str, Any]:
     """Wrap most of view_img to reuse it in other places."""
     # Prepare the color map and thresholding
@@ -782,12 +811,15 @@ def create_brainsprite(
         radiological,
     )
 
+    html_ids = _get_brainsprite_html_ids(unique_id)
+    json_view["html_ids"] = html_ids
     json_view["params"] = _json_view_params(
         stat_map_img.shape,
         stat_map_img.affine,
         colors["vmin"],
         colors["vmax"],
         cut_slices,
+        html_ids,
         black_bg,
         opacity,
         draw_cross,

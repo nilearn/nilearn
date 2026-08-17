@@ -7,10 +7,11 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import (
     check_params,
 )
+from nilearn.nilearn_typing import DataDir
 
 
 @fill_doc
-def get_data_dirs(data_dir=None):
+def get_data_dirs(data_dir: DataDir = None) -> list[str]:
     """Return the directories in which nilearn looks for data.
 
     This is typically useful for the end-user to check where the data is

@@ -530,7 +530,7 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
 @fill_doc
 def recursive_neighbor_agglomeration(
     X, mask_img, n_clusters, n_iter=10, threshold=1e-7, verbose=0
-):
+) -> tuple[int, np.ndarray]:
     """Recursive neighbor agglomeration (:term:`ReNA`).
 
     It performs iteratively the nearest neighbor grouping.

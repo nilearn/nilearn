@@ -144,7 +144,7 @@ Comparing to massively univariate analysis: F_score or SPM
 
 The standard approach to brain mapping is performed using *Statistical
 Parametric Mapping* (:term:`SPM`), using :term:`ANOVA` (analysis of
-variance), and parametric tests (F-tests ot t-tests).
+variance), and parametric tests (F-tests or t-tests).
 Here we compute the *p-values* of the :term:`voxels<voxel>` [1]_.
 To display the results, we use the negative log of the p-value.
 

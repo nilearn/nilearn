@@ -11,9 +11,8 @@ from typing import Any
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils.helpers import is_kaleido_installed
 from nilearn.plotting import cm
-from nilearn.plotting._engine_utils import colorscale
+from nilearn.plotting._engine_utils import colorscale, save_figure_if_needed
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.js_plotting_utils import mesh_to_plotly
 from nilearn.plotting.surface._utils import (
@@ -356,14 +355,7 @@ def _plot_surf(
         figure=fig, output_file=output_file, hemi=hemi
     )
 
-    if output_file is not None:
-        if not is_kaleido_installed():
-            msg = (
-                "Saving figures to file with engine='plotly' requires "
-                "that ``kaleido`` is installed."
-            )
-            raise ImportError(msg)
-        plotly_figure.savefig()
+    save_figure_if_needed(plotly_figure, output_file)
 
     return plotly_figure
 

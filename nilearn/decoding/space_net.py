@@ -36,17 +36,16 @@ from nilearn._utils.param_validation import (
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import adjust_screening_percentile
+from nilearn.decoding.space_net_solvers import (
+    graph_net_logistic,
+    graph_net_squared_loss,
+    tvl1_solver,
+)
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import unmask_from_to_3d_array
 from nilearn.surface import SurfaceImage
-
-from .space_net_solvers import (
-    graph_net_logistic,
-    graph_net_squared_loss,
-    tvl1_solver,
-)
 
 
 def _crop_mask(mask):

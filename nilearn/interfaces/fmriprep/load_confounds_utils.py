@@ -12,8 +12,9 @@ from sklearn.preprocessing import scale
 
 from nilearn._utils.fmriprep_confounds import flag_single_gifti, is_camel_case
 from nilearn.interfaces.bids import parse_bids_filename
-
-from .load_confounds_scrub import extract_outlier_regressors
+from nilearn.interfaces.fmriprep.load_confounds_scrub import (
+    extract_outlier_regressors,
+)
 
 img_file_patterns = {
     "aroma": "_desc-smoothAROMAnonaggr_bold",
@@ -310,7 +311,7 @@ def get_confounds_file(image_file, flag_full_aroma, flag_tedana):
     flag_full_aroma : :obj:`bool`
         True if the input is a full ICA-AROMA output, False otherwise.
 
-    flag_tedata : :obj:`bool`
+    flag_tedana : :obj:`bool`
         True if the input is a TEDANA optimally combined output,
         False otherwise.
 
@@ -488,7 +489,7 @@ def _check_images(image_file, flag_full_aroma, flag_tedana: bool) -> None:
     flag_full_aroma : bool
         True if the input is a full ICA-AROMA output, False otherwise.
 
-    flag_tedata : :obj:`bool`
+    flag_tedana : :obj:`bool`
         True if the input is a TEDANA optimally combined output
 
     Raises

@@ -43,6 +43,7 @@ def labels(n_regions) -> list[str]:
     "fig,axes", [("foo", "bar"), (1, 2), plt.subplots(1, 1, figsize=(7, 5))]
 )
 def test_sanitize_figure_and_axes_error(fig, axes):
+    """Test that passing both figure and axes raises a ValueError."""
     with pytest.raises(
         ValueError,
         match=(r"Parameters figure and axes cannot be specified together."),
@@ -61,6 +62,7 @@ def test_sanitize_figure_and_axes_error(fig, axes):
     ],
 )
 def test_sanitize_figure_and_axes(fig, axes, expected):
+    """Test _sanitize_figure_and_axes with various figure/axes inputs."""
     fig2, axes2, own_fig = _sanitize_figure_and_axes(fig, axes)
     assert isinstance(fig2, plt.Figure)
     assert isinstance(axes2, plt.Axes)
@@ -112,7 +114,7 @@ def test_matrix_plotting_set_title(mat, labels, title):
 
 @pytest.mark.thread_unsafe
 def test_matrix_plotting_reorder(matplotlib_pyplot, mat, labels):  # noqa: ARG001
-    # test if reordering with default linkage works
+    """Test that reordering with default linkage works."""
     idx = [2, 3, 5]
     # make symmetric matrix of similarities so we can get a block
     for perm in permutations(idx, 2):
@@ -160,7 +162,7 @@ def test_save_design_matrix(tmp_path):
     ax = plot_design_matrix(dmtx, output_file=tmp_path / "dmtx.png")
 
     assert (tmp_path / "dmtx.png").exists()
-    assert ax is None
+    assert ax is not None
 
     plot_design_matrix(dmtx, output_file=tmp_path / "dmtx.pdf")
 
@@ -227,7 +229,7 @@ def test_show_event_plot(tmp_path):
     fig = plot_event(model_event, output_file=tmp_path / "event.png")
 
     assert (tmp_path / "event.png").exists()
-    assert fig is None
+    assert fig is not None
 
     plot_event(model_event, output_file=tmp_path / "event.pdf")
 
@@ -295,7 +297,7 @@ def test_save_contrast_matrix(tmp_path):
     )
     assert (tmp_path / "contrast.png").exists()
 
-    assert ax is None
+    assert ax is not None
 
     plot_contrast_matrix(contrast, dmtx, output_file=tmp_path / "contrast.pdf")
 

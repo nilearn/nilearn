@@ -24,6 +24,8 @@
 
 .. _Alexis Thual: https://github.com/alexisthual
 
+.. _Alice Schiavone: https://aliswh.github.io
+
 .. _Alisha Kodibagkar: https://github.com/alishakodibagkar/
 
 
@@ -31,9 +33,13 @@
 
 .. _Anand Joshi: https://github.com/ajoshiusc
 
+.. _Andrew Chen: https://github.com/chuenchen309
+
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
 
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
+
+.. _Anton Karpov: https://github.com/karpovantonme
 
 .. _Anupriya Kumari: https://github.com/anupriyakkumari
 
@@ -103,6 +109,8 @@
 
 .. _Fabian Pedregosa: https://github.com/fabianp
 
+.. _Fabricio Cravo: https://fabriciocravo.github.io/
+
 .. _Fernanda Ponce: https://github.com/ferponcem
 
 .. _Florent Pollet: https://florian6973.github.io/
@@ -130,6 +138,8 @@
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
 .. _Himanshu Aggarwal: https://github.com/man-shu
+
+.. _Hugo Delhaye: https://github.com/HugoDelhaye
 
 .. _Ian Abenes: https://github.com/boredStats
 

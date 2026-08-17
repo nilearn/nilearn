@@ -5,11 +5,13 @@ import numpy as np
 from scipy import linalg
 from scipy.spatial import distance_matrix
 
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     is_plotly_installed,
     is_sphinx_build,
 )
 from nilearn._utils.logger import find_stack_level
+from nilearn.nilearn_typing import OutputFile
 from nilearn.plotting.surface._utils import DEFAULT_HEMI, get_faces_on_edge
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data, load_surf_data
@@ -39,28 +41,12 @@ class SurfaceFigure:
         """Show the figure."""
         raise NotImplementedError
 
-    def _check_output_file(self, output_file=None):
-        """If an output file is provided, \
-        set it as the new default output file.
-
-        Parameters
-        ----------
-        output_file : :obj:`str` or None, default=None
-            Path to output file.
-        """
-        if output_file is None:
-            if self.output_file is None:
-                raise ValueError(
-                    "You must provide an output file name to save the figure."
-                )
-        else:
-            self.output_file = output_file
-
     def add_contours(self):
         """Draw boundaries around roi."""
         raise NotImplementedError
 
 
+@fill_doc
 class PlotlySurfaceFigure(SurfaceFigure):
     """Implementation of a surface figure obtained with `plotly` engine.
 
@@ -127,23 +113,30 @@ class PlotlySurfaceFigure(SurfaceFigure):
             else:
                 self.figure.show(renderer=renderer)
 
-    def savefig(self, output_file=None, **savefig_kwargs) -> None:  # noqa: ARG002
+    @fill_doc
+    def savefig(self, output_file: OutputFile = None, **kwargs) -> None:
         """Save the figure to file.
 
         Parameters
         ----------
-        output_file : :obj:`str` or None, default=None
+        %(output_file)s
             Path to output file.
 
-        savefig_kwargs:
+        kwargs: :obj:`dict`
+            Extra keyword arguments are passed to
+            :func:`plotly.io.write_image`
         """
-        self._check_output_file(output_file=output_file)
         if self.figure is not None:
             if output_file is not None:
                 self.output_file = output_file
 
+            if self.output_file is None:
+                raise ValueError(
+                    "You must provide an output file name to save the figure."
+                )
+
             try:
-                self.figure.write_image(self.output_file)
+                self.figure.write_image(self.output_file, **kwargs)
             except RuntimeError as e:
                 kaleido_spec = find_spec("kaleido")
                 if "Kaleido requires Google Chrome" in str(e) or kaleido_spec:
@@ -207,7 +200,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             If length 1, the properties defined in that element will be used
             to draw all requested contours.
 
-        elevations : :obj:`float`, default=0.1
+        elevation : :obj:`float`, default=0.1
             Controls how high above the face each boundary should be placed.
             0.0 implies directly on boundary, and higher values are farther
             above the face. This is useful for avoiding overlap of surface

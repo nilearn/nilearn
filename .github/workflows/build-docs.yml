@@ -62,9 +62,15 @@
 # This saves a lot of time and avoids potential network errors that can happen
 # when downloading datasets from remote servers.
 #
-# Data is cached after the ``get_data`` job to be passed to the ``build_docs`` job.
-# Data can be cached and restored across attempts of a run of this workflow.
-# Data can be cached and restored across run of this workflow.
+# There is a single cache for the month, shared by all runs of this workflow
+# (scheduled, push and pull request alike). Only the first run of the month
+# populates it; every other run only reads from it and never overwrites it.
+# This keeps a single long-lived ~4GB+ cache entry instead of every run
+# saving its own copy, which used to blow through the repository's 10GB
+# Actions cache quota and evict the shared cache well before it was reused.
+#
+# Data is passed from the ``get_data`` job to the ``build_docs`` job of the
+# same run via a short-lived (1 day) build artifact, not via the cache above.
 #
 # Note that you can request to download all datasets and ignore the cache at any time
 # by including the tag ``[force download]`` in your commit message.
@@ -134,7 +140,7 @@ jobs:
         needs: [check_skip_flags]
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
 
         -   name: Check whether the citation metadata from CITATION.cff is valid
             uses: citation-file-format/cffconvert-github-action@2.0.0
@@ -147,7 +153,7 @@ jobs:
         needs: [check_skip_flags]
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v7
         -   uses: actions/setup-python@v6
@@ -171,7 +177,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
             with:
                   # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -214,7 +220,7 @@ jobs:
 
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
             with:
                   # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -251,48 +257,13 @@ jobs:
         -   name: Key for cache based on month number
             run: date +%m > month_num;
 
-        -   name: Get cache from a previous attempts on this PR or branch
+        -   name: Restore monthly data cache
+                  # Shared by every run this month; only saved once (see below).
             if: steps.cache-key.outputs.restore == 'true'
-            id: restore-previous-run
-            uses: actions/cache/restore@v5
+            id: restore-monthly-cache
+            uses: actions/cache/restore@v6
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{
-                    github.run_attempt }}
-                restore-keys: |
-                    data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}_run-${{ github.run_number }}
-                    data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}
-                    data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
-
-        -   name: Get data from a previous successful run for full builds
-                  # only run it if we did not get the data from a previous attempt
-            if: ${{ steps.build-type.outputs.build == 'html-strict' && steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit
-                != 'true' }}
-            id: restore-previous-full-build
-            uses: actions/cache@v5
-            with:
-                path: nilearn_data
-                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
-
-        -   name: Get data for reports from a previous successful run
-                  # only run it if we did not get the data from a previous attempt
-            if: ${{ steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit != 'true' && steps.restore-previous-full-build.outputs.cache-hit
-                != 'true' }}
-            uses: actions/cache@v5
-            with:
-                path: |
-                    nilearn_data/adhd
-                    nilearn_data/development_fmri
-                    nilearn_data/difumo_atlases
-                    nilearn_data/ds000030
-                    nilearn_data/fiac_nilearn.glm
-                    nilearn_data/icbm152_2009
-                    nilearn_data/miyawaki2008
-                    nilearn_data/msdl_atlas
-                    nilearn_data/oasis1
-                    nilearn_data/schaefer_2018
-                    nilearn_data/yeo_2011
-
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
 
         -   name: Get data
@@ -304,13 +275,29 @@ jobs:
                 BUILD_TYPE=$(cat build.txt)
                 python doc/get_data_examples.py $BUILD_TYPE
 
-        -   name: Save cache to pass to build_docs job
-            uses: actions/cache/save@v5
-            if: always()
+        -   name: Save monthly data cache
+                  # Only save from a full build, and only if this month's
+                  # cache did not already exist, so the shared cache always
+                  # holds the full dataset superset instead of being frozen
+                  # with just the partial-build subset by whichever PR run
+                  # happens to be first each month.
+            if: ${{ steps.restore-monthly-cache.outputs.cache-hit != 'true' && contains(fromJSON('["full", "html", "html-strict"]'), steps.build-type.outputs.build)
+                }}
+            uses: actions/cache/save@v6
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{
-                    github.run_attempt }}
+                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
+
+        -   name: Upload data for build_docs job
+                  # Hand the downloaded data off to the build_docs job via an
+                  # artifact (scoped to this run only) rather than a second,
+                  # per-run cache entry, so it does not compete with the
+                  # monthly cache above for the shared cache storage quota.
+            uses: actions/upload-artifact@v7
+            with:
+                name: nilearn_data
+                path: nilearn_data
+                retention-days: 1
 
     # Steps to build the documentation.
     build_docs:
@@ -346,7 +333,7 @@ jobs:
                 docker-images: true
                 swap-storage: true
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
             with:
                   # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -361,17 +348,11 @@ jobs:
                 sudo -E apt-get -yq --no-install-suggests --no-install-recommends install \
                     dvipng texlive-latex-base texlive-latex-extra
 
-        -   name: Key for cache based on month number
-            run: date +%m > month_num;
-
         -   name: Get data from the get_data job
-            uses: actions/cache@v5
+            uses: actions/download-artifact@v8
             with:
+                name: nilearn_data
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{
-                    github.run_attempt }}
-                restore-keys: |
-                    data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}_run-${{ github.run_number }}
 
                   # Set up and launch a virtual browser needed for one example to run
                   # without stalling the job. The example launches an html in the browser.
@@ -460,7 +441,7 @@ jobs:
         if: ${{ contains(fromJSON('["push", "workflow_dispatch", "schedule", "release"]'), github.event_name)}}
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
             with:
                 fetch-depth: 0
 
