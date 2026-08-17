@@ -708,6 +708,7 @@ def plot_epi(
     return display
 
 
+@fill_doc
 def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     """Help for plotting regions of interest ROIs in contours.
 

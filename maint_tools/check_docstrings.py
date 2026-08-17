@@ -11,7 +11,8 @@
 - checks docstrings of functions, classes and methods
 - checks for:
     - find missing :obj:`` in doc string type
-    - if a function of class definition uses the fill_doc decorator properly
+
+The fill_doc checks live in check_filldoc.py.
 """
 
 import ast
@@ -22,8 +23,6 @@ from pathlib import Path
 from numpydoc.docscrape import NumpyDocString
 from rich import print
 from utils import list_classes, list_functions, list_modules
-
-from nilearn._utils.param_validation import TYPE_MAPS
 
 # List of values to check for missing :obj:`` link
 VALUES = [
@@ -67,13 +66,11 @@ def main() -> None:
             if docstring is None:
                 continue
 
-            check_fill_doc_decorator(func_def, filename)
             check_docstring(func_def, filename)
             check_returns_yields_and_annotation(func_def, filename)
 
         for class_def in list_classes(filename, include="all"):
             if _get_docstring(class_def, filename) is not None:
-                check_fill_doc_decorator(class_def, filename)
                 check_docstring(class_def, filename)
 
             for meth_def in list_functions(class_def, include="all"):
@@ -86,7 +83,6 @@ def main() -> None:
                 if docstring is None:
                     continue
 
-                check_fill_doc_decorator(meth_def, filename)
                 check_docstring(meth_def, filename)
                 check_returns_yields_and_annotation(meth_def, filename)
 
@@ -101,99 +97,6 @@ def _get_docstring(ast_node, filename):
         return None
     else:
         return docstring
-
-
-def check_fill_doc_decorator(
-    ast_node: ast.ClassDef | ast.FunctionDef, filename: str | Path
-) -> None:
-    """Check that fill_doc decorator is present when needed.
-
-    Checks if '%(' is present in the doc string
-    and warns if the function or class
-    does not have the @fill_doc decorator.
-
-    Also warns if the decorator is used for no reason.
-    """
-    tmp = "|".join(list(TYPE_MAPS.keys()))
-    check_params_docstring_regex = rf"\%\([{tmp}]\)s"
-
-    expand_docstring = False
-    check_params_needed = False
-    if ast.get_docstring(ast_node, clean=False):
-        expand_docstring = re.search(
-            r"\%\(", ast.get_docstring(ast_node, clean=False)
-        )
-        check_params_needed = re.search(
-            check_params_docstring_regex,
-            ast.get_docstring(ast_node, clean=False),
-        )
-
-    if isinstance(ast_node, ast.ClassDef):
-        methods_docstrings = [
-            ast.get_docstring(meth_def, clean=False)
-            for meth_def in list_functions(ast_node)
-        ]
-        expand_docstring_any_method = any(
-            re.search(r"\%\(", x) for x in methods_docstrings if x is not None
-        )
-        check_params_needed_any_method = any(
-            re.search(check_params_docstring_regex, x)
-            for x in methods_docstrings
-            if x is not None
-        )
-        expand_docstring = expand_docstring or expand_docstring_any_method
-        check_params_needed = (
-            check_params_needed or check_params_needed_any_method
-        )
-
-    has_fill_doc_decorator = False
-    if len(ast_node.decorator_list) == 0:
-        has_fill_doc_decorator = False
-    elif any(
-        (
-            getattr(x, "name", "") == "fill_doc"
-            or getattr(x, "id", "") == "fill_doc"
-            or getattr(x, "attr", "") == "fill_doc"
-        )
-        for x in ast_node.decorator_list
-    ):
-        has_fill_doc_decorator = True
-
-    if expand_docstring:
-        if not has_fill_doc_decorator:
-            print(
-                f"{filename}:{ast_node.lineno} "
-                "- [red]missing @fill_doc decorator."
-            )
-    elif has_fill_doc_decorator:
-        print(
-            f"{filename}:{ast_node.lineno} "
-            "- [red]@fill_doc decorator not needed."
-        )
-
-    if check_params_needed and not contains_check_params_call(ast_node):
-        print(
-            f"{filename}:{ast_node.lineno} "
-            "- [red]expandable docstring used "
-            "but no call to check_params found."
-        )
-
-
-def contains_check_params_call(node: ast.AST) -> bool:
-    """Return True if the AST node contains a call to `check_params`."""
-    for subnode in ast.walk(node):
-        if isinstance(subnode, ast.Call):
-            func = subnode.func
-
-            # check_params(...)
-            if isinstance(func, ast.Name) and func.id == "check_params":
-                return True
-
-            # something.check_params(...)
-            if isinstance(func, ast.Attribute) and func.attr == "check_params":
-                return True
-
-    return False
 
 
 def check_docstring(ast_node, filename: str | Path) -> None:

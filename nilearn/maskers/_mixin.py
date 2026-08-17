@@ -27,6 +27,7 @@ from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
 
 
+@fill_doc
 class _MultiMixin:
     """Mixin class to add common MultiMasker functionalities."""
 
@@ -385,6 +386,7 @@ class _LabelMaskerMixin:
         )
 
 
+@fill_doc
 class MaskerReportMixin(ReportMixin):
     """A mixin class that adapts ``ReportMixin`` to masker classes for
     reporting functionality.

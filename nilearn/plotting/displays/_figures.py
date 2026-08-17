@@ -5,6 +5,7 @@ import numpy as np
 from scipy import linalg
 from scipy.spatial import distance_matrix
 
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     is_plotly_installed,
     is_sphinx_build,
@@ -45,6 +46,7 @@ class SurfaceFigure:
         raise NotImplementedError
 
 
+@fill_doc
 class PlotlySurfaceFigure(SurfaceFigure):
     """Implementation of a surface figure obtained with `plotly` engine.
 
@@ -111,6 +113,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             else:
                 self.figure.show(renderer=renderer)
 
+    @fill_doc
     def savefig(self, output_file: OutputFile = None, **kwargs) -> None:
         """Save the figure to file.
 
