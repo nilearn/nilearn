@@ -80,6 +80,7 @@ view
 
 # %%
 # Uncomment this to open the plot in a web browser:
+
 # view.open_in_browser()
 
 # %%
@@ -92,6 +93,7 @@ view_radio
 
 # %%
 # Uncomment this to open the plot in a web browser:
+
 # view_radio.open_in_browser()
 
 # %%
