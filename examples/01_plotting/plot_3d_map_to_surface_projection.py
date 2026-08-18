@@ -175,7 +175,6 @@ destrieux_atlas = SurfaceImage(
     },
 )
 
-
 # %%
 # We select the regions we want to outline and
 # get indices in atlas for these labels.
