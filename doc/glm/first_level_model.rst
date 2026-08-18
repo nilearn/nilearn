@@ -108,7 +108,7 @@ are used to build the LSS beta-series.
 .. topic:: Choosing the right beta-series model for your analysis
 
     We have chosen not to systematically reproduce analyses comparing beta-series
-    modeling approaches in nilearn's documentation;
+    modeling approaches in Nilearn's documentation;
     however, we do incorporate recommendations from the literature.
     Rather than taking these recommendations at face value, please refer back
     to the original publications and any potential updates to the literature,
