@@ -279,7 +279,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        displays : list
+        displays : :obj:`list`
             A list of all displays to be rendered.
 
         """

@@ -174,7 +174,7 @@ def _mask_and_reduce(
         :obj:`~nilearn.maskers.SurfaceMasker`
         Instance used to mask provided data.
 
-    imgs : list of 4D Niimg-like objects or list of \
+    imgs : :obj:`list` of 4D Niimg-like objects or list of \
         :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
         List of subject data to mask, reduce and stack.
@@ -325,11 +325,11 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
     %(standardize_true)s
 
-    standardize_confounds : boolean, default=True
+    standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend : boolean, default=True
+    detrend : :obj:`bool`, default=True
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
@@ -476,7 +476,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         Parameters
         ----------
-        imgs : list of Niimg-like objects or \
+        imgs : :obj:`list` of Niimg-like objects or \
                list of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data on which the mask is calculated. If this is a list,
@@ -485,7 +485,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         %(y_dummy)s
 
-        confounds : list of CSV file paths, numpy.ndarrays \
+        confounds : :obj:`list` of CSV file paths, numpy.ndarrays \
                 or pandas DataFrames or None, default=None.
             This parameter is passed to nilearn.signal.clean.
             Please see the related documentation for details.
@@ -641,7 +641,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         Returns
         -------
-        loadings : list of 2D ndarray,
+        loadings : :obj:`list` of 2D ndarray,
             For each subject, each sample, loadings for each decomposition
             components
             shape: number of subjects * (number of scans, number of regions)
@@ -675,12 +675,12 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         Parameters
         ----------
-        loadings : list of numpy array (n_samples x n_components)
+        loadings : :obj:`list` of numpy array (n_samples x n_components)
             Component signals to transform back into voxel signals
 
         Returns
         -------
-        reconstructed_imgs : list of nibabel.Nifti1Image or \
+        reconstructed_imgs : :obj:`list` of nibabel.Nifti1Image or \
             :class:`~nilearn.surface.SurfaceImage`
 
         For each loading, reconstructed Nifti1Image or SurfaceImage.
@@ -734,13 +734,13 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 
-        per_component : bool, default=False
+        per_component : :obj:`bool`, default=False
             Specify whether the explained variance ratio is desired for each
             map or for the global set of components.
 
         Returns
         -------
-        score : float
+        score : :obj:`float`
             Holds the score for each subjects. Score is two dimensional
             if per_component is True. First dimension
             is squeezed if the number of subjects is one
@@ -779,7 +779,7 @@ def _explained_variance(X, components, per_component=True):
     components : array-like
         Represents the components estimated by the decomposition algorithm.
 
-    per_component : bool, default=True
+    per_component : :obj:`bool`, default=True
         Specify whether the explained variance ratio is desired for each
         map or for the global set of components_.
 

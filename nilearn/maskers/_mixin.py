@@ -82,7 +82,7 @@ class _MultiMixin:
 
         Parameters
         ----------
-        %(imgs)s
+        %(imgs_list)s
             Images to process.
 
         %(confounds_multi)s
@@ -132,7 +132,7 @@ class _MultiMixin:
 
         Parameters
         ----------
-        imgs :Image object, or a :obj:`list` of Image objects
+        imgs : Image object, or a :obj:`list` of Image objects
             See :ref:`extracting_data`.
             Data to be preprocessed
 
@@ -308,7 +308,7 @@ class _LabelMaskerMixin:
 
         Parameters
         ----------
-        input_features :default=None
+        input_features : default=None
             Only for sklearn API compatibility.
         """
         del input_features
@@ -508,12 +508,10 @@ class MaskerReportMixin(ReportMixin):
 
             - For NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker,
               MultiSurfaceMapsMasker :
-
-                  %(displayed_maps)s
+              %(displayed_maps)s
 
             - For NiftiSpheresMasker :
-
-                  %(displayed_spheres)s
+              %(displayed_spheres)s
 
         Returns
         -------

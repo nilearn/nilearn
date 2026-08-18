@@ -209,7 +209,7 @@ class BaseSlicer:
 
         Parameters
         ----------
-        bounds:
+        bounds :
             valid bounds for the cut coordinates
 
         %(cut_coords)s
@@ -431,7 +431,7 @@ class BaseSlicer:
         %(colorbar)s
             default=False.
 
-        cbar_tick_format : str, default="%%.2g" (scientific notation)
+        cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
             Ex: use "%%i" to display as integers.
 
@@ -788,7 +788,7 @@ class BaseSlicer:
 
         Parameters
         ----------
-        data: ndarray
+        data : ndarray
             data to be thresholded
 
         %(threshold)s

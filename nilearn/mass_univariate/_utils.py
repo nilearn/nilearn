@@ -363,7 +363,7 @@ def orthonormalize_matrix(m, tol=1.0e-12):
     m : numpy array,
         The matrix to orthonormalize.
 
-    tol : float, default=1e-12
+    tol : :obj:`float`, default=1e-12
         Tolerance parameter for nullity.
 
     Returns

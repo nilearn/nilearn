@@ -24,7 +24,7 @@ def apply_mask(
         The mask to apply.
     img : Nifti1Image
         The image to apply the mask to.
-    implementation : str
+    implementation : :obj:`str`
         The implementation to use. Can be either 'nilearn' or 'numpy'.
     nifti_masker_params : dict, default=None
         Parameters to pass to the NiftiMasker object when using 'nilearn' as

@@ -109,7 +109,7 @@ def sanitize_confounds(img_files):
     -------
     img_files : :obj:`list` of :obj:`str`
         List of functional image file(s).
-    flag_single : bool
+    flag_single : :obj:`bool`
         True if the input is a single file, False if it is a :obj:`list` of
         files.
     """
@@ -166,15 +166,16 @@ def _generate_confounds_file_candidates(nii_file, flag_tedana=False):
 
     Parameters
     ----------
-    nii_file : str
+    nii_file : :obj:`str`
         Path to the functional image file.
-    flag_tedana : bool, default=False
+
+    flag_tedana : :obj:`bool`, default=False
         If True, also generate candidates with desc=ICA for TEDANA
         optimally combined output. Defaults to False.
 
     Returns
     -------
-    filenames : list of str
+    filenames : :obj:`list` of str
         List of potential confounds filenames.
     """
     parsed_file = parse_bids_filename(nii_file)
@@ -234,15 +235,15 @@ def _get_file_name(nii_file, flag_tedana=False):
 
     Parameters
     ----------
-    nii_file : str
+    nii_file : :obj:`str`
         Path to the functional image file.
 
-    flag_tedana : bool, default=False
+    flag_tedana : :obj:`bool`, default=False
         If True, look for TEDANA confounds files. Defaults to False.
 
     Returns
     -------
-    confound_file : str
+    confound_file : :obj:`str`
         Path to the associated confounds file.
     """
     if isinstance(nii_file, list):  # catch gifti
@@ -453,18 +454,18 @@ def _ext_validator(image_file, ext):
 
     Parameters
     ----------
-    image_file : str
+    image_file : :obj:`str`
         Path to the functional image file.
 
-    ext : str
+    ext : :obj:`str`
         Extension to check.
 
     Returns
     -------
-    valid_img : bool
+    valid_img : :obj:`bool`
         True if the image is valid, False otherwise.
 
-    error_message : str
+    error_message : :obj:`str`
         Error message to raise if the image is invalid.
     """
     try:
@@ -483,10 +484,10 @@ def _check_images(image_file, flag_full_aroma, flag_tedana: bool) -> None:
 
     Parameters
     ----------
-    image_file : str
+    image_file : :obj:`str`
         Path to the functional image file.
 
-    flag_full_aroma : bool
+    flag_full_aroma : :obj:`bool`
         True if the input is a full ICA-AROMA output, False otherwise.
 
     flag_tedana : :obj:`bool`

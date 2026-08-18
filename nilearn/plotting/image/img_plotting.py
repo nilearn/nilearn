@@ -182,9 +182,15 @@ def _plot_img_with_bg(
     display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
 
+    cbar_vmin : :obj:`float` or None, default=None
+
+    cbar_vmax : :obj:`float` or None, default=None
+
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
+
+    brain_color : :obj:`tuple` of 3 :obj:`float`
 
     decimals : :obj:`int` or :obj:`bool`, default=False
         Number of decimal places on slice position annotation.
@@ -1496,8 +1502,6 @@ def plot_glass_brain(
     %(radiological)s
 
     %(transparency)s
-
-    %(transparency_range)s
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
