@@ -48,14 +48,10 @@ cut_coords = [sagittal, coronal, axial]
 
 from nilearn import datasets
 
-# First, we fetch EPI images and masks images from the Haxby
-# dataset
+# First, we fetch EPI images and masks images from the Haxby dataset.
 haxby_dataset = datasets.fetch_haxby()
 
-# print basic information on the dataset
-print(
-    "First subject anatomical nifti image (3D) is located "
-    f"at: {haxby_dataset.anat[0]}"
+# Print basic information on the dataset.
 print(
     "First subject functional nifti image (4D) is located "
     f"at: {haxby_dataset.func[0]}"
@@ -65,12 +61,13 @@ print(
     f"at: {haxby_dataset.session_target[0]}"
 )
 
-# Second, load the labels stored in a text file into array using pandas
+# Second, load the labels stored in a text file into array using pandas.
 import pandas as pd
 
 run_target = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
+
 # Now, we have the labels that will be useful while computing the
-# student's t-test
+# student's t-test.
 haxby_labels = run_target["labels"]
 
 # %%
@@ -94,7 +91,7 @@ haxby_labels = run_target["labels"]
 # majority of nilearn functions, :func:`~nilearn.image.smooth_img` can
 # also use file names as input parameters.
 
-# Smooth the data using image processing module from nilearn
+# Smooth the data using image processing module from nilearn.
 from nilearn import image
 
 # Functional data
@@ -104,13 +101,13 @@ fmri_filename = haxby_dataset.func[0]
 fmri_img = image.smooth_img(fmri_filename, fwhm=6)
 
 # Visualize the mean of the smoothed EPI image using plotting function
-# `plot_epi`
+# `plot_epi`.
 from nilearn.plotting import plot_epi
 
 # First, compute the voxel-wise mean of the smooth EPI image
-# (first argument) using the image processing module `image`
+# (first argument) using the image processing module `image`.
 mean_img = image.mean_img(fmri_img)
-# Second, we visualize the mean image with coordinates positioned manually
+# Second, we visualize the mean image with coordinates positioned manually.
 plot_epi(mean_img, title="Smoothed mean EPI", cut_coords=cut_coords)
 
 # %%
@@ -160,7 +157,7 @@ log_p_values[log_p_values > 10.0] = 10.0
 # using function `new_img_like` from nilearn.
 from nilearn.image import new_img_like
 
-# Visualize statistical p-values using plotting function `plot_stat_map`
+# Visualize statistical p-values using plotting function `plot_stat_map`.
 from nilearn.plotting import plot_stat_map
 
 # First argument being a reference image
@@ -205,22 +202,13 @@ log_p_values[log_p_values < 5] = 0
 # function. As shown above, we first transform data in array to Nifti image.
 log_p_values_img = new_img_like(fmri_img, log_p_values)
 
-# Now, visualizing the created log p-values to image
-# without Left - 'L', Right - 'R' annotation
+# Now, visualizing the created log p-values to image.
 plot_stat_map(
     log_p_values_img,
     mean_img,
     title="Thresholded p-values",
-    annotate=False,
-    colorbar=True,
     cut_coords=cut_coords,
     cmap="inferno",
-plot_stat_map(
-log_p_values_img,
-mean_img,
-title="Thresholded p-values",
-cut_coords=cut_coords,
-cmap="inferno",
 )
 
 # %%
@@ -259,7 +247,7 @@ from nilearn.plotting import plot_roi, show
 # First, we create new image type of binarized and intersected mask (second
 # argument) and use this created Nifti image type in visualization. Binarized
 # values in data type boolean should be converted to int data type at the same
-# time. Otherwise, an error will be raised
+# time. Otherwise, an error will be raised.
 bin_p_values_and_vt_img = new_img_like(
     fmri_img, bin_p_values_and_vt.astype(np.int32)
 )
@@ -283,31 +271,23 @@ plot_roi(
 # to be sure not to forget voxels located on the edge of a ROI. In other words,
 # such operations can fill "holes" in masked :term:`voxel` representations.
 
-# We use ndimage function from scipy Python library for mask dilation
+# We use ndimage function from scipy Python library for mask dilation.
 from scipy.ndimage import binary_dilation
 
-# Input here is a binarized and intersected mask data from the previous section
+# Input here is a binarized and intersected mask data
+# from the previous section.
 dil_bin_p_values_and_vt = binary_dilation(bin_p_values_and_vt)
 
 # Now, we visualize the same using `plot_roi` with the data being converted
-# to Nifti image. In all `new_img_like` calls, we use the same reference image
+# to Nifti image. In all `new_img_like` calls, we use the same reference image.
 dil_bin_p_values_and_vt_img = new_img_like(
     fmri_img, dil_bin_p_values_and_vt.astype(np.int32)
 )
-# Visualization goes here without 'L', 'R' annotation and coordinates being the
-# same
 plot_roi(
     dil_bin_p_values_and_vt_img,
     mean_img,
     title="Dilated mask",
     cut_coords=cut_coords,
-    annotate=False,
-# Visualization goes here
-plot_roi(
-dil_bin_p_values_and_vt_img,
-mean_img,
-title="Dilated mask",
-cut_coords=cut_coords,
 )
 # %%
 # Finally, we end with splitting the connected ROIs to two hemispheres into two
@@ -324,19 +304,26 @@ cut_coords=cut_coords,
 from scipy.ndimage import label
 
 labels, _ = label(dil_bin_p_values_and_vt)
+
 # we take first roi data with labels assigned as integer 1
 first_roi_data = (labels == 5).astype(np.int32)
+
 # Similarly, second roi data is assigned as integer 2
 second_roi_data = (labels == 3).astype(np.int32)
+
 # Visualizing the connected components
-# First, we create a Nifti image type from first roi data in a array
+# ....................................
+# First, we create a Nifti image type from first roi data in a array.
 first_roi_img = new_img_like(fmri_img, first_roi_data)
+
 # Then, we visualize the same created Nifti image (first argument) with the
 # mean of functional images as background (second argument). The cut_coords are
 # the default now: coordinates are selected automatically and will be pointed
-# exactly on the roi data
+# exactly on the roi data.
+
 plot_roi(first_roi_img, mean_img, title="Connected components: first ROI")
-# we do the same for the second roi data
+
+# We do the same for the second roi data.
 second_roi_img = new_img_like(fmri_img, second_roi_data)
 plot_roi(second_roi_img, mean_img, title="Connected components: second ROI")
 
@@ -345,21 +332,21 @@ plot_roi(second_roi_img, mean_img, title="Connected components: second ROI")
 # Use the new ROIs to extract data maps in both ROIs
 # --------------------------------------------------
 # We extract data from ROIs using Nilearn's
-# :class:`~nilearn.maskers.NiftiLabelsMasker`
+# :class:`~nilearn.maskers.NiftiLabelsMasker`.
 from nilearn.maskers import NiftiLabelsMasker
 
 # %%
 # Before data extraction, we convert array labels to a Nifti like image. All
 # inputs to ``NiftiLabelsMasker`` must be Nifti-like images or filenames to
 # Nifti images. We use the same reference image as used above in previous
-# sections
+# sections.
 labels_img = new_img_like(fmri_img, labels)
 
 # %%
 # First, we initialize a masker with parameters suited for data extraction:
 # labels as input image, ``resampling_target`` is None as the affine and
 # shape/size are the same for all the data used here, time series signal
-# processing parameters ``standardize`` and ``detrend`` are set to ``False``
+# processing parameters ``standardize`` and ``detrend`` are set to ``False``.
 masker = NiftiLabelsMasker(
     labels_img,
     resampling_target=None,
@@ -370,7 +357,7 @@ masker = NiftiLabelsMasker(
 
 # %%
 # Preparing for data extraction: setting number of conditions, size, etc. from
-# haxby dataset
+# haxby dataset.
 condition_names = haxby_labels.unique()
 n_cond_img = fmri_data[..., haxby_labels == "house"].shape[-1]
 n_conds = len(condition_names)
@@ -381,7 +368,7 @@ X1, X2 = np.zeros((n_cond_img, n_conds)), np.zeros((n_cond_img, n_conds))
 # Gathering data for each condition and then use
 # :meth:`~nilearn.maskers.NiftiLabelsMasker.fit_transform` on each data.
 # The transformer extracts data in condition maps where the target regions are
-# specified by labels images
+# specified by labels images.
 for i, cond in enumerate(condition_names):
     cond_maps = new_img_like(
         fmri_img, fmri_data[..., haxby_labels == cond][..., :n_cond_img]
@@ -391,7 +378,7 @@ for i, cond in enumerate(condition_names):
 condition_names[np.where(condition_names == "scrambledpix")] = "scrambled"
 
 # %%
-# save the ROI 'atlas' to a Nifti file
+# Save the ROI 'atlas' to a Nifti file.
 from pathlib import Path
 
 output_dir = Path.cwd() / "results" / "plot_roi_extraction"
@@ -401,7 +388,7 @@ print(f"Output will be saved to: {output_dir}")
 new_img_like(fmri_img, labels).to_filename(output_dir / "mask_atlas.nii.gz")
 
 # %%
-# Plot the average in the different condition names
+# Plot the average in the different condition names.
 import matplotlib.pyplot as plt
 
 plt.figure(figsize=(15, 7))
