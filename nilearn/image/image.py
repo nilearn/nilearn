@@ -2088,8 +2088,6 @@ def binarize_img(
 
      %(copy_header)s
 
-        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
-
         .. nilearn_versionadded:: 0.11.0
 
     Returns
