@@ -50,7 +50,7 @@ for _idx, model in enumerate(models):
     # Multiple fMRI runs (and accompanying event files) may
     # support a single subject's FirstLevelModel,
     # so we loop through. Note that for this dataset,
-    # we expect only one run per subject.
+    # we have only one run per subject.
     for run_imgs, events in zip(
         models_run_imgs[_idx], events_dfs[_idx], strict=False
     ):
