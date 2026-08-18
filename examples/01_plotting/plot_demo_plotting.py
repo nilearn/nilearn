@@ -63,6 +63,11 @@ plotting.plot_stat_map(
     radiological=True,
 )
 
+# %%
+# A call to plotting.show is needed to display the plots when running
+# in script mode (ie outside IPython)
+plotting.show()
+
 
 # %%
 # Making interactive visualizations: `view_img`
@@ -111,6 +116,8 @@ plotting.plot_glass_brain(stat_img, title="plot_glass_brain", threshold=3)
 # Visualizing anatomical image of haxby dataset
 plotting.plot_anat(haxby_anat_filename, title="plot_anat")
 
+plotting.show()
+
 # %%
 # Plotting ROIs (here the mask): `plot_roi`
 # `````````````````````````````````````````
@@ -121,6 +128,8 @@ plotting.plot_anat(haxby_anat_filename, title="plot_anat")
 plotting.plot_roi(
     haxby_mask_filename, bg_img=haxby_anat_filename, title="plot_roi"
 )
+
+plotting.show()
 
 # %%
 # Plotting :term:`EPI` image: `plot_epi`
@@ -136,9 +145,6 @@ mean_haxby_img = image.mean_img(haxby_func_filename)
 # Visualizing mean image (3D)
 plotting.plot_epi(mean_haxby_img, title="plot_epi")
 
-# %%
-# A call to plotting.show is needed to display the plots when running
-# in script mode (ie outside IPython)
 plotting.show()
 
 # %%
@@ -158,6 +164,8 @@ plotting.plot_stat_map(
     title="No plotting threshold",
 )
 
+plotting.show()
+
 # %%
 # Plotting threshold set to 1
 # ```````````````````````````
@@ -172,6 +180,8 @@ plotting.plot_stat_map(
     cut_coords=[36, -27, 60],
     title="plotting threshold=1",
 )
+
+plotting.show()
 
 # %%
 # Plotting threshold set to 1 with ``vmin=0``
@@ -189,6 +199,8 @@ plotting.plot_stat_map(
     vmin=0,
 )
 
+plotting.show()
+
 # %%
 # Plotting threshold set to 1 with ``vmax=0``
 # ```````````````````````````````````````````
@@ -205,6 +217,8 @@ plotting.plot_stat_map(
     vmax=0,
 )
 
+plotting.show()
+
 # %%
 # Visualizing without a colorbar on the right side
 # ------------------------------------------------
@@ -219,5 +233,7 @@ plotting.plot_stat_map(
     colorbar=False,
     title="no colorbar",
 )
+
+plotting.show()
 
 # sphinx_gallery_dummy_images=11
