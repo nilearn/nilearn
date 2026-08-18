@@ -245,7 +245,6 @@ vt = get_data(load_img(mask_vt_filename)).astype(bool)
 # We can then use a logical "and" operation - `numpy.logical_and` - to
 # keep only voxels that have been selected in both masks.
 # In neuroimaging jargon, this is called an "AND conjunction".
-# We use the already imported numpy as np
 bin_p_values_and_vt = np.logical_and(bin_p_values, vt)
 
 # Visualizing the mask intersection results using plotting function `plot_roi`,
