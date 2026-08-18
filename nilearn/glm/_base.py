@@ -12,7 +12,6 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
-from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.versions import SKLEARN_LT_1_6
@@ -32,7 +31,6 @@ from nilearn.surface import SurfaceImage
 FIGURE_FORMAT = "png"
 
 
-@fill_doc
 class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`.
@@ -297,7 +295,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
                 of (:obj:`str` or array of shape (n_col)) or :obj:`dict`
                 Contrast definitions.
 
-        contrast_types ::obj:`dict` of :obj:`str`
+        contrast_types : :obj:`dict` of :obj:`str`
             An optional dictionary mapping some
             or all of the :term:`contrast` names to
             specific contrast types ('t' or 'F').

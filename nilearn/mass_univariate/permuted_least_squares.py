@@ -29,6 +29,7 @@ from nilearn.mass_univariate._utils import (
 )
 
 
+@fill_doc
 def _permuted_ols_on_chunk(
     scores_original_data,
     tested_vars,
@@ -93,11 +94,11 @@ def _permuted_ols_on_chunk(
     n_perm_chunk : int, default=10000
         Number of permutations to be performed.
 
-    intercept_test : boolean, default=True
+    intercept_test : :obj:`bool`, default=True
         Change the permutation scheme (swap signs for intercept,
         switch labels otherwise). See :footcite:t:`Fisher1935`.
 
-    two_sided_test : boolean, default=True
+    two_sided_test : :obj:`bool`, default=True
         If True, performs an unsigned t-test. Both positive and negative
         effects are considered; the null hypothesis is that the effect is zero.
         If False, only positive effects are considered as relevant. The null
