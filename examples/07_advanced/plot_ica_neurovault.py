@@ -56,6 +56,7 @@ if term_weights is None:
     term_weights = np.ones((len(images), 2))
     vocabulary = np.asarray(["Neurosynth is down", "Please try again later"])
 
+# %%
 # After downloading, clean and report term scores.
 term_weights[term_weights < 0] = 0
 total_scores = np.mean(term_weights, axis=0)
@@ -170,4 +171,3 @@ for index, (ic_map, ic_terms) in enumerate(
 # maps, while other capture noise in the database. More data, better
 # filtering, and better cognitive labels would give better maps.
 
-show()
