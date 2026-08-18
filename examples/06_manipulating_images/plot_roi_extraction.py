@@ -48,7 +48,7 @@ cut_coords = [sagittal, coronal, axial]
 
 from nilearn import datasets
 
-# First, we fetch anatomical image, EPI images and masks images from the Haxby
+# First, we fetch EPI images and masks images from the Haxby
 # dataset
 haxby_dataset = datasets.fetch_haxby()
 
