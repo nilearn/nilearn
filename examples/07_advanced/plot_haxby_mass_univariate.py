@@ -45,19 +45,22 @@ print(f"Functional nifti image (4D) is located at: {haxby_dataset.func[0]}")
 # %%
 # Restrict to "face" and "house" conditions
 # -----------------------------------------
+# Next, we map all visual categories to numerical labels
+# using :class:`~sklearn.preprocessing.LabelEncoder`.
+# This is necessary since both
+# :func:`~nilearn.mass_univariate.permuted_ols` and
+# :func:`~sklearn.feature_selection.f_regression`
+# require that string labels are
+# encoded as integers.
+#
+# Then, we subset to only  include "face" and "house"
+# task categories.
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
 df = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 df = df.rename(columns={"chunks": "runs"})
-
-# Re-code visual categories with numerical labels
-# using :func:`sklearn.preprocessing.LabelEncoder`.
-# :func:`nilearn.mass_univariate.permuted_ols` and
-# :func:`sklearn.feature_selection.f_regression`
-# both require that string labels are
-# encoded as integers.
 
 le = LabelEncoder().fit(df["labels"])
 categories = le.classes_
