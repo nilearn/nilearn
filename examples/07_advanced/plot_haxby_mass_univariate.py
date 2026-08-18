@@ -54,6 +54,11 @@ df = df.rename(columns={"chunks": "runs"})
 
 # Re-code visual categories with numerical labels
 # using :func:`sklearn.preprocessing.LabelEncoder`.
+# :func:`nilearn.mass_univariate.permuted_ols` and
+# :func:`sklearn.feature_selection.f_regression`
+# both require that string labels are
+# encoded as integers.
+
 le = LabelEncoder().fit(df["labels"])
 categories = le.classes_
 conditions_encoded = le.transform(df["labels"])
