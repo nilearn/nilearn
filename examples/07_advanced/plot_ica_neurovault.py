@@ -86,7 +86,7 @@ from nilearn.maskers import NiftiMasker
 
 mask_img = load_mni152_brain_mask(resolution=2)
 masker = NiftiMasker(
-    mask_img=mask_img, memory="nilearn_cache", memory_level=1, verbose=1
+    mask_img=mask_img, memory="nilearn_cache", memory_level=1
 )
 masker = masker.fit()
 
