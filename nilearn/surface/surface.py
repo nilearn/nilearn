@@ -6,6 +6,7 @@ import pathlib
 import warnings
 from collections.abc import Iterable, Iterator, Mapping
 from pathlib import Path
+from typing import overload
 
 import numpy as np
 import pandas as pd
@@ -434,9 +435,9 @@ class PolyData:
 
         Returns
         -------
-        vmin : float
+        vmin : :obj:`float`
 
-        vmax : float
+        vmax : :obj:`float`
         """
         vmin = min(x.min() for x in self.parts.values())
         vmax = max(x.max() for x in self.parts.values())
@@ -460,7 +461,7 @@ class PolyData:
         dim : int
             Dimensions the data should have.
 
-        var_name : str, default="img"
+        var_name : :obj:`str`, default="img"
             Name of the variable to include in the error message.
 
         Returns
@@ -1703,7 +1704,7 @@ def _gifti_img_to_mesh(gifti_img):
     return coords, faces
 
 
-def combine_hemispheres_meshes(mesh):
+def combine_hemispheres_meshes(mesh: PolyMesh) -> InMemoryMesh:
     """Combine the left and right hemisphere meshes such that both are
     represented in the same mesh.
 
@@ -1941,7 +1942,15 @@ def load_surf_mesh(surf_mesh) -> InMemoryMesh:
     return mesh
 
 
-def at_least_2d(input):
+@overload
+def at_least_2d(input: SurfaceImage) -> SurfaceImage: ...
+
+
+@overload
+def at_least_2d(input: PolyData) -> PolyData: ...
+
+
+def at_least_2d(input: SurfaceImage | PolyData) -> SurfaceImage | PolyData:
     """Force surface image or polydata to be 2d."""
     if len(input.shape) == 2:
         return input
@@ -2232,7 +2241,7 @@ def find_surface_clusters(
     mask : (n_vertices,) array_like of bool
         Boolean mask, True where vertex is part of a cluster.
 
-    offset: int, default=1
+    offset : int, default=1
         Base value to use to index the different clusters.
 
     Returns

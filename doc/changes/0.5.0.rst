@@ -1,10 +1,8 @@
 
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.5.0
-=====
+Version 0.5.0
+=============
 
 **Released November 2018**
 
@@ -77,8 +75,8 @@ Changes
 
 Lots of changes and improvements. Detailed change list for each release follows.
 
-0.5.0 rc
-========
+Version 0.5.0 rc
+================
 
 Highlights
 ----------
@@ -122,8 +120,8 @@ The following people contributed to this release:
     * `Christian Horea`_ (1)
     * `Jerome Dockes`_ (7)
 
-0.5.0 beta
-==========
+Version 0.5.0 beta
+==================
 
 **Released October 2018**
 
@@ -215,8 +213,8 @@ The following people contributed to this release:
     * Yaroslav Halchenko (1)
     * dtyulman (1)
 
-0.5.0 alpha
-===========
+Version 0.5.0 alpha
+===================
 
 **Released August 2018**
 

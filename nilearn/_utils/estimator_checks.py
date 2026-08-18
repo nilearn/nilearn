@@ -45,7 +45,7 @@ from numpydoc.docscrape import NumpyDocString
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import is_classifier, is_regressor
-from sklearn.datasets import make_classification, make_regression
+from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import _safe_indexing
@@ -177,9 +177,9 @@ def check_estimator(
 
     Parameters
     ----------
-    estimators : list of estimator object
+    estimators : :obj:`list` of estimator object
         Estimator instance to check.
-    valid : bool, default=True
+    valid : :obj:`bool`, default=True
         Whether to return only the valid checks or not.
     """
     # TODO (sklearn >= 1.6.0) remove this function
@@ -331,7 +331,7 @@ def return_expected_failed_checks(
         "check_readonly_memmap_input": "TODO",
     }
 
-    expected_failed_checks |= unapplicable_checks()
+    expected_failed_checks |= inapplicable_checks()
 
     if hasattr(estimator, "transform"):
         expected_failed_checks |= {
@@ -401,7 +401,7 @@ def return_expected_failed_checks(
     return expected_failed_checks
 
 
-def unapplicable_checks() -> dict[str, str]:
+def inapplicable_checks() -> dict[str, str]:
     """Return sklearn checks that do not apply for nilearn estimators \
        when they take images as input.
     """
@@ -532,7 +532,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
             ),
         }
 
-    expected_failed_checks |= unapplicable_checks()
+    expected_failed_checks |= inapplicable_checks()
 
     return expected_failed_checks
 
@@ -572,9 +572,9 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
     # TODO (sklearn >= 1.6.0) simplify
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
-        requires_y = isinstance(estimator, _BaseDecoder)
+        requires_y = isinstance(estimator, (_BaseDecoder, BaseSpaceNet))
     else:
-        requires_y = getattr(tags.target_tags, "required", False)
+        requires_y = getattr(tags.target_tags, "required", True)
 
     yield (clone(estimator), check_doc_attributes)
     yield (clone(estimator), check_set_output)
@@ -611,6 +611,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
 
         if requires_y:
             yield (clone(estimator), check_img_estimator_requires_y_none)
+            yield (clone(estimator), check_inputs_length)
 
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
@@ -866,7 +867,7 @@ def check_verbose(estimator) -> None:
 
 
 def check_set_output(estimator_orig) -> None:
-    """Check that set_ouput can be used.
+    """Check that set_output can be used.
 
     Check that:
     - by default we transform to numpy array
@@ -1239,7 +1240,7 @@ def check_verbosity_embedded_masker(estimator_orig) -> None:
     if not isinstance(estimator, (SearchLight, SecondLevelModel)):
         assert "Extracting region signals" in outputs[2]
 
-    # specific fo GLM
+    # specific for GLM
     if is_glm(estimator):
         for verbose in [1, 2, 3]:
             assert re.search(r"Computation of .* done in", outputs[verbose])
@@ -2181,6 +2182,24 @@ def check_img_estimator_requires_y_none(estimator_orig) -> None:
             raise ve
 
 
+def check_inputs_length(estimator_orig) -> None:
+    """Raise error when X and y have inconsistent numbers of samples."""
+    estimator = clone(estimator_orig)
+
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    y = 2 * (y > 0) - 1
+    X_, mask = to_niimgs(X, (2, 2, 2))
+
+    # Remove ten samples from y
+    y = y[:-10]
+
+    estimator.mask = mask
+
+    with pytest.raises(ValueError, match="inconsistent numbers of samples"):
+        estimator.fit(X_, y)
+
+
 def check_img_estimator_fit_score_takes_y(estimator_orig) -> None:
     """Replace sklearn check_fit_score_takes_y for maskers.
 
@@ -2582,7 +2601,7 @@ def check_decoder_estimator_args(estimator_orig) -> None:
 def check_decoder_screening_n_features(estimator_orig) -> None:
     """Set screening_n_features gives the requested number of weights / CV.
 
-    screening_n_features determines the number of seelcted features per CV
+    screening_n_features determines the number of selected features per CV
     so we only run a single CV.
     """
     estimator = clone(estimator_orig)

@@ -1077,6 +1077,10 @@ def _unmask_3d(X, mask, order="C"):
     mask : Niimg-like object
         See :ref:`extracting_data`.
         Mask. mask.ndim must be equal to 3, and dtype *must* be bool.
+
+    order : "F" or "C", default='F'
+        Data ordering in output array. This function is slightly faster with
+        Fortran ordering.
     """
     if mask.dtype != bool:
         raise TypeError("mask must be a boolean array")
@@ -1105,6 +1109,10 @@ def _unmask_4d(X, mask, order="C"):
 
     mask : :class:`numpy.ndarray`
         Mask. mask.ndim must be equal to 4, and dtype *must* be bool.
+
+    order : "F" or "C", default='F'
+        Data ordering in output array. This function is slightly faster with
+        Fortran ordering.
 
     Returns
     -------

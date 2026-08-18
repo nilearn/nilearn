@@ -1,59 +1,64 @@
 """
-BIDS dataset first and second level analysis
-============================================
+BIDS dataset first- and second-level analysis
+=============================================
 
-Full step-by-step example of fitting a :term:`GLM`
-to perform a first and second level
-analysis in a :term:`BIDS` dataset and visualizing the results.
-Details about the :term:`BIDS` standard can be consulted at
+This example provides a step-by-step walk-through of fitting
+a first- and second-level :term:`GLM` to perform
+massively univariate statistical analysis of a :term:`BIDS`
+dataset, then visualizing the results.
+Full details about the :term:`BIDS` standard can be consulted at
 `https://bids.neuroimaging.io/ <https://bids.neuroimaging.io/>`_.
 
-More specifically:
+More specifically, this example will be divided into three sections:
 
-1. Download an :term:`fMRI` :term:`BIDS` dataset
-   with two language conditions to contrast.
-2. Extract first level model objects automatically
+1. Downloading an :term:`fMRI` :term:`BIDS` dataset
+   in :term:`MNI` space, with two task conditions to contrast.
+2. Extracting :term:`GLM` first-level model objects automatically
    from the :term:`BIDS` dataset.
-3. Fit a second level model on the fitted first level models.
-   Notice that in this case the preprocessed :term:`bold<BOLD>`
-   images were already normalized to the same :term:`MNI` space.
+3. Fitting a :term:`GLM` second-level model directly from
+   the fitted :term:`GLM` first-level models.
 """
-
-from nilearn import plotting
 
 # %%
 # Fetch example :term:`BIDS` dataset
 # ----------------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative
 # purposes. It contains only the necessary
-# information to run a statistical analysis using Nilearn. The raw data
-# subject folders only contain bold.json and events.tsv files, while the
-# derivatives folder includes the preprocessed files preproc.nii and the
-# confounds.tsv files.
+# information for each subject to run a statistical analysis using Nilearn.
+# Each of the raw data folders  contain ``bold.json`` and ``events.tsv`` files,
+# indicating :term:`fMRI` metadata and the timing of the task events,
+# respectively.
+# The derivatives folders include preprocessed :term:`fMRI`
+# files ``preproc.nii`` and their accompanying ``confounds.tsv`` files.
 #
-# For more information
-# see the :ref:`dataset description <language_localizer_dataset>`.
+# For more information on this dataset, see
+# the :func:`~nilearn.datasets.fetch_language_localizer_demo_dataset`
+# description.
 #
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
 data = fetch_language_localizer_demo_dataset()
 
 # %%
-# Here is the location of the dataset on disk.
+# We can verify the location of the dataset on disk.
 print(data.data_dir)
 
 # %%
-# Obtain automatically FirstLevelModel objects and fit arguments
-# --------------------------------------------------------------
-# From the dataset directory we automatically obtain
-# the FirstLevelModel objects
-# with their subject_id filled from the :term:`BIDS` dataset.
-# Moreover, we obtain for each model a dictionary with run_imgs,
-# events and confounder regressors
-# since in this case a confounds.tsv file is available
-# in the :term:`BIDS` dataset.
-# To get the first level models we only have to specify the dataset directory
-# and the task_label as specified in the file names.
+# Automatically extract ``FirstLevelModel`` objects
+# -------------------------------------------------
+# Since :term:`BIDS` datasets follow a known file structure,
+# we can automatically infer the task structure for a given ``task_label``
+# using :func:`~nilearn.glm.first_level.first_level_from_bids`.
+#
+# Specifically, :func:`~nilearn.glm.first_level.first_level_from_bids`
+# will extract the :term:`fMRI` images (``models_run_imgs``),
+# events (``models_events``),
+# and confounder regressors (``model_confounds``)
+# for each subject in the dataset.
+#
+# These extracted data are used to instantiate a
+# :class:`~nilearn.glm.first_level.FirstLevelModel`, one for each subject.
+# Here, these are the ``models`` objects.
 from nilearn.glm.first_level import first_level_from_bids
 
 task_label = "languagelocalizer"
@@ -72,36 +77,53 @@ task_label = "languagelocalizer"
 )
 
 # %%
-# Quick sanity check on fit arguments
-# -----------------------------------
-# Additional checks or information extraction from pre-processed data can
-# be made here.
+# Quick sanity check on the extracted data
+# .........................................
+# It is good practice to verify that the data extracted
+# from the :term:`BIDS` dataset is as expected.
+# Note that Nilearn does not run an extensive BIDS validation internally.
 
 # %%
-# We just expect one run_img per subject.
+# First, we confirm that each ``model_run_imgs`` list corresponds
+# to one subject, as expected.
 from pathlib import Path
 
-print([Path(run).name for run in models_run_imgs[0]])
+for _subject_idx, subject_runs in enumerate(models_run_imgs[:2]):
+    for run in subject_runs:
+        print(Path(run).name)
 
 # %%
-# The only confounds stored are regressors obtained from motion correction. As
-# we can verify from the column headers of the confounds table corresponding
-# to the only run_img present.
-print(models_confounds[0][0].columns)
+# Next, we verify the column headers of the first confounds table;
+# i.e., for the first subject.
+for _subject_idx, subject_confounds in enumerate(models_confounds[:1]):
+    for confounds in subject_confounds:
+        print(confounds.columns)
 
 # %%
-# During this acquisition the subject read blocks of sentences and
-# consonant strings. So these are our only two conditions in events.
-# We verify there are 12 blocks for each condition.
-print(models_events[0][0]["trial_type"].value_counts())
+# Finally, we verify the event structure.
+# During this acquisition,
+# each subject read blocks of sentences and consonant strings.
+# These are the two conditions in the "languagelocalizer" task.
+# We verify that there are 12 blocks for each condition
+# for the first subject.
+for _subject_idx, subject_events in enumerate(models_events[:1]):
+    for events in subject_events:
+        print(events["trial_type"].value_counts())
 
 # %%
-# First level model estimation
-# ----------------------------
-# Now we simply fit each first level model and plot for each subject the
-# :term:`contrast` that reveals the language network (language - string).
+# For a single subject, we can visualize their event structure
+# using :func:`nilearn.plotting.plot_event`.
+from nilearn.plotting import plot_event
+
+plot_event(events)
+
+# %%
+# First-level model estimation
+# ............................
+# Now we simply fit each first-level :term:`GLM` model each subject.
+# We can then plot the task-specific :term:`contrast` (``language - string``).
 # Notice that we can define a :term:`contrast`
-# using the names of the conditions specified in the events dataframe.
+# using the names of the conditions specified in the ``events`` dataframe.
 # Sum, subtraction and scalar multiplication are allowed.
 
 # %%
@@ -111,25 +133,31 @@ from scipy.stats import norm
 p001_unc = norm.isf(0.001)
 
 # %%
-# Prepare figure for concurrent plot of individual maps.
+# Plot individual contrast maps.
 from math import ceil
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+from nilearn import plotting
 
 ncols = 2
 nrows = ceil(len(models) / ncols)
 
 fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(10, 12))
 axes = np.atleast_2d(axes)
+
+# lists from `first_level_from_bids` are zipped together to iterate over them
 model_and_args = zip(
     models, models_run_imgs, models_events, models_confounds, strict=False
 )
+
+# for each subject:
 for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
     # fit the GLM
     model.fit(imgs, events, confounds)
     # compute the contrast of interest
-    zmap = model.compute_contrast("language-string")
+    zmap = model.compute_contrast("language - string")
     plotting.plot_glass_brain(
         zmap,
         threshold=p001_unc,
@@ -141,58 +169,61 @@ for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
         vmin=-12,
         vmax=12,
     )
-fig.suptitle("subjects z_map language network (unc p<0.001)")
+fig.suptitle("Subjects's z_map language network (unc. p<0.001)")
 plotting.show()
 
 # %%
-# Second level model estimation
+# Second-level model estimation
 # -----------------------------
-# We just have to provide the list of fitted FirstLevelModel objects
-# to the SecondLevelModel object for estimation. We can do this because
-# all subjects share a similar design matrix (same variables reflected in
-# column names).
+# Now, we just have to provide the list of
+# fitted :class:`~nilearn.glm.first_level.FirstLevelModel` objects
+# to the :class:`~nilearn.glm.second_level.SecondLevelModel` object
+# for estimation.
+# We can do this because all subjects share a similar design matrix
+# (i.e., the same variables represented with identical column names).
 from nilearn.glm.second_level import SecondLevelModel
 
 second_level_input = models
 
 # %%
-# Note that we apply a smoothing of 8mm.
+# We apply a smoothing of 8mm and parallelize the computation.
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2)
 second_level_model = second_level_model.fit(second_level_input)
 
 # %%
-# Computing contrasts at the second level is as simple as at the first level.
-# Since we are not providing confounders we are performing a one-sample test
-# at the second level with the images determined by the specified first level
+# Computing contrasts at the second-level is as simple as at the first-level.
+# Since we are not providing confounders,
+# we are performing a one-sample test
+# at the second-level with the images determined by the specified first-level
 # contrast.
 zmap = second_level_model.compute_contrast(
-    first_level_contrast="language-string"
+    first_level_contrast="language - string"
 )
 
 # %%
-# The group level :term:`contrast` reveals a left lateralized fronto-temporal
+# The second-level :term:`contrast` reveals a left lateralized fronto-temporal
 # language network.
 plotting.plot_glass_brain(
     zmap,
     threshold=p001_unc,
-    title="Group language network (unc p<0.001)",
+    title="Group language network (unc. p<0.001)",
     plot_abs=False,
-    display_mode="x",
     figure=plt.figure(figsize=(5, 4)),
 )
 plotting.show()
 
 # %%
-# Generate and save the GLM report at the group level.
+# We can generate and save the second-level :term:`GLM` report.
 report_slm = second_level_model.generate_report(
     contrasts="intercept",
-    first_level_contrast="language-string",
+    first_level_contrast="language - string",
     threshold=p001_unc,
+    height_control=None,
     display_mode="x",
 )
 
 # %%
-# View the GLM report at the group level.
+# View the second-level :term:`GLM` report.
 #
 # .. include:: ../../../examples/report_note.rst
 #

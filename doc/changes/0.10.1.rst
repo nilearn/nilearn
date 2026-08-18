@@ -1,9 +1,7 @@
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.10.1
-======
+Version 0.10.1
+==============
 
 **Released April 2023**
 
@@ -66,8 +64,8 @@ Changes
 - :bdg-secondary:`Maint` Moved packaging from ``setup.py`` and setuptools build backend to ``pyproject.toml`` and hatchling backend. This change comes about as new standards are defined for Python packaging that are better met by the new configuration (:gh:`3635` by `Yasmin Mzayek`_).
 
 
-0.10.1rc1
-=========
+Version 0.10.1rc1
+=================
 
 **Released February 2023**
 
