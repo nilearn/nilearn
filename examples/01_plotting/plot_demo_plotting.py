@@ -72,7 +72,7 @@ show()
 # %%
 # Making interactive visualizations: `view_img`
 # `````````````````````````````````````````````
-# An alternative to :func:`~nilearn.plot_stat_map` is to use
+# An alternative to :func:`~nilearn.plotting.plot_stat_map` is to use
 # :func:`~nilearn.plotting.view_img` that gives more interactive
 # visualizations in a web browser.
 # See :ref:`interactive-stat-map-plotting` for more details.
