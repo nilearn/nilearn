@@ -799,11 +799,11 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        n_scans: int
+        n_scans : int
 
-        events : list of pandas.DataFrame
+        events : :obj:`list` of pandas.DataFrame
 
-        confounds : list of pandas.DataFrame or numpy.arrays
+        confounds : :obj:`list` of pandas.DataFrame or numpy.arrays
 
         run_idx : int
         """
@@ -1589,7 +1589,7 @@ def first_level_from_bids(
         Filter examples would be ``('desc', 'preproc')``, ``('dir', 'pa')``
         and ``('run', '10')``.
 
-    mask_img: Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
+    mask_img : Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
              :obj:`~nilearn.maskers.SurfaceMasker`, False \
              or ``"derivatives"``, or \
              None, default=None
@@ -1634,9 +1634,12 @@ def first_level_from_bids(
         of :func:`~nilearn.interfaces.fmriprep.load_confounds`
         for more details on the confounds loading strategies.
 
+    .. do not check for missing parameters in docstring
+
     Returns
     -------
-    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
+    models : :obj:`list` \
+        of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
         Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
         corresponds to a subject.
         All runs from different sessions are considered together
@@ -1654,6 +1657,15 @@ def first_level_from_bids(
         ``models_events[i][j]`` corresponds to the j\\ :sup:`th` event file
         of the i\\ :sup:`th` subject.
 
+        Currently we only support 2 cases:
+
+        - raw BIDS datasets with one events file per run
+          stored along the bold file
+
+        - raw BIDS dataset with a single events file at its root,
+          (it is then assumed that this events file should be used
+          for all runs and the list contains j copies of the same dataframe)
+
     models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
         ``None``
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
@@ -1666,6 +1678,11 @@ def first_level_from_bids(
             Any NaN values on the first row of the loaded confounds
             will be replaced by 0 to avoid later errors
             during design matrix creation.
+
+    Notes
+    -----
+    See :obj:`~nilearn.glm.first_level.FirstLevelModel` for further details
+    on other parameters.
 
     Examples
     --------
@@ -2037,6 +2054,7 @@ def _list_valid_subjects(derivatives_path, sub_labels) -> list[str]:
     return sorted(set(sub_labels_exist))
 
 
+@fill_doc
 def _report_found_files(files, text, sub_label, filters, verbose) -> None:
     """Print list of files found for a given subject and filter.
 
@@ -2054,6 +2072,8 @@ def _report_found_files(files, text, sub_label, filters, verbose) -> None:
     filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters are of the form (field, label).
         Only one filter per field allowed.
+
+    %(verbose)s
 
     """
     unordered_list_string = "\n\t- ".join(files)
@@ -2246,6 +2266,27 @@ def _get_events_files(
         sub_label=sub_label,
         filters=events_filters,
     )
+
+    # looking for file in the root of the raw data
+    global_events_file = get_bids_files(
+        dataset_path,
+        modality_folder="func",
+        file_tag="events",
+        file_type="tsv",
+        sub_label=sub_label,
+        filters=events_filters,
+        sub_folder=False,
+    )
+
+    if len(events) == 0 and len(global_events_file) == 1:
+        # if we found something this means
+        # that all runs haves the same events.tsv
+        events = global_events_file * len(imgs)
+    else:
+        # otherwise we pull all events together
+        # and let _check_bids_events_list decide what to do
+        events.extend(global_events_file)
+
     _report_found_files(
         files=events,
         text="events",
@@ -2278,16 +2319,16 @@ def _get_masks_files(
 
     Parameters
     ----------
-    dataset_path : :obj:`pathlib.Path`
+    derivatives_path : :obj:`pathlib.Path`
         Directory of the derivatives BIDS dataset.
 
     sub_label : :obj:`str`
         Subject label as specified in the file names like sub-<sub_label>_.
 
     task_label : :obj:`str`
-        Task label as specified in the file names like _task-<task_label>_.
+        Space label as specified in the file names like _task-<task_label>_.
 
-    task_label : :obj:`str`
+    space_label : :obj:`str`
         Space label as specified in the file names like _space-<space_label>_.
 
     img_filters : :obj:`list` of :obj:`tuple` (str, str)
@@ -2514,7 +2555,7 @@ def _check_args_first_level_from_bids(
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
-    derivatives_path : :obj:`str`
+    derivatives_folder : :obj:`str`
         Fullpath of the BIDS dataset derivative folder.
 
     """
@@ -2594,6 +2635,7 @@ def _check_kwargs_load_confounds(**kwargs):
     return kwargs_load_confounds, remaining_kwargs
 
 
+@fill_doc
 def _make_bids_files_filter(
     task_label,
     space_label=None,
@@ -2726,6 +2768,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
             run_check_list.append(run)
 
 
+@fill_doc
 def _check_bids_events_list(
     events, imgs, sub_label, task_label, dataset_path, events_filters, verbose
 ) -> None:
@@ -2758,6 +2801,8 @@ def _check_bids_events_list(
         Filters of the form (field, label) used to select the files.
         See :func:`get_bids_files`.
 
+    %(verbose)s
+
     """
     if not events:
         raise ValueError(
@@ -2773,6 +2818,17 @@ def _check_bids_events_list(
             "as the number of runs is expected."
         )
     _check_trial_type(events=events)
+
+    # all events file are the same
+    # or we have single event file that does not
+    # contain the sub entity:
+    # we have a single event file in the root of the dataset
+    if len(events) > 1 and all(x == events[0] for x in events):
+        return None
+    elif len(events) == 1:
+        ref = parse_bids_filename(events[0])
+        if "sub" not in ref["entities"]:
+            return None
 
     supported_filters = [
         "sub",

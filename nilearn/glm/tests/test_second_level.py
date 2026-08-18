@@ -748,7 +748,7 @@ def test_error_list_2d_surface_image(rng):
         SecondLevelModel().fit(fmri_data, design_matrix=design_matrix)
 
 
-def test_error_mistmatch_n_image_row_design_matrix(rng):
+def test_error_mismatch_n_image_row_design_matrix(rng):
     """Check n_row in design matrix matches n_images."""
     p, q = 80, 10
     X = rng.standard_normal(size=(p, q))

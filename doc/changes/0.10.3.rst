@@ -1,9 +1,7 @@
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.10.3
-======
+Version 0.10.3
+==============
 
 **Released January 2024**
 

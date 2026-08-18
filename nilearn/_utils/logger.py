@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 
 from nilearn._base import NilearnBaseEstimator
+from nilearn._utils.docs import fill_doc
 from nilearn.nilearn_typing import Verbose
 
 
@@ -29,6 +30,7 @@ if _has_rich():
 
 # The technique used in the log() function only applies to CPython, because
 # it uses the inspect module to walk the call stack.
+@fill_doc
 def log(
     msg: str,
     verbose: Verbose,
@@ -45,7 +47,7 @@ def log(
 
     Parameters
     ----------
-    msg : str
+    msg : :obj:`str`
         Message to display.
 
     %(verbose)s
@@ -64,6 +66,9 @@ def log(
     msg_level : int, default=1
         Verbosity level at and above which message should be displayed to the
         user. Most of the time this parameter can be left unchanged.
+
+    with_traceback : :obj:`bool`
+        Print traceback in the log.
 
     Notes
     -----
@@ -121,7 +126,7 @@ def compose_err_msg(msg: str, **kwargs) -> str:
 
     Parameters
     ----------
-    msg : string
+    msg : :obj:`str`
         Arbitrary message.
 
     kwargs : dict, optional
@@ -129,7 +134,7 @@ def compose_err_msg(msg: str, **kwargs) -> str:
 
     Returns
     -------
-    updated_msg : string
+    updated_msg : :obj:`str`
         msg, with "key: value" appended. Only string values are appended.
 
     Examples
