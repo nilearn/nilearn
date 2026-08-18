@@ -102,13 +102,15 @@ fmri_img = image.smooth_img(fmri_filename, fwhm=6)
 
 # Visualize the mean of the smoothed EPI image using plotting function
 # `plot_epi`.
-from nilearn.plotting import plot_epi
+from nilearn.plotting import plot_epi, show
 
 # First, compute the voxel-wise mean of the smooth EPI image
 # (first argument) using the image processing module `image`.
 mean_img = image.mean_img(fmri_img)
 # Second, we visualize the mean image with coordinates positioned manually.
 plot_epi(mean_img, title="Smoothed mean EPI", cut_coords=cut_coords)
+
+show()
 
 # %%
 # Functional MRI data can be considered "high dimensional" given the p-versus-n
@@ -177,6 +179,8 @@ plot_stat_map(
     cmap="inferno",
 )
 
+show()
+
 # %%
 # Selecting features using f_classif
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -211,6 +215,8 @@ plot_stat_map(
     cmap="inferno",
 )
 
+show()
+
 # %%
 # We can post-process the results obtained with simple operations
 # such as mask intersection and :term:`dilation<Dilation>`
@@ -242,7 +248,7 @@ bin_p_values_and_vt = np.logical_and(bin_p_values, vt)
 
 # Visualizing the mask intersection results using plotting function `plot_roi`,
 # a function which can be used for visualizing target specific voxels.
-from nilearn.plotting import plot_roi, show
+from nilearn.plotting import plot_roi
 
 # First, we create new image type of binarized and intersected mask (second
 # argument) and use this created Nifti image type in visualization. Binarized
@@ -259,6 +265,8 @@ plot_roi(
     cut_coords=cut_coords,
     title="Intersection with ventral temporal mask",
 )
+
+show()
 
 # %%
 # Dilation
@@ -289,6 +297,9 @@ plot_roi(
     title="Dilated mask",
     cut_coords=cut_coords,
 )
+
+show()
+
 # %%
 # Finally, we end with splitting the connected ROIs to two hemispheres into two
 # separate regions (ROIs). We use the function :func:`scipy.ndimage.label` from
@@ -327,6 +338,7 @@ plot_roi(first_roi_img, mean_img, title="Connected components: first ROI")
 second_roi_img = new_img_like(fmri_img, second_roi_data)
 plot_roi(second_roi_img, mean_img, title="Connected components: second ROI")
 
+show()
 
 # %%
 # Use the new ROIs to extract data maps in both ROIs
