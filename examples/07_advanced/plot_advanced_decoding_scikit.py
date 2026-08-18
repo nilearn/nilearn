@@ -29,7 +29,7 @@ focusing on distinguishing two categories:
 # .................
 # The :func:`~nilearn.datasets.fetch_haxby` function will download the
 # Haxby dataset object, whose attributes include
-# the fMRI images as Niimg objects (``func``)
+# the fMRI images as Niimg objects (``func``),
 # a spatial mask (``mask_vt``),
 # and a CSV with the visual category label for each image (``session_target``).
 
@@ -88,6 +88,7 @@ masker = NiftiMasker(
     mask_img=mask_filename,
     runs=run_label,
     smoothing_fwhm=4,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
     verbose=1,
@@ -112,14 +113,14 @@ print(f"SVC accuracy: {cv_scores.mean():.3f}")
 # You can change many parameters of the cross_validation, such as:
 #
 # * using a different
-#   :sklearn:`cross-validation scheme <modules/cross_validation.html>`
+#   :sklearn:`cross-validation scheme <modules/cross_validation.html>`.
 #
 # * speeding up the computation by using `n_jobs = -1`, which will spread the
 #   computation equally across all processors.
 #
 # * use a different scoring function, as a keyword or imported from
 #   :sklearn:`SVC <modules/model_evaluation.html>`;
-#   for example, :func:`sklearn.metrics.roc_auc_score`
+#   for example, :func:`sklearn.metrics.roc_auc_score`.
 from sklearn.model_selection import LeaveOneGroupOut
 
 cv = LeaveOneGroupOut()
@@ -211,7 +212,7 @@ print(f"ANOVA+SVC test score: {fitted_pipeline['test_score'].mean():.3f}")
 # Visualize the :term:`ANOVA` + SVC's discriminating weights
 # ..........................................................
 # First, we retrieve the Pipeline object fitted on the first
-# cross-validation fold and its SVC coefficients
+# cross-validation fold and its SVC coefficients.
 
 first_pipeline = fitted_pipeline["estimator"][0]
 svc_coef = first_pipeline.named_steps["svc"].coef_
@@ -235,11 +236,11 @@ print(
 # %%
 # Finally, we apply the ``inverse_transform`` function
 # of our :class:`~nilearn.maskers.NiftiMasker` object
-# to re-create a 4D Niimg that we can visualize
+# to re-create a 4D Niimg that we can visualize.
 from nilearn.plotting import plot_stat_map, show
 
 weight_img = masker.inverse_transform(full_coef)
-plot_stat_map(weight_img, title="ANOVA+SVC weights")
+plot_stat_map(weight_img, title="ANOVA+SVC weights", draw_cross=False)
 
 show()
 
@@ -296,7 +297,7 @@ from sklearn.feature_selection import RFE
 svc = SVC()
 rfe = RFE(SVC(kernel="linear", C=1.0), n_features_to_select=50, step=0.25)
 
-# Create a new pipeline, composing the two classifiers `rfe` and `svc`
+# Create a new pipeline, composing the two classifiers `rfe` and `svc`.
 
 rfe_svc = Pipeline([("rfe", rfe), ("svc", svc)])
 
