@@ -43,19 +43,19 @@ stat_img = datasets.load_sample_motor_activation_image()
 # Plotting statistical maps: `plot_stat_map`
 # ``````````````````````````````````````````
 
-from nilearn import plotting
+from nilearn.plotting import plot_stat_map, show
 
 # %%
 # Visualizing t-map image on EPI template with manual
-# positioning of coordinates using cut_coords given as a list
-plotting.plot_stat_map(
+# positioning of coordinates using cut_coords given as a list.
+plot_stat_map(
     stat_img, threshold=3, title="plot_stat_map", cut_coords=[36, -27, 66]
 )
 
 # %%
 # It's also possible to visualize volumes in a LR-flipped "radiological" view
 # by setting radiological=True:
-plotting.plot_stat_map(
+plot_stat_map(
     stat_img,
     threshold=3,
     title="plot_stat_map",
@@ -65,14 +65,14 @@ plotting.plot_stat_map(
 
 # %%
 # A call to plotting.show is needed to display the plots when running
-# in script mode (ie outside IPython)
-plotting.show()
+# in script mode (ie outside IPython).
+show()
 
 
 # %%
 # Making interactive visualizations: `view_img`
 # `````````````````````````````````````````````
-# An alternative to :func:`~nilearn.plotting.plot_stat_map` is to use
+# An alternative to :func:`~nilearn.plot_stat_map` is to use
 # :func:`~nilearn.plotting.view_img` that gives more interactive
 # visualizations in a web browser.
 # See :ref:`interactive-stat-map-plotting` for more details.
@@ -80,7 +80,7 @@ from nilearn.plotting import view_img
 
 view = view_img(stat_img, threshold=3)
 # In a notebook, if ``view`` is the output of a cell, it will
-# be displayed below the cell
+# be displayed below the cell.
 view
 
 # %%
@@ -106,17 +106,23 @@ view_radio
 # ``````````````````````````````````````````````````````````````
 #
 # Now, the t-map image is mapped on glass brain representation where glass
-# brain is always a fixed background template
-plotting.plot_glass_brain(stat_img, title="plot_glass_brain", threshold=3)
+# brain is always a fixed background template.
+from nilearn.plotting import plot_glass_brain
+
+plot_glass_brain(stat_img, title="plot_glass_brain", threshold=3)
+
+show()
 
 # %%
 # Plotting anatomical images: `plot_anat`
 # ```````````````````````````````````````
 #
 # Visualizing anatomical image of haxby dataset
-plotting.plot_anat(haxby_anat_filename, title="plot_anat")
+from nilearn.plotting import plot_anat
 
-plotting.show()
+plot_anat(haxby_anat_filename, title="plot_anat")
+
+show()
 
 # %%
 # Plotting ROIs (here the mask): `plot_roi`
@@ -124,12 +130,12 @@ plotting.show()
 #
 # Visualizing ventral temporal region image from haxby dataset overlaid on
 # subject specific anatomical image
-# with coordinates positioned automatically on region of interest (roi)
-plotting.plot_roi(
-    haxby_mask_filename, bg_img=haxby_anat_filename, title="plot_roi"
-)
+# with coordinates positioned automatically on region of interest (roi).
+from nilearn.plotting import plot_roi
 
-plotting.show()
+plot_roi(haxby_mask_filename, bg_img=haxby_anat_filename, title="plot_roi")
+
+show()
 
 # %%
 # Plotting :term:`EPI` image: `plot_epi`
@@ -138,14 +144,16 @@ plotting.show()
 # Import image processing tool
 from nilearn import image
 
-# Compute the voxel_wise mean of functional images across time.
-# Basically reducing the functional image from 4D to 3D
+# Compute the voxel_wise mean of functional images across time,
+# basically reducing the functional image from 4D to 3D.
+from nilearn.plotting import plot_epi
+
 mean_haxby_img = image.mean_img(haxby_func_filename)
 
 # Visualizing mean image (3D)
-plotting.plot_epi(mean_haxby_img, title="plot_epi")
+plot_epi(mean_haxby_img, title="plot_epi")
 
-plotting.show()
+show()
 
 # %%
 # Thresholding plots
@@ -157,14 +165,14 @@ plotting.show()
 # Plotting without threshold
 # ``````````````````````````
 
-plotting.plot_stat_map(
+plot_stat_map(
     stat_img,
     display_mode="ortho",
     cut_coords=[36, -27, 60],
     title="No plotting threshold",
 )
 
-plotting.show()
+show()
 
 # %%
 # Plotting threshold set to 1
@@ -173,7 +181,7 @@ plotting.show()
 # When plotting threshold is set to 1, the values between -1 and 1
 # are masked in the plot.
 
-plotting.plot_stat_map(
+plot_stat_map(
     stat_img,
     threshold=1,
     display_mode="ortho",
@@ -181,7 +189,7 @@ plotting.plot_stat_map(
     title="plotting threshold=1",
 )
 
-plotting.show()
+show()
 
 # %%
 # Plotting threshold set to 1 with ``vmin=0``
@@ -189,7 +197,7 @@ plotting.show()
 #
 # Setting ``vmin=0``, it is possible to plot only positive image values.
 
-plotting.plot_stat_map(
+plot_stat_map(
     stat_img,
     threshold=1,
     cmap="inferno",
@@ -199,7 +207,7 @@ plotting.plot_stat_map(
     vmin=0,
 )
 
-plotting.show()
+show()
 
 # %%
 # Plotting threshold set to 1 with ``vmax=0``
@@ -207,7 +215,7 @@ plotting.show()
 #
 # Setting ``vmax=0``, it is possible to plot only negative image values.
 
-plotting.plot_stat_map(
+plot_stat_map(
     stat_img,
     threshold=1,
     cmap="inferno",
@@ -217,7 +225,7 @@ plotting.plot_stat_map(
     vmax=0,
 )
 
-plotting.show()
+show()
 
 # %%
 # Visualizing without a colorbar on the right side
@@ -226,7 +234,7 @@ plotting.show()
 # The argument ``colorbar`` should be set to ``False`` to show plots without
 # a colorbar on the right side.
 
-plotting.plot_stat_map(
+plot_stat_map(
     stat_img,
     display_mode="ortho",
     cut_coords=[36, -27, 60],
@@ -234,6 +242,6 @@ plotting.plot_stat_map(
     title="no colorbar",
 )
 
-plotting.show()
+show()
 
 # sphinx_gallery_dummy_images=11
