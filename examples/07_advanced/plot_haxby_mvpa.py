@@ -22,8 +22,8 @@ The example is divided into the following sections:
 """
 
 # %%
-# 1. Load Haxby dataset
-# ---------------------
+# Load Haxby dataset
+# ------------------
 # For a complete picture of this dataset,
 # please refer to the
 # :ref:`dataset description <haxby_dataset>`.
@@ -64,8 +64,8 @@ print(f"Runs (`groups`): {np.unique(run)}")
 
 
 # %%
-# 2. Define our own MVPA estimator for use in SearchLight
-# -------------------------------------------------------
+# Define our own MVPA estimator for use in SearchLight
+# ----------------------------------------------------
 # We now define a custom Multi-Voxel Pattern Analysis (:term:`MVPA`)
 # estimator to compute within each :term:`SearchLight`.
 # In this case, we use the Haxby-style correlation contrast as
@@ -192,9 +192,8 @@ class CorrelationMVPA(BaseEstimator):
 
 
 # %%
-# 3. Perform searchlight analysis
-# --------------------------------
-#
+# Perform searchlight analysis
+# ----------------------------
 # Using the ``CorrelationMVPA`` estimator defined above,
 # we perform a :term:`Searchlight` analysis.
 #
@@ -218,8 +217,8 @@ searchlight.fit(imgs=fmri_img, y=y, groups=run)
 scores_img = searchlight.scores_img_
 
 # %%
-# 4. Visualize the searchlight scores
-# -----------------------------------
+# Visualize the searchlight scores
+# --------------------------------
 # We can now visualize the :term:`Searchlight` scores calculated
 # using our custom ``CorrelationMVPA``.
 #
@@ -235,9 +234,16 @@ plot_stat_map(
     bg_img=mean_fmri,
     title="Searchlight scores (face vs house)",
     threshold=0.15,
+    vmax=1.0,
     black_bg=True,
     figure=plt.figure(figsize=(6, 4)),
     symmetric_cbar=True,
 )
 
 show()
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::
