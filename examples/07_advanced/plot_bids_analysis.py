@@ -20,8 +20,8 @@ More specifically, this example will be divided into three sections:
 """
 
 # %%
-# 1. Fetch example :term:`BIDS` dataset
-# -------------------------------------
+# Fetch example :term:`BIDS` dataset
+# ----------------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative
 # purposes. It contains only the necessary
 # information for each subject to run a statistical analysis using Nilearn.
@@ -32,7 +32,7 @@ More specifically, this example will be divided into three sections:
 # files ``preproc.nii`` and their accompanying ``confounds.tsv`` files.
 #
 # For more information on this dataset, see
-# the :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`
+# the :func:`~nilearn.datasets.fetch_language_localizer_demo_dataset`
 # description.
 #
 from nilearn.datasets import fetch_language_localizer_demo_dataset
@@ -44,8 +44,8 @@ data = fetch_language_localizer_demo_dataset()
 print(data.data_dir)
 
 # %%
-# 2. Automatically extract ``FirstLevelModel`` objects
-# ----------------------------------------------------
+# Automatically extract ``FirstLevelModel`` objects
+# -------------------------------------------------
 # Since :term:`BIDS` datasets follow a known file structure,
 # we can automatically infer the task structure for a given ``task_label``
 # using :func:`~nilearn.glm.first_level.first_level_from_bids`.
@@ -85,7 +85,7 @@ task_label = "languagelocalizer"
 
 # %%
 # First, we confirm that each ``model_run_imgs`` list corresponds
-#  to one subject, as expected.
+# to one subject, as expected.
 from pathlib import Path
 
 for _subject_idx, subject_runs in enumerate(models_run_imgs[:2]):
@@ -109,6 +109,13 @@ for _subject_idx, subject_confounds in enumerate(models_confounds[:1]):
 for _subject_idx, subject_events in enumerate(models_events[:1]):
     for events in subject_events:
         print(events["trial_type"].value_counts())
+
+# %%
+# For a single subject, we can visualize their event structure
+# using :func:`nilearn.plotting.plot_event`.
+from nilearn.plotting import plot_event
+
+plot_event(events)
 
 # %%
 # First-level model estimation
@@ -166,8 +173,8 @@ fig.suptitle("Subjects's z_map language network (unc. p<0.001)")
 plotting.show()
 
 # %%
-# 3. Second-level model estimation
-# --------------------------------
+# Second-level model estimation
+# -----------------------------
 # Now, we just have to provide the list of
 # fitted :class:`~nilearn.glm.first_level.FirstLevelModel` objects
 # to the :class:`~nilearn.glm.second_level.SecondLevelModel` object
@@ -201,7 +208,6 @@ plotting.plot_glass_brain(
     threshold=p001_unc,
     title="Group language network (unc. p<0.001)",
     plot_abs=False,
-    display_mode="x",
     figure=plt.figure(figsize=(5, 4)),
 )
 plotting.show()
