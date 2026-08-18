@@ -56,7 +56,6 @@ haxby_dataset = datasets.fetch_haxby()
 print(
     "First subject anatomical nifti image (3D) is located "
     f"at: {haxby_dataset.anat[0]}"
-)
 print(
     "First subject functional nifti image (4D) is located "
     f"at: {haxby_dataset.func[0]}"
@@ -172,7 +171,7 @@ log_p_values_img = new_img_like(fmri_img, log_p_values)
 
 # Now, we visualize the log p-values image on the functional mean image as
 # a background with coordinates given manually and a colorbar on the right side
-# of the plot (by default, colorbar=True)
+# of the plot (by default, colorbar=True).
 plot_stat_map(
     log_p_values_img,
     mean_img,
@@ -216,6 +215,12 @@ plot_stat_map(
     colorbar=True,
     cut_coords=cut_coords,
     cmap="inferno",
+plot_stat_map(
+log_p_values_img,
+mean_img,
+title="Thresholded p-values",
+cut_coords=cut_coords,
+cmap="inferno",
 )
 
 # %%
@@ -226,7 +231,7 @@ plot_stat_map(
 
 # %%
 # Binarization and Intersection with Ventral Temporal (VT) mask
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We now want to restrict our investigation to the VT area. The corresponding
 # spatial mask is provided in ``haxby_dataset.mask_vt``. We want to compute the
 # intersection of this provided mask with our self-computed mask.
@@ -237,7 +242,7 @@ bin_p_values = log_p_values != 0
 mask_vt_filename = haxby_dataset.mask_vt[0]
 
 # The first step is to load VT mask and at the same time to convert the
-# datatype from "number" to "boolean"
+# datatype from "number" to "boolean".
 from nilearn.image import load_img
 
 vt = get_data(load_img(mask_vt_filename)).astype(bool)
@@ -297,6 +302,12 @@ plot_roi(
     title="Dilated mask",
     cut_coords=cut_coords,
     annotate=False,
+# Visualization goes here
+plot_roi(
+dil_bin_p_values_and_vt_img,
+mean_img,
+title="Dilated mask",
+cut_coords=cut_coords,
 )
 # %%
 # Finally, we end with splitting the connected ROIs to two hemispheres into two
@@ -332,6 +343,7 @@ plot_roi(second_roi_img, mean_img, title="Connected components: second ROI")
 
 # %%
 # Use the new ROIs to extract data maps in both ROIs
+# --------------------------------------------------
 # We extract data from ROIs using Nilearn's
 # :class:`~nilearn.maskers.NiftiLabelsMasker`
 from nilearn.maskers import NiftiLabelsMasker
@@ -351,7 +363,7 @@ labels_img = new_img_like(fmri_img, labels)
 masker = NiftiLabelsMasker(
     labels_img,
     resampling_target=None,
-    standardize=False,
+    standardize=None,
     detrend=False,
     verbose=1,
 )
