@@ -212,7 +212,6 @@ searchlight = SearchLight(
     process_mask_img=mask_img,
     radius=5.6,
     n_jobs=2,
-    verbose=0,
     estimator=CorrelationMVPA(labels=("face", "house")),
 )
 searchlight.fit(imgs=fmri_img, y=y, groups=run)
