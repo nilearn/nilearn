@@ -20,6 +20,14 @@ NEW
 Fixes
 -----
 
+- :bdg-success:`API` Fix Fix mismatch between parameters in several functions or methods and their docstrings. Also adds an ``interpolation`` parameter to :func:`~.datasets.fetch_neurovault` that was documented but missing from the API (:gh:`6482` by `Rémi Gau`_).
+
+- :bdg-primary:`Doc` Fix docstrings that name a parameter which is not in the signature (:func:`~plotting.plot_img_comparison`, :meth:`~plotting.displays.PlotlySurfaceFigure.add_contours` and seven private helpers), the documented default of ``two_sided_test`` in ``calculate_tfce``, and the sentence stating that a source image is resampled to match itself (:gh:`6469` by `Anton Karpov`_).
+
+- :bdg-dark:`Code` Fix the masked atlas returned by :func:`~regions.img_to_signals_labels` and exposed as ``NiftiLabelsMasker.region_atlas_`` being cast to ``int8``, which wrapped every label above 127 around and aliased label 256 onto the background; atlases such as Schaefer-400 label well past that (:gh:`6447` by `Andrew Chen`_).
+
+- :bdg-info:`Plotting` Fix Brainsprite figures becoming blank or incorrect when multiple masker reports are embedded in the same HTML document by giving each viewer unique DOM element IDs (:gh:`6419` by `Mohammad Sadeghi Hardengi`_).
+
 - :bdg-dark:`Code` Fix :func:`~regions.connected_label_regions` attaching the names given in ``labels`` to the wrong regions, because the sorted labels from ``np.unique`` were put through a ``set`` before being zipped against the names; contiguous labels happened to survive that, but the sparse labels real atlases use did not (:gh:`6445` by `Andrew Chen`_).
 
 - :bdg-dark:`Code` Fix :class:`~maskers.NiftiMapsMasker` silently extracting a zero signal for a map whose weights are negative, because ``_trim_maps`` decides which maps to keep sign-agnostically with ``abs()`` but then builds their support with ``> 0``, so a kept negative map covered no voxel; this matters for the signed ICA and statistical maps the masker targets (:gh:`6443` by `Andrew Chen`_).
@@ -41,6 +49,10 @@ Fixes
 - :bdg-dark:`Code` Allow :func:`~glm.first_level.first_level_from_bids` to work with BIDS dataset that have a single events file in the root of the dataset for all runs (:gh:`6278` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` Add return type annotations and :obj:`~typing.overload` signatures to :func:`~connectome.vec_to_sym_matrix`, :func:`~connectome.group_sparse_covariance`, and :func:`~reporting.get_clusters_table` (:gh:`6368` by `Rémi Gau`_).
+
+- :bdg-secondary:`Maint` Move the ``fill_doc`` checks out of ``maint_tools/check_docstrings.py`` into a new ``maint_tools/check_filldoc.py`` that fails the build instead of only printing, and add the 37 missing ``@fill_doc`` decorators it found; without the decorator the raw ``%(name)s`` placeholder stays in the docstring and is shown by ``help()`` and by editor tooltips (:gh:`6473` by `Anton Karpov`_).
+
+- :bdg-primary:`Doc` Fix eleven docstrings naming a parameter the function does not take, including the typos ``lispchitz_constant`` and ``flag_tedata``, and a pair of neighboring helpers documenting each other's parameter names (:gh:`6474` by `Anton Karpov`_).
 
 
 Enhancements

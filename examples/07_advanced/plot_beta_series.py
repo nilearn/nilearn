@@ -167,10 +167,10 @@ def lss_transformer(events_df, row_number):
 
     Returns
     -------
-    df : pandas.data frame
+    df : pandas.DataFrame
         Update events information,
         with the selected trial's trial type isolated.
-    trial_name : str
+    trial_name : :obj:`str`
         Name of the isolated trial's trial type.
     """
     events_df = events_df.copy()

@@ -107,7 +107,7 @@ show()
 # by generating a masker report.
 # This can be done using
 # the :meth:`~nilearn.maskers.NiftiMasker.generate_report` method.
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 
 # %%
 #
@@ -155,7 +155,7 @@ show()
 
 masker = NiftiMasker(mask_strategy="epi")
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
@@ -172,7 +172,7 @@ report
 
 masker = NiftiMasker(mask_strategy="epi", mask_args={"opening": 10})
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
@@ -193,7 +193,7 @@ masker = NiftiMasker(
     mask_args={"upper_cutoff": 0.9, "lower_cutoff": 0.8, "opening": False},
 )
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
@@ -209,7 +209,7 @@ report
 
 masker = NiftiMasker(mask_strategy="whole-brain-template")
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
@@ -230,7 +230,7 @@ import numpy as np
 
 masker = NiftiMasker(mask_strategy="epi", target_affine=np.eye(3) * 8)
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%

@@ -435,9 +435,9 @@ class PolyData:
 
         Returns
         -------
-        vmin : float
+        vmin : :obj:`float`
 
-        vmax : float
+        vmax : :obj:`float`
         """
         vmin = min(x.min() for x in self.parts.values())
         vmax = max(x.max() for x in self.parts.values())
@@ -461,7 +461,7 @@ class PolyData:
         dim : int
             Dimensions the data should have.
 
-        var_name : str, default="img"
+        var_name : :obj:`str`, default="img"
             Name of the variable to include in the error message.
 
         Returns
@@ -2241,7 +2241,7 @@ def find_surface_clusters(
     mask : (n_vertices,) array_like of bool
         Boolean mask, True where vertex is part of a cluster.
 
-    offset: int, default=1
+    offset : int, default=1
         Base value to use to index the different clusters.
 
     Returns
