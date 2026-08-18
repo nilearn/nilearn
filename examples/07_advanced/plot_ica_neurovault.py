@@ -166,6 +166,8 @@ for index, (ic_map, ic_terms) in enumerate(
 
     plot_stat_map(ic_img, threshold=ic_threshold, colorbar=False, title=title)
 
+show()
+
 # %%
 # As we can see, some of the components capture cognitive or neurological
 # maps, while other capture noise in the database. More data, better
