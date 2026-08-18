@@ -21,7 +21,8 @@ NewSegment) to create :term:`VBM` maps, which we study here.
 Predictive modeling analysis: VBM bio-markers of aging?
 -------------------------------------------------------
 
-We run a Support Vector Regression (SVR) and  :term:`ANOVA` using the nilearn `DecoderRegressor` to predict age from the VBM data.
+We run a Support Vector Regression (SVR) and  :term:`ANOVA`
+using the nilearn `DecoderRegressor` to predict age from the VBM data.
 We use a subset of the subjects from the OASIS dataset
 to limit the memory usage.
 
