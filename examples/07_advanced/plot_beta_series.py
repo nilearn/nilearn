@@ -160,7 +160,7 @@ def lss_transformer(events_df, row_number):
 
     Parameters
     ----------
-    df : pandas.data frame
+    df : pandas.DataFrame
         BIDS-compliant events file information.
     row_number : int
         Row number in the data frame.
