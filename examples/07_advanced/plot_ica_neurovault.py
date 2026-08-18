@@ -95,7 +95,7 @@ is_usable = np.ones((len(images),), dtype=bool)
 
 for index, image_path in enumerate(images):
     # load image and remove nan and inf values.
-    # applying smooth_img to an image with FWHM=None simply cleans up
+    # applying smooth_img to an image with ``FWHM=None`` simply cleans up
     # non-finite values but otherwise doesn't modify the image.
     image = smooth_img(image_path, fwhm=None)
     try:
@@ -133,7 +133,7 @@ term_weights = term_weights[is_usable, :]
 
 from sklearn.decomposition import FastICA
 
-n_components = 5
+n_components = 3
 fast_ica = FastICA(n_components=n_components, random_state=0)
 ica_maps = fast_ica.fit_transform(X.T).T
 
