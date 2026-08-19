@@ -3501,9 +3501,9 @@ def check_masker_transform_resampling(estimator_orig) -> None:
     input_shape = (28, 29, 30, n_sample)
     imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
 
-    imgs_with_different_fov = Nifti1Image(
-        _rng().random((20, 21, 22)), _affine_eye()
-    )
+    imgs_with_different_fov = [
+        Nifti1Image(_rng().random((20, 21, 22)), _affine_eye())
+    ]
 
     mask_shape = (15, 16, 17)
     mask_img = Nifti1Image(np.ones(mask_shape), _affine_eye())
