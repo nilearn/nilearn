@@ -7,7 +7,7 @@ from scipy.ndimage import gaussian_filter
 from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
 
-from ..utils import _rng
+from .._utils import _rng
 
 
 class BaseBenchMarkTFCE:
