@@ -523,6 +523,36 @@ def test_nifti_labels_masker_resampling_to_labels(
     assert fmri11_img_r.shape == ((*masker.labels_img_.shape[:3], length))
 
 
+@pytest.mark.ai_generated
+def test_nifti_labels_masker_resampling_list_to_labels(affine_eye):
+    """Test resampling a list of 3D images to labels."""
+    labels = np.zeros((2, 2, 2), dtype=np.int8)
+    labels[1, ...] = 1
+    labels_affine = affine_eye.copy()
+    labels_affine[:3, 3] = 1
+    labels_img = Nifti1Image(labels, labels_affine)
+
+    imgs = []
+    for value in (1.0, 2.0):
+        data = np.full((4, 4, 4), value)
+        data[0, 0, :2] = (value + 1, value + 2)
+        imgs.append(Nifti1Image(data, affine_eye))
+
+    masker = NiftiLabelsMasker(
+        labels_img,
+        resampling_target="labels",
+        standardize=None,
+    )
+
+    with pytest.warns(
+        UserWarning, match="Resampling images at transform time"
+    ):
+        signals = masker.fit_transform(imgs)
+
+    assert signals.shape == (2, 1)
+    assert_almost_equal(signals, [[1.0], [2.0]])
+
+
 def test_nifti_labels_masker_resampling_to_clipped_labels(
     affine_eye, shape_3d_default, n_regions, length
 ):
