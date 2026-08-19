@@ -155,22 +155,24 @@ log_p_values = -np.log10(p_values)
 log_p_values[np.isnan(log_p_values)] = 0.0
 log_p_values[log_p_values > 10.0] = 10.0
 
+#  %%
+# Visualize statistical p-values
+# ..............................
 # Before visualizing, we transform the computed p-values to a Nifti-like image
 # using function `new_img_like` from nilearn.
-from nilearn.image import new_img_like
-
-# Visualize statistical p-values using plotting function `plot_stat_map`.
-from nilearn.plotting import plot_stat_map
-
 # First argument being a reference image
 # and second argument should be p-values data
 # to convert to a new image as output.
 # This new image will have same header information as the reference image.
+from nilearn.image import new_img_like
+
 log_p_values_img = new_img_like(fmri_img, log_p_values)
 
 # Now, we visualize the log p-values image on the functional mean image as
 # a background with coordinates given manually and a colorbar on the right side
 # of the plot (by default, colorbar=True).
+from nilearn.plotting import plot_stat_map
+
 plot_stat_map(
     log_p_values_img,
     mean_img,
@@ -322,6 +324,7 @@ first_roi_data = (labels == 5).astype(np.int32)
 # Similarly, second roi data is assigned as integer 2
 second_roi_data = (labels == 3).astype(np.int32)
 
+# %%
 # Visualizing the connected components
 # ....................................
 # First, we create a Nifti image type from first roi data in a array.
