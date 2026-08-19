@@ -191,8 +191,9 @@ show()
 # feature selection in multi-class settings.
 
 # %%
-# Build a mask from this statistical map (Improving the quality of the mask)
-# --------------------------------------------------------------------------
+# Build a mask
+# ------------
+#
 # Thresholding
 # ^^^^^^^^^^^^
 # We build the t-map to have better representation of voxels
