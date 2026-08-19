@@ -66,6 +66,7 @@ Some other past or present contributors are:
 * `Andrew Chen`_
 * `Andrés Hoyos Idrobo`_: Rakuten, France
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
+* `Anton Karpov`_
 * `Anupriya Kumari`_: Indian Institute of Technology, Roorkee, India
 * `Ariel Rokem`_: University of Washington, Psychology, Seattle, Washington, 98107, USA
 * `Arthur Mensch`_

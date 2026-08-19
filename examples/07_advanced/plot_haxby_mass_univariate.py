@@ -1,26 +1,38 @@
 """
-Massively univariate analysis of face vs house recognition
-==========================================================
+Massively univariate analysis of a visual task from the Haxby dataset
+=====================================================================
 
-A permuted Ordinary Least Squares algorithm is run at each voxel in
-order to determine whether or not it behaves differently under a "face
-viewing" condition and a "house viewing" condition.
-We consider the mean image per run and per condition.
-Otherwise, the observations cannot be exchanged at random because
-a time dependence exists between observations within a same run
+To determine whether or not a voxel responds differently under different
+conditions of a visual task, we use a permuted
+Ordinary Least Squares
+(:sklearn:`OLS <modules/linear_model.html#ordinary-least-squares>`)
+analysis,
+run at each voxel with :func:`~nilearn.mass_univariate.permuted_ols`.
+As in many other examples, we compare two visual categories from the
+Haxby dataset (:footcite:t:`Haxby2001`): "face" and "house" images.
+
+Note that we consider the mean image per condition
+separately for each run;
+otherwise, the observations cannot be exchanged at random because
+a time dependence exists between observations within the same run
 (see :footcite:t:`Winkler2014` for more detailed explanations).
 
 The example shows the small differences that exist between
-Bonferroni-corrected p-values and family-wise corrected p-values obtained
-from a permutation test combined
-with a max-type procedure (:footcite:t:`Anderson2001`).
-Bonferroni correction is a bit conservative, as revealed by the presence of
-a few false negative.
+Bonferroni-corrected (:term:`FPR correction`) p-values computed using an
+F-test in scikit-learn with
+:func:`~sklearn.feature_selection.f_regression` and
+family-wise corrected (:term:`FWER correction`) p-values obtained with
+with :func:`~nilearn.mass_univariate.permuted_ols` ; i.e.,
+from the permutation test combined with a max-type procedure,
+following the approach of :footcite:t:`Anderson2001`.
+
+We find that Bonferroni correction is a bit more conservative,
+as revealed by the higher detection rate.
 """
 
 # %%
-# Load Haxby dataset
-# ------------------
+# Load one subject from the Haxby dataset
+# ---------------------------------------
 from nilearn import datasets, image
 from nilearn.plotting import plot_stat_map, show
 
@@ -31,24 +43,42 @@ print(f"Mask nifti image (3D) is located at: {haxby_dataset.mask}")
 print(f"Functional nifti image (4D) is located at: {haxby_dataset.func[0]}")
 
 # %%
-# Restrict to faces and houses
-# ----------------------------
+# Restrict to "face" and "house" conditions
+# -----------------------------------------
+# Next, we map all visual categories to numerical labels
+# using :class:`~sklearn.preprocessing.LabelEncoder`.
+# This is necessary since both
+# :func:`~nilearn.mass_univariate.permuted_ols` and
+# :func:`~sklearn.feature_selection.f_regression`
+# require that string labels are
+# encoded as integers.
+#
+# Then, we subset to only  include "face" and "house"
+# task categories.
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 
-labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
-conditions = labels["labels"]
-categories = conditions.unique()
-conditions_encoded = np.zeros_like(conditions)
-for c, category in enumerate(categories):
-    conditions_encoded[conditions == category] = c
-runs = labels["chunks"]
-condition_mask = conditions.isin(["face", "house"])
+df = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
+df = df.rename(columns={"chunks": "runs"})
+
+le = LabelEncoder().fit(df["labels"])
+categories = le.classes_
+conditions_encoded = le.transform(df["labels"])
+
+# Find and subset to timepoints where either "face"
+# or "house" images are shown.
+conditions_of_interest = ["face", "house"]
+condition_mask = df["labels"].isin(conditions_of_interest)
 conditions_encoded = conditions_encoded[condition_mask]
+masked_df = df[condition_mask].reset_index()
 
 # %%
-# Mask data
-# ---------
+# Mask data and average per run and per condition
+# -----------------------------------------------
+# We consider the mean image per condition separately for each run.
+# Otherwise, the observations cannot be exchanged at random because
+# a time dependence exists between observations within the same run.
 from nilearn.image import index_img
 from nilearn.maskers import NiftiMasker
 
@@ -61,41 +91,39 @@ nifti_masker = NiftiMasker(
     memory_level=1,
     verbose=1,
 )
+# Take only the :term:`fMRI` volumes in the ``condition_mask``,
+# and extract their voxelwise-values using ``NiftiMasker``.
 func_filename = haxby_dataset.func[0]
 func_reduced = index_img(func_filename, condition_mask)
 fmri_masked = nifti_masker.fit_transform(func_reduced)
 
-# We consider the mean image per run and per condition.
-# Otherwise, the observations cannot be exchanged at random because
-# a time dependence exists between observations within a same run.
-n_runs = np.unique(runs).size
-conditions_per_run = 2
-grouped_fmri_masked = np.empty(
-    (conditions_per_run * n_runs, fmri_masked.shape[1])
-)
-grouped_conditions_encoded = np.empty((conditions_per_run * n_runs, 1))
+n_runs = masked_df["runs"].unique().size
+conditions_per_run = len(conditions_of_interest)
+
+grouped_fmri_masked = []
+grouped_conditions_encoded = []
 
 for s in range(n_runs):
-    run_mask = runs[condition_mask] == s
-    run_house_mask = np.logical_and(
-        run_mask, conditions[condition_mask] == "house"
-    )
-    run_face_mask = np.logical_and(
-        run_mask, conditions[condition_mask] == "face"
-    )
-    grouped_fmri_masked[2 * s] = fmri_masked[run_house_mask].mean(0)
-    grouped_fmri_masked[2 * s + 1] = fmri_masked[run_face_mask].mean(0)
-    grouped_conditions_encoded[2 * s] = conditions_encoded[run_house_mask][0]
-    grouped_conditions_encoded[2 * s + 1] = conditions_encoded[run_face_mask][
-        0
-    ]
+    # Find images within this run
+    run_subset = masked_df.loc[masked_df["runs"] == s]
+
+    for condition in conditions_of_interest:
+        # Identify indices for each condition of interest
+        # and take the average of the associated fMRI volumes.
+        indices = run_subset.loc[run_subset["labels"] == condition].index
+        grouped_fmri_masked.append(fmri_masked[indices].mean(axis=0))
+        grouped_conditions_encoded.append(le.transform([condition]))
+
+grouped_fmri_masked = np.asarray(grouped_fmri_masked)
+grouped_conditions_encoded = np.asarray(grouped_conditions_encoded)
 
 # %%
 # Perform massively univariate analysis with permuted OLS
 # -------------------------------------------------------
 #
-# We use a two-sided t-test to compute p-values, but we keep trace of the
-# effect sign to add it back at the end and thus observe the signed effect
+# We use a two-sided t-test to compute p-values,
+# but we keep the trace of the effect sign to add it back
+# at the end and thus observe the signed effect
 from nilearn.mass_univariate import permuted_ols
 
 # Note that an intercept as a covariate is used by default
@@ -115,9 +143,19 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 )
 
 # %%
-# scikit-learn F-scores for comparison
+# Calculate scikit-learn F-scores, for comparison
+# -----------------------------------------------
 #
-# F-test does not allow to observe the effect sign (pure two-sided test)
+# The F-test quantifies the strength of linear dependencies between
+# the beta maps and the occurrence of stimuli, at the voxel level.
+# Assuming that no such effect exists,
+# it follows a Fisher distribution,
+# which yields p-values that can be used to assert significance.
+# Note however that the F-test considers voxels in isolation
+# and thus misses effects distributed across voxels.
+# Also note that the F-test does not allow us to observe
+# the effect sign (pure two-sided test).
+
 from sklearn.feature_selection import f_regression
 
 # f_regression implicitly adds intercept
@@ -125,29 +163,41 @@ _, pvals_bonferroni = f_regression(
     grouped_fmri_masked,
     grouped_conditions_encoded.ravel(),
 )
+
+# calculate the negative log of the p-values
+# for equivalent visualization with
+# :func:`~nilearn.mass_univariate.permuted_ols`
 pvals_bonferroni *= fmri_masked.shape[1]
 pvals_bonferroni[np.isnan(pvals_bonferroni)] = 1
 pvals_bonferroni[pvals_bonferroni > 1] = 1
 neg_log_pvals_bonferroni = -np.log10(pvals_bonferroni)
+
 neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_bonferroni
 )
 
 # %%
-# Visualization
-# -------------
+# Visualize the results
+# ---------------------
+#
+# Since we are plotting negative log p-values and
+# using a threshold equal to 1,
+# it corresponds to corrected p-values lower than 10%,
+# meaning that there is less than 10% probability to
+# make a single false discovery
+# (i.e., a 90% chance that we make no false discovery at all).
+
 
 from nilearn.image import get_data
 
 # Use the fMRI mean image as a surrogate of anatomical data
 mean_fmri_img = image.mean_img(func_filename)
 
-threshold = -np.log10(0.1)  # 10% corrected
+threshold = 1  # 10% corrected
 
 vmax = min(signed_neg_log_pvals.max(), neg_log_pvals_bonferroni.max())
 
 # Plot thresholded p-values map corresponding to F-scores
-
 neg_log_pvals_bonferroni_data = get_data(neg_log_pvals_bonferroni_unmasked)
 n_detections = (neg_log_pvals_bonferroni_data > threshold).sum()
 title = (

@@ -56,7 +56,7 @@ def assert_memory_less_than(
     memory_limit : int
         The expected memory limit in MiB.
 
-    tolerance : float
+    tolerance : :obj:`float`
         As memory_profiler results have some variability, this adds some
         tolerance around memory_limit. Accepted values are in range [0.0, 1.0].
 
@@ -115,22 +115,22 @@ def write_imgs_to_path(
         Several Nifti images. Every format understood by nibabel.save is
         accepted.
 
-    file_path: pathlib.Path
+    file_path : pathlib.Path
         Output directory
 
-    create_files : bool
+    create_files : :obj:`bool`
         If True, imgs are written on disk and filenames are returned. If
         False, nothing is written, and imgs is returned as output. This is
         useful to test the two cases (filename / Nifti1Image) in the same
         loop.
 
-    use_wildcards : bool
+    use_wildcards : :obj:`bool`
         If True, and create_files is True, imgs are written on disk and a
         matching glob is returned.
 
     Returns
     -------
-    filenames : string or list of strings
+    filenames : :obj:`str` or list of strings
         Filename(s) where input images have been written. If a single image
         has been given as input, a single string is returned. Otherwise, a
         list of string is returned.
@@ -185,7 +185,7 @@ def skip_if_running_tests(msg="") -> None:
 
     Parameters
     ----------
-    msg : string, default=""
+    msg : :obj:`str`, default=""
         The message issued when a test is skipped.
 
     """

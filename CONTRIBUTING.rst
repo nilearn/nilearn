@@ -604,21 +604,21 @@ This is implemented via a pre-commit hook.
 
 .. _pre_commit:
 
-Pre-commit
-----------
+Pre-commit/Prek
+---------------
 
-We use `pre-commit <https://pre-commit.com/>`__
+We use `prek <https://prek.j178.dev/>`__
 to run a set of linters and autoformatters on the codebase.
 
-To install pre-commit, run:
+To install prek, run:
 
 .. code-block:: bash
 
-      pip install pre-commit
+      pip install prek
 
 .. note::
 
-      Pre-commit will already be installed if you installed
+      Prek will already be installed if you installed
       the ``dev`` or ``style`` developers dependencies of nilearn
       with::
 
@@ -632,9 +632,9 @@ Then run the following to install the pre-commit hooks:
 
 .. code-block:: bash
 
-      pre-commit install
+      prek install
 
-Pre-commit will then run all those hooks on the files you have staged for commit.
+Prek will then run all those hooks on the files you have staged for commit.
 Note that if some of those hooks fail you may have to edit some files and stage them again.
 
 Tests
@@ -931,12 +931,13 @@ The installed version will also reflect any changes you make to your code.
 
       pytest nilearn
 
-5. (optional) install `pre-commit <https://pre-commit.com/#usage>`_ hooks
+
+5. (optional) install `prek <https://prek.j178.dev>`_ hooks
    to run the linter and other checks before each commit:
 
 .. code-block:: bash
 
-      pre-commit install
+      prek install
 
 
 Contributing
@@ -970,7 +971,7 @@ Here are the key steps you need to go through to contribute code to ``nilearn``:
 
         ruff format <path_to_edited_file>
 
-    Note that if you installed pre-commit and the pre-commit hooks,
+    Note that if you installed prek and the pre-commit hooks,
     those commands will be run automatically before each commit.
 
 4. commit your changes on this branch (don't forget to write tests!)
