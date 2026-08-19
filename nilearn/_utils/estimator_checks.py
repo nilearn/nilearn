@@ -3501,7 +3501,7 @@ def check_masker_transform_resampling(estimator_orig) -> None:
     input_shape = (28, 29, 30, n_sample)
     imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
 
-    # using a list of images as regression test for #6497 
+    # using a list of images as regression test for #6497
     imgs_with_different_fov = [
         Nifti1Image(_rng().random((20, 21, 22)), _affine_eye())
     ]
