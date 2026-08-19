@@ -118,6 +118,7 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
     not is_kaleido_installed(),
     reason="This test is run only if kaleido is installed.",
 )
+@pytest.mark.single_process
 @pytest.mark.thread_unsafe
 def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
     """Test nilearn.plotting.surface.surf_plotting.plot_surf function with
@@ -1073,6 +1074,8 @@ def test_plot_surf_roi_default_arguments(
     # To avoid extra warnings
     if engine == "plotly":
         avg_method = None
+    else:
+        symmetric_cmap = None
 
     plot_surf_roi(
         surface_image_roi.mesh,

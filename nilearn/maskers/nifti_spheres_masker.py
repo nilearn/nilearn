@@ -57,10 +57,10 @@ def apply_mask_and_get_affinity(
         If a 3D niimg is provided, a singleton dimension will be added to
         the output to represent the single scan in the niimg.
 
-    radius : float
+    radius : :obj:`float`
         Indicates, in millimeters, the radius for the sphere around the seed.
 
-    allow_overlap : boolean
+    allow_overlap : :obj:`bool`
         If False, a ValueError is raised if VOIs overlap
 
     mask_img : Niimg-like object or None, default=None
@@ -176,10 +176,10 @@ def _iter_signals_from_spheres(
         If a 3D niimg is provided, a singleton dimension will be added to
         the output to represent the single scan in the niimg.
 
-    radius : float
+    radius : :obj:`float`
         Indicates, in millimeters, the radius for the sphere around the seed.
 
-    allow_overlap : boolean
+    allow_overlap : :obj:`bool`
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
 
@@ -402,7 +402,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        displays : list
+        displays : :obj:`list`
             A list of all displays to be rendered.
         """
         if not self._has_report_data():
@@ -417,8 +417,10 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             positions = [
                 np.round(
                     coord_transform(
-                        *seed,
-                        np.linalg.inv(img.affine),  # type: ignore[call-arg]
+                        seed[0],
+                        seed[1],
+                        seed[2],
+                        np.linalg.inv(img.affine),
                     )
                 ).astype(int)
                 for seed in seeds

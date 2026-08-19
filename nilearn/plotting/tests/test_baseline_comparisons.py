@@ -656,7 +656,7 @@ def test_plot_event_x_lim(rng):
 
 
 @pytest.fixture
-def matrix_to_plot(rng):
+def matrix_to_plot(rng) -> np.ndarray:
     """Return a random 50x50 matrix to plot."""
     return rng.random((50, 50)) * 10 - 5
 

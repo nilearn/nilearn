@@ -4,6 +4,7 @@ with OLS and permutation test.
 
 import time
 import warnings
+from typing import Literal, overload
 
 import joblib
 import numpy as np
@@ -28,6 +29,7 @@ from nilearn.mass_univariate._utils import (
 )
 
 
+@fill_doc
 def _permuted_ols_on_chunk(
     scores_original_data,
     tested_vars,
@@ -92,11 +94,11 @@ def _permuted_ols_on_chunk(
     n_perm_chunk : int, default=10000
         Number of permutations to be performed.
 
-    intercept_test : boolean, default=True
+    intercept_test : :obj:`bool`, default=True
         Change the permutation scheme (swap signs for intercept,
         switch labels otherwise). See :footcite:t:`Fisher1935`.
 
-    two_sided_test : boolean, default=True
+    two_sided_test : :obj:`bool`, default=True
         If True, performs an unsigned t-test. Both positive and negative
         effects are considered; the null hypothesis is that the effect is zero.
         If False, only positive effects are considered as relevant. The null
@@ -294,6 +296,43 @@ def _permuted_ols_on_chunk(
     )
 
 
+@overload
+def permuted_ols(
+    tested_vars,
+    target_vars,
+    confounding_vars=...,
+    model_intercept=...,
+    n_perm=...,
+    two_sided_test=...,
+    random_state=...,
+    n_jobs=...,
+    verbose=...,
+    masker=...,
+    tfce=...,
+    threshold=...,
+    output_type: Literal["dict"] = ...,
+) -> dict[str, np.ndarray]: ...
+
+
+@overload
+def permuted_ols(
+    tested_vars,
+    target_vars,
+    confounding_vars=...,
+    model_intercept=...,
+    n_perm=...,
+    two_sided_test=...,
+    random_state=...,
+    n_jobs=...,
+    verbose=...,
+    masker=...,
+    tfce=...,
+    threshold=...,
+    *,
+    output_type: Literal["legacy"],
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]: ...
+
+
 @fill_doc
 def permuted_ols(
     tested_vars,
@@ -309,7 +348,7 @@ def permuted_ols(
     tfce=False,
     threshold=None,
     output_type="dict",
-):
+) -> dict[str, np.ndarray] | tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Massively univariate group analysis with permuted OLS.
 
     Tested variates are independently fitted to target variates descriptors
@@ -734,7 +773,7 @@ def permuted_ols(
             return np.asarray([]), scores_original_data.T, np.asarray([])
 
         out = {"t": scores_original_data.T}
-        if tfce:
+        if tfce and tfce_original_data is not None:
             out["tfce"] = tfce_original_data.T
         return out
 

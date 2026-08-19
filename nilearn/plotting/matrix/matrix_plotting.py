@@ -370,7 +370,7 @@ def plot_design_matrix(
 
     Parameters
     ----------
-    design matrix : :class:`pandas.DataFrame` or \
+    design_matrix : :class:`pandas.DataFrame` or \
                     :obj:`str` or :obj:`pathlib.Path` to a TSV event file
         Describes a design matrix.
 

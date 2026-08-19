@@ -54,8 +54,8 @@ def _simu_img(tmp_path, trend, demean):
     # create random noise and a random mixture of confounds standardized
     # to zero mean and unit variance
     rng = _rng()
-    beta = rng.random((nx * ny * nz, X.shape[1]))
-    tseries_rand = scale(rng.random((nx * ny * nz, nt)), axis=1)
+    beta = rng.random(size=(nx * ny * nz, X.shape[1]))
+    tseries_rand = scale(rng.random(size=(nx * ny * nz, nt)), axis=1)
     # create the confound mixture
     tseries_conf = scale(np.matmul(beta, X.transpose()), axis=1)
 
@@ -90,7 +90,7 @@ def _simu_img(tmp_path, trend, demean):
     return img, mask_conf, mask_rand, test_confounds, sample_mask
 
 
-def _handle_non_steady(confounds):
+def _handle_non_steady(confounds) -> pd.DataFrame:
     """Simulate non steady state correctly while increase the length.
 
     - The first row is non-steady state,
@@ -110,7 +110,7 @@ def _handle_non_steady(confounds):
     )
 
 
-def _regression(confounds, tmp_path):
+def _regression(confounds, tmp_path) -> None:
     """Perform simple regression with NiftiMasker."""
     # Simulate data
     img, mask_conf, _, _, _ = _simu_img(tmp_path, trend=False, demean=False)
@@ -446,7 +446,7 @@ missing_params = ["trans_y", "trans_x_derivative1", "rot_z_power2"]
 missing_keywords = ["cosine", "global_signal"]
 
 
-def _remove_confounds(conf_file):
+def _remove_confounds(conf_file) -> None:
     legal_confounds = pd.read_csv(conf_file, delimiter="\t", encoding="utf-8")
     remove_columns = []
     for missing_kw in missing_keywords:
@@ -769,7 +769,7 @@ def test_sample_mask(
     reg, mask = load_confounds(regular_nii, strategy=("motion",))
     assert mask is None
 
-    # When no volumes needs removing (very liberal motion threshould)
+    # When no volumes needs removing (very liberal motion threshold)
     reg, mask = load_confounds(
         regular_nii, strategy=("motion", "scrub"), scrub=0, fd_threshold=4
     )

@@ -81,7 +81,7 @@ def _make_searchlight_test_data(frames):
 
 
 def define_cross_validation():
-    # Define cross validation
+    """Define cross validation."""
     cv = KFold(n_splits=4)
     n_jobs = 1
     return cv, n_jobs
@@ -101,6 +101,7 @@ def test_error_searchlight_no_mask():
 
 
 def test_searchlight_small_radius():
+    """Check that only one pixel is selected with a small radius."""
     frames = 30
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
@@ -122,6 +123,7 @@ def test_searchlight_small_radius():
 
 
 def test_searchlight_mask_far_from_signal(affine_eye):
+    """Check that no voxel is selected when process mask is far from signal."""
     frames = 30
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
@@ -143,6 +145,7 @@ def test_searchlight_mask_far_from_signal(affine_eye):
 
 
 def test_searchlight_medium_radius():
+    """Check that neighboring voxels are selected with a medium radius."""
     frames = 30
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
@@ -168,6 +171,7 @@ def test_searchlight_medium_radius():
 
 
 def test_searchlight_large_radius():
+    """Check that more voxels are selected with a large radius."""
     frames = 30
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
@@ -362,6 +366,7 @@ class _NoCVNoGroupsEstimator(BaseEstimator):
 
 
 def test_check_searchlight_estimator_class_not_instance_raises():
+    """Raise error when estimator is a class rather than an instance."""
     with pytest.raises(TypeError, match="must be an \\*instance\\*"):
         searchlight._check_searchlight_estimator(
             _ValidEstimator, scoring="accuracy", y=np.ones(5)
@@ -369,6 +374,8 @@ def test_check_searchlight_estimator_class_not_instance_raises():
 
 
 def test_check_searchlight_estimator_not_base_estimator_raises():
+    """Raise error when estimator does not inherit from BaseEstimator."""
+
     class _NotAnEstimator:
         def fit(self, X, y):  # noqa: ARG002
             return self
@@ -383,6 +390,7 @@ def test_check_searchlight_estimator_not_base_estimator_raises():
 
 
 def test_check_searchlight_estimator_y_none_no_decision_function_raises():
+    """Raise error when y=None and estimator has no decision_function."""
     with pytest.raises(TypeError, match="decision_function"):
         searchlight._check_searchlight_estimator(
             _ValidEstimator(), scoring="accuracy", y=None
@@ -390,12 +398,14 @@ def test_check_searchlight_estimator_y_none_no_decision_function_raises():
 
 
 def test_check_searchlight_estimator_y_none_with_decision_function_passes():
+    """Pass when y=None and estimator has a decision_function."""
     searchlight._check_searchlight_estimator(
         _EstimatorWithDecisionFunction(), scoring="accuracy", y=None
     )
 
 
 def test_check_searchlight_estimator_scoring_none_no_score_raises():
+    """Raise error when scoring=None and estimator has no score method."""
     with pytest.raises(TypeError, match="scoring=None"):
         searchlight._check_searchlight_estimator(
             _NoScoreEstimator(), scoring=None, y=np.ones(5)
@@ -403,6 +413,7 @@ def test_check_searchlight_estimator_scoring_none_no_score_raises():
 
 
 def test_check_searchlight_estimator_no_cv_no_score_raises():
+    """Raise error when a no-CV estimator has no score method."""
     with pytest.raises(
         TypeError, match="nilearn_searchlight_uses_cv is False"
     ):
@@ -412,6 +423,7 @@ def test_check_searchlight_estimator_no_cv_no_score_raises():
 
 
 def test_check_searchlight_estimator_no_cv_no_groups_in_fit_raises():
+    """Raise error when a no-CV estimator's fit has no groups parameter."""
     with pytest.raises(TypeError, match="'groups' parameter in fit"):
         searchlight._check_searchlight_estimator(
             _NoCVNoGroupsEstimator(), scoring="accuracy", y=np.ones(5)
@@ -419,12 +431,14 @@ def test_check_searchlight_estimator_no_cv_no_groups_in_fit_raises():
 
 
 def test_check_searchlight_estimator_no_cv_valid_passes():
+    """Pass when a valid no-CV estimator is provided."""
     searchlight._check_searchlight_estimator(
         _NoCVEstimator(), scoring="accuracy", y=np.ones(5)
     )
 
 
 def test_check_searchlight_estimator_regular_valid_passes():
+    """Pass when a valid regular (CV-based) estimator is provided."""
     searchlight._check_searchlight_estimator(
         _ValidEstimator(), scoring="accuracy", y=np.ones(5)
     )

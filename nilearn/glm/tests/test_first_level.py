@@ -86,7 +86,6 @@ else:
         check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -138,7 +137,6 @@ def test_glm_override_masker_param(shape_4d_default):
         )
 
 
-@pytest.mark.slow
 def test_glm_fit_valid_mask_img(shape_4d_default):
     """Run fit on FLM with different valid masks."""
     rk = 3
@@ -166,7 +164,6 @@ def test_glm_fit_valid_mask_img(shape_4d_default):
     assert isinstance(z1, Nifti1Image)
 
 
-@pytest.mark.slow
 def test_explicit_fixed_effects(shape_3d_default):
     """Test the fixed effects performed manually/explicitly."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3
@@ -226,7 +223,6 @@ def test_explicit_fixed_effects(shape_3d_default):
         compute_fixed_effects(contrasts, variance, mask, dofs=[100])
 
 
-@pytest.mark.slow
 def test_explicit_fixed_effects_without_mask(shape_3d_default):
     """Test the fixed effects performed manually/explicitly with no mask."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3
@@ -286,7 +282,6 @@ def test_high_level_glm_with_data(shape_3d_default):
     assert get_data(z_image).std() < 3.0
 
 
-@pytest.mark.slow
 def test_glm_target_shape_affine(shape_3d_default, affine_eye):
     """Check that target shape and affine are applied."""
     shapes, rk = [(*shape_3d_default, 5)], 3
@@ -316,7 +311,6 @@ def test_glm_target_shape_affine(shape_3d_default, affine_eye):
     assert z_image.shape == (10, 11, 12)
 
 
-@pytest.mark.slow
 def test_high_level_glm_with_data_with_mask(shape_3d_default):
     """Test GLM can be run with mask."""
     shapes, rk = [(*shape_3d_default, 5)], 3
@@ -378,7 +372,6 @@ def test_fmri_inputs_type_data_smoke(tmp_path, shape_4d_default):
     )
 
 
-@pytest.mark.slow
 def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
     """Test processing of FMRI inputs with path, str for design matrix."""
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
@@ -431,7 +424,6 @@ def test_high_level_glm_null_contrasts(shape_3d_default):
     np.testing.assert_almost_equal(get_data(z1), get_data(z2))
 
 
-@pytest.mark.slow
 def test_high_level_glm_different_design_matrices():
     """Test can estimate a contrast when design matrices are different."""
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
@@ -464,7 +456,6 @@ def test_high_level_glm_different_design_matrices():
     assert_almost_equal(get_data(z1) + get_data(z2), 2 * get_data(z_joint))
 
 
-@pytest.mark.slow
 def test_high_level_glm_different_design_matrices_formulas():
     """Test can estimate a contrast when design matrices are different."""
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
@@ -492,7 +483,6 @@ def test_high_level_glm_different_design_matrices_formulas():
         multi_run_model.compute_contrast(formula, output_type="effect_size")
 
 
-@pytest.mark.slow
 def test_compute_contrast_num_contrasts(shape_4d_default):
     """Check error when computing contrast with invalid contrast matrix."""
     shapes, rk = [shape_4d_default, shape_4d_default, shape_4d_default], 3
@@ -642,9 +632,8 @@ def test_glm_ar_estimates_errors(rng):
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("random_state", [3, np.random.RandomState(42)])
-def test_glm_random_state(random_state):
+def test_glm_random_state(rng, random_state):
     """Test that the random state is passed to the run_glm."""
-    rng = np.random.RandomState(42)
     n, p, q = 33, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
@@ -676,7 +665,6 @@ def test_scaling(rng):
     assert Y.std() > 1
 
 
-@pytest.mark.slow
 def test_fmri_inputs_shape(shape_4d_default):
     """Test different types of fit inputs.
 
@@ -724,7 +712,6 @@ def test_fmri_inputs_design_matrices_csv(tmp_path, shape_4d_default):
     )
 
 
-@pytest.mark.slow
 def test_fmri_inputs_events_type(tmp_path):
     """Check events can be dataframe or pathlike to CSV / TSV."""
     n_timepoints = 10
@@ -745,7 +732,6 @@ def test_fmri_inputs_events_type(tmp_path):
     )
 
 
-@pytest.mark.slow
 def test_fmri_inputs_with_confounds(tmp_path):
     """Test with confounds and, events."""
     n_timepoints = 10
@@ -906,7 +892,6 @@ def test_fmri_inputs_errors(shape_4d_default):
         FirstLevelModel(mask_img=None, t_r=1.0).fit(fmri_data, design_matrices)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "to_ignore",
     [{"slice_time_ref": 0.5}, {"t_r": 2}, {"hrf_model": "fir"}],
@@ -945,7 +930,6 @@ def test_parameter_attributes_ignored_with_design_matrix(
         )
 
 
-@pytest.mark.slow
 def test_fmri_inputs_errors_confounds(shape_4d_default):
     """Raise errors when incompatible inputs and confounds are passed."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -984,7 +968,6 @@ def test_fmri_inputs_errors_confounds(shape_4d_default):
         )
 
 
-@pytest.mark.slow
 def test_first_level_design_creation(shape_4d_default):
     """Check that design matrices equals one built 'manually'."""
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(
@@ -1061,7 +1044,6 @@ def test_first_level_glm_computation_with_memory_caching(shape_4d_default):
     model.fit(fmri_data[0], events)
 
 
-@pytest.mark.slow
 def test_first_level_contrast_computation():
     """Check contrast_computation."""
     shapes = ((7, 8, 9, 10),)
@@ -1257,7 +1239,6 @@ def test_first_level_residuals(shape_4d_default):
     assert_array_almost_equal(mean_residuals, 0)
 
 
-@pytest.mark.slow
 def test_first_level_residuals_errors(shape_4d_default):
     """Access residuals needs fit and minimize_memory set to True."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -1289,7 +1270,6 @@ def test_first_level_residuals_errors(shape_4d_default):
         model._get_element_wise_model_attribute("foo", True)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "shapes",
     [
@@ -1318,7 +1298,6 @@ def test_get_element_wise_attributes_should_return_as_many_as_design_matrices(
     ) == len(shapes)
 
 
-@pytest.mark.slow
 def test_first_level_predictions_r_square(shape_4d_default):
     """Check r_square gives sensible values."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -1713,7 +1692,6 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
 # -----------------------report tests----------------------- #
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs",
@@ -1745,7 +1723,6 @@ def test_generate_report_default(kwargs):
         assert len(warning_list) == 0 if is_matplotlib_installed() else 2
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_generate_report_height_none_future_default():
     """Make sure generate_report raises a single FutureWarning
@@ -1774,7 +1751,6 @@ def test_generate_report_height_none_future_default():
         flm.generate_report(contrasts=contrasts, height_control=None)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", [4, DEFAULT_Z_THRESHOLD])
 def test_generate_report_threshold_unused(threshold):

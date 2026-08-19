@@ -48,7 +48,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     maps_img : Niimg-like object
         An image of brain atlas maps.
 
-    threshold : float
+    threshold : :obj:`float`
         If float, value is used as a ratio to n_voxels
         to get a certain threshold size in number to threshold the image.
         The value should be positive and
@@ -107,7 +107,7 @@ def _remove_small_regions(input_data, affine, min_size):
         Affine of input_data is used to convert size in voxels to size in
         volume of region in mm^3.
 
-    min_size : float in mm^3
+    min_size : :obj:`float` in mm^3
         Size of regions in input_data which falls below the specified min_size
         of volume in mm^3 will be discarded.
 
@@ -695,10 +695,9 @@ def connected_label_regions(
             "integers assigned as labels."
         )
 
-    unique_labels = set(check_unique_labels)
-    # check for background label indicated as 0
-    if np.any(check_unique_labels == 0):
-        unique_labels.remove(0)
+    # np.unique returns them sorted; keep that order, since the names in
+    # labels are expected to match it. Background label 0 is not a region.
+    unique_labels = check_unique_labels[check_unique_labels != 0]
 
     if labels is not None:
         if not isinstance(labels, collections.abc.Iterable) or isinstance(

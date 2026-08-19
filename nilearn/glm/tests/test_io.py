@@ -178,7 +178,7 @@ def test_save_glm_to_bids_serialize_affine(tmp_path):
 
 
 @pytest.fixture
-def n_cols_design_matrix():
+def n_cols_design_matrix() -> int:
     """Return expected number of column in design matrix."""
     return 3
 

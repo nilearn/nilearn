@@ -23,7 +23,7 @@ def get_data_dirs(data_dir: DataDir = None) -> list[str]:
 
     Returns
     -------
-    paths : list of strings
+    paths : :obj:`list` of strings
         Paths of the dataset directories.
 
     Notes
