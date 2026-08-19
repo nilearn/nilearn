@@ -2,7 +2,7 @@
 # Runs pytest on maint_tools and build_tools folders.
 #
 ###
-name: test
+name: test maintenance scripts
 
 on:
     push:
@@ -11,14 +11,14 @@ on:
         paths:
         -   maint_tools/**/*
         -   build_tools/**/*
-        -   .github/workflows/test_maintenance_scipts.yml
+        -   .github/workflows/test_maintenance_scripts.yml
     pull_request:
         branches:
         -   '*'
         paths:
         -   maint_tools/**/*
         -   build_tools/**/*
-        -   .github/workflows/test_maintenance_scipts.yml
+        -   .github/workflows/test_maintenance_scripts.yml
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
