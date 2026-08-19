@@ -22,7 +22,7 @@ Fixes
 
 - :bdg-dark:`Code` Fix :class:`~maskers.NiftiLabelsMasker` raising an ``AttributeError`` when transforming a list of 3D images with ``resampling_target="labels"`` (:gh:`6498` by `Mohammad Sadeghi Hardengi`_).
 
-- :bdg-success:`API` Fix Fix mismatch between parameters in several functions or methods and their docstrings. Also adds an ``interpolation`` parameter to :func:`~.datasets.fetch_neurovault` that was documented but missing from the API (:gh:`6482` by `Rémi Gau`_).
+- :bdg-success:`API` Fix mismatch between parameters in several functions or methods and their docstrings. Also adds an ``interpolation`` parameter to :func:`~.datasets.fetch_neurovault` that was documented but missing from the API (:gh:`6482` by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Fix docstrings that name a parameter which is not in the signature (:func:`~plotting.plot_img_comparison`, :meth:`~plotting.displays.PlotlySurfaceFigure.add_contours` and seven private helpers), the documented default of ``two_sided_test`` in ``calculate_tfce``, and the sentence stating that a source image is resampled to match itself (:gh:`6469` by `Anton Karpov`_).
 
@@ -41,8 +41,6 @@ Fixes
 - :bdg-dark:`Code` Fix :func:`~interfaces.bids.get_bids_files` missing subject-level anatomical derivatives in multi-session datasets (:gh:`6291` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-dark:`Code` Fix a bug in :func:`~plotting.view_img` where the background colormap was not being applied correctly. (:gh:`6466` by `Pierre-Louis Barbarant`_).
-
-- :bdg-dark:`Code` Fix :func:`~image.smooth_img` and ``smooth_array`` truncating the smoothed signal for unsigned integer input, because only signed integers were promoted to float before ``gaussian_filter1d`` wrote its float result back into the input buffer in place; unsigned is the common case since ``uint8`` is the standard on-disk dtype for masks and atlases (:gh:`6440` by `Andrew Chen`_).
 
 - :bdg-dark:`Code` Allow custom scikit-learn-compatible estimators in decoders to use an empty default parameter grid, and clarify how to use ``param_grid`` to tune them (:gh:`6227` by `Mohammad Sadeghi Hardengi`_).
 
