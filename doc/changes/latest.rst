@@ -20,7 +20,7 @@ NEW
 Fixes
 -----
 
-- :bdg-info:`Plotting` Fix :func:`~plotting.view_img` displaying the mirrored sagittal slice in radiological view, because ``_data_to_sprite`` reverses the sagittal axis of the sprite while the slice index and affine handed to the viewer were left unflipped; a cut requested at ``x = +45`` showed the slice lying at ``x = -45``, labelled with the requested coordinate (:gh:`6502` by `Cedric Conday`_).
+- :bdg-info:`Plotting` Fix :func:`~plotting.view_img` displaying the mirrored sagittal slice in radiological view, because ``_data_to_sprite`` reverses the sagittal axis of the sprite while the slice index and affine handed to the viewer were left unflipped; a cut requested at ``x = +45`` showed the slice lying at ``x = -45``, labeled with the requested coordinate (:gh:`6502` by `Cedric Conday`_).
 
 - :bdg-dark:`Code` Fix :class:`~maskers.NiftiLabelsMasker` raising an ``AttributeError`` when transforming a list of 3D images with ``resampling_target="labels"`` (:gh:`6498` by `Mohammad Sadeghi Hardengi`_).
 

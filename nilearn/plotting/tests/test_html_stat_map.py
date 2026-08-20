@@ -363,7 +363,7 @@ def test_json_view_params_radiological_keeps_hemisphere(cut_x):
     Regression test for https://github.com/nilearn/nilearn/issues/6134.
     Because the sagittal axis was reversed for the sprite but not for the
     slice index, a cut requested at ``x = +45`` displayed the slice lying
-    at ``x = -45``, labelled with the requested coordinate.
+    at ``x = -45``, labeled with the requested coordinate.
     """
     img, data, shape, affine = _radiological_test_img()
 
