@@ -20,6 +20,8 @@ NEW
 Fixes
 -----
 
+- :bdg-info:`Plotting` Fix :func:`~plotting.view_img` displaying the mirrored sagittal slice in radiological view, because ``_data_to_sprite`` reverses the sagittal axis of the sprite while the slice index and affine handed to the viewer were left unflipped; a cut requested at ``x = +45`` showed the slice lying at ``x = -45``, labelled with the requested coordinate (:gh:`6134` by `Cedric Conday`_).
+
 - :bdg-dark:`Code` Fix :class:`~maskers.NiftiLabelsMasker` raising an ``AttributeError`` when transforming a list of 3D images with ``resampling_target="labels"`` (:gh:`6498` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-success:`API` Fix mismatch between parameters in several functions or methods and their docstrings. Also adds an ``interpolation`` parameter to :func:`~.datasets.fetch_neurovault` that was documented but missing from the API (:gh:`6482` by `Rémi Gau`_).

@@ -289,6 +289,104 @@ def test_json_view_params(affine_eye):
     assert params["colorMap"]["img"] == "colorMap-test-viewer"
 
 
+def _radiological_test_img():
+    """Build an image whose voxel values encode their own x index."""
+    shape = (32, 32, 32)
+    affine = np.diag([-3.0, 3.0, 3.0, 1.0])
+    affine[:3, 3] = [48.0, -48.0, -48.0]
+    data = np.zeros(shape, dtype="float32")
+    for i in range(shape[0]):
+        data[i, :, :] = i
+    return Nifti1Image(data, affine), data, shape, affine
+
+
+def _displayed_slice(data, params, radiological):
+    """Return the volume slice the viewer actually puts on screen.
+
+    ``_data_to_sprite`` lays the sagittal slices out row by row, and
+    ``brainsprite.js`` picks the tile at index ``numSlice["X"]``.
+    """
+    sprite = _data_to_sprite(data, radiological=radiological)
+    n_x, n_y, n_z = data.shape
+    n_rows = int(np.ceil(np.sqrt(n_x)))
+    n_columns = int(np.ceil(n_x / float(n_rows)))
+    tile = int(params["numSlice"]["X"])
+    row, column = tile // n_columns, tile % n_columns
+    block = sprite[
+        row * n_z : (row + 1) * n_z, column * n_y : (column + 1) * n_y
+    ]
+    return int(block.max())
+
+
+def _params_for_cut(shape, affine, img, cut_x, radiological):
+    """Build viewer parameters for a sagittal cut at ``cut_x``."""
+    cut_slices = _get_cut_slices(
+        img, cut_coords=[cut_x, 0.0, 0.0], threshold=None
+    )
+    return _json_view_params(
+        shape,
+        affine,
+        vmin=0,
+        vmax=1,
+        cut_slices=cut_slices,
+        html_ids=_get_brainsprite_html_ids("test-viewer"),
+        radiological=radiological,
+    )
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("cut_x", [-45.0, -15.0, 0.0, 15.0, 45.0])
+def test_json_view_params_radiological_shows_same_slice(cut_x):
+    """Both views must display the same slice for the same cut.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/6134.
+    ``_data_to_sprite`` reverses the sagittal axis in radiological view,
+    so the tile at ``numSlice["X"]`` holds voxel ``n_x - 1 - X``. The
+    slice index was not flipped to match, so a cut requested at
+    ``x = +45`` displayed the slice lying at ``x = -45`` instead.
+    """
+    img, data, shape, affine = _radiological_test_img()
+
+    neurological = _params_for_cut(shape, affine, img, cut_x, False)
+    radiological = _params_for_cut(shape, affine, img, cut_x, True)
+
+    assert _displayed_slice(data, radiological, True) == _displayed_slice(
+        data, neurological, False
+    )
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("cut_x", [-45.0, -15.0, 15.0, 45.0])
+def test_json_view_params_radiological_keeps_hemisphere(cut_x):
+    """A cut must stay in the hemisphere it was requested in.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/6134.
+    Because the sagittal axis was reversed for the sprite but not for the
+    slice index, a cut requested at ``x = +45`` displayed the slice lying
+    at ``x = -45``, labelled with the requested coordinate.
+    """
+    img, data, shape, affine = _radiological_test_img()
+
+    params = _params_for_cut(shape, affine, img, cut_x, True)
+    voxel = _displayed_slice(data, params, True)
+    world_x = (affine @ np.array([voxel, 0.0, 0.0, 1.0]))[0]
+
+    assert np.sign(world_x) == np.sign(cut_x)
+
+
+@pytest.mark.ai_generated
+def test_json_view_params_neurological_unchanged():
+    """The neurological view must be left untouched by the fix."""
+    img, _, shape, affine = _radiological_test_img()
+    cut_slices = _get_cut_slices(
+        img, cut_coords=[15.0, 0.0, 0.0], threshold=None
+    )
+    params = _params_for_cut(shape, affine, img, 15.0, False)
+
+    assert np.array_equal(np.asarray(params["affine"]), affine)
+    assert params["numSlice"]["X"] == cut_slices[0] - 1
+
+
 def test_json_view_size():
     """Check that _json_view_size computes the expected viewer dimensions."""
     # Build some minimal sprite Parameters

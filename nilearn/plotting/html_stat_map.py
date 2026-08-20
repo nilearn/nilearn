@@ -407,6 +407,21 @@ def _json_view_params(
     if type(vmax).__module__ == "numpy":
         vmax = vmax.tolist()  # json does not deal with numpy array
 
+    # In radiological view, ``_data_to_sprite`` reverses the sagittal axis,
+    # so sprite slice ``i`` holds voxel ``n_x - 1 - i``. The viewer derives
+    # world coordinates as ``affine @ [numSlice + 1, ...]`` and applies no
+    # radiological correction of its own, so the slice index and the affine
+    # are both flipped here. Without this the reported coordinates describe
+    # the mirrored slice, placing every cut in the opposite hemisphere.
+    x_slice = cut_slices[0] - 1
+    if radiological:
+        n_x = shape[0]
+        x_slice = n_x - 1 - x_slice
+        flip_x = np.eye(4)
+        flip_x[0, 0] = -1.0
+        flip_x[0, 3] = n_x + 1.0
+        affine = affine @ flip_x
+
     params = {
         "canvas": html_ids["canvas"],
         "sprite": html_ids["sprite"],
@@ -424,7 +439,7 @@ def _json_view_params(
         "title": title,
         "flagValue": value,
         "numSlice": {
-            "X": cut_slices[0] - 1,
+            "X": x_slice,
             "Y": cut_slices[1] - 1,
             "Z": cut_slices[2] - 1,
         },
