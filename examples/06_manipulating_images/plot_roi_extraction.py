@@ -52,9 +52,12 @@ from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby()
 
 # Print basic information on the dataset.
+
+# Functional data
+fmri_filename = haxby_dataset.func[0]
+
 print(
-    "First subject functional nifti image (4D) is located "
-    f"at: {haxby_dataset.func[0]}"
+    f"First subject functional nifti image (4D) is located at: {fmri_filename}"
 )
 print(
     "Labels of haxby dataset (text file) is located "
@@ -92,21 +95,21 @@ haxby_labels = run_target["labels"]
 # also use file names as input parameters.
 
 # Smooth the data using image processing module from nilearn.
-from nilearn import image
-
-# Functional data
-fmri_filename = haxby_dataset.func[0]
 # smoothing: first argument as functional data filename and smoothing value
 # (integer) in second argument. Output is a Nifti image.
-fmri_img = image.smooth_img(fmri_filename, fwhm=6)
+from nilearn.image import smooth_img
+
+fmri_img = smooth_img(fmri_filename, fwhm=6)
 
 # Visualize the mean of the smoothed EPI image using plotting function
 # `plot_epi`.
-from nilearn.plotting import plot_epi, show
-
 # First, compute the voxel-wise mean of the smooth EPI image
 # (first argument) using the image processing module `image`.
-mean_img = image.mean_img(fmri_img)
+from nilearn.image import mean_img
+from nilearn.plotting import plot_epi, show
+
+mean_img = mean_img(fmri_img)
+
 # Second, we visualize the mean image with coordinates positioned manually.
 plot_epi(mean_img, title="Smoothed mean EPI", cut_coords=cut_coords)
 
@@ -121,6 +124,7 @@ show()
 from nilearn.image import get_data
 
 fmri_data = get_data(fmri_img)
+
 # number of voxels being x*y*z, samples in 4th dimension
 fmri_data.shape
 
@@ -135,14 +139,14 @@ fmri_data.shape
 # faces are shown to individuals during brain scanning). If the time-series
 # distribution is similar in the two conditions,
 # then the :term:`voxel` is not very interesting to discriminate the condition.
-
-import numpy as np
-from scipy import stats
-
+#
 # This test returns p-values that represent probabilities that the two
 # time-series were not drawn from the same distribution. The lower the
 # p-value, the more discriminative is the voxel in distinguishing
 # the two conditions (faces and houses).
+import numpy as np
+from scipy import stats
+
 _, p_values = stats.ttest_ind(
     fmri_data[..., haxby_labels == "face"],
     fmri_data[..., haxby_labels == "house"],
@@ -155,7 +159,7 @@ log_p_values = -np.log10(p_values)
 log_p_values[np.isnan(log_p_values)] = 0.0
 log_p_values[log_p_values > 10.0] = 10.0
 
-#  %%
+# %%
 # Visualize statistical p-values
 # ..............................
 # Before visualizing, we transform the computed p-values to a Nifti-like image
@@ -168,6 +172,7 @@ from nilearn.image import new_img_like
 
 log_p_values_img = new_img_like(fmri_img, log_p_values)
 
+# %%
 # Now, we visualize the log p-values image on the functional mean image as
 # a background with coordinates given manually and a colorbar on the right side
 # of the plot (by default, colorbar=True).
@@ -200,11 +205,12 @@ show()
 # of interest, where voxels with lower p-values correspond to the most intense
 # voxels. This can be done easily by applying a threshold to a t-map data in
 # array.
-
+#
 # Note that we use log p-values data; we force values below 5 to 0 by
 # thresholding.
 log_p_values[log_p_values < 5] = 0
 
+# %%
 # Visualize the reduced voxels of interest using statistical image plotting
 # function. As shown above, we first transform data in array to Nifti image.
 log_p_values_img = new_img_like(fmri_img, log_p_values)
@@ -244,24 +250,28 @@ from nilearn.image import load_img
 
 vt = get_data(load_img(mask_vt_filename)).astype(bool)
 
+# %%
 # We can then use a logical "and" operation - `numpy.logical_and` - to
 # keep only voxels that have been selected in both masks.
 # In neuroimaging jargon, this is called an "AND conjunction".
 bin_p_values_and_vt = np.logical_and(bin_p_values, vt)
 
+# %%
 # Visualizing the mask intersection results using plotting function `plot_roi`,
 # a function which can be used for visualizing target specific voxels.
-from nilearn.plotting import plot_roi
-
-# First, we create new image type of binarized and intersected mask (second
-# argument) and use this created Nifti image type in visualization. Binarized
-# values in data type boolean should be converted to int data type at the same
-# time. Otherwise, an error will be raised.
+#
+# First, we create new image type of binarized and intersected mask
+# (second argument) and use this created Nifti image type in visualization.
+# Binarized values in data type boolean
+# should be converted to int data type at the same time.
+# Otherwise, an error will be raised.
 bin_p_values_and_vt_img = new_img_like(
     fmri_img, bin_p_values_and_vt.astype(np.int32)
 )
 # We visualize the mask using the computed mean of functional images as
 # background.
+from nilearn.plotting import plot_roi
+
 plot_roi(
     bin_p_values_and_vt_img,
     mean_img,
@@ -331,6 +341,7 @@ second_roi_data = (labels == 3).astype(np.int32)
 # First, we create a Nifti image type from first roi data in a array.
 first_roi_img = new_img_like(fmri_img, first_roi_data)
 
+# %%
 # Then, we visualize the same created Nifti image (first argument) with the
 # mean of functional images as background (second argument). The cut_coords are
 # the default now: coordinates are selected automatically and will be pointed
@@ -338,6 +349,7 @@ first_roi_img = new_img_like(fmri_img, first_roi_data)
 
 plot_roi(first_roi_img, mean_img, title="Connected components: first ROI")
 
+# %%
 # We do the same for the second roi data.
 second_roi_img = new_img_like(fmri_img, second_roi_data)
 plot_roi(second_roi_img, mean_img, title="Connected components: second ROI")
