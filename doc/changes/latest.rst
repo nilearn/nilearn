@@ -20,7 +20,7 @@ NEW
 Fixes
 -----
 
-- :bdg-dark:`Code` Fix :func:`~image.smooth_img` leaving non-finite values in surface images, and spreading them over neighbouring vertices when smoothing; the volume branch already passes ``ensure_finite=True`` to ``smooth_array`` (:gh:`6503` by `Cedric Conday`_).
+- :bdg-dark:`Code` Fix :func:`~image.smooth_img` leaving non-finite values in surface images, and spreading them over neighboring vertices when smoothing; the volume branch already passes ``ensure_finite=True`` to ``smooth_array`` (:gh:`6503` by `Cedric Conday`_).
 
 - :bdg-dark:`Code` Fix :class:`~maskers.NiftiLabelsMasker` raising an ``AttributeError`` when transforming a list of 3D images with ``resampling_target="labels"`` (:gh:`6498` by `Mohammad Sadeghi Hardengi`_).
 

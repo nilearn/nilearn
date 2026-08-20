@@ -472,7 +472,7 @@ def test_smooth_img_surface_nan_do_not_propagate(surf_img_1d, fwhm):
     The volume branch of ``smooth_img`` passes ``ensure_finite=True`` to
     ``smooth_array``, but the surface branch did not clean its data, so
     the smoothing iterations spread each non-finite vertex over its
-    neighbours instead.
+    neighbors instead.
     """
     surf_img_1d.data.parts["left"][0] = np.nan
     surf_img_1d.data.parts["left"][1] = np.inf

@@ -565,7 +565,7 @@ def _smooth_surface_img(
         # first because ``ensure_finite_data`` works in place, and do it
         # before the ``n_iter == 0`` shortcut so that the guarantee holds
         # whatever ``fwhm`` is. Left as is, a single non-finite vertex is
-        # spread over its neighbours by the smoothing iterations.
+        # spread over its neighbors by the smoothing iterations.
         data = np.array(img.data.parts[hemi], copy=True)
         ensure_finite_data(data, raise_warning=False)
 
