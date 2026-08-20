@@ -953,6 +953,18 @@ def test_permuted_ols_target_vars_error(dummy_design):
         )
 
 
+@pytest.mark.ai_generated
+def test_permuted_ols_non_numerical_tested_vars_error(dummy_design):
+    """Check that tested variables contain numerical values."""
+    target_var, *_ = dummy_design
+    tested_var = np.resize(["face", "house"], target_var.shape[0])
+
+    with pytest.raises(
+        TypeError, match="'tested_vars' must contain numerical values"
+    ):
+        permuted_ols(tested_var, target_var, n_perm=0)
+
+
 def test_permuted_ols_type_n_perm(dummy_design):
     """Checks type n_perm."""
     target_var, tested_var, *_ = dummy_design
