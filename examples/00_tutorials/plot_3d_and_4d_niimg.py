@@ -102,9 +102,6 @@ for img in image.iter_img(selected_volumes):
 show()
 
 # %%
-# |
-#
-# ______
 #
 # To recap, neuroimaging images (niimgs as we call them) come in
 # different flavors:
