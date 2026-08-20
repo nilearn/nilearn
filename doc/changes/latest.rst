@@ -20,6 +20,8 @@ NEW
 Fixes
 -----
 
+- :bdg-info:`Plotting` Fix :func:`~plotting.view_img` displaying the slice next to the one requested: ``cut_slices`` is already a 0-based voxel index but a further ``- 1`` was applied before handing it to the viewer, which draws the tile at ``numSlice`` while reading coordinates out as ``affine @ [numSlice + 1, ...]``; the label matched the request while the slice on screen was its neighbor (:gh:`6505` by `Cedric Conday`_).
+
 - :bdg-dark:`Code` Fix :class:`~maskers.NiftiLabelsMasker` raising an ``AttributeError`` when transforming a list of 3D images with ``resampling_target="labels"`` (:gh:`6498` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-success:`API` Fix mismatch between parameters in several functions or methods and their docstrings. Also adds an ``interpolation`` parameter to :func:`~.datasets.fetch_neurovault` that was documented but missing from the API (:gh:`6482` by `Rémi Gau`_).

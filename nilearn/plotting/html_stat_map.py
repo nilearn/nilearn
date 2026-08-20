@@ -407,6 +407,16 @@ def _json_view_params(
     if type(vmax).__module__ == "numpy":
         vmax = vmax.tolist()  # json does not deal with numpy array
 
+    # ``cut_slices`` is already a 0-based voxel index and the viewer draws the
+    # sprite tile at ``numSlice`` itself, so that index is what must be sent.
+    # The viewer does read coordinates out as ``affine @ [numSlice + 1, ...]``
+    # (see brainsprite.min.js), so the affine carries a -1 shift to cancel it;
+    # otherwise the label describes the slice next to the one on screen.
+    x_slice, y_slice, z_slice = (round(c) for c in cut_slices[:3])
+    readout_shift = np.eye(4)
+    readout_shift[:3, 3] = -1.0
+    affine = affine @ readout_shift
+
     params = {
         "canvas": html_ids["canvas"],
         "sprite": html_ids["sprite"],
@@ -424,9 +434,9 @@ def _json_view_params(
         "title": title,
         "flagValue": value,
         "numSlice": {
-            "X": cut_slices[0] - 1,
-            "Y": cut_slices[1] - 1,
-            "Z": cut_slices[2] - 1,
+            "X": x_slice,
+            "Y": y_slice,
+            "Z": z_slice,
         },
         "radiological": radiological,
         "showLR": show_lr,
