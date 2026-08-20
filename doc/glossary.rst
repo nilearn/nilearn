@@ -53,7 +53,7 @@ If you wish to add a missing term, please
 
     Deterministic atlas
         A deterministic atlas is a hard parcellation of the brain into
-        non-overlaping regions, that might have been obtained by segmentation or clustering methods.
+        non-overlapping regions, that might have been obtained by segmentation or clustering methods.
         These objects are represented as 3D images of the brain composed of
         integer values, called 'labels', which define the different regions.
         In such atlases, and contrary to

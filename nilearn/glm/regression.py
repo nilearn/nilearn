@@ -109,7 +109,7 @@ class OLSModel:
 
         Returns
         -------
-        loglf : float
+        loglf : :obj:`float`
             The value of the loglikelihood function.
 
         Notes

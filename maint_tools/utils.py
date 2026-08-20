@@ -112,3 +112,16 @@ for subpackage in nilearn.__all__:
             submod = importlib.import_module(f"nilearn.{subpackage}.{x}")
             if hasattr(submod, "__all__"):
                 public_api.extend(submod.__all__)
+
+
+try:
+    # ---------------- TESTS ----------------
+
+    def test_list_modules():
+        """Smoke test for list_modules."""
+        filenames = list_modules(
+            skip_private=True, folders_to_skip=["data", "tests"]
+        )
+        assert len(filenames) == 106
+except Exception:
+    ...

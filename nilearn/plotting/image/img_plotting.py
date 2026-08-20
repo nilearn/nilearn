@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import get_backend
 from matplotlib.colors import LinearSegmentedColormap, Normalize
+from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpecFromSubplotSpec
 from matplotlib.ticker import MaxNLocator
 
@@ -49,6 +50,7 @@ from nilearn.nilearn_typing import (
     OutputFile,
     Radiological,
     ResamplingInterpolation,
+    Standardize,
     Title,
 )
 from nilearn.plotting import cm
@@ -180,9 +182,15 @@ def _plot_img_with_bg(
     display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
 
+    cbar_vmin : :obj:`float` or None, default=None
+
+    cbar_vmax : :obj:`float` or None, default=None
+
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
+
+    brain_color : :obj:`tuple` of 3 :obj:`float`
 
     decimals : :obj:`int` or :obj:`bool`, default=False
         Number of decimal places on slice position annotation.
@@ -706,6 +714,7 @@ def plot_epi(
     return display
 
 
+@fill_doc
 def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     """Help for plotting regions of interest ROIs in contours.
 
@@ -1494,8 +1503,6 @@ def plot_glass_brain(
 
     %(transparency)s
 
-    %(transparency_range)s
-
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
@@ -1907,8 +1914,8 @@ def plot_carpet(
     title: Title = None,
     cmap="gray",
     cmap_labels="gist_ncar",
-    standardize=True,
-):
+    standardize: Standardize = True,
+) -> Figure:
     """Plot an image representation of :term:`voxel` intensities across time.
 
     This figure is also known as a "grayplot" or "Power plot".

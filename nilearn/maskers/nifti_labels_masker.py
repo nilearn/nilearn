@@ -306,7 +306,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         labels_data[np.logical_not(mask_data)] = self.background_label
         region_ids_after_masking = np.unique(labels_data).tolist()
         masked_atlas = Nifti1Image(
-            labels_data.astype(np.int8), self.labels_img_.affine
+            labels_data.astype(np.int32), self.labels_img_.affine
         )
         removed_region_ids = [
             region_id
@@ -743,7 +743,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         target_shape = None
         target_affine = None
         if self.resampling_target == "labels":
-            if not check_same_fov(labels_img_, imgs):
+            imgs_ = check_niimg(imgs, atleast_4d=True)
+            if not check_same_fov(labels_img_, imgs_):
                 warnings.warn(
                     (
                         "Resampling images at transform time...\n"
@@ -753,6 +754,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                     ),
                     stacklevel=find_stack_level(),
                 )
+            del imgs_
 
             target_shape = labels_img_.shape[:3]
             target_affine = labels_img_.affine

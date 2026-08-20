@@ -2,7 +2,7 @@
 
 from nilearn.image import index_img, mean_img
 
-from ..utils import Benchmark, load
+from .._utils import Benchmark, load
 
 
 class LoadImgBenchmark(Benchmark):
