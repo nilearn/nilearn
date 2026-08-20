@@ -78,8 +78,11 @@ def _check_output_first_level_from_bids(
 
     assert len(models) == len(confounds)
     for confound_ in confounds:
+        # confound_ should be list of None or a list of dataframes
         assert isinstance(confound_, list)
-        assert all(isinstance(x, pd.DataFrame) for x in confound_)
+        assert all(
+            (x is None or isinstance(x, pd.DataFrame)) for x in confound_
+        )
 
 
 def test_set_repetition_time_warnings(tmp_path):
@@ -277,8 +280,12 @@ def test_get_start_time_from_derivatives(tmp_path):
 @pytest.mark.parametrize("n_ses", [0, 2])
 @pytest.mark.parametrize("task_index", [0, 1])
 @pytest.mark.parametrize("space_label", ["MNI", "T1w"])
+@pytest.mark.parametrize(
+    "kwargs",
+    [{}, {"confounds_strategy": None}, {"confounds_strategy": ("motion",)}],
+)
 def test_first_level_from_bids(
-    tmp_path, n_runs, n_ses, task_index, space_label
+    tmp_path, n_runs, n_ses, task_index, space_label, kwargs
 ):
     """Test several BIDS structure."""
     n_sub = 2
@@ -294,6 +301,7 @@ def test_first_level_from_bids(
         space_label=space_label,
         img_filters=[("desc", "preproc")],
         slice_time_ref=0.0,  # set to 0.0 to avoid warnings
+        **kwargs,
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -412,6 +420,7 @@ def test_select_one_run_per_session(bids_dataset):
         space_label="MNI",
         img_filters=[("run", "01"), ("desc", "preproc")],
         slice_time_ref=0.0,  # set to 0.0 to avoid warnings
+        confounds_strategy=("motion",),
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -790,7 +799,8 @@ def test_one_confound_missing(tmp_path_factory):
         )
 
 
-def test_all_confounds_missing(tmp_path_factory):
+@pytest.mark.parametrize("confounds_strategy", [None, ("motion",)])
+def test_all_confounds_missing(tmp_path_factory, confounds_strategy):
     """If all confound files are missing, \
     confounds should be an array of None.
     """
@@ -808,13 +818,16 @@ def test_all_confounds_missing(tmp_path_factory):
         space_label="MNI",
         img_filters=[("desc", "preproc")],
         slice_time_ref=0.0,  # set to 0.0 to avoid warnings
+        confounds_strategy=confounds_strategy,
     )
 
     assert len(models) == len(imgs)
     assert len(models) == len(events)
     assert len(models) == len(confounds)
-    for condounds_ in confounds:
-        assert condounds_ is None
+    for confound_ in confounds:
+        assert all(
+            (x is None or isinstance(x, pd.DataFrame)) for x in confound_
+        )
 
 
 @pytest.mark.parametrize("n_sub", [1, 2])
@@ -840,8 +853,10 @@ def test_confounds_strategy_none(tmp_path, n_sub):
     assert len(models) == len(imgs)
     assert len(models) == len(events)
     assert len(models) == len(confounds)
-    for c in confounds:
-        assert c is None
+    for confound_ in confounds:
+        assert all(
+            (x is None or isinstance(x, pd.DataFrame)) for x in confound_
+        )
 
 
 def test_no_derivatives(tmp_path):
@@ -1123,11 +1138,16 @@ def test_subject_order_with_labels(tmp_path):
     assert returned_subjects == expected_subjects
 
 
-def test_surface(tmp_path):
+@pytest.mark.parametrize(
+    "kwargs",
+    [{}, {"confounds_strategy": None}, {"confounds_strategy": ("motion",)}],
+)
+@pytest.mark.parametrize("n_runs", [[1], [2], [3]])
+def test_surface(tmp_path, kwargs, n_runs):
     """Test finding and loading Surface data in BIDS dataset."""
     n_sub = 2
     tasks = ["main"]
-    n_runs = [2]
+    n_runs = n_runs
 
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
@@ -1142,6 +1162,7 @@ def test_surface(tmp_path):
         dataset_path=bids_path,
         task_label="main",
         space_label="fsaverage5",
+        **kwargs,
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
