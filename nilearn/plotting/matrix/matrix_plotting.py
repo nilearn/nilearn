@@ -225,9 +225,6 @@ def plot_matrix(
         Accepted linkage options for the clustering are 'single',
         'complete', and 'average'. True defaults to average linkage.
 
-        .. note::
-            This option is only available with SciPy >= 1.0.0.
-
         .. nilearn_versionadded:: 0.4.1
 
     kwargs : extra keyword arguments, optional
