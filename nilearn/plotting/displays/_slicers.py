@@ -11,6 +11,7 @@ from matplotlib.colors import ListedColormap
 from matplotlib.transforms import Bbox
 
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data, is_binary_niimg, safe_get_data
 from nilearn._utils.param_validation import check_params
@@ -1105,12 +1106,13 @@ class BaseSlicer:
         """
         plt.close(self.frame_axes.figure.number)
 
-    def savefig(self, filename: OutputFile, dpi=None, **kwargs) -> None:
+    @rename_parameters({"filename": "output_file"}, end_version="0.17.0")
+    def savefig(self, output_file: OutputFile, dpi=None, **kwargs) -> None:
         """Save the figure to a file.
 
         Parameters
         ----------
-        filename : :obj:`str` or :obj:`pathlib.Path`
+        output_file : :obj:`str` or :obj:`pathlib.Path`
             The file name to save to. Its extension determines the
             file type, typically '.png', '.svg' or '.pdf'.
 
@@ -1122,16 +1124,18 @@ class BaseSlicer:
             :func:`matplotlib.pyplot.savefig`.
 
         """
-        if filename is None:
+        check_params(locals())
+
+        if output_file is None:
             raise ValueError(
                 "You must provide an output file name to save the figure."
             )
 
-        output_file = Path(filename)
+        output_file = Path(output_file)
         output_file.parent.mkdir(exist_ok=True, parents=True)
         facecolor = edgecolor = "k" if self._black_bg else "w"
         self.frame_axes.figure.savefig(
-            filename,
+            output_file,
             dpi=dpi,
             facecolor=facecolor,
             edgecolor=edgecolor,
