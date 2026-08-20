@@ -334,9 +334,7 @@ def test_json_view_params_displays_requested_slice(marker):
 
 
 @pytest.mark.ai_generated
-@pytest.mark.parametrize(
-    "cut_coords", [[0.0, -12.0, 9.0], [15.0, 6.0, -21.0]]
-)
+@pytest.mark.parametrize("cut_coords", [[0.0, -12.0, 9.0], [15.0, 6.0, -21.0]])
 def test_json_view_params_reports_requested_coordinates(cut_coords):
     """The coordinates shown must still be the ones requested."""
     n = 32
