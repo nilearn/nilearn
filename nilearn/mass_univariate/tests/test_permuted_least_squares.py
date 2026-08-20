@@ -953,7 +953,6 @@ def test_permuted_ols_target_vars_error(dummy_design):
         )
 
 
-@pytest.mark.ai_generated
 def test_permuted_ols_non_numerical_tested_vars_error(dummy_design):
     """Check that tested variables contain numerical values."""
     target_var, *_ = dummy_design
