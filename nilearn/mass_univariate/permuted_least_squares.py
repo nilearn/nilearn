@@ -380,8 +380,8 @@ def permuted_ols(
     Parameters
     ----------
     tested_vars : array-like, shape=(n_samples, n_regressors)
-        Numerical explanatory variates, fitted and tested independently from
-        each others.
+        Numerical or boolean explanatory variates, fitted and tested
+        independently from each others.
 
     target_vars : array-like, shape=(n_samples, n_descriptors)
         :term:`fMRI` data to analyze according
@@ -944,7 +944,9 @@ def _sanitize_inputs_permuted_ols(
         np.issubdtype(tested_vars.dtype, np.number)
         or np.issubdtype(tested_vars.dtype, np.bool_)
     ):
-        raise TypeError("'tested_vars' must contain numerical values.")
+        raise TypeError(
+            "'tested_vars' must contain numerical or boolean values."
+        )
 
     # check n_jobs (number of CPUs)
     if n_jobs < 0:

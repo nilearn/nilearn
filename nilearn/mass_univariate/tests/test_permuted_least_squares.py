@@ -959,9 +959,20 @@ def test_permuted_ols_non_numerical_tested_vars_error(dummy_design):
     tested_var = np.resize(["face", "house"], target_var.shape[0])
 
     with pytest.raises(
-        TypeError, match="'tested_vars' must contain numerical values"
+        TypeError,
+        match="'tested_vars' must contain numerical or boolean values",
     ):
         permuted_ols(tested_var, target_var, n_perm=0)
+
+
+def test_permuted_ols_boolean_tested_vars(dummy_design):
+    """Check that boolean tested variables are supported."""
+    target_var, *_ = dummy_design
+    tested_var = np.resize([True, False], target_var.shape[0])
+
+    output = permuted_ols(tested_var, target_var, n_perm=0)
+
+    assert output["t"].shape == (1, target_var.shape[1])
 
 
 def test_permuted_ols_type_n_perm(dummy_design):

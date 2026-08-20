@@ -20,7 +20,7 @@ NEW
 Fixes
 -----
 
-- :bdg-dark:`Code` Clarify that :func:`~mass_univariate.permuted_ols` requires numerical ``tested_vars`` and raise a clear error for non-numerical data (:gh:`6501` by `Mohammad Sadeghi Hardengi`_).
+- :bdg-dark:`Code` Clarify that :func:`~mass_univariate.permuted_ols` requires numerical or boolean ``tested_vars`` and raise a clear error for unsupported data (:gh:`6501` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-dark:`Code` Fix :class:`~maskers.NiftiLabelsMasker` raising an ``AttributeError`` when transforming a list of 3D images with ``resampling_target="labels"`` (:gh:`6498` by `Mohammad Sadeghi Hardengi`_).
 
