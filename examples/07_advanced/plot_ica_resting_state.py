@@ -40,6 +40,7 @@ from nilearn.maskers import NiftiMasker
 # EPI images
 masker = NiftiMasker(
     smoothing_fwhm=8,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
     mask_strategy="epi",

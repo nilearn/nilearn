@@ -47,6 +47,7 @@ masker = NiftiMapsMasker(
     detrend=True,
     low_pass=0.1,
     high_pass=0.01,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
     standardize_confounds=True,
