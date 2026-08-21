@@ -360,6 +360,36 @@ def test_json_view_params_reports_requested_coordinates(cut_coords):
     assert displayed == pytest.approx(cut_coords)
 
 
+@pytest.mark.ai_generated
+@pytest.mark.parametrize(
+    "cut,expected", [(19.5, 20), (20.5, 21), (21.5, 22), (20.4, 20)]
+)
+def test_json_view_params_breaks_ties_upwards(cut, expected):
+    """Round the way the viewer does, so every cut moves by one slice.
+
+    ``brainsprite.js`` rounds ``numSlice`` with ``Math.round``, which breaks
+    ties upwards, while Python's ``round`` breaks them to even. Using the
+    latter would send the same index as before this fix whenever a cut lands
+    exactly between two slices on an even voxel index, leaving the off-by-one
+    in place for those cuts.
+    """
+    n = 32
+    affine = np.diag([2.0, 2.0, 2.0, 1.0])
+
+    params = _json_view_params(
+        (n, n, n),
+        affine,
+        vmin=0,
+        vmax=1,
+        cut_slices=np.array([cut, cut, cut]),
+        html_ids=_get_brainsprite_html_ids("test-viewer"),
+    )
+
+    assert params["numSlice"] == {"X": expected, "Y": expected, "Z": expected}
+    # must survive json.dumps
+    assert all(isinstance(v, int) for v in params["numSlice"].values())
+
+
 def test_json_view_size():
     """Check that _json_view_size computes the expected viewer dimensions."""
     # Build some minimal sprite Parameters

@@ -412,7 +412,12 @@ def _json_view_params(
     # The viewer does read coordinates out as ``affine @ [numSlice + 1, ...]``
     # (see brainsprite.min.js), so the affine carries a -1 shift to cancel it;
     # otherwise the label describes the slice next to the one on screen.
-    x_slice, y_slice, z_slice = (round(c) for c in cut_slices[:3])
+    # Round the way the viewer does: ``Math.round`` breaks ties upwards whereas
+    # Python's ``round`` breaks them to even, which would leave a cut landing
+    # exactly between two slices on the same slice as before this fix.
+    x_slice, y_slice, z_slice = (
+        int(np.floor(c + 0.5)) for c in cut_slices[:3]
+    )
     readout_shift = np.eye(4)
     readout_shift[:3, 3] = -1.0
     affine = affine @ readout_shift
