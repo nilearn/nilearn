@@ -381,7 +381,7 @@ def permuted_ols(
     ----------
     tested_vars : array-like, shape=(n_samples, n_regressors)
         Numerical or boolean explanatory variates, fitted and tested
-        independently from each others.
+        independently of each other.
 
     target_vars : array-like, shape=(n_samples, n_descriptors)
         :term:`fMRI` data to analyze according
