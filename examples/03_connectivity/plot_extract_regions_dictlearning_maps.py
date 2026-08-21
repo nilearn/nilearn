@@ -7,7 +7,7 @@ to extract spatially constrained brain regions from whole brain maps decomposed
 using :term:`Dictionary learning` and use them to build
 a :term:`functional connectome`.
 
-We used 20 movie-watching functional datasets from
+We used movie-watching functional scans of 20 subjects from
 :func:`~nilearn.datasets.fetch_development_fmri` and
 :class:`~nilearn.decomposition.DictLearning` for set of brain atlas maps.
 
