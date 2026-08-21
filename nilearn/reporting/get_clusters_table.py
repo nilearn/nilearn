@@ -409,7 +409,7 @@ def get_clusters_table(
     )
 
     if not return_label_maps:
-        # TODO (nilearn >= 0.16.0) remove
+        # TODO (nilearn >= 0.17.0) remove
         warnings.warn(
             (
                 'The "return_label_maps" parameter is deprecated. '
