@@ -8,9 +8,10 @@ to :term:`fMRI` data from a movie-watching task, accessed via the
 :func:`~nilearn.datasets.fetch_development_fmri` fetcher.
 
 Note that any :sklearn:`unsupervised decomposition model
-<modules/decomposition.html>`---or other latent-factor models---can be
-accessed from scikit-learn and applied to
-the data by following the same procedure described in this example.
+<modules/decomposition.html>` --- or other latent-factor models --- can
+be accessed from `scikit-learn <https://scikit-learn.org/>`_
+and applied to the data by following the same procedure described
+in this example.
 
 For decomposition methods that are specifically
 tailored to :term:`fMRI` data, please refer to
@@ -113,8 +114,15 @@ from nilearn.plotting import plot_stat_map, show
 # Use the mean image as a background.
 mean_img = image.mean_img(func_filename)
 
-# Plot the first two components.
-plot_stat_map(image.index_img(component_img, 0), mean_img)
-plot_stat_map(image.index_img(component_img, 1), mean_img)
-
+# Plot two component images.
+plot_stat_map(image.index_img(component_img, 2), mean_img)
+plot_stat_map(image.index_img(component_img, 6), mean_img)
 show()
+
+# %%
+# We see that the generated components represent both signal
+# and noise, underscoring the complex spatiotemporal patterns
+# in real :term:`fMRI` time series.
+# For decomposition methods that are specifically
+# tailored to :term:`fMRI` data, please refer to
+# :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`.
