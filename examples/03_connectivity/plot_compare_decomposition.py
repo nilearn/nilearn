@@ -86,6 +86,10 @@ plot_prob_atlas(canica_components_img, title="All ICA components")
 
 # %%
 # Finally, we plot the map for each :term:`ICA` component separately
+# .. note::
+#
+#   The following code block will generate many figures.
+#
 from nilearn.image import iter_img
 from nilearn.plotting import plot_stat_map, show
 
@@ -133,9 +137,7 @@ dict_learning = DictLearning(
 print("[Example] Fitting dictionary learning model")
 dict_learning.fit(func_filenames)
 print("[Example] Saving results")
-# Grab extracted components umasked back to Nifti image.
-# Note: For older versions, less than 0.4.1. components_img_
-# is not implemented. See Note section above for details.
+
 dictlearning_components_img = dict_learning.components_img_
 dictlearning_components_img.to_filename(
     output_dir / "dictionary_learning_resting_state.nii.gz"
@@ -153,6 +155,10 @@ plot_prob_atlas(
 
 # %%
 # One plot of each component
+# .. note::
+#
+#   The following code block will generate many figures.
+#
 
 for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
     plot_stat_map(
