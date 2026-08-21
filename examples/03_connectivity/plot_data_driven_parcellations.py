@@ -57,10 +57,11 @@ print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 #
 # Transforming list of images to data matrix and build brain parcellations,
 # all can be done at once using `Parcellations` object.
+#
+# .. note::
+#   Computing ward for the first time, will be long... This can be seen by
+#   measuring using time
 
-
-# Computing ward for the first time, will be long... This can be seen by
-# measuring using time
 start = time.time()
 
 # Agglomerative Clustering: ward
