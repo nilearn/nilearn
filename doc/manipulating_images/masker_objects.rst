@@ -264,8 +264,8 @@ properties, before conversion to :term:`voxel` signals.
     by passing them to :meth:`NiftiMasker.transform`. If the dataset
     provides a confounds file, just pass its path to the masker. For
     :term:`fMRIPrep` outputs, one can use
-    :func:`~nilearn.interfaces.fmriprep.load_confounds` or
-    :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` to select
+    :func:`~interfaces.fmriprep.load_confounds` or
+    :func:`~interfaces.fmriprep.load_confounds_strategy` to select
     confound variables with some basic sanity check based on
     :term:`fMRIPrep` documentation.
 
@@ -281,8 +281,8 @@ properties, before conversion to :term:`voxel` signals.
 .. note::
 
    Please see the usage example of
-   :func:`~nilearn.interfaces.fmriprep.load_confounds` and
-   :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` in
+   :func:`~interfaces.fmriprep.load_confounds` and
+   :func:`~interfaces.fmriprep.load_confounds_strategy` in
    :doc:`plot_signal_extraction.py <../auto_examples/03_connectivity/plot_signal_extraction>`.
 
 .. seealso::
@@ -516,7 +516,7 @@ Extraction of signals from surface images\  :class:`SurfaceMasker`, :class:`Surf
 The purpose of :class:`SurfaceMasker`, :class:`SurfaceLabelsMasker`, :class:`SurfaceMapsMasker`
 is to mirror the capabilities of
 :class:`NiftiMasker`, :class:`NiftiLabelsMasker` and :class:`NiftiMapsMasker`
-but to extract data from :class:`~nilearn.surface.SurfaceImage`.
+but to extract data from :class:`~surface.SurfaceImage`.
 
 They can perform data extraction from 1D surface data (n_vertices),
 2D surface data (n_vertices x samples)

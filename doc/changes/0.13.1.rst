@@ -18,7 +18,7 @@ Fixes
 
 - :bdg-dark:`Code` Only throw warning about non-interactive plotting backend when using :func:`nilearn.plotting.show` (:gh:`5929` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Re-allow use non-multi maskers for :class:`~nilearn.regions.Parcellations` (:gh:`5930` by `Rémi Gau`_).
+- :bdg-dark:`Code` Re-allow use non-multi maskers for :class:`~regions.Parcellations` (:gh:`5930` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Change default slice order of slicers and projectors to be x, y, z. (:gh:`5944` by `Hande Gözükan`_).
 

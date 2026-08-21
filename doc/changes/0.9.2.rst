@@ -40,7 +40,7 @@ Fixes
 
 - :bdg-dark:`Code` Fix usage of ``scipy.stats.gamma.pdf`` in ``_gamma_difference_hrf`` function under ``nilearn/glm/first_level/hemodynamic_models.py``, which resulted in slight distortion of HRF (:gh:`3297` by `Kun CHEN`_).
 
-- :bdg-dark:`Code` Fix bug introduced due to a fix in the pre-release version of scipy (``1.9.0rc1``) which now enforces that elements of a band-pass filter must meet condition ``Wn[0] < Wn[1]``. Now if band-pass elements are equal :func:`~nilearn.signal.butterworth` returns an unfiltered signal with a warning (:gh:`3293` by `Yasmin Mzayek`_).
+- :bdg-dark:`Code` Fix bug introduced due to a fix in the pre-release version of scipy (``1.9.0rc1``) which now enforces that elements of a band-pass filter must meet condition ``Wn[0] < Wn[1]``. Now if band-pass elements are equal :func:`~signal.butterworth` returns an unfiltered signal with a warning (:gh:`3293` by `Yasmin Mzayek`_).
 
 - :bdg-primary:`Doc` Fix the typographic error on the page :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_adhd_dmn.py` (:gh:`3337` by `Sachin Patalasingh`_).
 
@@ -56,7 +56,7 @@ Fixes
 
 - :bdg-info:`Plotting` The parameter ``alpha`` is now correctly passed to :func:`~plotting.plot_glass_brain` in :func:`~plotting.plot_connectome` (:gh:`3306` by `Koen Helwegen`_).
 
-- :bdg-info:`Plotting` Fix plotting of background image in :func:`~nilearn.plotting.view_img` when the background is not the MNI template (:gh:`3312` by `Jerome Dockes`_).
+- :bdg-info:`Plotting` Fix plotting of background image in :func:`~plotting.view_img` when the background is not the MNI template (:gh:`3312` by `Jerome Dockes`_).
 
 Enhancements
 ------------
@@ -71,7 +71,7 @@ Enhancements
 
 - :bdg-dark:`Code` In :func:`~reporting.get_clusters_table`, when the center of mass of a binary cluster falls outside the cluster, report the nearest within-cluster voxel instead (:gh:`3292` by `Connor Lane`_).
 
-- :bdg-primary:`Doc` Docstrings of module :mod:`~nilearn.glm.second_level` were improved (:gh:`3030` by `Nicolas Gensollen`_).
+- :bdg-primary:`Doc` Docstrings of module :mod:`~glm.second_level` were improved (:gh:`3030` by `Nicolas Gensollen`_).
 
 - :bdg-primary:`Doc` Contributing guidelines now include a recommendation to run flake8 locally on the branch diff with main (:gh:`3317` by `Yasmin Mzayek`_).
 
@@ -98,7 +98,7 @@ Changes
 
 - :bdg-secondary:`Maint` Refactors fmriprep confound loading such that that the parsing of the relevant image file and the loading of the confounds are done in separate steps (:gh:`3274` by `David G Ellis`_).
 
-- :bdg-secondary:`Maint` Private submodules, functions, and classes from the :mod:`~nilearn.decomposition` module now start with a "_" character to make it clear that they are not part of the public API (:gh:`3141` by `Nicolas Gensollen`_).
+- :bdg-secondary:`Maint` Private submodules, functions, and classes from the :mod:`~decomposition` module now start with a "_" character to make it clear that they are not part of the public API (:gh:`3141` by `Nicolas Gensollen`_).
 
 - :bdg-secondary:`Maint` Convert references in ``nilearn/glm/regression.py`` and ``nilearn/glm/thresholding.py`` to use footcite/footbibliography (:gh:`3302` by `Ahmad Chamma`_).
 

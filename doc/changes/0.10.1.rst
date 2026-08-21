@@ -17,11 +17,11 @@ NEW
 Fixes
 -----
 
-- :bdg-success:`API` :func:`~nilearn.interfaces.fmriprep.load_confounds` can support searching preprocessed data in native space. (:gh:`3531` by `Hao-Ting Wang`_)
+- :bdg-success:`API` :func:`~interfaces.fmriprep.load_confounds` can support searching preprocessed data in native space. (:gh:`3531` by `Hao-Ting Wang`_)
 
 - :bdg-success:`API` :func:`~glm.second_level.non_parametric_inference` can accept first level model as input without failing. (:gh:`3600` by `Rémi Gau`_)
 
-- :bdg-success:`API` The label of the clusters in the label maps returned by :func:`~nilearn.reporting.get_clusters_table` now matches the Cluster IDs in the clusters table (:gh:`3563` by `Julio A Peraza`_).
+- :bdg-success:`API` The label of the clusters in the label maps returned by :func:`~reporting.get_clusters_table` now matches the Cluster IDs in the clusters table (:gh:`3563` by `Julio A Peraza`_).
 
 - :bdg-dark:`Code` Fixes several bugs in :func:`~glm.first_level.first_level_from_bids`. Refactors :func:`~glm.first_level.first_level_from_bids` and ``nilearn._utils.data_gen.create_fake_bids_dataset``. (:gh:`3525` by `Rémi Gau`_).
 
@@ -49,15 +49,15 @@ Enhancements
 Changes
 -------
 
-- :bdg-success:`API` The behavior of :func:`~nilearn.datasets.fetch_atlas_craddock_2012`, :func:`~nilearn.datasets.fetch_atlas_smith_2009` and :func:`~nilearn.datasets.fetch_atlas_basc_multiscale_2015` is updated with their new parameters to return one map along with a deprecation cycle (:gh:`3353` by `Ahmad Chamma`_).
+- :bdg-success:`API` The behavior of :func:`~datasets.fetch_atlas_craddock_2012`, :func:`~datasets.fetch_atlas_smith_2009` and :func:`~datasets.fetch_atlas_basc_multiscale_2015` is updated with their new parameters to return one map along with a deprecation cycle (:gh:`3353` by `Ahmad Chamma`_).
 
 - :bdg-dark:`Code` Extract helper-functions for input-image validation from :func:`~regions.img_to_signals_labels`, :func:`~regions.signals_to_img_labels`, :func:`~regions.img_to_signals_maps` :func:`~regions.signals_to_img_maps` (:gh:`3523` by `Rémi Gau`_ and `Christian Gerloff`_).
 
 - :bdg-primary:`Doc` Examples are updated with the new atlas API :ref:`sphx_glr_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py`, :ref:`sphx_glr_auto_examples_01_plotting_plot_multiscale_parcellations.py` and :ref:`sphx_glr_auto_examples_01_plotting_plot_prob_atlas.py` (:gh:`3557` by `Ahmad Chamma`_).
 
-- :bdg-primary:`Doc` Update the references format of the functions :func:`~nilearn.decomposition.CanICA` and :func:`~nilearn.decomposition.DictLearning` with bibtex (:gh:`3558` by `Ahmad Chamma`_)
+- :bdg-primary:`Doc` Update the references format of the functions :func:`~decomposition.CanICA` and :func:`~decomposition.DictLearning` with bibtex (:gh:`3558` by `Ahmad Chamma`_)
 
-- :bdg-secondary:`Maint` Modules :mod:`~nilearn.image` code and docstrings have been reformatted using black. Changes resulted in improved readability overall and increased consistency (:gh:`3548` by `Rémi Gau`_).
+- :bdg-secondary:`Maint` Modules :mod:`~image` code and docstrings have been reformatted using black. Changes resulted in improved readability overall and increased consistency (:gh:`3548` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` Examples have been made PEP8 compliant and reformatted using black. (:gh:`3549`, :gh:`3550`, :gh:`3551`, :gh:`3552`, :gh:`3553`, :gh:`3554`, :gh:`3555`,  by `Rémi Gau`_).
 
@@ -75,9 +75,9 @@ This is a pre-release.
 Fixes
 -----
 
-- :bdg-success:`API` :func:`~nilearn.glm.second_level.non_parametric_inference` now supports confounding variates when they are available in the input design matrix :func:`~nilearn.mass_univariate.permuted_ols` (:gh:`3465` by `Jelle Roelof Dalenberg`_).
+- :bdg-success:`API` :func:`~glm.second_level.non_parametric_inference` now supports confounding variates when they are available in the input design matrix :func:`~mass_univariate.permuted_ols` (:gh:`3465` by `Jelle Roelof Dalenberg`_).
 
-- :bdg-success:`API` :func:`~nilearn.mass_univariate.permuted_ols` now checks if confounding variates contain a intercept and raises an warning when multiple intercepts are defined across target and confounding variates (:gh:`3465` by `Jelle Roelof Dalenberg`_).
+- :bdg-success:`API` :func:`~mass_univariate.permuted_ols` now checks if confounding variates contain a intercept and raises an warning when multiple intercepts are defined across target and confounding variates (:gh:`3465` by `Jelle Roelof Dalenberg`_).
 
 - :bdg-dark:`Code` Restore :func:`~image.resample_img` compatibility with all :class:`nibabel.spatialimages.SpatialImage` objects (:gh:`3462` by `Mathias Goncalves`_).
 
@@ -95,4 +95,4 @@ Changes
 
 - :bdg-primary:`Doc` The documentation for :func:`~image.threshold_img` has been improved, with more information about which voxels are set to 0 and which ones keep their original values (:gh:`3485` by `Rémi Gau`_).
 
-- :bdg-secondary:`Maint` Modules :mod:`~nilearn.decomposition` and :mod:`~nilearn.decoding` code and docstrings have been reformatted using black. Changes resulted in improved readability overall and increased consistency (:gh:`3491` and :gh:`3484` by `Rémi Gau`_).
+- :bdg-secondary:`Maint` Modules :mod:`~decomposition` and :mod:`~decoding` code and docstrings have been reformatted using black. Changes resulted in improved readability overall and increased consistency (:gh:`3491` and :gh:`3484` by `Rémi Gau`_).

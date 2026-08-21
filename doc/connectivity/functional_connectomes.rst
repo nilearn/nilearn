@@ -80,13 +80,13 @@ Note that confound signals can be specified in the call. Indeed, to
 obtain time series that capture well the functional interactions between
 regions, regressing out noise sources is very important (:footcite:t:`Varoquaux2013`).
 For data processed by :term:`fMRIPrep`,
-:func:`~nilearn.interfaces.fmriprep.load_confounds` and
-:func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` can help you
+:func:`~interfaces.fmriprep.load_confounds` and
+:func:`~interfaces.fmriprep.load_confounds_strategy` can help you
 retrieve confound variables.
-:func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` selects confounds
+:func:`~interfaces.fmriprep.load_confounds_strategy` selects confounds
 based on past literature with limited parameters for customization.
 For more freedoms of confounds selection,
-:func:`~nilearn.interfaces.fmriprep.load_confounds` groups confound variables as
+:func:`~interfaces.fmriprep.load_confounds` groups confound variables as
 sets of noise components and one can fine tune each of the parameters.
 
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_signal_extraction_001.png
@@ -114,11 +114,11 @@ sets of noise components and one can fine tune each of the parameters.
    * Inspect the '.keys()' of the object returned by
      :func:`nilearn.datasets.fetch_development_fmri`.
 
-   * Use :func:`~nilearn.interfaces.fmriprep.load_confounds` to get a set of
+   * Use :func:`~interfaces.fmriprep.load_confounds` to get a set of
      confounds of your choice. (Note: CompCor and ICA-AROMA related options are
      not applicable to the brain development dataset).
 
-   * Use :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` to get a
+   * Use :func:`~interfaces.fmriprep.load_confounds_strategy` to get a
      set of confounds. (Note: only ``simple`` and ``scrubbing`` are applicable
      to the brain development dataset).
 

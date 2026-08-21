@@ -6,7 +6,7 @@ Region Extraction for better brain parcellations
 
 .. topic:: **Page summary**
 
-   This section shows how to use :class:`~nilearn.regions.RegionExtractor`
+   This section shows how to use :class:`~regions.RegionExtractor`
    to extract connected regions/components into a separate brain
    region and also shows how to learn functional connectivity
    interactions between each separate region.
@@ -87,7 +87,7 @@ the maps data.
 The parameter ``min_region_size=1350 mm^3`` is to keep the minimum number of extracted
 regions. We control the small spurious regions size by thresholding in :term:`voxel`
 units to adapt well to the resolution of the image. Please see the documentation of
-:func:`~nilearn.regions.connected_regions` for more details.
+:func:`~regions.connected_regions` for more details.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # more intense non-voxels will be survived.

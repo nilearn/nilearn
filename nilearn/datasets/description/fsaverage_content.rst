@@ -30,6 +30,6 @@ Data
 
 See Also
 --------
-See :func:`~nilearn.datasets.load_fsaverage` and
-:func:`~nilearn.datasets.load_fsaverage_data`
-to access fsaverage data as :obj:`~nilearn.surface.SurfaceImage`.
+See :func:`~datasets.load_fsaverage` and
+:func:`~datasets.load_fsaverage_data`
+to access fsaverage data as :obj:`~surface.SurfaceImage`.

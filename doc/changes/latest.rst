@@ -60,19 +60,19 @@ Enhancements
 
 - :bdg-dark:`Code` Improve type annotations (and :obj:`~typing.overload` signatures where the return type depends on the arguments given) in :mod:`nilearn.glm` (:gh:`6370`), :mod:`nilearn.regions` (:gh:`6369`), :mod:`nilearn.connectome` (:gh:`6368`), :mod:`nilearn.reporting` (:gh:`6368`), :mod:`nilearn.interfaces` (:gh:`6362`), :mod:`nilearn.image` (:gh:`6408`, :gh:`6438`), :mod:`nilearn.utils`, :mod:`nilearn.surface` (:gh:`6410`), :mod:`nilearn.datasets`  (:gh:`6438`),  :mod:`nilearn.plotting` (:gh:`6438` and :gh:`6439`),  :mod:`nilearn.glm` and :mod:`nilearn.mass_univariate` (:gh:`6439`) (by `Rémi Gau`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.masking.compute_epi_mask` (:gh:`6306` by `Marco Flores`_).
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~masking.compute_epi_mask` (:gh:`6306` by `Marco Flores`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring section to :func:`~nilearn.utils.all_displays`, :func:`~nilearn.utils.all_estimators`, :func:`~nilearn.utils.all_functions` (:gh:`6322`, :gh:`6324`, :gh:`6325` by `Alice Schiavone`_).
+- :bdg-primary:`Doc` Add ``Examples`` docstring section to :func:`~utils.all_displays`, :func:`~utils.all_estimators`, :func:`~utils.all_functions` (:gh:`6322`, :gh:`6324`, :gh:`6325` by `Alice Schiavone`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.iter_img` (:gh:`6304` by `Ruben Dörfel`_).
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~image.iter_img` (:gh:`6304` by `Ruben Dörfel`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.plotting.plot_design_matrix` (:gh:`6380` by `Nirmitee Mulay`_).
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~plotting.plot_design_matrix` (:gh:`6380` by `Nirmitee Mulay`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.signal.butterworth` function (:gh:`6311` by `Hande Gözükan`_).
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~signal.butterworth` function (:gh:`6311` by `Hande Gözükan`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.regions.img_to_signals_labels` function (:gh:`6315` by `Hande Gözükan`_).
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~regions.img_to_signals_labels` function (:gh:`6315` by `Hande Gözükan`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.plotting.plot_design_matrix_correlation` function (:gh:`6413` by `Nirmitee Mulay`_).
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~plotting.plot_design_matrix_correlation` function (:gh:`6413` by `Nirmitee Mulay`_).
 
 Changes
 -------

@@ -57,8 +57,8 @@ to help users analyze their own fMRI data with the meaning of analysis levels be
     and run one model per run
     (see for example :ref:`this report with 2 runs <two_runs_glm>`).
     In Nilearn, to compute summary statistics across runs
-    you can use the method :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`
-    or the function :func:`~nilearn.glm.compute_fixed_effects`.
+    you can use the method :meth:`~glm.first_level.FirstLevelModel.compute_contrast`
+    or the function :func:`~glm.compute_fixed_effects`.
 
     .. seealso::
 
