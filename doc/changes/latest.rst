@@ -58,7 +58,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-dark:`Code` Improve type annotations (and :obj:`~typing.overload` signatures where the return type depends on the arguments given) in :mod:`~glm` (:gh:`6370`), :mod:`~regions` (:gh:`6369`), :mod:`~connectome` (:gh:`6368`), :mod:`~reporting` (:gh:`6368`), :mod:`~interfaces` (:gh:`6362`), :mod:`~image` (:gh:`6408`, :gh:`6438`), :mod:`~utils`, :mod:`~surface` (:gh:`6410`), :mod:`~datasets`  (:gh:`6438`),  :mod:`~plotting` (:gh:`6438` and :gh:`6439`),  :mod:`~glm` and :mod:`~mass_univariate` (:gh:`6439`) (by `Rémi Gau`_).
+- :bdg-dark:`Code` Improve type annotations (and :obj:`~typing.overload` signatures where the return type depends on the arguments given) in :mod:`~nilearn.glm` (:gh:`6370`), :mod:`~nilearn.regions` (:gh:`6369`), :mod:`~nilearn.connectome` (:gh:`6368`), :mod:`~nilearn.reporting` (:gh:`6368`), :mod:`~nilearn.interfaces` (:gh:`6362`), :mod:`~nilearn.image` (:gh:`6408`, :gh:`6438`), :mod:`~nilearn.utils`, :mod:`~nilearn.surface` (:gh:`6410`), :mod:`~nilearn.datasets`  (:gh:`6438`),  :mod:`~nilearn.plotting` (:gh:`6438` and :gh:`6439`),  :mod:`~nilearn.glm` and :mod:`~nilearn.mass_univariate` (:gh:`6439`) (by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~masking.compute_epi_mask` (:gh:`6306` by `Marco Flores`_).
 

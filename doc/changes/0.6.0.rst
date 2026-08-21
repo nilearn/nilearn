@@ -41,7 +41,7 @@ NEW
 ENHANCEMENTS
 ------------
 
-- :bdg-success:`API` Rework of the standardize-options of function :func:`~signal.clean` and the various Maskers in :mod:`~maskers`. You can now set ``standardize`` to ``zscore`` or ``psc``. ``psc`` stands for ``Percent Signal Change``, which can be a meaningful metric for :term:`BOLD` (:gh:`1952` by `Gilles de Hollander`_).
+- :bdg-success:`API` Rework of the standardize-options of function :func:`~signal.clean` and the various Maskers in :mod:`~nilearn.maskers`. You can now set ``standardize`` to ``zscore`` or ``psc``. ``psc`` stands for ``Percent Signal Change``, which can be a meaningful metric for :term:`BOLD` (:gh:`1952` by `Gilles de Hollander`_).
 
 - :bdg-success:`API` Class :class:`~maskers.NiftiLabelsMasker` now accepts an optional ``strategy`` parameter which allows it to change the function used to reduce values within each labeled ROI. Available functions include ``mean``, ``median``, ``minimum``, ``maximum``, ``standard_deviation`` and ``variance``. This change is also introduced in function :func:`~regions.img_to_signals_labels` (:gh:`2221` by `Daniel Gomez`_).
 
@@ -205,7 +205,7 @@ NEW
 Changes
 -------
 
-- :bdg-success:`API` Rework of the standardize-options of function :func:`~signal.clean` and the various Maskers in :mod:`~maskers`. You can now set ``standardize`` to ``zscore`` or ``psc``. ``psc`` stands for ``Percent Signal Change``, which can be a meaningful metric for :term:`BOLD` (:gh:`1952` by `Gilles de Hollander`_).
+- :bdg-success:`API` Rework of the standardize-options of function :func:`~signal.clean` and the various Maskers in :mod:`~nilearn.maskers`. You can now set ``standardize`` to ``zscore`` or ``psc``. ``psc`` stands for ``Percent Signal Change``, which can be a meaningful metric for :term:`BOLD` (:gh:`1952` by `Gilles de Hollander`_).
 
 - :bdg-primary:`Doc` Examples ``plot_decoding_tutorial``, ``plot_haxby_decoder``, ``plot_haxby_different_estimators``, ``plot_haxby_full_analysis``, ``plot_oasis_vbm`` now use :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` instead of sklearn SVC and SVR (:gh:`2000` by `Binh Nguyen`_).
 

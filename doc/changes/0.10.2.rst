@@ -118,6 +118,6 @@ Changes
 
 - :bdg-secondary:`Maint` Refactor error raising tests using context managers (:gh:`3854` BY `François Paugam`_)
 
-- :bdg-secondary:`Maint` Move the ``~plotting.html_surface._mix_colormaps`` to ``cm.py`` in :mod:`~plotting` (:gh:`3919` by `Ahmad Chamma`_)
+- :bdg-secondary:`Maint` Move the ``~plotting.html_surface._mix_colormaps`` to ``cm.py`` in :mod:`~nilearn.plotting` (:gh:`3919` by `Ahmad Chamma`_)
 
 - :bdg-secondary:`Maint` Remove deprecation decorator from ``~glm.regression`` (:gh:`3921` by `Ahmad Chamma`_)

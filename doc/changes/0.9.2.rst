@@ -71,7 +71,7 @@ Enhancements
 
 - :bdg-dark:`Code` In :func:`~reporting.get_clusters_table`, when the center of mass of a binary cluster falls outside the cluster, report the nearest within-cluster voxel instead (:gh:`3292` by `Connor Lane`_).
 
-- :bdg-primary:`Doc` Docstrings of module :mod:`~glm.second_level` were improved (:gh:`3030` by `Nicolas Gensollen`_).
+- :bdg-primary:`Doc` Docstrings of module :mod:`~nilearn.glm.second_level` were improved (:gh:`3030` by `Nicolas Gensollen`_).
 
 - :bdg-primary:`Doc` Contributing guidelines now include a recommendation to run flake8 locally on the branch diff with main (:gh:`3317` by `Yasmin Mzayek`_).
 
@@ -98,7 +98,7 @@ Changes
 
 - :bdg-secondary:`Maint` Refactors fmriprep confound loading such that that the parsing of the relevant image file and the loading of the confounds are done in separate steps (:gh:`3274` by `David G Ellis`_).
 
-- :bdg-secondary:`Maint` Private submodules, functions, and classes from the :mod:`~decomposition` module now start with a "_" character to make it clear that they are not part of the public API (:gh:`3141` by `Nicolas Gensollen`_).
+- :bdg-secondary:`Maint` Private submodules, functions, and classes from the :mod:`~nilearn.decomposition` module now start with a "_" character to make it clear that they are not part of the public API (:gh:`3141` by `Nicolas Gensollen`_).
 
 - :bdg-secondary:`Maint` Convert references in ``nilearn/glm/regression.py`` and ``nilearn/glm/thresholding.py`` to use footcite/footbibliography (:gh:`3302` by `Ahmad Chamma`_).
 

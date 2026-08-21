@@ -103,7 +103,7 @@ Changes
 
   (:gh:`2869` by `Nicolas Gensollen`_).
 
-- :bdg-danger:`Deprecation` Function ``sym_to_vec`` from :mod:`~connectome` was deprecated since release ``0.4`` and has been removed (:gh:`2867` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Function ``sym_to_vec`` from :mod:`~nilearn.connectome` was deprecated since release ``0.4`` and has been removed (:gh:`2867` by `Nicolas Gensollen`_).
 
 - :bdg-danger:`Deprecation` Function ``nilearn.datasets.fetch_nyu_rest`` was deprecated since release ``0.6.2`` and has been removed (:gh:`2868` by `Nicolas Gensollen`_).
 

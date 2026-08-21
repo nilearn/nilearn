@@ -33,7 +33,7 @@ Enhancements
 
 - :bdg-primary:`Doc` Terms :term:`Probabilistic atlas` and :term:`Deterministic atlas` were added to the glossary and references were added to atlas fetchers (:gh:`3152` by `Nicolas Gensollen`_).
 
-- :bdg-secondary:`Maint` Functions in :mod:`~datasets` have been organized by the type of data in the references page and :func:`~datasets.fetch_mixed_gambles` has been added to the documentation (:gh:`3207` by `Taylor Salo`_).
+- :bdg-secondary:`Maint` Functions in :mod:`~nilearn.datasets` have been organized by the type of data in the references page and :func:`~datasets.fetch_mixed_gambles` has been added to the documentation (:gh:`3207` by `Taylor Salo`_).
 
 Changes
 -------
