@@ -58,21 +58,25 @@ def _configure_grid(axes, tri, size) -> None:
     if tri == "lower":
         for i in range(size):
             # Correct for weird mis-sizing
-            i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="gray")
-            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
+            pos = 1.001 * i
+            axes.plot(
+                [pos + 0.5, pos + 0.5], [size - 0.5, pos + 0.5], color="gray"
+            )
+            axes.plot([pos + 0.5, -0.5], [pos + 0.5, pos + 0.5], color="gray")
     elif tri == "diag":
         for i in range(size):
             # Correct for weird mis-sizing
-            i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="gray")
-            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color="gray")
+            pos = 1.001 * i
+            axes.plot(
+                [pos + 0.5, pos + 0.5], [size - 0.5, pos - 0.5], color="gray"
+            )
+            axes.plot([pos + 0.5, -0.5], [pos - 0.5, pos - 0.5], color="gray")
     else:
         for i in range(size):
             # Correct for weird mis-sizing
-            i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color="gray")
-            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
+            pos = 1.001 * i
+            axes.plot([pos + 0.5, pos + 0.5], [size - 0.5, -0.5], color="gray")
+            axes.plot([size - 0.5, -0.5], [pos + 0.5, pos + 0.5], color="gray")
 
 
 def _fit_axes(axes) -> None:
@@ -273,11 +277,11 @@ def plot_matrix(
 
     """
     check_params(locals())
-    labels, reorder, fig, axes, _ = _sanitize_inputs_plot_matrix(
+    labels, reorder_method, fig, axes, _ = _sanitize_inputs_plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
-    if reorder:
-        mat, labels = reorder_matrix(mat, labels, reorder)
+    if reorder_method:
+        mat, labels = reorder_matrix(mat, labels, reorder_method)
     if tri != "full":
         mat = mask_matrix(mat, tri)
 
