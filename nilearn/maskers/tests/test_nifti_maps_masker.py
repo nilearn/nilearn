@@ -532,3 +532,12 @@ def test_nifti_maps_masker_overlap(maps_img_fn, allow_overlap, img_fmri):
             masker.fit_transform(img_fmri)
     else:
         masker.fit_transform(img_fmri)
+
+
+def test_maps_img_negative_values(
+    matplotlib_pyplot, rng, affine_eye, shape_4d_default
+):
+    """Smoke test for radiological view."""
+    data = rng.random(shape_4d_default) * -1
+    img_neg_values = Nifti1Image(data, affine_eye)
+    NiftiMapsMasker(img_neg_values, standardize=None).fit()
