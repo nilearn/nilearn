@@ -59,7 +59,7 @@ Fixes
 
 - :bdg-dark:`Code` Fixed inheritance of decoder classes to keep compatibility with scikit-learn>v1.3 (:gh:`4188` by `Yasmin Mzayek`_).
 
-- :bdg-danger:`Deprecation` Make sure that all the fetchers for ``atlas`` and ``func`` from :mod:`nilearn.datasets` return a :class:`sklearn.utils.Bunch`. Add new behavior to :func:`~datasets.fetch_language_localizer_demo_dataset` to return output as ``Bunch``. This behavior will become the default in version 0.13.0 (:gh:`4233` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` Make sure that all the fetchers for ``atlas`` and ``func`` from :mod:`~datasets` return a :class:`sklearn.utils.Bunch`. Add new behavior to :func:`~datasets.fetch_language_localizer_demo_dataset` to return output as ``Bunch``. This behavior will become the default in version 0.13.0 (:gh:`4233` by `Rémi Gau`_).
 
 Enhancements
 ------------

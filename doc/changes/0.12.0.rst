@@ -22,7 +22,7 @@ HIGHLIGHTS
 
 - More uniform look for all nilearn masker and glm reports. Improved user interface of the GLM reports.
 
-- Fixes the behavior of :class:`nilearn.decoding.Decoder` where it used to set the score to zero if all coefficients are zero, irrespective of the scoring metric used. This change ensures that the average cross-validated scores are comparable to a pure scikit-learn implementation. (:gh:`5097`).
+- Fixes the behavior of :class:`~decoding.Decoder` where it used to set the score to zero if all coefficients are zero, irrespective of the scoring metric used. This change ensures that the average cross-validated scores are comparable to a pure scikit-learn implementation. (:gh:`5097`).
 
 - Improve compliance of nilearn maskers, GLM and decoder estimators with scikit-learn estimators guidelines.
 
@@ -49,7 +49,7 @@ Fixes
 
 - :bdg-dark:`Code` Ensure that only valid surface meshes can be instantiated. (:gh:`5036` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Do not set score to zero if all coefficients are zero in :class:`nilearn.decoding.Decoder` and ensure average scores are comparable to a pure scikit-learn implementation (:gh:`5097` by `Himanshu Aggarwal`_).
+- :bdg-dark:`Code` Do not set score to zero if all coefficients are zero in :class:`~decoding.Decoder` and ensure average scores are comparable to a pure scikit-learn implementation (:gh:`5097` by `Himanshu Aggarwal`_).
 
 - :bdg-dark:`Code` New interpolation method (``method='nearest_most_frequent'``) for :func:`~surface.vol_to_surf` to better handle deterministic atlases by assigning most frequent voxel value in the neighborhood of a vertex (:gh:`5169` by `Himanshu Aggarwal`_).
 
@@ -70,7 +70,7 @@ Enhancements
 
 - :bdg-dark:`Code` Extend :func:`~masking.apply_mask` to work with :class:`~surface.SurfaceImage` (:gh:`5277` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Add different reduction strategies to :class:`nilearn.maskers.SurfaceLabelsMasker` (:gh:`4809` by `Rémi Gau`_).
+- :bdg-dark:`Code` Add different reduction strategies to :class:`~maskers.SurfaceLabelsMasker` (:gh:`4809` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add reports for the surface based GLMs (:gh:`4442` by `Rémi Gau`_).
 
@@ -88,13 +88,13 @@ Enhancements
 
 - :bdg-dark:`Code` Add an ``"atlas_type"`` metadata to each atlas (:gh:`4820` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Add ``n_networks`` and ``thickness`` parameters to :func:`nilearn.datasets.fetch_atlas_yeo_2011` to specify which parcellation should be returned :gh:`5085` by `Rémi Gau`_).
+- :bdg-dark:`Code` Add ``n_networks`` and ``thickness`` parameters to :func:`~datasets.fetch_atlas_yeo_2011` to specify which parcellation should be returned :gh:`5085` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add reports for SurfaceMapsMasker (:gh:`4968` by `Himanshu Aggarwal`_).
 
 - :bdg-info:`Plotting` Add radiological view and left right labels to :func:`~plotting.view_img` (:gh:`5346` by `Rohan Thomas Jepegnanam`_).
 
-- :bdg-info:`Plotting` ``transparency`` and ``transparency_range`` parameters have been added to the :meth:`nilearn.plotting.displays.BaseSlicer.add_overlay` (and therefore to the all classes inheriting :class:`~plotting.displays.BaseSlicer`). These parameters were also explicitly added to the plotting functions :func:`~plotting.plot_img`, :func:`~plotting.plot_stat_map`, :func:`~plotting.plot_glass_brain` (:gh:`5151` by `Rémi Gau`_ and :gh:`5371` by `Hande Gözükan`_).
+- :bdg-info:`Plotting` ``transparency`` and ``transparency_range`` parameters have been added to the :meth:`~plotting.displays.BaseSlicer.add_overlay` (and therefore to the all classes inheriting :class:`~plotting.displays.BaseSlicer`). These parameters were also explicitly added to the plotting functions :func:`~plotting.plot_img`, :func:`~plotting.plot_stat_map`, :func:`~plotting.plot_glass_brain` (:gh:`5151` by `Rémi Gau`_ and :gh:`5371` by `Hande Gözükan`_).
 
 - :bdg-info:`Plotting` Add a :func:`~plotting.plot_bland_altman` to create Bland-Altman plots to compare images (:gh:`5112` by `Rémi Gau`_).
 
@@ -119,7 +119,7 @@ Changes
 
 - :bdg-danger:`Deprecation` In version >=0.13.0, the parameter ``img`` or  ``X`` will be renamed to ``imgs`` for the ``fit``, ``transform`` and ``fit_transform`` method of all the surface maskers, the fit method of the :class:`~maskers.NiftiSpheresMasker` and the :class:`~regions.RegionExtractor`, and the ``fit_transform`` method of the  :class:`~maskers.NiftiMasker` (:gh:`5262` by `Rémi Gau`_).
 
-- :bdg-danger:`Deprecation` From version >=0.13.0, :func:`nilearn.datasets.fetch_atlas_yeo_2011` will return a single parcellation (:gh:`5085` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` From version >=0.13.0, :func:`~datasets.fetch_atlas_yeo_2011` will return a single parcellation (:gh:`5085` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` For version >=0.13.0 :func:`~interfaces.bids.parse_bids_filename` will return a dictionary whose keys correspond to valid BIDS terms. (:gh:`5320` by `Rémi Gau`_).
 

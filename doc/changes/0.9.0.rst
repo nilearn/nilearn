@@ -23,7 +23,7 @@ HIGHLIGHTS
  | - Pandas -- v1.0
  | - Joblib -- v0.15
 
-- :bdg-success:`API` New module :mod:`nilearn.interfaces` to implement loading and saving utilities with various interfaces (:term:`fMRIPrep`, :term:`BIDS`...) (:gh:`3061` by `Nicolas Gensollen`_).
+- :bdg-success:`API` New module :mod:`~interfaces` to implement loading and saving utilities with various interfaces (:term:`fMRIPrep`, :term:`BIDS`...) (:gh:`3061` by `Nicolas Gensollen`_).
 
 - :bdg-success:`API` New functions :func:`~interfaces.fmriprep.load_confounds` and :func:`~interfaces.fmriprep.load_confounds_strategy` to load confound variables easily from :term:`fMRIPrep` outputs (:gh:`2946` and :gh:`3016` by `Hao-Ting Wang`_).
 
@@ -31,7 +31,7 @@ HIGHLIGHTS
 
 - :bdg-success:`API` Class :class:`~maskers.NiftiMapsMasker` can now generate HTML reports in the same way as :class:`~maskers.NiftiMasker` and :class:`~maskers.NiftiLabelsMasker` (:gh:`2880` by `Nicolas Gensollen`_).
 
-- :bdg-danger:`Deprecation` Masker objects like :class:`~maskers.NiftiMasker` now belong to the new module :mod:`nilearn.maskers`. The old import style, through the module ``input_data``, still works but has been deprecated (:gh:`3065` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Masker objects like :class:`~maskers.NiftiMasker` now belong to the new module :mod:`~maskers`. The old import style, through the module ``input_data``, still works but has been deprecated (:gh:`3065` by `Nicolas Gensollen`_).
 
 - :bdg-primary:`Doc` The :doc:`contributing documentation</development>` and :doc:`maintenance</maintenance>` pages were improved (:gh:`3010` by `Nicolas Gensollen`_).
 
@@ -40,21 +40,21 @@ HIGHLIGHTS
 NEW
 ---
 
-- :bdg-success:`API` New module :mod:`nilearn.interfaces` to implement loading and saving utilities with various interfaces (:term:`fMRIPrep`, :term:`BIDS`...) (:gh:`3061` by `Nicolas Gensollen`_).
+- :bdg-success:`API` New module :mod:`~interfaces` to implement loading and saving utilities with various interfaces (:term:`fMRIPrep`, :term:`BIDS`...) (:gh:`3061` by `Nicolas Gensollen`_).
 
-- :bdg-success:`API` New submodule :mod:`nilearn.interfaces.fmriprep` to implement loading utilities for :term:`fMRIPrep` (:gh:`3061` by `Nicolas Gensollen`_).
+- :bdg-success:`API` New submodule :mod:`~interfaces.fmriprep` to implement loading utilities for :term:`fMRIPrep` (:gh:`3061` by `Nicolas Gensollen`_).
 
 - :bdg-success:`API` New function :func:`~interfaces.fmriprep.load_confounds` to load confound variables easily from :term:`fMRIPrep` outputs (:gh:`2946` by `Hao-Ting Wang`_).
 
 - :bdg-success:`API` New function :func:`~interfaces.fmriprep.load_confounds_strategy` to load confound variables from :term:`fMRIPrep` outputs using four preset strategies: ``simple``, ``scrubbing``, ``compcor``, and ``ica_aroma`` (:gh:`3016` by `Hao-Ting Wang`_).
 
-- :bdg-success:`API` New submodule :mod:`nilearn.interfaces.bids` to implement loading utilities for :term:`BIDS` datasets (:gh:`3126` by `Taylor Salo`_).
+- :bdg-success:`API` New submodule :mod:`~interfaces.bids` to implement loading utilities for :term:`BIDS` datasets (:gh:`3126` by `Taylor Salo`_).
 
 - :bdg-success:`API` New function :func:`~interfaces.bids.get_bids_files` to select files easily from :term:`BIDS` datasets (:gh:`3126` by `Taylor Salo`_).
 
 - :bdg-success:`API` New function :func:`~interfaces.bids.parse_bids_filename` to identify subparts of :term:`BIDS` filenames (:gh:`3126` by `Taylor Salo`_).
 
-- :bdg-success:`API` New submodule :mod:`nilearn.interfaces.fsl` to implement loading utilities for FSL outputs. (:gh:`3126` by `Taylor Salo`_).
+- :bdg-success:`API` New submodule :mod:`~interfaces.fsl` to implement loading utilities for FSL outputs. (:gh:`3126` by `Taylor Salo`_).
 
 - :bdg-success:`API` New function :func:`~interfaces.fsl.get_design_from_fslmat` to load design matrices from FSL files (:gh:`3126` by `Taylor Salo`_).
 
@@ -64,7 +64,7 @@ NEW
 
 - :bdg-danger:`Deprecation` **Support for Python 3.6 is deprecated and will be removed in release 0.10.** Users with a Python 3.6 environment will be warned at their first Nilearn import and encouraged to update to more recent versions of Python (:gh:`3026` by `Nicolas Gensollen`_).
 
-- :bdg-danger:`Deprecation` Masker objects like :class:`~maskers.NiftiMasker` now belong to the new module :mod:`nilearn.maskers`. The old import style, through the module ``input_data``, still works but has been deprecated (:gh:`3065` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Masker objects like :class:`~maskers.NiftiMasker` now belong to the new module :mod:`~maskers`. The old import style, through the module ``input_data``, still works but has been deprecated (:gh:`3065` by `Nicolas Gensollen`_).
 
 - :bdg-info:`Plotting` When using the ``plotly`` engine, surface plotting functions derived from :func:`~plotting.plot_surf` return a new display object, a :class:`~plotting.displays.PlotlySurfaceFigure`, which provides a similar interface to the :class:`~matplotlib.figure.Figure` returned with the ``matplotlib`` engine (:gh:`3036` by `Nicolas Gensollen`_).
 
@@ -108,7 +108,7 @@ Enhancements
 
 - :bdg-secondary:`Maint` Tests from ``nilearn/plotting/tests/test_img_plotting.py`` have been refactored and reorganized in separate files in new folder ``nilearn/plotting/tests/test_img_plotting/`` (:gh:`3015` by `Nicolas Gensollen`_).
 
-- :bdg-info:`Plotting` Importing :mod:`nilearn.plotting` will now raise a warning if the ``matplotlib`` backend has been changed from its original value, instead of silently modifying it (:gh:`3077` by `Raphael Meudec`_).
+- :bdg-info:`Plotting` Importing :mod:`~plotting` will now raise a warning if the ``matplotlib`` backend has been changed from its original value, instead of silently modifying it (:gh:`3077` by `Raphael Meudec`_).
 
 - :bdg-info:`Plotting` Function :func:`~plotting.plot_img` and deriving functions like :func:`~plotting.plot_anat`, :func:`~plotting.plot_stat_map`, or :func:`~plotting.plot_epi` now accept an optional argument ``cbar_tick_format`` to specify how numbers should be displayed on the colorbar. This is consistent with the API of surface plotting functions (see release ``0.7.1``). The default format is scientific notation (:gh:`2859` by `Nicolas Gensollen`_).
 
@@ -134,6 +134,6 @@ Changes
 
 - :bdg-secondary:`Maint` Display objects have been reorganized. For example, ``Slicers`` (like the :class:`~plotting.displays.OrthoSlicer`) are all in file ``nilearn/plotting/displays/_slicers.py``, and ``Projectors`` (like the :class:`~plotting.displays.OrthoProjector`) are all in file ``nilearn/plotting/displays/_projectors.py``. All display objects have been added to the public API, and examples have been improved to show how to use these objects to customize figures obtained with plotting functions (:gh:`3073` by `Nicolas Gensollen`_).
 
-- :bdg-secondary:`Maint` Descriptions of datasets retrieved with fetchers from :mod:`nilearn.datasets` are now python strings rather than ``bytes``. Therefore, decoding the descriptions is no longer necessary (:gh:`2655` by `Nicolas Gensollen`_).
+- :bdg-secondary:`Maint` Descriptions of datasets retrieved with fetchers from :mod:`~datasets` are now python strings rather than ``bytes``. Therefore, decoding the descriptions is no longer necessary (:gh:`2655` by `Nicolas Gensollen`_).
 
 - :bdg-secondary:`Maint` Dataset fetchers returning a :class:`~numpy.recarray` can now return a :class:`~pandas.DataFrame` instead. These fetchers now have a ``legacy_format`` optional argument defaulting to ``True`` for backward compatibility. Users will be warned that this parameter will default to ``False`` in release ``0.11.0``, making :class:`~pandas.DataFrame` the default return type instead or :class:`~numpy.recarray` (:gh:`2829` by `Ahmad Chamma`_).

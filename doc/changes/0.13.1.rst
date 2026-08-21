@@ -16,7 +16,7 @@ Fixes
 
 - :bdg-dark:`Code` Use sklearn HTML representation of estimators and their parameters in notebooks and reports (:gh:`5925` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Only throw warning about non-interactive plotting backend when using :func:`nilearn.plotting.show` (:gh:`5929` by `Rémi Gau`_).
+- :bdg-dark:`Code` Only throw warning about non-interactive plotting backend when using :func:`~plotting.show` (:gh:`5929` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Re-allow use non-multi maskers for :class:`~regions.Parcellations` (:gh:`5930` by `Rémi Gau`_).
 

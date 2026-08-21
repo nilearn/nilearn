@@ -58,7 +58,7 @@ HIGHLIGHTS
 
 - Many functions now include an ``Examples`` section.
 
-- Accessing the maskers from ``nilearn.input_data`` is no longer possible, they now must be accessed via :mod:`nilearn.maskers`.
+- Accessing the maskers from ``nilearn.input_data`` is no longer possible, they now must be accessed via :mod:`~maskers`.
 
 
 
@@ -132,7 +132,7 @@ Enhancements
 
 - :bdg-dark:`Code` Add ``screening_n_features`` parameter to :class:`~decoding.Decoder`,  :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMClassifier`,  and :class:`~decoding.FREMRegressor` (:gh:`5863` by `Sanjana Soni`_).
 
-- :bdg-dark:`Code` Improve type annotations to :mod:`nilearn.signal`, :mod:`nilearn.surface`,  :mod:`nilearn.masking` and :mod:`nilearn.image` (:gh:`6353`, :gh:`6338` and :gh:`6345` by `Rémi Gau`_).
+- :bdg-dark:`Code` Improve type annotations to :mod:`~signal`, :mod:`~surface`,  :mod:`~masking` and :mod:`~image` (:gh:`6353`, :gh:`6338` and :gh:`6345` by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Add jupyterlite option in the documentation (:gh:`6033` by `Hugo Delhaye`_).
 
@@ -177,7 +177,7 @@ Changes
 
 - :bdg-danger:`Deprecation` The private functions ``nilearn._utils.niimg_conversions.check_niimg*`` have been removed, please use their public equivalent :func:`~image.check_niimg`, :func:`~image.check_niimg_3d` and :func:`~image.check_niimg_4d` (:gh:`5995` by `Rémi Gau`_).
 
-- :bdg-danger:`Deprecation` Accessing the maskers from ``nilearn.input_data`` is no longer possible, they now must be accessed via :mod:`nilearn.maskers` (:gh:`5995` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` Accessing the maskers from ``nilearn.input_data`` is no longer possible, they now must be accessed via :mod:`~maskers` (:gh:`5995` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The ``version`` parameters of in :func:`~datasets.fetch_atlas_pauli_2017` has now permanently been replaced by ``atlas_type`` (:gh:`5995` by `Rémi Gau`_).
 
