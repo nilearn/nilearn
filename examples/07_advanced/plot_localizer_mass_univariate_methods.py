@@ -74,17 +74,19 @@ contrast_map_filenames = np.array(localizer_dataset.cmaps)[quality_mask]
 tested_var = behav_var[quality_mask].reshape((-1, 1))
 
 # %%
-# Mask data
-# ---------
+# Extract :term:`voxelwise <voxel>` data
+# --------------------------------------
 # Next, we use a :func:`~nilearn.maskers.NiftiMasker`
-# to preprocess the ``left button press (auditory cue)``
-# task :term:`contrast` map for each subject who passed
-# quality control.
+# to extract voxelwise values for the
+#  ``left button press (auditory cue)`` task :term:`contrast`
+# map for each subject who passed quality control.
+# We also apply a light processing on this data,
+# including smoothing with a 5mm :term:`FWHM` kernel.
 #
-# We use a :func:`~nilearn.maskers.NiftiMasker` object rather than a
-# :func:`~nilearn.maskers.MultiNiftiMasker` object in order to
-# extract all :term:`voxel` values for all subjects into
-# the same array.
+# Note that we use a :func:`~nilearn.maskers.NiftiMasker` object
+# rather than a :func:`~nilearn.maskers.MultiNiftiMasker` object
+# in order to extract all :term:`voxel` values for all subjects
+# into the same array.
 #
 from nilearn.maskers import NiftiMasker
 
