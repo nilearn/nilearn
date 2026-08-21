@@ -20,6 +20,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Clarify that :func:`~mass_univariate.permuted_ols` requires numerical or boolean ``tested_vars`` and raise a clear error for unsupported data (:gh:`6501` by `Mohammad Sadeghi Hardengi`_).
+
 - :bdg-dark:`Code` Fix :class:`~maskers.NiftiLabelsMasker` raising an ``AttributeError`` when transforming a list of 3D images with ``resampling_target="labels"`` (:gh:`6498` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-success:`API` Fix mismatch between parameters in several functions or methods and their docstrings. Also adds an ``interpolation`` parameter to :func:`~.datasets.fetch_neurovault` that was documented but missing from the API (:gh:`6482` by `Rémi Gau`_).
@@ -71,6 +73,8 @@ Enhancements
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.signal.butterworth` function (:gh:`6311` by `Hande Gözükan`_).
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.regions.img_to_signals_labels` function (:gh:`6315` by `Hande Gözükan`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.plotting.plot_design_matrix_correlation` function (:gh:`6413` by `Nirmitee Mulay`_).
 
 Changes
 -------
