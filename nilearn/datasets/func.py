@@ -6,13 +6,12 @@ import fnmatch
 import functools
 import itertools
 import json
-import numbers
 import os
 import re
 import warnings
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, TypeVar, cast
 
 import numpy as np
 import pandas as pd
@@ -23,6 +22,7 @@ from sklearn.utils import Bunch
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import (
@@ -54,11 +54,51 @@ from nilearn.nilearn_typing import (
 )
 from nilearn.surface import SurfaceImage
 
+_SubjectSelection = TypeVar(
+    "_SubjectSelection", bound=int | list[int] | tuple[int, ...]
+)
 
+
+def _validate_subjects(
+    n_subjects: _SubjectSelection | None,
+    max_subjects: int,
+    *,
+    subject_list_types: tuple[type, ...] = (),
+    min_subjects: int | None = None,
+    warning_message: str | None = None,
+) -> _SubjectSelection | int:
+    """Validate and normalize a dataset subject selection."""
+    if n_subjects is not None:
+        check_is_of_allowed_type(
+            n_subjects, (int, *subject_list_types), "n_subjects"
+        )
+
+    if n_subjects is None:
+        return max_subjects
+
+    if isinstance(n_subjects, (list, tuple)):
+        for subject_id in n_subjects:
+            check_parameter_in_allowed(
+                subject_id, list(range(1, max_subjects + 1)), "subject id"
+            )
+        return n_subjects
+
+    invalid_subjects = n_subjects > max_subjects or (
+        min_subjects is not None and n_subjects < min_subjects
+    )
+    if not invalid_subjects:
+        return n_subjects
+
+    if warning_message is not None:
+        warnings.warn(warning_message, stacklevel=find_stack_level())
+    return max_subjects
+
+
+@rename_parameters({"subjects": "n_subjects"}, end_version="0.17.0")
 @fill_doc
 def fetch_haxby(
     data_dir: DataDir = None,
-    subjects: int | list[int] | tuple[int] | None = (2,),
+    n_subjects: int | list[int] | tuple[int, ...] | None = (2,),
     fetch_stimuli: bool = False,
     url: Url = None,
     resume: Resume = True,
@@ -68,11 +108,15 @@ def fetch_haxby(
 
     See :footcite:t:`Haxby2001`.
 
+    .. nilearn_versionchanged:: 0.15.0
+
+        The ``subjects`` parameter was renamed to ``n_subjects``.
+
     Parameters
     ----------
     %(data_dir)s
 
-    subjects : :obj:`list` or :obj:`tuple` or :obj:`int` or None, default=(2,)
+    n_subjects : :obj:`list` | :obj:`tuple` | :obj:`int` | None, default=(2,)
         Either a list of subjects or the number of subjects to load,
         from 1 to 6.
         By default, 2nd subject will be loaded.
@@ -147,18 +191,15 @@ def fetch_haxby(
     """
     check_params(locals())
 
-    if subjects is not None:
-        check_is_of_allowed_type(subjects, (int, list, tuple), "subjects")
-    if (subjects is None) or (isinstance(subjects, int) and subjects > 6):
-        subjects = 6
-    if isinstance(subjects, (list, tuple)):
-        for sub_id in subjects:
-            check_parameter_in_allowed(
-                sub_id, [1, 2, 3, 4, 5, 6], "subject id"
-            )
-        subject_mask = np.array(subjects)
-    if isinstance(subjects, int):
-        subject_mask = np.arange(1, subjects + 1)
+    n_subjects = _validate_subjects(
+        n_subjects,
+        max_subjects=6,
+        subject_list_types=(list, tuple),
+    )
+    if isinstance(n_subjects, (list, tuple)):
+        subject_mask = np.array(n_subjects)
+    if isinstance(n_subjects, int):
+        subject_mask = np.arange(1, n_subjects + 1)
 
     dataset_name = "haxby2001"
     data_dir = get_dataset_dir(
@@ -208,7 +249,7 @@ def fetch_haxby(
 
     files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    if subjects == 6 or np.any(subject_mask == 6):
+    if n_subjects == 6 or np.any(subject_mask == 6):
         files.append(None)  # None value because subject 6 has no anat
 
     kwargs = {}
@@ -355,14 +396,11 @@ def fetch_adhd(
     ids = adhd_ids()
     nitrc_ids = range(7782, 7822)
     max_subjects = len(ids)
-    if n_subjects is None:
-        n_subjects = max_subjects
-    if n_subjects > max_subjects:
-        warnings.warn(
-            f"Warning: there are only {max_subjects} subjects.",
-            stacklevel=find_stack_level(),
-        )
-        n_subjects = max_subjects
+    n_subjects = _validate_subjects(
+        n_subjects,
+        max_subjects,
+        warning_message=f"Warning: there are only {max_subjects} subjects.",
+    )
     ids = ids[:n_subjects]
     nitrc_ids = nitrc_ids[:n_subjects]
 
@@ -787,15 +825,19 @@ def fetch_localizer_contrasts(
 
     _check_inputs_fetch_localizer_contrasts(contrasts)
 
-    if n_subjects is None:
-        n_subjects = 94  # 94 subjects available
-    if isinstance(n_subjects, int) and ((n_subjects > 94) or (n_subjects < 1)):
-        warnings.warn(
-            "Wrong value for 'n_subjects' (%d). The maximum "
-            "value will be used instead ('n_subjects=94').",
-            stacklevel=find_stack_level(),
-        )
-        n_subjects = 94  # 94 subjects available
+    n_subjects = cast(
+        "int | list[int]",
+        _validate_subjects(
+            n_subjects,
+            max_subjects=94,
+            subject_list_types=(list,),
+            min_subjects=1,
+            warning_message=(
+                "Wrong value for 'n_subjects' (%d). The maximum "
+                "value will be used instead ('n_subjects=94')."
+            ),
+        ),
+    )
 
     # convert contrast names
     contrasts_wrapped = []
@@ -1357,9 +1399,9 @@ def fetch_abide_pcp(
 
     # Get the files
     file_ids = pheno_df["FILE_ID"].tolist()
-    if n_subjects is not None:
-        file_ids = file_ids[:n_subjects]
-        pheno_df = pheno_df[:n_subjects]
+    n_subjects = _validate_subjects(n_subjects, len(file_ids))
+    file_ids = file_ids[:n_subjects]
+    pheno_df = pheno_df[:n_subjects]
 
     results = {
         "description": get_dataset_descr(dataset_name),
@@ -1492,14 +1534,11 @@ def fetch_mixed_gambles(
     """
     check_params(locals())
 
-    if n_subjects is None:
-        n_subjects = 16
-    if n_subjects > 16:
-        warnings.warn(
-            "Warning: there are only 16 subjects!",
-            stacklevel=find_stack_level(),
-        )
-        n_subjects = 16
+    n_subjects = _validate_subjects(
+        n_subjects,
+        max_subjects=16,
+        warning_message="Warning: there are only 16 subjects!",
+    )
 
     if url is None:
         url = (
@@ -1862,14 +1901,11 @@ def fetch_surf_nki_enhanced(
     nitrc_ids = range(8260, 8464)
     ids = nki_ids()
     max_subjects = len(ids)
-    if n_subjects is None:
-        n_subjects = max_subjects
-    if n_subjects > max_subjects:
-        warnings.warn(
-            f"Warning: there are only {max_subjects} subjects.",
-            stacklevel=find_stack_level(),
-        )
-        n_subjects = max_subjects
+    n_subjects = _validate_subjects(
+        n_subjects,
+        max_subjects,
+        warning_message=f"Warning: there are only {max_subjects} subjects.",
+    )
     ids = ids[:n_subjects]
 
     # Dataset description
@@ -2290,8 +2326,15 @@ def fetch_development_fmri(
     )
     max_subjects = adult_count + child_count
 
-    n_subjects = _set_invalid_n_subjects_to_max(
-        n_subjects, max_subjects, age_group
+    n_subjects = _validate_subjects(
+        n_subjects,
+        max_subjects,
+        min_subjects=1,
+        warning_message=(
+            f"Wrong value for n_subjects={n_subjects}. "
+            f"The maximum value (for age_group={age_group}) "
+            f"will be used instead: n_subjects={max_subjects}."
+        ),
     )
 
     # To keep the proportion of children versus adults
@@ -2352,24 +2395,6 @@ def _filter_csv_by_n_subjects(participants, n_adult, n_child):
     participants = participants[np.isin(participants["participant_id"], ids)]
     participants = participants.sort_values(by=["Child_Adult"])
     return participants
-
-
-def _set_invalid_n_subjects_to_max(n_subjects, max_subjects, age_group):
-    """If n_subjects is invalid, sets it to max."""
-    if n_subjects is None:
-        n_subjects = max_subjects
-
-    if isinstance(n_subjects, numbers.Number) and (
-        (n_subjects > max_subjects) or (n_subjects < 1)
-    ):
-        warnings.warn(
-            f"Wrong value for n_subjects={n_subjects}. "
-            f"The maximum value (for age_group={age_group}) "
-            f"will be used instead: n_subjects={max_subjects}.",
-            stacklevel=find_stack_level(),
-        )
-        n_subjects = max_subjects
-    return n_subjects
 
 
 def _reduce_confounds(regressors, keep_confounds):
@@ -2618,7 +2643,9 @@ def select_from_index(
         return sorted(subjects)
 
     # We get a list of subjects (for the moment the first n subjects)
-    selected_subjects = set(infer_subjects(urls)[:n_subjects])
+    subjects = infer_subjects(urls)
+    n_subjects = _validate_subjects(n_subjects, len(subjects))
+    selected_subjects = set(subjects[:n_subjects])
 
     # We exclude urls of subjects not selected
     def subject_selected(url: str) -> bool:
