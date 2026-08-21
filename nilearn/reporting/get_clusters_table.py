@@ -331,7 +331,7 @@ def get_clusters_table(
 
         .. nilearn_deprecated:: 0.14.1dev
 
-            This parameter will be removed in version 0.16.0, when
+            This parameter will be removed in version 0.17.0, when
             :func:`~nilearn.reporting.get_clusters_table` will always return
             the cluster label maps together with the table. Set
             ``return_label_maps=True`` and update your code to unpack both
