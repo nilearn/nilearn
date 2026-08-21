@@ -10,11 +10,6 @@ operation in just a few lines of code.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
-
 # %%
 # Retrieve the brain development functional dataset
 # -------------------------------------------------
@@ -44,20 +39,30 @@ print(f"The atlas contains {len(atlas.labels) - 1} non-overlapping regions")
 # Instantiate the mask and visualize atlas
 # ----------------------------------------
 #
-# Instantiate the masker with label image and label values
+# Instantiate the masker with label image and label values.
+# We use ``standardize="zscore_sample"``
+# so that the extracted time-series are shifted to zero mean
+# and scaled to unit variance.
+# ``detrend=True`` is used to remove linear trends in the signal.
 #
 from nilearn.maskers import NiftiLabelsMasker
 
-masker = NiftiLabelsMasker(atlas.maps, lut=atlas.lut, verbose=1)
+masker = NiftiLabelsMasker(
+    atlas.maps,
+    lut=atlas.lut,
+    standardize="zscore_sample",
+    detrend=True,
+    verbose=1,
+)
 
 # %%
 # Visualize the atlas
 # -------------------
 #
-# We need to call fit prior to generating the mask.
+# We need to call ``fit`` prior to generating the mask.
 # We can then generate a report to visualize the atlas.
 # Here we use the 'brainsprite' engine
-# that gives an interactive vizualtion
+# that gives an interactive visualization
 # instead of the static one generated
 # by the matplotlib engine.
 #
@@ -85,7 +90,7 @@ report
 # Process the data with the NiftiLabelsMasker
 # -------------------------------------------
 #
-# In order to extract the signals, we need to call transform on the
+# In order to extract the signals, we need to call ``transform`` on the
 # functional data.
 signals = masker.transform(func_filename)
 
@@ -96,13 +101,19 @@ print(f"{signals.shape=}")
 # Output to dataframe and plot
 # ----------------------------
 #
-# You can use 'set_output()' to decide the output format of 'transform'.
-# If you want to output to a DataFrame, you can choose 'pandas' or 'polars'.
+# You can use :meth:`~nilearn.maskers.NiftiLabelsMasker.set_output`
+# to decide the output format of ``transform``.
+# If you want to output to a DataFrame, you can choose
+# ``"pandas"`` or ``"polars"``.
 #
+from nilearn.plotting import show
+
 masker.set_output(transform="pandas")
 signals_df = masker.transform(func_filename)
-print(signals_df.head)
+print(signals_df.head())
 
 signals_df[["Frontal Pole", "Insular Cortex", "Superior Frontal Gyrus"]].plot(
     title="Signals from 3 regions", figsize=(15, 5)
 )
+
+show()
