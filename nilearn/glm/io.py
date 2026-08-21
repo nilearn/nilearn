@@ -469,12 +469,13 @@ def save_glm_to_bids(
         ).open("w") as f:
             json.dump(table_details[0], f)
 
-        cluster_table = get_clusters_table(
+        cluster_table, _ = get_clusters_table(
             thresholded_img,
             stat_threshold=threshold,
             cluster_threshold=report_kwargs["cluster_threshold"],
             min_distance=report_kwargs["min_distance"],
             two_sided=report_kwargs["two_sided"],
+            return_label_maps=True,
         )
         cluster_table.to_csv(
             out_dir
