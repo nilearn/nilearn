@@ -1,13 +1,37 @@
-"""Compare gallery example images between the stable and dev doc builds.
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#   "rich",
+#   "pillow",
+#   "pixelmatch"
+# ]
+# ///
 
-Compares 'sphx_glr_plot_*.png' images between the 'stable' and 'dev'
-builds of the doc, published on nilearn.github.io. Gives an idea of how
-much example outputs visually change across nilearn versions.
+"""Compare gallery example images between two doc builds.
+
+Compares 'sphx_glr_plot_*.png' images between the 'dev' build of the doc
+and a baseline build
+(published 'stable' by default, or any other version),
+both published on nilearn.github.io.
+Gives an idea of how much example outputs visually change
+across nilearn versions.
+
 See https://github.com/nilearn/nilearn/issues/6342
+
+The scripts expects the documentation repo to be in a tmp directory.
+Use a sparse checkout for speed:
+
+    git clone --depth 1 --filter=blob:none --sparse \
+        https://github.com/nilearn/nilearn.github.io.git \
+        tmp/nilearn.github.io
+    git -C tmp/nilearn.github.io sparse-checkout set dev/_images stable/_images
+
+
 """
 
 import re
 import sys
+from argparse import ArgumentParser
 from fnmatch import fnmatchcase
 from pathlib import Path
 
@@ -17,7 +41,8 @@ from rich.console import Console
 from rich.markup import escape
 
 # expects a clone of nilearn/nilearn.github.io at this path, with at least
-# dev/_images and stable/_images checked out (see CI workflow)
+# dev/_images and <baseline>/_images checked out (see CI workflow;
+# <baseline> is 'stable' by default, see --baseline)
 ROOT = Path(__file__).resolve().parent.parent
 TMP_DIR = ROOT / "tmp"
 CLONE_DIR = TMP_DIR / "nilearn.github.io"
@@ -109,15 +134,36 @@ def dev_doc_url(rel_path):
     return f"https://nilearn.github.io/dev/auto_examples/{without_ext}.html#{anchor}"
 
 
-def check_clone(stable_dir, dev_dir):
-    """Exit with an error if the stable/dev image directories are missing."""
-    for directory in (stable_dir, dev_dir):
+def parse_args(argv=None):
+    """Parse command line arguments."""
+    parser = ArgumentParser(
+        description=(
+            "Compare gallery example images between the 'dev' build of "
+            "the doc and a baseline build, both published on "
+            "nilearn.github.io."
+        )
+    )
+    parser.add_argument(
+        "--baseline",
+        default="stable",
+        help=(
+            "Doc version to compare 'dev' against: the name of a "
+            "directory at the root of the nilearn.github.io clone, "
+            "e.g. 'stable' (default) or '0.10.0'."
+        ),
+    )
+    return parser.parse_args(argv)
+
+
+def check_clone(baseline, baseline_dir, dev_dir):
+    """Exit with an error if the baseline/dev image directories are missing."""
+    for directory in (baseline_dir, dev_dir):
         if not directory.exists():
             console_err.print(f"Expected directory not found: {directory}")
             console_err.print(
                 "Clone nilearn/nilearn.github.io into "
                 f"{CLONE_DIR} first "
-                "(with dev/_images and stable/_images checked out)."
+                f"(with dev/_images and {baseline}/_images checked out)."
             )
             sys.exit(1)
 
@@ -136,8 +182,8 @@ def list_gallery_images(directory):
     ]
 
 
-def compare_image(name, stable_dir, dev_dir):
-    """Compare one gallery image between the stable and dev doc builds.
+def compare_image(name, baseline_dir, dev_dir):
+    """Compare one gallery image between the baseline and dev doc builds.
 
     Writes a pixelmatch diff image under `DIFF_DIR` whenever any pixel
     differs.
@@ -147,16 +193,16 @@ def compare_image(name, stable_dir, dev_dir):
     (`None` when the two images' dimensions differ, since pixelmatch
     cannot diff images of different sizes).
     """
-    img_stable = Image.open(stable_dir / name)
+    img_baseline = Image.open(baseline_dir / name)
     img_dev = Image.open(dev_dir / name)
 
-    if img_stable.size != img_dev.size:
+    if img_baseline.size != img_dev.size:
         return {"name": name, "status": "size-changed", "diff_ratio": None}
 
-    width, height = img_stable.size
+    width, height = img_baseline.size
     img_diff = Image.new("RGBA", (width, height))
     num_diff_pixels = pixelmatch(
-        img_stable, img_dev, img_diff, threshold=PIXELMATCH_THRESHOLD
+        img_baseline, img_dev, img_diff, threshold=PIXELMATCH_THRESHOLD
     )
     diff_ratio = num_diff_pixels / (width * height)
 
@@ -183,24 +229,27 @@ def print_file_list(label, names):
 
 
 def main():
-    """Compare the gallery images of the stable and dev doc builds.
+    """Compare the gallery images of the baseline and dev doc builds.
 
     Prints a report grouped by example, and exits with a non-zero
     status if any image's pixel diff exceeds `DIFF_RATIO_TOLERANCE`
     (dimension-only changes are reported but don't affect the exit
     status).
     """
-    stable_dir = CLONE_DIR / "stable" / "_images"
+    args = parse_args()
+    baseline = args.baseline
+
+    baseline_dir = CLONE_DIR / baseline / "_images"
     dev_dir = CLONE_DIR / "dev" / "_images"
 
-    check_clone(stable_dir, dev_dir)
+    check_clone(baseline, baseline_dir, dev_dir)
 
-    stable_images = set(list_gallery_images(stable_dir))
+    baseline_images = set(list_gallery_images(baseline_dir))
     dev_images = set(list_gallery_images(dev_dir))
 
-    only_in_stable = stable_images - dev_images
-    only_in_dev = dev_images - stable_images
-    shared = stable_images & dev_images
+    only_in_baseline = baseline_images - dev_images
+    only_in_dev = dev_images - baseline_images
+    shared = baseline_images & dev_images
 
     ignore_patterns = load_ignore_patterns(IGNORE_FILE)
     ignored = {n for n in shared if is_ignored(n, ignore_patterns)}
@@ -208,10 +257,10 @@ def main():
 
     console.print(
         f"\nCompared [bold]{len(to_compare)}[/bold] gallery image(s) "
-        "present in both stable and dev."
+        f"present in both {baseline} and dev."
     )
-    print_file_list("only in stable (removed in dev)", only_in_stable)
-    print_file_list("only in dev (new since stable)", only_in_dev)
+    print_file_list(f"only in {baseline} (removed in dev)", only_in_baseline)
+    print_file_list(f"only in dev (new since {baseline})", only_in_dev)
     if ignored:
         console.print(
             f"[dim]{len(ignored)} image(s) ignored per "
@@ -219,7 +268,7 @@ def main():
         )
 
     results = sorted(
-        (compare_image(name, stable_dir, dev_dir) for name in to_compare),
+        (compare_image(name, baseline_dir, dev_dir) for name in to_compare),
         key=lambda r: (r["name"], -(r["diff_ratio"] or 0)),
     )
 
