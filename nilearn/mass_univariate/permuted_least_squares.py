@@ -380,7 +380,7 @@ def permuted_ols(
     Parameters
     ----------
     tested_vars : array-like, shape=(n_samples, n_regressors)
-        Numerical or boolean explanatory variates, fitted and tested
+        Numerical or boolean labels for explanatory variates; fitted and tested 
         independently of each other.
 
     target_vars : array-like, shape=(n_samples, n_descriptors)
