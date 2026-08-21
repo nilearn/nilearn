@@ -4,7 +4,7 @@
 # Gives an idea of how much example outputs visually change across
 # nilearn versions. See https://github.com/nilearn/nilearn/issues/6342
 #
-# Comparison is done via maint_tools/compare_doc_images.js
+# Comparison is done via maint_tools/compare_doc_images.py
 ###
 name: compare doc images
 
@@ -50,14 +50,19 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-        -   uses: actions/checkout@v7
+        -   name: Checkout nilearn
+            uses: actions/checkout@v7
 
-        -   uses: actions/setup-node@v6
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v7
+
+        -   name: Setup python
+            uses: actions/setup-python@v6
             with:
-                node-version: 24
+                python-version: '3.14'
 
-        -   name: Install node dependencies
-            run: npm install
+        -   name: Install packages
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
 
         -   name: Clone nilearn.github.io (sparse, dev/_images + stable/_images only)
             run: |
@@ -69,7 +74,7 @@ jobs:
         -   name: Compare doc images
             id: compare
             continue-on-error: true
-            run: node maint_tools/compare_doc_images.js
+            run: tox run -e compare_doc_images
 
         -   name: Upload diff images
             if: success() || failure()

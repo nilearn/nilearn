@@ -1,5 +1,5 @@
 # List of gallery image filenames (or glob patterns using '*') to skip
-# when comparing stable vs dev doc images in compare_doc_images.js.
+# when comparing stable vs dev doc images in compare_doc_images.py.
 #
 # Use this when a diff is expected and accepted,
 # e.g. after intentionally changing the example script that generates an image.
