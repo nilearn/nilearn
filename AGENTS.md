@@ -156,7 +156,7 @@ in the root of the repository.
 When reporting a bug,
 rely on the .github/ISSUE_TEMPLATE/bug.yml template.
 When reporting the steps and code to reproduce bug
-try to rely only the 'user facing' part of the public API
+rely only the 'user facing' part of the public API
 (mentioned only in `__init__.py` files).
 
 ### Pull requests
