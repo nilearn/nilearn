@@ -21,6 +21,11 @@ concatenated and given directly to
 correlation matrices for each atlas across all subjects.
 
 Mean correlation matrix is displayed on glass brain on extracted coordinates.
+
+The example also cover a special case of plotting directed connectome, such
+as results from Granger causality. To demonstrate the utility, we created an
+asymatric connectome, which would be similar to results from Granger
+causality.
 """
 
 # control overall verbosity of the script
