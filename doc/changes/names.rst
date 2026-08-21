@@ -63,6 +63,8 @@
 
 .. _Caglar Cakan: https://github.com/caglorithm
 
+.. _Chi-Wei Lee: https://github.com/Arthur031221
+
 .. _Chloe Hampson: https://github.com/chlohamp
 
 .. _Chris Rorden: https://github.com/neurolabusc
