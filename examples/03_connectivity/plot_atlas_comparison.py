@@ -24,7 +24,7 @@ Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
 The example also cover a special case of plotting directed connectome, such
 as results from Granger causality. To demonstrate the utility, we created an
-asymatric connectome, which would be similar to results from Granger
+asymmetric connectome, which would be similar to results from Granger
 causality.
 """
 
