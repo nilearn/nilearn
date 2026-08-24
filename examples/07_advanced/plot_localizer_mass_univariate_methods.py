@@ -10,7 +10,7 @@ Max :term:`t-statistic <Parameter estimate>` Family-wise Error
 Max :term:`TFCE` :term:`FWE <FWER correction>`.
 
 These two methods are compared against a baseline parametric test
-(Bonferroni-Holm :term:`FWE <FWER correction>`).
+(Bonferroni :term:`FWE <FWER correction>`).
 
 The example is structured as follows:
 
@@ -58,7 +58,7 @@ behav_var = localizer_dataset.ext_vars["pseudo"].values
 # Examine the behavioral variate
 print(behav_var)
 
-# %%%
+# %%
 # Remove subjects without behavioral variate
 # ``````````````````````````````````````````
 # We see that some subjects do not have scores for this behavioral
@@ -68,9 +68,12 @@ quality_mask = np.isfinite(behav_var)
 n_samples = np.sum(quality_mask)
 print(f"Actual number of subjects after quality check: {int(n_samples)}")
 
-# Cast list of ``cmaps`` to numpy array for Boolean masking.
+# %%
+# We cast list of ``cmaps`` to numpy array for Boolean masking with
+# ``quality_mask``. Similarly, we subset ``behav_var`` with
+# ``quality_mask`` and then reshape from shape (n_samples,) to
+# shape (n_samples, 1).
 contrast_map_filenames = np.array(localizer_dataset.cmaps)[quality_mask]
-# Reshape from shape (n_samples,) to shape (n_samples, 1)
 tested_var = behav_var[quality_mask].reshape((-1, 1))
 
 # %%
@@ -92,7 +95,6 @@ from nilearn.maskers import NiftiMasker
 
 nifti_masker = NiftiMasker(
     smoothing_fwhm=5,
-    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
     verbose=1,
@@ -117,6 +119,7 @@ from sklearn.feature_selection import f_regression
 
 _, pvals_anova = f_regression(fmri_masked, tested_var.ravel(), center=True)
 
+# %%
 # Calculate the negative log of the p-values
 # for equivalent visualization with
 # :func:`~nilearn.mass_univariate.permuted_ols`.
@@ -152,14 +155,19 @@ ols_outputs = permuted_ols(
     tfce=True,
     n_perm=100,  # 100 for the sake of time. Ideally, this should be 10000.
     verbose=1,  # display progress bar
+    random_state=0,  # to ensure reproducible results
     n_jobs=2,  # can be changed to use more CPUs
 )
 
-# Select first regressor from max :term:`t-statistic <Parameter estimate>`.
+# %%
+# We select the first regressor from max :term:`t-statistic
+# <Parameter estimate>` and assign to the variable
+# ``neg_log_pvals_permuted_ols_unmasked`` ; then we perform the same
+# procedure for the :term:`TFCE` corrected outputs, assigning to
+# the first regressor to ``neg_log_pvals_tfce_unmasked``.
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
     ols_outputs["logp_max_t"][0, :]
 )
-# Select first regressor from :term:`TFCE`.
 neg_log_pvals_tfce_unmasked = nifti_masker.inverse_transform(
     ols_outputs["logp_max_tfce"][0, :]
 )
@@ -196,7 +204,7 @@ images_to_plot = {
     "Permutation Test\n(Max TFCE FWE)": neg_log_pvals_tfce_unmasked,
 }
 
-fig, axes = plt.subplots(figsize=(10, 4), ncols=3)
+fig, axes = plt.subplots(figsize=(15, 5), ncols=3)
 for i_col, (title, img) in enumerate(images_to_plot.items()):
     ax = axes[i_col]
     n_detections = (get_data(img) > threshold).sum()
@@ -212,7 +220,7 @@ for i_col, (title, img) in enumerate(images_to_plot.items()):
         figure=fig,
         axes=ax,
     )
-    ax.set_title(new_title)
+    ax.set_title(new_title, pad=10.0)
 
 fig.suptitle(
     "Group left button press ($-\\log_{10}$ p-values)",
@@ -220,6 +228,6 @@ fig.suptitle(
     fontsize=16,
 )
 
-fig.subplots_adjust(top=0.75, wspace=0.5)
+fig.subplots_adjust(top=0.75, wspace=0.8)
 
 plotting.show()
