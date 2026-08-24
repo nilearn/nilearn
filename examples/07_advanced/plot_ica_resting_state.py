@@ -39,7 +39,7 @@ print(f"Functional nifti image (4D) is of shape: {img.shape}")
 # --------------------------
 # This is fMRI timeseries data:
 # the background has not been removed yet,
-# thus we need to use mask_strategy='epi' to compute the mask from the
+# thus we need to use `mask_strategy='epi'` to compute the mask from the
 # EPI images.
 # We further want to pass a smoothing kernel of 8mm
 # (``smoothing_fwhm=8``) in order to
