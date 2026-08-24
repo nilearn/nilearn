@@ -50,7 +50,8 @@ else:
 
 
 # check_multi_masker_transformer_high_variance_confounds is slow
-@pytest.mark.slow
+
+
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -80,7 +81,6 @@ def img_2(data_2, affine_eye) -> Nifti1Image:
     return Nifti1Image(data_2, affine_eye)
 
 
-@pytest.mark.slow
 def test_auto_mask(data_1, img_1, data_2, img_2):
     """Test that a proper mask is generated from fitted image."""
     masker = MultiNiftiMasker(mask_args={"opening": 0}, standardize=None)
@@ -127,7 +127,6 @@ def test_nan():
     assert not mask[:, :, -1].any()
 
 
-@pytest.mark.slow
 def test_different_affines():
     """Check mask and EIP files with different affines."""
     mask_img = Nifti1Image(
@@ -142,7 +141,6 @@ def test_different_affines():
         masker.inverse_transform(this_epi)
 
 
-@pytest.mark.slow
 def test_3d_images(rng):
     """Test that the MultiNiftiMasker works with 3D images.
 
@@ -199,7 +197,6 @@ def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
     np.testing.assert_array_equal(get_data(masker2.mask_img_), mask_ref)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "strategy",
     ["background", *[f"{p}-template" for p in ["whole-brain", "gm", "wm"]]],

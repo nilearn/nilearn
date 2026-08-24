@@ -33,9 +33,13 @@
 
 .. _Anand Joshi: https://github.com/ajoshiusc
 
+.. _Andrew Chen: https://github.com/chuenchen309
+
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
 
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
+
+.. _Anton Karpov: https://github.com/karpovantonme
 
 .. _Anupriya Kumari: https://github.com/anupriyakkumari
 
@@ -105,6 +109,8 @@
 
 .. _Fabian Pedregosa: https://github.com/fabianp
 
+.. _Fabricio Cravo: https://fabriciocravo.github.io/
+
 .. _Fernanda Ponce: https://github.com/ferponcem
 
 .. _Florent Pollet: https://florian6973.github.io/
@@ -130,6 +136,8 @@
 .. _Hande Gözükan: https://github.com/hndgzkn
 
 .. _Hao-Ting Wang: https://wanghaoting.com/
+
+.. _Hariom Patidar: https://github.com/HariomPtdr
 
 .. _Himanshu Aggarwal: https://github.com/man-shu
 

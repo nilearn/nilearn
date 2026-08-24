@@ -23,13 +23,13 @@ from nilearn.image import get_data, new_img_like
 
 
 @pytest.fixture
-def img1(affine_eye):
+def img1(affine_eye) -> Nifti1Image:
     data = np.ones((2, 2, 2, 2))
     return Nifti1Image(data, affine=affine_eye)
 
 
 @pytest.fixture
-def img_binary(affine_eye, has_inf, has_nan, non_bin):
+def img_binary(affine_eye, has_inf, has_nan, non_bin) -> Nifti1Image:
     data = np.ones((3, 3, 3, 3))
 
     if has_inf:

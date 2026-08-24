@@ -54,7 +54,6 @@ else:
         check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
@@ -71,7 +70,6 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-@pytest.mark.slow
 def test_multi_nifti_labels_masker(
     affine_eye, n_regions, shape_3d_default, length, img_labels
 ):
@@ -136,7 +134,6 @@ def test_multi_nifti_labels_masker(
         assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
 
-@pytest.mark.slow
 def test_multi_nifti_labels_masker_errors(
     affine_eye, shape_3d_default, length, img_labels
 ):
@@ -204,7 +201,6 @@ def test_multi_nifti_labels_masker_errors_resampling(
         masker.fit()
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("test_values", [[-2.0, -1.0, 0.0, 1.0, 2]])
 @pytest.mark.parametrize(
     "strategy, fn",
@@ -250,7 +246,6 @@ def test_multi_nifti_labels_masker_reduction_strategies(
     assert default_masker.strategy == "mean"
 
 
-@pytest.mark.slow
 def test_multi_nifti_labels_masker_resampling(
     affine_eye, n_regions, length, img_labels
 ):
@@ -298,7 +293,6 @@ def test_multi_nifti_labels_masker_resampling(
         assert fmri11_img_r.shape == ((*masker.labels_img_.shape[:3], length))
 
 
-@pytest.mark.slow
 def test_multi_nifti_labels_masker_resampling_clipped_labels(
     affine_eye, n_regions, length, img_labels, img_fmri
 ):
@@ -349,7 +343,6 @@ def test_multi_nifti_labels_masker_resampling_clipped_labels(
         assert fmri11_img_r.shape == ((*masker.labels_img_.shape[:3], length))
 
 
-@pytest.mark.slow
 def test_multi_nifti_labels_masker_atlas_data_different_fov(
     affine_eye, img_labels, length
 ):
@@ -376,7 +369,6 @@ def test_multi_nifti_labels_masker_atlas_data_different_fov(
     assert_array_equal(masker.labels_img_.affine, affine2)
 
 
-@pytest.mark.slow
 # TODO (python >= 3.11) remove skipif
 @pytest.mark.skipif(
     sys.version_info[1] < 11, reason="UserWarning not thrown in py310"

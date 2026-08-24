@@ -62,7 +62,7 @@ def test_colorscale_no_threshold():
 
 
 @pytest.fixture
-def expected_abs_threshold(threshold):
+def expected_abs_threshold(threshold) -> float | None:
     """Return the expected absolute threshold."""
     expected = {"0%": 1.5, "50%": 7.55, "99%": 13}
     return (
@@ -121,7 +121,7 @@ def test_colorscale_symmetric_cmap(vmin, vmax):
 
 
 @pytest.fixture
-def expected_vmin_vmax(values, vmax, vmin):
+def expected_vmin_vmax(values, vmax, vmin) -> tuple[float, float]:
     """Return expected vmin and vmax."""
     if vmax is None:
         return (min(values), max(values))

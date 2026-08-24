@@ -9,7 +9,7 @@ from nilearn.plotting import plot_connectome
 
 
 @pytest.fixture
-def non_symmetric_matrix():
+def non_symmetric_matrix() -> np.ndarray:
     """Non symmetric adjacency matrix."""
     return np.array(
         [

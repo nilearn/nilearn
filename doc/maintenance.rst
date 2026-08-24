@@ -409,16 +409,14 @@ For example::
     - :bdg-info:`Plotting` ...
 
 We also need to write a "Highlights" section promoting the most important additions that come with this new release.
-Finally, we need to change the title from ``X.Y.Z.dev`` to ``X.Y.Z``:
+Finally, we need to change the title from ``Version X.Y.Z.dev`` to ``Version X.Y.Z``:
 
 .. code-block:: RST
 
    .. currentmodule:: nilearn
 
-   .. include:: names.rst
-
-   X.Y.Z
-   =====
+   Version X.Y.Z
+   =============
 
    **Released MONTH YEAR**
 
@@ -631,10 +629,8 @@ sections for the version currently under development:
 
    .. currentmodule:: nilearn
 
-   .. include:: names.rst
-
-   X.Y.Z+1.dev
-   =========
+   Version X.Y.Z+1.dev
+   ====================
 
    ..
     Each changelog entry should begin with one of the following badges:

@@ -23,6 +23,9 @@ correlation matrices for each atlas across all subjects.
 Mean correlation matrix is displayed on glass brain on extracted coordinates.
 """
 
+# control overall verbosity of the script
+verbose = 0
+
 # %%
 # Load atlases
 # ------------
@@ -45,7 +48,7 @@ print(
 )
 print(
     "Counfound csv files (of same subject) are located "
-    f"at : {data['confounds'][0]!r}"
+    f"at : {data.confounds[0]!r}"
 )
 
 
@@ -57,17 +60,18 @@ from nilearn.maskers import MultiNiftiLabelsMasker
 
 # ConnectivityMeasure from Nilearn uses simple 'correlation' to compute
 # connectivity matrices for all subjects in a list
-connectome_measure = ConnectivityMeasure(kind="correlation", verbose=1)
+connectome_measure = ConnectivityMeasure(kind="correlation", verbose=verbose)
 
 # create masker using MultiNiftiLabelsMasker to extract functional data within
 # atlas parcels from multiple subjects using parallelization to speed up the
 # computation
 masker = MultiNiftiLabelsMasker(
-    labels_img=yeo["maps"],  # Both hemispheres
+    labels_img=yeo["maps"],  # Both hemispheres,
+    standardize=None,
     standardize_confounds=True,
     memory="nilearn_cache",
     n_jobs=2,
-    verbose=1,
+    verbose=verbose,
 )
 
 # extract time series from all subjects
@@ -112,8 +116,7 @@ show()
 import nibabel as nb
 import numpy as np
 
-from nilearn.image import get_data, new_img_like
-from nilearn.image.resampling import coord_transform
+from nilearn.image import coord_transform, get_data, new_img_like
 
 # load the atlas image first
 label_image = nb.load(yeo["maps"])
@@ -144,8 +147,9 @@ for hemi, img in zip(
 ):
     masker = MultiNiftiLabelsMasker(
         labels_img=img,
+        standardize=None,
         standardize_confounds=True,
-        verbose=1,
+        verbose=verbose,
     )
 
     time_series = masker.fit_transform(data.func, confounds=data.confounds)
@@ -223,11 +227,12 @@ from nilearn.maskers import MultiNiftiMapsMasker
 # computation.
 masker = MultiNiftiMapsMasker(
     maps_img=difumo.maps,
+    standardize=None,
     standardize_confounds=True,
     memory="nilearn_cache",
     memory_level=1,
     n_jobs=2,
-    verbose=1,
+    verbose=verbose,
 )
 
 # extract time series from all subjects

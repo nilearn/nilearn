@@ -13,7 +13,7 @@ from nilearn.image import get_data
 from nilearn.plotting import plot_img
 
 
-def _testdata_3d_for_plotting_for_resampling(img, binary):
+def _testdata_3d_for_plotting_for_resampling(img, binary) -> Nifti1Image:
     """Return testing data for resampling tests.
 
     Data can be binarize or not.

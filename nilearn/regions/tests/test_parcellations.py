@@ -85,7 +85,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 
 
 @pytest.fixture
-def image_1():
+def image_1() -> Nifti1Image:
     data = np.zeros((10, 11, 12, 5))
     data[9, 10, 2] = 1
     data[4, 9, 3] = 2
@@ -93,7 +93,7 @@ def image_1():
 
 
 @pytest.fixture
-def image_2():
+def image_2() -> Nifti1Image:
     data = np.ones((10, 11, 12, 10))
     data[6, 7, 8] = 2
     data[9, 10, 11] = 3
@@ -431,12 +431,12 @@ def test_transform_list_3d_input_images(affine_eye):
 
 
 @pytest.fixture
-def n_samples():
+def n_samples() -> int:
     return 10
 
 
 @pytest.fixture
-def surface_img_for_parcellation(rng, n_samples):
+def surface_img_for_parcellation(rng, n_samples) -> SurfaceImage:
     mesh = {
         "left": flat_mesh(10, 8),
         "right": flat_mesh(9, 7),
