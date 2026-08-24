@@ -20,6 +20,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Clarify that :func:`~mass_univariate.permuted_ols` requires numerical or boolean ``tested_vars`` and raise a clear error for unsupported data (:gh:`6501` by `Mohammad Sadeghi Hardengi`_).
+
 - :bdg-dark:`Code` Fix :class:`~maskers.NiftiLabelsMasker` raising an ``AttributeError`` when transforming a list of 3D images with ``resampling_target="labels"`` (:gh:`6498` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-success:`API` Fix mismatch between parameters in several functions or methods and their docstrings. Also adds an ``interpolation`` parameter to :func:`~.datasets.fetch_neurovault` that was documented but missing from the API (:gh:`6482` by `Rémi Gau`_).
@@ -61,6 +63,8 @@ Enhancements
 - :bdg-dark:`Code` Improve type annotations (and :obj:`~typing.overload` signatures where the return type depends on the arguments given) in :mod:`~nilearn.glm` (:gh:`6370`), :mod:`~nilearn.regions` (:gh:`6369`), :mod:`~nilearn.connectome` (:gh:`6368`), :mod:`~nilearn.reporting` (:gh:`6368`), :mod:`~nilearn.interfaces` (:gh:`6362`), :mod:`~nilearn.image` (:gh:`6408`, :gh:`6438`), :mod:`~nilearn.utils`, :mod:`~nilearn.surface` (:gh:`6410`), :mod:`~nilearn.datasets`  (:gh:`6438`),  :mod:`~nilearn.plotting` (:gh:`6438` and :gh:`6439`),  :mod:`~nilearn.glm` and :mod:`~nilearn.mass_univariate` (:gh:`6439`) (by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~masking.compute_epi_mask` (:gh:`6306` by `Marco Flores`_).
+
+- :bdg-dark:`Code` Add return type annotations and ``Returns`` docstring sections to the private helpers of :mod:`nilearn.plotting` matrix utilities (:gh:`6510` by `Hariom Patidar`_).
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring section to :func:`~utils.all_displays`, :func:`~utils.all_estimators`, :func:`~utils.all_functions` (:gh:`6322`, :gh:`6324`, :gh:`6325` by `Alice Schiavone`_).
 
