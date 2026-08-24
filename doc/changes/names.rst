@@ -137,6 +137,8 @@
 
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
+.. _Hariom Patidar: https://github.com/HariomPtdr
+
 .. _Himanshu Aggarwal: https://github.com/man-shu
 
 .. _Hugo Delhaye: https://github.com/HugoDelhaye
