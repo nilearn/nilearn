@@ -60,8 +60,6 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-dark:`Code` Handle :class:`~surface.SurfaceImage` objects in ``repr_niimgs`` without truncating their shape when shortening representations (:gh:`6519` by `Mohammad Sadeghi Hardengi`_).
-
 - :bdg-dark:`Code` Improve type annotations (and :obj:`~typing.overload` signatures where the return type depends on the arguments given) in :mod:`nilearn.glm` (:gh:`6370`), :mod:`nilearn.regions` (:gh:`6369`), :mod:`nilearn.connectome` (:gh:`6368`), :mod:`nilearn.reporting` (:gh:`6368`), :mod:`nilearn.interfaces` (:gh:`6362`), :mod:`nilearn.image` (:gh:`6408`, :gh:`6438`), :mod:`nilearn.utils`, :mod:`nilearn.surface` (:gh:`6410`), :mod:`nilearn.datasets`  (:gh:`6438`),  :mod:`nilearn.plotting` (:gh:`6438` and :gh:`6439`),  :mod:`nilearn.glm` and :mod:`nilearn.mass_univariate` (:gh:`6439`) (by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add return type annotations and ``Returns`` docstring sections to the private helpers of :mod:`nilearn.plotting` matrix utilities (:gh:`6510` by `Hariom Patidar`_).
