@@ -20,7 +20,7 @@ NEW
 Fixes
 -----
 
-- :bdg-info:`Plotting` Fix :func:`~plotting.plot_prob_atlas` showing two overlapping colorbars, because the anatomical background plotted by the underlying :func:`~plotting.plot_anat` call kept its own default colorbar in addition to the "Map #" colorbar added for the atlas maps (:gh:`6516` by `Rémi Gau`_).
+- :bdg-info:`Plotting` Fix :func:`~plotting.plot_prob_atlas` showing two overlapping colorbars, because the anatomical background plotted by the underlying :func:`~plotting.plot_anat` call kept its own default colorbar in addition to the "Map #" colorbar added for the atlas maps (:gh:`6517` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Clarify that :func:`~mass_univariate.permuted_ols` requires numerical or boolean ``tested_vars`` and raise a clear error for unsupported data (:gh:`6501` by `Mohammad Sadeghi Hardengi`_).
 
