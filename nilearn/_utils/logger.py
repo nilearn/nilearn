@@ -24,7 +24,6 @@ def _has_rich() -> bool:
 
 
 if _has_rich():
-    from rich import print
     from rich.console import Console
     from rich.markup import escape
 
