@@ -115,10 +115,11 @@ from nilearn.plotting import plot_stat_map, show
 mean_img = image.mean_img(func_filename)
 
 # %%
-# We cherry-pick and plot two component images showing
-# recognizable signal from the Default Mode Network
-# (the first map) and obvious pulsatility-related noise
-# in the CerebroSpinal Fluid (CSF; the second map).
+# We cherry-pick and plot two component images, the first
+# showing obvious pulsatility-related noise
+# in the CerebroSpinal Fluid (CSF; the first map) and the second
+# with recognizable signal from the Default Mode Network
+# (the second map).
 plot_stat_map(image.index_img(component_img, 2), mean_img)
 plot_stat_map(image.index_img(component_img, 6), mean_img)
 show()
