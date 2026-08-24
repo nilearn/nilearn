@@ -52,27 +52,31 @@ def _configure_axis(
             label.set_rotation(y_label_rotation)
 
 
-def _configure_grid(axes, tri, size):
+def _configure_grid(axes, tri, size) -> None:
     """Help for plot_matrix."""
     # Different grids for different layouts
     if tri == "lower":
         for i in range(size):
             # Correct for weird mis-sizing
-            i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="gray")
-            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
+            pos = 1.001 * i
+            axes.plot(
+                [pos + 0.5, pos + 0.5], [size - 0.5, pos + 0.5], color="gray"
+            )
+            axes.plot([pos + 0.5, -0.5], [pos + 0.5, pos + 0.5], color="gray")
     elif tri == "diag":
         for i in range(size):
             # Correct for weird mis-sizing
-            i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="gray")
-            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color="gray")
+            pos = 1.001 * i
+            axes.plot(
+                [pos + 0.5, pos + 0.5], [size - 0.5, pos - 0.5], color="gray"
+            )
+            axes.plot([pos + 0.5, -0.5], [pos - 0.5, pos - 0.5], color="gray")
     else:
         for i in range(size):
             # Correct for weird mis-sizing
-            i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color="gray")
-            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
+            pos = 1.001 * i
+            axes.plot([pos + 0.5, pos + 0.5], [size - 0.5, -0.5], color="gray")
+            axes.plot([size - 0.5, -0.5], [pos + 0.5, pos + 0.5], color="gray")
 
 
 def _fit_axes(axes) -> None:
@@ -106,8 +110,22 @@ def _fit_axes(axes) -> None:
         axes.set_position(new_position)
 
 
-def _sanitize_figure_and_axes(figure, axes):
-    """Help for plot_matrix."""
+def _sanitize_figure_and_axes(figure, axes) -> tuple[Figure, Axes, bool]:
+    """Help for plot_matrix.
+
+    Returns
+    -------
+    fig : :class:`matplotlib.figure.Figure`
+        The figure to plot on.
+
+    axes : :class:`matplotlib.axes.Axes`
+        The axes to plot on.
+
+    own_fig : :obj:`bool`
+        Whether the figure was created here
+        rather than passed in by the caller.
+
+    """
     if axes is not None and figure is not None:
         raise ValueError(
             "Parameters figure and axes cannot be specified together. "
@@ -138,10 +156,29 @@ def _sanitize_figure_and_axes(figure, axes):
 
 def _sanitize_inputs_plot_matrix(
     mat_shape, tri, labels, reorder, figure, axes
-):
+) -> tuple[list | None, str | bool, Figure, Axes, bool]:
     """Help for plot_matrix.
 
     This function makes sure the inputs to plot_matrix are valid.
+
+    Returns
+    -------
+    labels : :obj:`list` or None
+        The validated labels.
+
+    reorder : :obj:`str` or :obj:`bool`
+        The validated ``reorder`` value.
+
+    fig : :class:`matplotlib.figure.Figure`
+        The figure to plot on.
+
+    axes : :class:`matplotlib.axes.Axes`
+        The axes to plot on.
+
+    own_fig : :obj:`bool`
+        Whether the figure was created here
+        rather than passed in by the caller.
+
     """
     sanitize_tri(tri)
     labels = sanitize_labels(mat_shape, labels)
@@ -240,11 +277,11 @@ def plot_matrix(
 
     """
     check_params(locals())
-    labels, reorder, fig, axes, _ = _sanitize_inputs_plot_matrix(
+    labels, reorder_method, fig, axes, _ = _sanitize_inputs_plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
-    if reorder:
-        mat, labels = reorder_matrix(mat, labels, reorder)
+    if reorder_method:
+        mat, labels = reorder_matrix(mat, labels, reorder_method)
     if tri != "full":
         mat = mask_matrix(mat, tri)
 
