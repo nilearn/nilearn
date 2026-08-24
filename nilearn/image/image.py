@@ -443,12 +443,11 @@ def smooth_img(imgs: Iterable[NiimgLike], fwhm) -> list[Nifti1Image]: ...
 
 @fill_doc
 def smooth_img(
-    imgs, fwhm
+    imgs, fwhm, ensure_finite: bool = True
 ) -> Nifti1Image | SurfaceImage | list[Nifti1Image] | list[SurfaceImage]:
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of `arr`.
-    In all cases, non-finite values in input image are replaced by zeros.
 
     Parameters
     ----------
@@ -459,6 +458,17 @@ def smooth_img(
         for a detailed description of the valid input types).
 
     %(fwhm)s
+
+    ensure_finite : :obj:`bool`, default=True
+        If True, non-finite values in the input are replaced with zeros
+        before smoothing. Left in place they propagate: for volumes the
+        Gaussian filter spreads them over the neighborhood, for surfaces
+        the smoothing iterations spread them over neighboring vertices.
+
+        For surfaces a warning is emitted when values are replaced, because
+        every vertex carries data and a non-finite one is anomalous. For
+        volumes no warning is emitted, since non-finite values outside the
+        brain are routine in the field.
 
     Returns
     -------
@@ -509,7 +519,11 @@ def smooth_img(
             raise TypeError("For surface data, 'fwhm' must be a scalar.")
         for img in imgs:
             iterations = _mris_fwhm_to_niters(fwhm, img)
-            ret.append(_smooth_surface_img(img, iterations))
+            ret.append(
+                _smooth_surface_img(
+                    img, iterations, ensure_finite=ensure_finite
+                )
+            )
 
     else:
         for img in imgs:
@@ -519,7 +533,7 @@ def smooth_img(
                 _get_data(img),
                 affine,
                 fwhm=fwhm,
-                ensure_finite=True,
+                ensure_finite=ensure_finite,
                 copy=True,
             )
             ret.append(new_img_like(img, filtered, affine))
@@ -530,6 +544,7 @@ def smooth_img(
 def _smooth_surface_img(
     img: SurfaceImage,
     iterations: list[int],
+    ensure_finite: bool = True,
 ):
     """Smooth values along the surface.
 
@@ -543,6 +558,11 @@ def _smooth_surface_img(
         The number of times to repeat the smoothing operation
         (it must be a positive value).
         One value per mesh in the image.
+
+    ensure_finite : :obj:`bool`, default=True
+        If True, non-finite values are replaced with zeros before smoothing
+        and a warning is emitted. Left in place they are spread over
+        neighboring vertices by the smoothing iterations.
 
     Returns
     -------
@@ -560,14 +580,13 @@ def _smooth_surface_img(
     new_data = {}
     for hemi, n_iter in zip(img.mesh.parts, iterations, strict=False):
         mesh = img.mesh.parts[hemi]
-        # Match the volume path, which passes ``ensure_finite=True`` to
-        # ``smooth_array``: non-finite values are replaced with zeros. Copy
-        # first because ``ensure_finite_data`` works in place, and do it
-        # before the ``n_iter == 0`` shortcut so that the guarantee holds
-        # whatever ``fwhm`` is. Left as is, a single non-finite vertex is
-        # spread over its neighbors by the smoothing iterations.
-        data = np.array(img.data.parts[hemi], copy=True)
-        ensure_finite_data(data, raise_warning=False)
+        # Copy because ``ensure_finite_data`` works in place, and clean
+        # before the ``n_iter == 0`` shortcut so the guarantee holds whatever
+        # ``fwhm`` is. Left as is, one non-finite vertex is spread over its
+        # neighbors by the smoothing iterations.
+        data = np.array(img.data.parts[hemi])
+        if ensure_finite:
+            ensure_finite_data(data)
 
         if n_iter == 0:
             new_data[hemi] = data

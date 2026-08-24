@@ -478,7 +478,8 @@ def test_smooth_img_surface_nan_do_not_propagate(surf_img_1d, fwhm):
     surf_img_1d.data.parts["left"][1] = np.inf
     surf_img_1d.data.parts["right"][0] = -np.inf
 
-    smoothed = smooth_img(surf_img_1d, fwhm=fwhm)
+    with pytest.warns(UserWarning, match="Non-finite values detected"):
+        smoothed = smooth_img(surf_img_1d, fwhm=fwhm)
 
     for part in smoothed.data.parts.values():
         assert np.all(np.isfinite(part))
@@ -492,10 +493,23 @@ def test_smooth_img_surface_does_not_modify_input(surf_img_1d):
         part: values.copy() for part, values in surf_img_1d.data.parts.items()
     }
 
-    smooth_img(surf_img_1d, fwhm=4.0)
+    with pytest.warns(UserWarning, match="Non-finite values detected"):
+        smooth_img(surf_img_1d, fwhm=4.0)
 
     for part, values in expected.items():
         assert_array_equal(surf_img_1d.data.parts[part], values)
+
+
+@pytest.mark.ai_generated
+def test_smooth_img_surface_ensure_finite_false_keeps_values(surf_img_1d):
+    """``ensure_finite=False`` opts out of the cleaning, without warning."""
+    surf_img_1d.data.parts["left"][0] = np.nan
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        smoothed = smooth_img(surf_img_1d, fwhm=None, ensure_finite=False)
+
+    assert not np.all(np.isfinite(smoothed.data.parts["left"]))
 
 
 def test_smooth_img_surface(surf_img_1d):
