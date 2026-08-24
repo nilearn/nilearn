@@ -296,6 +296,47 @@ def test_repr_niimgs_with_niimg(
     )
 
 
+@pytest.mark.parametrize("shorten", [True, False])
+def test_repr_niimgs_with_1d_surface_image(surf_img_1d, shorten):
+    assert repr_niimgs(surf_img_1d, shorten=shorten) == repr(surf_img_1d)
+
+
+@pytest.mark.parametrize("shorten", [True, False])
+def test_repr_niimgs_with_2d_surface_image(surf_img_2d, shorten):
+    img = surf_img_2d(n_samples=2)
+
+    assert repr_niimgs(img, shorten=shorten) == repr(img)
+
+
+@pytest.mark.parametrize("shorten", [True, False])
+def test_repr_niimgs_with_surface_image_list(
+    surf_img_1d, surf_img_2d, shorten
+):
+    imgs = [surf_img_1d, surf_img_2d(n_samples=2)]
+
+    expected = f"[{imgs[0]!r}, {imgs[1]!r}]"
+    assert repr_niimgs(imgs, shorten=shorten) == expected
+
+
+@pytest.mark.parametrize("shorten", [True, False])
+def test_repr_niimgs_with_long_surface_image_list(
+    surf_img_1d, surf_img_2d, shorten
+):
+    imgs = [
+        surf_img_1d,
+        surf_img_2d(n_samples=2),
+        surf_img_1d,
+        surf_img_2d(n_samples=3),
+    ]
+
+    if shorten:
+        expected = f"[{imgs[0]!r},\n         ...\n {imgs[-1]!r}]"
+    else:
+        image_reprs = ",\n ".join(repr(img) for img in imgs)
+        expected = f"[{image_reprs}]"
+    assert repr_niimgs(imgs, shorten=shorten) == expected
+
+
 @pytest.mark.parametrize(
     "has_inf,has_nan,non_bin,expected",
     [
