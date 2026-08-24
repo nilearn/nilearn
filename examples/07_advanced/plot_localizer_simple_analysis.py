@@ -3,20 +3,19 @@ Massively univariate analysis of a calculation task from the Localizer dataset
 ==============================================================================
 
 This example shows how to use the Localizer dataset in a basic analysis.
-A standard Anova is performed (massively univariate F-test) and the resulting
+A standard `ANOVA <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_
+(massively univariate F-test) is performed and the resulting
 Bonferroni-corrected p-values are plotted.
-We use a calculation task and 20 subjects out of the 94 available.
 
-The Localizer dataset contains many contrasts and subject-related
-variates.  The user can refer to the
-`plot_localizer_mass_univariate_methods.py` example to see how to use these.
+We use the calculation task contrast maps from the
+Localizer dataset (:func:`~nilearn.datasets.fetch_localizer_calculation_task`).
+This dataset includes many other contrast maps and external, subject-related
+or behavioral variates, accessible via
+:func:`~nilearn.datasets.fetch_localizer_contrasts`.
+
+Please refer to the
+:ref:`plot_localizer_mass_univariate_methods` example.
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
-import matplotlib.pyplot as plt
 
 # %%
 import numpy as np
@@ -27,6 +26,7 @@ from nilearn.maskers import NiftiMasker
 
 # %%
 # Load Localizer contrast
+# -----------------------
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(
     n_subjects=n_samples
@@ -35,6 +35,7 @@ tested_var = np.ones((n_samples, 1))
 
 # %%
 # Mask data
+# ---------
 nifti_masker = NiftiMasker(
     smoothing_fwhm=5, memory="nilearn_cache", memory_level=1, verbose=1
 )
@@ -43,10 +44,14 @@ fmri_masked = nifti_masker.fit_transform(cmap_filenames)
 
 # %%
 # Anova (parametric F-scores)
+# ---------------------------
 from sklearn.feature_selection import f_regression
 
-# Center=False is used to not remove intercept
-_, pvals_anova = f_regression(fmri_masked, tested_var.ravel(), center=False)
+_, pvals_anova = f_regression(
+    fmri_masked,
+    tested_var.ravel(),
+    center=False,  # ``center=False`` to not remove intercept.
+)
 pvals_anova *= fmri_masked.shape[1]
 pvals_anova[np.isnan(pvals_anova)] = 1
 pvals_anova[pvals_anova > 1] = 1
@@ -57,6 +62,9 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
 
 # %%
 # Visualization
+# -------------
+import matplotlib.pyplot as plt
+
 from nilearn.plotting import plot_stat_map, show
 
 # Various plotting parameters
