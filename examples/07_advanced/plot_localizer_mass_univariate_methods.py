@@ -106,7 +106,7 @@ fmri_masked = nifti_masker.fit_transform(contrast_map_filenames)
 # :term:`ANOVA` (parametric F-scores)
 # -----------------------------------
 # We use :func:`sklearn.feature_selection.f_regression` to perform
-# :sklearn:`feature selection <modules/modules/feature_selection.html>`
+# :sklearn:`feature selection <modules/feature_selection.html>`
 # at every :term:`voxel` and keep only those most related
 # to the behavioral variate, as assessed via a simple F-score.
 # Assuming that no such effect exists,
