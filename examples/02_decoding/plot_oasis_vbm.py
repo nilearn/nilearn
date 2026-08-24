@@ -16,7 +16,7 @@ Predictive modeling analysis: VBM bio-markers of aging?
 -------------------------------------------------------
 
 We run a standard SVM-ANOVA nilearn pipeline to predict age from the VBM
-data. We use only 100 subjects from the OASIS dataset to limit the memory
+data. We use only 200 subjects from the OASIS dataset to limit the memory
 usage.
 
 Note that for an actual predictive modeling study of aging, the study

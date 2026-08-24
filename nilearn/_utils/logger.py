@@ -25,7 +25,10 @@ def _has_rich() -> bool:
 
 if _has_rich():
     from rich import print
+    from rich.console import Console
     from rich.markup import escape
+
+    console = Console(highlight=True, soft_wrap=True)
 
 
 # The technique used in the log() function only applies to CPython, because
@@ -113,7 +116,7 @@ def log(
         func_name = f"{object_self.__class__.__name__}.{func_name}"
 
     if _has_rich():
-        print(f"[blue]\\[{func_name}][/blue] {escape(msg)}")
+        console.print(f"[blue]\\[{func_name}][/blue] {escape(msg)}")
     else:
         print(f"[{func_name}] {msg}")
 
