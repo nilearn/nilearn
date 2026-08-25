@@ -289,7 +289,6 @@ def test_json_view_params(affine_eye):
     assert params["colorMap"]["img"] == "colorMap-test-viewer"
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("marker", [3, 11, 20, 28])
 def test_json_view_params_displays_requested_slice(marker):
     """The tile drawn must hold the slice whose coordinate was requested.
@@ -333,7 +332,6 @@ def test_json_view_params_displays_requested_slice(marker):
     assert int(block.max()) == marker
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("cut_coords", [[0.0, -12.0, 9.0], [15.0, 6.0, -21.0]])
 def test_json_view_params_reports_requested_coordinates(cut_coords):
     """The coordinates shown must still be the ones requested."""
@@ -360,7 +358,6 @@ def test_json_view_params_reports_requested_coordinates(cut_coords):
     assert displayed == pytest.approx(cut_coords)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "cut,expected", [(19.5, 20), (20.5, 21), (21.5, 22), (20.4, 20)]
 )
