@@ -290,7 +290,7 @@ show()
 #
 # .. seealso::
 #
-#     The restults saved to disk and the output of get_clusters_table
+#     The results saved to disk and the output of get_clusters_table
 #     do not contain the anatomical location of the clusters.
 #     To get the names of the location of the clusters
 #     according to one or several atlases,

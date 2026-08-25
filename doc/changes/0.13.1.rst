@@ -1,9 +1,7 @@
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.13.1
-======
+Version 0.13.1
+==============
 
 **Released February 2026**
 
@@ -18,9 +16,9 @@ Fixes
 
 - :bdg-dark:`Code` Use sklearn HTML representation of estimators and their parameters in notebooks and reports (:gh:`5925` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Only throw warning about non-interactive plotting backend when using :func:`nilearn.plotting.show` (:gh:`5929` by `Rémi Gau`_).
+- :bdg-dark:`Code` Only throw warning about non-interactive plotting backend when using :func:`~plotting.show` (:gh:`5929` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Re-allow use non-multi maskers for :class:`~nilearn.regions.Parcellations` (:gh:`5930` by `Rémi Gau`_).
+- :bdg-dark:`Code` Re-allow use non-multi maskers for :class:`~regions.Parcellations` (:gh:`5930` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Change default slice order of slicers and projectors to be x, y, z. (:gh:`5944` by `Hande Gözükan`_).
 

@@ -66,6 +66,7 @@ Some other past or present contributors are:
 * `Andrew Chen`_
 * `Andrés Hoyos Idrobo`_: Rakuten, France
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
+* `Anton Karpov`_
 * `Anupriya Kumari`_: Indian Institute of Technology, Roorkee, India
 * `Ariel Rokem`_: University of Washington, Psychology, Seattle, Washington, 98107, USA
 * `Arthur Mensch`_
@@ -114,6 +115,7 @@ Some other past or present contributors are:
 * `Gustav Magnusson`_: Linköping University, Linköping
 * `Hande Gözükan`_: Inria, Saclay, France
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
+* `Hariom Patidar`_
 * `Himanshu Aggarwal`_: Inria, Saclay, France
 * `Hugo Delhaye`_: SIMEXP, Université de Montréal, Montréal, Canada
 * `Ian Abenes`_
@@ -216,7 +218,7 @@ Some other past or present contributors are:
 * `Salma Bougacha`_
 * `Sam Buck Johnson`_
 * `Sami Jawhar`_
-* `Sanjana Soni`_: Goverment Engineering College, Bilaspur, India
+* `Sanjana Soni`_: Government Engineering College, Bilaspur, India
 * `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
 * `Sin Kim`_: Korea Advanced Institute of Science and Technology: Daejeon, KR
 * `Sourav Singh`_

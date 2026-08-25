@@ -8,6 +8,7 @@ from warnings import warn
 import numpy as np
 from nibabel import Nifti1Image, is_proxy, load, spatialimages
 
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import get_target_dtype
@@ -46,11 +47,11 @@ def safe_get_data(
     img : Nifti image/object
         Image to get data.
 
-    ensure_finite : bool
+    ensure_finite : :obj:`bool`
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
-    copy_data : bool, default=False
+    copy_data : :obj:`bool`, default=False
         If true, the returned data is a copy of the img data.
 
     Returns
@@ -97,6 +98,7 @@ def ensure_finite_data(
     return data
 
 
+@fill_doc
 def load_niimg(niimg, dtype=None):
     """Load a niimg, check if it is a nibabel SpatialImage and cast if needed.
 
@@ -155,9 +157,13 @@ def is_binary_niimg(
         See :ref:`extracting_data`.
         Image to test.
 
+    block_size : :obj:`int`, default = 1_000_000
+
+    accept_non_finite : :obj:`bool`, default = True
+
     Returns
     -------
-    is_binary : Boolean
+    is_binary : :obj:`bool`
         True if binary, False otherwise.
 
     """
@@ -202,21 +208,26 @@ def repr_niimgs(niimgs, shorten=True):
     Parameters
     ----------
     niimgs : image or collection of images
-        nibabel SpatialImage to repr.
+        nibabel SpatialImage or SurfaceImage to repr.
 
-    shorten : boolean, default=True
+    shorten : :obj:`bool`, default=True
         If True, filenames with more than 20 characters will be
         truncated, and lists of more than 3 file names will be
         printed with only first and last element.
 
     Returns
     -------
-    repr : str
+    repr : :obj:`str`
         String representation of the image.
     """
     # Simple string case
     if isinstance(niimgs, (str, Path)):
         return _short_repr(niimgs, shorten=shorten)
+    # SurfaceImage imports repr_niimgs, so import locally to avoid a cycle.
+    from nilearn.surface.surface import SurfaceImage
+
+    if isinstance(niimgs, SurfaceImage):
+        return repr(niimgs)
     # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
         # Maximum number of elements to be displayed

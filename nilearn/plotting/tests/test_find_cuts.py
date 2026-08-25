@@ -295,7 +295,7 @@ def test_singleton_ax_dim(affine_eye):
 
 
 @pytest.mark.parametrize("direction", ["x", "y", "z"])
-def test_tranform_cut_coords_return_iterable(affine_eye, direction):
+def test_transform_cut_coords_return_iterable(affine_eye, direction):
     """Test that when n_cuts is 1 we do get an iterable."""
     assert hasattr(
         _transform_cut_coords([4], direction, affine_eye), "__iter__"
@@ -303,7 +303,7 @@ def test_tranform_cut_coords_return_iterable(affine_eye, direction):
 
 
 @pytest.mark.parametrize("direction", ["x", "y", "z"])
-def test_tranform_cut_coords_n_cuts(affine_eye, direction):
+def test_transform_cut_coords_n_cuts(affine_eye, direction):
     """Test that n_cuts after as before function call."""
     n_cuts = 5
     cut_coords = np.arange(n_cuts)
