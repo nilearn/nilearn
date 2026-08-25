@@ -2,7 +2,7 @@
 SearchLight with a custom correlation estimator
 ===============================================
 
-This example shows how to use :class:`nilearn.decoding.SearchLight`
+This example shows how to use :class:`~nilearn.decoding.SearchLight`
 with a user-defined
 :sklearn:`scikit-learn compatible estimator </developers/develop.html>`.
 As in many other examples, we fetch the Haxby dataset using

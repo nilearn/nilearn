@@ -216,9 +216,11 @@ data = variance_threshold.fit_transform(gm_maps_masked)
 output = permuted_ols(
     age,
     data,  # + intercept as a covariate by default
+    # few permutations in the interest of time; 10000 would be better
     n_perm=2000,  # 10 000 would be better
     verbose=verbose,
     n_jobs=n_jobs,
+    random_state=0,  # to ensure reproducible results
 )
 
 # %%
