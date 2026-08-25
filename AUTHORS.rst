@@ -116,6 +116,7 @@ Some other past or present contributors are:
 * `Gustav Magnusson`_: Linköping University, Linköping
 * `Hande Gözükan`_: Inria, Saclay, France
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
+* `Hariom Patidar`_
 * `Himanshu Aggarwal`_: Inria, Saclay, France
 * `Hugo Delhaye`_: SIMEXP, Université de Montréal, Montréal, Canada
 * `Ian Abenes`_
