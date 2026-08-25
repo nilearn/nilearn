@@ -179,7 +179,7 @@ report
 # Generate mask with a high lower cutoff
 # --------------------------------------
 #
-# The NiftiMasker calls the :func:`nilearn.masking.compute_epi_mask` function
+# The NiftiMasker calls the :func:`~nilearn.masking.compute_epi_mask` function
 # to compute the mask from the EPI.
 # It has two important parameters: ``lower_cutoff`` and ``upper_cutoff``.
 # These set the grey-value bounds
