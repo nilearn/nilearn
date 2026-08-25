@@ -298,14 +298,19 @@ def test_repr_niimgs_with_niimg(
 
 @pytest.mark.parametrize("shorten", [True, False])
 def test_repr_niimgs_with_1d_surface_image(surf_img_1d, shorten):
-    assert repr_niimgs(surf_img_1d, shorten=shorten) == repr(surf_img_1d)
+    img_repr = "<SurfaceImage (9,)>"
+
+    assert repr(surf_img_1d) == img_repr
+    assert repr_niimgs(surf_img_1d, shorten=shorten) == img_repr
 
 
 @pytest.mark.parametrize("shorten", [True, False])
 def test_repr_niimgs_with_2d_surface_image(surf_img_2d, shorten):
     img = surf_img_2d(n_samples=2)
+    img_repr = "<SurfaceImage (9, 2)>"
 
-    assert repr_niimgs(img, shorten=shorten) == repr(img)
+    assert repr(img) == img_repr
+    assert repr_niimgs(img, shorten=shorten) == img_repr
 
 
 @pytest.mark.parametrize("shorten", [True, False])
