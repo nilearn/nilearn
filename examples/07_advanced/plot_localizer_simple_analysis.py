@@ -43,7 +43,6 @@ univariate analyses.
 #
 # We also define ``tested_var`` as an array of ones of shape
 # (n_subjects, 1).
-# As the ``tested_var`` contains only one value,
 #
 import numpy as np
 
@@ -97,7 +96,7 @@ _, pvals_anova = f_regression(
 )
 
 # %%
-# Calculate the negative log of the p-values
+# We calculate the negative log of the p-values
 # for thresholding and visualization.
 #
 from nilearn.image import get_data
