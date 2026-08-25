@@ -32,6 +32,10 @@ fig = view_surf(surf_map=load_fsaverage_data())
 fig.resize(WIDTH, HEIGHT)
 fig.save_as_html(output_path / "view_surf.html")
 
+fig = view_surf(surf_map=load_fsaverage_data(), engine="niivue")
+fig.resize(WIDTH, HEIGHT)
+fig.save_as_html(output_path / "view_surf_niivue.html")
+
 fig = view_img_on_surf(load_sample_motor_activation_image())
 fig.resize(WIDTH, HEIGHT)
 fig.save_as_html(output_path / "view_img_on_surf.html")

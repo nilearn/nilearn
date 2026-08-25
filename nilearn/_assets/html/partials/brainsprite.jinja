@@ -1,18 +1,18 @@
-<div id="div_viewer">
+<div id="{{ html_ids.viewer }}">
     <!-- this is the canvas that will feature the brain slices -->
-    <canvas id="3Dviewer">
+    <canvas id="{{ html_ids.canvas }}">
         <!-- load a hidden version of the sprite image that includes all (sagittal) brain slices -->
-        <img id="spriteImg"
+        <img id="{{ html_ids.sprite }}"
              class="hidden"
              src="data:image/png;base64,{{ bg_base64 }}"
              alt="background">
         <!-- the colormap -->
-        <img id="colorMap"
+        <img id="{{ html_ids.color_map }}"
              class="hidden"
              src="data:image/png;base64,{{ cm_base64 }}"
              alt="colormap">
         <!-- another sprite image, with an overlay-->
-        <img id="overlayImg"
+        <img id="{{ html_ids.overlay }}"
              class="hidden"
              src="data:image/png;base64,{{ stat_map_base64 }}"
              alt="overlay">
@@ -25,8 +25,8 @@
                    max="100"
                    value="100"
                    class="slider"
-                   id="opacity">
-            <span id="demo"></span>
+                   id="{{ html_ids.opacity }}">
+            <span id="{{ html_ids.opacity_value }}"></span>
         </div>
     {% endif %}
 </div>

@@ -217,13 +217,13 @@ try:
         [
             ("", "ci-html-noplot\n"),
             ("[full doc]", "html-strict\n"),
-            ("[report]", "ci-html-noplot-reports\n"),
+            ("[reports]", "ci-html-noplot-reports\n"),
             (
                 "[example] plot_3d_and_4d_niimg.py",
                 "html-modified-examples-only\n",
             ),
             (
-                "[report][example] plot_3d_and_4d_niimg.py",
+                "[reports][example] plot_3d_and_4d_niimg.py",
                 "html-modified-examples-only-reports\n",
             ),
         ],

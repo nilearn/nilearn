@@ -57,6 +57,7 @@ from nilearn.nilearn_typing import (
 )
 from nilearn.surface.surface import (
     FileMesh,
+    PolyData,
     SurfaceImage,
     at_least_2d,
     compute_adjacency_matrix,
@@ -275,7 +276,7 @@ def high_variance_confounds(
     nilearn.signal.high_variance_confounds
 
     """
-    from .. import masking
+    from nilearn import masking
 
     check_compatibility_mask_and_images(mask_img, imgs)
 
@@ -352,7 +353,9 @@ def _fast_smooth_array(arr):
 
 
 @fill_doc
-def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
+def smooth_array(
+    arr, affine, fwhm=None, ensure_finite: bool = True, copy: bool = True
+) -> np.ndarray:
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of `arr`.
@@ -397,8 +400,8 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
             stacklevel=find_stack_level(),
         )
         fwhm = None
-    if arr.dtype.kind == "i":
-        if arr.dtype == np.int64:
+    if arr.dtype.kind in ("i", "u"):
+        if arr.dtype in (np.int64, np.uint64):
             arr = arr.astype(np.float64)
         else:
             arr = arr.astype(np.float32)  # We don't need crazy precision.
@@ -441,7 +444,7 @@ def smooth_img(imgs: Iterable[NiimgLike], fwhm) -> list[Nifti1Image]: ...
 @fill_doc
 def smooth_img(
     imgs, fwhm
-) -> NiimgLike | SurfaceImage | list[NiimgLike] | list[SurfaceImage]:
+) -> Nifti1Image | SurfaceImage | list[Nifti1Image] | list[SurfaceImage]:
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of `arr`.
@@ -467,17 +470,15 @@ def smooth_img(
 
     Examples
     --------
-    Let's first create a Nifti1Image:
-
+    >>> # Let's first create a Nifti1Image.
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
     >>> data = np.array([[[0.0, 0.0, 0.0],
     ...                   [0.0, 3.0, 0.0],
     ...                   [0.0, 0.0, 0.0]]])
     >>> img = Nifti1Image(data, affine=np.eye(4))
-
-    Now we can smooth the image:
-
+    >>>
+    >>> # Now we can smooth the image.
     >>> from nilearn.image import smooth_img, get_data
     >>> smoothed_img = smooth_img(img, fwhm=2)
     >>> data = get_data(smoothed_img)
@@ -534,8 +535,8 @@ def _smooth_surface_img(
 
     Parameters
     ----------
-    imgs : SurfaceImage
-        The surface whose is to be smoothed.
+    img : SurfaceImage
+        The surface to be smoothed.
         In the case of 2D data, each sample is smoothed independently.
 
     iterations : :obj:`tuple` of :obj:`int` >=0
@@ -632,6 +633,7 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
     return niters
 
 
+@fill_doc
 def _crop_img_to(img, slices, copy=True, copy_header=True):
     """Crops an image to a smaller size.
 
@@ -645,7 +647,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
         the slices will be applied to the first `len(slices)` dimensions
         (See :ref:`extracting_data`).
 
-    slices : list of slices
+    slices : :obj:`list` of slices
         Defines the range of the crop.
         E.g. [slice(20, 200), slice(40, 150), slice(0, 100)] defines a cube.
 
@@ -658,7 +660,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
 
     Returns
     -------
-    Niimg-like object
+    Nifti1Image
         Cropped version of the input image.
 
     offset : :obj:`list`, optional
@@ -690,8 +692,13 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
 
 @fill_doc
 def crop_img(
-    img, rtol=1e-8, copy=True, pad=True, return_offset=False, copy_header=True
-):
+    img,
+    rtol=1e-8,
+    copy: bool = True,
+    pad: bool = True,
+    return_offset: bool = False,
+    copy_header: bool = True,
+) -> Nifti1Image | tuple[Nifti1Image, tuple[slice, ...]]:
     """Crops an image as much as possible.
 
     Will crop `img`, removing as many zero entries as possible without
@@ -727,7 +734,7 @@ def crop_img(
 
     Returns
     -------
-    cropped_im : Niimg-like object
+    cropped_im : Nifti1Image
         Cropped version of the input image
         If the specified image is empty, the original image will be returned.
 
@@ -783,7 +790,7 @@ def crop_img(
 
     # Sets full range if no data are found along the axis
     if coords.shape[1] == 0:
-        start, end = [0, 0, 0], list(data.shape)
+        start, end = np.array([0, 0, 0]), np.array(data.shape[:3])
         pad = False
         warnings.warn(
             f"No values above {rtol}. Returning original image.",
@@ -810,7 +817,7 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
 
     See mean_img for details about the API.
     """
-    from . import resampling
+    from nilearn.image.resampling import resample_img
 
     input_repr = repr_niimgs(imgs, shorten=True)
 
@@ -828,7 +835,7 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
         mean_data = mean_data.mean(axis=-1)
     else:
         mean_data = mean_data.copy()
-    mean_data = resampling.resample_img(
+    mean_data = resample_img(
         Nifti1Image(mean_data, affine),
         target_affine=target_affine,
         target_shape=target_shape,
@@ -853,6 +860,7 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
 
 def _compute_surface_mean(imgs: SurfaceImage) -> SurfaceImage:
     """Compute mean of a single surface image over its 2nd dimension."""
+    data: PolyData | dict[str, np.ndarray]
     if len(imgs.shape) < 2 or imgs.shape[1] < 2:
         data = imgs.data
     else:
@@ -949,6 +957,7 @@ def mean_img(
     ...                                  axis=-1),
     ...                   affine=np.eye(4),
     ...                   dtype=np.int32)
+    >>>
     >>> # Compute the mean image and get its content as a numpy array
     >>> from nilearn.image import mean_img
     >>> mean_image = mean_img(img)
@@ -1033,7 +1042,7 @@ def swap_img_hemispheres(img) -> Nifti1Image:
     Note that this does not require a change of the affine matrix.
 
     """
-    from .resampling import reorder_img
+    from nilearn.image import reorder_img
 
     # Check input is really a path to a nifti file or a nifti object
     img = check_niimg_3d(img)
@@ -1082,8 +1091,7 @@ def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
 
     Examples
     --------
-    First we concatenate two MNI152 images to create a 4D-image:
-
+    >>> # First we concatenate two MNI152 images to create a 4D-image.
     >>> from nilearn import datasets
     >>> from nilearn.image import concat_imgs, index_img
     >>> joint_mni_image = concat_imgs(
@@ -1091,21 +1099,18 @@ def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
     ... )
     >>> print(joint_mni_image.shape)
     (197, 233, 189, 2)
-
-    We can now select one slice from the last dimension of this 4D-image:
-
+    >>>
+    >>> # We can now select one slice from the last dimension of this 4D-image.
     >>> single_mni_image = index_img(joint_mni_image, 1)
     >>> print(single_mni_image.shape)
     (197, 233, 189)
-
-    We can also select multiple frames using the `slice` constructor:
-
+    >>>
+    >>> # We can also select multiple frames using the `slice` constructor.
     >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
-    >>> print(five_mni_images.shape)
+    >>> five_mni_images.shape
     (197, 233, 189, 5)
-
     >>> first_three_images = index_img(five_mni_images, slice(0, 3))
-    >>> print(first_three_images.shape)
+    >>> first_three_images.shape
     (197, 233, 189, 3)
 
     """
@@ -1192,7 +1197,7 @@ def iter_img(imgs: NiimgLike) -> Iterator[Nifti1Image]: ...
 def iter_img(imgs) -> Iterator[Nifti1Image | SurfaceImage]:
     """Iterate over images.
 
-    Could be along the the 4th dimension for 4D Niimg-like object
+    Could be along the 4th dimension for 4D Niimg-like object
     or the 2nd dimension for 2D Surface images..
 
     Parameters
@@ -1208,6 +1213,34 @@ def iter_img(imgs) -> Iterator[Nifti1Image | SurfaceImage]:
     See Also
     --------
     nilearn.image.index_img
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.image import iter_img
+    >>>
+    >>> # Create dummy 4D image.
+    >>> affine = np.eye(4)
+    >>> data = np.ones((3, 3, 3, 2))
+    >>>
+    >>> # Set different values for each 3D image in 4D series.
+    >>> for i in range(data.shape[-1]):
+    ...     data[:, :, :, i] = data[:, :, :, i] * i
+    >>>
+    >>> # Create 4D Nifti Image and print the shape of the data.
+    >>> img_4d = Nifti1Image(data, affine)
+    >>> f"{img_4d.__class__.__name__} with shape= {img_4d.shape}"
+    'Nifti1Image with shape= (3, 3, 3, 2)'
+    >>>
+    >>> # iter_img creates a generator object.
+    >>> all_images = iter_img(img_4d)
+    >>> type(all_images)
+    <class 'generator'>
+    >>>
+    >>> # Let's check its content.
+    >>> [f"{x.__class__.__name__} with shape= {x.shape}" for x in all_images]
+    ['Nifti1Image with shape= (3, 3, 3)', 'Nifti1Image with shape= (3, 3, 3)']
 
     """
     if isinstance(imgs, SurfaceImage):
@@ -1320,7 +1353,7 @@ def new_img_like(
     >>> img1 = Nifti1Image(data1, affine, dtype=np.int32)
     >>>
     >>> # create a new image from data2, and we would like to create an
-    >>> # image of the same type with img_1:
+    >>> # image of the same type with img_1.
     >>> data2 = np.array([[[0., 0.5, 0.3],
     ...                   [2.5, 2.0, 0.2],
     ...                   [0.1, 0.2, 1.0]]])
@@ -1395,6 +1428,7 @@ def new_img_like(
     return klass(data, affine, header=header)
 
 
+@fill_doc
 def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     """Apply cluster-extent thresholding to voxel-wise thresholded array.
 
@@ -1608,6 +1642,7 @@ def threshold_img(
     ...                   [1.5, 3.0, 0.1],
     ...                   [0.4, 2.2, 0.0]]])
     >>> img = Nifti1Image(data, affine=np.eye(4), dtype=np.int32)
+    >>>
     >>> # Threshold: voxels with intensity < 1.0 are set to zero
     >>> from nilearn.image import threshold_img
     >>> thresholded_img = threshold_img(img, threshold=1.0, two_sided=False)
@@ -1735,13 +1770,13 @@ def _apply_threshold(img_data, two_sided, cutoff_threshold):
 
     Parameters
     ----------
-    img_data: np.ndarray or SurfaceImage
+    img_data : np.ndarray or SurfaceImage
 
     two_sided : :obj:`bool`, default=True
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-    cutoff_threshold: :obj:`int`
+    cutoff_threshold : :obj:`int`
         Effective threshold returned by check_threshold.
 
     Returns
@@ -1860,17 +1895,14 @@ def math_img(
     Examples
     --------
     >>> # Let's load an image using nilearn datasets module.
-    >>>
     >>> from nilearn import datasets
     >>> anatomical_image = datasets.load_mni152_template()
     >>>
     >>> # Now we can use any numpy function on this image.
-    >>>
     >>> from nilearn.image import math_img
     >>> log_img = math_img("np.log(img)", img=anatomical_image)
     >>>
     >>> # We can also apply mathematical operations on several images.
-    >>>
     >>> result_img = math_img("img1 + img2",
     ...                       img1=anatomical_image, img2=log_img)
 
@@ -2008,7 +2040,7 @@ def binarize_img(
     mask_img: SurfaceImage | NiimgLike | None = ...,
     two_sided: bool = ...,
     copy_header: bool = ...,
-) -> NiimgLike: ...
+) -> Nifti1Image: ...
 
 
 @fill_doc
@@ -2018,7 +2050,7 @@ def binarize_img(
     mask_img: SurfaceImage | NiimgLike | None = None,
     two_sided: bool = False,
     copy_header: bool = True,
-) -> SurfaceImage | NiimgLike:
+) -> SurfaceImage | Nifti1Image:
     """Binarize an image such that its values are either 0 or 1.
 
     .. nilearn_versionadded:: 0.8.1
@@ -2056,8 +2088,6 @@ def binarize_img(
 
      %(copy_header)s
 
-        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
-
         .. nilearn_versionadded:: 0.11.0
 
     Returns
@@ -2072,15 +2102,13 @@ def binarize_img(
 
     Examples
     --------
-    Let's load an image using nilearn datasets module::
-
-     >>> from nilearn import datasets
-     >>> anatomical_image = datasets.load_mni152_template()
-
-    Now we binarize it, generating a pseudo brainmask::
-
-     >>> from nilearn.image import binarize_img
-     >>> img = binarize_img(anatomical_image)
+    >>> # Let's load an image using nilearn datasets module
+    >>> from nilearn import datasets
+    >>> anatomical_image = datasets.load_mni152_template()
+    >>>
+    >>> # Now we binarize it, generating a pseudo brainmask
+    >>> from nilearn.image import binarize_img
+    >>> img = binarize_img(anatomical_image)
 
     """
     check_params(locals())
@@ -2274,16 +2302,15 @@ def clean_img(
         ...                         t_r = 1,
         ...                         standardize=None)
         >>>
-        >>> # Plot the results (if matplotlib is installed)
-        >>> try:
-        ...     from matplotlib import pyplot as plt
-        ...     cleaned_data = cleaned_img.get_fdata()
-        ...     fig = plt.plot(t, raw_data[1, 1, 1], color="red")
-        ...     fig = plt.plot(t, cleaned_data[1, 1, 1], color="green")
-        ...     leg = plt.legend(["raw", "cleaned"])
-        ...     plt.show()
-        ... except:
-        ...     pass
+        >>> # Plot the results
+        >>> from matplotlib import pyplot as plt
+        >>>
+        >>> cleaned_data = cleaned_img.get_fdata()
+        >>> fig = plt.plot(t, raw_data[1, 1, 1], color="red")
+        >>> fig = plt.plot(t, cleaned_data[1, 1, 1], color="green")
+        >>> leg = plt.legend(["raw", "cleaned"])
+        >>> plt.show()
+
     """
     check_params(locals())
     # Avoid circular import
@@ -2504,14 +2531,12 @@ def concat_imgs(
     --------
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
-
-    Two 3D images, each (2, 2, 1)
-
+    >>>
+    >>> # Two 3D images, each (2, 2, 1)
     >>> img1 = Nifti1Image(np.zeros((2, 2, 1)), affine=np.eye(4))
     >>> img2 = Nifti1Image(np.ones((2, 2, 1)), affine=np.eye(4))
-
-    concat_imgs stacks them along a new 4th dimension
-
+    >>>
+    >>> # concat_imgs stacks them along a new 4th dimension
     >>> from nilearn.image import concat_imgs
     >>> concatenated_img = concat_imgs([img1, img2])
     >>> concatenated_img.shape
@@ -2699,7 +2724,7 @@ def largest_connected_component_img(
            [[0., 0., 1., 1.],
             [0., 0., 1., 1.]]])
     """
-    from .._utils.ndimage import largest_connected_component
+    from nilearn._utils.ndimage import largest_connected_component
 
     imgs = stringify_path(imgs)
     if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
@@ -2736,49 +2761,42 @@ def copy_img(img) -> Nifti1Image:
     >>> from nilearn.image import copy_img
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
-
-    Create a dummy image:
-
+    >>>
+    >>> # Create a dummy image.
     >>> affine = np.eye(4)
     >>> data = np.ones((3, 3, 3))
     >>> img_3d = Nifti1Image(data, affine)
-
-    Copy the image vs reference assignment:
-
+    >>>
+    >>> # Copy the image vs reference assignment.
     >>> img_3d_copy = copy_img(img_3d)
-
-    Use reference assignment. This is not copying, img_3d_notcopy points to the
-    same object as img_3d!:
-
+    >>>
+    >>> # Use reference assignment.
+    >>> # This is not copying, img_3d_notcopy points to the
+    >>> # same object as img_3d!.
     >>> img_3d_notcopy = img_3d
-
-    Show initial dtypes; they are all the same:
-
+    >>>
+    >>> # Show initial dtypes; they are all the same.
     >>> img_3d.get_data_dtype()
     dtype('<f8')
     >>> img_3d_copy.get_data_dtype()
     dtype('<f8')
     >>> img_3d_notcopy.get_data_dtype()
     dtype('<f8')
-
-    Change the dtype in the original image:
-
+    >>>
+    >>> # Change the dtype in the original image.
     >>> img_3d.set_data_dtype("uint8")
-
-    Show the new dtypes:
-
+    >>>
+    >>> # Show the new dtypes.
     >>> img_3d.get_data_dtype()
     dtype('uint8')
-
-    img_3d_copy was copied before the change and keeps the original dtype:
-
+    >>>
+    >>> # img_3d_copy was copied
+    >>> # before the change and keeps the original dtype
     >>> img_3d_copy.get_data_dtype()
     dtype('<f8')
-
-    img_3d_notcopy refers to the same object as img_3d:
-
-    Hence its dtype has changed:
-
+    >>>
+    >>> # img_3d_notcopy refers to the same object as img_3d.
+    >>> # Hence its dtype has changed.
     >>> img_3d_notcopy.get_data_dtype()
     dtype('uint8')
     """
@@ -2810,12 +2828,12 @@ def check_same_fov(*args, **kwargs) -> bool:
         Images to be checked. Images passed without keywords will be labeled
         as img_#1 in the error message (replace 1 with the appropriate index).
 
-    kwargs : images
+    kwargs : images or raise_error
         Images to be checked. In case of error, images will be referenced by
         their keyword name in the error message.
 
-    raise_error : :obj:`bool`, optional
-        If True, an error will be raised in case of error.
+        raise_error : :obj:`bool`, optional
+            If True, an error will be raised in case of error.
 
     """
     raise_error = kwargs.pop("raise_error", False)
@@ -3099,21 +3117,18 @@ def check_niimg(
 
     Examples
     --------
-    Let's create a 3D Nifti1Image:
-
+    >>> # Let's create a 3D Nifti1Image.
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
     >>> img_3d = Nifti1Image(
     ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
     ... )
-
-    We can check the image:
-
+    >>>
+    >>> # We can check the image.
     >>> from nilearn.image import check_niimg
     >>> checked_img = check_niimg(img_3d)
-
-    We can get the data of the image:
-
+    >>>
+    >>> # We can get the data of the image.
     >>> from nilearn.image import get_data
     >>> data = get_data(checked_img)
     >>> data
@@ -3123,15 +3138,13 @@ def check_niimg(
            [[12, 13, 14, 15],
             [16, 17, 18, 19],
             [20, 21, 22, 23]]])
-
-    We can also check the image specifying the expected dimension. For example
-    for a 3D image:
-
+    >>>
+    >>> # We can also check the image specifying the expected dimension.
+    >>> # For example, for a 3D image.
     >>> from nilearn.image import check_niimg
     >>> checked_img = check_niimg(img_3d, ensure_ndim=3)
-
-    Let's check to ensure the same image to be 4D:
-
+    >>>
+    >>> # Let's check to ensure the same image to be 4D.
     >>> from nilearn.image import check_niimg
     >>> checked_img = check_niimg(img_3d, ensure_ndim=4)
     Traceback (most recent call last):
@@ -3226,21 +3239,18 @@ def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
 
     Examples
     --------
-    Let's create a 3D Nifti1Image:
-
+    >>> # Let's create a 3D Nifti1Image.
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
     >>> img_3d = Nifti1Image(
     ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32
     ... )
-
-    We can check if img_3d is a proper 3D image:
-
+    >>>
+    >>> # We can check if img_3d is a proper 3D image.
     >>> from nilearn.image import check_niimg_3d
     >>> checked_img = check_niimg_3d(img_3d)
-
-    We can get the data of the image:
-
+    >>>
+    >>> # We can get the data of the image.
     >>> from nilearn.image import get_data
     >>> data = get_data(checked_img)
     >>> data
@@ -3250,17 +3260,15 @@ def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
            [[12, 13, 14, 15],
             [16, 17, 18, 19],
             [20, 21, 22, 23]]])
-
-    We can try it with a 4D image:
-
+    >>>
+    >>> # We can try it with a 4D image.
     >>> img_4d = Nifti1Image(
     ...     np.arange(24).reshape((2, 3, 2, 2)),
     ...     affine=np.eye(4),
     ...     dtype=np.int32,
     ... )
-
-    Let's see the result for img_4d:
-
+    >>>
+    >>> # Let's see the result for img_4d.
     >>> checked_img = check_niimg_3d(img_4d)
     Traceback (most recent call last):
       ...
@@ -3330,8 +3338,7 @@ def check_niimg_4d(
 
     Examples
     --------
-    Let's create a 4D Nifti1Image:
-
+    >>> # Let's create a 4D Nifti1Image
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
     >>> img_4d = Nifti1Image(
@@ -3339,14 +3346,12 @@ def check_niimg_4d(
     ...     affine=np.eye(4),
     ...     dtype=np.int32,
     ... )
-
-    We can check if img_4d is a proper 4D image:
-
+    >>>
+    >>> # We can check if img_4d is a proper 4D image.
     >>> from nilearn.image import check_niimg_4d
     >>> checked_img = check_niimg_4d(img_4d)
-
-    Now let's try with a 3D image:
-
+    >>>
+    >>> # Now let's try with a 3D image.
     >>> from nibabel import Nifti1Image
     >>> img_3d = Nifti1Image(
     ...     np.arange(24).reshape((2, 3, 4)), affine=np.eye(4), dtype=np.int32

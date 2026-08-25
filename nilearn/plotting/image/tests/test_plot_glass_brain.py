@@ -123,7 +123,6 @@ def test_plot_glass_brain_display_modes_without_img(
     plot_glass_brain(None, display_mode=display_mode)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("display_mode", ["lr", "lzry"])
 def test_plot_glass_brain_with_completely_masked_img(

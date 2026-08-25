@@ -86,7 +86,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     %(dtype)s
 
-        ..versionadded:: 0.14.0dev
+        ..versionadded:: 0.14.0
 
     %(memory)s
 
@@ -489,7 +489,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         Returns
         -------
-        displays : list
+        displays : :obj:`list`
             A list of all displays to be rendered.
         """
         # Handle the edge case where this function is called
@@ -506,17 +506,17 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         maps_image = self._reporting_data["maps_image"]
 
-        embeded_images = []
+        embedded_images = []
 
         for roi in self._report_content["displayed_maps"]:
             roi = index_img(maps_image, roi)
             fig = self._create_figure_for_report(roi=roi, bg_img=img)[0]
             if self._report_content["engine"] == "plotly":
-                embeded_images.append(fig)
+                embedded_images.append(fig)
             elif self._report_content["engine"] == "matplotlib":
-                embeded_images.append(figure_to_png_base64(fig))
+                embedded_images.append(figure_to_png_base64(fig))
 
-        return embeded_images
+        return embedded_images
 
     def _create_figure_for_report(self, roi, bg_img) -> list:
         """Create a figure of maps image, one region at a time.

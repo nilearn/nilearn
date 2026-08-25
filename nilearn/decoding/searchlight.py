@@ -220,7 +220,7 @@ def _group_iter_search_light(
     groups : array-like
         group label for each sample for cross validation.
 
-    scoring : string or callable
+    scoring : :obj:`str` or callable
         Scoring strategy to use. See the scikit-learn documentation.
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
@@ -369,15 +369,15 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
 
     process_mask_ : numpy.ndarray
         Boolean mask array representing the voxels included in the
-         searchlight computation.
+        searchlight computation.
 
-         .. nilearn_versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     scores_ : numpy.ndarray
         3D array containing searchlight scores for each voxel, aligned
-         with the mask.
+        with the mask.
 
-         .. nilearn_versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     Notes
     -----

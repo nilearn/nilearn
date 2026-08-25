@@ -16,7 +16,7 @@ from nilearn._utils.param_validation import (
 
 
 @pytest.fixture
-def matrix():
+def matrix() -> np.ndarray:
     return np.array(
         [[-3.0, 2.0, -1.0, 0.0, -4.0], [4.0, -6.0, 5.0, 1.0, -3.0]]
     )

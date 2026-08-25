@@ -7,8 +7,7 @@ import numpy as np
 from sklearn.utils.extmath import randomized_svd
 
 from nilearn._utils.docs import fill_doc
-
-from ._base import _BaseDecomposition
+from nilearn.decomposition._base import _BaseDecomposition
 
 
 @fill_doc
@@ -24,7 +23,7 @@ class _MultiPCA(_BaseDecomposition):
     n_components : int, default=20
         Number of components to extract.
 
-    do_cca : boolean, default=True
+    do_cca : :obj:`bool`, default=True
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
@@ -50,11 +49,11 @@ class _MultiPCA(_BaseDecomposition):
 
     %(standardize_false)s
 
-    standardize_confounds : boolean, default=True
+    standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend : boolean, default=False
+    detrend : :obj:`bool`, default=False
         If detrend is True, the time-series will be detrended before
         components extraction.
 
@@ -85,7 +84,7 @@ class _MultiPCA(_BaseDecomposition):
 
     %(dtype)s
 
-        ..versionadded:: 0.14.0dev
+        ..versionadded:: 0.14.0
 
     memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.

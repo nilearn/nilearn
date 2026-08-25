@@ -52,7 +52,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
 
     %(dtype)s
 
-        ..versionadded:: 0.14.0dev
+        ..versionadded:: 0.14.0
 
     %(memory)s
 

@@ -109,6 +109,7 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
     return to_color_strings(colors)
 
 
+@fill_doc
 def _prepare_lines_metadata(
     adjacency_matrix, coords, threshold, cmap, symmetric_cmap
 ):
@@ -127,7 +128,7 @@ def _prepare_lines_metadata(
         If it is a number only connections of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%", and only connections of amplitude above the
+        e.g. "25.3%%", and only connections of amplitude above the
         given percentile will be shown.
 
     %(cmap)s
@@ -306,7 +307,7 @@ def view_connectome(
         or None, default=None
         Labels for the nodes.
 
-        .. nilearn_versionadded:: 0.14.0dev
+        .. nilearn_versionadded:: 0.14.0
 
     Returns
     -------

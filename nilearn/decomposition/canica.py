@@ -76,7 +76,7 @@ class CanICA(_MultiPCA):
 
     %(dtype)s
 
-        ..versionadded:: 0.14.0dev
+        ..versionadded:: 0.14.0
 
     %(target_affine)s
 

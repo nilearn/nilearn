@@ -55,7 +55,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     %(dtype)s
 
-        ..versionadded:: 0.14.0dev
+        ..versionadded:: 0.14.0
 
     %(memory)s
 
@@ -375,7 +375,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return self._post_process_inverse_transform(signals, imgs, return_1D)
 
-    def _load_report_displays(self) -> None | str:
+    def _load_report_displays(self) -> str | None:
         """Load displays needed for report.
 
         Returns

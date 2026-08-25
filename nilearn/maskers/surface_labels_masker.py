@@ -118,7 +118,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
     %(dtype)s
 
-        ..versionadded:: 0.14.0dev
+        ..versionadded:: 0.14.0
 
     %(memory)s
 
@@ -479,12 +479,12 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         return self._post_process_inverse_transform(signals, imgs, return_1D)
 
-    def _load_report_displays(self) -> None | str:
+    def _load_report_displays(self) -> str | None:
         """Load displays needed for report.
 
         Returns
         -------
-        displays : list
+        displays : :obj:`list`
             A list of all displays to be rendered.
         """
         # Handle the edge case where this function is called
