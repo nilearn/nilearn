@@ -47,6 +47,7 @@ masker = MultiNiftiMapsMasker(
     memory="nilearn_cache",
     memory_level=1,
     standardize_confounds=True,
+    standardize="zscore_sample",
     verbose=1,
 )
 masked_data = masker.fit_transform(
