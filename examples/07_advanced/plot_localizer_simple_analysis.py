@@ -21,7 +21,8 @@ note that this dataset contains many other contrast maps as
 well as external, subject-related or behavioral variates,
 which can be accessed with the
 :func:`~nilearn.datasets.fetch_localizer_contrasts` fetcher.
-Please refer to the :ref:`plot_localizer_mass_univariate_methods`
+Please refer to the
+:ref:`sphx_glr_auto_examples_07_advanced_plot_localizer_mass_univariate_methods.py`
 example for an illustration of
 how to use these external variates in other massively
 univariate analyses.
