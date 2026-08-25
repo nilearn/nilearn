@@ -67,6 +67,7 @@ warnings.filterwarnings(
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
+    "changelog_anchors",
     "gh_substitutions",
     "myst_parser",
     "numpydoc",
@@ -96,21 +97,21 @@ autodoc_default_options = {
     "member-order": "bysource",
 }
 
-try:
-    import jupyterlite_sphinx  # noqa: F401
+# try:
+#     import jupyterlite_sphinx
 
-    extensions.append("jupyterlite_sphinx")
-    with_jupyterlite = True
-except ImportError:
-    # In some cases we don't want to require jupyterlite_sphinx
-    # to be installed,
-    # e.g. the doc-min-dependencies build
-    warnings.warn(
-        "jupyterlite_sphinx is not installed, you need to install it "
-        "if you want JupyterLite links to appear in the API documentation",
-        stacklevel=2,
-    )
-    with_jupyterlite = False
+#     extensions.append("jupyterlite_sphinx")
+#     with_jupyterlite = True
+# except ImportError:
+#     # In some cases we don't want to require jupyterlite_sphinx
+#     # to be installed,
+#     # e.g. the doc-min-dependencies build
+#     warnings.warn(
+#         "jupyterlite_sphinx is not installed, you need to install it "
+#         "if you want JupyterLite links to appear in the API documentation",
+#         stacklevel=2,
+#     )
+#     with_jupyterlite = False
 
 
 # Get rid of spurious warnings due to some interaction between
@@ -190,6 +191,15 @@ exclude_patterns = [
     "tune_toc.rst",
     "includes/big_toc_css.rst",
     "includes/bigger_toc_css.rst",
+    # Per-version changelog fragments are only ever meant to be pulled into
+    # changes/whats_new.rst via ".. include::"; building them as their own
+    # standalone pages as well duplicates every anchor they define and
+    # trips Sphinx's duplicate-label warning.
+    *(
+        str(p.relative_to(Path(__file__).parent))
+        for p in Path(__file__).parent.glob("changes/*.rst")
+        if p.name not in ("whats_new.rst", "names.rst")
+    ),
 ]
 
 # List of directories, relative to source directory, that shouldn't be
@@ -437,7 +447,7 @@ html_context = {"build_dev_html": build_dev_html}
 # html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "PythonScientic"
+htmlhelp_basename = "PythonScientific"
 
 # sphinx-copybutton configurations
 copybutton_prompt_text = (
@@ -502,30 +512,34 @@ sphinx_gallery_conf = {
     },
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
     "within_subsection_order": "ExampleTitleSortKey",
+    # # Disallow jupyterlite for examples in gallery
+    # # as most of them requires loading too much data in the browser
+    # "jupyterlite": None,
 }
 
 
-if with_jupyterlite:
-    global_enable_try_examples = True
-    try_examples_global_button_text = "Try it in your browser!"
-    try_examples_global_warning_text = (
-        "Running the nilearn examples in JupyterLite is experimental"
-        " and you may encounter some unexpected behavior.\n\n"
-        " The main difference is that imports will take a lot longer"
-        " than usual, for example the first `import nilearn` can take"
-        " roughly 10-20s.\n\nIf you notice problems, feel free to open"
-        " an [issue](https://github.com/nilearn/nilearn/issues/new/choose) "
-        "about it."
-    )
-    # Work around https://github.com/jupyterlite/pyodide-kernel/issues/166
-    # and https://github.com/pyodide/micropip/issues/223 by installing the
-    # dependencies first, and then nilearn from Anaconda.org.
-    try_examples_preamble = """
-    # Jupyterlite specific code
-    import matplotlib
-    import pandas
-    %pip install -q nilearn
-    """
+# if with_jupyterlite:
+#     global_enable_try_examples = True
+#     jupyterlite_bind_ipynb_suffix = False
+#     try_examples_global_button_text = "Try it in your browser!"
+#     try_examples_global_warning_text = (
+#         "Running the nilearn examples in JupyterLite is experimental"
+#         " and you may encounter some unexpected behavior.\n\n"
+#         " The main difference is that imports will take a lot longer"
+#         " than usual, for example the first `import nilearn` can take"
+#         " roughly 10-20s.\n\nIf you notice problems, feel free to open"
+#         " an [issue](https://github.com/nilearn/nilearn/issues/new/choose) "
+#         "about it."
+#     )
+#     # Work around https://github.com/jupyterlite/pyodide-kernel/issues/166
+#     # and https://github.com/pyodide/micropip/issues/223 by installing the
+#     # dependencies first, and then nilearn from Anaconda.org.
+#     try_examples_preamble = """
+#     # Jupyterlite specific code
+#     import matplotlib
+#     import pandas
+#     %pip install -q nilearn
+#     """
 
 mermaid_version = "11.4.0"
 

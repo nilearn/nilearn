@@ -2,6 +2,7 @@
 multiple modules in nilearn.plotting package.
 """
 
+from pathlib import Path
 from warnings import warn
 
 import matplotlib.pyplot as plt
@@ -12,11 +13,13 @@ from matplotlib.colors import (
     ListedColormap,
     Normalize,
 )
+from matplotlib.figure import Figure
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
+from nilearn.nilearn_typing import OutputFile
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
     check_threshold_not_negative,
@@ -24,6 +27,25 @@ from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
 )
+
+
+@fill_doc
+def save_figure_if_needed(fig: Figure, output_file: OutputFile) -> None:
+    """Save figure if a valid output file value is given.
+
+    Create output path if required.
+
+    Parameters
+    ----------
+    fig :  :class:`matplotlib.figure.Figure`
+        figure to save
+
+    %(output_file)s
+    """
+    if output_file is not None:
+        output_file = Path(output_file)
+        output_file.parent.mkdir(exist_ok=True, parents=True)
+        fig.savefig(output_file)
 
 
 @fill_doc
@@ -43,7 +65,7 @@ def threshold_cmap(
     threshold : :obj:`float`  or obj:`int`
         A positive value to be used as threshold
 
-    threshold_color: :obj:`tuple`, default=(0.5, 0.5, 0.5, 1.0)
+    threshold_color : :obj:`tuple`, default=(0.5, 0.5, 0.5, 1.0)
         Color to be used for thresholded values. Default value is an average
         gray color.
 
@@ -122,6 +144,8 @@ def create_colormap_from_lut(cmap, default_cmap="gist_ncar"):
     ----------
     cmap : pd.DataFrame
         DataFrame with columns 'index', 'name', and 'color' (hex values)
+
+    default_cmap : :obj:`str`
 
     Returns
     -------

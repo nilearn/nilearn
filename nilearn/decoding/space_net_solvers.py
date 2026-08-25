@@ -9,9 +9,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.masking import unmask_from_to_3d_array
-
-from ._objective_functions import (
+from nilearn.decoding._objective_functions import (
     divergence,
     gradient,
     gradient_id,
@@ -22,13 +20,14 @@ from ._objective_functions import (
     squared_loss,
     squared_loss_grad,
 )
-from ._proximal_operators import (
+from nilearn.decoding._proximal_operators import (
     prox_l1,
     prox_l1_with_intercept,
     prox_tvl1,
     prox_tvl1_with_intercept,
 )
-from .fista import mfista
+from nilearn.decoding.fista import mfista
+from nilearn.masking import unmask_from_to_3d_array
 
 
 def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
@@ -46,7 +45,9 @@ def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight : float
+    mask : ndarray
+
+    grad_weight : :obj:`float`
         l1_ratio * alpha.
 
     Returns
@@ -79,7 +80,9 @@ def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight : float
+    mask : ndarray
+
+    grad_weight : :obj:`float`
         l1_ratio * alpha
 
     Returns
@@ -107,13 +110,12 @@ def _graph_net_data_function(X, w, mask, grad_weight):
     X : ndarray, shape (n_samples, n_features)
         Design matrix.
 
-    y : ndarray, shape (n_samples,)
-        Target / response vector.
-
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight : float
+    mask : ndarray
+
+    grad_weight : :obj:`float`
         l1_ratio * alpha.
 
     Returns
@@ -147,13 +149,12 @@ def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
     X : ndarray, shape (n_samples, n_features)
         Design matrix.
 
-    y : ndarray, shape (n_samples,)
-        Target / response vector.
-
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight : float
+    adjoint_mask : ndarray
+
+    grad_weight : :obj:`float`
         l1_ratio * alpha.
 
     Returns
@@ -176,8 +177,8 @@ def _squared_loss_derivative_lipschitz_constant(
     of the Graph-Net regression problem (squared_loss + grad_weight*grad) \
     via power method.
     """
-    rng = np.random.RandomState(42)
-    a = rng.randn(X.shape[1])
+    rng = np.random.default_rng(42)
+    a = rng.normal(size=X.shape[1])
     a /= sqrt(np.dot(a, a))
     adjoint_mask = np.tile(mask, [mask.ndim] + [1] * mask.ndim)
 
@@ -219,8 +220,8 @@ def _logistic_derivative_lipschitz_constant(
     # data_constant = sp.linalg.norm(X, 2) ** 2
     data_constant = logistic_loss_lipschitz_constant(X)
 
-    rng = np.random.RandomState(42)
-    a = rng.randn(X.shape[1])
+    rng = np.random.default_rng(42)
+    a = rng.normal(size=X.shape[1])
     a /= sqrt(np.dot(a, a))
     grad_buffer = np.zeros(mask.shape)
     for _ in range(n_iterations):
@@ -285,7 +286,7 @@ def graph_net_squared_loss(
     w : ndarray, shape (n_features,)
         Solution vector.
 
-    solver_info : float
+    solver_info : :obj:`float`
         Solver information, for warm start.
 
     objective : array of floats
@@ -530,6 +531,9 @@ def tvl1_solver(
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.
 
+    init : ndarray or None, default=None
+        Initialization vector for the prox.
+
     callback : callable(dict) -> :obj:`bool`, default=None
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
@@ -545,7 +549,7 @@ def tvl1_solver(
     objective : array of floats
         Objective function (fval) computed on every iteration.
 
-    solver_info : float
+    solver_info : :obj:`float`
         Solver information, for warm start.
 
     """

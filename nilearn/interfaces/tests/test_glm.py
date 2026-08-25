@@ -6,7 +6,6 @@ from nilearn.glm.first_level import FirstLevelModel
 from nilearn.interfaces.bids import save_glm_to_bids
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_deprecation_save_glm_to_bids(tmp_path):
     """Check deprecation about moved function."""

@@ -88,6 +88,11 @@ authors:
     family-names: Thual
     website: https://github.com/alexisthual
     affiliation: Inria, Saclay, France
+  - given-names: Alice
+    family-names: Schiavone
+    affiliation: University of Copenhagen
+    orcid: https://orcid.org/0009-0006-4844-2088
+    website: https://aliswh.github.io
   - given-names: Alisha
     family-names: Kodibagkar
     website: https://github.com/alishakodibagkar/
@@ -103,6 +108,9 @@ authors:
     family-names: Joshi
     website: https://github.com/ajoshiusc
     affiliation: University of Southern California, Los Angeles, California, United States
+  - given-names: Andrew
+    family-names: Chen
+    website: https://github.com/chuenchen309
   - given-names: Andrés Hoyos
     family-names: Idrobo
     website: https://github.com/ahoyosid
@@ -111,6 +119,9 @@ authors:
     family-names: Kieslinger
     website: https://github.com/askieslinger
     affiliation: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
+  - given-names: Anton
+    family-names: Karpov
+    website: https://github.com/karpovantonme
   - given-names: Anupriya
     family-names: Kumari
     website: https://github.com/anupriyakkumari
@@ -265,6 +276,11 @@ authors:
     website: https://github.com/fabianp
     affiliation: '@google, Geneva, Switzerland'
     orcid: https://orcid.org/0000-0003-4025-3953
+  - given-names: Fabricio
+    family-names: Cravo
+    website: https://fabriciocravo.github.io/
+    affiliation: NeuroPRISM, Northeastern University
+    orcid: https://orcid.org/0009-0005-8351-7156
   - given-names: Fernanda
     family-names: Ponce
     website: https://github.com/ferponcem
@@ -332,6 +348,9 @@ authors:
     affiliation: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
     email: wang.hao-ting@criugm.qc.ca
     orcid: https://orcid.org/0000-0003-4078-2038
+  - given-names: Hariom
+    family-names: Patidar
+    website: https://github.com/HariomPtdr
   - given-names: Himanshu
     family-names: Aggarwal
     website: https://github.com/man-shu
@@ -790,7 +809,7 @@ authors:
   - given-names: Sanjana
     family-names: Soni
     website: https://github.com/isha822
-    affiliation: Goverment Engineering College, Bilaspur, India
+    affiliation: Government Engineering College, Bilaspur, India
   - given-names: Simon
     family-names: Steinkamp
     website: https://github.com/SRSteinkamp

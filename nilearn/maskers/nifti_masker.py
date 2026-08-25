@@ -82,10 +82,10 @@ def make_brain_mask_func(mask_type: str, multi: bool = False):
 
     Parameters
     ----------
-    mask_type : str
+    mask_type : :obj:`str`
         Type of masking function to return.
 
-    multi : bool
+    multi : :obj:`bool`
         Whether to return functions for multimasker or not.
     """
 
@@ -140,13 +140,17 @@ def filter_and_mask(
     imgs : 3D/4D Niimg-like object
         Images to be masked. Can be 3-dimensional or 4-dimensional.
 
-    For all other parameters refer to NiftiMasker documentation.
-
     Returns
     -------
     signals : 2D numpy array
         Signals extracted using the provided mask. It is a scikit-learn
         friendly 2D array with shape n_sample x n_features.
+
+    .. do not check for missing parameters in docstring
+
+    Notes
+    -----
+    For all other parameters refer to NiftiMasker documentation.
 
     """
     if memory is None:
@@ -407,7 +411,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        displays : List of :class:`~matplotlib.figure.Figure`
+        displays : :obj:`list` of :class:`~matplotlib.figure.Figure`
             A list of all displays to be rendered.
             Returns None when masker is not fitted
         """

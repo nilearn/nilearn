@@ -194,8 +194,10 @@ from nilearn.mass_univariate import permuted_ols
 output = permuted_ols(
     age,
     data,  # + intercept as a covariate by default
-    n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
+    # few permutations in the interest of time; 10000 would be better
+    n_perm=2000,
     verbose=1,  # display progress bar
+    random_state=0,  # to ensure reproducible results
     n_jobs=2,
 )
 neg_log_pvals = output["logp_max_t"]

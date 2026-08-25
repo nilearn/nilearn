@@ -212,6 +212,7 @@ def test_read_md5_sum_file(tmp_path):
 
 @pytest.fixture
 def dir1(tmp_path) -> Path:
+    """Return a temporary 'dir1' directory."""
     dir1 = tmp_path / "dir1"
     dir1.mkdir()
     return dir1
@@ -219,6 +220,7 @@ def dir1(tmp_path) -> Path:
 
 @pytest.fixture
 def dir2(tmp_path) -> Path:
+    """Return a temporary 'dir2' directory."""
     dir2 = tmp_path / "dir2"
     dir2.mkdir()
     return dir2

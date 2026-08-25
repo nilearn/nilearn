@@ -13,13 +13,13 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import (
     create_colorbar_for_fig,
+    save_figure_if_needed,
     to_color_strings,
 )
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
 )
 from nilearn.plotting.cm import mix_colormaps
-from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
     check_engine_params,
@@ -435,7 +435,8 @@ def _plot_surf(
     if title is not None:
         axes.set_title(title)
 
-    return save_figure_if_needed(figure, output_file)
+    save_figure_if_needed(figure, output_file)
+    return figure
 
 
 def _plot_surf_contours(
@@ -530,7 +531,8 @@ def _plot_surf_contours(
     if title:
         axes.set_title(title)
 
-    return save_figure_if_needed(figure, output_file)
+    save_figure_if_needed(figure, output_file)
+    return figure
 
 
 def _plot_img_on_surf(

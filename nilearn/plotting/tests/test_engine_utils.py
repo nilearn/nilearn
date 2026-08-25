@@ -1,5 +1,7 @@
 import re
+from unittest.mock import Mock
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from matplotlib.colors import Normalize
@@ -7,6 +9,7 @@ from matplotlib.colors import Normalize
 from nilearn.plotting._engine_utils import (
     colorscale,
     create_colorbar_for_fig,
+    save_figure_if_needed,
     threshold_cmap,
     to_color_strings,
 )
@@ -29,6 +32,24 @@ def check_colors(colors):
     return val, cstring
 
 
+def test_save_figure_if_needed(tmp_path):
+    """Test nilearn.plotting._engine_utils.save_figure_if_needed for valid
+    values of output_file.
+    """
+    # check if figure is saved when called with a filename
+    fig = plt.figure()
+    path = tmp_path / "fig.png"
+    save_figure_if_needed(fig, output_file=path)
+
+    assert path.exists()
+
+    # check if figure.savefig is called when None is specified as output_file
+    fig = Mock()
+    save_figure_if_needed(fig, None)
+
+    fig.savefig.assert_not_called()
+
+
 def test_colorscale_no_threshold():
     """Test colorscale with no thresholding."""
     values = np.linspace(-13, -1.5, 20)
@@ -41,7 +62,7 @@ def test_colorscale_no_threshold():
 
 
 @pytest.fixture
-def expected_abs_threshold(threshold):
+def expected_abs_threshold(threshold) -> float | None:
     """Return the expected absolute threshold."""
     expected = {"0%": 1.5, "50%": 7.55, "99%": 13}
     return (
@@ -100,7 +121,7 @@ def test_colorscale_symmetric_cmap(vmin, vmax):
 
 
 @pytest.fixture
-def expected_vmin_vmax(values, vmax, vmin):
+def expected_vmin_vmax(values, vmax, vmin) -> tuple[float, float]:
     """Return expected vmin and vmax."""
     if vmax is None:
         return (min(values), max(values))

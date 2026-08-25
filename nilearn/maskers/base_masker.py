@@ -75,13 +75,17 @@ def filter_and_extract(
         If any other parameter is needed, a functor or a partial
         function must be provided.
 
-    For all other parameters refer to NiftiMasker documentation
+    .. do not check for missing parameters in docstring
 
     Returns
     -------
     signals : 1D or 2D numpy array
         Signals extracted using the extraction function. It is a scikit-learn
         friendly 2D array with shape n_samples x n_features.
+
+    Notes
+    -----
+    For all other parameters refer to NiftiMasker documentation
 
     """
     if memory is None:
@@ -292,7 +296,6 @@ def sanitize_displayed_maps(
     return estimator, displayed_maps
 
 
-@fill_doc
 class _BaseMasker(
     MaskerReportMixin,
     TransformerMixin,
@@ -305,7 +308,7 @@ class _BaseMasker(
 
     @property
     def _n_features_out(self):
-        """Needed by sklearn machinery for set_ouput."""
+        """Needed by sklearn machinery for set_output."""
         return self.n_elements_
 
     @abc.abstractmethod
@@ -416,10 +419,10 @@ class BaseMasker(_BaseMasker):
 
     @property
     def _n_features_out(self):
-        """Needed by sklearn machinery for set_ouput."""
+        """Needed by sklearn machinery for set_output."""
         return self.n_elements_
 
-    def _get_masker_params(self, ignore: None | list[str] = None, deep=False):
+    def _get_masker_params(self, ignore: list[str] | None = None, deep=False):
         """Get parameters for this masker.
 
         Very similar to the BaseEstimator.get_params() from sklearn
@@ -430,7 +433,7 @@ class BaseMasker(_BaseMasker):
         ignore : None or list of strings
             Names of the parameters that are not returned.
 
-        deep : bool, default=True
+        deep : :obj:`bool`, default=True
             If True, will return the parameters for this estimator
             and contained subobjects that are estimators.
 
@@ -458,7 +461,7 @@ class BaseMasker(_BaseMasker):
     @overload
     def _load_mask(self, imgs: Nifti1Image) -> Nifti1Image: ...
 
-    def _load_mask(self, imgs) -> None | Nifti1Image:
+    def _load_mask(self, imgs) -> Nifti1Image | None:
         """Load and validate mask if one passed at init.
 
         Returns
@@ -693,6 +696,7 @@ class BaseMasker(_BaseMasker):
             bg_img=bg_img,
             cmap=self.cmap if cmap is None else cmap,
             symmetric_cmap=False,
+            unique_id=self._report_content["unique_id"],
         )
 
         self._reporting_data["bg_base64"] = json_view["bg_base64"]
@@ -712,6 +716,7 @@ class BaseMasker(_BaseMasker):
         return output
 
 
+@fill_doc
 class _BaseSurfaceMasker(_BaseMasker):
     """Class from which all surface maskers should inherit."""
 
@@ -757,7 +762,7 @@ class _BaseSurfaceMasker(_BaseMasker):
     @overload
     def _load_mask(self, imgs: SurfaceImage) -> SurfaceImage: ...
 
-    def _load_mask(self, imgs) -> None | SurfaceImage:
+    def _load_mask(self, imgs) -> SurfaceImage | None:
         """Load and validate mask if one passed at init.
 
         Returns
