@@ -47,7 +47,7 @@ def log(
 
     Parameters
     ----------
-    msg : str
+    msg : :obj:`str`
         Message to display.
 
     %(verbose)s
@@ -66,6 +66,9 @@ def log(
     msg_level : int, default=1
         Verbosity level at and above which message should be displayed to the
         user. Most of the time this parameter can be left unchanged.
+
+    with_traceback : :obj:`bool`
+        Print traceback in the log.
 
     Notes
     -----
@@ -123,7 +126,7 @@ def compose_err_msg(msg: str, **kwargs) -> str:
 
     Parameters
     ----------
-    msg : string
+    msg : :obj:`str`
         Arbitrary message.
 
     kwargs : dict, optional
@@ -131,7 +134,7 @@ def compose_err_msg(msg: str, **kwargs) -> str:
 
     Returns
     -------
-    updated_msg : string
+    updated_msg : :obj:`str`
         msg, with "key: value" appended. Only string values are appended.
 
     Examples

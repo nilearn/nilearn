@@ -30,6 +30,8 @@ class SurfaceFigure:
 
     output_file : :obj:`str` or None, default=None
         Path to output file.
+
+    hemi : :obj:`str`, default="left
     """
 
     def __init__(self, figure=None, output_file=None, hemi=DEFAULT_HEMI):
@@ -57,6 +59,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
     output_file : :obj:`str` or None, default=None
         Output file path.
+
+    hemi : :obj:`str`, default="left"
 
     Attributes
     ----------
@@ -99,7 +103,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Parameters
         ----------
-        renderer : :obj:`str`, default=None
+        renderer : :obj:`str` or None, default=None
             Plotly renderer to be used.
 
         """
@@ -122,7 +126,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         %(output_file)s
             Path to output file.
 
-        kwargs: :obj:`dict`
+        kwargs : :obj:`dict`
             Extra keyword arguments are passed to
             :func:`plotly.io.write_image`
         """

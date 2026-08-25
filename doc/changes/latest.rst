@@ -20,6 +20,14 @@ NEW
 Fixes
 -----
 
+- :bdg-info:`Plotting` Fix :func:`~plotting.plot_prob_atlas` showing two overlapping colorbars, because the anatomical background plotted by the underlying :func:`~plotting.plot_anat` call kept its own default colorbar in addition to the "Map #" colorbar added for the atlas maps (:gh:`6517` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Clarify that :func:`~mass_univariate.permuted_ols` requires numerical or boolean ``tested_vars`` and raise a clear error for unsupported data (:gh:`6501` by `Mohammad Sadeghi Hardengi`_).
+
+- :bdg-dark:`Code` Fix :class:`~maskers.NiftiLabelsMasker` raising an ``AttributeError`` when transforming a list of 3D images with ``resampling_target="labels"`` (:gh:`6498` by `Mohammad Sadeghi Hardengi`_).
+
+- :bdg-success:`API` Fix mismatch between parameters in several functions or methods and their docstrings. Also adds an ``interpolation`` parameter to :func:`~.datasets.fetch_neurovault` that was documented but missing from the API (:gh:`6482` by `Rémi Gau`_).
+
 - :bdg-primary:`Doc` Fix docstrings that name a parameter which is not in the signature (:func:`~plotting.plot_img_comparison`, :meth:`~plotting.displays.PlotlySurfaceFigure.add_contours` and seven private helpers), the documented default of ``two_sided_test`` in ``calculate_tfce``, and the sentence stating that a source image is resampled to match itself (:gh:`6469` by `Anton Karpov`_).
 
 - :bdg-dark:`Code` Fix the masked atlas returned by :func:`~regions.img_to_signals_labels` and exposed as ``NiftiLabelsMasker.region_atlas_`` being cast to ``int8``, which wrapped every label above 127 around and aliased label 256 onto the background; atlases such as Schaefer-400 label well past that (:gh:`6447` by `Andrew Chen`_).
@@ -38,8 +46,6 @@ Fixes
 
 - :bdg-dark:`Code` Fix a bug in :func:`~plotting.view_img` where the background colormap was not being applied correctly. (:gh:`6466` by `Pierre-Louis Barbarant`_).
 
-- :bdg-dark:`Code` Fix :func:`~image.smooth_img` and ``smooth_array`` truncating the smoothed signal for unsigned integer input, because only signed integers were promoted to float before ``gaussian_filter1d`` wrote its float result back into the input buffer in place; unsigned is the common case since ``uint8`` is the standard on-disk dtype for masks and atlases (:gh:`6440` by `Andrew Chen`_).
-
 - :bdg-dark:`Code` Allow custom scikit-learn-compatible estimators in decoders to use an empty default parameter grid, and clarify how to use ``param_grid`` to tune them (:gh:`6227` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-dark:`Code` Fix :func:`~image.resample_img` raising an ``AttributeError`` instead of resampling correctly when ``target_affine`` is passed as a :obj:`list` or :obj:`tuple` together with ``target_shape`` (:gh:`6408` by `Rémi Gau`_).
@@ -56,19 +62,23 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-dark:`Code` Improve type annotations (and :obj:`~typing.overload` signatures where the return type depends on the arguments given) in :mod:`nilearn.glm` (:gh:`6370`), :mod:`nilearn.regions` (:gh:`6369`), :mod:`nilearn.connectome` (:gh:`6368`), :mod:`nilearn.reporting` (:gh:`6368`), :mod:`nilearn.interfaces` (:gh:`6362`), :mod:`nilearn.image` (:gh:`6408`, :gh:`6438`), :mod:`nilearn.utils`, :mod:`nilearn.surface` (:gh:`6410`), :mod:`nilearn.datasets`  (:gh:`6438`),  :mod:`nilearn.plotting` (:gh:`6438` and :gh:`6439`),  :mod:`nilearn.glm` and :mod:`nilearn.mass_univariate` (:gh:`6439`) (by `Rémi Gau`_).
+- :bdg-dark:`Code` Improve type annotations (and :obj:`~typing.overload` signatures where the return type depends on the arguments given) in :mod:`~nilearn.glm` (:gh:`6370`), :mod:`~nilearn.regions` (:gh:`6369`), :mod:`~nilearn.connectome` (:gh:`6368`), :mod:`~nilearn.reporting` (:gh:`6368`), :mod:`~nilearn.interfaces` (:gh:`6362`), :mod:`~nilearn.image` (:gh:`6408`, :gh:`6438`), :mod:`~nilearn.utils`, :mod:`~nilearn.surface` (:gh:`6410`), :mod:`~nilearn.datasets`  (:gh:`6438`),  :mod:`~nilearn.plotting` (:gh:`6438` and :gh:`6439`),  :mod:`~nilearn.glm` and :mod:`~nilearn.mass_univariate` (:gh:`6439`) (by `Rémi Gau`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~nilearn.masking.compute_epi_mask` (:gh:`6306` by `Marco Flores`_).
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~masking.compute_epi_mask` (:gh:`6306` by `Marco Flores`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring section to :func:`~nilearn.utils.all_displays`, :func:`~nilearn.utils.all_estimators`, :func:`~nilearn.utils.all_functions` (:gh:`6322`, :gh:`6324`, :gh:`6325` by `Alice Schiavone`_).
+- :bdg-dark:`Code` Add return type annotations and ``Returns`` docstring sections to the private helpers of :mod:`nilearn.plotting` matrix utilities (:gh:`6510` by `Hariom Patidar`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~nilearn.image.iter_img` (:gh:`6304` by `Ruben Dörfel`_).
+- :bdg-primary:`Doc` Add ``Examples`` docstring section to :func:`~utils.all_displays`, :func:`~utils.all_estimators`, :func:`~utils.all_functions` (:gh:`6322`, :gh:`6324`, :gh:`6325` by `Alice Schiavone`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.plotting.plot_design_matrix` (:gh:`6380` by `Nirmitee Mulay`_).
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections for a utility function in the public API: :func:`~image.iter_img` (:gh:`6304` by `Ruben Dörfel`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.signal.butterworth` function (:gh:`6311` by `Hande Gözükan`_).
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~plotting.plot_design_matrix` (:gh:`6380` by `Nirmitee Mulay`_).
 
-- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~nilearn.regions.img_to_signals_labels` function (:gh:`6315` by `Hande Gözükan`_).
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~signal.butterworth` function (:gh:`6311` by `Hande Gözükan`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~regions.img_to_signals_labels` function (:gh:`6315` by `Hande Gözükan`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring section for :func:`~plotting.plot_design_matrix_correlation` function (:gh:`6413` by `Nirmitee Mulay`_).
 
 Changes
 -------

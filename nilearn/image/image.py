@@ -647,7 +647,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
         the slices will be applied to the first `len(slices)` dimensions
         (See :ref:`extracting_data`).
 
-    slices : list of slices
+    slices : :obj:`list` of slices
         Defines the range of the crop.
         E.g. [slice(20, 200), slice(40, 150), slice(0, 100)] defines a cube.
 
@@ -1770,13 +1770,13 @@ def _apply_threshold(img_data, two_sided, cutoff_threshold):
 
     Parameters
     ----------
-    img_data: np.ndarray or SurfaceImage
+    img_data : np.ndarray or SurfaceImage
 
     two_sided : :obj:`bool`, default=True
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-    cutoff_threshold: :obj:`int`
+    cutoff_threshold : :obj:`int`
         Effective threshold returned by check_threshold.
 
     Returns
@@ -2087,8 +2087,6 @@ def binarize_img(
             Default was changed to False.
 
      %(copy_header)s
-
-        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
         .. nilearn_versionadded:: 0.11.0
 
@@ -2830,12 +2828,12 @@ def check_same_fov(*args, **kwargs) -> bool:
         Images to be checked. Images passed without keywords will be labeled
         as img_#1 in the error message (replace 1 with the appropriate index).
 
-    kwargs : images
+    kwargs : images or raise_error
         Images to be checked. In case of error, images will be referenced by
         their keyword name in the error message.
 
-    raise_error : :obj:`bool`, optional
-        If True, an error will be raised in case of error.
+        raise_error : :obj:`bool`, optional
+            If True, an error will be raised in case of error.
 
     """
     raise_error = kwargs.pop("raise_error", False)

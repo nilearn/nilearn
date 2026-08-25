@@ -47,11 +47,11 @@ def safe_get_data(
     img : Nifti image/object
         Image to get data.
 
-    ensure_finite : bool
+    ensure_finite : :obj:`bool`
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
-    copy_data : bool, default=False
+    copy_data : :obj:`bool`, default=False
         If true, the returned data is a copy of the img data.
 
     Returns
@@ -157,9 +157,13 @@ def is_binary_niimg(
         See :ref:`extracting_data`.
         Image to test.
 
+    block_size : :obj:`int`, default = 1_000_000
+
+    accept_non_finite : :obj:`bool`, default = True
+
     Returns
     -------
-    is_binary : Boolean
+    is_binary : :obj:`bool`
         True if binary, False otherwise.
 
     """
@@ -206,14 +210,14 @@ def repr_niimgs(niimgs, shorten=True):
     niimgs : image or collection of images
         nibabel SpatialImage to repr.
 
-    shorten : boolean, default=True
+    shorten : :obj:`bool`, default=True
         If True, filenames with more than 20 characters will be
         truncated, and lists of more than 3 file names will be
         printed with only first and last element.
 
     Returns
     -------
-    repr : str
+    repr : :obj:`str`
         String representation of the image.
     """
     # Simple string case

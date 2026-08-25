@@ -54,6 +54,7 @@ nifti_masker = NiftiMasker(
     mask_img=mask_filename,
     runs=run,
     smoothing_fwhm=4,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     standardize="zscore_sample",
     memory_level=1,

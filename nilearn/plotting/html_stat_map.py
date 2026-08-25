@@ -39,6 +39,7 @@ from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
 
 
+@fill_doc
 def _data_to_sprite(
     data: np.ndarray, radiological: bool = False
 ) -> np.ndarray:
@@ -48,6 +49,8 @@ def _data_to_sprite(
     ----------
     data : :class:`numpy.ndarray`
         Input data to convert to sprite.
+
+    %(radiological)s
 
     Returns
     -------
@@ -169,6 +172,8 @@ def _save_sprite(
 
     format : :obj:`str`, default='png'
         Format to use for output image.
+
+    %(radiological)s
 
     Returns
     -------

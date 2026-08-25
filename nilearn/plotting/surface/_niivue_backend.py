@@ -38,7 +38,7 @@ def matplotlib_cm_to_niivue_cm(
 
     Parameters
     ----------
-    cmap : str or Colormap
+    cmap : :obj:`str` or Colormap
         Name of the colormap to convert.
 
     Returns
