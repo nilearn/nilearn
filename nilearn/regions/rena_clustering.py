@@ -78,7 +78,7 @@ def _make_3d_edges(vertices, is_mask):
     vertices : ndarray
         The indices of the voxels.
 
-    is_mask : boolean
+    is_mask : :obj:`bool`
         If is_mask is true, it returns the mask of edges.
         Returns 1 if the edge is contained in the mask, 0 otherwise.
 
@@ -169,7 +169,7 @@ def _compute_weights_surface(X, mask, edges):
         So n_features is only the number of vertices that were kept after
         masking.
 
-    mask : boolean ndarray, shape = [1, n_vertices]
+    mask : :obj:`bool` ndarray, shape = [1, n_vertices]
         Initial mask used for getting the X. So n_vertices is the total number
         of vertices in the mesh.
 
@@ -229,7 +229,7 @@ def make_edges_surface(faces, mask):
     faces : ndarray
         The vertex indices corresponding the mesh triangles.
 
-    mask : boolean
+    mask : :obj:`bool`
         True if the edge is contained in the mask, False otherwise.
 
     Returns
@@ -359,7 +359,7 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     connectivity : a sparse matrix in COOrdinate format.
         Sparse matrix representation of the weighted adjacency graph.
 
-    threshold : float in the close interval [0, 1], default=1e-7
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
 
     Returns
@@ -420,7 +420,7 @@ def _reduce_data_and_connectivity(
     connectivity : a sparse matrix in COOrdinate format.
         Sparse matrix representation of the weighted adjacency graph.
 
-    threshold : float in the close interval [0, 1], default=1e-7
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
 
     Returns

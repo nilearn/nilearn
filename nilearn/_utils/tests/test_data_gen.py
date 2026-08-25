@@ -82,7 +82,7 @@ def test_write_fake_bold_img(tmp_path, shape, affine, rng):
         file_path=tmp_path / "fake_bold.nii",
         shape=shape,
         affine=affine,
-        random_state=rng,
+        rand_gen=rng,
     )
     img = load(img_file)
 
@@ -573,7 +573,7 @@ def test_generate_fake_fmri(
         n_blocks=n_block,
         block_size=block_size,
         block_type=block_type,
-        random_state=rng,
+        rand_gen=rng,
     )
 
     assert fake_fmri[0].shape[:-1] == shape
@@ -588,7 +588,7 @@ def test_generate_fake_fmri_error(rng):
             length=10,
             n_blocks=10,
             block_size=3,
-            random_state=rng,
+            rand_gen=rng,
         )
 
 
@@ -597,10 +597,10 @@ def test_generate_fake_fmri_error(rng):
 )
 @pytest.mark.parametrize("rank", [1, 3, 5])
 @pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
-def test_fake_fmri_data_and_design_generate(shapes, rank, affine):
+def test_fake_fmri_data_and_design_generate(shapes, rank, affine, rng):
     # test generate
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes, rk=rank, affine=affine, random_state=42
+        shapes, rk=rank, affine=affine, rand_gen=rng
     )
 
     for fmri, shape in zip(fmri_data, shapes, strict=False):
@@ -620,10 +620,10 @@ def test_fake_fmri_data_and_design_generate(shapes, rank, affine):
 @pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
 def test_fake_fmri_data_and_design_write(tmp_path, shapes, rank, affine):
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes, rk=rank, affine=affine, random_state=42
+        shapes, rk=rank, affine=affine, rand_gen=1
     )
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
-        shapes, rk=rank, affine=affine, random_state=42, file_path=tmp_path
+        shapes, rk=rank, affine=affine, rand_gen=1, file_path=tmp_path
     )
 
     mask_img = load(mask_file)
@@ -646,9 +646,7 @@ def test_fake_fmri_data_and_design_write(tmp_path, shapes, rank, affine):
 @pytest.mark.parametrize("shape", [(3, 4, 5), (2, 3, 5, 7)])
 @pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
 def test_generate_random_img(shape, affine, rng):
-    img, mask = generate_random_img(
-        shape=shape, affine=affine, random_state=rng
-    )
+    img, mask = generate_random_img(shape=shape, affine=affine, rand_gen=rng)
 
     assert img.shape == shape
     assert mask.shape == shape[:3]
@@ -670,7 +668,7 @@ def test_generate_group_sparse_gaussian_graphs(
         min_n_samples=n_samples_range[0],
         max_n_samples=n_samples_range[1],
         density=density,
-        random_state=rng,
+        rand_gen=rng,
     )
 
     assert len(signals) == n_subjects
@@ -703,7 +701,7 @@ def test_generate_timeseries(n_timepoints, n_features, rng):
 @pytest.mark.parametrize("mask_dilation", [1, 2])
 def test_generate_mni_space_img(n_scans, res, mask_dilation, rng):
     inverse_img, mask_img = generate_mni_space_img(
-        n_scans=n_scans, res=res, mask_dilation=mask_dilation, random_state=rng
+        n_scans=n_scans, res=res, mask_dilation=mask_dilation, rand_gen=rng
     )
 
     def resample_dim(orig, res):

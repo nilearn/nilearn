@@ -378,7 +378,29 @@ def test_signals_extraction_with_labels_without_mask(
     assert labels_r == list(range(1, 9))
 
 
-@pytest.mark.thread_unsafe
+@pytest.mark.parametrize(
+    "label_values", [[10, 20, 30], [100, 150, 200, 256, 300, 400]]
+)
+def test_masked_atlas_keeps_the_label_values(affine_eye, label_values):
+    """The masked atlas must carry the same labels it reports.
+
+    Real atlases label well past 127, and Schaefer-400 goes to 400, so casting
+    the atlas to int8 wraps those labels around; 256 lands on the background.
+    """
+    labels_data = np.zeros((6, 6, 6), dtype=np.int32)
+    for i, label_value in enumerate(label_values):
+        labels_data[i, 0, 0] = label_value
+    signals_data = np.ones((6, 6, 6, 1))
+
+    _, labels, masked_atlas = img_to_signals_labels(
+        imgs=Nifti1Image(signals_data, affine_eye),
+        labels_img=Nifti1Image(labels_data, affine_eye),
+        return_masked_atlas=True,
+    )
+
+    assert set(np.unique(get_data(masked_atlas))) - {0} == set(labels)
+
+
 def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
     signals, labels_img
 ):
@@ -490,7 +512,6 @@ def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
     assert list(np.unique(labels_data_r)) == [0, 1, 2, 5]
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
     # Generate signal imgs
@@ -520,7 +541,6 @@ def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
     assert_almost_equal(get_data(img_r), get_data(imgs))
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_signal_extraction_with_maps_and_labels(
     labeled_regions, fmri_img, shape_3d_default
@@ -799,6 +819,26 @@ def test_trim_maps_half_regions(shape_3d_default):
 
     mask_data[1, 1, 1] = 1  # reset, just in case.
     assert_equal(np.asarray(list(range(4))), maps_i_indices)
+
+
+@pytest.mark.parametrize("weight", [3.0, -3.0])
+def test_trim_maps_support_covers_negative_weights(shape_3d_default, weight):
+    """A kept map must contribute its voxels to the support, whatever its sign.
+
+    Which maps are kept is decided with abs(), so a negative-weighted map
+    survives the trim. The support must agree, otherwise the map is declared
+    present while covering no voxel at all.
+    """
+    maps_data = np.zeros((*shape_3d_default, 2), dtype=np.float32)
+    maps_data[0, 0, 0, 0] = weight
+    maps_data[1, 1, 1, 1] = 5.0
+
+    mask_data = np.ones(shape_3d_default, dtype=np.int8)
+
+    _, maps_i_mask, maps_i_indices = _trim_maps(maps_data, mask_data)
+
+    assert len(maps_i_indices) == 2
+    assert maps_i_mask.sum() == 2
 
 
 @pytest.mark.single_process

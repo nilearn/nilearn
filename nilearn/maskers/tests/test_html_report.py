@@ -4,6 +4,8 @@ More generic tests (those that apply to all maskers)
 should go into nilearn/_utils/estimator_checks.
 """
 
+import json
+import re
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -51,14 +53,20 @@ def generate_and_check_masker_report(
 ) -> HTMLReport:
     """Generate and check content of masker report.
 
-    See check_report fo details about the parameters.
+    See check_report for details about the parameters.
     """
     if warnings_msg_to_check is None:
         warnings_msg_to_check = []
 
     includes = []
-    excludes = ["Adapted from Pure CSS navbar"]
-    # navbar and its css is only for GLM reports
+
+    excludes = [
+        # navbar and its css is only for GLM reports
+        "Adapted from Pure CSS navbar",
+        # if Slicer is present in report it probably means one figure was not
+        # converted to svg before being embedded in the HTML
+        "Slicer",
+    ]
 
     report_at_fit_time = masker._report_content.get(
         "reports_at_fit_time", masker.reports
@@ -163,7 +171,6 @@ def input_parameters(
     return None
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
@@ -229,7 +236,6 @@ def test_displayed_maps_error(masker_class, input_parameters, displayed_maps):
             masker.generate_report(displayed_maps=displayed_maps)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
@@ -252,7 +258,6 @@ def test_displayed_maps_warning_too_many(
             masker.generate_report(displayed_maps=displayed_maps)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
@@ -288,7 +293,6 @@ def test_nifti_spheres_masker_report_1_sphere(
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_nifti_labels_masker_report_no_image_for_fit(
     img_3d_rand_eye, n_regions, labels, img_labels
 ):
@@ -325,7 +329,6 @@ EXPECTED_COLUMNS = [
 
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
-@pytest.mark.slow
 def test_nifti_labels_masker_report(
     img_3d_rand_eye,
     img_mask_eye,
@@ -392,7 +395,6 @@ def test_nifti_labels_masker_report(
         )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
 def test_nifti_labels_masker_report_cut_coords(
@@ -414,7 +416,6 @@ def test_nifti_labels_masker_report_cut_coords(
     assert display.cut_coords == display_data.cut_coords
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
     """Test for NiftiMasker reports with 4D data."""
@@ -443,7 +444,6 @@ def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_nifti_masker_overlaid_report(
     matplotlib_pyplot,  # noqa: ARG001
     img_fmri,
@@ -465,25 +465,56 @@ def test_nifti_masker_overlaid_report(
     masker.fit(img_fmri)
 
     generate_and_check_masker_report(
-        masker, extend_includes=['<div class="overlay">']
+        masker,
+        extend_includes=['<div class="overlay">'],
+        # overlay should be an actual image
+        # not the string representation of a slicer
+        # regression test for https://github.com/nilearn/nilearn/issues/6418
+        extend_excludes=["nilearn.plotting.displays._slicers.OrthoSlicer"],
     )
 
 
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
+@pytest.mark.ai_generated
 def test_nifti_masker_brainsprite(
     matplotlib_pyplot,  # noqa: ARG001
     img_fmri,
 ):
-    """Check that NiftiMasker work with brainsprite engine."""
+    """Check that NiftiMasker Brainsprite reports use unique DOM IDs."""
     masker = NiftiMasker(standardize=None)
     generate_and_check_masker_report(
         masker, extra_warnings_allowed=True, engine="brainsprite"
     )
     masker.fit(img_fmri)
-    generate_and_check_masker_report(
+    first_report = generate_and_check_masker_report(
         masker, extra_warnings_allowed=True, engine="brainsprite"
     )
+    second_report = generate_and_check_masker_report(
+        masker, extra_warnings_allowed=True, engine="brainsprite"
+    )
+
+    configs = []
+    combined_html = f"{first_report}{second_report}"
+    for report in (first_report, second_report):
+        config_match = re.search(r"brainsprite\((\{.*\})\);", str(report))
+        assert config_match is not None
+        config = json.loads(config_match.group(1))
+        configs.append(config)
+
+        for element_id in (
+            config["canvas"],
+            config["sprite"],
+            config["overlay"]["sprite"],
+            config["colorMap"]["img"],
+        ):
+            assert f'id="{element_id}"' in str(report)
+            assert combined_html.count(f'id="{element_id}"') == 1
+
+    assert configs[0]["canvas"] != configs[1]["canvas"]
+    assert configs[0]["sprite"] != configs[1]["sprite"]
+    assert configs[0]["overlay"]["sprite"] != configs[1]["overlay"]["sprite"]
+    assert configs[0]["colorMap"]["img"] != configs[1]["colorMap"]["img"]
 
 
 @pytest.mark.thread_unsafe
@@ -504,7 +535,6 @@ def test_nifti_label_masker_brainsprite(
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_multi_nifti_masker_generate_report_mask(
     img_3d_ones_eye, shape_3d_default, affine_eye
 ):
@@ -524,7 +554,6 @@ def test_multi_nifti_masker_generate_report_mask(
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.slow
 def test_multi_nifti_masker_generate_report_imgs_and_mask(
     shape_3d_default, affine_eye, img_fmri
 ):

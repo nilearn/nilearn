@@ -87,13 +87,13 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     length = 2
 
     query_images, mask_img = generate_fake_fmri(
-        random_state=rng, shape=(2, 3, 4), length=length
+        rand_gen=rng, shape=(2, 3, 4), length=length
     )
     # plot_img_comparison doesn't handle 4d images ATM
     query_images = list(iter_img(query_images))
 
     target_images, _ = generate_fake_fmri(
-        random_state=rng, shape=(4, 5, 6), length=length
+        rand_gen=rng, shape=(4, 5, 6), length=length
     )
     target_images = list(iter_img(target_images))
     target_images[0] = query_images[0]
@@ -138,13 +138,13 @@ def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     axes = axes.ravel()
 
     query_images, mask_img = generate_fake_fmri(
-        random_state=rng, shape=(2, 3, 4), length=2
+        rand_gen=rng, shape=(2, 3, 4), length=2
     )
     # plot_img_comparison doesn't handle 4d images ATM
     query_images = list(iter_img(query_images))
 
     target_images, _ = generate_fake_fmri(
-        random_state=rng, shape=(2, 3, 4), length=2
+        rand_gen=rng, shape=(2, 3, 4), length=2
     )
     target_images = list(iter_img(target_images))
     target_images[0] = query_images[0]

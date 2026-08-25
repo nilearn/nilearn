@@ -54,8 +54,8 @@ def _simu_img(tmp_path, trend, demean):
     # create random noise and a random mixture of confounds standardized
     # to zero mean and unit variance
     rng = _rng()
-    beta = rng.random((nx * ny * nz, X.shape[1]))
-    tseries_rand = scale(rng.random((nx * ny * nz, nt)), axis=1)
+    beta = rng.random(size=(nx * ny * nz, X.shape[1]))
+    tseries_rand = scale(rng.random(size=(nx * ny * nz, nt)), axis=1)
     # create the confound mixture
     tseries_conf = scale(np.matmul(beta, X.transpose()), axis=1)
 
@@ -769,7 +769,7 @@ def test_sample_mask(
     reg, mask = load_confounds(regular_nii, strategy=("motion",))
     assert mask is None
 
-    # When no volumes needs removing (very liberal motion threshould)
+    # When no volumes needs removing (very liberal motion threshold)
     reg, mask = load_confounds(
         regular_nii, strategy=("motion", "scrub"), scrub=0, fd_threshold=4
     )

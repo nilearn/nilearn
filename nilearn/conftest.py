@@ -1,6 +1,5 @@
 """Configuration and extra fixtures for pytest."""
 
-import inspect
 from collections.abc import Callable, Generator
 from pathlib import Path
 from types import ModuleType
@@ -10,7 +9,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
-from numpydoc.docscrape import NumpyDocString
 from scipy.signal import get_window
 
 from nilearn._utils.helpers import is_gil_enabled, is_matplotlib_installed
@@ -624,7 +622,7 @@ def surf_mesh() -> PolyMesh:
     return _make_mesh()
 
 
-def _make_surface_img(n_samples=1):
+def _make_surface_img(n_samples: int = 1) -> SurfaceImage:
     """Create data with increasing values for each vertex."""
     mesh = _make_mesh()
     data = {}
@@ -677,7 +675,7 @@ def surf_img_ones_1d(surf_mesh) -> SurfaceImage:
     return SurfaceImage(surf_mesh, data)
 
 
-def _make_surface_mask(n_zeros=4):
+def _make_surface_mask(n_zeros: int = 4) -> SurfaceImage:
     mesh = _make_mesh()
     data = {}
     for key, val in mesh.parts.items():
@@ -759,7 +757,7 @@ def _surf_maps_img(n_regions: int = 6) -> SurfaceImage:
     """
     if n_regions > 6 or n_regions < 1:
         raise ValueError(
-            f"'n_regions' must be  in interaval '[1, 6]'. Got {n_regions=}."
+            f"'n_regions' must be  in interval '[1, 6]'. Got {n_regions=}."
         )
     data = {
         "left": np.asarray(
@@ -903,82 +901,3 @@ def transparency_image(rng, affine_mni) -> Nifti1Image:
     data_rng = rng.random((7, 7, 3)) * 10 - 5
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     return Nifti1Image(data_positive, affine_mni)
-
-
-# ------------------------ DOCSTRING ------------------------#
-
-
-def check_obj_docstring(obj) -> None:
-    """Check that class and method parameters and attributes are documented.
-
-    - Check if public class attributes are documented
-    - Check if __init__ parameters are documented
-    - Check if each public function and parameters are documented
-    - Check not to have duplicates
-
-    Parameters
-    ----------
-    obj: :obj:`object`
-        Instance of the class to check
-    """
-    obj_doc = NumpyDocString(inspect.getdoc(obj.__class__))
-
-    # check public class attributes
-    # ------------------------------
-    attributes = [x for x in obj.__dict__ if not x.startswith("_")]
-    check_parameters_doctring(attributes, obj_doc["Attributes"])
-
-    # check __init__ parameters
-    # -------------------------
-    parameters = dict(**inspect.signature(obj.__init__).parameters)
-    check_parameters_doctring(parameters, obj_doc["Parameters"])
-
-    # get public methods from class definition
-    # ----------------------------------------
-    check_methods_docstring(obj.__class__)
-
-
-def check_parameters_doctring(parameters, doc_dict):
-    """Check if all parameters are documented without duplicates and extras."""
-    documented = []
-    for param in doc_dict:
-        if param.name.startswith("_"):
-            continue
-        # make sure type is defined for the parameter
-        assert param.type
-
-        # in case multiple params are defined in a line
-        documented.extend([name.strip() for name in param.name.split(",")])
-
-    undocumented = [param for param in parameters if param not in documented]
-    extras = [param for param in documented if param not in parameters]
-
-    # no undocumented
-    assert not undocumented
-    # no extras
-    assert not extras
-    # no duplicates
-    assert len(documented) == len(set(documented))
-
-
-def check_methods_docstring(cls):
-    """Check if all public functions and parameters are documented."""
-    for name, member in cls.__dict__.items():
-        if name.startswith("_"):
-            continue
-        if isinstance(member, (staticmethod, classmethod)):
-            func = member.__func__
-        elif inspect.isfunction(member):
-            func = member
-        else:
-            continue
-
-        sig = inspect.signature(func)
-        params = [
-            p.name
-            for p in sig.parameters.values()
-            if p.name not in ("self", "cls")
-        ]
-        func_doc = NumpyDocString(inspect.getdoc(func))
-
-        check_parameters_doctring(params, func_doc["Parameters"])

@@ -4,7 +4,7 @@ Many of those correspond to the types of variable
 declared in nilearn._utils.doc.
 
 Several of them can be enforced at run time using
-nilearn._utils.param_validaton.check_params.
+nilearn._utils.param_validation.check_params.
 
 To expand the functionality of check_params you need to:
 
@@ -90,7 +90,7 @@ NiimgLike: TypeAlias = Nifti1Image | str | pathlib.Path
 Opening: TypeAlias = bool | Integer
 OutputFile: TypeAlias = str | pathlib.Path | None
 Radiological: TypeAlias = bool
-RandomState: TypeAlias = NonNullScalar | np.random.RandomState | None
+RandomState: TypeAlias = Integer | np.random.RandomState | None
 ResamplingInterpolation: TypeAlias = Literal["continuous", "nearest"]
 Resolution: TypeAlias = Integer | None
 Resume: TypeAlias = bool

@@ -86,7 +86,7 @@ def _univariate_feature_screening(
     mask : ndarray or booleans, shape (nx, ny, nz)
         Mask defining brain Rois.
 
-    is_classif : bool
+    is_classif : :obj:`bool`
         Flag telling whether the learning task is classification or regression.
 
     %(screening_percentile)s
@@ -154,21 +154,21 @@ def _space_net_alpha_grid(
     y : ndarray, shape (n_samples,)
         Target / response vector.
 
-    l1_ratio : float, default=1
+    l1_ratio : :obj:`float`, default=1
         The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
         For ``l1_ratio = 0`` the penalty is purely a spatial prior
         (Graph-Net, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
         For ``0 < l1_ratio < 1``, the penalty is a combination of L1
         and a spatial prior.
 
-    eps : float, default=1e-3
+    eps : :obj:`float`, default=1e-3
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
     n_alphas : int, default=10
         Number of alphas along the regularization path.
 
-    logistic : bool, default=False
+    logistic : :obj:`bool`, default=False
         Indicates where the underlying loss function is logistic.
 
     """
@@ -319,7 +319,7 @@ def _center_data(X, y):
         Centered version of X
     y : ndarray of shape (n_samples,) or (n_samples, n_targets)
         Centered version of y
-    y_offset : float or ndarray of shape (n_features,)
+    y_offset : :obj:`float` or ndarray of shape (n_features,)
         Mean of y
     """
     X = check_array(
@@ -405,7 +405,7 @@ def path_scores(
         Indicates whether the loss is a classification loss or a
         regression loss.
 
-    key: ??? TODO: Add description.
+    key : ??? TODO: Add description.
 
     %(debias)s
 
@@ -782,7 +782,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         if self._is_classification:
             self._validate_loss(self.loss)
 
-    def _set_coef_and_intercept(self, w):
+    def _set_coef_and_intercept(self, w) -> None:
         """Set the loadings vector (coef) and the intercept of the fitted \
         model.
         """
@@ -1231,7 +1231,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
         Returns
         -------
-        score : float
+        score : :obj:`float`
             Mean accuracy of self.predict(X)  w.r.t y.
         """
         check_is_fitted(self)

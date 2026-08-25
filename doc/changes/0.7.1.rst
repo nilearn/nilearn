@@ -1,9 +1,7 @@
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.7.1
-=====
+Version 0.7.1
+=============
 
 **Released March 2021**
 
@@ -23,7 +21,7 @@ NEW
 
 - :bdg-success:`API` New atlas fetcher :func:`~datasets.fetch_atlas_difumo` to download *Dictionaries of Functional Modes*, or “DiFuMo”, that can serve as atlases to extract functional signals with different dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well raw :term:`BOLD` timeseries, over a with range of experimental conditions (:gh:`2619` by `Nicolas Gensollen`_).
 
-- :bdg-success:`API` Function :func:`glm.Contrast.one_minus_pvalue` was added to ensure numerical stability of p-value estimation. It computes 1 - p-value using the Cumulative Distribution Function in the same way as function :func:`nilearn.glm.Contrast.p_value` computes the p-value using the Survival Function. (:gh:`2567` by `Ana Luisa Pinho`_).
+- :bdg-success:`API` Function :func:`glm.Contrast.one_minus_pvalue` was added to ensure numerical stability of p-value estimation. It computes 1 - p-value using the Cumulative Distribution Function in the same way as function :func:`~glm.Contrast.p_value` computes the p-value using the Survival Function. (:gh:`2567` by `Ana Luisa Pinho`_).
 
 Fixes
 -----
