@@ -156,7 +156,7 @@ def _sanitize_figure_and_axes(figure, axes) -> tuple[Figure, Axes, bool]:
 
 def _sanitize_inputs_plot_matrix(
     mat_shape, tri, labels, reorder, figure, axes
-) -> tuple[list | None, str | bool, Figure, Axes, bool]:
+) -> tuple[list | None, str | bool, Figure, Axes]:
     """Help for plot_matrix.
 
     This function makes sure the inputs to plot_matrix are valid.
@@ -175,16 +175,12 @@ def _sanitize_inputs_plot_matrix(
     axes : :class:`matplotlib.axes.Axes`
         The axes to plot on.
 
-    own_fig : :obj:`bool`
-        Whether the figure was created here
-        rather than passed in by the caller.
-
     """
     sanitize_tri(tri)
     labels = sanitize_labels(mat_shape, labels)
     reorder = sanitize_reorder(reorder)
-    fig, axes, own_fig = _sanitize_figure_and_axes(figure, axes)
-    return labels, reorder, fig, axes, own_fig
+    fig, axes, _ = _sanitize_figure_and_axes(figure, axes)
+    return labels, reorder, fig, axes
 
 
 @fill_doc
@@ -277,7 +273,7 @@ def plot_matrix(
 
     """
     check_params(locals())
-    labels, reorder_method, fig, axes, _ = _sanitize_inputs_plot_matrix(
+    labels, reorder_method, fig, axes = _sanitize_inputs_plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
     if reorder_method:

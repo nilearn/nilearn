@@ -84,3 +84,5 @@ Changes
 - :bdg-dark:`Code` Add ``asv`` benchmark for TFCE computation (:gh:`6394` by `Fabricio Cravo`_).
 
 - :bdg-dark:`Code` Update plotting functions to return figure or axes instead of None when an output file is specified to save the figure (:gh:`6272` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Drop the unused ``own_fig`` element from the return value of the private ``_sanitize_inputs_plot_matrix`` helper (:gh:`6519` by `Hariom Patidar`_).
