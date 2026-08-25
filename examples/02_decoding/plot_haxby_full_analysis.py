@@ -84,7 +84,7 @@ mask_scores = {}
 mask_chance_scores = {}
 
 for mask_name in mask_names:
-    print(f"Working on {mask_name}")
+    print(f"\nWorking on {mask_name}")
 
     mask_filename = haxby_dataset[mask_name][0]
 
@@ -92,7 +92,7 @@ for mask_name in mask_names:
     mask_chance_scores[mask_name] = {}
 
     for category in categories:
-        print(f" Processing {category}")
+        print(f"\tProcessing {category}")
 
         classification_target = stimuli[task_mask] == category
 
