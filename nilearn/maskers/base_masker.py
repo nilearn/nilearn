@@ -322,6 +322,20 @@ class _BaseMasker(
         if self.dtype == bool:
             raise TypeError("'dtype' cannot be bool")
 
+    def _get_target_dtype(self, source_dtype):
+        """Adapts dtype to apply to transform() output."""
+        target_dtype = get_target_dtype(source_dtype, self.dtype)
+        # here target_dtype is None if:
+        # - self.dtype is None
+        # - self.dtype == source_dtype
+        if target_dtype is None and self.dtype is not None:
+            # requested dtype already matches the source image's dtype,
+            # but intermediate computations (e.g. standardization)
+            # may have changed the working dtype.
+            target_dtype = source_dtype
+
+        return target_dtype
+
 
 @fill_doc
 class BaseMasker(_BaseMasker):

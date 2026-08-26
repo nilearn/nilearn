@@ -1942,10 +1942,11 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
                 if not isinstance(result, list):
                     result = [result]
 
-                # When ``dtype`` (self.dtype) is None, no explicit dtype was
-                # requested: the output dtype is whatever the
-                # extraction/cleaning pipeline naturally produced (e.g.
-                # float64 after standardization or other linear algebra),
+                # When ``dtype`` (self.dtype) is None,
+                # no explicit dtype was requested:
+                # the output dtype is
+                # whatever the extraction/cleaning pipeline naturally produced
+                # (e.g. float64 after standardization or other linear algebra),
                 # and should not be forced to match the input's dtype.
                 if dtype is None:
                     continue
@@ -2880,14 +2881,14 @@ def check_img_estimator_clean_dtype(estimator_orig) -> None:
             input_img = _make_surface_img(n_samples)
             input_img.data._set_dtype(input_dtype)
 
-        scenarios: list[dict[str, Any]] = []
-        scenarios.append({"standardize": "zscore_sample"})
-        scenarios.append({"standardize": "psc"})
-        scenarios.append({"detrend": True})
-        scenarios.append({"low_pass": 0.2, "t_r": 2.0})
-        scenarios.append({"high_pass": 0.01, "t_r": 2.0})
-        scenarios.append({"smoothing_fwhm": 4.0})
-
+        scenarios: list[dict[str, Any]] = [
+            {"standardize": "zscore_sample"},
+            {"standardize": "psc"},
+            {"detrend": True},
+            {"low_pass": 0.2, "t_r": 2.0},
+            {"high_pass": 0.01, "t_r": 2.0},
+            {"smoothing_fwhm": 4.0},
+        ]
         for params in scenarios:
             estimator = clone(estimator_orig)
             estimator.dtype = None

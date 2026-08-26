@@ -12,7 +12,6 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
 )
@@ -550,12 +549,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         imgs_ = check_niimg(imgs, atleast_4d=True)
 
         source_dtype = img_data_dtype(imgs_)
-        target_dtype = get_target_dtype(source_dtype, self.dtype)
-        if target_dtype is None and self.dtype is not None:
-            # requested dtype already matches the source image's dtype,
-            # but intermediate computations (e.g. standardization) may
-            # have changed the working dtype: cast explicitly.
-            target_dtype = source_dtype
+        target_dtype = self._get_target_dtype(source_dtype)
+
         # if target_dtype is still None, self.dtype is None: no explicit
         # dtype was requested, so keep the dtype produced by the
         # extraction/cleaning pipeline (e.g. float after standardize)
