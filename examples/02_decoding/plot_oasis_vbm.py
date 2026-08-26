@@ -10,7 +10,7 @@ The data comes from the Open Access Series of Imaging Studies
 If you use it, you need to agree with the data usage agreement available
 on the website.
 
-It has been run through a standard :term:`VBM` pipeline (using SPM8 and
+It has been processed through a standard :term:`VBM` pipeline (using SPM8 and
 NewSegment) to create :term:`VBM` maps, which we study here.
 
 .. seealso::
@@ -61,7 +61,7 @@ from sklearn.model_selection import train_test_split
 
 from nilearn.datasets import fetch_oasis_vbm
 
-n_subjects = 200  # more subjects requires more memory
+n_subjects = 200  # more subjects require more memory
 
 oasis_dataset = fetch_oasis_vbm(n_subjects=n_subjects, verbose=verbose)
 
@@ -108,7 +108,7 @@ mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 # Prediction pipeline with ANOVA and SVR using DecoderRegressor
 # -------------------------------------------------------------
 #
-# In Nilearn we can benefit from the built-in DecoderRegressor object
+# In Nilearn we can benefit from the built-in :class:`~nilearn.decoding.DecoderRegressor` object
 # to do an :term:`ANOVA` with SVR
 # instead of manually defining the whole pipeline.
 #
@@ -116,7 +116,7 @@ mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 # and ensemble them.
 #
 # To save time (because these are anat images with many voxels),
-# we include only the 1-percent voxels most correlated
+# we include only the 1-percent of the voxels most correlated
 # with the age variable to fit.
 #
 # We also want to set mask hyperparameter
