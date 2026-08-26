@@ -5,7 +5,7 @@ Voxel-Based Morphometry on Oasis dataset
 This example uses Voxel-Based Morphometry (:term:`VBM`)
 to study the relationship between aging and gray matter density.
 
-The data come from the Open Access Series of Imaging Studies
+The data comes from the Open Access Series of Imaging Studies
 (`OASIS <https://sites.wustl.edu/oasisbrains/>`_) project.
 If you use it, you need to agree with the data usage agreement available
 on the website.
