@@ -18,8 +18,8 @@ NewSegment) to create :term:`VBM` maps, which we study here.
     For more information
     see the :ref:`dataset description <oasis_maps>`.
 
-Predictive modeling analysis: VBM bio-markers of aging?
--------------------------------------------------------
+Predictive modeling analysis
+----------------------------
 
 We run a Support Vector Regression (SVR) and  :term:`ANOVA`
 using the nilearn `DecoderRegressor` to predict age from the VBM data.
@@ -31,16 +31,10 @@ to limit the memory usage.
     Note that for an actual predictive modeling study of aging,
     the study should be ran on the full set of subjects.
 
-    Also, all parameters should be set by cross-validation.
-    This includes the smoothing applied to the data and the
-    number of features selected by the :term:`ANOVA` step.
-    Indeed, even these data-preparation parameter
-    impact significantly the prediction score.
-
-    Also, parameters such as the smoothing should be applied
-    to the data and the number of features selected by the :term:`ANOVA` step
-    should be set by nested cross-validation,
-    as they impact significantly the prediction score.
+    Also, all parameters should be selected by nested cross-validation.
+    Indeed, things like the smoothing applied to the data
+    and the number of features selected by the :term:`ANOVA` step
+    can impact significantly the prediction score.
 
 """
 
@@ -108,7 +102,8 @@ mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 # Prediction pipeline with ANOVA and SVR using DecoderRegressor
 # -------------------------------------------------------------
 #
-# In Nilearn we can benefit from the built-in :class:`~nilearn.decoding.DecoderRegressor` object
+# In Nilearn we can benefit
+# from the built-in :class:`~nilearn.decoding.DecoderRegressor` object
 # to do an :term:`ANOVA` with SVR
 # instead of manually defining the whole pipeline.
 #
@@ -217,7 +212,7 @@ output = permuted_ols(
     age,
     data,  # + intercept as a covariate by default
     # few permutations in the interest of time; 10000 would be better
-    n_perm=2000,  # 10 000 would be better
+    n_perm=2000,
     verbose=verbose,
     n_jobs=n_jobs,
     random_state=0,  # to ensure reproducible results
