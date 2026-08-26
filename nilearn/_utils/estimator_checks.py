@@ -2901,8 +2901,15 @@ def check_img_estimator_clean_dtype(estimator_orig) -> None:
 
             if params.get("standardize") == "zscore_sample":
                 # a truncated (e.g. integer-cast) standardized signal
-                # would not have unit variance anymore.
-                assert_almost_equal(result.std(axis=0), 1, decimal=1)
+                # would not have unit variance anymore. Skip features
+                # that are genuinely constant for this estimator's
+                # fixture (e.g. a region covering a single voxel):
+                # their standardized std is legitimately 0, not
+                # truncated.
+                stds = result.std(axis=0)
+                non_degenerate = stds > 1e-8
+                if non_degenerate.any():
+                    assert_almost_equal(stds[non_degenerate], 1, decimal=1)
 
         if accepts_confounds:
             estimator = clone(estimator_orig)
