@@ -67,7 +67,8 @@ task_data = index_img(func_filename, task_mask)
 # The mask of the region of interest is passed directly to the Decoder.
 #
 # We will be doing a 'leave one run out' for cross validation
-# by using :class:`sklearn.model_selection.LeaveOneGroupOut` and passing the run labels at fit time.
+# by using :class:`sklearn.model_selection.LeaveOneGroupOut`
+# and passing the run labels at fit time.
 #
 # We will use :class:`~nilearn.decoding.Decoder`
 # with a "dummy_classifier" to estimate a baseline.
