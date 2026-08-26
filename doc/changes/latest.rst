@@ -20,6 +20,8 @@ NEW
 Fixes
 -----
 
+- :bdg-info:`Plotting` Fix :func:`~plotting.view_img` displaying the slice next to the one requested: ``cut_slices`` is already a 0-based voxel index but a further ``- 1`` was applied before handing it to the viewer, which draws the tile at ``numSlice`` while reading coordinates out as ``affine @ [numSlice + 1, ...]``; the label matched the request while the slice on screen was its neighbor (:gh:`6505` by `Cedric Conday`_).
+
 - :bdg-info:`Plotting` Fix :func:`~plotting.plot_prob_atlas` showing two overlapping colorbars, because the anatomical background plotted by the underlying :func:`~plotting.plot_anat` call kept its own default colorbar in addition to the "Map #" colorbar added for the atlas maps (:gh:`6517` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Clarify that :func:`~mass_univariate.permuted_ols` requires numerical or boolean ``tested_vars`` and raise a clear error for unsupported data (:gh:`6501` by `Mohammad Sadeghi Hardengi`_).
