@@ -642,11 +642,21 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         )
 
         imgs = load_img(imgs)
-        target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
-        if target_dtype is None:
-            target_dtype = img_data_dtype(imgs)
+        source_dtype = img_data_dtype(imgs)
+        target_dtype = get_target_dtype(source_dtype, self.dtype)
+        if target_dtype is None and self.dtype is not None:
+            # requested dtype already matches the source image's dtype,
+            # but intermediate computations (e.g. standardization) may
+            # have changed the working dtype: cast explicitly.
+            target_dtype = source_dtype
 
-        signals = signals.astype(target_dtype)
+        if target_dtype is not None:
+            # if target_dtype is None here, self.dtype is None: no
+            # explicit dtype was requested, so keep the dtype produced by
+            # the extraction/cleaning pipeline (e.g. float after
+            # standardize) instead of forcing it back to the source
+            # image's dtype.
+            signals = signals.astype(target_dtype)
 
         if self.n_elements_ == 1:
             return signals

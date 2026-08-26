@@ -650,6 +650,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
         yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_smooth)
         yield (clone(estimator), check_masker_standardization)
+        yield (clone(estimator), check_masker_standardize_dtype)
         yield (clone(estimator), check_masker_transform_resampling)
         yield (clone(estimator), check_masker_transformer)
         yield (
@@ -1941,6 +1942,14 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
                 if not isinstance(result, list):
                     result = [result]
 
+                # When ``dtype`` (self.dtype) is None, no explicit dtype was
+                # requested: the output dtype is whatever the
+                # extraction/cleaning pipeline naturally produced (e.g.
+                # float64 after standardization or other linear algebra),
+                # and should not be forced to match the input's dtype.
+                if dtype is None:
+                    continue
+
                 target_dtype = get_target_dtype(input_np_dtype, dtype)
                 if target_dtype is None:
                     target_dtype = input_np_dtype
@@ -2774,6 +2783,78 @@ def check_masker_standardization(estimator_orig) -> None:
                 ),
                 decimal=1,
             )
+
+
+def check_masker_standardize_dtype(estimator_orig) -> None:
+    """Regression test for https://github.com/nilearn/nilearn/issues/6525.
+
+    When the masker's own ``dtype`` is left to its default (``None``) and
+    ``standardize`` is requested, ``transform`` must not silently cast the
+    standardized (floating point) signal back down to the dtype of the
+    source image.
+
+    This matters most for raw, unprocessed BOLD data, which is often
+    stored with an integer dtype (e.g. ``int16``): truncating the
+    z-scored / percent-signal-change values down to the source image's
+    integer dtype collapses them to a handful of integer levels,
+    destroying almost all of the standardized signal's precision.
+    """
+    if not is_masker(estimator_orig):
+        return
+    if not hasattr(estimator_orig, "standardize") or not hasattr(
+        estimator_orig, "dtype"
+    ):
+        return
+
+    # TODO
+    # fix for free threaded python
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
+
+    n_samples = 20
+    input_dtype = np.int16
+
+    input_img: Nifti1Image | SurfaceImage
+    if accept_niimg_input(estimator_orig):
+        signals = _rng().standard_normal(
+            size=(np.prod(_shape_3d_default()), n_samples)
+        )
+        means = (
+            _rng().standard_normal(size=(np.prod(_shape_3d_default()), 1)) * 50
+            + 1000
+        )
+        signals += means
+        data = signals.reshape((*_shape_3d_default(), n_samples))
+        input_img = Nifti1Image(
+            data.astype(input_dtype), _affine_eye(), dtype=input_dtype
+        )
+    elif accept_surf_img_input(estimator_orig):
+        input_img = _make_surface_img(n_samples)
+        input_img.data._set_dtype(input_dtype)
+    else:
+        return
+
+    for standardize in ("zscore_sample", "psc"):
+        estimator = clone(estimator_orig)
+        estimator.dtype = None
+        estimator.standardize = standardize
+
+        estimator.fit(input_img)
+        result = estimator.transform(input_img)
+
+        if result.dtype.kind != "f":
+            raise TypeError(
+                "'transform' with standardize="
+                f"{standardize!r} and dtype=None should return floating "
+                "point data reflecting the precision produced by "
+                "standardization, not be cast back to the source "
+                f"image's integer dtype. Got dtype '{result.dtype}'."
+            )
+
+        if standardize == "zscore_sample":
+            # a truncated (e.g. integer-cast) standardized signal would
+            # not have unit variance anymore.
+            assert_almost_equal(result.std(axis=0), 1, decimal=1)
 
 
 def check_masker_compatibility_mask_image(estimator_orig) -> None:

@@ -549,9 +549,17 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         imgs_ = check_niimg(imgs, atleast_4d=True)
 
-        target_dtype = get_target_dtype(img_data_dtype(imgs_), self.dtype)
-        if target_dtype is None:
-            target_dtype = img_data_dtype(imgs_)
+        source_dtype = img_data_dtype(imgs_)
+        target_dtype = get_target_dtype(source_dtype, self.dtype)
+        if target_dtype is None and self.dtype is not None:
+            # requested dtype already matches the source image's dtype,
+            # but intermediate computations (e.g. standardization) may
+            # have changed the working dtype: cast explicitly.
+            target_dtype = source_dtype
+        # if target_dtype is still None, self.dtype is None: no explicit
+        # dtype was requested, so keep the dtype produced by the
+        # extraction/cleaning pipeline (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
 
         if self.resampling_target is None:
             images = {"maps": maps_img_, "data": imgs_}
@@ -684,6 +692,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             verbose=self.verbose,
             sklearn_output_config=sklearn_output_config,
         )
+
+        if target_dtype is None:
+            return region_signals
 
         return region_signals.astype(target_dtype)
 

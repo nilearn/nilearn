@@ -444,10 +444,20 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             else imgs[0].data._dtype
         )
         target_dtype = get_target_dtype(input_type, self.dtype)
-        if target_dtype is None:
-            target_dtype = imgs.data._dtype
+        if target_dtype is None and self.dtype is not None:
+            # requested dtype already matches the source image's dtype,
+            # but intermediate computations (e.g. standardization) may
+            # have changed the working dtype: cast explicitly.
+            target_dtype = input_type
 
         region_signals = self._clean(region_signals, confounds, sample_mask)
+        if target_dtype is None:
+            # self.dtype is None: no explicit dtype was requested, so keep
+            # the dtype produced by the extraction/cleaning pipeline (e.g.
+            # float after standardize) instead of forcing it back to the
+            # source image's dtype.
+            return region_signals
+
         return region_signals.astype(target_dtype)
 
     @fill_doc

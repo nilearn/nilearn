@@ -20,6 +20,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix maskers silently truncating standardized (``standardize="zscore_sample"`` or ``"psc"``) signal back down to the source image's dtype when the masker's own ``dtype`` was left at its default (``None``); for images with an integer dtype, such as raw unprocessed BOLD data, this collapsed the standardized values to a handful of integer levels, destroying almost all of the signal's precision (:gh:`6525` by `Rémi Gau`_).
+
 - :bdg-info:`Plotting` Fix :func:`~plotting.plot_prob_atlas` showing two overlapping colorbars, because the anatomical background plotted by the underlying :func:`~plotting.plot_anat` call kept its own default colorbar in addition to the "Map #" colorbar added for the atlas maps (:gh:`6517` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Clarify that :func:`~mass_univariate.permuted_ols` requires numerical or boolean ``tested_vars`` and raise a clear error for unsupported data (:gh:`6501` by `Mohammad Sadeghi Hardengi`_).
