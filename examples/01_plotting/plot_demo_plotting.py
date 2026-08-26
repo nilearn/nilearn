@@ -64,8 +64,10 @@ plot_stat_map(
 )
 
 # %%
-# A call to plotting.show is needed to display the plots when running
-# in script mode (ie outside IPython).
+# Calling `show` function
+# from :mod:`nilearn.plotting` package is necessary to display the figure
+# when running as a script outside IPython
+
 show()
 
 

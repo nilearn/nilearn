@@ -12,9 +12,9 @@ Here we discover how to work with 3D and 4D niimgs.
 # Nilearn comes with functions that download public data from Internet
 #
 # Let's first check where the data is downloaded on our disk:
-from nilearn import datasets
+from nilearn.datasets import load_sample_motor_activation_image
 
-tmap_filename = datasets.load_sample_motor_activation_image()
+tmap_filename = load_sample_motor_activation_image()
 print(tmap_filename)
 
 
@@ -24,13 +24,23 @@ print(tmap_filename)
 #
 # The file contains a 3D volume, we can easily visualize it as a
 # statistical map:
-from nilearn.plotting import plot_stat_map, show
+from nilearn.plotting import plot_stat_map
 
 plot_stat_map(tmap_filename)
 
 # %%
+# Calling `show` function
+# from :mod:`nilearn.plotting` package is necessary to display the figure
+# when running as a script outside IPython
+from nilearn.plotting import show
+
+show()
+
+# %%
 # Visualizing works better with a threshold
 plot_stat_map(tmap_filename, threshold=3)
+
+show()
 
 
 # %%
@@ -38,28 +48,26 @@ plot_stat_map(tmap_filename, threshold=3)
 # -----------------------------------
 #
 # We can download :term:`resting-state` networks from the Smith 2009 study on
-# correspondence between rest and task
-rsn = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)["maps"]
-rsn
+# correspondence between rest and task.
+from nilearn.datasets import fetch_atlas_smith_2009
+
+rsn = fetch_atlas_smith_2009(resting=True, dimension=10)["maps"]
+print(rsn)
 
 # %%
-# It is a 4D nifti file. We load it into the memory to print its
-# shape.
-from nilearn import image
-
-print(image.load_img(rsn).shape)
-# It is a 4D nifti file. `nilearn.image` package provides some utility functions to work with image files.
-
+# It is a 4D nifti file.
+# the :mod:`nilearn.image` package
+# provides some utility functions to work with image files.
 # We can load it into the memory to print its shape.
-
 from nilearn.image import load_img
 
 print(load_img(rsn).shape)
 
 # %%
 # We can retrieve the first volume (note that Python indexing starts at 0):
-first_rsn = image.index_img(rsn, 0)
 from nilearn.image import index_img
+
+first_rsn = index_img(rsn, 0)
 
 first_rsn = index_img(rsn, 0)
 print(first_rsn.shape)
@@ -69,6 +77,8 @@ print(first_rsn.shape)
 #
 # We can then plot it
 plot_stat_map(first_rsn)
+
+show()
 
 
 # %%
@@ -88,6 +98,7 @@ for img in iter_img(rsn):
         img, threshold=3, display_mode="z", cut_coords=1, colorbar=False
     )
 
+show()
 
 # %%
 # Looping through selected volumes in a 4D file
@@ -108,10 +119,6 @@ selected_volumes = index_img(rsn, slice(3, 5))
 for img in iter_img(selected_volumes):
     plot_stat_map(img)
 
-
-# %%
-# plotting.show is useful to force the display of figures when running
-# outside IPython
 show()
 
 # %%
