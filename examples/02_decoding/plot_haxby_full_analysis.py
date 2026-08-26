@@ -31,7 +31,7 @@ warnings.filterwarnings(
 # %%
 # Load and prepare the data
 # -------------------------
-# We fetch the data a single subject for analysis.
+# We fetch the data of a single subject for analysis.
 # We also find the names of the different categories of stimuli,
 # and identify in which run they were presented.
 
