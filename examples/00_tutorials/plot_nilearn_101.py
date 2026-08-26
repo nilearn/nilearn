@@ -24,7 +24,7 @@ plot_img(MNI152_FILE_PATH)
 # %%
 # Calling `show` function
 # from :mod:`nilearn.plotting` package is necessary to display the figure
-# when running as a script outside IPython
+# when running as a script outside IPython.
 from nilearn.plotting import show
 
 show()

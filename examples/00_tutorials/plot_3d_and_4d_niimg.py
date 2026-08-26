@@ -31,7 +31,7 @@ plot_stat_map(tmap_filename)
 # %%
 # Calling `show` function
 # from :mod:`nilearn.plotting` package is necessary to display the figure
-# when running as a script outside IPython
+# when running as a script outside IPython.
 from nilearn.plotting import show
 
 show()
