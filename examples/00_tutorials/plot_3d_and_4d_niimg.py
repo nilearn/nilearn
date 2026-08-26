@@ -29,7 +29,7 @@ from nilearn.plotting import plot_stat_map
 plot_stat_map(tmap_filename)
 
 # %%
-# Calling `show` function
+# Calling ``show`` function
 # from :mod:`nilearn.plotting` package is necessary to display the figure
 # when running as a script outside IPython.
 from nilearn.plotting import show
