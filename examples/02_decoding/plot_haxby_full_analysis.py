@@ -1,6 +1,6 @@
 """
 ROI-based decoding analysis in the Haxby dataset
-===================================================
+================================================
 
 In this script we reproduce the data analysis
 conducted by :footcite:t:`Haxby2001`.
