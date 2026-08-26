@@ -115,8 +115,7 @@ def log(
         func_name = f"{object_self.__class__.__name__}.{func_name}"
 
     if _has_rich():
-        console.print(f"[blue]\\[{func_name}][/blue] {escape(msg)}")
-        print(f"[{func_name}] {msg}")
+        console.print(escape(f"[blue]\\[{func_name}][/blue]) {escape(msg)}")
     else:
         print(f"[{func_name}] {msg}")
 
