@@ -61,7 +61,7 @@ task_data = index_img(func_filename, task_mask)
 # Decoding on the different masks
 # -------------------------------
 #
-# The classifier used here is a support vector classifier (svc).
+# The classifier used here is a Support Vector Classifier (SVC).
 # We use :class:`~nilearn.decoding.Decoder`
 # with a ``svc_l1`` estimator because it is intra subject.
 # The mask of the region of interest is passed directly to the Decoder.
