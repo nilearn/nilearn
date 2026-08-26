@@ -29,9 +29,13 @@ print(f"Functional nifti images are located at: {func_filename}")
 # %%
 # We load the behavioral data that we will predict and
 # remove the rest condition, as it is of no interest to us.
+# .. seealso::
+#
+#   For more information about the dataset
+#   see its :ref:`description <haxby_dataset>`.
+#
 
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
-print(pd.crosstab(labels["labels"], labels["chunks"]))
 
 non_rest = labels["labels"] != "rest"
 
@@ -56,7 +60,6 @@ nifti_masker = NiftiMasker(
     smoothing_fwhm=4,
     standardize="zscore_sample",
     memory="nilearn_cache",
-    standardize="zscore_sample",
     memory_level=1,
     verbose=1,
 )
@@ -108,19 +111,18 @@ svc_ova
 # The :term:`fMRI` data is acquired by runs,
 # and the noise is autocorrelated in a given run.
 # Hence, it is better to predict across runs when doing cross-validation.
-# To leave a run out, pass the cross-validator object
-# to the cv parameter of decoder.
+# Here we do a 5 fold cross-validation.
 
-from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
+from sklearn.model_selection import cross_val_score
 
-cv = LeaveOneGroupOut()
+cv = 5
 
 # %%
-cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=cv, verbose=1, groups=run)
+cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=cv, verbose=1)
 cv_scores_ovo
 
 # %%
-cv_scores_ova = cross_val_score(svc_ova, X, y, cv=cv, verbose=1, groups=run)
+cv_scores_ova = cross_val_score(svc_ova, X, y, cv=cv, verbose=1)
 cv_scores_ova
 
 # %%
@@ -154,9 +156,9 @@ show()
 
 from sklearn.model_selection import cross_val_predict
 
-y_pred_ovo = cross_val_predict(svc_ovo, X, y, cv=cv, groups=run, verbose=1)
+y_pred_ovo = cross_val_predict(svc_ovo, X, y, cv=cv, verbose=1)
 
-y_pred_ova = cross_val_predict(svc_ova, X, y, cv=cv, groups=run, verbose=1)
+y_pred_ova = cross_val_predict(svc_ova, X, y, cv=cv, verbose=1)
 
 # %%
 # We get the labels of the numerical conditions represented by the vector y
