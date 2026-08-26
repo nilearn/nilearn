@@ -208,7 +208,7 @@ def repr_niimgs(niimgs, shorten=True):
     Parameters
     ----------
     niimgs : image or collection of images
-        nibabel SpatialImage to repr.
+        nibabel SpatialImage or SurfaceImage to repr.
 
     shorten : :obj:`bool`, default=True
         If True, filenames with more than 20 characters will be
@@ -223,6 +223,11 @@ def repr_niimgs(niimgs, shorten=True):
     # Simple string case
     if isinstance(niimgs, (str, Path)):
         return _short_repr(niimgs, shorten=shorten)
+    # SurfaceImage imports repr_niimgs, so import locally to avoid a cycle.
+    from nilearn.surface.surface import SurfaceImage
+
+    if isinstance(niimgs, SurfaceImage):
+        return repr(niimgs)
     # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
         # Maximum number of elements to be displayed
