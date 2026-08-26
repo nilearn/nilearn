@@ -232,8 +232,8 @@ show()
 # Visualizing without a colorbar on the right side
 # ------------------------------------------------
 #
-# The argument ``colorbar`` should be set to ``False`` to show plots without
-# a colorbar on the right side.
+# The argument ``colorbar`` should be set to ``False`` to show plots
+# without a colorbar on the right side.
 
 plot_stat_map(
     stat_img,

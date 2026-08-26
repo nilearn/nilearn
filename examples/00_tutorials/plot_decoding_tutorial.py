@@ -70,13 +70,15 @@ show()
 # ..............................................................
 #
 # These are some really lovely images, but for machine learning
-# we need matrices to work with the actual data. Fortunately, the
-# :class:`~nilearn.decoding.Decoder` object we will use later on can
-# automatically transform Nifti images into matrices.
-# All we have to do for now is define a mask filename.
+# we need matrices to work with the actual data.
+# Fortunately, the :class:`~nilearn.decoding.Decoder` object
+# we will use later on can automatically transform Nifti images into matrices.
 #
-# A mask of the Ventral Temporal (VT) cortex coming from the
-# Haxby study is available:
+# All we have to do for now is define a mask filename
+# to restrict the voxels of the brain
+# we will use as features for our decoding.
+# Here we will use a mask of the Ventral Temporal (VT) cortex
+# coming from the Haxby study:
 mask_filename = haxby_dataset.mask_vt[0]
 
 # Let's visualize it,
@@ -89,22 +91,19 @@ show()
 # Load the behavioral labels
 # ..........................
 #
-# Now that the brain images can be converted to a data matrix, we can apply
-# machine-learning to them, for instance to predict the task that the subject
-# was doing. The behavioral labels are stored in a CSV file, separated by
-# spaces.
+# We are now almost ready to apply machine-learning to these brain images,
+# for instance to predict the task that the subject was doing.
+# The behavioral labels are stored in a CSV file, separated by spaces.
+# The task was a visual-recognition task, and the labels denote the
+# experimental condition: the type of object that was presented to the
+# subject. This is what we are going to try to predict.
 #
 # We use pandas to load them in an array.
 import pandas as pd
 
-# Load behavioral information
 behavioral = pd.read_csv(haxby_dataset.session_target[0], delimiter=" ")
 print(behavioral)
 
-# %%
-# The task was a visual-recognition task, and the labels denote the
-# experimental condition: the type of object that was presented to the
-# subject. This is what we are going to try to predict.
 conditions = behavioral["labels"]
 print(conditions.value_counts())
 
