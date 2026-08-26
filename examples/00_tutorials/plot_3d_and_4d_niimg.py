@@ -15,6 +15,7 @@ Here we discover how to work with 3D and 4D niimgs.
 from nilearn import datasets
 
 tmap_filename = datasets.load_sample_motor_activation_image()
+print(tmap_filename)
 
 
 # %%
@@ -47,10 +48,20 @@ rsn
 from nilearn import image
 
 print(image.load_img(rsn).shape)
+# It is a 4D nifti file. `nilearn.image` package provides some utility functions to work with image files.
+
+# We can load it into the memory to print its shape.
+
+from nilearn.image import load_img
+
+print(load_img(rsn).shape)
 
 # %%
 # We can retrieve the first volume (note that Python indexing starts at 0):
 first_rsn = image.index_img(rsn, 0)
+from nilearn.image import index_img
+
+first_rsn = index_img(rsn, 0)
 print(first_rsn.shape)
 
 # %%
@@ -69,7 +80,9 @@ plot_stat_map(first_rsn)
 #
 # Then we give a few arguments to plot_stat_map in order to have a more
 # compact display.
-for img in image.iter_img(rsn):
+from nilearn.image import iter_img
+
+for img in iter_img(rsn):
     # img is now an in-memory 3D img
     plot_stat_map(
         img, threshold=3, display_mode="z", cut_coords=1, colorbar=False
@@ -85,14 +98,14 @@ for img in image.iter_img(rsn):
 #
 # Afterwards, we'll use iter_img to loop through them following the same
 # formula as before.
-selected_volumes = image.index_img(rsn, slice(3, 5))
+selected_volumes = index_img(rsn, slice(3, 5))
 
 # %%
 # If you're new to Python, one thing to note is that the slice constructor
 # uses 0-based indexing. You can confirm this by matching these slices
 # to the previous plot above.
 
-for img in image.iter_img(selected_volumes):
+for img in iter_img(selected_volumes):
     plot_stat_map(img)
 
 

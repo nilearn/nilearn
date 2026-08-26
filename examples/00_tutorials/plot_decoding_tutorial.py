@@ -293,7 +293,7 @@ print(decoder.cv_params_["face"])
 # the structure of the experiment,
 # for instance by leaving out full runs of acquisition.
 #
-# The number of the run is stored in the CSV file giving
+# The number of the runs is stored in the CSV file giving
 # the behavioral data.
 # We have to apply our run mask, to select only cats and faces.
 run_label = behavioral["chunks"][condition_mask]
@@ -357,7 +357,7 @@ decoder.coef_img_["face"].to_filename(output_dir / "haxby_svc_weights.nii.gz")
 # Plotting the :term:`SVM` weights
 # ................................
 #
-# We can plot the weights, using the subject's anatomical as a background.
+# We can plot the weights, using the subject's anatomical image as background.
 from nilearn.plotting import view_img
 
 view_img(

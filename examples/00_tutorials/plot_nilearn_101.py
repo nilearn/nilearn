@@ -19,12 +19,14 @@ print(f"Path to MNI152 template: {MNI152_FILE_PATH!r}")
 # Let's quickly plot this file:
 from nilearn import plotting
 
-plotting.plot_img(MNI152_FILE_PATH)
+from nilearn.plotting import plot_img
+
+plot_img(MNI152_FILE_PATH)
 
 # %%
 # This is not a very pretty plot. We just used the simplest possible
 # code. There is a whole :ref:`section of the documentation <plotting>`
-# on making prettier code.
+# on making prettier plots.
 #
 # **Exercise**: Try plotting one of your own files. In the above,
 # MNI152_FILE_PATH is nothing more than a string with a path pointing to
@@ -44,6 +46,9 @@ plotting.plot_img(MNI152_FILE_PATH)
 from nilearn import image
 
 smooth_anat_img = image.smooth_img(MNI152_FILE_PATH, fwhm=3)
+from nilearn.image import smooth_img
+
+smooth_anat_img = smooth_img(MNI152_FILE_PATH, fwhm=3)
 
 # While we are giving a file name as input, the function returns
 # an in-memory object:
@@ -58,6 +63,12 @@ plotting.plot_img(smooth_anat_img)
 # We could also pass it to the smoothing function
 more_smooth_anat_img = image.smooth_img(smooth_anat_img, fwhm=3)
 plotting.plot_img(more_smooth_anat_img)
+plot_img(smooth_anat_img)
+
+# %%
+# We could also pass it to the smoothing function
+more_smooth_anat_img = smooth_img(smooth_anat_img, fwhm=3)
+plot_img(more_smooth_anat_img)
 
 
 # %%
@@ -85,7 +96,7 @@ anats_all_subjects = (
 
 # %%
 # Now we can smooth all the anatomical images at once
-anats_all_subjects_smooth = image.smooth_img(anats_all_subjects, fwhm=5)
+anats_all_subjects_smooth = smooth_img(anats_all_subjects, fwhm=5)
 
 # %%
 # This is a 4D image containing one volume per subject
@@ -107,6 +118,10 @@ anats_all_subjects_smooth.to_filename(
 # Finally, calling plotting.show() is necessary to display the figure
 # when running as a script outside IPython
 plotting.show()
+# Finally, calling `show` function from `nilearn.plotting` package is necessary to display the figure
+# when running as a script outside IPython
+from nilearn.plotting import show
+show()
 
 # %%
 #
