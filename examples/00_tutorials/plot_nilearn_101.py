@@ -48,8 +48,7 @@ show()
 #
 # Functions containing 'img' can take either a filename or an image as input.
 #
-# Here we give as inputs the image filename and the smoothing value in mm
-from nilearn import image
+# Here we give as inputs the image filename and the smoothing value in mm.
 from nilearn.image import smooth_img
 
 smooth_anat_img = smooth_img(MNI152_FILE_PATH, fwhm=3)
@@ -59,26 +58,17 @@ smooth_anat_img = smooth_img(MNI152_FILE_PATH, fwhm=3)
 print(smooth_anat_img)
 
 # %%
-# This is an in-memory object. We can pass it to nilearn function, for
-# instance to look at it
+# This is an in-memory object.
+# We can pass it to nilearn function, for instance to look at it.
 plot_img(smooth_anat_img)
-
 show()
 
 # %%
-# We could also pass it to the smoothing function
-more_smooth_anat_img = image.smooth_img(smooth_anat_img, fwhm=3)
-plot_img(more_smooth_anat_img)
-plot_img(smooth_anat_img)
-
-show()
-
-# %%
-# We could also pass it to the smoothing function
+# We could also pass it to the smoothing function again.
 more_smooth_anat_img = smooth_img(smooth_anat_img, fwhm=3)
 plot_img(more_smooth_anat_img)
-
 show()
+
 
 # %%
 # Globbing over multiple 3D volumes
