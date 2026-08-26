@@ -589,6 +589,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
         yield (clone(estimator), check_fit_returns_self)
         yield (clone(estimator), check_img_estimator_dtypes)
         yield (clone(estimator), check_img_estimator_dtypes_transform)
+        yield (clone(estimator), check_img_estimator_clean_dtype)
         yield (clone(estimator), check_img_estimator_dtype_bool)
         yield (clone(estimator), check_img_estimator_dict_unchanged)
         yield (clone(estimator), check_img_estimator_dont_overwrite_parameters)
@@ -650,7 +651,6 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
         yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_smooth)
         yield (clone(estimator), check_masker_standardization)
-        yield (clone(estimator), check_masker_standardize_dtype)
         yield (clone(estimator), check_masker_transform_resampling)
         yield (clone(estimator), check_masker_transformer)
         yield (
@@ -2785,24 +2785,63 @@ def check_masker_standardization(estimator_orig) -> None:
             )
 
 
-def check_masker_standardize_dtype(estimator_orig) -> None:
+def _check_clean_dtype_output(result) -> None:
+    """Raise if any array in a transform() result is not floating point.
+
+    Helper for check_img_estimator_clean_dtype.
+    """
+    results = result if isinstance(result, list) else [result]
+    for s in results:
+        if s.dtype.kind != "f":
+            raise TypeError(
+                "'transform' with dtype=None should return floating "
+                "point data reflecting the precision produced by the "
+                "cleaning pipeline, not be cast back to the source "
+                f"image's integer dtype. Got dtype '{s.dtype}'."
+            )
+
+
+def check_img_estimator_clean_dtype(estimator_orig) -> None:
     """Regression test for https://github.com/nilearn/nilearn/issues/6525.
 
-    When the masker's own ``dtype`` is left to its default (``None``) and
-    ``standardize`` is requested, ``transform`` must not silently cast the
-    standardized (floating point) signal back down to the dtype of the
-    source image.
+    When an estimator's own ``dtype`` is left to its default (``None``)
+    and a cleaning option that can produce floating point output is
+    used, ``transform`` must not silently cast the result back down to
+    the dtype of the source image.
 
     This matters most for raw, unprocessed BOLD data, which is often
-    stored with an integer dtype (e.g. ``int16``): truncating the
-    z-scored / percent-signal-change values down to the source image's
-    integer dtype collapses them to a handful of integer levels,
-    destroying almost all of the standardized signal's precision.
+    stored with an integer dtype (e.g. ``int16``): truncating cleaned
+    floating point values (from standardization, detrending,
+    filtering, smoothing, or confound removal) down to the source
+    image's integer dtype collapses them to a handful of integer
+    levels, destroying almost all of the cleaned signal's precision.
+
+    Covers, one at a time: ``standardize`` ("zscore_sample" and
+    "psc"), ``detrend``, ``low_pass``, ``high_pass``,
+    ``smoothing_fwhm``, and passing ``confounds`` at transform time.
+
+    Not restricted to maskers: any estimator with a ``transform``
+    method, a ``dtype`` parameter, and at least one of the cleaning
+    parameters above (or that accepts ``confounds`` at transform time)
+    is checked.
     """
-    if not is_masker(estimator_orig):
-        return
-    if not hasattr(estimator_orig, "standardize") or not hasattr(
+    if not hasattr(estimator_orig, "transform") or not hasattr(
         estimator_orig, "dtype"
+    ):
+        return
+
+    clean_attrs = (
+        "standardize",
+        "detrend",
+        "low_pass",
+        "high_pass",
+        "smoothing_fwhm",
+    )
+    accepts_confounds = (
+        "confounds" in inspect.signature(estimator_orig.transform).parameters
+    )
+    if not accepts_confounds and not any(
+        hasattr(estimator_orig, attr) for attr in clean_attrs
     ):
         return
 
@@ -2811,50 +2850,91 @@ def check_masker_standardize_dtype(estimator_orig) -> None:
     if not is_gil_enabled():
         pytest.xfail("May fail without the GIL")
 
-    n_samples = 20
     input_dtype = np.int16
 
-    input_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator_orig):
-        signals = _rng().standard_normal(
-            size=(np.prod(_shape_3d_default()), n_samples)
-        )
-        means = (
-            _rng().standard_normal(size=(np.prod(_shape_3d_default()), 1)) * 50
-            + 1000
-        )
-        signals += means
-        data = signals.reshape((*_shape_3d_default(), n_samples))
-        input_img = Nifti1Image(
-            data.astype(input_dtype), _affine_eye(), dtype=input_dtype
-        )
-    elif accept_surf_img_input(estimator_orig):
-        input_img = _make_surface_img(n_samples)
-        input_img.data._set_dtype(input_dtype)
-    else:
-        return
+    # standardize / detrend / low_pass / high_pass / smoothing_fwhm are
+    # only meaningful to test on maskers: for _BaseDecomposition
+    # estimators (CanICA, DictLearning, ...) these only affect data
+    # loading at fit time through an internal masker and are not
+    # applied again by transform(), which delegates to an internal
+    # maps masker instead.
+    if is_masker(estimator_orig):
+        n_samples = 20
 
-    for standardize in ("zscore_sample", "psc"):
+        input_img: Nifti1Image | SurfaceImage
+        if accept_niimg_input(estimator_orig):
+            signals = _rng().standard_normal(
+                size=(np.prod(_shape_3d_default()), n_samples)
+            )
+            means = (
+                _rng().standard_normal(size=(np.prod(_shape_3d_default()), 1))
+                * 50
+                + 1000
+            )
+            signals += means
+            data = signals.reshape((*_shape_3d_default(), n_samples))
+            input_img = Nifti1Image(
+                data.astype(input_dtype), _affine_eye(), dtype=input_dtype
+            )
+        elif accept_surf_img_input(estimator_orig):
+            input_img = _make_surface_img(n_samples)
+            input_img.data._set_dtype(input_dtype)
+
+        scenarios: list[dict[str, Any]] = []
+        scenarios.append({"standardize": "zscore_sample"})
+        scenarios.append({"standardize": "psc"})
+        scenarios.append({"detrend": True})
+        scenarios.append({"low_pass": 0.2, "t_r": 2.0})
+        scenarios.append({"high_pass": 0.01, "t_r": 2.0})
+        scenarios.append({"smoothing_fwhm": 4.0})
+
+        for params in scenarios:
+            estimator = clone(estimator_orig)
+            estimator.dtype = None
+            for key, value in params.items():
+                setattr(estimator, key, value)
+
+            estimator.fit(input_img)
+            result = estimator.transform(input_img)
+
+            _check_clean_dtype_output(result)
+
+            if params.get("standardize") == "zscore_sample":
+                # a truncated (e.g. integer-cast) standardized signal
+                # would not have unit variance anymore.
+                assert_almost_equal(result.std(axis=0), 1, decimal=1)
+
+        if accepts_confounds:
+            estimator = clone(estimator_orig)
+            estimator.dtype = None
+
+            estimator.fit(input_img)
+
+            confounds = _rng().standard_normal(size=(n_samples, 2))
+            if isinstance(estimator, _MultiMixin):
+                confounds = [confounds]
+            result = estimator.transform(input_img, confounds=confounds)
+
+            _check_clean_dtype_output(result)
+
+    elif isinstance(estimator_orig, _BaseDecomposition):
+        X, _ = generate_data_to_fit(estimator_orig)
+
+        data = get_data(X) * 1000
+        input_img = Nifti1Image(
+            data.astype(input_dtype), affine=X.affine, dtype=input_dtype
+        )
+
         estimator = clone(estimator_orig)
         estimator.dtype = None
-        estimator.standardize = standardize
+        estimator = fit_estimator(estimator, input_img, None)
 
-        estimator.fit(input_img)
-        result = estimator.transform(input_img)
+        n_timepoints = input_img.shape[-1] if input_img.ndim == 4 else 1
+        confounds = [_rng().standard_normal(size=(n_timepoints, 2))]
 
-        if result.dtype.kind != "f":
-            raise TypeError(
-                "'transform' with standardize="
-                f"{standardize!r} and dtype=None should return floating "
-                "point data reflecting the precision produced by "
-                "standardization, not be cast back to the source "
-                f"image's integer dtype. Got dtype '{result.dtype}'."
-            )
+        result = estimator.transform(input_img, confounds=confounds)
 
-        if standardize == "zscore_sample":
-            # a truncated (e.g. integer-cast) standardized signal would
-            # not have unit variance anymore.
-            assert_almost_equal(result.std(axis=0), 1, decimal=1)
+        _check_clean_dtype_output(result)
 
 
 def check_masker_compatibility_mask_image(estimator_orig) -> None:
