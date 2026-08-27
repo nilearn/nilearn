@@ -840,7 +840,9 @@ def test_vcov_uniform_rejects_a_matrix_of_rank_3_or_more(dispersion):
     matrix = np.ones((2, RESULTS_2_COLUMNS.theta.shape[0], 2))
     kwargs = {} if dispersion is None else {"dispersion": dispersion}
 
-    with pytest.raises(ValueError, match="matrix must be 1-D or 2-D"):
+    with pytest.raises(
+        ValueError, match=r"matrix must be 1-D or 2-D.*Give it as"
+    ):
         RESULTS_2_COLUMNS.vcov(matrix=matrix, **kwargs)
 
     # The older shapes are unchanged: they still carry the extra axes.
