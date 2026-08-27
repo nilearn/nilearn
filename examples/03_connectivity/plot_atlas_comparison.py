@@ -22,7 +22,7 @@ correlation matrices for each atlas across all subjects.
 
 Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
-The example also cover a special case of plotting directed connectome, such
+The example also covers a special case of plotting directed connectome, such
 as results from Granger causality. To demonstrate the utility, we created an
 asymmetric connectome, which would be similar to results from Granger
 causality.
@@ -132,7 +132,7 @@ labels_affine = label_image.affine
 # generate image coordinates using affine
 x, y, z = coord_transform(0, 0, 0, np.linalg.inv(labels_affine))
 
-# generate an separate image for the left hemisphere
+# generate a separate image for the left hemisphere
 # left/right split is done along x-axis
 left_hemi = get_data(label_image).copy()
 left_hemi[: int(x)] = 0
