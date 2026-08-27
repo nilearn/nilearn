@@ -40,7 +40,7 @@ Enhancements
 
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
 
-- :bdg-success:`API` Add an ``ensure_finite`` parameter to :func:`~image.smooth_img`, and warn when non-finite values are replaced with zeros rather than doing it silently. Replacement now happens in a single place for both the volume and the surface branch, so the two behave identically (:gh:`6529` by `Cedric Conday`_).
+- :bdg-success:`API` Add an ``ensure_finite`` parameter to :func:`~image.smooth_img`, and warn when non-finite values are replaced with zeros rather than doing it silently. Replacement now happens in a single place for both the volume and the surface branch, so the two behave identically (:gh:`6530` by `Cedric Conday`_).
 
 - :bdg-primary:`Doc` Docstring examples can now be run in the browser via `jupyterlite <https://jupyterlite.readthedocs.io/en/stable/>`_ (:gh:`6581` by `Elizabeth DuPre`_).
 
