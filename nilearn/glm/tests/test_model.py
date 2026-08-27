@@ -629,59 +629,157 @@ def test_vcov_uniform_rejects_selectors_that_are_not_one_regressor_each(
         RESULTS.vcov(column=column, uniform=True)
 
 
+@pytest.mark.parametrize(
+    ("results", "n_dispersion"),
+    [(RESULTS, 1), (RESULTS_2_COLUMNS, 2), (RESULTS_3_UNRELATED, 3)],
+    ids=["one_dimensional", "two_columns", "three_columns"],
+)
 @pytest.mark.ai_generated
-def test_vcov_warns_when_uniform_is_not_given():
-    """Test that the shape change is announced on an unqualified call."""
-    with pytest.warns(FutureWarning, match="will always be"):
-        RESULTS.vcov()
+def test_vcov_default_returns_the_uniform_shape(results, n_dispersion):
+    """Test that a call naming no shape gets one matrix per dispersion."""
+    n_regressors = results.theta.shape[0]
+
+    assert results.vcov().shape == (n_dispersion, n_regressors, n_regressors)
+    assert_array_equal(results.vcov(), results.vcov(uniform=True))
+    assert_array_equal(
+        results.vcov(column=0), results.vcov(column=0, uniform=True)
+    )
+    assert_array_equal(
+        results.vcov(matrix=np.eye(n_regressors)),
+        results.vcov(matrix=np.eye(n_regressors), uniform=True),
+    )
 
 
-@pytest.mark.parametrize("uniform", [True, False])
 @pytest.mark.ai_generated
-def test_vcov_does_not_warn_when_uniform_is_given(uniform):
-    """Test that either explicit answer silences the warning."""
+def test_vcov_default_does_not_warn():
+    """Test that the call which used to warn no longer does.
+
+    Only the default is pinned here. ``uniform=False`` is deliberately
+    left unpinned, because it is scheduled to warn from 0.15.0 and a
+    test asserting silence would have to be deleted to let that
+    happen.
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("error", FutureWarning)
-        RESULTS.vcov(uniform=uniform)
+        RESULTS.vcov()
+        RESULTS.vcov(uniform=True)
+
+
+@pytest.mark.ai_generated
+def test_vcov_none_means_the_default_not_the_deprecated_shapes():
+    """Test that the old sentinel lands on the new default.
+
+    The commit that added the keyword documented ``None`` as meaning
+    ``False`` and warning. The warning is gone, so reading ``None`` for
+    truthiness would now drop the caller into the deprecated branch
+    silently instead. The keyword has not shipped, so this reverses a
+    docstring rather than a release.
+    """
+    assert_array_equal(
+        RESULTS_3_UNRELATED.vcov(uniform=None),
+        RESULTS_3_UNRELATED.vcov(uniform=True),
+    )
 
 
 @pytest.mark.parametrize(
     "results",
-    [RESULTS, RESULTS_3_UNRELATED],
+    [RESULTS_2_COLUMNS, RESULTS_3_UNRELATED],
+    ids=["two_columns", "three_columns"],
+)
+@pytest.mark.ai_generated
+def test_vcov_guard_names_the_escape_that_still_exists(results):
+    """Test that the message points at a call the caller can make.
+
+    The guard is only reachable by asking for the older shapes, so
+    telling the caller to pass ``uniform=True`` would be telling them
+    to undo the keyword they just wrote.
+    """
+    dispersion = np.asarray(results.dispersion)
+
+    with pytest.raises(ValueError, match="you asked for with uniform=False"):
+        results.vcov(dispersion=dispersion, uniform=False)
+
+
+@pytest.mark.parametrize(
+    ("results", "expected"),
+    [
+        (
+            RESULTS,
+            {
+                "t": (2,),
+                "t_0": (),
+                "conf_int": (2, 2),
+                "Tcontrast": (),
+                "Fcontrast": (1, 1, 1),
+            },
+        ),
+        (
+            RESULTS_3_UNRELATED,
+            {
+                "t": (2, 3),
+                "t_0": (3,),
+                "conf_int": (2, 2, 3),
+                "Tcontrast": (3,),
+                "Fcontrast": (1, 1, 3),
+            },
+        ),
+    ],
     ids=["one_dimensional", "three_columns"],
 )
 @pytest.mark.ai_generated
-def test_methods_reading_vcov_do_not_warn(results):
-    """Test that the methods built on vcov pin the shape they read.
+def test_methods_reading_vcov_keep_their_own_shapes(results, expected):
+    """Test that the methods built on vcov are unmoved by the default.
 
-    The test suite runs with -W error::FutureWarning, so a method that
-    let the deprecation reach the caller would fail every test that
-    calls it, and the caller could do nothing about it.
+    Each of them asks for ``uniform=False``. A caller that lost that
+    keyword would not raise: the uniform stack broadcasts into extra
+    axes, so the mistake would be silent and the numbers would still
+    look like numbers. These are the shapes that catch it.
     """
-    with warnings.catch_warnings():
-        warnings.simplefilter("error", FutureWarning)
-        results.t()
-        results.t(0)
-        results.conf_int()
-        results.conf_int(cols=[0])
-        results.Tcontrast([1, 0])
-        results.Fcontrast([1, 0])
+    assert results.t().shape == expected["t"]
+    assert np.shape(results.t(0)) == expected["t_0"]
+    assert results.conf_int().shape == expected["conf_int"]
+    assert np.shape(results.Tcontrast([1, 0]).t) == expected["Tcontrast"]
+    assert (
+        np.shape(results.Fcontrast([1, 0]).covariance) == expected["Fcontrast"]
+    )
 
 
-# C: the default still returns the old shape, warning aside.
+@pytest.mark.parametrize("dispersion", [None, 1.0])
+@pytest.mark.ai_generated
+def test_vcov_uniform_rejects_a_matrix_of_rank_3_or_more(dispersion):
+    """Test that a higher rank contrast raises rather than returning.
+
+    Such a matrix keeps its extra axes through the product, so it
+    cannot give one square block per dispersion value. It used to come
+    back with those axes still on it, or fail inside numpy, depending
+    on both its shape and the number of dispersion values.
+    """
+    matrix = np.ones((2, RESULTS_2_COLUMNS.theta.shape[0], 2))
+    kwargs = {} if dispersion is None else {"dispersion": dispersion}
+
+    with pytest.raises(ValueError, match="matrix must be 1-D or 2-D"):
+        RESULTS_2_COLUMNS.vcov(matrix=matrix, **kwargs)
+
+    # The older shapes are unchanged: they still carry the extra axes.
+    legacy = RESULTS_2_COLUMNS.vcov(matrix=matrix, uniform=False, **kwargs)
+    assert legacy.ndim > 3
+
+
+# C: the older shapes survive one release behind the keyword.
 @pytest.mark.parametrize(
     ("results", "n_columns"),
     [(RESULTS_2_COLUMNS, 2), (RESULTS_3_UNRELATED, 3)],
 )
 @pytest.mark.ai_generated
-def test_vcov_default_still_returns_the_older_shapes(results, n_columns):
-    """Test that the deprecation warns without changing anything yet."""
-    with pytest.warns(FutureWarning, match="will always be"):
-        assert results.vcov(column=0).shape == (n_columns,)
-    with pytest.warns(FutureWarning, match="will always be"):
-        assert results.vcov(matrix=np.eye(2)).shape == (2, 2, n_columns)
-    with pytest.warns(FutureWarning, match="will always be"):
-        assert results.vcov(column=0, dispersion=1.0).shape == ()
+def test_vcov_uniform_false_still_returns_the_older_shapes(results, n_columns):
+    """Test that uniform=False is the one-line migration it promises."""
+    assert results.vcov(column=0, uniform=False).shape == (n_columns,)
+    assert results.vcov(matrix=np.eye(2), uniform=False).shape == (
+        2,
+        2,
+        n_columns,
+    )
+    assert results.vcov(column=0, dispersion=1.0, uniform=False).shape == ()
 
 
 # D: one assertion that is exact rather than almost equal.
@@ -875,11 +973,13 @@ def test_vcov_uniform_dim_is_the_block_not_the_regressor_count():
 
 @pytest.mark.ai_generated
 def test_compute_contrast_does_not_warn():
-    """Test that the contrast path does not leak the deprecation either.
+    """Test that the contrast path runs clean under -W error.
 
-    It is the only caller of ``vcov`` outside this module, and the suite
-    runs with -W error::FutureWarning, so a leak there would fail tests
-    a user of ``compute_contrast`` could do nothing about.
+    It is the only caller of ``vcov`` outside this module. Nothing in
+    ``vcov`` warns now, so there is no leak left for this to catch
+    today; it is here for the ``uniform=False`` warning scheduled for
+    0.15.0, which would reach a user of ``compute_contrast`` who could
+    do nothing about it.
     """
     labels = np.zeros(Y_3_COLUMNS_UNRELATED.shape[1])
     results = {0.0: OLSModel(X_CORRELATED).fit(Y_3_COLUMNS_UNRELATED)}

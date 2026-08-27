@@ -1,13 +1,10 @@
 """Implement classes to handle statistical tests on likelihood models."""
 
-import warnings
-
 import numpy as np
 from nibabel.onetime import auto_attr
 from scipy.linalg import inv
 from scipy.stats import t as t_distribution
 
-from nilearn._utils.logger import find_stack_level
 from nilearn.glm._utils import pad_contrast, positive_reciprocal
 
 # Inverse t cumulative distribution
@@ -52,8 +49,10 @@ def _uniform_covariance_stack(
     value, whatever shape the dispersion itself arrives in. A scalar
     dispersion is one value, so it gives ``(1, dim, dim)``. The block
     is square except when ``other`` has a different number of rows
-    from ``matrix``, which is the one case that is not
-    ``(n_dispersion, dim, dim)``.
+    from ``matrix``, which is the one case that returns and is not
+    ``(n_dispersion, dim, dim)``. A ``matrix`` of rank 3 or more cannot
+    give a square block, so it raises here rather than returning
+    something of another rank.
 
     Selecting a single regressor gives a one by one block rather than
     dropping the axes, which is the difference from the branches of
@@ -78,6 +77,22 @@ def _uniform_covariance_stack(
             )
         block = cov[selected][:, selected]
     elif matrix is not None:
+        # Read the rank without rebinding matrix, so that an np.matrix
+        # reaches np.dot as one and the asarray below still has work to
+        # do.
+        rank = np.asarray(matrix).ndim
+        if rank > 2:
+            # matrix is documented as (dim, n_regressors). A higher rank
+            # one keeps its extra axes through the product, so the result
+            # cannot be one square block per dispersion value. It used
+            # to come back with those axes still on it, or fail inside
+            # numpy, depending on both its shape and the number of
+            # dispersion values.
+            raise ValueError(
+                "matrix must be 1-D or 2-D to give one covariance matrix "
+                f"per dispersion value; this one has {rank} "
+                "dimensions. Pass uniform=False for the older shapes."
+            )
         if other is None:
             other = matrix
         block = np.dot(matrix, np.dot(cov, np.transpose(other)))
@@ -224,7 +239,7 @@ default=None
         column=None,
         dispersion=None,
         other=None,
-        uniform=None,
+        uniform=True,
     ):
         """Return Variance/covariance matrix of linear :term:`contrast`.
 
@@ -243,17 +258,19 @@ default=None
             when both are given.
 
         dispersion : :obj:`float` or (n_voxels,) array, default=None
-            Value(s) for the dispersion parameters. Several values on
-            axes that overlap a covariance matrix, as in a 1-D array, a
-            row or a column vector, broadcast along the matrix rather
-            than stacking, so they are only accepted where the result
-            is not a matrix. Reshape, for instance to
-            ``dispersion[:, None, None]``, to get one matrix per value.
+            Value(s) for the dispersion parameters. One covariance
+            matrix is returned per value. Under ``uniform=False``,
+            several values on axes that overlap a covariance matrix,
+            as in a 1-D array, a row or a column vector, broadcast
+            along the matrix rather than stacking, so there they are
+            only accepted where the result is not a matrix; reshape,
+            for instance to ``dispersion[:, None, None]``, to get one
+            matrix per value.
 
         other : (dim, self.theta.shape[0]) array, default=None
             Alternative :term:`contrast` specification (?).
 
-        uniform : :obj:`bool` or None, default=None
+        uniform : :obj:`bool` or None, default=True
             Whether to return one covariance matrix per dispersion
             value for every call. True gives ``(n_dispersion, dim,
             dim)``, where ``dim`` is the size of the block the
@@ -264,22 +281,22 @@ default=None
             that contrast spans. Giving ``other`` alongside
             ``matrix`` makes the block ``matrix`` times ``cov``
             times ``other`` transposed, which need not be square,
-            and that is the one call whose result is not
-            ``(n_dispersion, dim, dim)``. False gives the older
-            shapes listed below, which depend on the arguments.
-            None means False and warns, because True becomes the
-            only behavior in 0.16.0.
+            and that is the one call that returns something other than
+            ``(n_dispersion, dim, dim)``; a ``matrix`` of rank 3 or
+            more raises instead. False gives the older
+            shapes listed below, which depend on the arguments; it
+            warns from 0.15.0 and goes in 0.16.0. None means True.
 
             .. nilearn_versionadded:: 0.14.1
 
         Returns
         -------
         cov : array
-            ``(n_dispersion, dim, dim)`` under ``uniform=True``, where
-            ``n_dispersion`` is the number of dispersion values and
-            ``dim`` is the size of the selected block, as described
-            under ``uniform`` above, and ``other`` is the one
-            argument that can make that block rectangular.
+            ``(n_dispersion, dim, dim)``, where ``n_dispersion`` is the
+            number of dispersion values and ``dim`` is the size of the
+            selected block, as described under ``uniform`` above, and
+            ``other`` is the one argument that can make that block
+            rectangular.
 
             Under ``uniform=False`` the shape depends on the arguments:
             ``(dim, dim)`` for a single dispersion, ``(dim, dim,
@@ -291,17 +308,23 @@ default=None
             dispersion.
 
             .. nilearn_versionchanged:: 0.14.1
-                Asking for several regressors at once while the
-                dispersion carries several values on axes overlapping
-                the covariance matrix now raises, instead of
-                broadcasting the dispersions along the columns of the
-                covariance matrix. That call is answered by
-                ``uniform=True``.
+                A call returns one covariance matrix per dispersion
+                value, instead of a shape that depended on which
+                arguments were given. That is
+                ``(n_dispersion, dim, dim)`` except through ``other``,
+                as described above. ``uniform=False`` restores the
+                older shapes, which is a one-line migration for code
+                that read them. Under ``uniform=False``, asking for
+                several regressors at once while the dispersion
+                carries several values on axes overlapping the
+                covariance matrix raises, instead of broadcasting the
+                dispersions along the columns of the covariance
+                matrix.
 
             .. nilearn_deprecated:: 0.14.1
-                The argument-dependent shapes are deprecated and will
-                be removed in 0.16.0, after which every call returns
-                ``(n_dispersion, dim, dim)``.
+                ``uniform=False``, and with it the argument-dependent
+                shapes, will warn from 0.15.0 and be removed in
+                0.16.0.
 
         Returns the variance/covariance matrix of a linear contrast of the
         estimates of theta, multiplied by `dispersion` which will often be an
@@ -320,38 +343,25 @@ default=None
         if dispersion is None:
             dispersion = self.dispersion
 
-        # TODO (nilearn >= 0.16.0) make the uniform branch the only
-        # one, and keep accepting the keyword rather than removing it:
-        # this warning tells people to pass uniform=True, and deleting
-        # the parameter would give everyone who took that advice a
-        # TypeError with no second warning to see it coming. Accepted
-        # and ignored costs one line and keeps the advice good.
-        # Worth deciding then, rather than inheriting it: uniform=False
-        # accepted and ignored means the shape flips silently for anyone
-        # who passed it to opt out today. Warning on False from 0.15.0
-        # is the alternative.
-        # The in-tree callers need rewriting rather than just losing
-        # the keyword: on the uniform shape t, conf_int, Tcontrast and
-        # Fcontrast broadcast into extra axes instead of raising, so
-        # getting it wrong is silent.
+        # The commit that added this keyword documented None as meaning
+        # False and warning. The warning is gone, so None now means the
+        # default rather than the deprecated branch. The keyword has not
+        # shipped, so this reverses a docstring rather than a release.
         if uniform is None:
-            warnings.warn(
-                category=FutureWarning,
-                message=(
-                    "The shape 'vcov' returns currently depends on which "
-                    "arguments it was given. From version 0.16.0 it will "
-                    "always be one covariance matrix per dispersion "
-                    "value.\n"
-                    "Pass uniform=True for that shape now; the keyword "
-                    "stays accepted afterwards, so that does not need "
-                    "undoing later. uniform=False keeps the current "
-                    "shapes and silences this warning, but those shapes "
-                    "go in 0.16.0."
-                ),
-                stacklevel=find_stack_level(),
-            )
-            uniform = False
+            uniform = True
 
+        # TODO (nilearn >= 0.15.0) warn on uniform=False, so the removal
+        # is not the first notice anyone gets. All seven in-tree callers
+        # ask for it and the suite runs with -W error::FutureWarning, so
+        # they need a path that skips the warning before it can be added.
+        # TODO (nilearn >= 0.16.0) drop the branch below and keep taking
+        # the keyword, since 0.14.1 leaves uniform=True writable and
+        # removing the argument would be a TypeError with no second
+        # warning. uniform=False should raise there, not be ignored, or
+        # the shape flips silently for whoever opted out. The callers
+        # need rewriting rather than just losing the keyword: on the
+        # uniform shape they broadcast into extra axes instead of
+        # raising, so getting it wrong is silent.
         if uniform:
             return _uniform_covariance_stack(
                 self.cov, matrix, column, dispersion, other
@@ -377,13 +387,14 @@ default=None
             raise ValueError(
                 "There is one covariance matrix per dispersion value "
                 "here, so they cannot be returned as a single matrix. "
-                "Select a single regressor at a time. When calling "
-                "vcov directly: pass uniform=True to get one matrix "
-                "per dispersion value, or pass a scalar dispersion, "
-                "or reshape the dispersion to carry its own axes, as "
-                "in dispersion[:, None, None], or pass matrix= with a "
-                "1-D dispersion and no column, since column takes "
-                "precedence over matrix."
+                "This is the older argument-dependent behavior, which "
+                "you asked for with uniform=False: drop it to get one "
+                "matrix per dispersion value. To stay on the older "
+                "shapes, select a single regressor at a time, or pass "
+                "a scalar dispersion, or reshape the dispersion to "
+                "carry its own axes, as in dispersion[:, None, None], "
+                "or pass matrix= with a 1-D dispersion and no column, "
+                "since column takes precedence over matrix."
             )
 
         if matrix is None and column is None:
