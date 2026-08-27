@@ -87,7 +87,7 @@ the maps data.
 The parameter ``min_region_size=1350 mm^3`` is to keep the minimum number of extracted
 regions. We control the small spurious regions size by thresholding in :term:`voxel`
 units to adapt well to the resolution of the image. Please see the documentation of
-:func:`~nilearn.regions.connected_regions` for more details.
+:func:`~connected_regions` for more details.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # more intense non-voxels will be survived.
