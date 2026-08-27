@@ -33,6 +33,7 @@ print(f"Functional nifti images are located at: {func_filename}")
 # %%
 # We load the behavioral data that we will predict and
 # remove the ``"rest"`` condition, as it is of no interest to us.
+#
 # .. seealso::
 #
 #   For more information about the dataset
@@ -151,7 +152,7 @@ show()
 # --------------------------------------------
 # Instead of fitting on a single train/test split, we use
 # :func:`sklearn.model_selection.cross_val_predict` with the same
-# leave-one-run-out cross-validation as above to get, for each sample,
+# cross-validation as above to get, for each sample,
 # a prediction made by a model that never saw that sample during training.
 # We can then build a single confusion matrix from those out-of-fold
 # predictions for the whole dataset.
