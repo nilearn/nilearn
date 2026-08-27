@@ -2038,7 +2038,9 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(verbose)s
 
     Returns
@@ -2049,11 +2051,6 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
 
     """
     check_params(locals())
-
-    dataset_name = "development_fmri"
-    data_dir = get_dataset_dir(
-        dataset_name, data_dir=data_dir, verbose=verbose
-    )
 
     if url is None:
         url = "https://osf.io/yr3av/download"
@@ -2090,9 +2087,13 @@ def _fetch_development_fmri_functional(
     participants : pandas.DataFrame
         Should contain column participant_id which represents subjects id. The
         number of files are fetched based on ids in this column.
+
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -2105,11 +2106,6 @@ def _fetch_development_fmri_functional(
 
     """
     check_params(locals())
-
-    dataset_name = "development_fmri"
-    data_dir = get_dataset_dir(
-        dataset_name, data_dir=data_dir, verbose=verbose
-    )
 
     if url is None:
         # Download from the relevant OSF project, using hashes generated

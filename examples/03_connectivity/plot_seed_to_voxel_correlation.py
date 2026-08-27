@@ -24,8 +24,8 @@ numpy array, corresponding to the data inside the mask.
 #
 # We will work with the first subject
 # of the brain development :term:`fMRI` data set.
-# dataset.func is a list of filenames. We select the 1st (0-based)
-# subject by indexing with [0]).
+# dataset.func is a list of filenames.
+# We select the 1st (0-based) subject by indexing with [0]).
 from nilearn import datasets, plotting
 
 dataset = datasets.fetch_development_fmri(n_subjects=1)
