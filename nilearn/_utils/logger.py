@@ -9,7 +9,6 @@ import numpy as np
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import is_notebook
 from nilearn.nilearn_typing import Verbose
 
 
@@ -84,6 +83,8 @@ def log(
     is the one which is most likely to have been written in the user's script.
 
     """
+    from nilearn._utils.helpers import is_notebook
+
     if verbose is False:
         verbose = 0
     if verbose is True:
