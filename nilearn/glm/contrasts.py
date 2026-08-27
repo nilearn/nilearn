@@ -408,7 +408,9 @@ def compute_contrast(
             )
             cbeta = np.atleast_2d(np.dot(con_val, reg.theta))
             invcov = np.linalg.inv(
-                np.atleast_2d(reg.vcov(matrix=con_val, dispersion=1.0))
+                np.atleast_2d(
+                    reg.vcov(matrix=con_val, dispersion=1.0, uniform=False)
+                )
             )
             wcbeta = np.dot(sqrtm(invcov), cbeta)
             rss = reg.dispersion

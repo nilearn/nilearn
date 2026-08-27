@@ -1,10 +1,13 @@
 """Implement classes to handle statistical tests on likelihood models."""
 
+import warnings
+
 import numpy as np
 from nibabel.onetime import auto_attr
 from scipy.linalg import inv
 from scipy.stats import t as t_distribution
 
+from nilearn._utils.logger import find_stack_level
 from nilearn.glm._utils import pad_contrast, positive_reciprocal
 
 # Inverse t cumulative distribution
@@ -37,6 +40,53 @@ def _scaled_covariance_block(cov, matrix, column) -> np.ndarray | None:
     if matrix is not None:
         return None
     return cov
+
+
+def _uniform_covariance_stack(
+    cov, matrix, column, dispersion, other
+) -> np.ndarray:
+    """Return one covariance matrix per dispersion value.
+
+    This is the shape :meth:`LikelihoodModelResults.vcov` returns under
+    ``uniform=True``: one copy of the selected block per dispersion
+    value, whatever shape the dispersion itself arrives in. A scalar
+    dispersion is one value, so it gives ``(1, dim, dim)``. The block
+    is square except when ``other`` has a different number of rows
+    from ``matrix``, which is the one case that is not
+    ``(n_dispersion, dim, dim)``.
+
+    Selecting a single regressor gives a one by one block rather than
+    dropping the axes, which is the difference from the branches of
+    :meth:`LikelihoodModelResults.vcov`. Through ``matrix`` the block
+    is the contrast's own dimension, so a single row spanning several
+    regressors is also one by one.
+
+    Returns
+    -------
+    :obj:`numpy.ndarray`
+        The selected covariance block, scaled once per dispersion value.
+    """
+    if column is not None:
+        column = np.asarray(column)
+        selected = np.atleast_1d(np.arange(cov.shape[0])[column])
+        if selected.ndim != 1:
+            # A 2-D selector, or a 0-d boolean, which numpy reads as a
+            # whole-array mask rather than as one regressor.
+            raise ValueError(
+                "column must be an integer, a 1-D sequence of integers "
+                "or a 1-D boolean mask."
+            )
+        block = cov[selected][:, selected]
+    elif matrix is not None:
+        if other is None:
+            other = matrix
+        block = np.dot(matrix, np.dot(cov, np.transpose(other)))
+    else:
+        block = cov
+    # asarray because ``*`` means matrix multiplication for the
+    # np.matrix a caller may have passed as ``matrix``.
+    block = np.asarray(block)
+    return block * np.ravel(dispersion)[:, np.newaxis, np.newaxis]
 
 
 class LikelihoodModelResults:
@@ -136,7 +186,9 @@ default=None
                 per-column axis is kept instead of being dropped. Asking
                 for several regressors at once used to raise, or to
                 return wrong values when the number of columns of data
-                happened to equal the number of regressors.
+                happened to equal the number of regressors, or when the
+                data was 2-D with a single column. A single regressor on
+                several columns of data was also wrong, silently.
 
         """
         if column is None:
@@ -152,21 +204,28 @@ default=None
             )
         _theta = self.theta[column]
         if column.shape == ():
-            _cov = self.vcov(column=column)
+            _cov = self.vcov(column=column, uniform=False)
         else:
             # Ask for one regressor at a time. Asking for several at once
             # gives back a covariance matrix, whose diagonal has already
             # dropped the column-of-data axis that ``_theta`` still has.
             _cov = np.array(
                 [
-                    self.vcov(column=c)
+                    self.vcov(column=c, uniform=False)
                     for c in np.arange(self.theta.shape[0])[column]
                 ]
             )
         _t = _theta * positive_reciprocal(np.sqrt(_cov))
         return _t
 
-    def vcov(self, matrix=None, column=None, dispersion=None, other=None):
+    def vcov(
+        self,
+        matrix=None,
+        column=None,
+        dispersion=None,
+        other=None,
+        uniform=None,
+    ):
         """Return Variance/covariance matrix of linear :term:`contrast`.
 
         Parameters
@@ -194,23 +253,55 @@ default=None
         other : (dim, self.theta.shape[0]) array, default=None
             Alternative :term:`contrast` specification (?).
 
+        uniform : :obj:`bool` or None, default=None
+            Whether to return one covariance matrix per dispersion
+            value for every call. True gives ``(n_dispersion, dim,
+            dim)``, where ``dim`` is the size of the block the
+            selection keeps: the number of regressors ``column``
+            names, or every regressor when neither ``column`` nor
+            ``matrix`` is given, or the number of rows of ``matrix``
+            when a contrast is given, whatever number of regressors
+            that contrast spans. Giving ``other`` alongside
+            ``matrix`` makes the block ``matrix`` times ``cov``
+            times ``other`` transposed, which need not be square,
+            and that is the one call whose result is not
+            ``(n_dispersion, dim, dim)``. False gives the older
+            shapes listed below, which depend on the arguments.
+            None means False and warns, because True becomes the
+            only behavior in 0.16.0.
+
+            .. nilearn_versionadded:: 0.14.1
+
         Returns
         -------
         cov : array
-            The estimated covariance matrix/matrices: ``(dim, dim)`` for
-            a single dispersion, ``(dim, dim, n_voxels)`` from
-            ``matrix``, ``(n_voxels,)`` when ``column`` selects a single
-            regressor and there is one dispersion per column of data,
-            ``(n_voxels, dim, dim)`` when the dispersion carries its
-            own axes, as in ``dispersion[:, None, None]``, and a 0-d
-            value when a single regressor meets a scalar dispersion.
+            ``(n_dispersion, dim, dim)`` under ``uniform=True``, where
+            ``n_dispersion`` is the number of dispersion values and
+            ``dim`` is the size of the selected block, as described
+            under ``uniform`` above, and ``other`` is the one
+            argument that can make that block rectangular.
+
+            Under ``uniform=False`` the shape depends on the arguments:
+            ``(dim, dim)`` for a single dispersion, ``(dim, dim,
+            n_voxels)`` from ``matrix``, ``(n_voxels,)`` when ``column``
+            selects a single regressor and there is one dispersion per
+            column of data, ``(n_voxels, dim, dim)`` when the dispersion
+            carries its own axes, as in ``dispersion[:, None, None]``,
+            and a 0-d value when a single regressor meets a scalar
+            dispersion.
 
             .. nilearn_versionchanged:: 0.14.1
                 Asking for several regressors at once while the
                 dispersion carries several values on axes overlapping
                 the covariance matrix now raises, instead of
                 broadcasting the dispersions along the columns of the
-                covariance matrix.
+                covariance matrix. That call is answered by
+                ``uniform=True``.
+
+            .. nilearn_deprecated:: 0.14.1
+                The argument-dependent shapes are deprecated and will
+                be removed in 0.16.0, after which every call returns
+                ``(n_dispersion, dim, dim)``.
 
         Returns the variance/covariance matrix of a linear contrast of the
         estimates of theta, multiplied by `dispersion` which will often be an
@@ -228,6 +319,43 @@ default=None
 
         if dispersion is None:
             dispersion = self.dispersion
+
+        # TODO (nilearn >= 0.16.0) make the uniform branch the only
+        # one, and keep accepting the keyword rather than removing it:
+        # this warning tells people to pass uniform=True, and deleting
+        # the parameter would give everyone who took that advice a
+        # TypeError with no second warning to see it coming. Accepted
+        # and ignored costs one line and keeps the advice good.
+        # Worth deciding then, rather than inheriting it: uniform=False
+        # accepted and ignored means the shape flips silently for anyone
+        # who passed it to opt out today. Warning on False from 0.15.0
+        # is the alternative.
+        # The in-tree callers need rewriting rather than just losing
+        # the keyword: on the uniform shape t, conf_int, Tcontrast and
+        # Fcontrast broadcast into extra axes instead of raising, so
+        # getting it wrong is silent.
+        if uniform is None:
+            warnings.warn(
+                category=FutureWarning,
+                message=(
+                    "The shape 'vcov' returns currently depends on which "
+                    "arguments it was given. From version 0.16.0 it will "
+                    "always be one covariance matrix per dispersion "
+                    "value.\n"
+                    "Pass uniform=True for that shape now; the keyword "
+                    "stays accepted afterwards, so that does not need "
+                    "undoing later. uniform=False keeps the current "
+                    "shapes and silences this warning, but those shapes "
+                    "go in 0.16.0."
+                ),
+                stacklevel=find_stack_level(),
+            )
+            uniform = False
+
+        if uniform:
+            return _uniform_covariance_stack(
+                self.cov, matrix, column, dispersion, other
+            )
 
         # One covariance matrix cannot hold one value per dispersion.
         # A dispersion whose values sit on axes overlapping the
@@ -250,10 +378,11 @@ default=None
                 "There is one covariance matrix per dispersion value "
                 "here, so they cannot be returned as a single matrix. "
                 "Select a single regressor at a time. When calling "
-                "vcov directly: pass a scalar dispersion, reshape the "
-                "dispersion to carry its own axes, as in "
-                "dispersion[:, None, None], or pass matrix= with a 1-D "
-                "dispersion and no column, since column takes "
+                "vcov directly: pass uniform=True to get one matrix "
+                "per dispersion value, or pass a scalar dispersion, "
+                "or reshape the dispersion to carry its own axes, as "
+                "in dispersion[:, None, None], or pass matrix= with a "
+                "1-D dispersion and no column, since column takes "
                 "precedence over matrix."
             )
 
@@ -316,7 +445,9 @@ default=None
         if "effect" in store:
             st_effect = np.squeeze(effect)
         if "t" in store or "sd" in store:
-            sd = np.sqrt(self.vcov(matrix=matrix, dispersion=dispersion))
+            sd = np.sqrt(
+                self.vcov(matrix=matrix, dispersion=dispersion, uniform=False)
+            )
         if "sd" in store:
             st_sd = np.squeeze(sd)
         if "t" in store:
@@ -382,7 +513,9 @@ default=None
             dispersion = self.dispersion
         q = matrix.shape[0]
         if invcov is None:
-            invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
+            invcov = inv(
+                self.vcov(matrix=matrix, dispersion=1.0, uniform=False)
+            )
         F = np.add.reduce(
             np.dot(invcov, ctheta) * ctheta, 0
         ) * positive_reciprocal(q * dispersion)
@@ -390,7 +523,9 @@ default=None
         return FContrastResults(
             effect=ctheta,
             covariance=self.vcov(
-                matrix=matrix, dispersion=dispersion[np.newaxis]
+                matrix=matrix,
+                dispersion=dispersion[np.newaxis],
+                uniform=False,
             ),
             F=F,
             df_den=self.df_residuals,
@@ -483,7 +618,7 @@ default=None
         lower, upper = [], []
         for i in cols:
             half_width = inv_t_cdf(1 - alpha / 2, self.df_residuals) * np.sqrt(
-                self.vcov(column=i, dispersion=dispersion)
+                self.vcov(column=i, dispersion=dispersion, uniform=False)
             )
             lower.append(self.theta[i] - half_width)
             upper.append(self.theta[i] + half_width)

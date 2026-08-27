@@ -1,10 +1,13 @@
 """Testing models module."""
 
+import warnings
+
 import numpy as np
 import pytest
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nilearn.glm import OLSModel
+from nilearn.glm.contrasts import compute_contrast
 
 N = 10
 X = np.c_[np.linspace(-1, 1, N), np.ones((N,))]
@@ -169,12 +172,15 @@ def test_f_output_errors():
         RESULTS.Fcontrast(np.array([1, 0])[:, None])
 
 
+@pytest.mark.ai_generated
 def test_f_output_new_api():
     """Test that Fcontrast exposes effect and covariance attributes."""
     res = RESULTS.Fcontrast([1, 0])
 
     assert_array_almost_equal(res.effect, RESULTS.theta[0])
-    assert_array_almost_equal(res.covariance, RESULTS.vcov()[0][0])
+    assert_array_almost_equal(
+        res.covariance, RESULTS.vcov(uniform=False)[0][0]
+    )
 
 
 def test_conf_int():
@@ -194,20 +200,22 @@ def test_conf_int():
 @pytest.mark.parametrize(
     "call",
     [
-        lambda results: results.vcov(),
-        lambda results: results.vcov(column=[0, 1]),
+        lambda results: results.vcov(uniform=False),
+        lambda results: results.vcov(column=[0, 1], uniform=False),
         # vcov runs its column branch whenever column is given, whether
         # or not matrix is given with it, so the guard must catch this
         # spelling too instead of taking the matrix escape.
-        lambda results: results.vcov(matrix=np.eye(2), column=[0, 1]),
+        lambda results: results.vcov(
+            matrix=np.eye(2), column=[0, 1], uniform=False
+        ),
         # A row or a column vector overlaps the covariance matrix just
         # as a 1-D array does; only axes of the dispersion's own, as in
         # dispersion[:, None, None], stack instead of smearing.
         lambda results: results.vcov(
-            dispersion=np.asarray(results.dispersion)[None, :]
+            dispersion=np.asarray(results.dispersion)[None, :], uniform=False
         ),
         lambda results: results.vcov(
-            dispersion=np.asarray(results.dispersion)[:, None]
+            dispersion=np.asarray(results.dispersion)[:, None], uniform=False
         ),
     ],
     ids=[
@@ -229,7 +237,7 @@ def test_vcov_several_dispersions_error(call, results):
 def test_vcov_several_dispersions_error_when_passed_explicitly():
     """Test that a dispersion per value is rejected on 1-D data too."""
     with pytest.raises(ValueError, match="one covariance matrix per disp"):
-        RESULTS.vcov(dispersion=np.array([1.0, 2.0]))
+        RESULTS.vcov(dispersion=np.array([1.0, 2.0]), uniform=False)
 
 
 @pytest.mark.parametrize(
@@ -244,7 +252,7 @@ def test_vcov_dispersion_shaped_to_stack_is_kept(results, n_columns):
     # gives one matrix per column of data and must not be rejected.
     dispersion = np.asarray(results.dispersion)[:, None, None]
 
-    stacked = results.vcov(dispersion=dispersion)
+    stacked = results.vcov(dispersion=dispersion, uniform=False)
 
     assert stacked.shape == (n_columns, 2, 2)
     assert_array_almost_equal(
@@ -259,17 +267,21 @@ def test_vcov_dispersion_shaped_to_stack_is_kept(results, n_columns):
 @pytest.mark.ai_generated
 def test_vcov_several_columns_of_data_still_supported(results, n_columns):
     """Test that vcov calls with one matrix per column of data still work."""
-    assert results.vcov(column=0).shape == (n_columns,)
+    assert results.vcov(column=0, uniform=False).shape == (n_columns,)
     assert results.t(0).shape == (n_columns,)
     assert results.conf_int(cols=[0, 1]).shape == (2, 2, n_columns)
-    assert results.vcov(matrix=np.eye(2)).shape == (2, 2, n_columns)
+    assert results.vcov(matrix=np.eye(2), uniform=False).shape == (
+        2,
+        2,
+        n_columns,
+    )
     # Any way of asking for a single regressor is a one by one
     # covariance, so it is still one number per column of data, and t
     # has to agree whichever way that regressor is named.
     for one_regressor in ([0], (0,), [True, False]):
         assert_array_almost_equal(
-            np.ravel(results.vcov(column=one_regressor)),
-            results.vcov(column=0),
+            np.ravel(results.vcov(column=one_regressor, uniform=False)),
+            results.vcov(column=0, uniform=False),
         )
         assert_array_almost_equal(
             np.ravel(results.t(one_regressor)), results.t(0)
@@ -422,7 +434,7 @@ def test_vcov_single_regressor_several_columns_of_data():
     results = OLSModel(X_CORRELATED[:, :1]).fit(Y_3_COLUMNS)
 
     assert_array_almost_equal(
-        np.ravel(results.vcov()),
+        np.ravel(results.vcov(uniform=False)),
         results.cov[0, 0] * results.dispersion,
     )
     # vcov is allowed through on this model, so every method that reads
@@ -430,3 +442,449 @@ def test_vcov_single_regressor_several_columns_of_data():
     assert results.t().shape == (1, 3)
     assert_array_almost_equal(np.ravel(results.t()), results.t(0))
     assert_array_almost_equal(results.conf_int(), results.conf_int(cols=[0]))
+
+
+# One entry per way of naming a selection, with the number of
+# regressors it selects. ``dim`` is that number, so the uniform shape
+# is (n_dispersion, dim, dim) for every row.
+UNIFORM_SELECTIONS = [
+    ({}, 2),
+    ({"column": 0}, 1),
+    ({"column": [0]}, 1),
+    ({"column": (0, 1)}, 2),
+    ({"column": [0, 1]}, 2),
+    ({"column": np.array([True, False])}, 1),
+    ({"matrix": np.eye(2)}, 2),
+    ({"matrix": np.array([[1.0, 0.0]])}, 1),
+    # column takes precedence over matrix, so this selects two
+    # regressors through the column branch.
+    ({"matrix": np.eye(2), "column": [0, 1]}, 2),
+]
+UNIFORM_SELECTION_IDS = [
+    "no_selection",
+    "single_integer",
+    "single_integer_sequence",
+    "tuple",
+    "integer_sequence",
+    "boolean_mask",
+    "matrix_two_rows",
+    "matrix_one_row",
+    "column_wins_over_matrix",
+]
+
+
+@pytest.mark.parametrize(
+    ("results", "n_dispersion"),
+    [(RESULTS, 1), (RESULTS_2_COLUMNS, 2), (RESULTS_3_UNRELATED, 3)],
+    ids=["one_dimensional", "two_columns", "three_columns"],
+)
+@pytest.mark.parametrize(
+    ("kwargs", "dim"), UNIFORM_SELECTIONS, ids=UNIFORM_SELECTION_IDS
+)
+@pytest.mark.ai_generated
+def test_vcov_uniform_shape_does_not_depend_on_the_arguments(
+    results, n_dispersion, kwargs, dim
+):
+    """Test that uniform=True gives (n_dispersion, dim, dim) every time."""
+    assert results.vcov(uniform=True, **kwargs).shape == (
+        n_dispersion,
+        dim,
+        dim,
+    )
+
+
+@pytest.mark.parametrize(
+    "results",
+    [RESULTS, RESULTS_2_COLUMNS, RESULTS_3_UNRELATED],
+    ids=["one_dimensional", "two_columns", "three_columns"],
+)
+@pytest.mark.parametrize(
+    ("kwargs", "dim"), UNIFORM_SELECTIONS, ids=UNIFORM_SELECTION_IDS
+)
+@pytest.mark.ai_generated
+def test_vcov_uniform_agrees_with_one_dispersion_at_a_time(
+    results, kwargs, dim
+):
+    """Test the stack against the shape that was already correct.
+
+    Asking for one scalar dispersion at a time is the call that never
+    had to choose between a matrix and a per-column axis, so it is the
+    oracle each matrix of the stack is compared against.
+    """
+    stack = results.vcov(uniform=True, **kwargs)
+
+    for i, dispersion in enumerate(np.ravel(results.dispersion)):
+        one_at_a_time = results.vcov(
+            dispersion=dispersion, uniform=False, **kwargs
+        )
+        assert_array_almost_equal(
+            stack[i], np.reshape(one_at_a_time, (dim, dim))
+        )
+
+
+@pytest.mark.parametrize(
+    ("results", "n_columns"),
+    [(RESULTS_3_COLUMNS, 3), (RESULTS_2_COLUMNS, 2), (RESULTS_3_UNRELATED, 3)],
+)
+@pytest.mark.ai_generated
+def test_vcov_uniform_matches_the_reshaped_dispersion_stack(
+    results, n_columns
+):
+    """Test that uniform=True returns what the reshape already returned.
+
+    ``dispersion[:, None, None]`` is the spelling that gives one matrix
+    per column of data today, so the new contract has to agree with it
+    rather than introduce a third answer.
+    """
+    reshaped = results.vcov(
+        dispersion=np.asarray(results.dispersion)[:, None, None],
+        uniform=False,
+    )
+
+    assert reshaped.shape == (n_columns, 2, 2)
+    assert_array_almost_equal(results.vcov(uniform=True), reshaped)
+
+
+@pytest.mark.parametrize(
+    "results",
+    [RESULTS_2_COLUMNS, RESULTS_3_UNRELATED],
+    ids=["two_columns", "three_columns"],
+)
+@pytest.mark.ai_generated
+def test_vcov_uniform_matrix_branch_only_moves_the_dispersion_axis(results):
+    """Test that the matrix branch keeps its numbers and moves one axis.
+
+    The matrix branch already returns one matrix per column of data,
+    with the per-column axis last. Uniform puts that axis first, and
+    nothing else about the result changes.
+    """
+    legacy = results.vcov(matrix=np.eye(2), uniform=False)
+
+    uniform = results.vcov(matrix=np.eye(2), uniform=True)
+
+    assert legacy.shape[-1] == uniform.shape[0]
+    assert np.array_equal(uniform, np.moveaxis(legacy, -1, 0))
+
+
+@pytest.mark.parametrize(
+    ("results", "n_columns"),
+    [(RESULTS_3_COLUMNS, 3), (RESULTS_2_COLUMNS, 2)],
+)
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"column": [0, 1]},
+        {"matrix": np.eye(2), "column": [0, 1]},
+    ],
+    ids=["no_selection", "integer_sequence", "column_wins_over_matrix"],
+)
+@pytest.mark.ai_generated
+def test_vcov_uniform_answers_what_the_guard_rejects(
+    results, n_columns, kwargs
+):
+    """Test that the calls with no single-matrix answer have a stack one."""
+    with pytest.raises(ValueError, match="one covariance matrix per disp"):
+        results.vcov(uniform=False, **kwargs)
+
+    stack = results.vcov(uniform=True, **kwargs)
+
+    assert stack.shape == (n_columns, 2, 2)
+    assert_array_almost_equal(
+        stack, [results.cov * d for d in results.dispersion]
+    )
+
+
+@pytest.mark.ai_generated
+def test_vcov_uniform_stacks_an_explicit_dispersion_on_one_dimensional_data():
+    """Test that an explicit list of dispersions stacks on a 1-D fit too."""
+    dispersion = np.array([1.0, 2.0])
+    with pytest.raises(ValueError, match="one covariance matrix per disp"):
+        RESULTS.vcov(dispersion=dispersion, uniform=False)
+
+    stack = RESULTS.vcov(dispersion=dispersion, uniform=True)
+
+    assert stack.shape == (2, 2, 2)
+    assert_array_almost_equal(stack[0], RESULTS.cov)
+    assert_array_almost_equal(stack[1], RESULTS.cov * 2.0)
+
+
+@pytest.mark.parametrize(
+    "column",
+    [
+        np.array([[0, 1]]),
+        np.arange(2).reshape(2, 1),
+        # numpy reads a 0-d boolean as a mask over the whole array
+        # rather than as one regressor.
+        np.array(True),
+    ],
+    ids=["two_dimensional_row", "two_dimensional_column", "zero_d_boolean"],
+)
+@pytest.mark.ai_generated
+def test_vcov_uniform_rejects_selectors_that_are_not_one_regressor_each(
+    column,
+):
+    """Test that a selector which is not a list of regressors raises."""
+    with pytest.raises(ValueError, match="column must be an integer"):
+        RESULTS.vcov(column=column, uniform=True)
+
+
+@pytest.mark.ai_generated
+def test_vcov_warns_when_uniform_is_not_given():
+    """Test that the shape change is announced on an unqualified call."""
+    with pytest.warns(FutureWarning, match="will always be"):
+        RESULTS.vcov()
+
+
+@pytest.mark.parametrize("uniform", [True, False])
+@pytest.mark.ai_generated
+def test_vcov_does_not_warn_when_uniform_is_given(uniform):
+    """Test that either explicit answer silences the warning."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", FutureWarning)
+        RESULTS.vcov(uniform=uniform)
+
+
+@pytest.mark.parametrize(
+    "results",
+    [RESULTS, RESULTS_3_UNRELATED],
+    ids=["one_dimensional", "three_columns"],
+)
+@pytest.mark.ai_generated
+def test_methods_reading_vcov_do_not_warn(results):
+    """Test that the methods built on vcov pin the shape they read.
+
+    The test suite runs with -W error::FutureWarning, so a method that
+    let the deprecation reach the caller would fail every test that
+    calls it, and the caller could do nothing about it.
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", FutureWarning)
+        results.t()
+        results.t(0)
+        results.conf_int()
+        results.conf_int(cols=[0])
+        results.Tcontrast([1, 0])
+        results.Fcontrast([1, 0])
+
+
+# C: the default still returns the old shape, warning aside.
+@pytest.mark.parametrize(
+    ("results", "n_columns"),
+    [(RESULTS_2_COLUMNS, 2), (RESULTS_3_UNRELATED, 3)],
+)
+@pytest.mark.ai_generated
+def test_vcov_default_still_returns_the_older_shapes(results, n_columns):
+    """Test that the deprecation warns without changing anything yet."""
+    with pytest.warns(FutureWarning, match="will always be"):
+        assert results.vcov(column=0).shape == (n_columns,)
+    with pytest.warns(FutureWarning, match="will always be"):
+        assert results.vcov(matrix=np.eye(2)).shape == (2, 2, n_columns)
+    with pytest.warns(FutureWarning, match="will always be"):
+        assert results.vcov(column=0, dispersion=1.0).shape == ()
+
+
+# D: one assertion that is exact rather than almost equal.
+@pytest.mark.parametrize(
+    "results", [RESULTS, RESULTS_2_COLUMNS, RESULTS_3_UNRELATED]
+)
+@pytest.mark.parametrize(
+    "kwargs",
+    [{}, {"column": 0}, {"column": [0, 1]}, {"matrix": np.eye(2)}],
+    ids=["no_selection", "single_integer", "integer_sequence", "matrix"],
+)
+@pytest.mark.ai_generated
+def test_vcov_uniform_values_are_exact_not_merely_close(results, kwargs):
+    """Test the stack against the one-dispersion call bit for bit."""
+    stack = results.vcov(uniform=True, **kwargs)
+
+    for i, dispersion in enumerate(np.ravel(results.dispersion)):
+        one = results.vcov(dispersion=dispersion, uniform=False, **kwargs)
+        assert_array_equal(stack[i], np.reshape(one, stack[i].shape))
+
+
+# A: the other argument, which only the matrix branch reads.
+@pytest.mark.parametrize(
+    ("results", "n_columns"),
+    [(RESULTS_2_COLUMNS, 2), (RESULTS_3_UNRELATED, 3)],
+)
+@pytest.mark.ai_generated
+def test_vcov_uniform_reads_other_like_the_matrix_branch(results, n_columns):
+    """Test that other is still the right hand side of the product."""
+    matrix = np.eye(2)[:1]
+    other = np.eye(2)[1:]
+
+    uniform = results.vcov(matrix=matrix, other=other, uniform=True)
+    legacy = results.vcov(matrix=matrix, other=other, uniform=False)
+
+    assert uniform.shape == (n_columns, 1, 1)
+    assert_array_equal(uniform, np.moveaxis(legacy, -1, 0))
+
+
+@pytest.mark.ai_generated
+def test_vcov_uniform_accepts_a_matrix_object():
+    """Test that a contrast passed as an ``np.matrix`` still works.
+
+    ``*`` means matrix multiplication for ``np.matrix``, so the block
+    has to be coerced before it is scaled by the dispersions. The
+    result is a plain array either way, since a stack of matrices
+    cannot be an ``np.matrix``.
+    """
+    results = RESULTS_3_UNRELATED
+    with warnings.catch_warnings():
+        # numpy itself discourages the subclass; the point here is only
+        # that a caller who still has one does not get a shape error.
+        warnings.simplefilter("ignore", PendingDeprecationWarning)
+        contrast = np.asmatrix(np.eye(2))
+
+        stack = results.vcov(matrix=contrast, uniform=True)
+
+    assert stack.shape == (3, 2, 2)
+    assert_array_equal(stack, results.vcov(matrix=np.eye(2), uniform=True))
+
+
+# B: a dispersion that arrives with axes of its own.
+@pytest.mark.parametrize(
+    ("results", "n_columns"),
+    [(RESULTS_2_COLUMNS, 2), (RESULTS_3_UNRELATED, 3)],
+)
+@pytest.mark.ai_generated
+def test_vcov_uniform_ignores_how_the_dispersion_is_shaped(results, n_columns):
+    """Test that only the dispersion values matter, not their layout."""
+    flat = np.asarray(results.dispersion)
+    stack = results.vcov(dispersion=flat, uniform=True)
+
+    assert stack.shape == (n_columns, 2, 2)
+    for shaped in (flat[:, None], flat[None, :], flat[:, None, None]):
+        assert_array_equal(
+            results.vcov(dispersion=shaped, uniform=True), stack
+        )
+
+
+# G: column beats matrix, with a matrix that would give a different answer.
+@pytest.mark.parametrize(
+    ("results", "n_columns"),
+    [(RESULTS_2_COLUMNS, 2), (RESULTS_3_UNRELATED, 3)],
+)
+@pytest.mark.ai_generated
+def test_vcov_uniform_column_wins_over_matrix(results, n_columns):
+    """Test the precedence with a matrix of a different width than column."""
+    # A one row matrix would give dim 1. column names both regressors, so
+    # a result of dim 2 can only have come from the column branch.
+    both = results.vcov(matrix=np.eye(2)[:1], column=[0, 1], uniform=True)
+
+    assert both.shape == (n_columns, 2, 2)
+    assert_array_equal(both, results.vcov(column=[0, 1], uniform=True))
+
+
+# K: the matrix branch smear that uniform corrects.
+@pytest.mark.ai_generated
+def test_vcov_uniform_stacks_where_the_matrix_branch_smeared():
+    """Test the case where the dispersion count equals the contrast rows.
+
+    With as many dispersion values as the contrast has rows, and the
+    dispersion carrying an axis of its own, the older matrix branch
+    broadcast the dispersions along the covariance matrix and returned
+    one matrix. Uniform returns one matrix per dispersion value.
+    """
+    results = RESULTS_2_COLUMNS
+    dispersion = np.asarray(results.dispersion)[:, None]
+
+    smeared = results.vcov(
+        matrix=np.eye(2), dispersion=dispersion, uniform=False
+    )
+    stacked = results.vcov(
+        matrix=np.eye(2), dispersion=dispersion, uniform=True
+    )
+
+    assert smeared.shape == (2, 2, 1)
+    assert stacked.shape == (2, 2, 2)
+    assert_array_almost_equal(
+        stacked, [results.cov * d for d in results.dispersion]
+    )
+
+
+# A three regressor design, so a selector can name something that is not
+# a prefix of the regressors.
+X_THREE_REGRESSORS = np.c_[
+    np.arange(N, dtype=float), np.arange(N, dtype=float) ** 2, np.ones((N,))
+]
+RESULTS_3_REGRESSORS = OLSModel(X_THREE_REGRESSORS).fit(Y_3_COLUMNS_UNRELATED)
+
+
+# M2: selectors that are not a prefix of the regressors.
+@pytest.mark.parametrize(
+    ("column", "wanted"),
+    [
+        (1, [1]),
+        ([2], [2]),
+        ([0, 2], [0, 2]),
+        ((2, 0), [2, 0]),
+        (np.array([False, True, True]), [1, 2]),
+    ],
+    ids=["bare_1", "sequence_2", "skip_the_middle", "out_of_order", "mask"],
+)
+@pytest.mark.ai_generated
+def test_vcov_uniform_selects_the_regressors_it_was_given(column, wanted):
+    """Test that the block is the named regressors, not the first few."""
+    results = RESULTS_3_REGRESSORS
+    stack = results.vcov(column=column, uniform=True)
+
+    assert stack.shape == (3, len(wanted), len(wanted))
+    for i, dispersion in enumerate(results.dispersion):
+        for a, ia in enumerate(wanted):
+            for b, ib in enumerate(wanted):
+                assert stack[i, a, b] == results.cov[ia, ib] * dispersion
+
+
+# T2: matrix and other of different heights give a block that is not square.
+@pytest.mark.ai_generated
+def test_vcov_uniform_block_is_not_square_when_other_differs():
+    """Test the shape when other has a different number of rows."""
+    results = RESULTS_3_REGRESSORS
+    matrix = np.eye(3)[:1]
+    other = np.eye(3)[:2]
+
+    stack = results.vcov(matrix=matrix, other=other, uniform=True)
+
+    assert stack.shape == (3, 1, 2)
+    assert_array_equal(
+        stack,
+        np.moveaxis(
+            results.vcov(matrix=matrix, other=other, uniform=False), -1, 0
+        ),
+    )
+
+
+@pytest.mark.ai_generated
+def test_vcov_uniform_dim_is_the_block_not_the_regressor_count():
+    """Test that a contrast row gives a one by one block.
+
+    Through ``matrix`` the block is the contrast's own dimension, so a
+    single row spanning two regressors is still one by one, and the
+    ``dim`` in the documented shape is not a count of regressors.
+    """
+    results = RESULTS_3_UNRELATED
+    spanning_two = np.array([[1.0, -1.0]])
+
+    stack = results.vcov(matrix=spanning_two, uniform=True)
+
+    assert stack.shape == (3, 1, 1)
+    assert results.vcov(matrix=np.eye(2), uniform=True).shape == (3, 2, 2)
+
+
+@pytest.mark.ai_generated
+def test_compute_contrast_does_not_warn():
+    """Test that the contrast path does not leak the deprecation either.
+
+    It is the only caller of ``vcov`` outside this module, and the suite
+    runs with -W error::FutureWarning, so a leak there would fail tests
+    a user of ``compute_contrast`` could do nothing about.
+    """
+    labels = np.zeros(Y_3_COLUMNS_UNRELATED.shape[1])
+    results = {0.0: OLSModel(X_CORRELATED).fit(Y_3_COLUMNS_UNRELATED)}
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", FutureWarning)
+        compute_contrast(labels, results, np.array([1.0, 0.0]), stat_type="t")
+        compute_contrast(labels, results, np.eye(2), stat_type="F")

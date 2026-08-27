@@ -92,3 +92,5 @@ Changes
 - :bdg-dark:`Code` Add ``asv`` benchmark for TFCE computation (:gh:`6394` by `Fabricio Cravo`_).
 
 - :bdg-dark:`Code` Update plotting functions to return figure or axes instead of None when an output file is specified to save the figure (:gh:`6272` by `Hande Gözükan`_).
+
+- :bdg-danger:`Deprecation` The shape ``vcov`` of :class:`~glm.LikelihoodModelResults` returns currently depends on which arguments it was given; passing ``uniform=True`` returns one covariance matrix per dispersion value, ``(n_dispersion, dim, dim)``, for every call, and that becomes the only behavior in 0.16.0; under ``uniform=True`` a selector that cannot name one regressor at a time, a 2-D array or a 0-d boolean, raises instead of returning (:gh:`6480` by `Chi-Wei Lee`_).
