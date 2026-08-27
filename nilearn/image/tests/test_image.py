@@ -463,7 +463,6 @@ def test_smooth_img_warning(img_3d_mni):
         smooth_img(img_3d_mni, fwhm=0.0)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("fwhm", [None, 0.0, 4.0])
 def test_smooth_img_surface_nan_do_not_propagate(surf_img_1d, fwhm):
     """Non-finite vertices must be zeroed, as they are for volumes.
@@ -484,7 +483,6 @@ def test_smooth_img_surface_nan_do_not_propagate(surf_img_1d, fwhm):
         assert np.all(np.isfinite(part))
 
 
-@pytest.mark.ai_generated
 def test_smooth_img_surface_does_not_modify_input(surf_img_1d):
     """Cleaning non-finite values must not touch the input image."""
     surf_img_1d.data.parts["left"][0] = np.nan
