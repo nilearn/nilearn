@@ -88,7 +88,7 @@ def _uniform_covariance_stack(cov, matrix, column, dispersion) -> np.ndarray:
             raise ValueError(
                 "matrix must be 1-D or 2-D to give one covariance matrix "
                 f"per dispersion value; this one has {rank} "
-                "dimensions. Pass uniform=False for the older shapes."
+                "dimensions. Give it as (dim, n_regressors)."
             )
         block = np.dot(matrix, np.dot(cov, np.transpose(matrix)))
     else:
