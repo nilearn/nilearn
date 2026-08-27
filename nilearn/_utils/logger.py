@@ -9,6 +9,7 @@ import numpy as np
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import is_notebook
 from nilearn.nilearn_typing import Verbose
 
 
@@ -114,8 +115,10 @@ def log(
     if object_self is not None:
         func_name = f"{object_self.__class__.__name__}.{func_name}"
 
-    if _has_rich():
-        console.print(escape(f"[blue]\\[{func_name}][/blue]) {escape(msg)}")
+    # Do not bother using rich in notebooks
+    # as the colored highlights are not rendered in their output.
+    if _has_rich() and not is_notebook():
+        console.print(f"[blue]\\[{func_name}][/blue] {escape(msg)}")
     else:
         print(f"[{func_name}] {msg}")
 
