@@ -2175,6 +2175,145 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
                 ) from e
 
 
+def check_img_estimator_clean_dtype(estimator_orig) -> None:
+    """Regression test for https://github.com/nilearn/nilearn/issues/6525.
+
+    When an estimator's own ``dtype`` is left to its default (``None``)
+    and a cleaning option that can produce floating point output is
+    used, ``transform`` must not silently cast the result back down to
+    the dtype of the source image.
+
+    This matters most for raw, unprocessed BOLD data, which is often
+    stored with an integer dtype (e.g. ``int16``): truncating cleaned
+    floating point values (from standardization, detrending,
+    filtering, smoothing, or confound removal) down to the source
+    image's integer dtype collapses them to a handful of integer
+    levels, destroying almost all of the cleaned signal's precision.
+
+    Covers, one at a time: ``standardize`` ("zscore_sample" and
+    "psc"), ``detrend``, ``low_pass``, ``high_pass``,
+    ``smoothing_fwhm``, and passing ``confounds`` at transform time.
+
+    Not restricted to maskers: any estimator with a ``transform``
+    method, a ``dtype`` parameter, and at least one of the cleaning
+    parameters above (or that accepts ``confounds`` at transform time)
+    is checked.
+    """
+    clean_attrs = (
+        "standardize",
+        "detrend",
+        "low_pass",
+        "high_pass",
+        "smoothing_fwhm",
+    )
+    accepts_confounds = (
+        "confounds" in inspect.signature(estimator_orig.transform).parameters
+    )
+    if (
+        not hasattr(estimator_orig, "transform")
+        or not hasattr(estimator_orig, "dtype")
+        or (
+            not accepts_confounds
+            and not any(hasattr(estimator_orig, attr) for attr in clean_attrs)
+        )
+    ):
+        return
+
+    input_dtype = np.int16
+
+    # standardize / detrend / low_pass / high_pass / smoothing_fwhm are
+    # only meaningful to test on maskers: for _BaseDecomposition
+    # estimators (CanICA, DictLearning, ...) these only affect data
+    # loading at fit time through an internal masker and are not
+    # applied again by transform(), which delegates to an internal
+    # maps masker instead.
+    if is_masker(estimator_orig):
+        n_samples = 20
+
+        input_img: Nifti1Image | SurfaceImage
+        if accept_niimg_input(estimator_orig):
+            signals = _rng().standard_normal(
+                size=(np.prod(_shape_3d_default()), n_samples)
+            )
+            means = (
+                _rng().standard_normal(size=(np.prod(_shape_3d_default()), 1))
+                * 50
+                + 1000
+            )
+            signals += means
+            data = signals.reshape((*_shape_3d_default(), n_samples))
+            input_img = Nifti1Image(
+                data.astype(input_dtype), _affine_eye(), dtype=input_dtype
+            )
+        elif accept_surf_img_input(estimator_orig):
+            input_img = _make_surface_img(n_samples)
+            input_img.data._set_dtype(input_dtype)
+
+        # other scenarios where output dtype will change
+        scenarios: list[dict[str, Any]] = [
+            {"standardize": "zscore_sample"},
+            {"standardize": "psc"},
+            {"detrend": True},
+            {"low_pass": 0.2, "t_r": 2.0},
+            {"high_pass": 0.01, "t_r": 2.0},
+            {"smoothing_fwhm": 4.0},
+        ]
+        for params in scenarios:
+            estimator = clone(estimator_orig)
+            estimator.dtype = None
+            for key, value in params.items():
+                setattr(estimator, key, value)
+
+            estimator.fit(input_img)
+            result = estimator.transform(input_img)
+
+            _check_clean_dtype_output(result)
+
+            if params.get("standardize") == "zscore_sample":
+                # a truncated (e.g. integer-cast) standardized signal
+                # would not have unit variance anymore. Skip features
+                # that are genuinely constant for this estimator's
+                # fixture (e.g. a region covering a single voxel):
+                # their standardized std is legitimately 0, not
+                # truncated.
+                stds = result.std(axis=0)
+                non_degenerate = stds > 1e-8
+                if non_degenerate.any():
+                    assert_almost_equal(stds[non_degenerate], 1, decimal=1)
+
+        if accepts_confounds:
+            estimator = clone(estimator_orig)
+            estimator.dtype = None
+
+            estimator.fit(input_img)
+
+            confounds = _rng().standard_normal(size=(n_samples, 2))
+            if isinstance(estimator, _MultiMixin):
+                confounds = [confounds]
+            result = estimator.transform(input_img, confounds=confounds)
+
+            _check_clean_dtype_output(result)
+
+    elif isinstance(estimator_orig, _BaseDecomposition):
+        X, _ = generate_data_to_fit(estimator_orig)
+
+        data = get_data(X) * 1000
+        input_img = Nifti1Image(
+            data.astype(input_dtype), affine=X.affine, dtype=input_dtype
+        )
+
+        estimator = clone(estimator_orig)
+        estimator.dtype = None
+        estimator = fit_estimator(estimator, input_img, None)
+
+        n_timepoints = input_img.shape[-1] if input_img.ndim == 4 else 1
+        confounds = [_rng().standard_normal(size=(n_timepoints, 2))]
+
+        result = estimator.transform(input_img, confounds=confounds)
+
+        _check_clean_dtype_output(result)
+
+
 def check_img_estimator_requires_y_none(estimator_orig) -> None:
     """Check estimator with requires_y=True fails gracefully for y=None.
 
@@ -2800,144 +2939,6 @@ def _check_clean_dtype_output(result) -> None:
                 "cleaning pipeline, not be cast back to the source "
                 f"image's integer dtype. Got dtype '{s.dtype}'."
             )
-
-
-def check_img_estimator_clean_dtype(estimator_orig) -> None:
-    """Regression test for https://github.com/nilearn/nilearn/issues/6525.
-
-    When an estimator's own ``dtype`` is left to its default (``None``)
-    and a cleaning option that can produce floating point output is
-    used, ``transform`` must not silently cast the result back down to
-    the dtype of the source image.
-
-    This matters most for raw, unprocessed BOLD data, which is often
-    stored with an integer dtype (e.g. ``int16``): truncating cleaned
-    floating point values (from standardization, detrending,
-    filtering, smoothing, or confound removal) down to the source
-    image's integer dtype collapses them to a handful of integer
-    levels, destroying almost all of the cleaned signal's precision.
-
-    Covers, one at a time: ``standardize`` ("zscore_sample" and
-    "psc"), ``detrend``, ``low_pass``, ``high_pass``,
-    ``smoothing_fwhm``, and passing ``confounds`` at transform time.
-
-    Not restricted to maskers: any estimator with a ``transform``
-    method, a ``dtype`` parameter, and at least one of the cleaning
-    parameters above (or that accepts ``confounds`` at transform time)
-    is checked.
-    """
-    clean_attrs = (
-        "standardize",
-        "detrend",
-        "low_pass",
-        "high_pass",
-        "smoothing_fwhm",
-    )
-    accepts_confounds = (
-        "confounds" in inspect.signature(estimator_orig.transform).parameters
-    )
-    if (
-        not hasattr(estimator_orig, "transform")
-        or not hasattr(estimator_orig, "dtype")
-        or (
-            not accepts_confounds
-            and not any(hasattr(estimator_orig, attr) for attr in clean_attrs)
-        )
-    ):
-        return
-
-    input_dtype = np.int16
-
-    # standardize / detrend / low_pass / high_pass / smoothing_fwhm are
-    # only meaningful to test on maskers: for _BaseDecomposition
-    # estimators (CanICA, DictLearning, ...) these only affect data
-    # loading at fit time through an internal masker and are not
-    # applied again by transform(), which delegates to an internal
-    # maps masker instead.
-    if is_masker(estimator_orig):
-        n_samples = 20
-
-        input_img: Nifti1Image | SurfaceImage
-        if accept_niimg_input(estimator_orig):
-            signals = _rng().standard_normal(
-                size=(np.prod(_shape_3d_default()), n_samples)
-            )
-            means = (
-                _rng().standard_normal(size=(np.prod(_shape_3d_default()), 1))
-                * 50
-                + 1000
-            )
-            signals += means
-            data = signals.reshape((*_shape_3d_default(), n_samples))
-            input_img = Nifti1Image(
-                data.astype(input_dtype), _affine_eye(), dtype=input_dtype
-            )
-        elif accept_surf_img_input(estimator_orig):
-            input_img = _make_surface_img(n_samples)
-            input_img.data._set_dtype(input_dtype)
-
-        scenarios: list[dict[str, Any]] = [
-            {"standardize": "zscore_sample"},
-            {"standardize": "psc"},
-            {"detrend": True},
-            {"low_pass": 0.2, "t_r": 2.0},
-            {"high_pass": 0.01, "t_r": 2.0},
-            {"smoothing_fwhm": 4.0},
-        ]
-        for params in scenarios:
-            estimator = clone(estimator_orig)
-            estimator.dtype = None
-            for key, value in params.items():
-                setattr(estimator, key, value)
-
-            estimator.fit(input_img)
-            result = estimator.transform(input_img)
-
-            _check_clean_dtype_output(result)
-
-            if params.get("standardize") == "zscore_sample":
-                # a truncated (e.g. integer-cast) standardized signal
-                # would not have unit variance anymore. Skip features
-                # that are genuinely constant for this estimator's
-                # fixture (e.g. a region covering a single voxel):
-                # their standardized std is legitimately 0, not
-                # truncated.
-                stds = result.std(axis=0)
-                non_degenerate = stds > 1e-8
-                if non_degenerate.any():
-                    assert_almost_equal(stds[non_degenerate], 1, decimal=1)
-
-        if accepts_confounds:
-            estimator = clone(estimator_orig)
-            estimator.dtype = None
-
-            estimator.fit(input_img)
-
-            confounds = _rng().standard_normal(size=(n_samples, 2))
-            if isinstance(estimator, _MultiMixin):
-                confounds = [confounds]
-            result = estimator.transform(input_img, confounds=confounds)
-
-            _check_clean_dtype_output(result)
-
-    elif isinstance(estimator_orig, _BaseDecomposition):
-        X, _ = generate_data_to_fit(estimator_orig)
-
-        data = get_data(X) * 1000
-        input_img = Nifti1Image(
-            data.astype(input_dtype), affine=X.affine, dtype=input_dtype
-        )
-
-        estimator = clone(estimator_orig)
-        estimator.dtype = None
-        estimator = fit_estimator(estimator, input_img, None)
-
-        n_timepoints = input_img.shape[-1] if input_img.ndim == 4 else 1
-        confounds = [_rng().standard_normal(size=(n_timepoints, 2))]
-
-        result = estimator.transform(input_img, confounds=confounds)
-
-        _check_clean_dtype_output(result)
 
 
 def check_masker_compatibility_mask_image(estimator_orig) -> None:
