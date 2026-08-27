@@ -17,7 +17,7 @@ import pandas as pd
 from nilearn.datasets import fetch_haxby
 from nilearn.image import get_data, load_img, new_img_like
 
-# We fetch 2nd subject from haxby datasets (which is default)
+# We fetch 2nd subject from the Haxby datasets (which is default)
 haxby_dataset = fetch_haxby()
 
 # print basic information on the dataset

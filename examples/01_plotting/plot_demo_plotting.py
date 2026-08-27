@@ -17,7 +17,7 @@ See :ref:`plotting` for more details.
 
 from nilearn.datasets import fetch_haxby, load_sample_motor_activation_image
 
-# haxby dataset to have EPI images and masks
+# Fetch the Haxby dataset to have EPI images and masks.
 haxby_dataset = fetch_haxby()
 
 # print basic information on the dataset
@@ -119,7 +119,7 @@ show()
 # Plotting anatomical images: `plot_anat`
 # ```````````````````````````````````````
 #
-# Visualizing anatomical image of haxby dataset
+# Visualizing anatomical image of the Haxby dataset
 from nilearn.plotting import plot_anat
 
 plot_anat(haxby_anat_filename, title="plot_anat")
@@ -130,7 +130,7 @@ show()
 # Plotting ROIs (here the mask): `plot_roi`
 # `````````````````````````````````````````
 #
-# Visualizing ventral temporal region image from haxby dataset overlaid on
+# Visualizing ventral temporal region image from the Haxby dataset overlaid on
 # subject specific anatomical image
 # with coordinates positioned automatically on region of interest (roi).
 from nilearn.plotting import plot_roi

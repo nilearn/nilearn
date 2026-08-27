@@ -1,10 +1,13 @@
 """
-The haxby dataset: different multi-class strategies
+The Haxby dataset: different multi-class strategies
 ===================================================
 
 In this example,
-we compare one vs all and one vs one multi-class strategies:
-the overall cross-validated accuracy and the confusion matrix.
+we compare ``one vs all`` and ``one vs one`` multi-class strategies:
+We compare their overall cross-validated accuracy and their confusion matrix.
+
+See the scikit-learn documentation
+about `multiclass classification <https://scikit-learn.org/stable/modules/multiclass.html>`_.
 
 """
 
@@ -14,8 +17,8 @@ import pandas as pd
 from nilearn import datasets
 
 # %%
-# Load the Haxby data dataset
-# ---------------------------
+# Load and prepare the Haxby dataset
+# ----------------------------------
 
 haxby_dataset = datasets.fetch_haxby()
 
@@ -28,7 +31,7 @@ print(f"Functional nifti images are located at: {func_filename}")
 
 # %%
 # We load the behavioral data that we will predict and
-# remove the rest condition, as it is of no interest to us.
+# remove the ``"rest"`` condition, as it is of no interest to us.
 # .. seealso::
 #
 #   For more information about the dataset
@@ -46,8 +49,6 @@ n_runs = len(np.unique(run))
 
 
 # %%
-# Prepare the :term:`fMRI` data
-# -----------------------------
 # We extract the data with a NiftiMasker.
 # For decoding, standardizing is often very important,
 # so we set ``standardize="zscore_sample"``.
@@ -66,17 +67,17 @@ nifti_masker = NiftiMasker(
 X = nifti_masker.fit_transform(func_filename)
 
 # %%
-# Remove the "rest" condition
+# Remove the ``"rest"`` condition
 X = X[non_rest]
 run = run[non_rest]
 
 # %%
 # Build the decoders, using scikit-learn
 # --------------------------------------
-# Nilearn does not have dedicate multiclass estimators,
+# Nilearn does not have dedicated multiclass estimators,
 # as we can directly use those from sklearn.
-# Here we use a Support Vector Classification, with a linear kernel,
-# and a simple feature selection step.
+# Here we use a Support Vector Classification (:class:`sklearn.svm.SVC`),
+# with a linear kernel, and a simple feature selection step.
 
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
