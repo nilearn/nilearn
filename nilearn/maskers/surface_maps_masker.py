@@ -354,12 +354,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 maps_data, img_data
             )[0].T
 
-        source_dtype = (
-            imgs.data._dtype
-            if isinstance(imgs, SurfaceImage)
-            else imgs[0].data._dtype
-        )
-        target_dtype = self._get_target_dtype(source_dtype)
+        target_dtype = self._get_target_dtype(imgs)
 
         region_signals = self._clean(region_signals, confounds, sample_mask)
 

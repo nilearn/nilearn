@@ -13,7 +13,7 @@ from nilearn._utils.bids import sanitize_look_up_table
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import img_data_dtype, safe_get_data
+from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_reduction_strategy,
@@ -811,8 +811,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         self.region_atlas_ = masked_atlas
 
         imgs = load_img(imgs)
-        source_dtype = img_data_dtype(imgs)
-        target_dtype = self._get_target_dtype(source_dtype)
+
+        target_dtype = self._get_target_dtype(imgs)
 
         # target_dtype is None: no explicit dtype was requested,
         # so keep the dtype produced by the extraction/cleaning pipeline

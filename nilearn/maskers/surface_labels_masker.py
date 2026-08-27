@@ -437,12 +437,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             )
             region_signals[n] = tmp
 
-        source_dtype = (
-            imgs.data._dtype
-            if isinstance(imgs, SurfaceImage)
-            else imgs[0].data._dtype
-        )
-        target_dtype = self._get_target_dtype(source_dtype)
+        target_dtype = self._get_target_dtype(imgs)
 
         region_signals = self._clean(region_signals, confounds, sample_mask)
 

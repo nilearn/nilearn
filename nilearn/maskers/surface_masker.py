@@ -330,12 +330,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
-        source_dtype = (
-            imgs.data._dtype
-            if isinstance(imgs, SurfaceImage)
-            else imgs[0].data._dtype
-        )
-        target_dtype = self._get_target_dtype(source_dtype)
+        target_dtype = self._get_target_dtype(imgs)
 
         output = self._clean(output, confounds, sample_mask)
 

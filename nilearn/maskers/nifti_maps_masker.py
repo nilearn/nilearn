@@ -11,7 +11,6 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
 )
@@ -548,13 +547,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         imgs_ = check_niimg(imgs, atleast_4d=True)
 
-        source_dtype = img_data_dtype(imgs_)
-        target_dtype = self._get_target_dtype(source_dtype)
-
-        # if target_dtype is still None, self.dtype is None: no explicit
-        # dtype was requested, so keep the dtype produced by the
-        # extraction/cleaning pipeline (e.g. float after standardize)
-        # instead of forcing it back to the source image's dtype.
+        target_dtype = self._get_target_dtype(imgs_)
 
         if self.resampling_target is None:
             images = {"maps": maps_img_, "data": imgs_}
@@ -688,10 +681,15 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             sklearn_output_config=sklearn_output_config,
         )
 
-        if target_dtype is None:
-            return region_signals
-
-        return region_signals.astype(target_dtype)
+        # if target_dtype is still None, self.dtype is None: no explicit
+        # dtype was requested, so keep the dtype produced by the
+        # extraction/cleaning pipeline (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return (
+            region_signals
+            if target_dtype is None
+            else region_signals.astype(target_dtype)
+        )
 
     @fill_doc
     def inverse_transform(self, region_signals):
