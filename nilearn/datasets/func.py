@@ -64,7 +64,7 @@ def fetch_haxby(
     resume: Resume = True,
     verbose: Verbose = 1,
 ) -> Bunch[str, Any]:
-    """Download and loads complete haxby dataset.
+    """Download and loads complete the Haxby dataset.
 
     See :footcite:t:`Haxby2001`.
 
