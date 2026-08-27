@@ -2826,11 +2826,6 @@ def check_img_estimator_clean_dtype(estimator_orig) -> None:
     parameters above (or that accepts ``confounds`` at transform time)
     is checked.
     """
-    if not hasattr(estimator_orig, "transform") or not hasattr(
-        estimator_orig, "dtype"
-    ):
-        return
-
     clean_attrs = (
         "standardize",
         "detrend",
@@ -2841,15 +2836,15 @@ def check_img_estimator_clean_dtype(estimator_orig) -> None:
     accepts_confounds = (
         "confounds" in inspect.signature(estimator_orig.transform).parameters
     )
-    if not accepts_confounds and not any(
-        hasattr(estimator_orig, attr) for attr in clean_attrs
+    if (
+        not hasattr(estimator_orig, "transform")
+        or not hasattr(estimator_orig, "dtype")
+        or (
+            not accepts_confounds
+            and not any(hasattr(estimator_orig, attr) for attr in clean_attrs)
+        )
     ):
         return
-
-    # TODO
-    # fix for free threaded python
-    if not is_gil_enabled():
-        pytest.xfail("May fail without the GIL")
 
     input_dtype = np.int16
 
