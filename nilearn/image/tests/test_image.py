@@ -491,6 +491,27 @@ def test_smooth_img_surface(surf_img_1d):
     assert data.var() > smoothed_data.var()
 
 
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("fwhm", [None, 0, 5])
+def test_smooth_img_surface_non_finite_values_are_replaced(surf_img_1d, fwhm):
+    """Replace non-finite surface values without modifying the input."""
+    data = {
+        hemi: values.copy() for hemi, values in surf_img_1d.data.parts.items()
+    }
+    data["left"][0] = np.nan
+    data["right"][1] = np.inf
+    img = SurfaceImage(surf_img_1d.mesh, data)
+
+    smoothed_img = smooth_img(img, fwhm=fwhm)
+
+    assert all(
+        np.isfinite(values).all()
+        for values in smoothed_img.data.parts.values()
+    )
+    assert np.isnan(img.data.parts["left"][0])
+    assert np.isinf(img.data.parts["right"][1])
+
+
 def test_smooth_list_img_surface(surf_img_1d):
     """Test smoothing list surface images."""
     smooth_ref = smooth_img(surf_img_1d, fwhm=5)

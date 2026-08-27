@@ -560,7 +560,8 @@ def _smooth_surface_img(
     new_data = {}
     for hemi, n_iter in zip(img.mesh.parts, iterations, strict=False):
         mesh = img.mesh.parts[hemi]
-        data = img.data.parts[hemi]
+        data = img.data.parts[hemi].copy()
+        ensure_finite_data(data, raise_warning=False)
 
         if n_iter == 0:
             new_data[hemi] = data

@@ -42,6 +42,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix :func:`~image.smooth_img` and ``smooth_array`` truncating the smoothed signal for unsigned integer input, because only signed integers were promoted to float before ``gaussian_filter1d`` wrote its float result back into the input buffer in place; unsigned is the common case since ``uint8`` is the standard on-disk dtype for masks and atlases (:gh:`6440` by `Andrew Chen`_).
 
+- :bdg-dark:`Code` Fix :func:`~image.smooth_img` leaving non-finite values in surface images untouched, so surface and volume inputs now share the documented finite-value behavior (:gh:`6487` by `AtomicGlance <https://github.com/AtomicGlance>`_).
+
 - :bdg-dark:`Code` Fix ``examples/04_glm_first_level/plot_bids_features.py``, ``doc/get_data_examples.py``, and ``doc/visual_testing/reporter_visual_inspection_suite.py`` downloading the full FSL derivatives for the ``bart`` and ``taskswitch`` tasks of the ``ds000030`` dataset in addition to ``stopsignal``, because the ``*task-task*`` exclusion filter did not match the ``derivatives/task/sub-*/taskswitch.feat`` folder name; switch to ``inclusion_filters`` to only fetch the files needed for the ``stopsignal`` analysis (:gh:`6432` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix :func:`~interfaces.bids.get_bids_files` missing subject-level anatomical derivatives in multi-session datasets (:gh:`6291` by `Mohammad Sadeghi Hardengi`_).
