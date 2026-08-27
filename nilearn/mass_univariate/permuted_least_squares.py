@@ -383,6 +383,14 @@ def permuted_ols(
         Numerical or boolean labels for explanatory variates; fitted and tested
         independently of each other.
 
+        .. note::
+
+            ``permuted_ols`` can support a wide range of analysis designs,
+            depending on the numerical labels in ``tested_var``.
+            For example, if you wished to perform a one-sample test,
+            you could simply provide an array of ones
+            (e.g., ``np.ones(n_samples)``).
+
     target_vars : array-like, shape=(n_samples, n_descriptors)
         :term:`fMRI` data to analyze according
         to the explanatory and confounding variates.
@@ -619,6 +627,11 @@ def permuted_ols(
     References
     ----------
     .. footbibliography::
+
+
+    Examples
+    --------
+    TODO
 
     """
     check_params(locals())
