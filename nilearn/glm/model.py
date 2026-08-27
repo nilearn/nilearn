@@ -39,17 +39,14 @@ def _scaled_covariance_block(cov, matrix, column) -> np.ndarray | None:
     return cov
 
 
-def _uniform_covariance_stack(
-    cov, matrix, column, dispersion, other
-) -> np.ndarray:
+def _uniform_covariance_stack(cov, matrix, column, dispersion) -> np.ndarray:
     """Return one covariance matrix per dispersion value.
 
-    This is the shape :meth:`LikelihoodModelResults.vcov` returns under
-    ``uniform=True``: one copy of the selected block per dispersion
-    value, whatever shape the dispersion itself arrives in. A scalar
-    dispersion is one value, so it gives ``(1, dim, dim)``. The block
-    is square except when ``other`` has a different number of rows
-    from ``matrix``, which is the one case that returns and is not
+    This is the shape :meth:`LikelihoodModelResults.vcov` returns
+    unless ``uniform=False``: one copy of the selected block per
+    dispersion value, whatever shape the dispersion itself arrives in.
+    A scalar dispersion is one value, so it gives ``(1, dim, dim)``.
+    The block is always square, so the result is always
     ``(n_dispersion, dim, dim)``. A ``matrix`` of rank 3 or more cannot
     give a square block, so it raises here rather than returning
     something of another rank.
@@ -93,9 +90,7 @@ def _uniform_covariance_stack(
                 f"per dispersion value; this one has {rank} "
                 "dimensions. Pass uniform=False for the older shapes."
             )
-        if other is None:
-            other = matrix
-        block = np.dot(matrix, np.dot(cov, np.transpose(other)))
+        block = np.dot(matrix, np.dot(cov, np.transpose(matrix)))
     else:
         block = cov
     # asarray because ``*`` means matrix multiplication for the
@@ -238,7 +233,7 @@ default=None
         matrix=None,
         column=None,
         dispersion=None,
-        other=None,
+        *,
         uniform=True,
     ):
         """Return Variance/covariance matrix of linear :term:`contrast`.
@@ -267,10 +262,7 @@ default=None
             for instance to ``dispersion[:, None, None]``, to get one
             matrix per value.
 
-        other : (dim, self.theta.shape[0]) array, default=None
-            Alternative :term:`contrast` specification (?).
-
-        uniform : :obj:`bool` or None, default=True
+        uniform : :obj:`bool` or None, keyword only, default=True
             Whether to return one covariance matrix per dispersion
             value for every call. True gives ``(n_dispersion, dim,
             dim)``, where ``dim`` is the size of the block the
@@ -278,14 +270,13 @@ default=None
             names, or every regressor when neither ``column`` nor
             ``matrix`` is given, or the number of rows of ``matrix``
             when a contrast is given, whatever number of regressors
-            that contrast spans. Giving ``other`` alongside
-            ``matrix`` makes the block ``matrix`` times ``cov``
-            times ``other`` transposed, which need not be square,
-            and that is the one call that returns something other than
-            ``(n_dispersion, dim, dim)``; a ``matrix`` of rank 3 or
-            more raises instead. False gives the older
-            shapes listed below, which depend on the arguments; it
-            warns from 0.15.0 and goes in 0.16.0. None means True.
+            that contrast spans. The block is always square, so the
+            result is always ``(n_dispersion, dim, dim)``, and a
+            ``matrix`` of rank 3 or more raises rather than returning
+            something of another rank. False gives
+            the older shapes listed below, which depend on the
+            arguments; it warns from 0.15.0 and goes in 0.16.0. None
+            means True.
 
             .. nilearn_versionadded:: 0.14.1
 
@@ -294,9 +285,7 @@ default=None
         cov : array
             ``(n_dispersion, dim, dim)``, where ``n_dispersion`` is the
             number of dispersion values and ``dim`` is the size of the
-            selected block, as described under ``uniform`` above, and
-            ``other`` is the one argument that can make that block
-            rectangular.
+            selected block, as described under ``uniform`` above.
 
             Under ``uniform=False`` the shape depends on the arguments:
             ``(dim, dim)`` for a single dispersion, ``(dim, dim,
@@ -308,11 +297,11 @@ default=None
             dispersion.
 
             .. nilearn_versionchanged:: 0.14.1
-                A call returns one covariance matrix per dispersion
-                value, instead of a shape that depended on which
-                arguments were given. That is
-                ``(n_dispersion, dim, dim)`` except through ``other``,
-                as described above. ``uniform=False`` restores the
+                Every call that returns gives
+                ``(n_dispersion, dim, dim)``, instead of a shape that
+                depended on which arguments were given. A selector that
+                cannot name one regressor at a time, a 2-D array or a
+                0-d boolean, raises. ``uniform=False`` restores the
                 older shapes, which is a one-line migration for code
                 that read them. Under ``uniform=False``, asking for
                 several regressors at once while the dispersion
@@ -364,7 +353,7 @@ default=None
         # raising, so getting it wrong is silent.
         if uniform:
             return _uniform_covariance_stack(
-                self.cov, matrix, column, dispersion, other
+                self.cov, matrix, column, dispersion
             )
 
         # One covariance matrix cannot hold one value per dispersion.
@@ -408,9 +397,7 @@ default=None
                 return self.cov[column][:, column] * dispersion
 
         else:
-            if other is None:
-                other = matrix
-            tmp = np.dot(matrix, np.dot(self.cov, np.transpose(other)))
+            tmp = np.dot(matrix, np.dot(self.cov, np.transpose(matrix)))
             if np.isscalar(dispersion):
                 return tmp * dispersion
             else:

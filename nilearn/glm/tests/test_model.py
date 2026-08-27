@@ -744,27 +744,6 @@ def test_methods_reading_vcov_keep_their_own_shapes(results, expected):
     )
 
 
-@pytest.mark.parametrize("dispersion", [None, 1.0])
-@pytest.mark.ai_generated
-def test_vcov_uniform_rejects_a_matrix_of_rank_3_or_more(dispersion):
-    """Test that a higher rank contrast raises rather than returning.
-
-    Such a matrix keeps its extra axes through the product, so it
-    cannot give one square block per dispersion value. It used to come
-    back with those axes still on it, or fail inside numpy, depending
-    on both its shape and the number of dispersion values.
-    """
-    matrix = np.ones((2, RESULTS_2_COLUMNS.theta.shape[0], 2))
-    kwargs = {} if dispersion is None else {"dispersion": dispersion}
-
-    with pytest.raises(ValueError, match="matrix must be 1-D or 2-D"):
-        RESULTS_2_COLUMNS.vcov(matrix=matrix, **kwargs)
-
-    # The older shapes are unchanged: they still carry the extra axes.
-    legacy = RESULTS_2_COLUMNS.vcov(matrix=matrix, uniform=False, **kwargs)
-    assert legacy.ndim > 3
-
-
 # C: the older shapes survive one release behind the keyword.
 @pytest.mark.parametrize(
     ("results", "n_columns"),
@@ -801,22 +780,72 @@ def test_vcov_uniform_values_are_exact_not_merely_close(results, kwargs):
         assert_array_equal(stack[i], np.reshape(one, stack[i].shape))
 
 
-# A: the other argument, which only the matrix branch reads.
+@pytest.mark.ai_generated
+def test_vcov_no_longer_accepts_other():
+    """Test that the removed contrast spelling is gone rather than ignored.
+
+    ``other`` was the second half of the ``matrix`` product, documented
+    as an alternative contrast specification followed by a question
+    mark, and nothing outside these tests passed it. Accepting and
+    ignoring it would leave anyone who did pass it with silently
+    different numbers, so it raises.
+
+    Removing a positional parameter re-points the position after it,
+    which is why ``uniform`` is keyword only: a fourth positional
+    argument was ``other`` and would otherwise be read as ``uniform``
+    for truthiness, answered with the stack or with the older shapes
+    depending on the value in it, rather than with an error.
+    """
+    with pytest.raises(TypeError, match="unexpected keyword argument"):
+        RESULTS.vcov(matrix=np.eye(2), other=np.eye(2))
+
+    with pytest.raises(TypeError, match="positional argument"):
+        RESULTS.vcov(np.eye(2), None, 1.0, np.eye(2))
+
+
 @pytest.mark.parametrize(
-    ("results", "n_columns"),
-    [(RESULTS_2_COLUMNS, 2), (RESULTS_3_UNRELATED, 3)],
+    ("results", "n_dispersion"),
+    [(RESULTS, 1), (RESULTS_2_COLUMNS, 2), (RESULTS_3_UNRELATED, 3)],
+    ids=["one_dimensional", "two_columns", "three_columns"],
 )
 @pytest.mark.ai_generated
-def test_vcov_uniform_reads_other_like_the_matrix_branch(results, n_columns):
-    """Test that other is still the right hand side of the product."""
-    matrix = np.eye(2)[:1]
-    other = np.eye(2)[1:]
+def test_vcov_uniform_block_is_always_square(results, n_dispersion):
+    """Test that every spelling that returns gives a square block.
 
-    uniform = results.vcov(matrix=matrix, other=other, uniform=True)
-    legacy = results.vcov(matrix=matrix, other=other, uniform=False)
+    With ``other`` gone there is no way to ask for a rectangular
+    product: the one input that could still carry extra axes through,
+    a ``matrix`` of rank 3 or more, raises instead.
+    """
+    n_regressors = results.theta.shape[0]
+    for kwargs, dim in (
+        ({}, n_regressors),
+        ({"column": 0}, 1),
+        ({"column": list(range(n_regressors))}, n_regressors),
+        ({"matrix": np.eye(n_regressors)}, n_regressors),
+        ({"matrix": np.eye(n_regressors)[:1]}, 1),
+    ):
+        assert results.vcov(**kwargs).shape == (n_dispersion, dim, dim)
 
-    assert uniform.shape == (n_columns, 1, 1)
-    assert_array_equal(uniform, np.moveaxis(legacy, -1, 0))
+
+@pytest.mark.parametrize("dispersion", [None, 1.0])
+@pytest.mark.ai_generated
+def test_vcov_uniform_rejects_a_matrix_of_rank_3_or_more(dispersion):
+    """Test that a higher rank contrast raises rather than returning.
+
+    Such a matrix keeps its extra axes through the product, so it
+    cannot give one square block per dispersion value. It used to come
+    back with those axes still on it, or fail inside numpy, depending
+    on both its shape and the number of dispersion values.
+    """
+    matrix = np.ones((2, RESULTS_2_COLUMNS.theta.shape[0], 2))
+    kwargs = {} if dispersion is None else {"dispersion": dispersion}
+
+    with pytest.raises(ValueError, match="matrix must be 1-D or 2-D"):
+        RESULTS_2_COLUMNS.vcov(matrix=matrix, **kwargs)
+
+    # The older shapes are unchanged: they still carry the extra axes.
+    legacy = RESULTS_2_COLUMNS.vcov(matrix=matrix, uniform=False, **kwargs)
+    assert legacy.ndim > 3
 
 
 @pytest.mark.ai_generated
@@ -933,25 +962,6 @@ def test_vcov_uniform_selects_the_regressors_it_was_given(column, wanted):
         for a, ia in enumerate(wanted):
             for b, ib in enumerate(wanted):
                 assert stack[i, a, b] == results.cov[ia, ib] * dispersion
-
-
-# T2: matrix and other of different heights give a block that is not square.
-@pytest.mark.ai_generated
-def test_vcov_uniform_block_is_not_square_when_other_differs():
-    """Test the shape when other has a different number of rows."""
-    results = RESULTS_3_REGRESSORS
-    matrix = np.eye(3)[:1]
-    other = np.eye(3)[:2]
-
-    stack = results.vcov(matrix=matrix, other=other, uniform=True)
-
-    assert stack.shape == (3, 1, 2)
-    assert_array_equal(
-        stack,
-        np.moveaxis(
-            results.vcov(matrix=matrix, other=other, uniform=False), -1, 0
-        ),
-    )
 
 
 @pytest.mark.ai_generated
