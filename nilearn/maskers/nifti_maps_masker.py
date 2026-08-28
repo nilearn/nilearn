@@ -547,8 +547,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         imgs_ = check_niimg(imgs, atleast_4d=True)
 
-        target_dtype = self._get_target_dtype(imgs_)
-
         if self.resampling_target is None:
             images = {"maps": maps_img_, "data": imgs_}
             if mask_img_ is not None:
@@ -624,10 +622,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     target_affine=ref_img.affine,
                 )
 
-            # Remove imgs_ from memory before loading the same image
-            # in filter_and_extract.
-            del imgs_
-
         if not self.allow_overlap:
             # Check if there is an overlap.
 
@@ -644,6 +638,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     "due to the atlas itself or possibly introduced by "
                     "resampling."
                 )
+
+        target_dtype = self._get_target_dtype(imgs_)
+
+        # Remove imgs_ from memory before loading the same image
+        # in filter_and_extract.
+        del imgs_
 
         target_shape = None
         target_affine = None
