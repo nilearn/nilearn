@@ -1,10 +1,10 @@
-{% extends "html/head.jinja" %}
+{% extends "html/template.jinja" %}
 
-{% block main %}
+{% block body_main %}
 
     {% include "html/partials/brainsprite.jinja" %}
 
     <script> {% include "js/jquery.min.js" %} </script>
     <script> {% include "js/brainsprite.min.js" %} </script>
     <script> {% include "js/brainsprite_opacity.jinja" %} </script>
-{% endblock main %}
+{% endblock body_main %}
