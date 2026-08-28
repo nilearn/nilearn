@@ -212,7 +212,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             mask_logger("load_data", img=imgs, verbose=self.verbose)
 
             self._check_imgs(imgs)
-            check_surf_img(imgs)
 
             if isinstance(imgs, SurfaceImage) and any(
                 hemi.ndim > 2 for hemi in imgs.data.parts.values()
@@ -232,6 +231,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 "Please provide a maps_img during initialization. "
                 "For example, masker = SurfaceMapsMasker(maps_img=maps_img)"
             )
+
+        if imgs is not None:
+            check_surf_img(imgs)
 
         self._fit_cache()
 
