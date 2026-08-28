@@ -226,6 +226,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._reset_report()
 
         if imgs is not None:
+            mask_logger("load_data", imgs, self.verbose)
             self._check_imgs(imgs)
 
             if isinstance(imgs, SurfaceImage) and any(
@@ -246,8 +247,6 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         self._fit_mask_img(imgs)
         assert self.mask_img_ is not None
-
-        mask_logger("load_data", imgs, self.verbose)
 
         start, stop = 0, 0
         self._slices = {}

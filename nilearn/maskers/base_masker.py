@@ -374,6 +374,7 @@ class BaseMasker(_BaseMasker):
         self._check_dtype()
 
         if imgs is not None:
+            mask_logger("load_data", img=imgs, verbose=self.verbose)
             self._check_imgs(imgs)
 
         # Reset report

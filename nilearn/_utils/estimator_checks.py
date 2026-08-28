@@ -3704,16 +3704,27 @@ def check_masker_verbose(estimator_orig) -> None:
     output_verbose_2 = buffer.getvalue()
 
     # Expected loading messages
-    expected_loading_message = (
-        "Loading data from",
-        "Loading mask from",
-        "Loading regions from",
-    )
+    expected_loading_message = ["Loading data from", "Finished fit"]
+    if isinstance(
+        estimator,
+        (
+            SurfaceLabelsMasker,
+            SurfaceMapsMasker,
+            NiftiLabelsMasker,
+            NiftiMapsMasker,
+        ),
+    ):
+        expected_loading_message.append("Loading regions from")
+    elif not isinstance(estimator, NiftiSpheresMasker):
+        expected_loading_message.append("Computing mask")
 
-    assert any(s in output_verbose_1 for s in expected_loading_message)
-    assert any(s in output_verbose_2 for s in expected_loading_message)
-
+    assert all(s in output_verbose_1 for s in expected_loading_message)
+    assert all(s in output_verbose_2 for s in expected_loading_message)
     assert len(output_verbose_2) >= len(output_verbose_1)
+
+    # verbosity for mask loading checked by check_masker_mask_img
+    assert "Loading mask from" not in output_verbose_1
+    assert "Loading mask from" not in output_verbose_2
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------

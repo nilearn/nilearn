@@ -245,9 +245,9 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self._reset_report()
 
         if imgs is not None:
-            self._check_imgs(imgs)
+            mask_logger("load_data", img=imgs, verbose=self.verbose)
 
-        if imgs is not None:
+            self._check_imgs(imgs)
             check_surf_img(imgs)
 
             if isinstance(imgs, SurfaceImage) and any(

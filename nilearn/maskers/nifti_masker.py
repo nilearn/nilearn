@@ -520,9 +520,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return hasattr(self, "mask_img_")
 
     def _fit(self, imgs):
-        # Load data (if filenames are given, load them)
-        mask_logger("load_data", img=imgs, verbose=self.verbose)
-
         # Compute the mask if not given by the user
         if self.mask_img_ is None:
             if imgs is None:
