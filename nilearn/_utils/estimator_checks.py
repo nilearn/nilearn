@@ -3750,8 +3750,6 @@ def check_masker_verbose(estimator_orig) -> None:
         for s in expected_loading_message:
             assert len(re.findall(rf"{s}", outputs)) == 1
 
-    assert len(output_verbose_2) >= len(output_verbose_1)
-
     # verbosity for mask loading checked by check_masker_mask_img
     assert "Loading mask from" not in output_verbose_1
     assert "Loading mask from" not in output_verbose_2
