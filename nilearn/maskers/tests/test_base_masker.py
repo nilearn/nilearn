@@ -37,9 +37,14 @@ def test_mask_logger(img_3d_mni, img_3d_mni_as_file, surf_img_1d):
 
     assert len(output[1]) == len(output[2]) == len(output[3])
 
-    # nifti file or nifti object or list nifti file or  SurfaceImage list
+    # nifti file or nifti object or list nifti file or SurfaceImage list
     output = {}
-    for img in [img_3d_mni_as_file, img_3d_mni, [img_3d_mni_as_file] * 5]:
+    for img in [
+        img_3d_mni_as_file,
+        img_3d_mni,
+        [img_3d_mni_as_file] * 5,
+        [surf_img_1d] * 5,
+    ]:
         for verbose in [1, 2, 3]:
             buffer = io.StringIO()
             with (
@@ -62,10 +67,10 @@ def test_mask_logger(img_3d_mni, img_3d_mni_as_file, surf_img_1d):
             mask_logger("load_data", img=[img_3d_mni] * 5, verbose=verbose)
         output[verbose] = buffer.getvalue()
 
-    # verbose 2: expands list
+    # verbose 2: shortens list but gives affine of first and last images
     assert len(output[1]) < len(output[2])
-    # verbose 2: expands list
-    assert len(output[2]) == len(output[3])
+    # verbose 2: expands list and gives affine of all images
+    assert len(output[2]) < len(output[3])
 
 
 def test_cropping_code_paths(rng):
