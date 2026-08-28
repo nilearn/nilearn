@@ -3540,15 +3540,31 @@ def check_masker_transform_resampling(estimator_orig) -> None:
 
         for mask in [None, mask_img]:
             estimator = clone(estimator)
+            estimator.verbose = 1
             estimator.resampling_target = resampling_target
             estimator.mask_img = mask
 
             # no resampling warning at fit time
-            with warnings.catch_warnings(record=True) as warning_list:
+            # but regular logging is OK
+            buffer = io.StringIO()
+            with (
+                warnings.catch_warnings(record=True) as warning_list,
+                contextlib.redirect_stdout(buffer),
+            ):
                 estimator.fit(imgs)
             assert all(
                 "at transform time" not in str(x.message) for x in warning_list
             )
+
+            # ensure expected message only appears once in log output
+            output_verbose = buffer.getvalue()
+            expected_loading_message = []
+            if resampling_target == "data":
+                expected_loading_message.append("Resampling regions")
+            if mask is not None:
+                expected_loading_message.append("Resampling mask")
+            for s in expected_loading_message:
+                assert len(re.findall(rf"{s}", output_verbose)) == 1
 
             signals = _rng().random((n_sample, estimator.n_elements_))
 
@@ -3558,19 +3574,27 @@ def check_masker_transform_resampling(estimator_orig) -> None:
             actual_shape = new_imgs.shape
             assert actual_shape == expected_shape
 
-            if resampling_target in ["maps", "labels"]:
-                with pytest.warns(
-                    UserWarning, match="images at transform time"
-                ):
-                    estimator.transform(imgs)
-            else:
-                # no resampling warning when using same imgs as for fit()
-                with warnings.catch_warnings(record=True) as warning_list:
-                    estimator.transform(imgs)
-                assert all(
-                    "at transform time" not in str(x.message)
-                    for x in warning_list
-                )
+            # resampling warning but no logging at transform time
+            buffer = io.StringIO()
+            with (
+                contextlib.redirect_stdout(buffer),
+            ):
+                if resampling_target in ["maps", "labels"]:
+                    with pytest.warns(
+                        UserWarning, match="images at transform time"
+                    ):
+                        estimator.transform(imgs)
+                else:
+                    # no resampling warning when using same imgs as for fit()
+                    with warnings.catch_warnings(record=True) as warning_list:
+                        estimator.transform(imgs)
+                    assert all(
+                        "at transform time" not in str(x.message)
+                        for x in warning_list
+                    )
+            output_verbose = buffer.getvalue()
+            for s in ["Resampling mask", "Resampling regions"]:
+                assert s not in output_verbose
 
             # same result before and after running transform()
             new_imgs_2 = estimator.inverse_transform(signals)
