@@ -503,8 +503,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         )
 
         if imgs is not None:
-            mask_logger("load_data", img=imgs, verbose=self.verbose)
-
             if self.reports:
                 if self.mask_img_ is not None:
                     resampl_imgs = self._cache(resample_img)(

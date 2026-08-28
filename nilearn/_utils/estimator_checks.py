@@ -3673,10 +3673,11 @@ def check_masker_joblib_cache(estimator_orig) -> None:
 def check_masker_verbose(estimator_orig) -> None:
     """Check verbose behavior for maskers.
 
-    Masker should mention they are loading data.
+    Masker should mention they are loading data, regions, extracting data...
+    during fit, transform, inverse_transform.
 
     Output to stdout should be longer with verbose = 2
-    than when verbose = 1 when fitting list of images
+    than when verbose = 1 when fitting list of images.
     """
     estimator = clone(estimator_orig)
 
@@ -3691,6 +3692,9 @@ def check_masker_verbose(estimator_orig) -> None:
         imgs = _make_surface_img(100)
     imgs = list(iter_img(imgs))
 
+    # -----------------------------------------------------------
+    # logging during fit
+
     estimator.verbose = 1
     buffer = io.StringIO()
     with contextlib.redirect_stdout(buffer):
@@ -3703,7 +3707,7 @@ def check_masker_verbose(estimator_orig) -> None:
         estimator.fit(imgs)
     output_verbose_2 = buffer.getvalue()
 
-    # Expected loading messages
+    # ensure expected message only appears once in output
     expected_loading_message = ["Loading data from", "Finished fit"]
     if isinstance(
         estimator,
@@ -3718,13 +3722,44 @@ def check_masker_verbose(estimator_orig) -> None:
     elif not isinstance(estimator, NiftiSpheresMasker):
         expected_loading_message.append("Computing mask")
 
-    assert all(s in output_verbose_1 for s in expected_loading_message)
-    assert all(s in output_verbose_2 for s in expected_loading_message)
+    for outputs in [output_verbose_1, output_verbose_2]:
+        for s in expected_loading_message:
+            assert len(re.findall(rf"{s}", outputs)) == 1
+
     assert len(output_verbose_2) >= len(output_verbose_1)
 
     # verbosity for mask loading checked by check_masker_mask_img
     assert "Loading mask from" not in output_verbose_1
     assert "Loading mask from" not in output_verbose_2
+
+    # -----------------------------------------------------------
+    # logging during transform and inverse transform
+    estimator = clone(estimator_orig)
+    estimator.verbose = 1
+    if isinstance(estimator, NiftiSpheresMasker):
+        estimator.mask_img = Nifti1Image(np.ones((15, 16, 17)), _affine_eye())
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        signal = estimator.fit_transform(imgs)
+    output_verbose = buffer.getvalue()
+
+    expected_loading_message = [
+        "Extracting region signals",
+        "Cleaning extracted signals",
+    ]
+    for s in expected_loading_message:
+        assert len(re.findall(rf"{s}", output_verbose)) == 1
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        estimator.inverse_transform(signal)
+    output_verbose = buffer.getvalue()
+
+    expected_loading_message = ["Computing image from signals"]
+    for outputs in [output_verbose]:
+        for s in expected_loading_message:
+            assert len(re.findall(rf"{s}", outputs)) == 1
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------
