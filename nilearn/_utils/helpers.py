@@ -247,7 +247,7 @@ def is_notebook() -> bool:
 
         is_marimo = mo.running_in_notebook()
     except (ImportError, AttributeError):
-        # TODO AttributeError
+        # TODO (joblib >= 1.5.0) remove AttributeError
         # marimo does not seem to play well with joblib
         is_marimo = False
 
