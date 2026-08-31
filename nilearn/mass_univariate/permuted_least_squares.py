@@ -631,7 +631,45 @@ def permuted_ols(
 
     Examples
     --------
-    TODO
+
+    .. plot::
+
+        >>> import numpy as np
+        >>>
+        >>> from matplotlib import pyplot as plt
+        >>>
+        >>> from nilearn.mass_univariate import permuted_ols
+        >>>
+        >>> n_samples = 1000
+        >>> random_state=42
+        >>> rng = np.random.RandomState(random_state)
+        >>>
+        >>> target_var = rng.randn(n_samples, 1)
+        >>> tested_var = np.ones(n_samples, dtype="f8").reshape((-1, 1))
+        >>>
+        >>> output = permuted_ols(tested_var,
+        ...                       target_var,
+        ...                       model_intercept=False,
+        ...                       n_perm=2000,
+        ...                       two_sided_test=False,
+        ...                       random_state=random_state,
+        ...                       output_type='dict',
+        ... )
+        >>>
+        >>> _, ax = plt.subplots()
+        >>> _ = ax.hist(output["h0_max_t"][0], bins=100)
+        >>> _ = ax.plot([output["t"][0], output["t"][0]],
+        ...              [0, 60],
+        ...              color="r",
+        ...              linewidth=3,
+        ... )
+        >>> _ = ax.text(x=output["t"][0][0],
+        ...              y=61,
+        ...              s=f"-log(p) = {output['logp_max_t'][0]}"
+        ... )
+        >>> _ = ax.set(xlabel="t-statistic",
+        ...            title="Distribution max t-statistic under $H_0$")
+        >>> plt.show()
 
     """
     check_params(locals())
