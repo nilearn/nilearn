@@ -729,6 +729,34 @@ def clean(
     See Also
     --------
     nilearn.image.clean_img
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>>
+        >>> from nilearn.signal import clean
+        >>>
+        >>> # Create a noisy sine wave with an extra linear trend.
+        >>> t = np.linspace(1, 30, 100)
+        >>> signal = np.sin(t) * 2 + t - 10
+        >>> signal += np.random.default_rng(42).normal(size=t.shape)
+        >>>
+        >>> # Clean the image with a low pass filter.
+        >>> cleaned_signal = clean(signal,
+        ...                        low_pass=0.2,
+        ...                        t_r = 1,
+        ...                        standardize=None)
+        >>>
+        >>> # Plot the results
+        >>> from matplotlib import pyplot as plt
+        >>>
+        >>> fig = plt.plot(t, signal[1, 1, 1], color="red")
+        >>> fig = plt.plot(t, cleaned_signal[1, 1, 1], color="green")
+        >>> leg = plt.legend(["raw", "cleaned"])
+        >>> plt.show()
     """
     check_params(locals())
     # Raise warning for some parameter combinations when confounds present
