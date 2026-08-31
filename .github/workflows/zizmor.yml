@@ -7,6 +7,14 @@
 # See https://docs.zizmor.sh/audits/ for the audit list, and .github/zizmor.yml
 # for repo-specific configuration.
 #
+# Shasum of the specific version of a github action can be found
+# with git.
+#
+# For example::
+#
+#     git ls-remote https://github.com/actions/checkout.git refs/tags/v7
+#  
+#
 ###
 name: zizmor
 
