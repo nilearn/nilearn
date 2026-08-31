@@ -3,14 +3,15 @@ Massively univariate analysis of a calculation task from the Localizer dataset
 ==============================================================================
 
 This example shows how to perform a standard
-`ANOVA <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_
-with `scikit-learn <https://scikit-learn.org>`_ and Nilearn.
-Using :func:`sklearn.feature_selection.f_regression`, a massively univariate
-F-test is performed; we then threshold and plot the resulting
+:term:`ANOVA` with `scikit-learn <https://scikit-learn.org>`_ and Nilearn.
+Using :func:`sklearn.feature_selection.f_regression`,
+`a massively univariate F-test
+<https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_
+is performed; we then threshold and plot the resulting
 :term:`Bonferroni-corrected <FPR correction>` p-values.
 
 We use the calculation-task :term:`contrast` maps from the
-Localizer dataset,
+:ref:`Localizer dataset <brainomics_maps>`,
 accessed via the
 :func:`~nilearn.datasets.fetch_localizer_calculation_task` fetcher.
 For a complete picture of this dataset,
