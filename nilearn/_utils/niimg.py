@@ -248,7 +248,7 @@ def repr_niimgs(niimgs, shorten=True):
             return f"[\n {tmp},\n]"
         else:
             tmp = [repr_niimgs(niimg, shorten=shorten) for niimg in niimgs]
-            return f"[\n{', '.join(tmp)},\n]"
+            return f"[\n {', '.join(tmp)},\n]"
 
     # Nibabel objects have a 'get_filename'
     try:
