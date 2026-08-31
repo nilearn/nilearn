@@ -22,6 +22,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix masker verbosity so higher ``verbose`` levels no longer produce less output than lower ones (:gh:`XXXX` by `Fabricio Cravo`_).
 
+- :bdg-dark:`Code` Fix maskers silently truncating standardized (``standardize="zscore_sample"`` or ``"psc"``) signal back down to the source image's dtype when the masker's own ``dtype`` was left at its default (``None``); for images with an integer dtype, such as raw unprocessed BOLD data, this collapsed the standardized values to a handful of integer levels, destroying almost all of the signal's precision (:gh:`6526` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Fix :func:`~image.smooth_img` leaving non-finite values in surface images, and spreading them over neighboring vertices when smoothing; the volume branch already passes ``ensure_finite=True`` to ``smooth_array`` (:gh:`6503` by `Cedric Conday`_).
 
 - :bdg-info:`Plotting` Fix :func:`~plotting.view_img` displaying the slice next to the one requested: ``cut_slices`` is already a 0-based voxel index but a further ``- 1`` was applied before handing it to the viewer, which draws the tile at ``numSlice`` while reading coordinates out as ``affine @ [numSlice + 1, ...]``; the label matched the request while the slice on screen was its neighbor (:gh:`6505` by `Cedric Conday`_).
