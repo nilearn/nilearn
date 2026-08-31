@@ -19,7 +19,6 @@ from nilearn import datasets
 # %%
 # Load and prepare the Haxby dataset
 # ----------------------------------
-
 # By default 2nd subject from haxby datasets will be fetched.
 haxby_dataset = datasets.fetch_haxby()
 
