@@ -10,7 +10,7 @@ The data comes from the Open Access Series of Imaging Studies
 If you use it, you need to agree with the data usage agreement available
 on the website.
 
-It has been processed through a  standard :term:`VBM` pipeline (using SPM8 and
+It has been processed through a standard :term:`VBM` pipeline (using SPM8 and
 NewSegment) to create :term:`VBM` maps, which we study here.
 
 .. seealso::
