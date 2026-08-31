@@ -24,6 +24,9 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
+permissions:
+    contents: read
+
 jobs:
     test_install:
         if: github.repository == 'nilearn/nilearn'
@@ -38,9 +41,11 @@ jobs:
                 shell: bash
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
         -   name: Setup python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: '3.10'
         -   name: Install dependencies for building Nilearn
@@ -74,11 +79,13 @@ jobs:
                 shell: bash
         steps:
         -   name: Install uv
-            uses: astral-sh/setup-uv@v7
+            uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
         -   name: Setup python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: '3.10'
         -   name: Test uv sync
@@ -96,9 +103,11 @@ jobs:
                 shell: bash
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
         -   name: Setup python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: '3.10'
 
@@ -126,9 +135,11 @@ jobs:
                 shell: bash
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
         -   name: Setup python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: ${{ matrix.python }}
 

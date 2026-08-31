@@ -34,18 +34,26 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
+permissions:
+    contents: read
+
 jobs:
     review-with-sourcery:
+        permissions:
+            contents: read
+            issues: write
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
 
-        -   uses: actions/setup-python@v6
+        -   uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: '3.10'
 
-        -   uses: sourcery-ai/action@v1
+        -   uses: sourcery-ai/action@438ce67e9f15fbeacb72257da23e2fffb1b6d354 # v1
             id: sourcery
             with:
                 token: ${{ secrets.SOURCERY_TOKEN }}
@@ -54,7 +62,7 @@ jobs:
 
         -   name: Create issue
             if: ${{ steps.sourcery.outcome != 'success' }}
-            uses: JasonEtco/create-an-issue@v2.9.2
+            uses: JasonEtco/create-an-issue@1b14a70e4d8dc185e5cc76d3bec9eab20257b2c5 # v2.9.2
             env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                 run_id: ${{ github.run_id }}

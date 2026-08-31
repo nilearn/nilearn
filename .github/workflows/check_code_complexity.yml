@@ -34,24 +34,29 @@ env:
     FORCE_COLOR: true
     MAX_COMPLEXITY_ALLOWED: 25
 
+permissions:
+    contents: read
+
 jobs:
     check:
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout base branch
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             with:
                 ref: ${{ github.event.pull_request.base.sha }}
                 path: main_branch
+                persist-credentials: false
 
         -   name: Checkout pull request
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             with:
                 path: current_branch
+                persist-credentials: false
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v7
+            uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
             with:
                 python-version: '3.13'
 
