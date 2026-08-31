@@ -152,7 +152,7 @@ def load_confounds_strategy(
             See `fmripost-aroma docs <https://fmripost-aroma.readthedocs.io/latest/usage.html>`_
             for the new ICA-AROMA implementation.
 
-    Other keyword arguments:
+    **kwargs :
         See additional parameters associated with `denoise_strategy` in
         Notes and refer to the documentation of
         :func:`nilearn.interfaces.fmriprep.load_confounds`.

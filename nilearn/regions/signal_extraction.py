@@ -112,6 +112,7 @@ def _check_shape_and_affine_compatibility(img1, img2=None, dim=None):
     return True
 
 
+@fill_doc
 def _get_labels_data(
     target_img,
     labels_img,
@@ -409,7 +410,7 @@ def img_to_signals_labels(
     if return_masked_atlas:
         # finding the new labels image
         masked_atlas = Nifti1Image(
-            labels_data.astype(np.int8), labels_img.affine
+            labels_data.astype(np.int32), labels_img.affine
         )
         return signals, labels, masked_atlas
     else:
