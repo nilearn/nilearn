@@ -743,6 +743,7 @@ def clean(
         >>> t = np.linspace(1, 30, 100)
         >>> signal = np.sin(t) * 2 + t - 10
         >>> signal += np.random.default_rng(42).normal(size=t.shape)
+        >>> signal = np.atleast_2d(signal).T
         >>>
         >>> # Clean the image with a low pass filter.
         >>> cleaned_signal = clean(signal,
@@ -753,8 +754,8 @@ def clean(
         >>> # Plot the results
         >>> from matplotlib import pyplot as plt
         >>>
-        >>> fig = plt.plot(t, signal[1, 1, 1], color="red")
-        >>> fig = plt.plot(t, cleaned_signal[1, 1, 1], color="green")
+        >>> fig = plt.plot(t, signal, color="red")
+        >>> fig = plt.plot(t, cleaned_signal, color="green")
         >>> leg = plt.legend(["raw", "cleaned"])
         >>> plt.show()
     """
