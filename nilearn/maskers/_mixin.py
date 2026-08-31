@@ -529,9 +529,8 @@ class MaskerReportMixin(ReportMixin):
 
     def _generate_report_htmls(self):
         """Generate report figure htmls and summary htmls."""
-        figure, embeded_images = self._generate_figure_htmls()
-        self._report_content["figure"] = figure
-        self._report_content["content"] = embeded_images
+        embeded_images = self._generate_figure_htmls()
+        self._report_content["figures"] = embeded_images
 
         # _generate_figure_htmls should be called before setting summary_html
         summary = self._report_content.get("summary", None)
@@ -557,18 +556,10 @@ class MaskerReportMixin(ReportMixin):
         else:
             embedded_images = [self._embed_img(i) for i in image]
 
-        content = embedded_images
-        if not isinstance(content, list):
-            content = [content]
+        if not isinstance(embedded_images, list):
+            embedded_images = [embedded_images]
 
-        tpl = self._get_partial_template(self._estimator_type, "figure")
-        tpl_rendered = tpl.render(
-            engine=self._report_content["engine"],
-            content=content,
-            displayed_maps=self._report_content["displayed_maps"],
-            unique_id=self._report_content["unique_id"],
-        )
-        return tpl_rendered, embedded_images
+        return embedded_images
 
     @abc.abstractmethod
     def _load_report_displays(self):

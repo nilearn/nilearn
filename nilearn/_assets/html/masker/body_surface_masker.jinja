@@ -7,11 +7,11 @@
 
                 {% include "html/partials/missing_plotting_engine.jinja" %}
 
-            {% elif content %}
+            {% elif figures %}
                 <div class="image">
                     <img class="pure-img"
                          width="100%"
-                         src="data:image/png;base64,{{ content }}"
+                         src="data:image/png;base64,{{ figures }}"
                          alt="image" />
                 </div>
             {% endif %}

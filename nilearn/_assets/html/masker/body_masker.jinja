@@ -7,12 +7,12 @@
 
                 {% include "html/partials/missing_plotting_engine.jinja" %}
 
-            {% elif content or engine == "brainsprite" %}
+            {% elif figures or engine == "brainsprite" %}
                 {% if engine == "matplotlib" %}
                     <div class="image">
                         <img class="pure-img"
                              width="100%"
-                             src="data:image/svg+xml;base64,{{ content }}"
+                             src="data:image/svg+xml;base64,{{ figures }}"
                              alt="No image provided." />
                         {% if overlay_html %}
                             <div class="overlay">
