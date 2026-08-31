@@ -232,6 +232,7 @@ def is_sphinx_build() -> bool:
     return any(module.startswith("sphinx.") for module in sys.modules)
 
 
+@functools.lru_cache
 def is_notebook() -> bool:
     """Detect if we are running in a notebook.
 
