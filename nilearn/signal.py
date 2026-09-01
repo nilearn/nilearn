@@ -27,7 +27,7 @@ from nilearn._utils.param_validation import (
     check_run_sample_masks,
 )
 from nilearn.exceptions import AllVolumesRemovedError
-from nilearn.typing import (
+from nilearn.nilearn_typing import (
     HighPass,
     LowPass,
     NonNullScalar,
@@ -328,7 +328,7 @@ def butterworth(
     padtype="odd",
     padlen=None,
     copy=False,
-):
+) -> np.ndarray:
     """Apply a low-pass, high-pass or band-pass \
     `Butterworth filter <https://en.wikipedia.org/wiki/Butterworth_filter>`_.
 
@@ -372,6 +372,37 @@ def butterworth(
     -------
     filtered_signals : :class:`numpy.ndarray`
         Signals filtered according to the given parameters.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>> from nilearn.signal import butterworth
+        >>>
+        >>> # Generate a single time series
+        >>> # and apply Butterworth filter to the signal.
+        >>> signals = np.random.default_rng(42).standard_normal(size=40)
+        >>> filtered_signals = butterworth(
+        ...     signals,
+        ...     sampling_rate=1,
+        ...     low_pass=0.25,
+        ...     high_pass=0.12,
+        ...     copy=True
+        ... )
+        >>>
+        >>> # Plot both signals and filtered_signals
+        >>> # (if matplotlib is installed).
+        >>> import matplotlib.pyplot as plt
+        >>>
+        >>> fig = plt.plot(signals, color="red")
+        >>> fig = plt.plot(filtered_signals, color="green")
+        >>> leg = plt.legend(["Initial signals", "Filtered signals"])
+        >>> plt.grid(True)
+        >>> plt.show()
+
+
     """
     check_params(locals())
     if low_pass is None and high_pass is None:
@@ -698,6 +729,35 @@ def clean(
     See Also
     --------
     nilearn.image.clean_img
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>>
+        >>> from nilearn.signal import clean
+        >>>
+        >>> # Create a noisy sine wave with an extra linear trend.
+        >>> t = np.linspace(1, 30, 100)
+        >>> signal = np.sin(t) * 2 + t - 10
+        >>> signal += np.random.default_rng(42).normal(size=t.shape)
+        >>> signal = np.atleast_2d(signal).T
+        >>>
+        >>> # Clean the image with a low pass filter.
+        >>> cleaned_signal = clean(signal,
+        ...                        low_pass=0.2,
+        ...                        t_r = 1,
+        ...                        standardize=None)
+        >>>
+        >>> # Plot the results
+        >>> from matplotlib import pyplot as plt
+        >>>
+        >>> fig = plt.plot(t, signal, color="red")
+        >>> fig = plt.plot(t, cleaned_signal, color="green")
+        >>> leg = plt.legend(["raw", "cleaned"])
+        >>> plt.show()
     """
     check_params(locals())
     # Raise warning for some parameter combinations when confounds present

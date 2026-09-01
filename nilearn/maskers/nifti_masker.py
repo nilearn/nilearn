@@ -13,8 +13,6 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import sanitize_verbose
 from nilearn.image import check_niimg, crop_img, load_img, resample_img
 from nilearn.image.image import check_same_fov
@@ -82,10 +80,10 @@ def make_brain_mask_func(mask_type: str, multi: bool = False):
 
     Parameters
     ----------
-    mask_type : str
+    mask_type : :obj:`str`
         Type of masking function to return.
 
-    multi : bool
+    multi : :obj:`bool`
         Whether to return functions for multimasker or not.
     """
 
@@ -140,13 +138,17 @@ def filter_and_mask(
     imgs : 3D/4D Niimg-like object
         Images to be masked. Can be 3-dimensional or 4-dimensional.
 
-    For all other parameters refer to NiftiMasker documentation.
-
     Returns
     -------
     signals : 2D numpy array
         Signals extracted using the provided mask. It is a scikit-learn
         friendly 2D array with shape n_sample x n_features.
+
+    .. do not check for missing parameters in docstring
+
+    Notes
+    -----
+    For all other parameters refer to NiftiMasker documentation.
 
     """
     if memory is None:
@@ -407,7 +409,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        displays : List of :class:`~matplotlib.figure.Figure`
+        displays : :obj:`list` of :class:`~matplotlib.figure.Figure`
             A list of all displays to be rendered.
             Returns None when masker is not fitted
         """
@@ -702,8 +704,11 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             return data
 
         imgs = load_img(imgs)
-        target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
-        if target_dtype is None:
-            target_dtype = img_data_dtype(imgs)
 
-        return data.astype(target_dtype)
+        target_dtype = self._get_target_dtype(imgs)
+
+        # target_dtype is None: no explicit dtype was requested,
+        # so keep the dtype produced by the extraction/cleaning pipeline
+        # (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return data if target_dtype is None else data.astype(target_dtype)

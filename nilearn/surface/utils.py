@@ -6,9 +6,17 @@ import numpy as np
 
 from nilearn._utils.logger import find_stack_level
 from nilearn.exceptions import MeshDimensionError
+from nilearn.surface.surface import (
+    PolyData,
+    PolyMesh,
+    SurfaceImage,
+    SurfaceMesh,
+)
 
 
-def assert_polydata_close(data_1, data_2, **kwargs) -> None:
+def assert_polydata_close(
+    data_1: PolyData, data_2: PolyData, **kwargs
+) -> None:
     """Check that 2 PolyData data are close."""
     set_1 = set(data_1.parts.keys())
     set_2 = set(data_2.parts.keys())
@@ -25,7 +33,7 @@ def assert_polydata_close(data_1, data_2, **kwargs) -> None:
             )
 
 
-def assert_polydata_equal(data_1, data_2) -> None:
+def assert_polydata_equal(data_1: PolyData, data_2: PolyData) -> None:
     """Check that 2 PolyData data are equal."""
     set_1 = set(data_1.parts.keys())
     set_2 = set(data_2.parts.keys())
@@ -42,14 +50,14 @@ def assert_polydata_equal(data_1, data_2) -> None:
             )
 
 
-def assert_polymesh_equal(mesh_1, mesh_2) -> None:
+def assert_polymesh_equal(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:
     """Check that 2 PolyMeshes are equal."""
     assert_polymesh_have_same_keys(mesh_1, mesh_2)
     for key in mesh_1.parts:
         assert_surface_mesh_equal(mesh_1.parts[key], mesh_2.parts[key])
 
 
-def assert_polymesh_have_same_keys(mesh_1, mesh_2) -> None:
+def assert_polymesh_have_same_keys(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:
     """Check that 2 polymeshes have the same keys."""
     set_1 = set(mesh_1.parts.keys())
     set_2 = set(mesh_2.parts.keys())
@@ -60,7 +68,7 @@ def assert_polymesh_have_same_keys(mesh_1, mesh_2) -> None:
         )
 
 
-def check_polymesh_equal(mesh_1, mesh_2) -> None:
+def check_polymesh_equal(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:
     """Check polymesh at-least have same number of vertices if not equal."""
     try:
         assert_polymesh_equal(mesh_1, mesh_2)
@@ -75,7 +83,9 @@ def check_polymesh_equal(mesh_1, mesh_2) -> None:
         )
 
 
-def assert_same_number_vertices(mesh_1, mesh_2) -> None:
+def assert_same_number_vertices(
+    mesh_1: SurfaceMesh, mesh_2: SurfaceMesh
+) -> None:
     """Assert 2 meshes or polymeshes have the same number of vertices."""
     if mesh_1.n_vertices != mesh_2.n_vertices:
         raise MeshDimensionError(
@@ -84,7 +94,9 @@ def assert_same_number_vertices(mesh_1, mesh_2) -> None:
         )
 
 
-def assert_surface_mesh_equal(mesh_1, mesh_2) -> None:
+def assert_surface_mesh_equal(
+    mesh_1: SurfaceMesh, mesh_2: SurfaceMesh
+) -> None:
     """Check that 2 SurfaceMeshes are equal."""
     if not np.array_equal(mesh_1.coordinates, mesh_2.coordinates):
         raise MeshDimensionError("Meshes do not have the same coordinates.")
@@ -92,13 +104,17 @@ def assert_surface_mesh_equal(mesh_1, mesh_2) -> None:
         raise MeshDimensionError("Meshes do not have the same faces.")
 
 
-def assert_surface_image_equal(img_1, img_2) -> None:
+def assert_surface_image_equal(
+    img_1: SurfaceImage, img_2: SurfaceImage
+) -> None:
     """Check that 2 SurfaceImages are equal."""
     assert_polymesh_equal(img_1.mesh, img_2.mesh)
     assert_polydata_equal(img_1.data, img_2.data)
 
 
-def assert_surface_image_close(img_1, img_2, **kwargs) -> None:
+def assert_surface_image_close(
+    img_1: SurfaceImage, img_2: SurfaceImage, **kwargs
+) -> None:
     """Check that 2 SurfaceImages are close."""
     assert_polymesh_equal(img_1.mesh, img_2.mesh)
     assert_polydata_close(img_1.data, img_2.data, **kwargs)

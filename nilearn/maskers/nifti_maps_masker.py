@@ -11,8 +11,6 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
 )
@@ -44,7 +42,7 @@ class _ExtractionFunctor:
         self.keep_masked_maps = keep_masked_maps
 
     def __call__(self, imgs):
-        from ..regions import signal_extraction
+        from nilearn.regions import signal_extraction
 
         return signal_extraction.img_to_signals_maps(
             imgs,
@@ -279,7 +277,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        displays : list
+        displays : :obj:`list`
             A list of all displays to be rendered.
 
         """
@@ -549,10 +547,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         imgs_ = check_niimg(imgs, atleast_4d=True)
 
-        target_dtype = get_target_dtype(img_data_dtype(imgs_), self.dtype)
-        if target_dtype is None:
-            target_dtype = img_data_dtype(imgs_)
-
         if self.resampling_target is None:
             images = {"maps": maps_img_, "data": imgs_}
             if mask_img_ is not None:
@@ -628,10 +622,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     target_affine=ref_img.affine,
                 )
 
-            # Remove imgs_ from memory before loading the same image
-            # in filter_and_extract.
-            del imgs_
-
         if not self.allow_overlap:
             # Check if there is an overlap.
 
@@ -648,6 +638,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     "due to the atlas itself or possibly introduced by "
                     "resampling."
                 )
+
+        target_dtype = self._get_target_dtype(imgs_)
+
+        # Remove imgs_ from memory before loading the same image
+        # in filter_and_extract.
+        del imgs_
 
         target_shape = None
         target_affine = None
@@ -685,7 +681,15 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             sklearn_output_config=sklearn_output_config,
         )
 
-        return region_signals.astype(target_dtype)
+        # if target_dtype is still None, self.dtype is None: no explicit
+        # dtype was requested, so keep the dtype produced by the
+        # extraction/cleaning pipeline (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return (
+            region_signals
+            if target_dtype is None
+            else region_signals.astype(target_dtype)
+        )
 
     @fill_doc
     def inverse_transform(self, region_signals):
@@ -702,7 +706,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         %(img_inv_transform_nifti)s
 
         """
-        from ..regions import signal_extraction
+        from nilearn.regions import signal_extraction
 
         check_is_fitted(self)
 

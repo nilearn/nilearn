@@ -79,7 +79,7 @@ def _load_localizer_index():
 
 
 @pytest.fixture()
-def localizer_mocker(request_mocker):
+def localizer_mocker(request_mocker) -> None:
     """Mock the index for localizer dataset."""
     index, tsv_files = _load_localizer_index()
     request_mocker.url_mapping["https://osf.io/hwbm2/download"] = json.dumps(
@@ -706,7 +706,7 @@ def test_fetch_development_fmri_participants(tmp_path, request_mocker):
         mock_participants.to_csv(index=False, sep="\t")
     )
     participants = func._fetch_development_fmri_participants(
-        data_dir=tmp_path, url=None, verbose=1
+        data_path=tmp_path, url=None, verbose=1
     )
 
     assert isinstance(participants, pd.DataFrame)
@@ -716,7 +716,7 @@ def test_fetch_development_fmri_participants(tmp_path, request_mocker):
 def test_fetch_development_fmri_functional(tmp_path):
     mock_participants = _mock_participants_data(n_ids=8)
     funcs, confounds = func._fetch_development_fmri_functional(
-        mock_participants, data_dir=tmp_path, url=None, resume=True, verbose=1
+        mock_participants, data_path=tmp_path, url=None, resume=True, verbose=1
     )
 
     assert len(funcs) == 8
@@ -939,7 +939,8 @@ def test_fetch_openneuro_dataset(tmp_path):
         urls, tmp_path, dataset_version
     )
 
-    assert isinstance(datadir, str)
+    # https://github.com/nilearn/nilearn/issues/6388
+    assert datadir == str(data_dir)
     assert isinstance(dl_files, list)
     assert len(dl_files) == 9
 

@@ -91,7 +91,6 @@ else:
         check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -109,10 +108,10 @@ def random_diagonal(p, v_min=1.0, v_max=2.0, random_state=0):
     p : int
         The first dimension of the array.
 
-    v_min : float, optional (default to 1.)
+    v_min : :obj:`float`, optional (default to 1.)
         Minimal element.
 
-    v_max : float, optional (default to 2.)
+    v_max : :obj:`float`, optional (default to 2.)
         Maximal element.
 
     %(random_state)s
@@ -139,10 +138,10 @@ def random_spd(p, eig_min, cond, random_state=0):
     p : int
         The first dimension of the array.
 
-    eig_min : float
+    eig_min : :obj:`float`
         Minimal eigenvalue.
 
-    cond : float
+    cond : :obj:`float`
         Condition number, defined as the ratio of the maximum eigenvalue to the
         minimum one.
 
@@ -192,7 +191,9 @@ def signals() -> list[np.ndarray]:
 
 
 @pytest.fixture
-def signals_and_covariances(cov_estimator):
+def signals_and_covariances(
+    cov_estimator,
+) -> tuple[list[np.ndarray], list[np.ndarray]] | None:
     signals, _ = _signals()
     emp_covs = []
     ledoit_covs = []
@@ -207,6 +208,7 @@ def signals_and_covariances(cov_estimator):
         return signals, ledoit_covs
     elif isinstance(cov_estimator, EmpiricalCovariance):
         return signals, emp_covs
+    return None
 
 
 def test_check_square():
@@ -326,10 +328,10 @@ def random_non_singular(p, sing_min=1.0, sing_max=2.0, random_state=0):
     p : int
         The first dimension of the array.
 
-    sing_min : float, optional (default to 1.)
+    sing_min : :obj:`float`, optional (default to 1.)
         Minimal singular value.
 
-    sing_max : float, optional (default to 2.)
+    sing_max : :obj:`float`, optional (default to 2.)
         Maximal singular value.
 
     %(random_state)s
@@ -392,7 +394,7 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
 
     Returns
     -------
-    grad_norm : list of float
+    grad_norm : :obj:`list` of float
         Norm of the covariant derivative in the tangent space at each step.
     """
     mats = np.array(mats)

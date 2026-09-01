@@ -57,10 +57,14 @@ def set_mpl_backend() -> None:
 
 
 def engine_warning(engine: str) -> None:
+    if engine == "matplolib":
+        option = "plotting"
+    elif engine == "plotly":
+        option = "matplolib, plotly"
     message = (
         f"'{engine}' is not installed. To be able to use '{engine}' as "
         "plotting engine for 'nilearn.plotting' package:\n"
-        " pip install 'nilearn[plotting]'"
+        f" pip install 'nilearn[{option}]'"
     )
     warn(message, stacklevel=find_stack_level())
 
@@ -133,15 +137,15 @@ def get_cbar_ticks(
 
     Parameters
     ----------
-    vmin: :obj:`float`
+    vmin : :obj:`float`
         minimum value for the colorbar, should not be None
-    vmax: :obj:`float`
+    vmax : :obj:`float`
         maximum value for the colorbar, should not be None
-    threshold: :obj:`float`, :obj:`int` or None
+    threshold : :obj:`float`, :obj:`int` or None
         threshold value
-    n_ticks: :obj:`int`
+    n_ticks : :obj:`int`
         number of tick values to return
-    tick_format: :obj:`str`, default="%.2g"
+    tick_format : :obj:`str`, default="%.2g"
         formatting to be used for colorbar ticks
 
     Returns

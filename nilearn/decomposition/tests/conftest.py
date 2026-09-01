@@ -1,6 +1,7 @@
 """Fixtures for decomposition tests."""
 
 import warnings
+from collections.abc import Generator
 
 import numpy as np
 import pytest
@@ -26,7 +27,7 @@ N_COMPONENTS = 4
 
 
 @pytest.fixture(autouse=True)
-def suppress_specific_decoding_warning():
+def suppress_specific_decomposition_warning() -> Generator[None, None, None]:
     """Ignore internal decoding warnings."""
     with warnings.catch_warnings():
         messages = "Objective did not converge.*|"
@@ -110,7 +111,9 @@ def decomposition_masker(
     ).fit()
 
 
-def _decomposition_images_surface(rng, decomposition_mesh, with_activation):
+def _decomposition_images_surface(
+    rng, decomposition_mesh, with_activation
+) -> list[Nifti1Image | SurfaceImage]:
     return [
         _decomposition_img(
             "surface",

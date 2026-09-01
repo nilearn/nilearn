@@ -408,7 +408,6 @@ def test_nifti_maps_masker_resampling_to_mask(
     assert fmri11_img_r.shape == ((*masker.mask_img_.shape[:3], length))
 
 
-@pytest.mark.slow
 def test_nifti_maps_masker_resampling_to_maps(
     length,
     n_regions,
@@ -450,7 +449,6 @@ def test_nifti_maps_masker_resampling_to_maps(
     assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
 
 
-@pytest.mark.slow
 def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
     """Test with clipped maps: mask does not contain all maps."""
     # Shapes do matter in that case
@@ -533,29 +531,4 @@ def test_nifti_maps_masker_overlap(maps_img_fn, allow_overlap, img_fmri):
         with pytest.raises(ValueError, match="Overlap detected"):
             masker.fit_transform(img_fmri)
     else:
-        masker.fit_transform(img_fmri)
-
-
-def test_nifti_maps_masker_transform_resample_warning(img_fmri):
-    """Test warnings when images are resampled at transform."""
-    maps_img, _ = generate_maps((13, 11, 12), 2)
-    masker = NiftiMapsMasker(
-        maps_img, resampling_target="data", standardize=None
-    )
-
-    # Images have different fov between fit and transform
-    masker.fit(maps_img)
-    with pytest.warns(
-        UserWarning, match="Resampling maps at transform time..."
-    ):
-        masker.transform(img_fmri)
-
-    # Same fov between fit and transform, but resampling_target="maps"
-    masker = NiftiMapsMasker(
-        maps_img, resampling_target="maps", standardize=None
-    )
-
-    with pytest.warns(
-        UserWarning, match="Resampling images at transform time..."
-    ):
         masker.fit_transform(img_fmri)

@@ -2,15 +2,18 @@
 procedure on a 4D statistical/atlas maps and its function.
 """
 
-from .hierarchical_kmeans_clustering import HierarchicalKMeans
-from .parcellations import Parcellations
-from .region_extractor import (
+from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
+from nilearn.regions.parcellations import Parcellations
+from nilearn.regions.region_extractor import (
     RegionExtractor,
     connected_label_regions,
     connected_regions,
 )
-from .rena_clustering import ReNA, recursive_neighbor_agglomeration
-from .signal_extraction import (
+from nilearn.regions.rena_clustering import (
+    ReNA,
+    recursive_neighbor_agglomeration,
+)
+from nilearn.regions.signal_extraction import (
     img_to_signals_labels,
     img_to_signals_maps,
     signals_to_img_labels,

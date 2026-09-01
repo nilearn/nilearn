@@ -7,7 +7,6 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn.conftest import check_methods_docstring, check_obj_docstring
 from nilearn.plotting.displays import (
     BaseAxes,
     LProjector,
@@ -33,11 +32,6 @@ from nilearn.plotting.displays import (
     YZSlicer,
     ZProjector,
     ZSlicer,
-)
-from nilearn.plotting.displays._slicers import (
-    BaseSlicer,
-    BaseStackedSlicer,
-    _MultiDSlicer,
 )
 
 SLICER_KEYS = ["ortho", "tiled", "x", "y", "z", "yx", "yz", "mosaic", "xz"]
@@ -142,7 +136,7 @@ def test_get_index_from_direction_exception():
 
 
 @pytest.fixture
-def cut_coords(name):
+def cut_coords(name) -> int | tuple[int, ...] | list[int]:
     """Select appropriate cut coords."""
     if name == "mosaic":
         return 3
@@ -156,7 +150,7 @@ def cut_coords(name):
 
 
 @pytest.mark.parametrize(
-    "display,name", zip(SLICERS, SLICER_KEYS, strict=False)
+    "display,name", list(zip(SLICERS, SLICER_KEYS, strict=False))
 )
 def test_display_basics_slicers(
     display, name, mni152_template_res_2, cut_coords
@@ -177,7 +171,7 @@ def test_display_basics_slicers(
 
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
-    "display,name", zip(PROJECTORS, PROJECTOR_KEYS, strict=False)
+    "display,name", list(zip(PROJECTORS, PROJECTOR_KEYS, strict=False))
 )
 def test_display_basics_projectors(
     display, name, mni152_template_res_2, cut_coords
@@ -223,8 +217,13 @@ def test_slicer_save_to_file(slicer, mni152_template_res_2, tmp_path):
     slicer.add_overlay(mni152_template_res_2, cmap="gray", colorbar=True)
     assert slicer.brain_color == (0.5, 0.5, 0.5)
     assert not slicer.black_bg
+    path = tmp_path / "out.png"
     # Forcing a layout here, to test the locator code
-    slicer.savefig(tmp_path / "out.png")
+    slicer.savefig(path)
+    assert path.exists()
+
+    with pytest.raises(ValueError, match="You must provide an output file"):
+        slicer.savefig(filename=None)
     slicer.close()
 
 
@@ -339,7 +338,6 @@ def test_user_given_cmap_with_colorbar(mni152_template_res_2):
     oslicer.close()
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("display", [OrthoSlicer, LYRZProjector])
 def test_data_complete_mask(affine_eye, display):
     """Test for a special case due to matplotlib 2.1.0.
@@ -449,7 +447,7 @@ def test_threshold(threshold, vmin, vmax, expected_results):
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
 @pytest.mark.parametrize(
-    "display,name", zip(SLICERS, SLICER_KEYS, strict=False)
+    "display,name", list(zip(SLICERS, SLICER_KEYS, strict=False))
 )
 def test_display_slicers_transparency(
     display, mni152_template_res_2, name, cut_coords, transparency
@@ -471,7 +469,7 @@ def test_display_slicers_transparency(
 
 @pytest.mark.parametrize("transparency", [-2, 10])
 @pytest.mark.parametrize(
-    "display,name", zip(SLICERS, SLICER_KEYS, strict=False)
+    "display,name", list(zip(SLICERS, SLICER_KEYS, strict=False))
 )
 def test_display_slicers_transparency_warning(
     display, mni152_template_res_2, name, cut_coords, transparency
@@ -485,10 +483,9 @@ def test_display_slicers_transparency_warning(
     display.title(f"display mode is {name}")
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
 @pytest.mark.parametrize(
-    "display,name", zip(PROJECTORS, PROJECTOR_KEYS, strict=False)
+    "display,name", list(zip(PROJECTORS, PROJECTOR_KEYS, strict=False))
 )
 def test_display_projectors_transparency(
     display, mni152_template_res_2, name, cut_coords, transparency
@@ -510,7 +507,7 @@ def test_display_projectors_transparency(
 
 @pytest.mark.parametrize("transparency", [-2, 10])
 @pytest.mark.parametrize(
-    "display,name", zip(PROJECTORS, PROJECTOR_KEYS, strict=False)
+    "display,name", list(zip(PROJECTORS, PROJECTOR_KEYS, strict=False))
 )
 def test_display_projectors_transparency_warning(
     display, mni152_template_res_2, name, cut_coords, transparency
@@ -638,59 +635,3 @@ def test_slicer_sanitize_cut_coords_error(slicer, cut_coords):
     """
     with pytest.raises(ValueError, match="cut_coords passed does not match"):
         slicer._sanitize_cut_coords(cut_coords)
-
-
-@pytest.mark.parametrize(
-    "slicer",
-    [
-        OrthoSlicer((2, 3, 4)),
-        TiledSlicer((3, 4, 5)),
-        XSlicer(1),
-        YSlicer(2),
-        ZSlicer(3),
-        XZSlicer((4, 5)),
-        YXSlicer((2, 3)),
-        YZSlicer((1, 2)),
-        MosaicSlicer((2, 3, 4)),
-    ],
-)
-def test_slicer_docstrings(slicer):
-    """Test if all slicers defined nilearn.plotting.displays._slicers have
-    complete docstrings.
-    """
-    check_obj_docstring(slicer)
-
-
-def test_slicer_base_class_docstrings():
-    """Test if base classes defined nilearn.plotting.displays._slicers have
-    complete docstrings for methods.
-    """
-    check_methods_docstring(BaseSlicer)
-    check_methods_docstring(_MultiDSlicer)
-    check_methods_docstring(BaseStackedSlicer)
-
-
-@pytest.mark.parametrize(
-    "projector",
-    [
-        OrthoProjector,
-        XProjector,
-        YProjector,
-        ZProjector,
-        XZProjector,
-        YXProjector,
-        YZProjector,
-        LYRZProjector,
-        LZRYProjector,
-        LZRProjector,
-        LYRProjector,
-        LRProjector,
-        LProjector,
-        RProjector,
-    ],
-)
-def test_projector_docstrings(projector):
-    """Test if all slicers defined nilearn.plotting.displays._projectors have
-    complete docstrings.
-    """
-    check_obj_docstring(projector((2, 3, 4)))

@@ -29,7 +29,7 @@ from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 from nilearn.masking import load_mask_img
-from nilearn.typing import SupportedClassifiers, SupportedRegressors
+from nilearn.nilearn_typing import SupportedClassifiers, SupportedRegressors
 
 
 def _check_searchlight_estimator(estimator, *, scoring, y):
@@ -220,7 +220,7 @@ def _group_iter_search_light(
     groups : array-like
         group label for each sample for cross validation.
 
-    scoring : string or callable
+    scoring : :obj:`str` or callable
         Scoring strategy to use. See the scikit-learn documentation.
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
@@ -369,15 +369,15 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
 
     process_mask_ : numpy.ndarray
         Boolean mask array representing the voxels included in the
-         searchlight computation.
+        searchlight computation.
 
-         .. nilearn_versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     scores_ : numpy.ndarray
         3D array containing searchlight scores for each voxel, aligned
-         with the mask.
+        with the mask.
 
-         .. nilearn_versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     Notes
     -----

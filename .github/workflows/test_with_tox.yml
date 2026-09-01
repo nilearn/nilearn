@@ -117,7 +117,7 @@ jobs:
                     env: pytest_mpl
 
         steps:
-        -   uses: actions/checkout@v6
+        -   uses: actions/checkout@v7
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -186,7 +186,7 @@ jobs:
 
         -   name: Upload coverage to CodeCov
             if: success()
-            uses: codecov/codecov-action@v6
+            uses: codecov/codecov-action@v7
             with:
                 flags: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.env }}
                 token: ${{ secrets.CODECOV_TOKEN }}
@@ -212,7 +212,7 @@ jobs:
                 env: [pre]
 
         steps:
-        -   uses: actions/checkout@v6
+        -   uses: actions/checkout@v7
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -286,7 +286,7 @@ jobs:
                 env: [flaky]
 
         steps:
-        -   uses: actions/checkout@v6
+        -   uses: actions/checkout@v7
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}

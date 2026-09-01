@@ -306,6 +306,10 @@ class LikelihoodModelResults:
             `cis` is shape ``(len(cols), 2)`` where each row contains [lower,
             upper] for the given entry in `cols`
 
+        Notes
+        -----
+        Confidence intervals are two-tailed.
+
         Examples
         --------
         >>> from numpy.random import standard_normal as stan
@@ -315,10 +319,6 @@ class LikelihoodModelResults:
         >>> y = np.dot(x, beta) + stan((30))
         >>> model = OLSModel(x).fit(y)
         >>> confidence_intervals = model.conf_int(cols=(1, 2))
-
-        Notes
-        -----
-        Confidence intervals are two-tailed.
 
         """
         if cols is None:

@@ -7,8 +7,8 @@ from collections.abc import Iterable
 from typing import Any, get_args
 
 from nilearn._utils.param_validation import check_is_of_allowed_type
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface.surface import SurfaceImage
-from nilearn.typing import NiimgLike
 
 
 def check_compatibility_mask_and_images(mask_img: Any, run_imgs: Any) -> None:

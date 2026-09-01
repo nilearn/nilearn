@@ -84,6 +84,7 @@ def test_mask_error():
 
 
 def test_rena_clustering():
+    """Test that ReNA fits, transforms, and inverse-transforms data."""
     data_img, mask_img = generate_fake_fmri(shape=(10, 11, 12), length=5)
 
     data = get_data(data_img)

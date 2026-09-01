@@ -56,12 +56,13 @@ from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.masking import intersect_masks
+from nilearn.nilearn_typing import NiimgLike, Tr
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
-from nilearn.typing import NiimgLike, Tr
 
 
-def mean_scaling(Y, axis=0):
+def mean_scaling(Y, axis=0) -> tuple[np.ndarray, np.ndarray]:
     """Scaling of the data to have percent of baseline change \
     along the specified axis.
 
@@ -150,7 +151,7 @@ def _yule_walker(x, order):
 @fill_doc
 def run_glm(
     Y, X, noise_model="ar1", bins=100, n_jobs=1, verbose=0, random_state=None
-):
+) -> tuple[np.ndarray, dict[str | float, RegressionResults]]:
     """:term:`GLM` fit for an :term:`fMRI` data matrix.
 
     Parameters
@@ -798,11 +799,11 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        n_scans: int
+        n_scans : int
 
-        events : list of pandas.DataFrame
+        events : :obj:`list` of pandas.DataFrame
 
-        confounds : list of pandas.DataFrame or numpy.arrays
+        confounds : :obj:`list` of pandas.DataFrame or numpy.arrays
 
         run_idx : int
         """
@@ -1529,7 +1530,12 @@ def first_level_from_bids(
     minimize_memory=True,
     derivatives_folder="derivatives",
     **kwargs,
-):
+) -> tuple[
+    list[FirstLevelModel],
+    list[list[str] | list[SurfaceImage]],
+    list[list[pd.DataFrame]],
+    list[list[pd.DataFrame] | None],
+]:
     """Create FirstLevelModel objects and fit arguments \
        from a :term:`BIDS` dataset.
 
@@ -1583,6 +1589,16 @@ def first_level_from_bids(
         Filter examples would be ``('desc', 'preproc')``, ``('dir', 'pa')``
         and ``('run', '10')``.
 
+    mask_img : Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
+             :obj:`~nilearn.maskers.SurfaceMasker`, False \
+             or ``"derivatives"``, or \
+             None, default=None
+        Mask to be used on data.
+        If ``"derivatives"`` is passed, a mask image is generated
+        from the intersection of the relevant mask images
+        of all the runs of a subject
+        and used for the model of that subject.
+
     slice_time_ref : :obj:`float` between ``0.0`` and ``1.0``, or None, \
                      default= None
         This parameter indicates the time of the reference slice used in the
@@ -1599,6 +1615,8 @@ def first_level_from_bids(
 
     kwargs : :obj:`dict`
 
+        .. nilearn_versionadded:: 0.10.3
+
         Keyword arguments to be passed to functions called within this
         function.
 
@@ -1612,7 +1630,59 @@ def first_level_from_bids(
         no confounds are available, or if ``confounds_strategy`` is
         set to ``None``, a list of ``None`` is returned for the confounds.
 
-        .. nilearn_versionadded:: 0.10.3
+        Please refer to the documentation
+        of :func:`~nilearn.interfaces.fmriprep.load_confounds`
+        for more details on the confounds loading strategies.
+
+    .. do not check for missing parameters in docstring
+
+    Returns
+    -------
+    models : :obj:`list` \
+        of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
+        Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
+        corresponds to a subject.
+        All runs from different sessions are considered together
+        for the same subject to run a fixed effects analysis on them.
+
+    models_run_imgs : :obj:`list` of :obj:`list` of Niimg-like objects
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_run_imgs[i][j]`` corresponds to the j\\ :sup:`th` run
+        of the i\\ :sup:`th` subject.
+
+    models_events : :obj:`list` of :obj:`list` of pandas DataFrames
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_events[i][j]`` corresponds to the j\\ :sup:`th` event file
+        of the i\\ :sup:`th` subject.
+
+        Currently we only support 2 cases:
+
+        - raw BIDS datasets with one events file per run
+          stored along the bold file
+
+        - raw BIDS dataset with a single events file at its root,
+          (it is then assumed that this events file should be used
+          for all runs and the list contains j copies of the same dataframe)
+
+    models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
+        ``None``
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_confounds[i][j]`` corresponds to the j\\ :sup:`th`
+        confound file of the i\\ :sup:`th` subject.
+
+        .. note::
+
+            Any NaN values on the first row of the loaded confounds
+            will be replaced by 0 to avoid later errors
+            during design matrix creation.
+
+    Notes
+    -----
+    See :obj:`~nilearn.glm.first_level.FirstLevelModel` for further details
+    on other parameters.
 
     Examples
     --------
@@ -1687,44 +1757,6 @@ def first_level_from_bids(
             confounds_fd_threshold=0.2,
             confounds_std_dvars_threshold=0,
         )
-
-    Please refer to the documentation
-    of :func:`~nilearn.interfaces.fmriprep.load_confounds`
-    for more details on the confounds loading strategies.
-
-    Returns
-    -------
-    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
-        Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
-        corresponds to a subject.
-        All runs from different sessions are considered together
-        for the same subject to run a fixed effects analysis on them.
-
-    models_run_imgs : :obj:`list` of :obj:`list` of Niimg-like objects
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-        ``models_run_imgs[i][j]`` corresponds to the j\\ :sup:`th` run
-        of the i\\ :sup:`th` subject.
-
-    models_events : :obj:`list` of :obj:`list` of pandas DataFrames
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-        ``models_events[i][j]`` corresponds to the j\\ :sup:`th` event file
-        of the i\\ :sup:`th` subject.
-
-    models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
-        ``None``
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-        ``models_confounds[i][j]`` corresponds to the j\\ :sup:`th`
-        confound file of the i\\ :sup:`th` subject.
-
-        .. note::
-
-            Any NaN values on the first row of the loaded confounds
-            will be replaced by 0 to avoid later errors
-            during design matrix creation.
-
 
     """
     check_params(locals())
@@ -1808,7 +1840,7 @@ def first_level_from_bids(
         filters = _make_bids_files_filter(
             task_label=task_label,
             supported_filters=[*bids_entities()["raw"]],
-            extra_filter=img_filters,
+            extra_filter=[x for x in img_filters if x[0] != "desc"],
             verbose=verbose,
         )
         inferred_t_r = infer_repetition_time_from_dataset(
@@ -1910,7 +1942,7 @@ def first_level_from_bids(
             drift_order=drift_order,
             fir_delays=fir_delays,
             min_onset=min_onset,
-            mask_img=mask_img,
+            mask_img=None if mask_img == "derivatives" else mask_img,
             target_affine=target_affine,
             target_shape=target_shape,
             smoothing_fwhm=smoothing_fwhm,
@@ -1960,6 +1992,22 @@ def first_level_from_bids(
         )
         models_confounds.append(confounds)
 
+        if mask_img == "derivatives":
+            masks = _get_masks_files(
+                derivatives_path=derivatives_path,
+                sub_label=sub_label_,
+                task_label=task_label,
+                space_label=space_label,
+                img_filters=img_filters,
+                imgs=files_to_check,
+                verbose=verbose,
+            )
+            if masks:
+                mask_img = intersect_masks(
+                    masks, threshold=0.5, connected=False
+                )
+                model.mask_img = mask_img
+
     return models, models_run_imgs, models_events, models_confounds
 
 
@@ -2006,6 +2054,7 @@ def _list_valid_subjects(derivatives_path, sub_labels) -> list[str]:
     return sorted(set(sub_labels_exist))
 
 
+@fill_doc
 def _report_found_files(files, text, sub_label, filters, verbose) -> None:
     """Print list of files found for a given subject and filter.
 
@@ -2023,6 +2072,8 @@ def _report_found_files(files, text, sub_label, filters, verbose) -> None:
     filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters are of the form (field, label).
         Only one filter per field allowed.
+
+    %(verbose)s
 
     """
     unordered_list_string = "\n\t- ".join(files)
@@ -2206,6 +2257,7 @@ def _get_events_files(
         extra_filter=img_filters,
         verbose=verbose,
     )
+
     events = get_bids_files(
         dataset_path,
         modality_folder="func",
@@ -2214,6 +2266,27 @@ def _get_events_files(
         sub_label=sub_label,
         filters=events_filters,
     )
+
+    # looking for file in the root of the raw data
+    global_events_file = get_bids_files(
+        dataset_path,
+        modality_folder="func",
+        file_tag="events",
+        file_type="tsv",
+        sub_label=sub_label,
+        filters=events_filters,
+        sub_folder=False,
+    )
+
+    if len(events) == 0 and len(global_events_file) == 1:
+        # if we found something this means
+        # that all runs haves the same events.tsv
+        events = global_events_file * len(imgs)
+    else:
+        # otherwise we pull all events together
+        # and let _check_bids_events_list decide what to do
+        events.extend(global_events_file)
+
     _report_found_files(
         files=events,
         text="events",
@@ -2231,6 +2304,104 @@ def _get_events_files(
         verbose=verbose,
     )
     return events
+
+
+def _get_masks_files(
+    derivatives_path: Path,
+    sub_label: str,
+    task_label: str,
+    space_label: str,
+    img_filters: list[tuple[str, str]],
+    imgs: list[str],
+    verbose: int,
+) -> list[str]:
+    """Get mask images for a given subject, task, space and filters.
+
+    Parameters
+    ----------
+    derivatives_path : :obj:`pathlib.Path`
+        Directory of the derivatives BIDS dataset.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like sub-<sub_label>_.
+
+    task_label : :obj:`str`
+        Space label as specified in the file names like _task-<task_label>_.
+
+    space_label : :obj:`str`
+        Space label as specified in the file names like _space-<space_label>_.
+
+    img_filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    imgs : :obj:`list` of :obj:`str`
+        List of fullpath to the preprocessed images
+
+    verbose : :obj:`integer`
+        Indicate the level of verbosity.
+
+    Returns
+    -------
+    events : :obj:`list` of :obj:`str`
+        List of full path to the masks files
+    """
+    if space_label in (None, "", "fsaverage5"):
+        # TODO for surface data?
+        return []
+
+    img_filters = [x for x in img_filters if x[0] != "desc"]
+    filters = _make_bids_files_filter(
+        task_label=task_label,
+        space_label=space_label,
+        supported_filters=bids_entities()["raw"]
+        + bids_entities()["derivatives"],
+        extra_filter=img_filters,
+        verbose=verbose,
+    )
+
+    masks_files = get_bids_files(
+        main_path=derivatives_path,
+        modality_folder="func",
+        file_tag="mask",
+        file_type="nii*",
+        sub_label=sub_label,
+        filters=filters,
+    )
+
+    _report_found_files(
+        files=masks_files,
+        text="masks",
+        sub_label=sub_label,
+        filters=filters,
+        verbose=verbose,
+    )
+    _check_masks_list(masks_files, imgs)
+
+    return masks_files
+
+
+def _check_masks_list(masks_files: list[str], imgs: list[str]) -> None:
+    """Check the number of confounds.tsv files.
+
+    If no file is found, it will be assumed there are none,
+    but if there are any confounds files, there must be one per run.
+
+    Parameters
+    ----------
+    masks_files : :obj:`list` of :obj:`str`
+        List of full path to the mask files
+
+    imgs : :obj:`list` of :obj:`str`
+        List of full path to the preprocessed images
+
+    """
+    if len(masks_files) != len(imgs):
+        warn(
+            f"{len(masks_files)} mask files found "
+            f"for {len(imgs)} bold files. ",
+            stacklevel=find_stack_level(),
+        )
 
 
 def _get_confounds(
@@ -2316,9 +2487,7 @@ def _get_confounds(
             c.iloc[0] = c.iloc[0].fillna(0.0)
         return confounds
 
-    confounds, _ = load_confounds(img_files=imgs, **kwargs_load_confounds)
-
-    return confounds
+    return load_confounds(img_files=imgs, **kwargs_load_confounds)[0]
 
 
 def _check_confounds_list(confounds, imgs) -> None:
@@ -2386,7 +2555,7 @@ def _check_args_first_level_from_bids(
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
-    derivatives_path : :obj:`str`
+    derivatives_folder : :obj:`str`
         Fullpath of the BIDS dataset derivative folder.
 
     """
@@ -2466,6 +2635,7 @@ def _check_kwargs_load_confounds(**kwargs):
     return kwargs_load_confounds, remaining_kwargs
 
 
+@fill_doc
 def _make_bids_files_filter(
     task_label,
     space_label=None,
@@ -2598,6 +2768,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
             run_check_list.append(run)
 
 
+@fill_doc
 def _check_bids_events_list(
     events, imgs, sub_label, task_label, dataset_path, events_filters, verbose
 ) -> None:
@@ -2630,6 +2801,8 @@ def _check_bids_events_list(
         Filters of the form (field, label) used to select the files.
         See :func:`get_bids_files`.
 
+    %(verbose)s
+
     """
     if not events:
         raise ValueError(
@@ -2645,6 +2818,17 @@ def _check_bids_events_list(
             "as the number of runs is expected."
         )
     _check_trial_type(events=events)
+
+    # all events file are the same
+    # or we have single event file that does not
+    # contain the sub entity:
+    # we have a single event file in the root of the dataset
+    if len(events) > 1 and all(x == events[0] for x in events):
+        return None
+    elif len(events) == 1:
+        ref = parse_bids_filename(events[0])
+        if "sub" not in ref["entities"]:
+            return None
 
     supported_filters = [
         "sub",

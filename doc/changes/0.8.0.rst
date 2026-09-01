@@ -1,10 +1,8 @@
 
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.8.0
-=====
+Version 0.8.0
+=============
 
 **Released June 2021**
 
@@ -29,7 +27,7 @@ HIGHLIGHTS
 
 - :bdg-success:`API` Function :func:`~signal.clean` now accepts a new parameter ``sample_mask`` of shape ``(number of scans - number of volumes removed, )`` (:gh:`2858` by `Hao-Ting Wang`_).
 
-- :bdg-success:`API` All inherent classes of :class:`nilearn.maskers.BaseMasker` can use the parameter ``sample_mask`` for sub-sample masking (:gh:`2858` by `Hao-Ting Wang`_).
+- :bdg-success:`API` All inherent classes of :class:`~maskers.BaseMasker` can use the parameter ``sample_mask`` for sub-sample masking (:gh:`2858` by `Hao-Ting Wang`_).
 
 - :bdg-success:`API` Function :func:`~datasets.fetch_surf_fsaverage` now accepts ``fsaverage3``, ``fsaverage4`` and ``fsaverage6`` as values for parameter ``mesh``, so that all resolutions of fsaverage from 3 to 7 are now available (:gh:`2815` by `Alexis Thual`_).
 
@@ -42,7 +40,7 @@ NEW
 
 - :bdg-success:`API` Function :func:`~signal.clean` now accepts a new parameter ``sample_mask`` of shape ``(number of scans - number of volumes removed, )``. Masks the niimgs along time/fourth dimension to perform scrubbing (remove volumes with high motion) and/or non-steady-state volumes. Masking is applied before signal cleaning (:gh:`2858` by `Hao-Ting Wang`_).
 
-- :bdg-success:`API` All inherent classes of :class:`nilearn.maskers.BaseMasker` can use the parameter ``sample_mask`` for sub-sample masking (:gh:`2858` by `Hao-Ting Wang`_).
+- :bdg-success:`API` All inherent classes of :class:`~maskers.BaseMasker` can use the parameter ``sample_mask`` for sub-sample masking (:gh:`2858` by `Hao-Ting Wang`_).
 
 - :bdg-success:`API` Class :class:`~maskers.NiftiLabelsMasker` can now generate HTML reports in the same way as :class:`~maskers.NiftiMasker`. The report shows the regions defined by the provided label image and provide summary statistics on each region (name, volume...). If a functional image was provided to fit, the middle image is plotted with the regions overlaid as contours. Finally, if a mask is provided, its contours are shown in green (:gh:`2707` by `Nicolas Gensollen`_).
 
@@ -86,7 +84,7 @@ Enhancements
 
 - :bdg-secondary:`Maint` Function :func:`~signal.clean` has been refactored to clarify the data flow (:gh:`2821` by `Hao-Ting Wang`_).
 
-- :bdg-secondary:`Maint` Moves parameter ``sample_mask`` from :class:`~maskers.NiftiMasker` to method ``transform`` in base class :class:`nilearn.maskers.BaseMasker` (:gh:`2858` by `Hao-Ting Wang`_).
+- :bdg-secondary:`Maint` Moves parameter ``sample_mask`` from :class:`~maskers.NiftiMasker` to method ``transform`` in base class :class:`~maskers.BaseMasker` (:gh:`2858` by `Hao-Ting Wang`_).
 
 Changes
 -------
@@ -105,7 +103,7 @@ Changes
 
   (:gh:`2869` by `Nicolas Gensollen`_).
 
-- :bdg-danger:`Deprecation` Function ``sym_to_vec`` from :mod:`nilearn.connectome` was deprecated since release ``0.4`` and has been removed (:gh:`2867` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Function ``sym_to_vec`` from :mod:`~nilearn.connectome` was deprecated since release ``0.4`` and has been removed (:gh:`2867` by `Nicolas Gensollen`_).
 
 - :bdg-danger:`Deprecation` Function ``nilearn.datasets.fetch_nyu_rest`` was deprecated since release ``0.6.2`` and has been removed (:gh:`2868` by `Nicolas Gensollen`_).
 

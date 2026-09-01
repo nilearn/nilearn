@@ -4,7 +4,7 @@
 # If some potential refactoring are found it opens a pull-request.
 #
 # Requires a ``SOURCERY_TOKEN`` that can be obtained from
-# logging into `the sourcery website <https://sourcery.ai/>`_
+# logging into `the sourcery website <https://www.sourcery.ai/>`_
 # with your github account.
 #
 ###
@@ -39,7 +39,7 @@ jobs:
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         steps:
-        -   uses: actions/checkout@v6
+        -   uses: actions/checkout@v7
 
         -   uses: actions/setup-python@v6
             with:

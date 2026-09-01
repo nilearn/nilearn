@@ -14,7 +14,7 @@ from nilearn.plotting import plot_bland_altman, plot_img_comparison
 # ruff: noqa: ARG001
 
 
-def _mask():
+def _mask() -> Nifti1Image:
     affine = _affine_mni()
     data_positive = np.zeros((7, 7, 3))
     data_positive[1:-1, 2:-1, 1:] = 1
@@ -78,7 +78,6 @@ def test_plot_img_comparison_error(surf_img_1d, img_3d_mni):
         plot_img_comparison(surf_img_1d, img_3d_mni)
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     """Tests for plot_img_comparison."""
@@ -88,13 +87,13 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     length = 2
 
     query_images, mask_img = generate_fake_fmri(
-        random_state=rng, shape=(2, 3, 4), length=length
+        rand_gen=rng, shape=(2, 3, 4), length=length
     )
     # plot_img_comparison doesn't handle 4d images ATM
     query_images = list(iter_img(query_images))
 
     target_images, _ = generate_fake_fmri(
-        random_state=rng, shape=(4, 5, 6), length=length
+        rand_gen=rng, shape=(4, 5, 6), length=length
     )
     target_images = list(iter_img(target_images))
     target_images[0] = query_images[0]
@@ -132,7 +131,6 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     assert len(ax_1.patches) == length * 2 * gridsize
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     """Tests for plot_img_comparison no plot should return same result."""
@@ -140,13 +138,13 @@ def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     axes = axes.ravel()
 
     query_images, mask_img = generate_fake_fmri(
-        random_state=rng, shape=(2, 3, 4), length=2
+        rand_gen=rng, shape=(2, 3, 4), length=2
     )
     # plot_img_comparison doesn't handle 4d images ATM
     query_images = list(iter_img(query_images))
 
     target_images, _ = generate_fake_fmri(
-        random_state=rng, shape=(2, 3, 4), length=2
+        rand_gen=rng, shape=(2, 3, 4), length=2
     )
     target_images = list(iter_img(target_images))
     target_images[0] = query_images[0]
@@ -223,7 +221,6 @@ def test_plot_bland_altman_surface(matplotlib_pyplot, surf_img_1d, masker):
     )
 
 
-@pytest.mark.slow
 def test_plot_bland_altman_errors(
     surf_img_1d, surf_mask_1d, img_3d_rand_eye, img_3d_ones_eye
 ):
