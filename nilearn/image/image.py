@@ -374,8 +374,14 @@ def smooth_array(
     %(fwhm)s
 
     ensure_finite : :obj:`bool`, default=True
-        If True, replace every non-finite values (like NaNs) by zero before
-        filtering.
+        If True, replace every non-finite value (like NaNs) by zero before
+        filtering, and warn when any value was replaced. If False, non-finite
+        values are left untouched; note that filtering then spreads them over
+        neighboring voxels.
+
+        .. nilearn_versionchanged:: 0.14.1
+
+            A warning is now emitted when values are replaced.
 
     copy : :obj:`bool`, default=True
         If True, input array is not modified. True by default: the filtering
@@ -409,7 +415,7 @@ def smooth_array(
         arr = arr.copy()
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
-        ensure_finite_data(arr, raise_warning=False)
+        ensure_finite_data(arr)
     if isinstance(fwhm, str) and (fwhm == "fast"):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
@@ -880,11 +886,15 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
 
     if smooth:
         nan_mask = np.isnan(mean_data)
+        # The NaNs are restored right after smoothing, so clean them here
+        # without warning rather than letting ``smooth_array`` report a
+        # replacement that this function undoes.
+        ensure_finite_data(mean_data, raise_warning=False)
         mean_data = smooth_array(
             mean_data,
             affine=np.eye(4),
             fwhm=smooth,
-            ensure_finite=True,
+            ensure_finite=False,
             copy=False,
         )
         mean_data[nan_mask] = np.nan

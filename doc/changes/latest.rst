@@ -68,6 +68,10 @@ Enhancements
 
 - :bdg-success:`API` Add an ``ensure_finite`` parameter to :func:`~image.smooth_img`, and warn when non-finite values are replaced with zeros rather than doing it silently. Replacement now happens in a single place for both the volume and the surface branch, so the two behave identically (:gh:`6530` by `Cedric Conday`_).
 
+- :bdg-success:`API` :func:`~image.smooth_array` now warns when ``ensure_finite=True`` replaces non-finite values with zeros, instead of doing it silently (:gh:`6530` by `Cedric Conday`_).
+
+- :bdg-success:`API` :func:`~masking.apply_mask` and :func:`~masking.apply_mask_fmri` now honor ``ensure_finite`` for surface data. The surface branch previously cleaned non-finite values unconditionally, ignoring the argument. Passing ``smoothing_fwhm`` still forces ``ensure_finite=True``, now on surfaces as well as volumes (:gh:`6530` by `Cedric Conday`_).
+
 - :bdg-dark:`Code` Improve type annotations (and :obj:`~typing.overload` signatures where the return type depends on the arguments given) in :mod:`~nilearn.glm` (:gh:`6370`), :mod:`~nilearn.regions` (:gh:`6369`), :mod:`~nilearn.connectome` (:gh:`6368`), :mod:`~nilearn.reporting` (:gh:`6368`), :mod:`~nilearn.interfaces` (:gh:`6362`), :mod:`~nilearn.image` (:gh:`6408`, :gh:`6438`), :mod:`~nilearn.utils`, :mod:`~nilearn.surface` (:gh:`6410`), :mod:`~nilearn.datasets`  (:gh:`6438`),  :mod:`~nilearn.plotting` (:gh:`6438` and :gh:`6439`),  :mod:`~nilearn.glm` and :mod:`~nilearn.mass_univariate` (:gh:`6439`) (by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections for one function in the public API: :func:`~masking.compute_epi_mask` (:gh:`6306` by `Marco Flores`_).
