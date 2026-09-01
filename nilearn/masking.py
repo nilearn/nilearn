@@ -960,11 +960,16 @@ def apply_mask(
 
         .. note::
 
-            Implies ensure_finite=True when applied to volume data.
+            Implies ensure_finite=True.
 
     ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and
-        infs) found in the images will be replaced by zeros.
+        infs) found in the images will be replaced by zeros,
+        and a warning is emitted when any value was replaced.
+
+        .. nilearn_versionchanged:: 0.14.1
+
+            This is now honored for surface data as well as volume data.
 
     Returns
     -------
@@ -1004,10 +1009,17 @@ def apply_mask_fmri(
     assumed to contain only two different values (this is checked for in
     :func:`nilearn.masking.apply_mask`, not in this function).
     """
+    # Smoothing spreads non-finite values over their neighbors, so it forces
+    # the cleaning on. This rule applies to surface and volume data alike.
+    if smoothing_fwhm is not None:
+        ensure_finite = True
+
     if isinstance(imgs, SurfaceImage) and isinstance(mask_img, SurfaceImage):
         check_polymesh_equal(mask_img.mesh, imgs.mesh)
 
-        imgs = smooth_img(imgs, fwhm=smoothing_fwhm)
+        imgs = smooth_img(
+            imgs, fwhm=smoothing_fwhm, ensure_finite=ensure_finite
+        )
 
         mask_data = as_ndarray(get_surface_data(mask_img), dtype=bool)
         series = get_surface_data(imgs)
@@ -1023,9 +1035,6 @@ def apply_mask_fmri(
     mask_img = check_niimg_3d(mask_img)
     mask_affine = mask_img.affine
     mask_data = as_ndarray(get_data(mask_img), dtype=bool)
-
-    if smoothing_fwhm is not None:
-        ensure_finite = True
 
     imgs_img = check_niimg(imgs)
     affine = imgs_img.affine[:3, :3]

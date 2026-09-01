@@ -44,6 +44,8 @@ Enhancements
 
 - :bdg-primary:`Doc` Docstring examples can now be run in the browser via `jupyterlite <https://jupyterlite.readthedocs.io/en/stable/>`_ (:gh:`6581` by `Elizabeth DuPre`_).
 
+- :bdg-success:`API` :func:`~image.smooth_array` now warns when ``ensure_finite=True`` replaces non-finite values with zeros, instead of doing it silently (:gh:`6530` by `Cedric Conday`_).
+
 - :bdg-success:`API` :class:`~nilearn.utils.InputTags` is now part of the public API in :mod:`nilearn.utils`, so that third-party estimators can declare whether they accept Nifti and / or surface images (:gh:`6563` by `Aniket Singh Yadav`_).
 
 

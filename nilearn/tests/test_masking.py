@@ -391,6 +391,74 @@ def test_apply_mask_surface(surf_img_1d, surf_mask_1d):
     assert img_zero.var() > smoothed_img.var()
 
 
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("smoothing_fwhm", [None, 5])
+def test_apply_mask_surface_ensure_finite(
+    surf_img_1d, surf_mask_1d, smoothing_fwhm
+):
+    """``ensure_finite=True`` must clean and warn on surfaces too.
+
+    The surface branch used to ignore the argument entirely.
+    See https://github.com/nilearn/nilearn/issues/6487.
+    """
+    # vertex 2 is inside ``surf_mask_1d``, so it survives into the output
+    surf_img_1d.data.parts["left"][2] = np.nan
+
+    with pytest.warns(UserWarning, match="Non-finite values detected"):
+        masked = apply_mask(
+            surf_img_1d,
+            surf_mask_1d,
+            smoothing_fwhm=smoothing_fwhm,
+            ensure_finite=True,
+        )
+
+    assert np.all(np.isfinite(masked))
+
+
+@pytest.mark.ai_generated
+def test_apply_mask_surface_ensure_finite_false(surf_img_1d, surf_mask_1d):
+    """Without smoothing, ``ensure_finite=False`` keeps non-finite values.
+
+    This is what the volume branch already did; the surface branch cleaned
+    unconditionally regardless of the argument.
+    """
+    # vertex 2 is inside ``surf_mask_1d``, so it survives into the output
+    surf_img_1d.data.parts["left"][2] = np.nan
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", UserWarning)
+        masked = apply_mask(
+            surf_img_1d,
+            surf_mask_1d,
+            smoothing_fwhm=None,
+            ensure_finite=False,
+        )
+
+    assert not np.all(np.isfinite(masked))
+
+
+@pytest.mark.ai_generated
+def test_apply_mask_smoothing_forces_ensure_finite_on_surface(
+    surf_img_1d, surf_mask_1d
+):
+    """Smoothing overrides ``ensure_finite=False`` on surfaces as on volumes.
+
+    Non-finite values would otherwise be spread over neighboring vertices.
+    """
+    # vertex 2 is inside ``surf_mask_1d``, so it survives into the output
+    surf_img_1d.data.parts["left"][2] = np.nan
+
+    with pytest.warns(UserWarning, match="Non-finite values detected"):
+        masked = apply_mask(
+            surf_img_1d,
+            surf_mask_1d,
+            smoothing_fwhm=5,
+            ensure_finite=False,
+        )
+
+    assert np.all(np.isfinite(masked))
+
+
 @pytest.mark.parametrize(
     "smoothing_fwhm", [(0, 1, 2), [0, 1, 2], np.asarray([1])]
 )

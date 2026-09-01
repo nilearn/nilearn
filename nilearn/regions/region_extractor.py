@@ -15,7 +15,7 @@ from nilearn import masking
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import peak_local_max
-from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg import ensure_finite_data, safe_get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -237,8 +237,17 @@ def connected_regions(
         map_3d = maps[..., index]
         # Mark the seeds using random walker
         if extract_type == "local_regions":
+            # ``smooth_map`` only seeds the random walker and is never
+            # returned, so clean non-finite values without warning.
+            map_3d_clean = ensure_finite_data(
+                map_3d.copy(), raise_warning=False
+            )
             smooth_map = smooth_array(
-                map_3d, affine=affine, fwhm=smoothing_fwhm
+                map_3d_clean,
+                affine=affine,
+                fwhm=smoothing_fwhm,
+                ensure_finite=False,
+                copy=False,
             )
             seeds = peak_local_max(smooth_map)
             seeds_label, _ = label(seeds)

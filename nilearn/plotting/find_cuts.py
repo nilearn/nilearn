@@ -11,7 +11,7 @@ from scipy.ndimage import center_of_mass, find_objects, label
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import largest_connected_component
-from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg import ensure_finite_data, safe_get_data
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_parameter_in_allowed
 
@@ -313,7 +313,11 @@ def find_cut_slices(
     if data.dtype.kind in ("i", "u"):
         data = data.astype(np.float64)
 
-    data = smooth_array(data, affine, fwhm="fast")
+    # The smoothed copy is only used to locate cuts, never returned, so
+    # clean non-finite values here instead of warning about a replacement
+    # the caller cannot see.
+    ensure_finite_data(data, raise_warning=False)
+    data = smooth_array(data, affine, fwhm="fast", ensure_finite=False)
 
     # to control floating point error problems
     # during given input value "n_cuts"

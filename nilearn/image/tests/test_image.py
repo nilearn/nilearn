@@ -55,6 +55,7 @@ from nilearn.image.image import (
     check_niimg_4d,
     check_same_fov,
     clean_img,
+    compute_mean,
     concat_imgs,
     copy_img,
     crop_img,
@@ -336,17 +337,79 @@ def test_smooth_array_fwhm_is_odd_no_copy(affine):
     _check_fwhm(data, affine, fwhm)
 
 
+@pytest.mark.ai_generated
 def test_smooth_array_nan_do_not_propagate():
     data = _new_data_for_smooth_array()
     data[10, 10, 10] = np.nan
     fwhm = 9
     affine = AFFINE_TO_TEST[2]
 
-    filtered = smooth_array(
-        data, affine, fwhm=fwhm, ensure_finite=True, copy=True
-    )
+    with pytest.warns(UserWarning, match="Non-finite values detected"):
+        filtered = smooth_array(
+            data, affine, fwhm=fwhm, ensure_finite=True, copy=True
+        )
 
     assert np.all(np.isfinite(filtered))
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("fwhm", [None, 9])
+def test_smooth_array_warns_on_non_finite(fwhm):
+    """``smooth_array`` must report a replacement like ``smooth_img`` does.
+
+    See https://github.com/nilearn/nilearn/issues/6487.
+    """
+    data = _new_data_for_smooth_array()
+    data[10, 10, 10] = np.nan
+    affine = AFFINE_TO_TEST[2]
+
+    with pytest.warns(UserWarning, match="Non-finite values detected"):
+        smooth_array(data, affine, fwhm=fwhm, ensure_finite=True, copy=True)
+
+
+@pytest.mark.ai_generated
+def test_smooth_array_does_not_warn_when_all_finite():
+    """No warning when there is nothing to replace."""
+    data = _new_data_for_smooth_array()
+    affine = AFFINE_TO_TEST[2]
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", UserWarning)
+        smooth_array(data, affine, fwhm=9, ensure_finite=True, copy=True)
+
+
+@pytest.mark.ai_generated
+def test_smooth_array_ensure_finite_false_is_silent():
+    """``ensure_finite=False`` leaves the values alone without warning."""
+    data = _new_data_for_smooth_array()
+    data[10, 10, 10] = np.nan
+    affine = AFFINE_TO_TEST[2]
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", UserWarning)
+        filtered = smooth_array(
+            data, affine, fwhm=None, ensure_finite=False, copy=True
+        )
+
+    assert not np.all(np.isfinite(filtered))
+
+
+@pytest.mark.ai_generated
+def test_compute_mean_smooth_does_not_warn_on_nan(affine_eye):
+    """``compute_mean`` restores the NaNs it cleans, so it must stay silent.
+
+    ``compute_epi_mask(opening=True)`` reaches this path, and a warning
+    there would point at data the caller never sees changed.
+    """
+    data = np.zeros((10, 10, 10, 2))
+    data[5, 5, 5] = np.nan
+    img = Nifti1Image(data, affine_eye)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", UserWarning)
+        mean_data, _ = compute_mean(img, smooth=1)
+
+    assert np.isnan(mean_data[5, 5, 5])
 
 
 def test_smooth_array_same_result_with_fwhm_none_or_zero(
