@@ -3,7 +3,7 @@ Simple example of NiftiMasker use
 =================================
 
 Here is a simple example of automatic mask computation using
-:class:`nilearn.maskers.NiftiMasker`. The mask is computed and visualized.
+:class:`~nilearn.maskers.NiftiMasker`. The mask is computed and visualized.
 
 """
 

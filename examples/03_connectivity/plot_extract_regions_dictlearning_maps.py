@@ -85,6 +85,7 @@ from nilearn.regions import RegionExtractor
 extractor = RegionExtractor(
     components_img,
     threshold=0.5,
+    standardize="zscore_sample",
     thresholding_strategy="ratio_n_voxels",
     extractor="local_regions",
     standardize_confounds=True,

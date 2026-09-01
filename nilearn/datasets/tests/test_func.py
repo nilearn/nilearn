@@ -706,7 +706,7 @@ def test_fetch_development_fmri_participants(tmp_path, request_mocker):
         mock_participants.to_csv(index=False, sep="\t")
     )
     participants = func._fetch_development_fmri_participants(
-        data_dir=tmp_path, url=None, verbose=1
+        data_path=tmp_path, url=None, verbose=1
     )
 
     assert isinstance(participants, pd.DataFrame)
@@ -716,7 +716,7 @@ def test_fetch_development_fmri_participants(tmp_path, request_mocker):
 def test_fetch_development_fmri_functional(tmp_path):
     mock_participants = _mock_participants_data(n_ids=8)
     funcs, confounds = func._fetch_development_fmri_functional(
-        mock_participants, data_dir=tmp_path, url=None, resume=True, verbose=1
+        mock_participants, data_path=tmp_path, url=None, resume=True, verbose=1
     )
 
     assert len(funcs) == 8

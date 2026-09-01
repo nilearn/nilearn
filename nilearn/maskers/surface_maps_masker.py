@@ -20,7 +20,6 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -355,17 +354,19 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 maps_data, img_data
             )[0].T
 
-        input_type = (
-            imgs.data._dtype
-            if isinstance(imgs, SurfaceImage)
-            else imgs[0].data._dtype
-        )
-        target_dtype = get_target_dtype(input_type, self.dtype)
-        if target_dtype is None:
-            target_dtype = imgs.data._dtype
+        target_dtype = self._get_target_dtype(imgs)
 
         region_signals = self._clean(region_signals, confounds, sample_mask)
-        return region_signals.astype(target_dtype)
+
+        # target_dtype is None: no explicit dtype was requested,
+        # so keep the dtype produced by the extraction/cleaning pipeline
+        # (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return (
+            region_signals
+            if target_dtype is None
+            else region_signals.astype(target_dtype)
+        )
 
     @fill_doc
     def inverse_transform(self, region_signals):
