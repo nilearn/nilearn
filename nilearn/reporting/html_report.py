@@ -82,7 +82,7 @@ class HTMLReport(HTMLDocument):
 
 def assemble_report(body: str, page_title: str) -> HTMLReport:
     """Put together head and body of report."""
-    head_tpl = get_template("html/head.jinja")
+    head_tpl = get_template("html/report_html_template.jinja")
 
     return HTMLReport(
         body=body,
