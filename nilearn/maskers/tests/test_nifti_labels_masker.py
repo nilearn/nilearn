@@ -288,7 +288,7 @@ def test_nifti_labels_masker_with_nans_and_infs(
 
     masker = NiftiLabelsMasker(img_labels, standardize=None)
 
-    with pytest.warns(UserWarning, match="Non-finite values detected."):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected."):
         sig = masker.fit_transform(img_fmri)
 
     assert "nan" not in masker.lut_.name.to_list()
@@ -318,7 +318,7 @@ def test_nifti_labels_masker_with_nans_and_infs_in_data(
 
     masker = NiftiLabelsMasker(img_labels, standardize=None)
 
-    with pytest.warns(UserWarning, match="Non-finite values detected."):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected."):
         sig = masker.fit_transform(fmri_img)
 
     assert np.all(np.isfinite(sig))

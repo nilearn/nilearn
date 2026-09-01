@@ -379,7 +379,7 @@ def smooth_array(
         values are left untouched; note that filtering then spreads them over
         neighboring voxels.
 
-        .. nilearn_versionchanged:: 0.14.1
+        .. nilearn_versionchanged:: 0.15.0
 
             A warning is now emitted when values are replaced.
 
@@ -481,7 +481,7 @@ def smooth_img(
         values are left untouched; note that smoothing then spreads them over
         neighboring voxels or vertices.
 
-        .. nilearn_versionadded:: 0.14.1
+        .. nilearn_versionadded:: 0.15.0
 
     Returns
     -------

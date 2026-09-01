@@ -404,7 +404,7 @@ def test_apply_mask_surface_ensure_finite(
     # vertex 2 is inside ``surf_mask_1d``, so it survives into the output
     surf_img_1d.data.parts["left"][2] = np.nan
 
-    with pytest.warns(UserWarning, match="Non-finite values detected"):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
         masked = apply_mask(
             surf_img_1d,
             surf_mask_1d,
@@ -448,7 +448,7 @@ def test_apply_mask_smoothing_forces_ensure_finite_on_surface(
     # vertex 2 is inside ``surf_mask_1d``, so it survives into the output
     surf_img_1d.data.parts["left"][2] = np.nan
 
-    with pytest.warns(UserWarning, match="Non-finite values detected"):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
         masked = apply_mask(
             surf_img_1d,
             surf_mask_1d,
