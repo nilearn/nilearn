@@ -529,10 +529,9 @@ class MaskerReportMixin(ReportMixin):
 
     def _generate_report_htmls(self):
         """Generate report figure htmls and summary htmls."""
-        embeded_images = self._generate_figure_htmls()
-        self._report_content["figures"] = embeded_images
+        self._report_content["figures"] = self._embed_all_images()
 
-        # _generate_figure_htmls should be called before setting summary_html
+        # _embed_all_images should be called before setting summary_html
         summary = self._report_content.get("summary", None)
         if summary is not None:
             self._report_content["summary_html"] = self._get_summary_html(
@@ -543,21 +542,18 @@ class MaskerReportMixin(ReportMixin):
         if overlay := self._report_content.get("overlay", None):
             self._report_content["overlay_html"] = self._embed_img(overlay)
 
-    def _generate_figure_htmls(self):
-        """Generate image htmls using partial template for masker figures."""
-        embedded_images = None
+    def _embed_all_images(self) -> list[str | None]:
+        """Embed all images."""
+        embedded_images: list[str | None] = [None]
         image = self._load_report_displays()
         if image is None:
-            embedded_images = None
+            embedded_images = [None]
         elif not isinstance(image, list):
-            embedded_images = self._embed_img(image)
+            embedded_images = [self._embed_img(image)]
         elif all(x is None for x in image):
-            embedded_images = None
+            embedded_images = [None]
         else:
             embedded_images = [self._embed_img(i) for i in image]
-
-        if not isinstance(embedded_images, list):
-            embedded_images = [embedded_images]
 
         return embedded_images
 

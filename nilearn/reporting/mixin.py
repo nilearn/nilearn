@@ -286,7 +286,7 @@ class ReportMixin:
                 )
         return parameters
 
-    def _embed_img(self, display):
+    def _embed_img(self, display) -> str | None:
         """Embed an image or just return its instance if already embedded.
 
         Parameters
