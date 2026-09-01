@@ -78,6 +78,7 @@ Some other past or present contributors are:
 * `Bertrand Thirion`_: Inria, Saclay, France
 * `Binh Nguyen`_
 * `Caglar Cakan`_: Technische Universität Berlin, Berlin, Germany
+* `Cedric Conday`_
 * `Chloe Hampson`_: Florida International University, Miami, United States
 * `Chris Rorden`_: University of South Carolina, USA
 * `Chris Gorgolewski`_: Google LLC
@@ -115,6 +116,7 @@ Some other past or present contributors are:
 * `Gustav Magnusson`_: Linköping University, Linköping
 * `Hande Gözükan`_: Inria, Saclay, France
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
+* `Hariom Patidar`_
 * `Himanshu Aggarwal`_: Inria, Saclay, France
 * `Hugo Delhaye`_: SIMEXP, Université de Montréal, Montréal, Canada
 * `Ian Abenes`_
