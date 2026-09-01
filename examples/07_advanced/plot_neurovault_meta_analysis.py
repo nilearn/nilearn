@@ -37,7 +37,15 @@ stop_go_image_ids = (151, 3041, 3042, 2676, 2675, 2818, 2834)
 
 nv_data = fetch_neurovault_ids(image_ids=stop_go_image_ids, timeout=30.0)
 
-images_meta = nv_data["images_meta"]
+# fetch_neurovault_ids does not guarantee that images_meta is returned
+# in the same order as the requested image_ids, so re-order it here to
+# keep plots and outputs in a deterministic, reproducible order.
+images_meta_by_id = {meta["id"]: meta for meta in nv_data["images_meta"]}
+images_meta = [
+    images_meta_by_id[image_id]
+    for image_id in stop_go_image_ids
+    if image_id in images_meta_by_id
+]
 
 # %%
 # Visualize the data
