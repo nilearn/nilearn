@@ -15,6 +15,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.niimg import has_non_finite
 from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
@@ -190,12 +191,16 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         mask_data = {}
         for part, v in img.data.parts.items():
             # mask out vertices with NaN or infinite values
-            mask_data[part] = np.isfinite(v.astype("float32")).all(axis=1)
-            if not mask_data[part].all():
+            has_not_finite, non_finite_mask = has_non_finite(
+                v.astype("float32")
+            )
+            mask_data[part] = ~non_finite_mask.any(axis=1)
+            if has_not_finite:
                 warn(
                     "Non-finite values detected in the input image. "
                     "The computed mask will mask out these vertices.",
                     stacklevel=find_stack_level(),
+                    category=RuntimeWarning,
                 )
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 

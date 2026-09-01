@@ -115,3 +115,39 @@ def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
         v[0] = 0.0
     expected_img = SurfaceImage(img.mesh, expected_data)
     assert_surface_image_equal(unmasked_img, expected_img)
+
+
+@pytest.mark.ai_generated
+def test_fit_masks_out_non_finite_vertices(surf_img_2d):
+    """Vertices holding non-finite values are excluded from the mask.
+
+    ``SurfaceMasker`` does not replace those values with zeros, it drops the
+    vertices, so the computed mask has to stay a dict of boolean arrays.
+    """
+    img = surf_img_2d(3)
+    img.data.parts["left"][0, 1] = np.nan
+    img.data.parts["right"][2, 0] = np.inf
+
+    masker = SurfaceMasker()
+    with pytest.warns(
+        RuntimeWarning, match="Non-finite values detected in the input image"
+    ):
+        masker.fit(img)
+
+    mask = masker.mask_img_.data.parts
+    for part in mask.values():
+        assert part.dtype == bool
+    assert not mask["left"][0]
+    assert mask["left"][1:].all()
+    assert not mask["right"][2]
+
+
+@pytest.mark.ai_generated
+def test_fit_does_not_warn_when_all_finite(surf_img_2d):
+    """No warning, and no vertex dropped, when the input is finite."""
+    masker = SurfaceMasker()
+    masker.fit(surf_img_2d(3))
+
+    for part in masker.mask_img_.data.parts.values():
+        assert part.dtype == bool
+        assert part.all()

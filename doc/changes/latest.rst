@@ -70,7 +70,7 @@ Enhancements
 
 - :bdg-success:`API` :func:`~masking.apply_mask` now honors ``ensure_finite`` for surface data. The surface branch previously cleaned non-finite values unconditionally, ignoring the argument. Passing ``smoothing_fwhm`` still forces ``ensure_finite=True``, now on surfaces as well as volumes (:gh:`6530` by `Cedric Conday`_).
 
-- :bdg-success:`API` The ``Non-finite values detected. These values will be replaced with zeros.`` warning is now a ``RuntimeWarning`` rather than a ``UserWarning``. Code that catches it, with ``warnings.catch_warnings`` or ``pytest.warns``, has to be updated (:gh:`6530` by `Cedric Conday`_).
+- :bdg-success:`API` The warnings raised when non-finite values are detected are now ``RuntimeWarning`` rather than ``UserWarning``. This covers the ``Non-finite values detected. These values will be replaced with zeros.`` message and the one :class:`~maskers.SurfaceMasker` raises when it masks such vertices out. Code that catches them, with ``warnings.catch_warnings`` or ``pytest.warns``, has to be updated (:gh:`6530` by `Cedric Conday`_).
 
 - :bdg-dark:`Code` Improve type annotations (and :obj:`~typing.overload` signatures where the return type depends on the arguments given) in :mod:`~nilearn.glm` (:gh:`6370`), :mod:`~nilearn.regions` (:gh:`6369`), :mod:`~nilearn.connectome` (:gh:`6368`), :mod:`~nilearn.reporting` (:gh:`6368`), :mod:`~nilearn.interfaces` (:gh:`6362`), :mod:`~nilearn.image` (:gh:`6408`, :gh:`6438`), :mod:`~nilearn.utils`, :mod:`~nilearn.surface` (:gh:`6410`), :mod:`~nilearn.datasets`  (:gh:`6438`),  :mod:`~nilearn.plotting` (:gh:`6438` and :gh:`6439`),  :mod:`~nilearn.glm` and :mod:`~nilearn.mass_univariate` (:gh:`6439`) (by `Rémi Gau`_).
 
