@@ -60,7 +60,7 @@ print(
     f"First subject functional nifti image (4D) is located at: {fmri_filename}"
 )
 print(
-    "Labels of haxby dataset (text file) is located "
+    "Labels of the Haxby dataset (text file) is located "
     f"at: {haxby_dataset.session_target[0]}"
 )
 
@@ -385,7 +385,7 @@ masker = NiftiLabelsMasker(
 
 # %%
 # Preparing for data extraction: setting number of conditions, size, etc. from
-# haxby dataset.
+# the Haxby dataset.
 condition_names = haxby_labels.unique()
 n_cond_img = fmri_data[..., haxby_labels == "house"].shape[-1]
 n_conds = len(condition_names)

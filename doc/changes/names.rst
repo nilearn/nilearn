@@ -63,6 +63,8 @@
 
 .. _Caglar Cakan: https://github.com/caglorithm
 
+.. _Cedric Conday: https://github.com/CedricConday
+
 .. _Chloe Hampson: https://github.com/chlohamp
 
 .. _Chris Rorden: https://github.com/neurolabusc
@@ -136,6 +138,8 @@
 .. _Hande Gözükan: https://github.com/hndgzkn
 
 .. _Hao-Ting Wang: https://wanghaoting.com/
+
+.. _Hariom Patidar: https://github.com/HariomPtdr
 
 .. _Himanshu Aggarwal: https://github.com/man-shu
 

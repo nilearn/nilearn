@@ -24,8 +24,10 @@ def _has_rich() -> bool:
 
 
 if _has_rich():
-    from rich import print
+    from rich.console import Console
     from rich.markup import escape
+
+    console = Console(highlight=True, soft_wrap=True)
 
 
 # The technique used in the log() function only applies to CPython, because
@@ -81,6 +83,8 @@ def log(
     is the one which is most likely to have been written in the user's script.
 
     """
+    from nilearn._utils.helpers import is_notebook
+
     if verbose is False:
         verbose = 0
     if verbose is True:
@@ -112,8 +116,10 @@ def log(
     if object_self is not None:
         func_name = f"{object_self.__class__.__name__}.{func_name}"
 
-    if _has_rich():
-        print(f"[blue]\\[{func_name}][/blue] {escape(msg)}")
+    # Do not bother using rich in notebooks
+    # as the colored highlights are not rendered in their output.
+    if _has_rich() and not is_notebook():
+        console.print(f"[blue]\\[{func_name}][/blue] {escape(msg)}")
     else:
         print(f"[{func_name}] {msg}")
 

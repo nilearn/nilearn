@@ -15,10 +15,10 @@ See :ref:`plotting` for more details.
 # We will first retrieve data from nilearn provided (general-purpose)
 # datasets.
 
-from nilearn import datasets
+from nilearn.datasets import fetch_haxby, load_sample_motor_activation_image
 
-# haxby dataset to have EPI images and masks
-haxby_dataset = datasets.fetch_haxby()
+# Fetch the Haxby dataset to have EPI images and masks.
+haxby_dataset = fetch_haxby()
 
 # print basic information on the dataset
 print(
@@ -33,7 +33,7 @@ haxby_mask_filename = haxby_dataset.mask_vt[0]
 haxby_func_filename = haxby_dataset.func[0]
 
 # one motor activation map
-stat_img = datasets.load_sample_motor_activation_image()
+stat_img = load_sample_motor_activation_image()
 
 
 # %%
@@ -64,8 +64,10 @@ plot_stat_map(
 )
 
 # %%
-# A call to plotting.show is needed to display the plots when running
-# in script mode (ie outside IPython).
+# Calling ``show`` function
+# from :mod:`nilearn.plotting` package is necessary to display the figure
+# when running as a script outside IPython.
+
 show()
 
 
@@ -117,7 +119,7 @@ show()
 # Plotting anatomical images: `plot_anat`
 # ```````````````````````````````````````
 #
-# Visualizing anatomical image of haxby dataset
+# Visualizing anatomical image of the Haxby dataset
 from nilearn.plotting import plot_anat
 
 plot_anat(haxby_anat_filename, title="plot_anat")
@@ -128,7 +130,7 @@ show()
 # Plotting ROIs (here the mask): `plot_roi`
 # `````````````````````````````````````````
 #
-# Visualizing ventral temporal region image from haxby dataset overlaid on
+# Visualizing ventral temporal region image from the Haxby dataset overlaid on
 # subject specific anatomical image
 # with coordinates positioned automatically on region of interest (roi).
 from nilearn.plotting import plot_roi
@@ -141,14 +143,13 @@ show()
 # Plotting :term:`EPI` image: `plot_epi`
 # ``````````````````````````````````````
 
-# Import image processing tool
-from nilearn import image
 
 # Compute the voxel_wise mean of functional images across time,
 # basically reducing the functional image from 4D to 3D.
+from nilearn.image import mean_img
 from nilearn.plotting import plot_epi
 
-mean_haxby_img = image.mean_img(haxby_func_filename)
+mean_haxby_img = mean_img(haxby_func_filename)
 
 # Visualizing mean image (3D)
 plot_epi(mean_haxby_img, title="plot_epi")
@@ -231,8 +232,8 @@ show()
 # Visualizing without a colorbar on the right side
 # ------------------------------------------------
 #
-# The argument ``colorbar`` should be set to ``False`` to show plots without
-# a colorbar on the right side.
+# The argument ``colorbar`` should be set to ``False`` to show plots
+# without a colorbar on the right side.
 
 plot_stat_map(
     stat_img,
