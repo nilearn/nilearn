@@ -44,9 +44,11 @@ Enhancements
 
 - :bdg-primary:`Doc` Docstring examples can now be run in the browser via `jupyterlite <https://jupyterlite.readthedocs.io/en/stable/>`_ (:gh:`6581` by `Elizabeth DuPre`_).
 
-- :bdg-success:`API` :func:`~image.smooth_array` now warns when ``ensure_finite=True`` replaces non-finite values with zeros, instead of doing it silently (:gh:`6530` by `Cedric Conday`_).
-
 - :bdg-success:`API` :class:`~nilearn.utils.InputTags` is now part of the public API in :mod:`nilearn.utils`, so that third-party estimators can declare whether they accept Nifti and / or surface images (:gh:`6563` by `Aniket Singh Yadav`_).
+
+- :bdg-success:`API` :func:`~masking.apply_mask` now honors ``ensure_finite`` for surface data. The surface branch previously cleaned non-finite values unconditionally, ignoring the argument. Passing ``smoothing_fwhm`` still forces ``ensure_finite=True``, now on surfaces as well as volumes (:gh:`6530` by `Cedric Conday`_).
+
+- :bdg-success:`API` The ``Non-finite values detected. These values will be replaced with zeros.`` warning is now a ``RuntimeWarning`` rather than a ``UserWarning``. Code that catches it, with ``warnings.catch_warnings`` or ``pytest.warns``, has to be updated (:gh:`6530` by `Cedric Conday`_).
 
 
 Changes

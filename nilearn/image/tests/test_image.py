@@ -344,7 +344,7 @@ def test_smooth_array_nan_do_not_propagate():
     fwhm = 9
     affine = AFFINE_TO_TEST[2]
 
-    with pytest.warns(UserWarning, match="Non-finite values detected"):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
         filtered = smooth_array(
             data, affine, fwhm=fwhm, ensure_finite=True, copy=True
         )
@@ -363,7 +363,7 @@ def test_smooth_array_warns_on_non_finite(fwhm):
     data[10, 10, 10] = np.nan
     affine = AFFINE_TO_TEST[2]
 
-    with pytest.warns(UserWarning, match="Non-finite values detected"):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
         smooth_array(data, affine, fwhm=fwhm, ensure_finite=True, copy=True)
 
 
@@ -540,7 +540,7 @@ def test_smooth_img_surface_nan_do_not_propagate(surf_img_1d, fwhm):
     surf_img_1d.data.parts["left"][1] = np.inf
     surf_img_1d.data.parts["right"][0] = -np.inf
 
-    with pytest.warns(UserWarning, match="Non-finite values detected"):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
         smoothed = smooth_img(surf_img_1d, fwhm=fwhm)
 
     for part in smoothed.data.parts.values():
@@ -554,7 +554,7 @@ def test_smooth_img_surface_does_not_modify_input(surf_img_1d):
         part: values.copy() for part, values in surf_img_1d.data.parts.items()
     }
 
-    with pytest.warns(UserWarning, match="Non-finite values detected"):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
         smooth_img(surf_img_1d, fwhm=4.0)
 
     for part, values in expected.items():
@@ -570,7 +570,7 @@ def test_smooth_img_surface_warns_on_non_finite(surf_img_1d, fwhm):
     """
     surf_img_1d.data.parts["left"][0] = np.nan
 
-    with pytest.warns(UserWarning, match="Non-finite values detected"):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
         smooth_img(surf_img_1d, fwhm=fwhm)
 
 
@@ -581,7 +581,7 @@ def test_smooth_img_volume_warns_on_non_finite(img_3d_mni, fwhm):
     data = get_data(img_3d_mni)
     data[0, 0, 0] = np.nan
 
-    with pytest.warns(UserWarning, match="Non-finite values detected"):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
         smooth_img(img_3d_mni, fwhm=fwhm)
 
 
@@ -631,7 +631,7 @@ def test_smooth_img_volume_does_not_modify_input(img_3d_mni):
     data[0, 0, 0] = np.nan
     expected = data.copy()
 
-    with pytest.warns(UserWarning, match="Non-finite values detected"):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
         smooth_img(img_3d_mni, fwhm=4.0)
 
     assert_array_equal(get_data(img_3d_mni), expected)
@@ -646,7 +646,9 @@ def test_smooth_img_list_warns_for_each_image(surf_img_1d):
     """
     surf_img_1d.data.parts["left"][0] = np.nan
 
-    with pytest.warns(UserWarning, match="Non-finite values detected") as rec:
+    with pytest.warns(
+        RuntimeWarning, match="Non-finite values detected"
+    ) as rec:
         smoothed = smooth_img([surf_img_1d, surf_img_1d], fwhm=4.0)
 
     non_finite_warnings = [

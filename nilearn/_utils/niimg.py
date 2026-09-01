@@ -92,6 +92,7 @@ def ensure_finite_data(
             warn(
                 "Non-finite values detected. "
                 "These values will be replaced with zeros.",
+                RuntimeWarning,
                 stacklevel=find_stack_level(),
             )
         data[non_finite_mask] = 0

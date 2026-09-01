@@ -967,7 +967,7 @@ def apply_mask(
         infs) found in the images will be replaced by zeros,
         and a warning is emitted when any value was replaced.
 
-        .. nilearn_versionchanged:: 0.14.1
+        .. nilearn_versionchanged:: 0.15.0
 
             This is now honored for surface data as well as volume data.
 

@@ -1298,7 +1298,7 @@ def test_get_data_ensure_finite(surf_img_1d, ensure_finite):
     surf_img_1d.data.parts["left"][2] = np.inf
 
     if ensure_finite is True:
-        with pytest.warns(UserWarning, match="Non-finite values detected."):
+        with pytest.warns(RuntimeWarning, match="Non-finite values detected."):
             data_from_image = get_data(
                 surf_img_1d, ensure_finite=ensure_finite
             )
