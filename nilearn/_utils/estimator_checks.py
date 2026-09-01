@@ -120,8 +120,13 @@ from nilearn.decomposition.tests.conftest import (
 from nilearn.exceptions import DimensionError, MeshDimensionError
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
-from nilearn.image import get_data, index_img, new_img_like
-from nilearn.image.image import check_imgs_equal
+from nilearn.image.image import (
+    check_imgs_equal,
+    get_data,
+    index_img,
+    iter_img,
+    new_img_like,
+)
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     NiftiLabelsMasker,
@@ -657,6 +662,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
             clone(estimator),
             check_masker_transformer_high_variance_confounds,
         )
+        yield (clone(estimator), check_masker_verbose)
 
         if isinstance(estimator, NiftiMasker):
             # TODO enforce for other maskers
@@ -3043,6 +3049,8 @@ def check_masker_mask_img(estimator_orig) -> None:
     If a mask is passed at construction,
     then mask_img_ should be a valid mask after fit.
 
+    If verbose > 0, maskers should mention they are loading a mask.
+
     Maskers should be fittable
     even when passing a non-binary image
     with multiple samples (4D for volume, 2D for surface) as mask.
@@ -3097,7 +3105,14 @@ def check_masker_mask_img(estimator_orig) -> None:
     estimator = clone(estimator)
     estimator.mask_img = binary_mask_img
 
-    estimator.fit()
+    # when verbose masker says it's loading a mask
+    estimator.verbose = 1
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        estimator.fit()
+    output = buffer.getvalue()
+    assert "Loading mask" in output
+
     ref_mask_img_ = estimator.mask_img_
 
     estimator = clone(estimator)
@@ -3690,15 +3705,31 @@ def check_masker_transform_resampling(estimator_orig) -> None:
 
         for mask in [None, mask_img]:
             estimator = clone(estimator)
+            estimator.verbose = 1
             estimator.resampling_target = resampling_target
             estimator.mask_img = mask
 
             # no resampling warning at fit time
-            with warnings.catch_warnings(record=True) as warning_list:
+            # but regular logging is OK
+            buffer = io.StringIO()
+            with (
+                warnings.catch_warnings(record=True) as warning_list,
+                contextlib.redirect_stdout(buffer),
+            ):
                 estimator.fit(imgs)
             assert all(
                 "at transform time" not in str(x.message) for x in warning_list
             )
+
+            # ensure expected message only appears once in log output
+            output_verbose = buffer.getvalue()
+            expected_loading_message = []
+            if resampling_target == "data":
+                expected_loading_message.append("Resampling regions")
+            if mask is not None:
+                expected_loading_message.append("Resampling mask")
+            for s in expected_loading_message:
+                assert len(re.findall(rf"{s}", output_verbose)) == 1
 
             signals = _rng().random((n_sample, estimator.n_elements_))
 
@@ -3708,19 +3739,27 @@ def check_masker_transform_resampling(estimator_orig) -> None:
             actual_shape = new_imgs.shape
             assert actual_shape == expected_shape
 
-            if resampling_target in ["maps", "labels"]:
-                with pytest.warns(
-                    UserWarning, match="images at transform time"
-                ):
-                    estimator.transform(imgs)
-            else:
-                # no resampling warning when using same imgs as for fit()
-                with warnings.catch_warnings(record=True) as warning_list:
-                    estimator.transform(imgs)
-                assert all(
-                    "at transform time" not in str(x.message)
-                    for x in warning_list
-                )
+            # resampling warning but no logging at transform time
+            buffer = io.StringIO()
+            with (
+                contextlib.redirect_stdout(buffer),
+            ):
+                if resampling_target in ["maps", "labels"]:
+                    with pytest.warns(
+                        UserWarning, match="images at transform time"
+                    ):
+                        estimator.transform(imgs)
+                else:
+                    # no resampling warning when using same imgs as for fit()
+                    with warnings.catch_warnings(record=True) as warning_list:
+                        estimator.transform(imgs)
+                    assert all(
+                        "at transform time" not in str(x.message)
+                        for x in warning_list
+                    )
+            output_verbose = buffer.getvalue()
+            for s in ["Resampling mask", "Resampling regions"]:
+                assert s not in output_verbose
 
             # same result before and after running transform()
             new_imgs_2 = estimator.inverse_transform(signals)
@@ -3818,6 +3857,96 @@ def check_masker_joblib_cache(estimator_orig) -> None:
     # imgs return by inverse_transform impossible to save
     if accept_niimg_input(estimator):
         out_img.to_filename(cachedir / "test.nii")
+
+
+def check_masker_verbose(estimator_orig) -> None:
+    """Check verbose behavior for maskers.
+
+    Masker should mention they are loading data, regions, extracting data...
+    during fit, transform, inverse_transform.
+
+    Output to stdout should be longer with verbose = 2
+    than when verbose = 1 when fitting list of images.
+    """
+    estimator = clone(estimator_orig)
+
+    # TODO determine what the behavior of multi masker should be
+    if isinstance(estimator, _MultiMixin):
+        return
+
+    imgs: Nifti1Image | SurfaceImage | list
+    if accept_niimg_input(estimator):
+        imgs = _img_4d_rand_eye_medium()
+    else:
+        imgs = _make_surface_img(100)
+    imgs = list(iter_img(imgs))
+
+    # -----------------------------------------------------------
+    # logging during fit
+
+    estimator.verbose = 1
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        estimator.fit(imgs)
+    output_verbose_1 = buffer.getvalue()
+
+    estimator.verbose = 2
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        estimator.fit(imgs)
+    output_verbose_2 = buffer.getvalue()
+
+    # ensure expected message only appears once in output
+    expected_loading_message = ["Loading data from", "Finished fit"]
+    if isinstance(
+        estimator,
+        (
+            SurfaceLabelsMasker,
+            SurfaceMapsMasker,
+            NiftiLabelsMasker,
+            NiftiMapsMasker,
+        ),
+    ):
+        expected_loading_message.append("Loading regions from")
+    elif not isinstance(estimator, NiftiSpheresMasker):
+        expected_loading_message.append("Computing mask")
+
+    for outputs in [output_verbose_1, output_verbose_2]:
+        for s in expected_loading_message:
+            assert len(re.findall(rf"{s}", outputs)) == 1
+
+    # verbosity for mask loading checked by check_masker_mask_img
+    assert "Loading mask from" not in output_verbose_1
+    assert "Loading mask from" not in output_verbose_2
+
+    # -----------------------------------------------------------
+    # logging during transform and inverse transform
+    estimator = clone(estimator_orig)
+    estimator.verbose = 1
+    if isinstance(estimator, NiftiSpheresMasker):
+        estimator.mask_img = Nifti1Image(np.ones((15, 16, 17)), _affine_eye())
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        signal = estimator.fit_transform(imgs)
+    output_verbose = buffer.getvalue()
+
+    expected_loading_message = [
+        "Extracting region signals",
+        "Cleaning extracted signals",
+    ]
+    for s in expected_loading_message:
+        assert len(re.findall(rf"{s}", output_verbose)) == 1
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        estimator.inverse_transform(signal)
+    output_verbose = buffer.getvalue()
+
+    expected_loading_message = ["Computing image from signals"]
+    for outputs in [output_verbose]:
+        for s in expected_loading_message:
+            assert len(re.findall(rf"{s}", outputs)) == 1
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------

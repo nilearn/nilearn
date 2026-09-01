@@ -20,7 +20,7 @@ NEW
 Fixes
 -----
 
-- :bdg-dark:`Code` Fix ``examples/07_advanced/plot_neurovault_meta_analysis.py`` plotting its glass brain images in a non-deterministic order, since ``fetch_neurovault_ids`` does not guarantee ``images_meta`` is returned in the same order as the requested ``image_ids``; re-order ``images_meta`` to match ``stop_go_image_ids`` right after fetching (:gh:`6437` by `Rémi Gau`_).
+- :bdg-dark:`Code` Fix masker verbosity so higher ``verbose`` levels no longer produce less output than lower ones (:gh:`XXXX` by `Fabricio Cravo`_).
 
 - :bdg-dark:`Code` Fix maskers silently truncating standardized (``standardize="zscore_sample"`` or ``"psc"``) signal back down to the source image's dtype when the masker's own ``dtype`` was left at its default (``None``); for images with an integer dtype, such as raw unprocessed BOLD data, this collapsed the standardized values to a handful of integer levels, destroying almost all of the signal's precision (:gh:`6526` by `Rémi Gau`_).
 
