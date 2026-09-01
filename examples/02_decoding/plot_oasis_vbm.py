@@ -39,7 +39,7 @@ to limit the memory usage.
 """
 
 # Use a single variable to control the verbosity of the script.
-verbose = 0
+verbose = 1
 
 # Several of Nilearn's estimators (like the DecoderRegressor we use here)
 # accept a ``n_jobs=<some_high_value>``
