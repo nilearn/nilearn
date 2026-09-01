@@ -208,6 +208,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._reset_report()
 
         if imgs is not None:
+            mask_logger("load_data", img=imgs, verbose=self.verbose)
+
             self._check_imgs(imgs)
 
             if isinstance(imgs, SurfaceImage) and any(

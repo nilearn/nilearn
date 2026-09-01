@@ -175,7 +175,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 "if no mask is passed to mask_img."
             )
 
-        mask_logger("compute_mask", verbose=self.verbose)
+        mask_logger("compute_mask", img=img, verbose=self.verbose)
 
         img = deepcopy(img)
         if not isinstance(img, list):
@@ -225,6 +225,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._reset_report()
 
         if imgs is not None:
+            mask_logger("load_data", imgs, self.verbose)
             self._check_imgs(imgs)
 
             if isinstance(imgs, SurfaceImage) and any(
