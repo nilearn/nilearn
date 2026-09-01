@@ -20,6 +20,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix masker verbosity so higher ``verbose`` levels no longer produce less output than lower ones (:gh:`XXXX` by `Fabricio Cravo`_).
+
 - :bdg-dark:`Code` Fix maskers silently truncating standardized (``standardize="zscore_sample"`` or ``"psc"``) signal back down to the source image's dtype when the masker's own ``dtype`` was left at its default (``None``); for images with an integer dtype, such as raw unprocessed BOLD data, this collapsed the standardized values to a handful of integer levels, destroying almost all of the signal's precision (:gh:`6526` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix :func:`~image.smooth_img` leaving non-finite values in surface images, and spreading them over neighboring vertices when smoothing; the volume branch already passes ``ensure_finite=True`` to ``smooth_array`` (:gh:`6503` by `Cedric Conday`_).
