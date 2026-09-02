@@ -150,7 +150,7 @@ to consider is **standardization**.
 In :term:`fMRI` time series data, different voxels or vertices
 can exhibit drastically different baseline scales
 and variance profiles. If data is fed directly into machine-learning
-models (such as support vector machines, regularized linear models,
+models (such as :term:`support vector machines <SVM>`, regularized linear models,
 or penalized regression) without scaling, features with larger
 numerical variances will disproportionately dominate the optimization
 objective, leading to a severe scale bias.
