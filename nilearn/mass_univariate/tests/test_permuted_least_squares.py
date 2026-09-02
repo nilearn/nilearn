@@ -641,8 +641,7 @@ def test_tfce_smoke_legacy_smoke():
         n_regressors,
     ) = _tfce_design()
 
-    # no permutations and output_type is "dict", so check for "t" and
-    # "tfce" maps
+    # check for "t" and "tfce" maps
     out = permuted_ols(
         tested_var,
         target_var,
@@ -693,7 +692,7 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     """Test combinations of parameters related to cluster-level inference."""
     target_var, tested_var = cluster_level_design
 
-    # no permutations and output_type is "dict", so check for "t" map
+    # no permutations so check for "t" map
     out = permuted_ols(
         tested_var,
         target_var,
@@ -738,9 +737,6 @@ def test_sanitize_inputs_permuted_ols(design):
     target_vars, tested_vars, *_ = design
     _sanitize_inputs_permuted_ols(
         n_jobs=-1,
-        output_type="dict",
-        tfce=False,
-        threshold=None,
         target_vars=target_vars,
         tested_vars=tested_vars,
     )
@@ -771,65 +767,6 @@ def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
         match="perform more permutations",
     ):
         permuted_ols(tested_var, target_var, n_perm=1, masker=masker, n_jobs=2)
-
-
-def test_cluster_level_parameters_warnings(cluster_level_design, masker):
-    """Test combinations of parameters related to cluster-level inference."""
-    target_var, tested_var = cluster_level_design
-
-    # masker is defined, but threshold is not.
-    # no cluster-level inference is performed, but there's a warning.
-    with pytest.warns(
-        FutureWarning,
-        match="'output_type'.*is deprecated",
-    ):
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=N_PERM,
-            random_state=0,
-            masker=masker,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, tuple)
-
-    # threshold is defined, but output_type is "legacy".
-    # raise a warning, and get a dictionary.
-    with pytest.warns(
-        Warning,
-        match="If 'threshold' is not None",
-    ):
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=0,
-            random_state=0,
-            threshold=0.001,
-            masker=masker,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, dict)
-
-    # output_type is "legacy".
-    # raise a deprecation warning, but get the standard output.
-    with pytest.warns(FutureWarning, match="will be removed in version"):
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=N_PERM,
-            random_state=0,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, tuple)
 
 
 def test_permuted_ols_no_covar_warning(rng):
@@ -887,43 +824,6 @@ def test_permuted_ols_with_multiple_constants_and_covars_warnings(design):
             n_perm=0,
             random_state=0,
         )
-
-
-def test_tfce_smoke_legacy_warnings():
-    """Check that requesting a legacy output throws a warning."""
-    target_var, tested_var, masker, *_ = _tfce_design()
-
-    # tfce is True, but output_type is "legacy".
-    # raise a warning, and get a dictionary.
-    with pytest.warns(UserWarning, match="Overriding."):
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=0,
-            random_state=0,
-            masker=masker,
-            tfce=True,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, dict)
-
-    # output_type is "legacy".
-    # raise a deprecation warning, but get the standard output.
-    with pytest.warns(FutureWarning, match="will be removed in version"):
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=N_PERM,
-            random_state=0,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, tuple)
 
 
 def test_permuted_ols_no_covar_n_job_error(dummy_design):
