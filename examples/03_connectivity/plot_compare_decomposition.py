@@ -78,7 +78,7 @@ canica_components_img.to_filename(output_dir / "canica_resting_state.nii.gz")
 
 
 # %%
-# To visualize we plot the outline of all components on one figure
+# To visualize, we plot the outline of all components on one figure
 from nilearn.plotting import plot_prob_atlas
 
 # Plot all ICA components together
