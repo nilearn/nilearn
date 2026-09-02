@@ -147,8 +147,8 @@ the preprocessing steps applied to the data are often as critical
 as the choice of the estimator itself. A key preprocessing option
 to consider is **standardization**.
 
-In raw fMRI time-series or volumetric data, different voxels or
-brain regions can exhibit drastically different baseline scales
+In :term:`fMRI` time series data, different voxels or vertices
+can exhibit drastically different baseline scales
 and variance profiles. If data is fed directly into machine-learning
 models (such as support vector machines, regularized linear models,
 or penalized regression) without scaling, features with larger
