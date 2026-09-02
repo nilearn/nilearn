@@ -2,12 +2,12 @@
 
 import numpy as np
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.utils import ClassifierTags, RegressorTags
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import (
     check_params,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
 
 
 class _ClassifierMixin:
@@ -23,11 +23,6 @@ class _ClassifierMixin:
         # when bumping sklearn_version > 1.5
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            return tags
-
-        from sklearn.utils import ClassifierTags
-
         tags.estimator_type = "classifier"
         tags.classifier_tags = ClassifierTags()
 
@@ -69,11 +64,6 @@ class _RegressorMixin:
         # when bumping sklearn_version > 1.5
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            tags["multioutput"] = True
-            return tags
-        from sklearn.utils import RegressorTags
-
         tags.estimator_type = "regressor"
         tags.regressor_tags = RegressorTags()
 

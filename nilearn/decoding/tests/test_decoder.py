@@ -51,13 +51,11 @@ from sklearn.utils._testing import ignore_warnings
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
 from nilearn._utils.versions import (
     SKLEARN_GTE_1_7,
-    SKLEARN_LT_1_6,
     compare_version,
 )
 from nilearn.conftest import _rng
@@ -110,34 +108,14 @@ ESTIMATORS_TO_CHECK = [
     FREMRegressor(standardize="zscore_sample", screening_percentile=100),
 ]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.slow
@@ -1185,21 +1163,13 @@ def test_decoder_multiclass_warnings_frem(multiclass_data):
 def test_decoder_tags_classification():
     """Check value returned by _more_tags."""
     model = Decoder()
-    # TODO (sklearn >= 1.6.0) remove if block
-    if SKLEARN_LT_1_6:
-        assert model.__sklearn_tags__()["require_y"] is True
-    else:
-        assert model.__sklearn_tags__().target_tags.required is True
+    assert model.__sklearn_tags__().target_tags.required is True
 
 
 def test_decoder_tags_regression():
     """Check value returned by _more_tags."""
     model = DecoderRegressor()
-    # remove if block when bumping sklearn_version to > 1.5
-    if SKLEARN_LT_1_6:
-        assert model.__sklearn_tags__()["multioutput"] is True
-    else:
-        assert model.__sklearn_tags__().target_tags.multi_output is True
+    assert model.__sklearn_tags__().target_tags.multi_output is True
 
 
 @pytest.mark.slow

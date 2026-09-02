@@ -5,7 +5,7 @@ from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
 
 from nilearn._base import NilearnBaseEstimator
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.tags import InputTags
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker, get_params
 
@@ -80,14 +80,6 @@ class OwningClass(BaseEstimator):
         self.dummy = dummy
 
     def __sklearn_tags__(self):
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(surf_img=True, niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
         tags = BaseEstimator().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=True, niimg_like=False)
         return tags
@@ -103,13 +95,6 @@ class DummyEstimator:
             setattr(self, k, v)
 
     def __sklearn_tags__(self):
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(surf_img=True, niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
 
         tags = BaseEstimator().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=True, niimg_like=False)

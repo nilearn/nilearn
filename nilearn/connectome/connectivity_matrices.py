@@ -9,6 +9,7 @@ from sklearn.base import TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
 from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
+from sklearn.utils.validation import validate_data
 
 from nilearn import signal
 from nilearn._base import NilearnBaseEstimator
@@ -16,7 +17,6 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_parameter_in_allowed
-from nilearn._utils.versions import SKLEARN_LT_1_6
 
 
 def _check_square(matrix: np.ndarray) -> None:
@@ -541,20 +541,8 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             )
 
         if self.__sklearn_is_fitted__():
-            # TODO (sklearn >= 1.6.0) simplify
-            if SKLEARN_LT_1_6:
-                for x in X:
-                    check_array(
-                        x,
-                        estimator=self,
-                        ensure_min_features=self.n_features_in_,
-                        accept_sparse=False,
-                    )
-            else:
-                from sklearn.utils.validation import validate_data
-
-                for x in X:
-                    validate_data(self, x, reset=False, accept_sparse=False)
+            for x in X:
+                validate_data(self, x, reset=False, accept_sparse=False)
         else:
             for s in X:
                 check_array(s, accept_sparse=False)

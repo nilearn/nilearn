@@ -57,9 +57,6 @@ from sklearn.utils.estimator_checks import (
     _is_public_parameter,
     check_is_fitted,
 )
-from sklearn.utils.estimator_checks import (
-    check_estimator as sklearn_check_estimator,
-)
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
@@ -79,7 +76,7 @@ from nilearn._utils.tags import (
     is_masker,
 )
 from nilearn._utils.testing import is_ci, write_imgs_to_path
-from nilearn._utils.versions import SKLEARN_LT_1_6, compare_version
+from nilearn._utils.versions import compare_version
 from nilearn.conftest import (
     _affine_eye,
     _drop_surf_img_part,
@@ -156,55 +153,6 @@ SKLEARN_GTE_1_6 = compare_version(sklearn_version, ">=", "1.6.0")
 
 def nilearn_dir() -> Path:
     return Path(__file__).parents[1]
-
-
-def check_estimator(
-    estimators: list[NilearnBaseEstimator], valid: bool = True
-):
-    """Yield a valid or invalid sklearn estimators check.
-
-    ONLY USED FOR sklearn<1.6
-
-    As some of Nilearn estimators do not comply
-    with sklearn recommendations
-    (cannot fit Numpy arrays, do input validation in the constructor...)
-    we cannot directly use
-    sklearn.utils.estimator_checks.check_estimator.
-
-    So this is a home made generator that yields an estimator instance
-    along with a
-    - valid check from sklearn: those should stay valid
-    - or an invalid check that is known to fail.
-
-    See this section rolling-your-own-estimator in
-    the scikit-learn doc for more info:
-    https://scikit-learn.org/stable/developers/develop.html
-
-    Parameters
-    ----------
-    estimators : :obj:`list` of estimator object
-        Estimator instance to check.
-    valid : :obj:`bool`, default=True
-        Whether to return only the valid checks or not.
-    """
-    # TODO (sklearn >= 1.6.0) remove this function
-    if not SKLEARN_LT_1_6:  # pragma: no cover
-        raise RuntimeError(
-            "Use dedicated sklearn utilities to test estimators."
-        )
-
-    check_is_of_allowed_type(estimators, (list,), "estimators")
-
-    for est in estimators:
-        expected_failed_checks = return_expected_failed_checks(est)
-
-        for e, check in sklearn_check_estimator(
-            estimator=est, generate_only=True
-        ):
-            if not valid and check.func.__name__ in expected_failed_checks:
-                yield e, check, check.func.__name__
-            if valid and check.func.__name__ not in expected_failed_checks:
-                yield e, check, check.func.__name__
 
 
 def return_expected_failed_checks(

@@ -14,7 +14,7 @@ from joblib import Parallel, cpu_count, delayed
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
-from sklearn.utils import check_array
+from sklearn.utils import ClassifierTags, RegressorTags, check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import has_fit_parameter
 
@@ -23,7 +23,7 @@ from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import readable_time
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.tags import InputTags
 from nilearn.decoding._utils import SUPPORTED_ESTIMATORS, validate_estimator
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
@@ -428,30 +428,14 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags()
-
-        from sklearn.utils import ClassifierTags, RegressorTags
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=False)
 
         if self._estimator_type == "regressor":
-            if SKLEARN_LT_1_6:
-                tags["multioutput"] = True
-                return tags
             tags.estimator_type = "regressor"
             tags.regressor_tags = RegressorTags()
 
         elif self._estimator_type == "classifier":
-            if SKLEARN_LT_1_6:
-                return tags
             tags.estimator_type = "classifier"
             tags.classifier_tags = ClassifierTags()
 

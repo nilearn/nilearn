@@ -12,8 +12,7 @@ import numpy as np
 from nibabel import Nifti1Image
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
 from sklearn.base import ClusterMixin, TransformerMixin
-from sklearn.utils import check_array
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_is_fitted, validate_data
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
@@ -21,7 +20,7 @@ from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.tags import InputTags
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -683,14 +682,6 @@ class ReNA(
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(niimg_like=False)
         return tags
@@ -738,21 +729,14 @@ class ReNA(
         del y
         check_params(self.__dict__)
 
-        if SKLEARN_LT_1_6:
-            X = check_array(
-                X, ensure_min_features=2, ensure_min_samples=2, estimator=self
-            )
-            self.n_features_in_ = X.shape[1]
-        else:
-            from sklearn.utils.validation import validate_data
-
-            X = validate_data(
-                self,
-                X,
-                reset=True,
-                ensure_min_features=2,
-                ensure_min_samples=2,
-            )
+        X = validate_data(
+            self,
+            X,
+            reset=True,
+            ensure_min_features=2,
+            ensure_min_samples=2,
+        )
+        self.n_features_in_ = X.shape[1]
 
         self.mask_img_ = self.mask_img
         self._set_mask_img_for_tests()
@@ -837,18 +821,7 @@ class ReNA(
         """
         check_is_fitted(self)
 
-        # TODO (sklearn >= 1.6.0) simplify
-        if SKLEARN_LT_1_6:
-            X = check_array(
-                X,
-                ensure_2d=True,
-                estimator=self,
-                ensure_min_features=self.n_features_in_,
-            )
-        else:
-            from sklearn.utils.validation import validate_data
-
-            X = validate_data(self, X, reset=False)
+        X = validate_data(self, X, reset=False)
 
         unique_labels = np.unique(self.labels_)
 
