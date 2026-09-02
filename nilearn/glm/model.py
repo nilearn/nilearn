@@ -11,6 +11,94 @@ from nilearn.glm._utils import pad_contrast, positive_reciprocal
 inv_t_cdf = t_distribution.ppf
 
 
+def _scaled_covariance_block(cov, matrix, column) -> np.ndarray | None:
+    """Return the block of ``cov`` that :meth:`vcov` scales by dispersion.
+
+    Returns None for the ``matrix`` branch, which the guard leaves
+    alone: it appends an axis for a 1-D dispersion and behaves as it
+    always has for every other shape. ``column`` is tested first because
+    :meth:`vcov` runs its ``column`` branch whenever ``column`` is given,
+    whether or not ``matrix`` is given with it.
+
+    Indexes exactly as the branches of :meth:`vcov` do, so that a check
+    made on the returned block cannot disagree with what is returned.
+
+    Returns
+    -------
+    :obj:`numpy.ndarray` or None
+        The block of ``cov`` the selection keeps, or None when the
+        ``matrix`` branch will run.
+    """
+    if column is not None:
+        column = np.asarray(column)
+        if column.shape == ():
+            return cov[column, column]
+        return cov[column][:, column]
+    if matrix is not None:
+        return None
+    return cov
+
+
+def _uniform_covariance_stack(cov, matrix, column, dispersion) -> np.ndarray:
+    """Return one covariance matrix per dispersion value.
+
+    This is the shape :meth:`LikelihoodModelResults.vcov` returns
+    unless ``uniform=False``: one copy of the selected block per
+    dispersion value, whatever shape the dispersion itself arrives in.
+    A scalar dispersion is one value, so it gives ``(1, dim, dim)``.
+    The block is always square, so the result is always
+    ``(n_dispersion, dim, dim)``. A ``matrix`` of rank 3 or more cannot
+    give a square block, so it raises here rather than returning
+    something of another rank.
+
+    Selecting a single regressor gives a one by one block rather than
+    dropping the axes, which is the difference from the branches of
+    :meth:`LikelihoodModelResults.vcov`. Through ``matrix`` the block
+    is the contrast's own dimension, so a single row spanning several
+    regressors is also one by one.
+
+    Returns
+    -------
+    :obj:`numpy.ndarray`
+        The selected covariance block, scaled once per dispersion value.
+    """
+    if column is not None:
+        column = np.asarray(column)
+        selected = np.atleast_1d(np.arange(cov.shape[0])[column])
+        if selected.ndim != 1:
+            # A 2-D selector, or a 0-d boolean, which numpy reads as a
+            # whole-array mask rather than as one regressor.
+            raise ValueError(
+                "column must be an integer, a 1-D sequence of integers "
+                "or a 1-D boolean mask."
+            )
+        block = cov[selected][:, selected]
+    elif matrix is not None:
+        # Read the rank without rebinding matrix, so that an np.matrix
+        # reaches np.dot as one and the asarray below still has work to
+        # do.
+        rank = np.asarray(matrix).ndim
+        if rank > 2:
+            # matrix is documented as (dim, n_regressors). A higher rank
+            # one keeps its extra axes through the product, so the result
+            # cannot be one square block per dispersion value. It used
+            # to come back with those axes still on it, or fail inside
+            # numpy, depending on both its shape and the number of
+            # dispersion values.
+            raise ValueError(
+                "matrix must be 1-D or 2-D to give one covariance matrix "
+                f"per dispersion value; this one has {rank} "
+                "dimensions. Give it as (dim, n_regressors)."
+            )
+        block = np.dot(matrix, np.dot(cov, np.transpose(matrix)))
+    else:
+        block = cov
+    # asarray because ``*`` means matrix multiplication for the
+    # np.matrix a caller may have passed as ``matrix``.
+    block = np.asarray(block)
+    return block * np.ravel(dispersion)[:, np.newaxis, np.newaxis]
+
+
 class LikelihoodModelResults:
     """Class to contain results from likelihood models.
 
@@ -88,19 +176,66 @@ class LikelihoodModelResults:
 
         Use Tcontrast for more complicated (Wald) t-statistics.
 
+        Parameters
+        ----------
+        column : :obj:`int`, sequence, or 1-D :obj:`bool` mask, \
+default=None
+            Which regressor(s) to return the t-statistic for. None
+            means every regressor.
+
+        Returns
+        -------
+        t : (n_regressors,) or (n_regressors, n_voxels) array
+            One t-statistic per requested regressor, per column of the
+            data the model was fitted on. A single integer ``column``
+            returns the statistic for that regressor alone, without
+            the regressor axis.
+
+            .. nilearn_versionchanged:: 0.14.1
+                For a model fitted on several columns of data, the
+                per-column axis is kept instead of being dropped. Asking
+                for several regressors at once used to raise, or to
+                return wrong values when the number of columns of data
+                happened to equal the number of regressors, or when the
+                data was 2-D with a single column. A single regressor on
+                several columns of data was also wrong, silently.
+
         """
         if column is None:
             column = range(self.theta.shape[0])
 
         column = np.asarray(column)
+        if column.ndim > 1:
+            # Iterating a 2-D selector would hand whole rows to vcov,
+            # which selects blocks, and a block is not one regressor.
+            raise ValueError(
+                "column must be an integer, a 1-D sequence of integers "
+                "or a 1-D boolean mask."
+            )
         _theta = self.theta[column]
-        _cov = self.vcov(column=column)
-        if _cov.ndim == 2:
-            _cov = np.diag(_cov)
+        if column.shape == ():
+            _cov = self.vcov(column=column, uniform=False)
+        else:
+            # Ask for one regressor at a time. Asking for several at once
+            # gives back a covariance matrix, whose diagonal has already
+            # dropped the column-of-data axis that ``_theta`` still has.
+            _cov = np.array(
+                [
+                    self.vcov(column=c, uniform=False)
+                    for c in np.arange(self.theta.shape[0])[column]
+                ]
+            )
         _t = _theta * positive_reciprocal(np.sqrt(_cov))
         return _t
 
-    def vcov(self, matrix=None, column=None, dispersion=None, other=None):
+    def vcov(
+        self,
+        matrix=None,
+        column=None,
+        dispersion=None,
+        *,
+        uniform=True,
+    ):
         """Return Variance/covariance matrix of linear :term:`contrast`.
 
         Parameters
@@ -111,20 +246,74 @@ class LikelihoodModelResults:
             i.e. 1 for t contrasts, 1
             or more for F :term:`contrasts<contrast>`.
 
-        column : :obj:`int`, default=None
+        column : :obj:`int`, sequence, or 1-D :obj:`bool` mask, \
+default=None
             Alternative way of specifying :term:`contrasts<contrast>`
-            (column index).
+            (column index or indices). Takes precedence over ``matrix``
+            when both are given.
 
         dispersion : :obj:`float` or (n_voxels,) array, default=None
-            Value(s) for the dispersion parameters.
+            Value(s) for the dispersion parameters. One covariance
+            matrix is returned per value. Under ``uniform=False``,
+            several values on axes that overlap a covariance matrix,
+            as in a 1-D array, a row or a column vector, broadcast
+            along the matrix rather than stacking, so there they are
+            only accepted where the result is not a matrix; reshape,
+            for instance to ``dispersion[:, None, None]``, to get one
+            matrix per value.
 
-        other : (dim, self.theta.shape[0]) array, default=None
-            Alternative :term:`contrast` specification (?).
+        uniform : :obj:`bool` or None, keyword only, default=True
+            Whether to return one covariance matrix per dispersion
+            value for every call. True gives ``(n_dispersion, dim,
+            dim)``, where ``dim`` is the size of the block the
+            selection keeps: the number of regressors ``column``
+            names, or every regressor when neither ``column`` nor
+            ``matrix`` is given, or the number of rows of ``matrix``
+            when a contrast is given, whatever number of regressors
+            that contrast spans. The block is always square, so the
+            result is always ``(n_dispersion, dim, dim)``, and a
+            ``matrix`` of rank 3 or more raises rather than returning
+            something of another rank. False gives
+            the older shapes listed below, which depend on the
+            arguments; it warns from 0.15.0 and goes in 0.16.0. None
+            means True.
+
+            .. nilearn_versionadded:: 0.14.1
 
         Returns
         -------
-        cov : (dim, dim) or (n_voxels, dim, dim) array
-            The estimated covariance matrix/matrices.
+        cov : array
+            ``(n_dispersion, dim, dim)``, where ``n_dispersion`` is the
+            number of dispersion values and ``dim`` is the size of the
+            selected block, as described under ``uniform`` above.
+
+            Under ``uniform=False`` the shape depends on the arguments:
+            ``(dim, dim)`` for a single dispersion, ``(dim, dim,
+            n_voxels)`` from ``matrix``, ``(n_voxels,)`` when ``column``
+            selects a single regressor and there is one dispersion per
+            column of data, ``(n_voxels, dim, dim)`` when the dispersion
+            carries its own axes, as in ``dispersion[:, None, None]``,
+            and a 0-d value when a single regressor meets a scalar
+            dispersion.
+
+            .. nilearn_versionchanged:: 0.14.1
+                Every call that returns gives
+                ``(n_dispersion, dim, dim)``, instead of a shape that
+                depended on which arguments were given. A selector that
+                cannot name one regressor at a time, a 2-D array or a
+                0-d boolean, raises. ``uniform=False`` restores the
+                older shapes, which is a one-line migration for code
+                that read them. Under ``uniform=False``, asking for
+                several regressors at once while the dispersion
+                carries several values on axes overlapping the
+                covariance matrix raises, instead of broadcasting the
+                dispersions along the columns of the covariance
+                matrix.
+
+            .. nilearn_deprecated:: 0.14.1
+                ``uniform=False``, and with it the argument-dependent
+                shapes, will warn from 0.15.0 and be removed in
+                0.16.0.
 
         Returns the variance/covariance matrix of a linear contrast of the
         estimates of theta, multiplied by `dispersion` which will often be an
@@ -143,6 +332,60 @@ class LikelihoodModelResults:
         if dispersion is None:
             dispersion = self.dispersion
 
+        # The commit that added this keyword documented None as meaning
+        # False and warning. The warning is gone, so None now means the
+        # default rather than the deprecated branch. The keyword has not
+        # shipped, so this reverses a docstring rather than a release.
+        if uniform is None:
+            uniform = True
+
+        # TODO (nilearn >= 0.15.0) warn on uniform=False, so the removal
+        # is not the first notice anyone gets. All seven in-tree callers
+        # ask for it and the suite runs with -W error::FutureWarning, so
+        # they need a path that skips the warning before it can be added.
+        # TODO (nilearn >= 0.16.0) drop the branch below and keep taking
+        # the keyword, since 0.14.1 leaves uniform=True writable and
+        # removing the argument would be a TypeError with no second
+        # warning. uniform=False should raise there, not be ignored, or
+        # the shape flips silently for whoever opted out. The callers
+        # need rewriting rather than just losing the keyword: on the
+        # uniform shape they broadcast into extra axes instead of
+        # raising, so getting it wrong is silent.
+        if uniform:
+            return _uniform_covariance_stack(
+                self.cov, matrix, column, dispersion
+            )
+
+        # One covariance matrix cannot hold one value per dispersion.
+        # A dispersion whose values sit on axes overlapping the
+        # covariance block (1-D, row and column vector alike) smears
+        # the block; values on axes of the dispersion's own, as in
+        # dispersion[:, None, None], stack whole blocks and pass, and
+        # a single-regressor block is one number, so it always fits.
+        block = _scaled_covariance_block(self.cov, matrix, column)
+        # Order matters below: for a 0-d block, [-0:] would be the whole
+        # dispersion shape, but a 0-d block always has size 1 and the
+        # size check short-circuits first.
+        smears = (
+            block is not None
+            and np.size(block) > 1
+            and np.size(dispersion) > 1
+            and any(s > 1 for s in np.shape(dispersion)[-np.ndim(block) :])
+        )
+        if smears:
+            raise ValueError(
+                "There is one covariance matrix per dispersion value "
+                "here, so they cannot be returned as a single matrix. "
+                "This is the older argument-dependent behavior, which "
+                "you asked for with uniform=False: drop it to get one "
+                "matrix per dispersion value. To stay on the older "
+                "shapes, select a single regressor at a time, or pass "
+                "a scalar dispersion, or reshape the dispersion to "
+                "carry its own axes, as in dispersion[:, None, None], "
+                "or pass matrix= with a 1-D dispersion and no column, "
+                "since column takes precedence over matrix."
+            )
+
         if matrix is None and column is None:
             return self.cov * dispersion
 
@@ -154,9 +397,7 @@ class LikelihoodModelResults:
                 return self.cov[column][:, column] * dispersion
 
         else:
-            if other is None:
-                other = matrix
-            tmp = np.dot(matrix, np.dot(self.cov, np.transpose(other)))
+            tmp = np.dot(matrix, np.dot(self.cov, np.transpose(matrix)))
             if np.isscalar(dispersion):
                 return tmp * dispersion
             else:
@@ -202,7 +443,9 @@ class LikelihoodModelResults:
         if "effect" in store:
             st_effect = np.squeeze(effect)
         if "t" in store or "sd" in store:
-            sd = np.sqrt(self.vcov(matrix=matrix, dispersion=dispersion))
+            sd = np.sqrt(
+                self.vcov(matrix=matrix, dispersion=dispersion, uniform=False)
+            )
         if "sd" in store:
             st_sd = np.squeeze(sd)
         if "t" in store:
@@ -268,7 +511,9 @@ class LikelihoodModelResults:
             dispersion = self.dispersion
         q = matrix.shape[0]
         if invcov is None:
-            invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
+            invcov = inv(
+                self.vcov(matrix=matrix, dispersion=1.0, uniform=False)
+            )
         F = np.add.reduce(
             np.dot(invcov, ctheta) * ctheta, 0
         ) * positive_reciprocal(q * dispersion)
@@ -276,7 +521,9 @@ class LikelihoodModelResults:
         return FContrastResults(
             effect=ctheta,
             covariance=self.vcov(
-                matrix=matrix, dispersion=dispersion[np.newaxis]
+                matrix=matrix,
+                dispersion=dispersion[np.newaxis],
+                uniform=False,
             ),
             F=F,
             df_den=self.df_residuals,
@@ -293,18 +540,33 @@ class LikelihoodModelResults:
             ie., `alpha` = .05 returns a 95% confidence interval.
 
 
-        cols : :obj:`tuple`, default=None
-            `cols` specifies which confidence intervals to return.
+        cols : sequence of :obj:`int` or 1-D :obj:`bool` mask, \
+default=None
+            `cols` specifies which confidence intervals to return. A
+            boolean mask selects regressors the way the ``column``
+            argument of :meth:`t` does. A bare integer is not
+            accepted, as before.
 
-        dispersion : None or scalar, default=None
+        dispersion : None, scalar or array-like, default=None
             Scale factor for the variance / covariance
             (see class docstring and ``vcov`` method docstring).
 
         Returns
         -------
         cis : ndarray
-            `cis` is shape ``(len(cols), 2)`` where each row contains [lower,
-            upper] for the given entry in `cols`
+            `cis` is shape ``(len(cols), 2)``, or ``(len(cols), 2,
+            n_voxels)`` when the model was fitted on several columns of
+            data, where each row contains [lower, upper] for the given
+            entry in `cols`
+
+            .. nilearn_versionchanged:: 0.14.1
+                For a model fitted on several columns of data, the
+                per-column axis is kept instead of being dropped. A
+                1-D boolean mask in ``cols`` now selects regressors, as
+                it does in :meth:`t`, instead of being iterated as 0-d
+                boolean indices. An explicit non-scalar dispersion
+                keeps its own axis instead of being collapsed through
+                ``np.diag``, including a size-1 array.
 
         Notes
         -----
@@ -322,25 +584,42 @@ class LikelihoodModelResults:
 
         """
         if cols is None:
-            lower = self.theta - inv_t_cdf(
-                1 - alpha / 2, self.df_residuals
-            ) * np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
-            upper = self.theta + inv_t_cdf(
-                1 - alpha / 2, self.df_residuals
-            ) * np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
+            # Take the regressors one at a time, as the explicit branch
+            # below does. Asking for all of them at once goes through a
+            # covariance matrix, which cannot hold one variance per
+            # column of data.
+            cols = range(self.theta.shape[0])
         else:
-            lower, upper = [], []
-            for i in cols:
-                lower.append(
-                    self.theta[i]
-                    - inv_t_cdf(1 - alpha / 2, self.df_residuals)
-                    * np.sqrt(self.vcov(column=i, dispersion=dispersion))
+            # Materialize any iterable, so generators and sets keep
+            # working exactly as they always have.
+            if not isinstance(cols, np.ndarray):
+                cols = list(cols)
+            arr = np.asarray(cols)
+            if arr.ndim > 1:
+                # Iterating a 2-D selector would hand whole rows to
+                # vcov, which selects blocks, not single regressors.
+                raise ValueError(
+                    "cols must be a 1-D sequence of integers or a 1-D "
+                    "boolean mask."
                 )
-                upper.append(
-                    self.theta[i]
-                    + inv_t_cdf(1 - alpha / 2, self.df_residuals)
-                    * np.sqrt(self.vcov(column=i, dispersion=dispersion))
-                )
+            if arr.dtype == np.bool_ and arr.ndim == 1:
+                # A 1-D boolean mask selects regressors, as it does in
+                # t(). Iterating it raw would hand 0-d booleans to
+                # vcov, and a 0-d boolean indexes a block, not an
+                # element.
+                cols = np.arange(self.theta.shape[0])[arr]
+        if dispersion is not None and not np.isscalar(dispersion):
+            # vcov scales one covariance element, a numpy scalar, by
+            # the dispersion, and a numpy scalar times a python list is
+            # a TypeError rather than an array.
+            dispersion = np.asarray(dispersion)
+        lower, upper = [], []
+        for i in cols:
+            half_width = inv_t_cdf(1 - alpha / 2, self.df_residuals) * np.sqrt(
+                self.vcov(column=i, dispersion=dispersion, uniform=False)
+            )
+            lower.append(self.theta[i] - half_width)
+            upper.append(self.theta[i] + half_width)
         return np.asarray(list(zip(lower, upper, strict=False)))
 
 

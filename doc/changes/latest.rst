@@ -42,6 +42,8 @@ Fixes
 
 - :bdg-info:`Plotting` Fix Brainsprite figures becoming blank or incorrect when multiple masker reports are embedded in the same HTML document by giving each viewer unique DOM element IDs (:gh:`6419` by `Mohammad Sadeghi Hardengi`_).
 
+- :bdg-success:`API` Fix ``t`` and ``conf_int`` of :class:`~glm.LikelihoodModelResults` losing the per-column-of-data axis, and stop the default ``vcov`` broadcasting several dispersion values along a covariance matrix: it now returns one matrix per value, and under ``uniform=False`` asking for several regressors at once while the dispersion carries several values on axes that overlap the block raises rather than broadcasting (:gh:`5354` by `Chi-Wei Lee`_).
+
 - :bdg-dark:`Code` Fix :func:`~regions.connected_label_regions` attaching the names given in ``labels`` to the wrong regions, because the sorted labels from ``np.unique`` were put through a ``set`` before being zipped against the names; contiguous labels happened to survive that, but the sparse labels real atlases use did not (:gh:`6445` by `Andrew Chen`_).
 
 - :bdg-dark:`Code` Fix :class:`~maskers.NiftiMapsMasker` silently extracting a zero signal for a map whose weights are negative, because ``_trim_maps`` decides which maps to keep sign-agnostically with ``abs()`` but then builds their support with ``> 0``, so a kept negative map covered no voxel; this matters for the signed ICA and statistical maps the masker targets (:gh:`6443` by `Andrew Chen`_).
@@ -94,3 +96,7 @@ Changes
 - :bdg-dark:`Code` Add ``asv`` benchmark for TFCE computation (:gh:`6394` by `Fabricio Cravo`_).
 
 - :bdg-dark:`Code` Update plotting functions to return figure or axes instead of None when an output file is specified to save the figure (:gh:`6272` by `Hande Gözükan`_).
+
+- :bdg-danger:`Deprecation` ``vcov`` of :class:`~glm.LikelihoodModelResults` now returns one covariance matrix per dispersion value, ``(n_dispersion, dim, dim)``, for every call that returns, instead of a shape that depended on which arguments it was given. Two kinds of argument raise instead of returning: a selector that cannot name one regressor at a time, a 2-D array or a 0-d boolean, and a ``matrix`` of rank 3 or more, which only got past the first product when its middle axis matched the number of regressors, and even then did not always return. ``uniform=False`` restores the older shapes for both, warns from 0.15.0 and is removed in 0.16.0 (:gh:`6480` by `Chi-Wei Lee`_).
+
+- :bdg-danger:`Deprecation` The ``other`` argument of ``vcov`` of :class:`~glm.LikelihoodModelResults` is removed. It was the right hand side of the ``matrix`` product, was documented as an alternative contrast specification followed by a question mark, and was passed nowhere in nilearn outside its own tests. With it gone, and with a ``matrix`` of higher rank now raising, every call that returns gives a square block. ``uniform`` is keyword only, so a fourth positional argument raises instead of being read as the argument that inherited its position (:gh:`6480` by `Chi-Wei Lee`_).

@@ -64,6 +64,7 @@
 .. _Caglar Cakan: https://github.com/caglorithm
 
 .. _Cedric Conday: https://github.com/CedricConday
+.. _Chi-Wei Lee: https://github.com/Arthur031221
 
 .. _Chloe Hampson: https://github.com/chlohamp
 
