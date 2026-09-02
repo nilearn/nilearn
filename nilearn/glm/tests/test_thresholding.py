@@ -592,29 +592,22 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     )
 
     # one sided positive
-    with pytest.warns(
-        FutureWarning,
-        match=r"nilearn version>=0\.15, the default 'threshold'",
-    ):
-        result, _ = threshold_stats_img(
-            surf_img_1d, height_control=None, two_sided=False
-        )
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, two_sided=False, threshold=3.0
+    )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
     assert_equal(
         result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
-    with pytest.warns(
-        FutureWarning,
-        match=r"nilearn version>=0\.15, the default 'threshold'",
-    ):
-        result, _ = threshold_stats_img(
-            surf_img_1d,
-            height_control=None,
-            two_sided=False,
-            cluster_threshold=3,
-        )
+    result, _ = threshold_stats_img(
+        surf_img_1d,
+        height_control=None,
+        two_sided=False,
+        cluster_threshold=3,
+        threshold=3.0,
+    )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 0.0]))
     assert_equal(
