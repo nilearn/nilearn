@@ -15,7 +15,7 @@ from nilearn.datasets import load_fsaverage
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
-from nilearn.reporting import HTMLReport, make_glm_report
+from nilearn.reporting import HTMLReport
 from nilearn.reporting.tests._testing import generate_and_check_report
 from nilearn.surface import SurfaceImage
 
@@ -579,14 +579,3 @@ def test_carousel_several_runs(
 
     # 3 runs should be in the carousel
     assert str(report).count('id="carousel-obj-') == len(shapes)
-
-
-@pytest.mark.thread_unsafe
-def test_report_make_glm_deprecation_warning(flm, contrasts):
-    """Test deprecation warning for nilearn.reporting.make_glm_report.
-
-    # TODO (nilearn >= 0.15)
-    # remove
-    """
-    with pytest.warns(FutureWarning):
-        make_glm_report(flm, contrasts=contrasts, height_control=None)
