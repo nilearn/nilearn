@@ -2,6 +2,7 @@
 
 import warnings
 from math import floor, sqrt
+from typing import Self
 
 import numpy as np
 from scipy import linalg
@@ -575,7 +576,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                 raise ValueError(error_message)
 
     @fill_doc
-    def fit(self, X, y=None):
+    def fit(self, X, y=None) -> Self:
         """Fit the covariance estimator to the given time series for each \
         subject.
 

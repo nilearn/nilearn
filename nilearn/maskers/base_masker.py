@@ -7,7 +7,7 @@ import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, overload
+from typing import Any, Self, overload
 
 import numpy as np
 from joblib import Memory
@@ -369,7 +369,7 @@ class BaseMasker(_BaseMasker):
     _template_name = "body_masker.jinja"
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Compute the mask corresponding to the data.
 
         Parameters
@@ -838,7 +838,7 @@ class _BaseSurfaceMasker(_BaseMasker):
         return mask_img_
 
     @abc.abstractmethod
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Present only to comply with sklearn estimators checks."""
 
     @fill_doc

@@ -7,7 +7,7 @@ in the neighborhood of each location of a domain.
 import time
 import warnings
 from copy import deepcopy
-from typing import Any
+from typing import Any, Self
 
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
@@ -474,7 +474,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
                 return self.estimator._estimator_type
         return ""
 
-    def fit(self, imgs, y, groups=None):
+    def fit(self, imgs, y, groups=None) -> Self:
         """Fit the searchlight.
 
         Parameters
@@ -509,7 +509,9 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         process_mask_img = self.process_mask_img or self.mask_img_
 
         # Compute world coordinates of the seeds
-        process_mask, process_mask_affine = load_mask_img(process_mask_img)
+        process_mask, process_mask_affine = load_mask_img(
+            process_mask_img  # type: ignore[arg-type]
+        )
 
         self.process_mask_ = process_mask
 
@@ -522,7 +524,9 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             process_mask_coords[2],
             process_mask_affine,
         )
-        process_mask_coords = np.asarray(process_mask_coords).T
+        process_mask_coords = np.asarray(  # type: ignore[assignment]
+            process_mask_coords
+        ).T
 
         X, A = apply_mask_and_get_affinity(
             process_mask_coords,
@@ -569,7 +573,6 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             hasattr(self, "scores_")
             and hasattr(self, "process_mask_")
             and hasattr(self, "mask_img_")
-            and self.scores_ is not None
             and self.process_mask_ is not None
         )
 

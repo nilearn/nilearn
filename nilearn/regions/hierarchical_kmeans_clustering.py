@@ -1,6 +1,7 @@
 """Hierarchical k-means clustering."""
 
 import warnings
+from typing import Self
 
 import numpy as np
 from sklearn.base import (
@@ -270,7 +271,7 @@ class HierarchicalKMeans(
         return tags
 
     @fill_doc
-    def fit(self, X, y=None):
+    def fit(self, X, y=None) -> Self:
         """Compute clustering of the data.
 
         Parameters
