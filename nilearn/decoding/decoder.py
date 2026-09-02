@@ -619,7 +619,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         # TODO (sklearn >= 1.8) _estimator_type will be removed
         owning_class_type = getattr(self, "_estimator_type", None)
 
-        # TODO test with sklearn sklearn_version == 1.5.0
         if owning_class_type is None:
             owning_class_type = self.__sklearn_tags__().estimator_type
 
@@ -1454,13 +1453,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             estimator_args=estimator_args,
         )
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 
@@ -1645,13 +1637,6 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         )
 
         self.clustering_percentile = clustering_percentile
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.

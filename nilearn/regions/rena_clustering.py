@@ -669,13 +669,6 @@ class ReNA(
         self.memory_level = memory_level
         self.verbose = verbose
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 

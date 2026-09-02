@@ -519,7 +519,6 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         # TODO (sklearn >= 1.8) _estimator_type will be removed
         owning_class_type = getattr(self, "_estimator_type", None)
 
-        # TODO test with sklearn sklearn_version == 1.5.0
         if owning_class_type is None:
             owning_class_type = self.__sklearn_tags__().estimator_type
 
@@ -591,7 +590,6 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         # TODO (sklearn >= 1.8) _estimator_type will be removed
         owning_class_type = getattr(self, "_estimator_type", None)
 
-        # TODO test with sklearn sklearn_version == 1.5.0
         if owning_class_type is None:
             owning_class_type = self.__sklearn_tags__().estimator_type
 

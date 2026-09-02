@@ -42,7 +42,6 @@ from numpy.testing import (
     assert_raises,
 )
 from numpydoc.docscrape import NumpyDocString
-from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import is_classifier, is_regressor
 from sklearn.datasets import load_iris, make_classification, make_regression
@@ -76,7 +75,6 @@ from nilearn._utils.tags import (
     is_masker,
 )
 from nilearn._utils.testing import is_ci, write_imgs_to_path
-from nilearn._utils.versions import compare_version
 from nilearn.conftest import (
     _affine_eye,
     _drop_surf_img_part,
@@ -148,8 +146,6 @@ from nilearn.surface.utils import (
     assert_surface_image_equal,
 )
 
-SKLEARN_GTE_1_6 = compare_version(sklearn_version, ">=", "1.6.0")
-
 
 def nilearn_dir() -> Path:
     return Path(__file__).parents[1]
@@ -197,11 +193,8 @@ def return_expected_failed_checks(
             "check_readonly_memmap_input": "TODO",
             "check_transformer_data_not_an_array": "TODO",
             "check_transformer_general": "TODO",
+            "check_transformer_preserve_dtypes": "TODO",
         }
-        if SKLEARN_GTE_1_6:
-            expected_failed_checks |= {
-                "check_transformer_preserve_dtypes": "TODO",
-            }
 
         return expected_failed_checks
 
@@ -309,8 +302,7 @@ def return_expected_failed_checks(
         expected_failed_checks.pop("check_estimator_sparse_data")
         expected_failed_checks.pop("check_estimator_sparse_matrix")
         expected_failed_checks.pop("check_estimator_sparse_array")
-        if SKLEARN_GTE_1_6:
-            expected_failed_checks.pop("check_estimator_sparse_tag")
+        expected_failed_checks.pop("check_estimator_sparse_tag")
 
         expected_failed_checks |= {
             # have nilearn replacements
@@ -338,8 +330,7 @@ def return_expected_failed_checks(
             "check_transformer_general": "TODO",
             "check_transformer_preserve_dtypes": "TODO",
         }
-        if SKLEARN_GTE_1_6:
-            expected_failed_checks.pop("check_estimator_sparse_tag")
+        expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if is_masker(estimator):
         expected_failed_checks |= {
@@ -521,13 +512,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
     Each nilearn check can be run on an initialized estimator.
     """
     tags = estimator.__sklearn_tags__()
-
-    # TODO (sklearn >= 1.6.0) simplify
-    #  for sklearn >= 1.6 tags are always a dataclass
-    if isinstance(tags, dict) and "X_types" in tags:
-        requires_y = isinstance(estimator, (_BaseDecoder, BaseSpaceNet))
-    else:
-        requires_y = getattr(tags.target_tags, "required", True)
+    requires_y = getattr(tags.target_tags, "required", True)
 
     yield (clone(estimator), check_doc_attributes)
     yield (clone(estimator), check_set_output)

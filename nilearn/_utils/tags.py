@@ -55,12 +55,7 @@ def get_tag(estimator: Any, tag: str) -> bool:
     if not hasattr(estimator, "__sklearn_tags__"):
         return False
     tags = estimator.__sklearn_tags__()
-    # TODO (sklearn >= 1.6.0) simplify
-    #  for sklearn >= 1.6 tags are always a dataclass
-    if isinstance(tags, dict) and "X_types" in tags:
-        return tag in tags["X_types"]
-    else:
-        return getattr(tags.input_tags, tag, False)
+    return getattr(tags.input_tags, tag, False)
 
 
 def is_masker(estimator: Any) -> bool:

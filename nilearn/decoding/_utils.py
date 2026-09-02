@@ -385,7 +385,6 @@ def validate_estimator(
         # TODO (sklearn >= 1.8) _estimator_type will be removed
         estimator_type = getattr(estimator, "_estimator_type", None)
 
-        # TODO test with sklearn sklearn_version == 1.5.0
         if estimator_type is None and hasattr(estimator, "__sklearn_tags__"):
             estimator_type = getattr(
                 estimator.__sklearn_tags__(), "estimator_type", None
