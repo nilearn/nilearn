@@ -63,7 +63,6 @@ with warnings.catch_warnings():
     warnings.filterwarnings(action="ignore", category=ConvergenceWarning)
     canica.fit(func_filenames)
 
-# Retrieve the independent components in brain space. Directly
 # Retrieve the independent components in brain space directly
 # accessible through attribute `components_img_`.
 canica_components_img = canica.components_img_
