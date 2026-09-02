@@ -186,7 +186,6 @@ TYPE_MAPS = {
     "force_resample": nilearn_typing.ForceResample,
     "high_pass": nilearn_typing.HighPass,
     "hrf_model": nilearn_typing.HrfModel,
-    "keep_masked_maps": nilearn_typing.KeepMaskedMaps,
     "low_pass": nilearn_typing.LowPass,
     "lower_cutoff": nilearn_typing.LowerCutoff,
     "memory": nilearn_typing.MemoryLike,

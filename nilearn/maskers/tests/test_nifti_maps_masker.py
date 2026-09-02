@@ -377,22 +377,10 @@ def test_nifti_maps_masker_resampling_to_mask(
         maps33_img,
         mask_img=mask22_img,
         resampling_target="mask",
-        keep_masked_maps=True,
         standardize=None,
     )
 
-    with (
-        warnings.catch_warnings(record=True) as warning_list,
-        pytest.warns(
-            FutureWarning,
-            match='"keep_masked_maps" parameter will be removed',
-        ),
-    ):
-        signals = masker.fit_transform(img_fmri)
-        assert all(
-            "consider using nearest interpolation instead" not in str(x)
-            for x in warning_list
-        )
+    signals = masker.fit_transform(img_fmri)
 
     assert_almost_equal(masker.mask_img_.affine, mask22_img.affine)
     assert masker.mask_img_.shape == mask22_img.shape
@@ -426,14 +414,10 @@ def test_nifti_maps_masker_resampling_to_maps(
         maps33_img,
         mask_img=mask22_img,
         resampling_target="maps",
-        keep_masked_maps=True,
         standardize=None,
     )
 
-    with pytest.warns(
-        FutureWarning, match='"keep_masked_maps" parameter will be removed'
-    ):
-        signals = masker.fit_transform(img_fmri)
+    signals = masker.fit_transform(img_fmri)
 
     assert_array_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
@@ -467,14 +451,10 @@ def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
         maps33_img,
         mask_img=mask22_img,
         resampling_target="maps",
-        keep_masked_maps=True,
         standardize=None,
     )
 
-    with pytest.warns(
-        FutureWarning, match='"keep_masked_maps" parameter will be removed'
-    ):
-        signals = masker.fit_transform(fmri11_img)
+    signals = masker.fit_transform(fmri11_img)
 
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape

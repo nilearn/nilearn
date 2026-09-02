@@ -36,10 +36,9 @@ from nilearn.masking import load_mask_img
 class _ExtractionFunctor:
     func_name = "nifti_maps_masker_extractor"
 
-    def __init__(self, maps_img_, mask_img_, keep_masked_maps):
+    def __init__(self, maps_img_, mask_img_):
         self.maps_img_ = maps_img_
         self.mask_img_ = mask_img_
-        self.keep_masked_maps = keep_masked_maps
 
     def __call__(self, imgs):
         from nilearn.regions import signal_extraction
@@ -48,7 +47,6 @@ class _ExtractionFunctor:
             imgs,
             self.maps_img_,
             mask_img=self.mask_img_,
-            keep_masked_maps=self.keep_masked_maps,
         )
 
 
@@ -120,8 +118,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
           resampled to the shape and affine of ``maps_img``
         - ``None`` means no resampling: if shapes and affines do not match,
           a :obj:`ValueError` is raised.
-
-    %(keep_masked_maps)s
 
     %(memory)s
 
@@ -196,7 +192,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        keep_masked_maps=False,
         memory=None,
         memory_level=0,
         verbose=0,
@@ -234,8 +229,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self.reports = reports
         self.cmap = cmap
-
-        self.keep_masked_maps = keep_masked_maps
 
         self._reset_report()
 
@@ -667,7 +660,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             _ExtractionFunctor(
                 maps_img_,
                 mask_img_,
-                self.keep_masked_maps,
             ),
             # Pre-treatments
             params,

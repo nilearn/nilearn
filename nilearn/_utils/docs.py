@@ -689,23 +689,6 @@ imgs_list : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
 """
 
-# keep_masked_maps
-docdict["keep_masked_maps"] = """
-keep_masked_maps : :obj:`bool`, optional
-    If True, masked atlas with invalid maps (maps that contain only
-    zeros after applying the mask) will be retained in the output, resulting
-    in corresponding time series containing zeros only. If False, the
-    invalid maps will be removed from the trimmed atlas, resulting in
-    no empty time series in the output.
-
-    .. nilearn_deprecated:: 0.10.2
-
-    .. nilearn_versionchanged:: 0.13.0
-
-        The ``keep_masked_maps`` parameter will be removed in 0.15.
-
-"""
-
 # linewidth
 docdict["linewidths"] = """
 linewidths : :obj:`float`, optional

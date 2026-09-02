@@ -506,9 +506,7 @@ def test_signal_extraction_with_maps_and_labels(
     maps_img = Nifti1Image(maps_data, labeled_regions.affine)
 
     # Extract signals from maps and labels: results must be identical.
-    maps_signals, maps_labels = img_to_signals_maps(
-        fmri_img, maps_img, keep_masked_maps=True
-    )
+    maps_signals, maps_labels = img_to_signals_maps(fmri_img, maps_img)
 
     labels_signals, labels_labels, _ = img_to_signals_labels(
         imgs=fmri_img, labels_img=labeled_regions
@@ -523,12 +521,9 @@ def test_signal_extraction_with_maps_and_labels(
     labels_signals, labels_labels, _ = img_to_signals_labels(
         imgs=fmri_img, labels_img=labeled_regions, mask_img=mask_img
     )
-    with pytest.warns(
-        FutureWarning, match='"keep_masked_maps" parameter will be removed'
-    ):
-        maps_signals, maps_labels = img_to_signals_maps(
-            fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
-        )
+    maps_signals, maps_labels = img_to_signals_maps(
+        fmri_img, maps_img, mask_img=mask_img
+    )
 
     assert_almost_equal(maps_signals, labels_signals)
     assert maps_signals.shape[1] == N_REGIONS
@@ -639,15 +634,9 @@ def test_img_to_signals_maps_warnings(
     # containing only 3 regions, and
     # keeping the masked labels
     # test if the warning is raised
-
-    # TODO (nilearn >= 0.15.0)
-    with pytest.warns(
-        FutureWarning,
-        match='"keep_masked_maps" parameter will be removed',
-    ):
-        maps_signals, maps_labels = img_to_signals_maps(
-            fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
-        )
+    maps_signals, maps_labels = img_to_signals_maps(
+        fmri_img, maps_img, mask_img=mask_img
+    )
 
     # all regions must be kept
     assert maps_signals.shape == (N_TIMEPOINTS, 8)
