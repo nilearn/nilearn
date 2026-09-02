@@ -1161,13 +1161,13 @@ def test_decoder_multiclass_warnings_frem(multiclass_data):
 
 
 def test_decoder_tags_classification():
-    """Check value returned by _more_tags."""
+    """Check tags of Decoder."""
     model = Decoder()
     assert model.__sklearn_tags__().target_tags.required is True
 
 
 def test_decoder_tags_regression():
-    """Check value returned by _more_tags."""
+    """Check tags of DecoderRegressor."""
     model = DecoderRegressor()
     assert model.__sklearn_tags__().target_tags.multi_output is True
 

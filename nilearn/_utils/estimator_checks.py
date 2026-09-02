@@ -516,7 +516,6 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
 
     yield (clone(estimator), check_doc_attributes)
     yield (clone(estimator), check_set_output)
-    yield (clone(estimator), check_tags)
     yield (clone(estimator), check_verbose)
     yield (clone(estimator), check_doc_link)
 
@@ -778,18 +777,6 @@ def fit_estimator(
 
 
 # ------------------ GENERIC CHECKS ------------------
-
-
-def check_tags(estimator_orig) -> None:
-    """Check tags are the same with old and new methods.
-
-    TODO (sklearn >= 1.6) remove this check when bumping sklearn above 1.5
-    """
-    estimator = clone(estimator_orig)
-
-    old_tags = estimator._more_tags()
-    new_tags = estimator.__sklearn_tags__()
-    assert old_tags == new_tags
 
 
 def check_verbose(estimator) -> None:

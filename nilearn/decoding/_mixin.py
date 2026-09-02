@@ -19,9 +19,6 @@ class _ClassifierMixin:
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn >= 1.6) get rid of if block
-        # when bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
         tags.estimator_type = "classifier"
         tags.classifier_tags = ClassifierTags()
@@ -60,9 +57,6 @@ class _RegressorMixin:
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn >= 1.6) get rid of if block
-        # when bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
         tags.estimator_type = "regressor"
         tags.regressor_tags = RegressorTags()
