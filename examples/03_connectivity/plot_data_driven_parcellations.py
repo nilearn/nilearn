@@ -6,13 +6,13 @@ We use spatially-constrained Ward-clustering, KMeans, Hierarchical KMeans
 and Recursive Neighbor Agglomeration (ReNA) to create a set of parcels.
 
 In a high dimensional regime, these methods can be interesting
-to create a 'compressed' representation of the data, replacing the data
-in the :term:`fMRI` images by mean signals on the parcellation, which can
-subsequently be used for statistical analysis or machine learning.
+to create a 'compressed' representation of the data,
+replacing the data in the :term:`fMRI` images
+by mean signals on the parcellation,
+which can subsequently be used for statistical analysis or machine learning.
 
 Also, these methods can be used to learn functional connectomes
-and subsequently for classification tasks or to analyze data at a local
-level.
+and subsequently for classification tasks or to analyze data at a local level.
 
 .. seealso::
 
@@ -26,24 +26,15 @@ level.
     in the documentation section :ref:`parcellating_brain`.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
-# Download a brain development fMRI dataset and turn it to a data matrix
-# ----------------------------------------------------------------------
+# Download a brain development fMRI dataset
+# -----------------------------------------
 #
-# We download one subject of the movie watching dataset from Internet
-
-import time
+# We download one subject of the movie watching dataset.
 
 import numpy as np
-from matplotlib import patches, ticker
 
-from nilearn import datasets, plotting
-from nilearn.image import get_data, index_img, mean_img
-from nilearn.regions import Parcellations
+from nilearn import datasets
 
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 
@@ -52,23 +43,26 @@ print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 
 
 # %%
-# Brain parcellations with Ward Clustering
-# ----------------------------------------
+# Brain parcellation with Ward Clustering
+# ---------------------------------------
 #
-# Transforming list of images to data matrix and build brain parcellations,
-# all can be done at once using `Parcellations` object.
+# Transforming list of images to data matrix and build brain parcellation,
+# all can be done at once using ``Parcellation`` objects.
 #
 # .. note::
-#   Computing ward for the first time, will be long... This can be seen by
-#   measuring using time
+#
+#   Computing ward for the first time, will be long...
+#   This can be seen by measuring using time
+#
+# We build parameters of our own for this object
+# with parameters related to masking,
+# caching and defining number of clusters and specific parcellation method.
+#
+import time
+
+from nilearn.regions import Parcellations
 
 start = time.time()
-
-# Agglomerative Clustering: ward
-
-# We build parameters of our own for this object. Parameters related to
-# masking, caching and defining number of clusters and specific parcellations
-# method.
 ward = Parcellations(
     method="ward",
     n_parcels=1000,
@@ -77,14 +71,19 @@ ward = Parcellations(
     memory_level=1,
     verbose=1,
 )
-# Call fit on functional dataset: single subject (less samples).
+# Call fit on functional dataset: single subject (fewer samples).
 ward.fit(dataset.func)
+
+# %%
 print(f"Ward agglomeration 1000 clusters: {time.time() - start:.2f}s")
 
-# We compute now ward clustering with 2000 clusters and compare
-# time with 1000 clusters. To see the benefits of caching for second time.
-
-# We initialize class again with n_parcels=2000 this time.
+# %%
+# We compute now ward clustering with 2000 clusters
+# and compare time with 1000 clusters.
+# To see the benefits of caching for second time.
+#
+# We initialize class again with ``n_parcels=2000`` this time.
+#
 start = time.time()
 ward = Parcellations(
     method="ward",
@@ -95,25 +94,19 @@ ward = Parcellations(
     verbose=1,
 )
 ward.fit(dataset.func)
+
+# %%
 print(f"Ward agglomeration 2000 clusters: {time.time() - start:.2f}s")
 
 # %%
-# Visualize: Brain parcellations (Ward)
-# .....................................
+# Visualize: Brain parcellation (Ward)
+# ....................................
 #
-# First, we display the parcellations of the brain image stored in attribute
-# `labels_img_`
+# First, we display the parcellation of the brain image
+# stored in attribute ``labels_img_``.
+from nilearn import plotting
+
 ward_labels_img = ward.labels_img_
-
-# Now, ward_labels_img are Nifti1Image object, it can be saved to file
-# with the following code:
-from pathlib import Path
-
-output_dir = Path.cwd() / "results" / "plot_data_driven_parcellations"
-output_dir.mkdir(exist_ok=True, parents=True)
-print(f"Output will be saved to: {output_dir}")
-ward_labels_img.to_filename(output_dir / "ward_parcellation.nii.gz")
-
 
 first_plot = plotting.plot_roi(
     ward_labels_img, title="Ward parcellation", display_mode="xz"
@@ -121,7 +114,7 @@ first_plot = plotting.plot_roi(
 
 plotting.show()
 
-# Grab cut coordinates from this plot to use as a common for all plots
+# We grab the cut coordinates from this plot to use as a common for all plots.
 cut_coords = first_plot.cut_coords
 
 # %%
@@ -129,14 +122,19 @@ cut_coords = first_plot.cut_coords
 # ............................................
 #
 # Second, we illustrate the effect that the clustering has on the signal.
-# We show the original data, and the approximation provided by the
-# clustering by averaging the signal on each parcel.
+# We show the original data,
+# and the approximation provided by the clustering
+# by averaging the signal on each parcel.
 
-# Grab number of voxels from attribute mask image (mask_img_).
+# Grab the number of voxels from attribute mask image (mask_img_).
+from nilearn.image import get_data
+
 original_voxels = np.sum(get_data(ward.mask_img_))
 
 # Compute mean over time on the functional image to use the mean
 # image for compressed representation comparisons
+from nilearn.image import mean_img
+
 mean_func_img = mean_img(dataset.func[0])
 
 # Compute common vmin and vmax
@@ -152,21 +150,29 @@ plotting.plot_epi(
     display_mode="xz",
 )
 
-# A reduced dataset can be created by taking the parcel-level average:
-# Note that Parcellation objects with any method have the opportunity to
-# use a `transform` call that modifies input features. Here it reduces their
-# dimension. Note that we `fit` before calling a `transform` so that average
-# signals can be created on the brain parcellations with fit call.
+# %
+# A reduced dataset can be created by taking the parcel-level average.
+#
+# Parcellation objects with any method
+# have the opportunity to use a ``transform`` call
+# that modifies input features.
+# Here it reduces their dimension.
+# Note that we ``fit`` before calling a ``transform``
+# so that average signals can be created on the brain parcellation
+# with ``fit``.
+#
 fmri_reduced = ward.transform(dataset.func)
 
 # Display the corresponding data compressed
-# using the parcellation using parcels=2000.
+# using the previous parcellation.
+from nilearn.image import index_img
+
 fmri_compressed = ward.inverse_transform(fmri_reduced)
 
 plotting.plot_epi(
     index_img(fmri_compressed, 0),
     cut_coords=cut_coords,
-    title="Ward compressed representation (2000 parcels)",
+    title=f"Ward compressed representation ({ward.n_parcels} parcels)",
     vmin=vmin,
     vmax=vmax,
     display_mode="xz",
@@ -174,22 +180,23 @@ plotting.plot_epi(
 
 plotting.show()
 
-# As you can see below, this approximation is almost good, although there
-# are only 2000 parcels, instead of the original 60000 voxels
+# %%
+# As you can, this approximation is almost good,
+# although there are only 2000 parcels, instead of the original 60000 voxels.
+#
 
 # %%
-# Brain parcellations with KMeans Clustering
-# ------------------------------------------
+# Brain parcellation with KMeans Clustering
+# -----------------------------------------
 #
-# We use the same approach as with building parcellations using Ward
-# clustering. But, in the range of a small number of clusters,
-# it is most likely that we want to use standardization. Indeed with
-# standardization and smoothing, the clusters will form as regions.
-
-# class/functions can be used here as they are already imported above.
-
-# This object uses method='kmeans' for KMeans clustering with 10mm smoothing
-# and standardization ON
+# We use the same approach as with building parcellation
+# using Ward clustering.
+# But, in the range of a small number of clusters,
+# it is most likely that we want to use standardization.
+# Indeed with standardization and smoothing, the clusters will form as regions.
+#
+# This next parcellation uses ``method='kmeans'`` for KMeans clustering
+# with 10mm smoothing and standardization.
 start = time.time()
 kmeans = Parcellations(
     method="kmeans",
@@ -200,46 +207,51 @@ kmeans = Parcellations(
     memory_level=1,
     verbose=1,
 )
-# Call fit on functional dataset: single subject (less samples)
+# Call fit on functional dataset: single subject (fewer samples).
 kmeans.fit(dataset.func)
+
+# %%
 print(f"KMeans clusters: {time.time() - start:.2f}s")
 
 # %%
-# Visualize: Brain parcellations (KMeans)
-# .......................................
+# Visualize: Brain parcellation (KMeans)
+# ......................................
 #
-# Grab parcellations of brain image stored in attribute `labels_img_`
+# We display the parcellation of the brain image
+# stored in attribute ``labels_img_``.
 kmeans_labels_img = kmeans.labels_img_
 
 display = plotting.plot_roi(
     kmeans_labels_img,
     mean_func_img,
+    cut_coords=cut_coords,
     title="KMeans parcellation",
     display_mode="xz",
 )
 
 plotting.show()
 
-# kmeans_labels_img is a Nifti1Image object, it can be saved to file with
-# the following code:
-kmeans_labels_img.to_filename(output_dir / "kmeans_parcellation.nii.gz")
-
 # %%
-# Brain parcellations with Hierarchical KMeans Clustering
-# -------------------------------------------------------
+# Brain parcellation with Hierarchical KMeans Clustering
+# ------------------------------------------------------
 #
 # As the number of images from which we try to cluster grows,
-# voxels display more and more specific activity patterns causing
-# KMeans clusters to be very unbalanced with a few big clusters and
-# many voxels left as singletons. Hierarchical Kmeans algorithm is
-# tailored to enforce more balanced clusterings. To do this,
-# Hierarchical Kmeans does a first Kmeans clustering in square root of
-# n_parcels. In a second step, it clusters voxels inside each
-# of these parcels in m pieces with m adapted to the size of
-# the cluster in order to have n balanced clusters in the end.
+# voxels display more and more specific activity patterns
+# causing KMeans clusters to be very unbalanced
+# with a few big clusters and many voxels left as singletons.
 #
-# This object uses method='hierarchical_kmeans' for Hierarchical KMeans
-# clustering and 10mm smoothing and standardization to compare
+# Hierarchical Kmeans algorithm is tailored
+# to enforce more balanced clusterings.
+# To do this,
+# Hierarchical Kmeans does a first Kmeans clustering
+# in square root of ``n_parcels``.
+# In a second step, it clusters voxels inside each of these parcels
+# in ``m`` pieces with ``m`` adapted to the size of the cluster
+# in order to have n balanced clusters in the end.
+#
+# This object uses ``method='hierarchical_kmeans'``
+# for Hierarchical KMeans clustering
+# and 10mm smoothing and standardization to compare
 # with the previous method.
 start = time.time()
 hkmeans = Parcellations(
@@ -251,14 +263,15 @@ hkmeans = Parcellations(
     memory_level=1,
     verbose=1,
 )
-# Call fit on functional dataset: single subject (less samples)
+# Call fit on functional dataset: single subject (fewer samples).
 hkmeans.fit(dataset.func)
 
 # %%
-# Visualize: Brain parcellations (Hierarchical KMeans)
-# ....................................................
+# Visualize: Brain parcellation (Hierarchical KMeans)
+# ...................................................
 #
-# Grab parcellations of brain image stored in attribute `labels_img_`
+# We display the parcellation of brain image
+# stored in attribute ``labels_img_``.
 hkmeans_labels_img = hkmeans.labels_img_
 
 plotting.plot_roi(
@@ -271,38 +284,34 @@ plotting.plot_roi(
 
 plotting.show()
 
-# kmeans_labels_img is a :class:`nibabel.nifti1.Nifti1Image` object, it can be
-# saved to file with the following code:
-hkmeans_labels_img.to_filename(
-    output_dir / "hierarchical_kmeans_parcellation.nii.gz"
-)
-
 # %%
 # Compare Hierarchical Kmeans clusters with those from Kmeans
 # ...........................................................
-# To compare those, we'll first count how many voxels are contained in
-# each of the 50 clusters for both algorithms and compare those sizes
-# distribution. Hierarchical KMeans should give clusters closer to
-# average (600 here) than KMeans.
+# To compare those, we'll first count how many voxels are contained
+# in each of the 50 clusters for both algorithms
+# and compare those sizes distribution.
+# Hierarchical KMeans should give clusters
+# closer to average (600 here) than KMeans.
 #
-# First count how many voxels have each label (except 0 which is the
-# background).
 
+# First count how many voxels have each label
+# (except 0 which is the background).
 _, kmeans_counts = np.unique(get_data(kmeans_labels_img), return_counts=True)
 
 _, hkmeans_counts = np.unique(get_data(hkmeans_labels_img), return_counts=True)
 
 voxel_ratio = np.round(np.sum(kmeans_counts[1:]) / 50)
 
+# %%
 # If all voxels not in background were balanced between clusters ...
-
 print(f"... each cluster should contain {voxel_ratio} voxels")
 
 # %%
 # Let's plot clusters sizes distributions for both algorithms
 #
-# You can just skip the plotting code, the important part is the figure
+# You can just skip the plotting code, the important part is the figure.
 import matplotlib.pyplot as plt
+from matplotlib import patches, ticker
 
 bins = np.concatenate(
     [
@@ -333,15 +342,16 @@ fig.legend(handles, labels, loc=(0.5, 0.8))
 plotting.show()
 
 # %%
-# As we can see, half of the 50 KMeans clusters contain less than
-# 100 voxels whereas three contain several thousands voxels
-# Hierarchical KMeans yield better balanced clusters, with a significant
-# proportion of them containing hundreds to thousands of voxels.
+# As we can see, half of the 50 KMeans clusters contain
+# less than 100 voxels whereas three contain several thousands voxels.
+# Hierarchical KMeans yield better balanced clusters,
+# with a significant proportion of them containing hundreds
+# to thousands of voxels.
 #
 
 # %%
-# Brain parcellations with :term:`ReNA` Clustering
-# ------------------------------------------------
+# Brain parcellation with :term:`ReNA` Clustering
+# -----------------------------------------------
 #
 # One interesting algorithmic property of :term:`ReNA` (see References)
 # is that it is very fast
@@ -364,19 +374,17 @@ rena = Parcellations(
 )
 
 rena.fit_transform(dataset.func)
+
+# %%
 print(f"ReNA 5000 clusters: {time.time() - start:.2f}s")
 
 # %%
-# Visualize: Brain parcellations (ReNA)
-# .....................................
+# Visualize: Brain parcellation (ReNA)
+# ....................................
 #
-# First, we display the parcellations of the brain image stored in attribute
-# `labels_img_`
+# We display the parcellation of the brain image stored in attribute
+# ``labels_img_``.
 rena_labels_img = rena.labels_img_
-
-# Now, rena_labels_img are Nifti1Image object, it can be saved to file
-# with the following code:
-rena_labels_img.to_filename(output_dir / "rena_parcellation.nii.gz")
 
 plotting.plot_roi(
     ward_labels_img,
@@ -408,14 +416,12 @@ plotting.plot_epi(
     display_mode="xz",
 )
 
-plotting.show()
-
 # A reduced data can be created by taking the parcel-level average:
 # Note that, as many scikit-learn objects, the ``rena`` object exposes
-# a transform method that modifies input features. Here it reduces their
-# dimension.
+# a ``transform`` method that modifies input features.
+# Here it reduces their dimension.
 # However, the data are in one single large 4D image, we need to use
-# index_img to do the split easily:
+# :func:`~nilearn.image.index_img` to do the split easily:
 fmri_reduced_rena = rena.transform(dataset.func)
 
 # Display the corresponding data compression using the parcellation
@@ -424,7 +430,7 @@ compressed_img_rena = rena.inverse_transform(fmri_reduced_rena)
 plotting.plot_epi(
     index_img(compressed_img_rena, 0),
     cut_coords=cut_coords,
-    title="ReNA compressed representation (5000 parcels)",
+    title=f"ReNA compressed representation ({rena.n_parcels} parcels)",
     vmin=vmin,
     vmax=vmax,
     display_mode="xz",
@@ -433,12 +439,12 @@ plotting.plot_epi(
 plotting.show()
 
 # %%
-# Even if the compressed signal is relatively close
-# to the original signal, we can notice that Ward Clustering
+# Even if the compressed signal is relatively close to the original signal,
+# we can notice that Ward Clustering
 # gives a slightly more accurate compressed representation.
-# However, as said in the previous section, the computation time is
-# reduced which could still make :term:`ReNA` more relevant than Ward in
-# some cases.
+# However, as said in the previous section,
+# the computation time is reduced
+# which could still make :term:`ReNA` more relevant than Ward in some cases.
 
 # %%
 # References
