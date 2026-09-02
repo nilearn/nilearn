@@ -3,10 +3,10 @@ Deriving spatial maps from group fMRI data using ICA and Dictionary Learning
 ============================================================================
 
 Various approaches exist to derive spatial maps or networks from
-group fmr data. The methods extract distributed brain regions that
+group :term`fMRI` data. The methods extract distributed brain regions that
 exhibit similar :term:`BOLD` fluctuations over time. Decomposition
 methods allow for generation of many independent maps simultaneously
-without the need to provide a priori information (e.g. seeds or priors.)
+without the need to provide a priori information (e.g. seeds or priors).
 
 This example will apply two popular decomposition methods, :term:`ICA` and
 :term:`Dictionary learning`, to :term:`fMRI` data measured while children
@@ -64,6 +64,7 @@ with warnings.catch_warnings():
     canica.fit(func_filenames)
 
 # Retrieve the independent components in brain space. Directly
+# Retrieve the independent components in brain space directly
 # accessible through attribute `components_img_`.
 canica_components_img = canica.components_img_
 # components_img is a Nifti Image object, and can be saved to a file with
@@ -115,7 +116,7 @@ show()
 # and usually cleaner than :term:`ICA`. Here, we will compare networks built
 # with :term:`CanICA` to networks built with :term:`Dictionary learning`.
 #
-# For more detailse see :footcite:t:`Mensch2016`.
+# For more details see :footcite:t:`Mensch2016`.
 #
 
 
@@ -197,7 +198,7 @@ show()
 # %%
 # .. note::
 #
-#     To see how to extract subject-level timeseries' from regions
+#     To see how to extract subject-level timeseries from regions
 #     created using :term:`Dictionary learning`, see :ref:`example Regions
 #     extraction using dictionary learning and functional connectomes
 #     <sphx_glr_auto_examples_03_connectivity\
