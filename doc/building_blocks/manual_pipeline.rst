@@ -143,8 +143,8 @@ The importance of data standardization
 --------------------------------------
 
 When building machine-learning pipelines for neuroimaging data,
-the preprocessing steps applied to the data are often more critical
-than the choice of the estimator itself. A key preprocessing option
+the preprocessing steps applied to the data are often as critical
+as the choice of the estimator itself. A key preprocessing option
 to consider is **standardization**.
 
 In raw fMRI time-series or volumetric data, different voxels or
