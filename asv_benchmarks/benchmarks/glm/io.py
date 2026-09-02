@@ -18,15 +18,7 @@ class BenchMarkFirstLevelModelSave(BaseBenchMarkFLM):
         """Set up for all benchmarks."""
         super().setup(memory, n_runs)
 
-        # save_glm_to_bids is permanently moving to nilearn.glm.io in
-        # nilearn 0.15.0: nilearn.interfaces.bids.save_glm_to_bids (its
-        # current, deprecated, location) will be removed then. Import
-        # locally so that benchmarking versions on either side of that
-        # move only fails this benchmark instead of the whole module.
-        try:
-            from nilearn.interfaces.bids import save_glm_to_bids
-        except ImportError:
-            from nilearn.glm.io import save_glm_to_bids
+        from nilearn.glm.io import save_glm_to_bids
 
         self.save_glm_to_bids = save_glm_to_bids
 
