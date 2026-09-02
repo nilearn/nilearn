@@ -14,7 +14,7 @@ We used movie-watching functional scans of 20 subjects from
 This example can also be inspired to apply the same steps
 to even regions extraction
 using :term:`ICA` maps.
-In that case, idea would be to replace
+In that case, the idea would be to replace
 :term:`Dictionary learning` to canonical :term:`ICA` decomposition
 using :class:`~nilearn.decomposition.CanICA`
 
@@ -59,7 +59,16 @@ dict_learn.fit(func_filenames)
 components_img = dict_learn.components_img_
 
 # Visualization of functional networks
-# Show networks using plotting utilities
+
+# %%
+# Visualization of functional networks
+# ....................................
+# Get the extracted functional networks
+# via the attribute ``components_img_``
+# and show them using plotting utilities.
+#
+
+components_img = dict_learn.components_img_
 from nilearn.plotting import plot_prob_atlas, show
 
 plot_prob_atlas(
@@ -79,7 +88,11 @@ show()
 # :mod:`~nilearn.regions` module.
 # ``threshold=0.5`` indicates that we keep nominal of amount nonzero
 # :term:`voxels<voxel>` across all maps, less the threshold means that
-# more intense non-voxels will be survived.
+# Import :class:`~nilearn.regions.RegionExtractor` from the
+# :mod:`~nilearn.regions` module.
+# ``threshold=0.5`` indicates that we keep a nominal of amount non-zero
+# :term:`voxels<voxel>` across all maps.
+#
 from nilearn.regions import RegionExtractor
 
 extractor = RegionExtractor(
@@ -105,6 +118,24 @@ n_regions_extracted = regions_extracted_img.shape[-1]
 title = (
     f"{n_regions_extracted} regions are extracted from 8 components.\n"
     "Each separate color of region indicates extracted region"
+# Just call fit() to proceed with regions extraction
+extractor.fit()
+
+# %%
+# Visualization of region extraction results
+# ..........................................
+# Extracted regions are stored in ``regions_img_``
+# and each region index is stored in ``index_``.
+regions_extracted_img = extractor.regions_img_
+regions_index = extractor.index_
+
+n_regions_extracted = regions_extracted_img.shape[-1]
+n_components = components_img.shape[-1]
+
+title = (
+f"{n_regions_extracted} regions are extracted "
+f"from {n_components} components.\n"
+"Each separate color of region indicates extracted region."
 )
 plot_prob_atlas(
     regions_extracted_img,
@@ -124,7 +155,13 @@ show()
 # To extract timeseries signals, we call
 # :meth:`~nilearn.regions.RegionExtractor.transform` onto each subject
 # functional data stored in ``func_filenames``.
-# To estimate correlation matrices we import connectome utilities from nilearn.
+# First we need to extract timeseries signals for each subject
+# and then estimate the correlation matrices on those signals.
+# To extract timeseries, we call
+# :meth:`~nilearn.regions.RegionExtractor.transform` onto each subject
+# functional data stored in ``func_filenames``.
+# To estimate the correlation matrices
+# we can rely on :class:`nilearn.connectome.ConnectivityMeasure`.
 from nilearn.connectome import ConnectivityMeasure
 
 correlations = []
@@ -136,6 +173,12 @@ for filename, confound in zip(func_filenames, confounds, strict=False):
     # call fit_transform from ConnectivityMeasure object
     correlation = connectome_measure.fit_transform([timeseries_each_subject])
     # saving each subject correlation to correlations
+connectome_measure = ConnectivityMeasure(kind="correlation", verbose=1)
+
+correlations = []
+for filename, confound in zip(func_filenames, confounds, strict=False):
+    timeseries_each_subject = extractor.transform(filename, confounds=confound)
+    correlation = connectome_measure.fit_transform([timeseries_each_subject])
     correlations.append(correlation)
 
 # Mean of all correlations
