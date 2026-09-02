@@ -44,13 +44,11 @@ class _ExtractionFunctor:
         labels_img,
         background_label,
         strategy,
-        keep_masked_labels,
         mask_img,
     ):
         self.labels_img = labels_img
         self.background_label = background_label
         self.strategy = strategy
-        self.keep_masked_labels = keep_masked_labels
         self.mask_img = mask_img
 
     def __call__(self, imgs):
@@ -61,7 +59,6 @@ class _ExtractionFunctor:
             self.labels_img,
             background_label=self.background_label,
             strategy=self.strategy,
-            keep_masked_labels=self.keep_masked_labels,
             mask_img=self.mask_img,
         )
         return signals, (labels, masked_labels_img)
@@ -157,8 +154,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     %(strategy)s
 
-    %(keep_masked_labels)s
-
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
 
@@ -232,7 +227,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         memory_level=1,
         verbose=0,
         strategy="mean",
-        keep_masked_labels=False,
         reports=True,
         cmap=None,
         clean_args=None,
@@ -244,7 +238,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         self.lut = lut
 
         self.mask_img = mask_img
-        self.keep_masked_labels = keep_masked_labels
 
         # Parameters for smooth_array
         self.smoothing_fwhm = smoothing_fwhm
@@ -776,7 +769,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 labels_img_,
                 self.background_label,
                 self.strategy,
-                self.keep_masked_labels,
                 mask_img_,
             ),
             # Pre-processing

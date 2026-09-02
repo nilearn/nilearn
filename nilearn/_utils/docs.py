@@ -689,25 +689,6 @@ imgs_list : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
 """
 
-# keep_masked_labels
-docdict["keep_masked_labels"] = """
-keep_masked_labels : :obj:`bool`, default=False
-    When a mask is supplied through the "mask_img" parameter, some
-    atlas regions may lie entirely outside of the brain mask, resulting
-    in empty time series for those regions.
-    If True, the masked atlas with these empty labels will be retained
-    in the output, resulting in corresponding time series containing
-    zeros only. If False, the empty labels will be removed from the
-    output, ensuring no empty time series are present.
-
-    .. nilearn_deprecated:: 0.10.2
-
-    .. nilearn_versionchanged:: 0.13.0
-
-        The ``keep_masked_labels`` parameter will be removed in 0.15.
-
-"""
-
 # keep_masked_maps
 docdict["keep_masked_maps"] = """
 keep_masked_maps : :obj:`bool`, optional
