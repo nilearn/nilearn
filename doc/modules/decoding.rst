@@ -26,3 +26,12 @@ Classes
 
 .. autoclasstree:: nilearn.decoding
    :full:
+
+Functions
+---------
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   cross_val_decoder_score
