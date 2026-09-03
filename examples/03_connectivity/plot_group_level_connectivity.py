@@ -17,11 +17,11 @@ for a careful study.
 # ----------------------------------------------------------
 # We study only 30 subjects from the dataset, to save computation time.
 from nilearn.datasets import (
-    fetch_atlas_difumo,
     fetch_atlas_msdl,
     fetch_development_fmri,
 )
 from nilearn.plotting import (
+    plot_connectome,
     plot_matrix,
     show,
 )
@@ -34,13 +34,9 @@ msdl_data = fetch_atlas_msdl()
 msdl_coords = msdl_data.region_coords
 n_regions = len(msdl_coords)
 
-basc_data = fetch_atlas_difumo(dimension=64)
-# basc_coords = find_parcellation_cut_coords(basc_data.maps)
-# n_regions = len(basc_coords)
-
 print(
     f"MSDL has {n_regions} ROIs, "
-    # f"part of the following networks:\n{msdl_data.networks}."
+    f"part of the following networks:\n{msdl_data.networks}."
 )
 
 # %%
@@ -52,13 +48,12 @@ print(
 from nilearn.maskers import NiftiMapsMasker
 
 masker = NiftiMapsMasker(
-    basc_data.maps,
+    msdl_data.maps,
     resampling_target="data",
     t_r=development_dataset.t_r,
     detrend=True,
     low_pass=0.1,
     high_pass=0.01,
-    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
     standardize_confounds=True,
@@ -135,11 +130,11 @@ for i, (matrix, ax) in enumerate(
 
 # %%
 # Now we display as a connectome the mean correlation matrix over all children.
-# plot_connectome(
-#     mean_correlation_matrix,
-#     basc_coords,
-#     title="mean correlation over all children",
-# )
+plot_connectome(
+    mean_correlation_matrix,
+    msdl_coords,
+    title="mean correlation over all children",
+)
 
 # %%
 # Studying partial correlations
@@ -170,11 +165,11 @@ for i, (matrix, ax) in enumerate(
         vmin=-vmax,
     )
 # %%
-# plot_connectome(
-#     partial_correlation_measure.mean_,
-#     basc_coords,
-#     title="mean partial correlation over all children",
-# )
+plot_connectome(
+    partial_correlation_measure.mean_,
+    msdl_coords,
+    title="mean partial correlation over all children",
+)
 
 # %%
 # Extract subjects variabilities around a group connectivity
