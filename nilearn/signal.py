@@ -75,11 +75,6 @@ def standardize_signal(
     if standardize is None:
         return signals
 
-    check_parameter_in_allowed(
-        standardize,
-        allowed=["psc", "zscore_sample"],
-        parameter_name="standardize",
-    )
     if signals.shape[0] == 1:
         warnings.warn(
             "Standardization of 3D signal has been requested but "
