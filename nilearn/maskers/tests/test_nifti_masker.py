@@ -135,7 +135,7 @@ def test_resample_to_mask_warning(img_3d_rand_eye, affine_eye):
         masker.fit_transform(img_3d_rand_eye)
 
 
-def test_nan(affine_eye):
+def test_nan():
     """Check that the masker handles NaNs appropriately."""
     data = np.ones((9, 9, 9))
     data[0] = np.nan
@@ -145,10 +145,13 @@ def test_nan(affine_eye):
     data[:, -1] = np.nan
     data[:, :, -1] = np.nan
     data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, affine_eye)
+    img = Nifti1Image(data, np.eye(4))
+
     masker = NiftiMasker(mask_args={"opening": 0})
-    masker.fit(img)
+    masker.fit([img])
+
     mask = get_data(masker.mask_img_)
+
     assert mask[1:-1, 1:-1, 1:-1].all()
     assert not mask[0].any()
     assert not mask[:, 0].any()
@@ -283,6 +286,14 @@ def test_mask_strategy_errors_warnings(img_fmri):
         ValueError, match="Unknown value of mask_strategy 'oops'"
     ):
         masker.fit(img_fmri)
+
+    # Warning with deprecated 'template' strategy,
+    # plus an exception because there's no resulting mask
+    mask = NiftiMasker(mask_strategy="template")
+    with pytest.warns(
+        UserWarning, match="Masking strategy 'template' is deprecated."
+    ):
+        mask.fit(img_fmri)
 
 
 def test_compute_epi_mask(affine_eye):
