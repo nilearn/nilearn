@@ -452,7 +452,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, signals):
+    def inverse_transform(self, signals) -> SurfaceImage:
         """Transform extracted signal back to surface image.
 
         Parameters

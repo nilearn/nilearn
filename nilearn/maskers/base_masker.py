@@ -627,7 +627,7 @@ class BaseMasker(_BaseMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, X):
+    def inverse_transform(self, X) -> Nifti1Image:
         """Transform the data matrix back to an image in brain space.
 
         This step only performs spatial unmasking,

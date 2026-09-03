@@ -371,7 +371,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, region_signals):
+    def inverse_transform(self, region_signals) -> SurfaceImage:
         """Compute :term:`vertex` signals from region signals.
 
         Parameters
@@ -422,7 +422,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         vertex_signals = vertex_signals.T
 
         # split the signal into hemispheres
-        vertex_signals = {
+        data = {
             "left": vertex_signals[
                 : self.maps_img.data.parts["left"].shape[0], :
             ],
@@ -430,8 +430,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 self.maps_img.data.parts["left"].shape[0] :, :
             ],
         }
-
-        imgs = SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
+        imgs = SurfaceImage(mesh=self.maps_img.mesh, data=data)
 
         return self._post_process_inverse_transform(
             region_signals, imgs, return_1D

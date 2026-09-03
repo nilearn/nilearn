@@ -785,7 +785,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
     def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "cov_estimator_")
 
-    def inverse_transform(self, connectivities, diagonal=None):
+    def inverse_transform(self, connectivities, diagonal=None) -> np.ndarray:
         """Return connectivity matrices from connectivities, \
         vectorized or not.
 
