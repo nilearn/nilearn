@@ -1,7 +1,5 @@
 """Test the multi_nifti_labels_masker module."""
 
-import sys
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -369,10 +367,6 @@ def test_multi_nifti_labels_masker_atlas_data_different_fov(
     assert_array_equal(masker.labels_img_.affine, affine2)
 
 
-# TODO (python >= 3.11) remove skipif
-@pytest.mark.skipif(
-    sys.version_info[1] < 11, reason="UserWarning not thrown in py310"
-)
 def test_multi_nifti_labels_masker_resampling_target():
     """Test labels masker with resampling target in 'data', 'labels'.
 
