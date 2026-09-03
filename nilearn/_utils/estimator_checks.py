@@ -2469,11 +2469,7 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             continue
 
         results = {}
-        standardize_values = [
-            "zscore_sample",
-            "psc",
-            None,
-        ]
+        standardize_values = ["zscore_sample", "psc", None]
         for standardize in standardize_values:
             estimator = clone(estimator_orig)
 
@@ -2856,13 +2852,7 @@ def check_masker_standardization(estimator_orig) -> None:
         default_result = estimator.transform(input_img)
 
         results = {}
-        standardize_values = [
-            "zscore_sample",
-            "psc",
-            True,
-            False,
-            None,
-        ]
+        standardize_values = ["zscore_sample", "psc", None]
         for standardize in standardize_values:
             estimator = clone(estimator_orig)
 
@@ -2870,25 +2860,11 @@ def check_masker_standardization(estimator_orig) -> None:
 
             estimator.fit(input_img)
 
-            # TODO (nilearn >= 0.15.0) remove warning catch
-            # Make sure that a FutureWarning warning is thrown
-            # and not one during call to fit and then call to clean.
-            if standardize in [True, False]:
-                with pytest.warns(
-                    FutureWarning,
-                    match=(
-                        "boolean values for 'standardize' will be deprecated"
-                    ),
-                ):
-                    results[str(standardize)] = estimator.transform(input_img)
-            else:
-                results[str(standardize)] = estimator.transform(input_img)
+            results[str(standardize)] = estimator.transform(input_img)
 
-        unstandarized_result = results[str(False)]
+        unstandarized_result = results[str(None)]
 
         # check which options are equal or different
-        assert_array_equal(results[str(None)], results[str(False)])
-
         for x in ["zscore_sample", "psc"]:
             with pytest.raises(AssertionError):
                 assert_array_equal(unstandarized_result, results[x])
