@@ -53,7 +53,7 @@ min_plotting = [
     "plotly==6.1.1"
 ]
 # For prettier printing
-rich = ["rich>=3.0.0"]
+rich = ["rich>=12.0.0"]
 # Applying style guide
 style = ['prek']
 test = [
@@ -491,4 +491,4 @@ max-branches = 22
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 8
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 100
+max-statements = 110

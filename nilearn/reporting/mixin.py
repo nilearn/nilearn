@@ -286,7 +286,7 @@ class ReportMixin:
                 )
         return parameters
 
-    def _embed_img(self, display):
+    def _embed_img(self, display) -> str | None:
         """Embed an image or just return its instance if already embedded.
 
         Parameters
@@ -315,16 +315,6 @@ class ReportMixin:
             estimator_type = "/" + estimator_type
         body_tpl_path = f"html{estimator_type}/{self._template_name}"
         return get_template(body_tpl_path)
-
-    def _get_partial_template(
-        self, estimator_type: str, tpl_name: str, is_common: bool = False
-    ):
-        """Return a partial template for the specified `_estimator_type`.
-        If `is_common=True`, the template is not searched in estimator's
-        template directory but common `partials` directory.
-        """
-        loc = f"/{estimator_type}" if not is_common else ""
-        return get_template(f"html{loc}/partials/{tpl_name}.jinja")
 
     def _assemble_report(self) -> HTMLReport:
         """Assemble report head and body acquiring body template corresponding

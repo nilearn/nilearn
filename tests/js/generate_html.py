@@ -19,7 +19,8 @@ from nilearn.plotting import (
 )
 from nilearn.surface import SurfaceImage
 
-output_path = Path(__file__).parent
+output_path = Path(__file__).parent / "generated" / "html"
+output_path.mkdir(parents=True, exist_ok=True)
 
 WIDTH = 1200
 HEIGHT = 800

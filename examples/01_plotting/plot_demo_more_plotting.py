@@ -51,7 +51,7 @@ See :ref:`plotting` for more details.
 
 from nilearn import datasets
 
-# haxby dataset to have anatomical image, EPI images and masks
+# The Haxby dataset to have anatomical image, EPI images and masks.
 haxby_dataset = datasets.fetch_haxby()
 haxby_anat_filename = haxby_dataset.anat[0]
 haxby_mask_filename = haxby_dataset.mask_vt[0]
@@ -406,7 +406,7 @@ output_dir = Path.cwd() / "results" / "plot_demo_more_plotting"
 output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
 
-plotting.plot_stat_map(
+display = plotting.plot_stat_map(
     stat_img,
     title="Using plot_stat_map output_file",
     output_file=output_dir / "plot_stat_map.png",
