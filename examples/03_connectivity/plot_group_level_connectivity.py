@@ -7,18 +7,24 @@ between regions of interest : correlation, partial correlation,
 and tangent space embedding.
 
 The resulting connectivity coefficients can be used to
-discriminate children from adults.In general, the tangent space embedding
+discriminate children from adults. In general, the tangent space embedding
 **outperforms** the standard correlations: see :footcite:t:`Dadi2019`
 for a careful study.
-
 """
 
 # %%
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
 # We study only 30 subjects from the dataset, to save computation time.
-from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
-from nilearn.plotting import plot_connectome, plot_matrix, show
+from nilearn.datasets import (
+    fetch_atlas_difumo,
+    fetch_atlas_msdl,
+    fetch_development_fmri,
+)
+from nilearn.plotting import (
+    plot_matrix,
+    show,
+)
 
 development_dataset = fetch_development_fmri(n_subjects=30)
 
@@ -27,9 +33,14 @@ development_dataset = fetch_development_fmri(n_subjects=30)
 msdl_data = fetch_atlas_msdl()
 msdl_coords = msdl_data.region_coords
 n_regions = len(msdl_coords)
+
+basc_data = fetch_atlas_difumo(dimension=64)
+# basc_coords = find_parcellation_cut_coords(basc_data.maps)
+# n_regions = len(basc_coords)
+
 print(
     f"MSDL has {n_regions} ROIs, "
-    f"part of the following networks:\n{msdl_data.networks}."
+    # f"part of the following networks:\n{msdl_data.networks}."
 )
 
 # %%
@@ -41,7 +52,7 @@ print(
 from nilearn.maskers import NiftiMapsMasker
 
 masker = NiftiMapsMasker(
-    msdl_data.maps,
+    basc_data.maps,
     resampling_target="data",
     t_r=development_dataset.t_r,
     detrend=True,
@@ -50,6 +61,7 @@ masker = NiftiMapsMasker(
     memory="nilearn_cache",
     memory_level=1,
     standardize_confounds=True,
+    standardize="zscore_sample",
     verbose=1,
 )
 
@@ -122,11 +134,11 @@ for i, (matrix, ax) in enumerate(
 
 # %%
 # Now we display as a connectome the mean correlation matrix over all children.
-plot_connectome(
-    mean_correlation_matrix,
-    msdl_coords,
-    title="mean correlation over all children",
-)
+# plot_connectome(
+#     mean_correlation_matrix,
+#     basc_coords,
+#     title="mean correlation over all children",
+# )
 
 # %%
 # Studying partial correlations
@@ -157,11 +169,11 @@ for i, (matrix, ax) in enumerate(
         vmin=-vmax,
     )
 # %%
-plot_connectome(
-    partial_correlation_measure.mean_,
-    msdl_coords,
-    title="mean partial correlation over all children",
-)
+# plot_connectome(
+#     partial_correlation_measure.mean_,
+#     basc_coords,
+#     title="mean partial correlation over all children",
+# )
 
 # %%
 # Extract subjects variabilities around a group connectivity
@@ -204,8 +216,12 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes, strict=False)):
 # adults. We use cross-validation and measure classification accuracy to
 # compare the different kinds of connectivity matrices.
 # We use random splits of the subjects into training/testing sets.
-# StratifiedShuffleSplit allows preserving the proportion of children in the
-# test set.
+# :class:`sklearn.model_selection.StratifiedShuffleSplit`
+# allows preserving the proportion of children in the test set. We also use
+# :class:`sklearn.dummy.DummyClassifier' to get the chance level performance.
+# As the the proportion of children in the training/testing sets are
+# preserved across all folds, we only need to calculate it once.
+from sklearn.dummy import DummyClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.svm import LinearSVC
@@ -237,10 +253,18 @@ for kind in kinds:
         # store the accuracy for this cross-validation fold
         scores[kind].append(accuracy_score(classes[test], predictions))
 
+        if not scores.get("dummy"):
+            # run dummy classifier to get chance level performance if its not
+            # there already
+            dummy_prediction = (
+                DummyClassifier()
+                .fit(connectomes, classes[train])
+                .predict(pooled_subjects[test])
+            )
+            scores["dummy"] = accuracy_score(classes[test], dummy_prediction)
 
 # %%
 # display the results
-
 mean_scores = [np.mean(scores[kind]) for kind in kinds]
 scores_std = [np.std(scores[kind]) for kind in kinds]
 
@@ -252,7 +276,7 @@ yticks = [k.replace(" ", "\n") for k in kinds]
 plt.yticks(positions, yticks)
 plt.gca().grid(True)
 plt.gca().set_axisbelow(True)
-plt.gca().axvline(0.8, color="red", linestyle="--")
+plt.gca().axvline(scores["dummy"], color="red", linestyle="--")
 plt.xlabel("Classification accuracy\n(red line = chance level)")
 
 
