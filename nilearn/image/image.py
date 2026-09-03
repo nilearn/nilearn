@@ -535,8 +535,8 @@ def _smooth_surface_img(
 
     Parameters
     ----------
-    imgs : SurfaceImage
-        The surface whose is to be smoothed.
+    img : SurfaceImage
+        The surface to be smoothed.
         In the case of 2D data, each sample is smoothed independently.
 
     iterations : :obj:`tuple` of :obj:`int` >=0
@@ -560,7 +560,14 @@ def _smooth_surface_img(
     new_data = {}
     for hemi, n_iter in zip(img.mesh.parts, iterations, strict=False):
         mesh = img.mesh.parts[hemi]
-        data = img.data.parts[hemi]
+        # Match the volume path, which passes ``ensure_finite=True`` to
+        # ``smooth_array``: non-finite values are replaced with zeros. Copy
+        # first because ``ensure_finite_data`` works in place, and do it
+        # before the ``n_iter == 0`` shortcut so that the guarantee holds
+        # whatever ``fwhm`` is. Left as is, a single non-finite vertex is
+        # spread over its neighbors by the smoothing iterations.
+        data = np.array(img.data.parts[hemi], copy=True)
+        ensure_finite_data(data, raise_warning=False)
 
         if n_iter == 0:
             new_data[hemi] = data
@@ -633,6 +640,7 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
     return niters
 
 
+@fill_doc
 def _crop_img_to(img, slices, copy=True, copy_header=True):
     """Crops an image to a smaller size.
 
@@ -646,7 +654,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
         the slices will be applied to the first `len(slices)` dimensions
         (See :ref:`extracting_data`).
 
-    slices : list of slices
+    slices : :obj:`list` of slices
         Defines the range of the crop.
         E.g. [slice(20, 200), slice(40, 150), slice(0, 100)] defines a cube.
 
@@ -1427,6 +1435,7 @@ def new_img_like(
     return klass(data, affine, header=header)
 
 
+@fill_doc
 def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     """Apply cluster-extent thresholding to voxel-wise thresholded array.
 
@@ -1768,13 +1777,13 @@ def _apply_threshold(img_data, two_sided, cutoff_threshold):
 
     Parameters
     ----------
-    img_data: np.ndarray or SurfaceImage
+    img_data : np.ndarray or SurfaceImage
 
     two_sided : :obj:`bool`, default=True
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-    cutoff_threshold: :obj:`int`
+    cutoff_threshold : :obj:`int`
         Effective threshold returned by check_threshold.
 
     Returns
@@ -2085,8 +2094,6 @@ def binarize_img(
             Default was changed to False.
 
      %(copy_header)s
-
-        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
         .. nilearn_versionadded:: 0.11.0
 
@@ -2828,12 +2835,12 @@ def check_same_fov(*args, **kwargs) -> bool:
         Images to be checked. Images passed without keywords will be labeled
         as img_#1 in the error message (replace 1 with the appropriate index).
 
-    kwargs : images
+    kwargs : images or raise_error
         Images to be checked. In case of error, images will be referenced by
         their keyword name in the error message.
 
-    raise_error : :obj:`bool`, optional
-        If True, an error will be raised in case of error.
+        raise_error : :obj:`bool`, optional
+            If True, an error will be raised in case of error.
 
     """
     raise_error = kwargs.pop("raise_error", False)

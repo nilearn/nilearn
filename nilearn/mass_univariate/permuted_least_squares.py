@@ -29,6 +29,7 @@ from nilearn.mass_univariate._utils import (
 )
 
 
+@fill_doc
 def _permuted_ols_on_chunk(
     scores_original_data,
     tested_vars,
@@ -93,11 +94,11 @@ def _permuted_ols_on_chunk(
     n_perm_chunk : int, default=10000
         Number of permutations to be performed.
 
-    intercept_test : boolean, default=True
+    intercept_test : :obj:`bool`, default=True
         Change the permutation scheme (swap signs for intercept,
         switch labels otherwise). See :footcite:t:`Fisher1935`.
 
-    two_sided_test : boolean, default=True
+    two_sided_test : :obj:`bool`, default=True
         If True, performs an unsigned t-test. Both positive and negative
         effects are considered; the null hypothesis is that the effect is zero.
         If False, only positive effects are considered as relevant. The null
@@ -379,7 +380,8 @@ def permuted_ols(
     Parameters
     ----------
     tested_vars : array-like, shape=(n_samples, n_regressors)
-        Explanatory variates, fitted and tested independently from each others.
+        Numerical or boolean labels for explanatory variates; fitted and tested
+        independently of each other.
 
     target_vars : array-like, shape=(n_samples, n_descriptors)
         :term:`fMRI` data to analyze according
@@ -937,6 +939,15 @@ def _check_inputs_permuted_ols(
 def _sanitize_inputs_permuted_ols(
     n_jobs, output_type, tfce, threshold, target_vars, tested_vars
 ):
+    tested_vars = np.asanyarray(tested_vars)
+    if not (
+        np.issubdtype(tested_vars.dtype, np.number)
+        or np.issubdtype(tested_vars.dtype, np.bool_)
+    ):
+        raise TypeError(
+            "'tested_vars' must contain numerical or boolean values."
+        )
+
     # check n_jobs (number of CPUs)
     if n_jobs < 0:
         n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)

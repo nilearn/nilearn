@@ -17,7 +17,6 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn.datasets import load_mni152_template
 from nilearn.image import load_img, resample_img
 from nilearn.image.image import (
@@ -57,10 +56,10 @@ def apply_mask_and_get_affinity(
         If a 3D niimg is provided, a singleton dimension will be added to
         the output to represent the single scan in the niimg.
 
-    radius : float
+    radius : :obj:`float`
         Indicates, in millimeters, the radius for the sphere around the seed.
 
-    allow_overlap : boolean
+    allow_overlap : :obj:`bool`
         If False, a ValueError is raised if VOIs overlap
 
     mask_img : Niimg-like object or None, default=None
@@ -176,10 +175,10 @@ def _iter_signals_from_spheres(
         If a 3D niimg is provided, a singleton dimension will be added to
         the output to represent the single scan in the niimg.
 
-    radius : float
+    radius : :obj:`float`
         Indicates, in millimeters, the radius for the sphere around the seed.
 
-    allow_overlap : boolean
+    allow_overlap : :obj:`bool`
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
 
@@ -402,7 +401,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        displays : list
+        displays : :obj:`list`
             A list of all displays to be rendered.
         """
         if not self._has_report_data():
@@ -513,6 +512,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     )
                 else:
                     resampl_imgs = imgs
+
                 # Store 1 timepoint to pass to reporter
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
         elif self.reports:  # imgs not provided to fit
@@ -642,11 +642,16 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         )
 
         imgs = load_img(imgs)
-        target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
-        if target_dtype is None:
-            target_dtype = img_data_dtype(imgs)
 
-        signals = signals.astype(target_dtype)
+        target_dtype = self._get_target_dtype(imgs)
+
+        if target_dtype is not None:
+            # if target_dtype is None here, self.dtype is None: no
+            # explicit dtype was requested, so keep the dtype produced by
+            # the extraction/cleaning pipeline (e.g. float after
+            # standardize) instead of forcing it back to the source
+            # image's dtype.
+            signals = signals.astype(target_dtype)
 
         if self.n_elements_ == 1:
             return signals

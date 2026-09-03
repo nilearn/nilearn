@@ -85,7 +85,8 @@ class _RegressorMixin:
 
         Parameters
         ----------
-        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
+        X : :obj:`list` of Niimg-like \
+            or :obj:`~nilearn.surface.SurfaceImage` objects
             See :ref:`extracting_data`.
             Data on which model is to be fitted.
             If this is a list,

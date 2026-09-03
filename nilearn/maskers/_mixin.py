@@ -27,6 +27,7 @@ from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
 
 
+@fill_doc
 class _MultiMixin:
     """Mixin class to add common MultiMasker functionalities."""
 
@@ -81,7 +82,7 @@ class _MultiMixin:
 
         Parameters
         ----------
-        %(imgs)s
+        %(imgs_list)s
             Images to process.
 
         %(confounds_multi)s
@@ -131,7 +132,7 @@ class _MultiMixin:
 
         Parameters
         ----------
-        imgs :Image object, or a :obj:`list` of Image objects
+        imgs : Image object, or a :obj:`list` of Image objects
             See :ref:`extracting_data`.
             Data to be preprocessed
 
@@ -307,7 +308,7 @@ class _LabelMaskerMixin:
 
         Parameters
         ----------
-        input_features :default=None
+        input_features : default=None
             Only for sklearn API compatibility.
         """
         del input_features
@@ -385,6 +386,7 @@ class _LabelMaskerMixin:
         )
 
 
+@fill_doc
 class MaskerReportMixin(ReportMixin):
     """A mixin class that adapts ``ReportMixin`` to masker classes for
     reporting functionality.
@@ -506,12 +508,10 @@ class MaskerReportMixin(ReportMixin):
 
             - For NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker,
               MultiSurfaceMapsMasker :
-
-                  %(displayed_maps)s
+              %(displayed_maps)s
 
             - For NiftiSpheresMasker :
-
-                  %(displayed_spheres)s
+              %(displayed_spheres)s
 
         Returns
         -------
@@ -529,42 +529,33 @@ class MaskerReportMixin(ReportMixin):
 
     def _generate_report_htmls(self):
         """Generate report figure htmls and summary htmls."""
-        report_content = self._report_content
+        self._report_content["figures"] = self._embed_all_images()
 
-        figure, embedded_images = self._generate_figure_htmls()
-        report_content["figure"] = figure
-        report_content["content"] = embedded_images
-
-        # _generate_figure_htmls should be called before setting summary_html
+        # _embed_all_images should be called before setting summary_html
         summary = self._report_content.get("summary", None)
         if summary is not None:
-            report_content["summary_html"] = self._get_summary_html(summary)
+            self._report_content["summary_html"] = self._get_summary_html(
+                summary
+            )
 
-    def _generate_figure_htmls(self):
-        """Generate image htmls using partial template for masker figures."""
-        embedded_images = None
+        # for Niftimasker
+        if overlay := self._report_content.get("overlay", None):
+            self._report_content["overlay_html"] = self._embed_img(overlay)
+
+    def _embed_all_images(self) -> list[str | None]:
+        """Embed all images."""
+        embedded_images: list[str | None] = [None]
         image = self._load_report_displays()
         if image is None:
-            embedded_images = None
+            embedded_images = [None]
         elif not isinstance(image, list):
-            embedded_images = self._embed_img(image)
+            embedded_images = [self._embed_img(image)]
         elif all(x is None for x in image):
-            embedded_images = None
+            embedded_images = [None]
         else:
             embedded_images = [self._embed_img(i) for i in image]
 
-        content = embedded_images
-        if not isinstance(content, list):
-            content = [content]
-
-        tpl = self._get_partial_template(self._estimator_type, "figure")
-        tpl_rendered = tpl.render(
-            engine=self._report_content["engine"],
-            content=content,
-            displayed_maps=self._report_content["displayed_maps"],
-            unique_id=self._report_content["unique_id"],
-        )
-        return tpl_rendered, embedded_images
+        return embedded_images
 
     @abc.abstractmethod
     def _load_report_displays(self):

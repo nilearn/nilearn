@@ -112,7 +112,7 @@ def hierarchical_k_means(
 
     Returns
     -------
-    labels : list of ints (len n_features)
+    labels : :obj:`list` of ints (len n_features)
         Parcellation of features in clusters
     """
     check_params(locals())
