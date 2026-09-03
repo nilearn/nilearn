@@ -161,9 +161,9 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
 @pytest.mark.parametrize(
     "estimator, standardize",
     [
-        (SpaceNetRegressor, True),
-        (SpaceNetRegressor, False),
-        (SpaceNetClassifier, True),
+        (SpaceNetRegressor, "zscore_sample"),
+        (SpaceNetRegressor, None),
+        (SpaceNetClassifier, "zscore_sample"),
     ],
 )
 def test_graph_net_and_tvl1_same_for_pure_l1_spacenet(
@@ -242,9 +242,9 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
 @pytest.mark.parametrize(
     "estimator, standardize",
     [
-        (SpaceNetRegressor, True),
-        (SpaceNetRegressor, False),
-        (SpaceNetClassifier, True),
+        (SpaceNetRegressor, "zscore_sample"),
+        (SpaceNetRegressor, None),
+        (SpaceNetClassifier, "zscore_sample"),
     ],
 )
 def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
@@ -281,7 +281,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
 
 @pytest.mark.slow
 @pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
-@pytest.mark.parametrize("standardize", [True, False])
+@pytest.mark.parametrize("standardize", ["zscore_sample", None])
 def test_graph_net_and_tv_same_for_pure_l1_spacenet_regressor(
     standardize, decimal=1
 ):
