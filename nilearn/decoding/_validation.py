@@ -3,7 +3,7 @@
 import numpy as np
 from sklearn.model_selection import cross_val_score
 
-from nilearn.image import iter_img
+from nilearn.image import check_niimg_3d, iter_img
 from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface import SurfaceImage
 
@@ -43,6 +43,8 @@ def cross_val_decoder_score(
         A 4D image or its path, an iterable of 3D images or their paths,
         a surface image, or an iterable of surface images.
         Each volume or surface sample corresponds to one element of ``y``.
+        Iterables of volumetric images must contain individual samples,
+        not 4D images containing multiple samples.
 
     y : array-like of shape (n_samples,)
         Target values, in the same order as the image samples.
@@ -155,6 +157,8 @@ def cross_val_decoder_score(
                 SurfaceImage(img.mesh, dict(img.data.parts))
             )
         ]
+    else:
+        imgs = [check_niimg_3d(img) for img in imgs]
 
     return cross_val_score(
         estimator,

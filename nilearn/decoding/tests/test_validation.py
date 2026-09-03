@@ -17,6 +17,7 @@ from nilearn.decoding import (
     FREMRegressor,
     cross_val_decoder_score,
 )
+from nilearn.exceptions import DimensionError
 from nilearn.image import check_niimg, get_data, index_img, iter_img
 from nilearn.maskers import NiftiMasker
 from nilearn.surface import SurfaceImage
@@ -351,3 +352,26 @@ def test_cross_val_decoder_score_dimension(volume_data):
 
     with pytest.raises(TypeError, match="Expected dimension is 4D"):
         cross_val_decoder_score(decoder, index_img(img, 0), y, cv=3)
+
+
+@pytest.mark.parametrize("form", ["list", "tuple", "generator", "paths"])
+@pytest.mark.parametrize("mixed_dimensions", [False, True])
+def test_cross_val_decoder_score_rejects_4d_collection(
+    volume_data, tmp_path, form, mixed_dimensions
+):
+    """Each item in a volume collection must represent a single sample."""
+    img, mask, _ = volume_data
+    imgs = [index_img(img, 0) if mixed_dimensions else img, img]
+    if form == "tuple":
+        imgs = tuple(imgs)
+    elif form == "generator":
+        imgs = iter(imgs)
+    elif form == "paths":
+        paths = [tmp_path / f"image_{i}.nii.gz" for i in range(len(imgs))]
+        for sample, path in zip(imgs, paths, strict=True):
+            sample.to_filename(path)
+        imgs = paths
+
+    decoder = _make_decoder(Decoder, mask)
+    with pytest.raises(DimensionError, match="Expected dimension is 3D"):
+        cross_val_decoder_score(decoder, imgs, [0, 1], cv=2)

@@ -83,8 +83,8 @@ decoder.fit(func_img, conditions)
 y_pred = decoder.predict(func_img)
 
 # %%
-# Obtain prediction scores via cross validation
-# ---------------------------------------------
+# Inspect the decoder's internal cross-validation scores
+# -----------------------------------------------------
 # Define the cross-validation scheme used for validation. Here we use a
 # LeaveOneGroupOut cross-validation on the run group which corresponds to a
 # leave a run out scheme, then pass the cross-validator object
@@ -104,11 +104,41 @@ decoder = Decoder(
     cv=cv,
     verbose=2,
 )
-# Compute the prediction accuracy for the different folds (i.e. run)
+# Fit the decoder, selecting and aggregating models across runs.
 decoder.fit(func_img, conditions, groups=run_label)
 
-# Print the CV scores
+# These internal scores are used for model selection.
 print(decoder.cv_scores_["face"])
+
+# %%
+# Evaluate the decoder on held-out runs
+# ------------------------------------
+# Use :func:`~nilearn.decoding.cross_val_decoder_score` to evaluate the full
+# decoder with an outer cross-validation loop. Each outer fold fits a fresh
+# clone, including its masker, feature selection, and internal model selection.
+# The returned scores measure prediction accuracy on runs that were held out
+# from all these steps.
+#
+# We use three outer folds to limit computation. ``groups`` keeps runs together
+# in the outer splits, while ``params`` also passes the training runs to the
+# decoder's internal LeaveOneGroupOut splitter. Thus, runs remain separate in
+# both cross-validation loops.
+from sklearn.model_selection import GroupKFold
+
+from nilearn.decoding import cross_val_decoder_score
+
+scores = cross_val_decoder_score(
+    decoder,
+    func_img,
+    conditions,
+    cv=GroupKFold(n_splits=3),
+    groups=run_label,
+    params={"groups": run_label},
+    scoring="accuracy",
+)
+print(f"Held-out run accuracies: {scores}")
+print(f"Mean accuracy: {scores.mean():.3f} +/- {scores.std():.3f}")
+# The original decoder remains fitted on all runs for visualization below.
 
 # %%
 # Visualize the results
