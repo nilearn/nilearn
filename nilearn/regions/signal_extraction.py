@@ -499,8 +499,6 @@ def img_to_signals_maps(
         maps e.g. ICA
 
     """
-    check_params(locals())
-
     maps_img = check_niimg_4d(maps_img)
     imgs = check_niimg_4d(imgs)
 
