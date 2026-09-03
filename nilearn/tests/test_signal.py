@@ -496,7 +496,7 @@ def test_clean_detrending():
     # using assert_almost_equal instead of array_equal due to NaNs
     assert_almost_equal(y_orig, y, decimal=13)
 
-    x_detrended = clean(x, standardize=False)
+    x_detrended = clean(x, standardize=None)
 
     assert_almost_equal(x_detrended, signals, decimal=13)
     # clean should not modify inputs

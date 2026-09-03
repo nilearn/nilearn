@@ -159,7 +159,7 @@ def _tseries_std(
     mask_img,
     confounds,
     sample_mask,
-    standardize_signal=False,
+    standardize_signal=None,
     standardize_confounds=True,
     detrend=False,
 ):
@@ -225,7 +225,7 @@ def test_nilearn_standardize_false(tmp_path):
         mask_conf,
         confounds,
         sample_mask,
-        standardize_signal=False,
+        standardize_signal=None,
         standardize_confounds=True,
         detrend=False,
     )
@@ -238,7 +238,7 @@ def test_nilearn_standardize_false(tmp_path):
         mask_rand,
         confounds,
         sample_mask,
-        standardize_signal=False,
+        standardize_signal=None,
         standardize_confounds=True,
         detrend=False,
     )
