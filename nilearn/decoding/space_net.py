@@ -629,7 +629,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
 
     %(screening_percentile)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
@@ -679,7 +679,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         tol=5e-4,
         memory=None,
         memory_level=1,
-        standardize=True,
+        standardize="zscore_sample",
         verbose=0,
         n_jobs=1,
         eps=1e-3,
@@ -1097,7 +1097,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     %(memory_level1)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(verbose0)s
 
@@ -1155,7 +1155,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         tol=1e-4,
         memory=None,
         memory_level=1,
-        standardize=True,
+        standardize="zscore_sample",
         verbose=0,
         n_jobs=1,
         eps=1e-3,
@@ -1329,7 +1329,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
 
     %(memory_level1)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(verbose0)s
 
@@ -1380,7 +1380,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         tol=1e-4,
         memory=None,
         memory_level=1,
-        standardize=True,
+        standardize="zscore_sample",
         verbose=0,
         n_jobs=1,
         eps=1e-3,

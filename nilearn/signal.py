@@ -31,6 +31,7 @@ from nilearn.nilearn_typing import (
     HighPass,
     LowPass,
     NonNullScalar,
+    Standardize,
     StandardizeConfounds,
     Tr,
 )
@@ -48,9 +49,7 @@ AVAILABLE_FILTERS = ("butterworth", "cosine")
 def standardize_signal(
     signals,
     detrend: bool = False,
-    standardize: Literal["psc", "zscore_sample"]
-    | bool
-    | None = "zscore_sample",
+    standardize: Standardize = "zscore_sample",
 ) -> np.ndarray:
     """Center and standardize a given signal (time is along first axis).
 
@@ -72,12 +71,6 @@ def standardize_signal(
     check_params(locals())
 
     signals = _detrend(signals, inplace=False) if detrend else signals.copy()
-
-    # TODO (nilearn >= 0.15) remove casting from bool
-    if standardize is False:
-        standardize = None
-    elif standardize is True:
-        standardize = "zscore_sample"
 
     if standardize is None:
         return signals
@@ -770,8 +763,8 @@ def clean(
     )
 
     # Read confounds and signals
-    signals, runs, confounds, sample_mask, standardize = _sanitize_inputs(
-        signals, runs, confounds, sample_mask, ensure_finite, standardize
+    signals, runs, confounds, sample_mask = _sanitize_inputs(
+        signals, runs, confounds, sample_mask, ensure_finite
     )
 
     # Process each run independently
@@ -856,10 +849,11 @@ def clean(
 
     # Remove confounds
     if confounds is not None:
-        tmp = None if standardize_confounds is False else "zscore_sample"
         confounds = standardize_signal(
             confounds,
-            standardize=tmp,
+            standardize=None
+            if standardize_confounds is False
+            else "zscore_sample",
             detrend=False,
         )
 
@@ -1088,9 +1082,7 @@ def _process_runs(
     return np.vstack(cleaned_signals)
 
 
-def _sanitize_inputs(
-    signals, runs, confounds, sample_mask, ensure_finite, standardize
-):
+def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     """Clean up signals and confounds before processing."""
     n_time = len(signals)  # original length of the signal
     n_runs, runs = _sanitize_runs(n_time, runs)
@@ -1098,23 +1090,7 @@ def _sanitize_inputs(
     sample_mask = _sanitize_sample_mask(n_time, n_runs, runs, sample_mask)
     signals = _sanitize_signals(signals, ensure_finite)
 
-    if isinstance(standardize, bool):
-        warnings.warn(
-            stacklevel=find_stack_level(),
-            category=FutureWarning,
-            message=(
-                "boolean values for 'standardize' "
-                "will be deprecated in nilearn 0.15.0.\n"
-                "Use 'zscore_sample' instead of 'True' or "
-                "use 'None' instead of 'False'."
-            ),
-        )
-        if standardize is True:
-            standardize = "zscore_sample"
-        elif standardize is False:
-            standardize = None
-
-    return signals, runs, confounds, sample_mask, standardize
+    return signals, runs, confounds, sample_mask
 
 
 def sanitize_confounds(n_time, confounds):

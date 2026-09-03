@@ -50,7 +50,6 @@ from nilearn.nilearn_typing import (
     OutputFile,
     Radiological,
     ResamplingInterpolation,
-    Standardize,
     Title,
 )
 from nilearn.plotting import cm
@@ -1918,7 +1917,6 @@ def plot_carpet(
     title: Title = None,
     cmap="gray",
     cmap_labels="gist_ncar",
-    standardize: Standardize = True,
 ) -> Figure:
     """Plot an image representation of :term:`voxel` intensities across time.
 
@@ -1976,15 +1974,6 @@ def plot_carpet(
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.
 
-    %(standardize_true)s
-
-        .. note::
-
-            Added to control passing value to `standardize` of ``signal.clean``
-            to call new behavior since passing False or True (default) is
-            deprecated.
-            This parameter will be removed in version 0.15.
-
     Returns
     -------
     figure : :class:`matplotlib.figure.Figure`
@@ -2028,13 +2017,6 @@ def plot_carpet(
     """
     check_params(locals())
     img = check_niimg_4d(img, dtype="auto")
-
-    # TODO (nilearn >= 0.15) remove if and elif below
-    # and change default of function
-    if standardize is True:
-        standardize = "zscore_sample"
-    elif standardize is False:
-        standardize = None
 
     # Define TR and number of frames
     t_r = t_r or float(img.header.get_zooms()[-1])
@@ -2083,7 +2065,7 @@ def plot_carpet(
 
     # Detrend and standardize data
     if detrend:
-        data = clean(data, t_r=t_r, detrend=True, standardize=standardize)
+        data = clean(data, t_r=t_r, detrend=True)
 
     if figure is None:
         if not axes:

@@ -276,7 +276,7 @@ def test_tikhonov_regularization_vs_graph_net():
         max_iter=400,
         fit_intercept=False,
         screening_percentile=100.0,
-        standardize=False,
+        standardize=None,
     )
     graph_net.fit(X_, y.copy())
 

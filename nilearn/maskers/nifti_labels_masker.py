@@ -121,7 +121,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -219,7 +219,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         high_variance_confounds=False,
         detrend=False,

@@ -388,27 +388,6 @@ def test_standardize(rng):
     )
 
 
-def test_standardize_boolean(rng):
-    """Test standardize_signal with standardize as boolean.
-
-    TODO (nilearn >= 0.15) remove this test
-    """
-    n_features = 10
-    n_samples = 17
-
-    # Create random signals with offsets and and negative mean
-    a = rng.random((n_samples, n_features))
-    a += np.linspace(0, 2.0, n_features)
-
-    assert_array_equal(
-        standardize_signal(a), standardize_signal(a, standardize=True)
-    )
-    assert_array_equal(
-        standardize_signal(a, standardize=None),
-        standardize_signal(a, standardize=False),
-    )
-
-
 def test_detrend():
     """Test custom detrend implementation."""
     point_number = 703
@@ -517,10 +496,7 @@ def test_clean_detrending():
     # using assert_almost_equal instead of array_equal due to NaNs
     assert_almost_equal(y_orig, y, decimal=13)
 
-    # This should remove trends as detrend is True by default
-    match = "boolean values for 'standardize' will be deprecated"
-    with pytest.warns(FutureWarning, match=match):
-        x_detrended = clean(x, standardize=False)
+    x_detrended = clean(x, standardize=False)
 
     assert_almost_equal(x_detrended, signals, decimal=13)
     # clean should not modify inputs
@@ -866,8 +842,8 @@ def test_clean_confounds_detrending():
 
 
 @pytest.mark.thread_unsafe
-def test_clean_standardize_true_false():
-    """Check difference between standardize False and True."""
+def test_clean_standardize_none_zscore():
+    """Check difference between standardize None and zscore_sample."""
     signals, _, _ = generate_signals(n_features=41, n_confounds=5, length=45)
 
     input_signals = 10 * signals
@@ -875,12 +851,7 @@ def test_clean_standardize_true_false():
 
     assert_almost_equal(cleaned_signals, input_signals)
 
-    # TODO (nilearn >= 0.15) remove catch_warnings
-    with pytest.warns(
-        FutureWarning,
-        match="boolean values for 'standardize' will be deprecated",
-    ):
-        clean(input_signals, detrend=False, standardize=True)
+    clean(input_signals, detrend=False, standardize="zscore_sample")
 
 
 def test_clean_confounds_inputs():

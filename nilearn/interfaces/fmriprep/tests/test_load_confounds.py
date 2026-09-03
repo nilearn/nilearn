@@ -181,7 +181,7 @@ def _denoise(
     mask_img,
     confounds,
     sample_mask,
-    standardize_signal=False,
+    standardize_signal=None,
     standardize_confounds=True,
     detrend=False,
 ):
@@ -211,7 +211,7 @@ def _corr_tseries(tseries1, tseries2):
 def test_nilearn_standardize_false(tmp_path):
     """Test removing confounds with no standardization."""
     # niftimasker default:
-    # standardize=False, standardize_confounds=True, detrend=False
+    # standardize=None, standardize_confounds=True, detrend=False
 
     # Simulate data; set demean to False as standardize_confounds=True
     (img, mask_conf, mask_rand, confounds, sample_mask) = _simu_img(

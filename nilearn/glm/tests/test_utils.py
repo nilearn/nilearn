@@ -143,7 +143,7 @@ def test_z_score_opposite_contrast(rng, add_regs_i):
 
     fmri_glm = FirstLevelModel(
         noise_model="ar1",
-        standardize=False,
+        standardize=None,
         drift_model="cosine",
     )
     fmri_glm.fit(fmri, design_matrices=design_matrix)

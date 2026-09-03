@@ -103,7 +103,6 @@ for mask_name in mask_names:
             mask=mask_filename,
             scoring="roc_auc",
             screening_percentile=100,
-            standardize="zscore_sample",
         )
         decoder.fit(task_data, classification_target, groups=run_labels)
 
@@ -119,7 +118,6 @@ for mask_name in mask_names:
             mask=mask_filename,
             scoring="roc_auc",
             screening_percentile=100,
-            standardize="zscore_sample",
         )
         dummy_classifier.fit(
             task_data, classification_target, groups=run_labels

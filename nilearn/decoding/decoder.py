@@ -489,7 +489,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
     %(screening_n_features)s
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
 
@@ -548,7 +548,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         screening_n_features=None,
         scoring=None,
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         low_pass=None,
@@ -1177,7 +1177,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
 
@@ -1243,7 +1243,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         mask_strategy="background",
@@ -1367,7 +1367,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
 
@@ -1427,7 +1427,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         mask_strategy="background",
@@ -1553,7 +1553,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
 
@@ -1617,7 +1617,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         mask_strategy="background",
@@ -1749,7 +1749,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         'recall' or 'roc_auc'; default='roc_auc'
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
 
@@ -1820,7 +1820,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         mask_strategy="background",

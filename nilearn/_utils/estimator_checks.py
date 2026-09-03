@@ -547,17 +547,6 @@ def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
 
     checks_to_run = []
     for est in estimators:
-        # TODO (nilearn >= 0.15.0)
-        # remove this entire if block
-        # as standardize as bool should not be possible anymore
-        if hasattr(est, "standardize"):
-            # forcing the new default on all estiamtors
-            # to avoid FutureWarnings
-            if est.standardize is False:
-                est.standardize = None
-            elif est.standardize is True:
-                est.standardize = "zscore_sample"
-
         for e, check in nilearn_check_generator(estimator=est):
             checks_to_run.append((e, check, check.__name__))
 

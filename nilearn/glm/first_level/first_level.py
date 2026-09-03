@@ -418,7 +418,7 @@ class FirstLevelModel(BaseGLM):
 
     %(memory_level)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     signal_scaling : False, :obj:`int` or (int, int), default=0
         If not False, fMRI signals are
@@ -521,7 +521,7 @@ class FirstLevelModel(BaseGLM):
         smoothing_fwhm=None,
         memory=None,
         memory_level=1,
-        standardize=False,
+        standardize=None,
         signal_scaling=0,
         noise_model="ar1",
         verbose=0,
@@ -984,13 +984,6 @@ class FirstLevelModel(BaseGLM):
         self._fit_cache()
 
         self.standardize_ = self.standardize
-
-        # TODO (nilearn >= 0.15.0) remove if and elif
-        # avoid some FutureWarning the user cannot affect
-        if self.standardize is False:
-            self.standardize_ = None
-        elif self.standardize is True:
-            self.standardize_ = "zscore_sample"
 
         check_parameter_in_allowed(
             self.signal_scaling, {False, 1, (0, 1)}, "signal_scaling"
@@ -1522,7 +1515,7 @@ def first_level_from_bids(
     smoothing_fwhm=None,
     memory=None,
     memory_level=1,
-    standardize=False,
+    standardize=None,
     signal_scaling=0,
     noise_model="ar1",
     verbose=0,

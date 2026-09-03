@@ -42,7 +42,7 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -133,7 +133,7 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
         mask_img=None,
         allow_overlap=True,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         high_variance_confounds=False,
         detrend=False,

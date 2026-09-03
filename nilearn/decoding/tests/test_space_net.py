@@ -284,7 +284,7 @@ def test_space_net_classifier_invalid_loss(rng):
         mask=mask,
         alphas=alphas,
         tol=1e-10,
-        standardize=False,
+        standardize=None,
         screening_percentile=100.0,
         loss="logistic",
     ).fit(X_, y)
@@ -293,7 +293,7 @@ def test_space_net_classifier_invalid_loss(rng):
         mask=mask,
         alphas=alphas,
         tol=1e-10,
-        standardize=False,
+        standardize=None,
         screening_percentile=100.0,
         loss="mse",
     ).fit(X_, y)
@@ -303,7 +303,7 @@ def test_space_net_classifier_invalid_loss(rng):
             mask=mask,
             alphas=alphas,
             tol=1e-10,
-            standardize=False,
+            standardize=None,
             screening_percentile=100.0,
             loss="bar",
         ).fit(X_, y)
@@ -364,7 +364,7 @@ def test_graph_net_classifier_score():
         alphas=1.0 / 0.01 / X.shape[0],
         l1_ratios=1.0,
         tol=1e-10,
-        standardize=False,
+        standardize=None,
         screening_percentile=100.0,
     ).fit(X_, y)
 
@@ -395,7 +395,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         tol=tol,
         max_iter=1000,
         penalty="tv-l1",
-        standardize=False,
+        standardize=None,
         screening_percentile=100.0,
     ).fit(X_, y)
 

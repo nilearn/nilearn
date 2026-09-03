@@ -35,7 +35,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -102,7 +102,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         mask_img=None,
         allow_overlap=True,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         high_variance_confounds=False,
