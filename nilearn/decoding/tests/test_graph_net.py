@@ -241,12 +241,7 @@ def test_max_alpha_squared_loss(estimator, l1_ratio):
     """
     X, y, _, _, mask_, X_ = _make_data()
 
-    reg = estimator(
-        mask=mask_,
-        max_iter=10,
-        penalty="graph-net",
-        standardize="zscore_sample",
-    )
+    reg = estimator(mask=mask_, max_iter=10, penalty="graph-net")
 
     reg.l1_ratios = l1_ratio
     reg.alphas = np.max(np.dot(X.T, y)) / l1_ratio
