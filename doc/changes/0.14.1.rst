@@ -31,6 +31,14 @@ Fixes
 
 - :bdg-success:`API` Fix mismatch between parameters in several functions or methods and their docstrings. Also adds an ``interpolation`` parameter to :func:`~.datasets.fetch_neurovault` that was documented but missing from the API (:gh:`6482` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Fix masker verbosity so higher ``verbose`` levels no longer produce less output than lower ones (:gh:`XXXX` by `Fabricio Cravo`_).
+
+- :bdg-dark:`Code` Fix maskers silently truncating extracted cleaned signal back down to the source image's dtype when the masker's own ``dtype`` was left at its default (``None``); for images with an integer dtype, such as raw unprocessed BOLD data, this collapsed the cleaned values to a handful of integer levels, destroying almost all of the signal's precision (:gh:`6526` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Fix :func:`~image.smooth_img` leaving non-finite values in surface images, and spreading them over neighboring vertices when smoothing; the volume branch already passes ``ensure_finite=True`` to ``smooth_array`` (:gh:`6503` by `Cedric Conday`_).
+
+- :bdg-dark:`Code` Fix :func:`~image.smooth_img` and ``smooth_array`` truncating the smoothed signal for unsigned integer input, because only signed integers were promoted to float before ``gaussian_filter1d`` wrote its float result back into the input buffer in place; unsigned is the common case since ``uint8`` is the standard on-disk dtype for masks and atlases (:gh:`6440` by `Andrew Chen`_).
+
 - :bdg-dark:`Code` Allow custom scikit-learn-compatible estimators in decoders to use an empty default parameter grid, and clarify how to use ``param_grid`` to tune them (:gh:`6227` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-dark:`Code` Allow :func:`~glm.first_level.first_level_from_bids` to work with BIDS dataset that have a single events file in the root of the dataset for all runs (:gh:`6278` by `Rémi Gau`_).
@@ -39,15 +47,9 @@ Fixes
 
 - :bdg-dark:`Code` Fix :class:`~maskers.NiftiMapsMasker` silently extracting a zero signal for a map whose weights are negative, because ``_trim_maps`` decides which maps to keep sign-agnostically with ``abs()`` but then builds their support with ``> 0``, so a kept negative map covered no voxel; this matters for the signed ICA and statistical maps the masker targets (:gh:`6443` by `Andrew Chen`_).
 
-- :bdg-dark:`Code` Fix :func:`~image.smooth_img` and ``smooth_array`` truncating the smoothed signal for unsigned integer input, because only signed integers were promoted to float before ``gaussian_filter1d`` wrote its float result back into the input buffer in place; unsigned is the common case since ``uint8`` is the standard on-disk dtype for masks and atlases (:gh:`6440` by `Andrew Chen`_).
-
 - :bdg-dark:`Code` Fix :func:`~interfaces.bids.get_bids_files` missing subject-level anatomical derivatives in multi-session datasets (:gh:`6291` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-dark:`Code` Fix :func:`~image.resample_img` raising an ``AttributeError`` instead of resampling correctly when ``target_affine`` is passed as a :obj:`list` or :obj:`tuple` together with ``target_shape`` (:gh:`6408` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Fix maskers silently truncating extracted cleaned signal back down to the source image's dtype when the masker's own ``dtype`` was left at its default (``None``); for images with an integer dtype, such as raw unprocessed BOLD data, this collapsed the cleaned values to a handful of integer levels, destroying almost all of the signal's precision (:gh:`6526` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Fix :func:`~image.smooth_img` leaving non-finite values in surface images, and spreading them over neighboring vertices when smoothing; the volume branch already passes ``ensure_finite=True`` to ``smooth_array`` (:gh:`6503` by `Cedric Conday`_).
 
 - :bdg-dark:`Code` Clarify that :func:`~mass_univariate.permuted_ols` requires numerical or boolean ``tested_vars`` and raise a clear error for unsupported data (:gh:`6501` by `Mohammad Sadeghi Hardengi`_).
 
@@ -59,7 +61,7 @@ Fixes
 
 - :bdg-primary:`Doc` Fix docstrings that name a parameter which is not in the signature (:func:`~plotting.plot_img_comparison`, :meth:`~plotting.displays.PlotlySurfaceFigure.add_contours` and seven private helpers), the documented default of ``two_sided_test`` in ``calculate_tfce``, and the sentence stating that a source image is resampled to match itself (:gh:`6469` by `Anton Karpov`_).
 
-- :bdg-secondary:`Maint` Move the ``fill_doc`` checks out of ``maint_tools/check_docstrings.py`` into a new ``maint_tools/check_filldoc.py`` that fails the build instead of only printing, and add the 37 missing ``@fill_doc`` decorators it found; without the decorator the raw ``%(name)s`` placeholder stays in the docstring and is shown by ``help()`` and by editor tooltips (:gh:`6473` by `Anton Karpov`_).
+- :bdg-secondary:`Doc` Add 37 missing ``@fill_doc`` decorators: without the decorator the raw ``%(name)s`` placeholder stays in the docstring and is shown by ``help()`` and by editor tooltips (:gh:`6473` by `Anton Karpov`_).
 
 - :bdg-info:`Plotting` Fix :func:`~plotting.view_img` displaying the slice next to the one requested: ``cut_slices`` is already a 0-based voxel index but a further ``- 1`` was applied before handing it to the viewer, which draws the tile at ``numSlice`` while reading coordinates out as ``affine @ [numSlice + 1, ...]``; the label matched the request while the slice on screen was its neighbor (:gh:`6505` by `Cedric Conday`_).
 

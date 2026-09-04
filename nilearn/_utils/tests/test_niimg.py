@@ -141,7 +141,11 @@ def test_repr_niimgs():
     ]
     # Explicit shortening, all 3 names are displayed, but shortened
     shortened_rep_list_of_size_3 = (
-        "[this-is-a-very-lon..., this-is-another-ve..., this-is-again-anot...]"
+        "[\n "
+        + "this-is-a-very-lon..., "
+        + "this-is-another-ve..., "
+        + "this-is-again-anot...,"
+        + "\n]"
     )
 
     assert (
@@ -152,7 +156,9 @@ def test_repr_niimgs():
     # Lists longer than 3
     # Small names - Explicit shortening
     long_list_small_names = ["test", "retest", "reretest", "rereretest"]
-    shortened_rep_long_list_small_names = "[test,\n         ...\n rereretest]"
+    shortened_rep_long_list_small_names = (
+        "[\n test,\n         ...\n rereretest,\n]"
+    )
 
     assert (
         repr_niimgs(long_list_small_names, shorten=True)
@@ -165,7 +171,7 @@ def test_repr_niimgs():
         "this-is-again-another-super-very-long-name-for-a-nifti-file.nii",
     ]
     shortened_rep_long_list_long_names = (
-        "[this-is-a-very-lon...,\n         ...\n this-is-again-anot...]"
+        "[\n this-is-a-very-lon...,\n         ...\n this-is-again-anot...,\n]"
     )
 
     assert (
@@ -181,8 +187,11 @@ def test_repr_niimgs_force_long_names():
     assert repr_niimgs(long_name, shorten=False) == long_name
 
     # Tests with list of file paths
-    assert repr_niimgs(["test", "retest"]) == "[test, retest]"
-    assert repr_niimgs(["test", "retest"], shorten=False) == "[test, retest]"
+    assert repr_niimgs(["test", "retest"]) == "[\n test, retest,\n]"
+    assert (
+        repr_niimgs(["test", "retest"], shorten=False)
+        == "[\n test, retest,\n]"
+    )
 
     # Force display, all 3 names are displayed
     list_of_size_3 = [
@@ -191,9 +200,9 @@ def test_repr_niimgs_force_long_names():
         "this-is-again-another-very-long-name-for-a-nifti-file.nii",
     ]
     long_rep_list_of_size_3 = (
-        "[this-is-a-very-long-name-for-a-nifti-file.nii,"
+        "[\n this-is-a-very-long-name-for-a-nifti-file.nii,"
         " this-is-another-very-long-name-for-a-nifti-file.nii,"
-        " this-is-again-another-very-long-name-for-a-nifti-file.nii]"
+        " this-is-again-another-very-long-name-for-a-nifti-file.nii,\n]"
     )
     assert (
         repr_niimgs(list_of_size_3, shorten=False) == long_rep_list_of_size_3
@@ -201,7 +210,7 @@ def test_repr_niimgs_force_long_names():
 
     long_list_small_names = ["test", "retest", "reretest", "rereretest"]
     long_rep_long_list_small_names = (
-        "[test,\n retest,\n reretest,\n rereretest]"
+        "[\n test,\n retest,\n reretest,\n rereretest,\n]"
     )
 
     assert (
@@ -215,9 +224,9 @@ def test_repr_niimgs_force_long_names():
         "this-is-again-another-super-very-long-name-for-a-nifti-file.nii",
     ]
     long_rep_long_list_long_names = (
-        long_rep_list_of_size_3[:-1].replace(",", ",\n")
-        + ",\n "
-        + "this-is-again-another-super-very-long-name-for-a-nifti-file.nii]"
+        long_rep_list_of_size_3[:-2].replace(",", ",\n")
+        + " this-is-again-another-super-very-long-name-for-a-nifti-file.nii,"
+        + "\n]"
     )
 
     assert (
@@ -254,14 +263,14 @@ def test_repr_niimgs_with_niimg_pathlib():
     ]
 
     shortened_list_of_paths = (
-        f"[...{Path('/path/to/file.nii')!s},\n"
+        f"[\n ...{Path('/path/to/file.nii')!s},\n"
         f"         ...\n"
-        f" a-very-long-file-n...]"
+        f" a-very-long-file-n...,\n]"
     )
 
     assert repr_niimgs(list_of_paths, shorten=True) == shortened_list_of_paths
     long_list_of_paths = ",\n ".join([str(_) for _ in list_of_paths])
-    long_list_of_paths = f"[{long_list_of_paths}]"
+    long_list_of_paths = f"[\n {long_list_of_paths},\n]"
     assert repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
 
 
@@ -319,7 +328,7 @@ def test_repr_niimgs_with_surface_image_list(
 ):
     imgs = [surf_img_1d, surf_img_2d(n_samples=2)]
 
-    expected = f"[{imgs[0]!r}, {imgs[1]!r}]"
+    expected = f"[\n {imgs[0]!r}, {imgs[1]!r},\n]"
     assert repr_niimgs(imgs, shorten=shorten) == expected
 
 
@@ -335,10 +344,10 @@ def test_repr_niimgs_with_long_surface_image_list(
     ]
 
     if shorten:
-        expected = f"[{imgs[0]!r},\n         ...\n {imgs[-1]!r}]"
+        expected = f"[\n {imgs[0]!r},\n         ...\n {imgs[-1]!r},\n]"
     else:
         image_reprs = ",\n ".join(repr(img) for img in imgs)
-        expected = f"[{image_reprs}]"
+        expected = f"[\n {image_reprs},\n]"
     assert repr_niimgs(imgs, shorten=shorten) == expected
 
 

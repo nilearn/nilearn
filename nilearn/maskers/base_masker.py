@@ -6,6 +6,7 @@ import json
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, overload
 
 import numpy as np
@@ -189,11 +190,21 @@ def filter_and_extract(
 def mask_logger(step, img=None, verbose=0) -> None:
     """Log similar messages for all maskers."""
     repr = None
+
     if img is not None:
-        repr = img.__repr__()
-        if verbose > 1:
+        if isinstance(img, (str, Path)) or (
+            isinstance(img, (list, tuple))
+            and isinstance(img[0], (str, Path, SurfaceImage))
+        ):
+            if verbose == 1:
+                repr = repr_niimgs(img, shorten=True)
+            elif verbose >= 2:
+                repr = repr_niimgs(img, shorten=False)
+        elif verbose == 1:
+            repr = img.__repr__()
+        elif verbose == 2:
             repr = repr_niimgs(img, shorten=True)
-        elif verbose > 2:
+        elif verbose >= 3:
             repr = repr_niimgs(img, shorten=False)
 
     messages = {
@@ -375,6 +386,7 @@ class BaseMasker(_BaseMasker):
         self._check_dtype()
 
         if imgs is not None:
+            mask_logger("load_data", img=imgs, verbose=self.verbose)
             self._check_imgs(imgs)
 
         # Reset report

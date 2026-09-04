@@ -512,6 +512,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     )
                 else:
                     resampl_imgs = imgs
+
                 # Store 1 timepoint to pass to reporter
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
         elif self.reports:  # imgs not provided to fit
