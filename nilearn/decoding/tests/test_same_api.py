@@ -329,7 +329,6 @@ def test_coef_shape(penalty, cls):
         max_iter=3,
         penalty=penalty,
         alphas=1.0,
-        standardize="zscore_sample",
     ).fit(X, y)
 
     assert model.coef_.ndim == 2

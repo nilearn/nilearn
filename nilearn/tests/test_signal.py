@@ -851,7 +851,7 @@ def test_clean_standardize_none_zscore():
 
     assert_almost_equal(cleaned_signals, input_signals)
 
-    clean(input_signals, detrend=False, standardize="zscore_sample")
+    clean(input_signals, detrend=False)
 
 
 def test_clean_confounds_inputs():
