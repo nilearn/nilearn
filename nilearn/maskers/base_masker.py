@@ -6,6 +6,7 @@ import json
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, overload
 
 import numpy as np
@@ -24,7 +25,12 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import ensure_finite_data, repr_niimgs, safe_get_data
+from nilearn._utils.niimg import (
+    ensure_finite_data,
+    img_data_dtype,
+    repr_niimgs,
+    safe_get_data,
+)
 from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -184,11 +190,21 @@ def filter_and_extract(
 def mask_logger(step, img=None, verbose=0) -> None:
     """Log similar messages for all maskers."""
     repr = None
+
     if img is not None:
-        repr = img.__repr__()
-        if verbose > 1:
+        if isinstance(img, (str, Path)) or (
+            isinstance(img, (list, tuple))
+            and isinstance(img[0], (str, Path, SurfaceImage))
+        ):
+            if verbose == 1:
+                repr = repr_niimgs(img, shorten=True)
+            elif verbose >= 2:
+                repr = repr_niimgs(img, shorten=False)
+        elif verbose == 1:
+            repr = img.__repr__()
+        elif verbose == 2:
             repr = repr_niimgs(img, shorten=True)
-        elif verbose > 2:
+        elif verbose >= 3:
             repr = repr_niimgs(img, shorten=False)
 
     messages = {
@@ -322,6 +338,29 @@ class _BaseMasker(
         if self.dtype == bool:
             raise TypeError("'dtype' cannot be bool")
 
+    def _get_target_dtype(
+        self, imgs: Nifti1Image | SurfaceImage | list[SurfaceImage]
+    ):
+        """Adapts dtype to apply to transform() output."""
+        if isinstance(imgs, Nifti1Image):
+            source_dtype = img_data_dtype(imgs)
+        elif isinstance(imgs, SurfaceImage):
+            source_dtype = imgs.data._dtype
+        else:
+            source_dtype = imgs[0].data._dtype
+
+        target_dtype = get_target_dtype(source_dtype, self.dtype)
+        # here target_dtype is None if:
+        # - self.dtype is None
+        # - self.dtype == source_dtype
+        if target_dtype is None and self.dtype is not None:
+            # requested dtype already matches the source image's dtype,
+            # but intermediate computations (e.g. standardization)
+            # may have changed the working dtype.
+            target_dtype = source_dtype
+
+        return target_dtype
+
 
 @fill_doc
 class BaseMasker(_BaseMasker):
@@ -347,6 +386,7 @@ class BaseMasker(_BaseMasker):
         self._check_dtype()
 
         if imgs is not None:
+            mask_logger("load_data", img=imgs, verbose=self.verbose)
             self._check_imgs(imgs)
 
         # Reset report

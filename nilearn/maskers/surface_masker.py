@@ -177,7 +177,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 "if no mask is passed to mask_img."
             )
 
-        mask_logger("compute_mask", verbose=self.verbose)
+        mask_logger("compute_mask", img=img, verbose=self.verbose)
 
         img = deepcopy(img)
         if not isinstance(img, list):
@@ -231,6 +231,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._reset_report()
 
         if imgs is not None:
+            mask_logger("load_data", imgs, self.verbose)
             self._check_imgs(imgs)
 
             if isinstance(imgs, SurfaceImage) and any(
@@ -336,17 +337,15 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
-        input_type = (
-            imgs.data._dtype
-            if isinstance(imgs, SurfaceImage)
-            else imgs[0].data._dtype
-        )
-        target_dtype = get_target_dtype(input_type, self.dtype)
-        if target_dtype is None:
-            target_dtype = imgs.data._dtype
+        target_dtype = self._get_target_dtype(imgs)
 
         output = self._clean(output, confounds, sample_mask)
-        return output.astype(target_dtype)
+
+        # target_dtype is None: no explicit dtype was requested,
+        # so keep the dtype produced by the extraction/cleaning pipeline
+        # (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return output if target_dtype is None else output.astype(target_dtype)
 
     @fill_doc
     def inverse_transform(self, signals):

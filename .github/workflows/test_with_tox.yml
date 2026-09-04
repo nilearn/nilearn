@@ -72,10 +72,10 @@ jobs:
             # only run latest and oldest python versions on PR
             id: py
             run: |
-                versions='py=["3.14", "3.13", "3.12", "3.11", "3.10"]'
+                versions='py=["3.14", "3.13", "3.12", "3.11"]'
 
                 if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
-                    versions='py=["3.14", "3.10"]'
+                    versions='py=["3.14", "3.11"]'
                 fi
 
                 echo "Will run on the following python: ${versions}"
@@ -101,18 +101,18 @@ jobs:
                 # Using macos on the following as tests run faster on macos.
                 # As 'no plotting' run fewer tests, this allows to fail event faster if using macos.
                 -   description: oldest dependencies - no plotting
-                    py: '3.10'
+                    py: '3.11'
                     os: macos-latest
                     env: min
                 -   description: oldest dependencies - with plotting
-                    py: '3.10'
+                    py: '3.11'
                     os: macos-latest
                     env: plot_min
                 # plotly images saved on different OS can generate slightly
                 # different baseline images. As baseline images are generated
                 # on a linux machine, ubuntu-latest is used
                 -   description: check generated figures
-                    py: '3.10'
+                    py: '3.11'
                     os: ubuntu-latest
                     env: pytest_mpl
 
