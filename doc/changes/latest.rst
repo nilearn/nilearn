@@ -3,6 +3,17 @@
 Version 0.15.0dev
 =================
 
+HIGHLIGHTS
+----------
+
+.. warning::
+
+ | **Support for Python 3.10 has been dropped.**
+ | **We recommend upgrading to Python 3.13 or above.**
+ |
+ | **Minimum supported versions of the following packages have been bumped up:**
+ | - joblib -- 1.5
+
 ..
     Each changelog entry should begin with one of the following badges:
     - :bdg-primary:`Doc`
@@ -13,14 +24,14 @@ Version 0.15.0dev
     - :bdg-danger:`Deprecation`
     - :bdg-dark:`Code`
 
-NEW
----
 
 Fixes
 -----
 
+
 Enhancements
 ------------
+
 
 Changes
 -------
