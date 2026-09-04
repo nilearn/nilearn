@@ -1,5 +1,5 @@
 # /// script
-# requires-python = ">=3.10"
+# requires-python = ">=3.11"
 # dependencies = [
 #   "nilearn[plotting,plotly]>=0.12",
 #    "numpydoc",
@@ -83,25 +83,25 @@ def main() -> None:
     print("\n[blue]Finding missing :obj:`` in doc string type.\n")
 
     filenames = list_modules(
-        skip_private=True, folders_to_skip=["data", "tests"]
+        skip_private=False, folders_to_skip=["data", "tests"]
     )
 
     for filename in filenames:
-        # for func_def in list_functions(filename, include="all"):
-        #     check_missing_return_annotation(func_def, filename)
+        for func_def in list_functions(filename, include="all"):
+            check_missing_return_annotation(func_def, filename)
 
-        #     docstring = _get_docstring(func_def, filename)
-        #     if docstring is None:
-        #         continue
+            docstring = _get_docstring(func_def, filename)
+            if docstring is None:
+                continue
 
-        #     check_docstring(func_def, filename)
-        #     check_returns_yields_and_annotation(func_def, filename)
+            check_docstring(func_def, filename)
+            check_returns_yields_and_annotation(func_def, filename)
 
-        for class_def in list_classes(filename, include="public"):
-            # if _get_docstring(class_def, filename) is not None:
-            #     check_docstring(class_def, filename)
+        for class_def in list_classes(filename, include="all"):
+            if _get_docstring(class_def, filename) is not None:
+                check_docstring(class_def, filename)
 
-            for meth_def in list_functions(class_def, include="public"):
+            for meth_def in list_functions(class_def, include="all"):
                 if meth_def.name == "__init__":
                     continue
 
@@ -111,8 +111,8 @@ def main() -> None:
                 if docstring is None:
                     continue
 
-                # check_docstring(meth_def, filename)
-                # check_returns_yields_and_annotation(meth_def, filename)
+                check_docstring(meth_def, filename)
+                check_returns_yields_and_annotation(meth_def, filename)
 
     print()
 
