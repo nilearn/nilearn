@@ -80,7 +80,7 @@ def img_2(data_2, affine_eye) -> Nifti1Image:
 
 def test_auto_mask(data_1, img_1, data_2, img_2):
     """Test that a proper mask is generated from fitted image."""
-    masker = MultiNiftiMasker(mask_args={"opening": 0}, standardize=None)
+    masker = MultiNiftiMasker(mask_args={"opening": 0})
 
     # Smoke test the fit
     masker.fit([[img_1]])
@@ -106,7 +106,7 @@ def test_different_affines():
     epi_img1 = Nifti1Image(np.ones((4, 4, 4, 3)), affine=np.diag((2, 2, 2, 1)))
     epi_img2 = Nifti1Image(np.ones((3, 3, 3, 3)), affine=np.diag((3, 3, 3, 1)))
 
-    masker = MultiNiftiMasker(mask_img=mask_img, standardize=None)
+    masker = MultiNiftiMasker(mask_img=mask_img)
     epis = masker.fit_transform([epi_img1, epi_img2])
     for this_epi in epis:
         masker.inverse_transform(this_epi)
@@ -122,7 +122,7 @@ def test_3d_images(rng):
     )
     epi_img1 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
     epi_img2 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
-    masker = MultiNiftiMasker(mask_img=mask_img, standardize=None)
+    masker = MultiNiftiMasker(mask_img=mask_img)
 
     masker.fit_transform([epi_img1, epi_img2])
 
