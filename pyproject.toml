@@ -53,7 +53,7 @@ min_plotting = [
     "plotly==6.1.1"
 ]
 # For prettier printing
-rich = ["rich>=3.0.0"]
+rich = ["rich>=12.0.0"]
 # Applying style guide
 style = ['prek']
 test = [
@@ -97,7 +97,6 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -128,7 +127,7 @@ maintainers = [
 ]
 name = "nilearn"
 readme = "README.rst"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 [project.optional-dependencies]
 # keep plotly as a separate optional extra dependency because of its size
@@ -491,4 +490,4 @@ max-branches = 22
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 8
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 100
+max-statements = 110

@@ -120,8 +120,13 @@ from nilearn.decomposition.tests.conftest import (
 from nilearn.exceptions import DimensionError, MeshDimensionError
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
-from nilearn.image import get_data, index_img, new_img_like
-from nilearn.image.image import check_imgs_equal
+from nilearn.image.image import (
+    check_imgs_equal,
+    get_data,
+    index_img,
+    iter_img,
+    new_img_like,
+)
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     NiftiLabelsMasker,
@@ -589,6 +594,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
         yield (clone(estimator), check_fit_returns_self)
         yield (clone(estimator), check_img_estimator_dtypes)
         yield (clone(estimator), check_img_estimator_dtypes_transform)
+        yield (clone(estimator), check_img_estimator_clean_dtype)
         yield (clone(estimator), check_img_estimator_dtype_bool)
         yield (clone(estimator), check_img_estimator_dict_unchanged)
         yield (clone(estimator), check_img_estimator_dont_overwrite_parameters)
@@ -656,6 +662,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
             clone(estimator),
             check_masker_transformer_high_variance_confounds,
         )
+        yield (clone(estimator), check_masker_verbose)
 
         if isinstance(estimator, NiftiMasker):
             # TODO enforce for other maskers
@@ -1941,6 +1948,15 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
                 if not isinstance(result, list):
                     result = [result]
 
+                # When ``dtype`` (self.dtype) is None,
+                # no explicit dtype was requested:
+                # the output dtype is
+                # whatever the extraction/cleaning pipeline naturally produced
+                # (e.g. float64 after standardization or other linear algebra),
+                # and should not be forced to match the input's dtype.
+                if dtype is None:
+                    continue
+
                 target_dtype = get_target_dtype(input_np_dtype, dtype)
                 if target_dtype is None:
                     target_dtype = input_np_dtype
@@ -2163,6 +2179,145 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
                     f"an image of type '{target_dtype}'. "
                     f"Got '{output_dtype}' instead."
                 ) from e
+
+
+def check_img_estimator_clean_dtype(estimator_orig) -> None:
+    """Regression test for https://github.com/nilearn/nilearn/issues/6525.
+
+    When an estimator's own ``dtype`` is left to its default (``None``)
+    and a cleaning option that can produce floating point output is
+    used, ``transform`` must not silently cast the result back down to
+    the dtype of the source image.
+
+    This matters most for raw, unprocessed BOLD data, which is often
+    stored with an integer dtype (e.g. ``int16``): truncating cleaned
+    floating point values (from standardization, detrending,
+    filtering, smoothing, or confound removal) down to the source
+    image's integer dtype collapses them to a handful of integer
+    levels, destroying almost all of the cleaned signal's precision.
+
+    Covers, one at a time: ``standardize`` ("zscore_sample" and
+    "psc"), ``detrend``, ``low_pass``, ``high_pass``,
+    ``smoothing_fwhm``, and passing ``confounds`` at transform time.
+
+    Not restricted to maskers: any estimator with a ``transform``
+    method, a ``dtype`` parameter, and at least one of the cleaning
+    parameters above (or that accepts ``confounds`` at transform time)
+    is checked.
+    """
+    if not hasattr(estimator_orig, "transform") or not hasattr(
+        estimator_orig, "dtype"
+    ):
+        return
+
+    clean_attrs = (
+        "standardize",
+        "detrend",
+        "low_pass",
+        "high_pass",
+        "smoothing_fwhm",
+    )
+    accepts_confounds = (
+        "confounds" in inspect.signature(estimator_orig.transform).parameters
+    )
+    if not accepts_confounds and not any(
+        hasattr(estimator_orig, attr) for attr in clean_attrs
+    ):
+        return
+
+    input_dtype = np.int16
+
+    # standardize / detrend / low_pass / high_pass / smoothing_fwhm are
+    # only meaningful to test on maskers: for _BaseDecomposition
+    # estimators (CanICA, DictLearning, ...) these only affect data
+    # loading at fit time through an internal masker and are not
+    # applied again by transform(), which delegates to an internal
+    # maps masker instead.
+    if is_masker(estimator_orig):
+        n_samples = 20
+
+        input_img: Nifti1Image | SurfaceImage
+        if accept_niimg_input(estimator_orig):
+            signals = _rng().standard_normal(
+                size=(np.prod(_shape_3d_default()), n_samples)
+            )
+            means = (
+                _rng().standard_normal(size=(np.prod(_shape_3d_default()), 1))
+                * 50
+                + 1000
+            )
+            signals += means
+            data = signals.reshape((*_shape_3d_default(), n_samples))
+            input_img = Nifti1Image(
+                data.astype(input_dtype), _affine_eye(), dtype=input_dtype
+            )
+        elif accept_surf_img_input(estimator_orig):
+            input_img = _make_surface_img(n_samples)
+            input_img.data._set_dtype(input_dtype)
+
+        # other scenarios where output dtype will change
+        scenarios: list[dict[str, Any]] = [
+            {"standardize": "zscore_sample"},
+            {"standardize": "psc"},
+            {"detrend": True},
+            {"low_pass": 0.2, "t_r": 2.0},
+            {"high_pass": 0.01, "t_r": 2.0},
+            {"smoothing_fwhm": 4.0},
+        ]
+        for params in scenarios:
+            estimator = clone(estimator_orig)
+            estimator.dtype = None
+            for key, value in params.items():
+                setattr(estimator, key, value)
+
+            estimator.fit(input_img)
+            result = estimator.transform(input_img)
+
+            _check_clean_dtype_output(result)
+
+            if params.get("standardize") == "zscore_sample":
+                # a truncated (e.g. integer-cast) standardized signal
+                # would not have unit variance anymore. Skip features
+                # that are genuinely constant for this estimator's
+                # fixture (e.g. a region covering a single voxel):
+                # their standardized std is legitimately 0, not
+                # truncated.
+                stds = result.std(axis=0)
+                non_degenerate = stds > 1e-8
+                if non_degenerate.any():
+                    assert_almost_equal(stds[non_degenerate], 1, decimal=1)
+
+        if accepts_confounds:
+            estimator = clone(estimator_orig)
+            estimator.dtype = None
+
+            estimator.fit(input_img)
+
+            confounds = _rng().standard_normal(size=(n_samples, 2))
+            if isinstance(estimator, _MultiMixin):
+                confounds = [confounds]
+            result = estimator.transform(input_img, confounds=confounds)
+
+            _check_clean_dtype_output(result)
+
+    elif isinstance(estimator_orig, _BaseDecomposition):
+        X, _ = generate_data_to_fit(estimator_orig)
+
+        data = get_data(X) * 1000
+        input_img = Nifti1Image(
+            data.astype(input_dtype), affine=X.affine, dtype=input_dtype
+        )
+
+        estimator = clone(estimator_orig)
+        estimator.dtype = None
+        estimator = fit_estimator(estimator, input_img, None)
+
+        n_timepoints = input_img.shape[-1] if input_img.ndim == 4 else 1
+        confounds = [_rng().standard_normal(size=(n_timepoints, 2))]
+
+        result = estimator.transform(input_img, confounds=confounds)
+
+        _check_clean_dtype_output(result)
 
 
 def check_img_estimator_requires_y_none(estimator_orig) -> None:
@@ -2776,6 +2931,22 @@ def check_masker_standardization(estimator_orig) -> None:
             )
 
 
+def _check_clean_dtype_output(result) -> None:
+    """Raise if any array in a transform() result is not floating point.
+
+    Helper for check_img_estimator_clean_dtype.
+    """
+    results = result if isinstance(result, list) else [result]
+    for s in results:
+        if s.dtype.kind != "f":
+            raise TypeError(
+                "'transform' with dtype=None should return floating "
+                "point data reflecting the precision produced by the "
+                "cleaning pipeline, not be cast back to the source "
+                f"image's integer dtype. Got dtype '{s.dtype}'."
+            )
+
+
 def check_masker_compatibility_mask_image(estimator_orig) -> None:
     """Check compatibility of the mask_img and images to masker.
 
@@ -2878,6 +3049,8 @@ def check_masker_mask_img(estimator_orig) -> None:
     If a mask is passed at construction,
     then mask_img_ should be a valid mask after fit.
 
+    If verbose > 0, maskers should mention they are loading a mask.
+
     Maskers should be fittable
     even when passing a non-binary image
     with multiple samples (4D for volume, 2D for surface) as mask.
@@ -2932,7 +3105,14 @@ def check_masker_mask_img(estimator_orig) -> None:
     estimator = clone(estimator)
     estimator.mask_img = binary_mask_img
 
-    estimator.fit()
+    # when verbose masker says it's loading a mask
+    estimator.verbose = 1
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        estimator.fit()
+    output = buffer.getvalue()
+    assert "Loading mask" in output
+
     ref_mask_img_ = estimator.mask_img_
 
     estimator = clone(estimator)
@@ -3525,15 +3705,31 @@ def check_masker_transform_resampling(estimator_orig) -> None:
 
         for mask in [None, mask_img]:
             estimator = clone(estimator)
+            estimator.verbose = 1
             estimator.resampling_target = resampling_target
             estimator.mask_img = mask
 
             # no resampling warning at fit time
-            with warnings.catch_warnings(record=True) as warning_list:
+            # but regular logging is OK
+            buffer = io.StringIO()
+            with (
+                warnings.catch_warnings(record=True) as warning_list,
+                contextlib.redirect_stdout(buffer),
+            ):
                 estimator.fit(imgs)
             assert all(
                 "at transform time" not in str(x.message) for x in warning_list
             )
+
+            # ensure expected message only appears once in log output
+            output_verbose = buffer.getvalue()
+            expected_loading_message = []
+            if resampling_target == "data":
+                expected_loading_message.append("Resampling regions")
+            if mask is not None:
+                expected_loading_message.append("Resampling mask")
+            for s in expected_loading_message:
+                assert len(re.findall(rf"{s}", output_verbose)) == 1
 
             signals = _rng().random((n_sample, estimator.n_elements_))
 
@@ -3543,19 +3739,27 @@ def check_masker_transform_resampling(estimator_orig) -> None:
             actual_shape = new_imgs.shape
             assert actual_shape == expected_shape
 
-            if resampling_target in ["maps", "labels"]:
-                with pytest.warns(
-                    UserWarning, match="images at transform time"
-                ):
-                    estimator.transform(imgs)
-            else:
-                # no resampling warning when using same imgs as for fit()
-                with warnings.catch_warnings(record=True) as warning_list:
-                    estimator.transform(imgs)
-                assert all(
-                    "at transform time" not in str(x.message)
-                    for x in warning_list
-                )
+            # resampling warning but no logging at transform time
+            buffer = io.StringIO()
+            with (
+                contextlib.redirect_stdout(buffer),
+            ):
+                if resampling_target in ["maps", "labels"]:
+                    with pytest.warns(
+                        UserWarning, match="images at transform time"
+                    ):
+                        estimator.transform(imgs)
+                else:
+                    # no resampling warning when using same imgs as for fit()
+                    with warnings.catch_warnings(record=True) as warning_list:
+                        estimator.transform(imgs)
+                    assert all(
+                        "at transform time" not in str(x.message)
+                        for x in warning_list
+                    )
+            output_verbose = buffer.getvalue()
+            for s in ["Resampling mask", "Resampling regions"]:
+                assert s not in output_verbose
 
             # same result before and after running transform()
             new_imgs_2 = estimator.inverse_transform(signals)
@@ -3653,6 +3857,96 @@ def check_masker_joblib_cache(estimator_orig) -> None:
     # imgs return by inverse_transform impossible to save
     if accept_niimg_input(estimator):
         out_img.to_filename(cachedir / "test.nii")
+
+
+def check_masker_verbose(estimator_orig) -> None:
+    """Check verbose behavior for maskers.
+
+    Masker should mention they are loading data, regions, extracting data...
+    during fit, transform, inverse_transform.
+
+    Output to stdout should be longer with verbose = 2
+    than when verbose = 1 when fitting list of images.
+    """
+    estimator = clone(estimator_orig)
+
+    # TODO determine what the behavior of multi masker should be
+    if isinstance(estimator, _MultiMixin):
+        return
+
+    imgs: Nifti1Image | SurfaceImage | list
+    if accept_niimg_input(estimator):
+        imgs = _img_4d_rand_eye_medium()
+    else:
+        imgs = _make_surface_img(100)
+    imgs = list(iter_img(imgs))
+
+    # -----------------------------------------------------------
+    # logging during fit
+
+    estimator.verbose = 1
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        estimator.fit(imgs)
+    output_verbose_1 = buffer.getvalue()
+
+    estimator.verbose = 2
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        estimator.fit(imgs)
+    output_verbose_2 = buffer.getvalue()
+
+    # ensure expected message only appears once in output
+    expected_loading_message = ["Loading data from", "Finished fit"]
+    if isinstance(
+        estimator,
+        (
+            SurfaceLabelsMasker,
+            SurfaceMapsMasker,
+            NiftiLabelsMasker,
+            NiftiMapsMasker,
+        ),
+    ):
+        expected_loading_message.append("Loading regions from")
+    elif not isinstance(estimator, NiftiSpheresMasker):
+        expected_loading_message.append("Computing mask")
+
+    for outputs in [output_verbose_1, output_verbose_2]:
+        for s in expected_loading_message:
+            assert len(re.findall(rf"{s}", outputs)) == 1
+
+    # verbosity for mask loading checked by check_masker_mask_img
+    assert "Loading mask from" not in output_verbose_1
+    assert "Loading mask from" not in output_verbose_2
+
+    # -----------------------------------------------------------
+    # logging during transform and inverse transform
+    estimator = clone(estimator_orig)
+    estimator.verbose = 1
+    if isinstance(estimator, NiftiSpheresMasker):
+        estimator.mask_img = Nifti1Image(np.ones((15, 16, 17)), _affine_eye())
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        signal = estimator.fit_transform(imgs)
+    output_verbose = buffer.getvalue()
+
+    expected_loading_message = [
+        "Extracting region signals",
+        "Cleaning extracted signals",
+    ]
+    for s in expected_loading_message:
+        assert len(re.findall(rf"{s}", output_verbose)) == 1
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        estimator.inverse_transform(signal)
+    output_verbose = buffer.getvalue()
+
+    expected_loading_message = ["Computing image from signals"]
+    for outputs in [output_verbose]:
+        for s in expected_loading_message:
+            assert len(re.findall(rf"{s}", outputs)) == 1
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------

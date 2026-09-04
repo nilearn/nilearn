@@ -251,15 +251,14 @@ plot_surf_stat_map(
 show()
 
 # %%
-# The plots can be saved to file,
-# in which case the display is closed after creating the figure
+# The plots can be saved to file.
 from pathlib import Path
 
 output_dir = Path.cwd() / "results" / "plot_surf_stat_map"
 output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
 
-plot_surf_stat_map(
+fig = plot_surf_stat_map(
     surf_mesh=fsaverage_meshes["inflated"],
     stat_map=stat_map_surf,
     hemi=hemisphere,
@@ -269,6 +268,7 @@ plot_surf_stat_map(
     output_file=output_dir / "plot_surf_stat_map.png",
     cmap="bwr",
 )
+
 
 # %%
 # References
