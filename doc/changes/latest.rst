@@ -28,8 +28,6 @@ HIGHLIGHTS
 Fixes
 -----
 
-- :bdg-warning:`Test` Bump minimum supported ``pytest`` version to 8.0.0; earlier versions do not correctly report warnings when several ``pytest.warns`` context managers are combined in a single ``with`` statement, which made ``test_resampling_target`` fail spuriously under the ``min`` dependency set (:gh:`6566` by `Rémi Gau`_).
-
 
 Enhancements
 ------------
