@@ -34,7 +34,7 @@ doc = [
     "pyarrow>=13.0.0"  # mostly to avoid some warnings in pandas
 ]
 min = [
-    "joblib==1.2.0",
+    "joblib==1.5.0",
     "nibabel==5.2.0",
     "numpy==1.26.0",
     "pandas==2.3.0",
@@ -103,7 +103,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14"
 ]
 dependencies = [
-    "joblib>=1.2.0",
+    "joblib>=1.5.0",
     "nibabel>=5.2.0",
     "numpy>=1.26.0",
     "pandas>=2.3.0",
