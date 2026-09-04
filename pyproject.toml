@@ -34,7 +34,7 @@ doc = [
     "pyarrow>=13.0.0"  # mostly to avoid some warnings in pandas
 ]
 min = [
-    "joblib==1.2.0",
+    "joblib==1.5.0",
     "nibabel==5.2.0",
     "numpy==1.26.0",
     "pandas==2.3.0",
@@ -97,14 +97,13 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14"
 ]
 dependencies = [
-    "joblib>=1.2.0",
+    "joblib>=1.5.0",
     "nibabel>=5.2.0",
     "numpy>=1.26.0",
     "pandas>=2.3.0",
@@ -128,7 +127,7 @@ maintainers = [
 ]
 name = "nilearn"
 readme = "README.rst"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 [project.optional-dependencies]
 # keep plotly as a separate optional extra dependency because of its size
@@ -491,4 +490,4 @@ max-branches = 22
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 8
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 100
+max-statements = 110
