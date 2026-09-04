@@ -215,6 +215,7 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
     return ijk, vals
 
 
+# TODO (nilearn >= 0.17.0) simplify overloads
 @overload
 def get_clusters_table(
     stat_img: NiimgLike,
