@@ -1,0 +1,92 @@
+.. currentmodule:: nilearn
+
+Version 0.14.1
+==============
+
+..
+    Each changelog entry should begin with one of the following badges:
+
+    - :bdg-primary:`Doc`
+    - :bdg-secondary:`Maint`
+    - :bdg-success:`API`
+    - :bdg-info:`Plotting`
+    - :bdg-warning:`Test`
+    - :bdg-danger:`Deprecation`
+    - :bdg-dark:`Code`
+
+HIGHLIGHTS
+----------
+
+- This releases fixes a major bug introduced in 0.14.0 that lead maskers casting cleaned signals from float to integers when extracting data from images with an integer dtype. This collapsed the cleaned values to a handful of integer levels, destroying almost all of the signal's precision and leading to a decrease in decoding performance (see :gh:`6525`).
+
+- Most of the public API now includes return type annotations including :obj:`~typing.overload` signatures.
+
+- Fix :func:`~image.smooth_img` leaving non-finite values in surface images, and spreading them over neighboring vertices when smoothing.
+
+NEW
+---
+
+Fixes
+-----
+
+- :bdg-success:`API` Fix mismatch between parameters in several functions or methods and their docstrings. Also adds an ``interpolation`` parameter to :func:`~.datasets.fetch_neurovault` that was documented but missing from the API (:gh:`6482` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Fix masker verbosity so higher ``verbose`` levels no longer produce less output than lower ones (:gh:`XXXX` by `Fabricio Cravo`_).
+
+- :bdg-dark:`Code` Fix maskers silently truncating extracted cleaned signal back down to the source image's dtype when the masker's own ``dtype`` was left at its default (``None``); for images with an integer dtype, such as raw unprocessed BOLD data, this collapsed the cleaned values to a handful of integer levels, destroying almost all of the signal's precision (:gh:`6526` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Fix :func:`~image.smooth_img` leaving non-finite values in surface images, and spreading them over neighboring vertices when smoothing; the volume branch already passes ``ensure_finite=True`` to ``smooth_array`` (:gh:`6503` by `Cedric Conday`_).
+
+- :bdg-dark:`Code` Fix :func:`~image.smooth_img` and ``smooth_array`` truncating the smoothed signal for unsigned integer input, because only signed integers were promoted to float before ``gaussian_filter1d`` wrote its float result back into the input buffer in place; unsigned is the common case since ``uint8`` is the standard on-disk dtype for masks and atlases (:gh:`6440` by `Andrew Chen`_).
+
+- :bdg-dark:`Code` Allow custom scikit-learn-compatible estimators in decoders to use an empty default parameter grid, and clarify how to use ``param_grid`` to tune them (:gh:`6227` by `Mohammad Sadeghi Hardengi`_).
+
+- :bdg-dark:`Code` Allow :func:`~glm.first_level.first_level_from_bids` to work with BIDS dataset that have a single events file in the root of the dataset for all runs (:gh:`6278` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Fix :func:`~regions.connected_label_regions` attaching the names given in ``labels`` to the wrong regions, because the sorted labels from ``np.unique`` were put through a ``set`` before being zipped against the names; contiguous labels happened to survive that, but the sparse labels real atlases use did not (:gh:`6445` by `Andrew Chen`_).
+
+- :bdg-dark:`Code` Fix :class:`~maskers.NiftiMapsMasker` silently extracting a zero signal for a map whose weights are negative, because ``_trim_maps`` decides which maps to keep sign-agnostically with ``abs()`` but then builds their support with ``> 0``, so a kept negative map covered no voxel; this matters for the signed ICA and statistical maps the masker targets (:gh:`6443` by `Andrew Chen`_).
+
+- :bdg-dark:`Code` Fix :func:`~interfaces.bids.get_bids_files` missing subject-level anatomical derivatives in multi-session datasets (:gh:`6291` by `Mohammad Sadeghi Hardengi`_).
+
+- :bdg-dark:`Code` Fix :func:`~image.resample_img` raising an ``AttributeError`` instead of resampling correctly when ``target_affine`` is passed as a :obj:`list` or :obj:`tuple` together with ``target_shape`` (:gh:`6408` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Clarify that :func:`~mass_univariate.permuted_ols` requires numerical or boolean ``tested_vars`` and raise a clear error for unsupported data (:gh:`6501` by `Mohammad Sadeghi Hardengi`_).
+
+- :bdg-dark:`Code` Fix :class:`~maskers.NiftiLabelsMasker` raising an ``AttributeError`` when transforming a list of 3D images with ``resampling_target="labels"`` (:gh:`6498` by `Mohammad Sadeghi Hardengi`_).
+
+- :bdg-dark:`Code` Fix the masked atlas returned by :func:`~regions.img_to_signals_labels` and exposed as ``NiftiLabelsMasker.region_atlas_`` being cast to ``int8``, which wrapped every label above 127 around and aliased label 256 onto the background; atlases such as Schaefer-400 label well past that (:gh:`6447` by `Andrew Chen`_).
+
+- :bdg-primary:`Doc` Fix eleven docstrings naming a parameter the function does not take, including the typos ``lispchitz_constant`` and ``flag_tedata``, and a pair of neighboring helpers documenting each other's parameter names (:gh:`6474` by `Anton Karpov`_).
+
+- :bdg-primary:`Doc` Fix docstrings that name a parameter which is not in the signature (:func:`~plotting.plot_img_comparison`, :meth:`~plotting.displays.PlotlySurfaceFigure.add_contours` and seven private helpers), the documented default of ``two_sided_test`` in ``calculate_tfce``, and the sentence stating that a source image is resampled to match itself (:gh:`6469` by `Anton Karpov`_).
+
+- :bdg-secondary:`Doc` Add 37 missing ``@fill_doc`` decorators: without the decorator the raw ``%(name)s`` placeholder stays in the docstring and is shown by ``help()`` and by editor tooltips (:gh:`6473` by `Anton Karpov`_).
+
+- :bdg-info:`Plotting` Fix :func:`~plotting.view_img` displaying the slice next to the one requested: ``cut_slices`` is already a 0-based voxel index but a further ``- 1`` was applied before handing it to the viewer, which draws the tile at ``numSlice`` while reading coordinates out as ``affine @ [numSlice + 1, ...]``; the label matched the request while the slice on screen was its neighbor (:gh:`6505` by `Cedric Conday`_).
+
+- :bdg-info:`Plotting` Fix :func:`~plotting.plot_prob_atlas` showing two overlapping colorbars, because the anatomical background plotted by the underlying :func:`~plotting.plot_anat` call kept its own default colorbar in addition to the "Map #" colorbar added for the atlas maps (:gh:`6517` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Fix Brainsprite figures becoming blank or incorrect when multiple masker reports are embedded in the same HTML document by giving each viewer unique DOM element IDs (:gh:`6419` by `Mohammad Sadeghi Hardengi`_).
+
+- :bdg-info:`Plotting` Fix a bug in :func:`~plotting.view_img` where the background colormap was not being applied correctly. (:gh:`6466` by `Pierre-Louis Barbarant`_).
+
+
+Enhancements
+------------
+
+- :bdg-dark:`Code` Improve type annotations (and :obj:`~typing.overload` signatures where the return type depends on the arguments given) in :mod:`~nilearn.glm` (:gh:`6370`), :mod:`~nilearn.regions` (:gh:`6369`), :mod:`~nilearn.connectome` (:gh:`6368`), :mod:`~nilearn.reporting` (:gh:`6368`), :mod:`~nilearn.interfaces` (:gh:`6362`), :mod:`~nilearn.image` (:gh:`6408`, :gh:`6438`), :mod:`~nilearn.utils`, :mod:`~nilearn.surface` (:gh:`6410`), :mod:`~nilearn.datasets`  (:gh:`6438`),  :mod:`~nilearn.plotting` (:gh:`6438` and :gh:`6439`),  :mod:`~nilearn.glm` and :mod:`~nilearn.mass_univariate` (:gh:`6439`) (by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add return type annotations and :obj:`~typing.overload` signatures to :func:`~connectome.vec_to_sym_matrix`, :func:`~connectome.group_sparse_covariance`, and :func:`~reporting.get_clusters_table` (:gh:`6368` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add return type annotations and ``Returns`` docstring sections to the private helpers of :mod:`nilearn.plotting` matrix utilities (:gh:`6510` by `Hariom Patidar`_).
+
+- :bdg-dark:`Code` Add ``asv`` benchmark for TFCE computation (:gh:`6394` by `Fabricio Cravo`_).
+
+- :bdg-primary:`Doc` Add ``Examples`` docstring sections to :func:`~masking.compute_epi_mask` (:gh:`6306` by `Marco Flores`_), :func:`~utils.all_displays`, :func:`~utils.all_estimators`, :func:`~utils.all_functions` (:gh:`6322`, :gh:`6324`, :gh:`6325` by `Alice Schiavone`_), :func:`~image.iter_img` (:gh:`6304` by `Ruben Dörfel`_), :func:`~plotting.plot_design_matrix` (:gh:`6380` by `Nirmitee Mulay`_), :func:`~signal.butterworth` (:gh:`6311` by `Hande Gözükan`_), :func:`~regions.img_to_signals_labels` (:gh:`6315` by `Hande Gözükan`_), :func:`~plotting.plot_design_matrix_correlation` function (:gh:`6413` by `Nirmitee Mulay`_).
+
+
+Changes
+-------
+
+- :bdg-dark:`Code` Update plotting functions to return figure or axes instead of None when an output file is specified to save the figure (:gh:`6272` by `Hande Gözükan`_).
