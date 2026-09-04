@@ -152,7 +152,6 @@ def test_get_clusters_table(
     validate_clusters_table(clusters_table, expected_n_cluster)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("call_style", ["omitted", "keyword", "positional"])
 def test_get_clusters_table_return_label_maps_deprecation(
     simple_stat_img, call_style
@@ -176,7 +175,6 @@ def test_get_clusters_table_return_label_maps_deprecation(
     assert warning_list[0].filename == __file__
 
 
-@pytest.mark.ai_generated
 def test_get_clusters_table_surface_return_label_maps_deprecation(surf_img_1d):
     """Warn on the deprecated table-only return for surface data."""
     with pytest.warns(

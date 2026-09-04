@@ -239,7 +239,6 @@ def test_cluster_level(n_subjects):
     assert get_data(out["logp_max_t"]).shape == SHAPE[:3]
 
 
-@pytest.mark.ai_generated
 def test_cluster_level_with_covariates(shape_3d_default, rng, n_subjects):
     """Test non-parametric inference with cluster-level inference in \
     the context of covariates.

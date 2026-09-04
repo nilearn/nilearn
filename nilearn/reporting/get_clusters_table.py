@@ -329,7 +329,7 @@ def get_clusters_table(
 
         .. nilearn_versionadded:: 0.10.1
 
-        .. nilearn_deprecated:: 0.14.1dev
+        .. nilearn_deprecated:: 0.15.0dev
 
             This parameter will be removed in version 0.17.0, when
             :func:`~nilearn.reporting.get_clusters_table` will always return
@@ -413,7 +413,7 @@ def get_clusters_table(
         warnings.warn(
             (
                 'The "return_label_maps" parameter is deprecated. '
-                "In version 0.16.0, it will be removed and "
+                "In version 0.17.0, it will be removed and "
                 '"get_clusters_table" will always return the cluster label '
                 'maps together with the table. Set "return_label_maps" to '
                 "True and update your code to unpack both outputs to avoid "
