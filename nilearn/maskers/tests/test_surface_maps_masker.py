@@ -121,7 +121,7 @@ def test_labels_img_none():
         SurfaceMapsMasker(maps_img=None).fit()
 
 
-def test_surface_maps_masker_empty_map_img_error(surf_mesh):
+def test_empty_map_img_error(surf_mesh):
     """Raise error if map_img is empty."""
     maps_img = SurfaceImage(
         mesh=surf_mesh,
@@ -137,7 +137,7 @@ def test_surface_maps_masker_empty_map_img_error(surf_mesh):
         SurfaceMapsMasker(maps_img=maps_img).fit()
 
 
-def test_surface_maps_masker_mask_img_masks_all_maps_error(surf_mesh):
+def test_mask_img_masks_all_maps_error(surf_mesh):
     """Raise error if mask_img excludes all vertices with map value."""
     maps_img = SurfaceImage(
         mesh=surf_mesh,

@@ -457,7 +457,7 @@ copybutton_prompt_is_regexp = True
 
 trim_doctests_flags = True
 
-_python_doc_base = "https://docs.python.org/3.10"
+_python_doc_base = "https://docs.python.org/3.11"
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
