@@ -124,7 +124,7 @@ env:
     BROWSER: /usr/bin/firefox
     DISPLAY: :99.0
     NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
-    MIN_PYTHON_VERSION: '3.10'
+    MIN_PYTHON_VERSION: '3.11'
     HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
 jobs:
@@ -310,7 +310,7 @@ jobs:
                 py: ['3.14']
                 env: [doc_latest]
                 include:
-                -   py: '3.10'
+                -   py: '3.11'
                     env: doc
 
         defaults:
