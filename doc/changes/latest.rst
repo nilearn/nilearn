@@ -1,7 +1,7 @@
 .. currentmodule:: nilearn
 
-Version X.Y.Z+1.dev
-====================
+Version 0.15.0dev
+=================
 
 ..
     Each changelog entry should begin with one of the following badges:
