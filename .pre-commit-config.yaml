@@ -91,3 +91,71 @@ repos:
         args: [--max-complexity-allowed=75]
 
     # Lint and format Python code
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.0
+    hooks:
+    -   id: ruff-check
+        # args: [--statistics]
+        args: [--fix, --show-fixes, --unsafe-fixes]
+    -   id: ruff-format
+        # args: [--diff]
+    -   id: ruff-check
+        # additional check to keep tests short
+        args: [--config, lint.pylint.max-statements=32]
+        files: |
+            (?x)^(
+                nilearn/.*/test_.*py
+            )$
+
+-   repo: https://github.com/adamchainz/blacken-docs
+    rev: 1.20.0    # replace with latest tag on GitHub
+    hooks:
+    -   id: blacken-docs
+        additional_dependencies:
+        -   black
+        # ignoring certain files
+        # to avoid generating lines that are too long
+        # or do not comply with some of the requirements
+        # of other linting / formaating tools (doc8, ruff...)
+        exclude: |
+            (?x)^(
+                doc/building_blocks/gpu_usage.rst
+                | nilearn/_utils/param_validation.py
+                | nilearn/image/image.py
+            )$
+
+
+-   repo: https://github.com/standard/standard
+    rev: v17.1.2
+    hooks:
+    -   id: standard
+        # ignoring JS files that are not our own
+        exclude: |
+            (?x)^(
+                nilearn/_assets/js/.*min.*
+                | nilearn/_assets/js/niivue.umd.js
+            )$
+
+        args: [--global, $, --global, Plotly]
+
+    # Check imports contracts
+-   repo: https://github.com/seddonym/import-linter
+    rev: v2.13
+    hooks:
+    -   id: import-linter
+        args: [--verbose]
+        language: python
+
+-   repo: https://github.com/PyCQA/doc8
+    rev: v2.0.0
+    hooks:
+    -   id: doc8
+        args: [--config=pyproject.toml, nilearn]
+
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v2.1.0
+    hooks:
+    -   id: mypy
+        files: nilearn
+        additional_dependencies: [numpy>=1.26.0, nibabel>=5.2.0, requests>=2.33.0, pandas-stubs, lxml-stubs, types-requests]
+        args: [--config-file, pyproject.toml, --pretty]
