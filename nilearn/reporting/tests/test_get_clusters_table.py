@@ -133,7 +133,6 @@ def test_cluster_nearest_neighbor(shape):
         (4, 9, True, 0),  # test empty table on high cluster threshold
     ],
 )
-@pytest.mark.ai_generated
 def test_get_clusters_table(
     simple_stat_img,
     stat_threshold,
@@ -156,7 +155,11 @@ def test_get_clusters_table(
 def test_get_clusters_table_return_label_maps_deprecation(
     simple_stat_img, call_style
 ):
-    """Warn on calls that keep the deprecated table-only return."""
+    """Warn on calls that keep the deprecated table-only return.
+    
+    
+    TODO (nilearn >= 0.17.0) remove test.
+    """
     match = 'The "return_label_maps" parameter is deprecated'
 
     with pytest.warns(FutureWarning, match=match) as warning_list:
@@ -176,7 +179,10 @@ def test_get_clusters_table_return_label_maps_deprecation(
 
 
 def test_get_clusters_table_surface_return_label_maps_deprecation(surf_img_1d):
-    """Warn on the deprecated table-only return for surface data."""
+    """Warn on the deprecated table-only return for surface data.
+    
+    TODO (nilearn >= 0.17.0) remove test.
+    """
     with pytest.warns(
         FutureWarning,
         match='The "return_label_maps" parameter is deprecated',
@@ -288,7 +294,6 @@ def test_get_clusters_table_surface_two_sided(
         (1.4, 10, 4),
     ],
 )
-@pytest.mark.ai_generated
 def test_get_clusters_table_surface_real_data(
     stat_threshold, cluster_threshold, expected_n_cluster_two_sided
 ):
