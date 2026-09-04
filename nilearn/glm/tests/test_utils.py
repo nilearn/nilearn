@@ -129,7 +129,7 @@ def test_z_score_opposite_contrast(rng, add_regs_i):
         shape=(50, 20, 50), length=96, rand_gen=rng
     )
 
-    nifti_masker = NiftiMasker(mask_img=mask, standardize=None)
+    nifti_masker = NiftiMasker(mask_img=mask)
 
     data = nifti_masker.fit_transform(fmri)
 
@@ -143,7 +143,6 @@ def test_z_score_opposite_contrast(rng, add_regs_i):
 
     fmri_glm = FirstLevelModel(
         noise_model="ar1",
-        standardize=None,
         drift_model="cosine",
     )
     fmri_glm.fit(fmri, design_matrices=design_matrix)

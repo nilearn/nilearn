@@ -98,12 +98,7 @@ def test_warning(n_subjects):
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     c1 = np.eye(len(X.columns))[0]
 
-    masker = NiftiMasker(
-        mask,
-        smoothing_fwhm=2.0,
-        # TODO (nilearn >= 0.15) remove standardize=None
-        standardize=None,
-    )
+    masker = NiftiMasker(mask, smoothing_fwhm=2.0)
     with pytest.warns(
         UserWarning,
         match="Parameter 'smoothing_fwhm' of the masker overridden",
@@ -442,11 +437,7 @@ def test_with_surface_images_2d_mask(surf_img_2d, surf_mask_1d, n_subjects):
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
-    masker = SurfaceMasker(
-        surf_mask_1d,
-        # TODO (nilearn >= 0.15) remove standardize=None
-        standardize=None,
-    )
+    masker = SurfaceMasker(surf_mask_1d)
 
     non_parametric_inference(
         second_level_input=second_level_input,

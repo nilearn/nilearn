@@ -104,9 +104,9 @@ def test_multi_pca_score_single_subject_n_components(
     assert_almost_equal(s, 1.0, 1)
 
     if data_type == "nifti":
-        masker = NiftiMasker(decomposition_mask_img, standardize=None).fit()
+        masker = NiftiMasker(decomposition_mask_img).fit()
     elif data_type == "surface":
-        masker = SurfaceMasker(decomposition_mask_img, standardize=None).fit()
+        masker = SurfaceMasker(decomposition_mask_img).fit()
 
     s = multi_pca._raw_score(
         masker.transform(decomposition_img), per_component=True

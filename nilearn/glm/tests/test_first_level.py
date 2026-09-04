@@ -912,9 +912,7 @@ def test_parameter_attributes_ignored_with_design_matrix(
     design_matrices = design_matrices[0]
 
     with warnings.catch_warnings(record=True) as warning_list:
-        FirstLevelModel(standardize=None).fit(
-            [fmri_data], design_matrices=[design_matrices]
-        )
+        FirstLevelModel().fit([fmri_data], design_matrices=[design_matrices])
     assert not warning_list, [str(x) for x in warning_list]
 
     with pytest.warns(UserWarning, match="If design matrices are supplied"):
@@ -1677,7 +1675,7 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
     variance = result["effect_variance"]
     surf_mask_ = masker.mask_img_
     for mask in [
-        SurfaceMasker(mask_img=masker.mask_img_, standardize=None),
+        SurfaceMasker(mask_img=masker.mask_img_),
         surf_mask_,
         None,
     ]:

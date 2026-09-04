@@ -386,7 +386,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
     X_, mask = to_niimgs(X, (2, 2, 2))
-    masker = NiftiMasker(mask_img=mask, standardize=None).fit()
+    masker = NiftiMasker(mask_img=mask).fit()
 
     tvl1 = SpaceNetClassifier(
         mask=masker,
