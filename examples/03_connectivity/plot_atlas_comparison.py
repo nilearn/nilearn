@@ -7,7 +7,10 @@ visualization. This requires choosing centers for each parcel
 or network, via :func:`~nilearn.plotting.find_parcellation_cut_coords` for
 :term:`parcellation` based on labels and
 :func:`~nilearn.plotting.find_probabilistic_atlas_cut_coords` for
-:term:`parcellation` based on probabilistic values.
+or network, via :func:`~nilearn.plotting.find_parcellation_cut_coords` for
+:term:`parcellation` based on deterministic atlases (labels) and
+:func:`~nilearn.plotting.find_probabilistic_atlas_cut_coords` for
+:term:`parcellation` based on probabilistic atlases (maps).
 
 In the intermediary steps, we make use of
 :class:`~nilearn.maskers.MultiNiftiLabelsMasker` and
@@ -59,7 +62,8 @@ print(
 
 # %%
 # Extract coordinates on Yeo atlas - parcellations
-# ------------------------------------------------
+# Extract coordinates from a deterministic parcellation - Yeo atlas
+# -----------------------------------------------------------------
 from nilearn.connectome import ConnectivityMeasure
 from nilearn.maskers import MultiNiftiLabelsMasker
 
@@ -177,7 +181,8 @@ show()
 
 # %%
 # Plot a directed connectome - asymmetric connectivity measure
-# ------------------------------------------------------------
+# Plot a directed connectome - asymmetric connectivity measure
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # In this section, we use the lag-1 correlation as the connectivity
 # measure, which leads to an asymmetric connectivity matrix.
 # The plot_connectome function accepts both symmetric and asymmetric
@@ -215,7 +220,8 @@ for lag in [0, 1]:
 
 # %%
 # Load probabilistic atlases - extracting coordinates on brain maps
-# -----------------------------------------------------------------
+# Extract coordinates from a probabilistic parcellation - Difumo atlas
+# --------------------------------------------------------------------
 from nilearn.datasets import fetch_atlas_difumo
 from nilearn.plotting import find_probabilistic_atlas_cut_coords
 
@@ -224,7 +230,6 @@ difumo = fetch_atlas_difumo(dimension=dim, resolution_mm=2)
 
 # %%
 # Iterate over fetched atlases to extract coordinates - probabilistic
-# -------------------------------------------------------------------
 from nilearn.maskers import MultiNiftiMapsMasker
 
 # Create masker using MultiNiftiMapsMasker to extract functional data within
