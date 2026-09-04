@@ -12,6 +12,7 @@
 name: test minimal version of each dependency
 
 on:
+    pull_request:
     schedule:
         # Uses the cron schedule for github actions
         # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
@@ -50,7 +51,7 @@ jobs:
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 python-version: ['3.10']
-                min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.26.0, pandas==2.3.0, scikit-learn==1.5.0, scipy==1.11.1, matplotlib==3.8.0, plotly==6.1.1]
+                min_dep: [joblib==1.2.0, nibabel==5.2.0, pandas==2.3.0, scikit-learn==1.5.0, matplotlib==3.8.0, plotly==6.1.1]
 
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}
 

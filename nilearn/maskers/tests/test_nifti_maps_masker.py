@@ -99,7 +99,7 @@ def test_data_atlas_different_shape(length, affine_eye, img_maps):
     with warnings.catch_warnings(record=True) as warning_list:
         masker.fit(fmri22_img)
         assert all(
-            "consider using nearest interpolation instead" not in x.message
+            "consider using nearest interpolation instead" not in str(x)
             for x in warning_list
         )
 
