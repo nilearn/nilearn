@@ -66,14 +66,6 @@ with warnings.catch_warnings():
 # Retrieve the independent components in brain space directly
 # accessible through attribute `components_img_`.
 canica_components_img = canica.components_img_
-# components_img is a Nifti Image object, and can be saved to a file with
-# the following lines:
-from pathlib import Path
-
-output_dir = Path.cwd() / "results" / "plot_compare_decomposition"
-output_dir.mkdir(exist_ok=True, parents=True)
-print(f"Output will be saved to: {output_dir}")
-canica_components_img.to_filename(output_dir / "canica_resting_state.nii.gz")
 
 
 # %%
@@ -85,7 +77,8 @@ plot_prob_atlas(canica_components_img, title="All ICA components")
 
 
 # %%
-# Finally, we plot the map for each :term:`ICA` component separately
+# Finally, we plot the map for each :term:`ICA` component separately.
+#
 # .. note::
 #
 #   The following code block will generate many figures.
@@ -134,14 +127,9 @@ dict_learning = DictLearning(
     n_jobs=2,
 )
 
-print("[Example] Fitting dictionary learning model")
 dict_learning.fit(func_filenames)
-print("[Example] Saving results")
 
 dictlearning_components_img = dict_learning.components_img_
-dictlearning_components_img.to_filename(
-    output_dir / "dictionary_learning_resting_state.nii.gz"
-)
 
 
 # %%
@@ -155,6 +143,7 @@ plot_prob_atlas(
 
 # %%
 # One plot of each component
+#
 # .. note::
 #
 #   The following code block will generate many figures.
@@ -174,8 +163,8 @@ for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
 # %%
 # Estimate explained variance per component and plot using matplotlib
 #
-# The fitted object `dict_learning` can be used
-# to calculate the score per component
+# The fitted object ``dict_learning`` can be used
+# to calculate the score per component.
 scores = dict_learning.score(func_filenames, per_component=True)
 
 # Plot the scores
