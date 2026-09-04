@@ -333,7 +333,6 @@ def test_get_clusters_table_surface_real_data(
     )
 
 
-@pytest.mark.ai_generated
 def test_get_clusters_table_surface_min_distance(surf_img_1d, simple_stat_img):
     """Change min_distance parameter raise warning when using surface data."""
     with pytest.warns(
@@ -356,7 +355,6 @@ def test_get_clusters_table_surface_min_distance(surf_img_1d, simple_stat_img):
     assert len(w) == 0
 
 
-@pytest.mark.ai_generated
 def test_get_clusters_table_negative_min_distance_error(simple_stat_img):
     """Check min_distance cannot be negative."""
     with pytest.raises(ValueError, match="'min_distance' must be positive"):
@@ -368,7 +366,6 @@ def test_get_clusters_table_negative_min_distance_error(simple_stat_img):
         )
 
 
-@pytest.mark.ai_generated
 def test_get_clusters_table_no_cluster_found_warning(
     surf_img_1d, simple_stat_img
 ):
@@ -404,7 +401,6 @@ def test_get_clusters_table_no_cluster_found_warning(
     validate_clusters_table(clusters_table, expected_n_cluster=0)
 
 
-@pytest.mark.ai_generated
 def test_get_clusters_table_negative_threshold(shape, affine_eye):
     """Check that one sided negative thresholds are handled well."""
     data = np.zeros(shape)
@@ -452,7 +448,6 @@ def test_get_clusters_table_negative_threshold_one_sided(
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.ai_generated
 def test_smoke_get_clusters_table_filename(tmp_path, simple_stat_img):
     """Run get_clusters_table on a file."""
     fname = str(tmp_path / "stat_img.nii.gz")
@@ -463,7 +458,6 @@ def test_smoke_get_clusters_table_filename(tmp_path, simple_stat_img):
     validate_clusters_table(clusters_table, expected_n_cluster=2)
 
 
-@pytest.mark.ai_generated
 def test_get_clusters_table_4d_image(shape, affine_eye):
     """Run get_clusters_table on 4D image."""
     data = np.zeros((*shape, 1))
@@ -480,7 +474,6 @@ def test_get_clusters_table_4d_image(shape, affine_eye):
     validate_clusters_table(clusters_table, expected_n_cluster=2)
 
 
-@pytest.mark.ai_generated
 def test_get_clusters_table_nans(shape, affine_eye):
     """Test nans are handled correctly (No numpy axis errors are raised)."""
     data = np.zeros((*shape, 1))
@@ -500,7 +493,6 @@ def test_get_clusters_table_nans(shape, affine_eye):
     validate_clusters_table(clusters_table, expected_n_cluster=1)
 
 
-@pytest.mark.ai_generated
 def test_get_clusters_table_subpeaks(shape, affine_eye):
     """Test subpeaks are handled correctly for len(subpeak_vals) > 1."""
     # 1 cluster and two subpeaks, 10 voxels apart.
@@ -572,7 +564,6 @@ def test_get_clusters_table_return_label_maps(simple_stat_img):
         (4, 0, False, 2),  # test cluster threshold is 0
     ],
 )
-@pytest.mark.ai_generated
 def test_get_clusters_table_not_modifying_stat_image(
     affine_eye,
     shape,
