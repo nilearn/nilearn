@@ -47,11 +47,11 @@ def compute_alpha_max(emp_covs, n_samples):
 
     Returns
     -------
-    alpha_max : float
+    alpha_max : :obj:`float`
         minimal value for the regularization parameter that gives a
         fully sparse matrix.
 
-    alpha_min : float
+    alpha_min : :obj:`float`
         minimal value for the regularization parameter that gives a fully
         dense matrix.
 
@@ -74,7 +74,7 @@ def compute_alpha_max(emp_covs, n_samples):
     return np.max(norms), np.min(norms[norms > 0])
 
 
-def _update_submatrix(full, sub, sub_inv, p, h, v):
+def _update_submatrix(full, sub, sub_inv, p, h, v) -> None:
     """Update submatrix and its inverse.
 
     sub_inv is the inverse of the submatrix of "full" obtained by removing
@@ -776,15 +776,15 @@ def group_sparse_scores(
 
     Returns
     -------
-    log_lik : float
+    log_lik : :obj:`float`
         log-likelihood of precisions on the given covariances. This is the
         opposite of the loss function, without the regularization term
 
-    objective : float
+    objective : :obj:`float`
         value of objective function. This is the value minimized by
         group_sparse_covariance()
 
-    duality_gap : float
+    duality_gap : :obj:`float`
         duality gap upper bound. The returned bound is tight: it vanishes for
         the optimal precision matrices
 
@@ -1059,10 +1059,10 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         sparsity pattern (if a coefficient is zero for a given matrix, it
         is also zero for every other.)
 
-    alpha_ : float
+    alpha_ : :obj:`float`
         penalization parameter value selected.
 
-    cv_alphas_ : list of floats
+    cv_alphas_ : :obj:`list` of floats
         all values of the penalization parameter explored.
 
     cv_scores_ : numpy.ndarray, shape (n_alphas, n_folds)

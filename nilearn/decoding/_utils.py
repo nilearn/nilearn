@@ -152,7 +152,7 @@ def _get_mask_extent(mask_img):
 
     Returns
     -------
-    mask_extent : float
+    mask_extent : :obj:`float`
         The computed volume in mm^3 (if mask_img is a Nifti1Image) or the
         number of vertices (if mask_img is a SurfaceImage).
 
@@ -185,7 +185,7 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
 
     Returns
     -------
-    screening_percentile : float in the interval [0, 100]
+    screening_percentile : :obj:`float` in the interval [0, 100]
         Percentile value for ANOVA univariate feature selection.
 
     """
@@ -280,9 +280,11 @@ def check_feature_screening(
     mask_img : nibabel image object
         Input image whose :term:`voxel` dimensions are to be computed.
 
-    is_classification : bool
+    is_classification : :obj:`bool`
         If is_classification is True, it indicates that a classification task
         is performed. Otherwise, a regression task is performed.
+
+    %(screening_n_features)s
 
     %(verbose0)s
 
@@ -368,10 +370,10 @@ def validate_estimator(
         in which the estimator to validate
         is embedded
 
-    estimator_args: dict or None
+    estimator_args : dict or None
         extra args to pass when instantiating the embedded estimator
 
-    verbose:
+    verbose :
         used to adjust the verbosity of the embedded estimator
     """
     if not isinstance(estimator, str):

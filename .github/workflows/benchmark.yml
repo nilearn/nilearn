@@ -17,6 +17,11 @@
 #   from the ``repo`` URL configured in ``asv.conf.json``,
 #   asv is temporarily pointed at the already checked out local clone instead
 #   (it contains both commits, as the checkout step fetches full history).
+#   ``build_tools/github/restrict_benchmarks_to_run.py`` reuses the same
+#   layered-architecture knowledge as ``restrict_tests_to_run.py`` (used
+#   to restrict which tests run) to only benchmark the parts of the
+#   public API the PR could plausibly affect, instead of the full suite
+#   on every PR.
 # - On a push to ``main`` (typically a merged PR),
 #   the benchmarks are run for the ``main`` HEAD and for the most recent git tag (the latest stable release),
 #   and this comparison *overwrites* whatever was previously published
@@ -82,10 +87,26 @@ on:
     push:
         branches:
         -   main
+        paths:
+        -   nilearn/**/*
+        -   asv_benchmarks/**/*
+        -   build_tools/github/restrict_benchmarks_to_run.py
+        -   build_tools/github/restrict_tests_to_run.py
+        -   build_tools/github/set_machine_name.py
+        -   .github/workflows/benchmark.yml
+        -   pyproject.toml
 
     pull_request:
         branches:
         -   '*'
+        paths:
+        -   nilearn/**/*
+        -   asv_benchmarks/**/*
+        -   build_tools/github/restrict_benchmarks_to_run.py
+        -   build_tools/github/restrict_tests_to_run.py
+        -   build_tools/github/set_machine_name.py
+        -   .github/workflows/benchmark.yml
+        -   pyproject.toml
 
     schedule:
         # Uses the cron schedule for github actions
@@ -112,7 +133,7 @@ concurrency:
 
 env:
     FORCE_COLOR: true
-    MIN_PYTHON: 3.10.18
+    MIN_PYTHON: 3.11.0
 
 
 jobs:
@@ -190,6 +211,7 @@ jobs:
 
         -   name: Prepare comparison of PR HEAD against upstream main (PR only)
             if: github.event_name == 'pull_request'
+            id: prepare-pr-comparison
             run: |
                 # make sure the upstream main branch is available locally
                 git fetch origin main
@@ -213,6 +235,14 @@ jobs:
                 # which already has both commits (thanks to the fetch-depth: 0 checkout)
                 sed -i 's#"repo": "https://github.com/nilearn/nilearn.git"#"repo": ".."#' asv.conf.json
 
+                # Only benchmark the parts of the public API this PR could
+                # plausibly affect, rather than the full suite on every PR
+                # (see build_tools/github/restrict_benchmarks_to_run.py).
+                # An empty filter means: run the full suite anyway
+                # (a foundational file changed).
+                python ../build_tools/github/restrict_benchmarks_to_run.py "$MAIN_SHA"
+                echo "benchmarks_filter=$(cat ../benchmarks_to_run.txt)" >> "$GITHUB_OUTPUT"
+
         -   name: Prepare comparison of main HEAD against latest release (push only)
             if: github.event_name == 'push'
             run: |
@@ -234,7 +264,12 @@ jobs:
         -   name: Run all benchmarks on the PR HEAD and upstream main (PR only)
             if: github.event_name == 'pull_request'
             run: |
-                asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 HASHFILE:pr_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                FILTER="${{ steps.prepare-pr-comparison.outputs.benchmarks_filter }}"
+                if [ -n "$FILTER" ]; then
+                    asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 -b "$FILTER" HASHFILE:pr_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                else
+                    asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 HASHFILE:pr_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                fi
 
         -   name: Run all benchmarks on main HEAD and latest release (push only)
             if: github.event_name == 'push'

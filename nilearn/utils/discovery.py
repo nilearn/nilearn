@@ -244,7 +244,7 @@ def all_displays(type_filter=None) -> list[tuple[str, type]]:
 
     Returns
     -------
-    displays : list of tuples
+    displays : :obj:`list` of tuples
         List of (name, class), where ``name`` is the display class name as
         string and ``class`` is the actual type of the class.
 

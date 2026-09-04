@@ -107,7 +107,7 @@ show()
 # by generating a masker report.
 # This can be done using
 # the :meth:`~nilearn.maskers.NiftiMasker.generate_report` method.
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 
 # %%
 #
@@ -155,7 +155,7 @@ show()
 
 masker = NiftiMasker(mask_strategy="epi")
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
@@ -172,21 +172,20 @@ report
 
 masker = NiftiMasker(mask_strategy="epi", mask_args={"opening": 10})
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
 # Generate mask with a high lower cutoff
 # --------------------------------------
 #
-# The NiftiMasker calls the :func:`nilearn.masking.compute_epi_mask` function
+# The NiftiMasker calls the :func:`~nilearn.masking.compute_epi_mask` function
 # to compute the mask from the EPI.
 # It has two important parameters: ``lower_cutoff`` and ``upper_cutoff``.
 # These set the grey-value bounds
 # in which the masking algorithm will search for its threshold
 # (0 being the minimum of the image and 1 the maximum).
-# We will here increase the lower cutoff
-# to enforce selection of those voxels
+# We will here increase the lower cutoff to enforce selection of those voxels
 # that appear as bright in the :term:`EPI` image.
 
 masker = NiftiMasker(
@@ -194,7 +193,7 @@ masker = NiftiMasker(
     mask_args={"upper_cutoff": 0.9, "lower_cutoff": 0.8, "opening": False},
 )
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
@@ -210,7 +209,7 @@ report
 
 masker = NiftiMasker(mask_strategy="whole-brain-template")
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%
@@ -231,7 +230,7 @@ import numpy as np
 
 masker = NiftiMasker(mask_strategy="epi", target_affine=np.eye(3) * 8)
 masker.fit(epi_img)
-report = masker.generate_report()
+report = masker.generate_report(engine="brainsprite")
 report
 
 # %%

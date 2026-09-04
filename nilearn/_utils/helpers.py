@@ -22,11 +22,11 @@ def rename_parameters(
         and their corresponding new parameters.
         Example: {old_param1: new_param1, old_param2: new_param2,...}
 
-    end_version : str {'future' | 'next' | <version>}, default='future'
+    end_version : :obj:`str` {'future' | 'next' | <version>}, default='future'
         Version when using the deprecated parameters will raise an error.
         For informational purpose in the warning text.
 
-    lib_name : str, default='Nilearn'
+    lib_name : :obj:`str`, default='Nilearn'
         Name of the library to which the decoratee belongs.
         For informational purpose in the warning text.
 
@@ -58,11 +58,11 @@ def _warn_deprecated_params(
         Dictionary of old_parameters as keys with replacement parameters
         as their corresponding values.
 
-    end_version : str
+    end_version : :obj:`str`
         The version where use of the deprecated parameters will raise an error.
         For informational purpose in the warning text.
 
-    lib_name : str
+    lib_name : :obj:`str`
         Name of the library. For informational purpose in the warning text.
 
     kwargs : Dict[str, any]
@@ -118,14 +118,14 @@ def remove_parameters(removed_params, reason, end_version="future"):
 
     Parameters
     ----------
-    removed_params : list[string]
+    removed_params : :obj:`list`[string]
         List of old parameters to be removed.
         Example: [old_param1, old_param2, ...]
 
-    reason : str
+    reason : :obj:`str`
         Detailed reason of deprecated parameter and alternative solutions.
 
-    end_version : str {'future' | 'next' | <version>}, default='future'
+    end_version : :obj:`str` {'future' | 'next' | <version>}, default='future'
         Version when using the deprecated parameters will raise an error.
         For informational purpose in the warning text.
 
@@ -160,7 +160,7 @@ def stringify_path(path):
 
     Parameters
     ----------
-    path : str or path-like object
+    path : :obj:`str` or path-like object
 
     Returns
     -------
@@ -228,3 +228,37 @@ def is_gil_enabled() -> bool:
 
 def is_sphinx_build() -> bool:
     return any(module.startswith("sphinx.") for module in sys.modules)
+
+
+@functools.lru_cache
+def is_notebook() -> bool:
+    """Detect if we are running in a notebook.
+
+    Adapted from https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
+    """
+    try:
+        shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
+    except NameError:
+        shell = False
+
+    try:
+        import marimo as mo
+
+        is_marimo = mo.running_in_notebook()
+    except (ImportError, AttributeError):
+        # TODO (joblib >= 1.5.0) remove AttributeError
+        # marimo does not seem to play well with joblib
+        is_marimo = False
+
+    if shell:
+        if shell == "ZMQInteractiveShell":
+            return True  # Jupyter notebook or qtconsole
+        elif shell == "TerminalInteractiveShell":
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+
+    if is_marimo:
+        return is_marimo
+
+    return False

@@ -97,10 +97,10 @@ def peak_local_max(
         `min_distance`). To find the maximum number of peaks, use
         `min_distance=1`.
 
-    threshold_abs : float, default=0
+    threshold_abs : :obj:`float`, default=0
         Minimum intensity of peaks.
 
-    threshold_rel : float, default=0.1
+    threshold_rel : :obj:`float`, default=0.1
         Minimum intensity of peaks calculated as `max(image) * threshold_rel`.
 
     num_peaks : int, default=np.inf

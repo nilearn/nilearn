@@ -842,6 +842,7 @@ class SecondLevelModel(BaseGLM):
 
         return outputs if output_type == "all" else output
 
+    @fill_doc
     def _make_stat_maps(
         self, contrasts, output_type="z_score", first_level_contrast=None
     ):

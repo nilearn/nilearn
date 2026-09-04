@@ -104,6 +104,7 @@ def _map_eigenvalues(function, symmetric):
     return _form_symmetric(function, eigenvalues, eigenvectors)
 
 
+@fill_doc
 def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     """Compute the geometric mean of symmetric positive definite matrices.
 
@@ -127,7 +128,8 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
     Parameters
     ----------
-    matrices : list of numpy.ndarray, all of shape (n_features, n_features)
+    matrices : :obj:`list` of numpy.ndarray, \
+                all of shape (n_features, n_features)
         List of matrices whose geometric mean to compute. Raise an error if the
         matrices are not all symmetric positive definite of the same shape.
 

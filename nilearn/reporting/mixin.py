@@ -46,7 +46,7 @@ class ReportMixin:
         - title : title to be used for the report
         - page_title : title for browser page; generated from title
         - engine : engine to generate plots
-        - has_plotting_engine : bool value to indicate if matplotlib is
+        - has_plotting_engine : :obj:`bool` value to indicate if matplotlib is
           installed
         - docstring : docstring of estimator
         - parameters : estimator parameters
@@ -144,7 +144,7 @@ class ReportMixin:
 
         Parameters
         ----------
-        warning: str
+        warning : :obj:`str`
             warning to be added to the list of warnings.
         """
         self._report_content["warning_messages"].append(warning)
@@ -286,7 +286,7 @@ class ReportMixin:
                 )
         return parameters
 
-    def _embed_img(self, display):
+    def _embed_img(self, display) -> str | None:
         """Embed an image or just return its instance if already embedded.
 
         Parameters
@@ -296,7 +296,7 @@ class ReportMixin:
 
         Returns
         -------
-        embed : str
+        embed : :obj:`str`
             Binary image string.
 
         """
@@ -316,16 +316,6 @@ class ReportMixin:
         body_tpl_path = f"html{estimator_type}/{self._template_name}"
         return get_template(body_tpl_path)
 
-    def _get_partial_template(
-        self, estimator_type: str, tpl_name: str, is_common: bool = False
-    ):
-        """Return a partial template for the specified `_estimator_type`.
-        If `is_common=True`, the template is not searched in estimator's
-        template directory but common `partials` directory.
-        """
-        loc = f"/{estimator_type}" if not is_common else ""
-        return get_template(f"html{loc}/partials/{tpl_name}.jinja")
-
     def _assemble_report(self) -> HTMLReport:
         """Assemble report head and body acquiring body template corresponding
         to estimator type and populating it with report data.
@@ -343,8 +333,14 @@ class ReportMixin:
         return html_report
 
     def _set_brainsprite_data(self):
+        from nilearn.plotting.html_stat_map import _get_brainsprite_html_ids
+
+        report_content = self._report_content
+        report_content["html_ids"] = _get_brainsprite_html_ids(
+            report_content["unique_id"]
+        )
+
         if self._has_report_data():
-            report_content = self._report_content
             report_content["bg_base64"] = self._reporting_data["bg_base64"]
             report_content["cm_base64"] = self._reporting_data["cm_base64"]
             report_content["params"] = self._reporting_data["params"]

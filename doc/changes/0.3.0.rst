@@ -1,10 +1,8 @@
 
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.3.0
-=====
+Version 0.3.0
+=============
 
 **Released April 2017**
 
@@ -26,7 +24,7 @@ Fixes
 
 - :bdg-dark:`Code` Fixed deprecations ``set_axis_bgcolor`` related to matplotlib in plotting functions.
 
-- :bdg-dark:`Code` Fixed bug related to not accepting a list of arrays as an input to unmask, in :mod:`nilearn.masking` module.
+- :bdg-dark:`Code` Fixed bug related to not accepting a list of arrays as an input to unmask, in :mod:`~nilearn.masking` module.
 
 - :bdg-secondary:`Maint` Fixed bunch of CircleCI documentation build failures.
 
@@ -37,8 +35,8 @@ Enhancements
 
 - :bdg-primary:`Doc` :term:`ANOVA` :term:`SVM` example on Haxby datasets ``plot_haxby_anova_svm`` in Decoding section now uses ``SelectPercentile`` to select :term:`voxels<voxel>` rather than ``SelectKBest``.
 
-0.3.0 beta
-===========
+Version 0.3.0 beta
+==================
 
 **Released February 2017**
 

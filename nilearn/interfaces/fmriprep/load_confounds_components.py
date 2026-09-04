@@ -109,7 +109,7 @@ def _load_tedana(confounds_files, tedana):
     confounds_files : :obj:`dict`
         dict of confounds dataframes.
 
-    tedana : str
+    tedana : :obj:`str`
         TEDANA strategy to use. Options are "aggressive" or
         "non-aggressive".
 
@@ -140,7 +140,7 @@ def _load_motion(confounds_raw, motion):
     confounds_raw : pandas.DataFrame
         DataFrame of confounds.
 
-    motion : str
+    motion : :obj:`str`
         Motion strategy to use. Options are "basic",
         "derivatives", "power2", or "full".
 
@@ -199,7 +199,7 @@ def _load_wm_csf(confounds_raw, wm_csf):
     confounds_raw : pandas.DataFrame
         DataFrame of confounds.
 
-    wm_csf : str
+    wm_csf : :obj:`str`
         White matter and CSF strategy to use. Options are "basic",
         "derivatives", "power2", or "full".
 
@@ -229,7 +229,7 @@ def _load_global_signal(confounds_raw, global_signal):
     confounds_raw : pandas.DataFrame
         DataFrame of confounds.
 
-    global_signal : str
+    global_signal : :obj:`str`
         Global signal strategy to use. Options are "basic",
         "derivatives", "power2", or "full".
 
@@ -262,7 +262,7 @@ def _load_compcor(confounds_raw, meta_json, compcor, n_compcor):
     meta_json : dict
         Dictionary of confounds meta data from the confounds.json file.
 
-    compcor : str
+    compcor : :obj:`str`
         Compcor strategy to use. Options are "temporal_anat", "temporal",
         "anat", or "combined".
 
@@ -296,7 +296,7 @@ def _load_ica_aroma(confounds_raw, ica_aroma):
     confounds_raw : pandas.DataFrame
         DataFrame of confounds.
 
-    ica_aroma : str
+    ica_aroma : :obj:`str`
         ICA-AROMA strategy to use. Options are "full", "basic".
 
     Returns
@@ -334,11 +334,11 @@ def _load_scrub(confounds_raw, scrub, fd_threshold, std_dvars_threshold):
         Minimal segment length.
         Segment smaller than the given value will be removed.
 
-    fd_threshold : float
+    fd_threshold : :obj:`float`
         Threshold for the framewise displacement. Volumes with FD larger
         than the threshold will be removed.
 
-    std_dvars_threshold : float
+    std_dvars_threshold : :obj:`float`
         Threshold for the standard deviation of DVARS.
         Volumes with DVARS larger than the threshold will be removed.
 

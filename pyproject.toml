@@ -53,9 +53,9 @@ min_plotting = [
     "plotly==6.1.1"
 ]
 # For prettier printing
-rich = ["rich>=3.0.0"]
+rich = ["rich>=12.0.0"]
 # Applying style guide
-style = ['pre-commit']
+style = ['prek']
 test = [
     {include-group = "test_common"},
     "coverage>=7.0.0",
@@ -97,7 +97,6 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -128,7 +127,7 @@ maintainers = [
 ]
 name = "nilearn"
 readme = "README.rst"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 [project.optional-dependencies]
 # keep plotly as a separate optional extra dependency because of its size
@@ -462,7 +461,7 @@ max-complexity = 23
 "**/{doc}/*" = ["B018", "D103"]  # 17 D103 errors to fix
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]  # 13 D103 errors to fix
 "__init__.py" = ["D104", "E402"]
-"doc/conf.py" = ["I001"]  # ignore sorting because this leads to conflict when running pre-commit locally and in CI
+"doc/conf.py" = ["I001"]  # ignore sorting because this leads to conflict when running prek locally and in CI
 "nilearn/**/tests/test_*" = ["D100"]
 "nilearn/connectome/tests/test_connectivity_matrices.py" = ["D103"]  # 30 errors to fix
 "nilearn/datasets/func.py" = ["PTH211"]  # 1 error
@@ -491,4 +490,4 @@ max-branches = 22
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 8
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 100
+max-statements = 110
