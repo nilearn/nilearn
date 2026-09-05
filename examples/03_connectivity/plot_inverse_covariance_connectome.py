@@ -17,8 +17,7 @@ display.
 As the MSDL atlas comes with (x, y, z) :term:`MNI` coordinates for
 the different regions, we can visualize the matrix as a graph of
 interaction in a brain. To avoid having too dense a graph, we
-represent only the 20% edges with the highest values.
-
+represent only the edges above 80% of the values.
 """
 
 # %%
@@ -89,7 +88,9 @@ plot_matrix(
 # ---------------------------------------
 coords = atlas.region_coords
 
-plot_connectome(estimator.covariance_, coords, title="Covariance")
+plot_connectome(
+    estimator.covariance_, coords, title="Covariance", edge_threshold="80%"
+)
 
 
 # %%
@@ -109,7 +110,10 @@ plot_matrix(
 # And now display the corresponding graph
 # ----------------------------------------
 plot_connectome(
-    -estimator.precision_, coords, title="Sparse inverse covariance"
+    -estimator.precision_,
+    coords,
+    title="Sparse inverse covariance",
+    edge_threshold="80%",
 )
 
 show()
@@ -123,7 +127,7 @@ show()
 # for more details.
 
 
-view = view_connectome(-estimator.precision_, coords)
+view = view_connectome(-estimator.precision_, coords, edge_threshold="80%")
 
 # In a notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
