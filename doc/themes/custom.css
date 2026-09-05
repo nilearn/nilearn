@@ -191,6 +191,12 @@ img.math {
   }
 }
 
+/* Hide Binder launch badge in footer  as we have it in header*/
+/* .binder-badge
+{
+  display: none;
+} */
+
 /*
 to match https://github.com/pradyunsg/furo/blob/main/src/furo/assets/styles/content/_api.sass
 */
