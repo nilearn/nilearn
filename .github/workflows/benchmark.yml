@@ -136,6 +136,9 @@ env:
     MIN_PYTHON: 3.11.0
 
 
+permissions:
+    contents: read
+
 jobs:
     benchmark:
         if: github.repository == 'nilearn/nilearn'
@@ -145,7 +148,7 @@ jobs:
                 working-directory: ./asv_benchmarks
 
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             with:
                 # fetch all branches and tags
                 fetch-depth: 0
@@ -153,8 +156,9 @@ jobs:
                 # check out the actual HEAD of the PR branch
                 # instead of the default synthetic merge commit
                 ref: ${{ github.event.pull_request.head.sha || github.sha }}
+                persist-credentials: false
 
-        -   uses: actions/setup-python@v6
+        -   uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: ${{ env.MIN_PYTHON }}
 
@@ -264,12 +268,14 @@ jobs:
         -   name: Run all benchmarks on the PR HEAD and upstream main (PR only)
             if: github.event_name == 'pull_request'
             run: |
-                FILTER="${{ steps.prepare-pr-comparison.outputs.benchmarks_filter }}"
+                FILTER="${STEPS_PREPARE_PR_COMPARISON_OUTPUTS_BENCHMARKS_FILTER}"
                 if [ -n "$FILTER" ]; then
                     asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 -b "$FILTER" HASHFILE:pr_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
                 else
                     asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 HASHFILE:pr_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
                 fi
+            env:
+                STEPS_PREPARE_PR_COMPARISON_OUTPUTS_BENCHMARKS_FILTER: ${{ steps.prepare-pr-comparison.outputs.benchmarks_filter }}
 
         -   name: Run all benchmarks on main HEAD and latest release (push only)
             if: github.event_name == 'push'
@@ -293,7 +299,7 @@ jobs:
             run: |
                 asv publish
 
-        -   uses: actions/upload-artifact@v7
+        -   uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: Upload asv benchmark results as artifacts
                 path: |
@@ -368,7 +374,9 @@ jobs:
             commits: ${{ steps.list.outputs.commits }}
 
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
 
         -   id: list
             # one matrix entry per non-empty, non-comment line
@@ -394,9 +402,11 @@ jobs:
                 working-directory: ./asv_benchmarks
 
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
 
-        -   uses: actions/setup-python@v6
+        -   uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: ${{ env.MIN_PYTHON }}
 
@@ -415,17 +425,21 @@ jobs:
         -   name: Run all benchmarks for this commit
             # "<commit>^!" is git's syntax for "just this one commit"
             run: |
-                asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 "${{ matrix.commit }}^!" 2>&1 | tee log_${{ matrix.commit }}
+                asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 "${MATRIX_COMMIT}^!" 2>&1 | tee log_${MATRIX_COMMIT}
+            env:
+                MATRIX_COMMIT: ${{ matrix.commit }}
 
         -   name: Fail if any benchmark reported as failed
             run: |
-                if grep -q "asv: benchmark failed" log_${{ matrix.commit }}; then
-                    echo "::error::One or more benchmarks failed for commit ${{ matrix.commit }}, see the excerpt(s) below"
-                    grep -B 5 "asv: benchmark failed" log_${{ matrix.commit }}
+                if grep -q "asv: benchmark failed" log_${MATRIX_COMMIT}; then
+                    echo "::error::One or more benchmarks failed for commit ${MATRIX_COMMIT}, see the excerpt(s) below"
+                    grep -B 5 "asv: benchmark failed" log_${MATRIX_COMMIT}
                     exit 1
                 fi
+            env:
+                MATRIX_COMMIT: ${{ matrix.commit }}
 
-        -   uses: actions/upload-artifact@v7
+        -   uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: history-results-${{ matrix.commit }}
                 path: ./asv_benchmarks/results
@@ -439,9 +453,11 @@ jobs:
                 working-directory: ./asv_benchmarks
 
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
 
-        -   uses: actions/setup-python@v6
+        -   uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: ${{ env.MIN_PYTHON }}
 
@@ -451,7 +467,7 @@ jobs:
                 pip install asv
 
         -   name: Download every commit's results
-            uses: actions/download-artifact@v8
+            uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
             with:
                 pattern: history-results-*
                 path: ./asv_benchmarks/downloaded_results
@@ -487,7 +503,7 @@ jobs:
         -   name: Create html with the combined results
             run: asv publish
 
-        -   uses: actions/upload-artifact@v7
+        -   uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: Upload combined history benchmark results as an artifact
                 path: |

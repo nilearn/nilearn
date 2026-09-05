@@ -127,9 +127,12 @@ env:
     MIN_PYTHON_VERSION: '3.11'
     HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
+permissions:
+    contents: read
+
 jobs:
     check_skip_flags:
-        uses: ./.github/workflows/check_skip_flags.yml
+        uses: $/.github/workflows/check_skip_flags.yml
         with:
             skip_type: doc
 
@@ -140,10 +143,12 @@ jobs:
         needs: [check_skip_flags]
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
 
         -   name: Check whether the citation metadata from CITATION.cff is valid
-            uses: citation-file-format/cffconvert-github-action@2.0.0
+            uses: citation-file-format/cffconvert-github-action@4cf11baa70a673bfdf9dad0acc7ee33b3f4b6084 # 2.0.0
             with:
                 args: --validate
 
@@ -153,10 +158,14 @@ jobs:
         needs: [check_skip_flags]
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v7
-        -   uses: actions/setup-python@v6
+            uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
+            with:
+                enable-cache: false
+        -   uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
         -   name: Install tox
@@ -177,13 +186,14 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             with:
                   # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
+                persist-credentials: false
         -   name: Setup python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
         -   name: Install dependencies
@@ -199,7 +209,7 @@ jobs:
                 echo "PATTERN = $(cat pattern.txt)"
                 echo "BUILD = $(cat build.txt)"
         -   name: Upload build.txt and pattern.txt
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: build_type
                 path: |
@@ -220,15 +230,16 @@ jobs:
 
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             with:
                   # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
+                persist-credentials: false
 
                       # Set up environment
         -   name: Setup python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
 
@@ -238,7 +249,7 @@ jobs:
                 python -m pip install .
 
         -   name: Download build type
-            uses: actions/download-artifact@v8
+            uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
             with:
                 name: build_type
         -   name: Verify build type
@@ -261,7 +272,7 @@ jobs:
                   # Shared by every run this month; only saved once (see below).
             if: steps.cache-key.outputs.restore == 'true'
             id: restore-monthly-cache
-            uses: actions/cache/restore@v6
+            uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
@@ -283,7 +294,7 @@ jobs:
                   # happens to be first each month.
             if: ${{ steps.restore-monthly-cache.outputs.cache-hit != 'true' && contains(fromJSON('["full", "html", "html-strict"]'), steps.build-type.outputs.build)
                 }}
-            uses: actions/cache/save@v6
+            uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
@@ -293,7 +304,7 @@ jobs:
                   # artifact (scoped to this run only) rather than a second,
                   # per-run cache entry, so it does not compete with the
                   # monthly cache above for the shared cache storage quota.
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: nilearn_data
                 path: nilearn_data
@@ -319,7 +330,7 @@ jobs:
 
         steps:
         -   name: Free Disk Space (Ubuntu)
-            uses: jlumbroso/free-disk-space@main
+            uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # main
             with:
                   # this might remove tools that are actually needed,
                   # if set to "true" but frees about 6 GB
@@ -333,11 +344,12 @@ jobs:
                 docker-images: true
                 swap-storage: true
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             with:
                   # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
+                persist-credentials: false
         -   name: Merge with upstream
             run: ./build_tools/github/merge_upstream.sh
 
@@ -349,7 +361,7 @@ jobs:
                     dvipng texlive-latex-base texlive-latex-extra
 
         -   name: Get data from the get_data job
-            uses: actions/download-artifact@v8
+            uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
             with:
                 name: nilearn_data
                 path: nilearn_data
@@ -360,15 +372,17 @@ jobs:
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v7
+            uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
+            with:
+                enable-cache: false
 
         -   name: Setup python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: ${{ matrix.py }}
 
         -   name: Download build type
-            uses: actions/download-artifact@v8
+            uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
             with:
                 name: build_type
 
@@ -409,7 +423,7 @@ jobs:
 
         -   name: Upload doc checks
             if: always()
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: ${{ matrix.env }}_checks
                 path: doc/tmp
@@ -424,13 +438,13 @@ jobs:
 
         -   name: Upload documentation
             if: steps.build-docs.outcome == 'success'
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: ${{ matrix.env }}
                 path: doc/_build/html
 
         -   name: Upload reports
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: ${{ matrix.env }}_reports
                 path: doc/modules/generated_reports
@@ -441,9 +455,10 @@ jobs:
         if: ${{ contains(fromJSON('["push", "workflow_dispatch", "schedule", "release"]'), github.event_name)}}
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             with:
                 fetch-depth: 0
+                persist-credentials: false
 
         -   name: Add SSH key
             env:
@@ -456,7 +471,7 @@ jobs:
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
 
-        -   uses: actions/download-artifact@v8
+        -   uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
             with:
                 name: doc
                 path: doc/_build/html

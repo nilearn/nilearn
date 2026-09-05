@@ -30,12 +30,18 @@ on:
 env:
     FORCE_COLOR: true
 
+permissions:
+    contents: read
+
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
 jobs:
     nightly:
+        permissions:
+            contents: read
+            issues: write
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
         if: github.repository == 'nilearn/nilearn'
@@ -44,16 +50,17 @@ jobs:
 
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             with:
                   # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
+                persist-credentials: false
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v7
+            uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
 
         -   name: Setup python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: 3.14
                 allow-prereleases: true
@@ -70,21 +77,21 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: nightly_report.html
                 path: report.html
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: pytest_output
                 path: results/pytest_output
 
         -   name: Create issue
             if: ${{ steps.nightly.outcome != 'success' }}
-            uses: JasonEtco/create-an-issue@v2.9.2
+            uses: JasonEtco/create-an-issue@1b14a70e4d8dc185e5cc76d3bec9eab20257b2c5 # v2.9.2
             env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                 run_id: ${{ github.run_id }}

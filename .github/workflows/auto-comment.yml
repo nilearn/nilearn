@@ -4,13 +4,19 @@
 # The checklist is only editable by maintainers at the moment.
 ###
 name: Auto Comment
-on: [pull_request_target]
+on: [pull_request_target]  # zizmor: ignore[dangerous-triggers]
+
+permissions: {}
+
 jobs:
     run:
+        permissions:
+            issues: write
+            pull-requests: write
         runs-on: ubuntu-latest
         steps:
         -   name: Auto comment pull request
-            uses: bubkoo/auto-comment@v1.1.2
+            uses: bubkoo/auto-comment@5c384ba7a8e49db480b35cb84535edb516fc9827 # v1.1.2
             with:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

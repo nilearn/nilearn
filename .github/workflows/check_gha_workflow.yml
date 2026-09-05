@@ -43,9 +43,11 @@ jobs:
         permissions: {}
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
         -   name: Setup python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: 3.14
         -   name: Install dependencies
@@ -53,7 +55,7 @@ jobs:
         -   name: Collect and plot test suite run time
             run: python maint_tools/check_gha_workflow.py ${{ secrets.GITHUB_TOKEN }}
         -   name: Upload output
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: test_runs_timing_outputs
                 path: maint_tools/*_runs_timing.*

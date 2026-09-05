@@ -48,6 +48,9 @@ env:
       # whether the cache was actually restored.
     NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
 
+permissions:
+    contents: read
+
 jobs:
 
     test_js:
@@ -57,14 +60,16 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
 
-        -   uses: actions/setup-node@v6
+        -   uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
             with:
                 node-version: 24
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v7
+            uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
             with:
                 python-version: '3.11'
 
@@ -72,7 +77,7 @@ jobs:
             run: date +%m > month_num;
 
         -   name: Get cache from a previous doc build
-            uses: actions/cache/restore@v6
+            uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
             with:
                 path: nilearn_data
                 key: data_cache-DocumentationBuilder_month-${{ hashFiles('month_num') }}
@@ -85,7 +90,7 @@ jobs:
 
         -   name: Upload reference, current and diff images from test
             if: success() || failure()
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: image
                 path: tests/js/**/*.png
