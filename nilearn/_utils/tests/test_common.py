@@ -26,6 +26,7 @@ def test_private_vs_public(matplotlib_pyplot, func):  # noqa: ARG001
     )
 
 
+@pytest.mark.ai_generated
 def test_number_public_functions(matplotlib_pyplot):  # noqa: ARG001
     """Check that number of public functions is stable.
 
@@ -33,7 +34,7 @@ def test_number_public_functions(matplotlib_pyplot):  # noqa: ARG001
     If this is intentional, then the number should be updated in the test.
     Otherwise it means that the public API of nilearn has changed by mistake.
     """
-    assert len({_[0] for _ in all_functions(return_private=False)}) == 275
+    assert len({_[0] for _ in all_functions()}) == 275
 
 
 def test_number_public_classes(matplotlib_pyplot):  # noqa: ARG001

@@ -103,6 +103,7 @@ def test_cut_axes_exception(affine_eye):
         axes.transform_to_2d(None, affine_eye)
 
 
+@pytest.mark.ai_generated
 def test_glass_brain_axes():
     """Tests for class ``GlassBrainAxes``."""
     from nilearn.plotting.displays import GlassBrainAxes
@@ -115,13 +116,13 @@ def test_glass_brain_axes():
     with pytest.raises(
         ValueError, match="If vmax is set to a non-positive number "
     ):
-        axes._add_lines(line_coords, line_values, None, vmin=None, vmax=-10)
-    axes._add_lines(line_coords, line_values, None, vmin=None, vmax=10)
+        axes._add_lines(line_coords, line_values, None, vmax=-10)
+    axes._add_lines(line_coords, line_values, None, vmax=10)
     with pytest.raises(
         ValueError, match="If vmin is set to a non-negative number "
     ):
-        axes._add_lines(line_coords, line_values, None, vmin=10, vmax=None)
-    axes._add_lines(line_coords, line_values, None, vmin=-10, vmax=None)
+        axes._add_lines(line_coords, line_values, None, vmin=10)
+    axes._add_lines(line_coords, line_values, None, vmin=-10)
     axes._add_lines(line_coords, line_values, None, vmin=-10, vmax=-5)
 
 
@@ -365,6 +366,7 @@ def test_add_markers_cut_coords_is_none():
     orthoslicer.close()
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_annotations():
     """Tests for ``display.annotate()``.
@@ -372,24 +374,23 @@ def test_annotations():
     In particular, exercise some of the keyword arguments for scale bars.
     """
     orthoslicer = OrthoSlicer(cut_coords=(None, None, None))
-    orthoslicer.annotate(size=10, left_right=True, positions=False)
+    orthoslicer.annotate(size=10, positions=False)
     orthoslicer.annotate(
-        size=12,
         left_right=False,
         positions=False,
         scalebar=True,
         scale_size=2.5,
-        scale_units="cm",
         scale_loc=3,
         frameon=True,
     )
     orthoslicer.close()
 
 
+@pytest.mark.ai_generated
 def test_position_annotation_with_decimals():
     """Test of decimals position annotation with precision of 2."""
     orthoslicer = OrthoSlicer(cut_coords=(0, 0, 0))
-    orthoslicer.annotate(positions=True, decimals=2)
+    orthoslicer.annotate(decimals=2)
     orthoslicer.close()
 
 

@@ -122,6 +122,7 @@ def test_z_score_f_values(rng):
         assert_array_almost_equal(z_score(p, one_minus_pvalue=cdf), z)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("add_regs_i", [0, 20])
 def test_z_score_opposite_contrast(rng, add_regs_i):
     """Test that z-scores of opposite contrasts are numerically opposite."""
@@ -141,11 +142,7 @@ def test_z_score_opposite_contrast(rng, add_regs_i):
         add_regs=np.array(data[:, add_regs_i]).reshape(-1, 1),
     )
 
-    fmri_glm = FirstLevelModel(
-        noise_model="ar1",
-        standardize=False,
-        drift_model="cosine",
-    )
+    fmri_glm = FirstLevelModel()
     fmri_glm.fit(fmri, design_matrices=design_matrix)
 
     c1 = np.array([1] + [0] * (design_matrix.shape[1] - 1))
@@ -153,10 +150,10 @@ def test_z_score_opposite_contrast(rng, add_regs_i):
     contrasts = {"seed1 - seed2": c1 - c2, "seed2 - seed1": c2 - c1}
 
     z_map_seed1_vs_seed2 = fmri_glm.compute_contrast(
-        contrasts["seed1 - seed2"], output_type="z_score"
+        contrasts["seed1 - seed2"]
     )
     z_map_seed2_vs_seed1 = fmri_glm.compute_contrast(
-        contrasts["seed2 - seed1"], output_type="z_score"
+        contrasts["seed2 - seed1"]
     )
 
     assert_almost_equal(

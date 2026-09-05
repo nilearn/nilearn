@@ -100,12 +100,13 @@ def image_2() -> Nifti1Image:
     return Nifti1Image(data, affine=_affine_eye())
 
 
+@pytest.mark.ai_generated
 @pytest.mark.slow
 def test_error_parcellation_method_none(image_1):
     with pytest.raises(
         ValueError, match=r"Parcellation method is specified as None. "
     ):
-        Parcellations(method=None).fit(image_1)
+        Parcellations().fit(image_1)
 
 
 @pytest.mark.slow

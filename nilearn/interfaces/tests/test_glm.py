@@ -6,6 +6,7 @@ from nilearn.glm.first_level import FirstLevelModel
 from nilearn.interfaces.bids import save_glm_to_bids
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_deprecation_save_glm_to_bids(tmp_path):
     """Check deprecation about moved function."""
@@ -16,7 +17,6 @@ def test_deprecation_save_glm_to_bids(tmp_path):
     )
 
     single_run_model = FirstLevelModel(
-        mask_img=None,
         minimize_memory=False,
     ).fit(fmri_data[0], design_matrices=design_matrices[0])
 

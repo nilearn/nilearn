@@ -252,6 +252,7 @@ def test_connected_regions_different_results_with_different_mask_images(
     )
 
 
+@pytest.mark.ai_generated
 def test_connected_regions_no_regions(map_img_3d):
     """Test if nilearn.regions.region_extractor.connected_regions raises
     warning when no supra-threshold regions are found.
@@ -261,9 +262,7 @@ def test_connected_regions_no_regions(map_img_3d):
     pos_thresholded_img = threshold_img(
         map_img_3d,
         threshold="99.9%",
-        copy=True,
         two_sided=False,
-        copy_header=True,
     )
     with pytest.warns(UserWarning, match="No supra threshold regions"):
         pos_regions_img, pos_index = connected_regions(
@@ -314,16 +313,16 @@ def test_fit_and_transform(maps_and_mask):
     )
 
 
+@pytest.mark.ai_generated
 def test_strategy_ratio_n_voxels(maps):
-    extract_ratio = RegionExtractor(
-        maps, threshold=0.2, thresholding_strategy="ratio_n_voxels"
-    )
+    extract_ratio = RegionExtractor(maps, threshold=0.2)
     extract_ratio.fit()
 
     assert extract_ratio.regions_img_ != ""
     assert extract_ratio.regions_img_.shape[-1] >= N_REGIONS
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("negative_regions", [True])
 def test_two_sided(maps):
     threshold = 0.4
@@ -334,7 +333,6 @@ def test_two_sided(maps):
         maps,
         threshold=threshold,
         thresholding_strategy=thresholding_strategy,
-        two_sided=False,
         min_region_size=min_region_size,
         extractor="connected_components",
     )
@@ -385,6 +383,7 @@ def test_strategy_percentile(maps_and_mask):
         assert expected_signal_shape == signal.shape
 
 
+@pytest.mark.ai_generated
 def test_high_resolution_image(affine_eye, n_regions, shape_3d_large):
     maps, _ = generate_maps(
         shape=shape_3d_large, n_regions=n_regions, affine=0.2 * affine_eye
@@ -392,7 +391,6 @@ def test_high_resolution_image(affine_eye, n_regions, shape_3d_large):
 
     extract_ratio = RegionExtractor(
         maps,
-        thresholding_strategy="ratio_n_voxels",
         smoothing_fwhm=0.6,
         min_region_size=0.4,
     )
@@ -402,6 +400,7 @@ def test_high_resolution_image(affine_eye, n_regions, shape_3d_large):
     assert extract_ratio.regions_img_.shape[-1] >= n_regions
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_zeros_affine_diagonal(affine_eye, n_regions):
     affine = affine_eye
@@ -413,9 +412,7 @@ def test_zeros_affine_diagonal(affine_eye, n_regions):
         rand_gen=42,
     )
 
-    extract_ratio = RegionExtractor(
-        maps, threshold=0.2, thresholding_strategy="ratio_n_voxels"
-    )
+    extract_ratio = RegionExtractor(maps, threshold=0.2)
     extract_ratio.fit()
 
     assert extract_ratio.regions_img_ != ""

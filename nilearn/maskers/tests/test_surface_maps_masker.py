@@ -134,13 +134,14 @@ def test_1d_maps_img(surf_img_1d):
         SurfaceMapsMasker(maps_img=surf_img_1d).fit()
 
 
+@pytest.mark.ai_generated
 def test_labels_img_none():
     """Test that an error is raised when maps_img is None."""
     with pytest.raises(
         ValueError,
         match="provide a maps_img during initialization",
     ):
-        SurfaceMapsMasker(maps_img=None).fit()
+        SurfaceMapsMasker().fit()
 
 
 def test_empty_map_img_error(surf_mesh):

@@ -104,6 +104,7 @@ def data_masked(data_pos_neg) -> np.ma.MaskedArray:
     return np.ma.masked_greater(data_pos_neg, 2.0)
 
 
+@pytest.mark.ai_generated
 def test_get_colorbar_and_data_ranges_error():
     """Tests for expected errors in get_colorbar_and_data_ranges."""
     vmin = 0
@@ -114,7 +115,6 @@ def test_get_colorbar_and_data_ranges_error():
             data_pos_neg,
             vmin=vmin,
             vmax=vmax,
-            symmetric_cbar=True,
         )
 
 
@@ -263,13 +263,12 @@ def test_get_colorbar_and_data_ranges_masked(
     )
 
 
+@pytest.mark.ai_generated
 def test_get_colorbar_and_data_ranges_force_min_stat_map_value(data_pos_neg):
     """Test for get_colorbar_and_data_ranges with force_min_stat_map_value."""
     expected_results = (0, None, 0, 3)
     assert expected_results == get_colorbar_and_data_ranges(
         data_pos_neg,
-        vmin=None,
-        vmax=None,
         symmetric_cbar="auto",
         force_min_stat_map_value=0,
     )
@@ -350,6 +349,7 @@ def test_get_cbar_ticks_int_tick_format(
     assert np.allclose(ticks, expected, rtol=1e-02)
 
 
+@pytest.mark.ai_generated
 def test_get_cbar_ticks_int_threshold_float():
     """Test nilearn.plotting._utils.get_cbar_ticks for when integer tick
     format with threshold of type float specified.
@@ -357,6 +357,4 @@ def test_get_cbar_ticks_int_threshold_float():
     with pytest.warns(
         UserWarning, match="You provided a non integer threshold"
     ):
-        get_cbar_ticks(
-            vmin=3, vmax=5, threshold=2.4, n_ticks=5, tick_format="%i"
-        )
+        get_cbar_ticks(vmin=3, vmax=5, threshold=2.4, tick_format="%i")

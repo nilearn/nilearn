@@ -351,6 +351,7 @@ def test_pass_masker_arg_to_estimator(
     check_decomposition_estimator(est, data_type)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_single_subject_score(canica_img, data_type, estimator):
@@ -372,7 +373,7 @@ def test_single_subject_score(canica_img, data_type, estimator):
     check_decomposition_estimator(est, data_type)
 
     # One score for all components
-    scores = est.score(canica_img, per_component=False)
+    scores = est.score(canica_img)
 
     assert isinstance(scores, float)
     assert 0 <= scores <= 1
@@ -385,6 +386,7 @@ def test_single_subject_score(canica_img, data_type, estimator):
     assert np.all(scores >= 0)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
@@ -403,7 +405,6 @@ def test_single_subject_file(data_type, canica_img, estimator, tmp_path):
     img = write_imgs_to_path(
         canica_img,
         file_path=tmp_path,
-        create_files=True,
         use_wildcards=True,
     )
     est.fit(img)
@@ -426,6 +427,7 @@ def test_single_subject_file(data_type, canica_img, estimator, tmp_path):
     est.transform(tmp_file)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
@@ -446,7 +448,7 @@ def test_with_globbing_patterns(
     est.fit(canica_data)
 
     img = write_imgs_to_path(
-        *canica_data, file_path=tmp_path, create_files=True, use_wildcards=True
+        *canica_data, file_path=tmp_path, use_wildcards=True
     )
 
     est.fit(img)

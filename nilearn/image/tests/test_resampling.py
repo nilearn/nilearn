@@ -311,6 +311,7 @@ def test_resampling_with_affine(data, affine_eye, angle, force_resample):
     assert np.max(data) == np.max(get_data(rot_img))
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("force_resample", [False, True])
 @pytest.mark.parametrize("shape", [(1, 10, 10), (1, 10, 10, 3)])
 @pytest.mark.parametrize("angle", (0, np.pi / 2.0, np.pi, 3 * np.pi / 2.0))
@@ -323,13 +324,11 @@ def test_resampling_continuous_with_affine(
     rot_img = resample_img(
         img,
         target_affine=rot,
-        interpolation="continuous",
         force_resample=force_resample,
     )
     rot_img_back = resample_img(
         rot_img,
         target_affine=affine_eye,
-        interpolation="continuous",
         force_resample=force_resample,
     )
 
@@ -397,6 +396,7 @@ def test_resampling_error_checks(tmp_path, force_resample, data, affine_eye):
         )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("force_resample", [False, True])
 @pytest.mark.parametrize("target_shape", [None, (3, 2, 5)])
 def test_resampling_copy_has_no_shared_memory(
@@ -420,7 +420,6 @@ def test_resampling_copy_has_no_shared_memory(
         img,
         target_affine=target_affine,
         target_shape=target_shape,
-        copy=True,
         force_resample=force_resample,
     )
 
@@ -445,6 +444,7 @@ def test_resampling_warning_s_form(data, affine_eye, force_resample):
         )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_resampling_warning_binary_image(affine_eye, rng, force_resample):
@@ -464,7 +464,6 @@ def test_resampling_warning_binary_image(affine_eye, rng, force_resample):
         resample_img(
             img_binary,
             target_affine=rot,
-            interpolation="continuous",
             force_resample=force_resample,
         )
 
@@ -873,6 +872,7 @@ def test_resample_identify_affine_int_translation(
     assert_almost_equal(get_data(target_img), get_data(result_img_4))
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_resample_clip(affine_eye, force_resample):
     # Resample and image and get larger and smaller
@@ -897,7 +897,6 @@ def test_resample_clip(affine_eye, force_resample):
         resample_img(
             source_img,
             target_affine=affine_eye,
-            clip=True,
             force_resample=force_resample,
         )
     )
@@ -1194,6 +1193,7 @@ def test_resampling_with_int64_types_no_crash(
     )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_resample_input(affine_eye, shape, rng, tmp_path, force_resample):
     data = rng.integers(0, 10, shape, dtype="int32")
@@ -1201,9 +1201,7 @@ def test_resample_input(affine_eye, shape, rng, tmp_path, force_resample):
     affine[:3, -1] = 0.5 * np.array(shape[:3])
     img = Nifti1Image(data, affine)
 
-    filename = testing.write_imgs_to_path(
-        img, file_path=tmp_path, create_files=True
-    )
+    filename = testing.write_imgs_to_path(img, file_path=tmp_path)
     filename = Path(filename)
     resample_img(
         filename,

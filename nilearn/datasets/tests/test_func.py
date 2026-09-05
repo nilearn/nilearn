@@ -235,15 +235,14 @@ def _adhd_metadata():
     return dict_to_archive({tmp: subs.to_csv(index=False)})
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("subjects", [None, 9999])
 def test_fetch_adhd_edge_cases(tmp_path, request_mocker, subjects):
     request_mocker.url_mapping["*metadata.tgz"] = _adhd_metadata()
     request_mocker.url_mapping[re.compile(r".*adhd40_([0-9]+)\.tgz")] = (
         _adhd_example_subject
     )
-    func.fetch_adhd(
-        data_dir=tmp_path, n_subjects=subjects, verbose=0, url=None
-    )
+    func.fetch_adhd(data_dir=tmp_path, n_subjects=subjects, verbose=0)
 
 
 @pytest.mark.parametrize("n_subjects", [12, 40])
@@ -387,10 +386,11 @@ def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  #
     ]
 
 
+@pytest.mark.ai_generated
 def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: ARG001
     # 2 subjects
     dataset = func.fetch_localizer_calculation_task(
-        n_subjects=2, data_dir=tmp_path, verbose=1
+        n_subjects=2, data_dir=tmp_path
     )
 
     assert isinstance(dataset, Bunch)
@@ -401,10 +401,11 @@ def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: 
     assert len(dataset.cmaps) == 2
 
 
+@pytest.mark.ai_generated
 def test_fetch_localizer_button_task(tmp_path, localizer_mocker, capsys):  # noqa: ARG001
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # Only one subject
-    dataset = func.fetch_localizer_button_task(data_dir=tmp_path, verbose=1)
+    dataset = func.fetch_localizer_button_task(data_dir=tmp_path)
 
     assert isinstance(dataset, Bunch)
 
@@ -771,6 +772,7 @@ def test_fetch_development_fmri_n_confounds(request_mocker):
     assert len(confounds[0]) == 28
 
 
+@pytest.mark.ai_generated
 def test_fetch_development_fmri_phenotype(request_mocker):
     """Check phenotype returned by fetch_development_fmri."""
     mock_participants = _mock_participants_data()
@@ -789,7 +791,7 @@ def test_fetch_development_fmri_phenotype(request_mocker):
 
     # check one of each age group returned if n_subject == 2
     # and age_group == 'both
-    data = fetch_development_fmri(n_subjects=2, age_group="both")
+    data = fetch_development_fmri(n_subjects=2)
     age_group = data.phenotypic["Child_Adult"]
 
     assert all(age_group == ["adult", "child"])
@@ -831,6 +833,7 @@ def test_fetch_development_fmri_exception():
 datadir = PACKAGE_DIRECTORY / "data"
 
 
+@pytest.mark.ai_generated
 def test_select_from_index():
     dataset_version = "ds000030_R1.0.4"
     data_prefix = (
@@ -865,7 +868,7 @@ def test_select_from_index():
     assert data_prefix + "/sub-yyy.html" in new_urls
 
     # ALL subjects and not subject specific files get downloaded
-    new_urls = func.select_from_index(urls, n_subjects=None)
+    new_urls = func.select_from_index(urls)
 
     assert len(new_urls) == 9
 
@@ -911,6 +914,7 @@ def test_fetch_ds000030_urls():
         assert urls == mock_json_content
 
 
+@pytest.mark.ai_generated
 def test_fetch_openneuro_dataset(tmp_path):
     dataset_version = "ds000030_R1.0.4"
     data_prefix = (
@@ -951,7 +955,6 @@ def test_fetch_openneuro_dataset(tmp_path):
         match='Downloading "ds000030_R1.0.4".',
     ):
         _, urls = func.fetch_openneuro_dataset(
-            urls=None,
             data_dir=tmp_path,
             dataset_version="ds500_v2",
         )

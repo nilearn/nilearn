@@ -23,6 +23,7 @@ from nilearn.maskers import NiftiMasker
 KWARGS = {"height_control": None, "threshold": 1, "cut_coords": [0.5, 1, 1.5]}
 
 
+@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
@@ -68,7 +69,6 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
     )
 
     single_run_model = FirstLevelModel(
-        mask_img=None,
         minimize_memory=False,
     ).fit(fmri_data[0], design_matrices=design_matrices[0])
 
@@ -103,6 +103,7 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
         assert (tmpdir / sub_prefix / f"{prefix}_{fname}").exists()
 
 
+@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_save_glm_to_bids_reset_threshold_warning(tmp_path_factory):
@@ -116,7 +117,6 @@ def test_save_glm_to_bids_reset_threshold_warning(tmp_path_factory):
     )
 
     single_run_model = FirstLevelModel(
-        mask_img=None,
         minimize_memory=False,
     ).fit(fmri_data[0], design_matrices=design_matrices[0])
 
@@ -203,7 +203,7 @@ def two_runs_model(n_cols_design_matrix) -> FirstLevelModel:
     masker = NiftiMasker(mask)
     masker.fit()
 
-    return FirstLevelModel(mask_img=None, minimize_memory=False).fit(
+    return FirstLevelModel(minimize_memory=False).fit(
         fmri_data, design_matrices=design_matrices
     )
 
@@ -246,6 +246,7 @@ def test_save_glm_to_bids_errors(
         )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
@@ -300,7 +301,6 @@ def test_save_glm_to_bids_contrast_definitions(
     save_glm_to_bids(
         model=two_runs_model,
         contrasts=contrasts,
-        contrast_types=None,
         out_dir=tmpdir,
         prefix=prefix,
         **KWARGS,
@@ -482,6 +482,7 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
         assert file not in report.__str__()
 
 
+@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("kwargs", ([{}, {"height_control": None}]))
@@ -492,7 +493,6 @@ def test_save_glm_to_bids_infer_filenames(tmp_path, kwargs):
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
         n_sub=n_sub,
-        n_ses=2,
         tasks=["main"],
         n_runs=[2],
         n_voxels=20,
@@ -577,6 +577,7 @@ def test_save_glm_to_bids_infer_filenames(tmp_path, kwargs):
         assert key in metadata
 
 
+@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_save_glm_to_bids_surface_prefix_override(tmp_path):
@@ -586,7 +587,6 @@ def test_save_glm_to_bids_surface_prefix_override(tmp_path):
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
         n_sub=n_sub,
-        n_ses=2,
         tasks=["main"],
         n_runs=[2],
         n_vertices=10242,

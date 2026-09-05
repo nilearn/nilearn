@@ -103,14 +103,13 @@ def test_hierarchical_k_means():
     assert_array_almost_equal(test_labels, truth_labels)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.single_process
 def test_transform():
     """Test that HierarchicalKMeans.transform reduces to n_clusters."""
     n_samples = 15
     n_clusters = 8
-    data_img, mask_img = generate_fake_fmri(
-        shape=(10, 11, 12), length=n_samples
-    )
+    data_img, mask_img = generate_fake_fmri(length=n_samples)
     masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
     X = masker.transform(data_img)
     hkmeans = HierarchicalKMeans(n_clusters=n_clusters).fit(X)
@@ -119,14 +118,13 @@ def test_transform():
     assert X_red.shape == (n_samples, n_clusters)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.single_process
 def test_inverse_transform():
     """Test that HierarchicalKMeans.inverse_transform restores input shape."""
     n_samples = 15
     n_clusters = 8
-    data_img, mask_img = generate_fake_fmri(
-        shape=(10, 11, 12), length=n_samples
-    )
+    data_img, mask_img = generate_fake_fmri(length=n_samples)
     masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
     X = masker.transform(data_img)
     hkmeans = HierarchicalKMeans(n_clusters=n_clusters).fit(X)
@@ -136,13 +134,12 @@ def test_inverse_transform():
     assert X_inv.shape == X.shape
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("n_clusters", [None, -2, 0, "2"])
 def test_error_n_clusters(n_clusters):
     """Test that HierarchicalKMeans rejects invalid n_clusters values."""
     n_samples = 15
-    data_img, mask_img = generate_fake_fmri(
-        shape=(10, 11, 12), length=n_samples
-    )
+    data_img, mask_img = generate_fake_fmri(length=n_samples)
     masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
     X = masker.transform(data_img)
 
@@ -154,14 +151,13 @@ def test_error_n_clusters(n_clusters):
         HierarchicalKMeans(n_clusters=n_clusters).fit(X)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_scaling():
     """Test that scaling weights inverse_transform output by cluster size."""
     n_samples = 15
     n_clusters = 8
-    data_img, mask_img = generate_fake_fmri(
-        shape=(10, 11, 12), length=n_samples
-    )
+    data_img, mask_img = generate_fake_fmri(length=n_samples)
     masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
     X = masker.transform(data_img)
 
@@ -211,6 +207,7 @@ def test_surface(
     assert X_inverse.shape == X.shape
 
 
+@pytest.mark.ai_generated
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("img_type", ["surface", "volume"])
 def test_n_clusters_warning(img_type, rng):
@@ -232,7 +229,7 @@ def test_n_clusters_warning(img_type, rng):
         img = SurfaceImage(mesh=mesh, data=data)
         X = SurfaceMasker(standardize=None).fit_transform(img)
     else:
-        img, _ = generate_fake_fmri(shape=(10, 11, 12), length=n_samples)
+        img, _ = generate_fake_fmri(length=n_samples)
         X = NiftiMasker(standardize=None).fit_transform(img)
 
     with pytest.warns(

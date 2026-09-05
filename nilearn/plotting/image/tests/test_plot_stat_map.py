@@ -77,6 +77,7 @@ def test_plot_stat_map_with_masked_image(
     plot_stat_map(masked_img, display_mode="x")
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "data",
@@ -87,7 +88,7 @@ def test_plot_stat_map_with_masked_image(
 )
 def test_plot_stat_map_threshold(matplotlib_pyplot, data, affine_eye):
     """Tests plot_stat_map with threshold (see #510)."""
-    plot_stat_map(Nifti1Image(data, affine_eye), threshold=1000, colorbar=True)
+    plot_stat_map(Nifti1Image(data, affine_eye), threshold=1000)
 
 
 @pytest.mark.thread_unsafe
@@ -164,6 +165,7 @@ def test_plot_stat_map_singleton_ax_dim(
     )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_outlier_cut_coords(matplotlib_pyplot):
     """Test to plot a subset of a large set of cuts found for a small area."""
@@ -179,7 +181,7 @@ def test_outlier_cut_coords(matplotlib_pyplot):
         int(z_map) - 1 : int(z_map) + 1,
     ] = 1
     img = Nifti1Image(data, affine)
-    cuts = find_cut_slices(img, n_cuts=20, direction="z")
+    cuts = find_cut_slices(img, n_cuts=20)
 
     with pytest.warns(UserWarning, match="seem to be out of the image"):
         plot_stat_map(img, display_mode="z", cut_coords=cuts, bg_img=bg_img)

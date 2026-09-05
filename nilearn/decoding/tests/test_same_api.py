@@ -209,6 +209,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_spacenet(
     assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
 
 
+@pytest.mark.ai_generated
 def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
     """Check graph_net_solver and tvl1_solver should give same results \
     when l1_ratio = 1.
@@ -221,7 +222,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
     mask = get_data(mask_).astype(bool).ravel()
 
     a = graph_net_logistic(
-        X, y, alpha, l1_ratio=1.0, mask=mask, max_iter=max_iter, verbose=0
+        X, y, alpha, l1_ratio=1.0, mask=mask, max_iter=max_iter
     )[0]
     b = tvl1_solver(
         X,
@@ -279,6 +280,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
     assert_array_almost_equal(sl.coef_[0], tvl1.coef_[0], decimal=decimal)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
 @pytest.mark.parametrize("standardize", [True, False])
@@ -298,7 +300,6 @@ def test_graph_net_and_tv_same_for_pure_l1_spacenet_regressor(
     sl = SpaceNetRegressor(
         alphas=alpha,
         l1_ratios=l1_ratio,
-        penalty="graph-net",
         max_iter=max_iter,
         mask=mask,
         standardize=standardize,

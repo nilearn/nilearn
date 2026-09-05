@@ -131,6 +131,7 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     assert len(ax_1.patches) == length * 2 * gridsize
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     """Tests for plot_img_comparison no plot should return same result."""
@@ -152,7 +153,7 @@ def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     masker = NiftiMasker(mask_img, standardize=None).fit()
 
     correlations = plot_img_comparison(
-        target_images, query_images, masker, plot_hist=True, colorbar=False
+        target_images, query_images, masker, colorbar=False
     )
 
     correlations_1 = plot_img_comparison(

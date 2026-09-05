@@ -9,6 +9,7 @@ from nilearn.decoding.space_net_solvers import (
 )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("alpha", [0.0, 1e-1, 1e-3])
 @pytest.mark.parametrize("l1_ratio", [0.0, 0.5, 1.0])
 def test_tvl1_from_gradient(rng, alpha, l1_ratio, size=5, n_samples=10):
@@ -25,7 +26,7 @@ def test_tvl1_from_gradient(rng, alpha, l1_ratio, size=5, n_samples=10):
     assert _tvl1_objective(
         X, y, w.copy().ravel(), alpha, l1_ratio, mask
     ) == squared_loss(
-        X, y, w.copy().ravel(), compute_grad=False
+        X, y, w.copy().ravel()
     ) + alpha * _tvl1_objective_from_gradient(gradid)
 
 
