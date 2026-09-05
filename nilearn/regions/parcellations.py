@@ -568,7 +568,7 @@ class Parcellations(_MultiPCA):
         return self
 
     @property
-    def n_elements_(self):
+    def n_elements_(self) -> int:
         """Return number of regions."""
         return self._n_elements_
 

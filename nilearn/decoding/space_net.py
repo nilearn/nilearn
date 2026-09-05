@@ -1006,7 +1006,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
     def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "masker_")
 
-    def predict(self, X):
+    def predict(self, X) -> np.ndarray:
         """Predict class labels for samples in X.
 
         Parameters
@@ -1220,7 +1220,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
     def _set_intercept(self) -> None:
         self.intercept_ = self.w_[:, -1]
 
-    def score(self, X, y):
+    def score(self, X, y) -> float:
         """Return the mean accuracy on the given test data and labels.
 
         Parameters
@@ -1241,7 +1241,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         check_is_fitted(self)
         return accuracy_score(y, self.predict(X))
 
-    def decision_function(self, X):
+    def decision_function(self, X) -> np.ndarray:
         """Predict confidence scores for samples.
 
         The confidence score for a sample is the signed distance of that

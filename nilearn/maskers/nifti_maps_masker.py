@@ -5,6 +5,7 @@ from copy import deepcopy
 from typing import Any, ClassVar
 
 import numpy as np
+from nibabel import Nifti1Image
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -692,7 +693,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, region_signals):
+    def inverse_transform(self, region_signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from region signals.
 
         Any mask given at initialization is taken into account.

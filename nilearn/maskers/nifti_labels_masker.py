@@ -860,7 +860,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         return labels_img_
 
     @fill_doc
-    def inverse_transform(self, signals):
+    def inverse_transform(self, signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from region signals.
 
         Any mask given at initialization is taken into account.
