@@ -273,14 +273,18 @@ def test_cluster_level_with_covariates(shape_3d_default, rng, n_subjects):
     neg_log_pval = -np.log10(stats.t.sf(get_data(out["t"]), df=df))
     logp_unc = new_img_like(out["t"], neg_log_pval)
     logp_unc_cluster_sizes = list(
-        get_clusters_table(logp_unc, -np.log10(unc_pval))["Cluster Size (mm3)"]
+        get_clusters_table(
+            logp_unc,
+            -np.log10(unc_pval),
+            return_label_maps=True,
+        )[0]["Cluster Size (mm3)"]
     )
 
     # Calculate corrected cluster sizes
     logp_max_cluster_sizes = list(
-        get_clusters_table(out["logp_max_size"], unc_pval)[
-            "Cluster Size (mm3)"
-        ]
+        get_clusters_table(
+            out["logp_max_size"], unc_pval, return_label_maps=True
+        )[0]["Cluster Size (mm3)"]
     )
 
     # Compare cluster sizes

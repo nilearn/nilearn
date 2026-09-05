@@ -362,8 +362,11 @@ eff_map.to_filename(output_dir / "listening_gt_rest_eff_map.nii.gz")
 #
 from nilearn.reporting import get_clusters_table
 
-table = get_clusters_table(
-    z_map, stat_threshold=threshold, cluster_threshold=20
+table, _ = get_clusters_table(
+    z_map,
+    stat_threshold=threshold,
+    cluster_threshold=20,
+    return_label_maps=True,
 )
 table
 

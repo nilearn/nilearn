@@ -215,6 +215,7 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
     return ijk, vals
 
 
+# TODO (nilearn >= 0.17.0) simplify overloads
 @overload
 def get_clusters_table(
     stat_img: NiimgLike,
@@ -266,7 +267,7 @@ def get_clusters_table(
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
     min_distance: NonNullScalar = 8.0,
-    return_label_maps: bool = False,
+    return_label_maps: bool = False, TODO (nilearn >= 0.17.0) remove
 ) -> (
     pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image] | list[SurfaceImage]]
 ):
@@ -329,6 +330,14 @@ def get_clusters_table(
 
         .. nilearn_versionadded:: 0.10.1
 
+        .. nilearn_deprecated:: 0.15.0dev
+
+            This parameter will be removed in version 0.17.0, when
+            :func:`~nilearn.reporting.get_clusters_table` will always return
+            the cluster label maps together with the table. Set
+            ``return_label_maps=True`` and update your code to unpack both
+            outputs to prepare for this change.
+
     Returns
     -------
     result_table : :obj:`pandas.DataFrame`
@@ -376,10 +385,11 @@ def get_clusters_table(
     >>> from nilearn.reporting import get_clusters_table
     >>>
     >>> img = load_sample_motor_activation_image()
-    >>> table = get_clusters_table(img,
-    ...                            stat_threshold = 4,
-    ...                            cluster_threshold = 20,
-    ...                            two_sided = True,
+    >>> table, _ = get_clusters_table(img,
+    ...                               stat_threshold = 4,
+    ...                               cluster_threshold = 20,
+    ...                               two_sided = True,
+    ...                               return_label_maps = True,
     ... )
     >>> table.head()
     Cluster   ID     X     Y     Z  Peak Stat Cluster Size (mm3)
@@ -398,6 +408,21 @@ def get_clusters_table(
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
     )
+
+    if not return_label_maps:
+        # TODO (nilearn >= 0.17.0) remove
+        warnings.warn(
+            (
+                'The "return_label_maps" parameter is deprecated. '
+                "In version 0.17.0, it will be removed and "
+                '"get_clusters_table" will always return the cluster label '
+                'maps together with the table. Set "return_label_maps" to '
+                "True and update your code to unpack both outputs to avoid "
+                "this warning."
+            ),
+            FutureWarning,
+            stacklevel=find_stack_level(),
+        )
 
     if not isinstance(stat_img, SurfaceImage):
         return _get_clusters_table_volume(
