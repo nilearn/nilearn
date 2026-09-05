@@ -55,6 +55,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.flaky(reruns=10, reruns_delay=1)
 @pytest.mark.parametrize(
     "estimator, check, name",
