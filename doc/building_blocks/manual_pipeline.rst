@@ -139,6 +139,28 @@ The :class:`NiftiMasker` can be seen as a *tube* that transforms data
 from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
 
+The importance of data standardization
+--------------------------------------
+
+When building machine-learning pipelines for neuroimaging data,
+the preprocessing steps applied to the data are often as critical
+as the choice of the estimator itself. A key preprocessing option
+to consider is **standardization**.
+
+In :term:`fMRI` time series data, different voxels or vertices
+can exhibit drastically different baseline scales
+and variance profiles. If data is fed directly into machine-learning
+models (such as :term:`support vector machines <SVM>`, regularized linear models,
+or penalized regression) without scaling, features with larger
+numerical variances will disproportionately dominate the optimization
+objective, leading to a severe scale bias.
+
+By enabling standardization (such as using the ``standardize``
+parameter in maskers like :class:`~nilearn.maskers.NiftiMasker`),
+each voxel's time-series is shifted to a mean of zero and scaled
+to unit variance. This ensures that all features contribute equally
+to the algorithm, resulting in more stable, reliable, and
+statistically sound predictive models.
 
 .. code-block:: python
 
