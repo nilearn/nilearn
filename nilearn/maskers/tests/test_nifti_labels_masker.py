@@ -545,14 +545,10 @@ def test_resampling_to_clipped_labels(
         labels33_img,
         mask_img=mask22_img,
         resampling_target="labels",
-        keep_masked_labels=True,
         standardize=None,
     )
 
-    with pytest.warns(
-        FutureWarning, match='"keep_masked_labels" parameter will be removed'
-    ):
-        signals = masker.fit_transform(fmri11_img)
+    signals = masker.fit_transform(fmri11_img)
 
     assert_almost_equal(masker.labels_img_.affine, labels33_img.affine)
 
@@ -1094,10 +1090,6 @@ def test_region_names(
         True,  # with masking
     ],
 )
-@pytest.mark.parametrize(
-    "keep_masked_labels",
-    [False, True],
-)
 def test_region_names_ids_match_after_fit(
     shape_3d_default,
     affine_eye,
@@ -1105,7 +1097,6 @@ def test_region_names_ids_match_after_fit(
     affine_data,
     n_regions,
     masking,
-    keep_masked_labels,
     img_labels,
 ):
     """Test that the same region names and ids correspond after fit."""
@@ -1132,21 +1123,10 @@ def test_region_names_ids_match_after_fit(
         labels=region_names,
         resampling_target="data",
         mask_img=mask_img,
-        keep_masked_labels=keep_masked_labels,
         standardize=None,
     )
 
-    if keep_masked_labels is True:
-        with pytest.warns(
-            FutureWarning,
-            match=(
-                r"In version 0.15.0, "
-                '"keep_masked_labels" parameter will be removed'
-            ),
-        ):
-            masker.fit_transform(fmri_img)
-    else:
-        masker.fit_transform(fmri_img)
+    masker.fit_transform(fmri_img)
 
     tmp = generate_labels(n_regions, background=background)
     if background is None:

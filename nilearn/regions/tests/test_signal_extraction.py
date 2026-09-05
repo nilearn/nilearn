@@ -361,7 +361,7 @@ def test_signals_extraction_with_labels_without_mask(
     )
 
     # and back
-    signals_r, labels_r, _ = img_to_signals_labels(
+    signals_r, labels_r, masked_atlas_r = img_to_signals_labels(
         imgs=data_img,
         labels_img=labels_img,
     )
@@ -369,6 +369,16 @@ def test_signals_extraction_with_labels_without_mask(
     assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
 
+    # masked_atlas_r should be the same as labels_img
+    labels_data = get_data(labels_img)
+    labels_data_r = get_data(masked_atlas_r)
+    assert_equal(labels_data_r, labels_data)
+
+    # labels should be the same as before
+    # the labels_img does not contain background
+    assert list(np.unique(labels_data_r)) == list(range(1, 9))
+
+    # same but with file
     filenames = write_imgs_to_path(data_img, file_path=tmp_path)
     signals_r, labels_r, _ = img_to_signals_labels(
         imgs=filenames, labels_img=labels_img
@@ -395,40 +405,9 @@ def test_masked_atlas_keeps_the_label_values(affine_eye, label_values):
     _, labels, masked_atlas = img_to_signals_labels(
         imgs=Nifti1Image(signals_data, affine_eye),
         labels_img=Nifti1Image(labels_data, affine_eye),
-        return_masked_atlas=True,
     )
 
     assert set(np.unique(get_data(masked_atlas))) - {0} == set(labels)
-
-
-def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
-    signals, labels_img
-):
-    """Test masked_atlas is correct in conversion between signals and images \
-    using regions defined by labels.
-    """
-    data_img = signals_to_img_labels(signals=signals, labels_img=labels_img)
-
-    # test return_masked_atlas
-    (
-        _,
-        _,
-        masked_atlas_r,
-    ) = img_to_signals_labels(
-        imgs=data_img,
-        labels_img=labels_img,
-        return_masked_atlas=True,
-    )
-
-    labels_data = get_data(labels_img)
-    labels_data_r = get_data(masked_atlas_r)
-
-    # masked_atlas_r should be the same as labels_img
-    assert_equal(labels_data_r, labels_data)
-
-    # labels should be the same as before
-    # the labels_img does not contain background
-    assert list(np.unique(labels_data_r)) == list(range(1, 9))
 
 
 @pytest.mark.thread_unsafe
@@ -469,46 +448,16 @@ def test_signals_extraction_with_labels_with_mask(
     )
 
     # and back
-    signals_r, labels_r, _ = img_to_signals_labels(
+    signals_r, labels_r, masked_atlas_r = img_to_signals_labels(
         imgs=data_img, labels_img=labels_img, mask_img=mask_img
     )
 
     assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
 
-
-@pytest.mark.thread_unsafe
-def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
-    signals, labels_img, mask_img
-):
-    """Test masked_atlas is correct in conversion between signals and images \
-    using regions defined by labels and a mask.
-    """
-    data_img = signals_to_img_labels(
-        signals=signals, labels_img=labels_img, mask_img=mask_img
-    )
-
-    # test return_masked_atlas
-    # create a mask_img with only 3 regions
-    mask_img = _create_mask_with_3_regions_from_labels_data(
-        get_data(labels_img), labels_img.affine
-    )
-
-    (
-        _,
-        _,
-        masked_atlas_r,
-    ) = img_to_signals_labels(
-        imgs=data_img,
-        labels_img=labels_img,
-        mask_img=mask_img,
-        return_masked_atlas=True,
-    )
-
-    labels_data_r = get_data(masked_atlas_r)
-
     # labels should be masked and only contain 3 regions
     # and the background
+    labels_data_r = get_data(masked_atlas_r)
     assert list(np.unique(labels_data_r)) == [0, 1, 2, 5]
 
 
@@ -557,36 +506,24 @@ def test_signal_extraction_with_maps_and_labels(
     maps_img = Nifti1Image(maps_data, labeled_regions.affine)
 
     # Extract signals from maps and labels: results must be identical.
-    maps_signals, maps_labels = img_to_signals_maps(
-        fmri_img, maps_img, keep_masked_maps=True
+    maps_signals, maps_labels = img_to_signals_maps(fmri_img, maps_img)
+
+    labels_signals, labels_labels, _ = img_to_signals_labels(
+        imgs=fmri_img, labels_img=labeled_regions
     )
-    with pytest.warns(
-        FutureWarning, match='"keep_masked_labels" parameter will be removed'
-    ):
-        labels_signals, labels_labels, _ = img_to_signals_labels(
-            imgs=fmri_img, labels_img=labeled_regions, keep_masked_labels=True
-        )
     assert_almost_equal(maps_signals, labels_signals)
 
     # Same thing with a mask, containing only 3 regions.
     mask_img = _create_mask_with_3_regions_from_labels_data(
         labels_data, labeled_regions.affine
     )
-    with pytest.warns(
-        FutureWarning, match='"keep_masked_labels" parameter will be removed'
-    ):
-        labels_signals, labels_labels, _ = img_to_signals_labels(
-            imgs=fmri_img,
-            labels_img=labeled_regions,
-            mask_img=mask_img,
-            keep_masked_labels=True,
-        )
-    with pytest.warns(
-        FutureWarning, match='"keep_masked_maps" parameter will be removed'
-    ):
-        maps_signals, maps_labels = img_to_signals_maps(
-            fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
-        )
+
+    labels_signals, labels_labels, _ = img_to_signals_labels(
+        imgs=fmri_img, labels_img=labeled_regions, mask_img=mask_img
+    )
+    maps_signals, maps_labels = img_to_signals_maps(
+        fmri_img, maps_img, mask_img=mask_img
+    )
 
     assert_almost_equal(maps_signals, labels_signals)
     assert maps_signals.shape[1] == N_REGIONS
@@ -629,7 +566,6 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
             imgs=fmri_img,
             labels_img=labeled_regions,
             mask_img=mask_img,
-            keep_masked_labels=False,
         )
 
     # only 3 regions must be kept, others must be removed
@@ -640,37 +576,19 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     # containing only 3 regions, and
     # keeping the masked labels
     # test if the warning is raised
-
-    with pytest.warns(
-        FutureWarning,
-        match='"keep_masked_labels" parameter will be removed.',
-    ):
-        labels_signals, labels_labels, _ = img_to_signals_labels(
-            imgs=fmri_img,
-            labels_img=labeled_regions,
-            mask_img=mask_img,
-            keep_masked_labels=True,
-        )
+    labels_signals, labels_labels, _ = img_to_signals_labels(
+        imgs=fmri_img,
+        labels_img=labeled_regions,
+        mask_img=mask_img,
+    )
 
     # all regions must be kept
     assert labels_signals.shape == (N_TIMEPOINTS, 8)
     assert len(labels_labels) == 8
 
-    # test return_masked_atlas deprecation warning
-    # TODO (nilearn >= 0.15.0)
-    with pytest.warns(
-        FutureWarning,
-        match=(
-            'In version 0.15, "return_masked_atlas" parameter will be removed.'
-        ),
-    ):
-        img_to_signals_labels(
-            imgs=fmri_img,
-            labels_img=labeled_regions,
-            mask_img=mask_img,
-            keep_masked_labels=False,
-            return_masked_atlas=False,
-        )
+    img_to_signals_labels(
+        imgs=fmri_img, labels_img=labeled_regions, mask_img=mask_img
+    )
 
 
 @pytest.mark.thread_unsafe
@@ -716,15 +634,9 @@ def test_img_to_signals_maps_warnings(
     # containing only 3 regions, and
     # keeping the masked labels
     # test if the warning is raised
-
-    # TODO (nilearn >= 0.15.0)
-    with pytest.warns(
-        FutureWarning,
-        match='"keep_masked_maps" parameter will be removed',
-    ):
-        maps_signals, maps_labels = img_to_signals_maps(
-            fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
-        )
+    maps_signals, maps_labels = img_to_signals_maps(
+        fmri_img, maps_img, mask_img=mask_img
+    )
 
     # all regions must be kept
     assert maps_signals.shape == (N_TIMEPOINTS, 8)

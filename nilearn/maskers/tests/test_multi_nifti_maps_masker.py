@@ -83,15 +83,10 @@ def test_multi_nifti_maps_masker(
         img_maps,
         mask_img=mask11_img,
         resampling_target=None,
-        keep_masked_maps=True,
         standardize=None,
     )
 
-    with pytest.warns(
-        FutureWarning,
-        match=r'"keep_masked_maps" parameter will be removed in version 0\.15',
-    ):
-        signals11 = masker.fit_transform(fmri11_img)
+    signals11 = masker.fit_transform(fmri11_img)
 
     assert signals11.shape == (length, n_regions)
 
@@ -99,10 +94,7 @@ def test_multi_nifti_maps_masker(
 
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
-    with pytest.warns(
-        FutureWarning, match=('"keep_masked_maps" parameter will be removed')
-    ):
-        signals11_list = masker.fit_transform(signals_input)
+    signals11_list = masker.fit_transform(signals_input)
 
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)

@@ -96,22 +96,15 @@ def test_multi_nifti_labels_masker(
         img_labels,
         mask_img=mask11_img,
         resampling_target=None,
-        keep_masked_labels=True,
         standardize=None,
     )
-    with pytest.warns(
-        FutureWarning, match='"keep_masked_labels" parameter will be removed'
-    ):
-        signals11 = masker11.fit_transform(fmri11_img)
+    signals11 = masker11.fit_transform(fmri11_img)
 
     assert signals11.shape == (length, n_regions)
 
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
-    with pytest.warns(
-        FutureWarning, match='"keep_masked_labels" parameter will be removed'
-    ):
-        signals11_list = masker11.fit_transform(signals_input)
+    signals11_list = masker11.fit_transform(signals_input)
 
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)
@@ -258,16 +251,12 @@ def test_resampling(affine_eye, n_regions, length, img_labels):
         img_labels,
         mask_img=mask22_img,
         resampling_target="labels",
-        keep_masked_labels=True,
         standardize=None,
     )
 
     fmri11_img = [fmri11_img, fmri11_img]
 
-    with pytest.warns(
-        FutureWarning, match='"keep_masked_labels" parameter will be removed'
-    ):
-        signals = masker.fit_transform(fmri11_img)
+    signals = masker.fit_transform(fmri11_img)
 
     assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
     assert masker.labels_img_.shape == img_labels.shape
@@ -305,14 +294,10 @@ def test_resampling_clipped_labels(
         img_labels,
         mask_img=mask22_img,
         resampling_target="labels",
-        keep_masked_labels=True,
         standardize=None,
     )
 
-    with pytest.warns(
-        FutureWarning, match='"keep_masked_labels" parameter will be removed'
-    ):
-        signals = masker.fit_transform(fmri11_img)
+    signals = masker.fit_transform(fmri11_img)
 
     assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
     assert masker.labels_img_.shape == img_labels.shape
@@ -376,37 +361,20 @@ def test_resampling_target():
         masker = MultiNiftiLabelsMasker(
             labels_img=labels_img,
             resampling_target=resampling_target,
-            keep_masked_labels=True,
             standardize=None,
         )
         if resampling_target == "data":
-            with (
-                pytest.warns(
-                    UserWarning,
-                    match=(
-                        "After resampling the label image "
-                        "to the data image, the following "
-                        "labels were removed"
-                    ),
-                ),
-                pytest.warns(
-                    FutureWarning,
-                    match=(
-                        r"In version 0.15.0, "
-                        '"keep_masked_labels" parameter will be removed'
-                    ),
+            with pytest.warns(
+                UserWarning,
+                match=(
+                    "After resampling the label image "
+                    "to the data image, the following "
+                    "labels were removed"
                 ),
             ):
                 signals = masker.fit_transform(fmri_img)
         else:
-            with pytest.warns(
-                FutureWarning,
-                match=(
-                    r"In version 0.15.0, "
-                    '"keep_masked_labels" parameter will be removed'
-                ),
-            ):
-                signals = masker.fit_transform(fmri_img)
+            signals = masker.fit_transform(fmri_img)
 
         resampled_labels_img = masker.labels_img_
         n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
@@ -417,11 +385,7 @@ def test_resampling_target():
 
         # Test that compressing the image a second time should yield an image
         # with the same data as compressed_img.
-        with pytest.warns(
-            FutureWarning,
-            match='"keep_masked_labels" parameter will be removed',
-        ):
-            signals2 = masker.fit_transform(fmri_img)
+        signals2 = masker.fit_transform(fmri_img)
 
         # inverse transform again
         compressed_img2 = masker.inverse_transform(signals2)

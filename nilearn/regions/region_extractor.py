@@ -405,8 +405,6 @@ class RegionExtractor(NiftiMapsMasker):
         - ``None`` means no resampling: if shapes and affines do not match,
           a :obj:`ValueError` is raised.
 
-    %(keep_masked_maps)s
-
     %(memory)s
 
     %(memory_level)s
@@ -483,7 +481,6 @@ class RegionExtractor(NiftiMapsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        keep_masked_maps=False,
         memory=None,
         memory_level=0,
         verbose=0,
@@ -505,7 +502,6 @@ class RegionExtractor(NiftiMapsMasker):
             t_r=t_r,
             dtype=dtype,
             resampling_target=resampling_target,
-            keep_masked_maps=keep_masked_maps,
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
