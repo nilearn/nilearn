@@ -33,7 +33,7 @@ from nilearn._utils.param_validation import (
     check_params,
     sanitize_verbose,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.tags import InputTags
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net_solvers import (
@@ -713,44 +713,16 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         self.target_shape = target_shape
         self.positive = positive
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(require_y=True, niimg_like=True, surf_img=True)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.target_tags.required = True
         tags.input_tags = InputTags(niimg_like=True, surf_img=False)
         return tags
-
-    # TODO: try to extract into children classes
-    @property
-    def _is_classification(self) -> bool:
-        # TODO remove for sklearn>=1.6
-        # this private method can probably be removed
-        # when dropping sklearn>=1.5 and replaced by just:
-        #   self.__sklearn_tags__().estimator_type == "classifier"
-        if SKLEARN_LT_1_6:
-            # TODO remove for sklearn>=1.8
-            return self._estimator_type == "classifier"
-        return self.__sklearn_tags__().estimator_type == "classifier"
 
     def _check_params(self) -> None:
         """Make sure parameters are sane."""
@@ -779,7 +751,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         check_parameter_in_allowed(
             self.penalty, self.SUPPORTED_PENALTIES, "penalty"
         )
-        if self._is_classification:
+        if self.__sklearn_tags__().estimator_type == "classifier":
             self._validate_loss(self.loss)
 
     def _set_coef_and_intercept(self, w) -> None:
@@ -1195,9 +1167,6 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
             positive=positive,
         )
         self.loss = loss
-
-        # TODO (sklearn  >= 1.6.0) remove
-        self._estimator_type = "classifier"
 
     def _validate_loss(self, value) -> None:
         if value is not None:
