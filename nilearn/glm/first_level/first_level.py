@@ -1542,7 +1542,7 @@ def first_level_from_bids(
     list[FirstLevelModel],
     list[list[str] | list[SurfaceImage]],
     list[list[pd.DataFrame]],
-    list[list[pd.DataFrame] | None],
+    list[list[pd.DataFrame] | list[None]],
 ]:
     """Create FirstLevelModel objects and fit arguments \
        from a :term:`BIDS` dataset.
@@ -1675,7 +1675,7 @@ def first_level_from_bids(
           for all runs and the list contains j copies of the same dataframe)
 
     models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
-        ``None``
+        :obj:`list` of None
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
         ``models_confounds[i][j]`` corresponds to the j\\ :sup:`th`
@@ -2420,7 +2420,7 @@ def _get_confounds(
     imgs,
     verbose,
     kwargs_load_confounds,
-) -> list[pd.DataFrame] | None:
+) -> list[pd.DataFrame] | list[None]:
     """Get confounds.tsv files for a given subject, task and filters.
 
     Also checks that the number of confounds.tsv files
@@ -2449,7 +2449,8 @@ def _get_confounds(
 
     Returns
     -------
-    confounds : :obj:`list` of :class:`pandas.DataFrame` or None
+    confounds : :obj:`list` of :class:`pandas.DataFrame` or \
+        :obj:`list` of None
 
     """
     # pop the 'desc' filter
@@ -2481,7 +2482,7 @@ def _get_confounds(
     _check_confounds_list(confounds=confounds_files, imgs=imgs)
 
     if not confounds_files or kwargs_load_confounds is None:
-        return None
+        return [None] * len(imgs)
 
     if len(kwargs_load_confounds) == 0:
         confounds = [
@@ -2495,7 +2496,14 @@ def _get_confounds(
             c.iloc[0] = c.iloc[0].fillna(0.0)
         return confounds
 
-    return load_confounds(img_files=imgs, **kwargs_load_confounds)[0]
+    confounds = load_confounds(img_files=imgs, **kwargs_load_confounds)[0]
+
+    if not isinstance(confounds, list):
+        confounds = [confounds]
+
+    assert len(confounds) == len(imgs)
+
+    return confounds
 
 
 def _check_confounds_list(confounds, imgs) -> None:
@@ -2700,7 +2708,7 @@ def _make_bids_files_filter(
     return filters
 
 
-def _check_bids_image_list(imgs, sub_label, filters):
+def _check_bids_image_list(imgs, sub_label, filters) -> None:
     """Check input BIDS images.
 
     Check that:
@@ -2742,7 +2750,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
         "space_label or img_filters"
     )
 
-    run_check_list = []
+    run_check_list: list[tuple[str, str] | str] = []
 
     for img_ in imgs:
         parsed_filename = parse_bids_filename(img_)
