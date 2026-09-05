@@ -37,3 +37,5 @@ Enhancements
 
 Changes
 -------
+
+- :bdg-warning:`Test` Remove keyword arguments in tests that were explicitly set to the default value of the function, method, or class being called, so that the implicit default behavior is exercised instead. A new script ``maint_tools/check_test_default_kwargs.py`` was added to detect (and optionally auto-fix with ``--fix``) such "extra-default" keyword arguments (:gh:`6567` by `Rémi Gau`_).

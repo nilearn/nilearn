@@ -353,6 +353,7 @@ def test_contrast_formula(second_level_contrast, rng, n_subjects):
     )
 
 
+@pytest.mark.ai_generated
 def test_contrast_computation_errors(rng, n_subjects):
     """Test invalid contrast values."""
     func_img, mask = fake_fmri_data()
@@ -403,7 +404,6 @@ def test_contrast_computation_errors(rng, n_subjects):
         non_parametric_inference(
             second_level_input=Y,
             design_matrix=X,
-            second_level_contrast=None,
         )
 
 

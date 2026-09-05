@@ -499,6 +499,7 @@ def test_drift_order_in_params(contrasts):
     )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.single_process
 def test_flm_generate_report_surface_data(rng):
@@ -510,7 +511,7 @@ def test_flm_generate_report_surface_data(rng):
     events = basic_paradigm()
     n_scans = 10
 
-    mesh = load_fsaverage(mesh="fsaverage5")["pial"]
+    mesh = load_fsaverage()["pial"]
     data = {}
     for key, val in mesh.parts.items():
         data_shape = (val.n_vertices, n_scans)
@@ -519,7 +520,7 @@ def test_flm_generate_report_surface_data(rng):
     fmri_data = SurfaceImage(mesh, data)
 
     # using smoothing_fwhm for coverage
-    model = FirstLevelModel(t_r=t_r, smoothing_fwhm=None, standardize=None)
+    model = FirstLevelModel(t_r=t_r, standardize=None)
 
     model.fit(fmri_data, events=events)
 
@@ -528,6 +529,7 @@ def test_flm_generate_report_surface_data(rng):
     )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_flm_generate_report_surface_data_error(
     surf_mask_1d, surf_img_2d, img_3d_mni
@@ -536,7 +538,6 @@ def test_flm_generate_report_surface_data_error(
     model = FirstLevelModel(
         mask_img=surf_mask_1d,
         t_r=2.0,
-        smoothing_fwhm=None,
     )
     events = basic_paradigm()
     model.fit(surf_img_2d(9), events=events)

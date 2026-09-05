@@ -389,6 +389,7 @@ def test_make_regressor_2():
     assert reg_names[0] == "cond"
 
 
+@pytest.mark.ai_generated
 def test_make_regressor_3():
     """Test the generated regressor."""
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
@@ -407,7 +408,6 @@ def test_make_regressor_3():
         hrf_model,
         frame_times,
         fir_delays=np.arange(4),
-        oversampling=50.0,
     )
 
     assert_array_equal(reg, reg_)

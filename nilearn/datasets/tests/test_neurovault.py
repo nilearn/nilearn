@@ -620,6 +620,7 @@ def test_write_read_metadata(tmp_path):
     assert read_metadata["absolute_path"] == Path("tmp", "collection_1")
 
 
+@pytest.mark.ai_generated
 def test_add_absolute_paths():
     """Test _add_absolute_paths."""
     meta = {
@@ -635,9 +636,7 @@ def test_add_absolute_paths():
         "dir_0", "neurovault", "collection_1"
     )
 
-    meta = neurovault._add_absolute_paths(
-        Path("dir_1", "neurovault"), meta, force=True
-    )
+    meta = neurovault._add_absolute_paths(Path("dir_1", "neurovault"), meta)
 
     assert meta["col_absolute_path"] == Path(
         "dir_1", "neurovault", "collection_1"
@@ -646,7 +645,7 @@ def test_add_absolute_paths():
     meta = {"id": 0}
 
     meta_transformed = neurovault._add_absolute_paths(
-        Path("dir_1", "neurovault"), meta, force=True
+        Path("dir_1", "neurovault"), meta
     )
 
     assert meta == meta_transformed
@@ -898,6 +897,7 @@ def test_fetch_neurovault_ids_offline(tmp_path):
     assert len(data.images) == 1
 
 
+@pytest.mark.ai_generated
 def test_fetch_neurovault_ids_overwrite(tmp_path):
     """Check that download_new mode forces overwrite."""
     collections, images = _get_neurovault_data()
@@ -935,9 +935,7 @@ def test_fetch_neurovault_ids_overwrite(tmp_path):
         meta_f.write(json.dumps(modified_meta).encode("UTF-8"))
 
     # fresh download
-    data = fetch_neurovault_ids(
-        image_ids=[img_ids[0]], data_dir=tmp_path, mode="download_new"
-    )
+    data = fetch_neurovault_ids(image_ids=[img_ids[0]], data_dir=tmp_path)
     data = fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
     )
@@ -982,6 +980,7 @@ def test_should_download_resampled_images_only_if_no_previous_download(
     _check_original_version_is_not_here(data)
 
 
+@pytest.mark.ai_generated
 def test_download_original_images_along_resamp_images_if_previously_downloaded(
     tmp_path,
 ):
@@ -1011,7 +1010,6 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
     data_orig = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
-        resample=False,
     )
 
     # Get the time of the last access to one of the original files
@@ -1031,6 +1029,7 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
     _check_no_affine_match_neurovault_affine(data_orig)
 
 
+@pytest.mark.ai_generated
 def test_download_resamp_images_along_original_images_if_previously_downloaded(
     tmp_path,
 ):
@@ -1044,7 +1043,6 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     data_orig = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
-        resample=False,
     )
 
     _check_original_version_is_here(data_orig)

@@ -104,6 +104,7 @@ def test_add_markers_left_hemi(matplotlib_pyplot):
         )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_glass_brain_colorbar_having_nans(
     matplotlib_pyplot, affine_eye, img_3d_mni
@@ -111,7 +112,7 @@ def test_plot_glass_brain_colorbar_having_nans(
     """Smoke-test for plot_glass_brain and nans in the data image."""
     data = get_data(img_3d_mni)
     data[6, 5, 2] = np.inf
-    plot_glass_brain(Nifti1Image(data, affine_eye), colorbar=True)
+    plot_glass_brain(Nifti1Image(data, affine_eye))
 
 
 @pytest.mark.thread_unsafe
@@ -132,6 +133,7 @@ def test_plot_glass_brain_with_completely_masked_img(
     plot_glass_brain(img_3d_mni, display_mode=display_mode)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_glass_brain_negative_vmin_with_plot_abs(
     matplotlib_pyplot, img_3d_mni
@@ -139,4 +141,4 @@ def test_plot_glass_brain_negative_vmin_with_plot_abs(
     """Test that warning is thrown if plot_abs is True and vmin is negative."""
     warning_message = "vmin is negative but plot_abs is True"
     with pytest.warns(UserWarning, match=warning_message):
-        plot_glass_brain(img_3d_mni, vmin=-2, plot_abs=True)
+        plot_glass_brain(img_3d_mni, vmin=-2)

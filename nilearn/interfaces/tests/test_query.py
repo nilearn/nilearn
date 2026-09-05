@@ -136,7 +136,7 @@ def _rm_all_json_files_from_bids_dataset(bids_path) -> None:
     """Remove all json and make sure that get_bids_files does not find any."""
     for x in bids_path.glob("**/*.json"):
         x.unlink()
-    selection = get_bids_files(bids_path, file_type="json", sub_folder=True)
+    selection = get_bids_files(bids_path, file_type="json")
 
     assert selection == []
 
@@ -145,6 +145,7 @@ def _rm_all_json_files_from_bids_dataset(bids_path) -> None:
     assert selection == []
 
 
+@pytest.mark.ai_generated
 def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
     """Check if json files are found in root folder of a dataset.
 
@@ -172,7 +173,6 @@ def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
         file_tag="bold",
         file_type="json",
         filters=[("task", "main")],
-        sub_folder=True,
     )
     assert selection == []
 
@@ -188,6 +188,7 @@ def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
     assert selection[0] == str(json_file)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.xfail(
     reason=(
         "get_bids_files does not find json files"
@@ -235,12 +236,12 @@ def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
         file_tag="bold",
         file_type="json",
         filters=[("task", "main")],
-        sub_folder=True,
     )
     assert selection != []
     assert selection[0] == str(new_json_file)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "params, files_per_subject",
     [
@@ -276,7 +277,6 @@ def test_get_bids_files(tmp_path, params, files_per_subject):
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
         n_sub=n_sub,
-        n_ses=2,
         tasks=["localizer", "main"],
         n_runs=[1, 2],
     )
@@ -296,6 +296,7 @@ def test_get_bids_files(tmp_path, params, files_per_subject):
     assert len(selection) == 1
 
 
+@pytest.mark.ai_generated
 def test_get_bids_files_fmriprep(tmp_path):
     """Check proper number of files is returned for fmriprep version."""
     n_sub = 2
@@ -303,10 +304,8 @@ def test_get_bids_files_fmriprep(tmp_path):
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
         n_sub=n_sub,
-        n_ses=2,
         tasks=["localizer", "main"],
         n_runs=[1, 2],
-        confounds_tag="desc-confounds_timeseries",
     )
 
     # counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
@@ -319,7 +318,6 @@ def test_get_bids_files_fmriprep(tmp_path):
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
         n_sub=n_sub,
-        n_ses=2,
         tasks=["localizer", "main"],
         n_runs=[1, 2],
         confounds_tag="desc-confounds_regressors",
@@ -416,6 +414,7 @@ def test_get_bids_files_fmriprep_subject_level_files(
     assert len(selection) == n_expected_files
 
 
+@pytest.mark.ai_generated
 def test_get_bids_files_no_space_entity(tmp_path):
     """Pass empty string for a label ignores files containing that label.
 
@@ -428,7 +427,6 @@ def test_get_bids_files_no_space_entity(tmp_path):
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
         n_sub=n_sub,
-        n_ses=2,
         tasks=["main"],
         n_runs=[2],
     )

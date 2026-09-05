@@ -112,6 +112,7 @@ def test_fill_html_template(tmp_path, mni152_template_res_2, engine):
     check_html_surface_plots(tmp_path, html, engine=engine)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.single_process
 @pytest.mark.engines(["plotly", "niivue"])
 def test_view_surf(tmp_path, rng, engine):
@@ -159,7 +160,6 @@ def test_view_surf(tmp_path, rng, engine):
     html = view_surf(
         fsaverage["pial_right"],
         fsaverage["sulc_right"],
-        threshold=None,
         cmap="Greys",
         engine=engine,
     )

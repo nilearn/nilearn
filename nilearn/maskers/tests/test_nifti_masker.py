@@ -352,13 +352,13 @@ def test_compute_brain_mask(strategy, expected_mask, mask_args):
     np.testing.assert_array_equal(get_data(masker.mask_img_), expected_mask)
 
 
+@pytest.mark.ai_generated
 def test_invalid_mask_arg_for_strategy():
     """Pass mask_args specific to epi strategy should not fail.
 
     But a warning should be thrown.
     """
     masker = NiftiMasker(
-        mask_strategy="background",
         mask_args={"lower_cutoff": 0.1, "ensure_finite": False},
     )
     img, _ = data_gen.generate_random_img((9, 9, 5))
@@ -369,6 +369,7 @@ def test_invalid_mask_arg_for_strategy():
         masker.fit(img)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
@@ -382,7 +383,6 @@ def test_no_warning_partial_joblib(strategy):
         mask_strategy=strategy,
         mask_args={"threshold": -0.5},
         memory="nilearn_cache",
-        memory_level=1,
     )
     img, _ = data_gen.generate_random_img((9, 9, 5))
     with warnings.catch_warnings(record=True) as warning_list:

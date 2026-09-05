@@ -292,6 +292,7 @@ def test_tikhonov_regularization_vs_graph_net():
     assert_almost_equal(graph_net_perf, optimal_model_perf, decimal=1)
 
 
+@pytest.mark.ai_generated
 def test_mfista_solver_graph_net_no_l1_term():
     """Test MFISTA solver for graph-net loss without an l1 term."""
     w = np.zeros(2)
@@ -311,7 +312,7 @@ def test_mfista_solver_graph_net_no_l1_term():
         X, (np.eye(2) == 1).astype(bool), 1
     )
     estimate_solution, _, _ = mfista(
-        f1_grad, f2_prox, f1, lipschitz_constant, w.size, tol=1e-8, verbose=0
+        f1_grad, f2_prox, f1, lipschitz_constant, w.size, tol=1e-8
     )
 
     solution = np.array([-10, 5])

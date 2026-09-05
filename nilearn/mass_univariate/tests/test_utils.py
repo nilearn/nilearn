@@ -90,6 +90,7 @@ def test_null_to_p_float_1_tailed_upper_tailed(
     )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "test_values, expected_p_value",
     [
@@ -104,10 +105,8 @@ def test_null_to_p_float_1_tailed_upper_tailed(
 )
 def test_null_to_p_float_2_tailed(test_values, expected_p_value, null):
     """Test null_to_p with single float input two-sided."""
-    result = _utils.null_to_p(test_values, null, alternative="two-sided")
-    assert result == _utils.null_to_p(
-        test_values * -1, null, alternative="two-sided"
-    )
+    result = _utils.null_to_p(test_values, null)
+    assert result == _utils.null_to_p(test_values * -1, null)
     assert math.isclose(result, expected_p_value)
 
 
