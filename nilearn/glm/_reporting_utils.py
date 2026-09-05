@@ -403,19 +403,8 @@ def sanitize_generate_report_input(
         first_level_contrast = None
 
     if height_control is None:
-        # TODO (nilearn >= 0.15.0) update to DEFAULT_Z_THRESHOLD
         if threshold is None:
-            threshold = 3.09
-
-        # TODO (nilearn >= 0.15.0) remove
-        if threshold == 3.09:
-            warnings.warn(
-                "\nFrom nilearn version>=0.15, "
-                "the default 'threshold' will be set to "
-                f"{DEFAULT_Z_THRESHOLD}.",
-                FutureWarning,
-                stacklevel=find_stack_level(),
-            )
+            threshold = DEFAULT_Z_THRESHOLD
 
     elif threshold is not None:
         threshold = float(threshold)

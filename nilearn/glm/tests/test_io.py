@@ -76,9 +76,6 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
     contrast_types = {"effects of interest": "F"}
     with (
         warnings.catch_warnings(record=True) as warning_list,
-        pytest.warns(
-            FutureWarning, match="the default 'threshold' will be set to"
-        ),
     ):
         save_glm_to_bids(
             model=single_run_model,
@@ -519,23 +516,12 @@ def test_save_glm_to_bids_infer_filenames(tmp_path, kwargs):
     # 2 sessions with 2 runs each
     assert len(model._reporting_data["run_imgs"]) == 4
 
-    if kwargs == {"height_control": None}:
-        with pytest.warns(
-            FutureWarning, match="the default 'threshold' will be set to"
-        ):
-            model = save_glm_to_bids(
-                model=model,
-                out_dir=tmp_path / "output",
-                contrasts=["c0"],
-                **kwargs,
-            )
-    else:
-        model = save_glm_to_bids(
-            model=model,
-            out_dir=tmp_path / "output",
-            contrasts=["c0"],
-            **kwargs,
-        )
+    model = save_glm_to_bids(
+        model=model,
+        out_dir=tmp_path / "output",
+        contrasts=["c0"],
+        **kwargs,
+    )
 
     EXPECTED_FILENAME_ENDINGS = [
         "sub-01_task-main_space-MNI_contrast-c0_stat-z_statmap.nii.gz",

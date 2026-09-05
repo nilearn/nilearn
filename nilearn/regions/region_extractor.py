@@ -4,7 +4,7 @@ import collections.abc
 import numbers
 import warnings
 from copy import deepcopy
-from typing import overload
+from typing import Self, overload
 
 import numpy as np
 from nibabel import Nifti1Image
@@ -532,7 +532,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.smoothing_fwhm = smoothing_fwhm
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
