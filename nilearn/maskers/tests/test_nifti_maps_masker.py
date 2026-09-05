@@ -321,7 +321,7 @@ def test_with_nans_and_infs_in_data(length, n_regions, affine_eye):
 
     masker = NiftiMapsMasker(maps_img, mask_img=mask_img, standardize=None)
 
-    with pytest.warns(UserWarning, match="Non-finite values detected."):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected."):
         signals = masker.fit_transform(fmri_img)
 
     assert signals.shape == (length, n_regions)

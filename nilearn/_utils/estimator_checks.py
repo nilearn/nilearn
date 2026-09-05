@@ -3438,7 +3438,7 @@ def check_masker_fit_with_non_finite_in_mask(estimator_orig) -> None:
         imgs = _make_surface_img(1)
 
     estimator.mask_img = mask_img
-    with pytest.warns(UserWarning, match="Non-finite values detected."):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected."):
         estimator.fit()
 
     signal = estimator.transform(imgs)
