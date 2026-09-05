@@ -557,19 +557,6 @@ class BaseMasker(_BaseMasker):
         check_is_fitted(self)
         self._check_imgs(imgs)
 
-        if self.standardize in [True, False]:
-            # TODO (nilearn >= 0.15.0) remove warning
-            warnings.warn(
-                category=FutureWarning,
-                message=(
-                    "boolean values for 'standardize' "
-                    "will be deprecated in nilearn 0.15.0.\n"
-                    "Use 'zscore_sample' instead of 'True' or "
-                    "use 'None' instead of 'False'."
-                ),
-                stacklevel=find_stack_level(),
-            )
-
         if confounds is None and not self.high_variance_confounds:
             return self.transform_single_imgs(
                 imgs, confounds=confounds, sample_mask=sample_mask
@@ -870,19 +857,6 @@ class _BaseSurfaceMasker(_BaseMasker):
         check_surf_img(imgs)
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
-
-        if self.standardize in [True, False]:
-            # TODO (nilearn >= 0.15.0) remove warning
-            warnings.warn(
-                category=FutureWarning,
-                message=(
-                    "boolean values for 'standardize' "
-                    "will be deprecated in nilearn 0.15.0.\n"
-                    "Use 'zscore_sample' instead of 'True' or "
-                    "use 'None' instead of 'False'."
-                ),
-                stacklevel=find_stack_level(),
-            )
 
         if self.reports:
             self._reporting_data["images"] = imgs

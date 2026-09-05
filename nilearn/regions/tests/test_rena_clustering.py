@@ -94,7 +94,7 @@ def test_rena_clustering():
     for i in range(data.shape[3]):
         X[i, :] = np.copy(data[:, :, :, i])[get_data(mask_img) != 0]
 
-    nifti_masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
+    nifti_masker = NiftiMasker(mask_img=mask_img).fit()
     n_voxels = nifti_masker.transform(data_img).shape[1]
 
     rena = ReNA(mask_img, n_clusters=10)
@@ -162,7 +162,7 @@ def test_make_edges_and_weights_surface(surf_mesh, surf_img_2d):
     }
     surf_mask_1d = SurfaceImage(surf_mesh, data)
     # create a surface masker
-    masker = SurfaceMasker(surf_mask_1d, standardize=None).fit()
+    masker = SurfaceMasker(surf_mask_1d).fit()
     # mask the surface image with 50 samples
     X = masker.transform(surf_img_2d(50))
     # compute edges and weights
@@ -203,7 +203,7 @@ def test_input_mask_surface(
     """
     surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
     # create a surface masker
-    masker = SurfaceMasker(surf_mask, standardize=None).fit()
+    masker = SurfaceMasker(surf_mask).fit()
     # mask the surface image with 50 samples
     X = masker.transform(surf_img_2d(50))
     if mask_as == "surface_image":

@@ -249,7 +249,6 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
         penalty="tv-l1",
         max_iter=10,
         debias=debias,
-        standardize="zscore_sample",
     ).fit(X, y)
 
 
@@ -284,7 +283,7 @@ def test_space_net_classifier_invalid_loss(rng):
         mask=mask,
         alphas=alphas,
         tol=1e-10,
-        standardize=False,
+        standardize=None,
         screening_percentile=100.0,
         loss="logistic",
     ).fit(X_, y)
@@ -293,7 +292,7 @@ def test_space_net_classifier_invalid_loss(rng):
         mask=mask,
         alphas=alphas,
         tol=1e-10,
-        standardize=False,
+        standardize=None,
         screening_percentile=100.0,
         loss="mse",
     ).fit(X_, y)
@@ -303,7 +302,7 @@ def test_space_net_classifier_invalid_loss(rng):
             mask=mask,
             alphas=alphas,
             tol=1e-10,
-            standardize=False,
+            standardize=None,
             screening_percentile=100.0,
             loss="bar",
         ).fit(X_, y)
@@ -347,7 +346,6 @@ def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
         l1_ratios=l1_ratio,
         penalty="tv-l1",
         max_iter=10,
-        standardize="zscore_sample",
     ).fit(X, y)
 
 
@@ -364,7 +362,7 @@ def test_graph_net_classifier_score():
         alphas=1.0 / 0.01 / X.shape[0],
         l1_ratios=1.0,
         tol=1e-10,
-        standardize=False,
+        standardize=None,
         screening_percentile=100.0,
     ).fit(X_, y)
 
@@ -386,7 +384,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
     X_, mask = to_niimgs(X, (2, 2, 2))
-    masker = NiftiMasker(mask_img=mask, standardize=None).fit()
+    masker = NiftiMasker(mask_img=mask).fit()
 
     tvl1 = SpaceNetClassifier(
         mask=masker,
@@ -395,7 +393,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         tol=tol,
         max_iter=1000,
         penalty="tv-l1",
-        standardize=False,
+        standardize=None,
         screening_percentile=100.0,
     ).fit(X_, y)
 
@@ -439,7 +437,6 @@ def test_lasso_vs_graph_net():
         l1_ratios=1,
         penalty="graph-net",
         max_iter=100,
-        standardize="zscore_sample",
     )
     lasso.fit(X_, y)
     graph_net.fit(X, y)
@@ -520,13 +517,8 @@ def test_space_net_one_alpha_no_crash(model):
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, [2, 2, 2])
 
-    model(n_alphas=1, mask=mask, standardize="zscore_sample").fit(X, y)
-    model(
-        n_alphas=2,
-        mask=mask,
-        alphas=None,
-        standardize="zscore_sample",
-    ).fit(X, y)
+    model(n_alphas=1, mask=mask).fit(X, y)
+    model(n_alphas=2, mask=mask, alphas=None).fit(X, y)
 
 
 def test_targets_in_y_space_net_regressor():
@@ -536,7 +528,7 @@ def test_targets_in_y_space_net_regressor():
     y = np.ones(iris.target.shape)
 
     imgs, mask = to_niimgs(X, (2, 2, 2))
-    regressor = SpaceNetRegressor(mask=mask, standardize="zscore_sample")
+    regressor = SpaceNetRegressor(mask=mask)
 
     with pytest.raises(
         ValueError, match="The given input y must have at least 2 targets"

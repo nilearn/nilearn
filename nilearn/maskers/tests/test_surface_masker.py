@@ -70,7 +70,7 @@ def test_transform_inverse_transform_no_mask(surf_mesh, n_timepoints):
         img_data[key] = data_part.T
 
     img = SurfaceImage(surf_mesh, img_data)
-    masker = SurfaceMasker(standardize=None).fit(img)
+    masker = SurfaceMasker().fit(img)
     signals = masker.transform(img)
 
     # make sure none of the data has been removed
@@ -101,7 +101,7 @@ def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
     }
     mask = SurfaceImage(surf_mesh, mask_data)
 
-    masker = SurfaceMasker(mask, standardize=None).fit(img)
+    masker = SurfaceMasker(mask).fit(img)
     signals = masker.transform(img)
 
     # check the data for first seven vertices is as expected

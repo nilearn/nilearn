@@ -323,7 +323,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
@@ -402,7 +402,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         random_state=None,
         mask=None,
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         standardize_confounds=True,
         detrend=True,
         low_pass=None,

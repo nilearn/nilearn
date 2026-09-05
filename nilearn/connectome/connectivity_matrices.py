@@ -465,15 +465,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
 
-    %(standardize_true)s
-
-        .. note::
-
-            Added to control passing value to `standardize` of ``signal.clean``
-            to call new behavior since passing False or True (default) is
-            deprecated.
-            This parameter will be removed in version 0.15.
-
     %(verbose0)s
 
     Attributes
@@ -509,14 +500,12 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         kind="covariance",
         vectorize=False,
         discard_diagonal=False,
-        standardize=True,
         verbose=0,
     ):
         self.cov_estimator = cov_estimator
         self.kind = kind
         self.vectorize = vectorize
         self.discard_diagonal = discard_diagonal
-        self.standardize = standardize
         self.verbose = verbose
 
     def _check_input(self, X, confounds=None):
@@ -652,14 +641,9 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
 
         # Compute all the matrices, stored in "connectivities"
         if self.kind == "correlation":
-            standardize = "zscore_sample" if self.standardize is True else None
             covariances_std = [
                 self.cov_estimator_.fit(
-                    signal.standardize_signal(
-                        x,
-                        detrend=False,
-                        standardize=standardize,
-                    )
+                    signal.standardize_signal(x, detrend=False)
                 ).covariance_
                 for x in X
             ]
