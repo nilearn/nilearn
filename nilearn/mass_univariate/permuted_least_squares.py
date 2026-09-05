@@ -383,6 +383,14 @@ def permuted_ols(
         Numerical or boolean labels for explanatory variates; fitted and tested
         independently of each other.
 
+        .. note::
+
+            ``permuted_ols`` can support a wide range of analysis designs,
+            depending on the numerical labels in ``tested_var``.
+            For example, if you wished to perform a one-sample test,
+            you could simply provide an array of ones
+            (e.g., ``np.ones(n_samples)``).
+
     target_vars : array-like, shape=(n_samples, n_descriptors)
         :term:`fMRI` data to analyze according
         to the explanatory and confounding variates.
@@ -619,6 +627,49 @@ def permuted_ols(
     References
     ----------
     .. footbibliography::
+
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>>
+        >>> from matplotlib import pyplot as plt
+        >>>
+        >>> from nilearn.mass_univariate import permuted_ols
+        >>>
+        >>> n_samples = 1000
+        >>> random_state=42
+        >>> rng = np.random.RandomState(random_state)
+        >>>
+        >>> target_var = rng.randn(n_samples, 1)
+        >>> tested_var = np.ones(n_samples, dtype="f8").reshape((-1, 1))
+        >>>
+        >>> output = permuted_ols(tested_var,
+        ...                       target_var,
+        ...                       model_intercept=False,
+        ...                       n_perm=2000,
+        ...                       two_sided_test=False,
+        ...                       random_state=random_state,
+        ...                       output_type='dict',
+        ... )
+        >>>
+        >>> _, ax = plt.subplots()
+        >>> _ = ax.hist(output["h0_max_t"][0], bins=100)
+        >>> _ = ax.plot([output["t"][0], output["t"][0]],
+        ...              [0, 60],
+        ...              color="r",
+        ...              linewidth=3,
+        ... )
+        >>> _ = ax.text(x=output["t"][0][0],
+        ...              y=61,
+        ...              s=f"-log(p) = {output['logp_max_t'][0]}"
+        ... )
+        >>> _ = ax.set(xlabel="t-statistic",
+        ...            title="Distribution max t-statistic under $H_0$")
+        >>> plt.show()
 
     """
     check_params(locals())
