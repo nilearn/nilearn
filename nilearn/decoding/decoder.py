@@ -13,7 +13,7 @@ ensembling to achieve state of the art performance
 import itertools
 import warnings
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Self
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -538,6 +538,11 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
     """
 
+    # dummy_output_ starts as a dict of accumulated fold outputs
+    # (set in _fetch_parallel_fit_outputs) and is turned into an array
+    # once ensembled in fit().
+    dummy_output_: Any
+
     def __init__(
         self,
         estimator: SupportedRegressors | SupportedClassifiers | Any = "svc",
@@ -590,7 +595,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         return 100
 
     @fill_doc
-    def fit(self, X, y, groups=None):
+    def fit(self, X, y, groups=None) -> Self:
         """Fit the decoder (learner).
 
         Parameters
@@ -770,7 +775,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         # Build the final model (the aggregated one)
         if not isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
-            self.coef_ = np.vstack(
+            self.coef_: np.ndarray | None = np.vstack(
                 [
                     np.mean(coefs[class_index], axis=0)
                     for class_index in classes_
@@ -803,9 +808,10 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         else:
             # For Dummy estimators
             self.coef_ = None
+            dummy_output = self.dummy_output_
             self.dummy_output_ = np.vstack(
                 [
-                    np.mean(self.dummy_output_[class_index], axis=0)
+                    np.mean(dummy_output[class_index], axis=0)
                     for class_index in classes_
                 ]
             )
@@ -891,6 +897,9 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
                 f" expecting {self.n_elements_}"
             )
 
+        # coef_ is only None for Dummy estimators, which do not reach
+        # this code path (they are predicted through _predict_dummy).
+        assert self.coef_ is not None
         scores = (
             safe_sparse_dot(X, self.coef_.T, dense_output=True)
             + self.intercept_
@@ -987,7 +996,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         intercepts = {}
         cv_scores = {}
         self.cv_params_ = {}
-        self.dummy_output_ = {}
+        self.dummy_output_: Any = {}
         classes_ = self._get_classes()
 
         for (

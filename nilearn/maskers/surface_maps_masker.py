@@ -3,7 +3,7 @@ brain regions.
 """
 
 import warnings
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Self
 
 import numpy as np
 from scipy import linalg
@@ -185,7 +185,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._reset_report()
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters

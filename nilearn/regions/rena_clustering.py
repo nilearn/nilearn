@@ -7,6 +7,7 @@ import inspect
 import itertools
 import warnings
 from pathlib import Path
+from typing import Self
 
 import numpy as np
 from nibabel import Nifti1Image
@@ -720,7 +721,7 @@ class ReNA(
             )
 
     @fill_doc
-    def fit(self, X, y=None):
+    def fit(self, X, y=None) -> Self:
         """Compute clustering of the data.
 
         Parameters

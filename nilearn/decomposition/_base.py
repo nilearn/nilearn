@@ -10,7 +10,7 @@ import warnings
 from math import ceil
 from pathlib import Path
 from string import Template
-from typing import get_args
+from typing import Literal, Self, get_args
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -471,7 +471,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             )
 
     @fill_doc
-    def fit(self, imgs, y=None, confounds=None):
+    def fit(self, imgs, y=None, confounds=None) -> Self:
         """Compute the mask and the components across subjects.
 
         Parameters
@@ -534,6 +534,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         self._validate_mask()
 
+        masker_type: Literal["nii", "surface", "multi_nii", "multi_surface"]
         masker_type = "multi_nii"
         if self.mask is not None:
             if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)):

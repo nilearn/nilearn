@@ -8,7 +8,7 @@ import collections
 import time
 import warnings
 from functools import partial
-from typing import ClassVar
+from typing import Any, ClassVar, Self
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -817,7 +817,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         # implemented in children classes
         raise NotImplementedError()
 
-    def fit(self, X, y):
+    def fit(self, X, y) -> Self:
         """Fit the learner.
 
         Parameters
@@ -881,7 +881,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
             if loss == "mse":
                 solver = graph_net_squared_loss
             else:
-                solver = graph_net_logistic
+                solver = graph_net_logistic  # type: ignore[assignment]
         elif loss == "mse":
             solver = partial(tvl1_solver, loss="mse")
         else:
@@ -916,7 +916,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
 
         # scores & mean weights map over all folds
         n_folds = len(self.cv_)
-        self.cv_scores_ = [[] for _ in range(n_problems)]
+        self.cv_scores_: list[list[Any]] = [[] for _ in range(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
@@ -926,8 +926,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
 
         # main loop: loop on classes and folds
         solver_params = {"tol": self.tol, "max_iter": self.max_iter}
-        self.best_model_params_ = []
-        self.alpha_grids_ = []
+        self.best_model_params_: list[Any] = []
+        self.alpha_grids_: list[Any] = []
         for (
             test_scores,
             best_w,
@@ -969,9 +969,13 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
             w[cls] += best_w
 
         # misc
-        self.cv_scores_ = np.array(self.cv_scores_)
-        self.best_model_params_ = np.array(self.best_model_params_)
-        self.alpha_grids_ = np.array(self.alpha_grids_)
+        self.cv_scores_ = np.array(self.cv_scores_)  # type: ignore[assignment]
+        self.best_model_params_ = np.array(  # type: ignore[assignment]
+            self.best_model_params_
+        )
+        self.alpha_grids_ = np.array(  # type: ignore[assignment]
+            self.alpha_grids_
+        )
 
         self.ymean_ /= n_folds
         w, self.ymean_, self.all_coef_ = self._adapt_weights_y_mean_all_coef(w)
@@ -1445,7 +1449,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
     def _adapt_weights_y_mean_all_coef(self, w):
         return w[0], self.ymean_[0], np.array(self.all_coef_)
 
-    def fit(self, X, y):
+    def fit(self, X, y) -> Self:
         """Fit the learner.
 
         Parameters

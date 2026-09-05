@@ -1,5 +1,7 @@
 """Extract data from multiple 2D surface objects."""
 
+from typing import Self
+
 from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
@@ -174,7 +176,7 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         self.n_jobs = n_jobs
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
