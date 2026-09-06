@@ -202,11 +202,7 @@ ignore_imports = [
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
-    "nilearn.plotting.matrix.* -> nilearn.glm.**",
-    "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
-    "nilearn.interfaces.bids.glm -> nilearn.glm.first_level",  # TODO: (nilearn >= 0.15.0) remove
-    "nilearn.interfaces.bids.glm -> nilearn.glm.second_level",  # TODO: (nilearn >= 0.15.0) remove
-    "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level"  # TODO: (nilearn >= 0.15.0) remove
+    "nilearn.plotting.matrix.* -> nilearn.glm.**"
 ]
 # ** utils:
 # - can import from any lower layers
@@ -241,10 +237,6 @@ ignore_imports = [
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
-    "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
-    "nilearn.interfaces.bids.glm -> nilearn.glm.first_level",  # TODO: (nilearn >= 0.15.0) remove
-    "nilearn.interfaces.bids.glm -> nilearn.glm.second_level",  # TODO: (nilearn >= 0.15.0) remove
-    "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level",  # TODO: (nilearn >= 0.15.0) remove
     # additional on top of those of "main architecture"
     "nilearn.plotting.tests.test_img_comparisons -> nilearn._utils.data_gen",  # allowed in tests
     "nilearn.plotting.tests.test_img_comparisons -> nilearn.maskers",  # allowed in tests
@@ -335,10 +327,8 @@ module = [
     "memory_profiler.*",
     "mpl_toolkits.*",
     "marimo.*",
-    "nibabel.*",
     "nilearn._version",
     "numpydoc.*",
-    "packaging.*",
     "plotly.*",
     "polars.*",
     "pytest.*",
