@@ -7,7 +7,7 @@ import csv
 import inspect
 import time
 from pathlib import Path
-from typing import Literal, get_args
+from typing import Any, Literal, Self, get_args
 from warnings import warn
 
 import numpy as np
@@ -720,6 +720,8 @@ class FirstLevelModel(BaseGLM):
 
     def _fit_single_run(self, sample_masks, bins, run_img, run_idx) -> None:
         """Fit the model for a single and keep only the regression results."""
+        assert self.labels_ is not None
+        assert self.results_ is not None
         design = self.design_matrices_[run_idx]
 
         sample_mask = None
@@ -731,6 +733,7 @@ class FirstLevelModel(BaseGLM):
         # Mask and prepare data for GLM
         self._log("masking")
         t_masking = time.time()
+        assert self.masker_ is not None
         Y = self.masker_.transform(run_img, sample_mask=sample_mask)
         del run_img  # Delete unmasked image to save memory
         self._log("masking_done", time_in_second=time.time() - t_masking)
@@ -869,7 +872,7 @@ class FirstLevelModel(BaseGLM):
         sample_masks=None,
         design_matrices=None,
         bins=100,
-    ):
+    ) -> Self:
         """Fit the :term:`GLM`.
 
         For each run:
@@ -998,8 +1001,8 @@ class FirstLevelModel(BaseGLM):
         if self.signal_scaling in [0, 1, (0, 1)]:
             self.standardize_ = None
 
-        self.labels_ = None
-        self.results_ = None
+        self.labels_: list[Any] | None = None
+        self.results_: list[Any] | None = None
 
         run_imgs, events, confounds, sample_masks, design_matrices = (
             self._check_fit_inputs(
@@ -1014,7 +1017,7 @@ class FirstLevelModel(BaseGLM):
         self._reset_report()
 
         # Initialize masker_ to None such that attribute exists
-        self.masker_ = None
+        self.masker_: NiftiMasker | SurfaceMasker | None = None
 
         self._prepare_mask(run_imgs)
 
@@ -1052,7 +1055,8 @@ class FirstLevelModel(BaseGLM):
         )
 
         # For each run fit the model and keep only the regression results.
-        self.labels_, self.results_ = [], []
+        self.labels_ = []
+        self.results_ = []
         self._reporting_data["run_imgs"] = {}
         n_runs = len(run_imgs)
         t0 = time.time()
@@ -1179,6 +1183,7 @@ class FirstLevelModel(BaseGLM):
             valid_types[:-1] if output_type == "all" else [output_type]
         )
         outputs = {}
+        assert self.masker_ is not None
         for output_type_ in output_types:
             estimate_ = getattr(contrast, output_type_)()
             # Prepare the returned images
@@ -1289,6 +1294,9 @@ class FirstLevelModel(BaseGLM):
 
         output = []
 
+        assert self.masker_ is not None
+        assert self.labels_ is not None
+        assert self.results_ is not None
         for design_matrix, labels, results in zip(
             self.design_matrices_, self.labels_, self.results_, strict=False
         ):

@@ -28,8 +28,6 @@ Functions
    :template: function.rst
 
    get_clusters_table
-   make_glm_report
-
 
 .. toctree::
 
