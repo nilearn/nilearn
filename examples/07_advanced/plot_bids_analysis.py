@@ -112,7 +112,7 @@ for _subject_idx, subject_events in enumerate(models_events[:1]):
 
 # %%
 # For a single subject, we can visualize their event structure
-# using :func:`nilearn.plotting.plot_event`.
+# using :func:`~nilearn.plotting.plot_event`.
 from nilearn.plotting import plot_event
 
 plot_event(events)

@@ -13,8 +13,7 @@ from nilearn._utils.bids import sanitize_look_up_table
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import img_data_dtype, safe_get_data
-from nilearn._utils.numpy_conversions import get_target_dtype
+from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_reduction_strategy,
@@ -534,6 +533,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 self.labels_img_,
             )
         ):
+            mask_logger("resample_regions", verbose=self.verbose)
             self.labels_img_ = self._resample_labels(imgs_)
 
         # resample mask
@@ -812,15 +812,20 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         self.region_atlas_ = masked_atlas
 
         imgs = load_img(imgs)
-        target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
-        if target_dtype is None:
-            target_dtype = img_data_dtype(imgs)
 
-        return region_signals.astype(target_dtype)
+        target_dtype = self._get_target_dtype(imgs)
+
+        # target_dtype is None: no explicit dtype was requested,
+        # so keep the dtype produced by the extraction/cleaning pipeline
+        # (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return (
+            region_signals
+            if target_dtype is None
+            else region_signals.astype(target_dtype)
+        )
 
     def _resample_labels(self, imgs_):
-        mask_logger("resample_regions", verbose=self.verbose)
-
         labels_before_resampling = set(
             np.unique(safe_get_data(self.labels_img_))
         )

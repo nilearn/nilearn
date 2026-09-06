@@ -560,7 +560,14 @@ def _smooth_surface_img(
     new_data = {}
     for hemi, n_iter in zip(img.mesh.parts, iterations, strict=False):
         mesh = img.mesh.parts[hemi]
-        data = img.data.parts[hemi]
+        # Match the volume path, which passes ``ensure_finite=True`` to
+        # ``smooth_array``: non-finite values are replaced with zeros. Copy
+        # first because ``ensure_finite_data`` works in place, and do it
+        # before the ``n_iter == 0`` shortcut so that the guarantee holds
+        # whatever ``fwhm`` is. Left as is, a single non-finite vertex is
+        # spread over its neighbors by the smoothing iterations.
+        data = np.array(img.data.parts[hemi], copy=True)
+        ensure_finite_data(data, raise_warning=False)
 
         if n_iter == 0:
             new_data[hemi] = data

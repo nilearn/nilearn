@@ -14,7 +14,7 @@ see :footcite:t:`Dadi2019` for a careful study.
 # %%
 # Load brain development :term:`fMRI` dataset
 # -------------------------------------------
-# To save computation time, we will use only 60 subjects from
+# To save computation time, we will use only a subset of subjects from
 # the :func:`~nilearn.datasets.fetch_development_fmri` dataset.
 from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 
@@ -47,6 +47,7 @@ masker = MultiNiftiMapsMasker(
     memory="nilearn_cache",
     memory_level=1,
     standardize_confounds=True,
+    standardize="zscore_sample",
     verbose=1,
 )
 masked_data = masker.fit_transform(

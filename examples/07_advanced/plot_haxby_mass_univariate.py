@@ -133,6 +133,7 @@ output = permuted_ols(
     n_perm=10000,
     two_sided_test=True,
     verbose=1,  # display progress bar
+    random_state=0,  # to ensure reproducible results
     n_jobs=2,  # can be changed to use more CPUs
 )
 neg_log_pvals = output["logp_max_t"]

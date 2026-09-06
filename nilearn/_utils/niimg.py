@@ -208,7 +208,7 @@ def repr_niimgs(niimgs, shorten=True):
     Parameters
     ----------
     niimgs : image or collection of images
-        nibabel SpatialImage to repr.
+        nibabel SpatialImage or SurfaceImage to repr.
 
     shorten : :obj:`bool`, default=True
         If True, filenames with more than 20 characters will be
@@ -223,25 +223,33 @@ def repr_niimgs(niimgs, shorten=True):
     # Simple string case
     if isinstance(niimgs, (str, Path)):
         return _short_repr(niimgs, shorten=shorten)
+
+    # SurfaceImage imports repr_niimgs, so import locally to avoid a cycle.
+    from nilearn.surface.surface import SurfaceImage
+
+    if isinstance(niimgs, SurfaceImage):
+        return repr(niimgs)
+
     # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
         # Maximum number of elements to be displayed
         # Note: should be >= 3 to make sense...
         list_max_display = 3
-        if shorten and len(niimgs) > list_max_display:
-            tmp = ",\n         ...\n ".join(
-                repr_niimgs(niimg, shorten=shorten)
-                for niimg in [niimgs[0], niimgs[-1]]
-            )
-            return f"[{tmp}]"
-        elif len(niimgs) > list_max_display:
-            tmp = ",\n ".join(
-                repr_niimgs(niimg, shorten=shorten) for niimg in niimgs
-            )
-            return f"[{tmp}]"
+        if len(niimgs) > list_max_display:
+            if shorten:
+                tmp = ",\n         ...\n ".join(
+                    repr_niimgs(niimg, shorten=shorten)
+                    for niimg in [niimgs[0], niimgs[-1]]
+                )
+            else:
+                tmp = ",\n ".join(
+                    repr_niimgs(niimg, shorten=shorten) for niimg in niimgs
+                )
+            return f"[\n {tmp},\n]"
         else:
             tmp = [repr_niimgs(niimg, shorten=shorten) for niimg in niimgs]
-            return f"[{', '.join(tmp)}]"
+            return f"[\n {', '.join(tmp)},\n]"
+
     # Nibabel objects have a 'get_filename'
     try:
         filename = niimgs.get_filename()

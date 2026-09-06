@@ -23,7 +23,7 @@ import pandas as pd
 
 from nilearn.datasets import fetch_haxby
 
-# We fetch 2nd subject from haxby datasets (which is default)
+# We fetch 2nd subject from the Haxby datasets (which is default)
 haxby_dataset = fetch_haxby()
 
 fmri_filename = haxby_dataset.func[0]

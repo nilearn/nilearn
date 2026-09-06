@@ -9,7 +9,7 @@ Version 0.1.4
 Highlights
 ----------
 
-- :bdg-success:`API` New class :class:`nilearn.maskers.NiftiSpheresMasker` which extracts signals from balls specified by their coordinates.
+- :bdg-success:`API` New class :class:`~maskers.NiftiSpheresMasker` which extracts signals from balls specified by their coordinates.
 
 - :bdg-dark:`Code` Add the Destrieux 2009 and Power 2011 atlas.
 

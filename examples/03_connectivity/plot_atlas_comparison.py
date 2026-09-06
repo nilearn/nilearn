@@ -76,7 +76,7 @@ connectome_measure = ConnectivityMeasure(kind="correlation", verbose=verbose)
 # computation
 masker = MultiNiftiLabelsMasker(
     labels_img=yeo["maps"],  # Both hemispheres,
-    standardize=None,
+    standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
     n_jobs=2,
@@ -156,7 +156,7 @@ for hemi, img in zip(
 ):
     masker = MultiNiftiLabelsMasker(
         labels_img=img,
-        standardize=None,
+        standardize="zscore_sample",
         standardize_confounds=True,
         verbose=verbose,
     )
@@ -237,7 +237,7 @@ from nilearn.maskers import MultiNiftiMapsMasker
 # computation.
 masker = MultiNiftiMapsMasker(
     maps_img=difumo.maps,
-    standardize=None,
+    standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
     memory_level=1,

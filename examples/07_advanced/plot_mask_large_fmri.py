@@ -130,7 +130,7 @@ mask_paths = create_masks(fmri_path, N_REGIONS)
 # This is the most user-friendly way to extract data from an fMRI image as it
 # makes it easy to standardize, smooth, detrend, etc. the data.
 #
-# We will first wrap the :func:`nilearn.maskers.NiftiMasker.fit_transform`
+# We will first wrap the :meth:`~nilearn.maskers.NiftiMasker.fit_transform`
 # within a function so that it is more readable and easier to use.
 # We will then define another function that would mask the fMRI image using
 # multiple masks in parallel using the :mod:`joblib` package. As mentioned

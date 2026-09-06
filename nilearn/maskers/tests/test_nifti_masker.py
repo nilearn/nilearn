@@ -15,11 +15,9 @@ from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils import data_gen
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
@@ -27,34 +25,14 @@ from nilearn.maskers.nifti_masker import filter_and_mask
 
 ESTIMATORS_TO_CHECK = [NiftiMasker(standardize=None)]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize(
@@ -135,7 +113,7 @@ def test_resample_to_mask_warning(img_3d_rand_eye, affine_eye):
         masker.fit_transform(img_3d_rand_eye)
 
 
-def test_nan(affine_eye):
+def test_nan():
     """Check that the masker handles NaNs appropriately."""
     data = np.ones((9, 9, 9))
     data[0] = np.nan
@@ -145,10 +123,13 @@ def test_nan(affine_eye):
     data[:, -1] = np.nan
     data[:, :, -1] = np.nan
     data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, affine_eye)
+    img = Nifti1Image(data, np.eye(4))
+
     masker = NiftiMasker(mask_args={"opening": 0})
-    masker.fit(img)
+    masker.fit([img])
+
     mask = get_data(masker.mask_img_)
+
     assert mask[1:-1, 1:-1, 1:-1].all()
     assert not mask[0].any()
     assert not mask[:, 0].any()

@@ -3,6 +3,7 @@
 from string import Template
 
 from nilearn._assets import get_template
+from nilearn._utils.helpers import is_notebook
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.versions import __short_version__
 
@@ -81,7 +82,7 @@ class HTMLReport(HTMLDocument):
 
 def assemble_report(body: str, page_title: str) -> HTMLReport:
     """Put together head and body of report."""
-    head_tpl = get_template("html/head.jinja")
+    head_tpl = get_template("html/report_html_template.jinja")
 
     return HTMLReport(
         body=body,
@@ -93,34 +94,3 @@ def assemble_report(body: str, page_title: str) -> HTMLReport:
             "display_footer": "style='display: none'" if is_notebook() else "",
         },
     )
-
-
-def is_notebook() -> bool:
-    """Detect if we are running in a notebook.
-
-    Adapted from https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
-    """
-    try:
-        shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
-    except NameError:
-        shell = False
-
-    try:
-        import marimo as mo
-
-        is_marimo = mo.running_in_notebook()
-    except ImportError:
-        is_marimo = False
-
-    if shell:
-        if shell == "ZMQInteractiveShell":
-            return True  # Jupyter notebook or qtconsole
-        elif shell == "TerminalInteractiveShell":
-            return False  # Terminal running IPython
-        else:
-            return False  # Other type (?)
-
-    if is_marimo:
-        return is_marimo
-
-    return False

@@ -1216,7 +1216,7 @@ smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
 
 # standardize
 standardize = """
-standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
+standardize : any of: 'zscore_sample', 'psc', True, False or None; \
               default={}
     Strategy to standardize the signal:
 

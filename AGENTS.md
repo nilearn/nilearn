@@ -146,7 +146,18 @@ Each PR must add an entry to `doc/changes/latest.rst` with a badge, PR link, and
 - :bdg-danger:`Deprecation`
 - :bdg-dark:`Code`
 
+If this is a first contribution, add authors details ONLY in the CITATION.CFF file
+in the root of the repository.
+
 ## GitHub
+
+## Issues
+
+When reporting a bug,
+rely on the .github/ISSUE_TEMPLATE/bug.yml template.
+When reporting the steps and code to reproduce bug
+rely only the 'user facing' part of the public API
+(mentioned only in `__init__.py` files).
 
 ### Pull requests
 

@@ -1097,6 +1097,10 @@ def plot_prob_atlas(
         radiological=radiological,
         vmin=vmin,
         vmax=vmax,
+        # the colorbar for the atlas maps is added below;
+        # the background anatomical image should not get its own
+        # see issue https://github.com/nilearn/nilearn/issues/6516
+        colorbar=False,
         **kwargs,
     )
 

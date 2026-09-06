@@ -3,11 +3,9 @@ import pytest
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _surf_maps_img
 from nilearn.maskers import SurfaceMapsMasker
 from nilearn.surface import SurfaceImage
@@ -17,34 +15,14 @@ ESTIMATORS_TO_CHECK = [
     SurfaceMapsMasker(_surf_maps_img(n_regions=1)),
 ]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize(
@@ -143,7 +121,7 @@ def test_labels_img_none():
         SurfaceMapsMasker(maps_img=None).fit()
 
 
-def test_surface_maps_masker_empty_map_img_error(surf_mesh):
+def test_empty_map_img_error(surf_mesh):
     """Raise error if map_img is empty."""
     maps_img = SurfaceImage(
         mesh=surf_mesh,
@@ -159,7 +137,7 @@ def test_surface_maps_masker_empty_map_img_error(surf_mesh):
         SurfaceMapsMasker(maps_img=maps_img).fit()
 
 
-def test_surface_maps_masker_mask_img_masks_all_maps_error(surf_mesh):
+def test_mask_img_masks_all_maps_error(surf_mesh):
     """Raise error if mask_img excludes all vertices with map value."""
     maps_img = SurfaceImage(
         mesh=surf_mesh,

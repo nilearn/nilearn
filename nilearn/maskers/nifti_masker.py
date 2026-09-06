@@ -13,8 +13,6 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import sanitize_verbose
 from nilearn.image import check_niimg, crop_img, load_img, resample_img
 from nilearn.image.image import check_same_fov
@@ -520,9 +518,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return hasattr(self, "mask_img_")
 
     def _fit(self, imgs):
-        # Load data (if filenames are given, load them)
-        mask_logger("load_data", img=imgs, verbose=self.verbose)
-
         # Compute the mask if not given by the user
         if self.mask_img_ is None:
             if imgs is None:
@@ -706,8 +701,11 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             return data
 
         imgs = load_img(imgs)
-        target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
-        if target_dtype is None:
-            target_dtype = img_data_dtype(imgs)
 
-        return data.astype(target_dtype)
+        target_dtype = self._get_target_dtype(imgs)
+
+        # target_dtype is None: no explicit dtype was requested,
+        # so keep the dtype produced by the extraction/cleaning pipeline
+        # (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return data if target_dtype is None else data.astype(target_dtype)
