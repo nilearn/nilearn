@@ -235,7 +235,6 @@ def _adhd_metadata():
     return dict_to_archive({tmp: subs.to_csv(index=False)})
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("subjects", [None, 9999])
 def test_fetch_adhd_edge_cases(tmp_path, request_mocker, subjects):
     request_mocker.url_mapping["*metadata.tgz"] = _adhd_metadata()
@@ -386,7 +385,6 @@ def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  #
     ]
 
 
-@pytest.mark.ai_generated
 def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: ARG001
     # 2 subjects
     dataset = func.fetch_localizer_calculation_task(
@@ -401,7 +399,6 @@ def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: 
     assert len(dataset.cmaps) == 2
 
 
-@pytest.mark.ai_generated
 def test_fetch_localizer_button_task(tmp_path, localizer_mocker, capsys):  # noqa: ARG001
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # Only one subject
@@ -772,7 +769,6 @@ def test_fetch_development_fmri_n_confounds(request_mocker):
     assert len(confounds[0]) == 28
 
 
-@pytest.mark.ai_generated
 def test_fetch_development_fmri_phenotype(request_mocker):
     """Check phenotype returned by fetch_development_fmri."""
     mock_participants = _mock_participants_data()
@@ -833,7 +829,6 @@ def test_fetch_development_fmri_exception():
 datadir = PACKAGE_DIRECTORY / "data"
 
 
-@pytest.mark.ai_generated
 def test_select_from_index():
     dataset_version = "ds000030_R1.0.4"
     data_prefix = (
@@ -914,7 +909,6 @@ def test_fetch_ds000030_urls():
         assert urls == mock_json_content
 
 
-@pytest.mark.ai_generated
 def test_fetch_openneuro_dataset(tmp_path):
     dataset_version = "ds000030_R1.0.4"
     data_prefix = (

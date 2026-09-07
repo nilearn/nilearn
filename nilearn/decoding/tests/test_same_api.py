@@ -209,7 +209,6 @@ def test_graph_net_and_tvl1_same_for_pure_l1_spacenet(
     assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
 
 
-@pytest.mark.ai_generated
 def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
     """Check graph_net_solver and tvl1_solver should give same results \
     when l1_ratio = 1.
@@ -280,7 +279,6 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
     assert_array_almost_equal(sl.coef_[0], tvl1.coef_[0], decimal=decimal)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
 @pytest.mark.parametrize("standardize", ["zscore_sample", None])

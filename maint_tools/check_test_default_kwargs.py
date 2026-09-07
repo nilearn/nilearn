@@ -318,43 +318,6 @@ def _iter_test_functions(tree: ast.Module):
             yield node
 
 
-def _has_ai_generated_marker(func) -> bool:
-    """Return True if ``func`` already carries the ai_generated marker."""
-    for decorator in func.decorator_list:
-        try:
-            if ast.unparse(decorator) == "pytest.mark.ai_generated":
-                return True
-        except Exception:
-            continue
-    return False
-
-
-def marker_edits(
-    tree: ast.Module, fixed_linenos: set, line_starts: list[int]
-) -> list[tuple[int, int, str]]:
-    """Insert ``@pytest.mark.ai_generated`` above every modified test.
-
-    Per this project's conventions, any test function that got a
-    keyword argument removed by ``--fix`` must carry this marker.
-    """
-    edits = []
-    for func in _iter_test_functions(tree):
-        end = func.end_lineno or func.lineno
-        if not any(func.lineno <= ln <= end for ln in fixed_linenos):
-            continue
-        if _has_ai_generated_marker(func):
-            continue
-        target_lineno = (
-            func.decorator_list[0].lineno
-            if func.decorator_list
-            else func.lineno
-        )
-        indent = " " * func.col_offset
-        offset = line_starts[target_lineno - 1]
-        edits.append((offset, offset, f"{indent}@pytest.mark.ai_generated\n"))
-    return edits
-
-
 def import_pytest_edit(
     tree: ast.Module, source: str, line_starts: list[int]
 ) -> tuple[int, int, str] | None:
@@ -368,7 +331,7 @@ def import_pytest_edit(
     return (0, 0, "import pytest\n")
 
 
-def fix_file(source: str, tree: ast.Module, flags: list[Flag]) -> str:
+def fix_file(source: str, flags: list[Flag]) -> str:
     """Return ``source`` with every safe-to-fix flag's keyword removed."""
     flags_by_call = defaultdict(list)
     for flag in flags:
@@ -389,14 +352,6 @@ def fix_file(source: str, tree: ast.Module, flags: list[Flag]) -> str:
             call, keywords_to_remove, source, line_starts
         ):
             edits.append((start, end, ""))
-
-    mark_edits = marker_edits(tree, fixed_linenos, line_starts)
-    edits.extend(mark_edits)
-
-    if mark_edits:
-        pytest_edit = import_pytest_edit(tree, source, line_starts)
-        if pytest_edit is not None:
-            edits.append(pytest_edit)
 
     for start, end, text in sorted(edits, key=lambda e: e[0], reverse=True):
         source = source[:start] + text + source[end:]
@@ -455,7 +410,7 @@ def main():
         if not args.fix or not flags:
             continue
 
-        fixed_source = fix_file(source, tree, flags)
+        fixed_source = fix_file(source, flags)
         if fixed_source != source:
             n_fixed += sum(1 for flag in flags if flag.safe_to_fix)
             test_file.write_text(fixed_source)

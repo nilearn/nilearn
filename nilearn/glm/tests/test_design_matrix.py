@@ -351,7 +351,6 @@ def test_design_matrix_repeated_name_in_user_regressors(rng, frame_times):
         )
 
 
-@pytest.mark.ai_generated
 def test_oversampling(n_frames):
     events = basic_paradigm()
     frame_times = np.linspace(0, n_frames - 1, n_frames)
@@ -415,7 +414,6 @@ def test_high_pass(n_frames):
     assert X.shape[1] == n_frames
 
 
-@pytest.mark.ai_generated
 def test_csv_io(tmp_path, frame_times):
     # test the csv io on design matrices
     DM = make_first_level_design_matrix(

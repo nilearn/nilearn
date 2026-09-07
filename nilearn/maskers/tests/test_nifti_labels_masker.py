@@ -356,7 +356,6 @@ def test_resampling_errors(img_labels):
         masker.fit()
 
 
-@pytest.mark.ai_generated
 def test_resampling_to_data(affine_eye, n_regions, length):
     """Test resampling to data in NiftiLabelsMasker."""
     # mask
@@ -958,7 +957,6 @@ def test_check_labels_errors(shape_3d_default, affine_eye):
         masker.fit()
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "background",
     [
@@ -1020,7 +1018,6 @@ def test_region_names(
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "background",
     [None, "background", "Background"],
@@ -1144,7 +1141,6 @@ def test_region_names_with_non_sequential_labels(
     check_region_names_after_fit(masker, signals, region_names, background)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("background", [None, "background", "Background"])
 def test_more_labels_than_actual_region_in_atlas(
     shape_3d_default, affine_eye, background, n_regions, img_labels

@@ -461,7 +461,6 @@ def test_safe_extract(tmp_path):
         _utils.uncompress_file(ztemp, verbose=0)
 
 
-@pytest.mark.ai_generated
 def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
     """Check that fetch_single_file can fetch part of file."""
 
@@ -507,7 +506,6 @@ def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
     assert file_full.read_text() == "dummy content"  # overwritten
 
 
-@pytest.mark.ai_generated
 def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
     """Check error fetch_single_file."""
     url = "http://foo/temp.txt"
@@ -525,7 +523,6 @@ def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
     )
 
 
-@pytest.mark.ai_generated
 def test_fetch_single_file_overwrite(tmp_path, request_mocker):
     """Check that fetch_single_file can overwrite files."""
     # overwrite non-exiting file.

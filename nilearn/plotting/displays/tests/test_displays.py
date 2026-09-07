@@ -103,7 +103,6 @@ def test_cut_axes_exception(affine_eye):
         axes.transform_to_2d(None, affine_eye)
 
 
-@pytest.mark.ai_generated
 def test_glass_brain_axes():
     """Tests for class ``GlassBrainAxes``."""
     from nilearn.plotting.displays import GlassBrainAxes
@@ -366,7 +365,6 @@ def test_add_markers_cut_coords_is_none():
     orthoslicer.close()
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_annotations():
     """Tests for ``display.annotate()``.
@@ -386,7 +384,6 @@ def test_annotations():
     orthoslicer.close()
 
 
-@pytest.mark.ai_generated
 def test_position_annotation_with_decimals():
     """Test of decimals position annotation with precision of 2."""
     orthoslicer = OrthoSlicer(cut_coords=(0, 0, 0))

@@ -235,7 +235,6 @@ def test_low_level_fixed_effects(rng):
     assert_almost_equal(Vw, 1.25 * V1)
 
 
-@pytest.mark.ai_generated
 def test_one_minus_pvalue():
     effect = np.ones((1, 3))
     variance = effect[0]
@@ -246,7 +245,6 @@ def test_one_minus_pvalue():
     assert np.allclose(contrast.stat_, 1.0, 1)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "effect, variance, match",
     [
@@ -267,7 +265,6 @@ def test_improper_contrast_inputs(effect, variance, match):
         Contrast(effect, variance)
 
 
-@pytest.mark.ai_generated
 def test_automatic_t2f_conversion():
     effect = np.ones((5, 3))
     variance = np.ones(5)

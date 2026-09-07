@@ -198,7 +198,6 @@ def test_find_cut_slices(affine_eye, direction):
     cuts = find_cut_slices(img, direction=direction, n_cuts=n_cuts, spacing=2)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_find_cut_slices_direction_z():
     """Test find_cut_slices in the z direction.
@@ -481,7 +480,6 @@ def test_find_parcellation_cut_coords_error(img_3d_mni):
         )
 
 
-@pytest.mark.ai_generated
 def test_find_parcellation_cut_coords_hemispheres(affine_mni):
     """Test find_parcellation_cut_coords with a hemisphere filter."""
     # Create a mock labels_img object

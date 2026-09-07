@@ -131,7 +131,6 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     assert len(ax_1.patches) == length * 2 * gridsize
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     """Tests for plot_img_comparison no plot should return same result."""

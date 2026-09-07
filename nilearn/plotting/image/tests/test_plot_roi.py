@@ -87,7 +87,6 @@ def test_demo_plot_roi_output_file(matplotlib_pyplot, tmp_path):
     assert out is None
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_cmap_with_one_level(matplotlib_pyplot, shape_3d_default, affine_eye):
     """Test we can handle cmap with only 1 level.

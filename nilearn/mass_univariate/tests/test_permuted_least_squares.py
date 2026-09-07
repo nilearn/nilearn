@@ -312,7 +312,6 @@ def test_permuted_ols_no_covar_with_ravelized_tested_var(design):
     compare_to_ref_score(output["t"], tested_var, target_var)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_permuted_ols_no_covar_with_intercept(design):
     """Check output when modeling intercept with no confounds."""
@@ -353,7 +352,6 @@ def test_permuted_ols_with_covar(design, confounding_vars):
     assert ref_score.shape == (n_regressors, n_descriptors)
 
 
-@pytest.mark.ai_generated
 def test_permuted_ols_with_covar_with_intercept(design, confounding_vars):
     """Check output when modeling intercept with normal confounds."""
     target_var, tested_var, n_descriptors, n_regressors = design
@@ -415,7 +413,6 @@ def test_permuted_ols_with_multiple_constants_and_covars(design, rng):
     assert output["t"].shape == (n_regressors, n_descriptors)
 
 
-@pytest.mark.ai_generated
 def test_permuted_ols_nocovar_multivariate(rng):
     """Test permuted_ols with multiple tested variates and no covariate.
 
@@ -462,7 +459,6 @@ def test_permuted_ols_nocovar_multivariate(rng):
 # Tests for sign swapping permutation scheme
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_permuted_ols_intercept_nocovar(rng):
     """Check output when no covariate is passed."""
@@ -498,7 +494,6 @@ def test_permuted_ols_intercept_nocovar(rng):
     assert output_addintercept["t"].shape == (n_regressors, n_descriptors)
 
 
-@pytest.mark.ai_generated
 def test_permuted_ols_intercept_statsmodels_withcovar(
     rng,
 ):
@@ -537,7 +532,6 @@ def test_permuted_ols_intercept_statsmodels_withcovar(
     assert output_intercept["t"].shape == (n_regressors, n_descriptors)
 
 
-@pytest.mark.ai_generated
 def test_one_sided_versus_two_test(rng):
     """Check that a positive effect is always better \
     recovered with one-sided.
@@ -579,7 +573,6 @@ def test_one_sided_versus_two_test(rng):
     )
 
 
-@pytest.mark.ai_generated
 def test_two_sided_recover_positive_and_negative_effects():
     """Check that two-sided can actually recover \
     positive and negative effects.
@@ -687,7 +680,6 @@ def test_tfce_smoke_legacy_smoke():
     assert out["h0_max_tfce"].size == n_perm
 
 
-@pytest.mark.ai_generated
 def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     """Test combinations of parameters related to cluster-level inference."""
     target_var, tested_var = cluster_level_design
@@ -744,7 +736,6 @@ def test_sanitize_inputs_permuted_ols(design):
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.single_process
 def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
@@ -996,7 +987,6 @@ def test_tfce_no_masker_error():
         )
 
 
-@pytest.mark.ai_generated
 def test_cluster_level_parameters_error_no_masker(cluster_level_design):
     """Test combinations of parameters related to cluster-level inference."""
     target_var, tested_var = cluster_level_design

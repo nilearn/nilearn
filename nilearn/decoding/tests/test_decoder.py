@@ -772,7 +772,6 @@ def test_decoder_dummy_classifier_strategy_most_frequent():
     assert model.cv_scores_ is not None
 
 
-@pytest.mark.ai_generated
 def test_decoder_dummy_classifier_roc_scoring(binary_classification_data):
     X, y, mask = binary_classification_data
 
@@ -884,7 +883,6 @@ def test_decoder_regression_clustering(
     assert model.score(X, y) == r2_score(y, y_pred)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.slow
 def test_decoder_dummy_regression(regression_data):
     X, y, mask = regression_data
@@ -1090,7 +1088,6 @@ def test_decoder_multiclass_warnings_decoder(multiclass_data):
         model.fit(X, y, groups=groups)
 
 
-@pytest.mark.ai_generated
 @ignore_warnings(category=ConvergenceWarning)
 def test_decoder_multiclass_warnings_frem(multiclass_data):
     """Check that warning is raised \

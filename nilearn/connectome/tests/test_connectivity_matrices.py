@@ -809,7 +809,6 @@ def test_connectivity_measure_specific_for_each_kind(
         _assert_connectivity_partial_correlation(connectivities, covs)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
 def test_connectivity_measure_check_mean(kind, signals):
     conn_measure = ConnectivityMeasure(kind=kind)
@@ -904,7 +903,6 @@ def test_connectivity_measure_check_inverse_transformation_discard_diag(
             conn_measure.inverse_transform(vectorized_connectivities)
 
 
-@pytest.mark.ai_generated
 def test_connectivity_measure_inverse_transform_tangent(
     signals,
 ):
@@ -974,7 +972,6 @@ def test_confounds_connectome_measure():
     correlation_measure.fit_transform(signals, confounds=confounds_df)
 
 
-@pytest.mark.ai_generated
 def test_confounds_connectome_measure_errors(signals):
     """Check proper errors raised for wrong inputs."""
     # Raising error for input signals are not iterable

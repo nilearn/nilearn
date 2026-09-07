@@ -105,7 +105,6 @@ def test_img_data_dtype(rng, affine_eye, tmp_path):
     assert not all(dtype_matches)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_load_niimg(img1, tmp_path):
     filename = write_imgs_to_path(img1, file_path=tmp_path)
@@ -113,7 +112,6 @@ def test_load_niimg(img1, tmp_path):
     load_niimg(filename)
 
 
-@pytest.mark.ai_generated
 def test_repr_niimgs():
     """Test repr_niimgs.
 
@@ -231,7 +229,6 @@ def test_repr_niimgs_force_long_names():
     )
 
 
-@pytest.mark.ai_generated
 def test_repr_niimgs_with_niimg_pathlib():
     """Test repr_niimgs with Path."""
     # Tests with pathlib
@@ -271,7 +268,6 @@ def test_repr_niimgs_with_niimg_pathlib():
     assert repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("shorten", [True, False])
 def test_repr_niimgs_with_niimg(

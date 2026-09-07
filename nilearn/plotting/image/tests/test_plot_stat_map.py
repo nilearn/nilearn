@@ -77,7 +77,6 @@ def test_plot_stat_map_with_masked_image(
     plot_stat_map(masked_img, display_mode="x")
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "data",
@@ -165,7 +164,6 @@ def test_plot_stat_map_singleton_ax_dim(
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_outlier_cut_coords(matplotlib_pyplot):
     """Test to plot a subset of a large set of cuts found for a small area."""

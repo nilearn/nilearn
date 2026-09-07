@@ -332,7 +332,6 @@ def test_plot_connectome_display_mode(
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.mpl_image_compare
 def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
     """Smoke test for plot_connectome with node_kwargs, edge_kwargs, \
@@ -353,7 +352,6 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
 # ---------------------- surface plotting -------------------------------
 
 
-@pytest.mark.ai_generated
 @pytest.mark.mpl_image_compare(tolerance=5)
 @mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
@@ -386,7 +384,6 @@ def test_plot_surf_surface(plot_func, view, hemi):
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.skipif(
     not (is_plotly_installed() and is_kaleido_installed()),
     reason="This test requires plotly and kaleido to be installed",
@@ -426,7 +423,6 @@ def test_plot_surf_surface_plotly(plot_func, view, hemi):
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.mpl_image_compare(tolerance=5)
 @mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
@@ -450,7 +446,6 @@ def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.skipif(
     not (is_plotly_installed() and is_kaleido_installed()),
     reason="This test requires plotly and kaleido to be installed",
@@ -579,7 +574,6 @@ def test_surface_fs_data(hemi, resolution):
     return fig
 
 
-@pytest.mark.ai_generated
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("hemi", ["left", "right"])
 def test_surface_fs_vertices_order(hemi):

@@ -179,7 +179,6 @@ def test_strategy_compcor(tmp_path, fmriprep_version):
     assert "global_signal" in compcor_col_str_anat
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
 def test_irrelevant_input(tmp_path, fmriprep_version):
     """Check invalid input raising correct warning or error message."""

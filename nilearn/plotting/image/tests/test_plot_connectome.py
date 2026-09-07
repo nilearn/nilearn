@@ -95,7 +95,6 @@ def test_plot_connectome_with_too_high_edge_threshold(adjacency, node_coords):
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_connectome_non_symmetric(node_coords, non_symmetric_matrix):
     """Tests for plot_connectome with non symmetric adjacency matrices."""

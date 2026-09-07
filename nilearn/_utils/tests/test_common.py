@@ -26,7 +26,6 @@ def test_private_vs_public(matplotlib_pyplot, func):  # noqa: ARG001
     )
 
 
-@pytest.mark.ai_generated
 def test_number_public_functions(matplotlib_pyplot):  # noqa: ARG001
     """Check that number of public functions is stable.
 

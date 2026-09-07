@@ -242,7 +242,6 @@ def test_get_clusters_table_surface_two_sided(
     assert cluster_labels_negative.size == expected_n_cluster_right + 1
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, expected_n_cluster_two_sided",
@@ -337,7 +336,6 @@ def test_get_clusters_table_no_cluster_found_warning(
     validate_clusters_table(clusters_table, expected_n_cluster=0)
 
 
-@pytest.mark.ai_generated
 def test_get_clusters_table_negative_threshold(shape, affine_eye):
     """Check that one sided negative thresholds are handled well."""
     data = np.zeros(shape)
@@ -405,7 +403,6 @@ def test_get_clusters_table_4d_image(shape, affine_eye):
     validate_clusters_table(clusters_table, expected_n_cluster=2)
 
 
-@pytest.mark.ai_generated
 def test_get_clusters_table_nans(shape, affine_eye):
     """Test nans are handled correctly (No numpy axis errors are raised)."""
     data = np.zeros((*shape, 1))

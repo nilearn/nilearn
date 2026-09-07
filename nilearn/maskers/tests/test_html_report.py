@@ -572,7 +572,6 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_surface_masker_mask_img_generate_report(surf_img_1d, surf_mask_1d):
     """Smoke test generate report."""
@@ -692,7 +691,6 @@ def test_surface_maps_masker_generate_report_plotly_out_figure_type(
     assert "<img" not in report_str
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_surface_maps_masker_generate_report_matplotlib_out_figure_type(
     matplotlib_pyplot,  # noqa: ARG001

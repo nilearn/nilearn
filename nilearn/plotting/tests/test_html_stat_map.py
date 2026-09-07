@@ -98,7 +98,6 @@ def test_data_to_sprite():
     assert (sprite == gtruth).all(), "simulated sprite not as expected"
 
 
-@pytest.mark.ai_generated
 def test_threshold_data():
     """Check _threshold_data with auto, None, positive and zero thresholds."""
     data = np.arange(-3, 4)
@@ -132,7 +131,6 @@ def test_threshold_data():
     assert (mask == gtruth).all()
 
 
-@pytest.mark.ai_generated
 def test_save_sprite(rng):
     """Test covers _save_sprite as well as _bytes_io_to_base64."""
     # Generate a simulated volume with a square inside
@@ -159,7 +157,6 @@ def test_save_sprite(rng):
     assert np.allclose(img, cmapped, atol=0.1)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("cmap", ["tab10", "cold_hot"])
 @pytest.mark.parametrize("n_colors", [7, 20])
 def test_save_cmap(cmap, n_colors):
@@ -179,7 +176,6 @@ def test_save_cmap(cmap, n_colors):
     assert np.allclose(img, expected, atol=0.1)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_mask_stat_map():
     """Check _mask_stat_map with no threshold and a zero threshold."""
@@ -290,7 +286,6 @@ def test_json_view_params(affine_eye):
     assert params["colorMap"]["img"] == "colorMap-test-viewer"
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("marker", [3, 11, 20, 28])
 def test_json_view_params_displays_requested_slice(marker):
     """The tile drawn must hold the slice whose coordinate was requested.
@@ -332,7 +327,6 @@ def test_json_view_params_displays_requested_slice(marker):
     assert int(block.max()) == marker
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("cut_coords", [[0.0, -12.0, 9.0], [15.0, 6.0, -21.0]])
 def test_json_view_params_reports_requested_coordinates(cut_coords):
     """The coordinates shown must still be the ones requested."""
@@ -522,7 +516,6 @@ def test_brainsprite_viewers_have_unique_element_ids():
     assert all_dom_ids[0].isdisjoint(all_dom_ids[1])
 
 
-@pytest.mark.ai_generated
 def test_get_cut_slices(affine_eye):
     """Check _get_cut_slices with automatic, manual and rescaled affines."""
     # Generate simple simulated data with one "spot"

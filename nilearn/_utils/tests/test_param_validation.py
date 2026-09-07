@@ -22,7 +22,6 @@ def matrix() -> np.ndarray:
     )
 
 
-@pytest.mark.ai_generated
 def test_check_threshold_positive_and_zero_ts_true(matrix):
     """Tests nilearn._utils.param_validation.check_threshold when
     two_sided=True, threshold is specified as a number and threshold >=0.
@@ -58,7 +57,6 @@ def test_check_threshold_positive_and_zero_ts_false(matrix):
         check_threshold(6, matrix, scoreatpercentile, two_sided=False)
 
 
-@pytest.mark.ai_generated
 def test_check_threshold_percentile_positive_and_zero_ts_true(matrix):
     """Tests nilearn._utils.param_validation.check_threshold when
     two_sided=True, threshold is specified as percentile (str ending with a %)

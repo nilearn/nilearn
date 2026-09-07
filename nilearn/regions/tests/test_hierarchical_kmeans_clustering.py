@@ -79,7 +79,6 @@ def test_hierarchical_k_means():
     assert_array_almost_equal(test_labels, truth_labels)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.single_process
 def test_transform():
     """Test that HierarchicalKMeans.transform reduces to n_clusters."""
@@ -94,7 +93,6 @@ def test_transform():
     assert X_red.shape == (n_samples, n_clusters)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.single_process
 def test_inverse_transform():
     """Test that HierarchicalKMeans.inverse_transform restores input shape."""
@@ -110,7 +108,6 @@ def test_inverse_transform():
     assert X_inv.shape == X.shape
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("n_clusters", [None, -2, 0, "2"])
 def test_error_n_clusters(n_clusters):
     """Test that HierarchicalKMeans rejects invalid n_clusters values."""
@@ -127,7 +124,6 @@ def test_error_n_clusters(n_clusters):
         HierarchicalKMeans(n_clusters=n_clusters).fit(X)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_scaling():
     """Test that scaling weights inverse_transform output by cluster size."""
@@ -183,7 +179,6 @@ def test_surface(
     assert X_inverse.shape == X.shape
 
 
-@pytest.mark.ai_generated
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("img_type", ["surface", "volume"])
 def test_n_clusters_warning(img_type, rng):

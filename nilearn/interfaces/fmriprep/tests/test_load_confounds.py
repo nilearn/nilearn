@@ -463,7 +463,6 @@ def _remove_confounds(conf_file) -> None:
     missing_confounds.to_csv(conf_file, sep="\t", index=False)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
 def test_not_found_exception(tmp_path, fmriprep_version):
     """Check various file or parameter missing scenario."""
@@ -503,7 +502,6 @@ def test_not_found_exception(tmp_path, fmriprep_version):
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
 def test_not_found_exception_ica_aroma(tmp_path, fmriprep_version):
     """Check various file or parameter for ICA-AROMA strategy."""
@@ -626,7 +624,6 @@ def test_invalid_filetype(tmp_path, rng):
         load_confounds(bad_nii)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x"])
 def test_ica_aroma(tmp_path, fmriprep_version):
     """Test ICA AROMA related file input."""
@@ -661,7 +658,6 @@ def test_ica_aroma(tmp_path, fmriprep_version):
         )
 
 
-@pytest.mark.ai_generated
 def test_tedana_happy_path(tmp_path):
     """Test TEDANA related file input."""
     # create a tedana nifti file with no confounds
@@ -725,7 +721,6 @@ def test_tedana_errors_warnings(tmp_path):
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "fmriprep_version, scrubbed_time_points, non_steady_outliers",
     [("1.4.x", 8, 1), ("21.x.x", 30, 3)],
@@ -812,7 +807,6 @@ def test_inputs(tmp_path, image_type):
     assert len(conf) == 2
 
 
-@pytest.mark.ai_generated
 def test_load_confounds_for_gifti(tmp_path):
     """Ensure that confounds are found for gifti files.
 

@@ -700,7 +700,6 @@ def test_inverse_transform_with_mask(surf_mesh, surf_img_2d):
     assert np.all(img_inverted.data.parts["right"][2:, :] == 0)
 
 
-@pytest.mark.ai_generated
 def test_labels_img_none():
     """Test that an error is raised when labels_img is None."""
     with pytest.raises(

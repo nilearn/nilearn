@@ -86,7 +86,6 @@ def test_check_surface_plotting_inputs_single_hemi_data(
     fn(in_memory_mesh, parcellation, hemi=hemi)
 
 
-@pytest.mark.ai_generated
 def test_check_surface_plotting_inputs_errors():
     """Fail if mesh is None and data is not a SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
@@ -115,7 +114,6 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
-@pytest.mark.ai_generated
 @pytest.mark.skipif(
     not is_kaleido_installed(),
     reason="This test is run only if kaleido is installed.",
@@ -170,7 +168,6 @@ def test_plot_surf_hemi_views(plt, engine, in_memory_mesh, hemi, view, bg_map):
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
 def test_plot_surf_swap_hemi(plt, engine, surf_img_1d, hemi, flip_surf_img):
     """Check error is raised if background image is incompatible."""
@@ -227,7 +224,6 @@ def test_plot_surf_error(plt, engine, rng, in_memory_mesh):
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_surf_tick_format_warning_matplotlib(
     matplotlib_pyplot, in_memory_mesh, bg_map
@@ -246,7 +242,6 @@ def test_plot_surf_tick_format_warning_matplotlib(
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs", [{"symmetric_cmap": True}, {"title_font_size": 18}]
@@ -427,7 +422,6 @@ def test_plot_surf_avg_method_errors(
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
     """Test if figure title is set correctly in
@@ -751,7 +745,6 @@ def test_plot_surf_stat_map_symmetric_cmap_plotly(
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_symmetric_cmap_matplotlib(
     matplotlib_pyplot, in_memory_mesh, bg_map
@@ -766,7 +759,6 @@ def test_plot_surf_stat_map_symmetric_cmap_matplotlib(
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("symmetric_cmap", [True, False])
 def test_plot_surf_stat_map_symmetric_cmap_matplotlib_error(
@@ -936,7 +928,6 @@ def test_plot_surf_roi_error(engine, rng, in_memory_mesh, surf_roi_data):
         plot_surf_roi(in_memory_mesh, roi_map=surf_roi_data, engine=engine)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_surf_roi_matplotlib_specific(
     matplotlib_pyplot, surface_image_roi
@@ -980,7 +971,6 @@ def test_plot_surf_roi_matplotlib_specific(
     assert cbar_vmax == 8.9
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_surf_roi_matplotlib_specific_nan_handling(
     matplotlib_pyplot,
@@ -1003,7 +993,6 @@ def test_plot_surf_roi_matplotlib_specific_nan_handling(
     assert n_faces == ((tmp._facecolors[:, 3]) != 0).sum()
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
     matplotlib_pyplot, surface_image_roi
@@ -1082,7 +1071,6 @@ def test_plot_surf_roi_default_arguments(
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "kwargs", [{"vmin": 2}, {"vmin": 2, "threshold": 5}, {"threshold": 5}]
 )

@@ -39,7 +39,6 @@ def test_squared_loss_lipschitz(rng, scaling, n_samples=4, n_features=2):
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("cb_retval", [0, 1])
 @pytest.mark.parametrize("verbose", [0, 1])
 @pytest.mark.parametrize("dgap_factor", [1.0, None])

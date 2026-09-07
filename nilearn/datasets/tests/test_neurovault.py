@@ -620,7 +620,6 @@ def test_write_read_metadata(tmp_path):
     assert read_metadata["absolute_path"] == Path("tmp", "collection_1")
 
 
-@pytest.mark.ai_generated
 def test_add_absolute_paths():
     """Test _add_absolute_paths."""
     meta = {
@@ -897,7 +896,6 @@ def test_fetch_neurovault_ids_offline(tmp_path):
     assert len(data.images) == 1
 
 
-@pytest.mark.ai_generated
 def test_fetch_neurovault_ids_overwrite(tmp_path):
     """Check that download_new mode forces overwrite."""
     collections, images = _get_neurovault_data()
@@ -980,7 +978,6 @@ def test_should_download_resampled_images_only_if_no_previous_download(
     _check_original_version_is_not_here(data)
 
 
-@pytest.mark.ai_generated
 def test_download_original_images_along_resamp_images_if_previously_downloaded(
     tmp_path,
 ):
@@ -1029,7 +1026,6 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
     _check_no_affine_match_neurovault_affine(data_orig)
 
 
-@pytest.mark.ai_generated
 def test_download_resamp_images_along_original_images_if_previously_downloaded(
     tmp_path,
 ):

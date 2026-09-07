@@ -315,7 +315,6 @@ def test_pass_masker_arg_to_estimator(
     check_decomposition_estimator(est, data_type)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_single_subject_score(canica_img, data_type, estimator):
@@ -349,7 +348,6 @@ def test_single_subject_score(canica_img, data_type, estimator):
     assert np.all(scores >= 0)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
@@ -386,7 +384,6 @@ def test_single_subject_file(data_type, canica_img, estimator, tmp_path):
     est.transform(tmp_file)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])

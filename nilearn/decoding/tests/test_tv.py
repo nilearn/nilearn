@@ -9,7 +9,6 @@ from nilearn.decoding.space_net_solvers import (
 )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("alpha", [0.0, 1e-1, 1e-3])
 @pytest.mark.parametrize("l1_ratio", [0.0, 0.5, 1.0])
 def test_tvl1_from_gradient(rng, alpha, l1_ratio, size=5, n_samples=10):

@@ -59,7 +59,6 @@ def test_mask_error():
         rena.fit_transform(X)
 
 
-@pytest.mark.ai_generated
 def test_rena_clustering():
     """Test that ReNA fits, transforms, and inverse-transforms data."""
     data_img, mask_img = generate_fake_fmri(length=5)

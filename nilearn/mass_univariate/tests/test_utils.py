@@ -90,7 +90,6 @@ def test_null_to_p_float_1_tailed_upper_tailed(
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "test_values, expected_p_value",
     [

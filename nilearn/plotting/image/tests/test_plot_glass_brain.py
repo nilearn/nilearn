@@ -104,7 +104,6 @@ def test_add_markers_left_hemi(matplotlib_pyplot):
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_glass_brain_colorbar_having_nans(
     matplotlib_pyplot, affine_eye, img_3d_mni
@@ -133,7 +132,6 @@ def test_plot_glass_brain_with_completely_masked_img(
     plot_glass_brain(img_3d_mni, display_mode=display_mode)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_glass_brain_negative_vmin_with_plot_abs(
     matplotlib_pyplot, img_3d_mni

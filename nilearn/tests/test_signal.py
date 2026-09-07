@@ -145,7 +145,6 @@ def data_butterworth_multiple_timeseries(
     return data
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_butterworth(data_butterworth_single_timeseries):
     """Check butterworth onsingle timeseries."""
@@ -170,7 +169,6 @@ def test_butterworth(data_butterworth_single_timeseries):
     assert id(out_single) != id(data)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_butterworth_multiple_timeseries(
     data_butterworth_single_timeseries, data_butterworth_multiple_timeseries
@@ -386,7 +384,6 @@ def test_standardize(rng):
     )
 
 
-@pytest.mark.ai_generated
 def test_detrend():
     """Test custom detrend implementation."""
     point_number = 703
@@ -620,7 +617,6 @@ def test_clean_t_r_type(cast_to):
     )
 
 
-@pytest.mark.ai_generated
 def test_clean_frequencies():
     """Check several values for low and high pass."""
     sx1 = np.sin(np.linspace(0, 100, 2000))
@@ -664,7 +660,6 @@ def test_clean_leaves_input_untouched():
     assert array_equal(sx_orig, sx)
 
 
-@pytest.mark.ai_generated
 def test_clean_runs():
     """Check cleaning across runs."""
     n_samples = 21
@@ -759,7 +754,6 @@ def test_clean_errors(signals):
         clean(signals, ensure_finite=None)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_clean_confounds():
     """Check output of cleaning when counfoun is passed."""
@@ -796,7 +790,6 @@ def test_clean_confounds():
     assert_almost_equal(cleaned_signals1, cleaned_signals)
 
 
-@pytest.mark.ai_generated
 def test_clean_confounds_detrending():
     """Test detrending.
 
@@ -896,7 +889,6 @@ def test_clean_confounds_inputs():
     )
 
 
-@pytest.mark.ai_generated
 def test_clean_warning(signals):
     """Check warnings are thrown."""
     # Check warning message when no confound methods were specified,
@@ -925,7 +917,6 @@ def test_clean_warning(signals):
         )
 
 
-@pytest.mark.ai_generated
 def test_clean_confounds_are_removed(signals, confounds):
     """Check that confounders effects are effectively removed.
 
@@ -947,7 +938,6 @@ def test_clean_confounds_are_removed(signals, confounds):
     assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * EPS
 
 
-@pytest.mark.ai_generated
 def test_clean_frequencies_using_power_spectrum_density():
     """Check on power spectrum that expected frequencies were removed."""
     # Create signal
@@ -1027,7 +1017,6 @@ def test_clean_warning_low_pass_not_implemented():
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("t_r", [1, 1.0])
 @pytest.mark.parametrize("high_pass", [1, 1.0])
 def test_clean_t_r_highpass_float_int(t_r, high_pass):
@@ -1151,7 +1140,6 @@ def test_high_variance_confounds_percentile():
     assert outG.shape == (length, n_confounds)
 
 
-@pytest.mark.ai_generated
 def test_high_variance_confounds_detrend():
     """Check adding a trend and detrending give same results as no trend."""
     n_features = 1001
@@ -1212,7 +1200,6 @@ def test_high_variance_confounds_nan():
     assert_almost_equal(out1, out2, decimal=13)
 
 
-@pytest.mark.ai_generated
 def test_clean_standardize_none():
     """Check output cleaning butterworth filter and no standardization."""
     n_samples = 500
@@ -1242,7 +1229,6 @@ def test_clean_standardize_none():
     assert_equal(cleaned_butterworth_signals, butterworth_signals)
 
 
-@pytest.mark.ai_generated
 def test_clean_psc(rng):
     """Test clean with percent signal change."""
     n_samples = 500
@@ -1280,7 +1266,6 @@ def test_clean_psc(rng):
         _assert_correlation_almost_1(z_signals, cleaned_signals)
 
 
-@pytest.mark.ai_generated
 def test_clean_psc_butterworth(rng):
     """Test clean with percent signal change and a butterworth filter."""
     n_samples = 500

@@ -24,7 +24,6 @@ def test_generate_atlas_look_up_table(shape_3d_default, surf_three_labels_img):
     check_look_up_table(lut=lut, atlas=surf_three_labels_img, strict=True)
 
 
-@pytest.mark.ai_generated
 def test_generate_atlas_look_up_table_errors():
     with pytest.raises(
         ValueError, match=r"'index' and 'name' cannot both be None."

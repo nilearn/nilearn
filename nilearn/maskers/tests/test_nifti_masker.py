@@ -350,7 +350,6 @@ def test_compute_brain_mask(strategy, expected_mask, mask_args):
     np.testing.assert_array_equal(get_data(masker.mask_img_), expected_mask)
 
 
-@pytest.mark.ai_generated
 def test_invalid_mask_arg_for_strategy():
     """Pass mask_args specific to epi strategy should not fail.
 
@@ -367,7 +366,6 @@ def test_invalid_mask_arg_for_strategy():
         masker.fit(img)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )

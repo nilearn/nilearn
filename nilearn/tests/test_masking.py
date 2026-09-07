@@ -89,7 +89,6 @@ def test_load_mask_img_surface(surf_mask_1d):
         assert hemi.dtype == "bool"
 
 
-@pytest.mark.ai_generated
 def test_high_variance_confounds():
     """Test high_variance_confounds."""
     img, mask, conf = _simu_img()
@@ -261,7 +260,6 @@ def test_compute_epi_mask_errors_warnings(affine_eye):
         compute_epi_mask(mean_image, exclude_zeros=True)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("value", (0, np.nan))
 def test_compute_background_mask(affine_eye, value):
     """Test compute_background_mask."""
@@ -293,7 +291,6 @@ def test_compute_background_mask_errors_warnings(affine_eye):
         compute_background_mask(mean_image)
 
 
-@pytest.mark.ai_generated
 def test_compute_brain_mask():
     """Test compute_brain_mask."""
     img, _ = data_gen.generate_mni_space_img(res=8)
@@ -373,7 +370,6 @@ def test_apply_mask(tmp_path, create_files, affine):
         assert_equal(proj.sum(), 9 / np.abs(affine[axis, axis]))
 
 
-@pytest.mark.ai_generated
 def test_apply_mask_surface(surf_img_1d, surf_mask_1d):
     """Test apply_mask on surface.
 
@@ -495,7 +491,6 @@ def test_apply_mask_errors(affine_eye, shape_3d_default):
         apply_mask(Nifti1Image(data, affine_eye), mask_img)
 
 
-@pytest.mark.ai_generated
 def test_unmask_4d(rng, affine_eye, shape_4d_default):
     """Test unmask on 4D images."""
     data4D = rng.uniform(size=shape_4d_default)
@@ -525,7 +520,6 @@ def test_unmask_4d(rng, affine_eye, shape_4d_default):
     assert_array_equal(t[0], unmasked4D)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("create_files", [False, True])
 def test_unmask_3d_with_files(
     rng, affine_eye, tmp_path, create_files, shape_3d_default
@@ -565,7 +559,6 @@ def test_unmask_3d_with_files(
     assert_array_equal(t[0], unmasked3D)
 
 
-@pytest.mark.ai_generated
 def test_unmask_retain_datatype(rng, affine_eye, shape_3d_default):
     """Check that the unmasked image retains the datatype of the data array.
 
@@ -866,7 +859,6 @@ def test_compute_multi_brain_mask_error():
         compute_multi_brain_mask(imgs)
 
 
-@pytest.mark.ai_generated
 def test_compute_multi_brain_mask():
     """Check results are the same if affine is the same."""
     imgs1 = [
@@ -907,7 +899,6 @@ def test_unmask_list(rng, shape_3d_default, affine_eye):
     assert_array_equal(get_data(a), get_data(b))
 
 
-@pytest.mark.ai_generated
 def test_extrapolate_out_mask():
     """Test extrapolate_out_mask."""
     # Input data:

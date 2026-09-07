@@ -23,7 +23,6 @@ from nilearn.maskers import NiftiMasker
 KWARGS = {"height_control": None, "threshold": 1, "cut_coords": [0.5, 1, 1.5]}
 
 
-@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
@@ -103,7 +102,6 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
         assert (tmpdir / sub_prefix / f"{prefix}_{fname}").exists()
 
 
-@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_save_glm_to_bids_reset_threshold_warning(tmp_path_factory):
@@ -246,7 +244,6 @@ def test_save_glm_to_bids_errors(
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
@@ -482,7 +479,6 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
         assert file not in report.__str__()
 
 
-@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("kwargs", ([{}, {"height_control": None}]))
@@ -577,7 +573,6 @@ def test_save_glm_to_bids_infer_filenames(tmp_path, kwargs):
         assert key in metadata
 
 
-@pytest.mark.ai_generated
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
 def test_save_glm_to_bids_surface_prefix_override(tmp_path):

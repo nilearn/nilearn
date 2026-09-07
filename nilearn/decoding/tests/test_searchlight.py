@@ -78,7 +78,6 @@ def test_error_searchlight_no_mask():
         sl.fit(data_img, y=cond)
 
 
-@pytest.mark.ai_generated
 def test_searchlight_small_radius():
     """Check that only one pixel is selected with a small radius."""
     frames = 30
@@ -148,7 +147,6 @@ def test_searchlight_medium_radius():
     assert sl.scores_[2, 2, 3] == 1.0
 
 
-@pytest.mark.ai_generated
 def test_searchlight_large_radius():
     """Check that more voxels are selected with a large radius."""
     frames = 30
@@ -427,7 +425,6 @@ def test_check_searchlight_estimator_regular_valid_passes():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.ai_generated
 def test_searchlight_custom_no_cv_estimator_runs_and_warns():
     """SearchLight with nilearn_searchlight_uses_cv=False bypasses CV."""
     frames = 20
@@ -451,7 +448,6 @@ def test_searchlight_custom_no_cv_estimator_runs_and_warns():
     assert np.all(sl.scores_[mask] == pytest.approx(0.5))
 
 
-@pytest.mark.ai_generated
 def test_searchlight_no_cv_estimator_receives_groups():
     """Groups are forwarded to fit() when nilearn_searchlight_uses_cv=False."""
     frames = 20

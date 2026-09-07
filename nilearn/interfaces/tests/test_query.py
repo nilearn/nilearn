@@ -145,7 +145,6 @@ def _rm_all_json_files_from_bids_dataset(bids_path) -> None:
     assert selection == []
 
 
-@pytest.mark.ai_generated
 def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
     """Check if json files are found in root folder of a dataset.
 
@@ -188,7 +187,6 @@ def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
     assert selection[0] == str(json_file)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.xfail(
     reason=(
         "get_bids_files does not find json files"
@@ -241,7 +239,6 @@ def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
     assert selection[0] == str(new_json_file)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "params, files_per_subject",
     [
@@ -296,7 +293,6 @@ def test_get_bids_files(tmp_path, params, files_per_subject):
     assert len(selection) == 1
 
 
-@pytest.mark.ai_generated
 def test_get_bids_files_fmriprep(tmp_path):
     """Check proper number of files is returned for fmriprep version."""
     n_sub = 2
@@ -414,7 +410,6 @@ def test_get_bids_files_fmriprep_subject_level_files(
     assert len(selection) == n_expected_files
 
 
-@pytest.mark.ai_generated
 def test_get_bids_files_no_space_entity(tmp_path):
     """Pass empty string for a label ignores files containing that label.
 

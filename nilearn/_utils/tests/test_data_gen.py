@@ -259,7 +259,6 @@ def test_fake_bids_derivatives_with_session_and_runs(
     assert len(all_files) == n_derivatives_files_expected
 
 
-@pytest.mark.ai_generated
 def test_bids_dataset_no_run_entity(tmp_path):
     """n_runs = 0 produces files without the run entity."""
     bids_path = create_fake_bids_dataset(
@@ -294,7 +293,6 @@ def test_bids_dataset_no_run_entity(tmp_path):
         assert len(files) == 1
 
 
-@pytest.mark.ai_generated
 def test_bids_dataset_no_session(tmp_path):
     """n_ses = 0 prevent creation of a session folder."""
     bids_path = create_fake_bids_dataset(
@@ -489,7 +487,6 @@ def test_fake_bids_extra_entity_not_bids_entity(tmp_path):
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("window", ["boxcar", "hamming"])
 def test_generate_regions_ts_no_overlap(window):
     n_voxels = 50
@@ -535,7 +532,6 @@ def test_generate_labeled_regions():
     assert len(np.unique(get_data(regions))) == n_regions + 1
 
 
-@pytest.mark.ai_generated
 def test_generate_maps():
     # Basic testing of generate_maps()
     shape = (10, 11, 12)
@@ -582,7 +578,6 @@ def test_generate_fake_fmri(
         assert fake_fmri[2].size == length
 
 
-@pytest.mark.ai_generated
 def test_generate_fake_fmri_error(rng):
     with pytest.raises(ValueError, match="10 is too small"):
         generate_fake_fmri(

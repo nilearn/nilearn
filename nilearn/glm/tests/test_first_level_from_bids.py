@@ -82,7 +82,6 @@ def _check_output_first_level_from_bids(
         assert all(isinstance(x, pd.DataFrame) for x in confound_)
 
 
-@pytest.mark.ai_generated
 def test_set_repetition_time_warnings(tmp_path):
     """Raise a warning when there is no bold.json file in the derivatives \
        and no TR value is passed as argument.
@@ -113,7 +112,6 @@ def test_set_repetition_time_warnings(tmp_path):
         assert models[0].t_r == expected_t_r
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "t_r, error_type, error_msg",
     [
@@ -137,7 +135,6 @@ def test_set_repetition_time_errors(tmp_path, t_r, error_type, error_msg):
         )
 
 
-@pytest.mark.ai_generated
 def test_set_slice_timing_ref_warnings(tmp_path):
     """Check that a warning is raised when slice_time_ref is not provided \
     and cannot be inferred from the dataset.
@@ -188,7 +185,6 @@ def test_set_slice_timing_ref_errors(
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.single_process
 def test_get_metadata_from_derivatives(tmp_path):
     """No warning should be thrown given derivatives have metadata.
@@ -217,7 +213,6 @@ def test_get_metadata_from_derivatives(tmp_path):
         assert models[0].slice_time_ref == StartTime / RepetitionTime
 
 
-@pytest.mark.ai_generated
 def test_get_repetition_time_from_derivatives(tmp_path):
     """Only RepetitionTime is provided in derivatives.
 
@@ -245,7 +240,6 @@ def test_get_repetition_time_from_derivatives(tmp_path):
         assert models[0].slice_time_ref == 0.0
 
 
-@pytest.mark.ai_generated
 def test_get_start_time_from_derivatives(tmp_path):
     """Only StartTime is provided in derivatives.
 
@@ -359,7 +353,6 @@ def test_slice_time_ref(bids_dataset, slice_time_ref):
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
 
-@pytest.mark.ai_generated
 def test_space_none(tmp_path):
     """Test behavior when no specific space is required .
 
@@ -657,7 +650,6 @@ def test_with_missing_events(tmp_path_factory):
         )
 
 
-@pytest.mark.ai_generated
 def test_no_tr(tmp_path_factory):
     """Throw warning when t_r information cannot be inferred from the data \
     and t_r=None is passed.
@@ -821,7 +813,6 @@ def test_all_confounds_missing(tmp_path_factory):
         assert condounds_ is None
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("n_sub", [1, 2])
 def test_confounds_strategy_none(tmp_path, n_sub):
     """If confounds_strategy is None, \
@@ -925,7 +916,6 @@ def test_slice_time_ref_warning_only_when_not_provided(bids_dataset):
         assert "'slice_time_ref' not provided" not in r.message.args[0]
 
 
-@pytest.mark.ai_generated
 def test_missing_trial_type_column_warning(tmp_path_factory):
     """Check that warning is thrown when an events file has no trial_type.
 
@@ -952,7 +942,6 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
         )
 
 
-@pytest.mark.ai_generated
 def test_load_confounds(tmp_path):
     """Test that only a subset of confounds can be loaded."""
     n_sub = 2
@@ -996,7 +985,6 @@ def test_load_confounds(tmp_path):
         assert f"{motion}_{dir}{der}{power}" in confounds[0][0].columns
 
 
-@pytest.mark.ai_generated
 def test_load_confounds_warnings(tmp_path):
     """Throw warning when incompatible confound loading strategy are used."""
     n_sub = 2

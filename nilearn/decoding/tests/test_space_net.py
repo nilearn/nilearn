@@ -250,7 +250,6 @@ def test_base_estimator_invalid_l1_ratio(rng, l1_ratio, estimator):
         estimator(l1_ratios=l1_ratio).fit(X, y)
 
 
-@pytest.mark.ai_generated
 def test_space_net_classifier_invalid_loss(rng):
     """Check invalid loss throw errors."""
     iris = load_iris()
@@ -397,7 +396,6 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     assert_array_equal(tvl1.predict(X_), sklogreg.predict(X))
 
 
-@pytest.mark.ai_generated
 @pytest.mark.slow
 def test_lasso_vs_graph_net():
     """Test for one of the extreme cases of Graph-Net.

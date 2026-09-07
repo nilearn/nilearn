@@ -74,7 +74,6 @@ def test_multi_pca_with_masker_without_cca_smoke(
     multi_pca.inverse_transform(multi_pca.transform(decomposition_images[-2:]))
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("with_activation", [False])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_multi_pca_score_single_subject_n_components(
