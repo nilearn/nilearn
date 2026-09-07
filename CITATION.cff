@@ -52,10 +52,12 @@ authors:
     family-names: Frau-Pascual
     website: https://github.com/ainafp
     orcid: https://orcid.org/0000-0001-6311-8426
-  - given-names: Aniketsy
+  - given-names: Aniket
     family-names: Singh Yadav
     website: https://github.com/Aniketsy
     orcid: https://orcid.org/0009-0004-4883-3797
+    affiliation: Galgotias University, India
+    email: singhyadavaniket43@gmail.com
   - given-names: Alex
     family-names: Rothberg
     website: https://github.com/cancan101
