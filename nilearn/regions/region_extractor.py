@@ -4,7 +4,7 @@ import collections.abc
 import numbers
 import warnings
 from copy import deepcopy
-from typing import overload
+from typing import Self, overload
 
 import numpy as np
 from nibabel import Nifti1Image
@@ -354,7 +354,7 @@ class RegionExtractor(NiftiMapsMasker):
 
         default=6mm.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
         .. note::
             Recommended to set to True if signals are not already standardized.
@@ -472,7 +472,7 @@ class RegionExtractor(NiftiMapsMasker):
         two_sided=False,
         extractor="local_regions",
         smoothing_fwhm=6,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         high_variance_confounds=False,
         detrend=False,
@@ -519,7 +519,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.smoothing_fwhm = smoothing_fwhm
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters

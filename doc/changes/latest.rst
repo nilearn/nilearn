@@ -12,7 +12,9 @@ HIGHLIGHTS
  | **We recommend upgrading to Python 3.13 or above.**
  |
  | **Minimum supported versions of the following packages have been bumped up:**
- | - joblib -- 1.5
+ | - joblib -- 1.5.0
+ | - scikit-learn -- 1.6.0
+ |
 
 ..
     Each changelog entry should begin with one of the following badges:
@@ -35,3 +37,5 @@ Enhancements
 
 Changes
 -------
+
+- :bdg-danger:`Deprecation` The functions ``nilearn.reporting.make_glm_report`` and ``nilearn.interfaces.bids.glm.save_glm_to_bids`` have been removed: instead now use :meth:`~nilearn.glm.first_level.FirstLevelModel.generate_report` or :meth:`~nilearn.glm.second_level.SecondLevelModel.generate_report`, and :func:`nilearn.glm.save_glm_to_bids` respectively (:gh:`6548` by `Rémi Gau`_).

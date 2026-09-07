@@ -94,7 +94,7 @@ Resolution: TypeAlias = Integer | None
 Resume: TypeAlias = bool
 ScreeningPercentile: TypeAlias = Scalar
 SmoothingFwhm: TypeAlias = Scalar
-Standardize: TypeAlias = Literal["zscore_sample", "psc", True, False, None]
+Standardize: TypeAlias = Literal["zscore_sample", "psc", None]
 StandardizeConfounds: TypeAlias = bool
 SupportedRegressors: TypeAlias = Literal[
     "ridge",
