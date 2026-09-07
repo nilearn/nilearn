@@ -1,11 +1,76 @@
 """Test the base_masker module."""
 
+import contextlib
+import io
+
 import numpy as np
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
 from nilearn import image
+from nilearn.maskers.base_masker import mask_logger
 from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
+
+
+def test_mask_logger(img_3d_mni, img_3d_mni_as_file, surf_img_1d):
+    """Check verbosity of mask_logger."""
+    # verbose = 0 --> no output
+    buffer = io.StringIO()
+    with (
+        contextlib.redirect_stdout(buffer),
+    ):
+        mask_logger("load_data", img=img_3d_mni, verbose=0)
+        mask_logger("load_data", img=surf_img_1d, verbose=0)
+    output_verbose = buffer.getvalue()
+
+    assert output_verbose == ""
+
+    # SurfaceImage: no shorten repr
+    output = {}
+    for verbose in [1, 2, 3]:
+        buffer = io.StringIO()
+        with (
+            contextlib.redirect_stdout(buffer),
+        ):
+            mask_logger("load_data", img=surf_img_1d, verbose=verbose)
+        output[verbose] = buffer.getvalue()
+
+    assert len(output[1]) == len(output[2]) == len(output[3])
+
+    # nifti file or nifti object or list nifti file or SurfaceImage list
+    output = {}
+    for img in [
+        img_3d_mni_as_file,
+        img_3d_mni,
+        [img_3d_mni_as_file] * 5,
+        [surf_img_1d] * 5,
+    ]:
+        for verbose in [1, 2, 3]:
+            buffer = io.StringIO()
+            with (
+                contextlib.redirect_stdout(buffer),
+            ):
+                mask_logger("load_data", img=img, verbose=verbose)
+            output[verbose] = buffer.getvalue()
+
+        # verbose 2 gives fullpath or affine matrix or expands list
+        assert len(output[1]) < len(output[2])
+        assert len(output[2]) == len(output[3])
+
+    # list nifti object
+    output = {}
+    for verbose in [1, 2, 3]:
+        buffer = io.StringIO()
+        with (
+            contextlib.redirect_stdout(buffer),
+        ):
+            mask_logger("load_data", img=[img_3d_mni] * 5, verbose=verbose)
+        output[verbose] = buffer.getvalue()
+
+    # verbose 2: shortens list but gives affine of first and last images
+    assert len(output[1]) < len(output[2])
+    # verbose 2: expands list and gives affine of all images
+    assert len(output[2]) < len(output[3])
 
 
 def test_cropping_code_paths(rng):

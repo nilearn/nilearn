@@ -11,12 +11,10 @@ from sklearn.covariance import EmpiricalCovariance, LedoitWolf
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
 from nilearn._utils.extmath import is_spd
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
     _check_spd,
@@ -48,47 +46,14 @@ ESTIMATORS_TO_CHECK = [
     ConnectivityMeasure(),
 ]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        (check_estimator(estimators=ESTIMATORS_TO_CHECK)),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):
-        """Check compliance with sklearn estimators."""
-        if name == "check_estimators_fit_returns_self":
-            # "check_estimators_fit_returns_self" fails with sklearn 1.4
-            # whether passed as a valid or invalid check
-            # so we are skipping it.
-            # Note it passes fine with later sklearn versions
-            pytest.skip("ignored for older sklearn")
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(
-            estimators=ESTIMATORS_TO_CHECK,
-            valid=False,
-        ),
-    )
-    def test_check_estimator_sklearn_invalid(
-        estimator,
-        check,
-        name,  # noqa: ARG001
-    ):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn_2(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn_2(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize(

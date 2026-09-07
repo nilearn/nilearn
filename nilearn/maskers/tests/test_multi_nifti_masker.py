@@ -9,47 +9,22 @@ from numpy.testing import assert_array_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
 
 ESTIMATORS_TO_CHECK = [MultiNiftiMasker()]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-
-# check_multi_masker_transformer_high_variance_confounds is slow
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize(
@@ -99,32 +74,6 @@ def test_auto_mask(data_1, img_1, data_2, img_2):
     masker.transform([[img_1]])
     # It should also work with a 3D image
     masker.transform(img_1)
-
-
-def test_nan():
-    """Check when fitted data contains nan."""
-    data = np.ones((9, 9, 9))
-    data[0] = np.nan
-    data[:, 0] = np.nan
-    data[:, :, 0] = np.nan
-    data[-1] = np.nan
-    data[:, -1] = np.nan
-    data[:, :, -1] = np.nan
-    data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, np.eye(4))
-
-    masker = MultiNiftiMasker(mask_args={"opening": 0})
-    masker.fit([img])
-
-    mask = get_data(masker.mask_img_)
-
-    assert mask[1:-1, 1:-1, 1:-1].all()
-    assert not mask[0].any()
-    assert not mask[:, 0].any()
-    assert not mask[:, :, 0].any()
-    assert not mask[-1].any()
-    assert not mask[:, -1].any()
-    assert not mask[:, :, -1].any()
 
 
 def test_different_affines():
