@@ -372,10 +372,7 @@ def test_atlas_data_different_fov(img_labels, affine_eye, length):
     with pytest.raises(AssertionError):
         assert_array_equal(img_labels.affine, fmri22_img.affine)
 
-    masker = NiftiLabelsMasker(
-        img_labels,
-        mask_img=mask22_img
-    )
+    masker = NiftiLabelsMasker(img_labels, mask_img=mask22_img)
     masker.fit_transform(fmri22_img)
 
     assert_array_equal(masker.labels_img_.affine, fmri22_img.affine)
