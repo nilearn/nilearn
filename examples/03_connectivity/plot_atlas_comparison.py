@@ -181,7 +181,7 @@ show()
 #
 # In this section, we use the lag-1 correlation as the connectivity
 # measure, which leads to an asymmetric connectivity matrix.
-# The plot_connectome function accepts both symmetric and asymmetric
+# The :func:`~nilearn.plotting.plot_connectome` function accepts both symmetric and asymmetric
 # matrices, but plots the latter as a directed graph.
 #
 
