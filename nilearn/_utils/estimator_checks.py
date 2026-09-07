@@ -511,6 +511,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
     yield (clone(estimator), check_set_output)
     yield (clone(estimator), check_verbose)
     yield (clone(estimator), check_doc_link)
+    yield (clone(estimator), check_refit)
 
     if isinstance(estimator, CacheMixin):
         yield (clone(estimator), check_img_estimator_cache_warning)
@@ -530,7 +531,6 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
         yield (clone(estimator), check_img_estimator_pickle)
         yield (clone(estimator), check_img_estimator_n_elements)
         yield (clone(estimator), check_img_estimator_pipeline_consistency)
-        yield (clone(estimator), check_img_estimator_refit)
         yield (clone(estimator), check_img_estimator_standardization)
         yield (clone(estimator), check_img_estimator_verbose)
         yield (clone(estimator), check_nilearn_methods_sample_order_invariance)
@@ -1036,6 +1036,33 @@ def check_doc_link(estimator_orig) -> None:
     )
 
 
+def check_refit(estimator_orig) -> None:
+    """Check that estimator can be refitted data does not match n_elements_.
+
+    Easier to change n_elements_after a first fit.
+    """
+    if not hasattr(estimator_orig, "transform"):
+        return
+
+    estimator = clone(estimator_orig)
+
+    set_random_state(estimator)
+    estimator = fit_estimator(estimator)
+
+    set_random_state(estimator)
+    if isinstance(estimator, (NiftiLabelsMasker, SurfaceLabelsMasker)):
+        # for label maskers, n_elements_ is a property
+        # so we need to hack around
+        n_elements_ = estimator.n_elements_
+        estimator._lut_ = pd.DataFrame({"index": list(range(n_elements_ + 5))})
+    elif hasattr(estimator, "n_features_in_"):
+        estimator.n_features_in_ += 5
+    else:
+        estimator.n_elements_ += 5
+
+    fit_estimator(estimator)
+
+
 # ------------------ GENERIC IMG ESTIMATORS CHECKS ------------------
 
 
@@ -1497,27 +1524,6 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
             rtol=max(tol, 1e-7),
             err_msg=f"Idempotency check failed for method '{method}'",
         )
-
-
-def check_img_estimator_refit(estimator_orig) -> None:
-    """Check that estimator can be refitted data does not match n_elements_.
-
-    Easier to change n_elements_after a first fit.
-    """
-    estimator = clone(estimator_orig)
-
-    set_random_state(estimator)
-    estimator = fit_estimator(estimator)
-
-    set_random_state(estimator)
-    if isinstance(estimator, (NiftiLabelsMasker, SurfaceLabelsMasker)):
-        # for label maskers, n_elements_is a property
-        # so we need to hack around
-        n_elements_ = estimator.n_elements_
-        estimator._lut_ = pd.DataFrame({"index": list(range(n_elements_ + 5))})
-    else:
-        estimator.n_elements_ += 5
-    estimator = fit_estimator(estimator)
 
 
 def check_img_estimator_overwrite_params(estimator_orig) -> None:
