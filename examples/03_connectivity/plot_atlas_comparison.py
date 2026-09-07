@@ -2,7 +2,7 @@
 Comparing connectomes on different reference atlases
 ====================================================
 
-This examples shows how to turn a :term:`parcellation` into connectome for
+This example shows how to turn a :term:`parcellation` into connectome for
 visualization. This requires choosing centers for each parcel
 or network, via :func:`~nilearn.plotting.find_parcellation_cut_coords` for
 :term:`parcellation` based on deterministic atlases (labels) and
