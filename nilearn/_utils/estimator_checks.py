@@ -536,11 +536,12 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
         yield (clone(estimator), check_img_estimator_dont_overwrite_parameters)
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
         yield (clone(estimator), check_img_estimator_fit_idempotent)
+        yield (clone(estimator), check_img_estimator_fit_score_takes_y)
         yield (clone(estimator), check_img_estimator_overwrite_params)
         yield (clone(estimator), check_img_estimator_pickle)
-        yield (clone(estimator), check_img_estimator_fit_score_takes_y)
         yield (clone(estimator), check_img_estimator_n_elements)
         yield (clone(estimator), check_img_estimator_pipeline_consistency)
+        yield (clone(estimator), check_img_estimator_refit)
         yield (clone(estimator), check_img_estimator_standardization)
         yield (clone(estimator), check_img_estimator_verbose)
         yield (clone(estimator), check_nilearn_methods_sample_order_invariance)
@@ -558,11 +559,11 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
+            yield (clone(estimator), check_decoder_estimator_args)
             yield (clone(estimator), check_decoder_compatibility_mask_image)
             yield (clone(estimator), check_decoder_screening_n_features)
             yield (clone(estimator), check_decoder_with_surface_data)
             yield (clone(estimator), check_decoder_with_arrays)
-            yield (clone(estimator), check_decoder_estimator_args)
             yield (clone(estimator), check_verbosity_embedded_masker)
             yield (clone(estimator), check_warning_embedded_masker)
 
@@ -1510,10 +1511,23 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
 
 
 def check_img_estimator_refit(estimator_orig) -> None:
-    """Check that estimator can be refitted with data of different shape."""
+    """Check that estimator can be refitted data does not match n_elements_.
+
+    Easier to change n_elements_after a first fit.
+    """
     estimator = clone(estimator_orig)
-    _X, _ = generate_data_to_fit(estimator)
+
     set_random_state(estimator)
+    estimator = fit_estimator(estimator)
+
+    set_random_state(estimator)
+    if isinstance(estimator, (NiftiLabelsMasker, SurfaceLabelsMasker)):
+        # for label maskers, n_elements_is a property
+        # so we need to hack around
+        n_elements_ = estimator.n_elements_
+        estimator._lut_ = pd.DataFrame({"index": list(range(n_elements_ + 5))})
+    else:
+        estimator.n_elements_ += 5
     estimator = fit_estimator(estimator)
 
 
