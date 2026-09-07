@@ -63,16 +63,19 @@ with warnings.catch_warnings():
     warnings.filterwarnings(action="ignore", category=ConvergenceWarning)
     canica.fit(func_filenames)
 
-# Retrieve the independent components in brain space directly
-# accessible through attribute `components_img_`.
-canica_components_img = canica.components_img_
-
 
 # %%
-# To visualize, we plot the outline of all components on one figure
+# Visualize the results
+# .....................
+#
+# To visualize,
+# we retrieve the independent components in brain space
+# directly accessible through attribute `components_img_`.
+# We then plot the outline of all ICA components on one figure.
 from nilearn.plotting import plot_prob_atlas
 
-# Plot all ICA components together
+canica_components_img = canica.components_img_
+
 plot_prob_atlas(canica_components_img, title="All ICA components")
 
 
@@ -97,8 +100,8 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
         colorbar=False,
     )
 
-
 show()
+
 
 # %%
 # Compare :term:`CanICA` to dictionary learning
@@ -129,13 +132,13 @@ dict_learning = DictLearning(
 
 dict_learning.fit(func_filenames)
 
-dictlearning_components_img = dict_learning.components_img_
-
 
 # %%
 # Visualize the results
+# .....................
 #
 # First plot all DictLearning components together
+dictlearning_components_img = dict_learning.components_img_
 plot_prob_atlas(
     dictlearning_components_img, title="All DictLearning components"
 )
@@ -160,6 +163,7 @@ for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
         colorbar=False,
     )
 
+
 # %%
 # Estimate explained variance per component and plot using matplotlib
 #
@@ -167,6 +171,8 @@ for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
 # to calculate the score per component.
 scores = dict_learning.score(func_filenames, per_component=True)
 
+
+# %%
 # Plot the scores
 import numpy as np
 from matplotlib import pyplot as plt
@@ -183,6 +189,7 @@ plt.gca().xaxis.set_major_formatter(FormatStrFormatter("%.3f"))
 
 show()
 
+
 # %%
 # .. note::
 #
@@ -191,6 +198,7 @@ show()
 #     extraction using dictionary learning and functional connectomes
 #     <sphx_glr_auto_examples_03_connectivity\
 #     _plot_extract_regions_dictlearning_maps.py>`.
+
 
 # %%
 # References
