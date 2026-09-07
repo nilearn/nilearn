@@ -6,7 +6,8 @@ import json
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
-from typing import Any, overload
+from pathlib import Path
+from typing import Any, Self, overload
 
 import numpy as np
 from joblib import Memory
@@ -35,7 +36,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.tags import InputTags
 from nilearn.image.image import (
     check_niimg,
     check_volume_for_fit,
@@ -189,11 +190,21 @@ def filter_and_extract(
 def mask_logger(step, img=None, verbose=0) -> None:
     """Log similar messages for all maskers."""
     repr = None
+
     if img is not None:
-        repr = img.__repr__()
-        if verbose > 1:
+        if isinstance(img, (str, Path)) or (
+            isinstance(img, (list, tuple))
+            and isinstance(img[0], (str, Path, SurfaceImage))
+        ):
+            if verbose == 1:
+                repr = repr_niimgs(img, shorten=True)
+            elif verbose >= 2:
+                repr = repr_niimgs(img, shorten=False)
+        elif verbose == 1:
+            repr = img.__repr__()
+        elif verbose == 2:
             repr = repr_niimgs(img, shorten=True)
-        elif verbose > 2:
+        elif verbose >= 3:
             repr = repr_niimgs(img, shorten=False)
 
     messages = {
@@ -358,7 +369,7 @@ class BaseMasker(_BaseMasker):
     _template_name = "body_masker.jinja"
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Compute the mask corresponding to the data.
 
         Parameters
@@ -375,6 +386,7 @@ class BaseMasker(_BaseMasker):
         self._check_dtype()
 
         if imgs is not None:
+            mask_logger("load_data", img=imgs, verbose=self.verbose)
             self._check_imgs(imgs)
 
         # Reset report
@@ -432,14 +444,6 @@ class BaseMasker(_BaseMasker):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(masker=True)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags()
         tags.estimator_type = "masker"
@@ -756,14 +760,6 @@ class _BaseSurfaceMasker(_BaseMasker):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(surf_img=True, niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=True, niimg_like=False)
         tags.estimator_type = "masker"
@@ -826,7 +822,7 @@ class _BaseSurfaceMasker(_BaseMasker):
         return mask_img_
 
     @abc.abstractmethod
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Present only to comply with sklearn estimators checks."""
 
     @fill_doc

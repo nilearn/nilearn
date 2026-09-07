@@ -3,7 +3,7 @@ Copying headers from input images with ``math_img``
 ===================================================
 
 This example shows how to copy the header information from one of
-the input images to the result image when using the function
+the input images to a resulting image when using the function
 :func:`~nilearn.image.math_img`.
 
 The header information contains metadata about the image, such as the
@@ -13,9 +13,11 @@ depending on the software used.
 """
 
 # %%
-# Let's fetch an example :term:`fMRI` dataset
+# Let's fetch two subjects from
+# an example :term:`fMRI` dataset,
+# :func:`~nilearn.datasets.fetch_adhd`.
 #
-# For more information
+# For more information on the structure of this dataset,
 # see the :ref:`dataset description <adhd_dataset>`.
 #
 from nilearn.datasets import fetch_adhd
@@ -23,6 +25,9 @@ from nilearn.datasets import fetch_adhd
 dataset = fetch_adhd(n_subjects=2)
 
 # %%
+# Preserving header information from an input image
+# -------------------------------------------------
+#
 # Now let's look at the header of one of these images
 from nilearn.image import load_img
 
@@ -31,16 +36,17 @@ subj2_img = load_img(dataset.func[1])
 
 print(f"Subject 1 header:\n{subj1_img.header}")
 # %%
-# Let's apply a simple operation using :func:`~nilearn.image.math_img`
+# Let's apply a simple operation to this image
+# using :func:`~nilearn.image.math_img`
 from nilearn.image import math_img
 
 result_img = math_img("img1 * 1", img1=subj1_img)
 
 # %%
-# By default, :func:`~nilearn.image.math_img` simply resets result image's
-# header to the default :class:`~nibabel.nifti1.Nifti1Header`.
+# By default, :func:`~nilearn.image.math_img` simply resets the result
+# image's header to the default :class:`~nibabel.nifti1.Nifti1Header`.
 #
-# This means that it will contain different information as compared to the
+# This means that it will not contain the same information as the
 # input image.
 #
 # We can check that as follows:
@@ -58,11 +64,12 @@ for key in result_img.header:
 # %%
 # This could affect some downstream analyses.
 #
-# For example, here the :term:`TR` (given as fifth element in ``pixdim``)
+# For example, here the :term:`TR`
+# (given as the fifth element in ``pixdim``)
 # is changed from 2 in ``subj1_img`` to 1 in ``result_img``.
 #
 # To fix this, we can copy the header of the input images to the
-# result image, like this:
+# result image, like so:
 result_img_with_header = math_img(
     "img1 * 1", img1=subj1_img, copy_header_from="img1"
 )
@@ -93,11 +100,14 @@ for key in result_img_with_header.header:
 # time axis.
 #
 # Copying the header with the ``copy_header_from`` parameter will not work
-# in this case.
+# in this case as the dimensions of the resulting image will be different.
 #
-# So, in such cases we could just use :func:`~nilearn.image.math_img` without
+# Instead, in these cases we can use :func:`~nilearn.image.math_img` without
 # specifying ``copy_header_from`` and then explicitly copy the header from one
 # of the images using :func:`~nilearn.image.new_img_like`
+
+# Take the mean of both subject images along the time axis
+# and subtract them.
 result_img = math_img(
     "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)",
     img1=subj1_img,
@@ -105,7 +115,7 @@ result_img = math_img(
 )
 
 # %%
-# Several of the header fields are different:
+# We can confirm that several of the header fields are different:
 print("Following header fields do not match:")
 for key in result_img.header:
     if not (subj1_img.header[key] == result_img.header[key]).all():
@@ -117,7 +127,7 @@ for key in result_img.header:
             result_img.header[key],
         )
 # %%
-# Now we can copy the header explicitly like this:
+# To account for this, we can copy the header explicitly like so:
 from nilearn.image import new_img_like
 
 result_img_with_header = new_img_like(
@@ -128,15 +138,6 @@ result_img_with_header = new_img_like(
 
 # %%
 # Now, only a few not-so-important fields are different.
-#
-# The modified fields can vary depending upon the formula passed into the
-# function.
-#
-# In this case, ``dim`` and ``pixdim`` are different because we took a mean
-# over the time dimension.
-#
-# And again, ``cal_min`` and ``cal_max`` are set to minimum and maximum data
-# values respectively, by Nilearn.
 print("Following header fields do not match:")
 for key in result_img_with_header.header:
     if not (subj1_img.header[key] == result_img_with_header.header[key]).all():
@@ -147,3 +148,13 @@ for key in result_img_with_header.header:
             "\n\tresult image:",
             result_img_with_header.header[key],
         )
+
+# %%
+# The modified fields can vary depending upon the formula passed into the
+# function.
+#
+# In this case, ``dim`` and ``pixdim`` are different because we took a mean
+# over the time dimension.
+#
+# And again, ``cal_min`` and ``cal_max`` are set to minimum and maximum data
+# values respectively, by Nilearn.

@@ -53,20 +53,19 @@ def test_sanitize_figure_and_axes_error(fig, axes):
 
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
-    "fig,axes,expected",
+    "fig,axes",
     [
-        ((6, 4), None, True),
-        (plt.figure(figsize=(3, 2)), None, True),
-        (None, None, True),
-        (None, plt.subplots(1, 1)[1], False),
+        ((6, 4), None),
+        (plt.figure(figsize=(3, 2)), None),
+        (None, None),
+        (None, plt.subplots(1, 1)[1]),
     ],
 )
-def test_sanitize_figure_and_axes(fig, axes, expected):
+def test_sanitize_figure_and_axes(fig, axes):
     """Test _sanitize_figure_and_axes with various figure/axes inputs."""
-    fig2, axes2, own_fig = _sanitize_figure_and_axes(fig, axes)
+    fig2, axes2 = _sanitize_figure_and_axes(fig, axes)
     assert isinstance(fig2, plt.Figure)
     assert isinstance(axes2, plt.Axes)
-    assert own_fig == expected
 
 
 @pytest.mark.thread_unsafe

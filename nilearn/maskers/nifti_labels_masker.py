@@ -533,6 +533,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 self.labels_img_,
             )
         ):
+            mask_logger("resample_regions", verbose=self.verbose)
             self.labels_img_ = self._resample_labels(imgs_)
 
         # resample mask
@@ -825,8 +826,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         )
 
     def _resample_labels(self, imgs_):
-        mask_logger("resample_regions", verbose=self.verbose)
-
         labels_before_resampling = set(
             np.unique(safe_get_data(self.labels_img_))
         )
