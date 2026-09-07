@@ -198,6 +198,7 @@ def test_find_cut_slices(affine_eye, direction):
     cuts = find_cut_slices(img, direction=direction, n_cuts=n_cuts, spacing=2)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_find_cut_slices_direction_z():
     """Test find_cut_slices in the z direction.
@@ -224,7 +225,7 @@ def test_find_cut_slices_direction_z():
     )
     img = Nifti1Image(data, affine)
 
-    cuts = find_cut_slices(img, direction="z")
+    cuts = find_cut_slices(img)
 
     assert np.diff(cuts).min() != 0.0
 
@@ -238,7 +239,7 @@ def test_find_cut_slices_direction_z():
     )
     img = Nifti1Image(data, affine)
 
-    cuts = find_cut_slices(img, direction="z")
+    cuts = find_cut_slices(img)
 
     assert np.diff(cuts).min() != 0.0
 
@@ -250,7 +251,7 @@ def test_find_cut_slices_direction_z():
     affine[:2, :2] = rotation_matrix * 2.0
     img = Nifti1Image(data, affine)
 
-    cuts = find_cut_slices(img, direction="z")
+    cuts = find_cut_slices(img)
 
     assert np.diff(cuts).min() != 0.0
 
@@ -480,6 +481,7 @@ def test_find_parcellation_cut_coords_error(img_3d_mni):
         )
 
 
+@pytest.mark.ai_generated
 def test_find_parcellation_cut_coords_hemispheres(affine_mni):
     """Test find_parcellation_cut_coords with a hemisphere filter."""
     # Create a mock labels_img object
@@ -489,7 +491,7 @@ def test_find_parcellation_cut_coords_hemispheres(affine_mni):
 
     # Test when label_hemisphere is "left"
     coords, labels = find_parcellation_cut_coords(
-        labels_img, return_label_names=True, label_hemisphere="left"
+        labels_img, return_label_names=True
     )
     assert len(coords) == 1
     assert labels == [1]

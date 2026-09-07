@@ -332,6 +332,7 @@ def test_plot_connectome_display_mode(
     )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.mpl_image_compare
 def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
     """Smoke test for plot_connectome with node_kwargs, edge_kwargs, \
@@ -344,7 +345,6 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
         node_size=[10, 20, 30, 40],
         node_color=np.zeros((4, 3)),
         edge_cmap="RdBu",
-        colorbar=True,
         node_kwargs={"marker": "v"},
         edge_kwargs={"linewidth": 4},
     )
@@ -353,6 +353,7 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
 # ---------------------- surface plotting -------------------------------
 
 
+@pytest.mark.ai_generated
 @pytest.mark.mpl_image_compare(tolerance=5)
 @mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
@@ -373,7 +374,7 @@ def test_plot_surf_surface(plot_func, view, hemi):
         # cannot have negative values for roi_map
         surf_img = math_img(
             "img > 0",
-            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+            img=load_fsaverage_data(mesh_type="inflated"),
         )
     return plot_func(
         surf_img.mesh,
@@ -385,6 +386,7 @@ def test_plot_surf_surface(plot_func, view, hemi):
     )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.skipif(
     not (is_plotly_installed() and is_kaleido_installed()),
     reason="This test requires plotly and kaleido to be installed",
@@ -412,7 +414,7 @@ def test_plot_surf_surface_plotly(plot_func, view, hemi):
         # cannot have negative values for roi_map
         surf_img = math_img(
             "img > 0",
-            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+            img=load_fsaverage_data(mesh_type="inflated"),
         )
     return plot_func(
         surf_img.mesh,
@@ -424,6 +426,7 @@ def test_plot_surf_surface_plotly(plot_func, view, hemi):
     )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.mpl_image_compare(tolerance=5)
 @mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
@@ -436,7 +439,7 @@ def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
         # cannot have negative values for roi_map
         surf_img = math_img(
             "img > 0",
-            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+            img=load_fsaverage_data(mesh_type="inflated"),
         )
     return plot_func(
         surf_img.mesh,
@@ -447,6 +450,7 @@ def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
     )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.skipif(
     not (is_plotly_installed() and is_kaleido_installed()),
     reason="This test requires plotly and kaleido to be installed",
@@ -466,7 +470,7 @@ def test_plot_surf_surface_colorbar_plotly(
         # cannot have negative values for roi_map
         surf_img = math_img(
             "img > 0",
-            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+            img=load_fsaverage_data(mesh_type="inflated"),
         )
     return plot_func(
         surf_img.mesh,
@@ -575,6 +579,7 @@ def test_surface_fs_data(hemi, resolution):
     return fig
 
 
+@pytest.mark.ai_generated
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("hemi", ["left", "right"])
 def test_surface_fs_vertices_order(hemi):
@@ -587,7 +592,7 @@ def test_surface_fs_vertices_order(hemi):
 
     resolution = ["fsaverage3", "fsaverage4", "fsaverage5"]
 
-    fs5 = fetch_surf_fsaverage(mesh="fsaverage5")
+    fs5 = fetch_surf_fsaverage()
 
     fig, ax = plt.subplots(
         nrows=len(resolution),

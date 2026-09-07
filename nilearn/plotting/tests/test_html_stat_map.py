@@ -98,6 +98,7 @@ def test_data_to_sprite():
     assert (sprite == gtruth).all(), "simulated sprite not as expected"
 
 
+@pytest.mark.ai_generated
 def test_threshold_data():
     """Check _threshold_data with auto, None, positive and zero thresholds."""
     data = np.arange(-3, 4)
@@ -110,7 +111,7 @@ def test_threshold_data():
     assert (data_t == gtruth_d).all()
 
     # Check that threshold=None keeps everything
-    data_t, mask, _ = _threshold_data(data, threshold=None)
+    data_t, mask, _ = _threshold_data(data)
     assert np.all(np.logical_not(mask))
     assert np.all(data_t == data)
 
@@ -131,6 +132,7 @@ def test_threshold_data():
     assert (mask == gtruth).all()
 
 
+@pytest.mark.ai_generated
 def test_save_sprite(rng):
     """Test covers _save_sprite as well as _bytes_io_to_base64."""
     # Generate a simulated volume with a square inside
@@ -139,7 +141,7 @@ def test_save_sprite(rng):
     mask[1:-1, 1:-1, 1:-1] = 1
     # Save the sprite using BytesIO
     sprite_io = BytesIO()
-    _save_sprite(data, sprite_io, vmin=0, vmax=1, mask=mask, format="png")
+    _save_sprite(data, sprite_io, vmin=0, vmax=1, mask=mask)
 
     # Load the sprite back in base64
     sprite_base64 = _bytes_io_to_base64(sprite_io)
@@ -157,13 +159,14 @@ def test_save_sprite(rng):
     assert np.allclose(img, cmapped, atol=0.1)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("cmap", ["tab10", "cold_hot"])
 @pytest.mark.parametrize("n_colors", [7, 20])
 def test_save_cmap(cmap, n_colors):
     """Test covers _save_cmap as well as _bytes_io_to_base64."""
     # Save the cmap using BytesIO
     cmap_io = BytesIO()
-    _save_cm(cmap_io, cmap, format="png", n_colors=n_colors)
+    _save_cm(cmap_io, cmap, n_colors=n_colors)
 
     # Load the colormap back in base64
     cmap_base64 = _bytes_io_to_base64(cmap_io)
@@ -176,6 +179,7 @@ def test_save_cmap(cmap, n_colors):
     assert np.allclose(img, expected, atol=0.1)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_mask_stat_map():
     """Check _mask_stat_map with no threshold and a zero threshold."""
@@ -183,7 +187,7 @@ def test_mask_stat_map():
     img, data = _simulate_img()
 
     # Try not to threshold anything
-    mask_img, img, _, _ = _mask_stat_map(img, threshold=None)
+    mask_img, img, _, _ = _mask_stat_map(img)
     assert np.max(get_data(mask_img)) == 0
 
     # Now threshold at zero
@@ -274,10 +278,7 @@ def test_json_view_params(affine_eye):
         black_bg=True,
         opacity=0.5,
         draw_cross=False,
-        annotate=True,
         title="A test",
-        colorbar=True,
-        value=True,
     )
 
     # Just check that a structure was generated,
@@ -289,6 +290,7 @@ def test_json_view_params(affine_eye):
     assert params["colorMap"]["img"] == "colorMap-test-viewer"
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("marker", [3, 11, 20, 28])
 def test_json_view_params_displays_requested_slice(marker):
     """The tile drawn must hold the slice whose coordinate was requested.
@@ -310,9 +312,7 @@ def test_json_view_params_displays_requested_slice(marker):
     img = Nifti1Image(data, affine)
 
     world_x = (affine @ np.array([marker, 0.0, 0.0, 1.0]))[0]
-    cut_slices = _get_cut_slices(
-        img, cut_coords=[world_x, 0.0, 0.0], threshold=None
-    )
+    cut_slices = _get_cut_slices(img, cut_coords=[world_x, 0.0, 0.0])
     params = _json_view_params(
         (n, n, n),
         affine,
@@ -332,6 +332,7 @@ def test_json_view_params_displays_requested_slice(marker):
     assert int(block.max()) == marker
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("cut_coords", [[0.0, -12.0, 9.0], [15.0, 6.0, -21.0]])
 def test_json_view_params_reports_requested_coordinates(cut_coords):
     """The coordinates shown must still be the ones requested."""
@@ -340,7 +341,7 @@ def test_json_view_params_reports_requested_coordinates(cut_coords):
     affine[:3, 3] = [48.0, -48.0, -48.0]
     img = Nifti1Image(np.zeros((n, n, n), dtype="float32"), affine)
 
-    cut_slices = _get_cut_slices(img, cut_coords=cut_coords, threshold=None)
+    cut_slices = _get_cut_slices(img, cut_coords=cut_coords)
     params = _json_view_params(
         (n, n, n),
         affine,
@@ -413,9 +414,7 @@ def _get_data_and_json_view(black_bg, cbar, radiological):
     mask_img = new_img_like(stat_map_img, data > 0, stat_map_img.affine)
 
     # Get color bar and data ranges
-    colors = colorscale(
-        "cold_hot", data.ravel(), threshold=0, symmetric_cmap=True, vmax=1
-    )
+    colors = colorscale("cold_hot", data.ravel(), threshold=0, vmax=1)
 
     # Build a sprite
     json_view = _json_view_data(
@@ -462,11 +461,8 @@ def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
         cut_slices=[1, 1, 1],
         html_ids=html_ids,
         black_bg=True,
-        opacity=1,
-        draw_cross=True,
         annotate=False,
         title="test",
-        colorbar=True,
         radiological=radiological,
     )
 
@@ -526,27 +522,28 @@ def test_brainsprite_viewers_have_unique_element_ids():
     assert all_dom_ids[0].isdisjoint(all_dom_ids[1])
 
 
+@pytest.mark.ai_generated
 def test_get_cut_slices(affine_eye):
     """Check _get_cut_slices with automatic, manual and rescaled affines."""
     # Generate simple simulated data with one "spot"
     img, data = _simulate_img()
 
     # Use automatic selection of coordinates
-    cut_slices = _get_cut_slices(img, cut_coords=None, threshold=None)
+    cut_slices = _get_cut_slices(img)
     assert (cut_slices == [4, 4, 4]).all()
 
     # Check that using a single number for cut_coords raises an error
     with pytest.raises(ValueError):
-        _get_cut_slices(img, cut_coords=4, threshold=None)
+        _get_cut_slices(img, cut_coords=4)
 
     # Check that it is possible to manually specify coordinates
-    cut_slices = _get_cut_slices(img, cut_coords=[2, 2, 2], threshold=None)
+    cut_slices = _get_cut_slices(img, cut_coords=[2, 2, 2])
     assert (cut_slices == [2, 2, 2]).all()
 
     # Check that the affine does not change where the cut is done
     affine = 2 * affine_eye
     img = Nifti1Image(data, affine)
-    cut_slices = _get_cut_slices(img, cut_coords=None, threshold=None)
+    cut_slices = _get_cut_slices(img)
     assert (cut_slices == [4, 4, 4]).all()
 
 

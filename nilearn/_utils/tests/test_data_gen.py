@@ -259,6 +259,7 @@ def test_fake_bids_derivatives_with_session_and_runs(
     assert len(all_files) == n_derivatives_files_expected
 
 
+@pytest.mark.ai_generated
 def test_bids_dataset_no_run_entity(tmp_path):
     """n_runs = 0 produces files without the run entity."""
     bids_path = create_fake_bids_dataset(
@@ -267,7 +268,6 @@ def test_bids_dataset_no_run_entity(tmp_path):
         n_ses=1,
         tasks=["main"],
         n_runs=[0],
-        with_derivatives=True,
     )
 
     files = list(bids_path.glob("**/*run-*"))
@@ -294,6 +294,7 @@ def test_bids_dataset_no_run_entity(tmp_path):
         assert len(files) == 1
 
 
+@pytest.mark.ai_generated
 def test_bids_dataset_no_session(tmp_path):
     """n_ses = 0 prevent creation of a session folder."""
     bids_path = create_fake_bids_dataset(
@@ -302,7 +303,6 @@ def test_bids_dataset_no_session(tmp_path):
         n_ses=0,
         tasks=["main"],
         n_runs=[1],
-        with_derivatives=True,
     )
 
     files = list(bids_path.glob("**/*ses-*"))
@@ -489,14 +489,13 @@ def test_fake_bids_extra_entity_not_bids_entity(tmp_path):
         )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("window", ["boxcar", "hamming"])
 def test_generate_regions_ts_no_overlap(window):
     n_voxels = 50
     n_regions = 10
 
-    regions = generate_regions_ts(
-        n_voxels, n_regions, overlap=0, window=window
-    )
+    regions = generate_regions_ts(n_voxels, n_regions, window=window)
 
     assert regions.shape == (n_regions, n_voxels)
     # check no overlap
@@ -536,11 +535,12 @@ def test_generate_labeled_regions():
     assert len(np.unique(get_data(regions))) == n_regions + 1
 
 
+@pytest.mark.ai_generated
 def test_generate_maps():
     # Basic testing of generate_maps()
     shape = (10, 11, 12)
     n_regions = 9
-    maps_img, _ = generate_maps(shape, n_regions, border=1)
+    maps_img, _ = generate_maps(shape, n_regions)
     maps = get_data(maps_img)
     assert maps.shape == (*shape, n_regions)
     # no empty map
@@ -582,12 +582,12 @@ def test_generate_fake_fmri(
         assert fake_fmri[2].size == length
 
 
+@pytest.mark.ai_generated
 def test_generate_fake_fmri_error(rng):
     with pytest.raises(ValueError, match="10 is too small"):
         generate_fake_fmri(
             length=10,
             n_blocks=10,
-            block_size=3,
             rand_gen=rng,
         )
 

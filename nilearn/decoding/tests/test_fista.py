@@ -39,6 +39,7 @@ def test_squared_loss_lipschitz(rng, scaling, n_samples=4, n_features=2):
     )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("cb_retval", [0, 1])
 @pytest.mark.parametrize("verbose", [0, 1])
 @pytest.mark.parametrize("dgap_factor", [1.0, None])
@@ -60,7 +61,7 @@ def test_input_args_and_kwargs(cb_retval, verbose, dgap_factor, rng):
     l1_weight = alpha_ * l1_ratio
 
     def f1(w):
-        return squared_loss(X, y, w, compute_grad=False)
+        return squared_loss(X, y, w)
 
     def f1_grad(w):
         return squared_loss(X, y, w, compute_grad=True, compute_energy=False)

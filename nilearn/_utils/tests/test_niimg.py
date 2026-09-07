@@ -105,13 +105,15 @@ def test_img_data_dtype(rng, affine_eye, tmp_path):
     assert not all(dtype_matches)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_load_niimg(img1, tmp_path):
-    filename = write_imgs_to_path(img1, file_path=tmp_path, create_files=True)
+    filename = write_imgs_to_path(img1, file_path=tmp_path)
     filename = Path(filename)
     load_niimg(filename)
 
 
+@pytest.mark.ai_generated
 def test_repr_niimgs():
     """Test repr_niimgs.
 
@@ -131,7 +133,7 @@ def test_repr_niimgs():
     assert repr_niimgs(long_name) == short_name
 
     # Explicit shortening of long names
-    assert repr_niimgs(long_name, shorten=True) == short_name
+    assert repr_niimgs(long_name) == short_name
 
     # Lists of long names up to length 3
     list_of_size_3 = [
@@ -148,10 +150,7 @@ def test_repr_niimgs():
         + "\n]"
     )
 
-    assert (
-        repr_niimgs(list_of_size_3, shorten=True)
-        == shortened_rep_list_of_size_3
-    )
+    assert repr_niimgs(list_of_size_3) == shortened_rep_list_of_size_3
 
     # Lists longer than 3
     # Small names - Explicit shortening
@@ -161,7 +160,7 @@ def test_repr_niimgs():
     )
 
     assert (
-        repr_niimgs(long_list_small_names, shorten=True)
+        repr_niimgs(long_list_small_names)
         == shortened_rep_long_list_small_names
     )
 
@@ -174,10 +173,7 @@ def test_repr_niimgs():
         "[\n this-is-a-very-lon...,\n         ...\n this-is-again-anot...,\n]"
     )
 
-    assert (
-        repr_niimgs(list_of_size_4, shorten=True)
-        == shortened_rep_long_list_long_names
-    )
+    assert repr_niimgs(list_of_size_4) == shortened_rep_long_list_long_names
 
 
 def test_repr_niimgs_force_long_names():
@@ -235,13 +231,14 @@ def test_repr_niimgs_force_long_names():
     )
 
 
+@pytest.mark.ai_generated
 def test_repr_niimgs_with_niimg_pathlib():
     """Test repr_niimgs with Path."""
     # Tests with pathlib
     # Case with very long path and small filename
     long_path = Path("/this/is/a/fake/long/path/to/file.nii")
     short_path = Path(".../path/to/file.nii")
-    assert repr_niimgs(long_path, shorten=True) == str(short_path)
+    assert repr_niimgs(long_path) == str(short_path)
     assert repr_niimgs(long_path, shorten=False) == str(long_path)
 
     # Case with very long path but very long filename
@@ -249,7 +246,7 @@ def test_repr_niimgs_with_niimg_pathlib():
         "/this/is/a/fake/long/path/to/my_file_with_a_very_long_name.nii"
     )
     short_name = "my_file_with_a_ver..."
-    assert repr_niimgs(long_path_long_name, shorten=True) == short_name
+    assert repr_niimgs(long_path_long_name) == short_name
     assert repr_niimgs(long_path_long_name, shorten=False) == str(
         long_path_long_name
     )
@@ -268,12 +265,13 @@ def test_repr_niimgs_with_niimg_pathlib():
         f" a-very-long-file-n...,\n]"
     )
 
-    assert repr_niimgs(list_of_paths, shorten=True) == shortened_list_of_paths
+    assert repr_niimgs(list_of_paths) == shortened_list_of_paths
     long_list_of_paths = ",\n ".join([str(_) for _ in list_of_paths])
     long_list_of_paths = f"[\n {long_list_of_paths},\n]"
     assert repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("shorten", [True, False])
 def test_repr_niimgs_with_niimg(
@@ -300,7 +298,7 @@ def test_repr_niimgs_with_niimg(
         == f"{class_name}('{filename}')"
     )
     assert (
-        repr_niimgs(img_3d_ones_eye, shorten=True)
+        repr_niimgs(img_3d_ones_eye)
         == f"{class_name}('{Path(filename).name[:18]}...')"
     )
 

@@ -88,6 +88,7 @@ def test_sort_input_dataframe(input_df):
     ]
 
 
+@pytest.mark.ai_generated
 def test_second_level_input_as_3d_images(
     rng, affine_eye, tmp_path, shape_3d_default, n_subjects
 ):
@@ -102,9 +103,7 @@ def test_second_level_input_as_3d_images(
         data = rng.random(shape_3d_default)
         images.append(Nifti1Image(data, affine_eye))
 
-    filenames = testing.write_imgs_to_path(
-        *images, file_path=tmp_path, create_files=True
-    )
+    filenames = testing.write_imgs_to_path(*images, file_path=tmp_path)
     second_level_input = filenames
     design_matrix = pd.DataFrame(
         [1] * len(second_level_input), columns=["intercept"]
@@ -431,6 +430,7 @@ def test_mask_img_volume(n_subjects):
     assert isinstance(model.mask_img_, Nifti1Image)
 
 
+@pytest.mark.ai_generated
 def test_affine_output_mask(n_subjects):
     func_img, mask = fake_fmri_data()
 
@@ -441,7 +441,7 @@ def test_affine_output_mask(n_subjects):
     model = model.fit(Y, design_matrix=X)
 
     c1 = np.eye(len(model.design_matrix_.columns))[0]
-    z_image = model.compute_contrast(c1, output_type="z_score")
+    z_image = model.compute_contrast(c1)
 
     assert_array_equal(z_image.affine, mask.affine)
 
@@ -471,6 +471,7 @@ def test_affine_shape_output_when_provided(affine_eye, n_subjects):
     assert_array_equal(z_image.affine, target_affine)
 
 
+@pytest.mark.ai_generated
 def test_slm_4d_image(img_4d_mni):
     """Compute contrast with 4D images as input.
 
@@ -481,7 +482,7 @@ def test_slm_4d_image(img_4d_mni):
     X = pd.DataFrame([[1]] * img_4d_mni.shape[3], columns=["intercept"])
     model = model.fit(Y, design_matrix=X)
     c1 = np.eye(len(model.design_matrix_.columns))[0]
-    model.compute_contrast(c1, output_type="z_score")
+    model.compute_contrast(c1)
 
 
 def test_warning_overriding_with_masker_parameter(n_subjects):
@@ -582,6 +583,7 @@ def test_fmri_inputs_dataframes_as_input(tmp_path, rng, confounds):
     SecondLevelModel().fit(niidf, confounds, design_matrix)
 
 
+@pytest.mark.ai_generated
 def test_fmri_pandas_series_as_input(tmp_path, rng):
     """Use pandas series of file paths as inputs."""
     # prepare correct input dataframe and lists
@@ -597,7 +599,6 @@ def test_fmri_pandas_series_as_input(tmp_path, rng):
     niidf = pd.DataFrame({"filepaths": [fmri_files, fmri_files, fmri_files]})
     SecondLevelModel().fit(
         second_level_input=niidf["filepaths"],
-        confounds=None,
         design_matrix=design_matrix,
     )
 
@@ -845,6 +846,7 @@ def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
         model._get_element_wise_model_attribute("foo", True)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "attribute", ["residuals_", "predicted_", "r_square_"]
 )
@@ -857,7 +859,7 @@ def test_second_level_voxelwise_attribute_errors_minimize_memory(
     """
     mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
 
-    model = SecondLevelModel(mask_img=mask, minimize_memory=True)
+    model = SecondLevelModel(mask_img=mask)
 
     Y = fmri_data * n_subjects
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
@@ -1030,6 +1032,7 @@ def test_second_level_f_contrast_length_errors(n_subjects):
         model.compute_contrast(second_level_contrast=np.eye(2))
 
 
+@pytest.mark.ai_generated
 def test_second_level_contrast_computation_with_memory_caching(n_subjects):
     func_img, mask = fake_fmri_data()
 
@@ -1043,7 +1046,7 @@ def test_second_level_contrast_computation_with_memory_caching(n_subjects):
     c1 = np.eye(ncol)[0, :]
 
     # test memory caching for compute_contrast
-    model.compute_contrast(c1, output_type="z_score")
+    model.compute_contrast(c1)
     # or simply pass nothing
     model.compute_contrast()
 
@@ -1140,6 +1143,7 @@ def test_second_level_input_as_surface_image_3d_same_as_list_2d(
     assert_surface_image_equal(result_2d, result_3d)
 
 
+@pytest.mark.ai_generated
 def test_second_level_input_as_surface_no_design_matrix(
     surf_img_1d, n_subjects
 ):
@@ -1151,7 +1155,7 @@ def test_second_level_input_as_surface_no_design_matrix(
     with pytest.raises(
         ValueError, match="require a design matrix to be provided"
     ):
-        model.fit(second_level_input, design_matrix=None)
+        model.fit(second_level_input)
 
 
 @pytest.mark.thread_unsafe

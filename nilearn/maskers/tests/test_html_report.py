@@ -572,10 +572,11 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
     )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_surface_masker_mask_img_generate_report(surf_img_1d, surf_mask_1d):
     """Smoke test generate report."""
-    masker = SurfaceMasker(surf_mask_1d, reports=True).fit()
+    masker = SurfaceMasker(surf_mask_1d).fit()
 
     assert masker._reporting_data is not None
     assert masker._reporting_data["images"] is None
@@ -691,6 +692,7 @@ def test_surface_maps_masker_generate_report_plotly_out_figure_type(
     assert "<img" not in report_str
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_surface_maps_masker_generate_report_matplotlib_out_figure_type(
     matplotlib_pyplot,  # noqa: ARG001
@@ -700,7 +702,7 @@ def test_surface_maps_masker_generate_report_matplotlib_out_figure_type(
     """Test that the report has a img tag when engine is matplotlib."""
     masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
-    report = masker.generate_report(engine="matplotlib", displayed_maps=2)
+    report = masker.generate_report(displayed_maps=2)
 
     # read the html file and see if matplotlib figure is inserted
     # meaning it should have <img tag

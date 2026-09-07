@@ -461,6 +461,7 @@ def test_safe_extract(tmp_path):
         _utils.uncompress_file(ztemp, verbose=0)
 
 
+@pytest.mark.ai_generated
 def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
     """Check that fetch_single_file can fetch part of file."""
 
@@ -487,7 +488,7 @@ def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
 
     request_mocker.url_mapping[url] = get_response
 
-    _utils.fetch_single_file(url=url, data_dir=tmp_path, resume=True)
+    _utils.fetch_single_file(url=url, data_dir=tmp_path)
 
     assert file_full.exists()
     assert file_full.read_text() == "Dummy content"  # not overwritten
@@ -500,14 +501,13 @@ def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
     # test for overwrite
     file_part.write_text("D")  # should be overwritten
 
-    _utils.fetch_single_file(
-        url=url, data_dir=tmp_path, resume=True, overwrite=True
-    )
+    _utils.fetch_single_file(url=url, data_dir=tmp_path, overwrite=True)
 
     assert file_full.exists()
     assert file_full.read_text() == "dummy content"  # overwritten
 
 
+@pytest.mark.ai_generated
 def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
     """Check error fetch_single_file."""
     url = "http://foo/temp.txt"
@@ -517,7 +517,7 @@ def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
     # the default Response from the mocker does not handle Range requests
     request_mocker.url_mapping[url] = "dummy content"
 
-    _utils.fetch_single_file(url=url, data_dir=tmp_path, resume=True)
+    _utils.fetch_single_file(url=url, data_dir=tmp_path)
 
     assert (
         "Resuming failed, try to download the whole file."
@@ -525,6 +525,7 @@ def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
     )
 
 
+@pytest.mark.ai_generated
 def test_fetch_single_file_overwrite(tmp_path, request_mocker):
     """Check that fetch_single_file can overwrite files."""
     # overwrite non-exiting file.
@@ -541,7 +542,7 @@ def test_fetch_single_file_overwrite(tmp_path, request_mocker):
 
     # Don't overwrite existing file.
     fil = _utils.fetch_single_file(
-        url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=False
+        url="http://foo/", data_dir=tmp_path, verbose=0
     )
 
     assert request_mocker.url_count == 1

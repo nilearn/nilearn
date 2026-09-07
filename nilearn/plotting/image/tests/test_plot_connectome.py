@@ -95,12 +95,11 @@ def test_plot_connectome_with_too_high_edge_threshold(adjacency, node_coords):
     )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_plot_connectome_non_symmetric(node_coords, non_symmetric_matrix):
     """Tests for plot_connectome with non symmetric adjacency matrices."""
-    ax = plot_connectome(
-        non_symmetric_matrix, node_coords, display_mode="ortho"
-    )
+    ax = plot_connectome(non_symmetric_matrix, node_coords)
     # No thresholding was performed, we should get
     # as many arrows as we have edges
     for direction in ["x", "y", "z"]:

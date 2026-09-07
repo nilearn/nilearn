@@ -179,6 +179,7 @@ def test_strategy_compcor(tmp_path, fmriprep_version):
     assert "global_signal" in compcor_col_str_anat
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
 def test_irrelevant_input(tmp_path, fmriprep_version):
     """Check invalid input raising correct warning or error message."""
@@ -194,9 +195,7 @@ def test_irrelevant_input(tmp_path, fmriprep_version):
         "'global_signal', 'demean']"
     )
     with pytest.warns(UserWarning, match=warning_message):
-        load_confounds_strategy(
-            file_nii, denoise_strategy="simple", ica_aroma="full"
-        )
+        load_confounds_strategy(file_nii, ica_aroma="full")
     # invalid strategy
     with pytest.raises(ValueError, match="blah"):
         load_confounds_strategy(file_nii, denoise_strategy="blah")

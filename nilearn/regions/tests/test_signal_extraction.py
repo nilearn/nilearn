@@ -378,6 +378,7 @@ def test_signals_extraction_with_labels_without_mask(
     assert labels_r == list(range(1, 9))
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "label_values", [[10, 20, 30], [100, 150, 200, 256, 300, 400]]
 )
@@ -395,12 +396,12 @@ def test_masked_atlas_keeps_the_label_values(affine_eye, label_values):
     _, labels, masked_atlas = img_to_signals_labels(
         imgs=Nifti1Image(signals_data, affine_eye),
         labels_img=Nifti1Image(labels_data, affine_eye),
-        return_masked_atlas=True,
     )
 
     assert set(np.unique(get_data(masked_atlas))) - {0} == set(labels)
 
 
+@pytest.mark.ai_generated
 def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
     signals, labels_img
 ):
@@ -417,7 +418,6 @@ def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
     ) = img_to_signals_labels(
         imgs=data_img,
         labels_img=labels_img,
-        return_masked_atlas=True,
     )
 
     labels_data = get_data(labels_img)
@@ -477,6 +477,7 @@ def test_signals_extraction_with_labels_with_mask(
     assert labels_r == list(range(1, 9))
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
     signals, labels_img, mask_img
@@ -502,7 +503,6 @@ def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
         imgs=data_img,
         labels_img=labels_img,
         mask_img=mask_img,
-        return_masked_atlas=True,
     )
 
     labels_data_r = get_data(masked_atlas_r)
@@ -604,6 +604,7 @@ def test_signal_extraction_with_maps_and_labels(
     assert maps_img_r.shape == (*shape_3d_default, N_TIMEPOINTS)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     labels_data = get_data(labeled_regions)
@@ -629,7 +630,6 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
             imgs=fmri_img,
             labels_img=labeled_regions,
             mask_img=mask_img,
-            keep_masked_labels=False,
         )
 
     # only 3 regions must be kept, others must be removed
@@ -668,7 +668,6 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
             imgs=fmri_img,
             labels_img=labeled_regions,
             mask_img=mask_img,
-            keep_masked_labels=False,
             return_masked_atlas=False,
         )
 
