@@ -61,14 +61,13 @@ print(
 
 
 # %%
-# Extract coordinates on Yeo atlas - parcellations
 # Extract coordinates from a deterministic parcellation - Yeo atlas
 # -----------------------------------------------------------------
 from nilearn.connectome import ConnectivityMeasure
 from nilearn.maskers import MultiNiftiLabelsMasker
 
 # ConnectivityMeasure from Nilearn uses simple 'correlation' to compute
-# connectivity matrices for all subjects in a list
+# connectivity matrices for all subjects in a list.
 connectome_measure = ConnectivityMeasure(kind="correlation", verbose=verbose)
 
 # create masker using MultiNiftiLabelsMasker to extract functional data within
@@ -181,12 +180,13 @@ show()
 
 # %%
 # Plot a directed connectome - asymmetric connectivity measure
-# Plot a directed connectome - asymmetric connectivity measure
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 # In this section, we use the lag-1 correlation as the connectivity
 # measure, which leads to an asymmetric connectivity matrix.
 # The plot_connectome function accepts both symmetric and asymmetric
 # matrices, but plots the latter as a directed graph.
+#
 
 
 # Define a custom function to compute lag correlation on the time series
@@ -219,7 +219,6 @@ for lag in [0, 1]:
     )
 
 # %%
-# Load probabilistic atlases - extracting coordinates on brain maps
 # Extract coordinates from a probabilistic parcellation - Difumo atlas
 # --------------------------------------------------------------------
 from nilearn.datasets import fetch_atlas_difumo
