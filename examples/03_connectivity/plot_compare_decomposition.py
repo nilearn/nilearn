@@ -3,7 +3,7 @@ Deriving spatial maps from group fMRI data using ICA and Dictionary Learning
 ============================================================================
 
 Various approaches exist to derive spatial maps or networks from
-group :term`fMRI` data. The methods extract distributed brain regions that
+group :term:`fMRI` data. The methods extract distributed brain regions that
 exhibit similar :term:`BOLD` fluctuations over time. Decomposition
 methods allow for generation of many independent maps simultaneously
 without the need to provide a priori information (e.g. seeds or priors).
