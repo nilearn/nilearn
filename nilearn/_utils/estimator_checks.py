@@ -85,6 +85,8 @@ from nilearn.conftest import (
     _img_3d_zeros,
     _img_4d_rand_eye,
     _img_4d_rand_eye_medium,
+    _img_labels,
+    _img_maps,
     _img_mask_mni,
     _make_surface_img,
     _make_surface_img_and_design,
@@ -93,6 +95,7 @@ from nilearn.conftest import (
     _shape_3d_default,
     _shape_3d_large,
     _surf_img_1d,
+    _surf_maps_img,
     _surf_mask_1d,
 )
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
@@ -133,6 +136,7 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers._mixin import _MultiMixin
+from nilearn.maskers.tests.conftest import sklearn_surf_label_img
 from nilearn.maskers.tests.test_html_report import (
     generate_and_check_masker_report,
 )
@@ -1451,7 +1455,7 @@ def check_img_estimator_cache_warning(estimator_orig) -> None:
 def check_img_estimator_fit_idempotent(estimator_orig) -> None:
     """Check that est.fit(X) is the same as est.fit(X).fit(X).
 
-    So we check that
+    Also check that
     predict(), decision_function() and transform() return
     the same results.
 
@@ -1503,6 +1507,14 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
             rtol=max(tol, 1e-7),
             err_msg=f"Idempotency check failed for method '{method}'",
         )
+
+
+def check_img_estimator_refit(estimator_orig) -> None:
+    """Check that estimator can be refitted with data of different shape."""
+    estimator = clone(estimator_orig)
+    _X, _ = generate_data_to_fit(estimator)
+    set_random_state(estimator)
+    estimator = fit_estimator(estimator)
 
 
 def check_img_estimator_overwrite_params(estimator_orig) -> None:
@@ -3310,7 +3322,11 @@ def check_masker_with_confounds(estimator_orig) -> None:
 
 
 def check_masker_refit(estimator_orig) -> None:
-    """Check masker can be refitted and give different results."""
+    """Check masker can be refitted and give different results.
+
+    Refit is done on images with different shape
+    and/or different number of features
+    """
     estimator = clone(estimator_orig)
 
     mask_img_1: Nifti1Image | SurfaceImage
@@ -3322,7 +3338,7 @@ def check_masker_refit(estimator_orig) -> None:
         mask[1:-1, 1:-1, 1:-1] = 1
         mask_img_1 = Nifti1Image(mask, _affine_eye())
 
-        mask = np.zeros(_shape_3d_large(), dtype=np.int8)
+        mask = np.zeros(tuple(x + 5 for x in _shape_3d_large()), dtype=np.int8)
         mask[3:-3, 3:-3, 3:-3] = 1
         mask_img_2 = Nifti1Image(mask, _affine_eye())
     else:
@@ -3336,6 +3352,19 @@ def check_masker_refit(estimator_orig) -> None:
     estimator.mask_img = mask_img_1
     estimator.fit()
     fitted_mask_1 = estimator.mask_img_
+
+    if isinstance(estimator, (NiftiLabelsMasker)):
+        estimator.labels_img = _img_labels(n_regions=estimator.n_elements_ + 5)
+    elif isinstance(estimator, (SurfaceLabelsMasker)):
+        estimator.labels_img = sklearn_surf_label_img(
+            n_regions=estimator.n_elements_ + 1
+        )
+    elif isinstance(estimator, (NiftiMapsMasker)):
+        estimator.maps_img = _img_maps(n_regions=estimator.n_elements_ + 5)
+    elif isinstance(estimator, (SurfaceMapsMasker)):
+        n_regions = 5
+        assert n_regions != estimator.n_elements_
+        estimator.maps_img = _surf_maps_img(n_regions=n_regions)
 
     estimator.mask_img = mask_img_2
     estimator.fit()
