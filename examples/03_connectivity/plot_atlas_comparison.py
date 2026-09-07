@@ -13,7 +13,7 @@ In the intermediary steps, we make use of
 :class:`~nilearn.maskers.MultiNiftiLabelsMasker` and
 :class:`~nilearn.maskers.MultiNiftiMapsMasker`
 to extract time series from nifti
-objects from multiple subjects using different :term:`parcellation` atlases.
+objects representing multiple subjects using different :term:`parcellation` atlases.
 
 The time series of all subjects of the brain development dataset are
 concatenated and given directly to
