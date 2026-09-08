@@ -497,7 +497,17 @@ def test_resampling_to_clipped_labels(
         labels33_img, mask_img=mask22_img, resampling_target="labels"
     )
 
-    signals = masker.fit_transform(fmri11_img)
+    signals = masker.fit()
+    assert masker.n_elements_ == 9
+    with pytest.warns(
+        UserWarning,
+        match=(
+            "Out of 10 labels, the masked labels image only contains 4 labels"
+        ),
+    ):
+        signals = masker.transform(fmri11_img)
+    n_regions_left = 3
+    assert masker.n_elements_ == n_regions_left
 
     assert_almost_equal(masker.labels_img_.affine, labels33_img.affine)
 
@@ -507,9 +517,9 @@ def test_resampling_to_clipped_labels(
 
     uniq_labels = np.unique(get_data(masker.labels_img_))
     assert uniq_labels[0] == 0
-    assert len(uniq_labels) - 1 == n_regions
+    assert len(uniq_labels) - 1 == n_regions_left
 
-    assert signals.shape == (length, n_regions)
+    assert signals.shape == (length, n_regions_left)
     # Some regions have been clipped. Resulting signal must be zero
     assert (signals.var(axis=0) == 0).sum() < n_regions
 
