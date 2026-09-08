@@ -19,6 +19,7 @@ from nilearn.image import (
     clean_img,
     get_data,
     index_img,
+    new_img_like,
     resample_img,
 )
 from nilearn.image.image import check_same_fov
@@ -441,6 +442,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     "No map left after applying mask to the maps image."
                 )
 
+        # TODO throw warning if some maps were dropped at fit time
+        # due to masking or resampling
+
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._reporting_data = {
@@ -651,7 +655,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         sklearn_output_config = getattr(self, "_sklearn_output_config", None)
 
-        region_signals, _ = self._cache(
+        region_signals, extracted_maps = self._cache(
             filter_and_extract,
             ignore=["verbose", "memory", "memory_level"],
         )(
@@ -672,6 +676,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             verbose=self.verbose,
             sklearn_output_config=sklearn_output_config,
         )
+
+        # we update some attributes
+        # that may have been changed by resampling or masking
+        self.n_elements_ = len(extracted_maps)
+        maps_data = get_data(maps_img_)[:, :, :, extracted_maps]
+        self.maps_img_ = new_img_like(self.maps_img_, maps_data)
 
         # if target_dtype is still None, self.dtype is None: no explicit
         # dtype was requested, so keep the dtype produced by the

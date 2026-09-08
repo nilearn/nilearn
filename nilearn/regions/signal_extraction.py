@@ -488,7 +488,7 @@ def img_to_signals_maps(
         Signals extracted from each region.
         Shape is: (scans number, number of regions intersecting mask)
 
-    labels : :obj:`list` of :obj:`int`
+    maps : :obj:`list` of :obj:`int`
         maps_img[..., labels[n]] is the region that has been used to extract
         signal region_signals[:, n].
 

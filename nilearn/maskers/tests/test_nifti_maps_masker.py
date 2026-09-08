@@ -349,6 +349,9 @@ def test_resampling_to_mask(
     if isinstance(masker, NiftiMapsMasker):
         input_img = img_fmri
 
+    # resampling only done at transform time not fit time
+    signals = masker.fit()
+    assert masker.n_elements_ == 9
     with (
         warnings.catch_warnings(record=True) as warning_list,
     ):
@@ -357,6 +360,13 @@ def test_resampling_to_mask(
             "consider using nearest interpolation instead" not in str(x)
             for x in warning_list
         )
+        assert any(
+            "Out of 9 maps, the masked map image only contains 2 maps"
+            in str(x)
+            for x in warning_list
+        )
+    n_regions_left = 2
+    assert masker.n_elements_ == n_regions_left
 
     assert_almost_equal(masker.mask_img_.affine, mask22_img.affine)
     assert masker.mask_img_.shape == mask22_img.shape
@@ -368,7 +378,7 @@ def test_resampling_to_mask(
         signals = [signals]
 
     for t in signals:
-        assert t.shape == (length, n_regions)
+        assert t.shape == (length, n_regions_left)
 
         fmri11_img_r = masker.inverse_transform(t)
 
@@ -400,10 +410,19 @@ def test_resampling_to_maps(
     if isinstance(masker, NiftiMapsMasker):
         input_img = img_fmri
 
-    signals = masker.fit_transform(input_img)
+    # resampling only done at transform time not fit time
+    signals = masker.fit()
+    assert masker.n_elements_ == 9
+    with pytest.warns(
+        UserWarning,
+        match="Out of 9 maps, the masked map image only contains 2 maps",
+    ):
+        signals = masker.transform(input_img)
+    n_regions_left = 2
+    assert masker.n_elements_ == n_regions_left
 
     assert_array_equal(masker.maps_img_.affine, maps33_img.affine)
-    assert masker.maps_img_.shape == maps33_img.shape
+    assert masker.maps_img_.shape == (*maps33_img.shape[:3], n_regions_left)
 
     assert_array_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
@@ -412,7 +431,7 @@ def test_resampling_to_maps(
         signals = [signals]
 
     for t in signals:
-        assert t.shape == (length, n_regions)
+        assert t.shape == (length, n_regions_left)
 
         fmri11_img_r = masker.inverse_transform(t)
 
@@ -439,10 +458,19 @@ def test_clipped_mask(estimator, affine_eye, length, n_regions, img_fmri):
     if isinstance(masker, NiftiMapsMasker):
         input_img = img_fmri
 
-    signals = masker.fit_transform(input_img)
+    # clipping is done at transform time not fit time
+    signals = masker.fit()
+    assert masker.n_elements_ == 9
+    with pytest.warns(
+        UserWarning,
+        match="Out of 9 maps, the masked map image only contains 4 maps",
+    ):
+        signals = masker.transform(input_img)
+    n_regions_left = 4
+    assert masker.n_elements_ == n_regions_left
 
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
-    assert masker.maps_img_.shape == maps33_img.shape
+    assert masker.maps_img_.shape == (*maps33_img.shape[:3], n_regions_left)
 
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
@@ -451,7 +479,7 @@ def test_clipped_mask(estimator, affine_eye, length, n_regions, img_fmri):
         signals = [signals]
 
     for t in signals:
-        assert t.shape == (length, n_regions)
+        assert t.shape == (length, n_regions_left)
         # Some regions have been clipped. Resulting signal must be zero
         assert (t.var(axis=0) == 0).sum() < n_regions
 
