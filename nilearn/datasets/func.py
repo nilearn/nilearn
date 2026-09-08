@@ -94,6 +94,7 @@ def _validate_subjects(
     return max_subjects
 
 
+# TODO (nilearn >= 0.17.0) remove decorator
 @rename_parameters({"subjects": "n_subjects"}, end_version="0.17.0")
 @fill_doc
 def fetch_haxby(
