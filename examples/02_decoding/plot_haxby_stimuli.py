@@ -21,7 +21,7 @@ stimulus_information = haxby_dataset.stimuli
 
 # %%
 
-for stim_type in stimulus_information:
+for stim_type in sorted(stimulus_information):
     # skip control images, there are too many
     if stim_type != "controls":
         file_names = stimulus_information[stim_type]
