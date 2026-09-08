@@ -411,32 +411,37 @@ def test_masked_atlas_keeps_the_label_values(affine_eye, label_values):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.parametrize("create_files", [True, False])
 def test_signals_extraction_with_labels_with_mask(
-    signals, labels_img, labels_data, mask_img, shape_3d_default, tmp_path
+    signals,
+    labels_img,
+    labels_data,
+    mask_img,
+    shape_3d_default,
+    tmp_path,
+    create_files,
+    labeled_regions,
 ):
     """Test conversion between signals and images \
     using regions defined by labels with a mask.
     """
-    data_img = signals_to_img_labels(
-        signals=signals, labels_img=labels_img, mask_img=mask_img
+    mask_img = _create_mask_with_3_regions_from_labels_data(
+        labels_data, labeled_regions.affine
     )
 
-    assert data_img.shape == (*shape_3d_default, N_TIMEPOINTS)
-    # There must be non-zero data (safety net)
-    data = get_data(data_img)
-    assert abs(data).max() > 1e-9
-
-    # Zero outside of the mask
-    assert np.all(data[np.logical_not(get_data(mask_img))].std(axis=-1) < EPS)
-
-    filenames = write_imgs_to_path(labels_img, mask_img, file_path=tmp_path)
+    filenames = write_imgs_to_path(
+        labels_img, mask_img, file_path=tmp_path, create_files=create_files
+    )
     data_img = signals_to_img_labels(
         signals=signals, labels_img=filenames[0], mask_img=filenames[1]
     )
 
     assert data_img.shape == (*shape_3d_default, N_TIMEPOINTS)
+
+    # There must be non-zero data (safety net)
     data = get_data(data_img)
     assert abs(data).max() > 1e-9
+
     # Zero outside of the mask
     assert np.all(data[np.logical_not(get_data(mask_img))].std(axis=-1) < EPS)
 
@@ -458,7 +463,8 @@ def test_signals_extraction_with_labels_with_mask(
     # labels should be masked and only contain 3 regions
     # and the background
     labels_data_r = get_data(masked_atlas_r)
-    assert list(np.unique(labels_data_r)) == [0, 1, 2, 5]
+    unique_labels = list(np.unique(labels_data_r))
+    assert unique_labels == [0, 1, 2, 5]
 
 
 @pytest.mark.thread_unsafe
@@ -513,11 +519,21 @@ def test_signal_extraction_with_maps_and_labels(
     )
     assert_almost_equal(maps_signals, labels_signals)
 
-    # Same thing with a mask, containing only 3 regions.
+    # Inverse operation with mask (mostly smoke test)
     mask_img = _create_mask_with_3_regions_from_labels_data(
         labels_data, labeled_regions.affine
     )
 
+    labels_img_r = signals_to_img_labels(
+        labels_signals, labeled_regions, mask_img=mask_img
+    )
+    assert labels_img_r.shape == (*shape_3d_default, N_TIMEPOINTS)
+
+    maps_img_r = signals_to_img_maps(maps_signals, maps_img, mask_img=mask_img)
+    assert maps_img_r.shape == (*shape_3d_default, N_TIMEPOINTS)
+
+    # Extract signals from maps and labels with a mask,
+    # containing only 3 regions.
     labels_signals, labels_labels, _ = img_to_signals_labels(
         imgs=fmri_img, labels_img=labeled_regions, mask_img=mask_img
     )
@@ -526,19 +542,10 @@ def test_signal_extraction_with_maps_and_labels(
     )
 
     assert_almost_equal(maps_signals, labels_signals)
-    assert maps_signals.shape[1] == N_REGIONS
-    assert maps_labels == list(range(len(maps_labels)))
-    assert labels_signals.shape == (N_TIMEPOINTS, N_REGIONS)
-    assert labels_labels == labels[1:]
-
-    # Inverse operation (mostly smoke test)
-    labels_img_r = signals_to_img_labels(
-        labels_signals, labeled_regions, mask_img=mask_img
-    )
-    assert labels_img_r.shape == (*shape_3d_default, N_TIMEPOINTS)
-
-    maps_img_r = signals_to_img_maps(maps_signals, maps_img, mask_img=mask_img)
-    assert maps_img_r.shape == (*shape_3d_default, N_TIMEPOINTS)
+    assert maps_signals.shape[1] == 3
+    assert maps_labels == [0, 1, 4]
+    assert labels_signals.shape == (N_TIMEPOINTS, 3)
+    assert labels_labels == [1, 2, 5]
 
 
 @pytest.mark.thread_unsafe
@@ -583,12 +590,8 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     )
 
     # all regions must be kept
-    assert labels_signals.shape == (N_TIMEPOINTS, 8)
-    assert len(labels_labels) == 8
-
-    img_to_signals_labels(
-        imgs=fmri_img, labels_img=labeled_regions, mask_img=mask_img
-    )
+    assert labels_signals.shape == (N_TIMEPOINTS, 3)
+    assert len(labels_labels) == 3
 
 
 @pytest.mark.thread_unsafe
