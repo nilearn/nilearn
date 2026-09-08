@@ -51,7 +51,7 @@ jobs:
             with:
                 python-version: 3.14
         -   name: Install dependencies
-            run: python -m pip install --requirement maint_tools/requirements.txt
+            run: python -m pip install -e '.[plotting,plotly]' --group dev
         -   name: Collect and plot test suite run time
             run: python maint_tools/check_gha_workflow.py ${{ secrets.GITHUB_TOKEN }}
         -   name: Upload output
