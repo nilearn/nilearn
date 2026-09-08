@@ -217,13 +217,20 @@ def test_slicer_save_to_file(slicer, mni152_template_res_2, tmp_path):
     slicer.add_overlay(mni152_template_res_2, cmap="gray", colorbar=True)
     assert slicer.brain_color == (0.5, 0.5, 0.5)
     assert not slicer.black_bg
-    path = tmp_path / "out.png"
+
     # Forcing a layout here, to test the locator code
-    slicer.savefig(path)
+    path = tmp_path / "out.png"
+    with pytest.warns(FutureWarning, match="0.17.0"):
+        # TODO (nilearn >=0.17.0) remove warning tests
+        slicer.savefig(filename=path)
     assert path.exists()
 
     with pytest.raises(ValueError, match="You must provide an output file"):
         slicer.savefig(output_file=None)
+
+    with pytest.raises(TypeError, match="'output_file' must be of type"):
+        slicer.savefig(output_file=123)
+
     slicer.close()
 
 
