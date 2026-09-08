@@ -414,7 +414,6 @@ def test_nifti_labels_masker_report_cut_coords(
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.ai_generated
 def test_surface_labels_masker_report(surf_mesh):
     """Check content of SurfaceLabelsMasker report.
 
@@ -534,7 +533,6 @@ def test_nifti_masker_overlaid_report(
 
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
-@pytest.mark.ai_generated
 def test_nifti_masker_brainsprite(
     matplotlib_pyplot,  # noqa: ARG001
     img_fmri,

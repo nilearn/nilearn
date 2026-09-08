@@ -113,11 +113,20 @@ def labeled_regions() -> Nifti1Image:
 
 
 def _all_voxel_of_each_region_have_same_values(
-    data, labels_data, n_regions, signals
+    data, labels_data, region_ids, signals, signal_indices=None
 ) -> None:
-    for n in range(1, n_regions + 1):
+    """Check that each region's voxels all carry its expected signal.
+
+    ``signal_indices[i]`` gives the column of ``signals`` that should
+    have been written into the voxels of region ``region_ids[i]``.
+    Defaults to ``region_ids[i] - 1``, which only holds when ``signals``
+    has one column per label value (i.e. no mask was applied).
+    """
+    if signal_indices is None:
+        signal_indices = [n - 1 for n in region_ids]
+    for n, signal_index in zip(region_ids, signal_indices, strict=True):
         sigs = data[labels_data == n, :]
-        assert_almost_equal(sigs[0, :], signals[:, n - 1])
+        assert_almost_equal(sigs[0, :], signals[:, signal_index])
         assert abs(sigs - sigs[0, :]).max() < EPS
 
 
@@ -358,7 +367,7 @@ def test_signals_extraction_with_labels_without_mask(
     assert abs(data).max() > 1e-9
 
     _all_voxel_of_each_region_have_same_values(
-        data, labels_data, N_REGIONS, signals
+        data, labels_data, range(1, N_REGIONS + 1), signals
     )
 
     # and back
@@ -442,8 +451,11 @@ def test_signals_extraction_with_labels_with_mask(
     # mask labels before checking
     masked_labels_data = labels_data.copy()
     masked_labels_data[np.logical_not(get_data(mask_img))] = 0
+    # the mask only keeps regions 1, 2 and 5: with a mask, signal
+    # columns are written positionally into the surviving labels,
+    # in ascending label order, not by ``label - 1``.
     _all_voxel_of_each_region_have_same_values(
-        data, masked_labels_data, N_REGIONS, signals
+        data, masked_labels_data, [1, 2, 5], signals, signal_indices=[0, 1, 2]
     )
 
     # and back
@@ -451,8 +463,10 @@ def test_signals_extraction_with_labels_with_mask(
         imgs=data_img, labels_img=labels_img, mask_img=mask_img
     )
 
-    assert_almost_equal(signals_r, signals)
-    assert labels_r == list(range(1, 9))
+    # only the signals for the regions surviving the mask (1, 2 and 5)
+    # are round-tripped, in that (ascending label) order
+    assert_almost_equal(signals_r, signals[:, :3])
+    assert labels_r == [1, 2, 5]
 
     # labels should be masked and only contain 3 regions
     # and the background
