@@ -60,7 +60,7 @@ print(
     f"First subject functional nifti image (4D) is located at: {fmri_filename}"
 )
 print(
-    "Labels of haxby dataset (text file) is located "
+    "Labels of the Haxby dataset (text file) is located "
     f"at: {haxby_dataset.session_target[0]}"
 )
 
@@ -374,7 +374,8 @@ labels_img = new_img_like(fmri_img, labels)
 # First, we initialize a masker with parameters suited for data extraction:
 # labels as input image, ``resampling_target`` is None as the affine and
 # shape/size are the same for all the data used here, time series signal
-# processing parameters ``standardize`` and ``detrend`` are set to ``False``.
+# processing parameters ``standardize`` and ``detrend``
+# are set to ``None`` or ``False``.
 masker = NiftiLabelsMasker(
     labels_img,
     resampling_target=None,
@@ -385,7 +386,7 @@ masker = NiftiLabelsMasker(
 
 # %%
 # Preparing for data extraction: setting number of conditions, size, etc. from
-# haxby dataset.
+# the Haxby dataset.
 condition_names = haxby_labels.unique()
 n_cond_img = fmri_data[..., haxby_labels == "house"].shape[-1]
 n_conds = len(condition_names)

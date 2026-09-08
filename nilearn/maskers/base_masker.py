@@ -6,7 +6,8 @@ import json
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
-from typing import Any, overload
+from pathlib import Path
+from typing import Any, Self, overload
 
 import numpy as np
 from joblib import Memory
@@ -24,13 +25,18 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import ensure_finite_data, repr_niimgs, safe_get_data
+from nilearn._utils.niimg import (
+    ensure_finite_data,
+    img_data_dtype,
+    repr_niimgs,
+    safe_get_data,
+)
 from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.tags import InputTags
 from nilearn.image.image import (
     check_niimg,
     check_volume_for_fit,
@@ -184,11 +190,21 @@ def filter_and_extract(
 def mask_logger(step, img=None, verbose=0) -> None:
     """Log similar messages for all maskers."""
     repr = None
+
     if img is not None:
-        repr = img.__repr__()
-        if verbose > 1:
+        if isinstance(img, (str, Path)) or (
+            isinstance(img, (list, tuple))
+            and isinstance(img[0], (str, Path, SurfaceImage))
+        ):
+            if verbose == 1:
+                repr = repr_niimgs(img, shorten=True)
+            elif verbose >= 2:
+                repr = repr_niimgs(img, shorten=False)
+        elif verbose == 1:
+            repr = img.__repr__()
+        elif verbose == 2:
             repr = repr_niimgs(img, shorten=True)
-        elif verbose > 2:
+        elif verbose >= 3:
             repr = repr_niimgs(img, shorten=False)
 
     messages = {
@@ -322,6 +338,29 @@ class _BaseMasker(
         if self.dtype == bool:
             raise TypeError("'dtype' cannot be bool")
 
+    def _get_target_dtype(
+        self, imgs: Nifti1Image | SurfaceImage | list[SurfaceImage]
+    ):
+        """Adapts dtype to apply to transform() output."""
+        if isinstance(imgs, Nifti1Image):
+            source_dtype = img_data_dtype(imgs)
+        elif isinstance(imgs, SurfaceImage):
+            source_dtype = imgs.data._dtype
+        else:
+            source_dtype = imgs[0].data._dtype
+
+        target_dtype = get_target_dtype(source_dtype, self.dtype)
+        # here target_dtype is None if:
+        # - self.dtype is None
+        # - self.dtype == source_dtype
+        if target_dtype is None and self.dtype is not None:
+            # requested dtype already matches the source image's dtype,
+            # but intermediate computations (e.g. standardization)
+            # may have changed the working dtype.
+            target_dtype = source_dtype
+
+        return target_dtype
+
 
 @fill_doc
 class BaseMasker(_BaseMasker):
@@ -330,7 +369,7 @@ class BaseMasker(_BaseMasker):
     _template_name = "body_masker.jinja"
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Compute the mask corresponding to the data.
 
         Parameters
@@ -347,6 +386,7 @@ class BaseMasker(_BaseMasker):
         self._check_dtype()
 
         if imgs is not None:
+            mask_logger("load_data", img=imgs, verbose=self.verbose)
             self._check_imgs(imgs)
 
         # Reset report
@@ -404,14 +444,6 @@ class BaseMasker(_BaseMasker):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(masker=True)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags()
         tags.estimator_type = "masker"
@@ -516,19 +548,6 @@ class BaseMasker(_BaseMasker):
         """
         check_is_fitted(self)
         self._check_imgs(imgs)
-
-        if self.standardize in [True, False]:
-            # TODO (nilearn >= 0.15.0) remove warning
-            warnings.warn(
-                category=FutureWarning,
-                message=(
-                    "boolean values for 'standardize' "
-                    "will be deprecated in nilearn 0.15.0.\n"
-                    "Use 'zscore_sample' instead of 'True' or "
-                    "use 'None' instead of 'False'."
-                ),
-                stacklevel=find_stack_level(),
-            )
 
         if confounds is None and not self.high_variance_confounds:
             return self.transform_single_imgs(
@@ -728,14 +747,6 @@ class _BaseSurfaceMasker(_BaseMasker):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(surf_img=True, niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=True, niimg_like=False)
         tags.estimator_type = "masker"
@@ -798,7 +809,7 @@ class _BaseSurfaceMasker(_BaseMasker):
         return mask_img_
 
     @abc.abstractmethod
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Present only to comply with sklearn estimators checks."""
 
     @fill_doc
@@ -830,19 +841,6 @@ class _BaseSurfaceMasker(_BaseMasker):
         check_surf_img(imgs)
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
-
-        if self.standardize in [True, False]:
-            # TODO (nilearn >= 0.15.0) remove warning
-            warnings.warn(
-                category=FutureWarning,
-                message=(
-                    "boolean values for 'standardize' "
-                    "will be deprecated in nilearn 0.15.0.\n"
-                    "Use 'zscore_sample' instead of 'True' or "
-                    "use 'None' instead of 'False'."
-                ),
-                stacklevel=find_stack_level(),
-            )
 
         if self.reports:
             self._reporting_data["images"] = imgs

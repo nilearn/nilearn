@@ -31,6 +31,7 @@ from nilearn.nilearn_typing import (
     HighPass,
     LowPass,
     NonNullScalar,
+    Standardize,
     StandardizeConfounds,
     Tr,
 )
@@ -48,9 +49,7 @@ AVAILABLE_FILTERS = ("butterworth", "cosine")
 def standardize_signal(
     signals,
     detrend: bool = False,
-    standardize: Literal["psc", "zscore_sample"]
-    | bool
-    | None = "zscore_sample",
+    standardize: Standardize = "zscore_sample",
 ) -> np.ndarray:
     """Center and standardize a given signal (time is along first axis).
 
@@ -73,20 +72,9 @@ def standardize_signal(
 
     signals = _detrend(signals, inplace=False) if detrend else signals.copy()
 
-    # TODO (nilearn >= 0.15) remove casting from bool
-    if standardize is False:
-        standardize = None
-    elif standardize is True:
-        standardize = "zscore_sample"
-
     if standardize is None:
         return signals
 
-    check_parameter_in_allowed(
-        standardize,
-        allowed=["psc", "zscore_sample"],
-        parameter_name="standardize",
-    )
     if signals.shape[0] == 1:
         warnings.warn(
             "Standardization of 3D signal has been requested but "
@@ -729,6 +717,35 @@ def clean(
     See Also
     --------
     nilearn.image.clean_img
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>>
+        >>> from nilearn.signal import clean
+        >>>
+        >>> # Create a noisy sine wave with an extra linear trend.
+        >>> t = np.linspace(1, 30, 100)
+        >>> signal = np.sin(t) * 2 + t - 10
+        >>> signal += np.random.default_rng(42).normal(size=t.shape)
+        >>> signal = np.atleast_2d(signal).T
+        >>>
+        >>> # Clean the image with a low pass filter.
+        >>> cleaned_signal = clean(signal,
+        ...                        low_pass=0.2,
+        ...                        t_r = 1,
+        ...                        standardize=None)
+        >>>
+        >>> # Plot the results
+        >>> from matplotlib import pyplot as plt
+        >>>
+        >>> fig = plt.plot(t, signal, color="red")
+        >>> fig = plt.plot(t, cleaned_signal, color="green")
+        >>> leg = plt.legend(["raw", "cleaned"])
+        >>> plt.show()
     """
     check_params(locals())
     # Raise warning for some parameter combinations when confounds present
@@ -741,8 +758,8 @@ def clean(
     )
 
     # Read confounds and signals
-    signals, runs, confounds, sample_mask, standardize = _sanitize_inputs(
-        signals, runs, confounds, sample_mask, ensure_finite, standardize
+    signals, runs, confounds, sample_mask = _sanitize_inputs(
+        signals, runs, confounds, sample_mask, ensure_finite
     )
 
     # Process each run independently
@@ -827,10 +844,11 @@ def clean(
 
     # Remove confounds
     if confounds is not None:
-        tmp = None if standardize_confounds is False else "zscore_sample"
         confounds = standardize_signal(
             confounds,
-            standardize=tmp,
+            standardize=None
+            if standardize_confounds is False
+            else "zscore_sample",
             detrend=False,
         )
 
@@ -1059,9 +1077,7 @@ def _process_runs(
     return np.vstack(cleaned_signals)
 
 
-def _sanitize_inputs(
-    signals, runs, confounds, sample_mask, ensure_finite, standardize
-):
+def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     """Clean up signals and confounds before processing."""
     n_time = len(signals)  # original length of the signal
     n_runs, runs = _sanitize_runs(n_time, runs)
@@ -1069,23 +1085,7 @@ def _sanitize_inputs(
     sample_mask = _sanitize_sample_mask(n_time, n_runs, runs, sample_mask)
     signals = _sanitize_signals(signals, ensure_finite)
 
-    if isinstance(standardize, bool):
-        warnings.warn(
-            stacklevel=find_stack_level(),
-            category=FutureWarning,
-            message=(
-                "boolean values for 'standardize' "
-                "will be deprecated in nilearn 0.15.0.\n"
-                "Use 'zscore_sample' instead of 'True' or "
-                "use 'None' instead of 'False'."
-            ),
-        )
-        if standardize is True:
-            standardize = "zscore_sample"
-        elif standardize is False:
-            standardize = None
-
-    return signals, runs, confounds, sample_mask, standardize
+    return signals, runs, confounds, sample_mask
 
 
 def sanitize_confounds(n_time, confounds):

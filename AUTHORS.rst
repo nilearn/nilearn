@@ -78,6 +78,7 @@ Some other past or present contributors are:
 * `Bertrand Thirion`_: Inria, Saclay, France
 * `Binh Nguyen`_
 * `Caglar Cakan`_: Technische Universität Berlin, Berlin, Germany
+* `Cedric Conday`_
 * `Chloe Hampson`_: Florida International University, Miami, United States
 * `Chris Rorden`_: University of South Carolina, USA
 * `Chris Gorgolewski`_: Google LLC

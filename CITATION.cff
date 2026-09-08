@@ -52,6 +52,12 @@ authors:
     family-names: Frau-Pascual
     website: https://github.com/ainafp
     orcid: https://orcid.org/0000-0001-6311-8426
+  - given-names: Aniket
+    family-names: Singh Yadav
+    website: https://github.com/Aniketsy
+    orcid: https://orcid.org/0009-0004-4883-3797
+    affiliation: Galgotias University, India
+    email: singhyadavaniket43@gmail.com
   - given-names: Alex
     family-names: Rothberg
     website: https://github.com/cancan101
@@ -171,6 +177,9 @@ authors:
     website: https://github.com/caglorithm
     affiliation: Technische Universität Berlin, Berlin, Germany
     orcid: https://orcid.org/0000-0002-1902-5393
+  - given-names: Cedric
+    family-names: Conday
+    website: https://github.com/CedricConday
   - given-names: Chloe
     family-names: Hampson
     website: https://github.com/chlohamp

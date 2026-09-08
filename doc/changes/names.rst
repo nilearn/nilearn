@@ -63,6 +63,8 @@
 
 .. _Caglar Cakan: https://github.com/caglorithm
 
+.. _Cedric Conday: https://github.com/CedricConday
+
 .. _Chloe Hampson: https://github.com/chlohamp
 
 .. _Chris Rorden: https://github.com/neurolabusc

@@ -463,6 +463,39 @@ def test_smooth_img_warning(img_3d_mni):
         smooth_img(img_3d_mni, fwhm=0.0)
 
 
+@pytest.mark.parametrize("fwhm", [None, 0.0, 4.0])
+def test_smooth_img_surface_nan_do_not_propagate(surf_img_1d, fwhm):
+    """Non-finite vertices must be zeroed, as they are for volumes.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/6487.
+    The volume branch of ``smooth_img`` passes ``ensure_finite=True`` to
+    ``smooth_array``, but the surface branch did not clean its data, so
+    the smoothing iterations spread each non-finite vertex over its
+    neighbors instead.
+    """
+    surf_img_1d.data.parts["left"][0] = np.nan
+    surf_img_1d.data.parts["left"][1] = np.inf
+    surf_img_1d.data.parts["right"][0] = -np.inf
+
+    smoothed = smooth_img(surf_img_1d, fwhm=fwhm)
+
+    for part in smoothed.data.parts.values():
+        assert np.all(np.isfinite(part))
+
+
+def test_smooth_img_surface_does_not_modify_input(surf_img_1d):
+    """Cleaning non-finite values must not touch the input image."""
+    surf_img_1d.data.parts["left"][0] = np.nan
+    expected = {
+        part: values.copy() for part, values in surf_img_1d.data.parts.items()
+    }
+
+    smooth_img(surf_img_1d, fwhm=4.0)
+
+    for part, values in expected.items():
+        assert_array_equal(surf_img_1d.data.parts[part], values)
+
+
 def test_smooth_img_surface(surf_img_1d):
     """Test smoothing surface images.
 
@@ -1829,9 +1862,7 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     data[:, 5, 5] = np.inf
     nan_img = Nifti1Image(data, affine_eye)
 
-    clean_im = clean_img(
-        nan_img, ensure_finite=True, standardize="zscore_sample"
-    )
+    clean_im = clean_img(nan_img, ensure_finite=True)
 
     assert np.any(np.isfinite(get_data(clean_im)))
 
@@ -1845,12 +1876,10 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     # if mask_img
     img, mask_img = generate_fake_fmri(shape=shape_3d_default, length=10)
 
-    data_img_mask_ = clean_img(
-        img, mask_img=mask_img, standardize="zscore_sample"
-    )
+    data_img_mask_ = clean_img(img, mask_img=mask_img)
 
     # Checks that output with full mask and without is equal
-    data_img_ = clean_img(img, standardize="zscore_sample")
+    data_img_ = clean_img(img)
 
     assert_almost_equal(get_data(data_img_), get_data(data_img_mask_))
 
@@ -2027,10 +2056,7 @@ def test_clean_img_sample_mask(img_4d_rand_eye, shape_4d_default):
     sample_mask = np.arange(length - 1)
 
     img = clean_img(
-        img_4d_rand_eye,
-        confounds=confounds,
-        clean__sample_mask=sample_mask,
-        standardize="zscore_sample",
+        img_4d_rand_eye, confounds=confounds, clean__sample_mask=sample_mask
     )
     assert img.shape == (*shape_4d_default[:3], length - 1)
 
@@ -2052,7 +2078,6 @@ def test_clean_img_sample_mask_mask_img(shape_3d_default):
         confounds=confounds,
         mask_img=mask_img,
         clean__sample_mask=sample_mask,
-        standardize="zscore_sample",
     )
     assert img.shape == (*shape_3d_default, length - 1)
 

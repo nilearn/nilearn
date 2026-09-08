@@ -133,7 +133,7 @@ concurrency:
 
 env:
     FORCE_COLOR: true
-    MIN_PYTHON: 3.10.18
+    MIN_PYTHON: 3.11.0
 
 
 jobs:
