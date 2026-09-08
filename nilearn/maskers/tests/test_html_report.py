@@ -31,6 +31,7 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceLabelsMasker,
     SurfaceMapsMasker,
     SurfaceMasker,
 )
@@ -410,6 +411,68 @@ def test_nifti_labels_masker_report_cut_coords(
     masker.fit(img_3d_rand_eye)
     display_data = masker._load_report_displays()
     assert display.cut_coords == display_data.cut_coords
+
+
+@pytest.mark.thread_unsafe
+@pytest.mark.ai_generated
+def test_surface_labels_masker_report(surf_mesh):
+    """Check content of SurfaceLabelsMasker report.
+
+    Some labels are masked by mask_img, with one label ("region_3")
+    entirely removed from the right hemisphere.
+    """
+    labels_data = {
+        "left": np.asarray([1, 1, 1, 2]),
+        "right": np.asarray([3, 3, 2, 2, 2]),
+    }
+    labels_img = SurfaceImage(surf_mesh, labels_data)
+
+    mask_data = {
+        "left": np.asarray([1, 1, 1, 1]),
+        "right": np.asarray([0, 0, 1, 1, 1]),
+    }
+    mask_img = SurfaceImage(surf_mesh, mask_data)
+
+    masker = SurfaceLabelsMasker(
+        labels_img=labels_img,
+        labels=["Background", "region_1", "region_2", "region_3"],
+        mask_img=mask_img,
+    )
+
+    with pytest.warns(UserWarning, match="the following labels were removed"):
+        masker.fit()
+
+    assert masker._reporting_data is not None
+
+    summary = masker._report_content["summary"]
+
+    # region_3 is entirely masked out on the right hemisphere,
+    # so it should not appear in the summary at all,
+    # on either hemisphere.
+    for part in ("left", "right"):
+        assert summary[part]["name"].to_list() == [
+            "Background",
+            "region_1",
+            "region_2",
+        ]
+
+    # Check region sizes calculations
+    assert summary["left"]["size"].to_list() == [0, 3, 1]
+    assert summary["right"]["size"].to_list() == [2, 0, 3]
+
+    # Relative sizes of regions (excluding background) should sum to 100%
+    for part in ("left", "right"):
+        relative_sizes = summary[part]["relative size"]
+        names = summary[part]["name"]
+        assert_almost_equal(
+            sum(
+                float(x)
+                for name, x in zip(names, relative_sizes, strict=False)
+                if name != "Background"
+            ),
+            100,
+            decimal=1,
+        )
 
 
 @pytest.mark.thread_unsafe
