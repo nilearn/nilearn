@@ -34,6 +34,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
+
 
 Changes
 -------
@@ -43,3 +45,5 @@ Changes
 - :bdg-danger:`Deprecation` The parameter ``keep_masked_maps`` (and respectively the parameter ``keep_masked_labels``) has been removed from :func:`~nilearn.regions.img_to_signals_maps`, :class:`~nilearn.maskers.NiftiMapsMasker` and :class:`~nilearn.maskers.MultiNiftiMapsMasker` (and respectively from :func:`~nilearn.regions.img_to_signals_labels`, :class:`~nilearn.maskers.NiftiLabelsMasker` and :class:`~nilearn.maskers.MultiNiftiLabelsMasker`). In practice, this means that data will not be extracted from maps or labels that are excluded by a mask image (:gh:`6551` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Boolean values for the ``standardize`` parameter (for maskers, glm, decoders...) are no longer supported. Use ``standardize="z_score_sample"`` instead of ``True`` and ``None`` instead of ``False`` (:gh:`6553` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The parameter name ``filename`` of the :meth:`~nilearn.plotting.displays.BaseSlicer.savefig` will be permanently replaced by ``output_file`` in version 0.17.0 (:gh:`6471` by `Aniket Singh Yadav`_).
