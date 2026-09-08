@@ -6,48 +6,23 @@ from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _img_maps
 from nilearn.exceptions import DimensionError
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
 ESTIMATORS_TO_CHECK = [MultiNiftiMapsMasker()]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(
-            estimators=ESTIMATORS_TO_CHECK,
-            valid=False,
-        ),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize(
@@ -56,8 +31,8 @@ else:
         estimators=[
             # pass less than the default number of regions
             # to speed up the tests
-            MultiNiftiMapsMasker(_img_maps(n_regions=2), standardize=None),
-            MultiNiftiMapsMasker(_img_maps(n_regions=1), standardize=None),
+            MultiNiftiMapsMasker(_img_maps(n_regions=2)),
+            MultiNiftiMapsMasker(_img_maps(n_regions=1)),
         ]
     ),
 )
@@ -84,7 +59,6 @@ def test_multi_nifti_maps_masker(
         mask_img=mask11_img,
         resampling_target=None,
         keep_masked_maps=True,
-        standardize=None,
     )
 
     with pytest.warns(
@@ -95,7 +69,7 @@ def test_multi_nifti_maps_masker(
 
     assert signals11.shape == (length, n_regions)
 
-    MultiNiftiMapsMasker(img_maps, standardize=None).fit_transform(fmri11_img)
+    MultiNiftiMapsMasker(img_maps).fit_transform(fmri11_img)
 
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
@@ -115,9 +89,7 @@ def test_multi_nifti_maps_masker(
         assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
     # Now try on a masker that has never seen the call to "transform"
-    masker = MultiNiftiMapsMasker(
-        img_maps, resampling_target=None, standardize=None
-    )
+    masker = MultiNiftiMapsMasker(img_maps, resampling_target=None)
     masker.fit()
     masker.inverse_transform(signals)
 
@@ -129,14 +101,12 @@ def test_errors(affine_eye, length, shape_3d_default, img_maps):
     )
 
     masker = MultiNiftiMapsMasker(
-        img_maps, mask_img=mask11_img, resampling_target=None, standardize=None
+        img_maps, mask_img=mask11_img, resampling_target=None
     )
 
     signals_input = [fmri11_img, fmri11_img]
 
     # NiftiMapsMasker should not work with 4D + 1D input
-    masker = NiftiMapsMasker(
-        img_maps, resampling_target=None, standardize=None
-    )
+    masker = NiftiMapsMasker(img_maps, resampling_target=None)
     with pytest.raises(DimensionError, match="incompatible dimensionality"):
         masker.fit_transform(signals_input)

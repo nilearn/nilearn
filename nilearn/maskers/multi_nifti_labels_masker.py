@@ -46,7 +46,7 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -126,7 +126,7 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         high_variance_confounds=False,
         detrend=False,
