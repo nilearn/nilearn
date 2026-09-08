@@ -4,7 +4,7 @@ import collections.abc
 import numbers
 import warnings
 from copy import deepcopy
-from typing import overload
+from typing import Self, overload
 
 import numpy as np
 from nibabel import Nifti1Image
@@ -48,7 +48,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     maps_img : Niimg-like object
         An image of brain atlas maps.
 
-    threshold : float
+    threshold : :obj:`float`
         If float, value is used as a ratio to n_voxels
         to get a certain threshold size in number to threshold the image.
         The value should be positive and
@@ -107,7 +107,7 @@ def _remove_small_regions(input_data, affine, min_size):
         Affine of input_data is used to convert size in voxels to size in
         volume of region in mm^3.
 
-    min_size : float in mm^3
+    min_size : :obj:`float` in mm^3
         Size of regions in input_data which falls below the specified min_size
         of volume in mm^3 will be discarded.
 
@@ -354,7 +354,7 @@ class RegionExtractor(NiftiMapsMasker):
 
         default=6mm.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
         .. note::
             Recommended to set to True if signals are not already standardized.
@@ -474,7 +474,7 @@ class RegionExtractor(NiftiMapsMasker):
         two_sided=False,
         extractor="local_regions",
         smoothing_fwhm=6,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         high_variance_confounds=False,
         detrend=False,
@@ -523,7 +523,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.smoothing_fwhm = smoothing_fwhm
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -695,10 +695,9 @@ def connected_label_regions(
             "integers assigned as labels."
         )
 
-    unique_labels = set(check_unique_labels)
-    # check for background label indicated as 0
-    if np.any(check_unique_labels == 0):
-        unique_labels.remove(0)
+    # np.unique returns them sorted; keep that order, since the names in
+    # labels are expected to match it. Background label 0 is not a region.
+    unique_labels = check_unique_labels[check_unique_labels != 0]
 
     if labels is not None:
         if not isinstance(labels, collections.abc.Iterable) or isinstance(

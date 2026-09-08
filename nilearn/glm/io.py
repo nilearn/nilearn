@@ -79,7 +79,7 @@ def _generate_dataset_description(out_file, model_level) -> None:
     ----------
     out_file : :obj:`pathlib.Path`
         Output JSON filename, to be created by the function.
-    model_level : str
+    model_level : :obj:`str`
         The level of the model.
     """
     repo_url = "https://github.com/nilearn/nilearn"

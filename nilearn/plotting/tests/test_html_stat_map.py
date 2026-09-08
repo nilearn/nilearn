@@ -1,4 +1,6 @@
 import base64
+import json
+import re
 from io import BytesIO
 
 import numpy as np
@@ -15,6 +17,7 @@ from nilearn.plotting.html_stat_map import (
     _bytes_io_to_base64,
     _data_to_sprite,
     _get_bg_mask_and_cmap,
+    _get_brainsprite_html_ids,
     _get_cut_slices,
     _is_isotropic,
     _json_view_data,
@@ -218,6 +221,12 @@ def test_get_bg_mask_and_cmap():
     mask, _ = _get_bg_mask_and_cmap(img, False)
     assert (mask == np.zeros(img.shape, dtype=bool)).all()
 
+    # Non-regression test for issue #6465
+    _, black_bg_cmap = _get_bg_mask_and_cmap(img, True)
+    assert black_bg_cmap._rgba_bad == (0.0, 0.0, 0.0, 1.0)
+    _, white_bg_cmap = _get_bg_mask_and_cmap(img, False)
+    assert white_bg_cmap._rgba_bad == (1.0, 1.0, 1.0, 1.0)
+
 
 def test_resample_stat_map(affine_eye):
     """Check _resample_stat_map resamples stat and mask to bg resolution."""
@@ -251,6 +260,7 @@ def test_resample_stat_map(affine_eye):
     )
 
 
+@pytest.mark.ai_generated
 def test_json_view_params(affine_eye):
     """Check that _json_view_params generates the expected structure."""
     # Try to generate some sprite parameters
@@ -260,6 +270,7 @@ def test_json_view_params(affine_eye):
         vmin=0,
         vmax=1,
         cut_slices=[1, 1, 1],
+        html_ids=_get_brainsprite_html_ids("test-viewer"),
         black_bg=True,
         opacity=0.5,
         draw_cross=False,
@@ -272,6 +283,108 @@ def test_json_view_params(affine_eye):
     # Just check that a structure was generated,
     # and test a single parameter
     assert params["overlay"]["opacity"] == 0.5
+    assert params["canvas"] == "3Dviewer-test-viewer"
+    assert params["sprite"] == "spriteImg-test-viewer"
+    assert params["overlay"]["sprite"] == "overlayImg-test-viewer"
+    assert params["colorMap"]["img"] == "colorMap-test-viewer"
+
+
+@pytest.mark.parametrize("marker", [3, 11, 20, 28])
+def test_json_view_params_displays_requested_slice(marker):
+    """The tile drawn must hold the slice whose coordinate was requested.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/6504.
+    ``_get_cut_slices`` already returns a 0-based voxel index, but a further
+    ``- 1`` was applied before sending it to the viewer, which draws the
+    sprite tile at ``numSlice`` and only adds one when reading coordinates
+    back out. The slice on screen was therefore the neighbor of the one
+    requested, labeled with the requested coordinate.
+    """
+    n = 32
+    affine = np.diag([-3.0, 3.0, 3.0, 1.0])
+    affine[:3, 3] = [48.0, -48.0, -48.0]
+    # voxel values encode their own x index, so a tile identifies its source
+    data = np.zeros((n, n, n), dtype="float32")
+    for i in range(n):
+        data[i, :, :] = i
+    img = Nifti1Image(data, affine)
+
+    world_x = (affine @ np.array([marker, 0.0, 0.0, 1.0]))[0]
+    cut_slices = _get_cut_slices(
+        img, cut_coords=[world_x, 0.0, 0.0], threshold=None
+    )
+    params = _json_view_params(
+        (n, n, n),
+        affine,
+        vmin=0,
+        vmax=1,
+        cut_slices=cut_slices,
+        html_ids=_get_brainsprite_html_ids("test-viewer"),
+    )
+
+    sprite = _data_to_sprite(data)
+    n_rows = int(np.ceil(np.sqrt(n)))
+    n_columns = int(np.ceil(n / float(n_rows)))
+    tile = int(params["numSlice"]["X"])
+    row, column = tile // n_columns, tile % n_columns
+    block = sprite[row * n : (row + 1) * n, column * n : (column + 1) * n]
+
+    assert int(block.max()) == marker
+
+
+@pytest.mark.parametrize("cut_coords", [[0.0, -12.0, 9.0], [15.0, 6.0, -21.0]])
+def test_json_view_params_reports_requested_coordinates(cut_coords):
+    """The coordinates shown must still be the ones requested."""
+    n = 32
+    affine = np.diag([-3.0, 3.0, 3.0, 1.0])
+    affine[:3, 3] = [48.0, -48.0, -48.0]
+    img = Nifti1Image(np.zeros((n, n, n), dtype="float32"), affine)
+
+    cut_slices = _get_cut_slices(img, cut_coords=cut_coords, threshold=None)
+    params = _json_view_params(
+        (n, n, n),
+        affine,
+        vmin=0,
+        vmax=1,
+        cut_slices=cut_slices,
+        html_ids=_get_brainsprite_html_ids("test-viewer"),
+    )
+    num_slice = params["numSlice"]
+    index = np.array(
+        [num_slice["X"] + 1, num_slice["Y"] + 1, num_slice["Z"] + 1, 1.0]
+    )
+    displayed = (np.asarray(params["affine"]) @ index)[:3]
+
+    assert displayed == pytest.approx(cut_coords)
+
+
+@pytest.mark.parametrize(
+    "cut,expected", [(19.5, 20), (20.5, 21), (21.5, 22), (20.4, 20)]
+)
+def test_json_view_params_breaks_ties_upwards(cut, expected):
+    """Round the way the viewer does, so every cut moves by one slice.
+
+    ``brainsprite.js`` rounds ``numSlice`` with ``Math.round``, which breaks
+    ties upwards, while Python's ``round`` breaks them to even. Using the
+    latter would send the same index as before this fix whenever a cut lands
+    exactly between two slices on an even voxel index, leaving the off-by-one
+    in place for those cuts.
+    """
+    n = 32
+    affine = np.diag([2.0, 2.0, 2.0, 1.0])
+
+    params = _json_view_params(
+        (n, n, n),
+        affine,
+        vmin=0,
+        vmax=1,
+        cut_slices=np.array([cut, cut, cut]),
+        html_ids=_get_brainsprite_html_ids("test-viewer"),
+    )
+
+    assert params["numSlice"] == {"X": expected, "Y": expected, "Z": expected}
+    # must survive json.dumps
+    assert all(isinstance(v, int) for v in params["numSlice"].values())
 
 
 def test_json_view_size():
@@ -335,15 +448,19 @@ def test_json_view_data(black_bg, cbar, radiological):
 @pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("cbar", [True, False])
 @pytest.mark.parametrize("radiological", [True, False])
+@pytest.mark.ai_generated
 def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
     """Check that _json_view_to_html builds a valid viewer."""
     data, json_view = _get_data_and_json_view(black_bg, cbar, radiological)
+    html_ids = _get_brainsprite_html_ids("test-viewer")
+    json_view["html_ids"] = html_ids
     json_view["params"] = _json_view_params(
         data.shape,
         affine_eye,
         vmin=0,
         vmax=1,
         cut_slices=[1, 1, 1],
+        html_ids=html_ids,
         black_bg=True,
         opacity=1,
         draw_cross=True,
@@ -355,6 +472,58 @@ def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
 
     html_view = _json_view_to_html(json_view)
     check_html_view_img(html_view)
+
+
+@pytest.mark.ai_generated
+def test_brainsprite_viewers_have_unique_element_ids():
+    """Check that multiple viewers bind to their own HTML elements."""
+    img, _ = _simulate_img()
+    views = [
+        view_img(img, resampling_interpolation="nearest"),
+        view_img(img, resampling_interpolation="nearest"),
+    ]
+    configs = []
+    all_dom_ids = []
+
+    for view in views:
+        config_match = re.search(r"brainsprite\((\{.*\})\);", str(view))
+        assert config_match is not None
+        config = json.loads(config_match.group(1))
+        configs.append(config)
+
+        element_ids = [
+            config["canvas"],
+            config["sprite"],
+            config["overlay"]["sprite"],
+            config["colorMap"]["img"],
+        ]
+        for element_id in element_ids:
+            assert f'id="{element_id}"' in str(view)
+
+        dom_ids = set(
+            re.findall(
+                r'id="((?:div_viewer|3Dviewer|spriteImg|overlayImg|'
+                r'colorMap|opacity|demo)-[^"]+)"',
+                str(view),
+            )
+        )
+        assert len(dom_ids) == 7
+        all_dom_ids.append(dom_ids)
+
+    first_ids = {
+        configs[0]["canvas"],
+        configs[0]["sprite"],
+        configs[0]["overlay"]["sprite"],
+        configs[0]["colorMap"]["img"],
+    }
+    second_ids = {
+        configs[1]["canvas"],
+        configs[1]["sprite"],
+        configs[1]["overlay"]["sprite"],
+        configs[1]["colorMap"]["img"],
+    }
+    assert first_ids.isdisjoint(second_ids)
+    assert all_dom_ids[0].isdisjoint(all_dom_ids[1])
 
 
 def test_get_cut_slices(affine_eye):

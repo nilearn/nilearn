@@ -52,27 +52,31 @@ def _configure_axis(
             label.set_rotation(y_label_rotation)
 
 
-def _configure_grid(axes, tri, size):
+def _configure_grid(axes, tri, size) -> None:
     """Help for plot_matrix."""
     # Different grids for different layouts
     if tri == "lower":
         for i in range(size):
             # Correct for weird mis-sizing
-            i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="gray")
-            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
+            pos = 1.001 * i
+            axes.plot(
+                [pos + 0.5, pos + 0.5], [size - 0.5, pos + 0.5], color="gray"
+            )
+            axes.plot([pos + 0.5, -0.5], [pos + 0.5, pos + 0.5], color="gray")
     elif tri == "diag":
         for i in range(size):
             # Correct for weird mis-sizing
-            i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="gray")
-            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color="gray")
+            pos = 1.001 * i
+            axes.plot(
+                [pos + 0.5, pos + 0.5], [size - 0.5, pos - 0.5], color="gray"
+            )
+            axes.plot([pos + 0.5, -0.5], [pos - 0.5, pos - 0.5], color="gray")
     else:
         for i in range(size):
             # Correct for weird mis-sizing
-            i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color="gray")
-            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
+            pos = 1.001 * i
+            axes.plot([pos + 0.5, pos + 0.5], [size - 0.5, -0.5], color="gray")
+            axes.plot([size - 0.5, -0.5], [pos + 0.5, pos + 0.5], color="gray")
 
 
 def _fit_axes(axes) -> None:
@@ -106,8 +110,18 @@ def _fit_axes(axes) -> None:
         axes.set_position(new_position)
 
 
-def _sanitize_figure_and_axes(figure, axes):
-    """Help for plot_matrix."""
+def _sanitize_figure_and_axes(figure, axes) -> tuple[Figure, Axes]:
+    """Help for plot_matrix.
+
+    Returns
+    -------
+    fig : :class:`matplotlib.figure.Figure`
+        The figure to plot on.
+
+    axes : :class:`matplotlib.axes.Axes`
+        The axes to plot on.
+
+    """
     if axes is not None and figure is not None:
         raise ValueError(
             "Parameters figure and axes cannot be specified together. "
@@ -116,12 +130,9 @@ def _sanitize_figure_and_axes(figure, axes):
     if figure is not None:
         if isinstance(figure, plt.Figure):
             fig = figure
-            if hasattr(fig, "set_layout_engine"):  # can be removed w/mpl 3.5
-                fig.set_layout_engine("constrained")
         else:
             fig = plt.figure(figsize=figure, layout="constrained")
         axes = plt.gca()
-        own_fig = True
     elif axes is None:
         fig, axes = plt.subplots(
             1,
@@ -129,25 +140,38 @@ def _sanitize_figure_and_axes(figure, axes):
             figsize=(7, 5),
             layout="constrained",
         )
-        own_fig = True
     else:
         fig = axes.figure
-        own_fig = False
-    return fig, axes, own_fig
+    return fig, axes
 
 
 def _sanitize_inputs_plot_matrix(
     mat_shape, tri, labels, reorder, figure, axes
-):
+) -> tuple[list | None, str | bool, Figure, Axes]:
     """Help for plot_matrix.
 
     This function makes sure the inputs to plot_matrix are valid.
+
+    Returns
+    -------
+    labels : :obj:`list` or None
+        The validated labels.
+
+    reorder : :obj:`str` or :obj:`bool`
+        The validated ``reorder`` value.
+
+    fig : :class:`matplotlib.figure.Figure`
+        The figure to plot on.
+
+    axes : :class:`matplotlib.axes.Axes`
+        The axes to plot on.
+
     """
     sanitize_tri(tri)
     labels = sanitize_labels(mat_shape, labels)
     reorder = sanitize_reorder(reorder)
-    fig, axes, own_fig = _sanitize_figure_and_axes(figure, axes)
-    return labels, reorder, fig, axes, own_fig
+    fig, axes = _sanitize_figure_and_axes(figure, axes)
+    return labels, reorder, fig, axes
 
 
 @fill_doc
@@ -225,9 +249,6 @@ def plot_matrix(
         Accepted linkage options for the clustering are 'single',
         'complete', and 'average'. True defaults to average linkage.
 
-        .. note::
-            This option is only available with SciPy >= 1.0.0.
-
         .. nilearn_versionadded:: 0.4.1
 
     kwargs : extra keyword arguments, optional
@@ -240,11 +261,11 @@ def plot_matrix(
 
     """
     check_params(locals())
-    labels, reorder, fig, axes, _ = _sanitize_inputs_plot_matrix(
+    labels, reorder_method, fig, axes = _sanitize_inputs_plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
-    if reorder:
-        mat, labels = reorder_matrix(mat, labels, reorder)
+    if reorder_method:
+        mat, labels = reorder_matrix(mat, labels, reorder_method)
     if tri != "full":
         mat = mask_matrix(mat, tri)
 
@@ -370,7 +391,7 @@ def plot_design_matrix(
 
     Parameters
     ----------
-    design matrix : :class:`pandas.DataFrame` or \
+    design_matrix : :class:`pandas.DataFrame` or \
                     :obj:`str` or :obj:`pathlib.Path` to a TSV event file
         Describes a design matrix.
 
@@ -622,6 +643,34 @@ def plot_design_matrix_correlation(
     -------
     display : :class:`matplotlib.axes.Axes`
         Axes image.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>> from pandas import DataFrame
+        >>> from nilearn.glm.first_level import make_first_level_design_matrix
+        >>> from nilearn.plotting import plot_design_matrix_correlation
+        >>> from nilearn.plotting.image.img_plotting import show
+        >>>
+        >>> #creating a design matrix
+        >>>
+        >>> frame_times = np.arange(25)
+        >>> onsets = np.arange(9)
+        >>> duration = np.linspace(1, 9, 9)
+        >>> trial_type = ["ET_0", "ET_0", "ET_0",
+        ...               "ET_1", "ET_1", "ET_1",
+        ...               "ET_2", "ET_2", "ET_2"]
+        >>> events = DataFrame({"trial_type": trial_type,
+        ...                     "onset": onsets,
+        ...                     "duration": duration})
+        >>>
+        >>> design_matrix = make_first_level_design_matrix(frame_times, events)
+        >>>
+        >>> ax = plot_design_matrix_correlation(design_matrix)
+        >>> show()
     """
     check_params(locals())
 

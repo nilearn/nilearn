@@ -168,7 +168,7 @@ def load(
 
     Parameters
     ----------
-    loader : str
+    loader : :obj:`str`
         The loader to use. Can be either 'nilearn' or 'nibabel (ref)'. When
         'nilearn' is selected, the load_img function from nilearn.image is
         used. When 'nibabel (ref)' is selected, the load function from nibabel

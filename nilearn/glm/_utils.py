@@ -16,11 +16,11 @@ def z_score(pvalue, one_minus_pvalue=None):
 
     Parameters
     ----------
-    pvalue : float or 1-d array shape=(n_pvalues,)
+    pvalue : :obj:`float` or 1-d array shape=(n_pvalues,)
         P-values computed using the survival function.
 
-    one_minus_pvalue : float, 1-d array shape=(n_one_minus_pvalues,) or None \
-        default=None
+    one_minus_pvalue : :obj:`float`, 1-d array shape=(n_one_minus_pvalues,) \
+        or None, default=None
         It shall take the value returned
         by /nilearn/glm/contrasts.py::one_minus_pvalue
         which computes the p_value using the cumulative distribution function,
@@ -158,7 +158,7 @@ def full_rank(X, cmax=1e15):
     X : array of shape (nrows, ncols)
         Input array.
 
-    cmax : float, default=1e15
+    cmax : :obj:`float`, default=1e15
         Tolerance for condition number.
 
     Returns
@@ -166,7 +166,7 @@ def full_rank(X, cmax=1e15):
     X : array of shape (nrows, ncols)
         Output array.
 
-    cond : float,
+    cond : :obj:`float`,
         Actual condition number.
 
     """

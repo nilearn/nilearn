@@ -321,7 +321,11 @@ def _generic_dispersion_derivative(
     dt : :obj:`float`, default=0.01
         Dispersion step for the derivative.
 
-    See _gamma_difference_hrf for the other parameters description.
+    .. do not check for missing parameters in docstring
+
+    Notes
+    -----
+    See ``_gamma_difference_hrf`` for the other parameters description.
     """
     return _compute_derivative_from_values(
         _gamma_difference_hrf(
@@ -642,6 +646,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     return names
 
 
+@fill_doc
 def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
     """Return the list of matching kernels \
     given the specification of the hemodynamic model and time parameters.

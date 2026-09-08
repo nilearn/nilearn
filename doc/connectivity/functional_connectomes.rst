@@ -122,7 +122,7 @@ sets of noise components and one can fine tune each of the parameters.
      set of confounds. (Note: only ``simple`` and ``scrubbing`` are applicable
      to the brain development dataset).
 
-   * :class:`nilearn.connectome.ConnectivityMeasure` can be used to compute
+   * :class:`~nilearn.connectome.ConnectivityMeasure` can be used to compute
      a correlation matrix (check the shape of your matrices).
 
    * :func:`matplotlib.pyplot.imshow` can show a correlation matrix.

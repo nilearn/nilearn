@@ -194,7 +194,7 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
         The subpeak coordinates in ``xyz``, but converted to matrix indices.
     vals : 1D numpy.ndarray
         The statistical value associated with each subpeak in ``xyz``/``ijk``.
-    min_distance : float
+    min_distance : :obj:`float`
         The minimum distance between subpeaks, in millimeters.
 
     Returns
@@ -446,6 +446,10 @@ def _get_clusters_table_surface(
         Useful when calling recursively
         for two-sided thresholding.
 
+    .. do not check for missing parameters in docstring
+
+    Notes
+    -----
     For other parameters, see `get_clusters_table`.
 
     """
@@ -706,13 +710,13 @@ def clustering_params_to_dataframe(
 
     Parameters
     ----------
-    threshold : float
+    threshold : :obj:`float`
         Cluster forming threshold in same scale as `stat_img` (either a
         p-value or z-scale value).
 
     %(cluster_threshold)s
 
-    min_distance : float
+    min_distance : :obj:`float`
         For display purposes only.
         Minimum distance between subpeaks in mm.
 
@@ -720,12 +724,12 @@ def clustering_params_to_dataframe(
         False positive control meaning of cluster forming
         threshold: 'fpr' (default) or 'fdr' or 'bonferroni' or None
 
-    alpha : float
+    alpha : :obj:`float`
         Number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
 
-    is_volume_glm: bool
+    is_volume_glm : :obj:`bool`
         True if we are dealing with volume data.
 
     Returns

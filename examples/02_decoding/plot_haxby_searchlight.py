@@ -3,8 +3,9 @@ Searchlight analysis of face vs house recognition
 =================================================
 
 Searchlight analysis requires fitting a classifier a large amount of
-times. As a result, it is an intrinsically slow method. In order to speed
-up computing, in this example, Searchlight is run only on one slice on
+times. As a result, it is an intrinsically slow method.
+In order to speed up computing, in this example,
+Searchlight is run only on one slice on
 the :term:`fMRI` (see the generated figures).
 
 """
@@ -17,7 +18,7 @@ import pandas as pd
 from nilearn.datasets import fetch_haxby
 from nilearn.image import get_data, load_img, new_img_like
 
-# We fetch 2nd subject from haxby datasets (which is default)
+# We fetch 2nd subject from the Haxby datasets (which is default)
 haxby_dataset = fetch_haxby()
 
 # print basic information on the dataset
@@ -138,6 +139,7 @@ from nilearn.maskers import NiftiMasker
 nifti_masker = NiftiMasker(
     mask_img=mask_img,
     runs=run,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
     verbose=1,

@@ -7,7 +7,6 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn.conftest import check_methods_docstring, check_obj_docstring
 from nilearn.plotting.displays import (
     BaseAxes,
     LProjector,
@@ -33,11 +32,6 @@ from nilearn.plotting.displays import (
     YZSlicer,
     ZProjector,
     ZSlicer,
-)
-from nilearn.plotting.displays._slicers import (
-    BaseSlicer,
-    BaseStackedSlicer,
-    _MultiDSlicer,
 )
 
 SLICER_KEYS = ["ortho", "tiled", "x", "y", "z", "yx", "yz", "mosaic", "xz"]
@@ -641,59 +635,3 @@ def test_slicer_sanitize_cut_coords_error(slicer, cut_coords):
     """
     with pytest.raises(ValueError, match="cut_coords passed does not match"):
         slicer._sanitize_cut_coords(cut_coords)
-
-
-@pytest.mark.parametrize(
-    "slicer",
-    [
-        OrthoSlicer((2, 3, 4)),
-        TiledSlicer((3, 4, 5)),
-        XSlicer(1),
-        YSlicer(2),
-        ZSlicer(3),
-        XZSlicer((4, 5)),
-        YXSlicer((2, 3)),
-        YZSlicer((1, 2)),
-        MosaicSlicer((2, 3, 4)),
-    ],
-)
-def test_slicer_docstrings(slicer):
-    """Test if all slicers defined nilearn.plotting.displays._slicers have
-    complete docstrings.
-    """
-    check_obj_docstring(slicer)
-
-
-def test_slicer_base_class_docstrings():
-    """Test if base classes defined nilearn.plotting.displays._slicers have
-    complete docstrings for methods.
-    """
-    check_methods_docstring(BaseSlicer)
-    check_methods_docstring(_MultiDSlicer)
-    check_methods_docstring(BaseStackedSlicer)
-
-
-@pytest.mark.parametrize(
-    "projector",
-    [
-        OrthoProjector,
-        XProjector,
-        YProjector,
-        ZProjector,
-        XZProjector,
-        YXProjector,
-        YZProjector,
-        LYRZProjector,
-        LZRYProjector,
-        LZRProjector,
-        LYRProjector,
-        LRProjector,
-        LProjector,
-        RProjector,
-    ],
-)
-def test_projector_docstrings(projector):
-    """Test if all slicers defined nilearn.plotting.displays._projectors have
-    complete docstrings.
-    """
-    check_obj_docstring(projector((2, 3, 4)))

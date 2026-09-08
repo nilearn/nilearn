@@ -44,18 +44,18 @@ class Atlas(Bunch):
     maps : Niimg-like object or SurfaceImage object
         single image or list of images for that atlas
 
-    description : str
+    description : :obj:`str`
         atlas description
 
-    atlas_type: {"deterministic", "probabilistic"}
+    atlas_type : {"deterministic", "probabilistic"}
 
-    labels: list of str
+    labels : :obj:`list` of str
         labels for the atlas
 
-    lut: pandas.DataFrame
+    lut : pandas.DataFrame
         look up table for the atlas
 
-    template: str
+    template : :obj:`str`
         name of the template used for the atlas
     """
 
@@ -2314,7 +2314,7 @@ def fetch_atlas_pauli_2017(
 
         - %(labels)s
             The list contains values for both
-            :term:`probabilitic<Probabilistic atlas>` and
+            :term:`probabilistic<Probabilistic atlas>` and
             :term:`deterministic<Deterministic atlas>` types.
 
         - %(description)s

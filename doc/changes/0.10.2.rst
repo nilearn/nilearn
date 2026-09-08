@@ -1,9 +1,7 @@
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.10.2
-======
+Version 0.10.2
+==============
 
 **Released September 2023**
 
@@ -12,7 +10,7 @@ HIGHLIGHTS
 
 - :bdg-success:`API` Add ``LassoCV`` as a new estimator option for Decoder objects (:gh:`3781` by `Michelle Wang`_)
 
-- :bdg-success:`API` Add ``vmin`` and ``symmetric_cbar`` arguments to :func:`~nilearn.plotting.plot_img_on_surf` (:gh:`3873` by `Michelle Wang`_).
+- :bdg-success:`API` Add ``vmin`` and ``symmetric_cbar`` arguments to :func:`~plotting.plot_img_on_surf` (:gh:`3873` by `Michelle Wang`_).
 
 - :bdg-success:`API` Improve ``contrasts`` allowing fixed effects on F contrasts (:gh:`3203` by `Bertrand Thirion`_)
 
@@ -48,9 +46,9 @@ Fixes
 
 - :bdg-dark:`Code` Fix bug where the ``cv_params_`` attribute of fitter Decoder objects sometimes had missing entries if ``grid_param`` is a sequence of dicts with different keys (:gh:`3733` by `Michelle Wang`_).
 
-- :bdg-dark:`Code` Make the :func:`~nilearn.interfaces.fmriprep.load_confounds` confounds file selection more generic (:gh:`3794` by `Taylor Salo`_).
+- :bdg-dark:`Code` Make the :func:`~interfaces.fmriprep.load_confounds` confounds file selection more generic (:gh:`3794` by `Taylor Salo`_).
 
-- :bdg-dark:`Code` Relax the :func:`~nilearn.interfaces.fmriprep.load_confounds` confounds selection on ``cosine`` as not all confound files contained the variables (:gh:`3816` by `Hao-Ting Wang`_).
+- :bdg-dark:`Code` Relax the :func:`~interfaces.fmriprep.load_confounds` confounds selection on ``cosine`` as not all confound files contained the variables (:gh:`3816` by `Hao-Ting Wang`_).
 
 - :bdg-dark:`Code` Fix ``pathlib.Path`` not being counted as Niimg-like object in :func:`~image.new_img_like` (:gh:`3723` by `Maximilian Cosmo Sitter`_).
 
@@ -79,7 +77,7 @@ Enhancements
 
 - :bdg-success:`API` Add ``LassoCV`` as a new estimator option for Decoder objects (:gh:`3781` by `Michelle Wang`_)
 
-- :bdg-success:`API` Add ``vmin`` and ``symmetric_cbar`` arguments to :func:`~nilearn.plotting.plot_img_on_surf` (:gh:`3873` by `Michelle Wang`_).
+- :bdg-success:`API` Add ``vmin`` and ``symmetric_cbar`` arguments to :func:`~plotting.plot_img_on_surf` (:gh:`3873` by `Michelle Wang`_).
 
 - :bdg-success:`API` Improve ``generate_report`` method of maskers by allowing users to pass a cmap argument for plotting image (:gh:`3897` by `Yasmin Mzayek`_)
 
@@ -120,6 +118,6 @@ Changes
 
 - :bdg-secondary:`Maint` Refactor error raising tests using context managers (:gh:`3854` BY `François Paugam`_)
 
-- :bdg-secondary:`Maint` Move the ``~nilearn.plotting.html_surface._mix_colormaps`` to ``cm.py`` in :mod:`~nilearn.plotting` (:gh:`3919` by `Ahmad Chamma`_)
+- :bdg-secondary:`Maint` Move the ``~plotting.html_surface._mix_colormaps`` to ``cm.py`` in :mod:`~nilearn.plotting` (:gh:`3919` by `Ahmad Chamma`_)
 
-- :bdg-secondary:`Maint` Remove deprecation decorator from ``~nilearn.glm.regression`` (:gh:`3921` by `Ahmad Chamma`_)
+- :bdg-secondary:`Maint` Remove deprecation decorator from ``~glm.regression`` (:gh:`3921` by `Ahmad Chamma`_)

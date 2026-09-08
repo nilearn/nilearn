@@ -23,7 +23,7 @@ class _MultiPCA(_BaseDecomposition):
     n_components : int, default=20
         Number of components to extract.
 
-    do_cca : boolean, default=True
+    do_cca : :obj:`bool`, default=True
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
@@ -47,13 +47,13 @@ class _MultiPCA(_BaseDecomposition):
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
-    standardize_confounds : boolean, default=True
+    standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend : boolean, default=False
+    detrend : :obj:`bool`, default=False
         If detrend is True, the time-series will be detrended before
         components extraction.
 
@@ -115,7 +115,7 @@ class _MultiPCA(_BaseDecomposition):
         smoothing_fwhm=None,
         do_cca=True,
         random_state=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         low_pass=None,

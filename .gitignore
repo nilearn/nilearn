@@ -42,7 +42,6 @@ build
 dist/
 nilearn/_version.py
 
-
 # notebooks
 .ipynb_checkpoints
 
@@ -57,9 +56,7 @@ venv*/
 *diff.png
 report*.html
 tests_to_run.txt
-tests/js/*.html
-tests/js/*.png
-
+tests/js/generated
 
 # CI benchmark
 maint_tools/*_runs_timing.*
@@ -106,3 +103,6 @@ nilearn.svg
 # uv
 uv.lock
 .python-version
+
+# complexipy
+.complexipy_cache

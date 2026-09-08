@@ -74,6 +74,7 @@ def test_plotly_show(plotly, renderer):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.single_process
 @pytest.mark.skipif(
     not is_kaleido_installed(),
     reason="Kaleido is not installed; required for this test.",

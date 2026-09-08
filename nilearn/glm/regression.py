@@ -109,7 +109,7 @@ class OLSModel:
 
         Returns
         -------
-        loglf : float
+        loglf : :obj:`float`
             The value of the loglikelihood function.
 
         Notes
@@ -171,7 +171,7 @@ class OLSModel:
         """
         return X
 
-    def fit(self, Y):
+    def fit(self, Y) -> "RegressionResults":
         """Fit model to data `Y`.
 
         Full fit of the model including estimate of covariance matrix,

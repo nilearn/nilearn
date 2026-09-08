@@ -4,6 +4,8 @@ More generic tests (those that apply to all maskers)
 should go into nilearn/_utils/estimator_checks.
 """
 
+import json
+import re
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -51,14 +53,20 @@ def generate_and_check_masker_report(
 ) -> HTMLReport:
     """Generate and check content of masker report.
 
-    See check_report fo details about the parameters.
+    See check_report for details about the parameters.
     """
     if warnings_msg_to_check is None:
         warnings_msg_to_check = []
 
     includes = []
-    excludes = ["Adapted from Pure CSS navbar"]
-    # navbar and its css is only for GLM reports
+
+    excludes = [
+        # navbar and its css is only for GLM reports
+        "Adapted from Pure CSS navbar",
+        # if Slicer is present in report it probably means one figure was not
+        # converted to svg before being embedded in the HTML
+        "Slicer",
+    ]
 
     report_at_fit_time = masker._report_content.get(
         "reports_at_fit_time", masker.reports
@@ -335,7 +343,6 @@ def test_nifti_labels_masker_report(
         labels=labels,
         mask_img=img_mask_eye,
         keep_masked_labels=True,
-        standardize=None,
     )
     with pytest.warns(
         FutureWarning, match='"keep_masked_labels" parameter will be removed'
@@ -452,30 +459,60 @@ def test_nifti_masker_overlaid_report(
         mask_strategy="whole-brain-template",
         mask_args={"threshold": 0.0},
         target_affine=np.eye(3),
-        standardize=None,
     )
     masker.fit(img_fmri)
 
     generate_and_check_masker_report(
-        masker, extend_includes=['<div class="overlay">']
+        masker,
+        extend_includes=['<div class="overlay">'],
+        # overlay should be an actual image
+        # not the string representation of a slicer
+        # regression test for https://github.com/nilearn/nilearn/issues/6418
+        extend_excludes=["nilearn.plotting.displays._slicers.OrthoSlicer"],
     )
 
 
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
+@pytest.mark.ai_generated
 def test_nifti_masker_brainsprite(
     matplotlib_pyplot,  # noqa: ARG001
     img_fmri,
 ):
-    """Check that NiftiMasker work with brainsprite engine."""
-    masker = NiftiMasker(standardize=None)
+    """Check that NiftiMasker Brainsprite reports use unique DOM IDs."""
+    masker = NiftiMasker()
     generate_and_check_masker_report(
         masker, extra_warnings_allowed=True, engine="brainsprite"
     )
     masker.fit(img_fmri)
-    generate_and_check_masker_report(
+    first_report = generate_and_check_masker_report(
         masker, extra_warnings_allowed=True, engine="brainsprite"
     )
+    second_report = generate_and_check_masker_report(
+        masker, extra_warnings_allowed=True, engine="brainsprite"
+    )
+
+    configs = []
+    combined_html = f"{first_report}{second_report}"
+    for report in (first_report, second_report):
+        config_match = re.search(r"brainsprite\((\{.*\})\);", str(report))
+        assert config_match is not None
+        config = json.loads(config_match.group(1))
+        configs.append(config)
+
+        for element_id in (
+            config["canvas"],
+            config["sprite"],
+            config["overlay"]["sprite"],
+            config["colorMap"]["img"],
+        ):
+            assert f'id="{element_id}"' in str(report)
+            assert combined_html.count(f'id="{element_id}"') == 1
+
+    assert configs[0]["canvas"] != configs[1]["canvas"]
+    assert configs[0]["sprite"] != configs[1]["sprite"]
+    assert configs[0]["overlay"]["sprite"] != configs[1]["overlay"]["sprite"]
+    assert configs[0]["colorMap"]["img"] != configs[1]["colorMap"]["img"]
 
 
 @pytest.mark.thread_unsafe
@@ -485,7 +522,7 @@ def test_nifti_label_masker_brainsprite(
     img_labels,
 ):
     """Check that NiftiLabelsMasker work with brainsprite engine."""
-    masker = NiftiLabelsMasker(img_labels, standardize=None)
+    masker = NiftiLabelsMasker(img_labels)
     generate_and_check_masker_report(
         masker, extra_warnings_allowed=True, engine="brainsprite"
     )
@@ -505,7 +542,6 @@ def test_multi_nifti_masker_generate_report_mask(
         # to test resampling lines without imgs
         target_affine=affine_eye,
         target_shape=shape_3d_default,
-        standardize=None,
     )
     masker.fit()
 
@@ -525,7 +561,6 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
         # to test resampling lines with imgs
         target_affine=affine_eye,
         target_shape=shape_3d_default,
-        standardize=None,
     )
     masker.fit([img_fmri, img_fmri])
 
@@ -540,7 +575,7 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
 @pytest.mark.thread_unsafe
 def test_surface_masker_mask_img_generate_report(surf_img_1d, surf_mask_1d):
     """Smoke test generate report."""
-    masker = SurfaceMasker(surf_mask_1d, reports=True, standardize=None).fit()
+    masker = SurfaceMasker(surf_mask_1d, reports=True).fit()
 
     assert masker._reporting_data is not None
     assert masker._reporting_data["images"] is None
@@ -559,7 +594,7 @@ def test_surface_masker_minimal_report_no_fit(
 ):
     """Test minimal report generation with no fit."""
     mask = None if empty_mask else surf_mask_1d
-    masker = SurfaceMasker(mask_img=mask, reports=reports, standardize=None)
+    masker = SurfaceMasker(mask_img=mask, reports=reports)
     generate_and_check_masker_report(masker)
 
 
@@ -571,7 +606,7 @@ def test_surface_masker_minimal_report_fit(
 ):
     """Test minimal report generation with fit."""
     mask = None if empty_mask else surf_mask_1d
-    masker = SurfaceMasker(mask_img=mask, reports=reports, standardize=None)
+    masker = SurfaceMasker(mask_img=mask, reports=reports)
     masker.fit_transform(surf_img_1d)
 
     extend_includes = []
@@ -590,7 +625,7 @@ def test_surface_maps_masker_generate_report_engine_error(
     surf_img_2d,
 ):
     """Test error is raised when engine is not 'plotly' or 'matplotlib'."""
-    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
+    masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
     with pytest.raises(
         ValueError,
@@ -612,7 +647,7 @@ def test_surface_maps_masker_generate_report_engine_no_plotly_warning(
     """Test warning is raised when engine selected is plotly but it is not
     installed. Only run when plotly is not installed but matplotlib is.
     """
-    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
+    masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
     with pytest.warns(match="Plotly is not installed"):
         masker.generate_report(engine="plotly", displayed_maps=2)
@@ -644,7 +679,7 @@ def test_surface_maps_masker_generate_report_plotly_out_figure_type(
     """Test that the report has a iframe tag when engine is plotly
     (default).
     """
-    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
+    masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
     report = masker.generate_report(engine="plotly", displayed_maps=2)
 
@@ -663,7 +698,7 @@ def test_surface_maps_masker_generate_report_matplotlib_out_figure_type(
     surf_img_2d,
 ):
     """Test that the report has a img tag when engine is matplotlib."""
-    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
+    masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
     report = masker.generate_report(engine="matplotlib", displayed_maps=2)
 

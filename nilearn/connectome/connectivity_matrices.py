@@ -2,6 +2,7 @@
 
 import warnings
 from math import floor, sqrt
+from typing import Self
 
 import numpy as np
 from scipy import linalg
@@ -9,6 +10,7 @@ from sklearn.base import TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
 from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
+from sklearn.utils.validation import validate_data
 
 from nilearn import signal
 from nilearn._base import NilearnBaseEstimator
@@ -16,7 +18,6 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_parameter_in_allowed
-from nilearn._utils.versions import SKLEARN_LT_1_6
 
 
 def _check_square(matrix: np.ndarray) -> None:
@@ -104,6 +105,7 @@ def _map_eigenvalues(function, symmetric):
     return _form_symmetric(function, eigenvalues, eigenvectors)
 
 
+@fill_doc
 def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     """Compute the geometric mean of symmetric positive definite matrices.
 
@@ -127,7 +129,8 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
     Parameters
     ----------
-    matrices : list of numpy.ndarray, all of shape (n_features, n_features)
+    matrices : :obj:`list` of numpy.ndarray, \
+                all of shape (n_features, n_features)
         List of matrices whose geometric mean to compute. Raise an error if the
         matrices are not all symmetric positive definite of the same shape.
 
@@ -462,15 +465,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
 
-    %(standardize_true)s
-
-        .. note::
-
-            Added to control passing value to `standardize` of ``signal.clean``
-            to call new behavior since passing False or True (default) is
-            deprecated.
-            This parameter will be removed in version 0.15.
-
     %(verbose0)s
 
     Attributes
@@ -506,14 +500,12 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         kind="covariance",
         vectorize=False,
         discard_diagonal=False,
-        standardize=True,
         verbose=0,
     ):
         self.cov_estimator = cov_estimator
         self.kind = kind
         self.vectorize = vectorize
         self.discard_diagonal = discard_diagonal
-        self.standardize = standardize
         self.verbose = verbose
 
     def _check_input(self, X, confounds=None):
@@ -539,20 +531,8 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             )
 
         if self.__sklearn_is_fitted__():
-            # TODO (sklearn >= 1.6.0) simplify
-            if SKLEARN_LT_1_6:
-                for x in X:
-                    check_array(
-                        x,
-                        estimator=self,
-                        ensure_min_features=self.n_features_in_,
-                        accept_sparse=False,
-                    )
-            else:
-                from sklearn.utils.validation import validate_data
-
-                for x in X:
-                    validate_data(self, x, reset=False, accept_sparse=False)
+            for x in X:
+                validate_data(self, x, reset=False, accept_sparse=False)
         else:
             for s in X:
                 check_array(s, accept_sparse=False)
@@ -573,7 +553,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                 raise ValueError(error_message)
 
     @fill_doc
-    def fit(self, X, y=None):
+    def fit(self, X, y=None) -> Self:
         """Fit the covariance estimator to the given time series for each \
         subject.
 
@@ -649,14 +629,9 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
 
         # Compute all the matrices, stored in "connectivities"
         if self.kind == "correlation":
-            standardize = "zscore_sample" if self.standardize is True else None
             covariances_std = [
                 self.cov_estimator_.fit(
-                    signal.standardize_signal(
-                        x,
-                        detrend=False,
-                        standardize=standardize,
-                    )
+                    signal.standardize_signal(x, detrend=False)
                 ).covariance_
                 for x in X
             ]

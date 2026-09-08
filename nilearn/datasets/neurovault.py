@@ -638,9 +638,12 @@ class Pattern(_SpecialValue):
     to, any value for which ``re.match(pattern, value, flags)`` is
     ``True``.
 
+    See the documentation for the standard library ``re`` module for
+    more information.
+
     Parameters
     ----------
-    pattern : str
+    pattern : :obj:`str`
         The pattern to try to match to candidates.
 
     flags : int, default=0
@@ -661,8 +664,6 @@ class Pattern(_SpecialValue):
     nilearn.datasets.neurovault.NotIn,
     nilearn.datasets.neurovault.Contains,
     nilearn.datasets.neurovault.NotContains.
-
-    Documentation for standard library ``re`` module.
 
     Examples
     --------
@@ -734,8 +735,9 @@ class ResultFilter:
         A ``metadata`` dictionary will be blocked by the filter if
         `callable_filter` does not return ``True`` for ``metadata``.
 
-    As an alternative to the `query_terms` dictionary parameter,
-    key, value pairs can be passed as keyword arguments.
+    kwargs :
+        As an alternative to the `query_terms` dictionary parameter,
+        key, value pairs can be passed as keyword arguments.
 
     Attributes
     ----------
@@ -744,7 +746,7 @@ class ResultFilter:
         ``metadata[key] == value`` for each ``key``, ``value`` pair in
         `query_terms_`.
 
-    callable_filters_ : list of callables
+    callable_filters_ : :obj:`list` of callables
         In addition to ``(key, value)`` pairs, we can use this
         attribute to specify more elaborate requirements. Called with
         a dict representing metadata for an image or collection, each
@@ -857,7 +859,7 @@ class ResultFilter:
         if item in self.query_terms_:
             del self.query_terms_[item]
 
-    def add_filter(self, callable_filter):
+    def add_filter(self, callable_filter) -> None:
         """Add a function to the callable_filters_.
 
         After a call add_filter(additional_filt), in addition to all
@@ -884,7 +886,7 @@ class _TemporaryDirectory:
 
     Attributes
     ----------
-    temp_dir_ : str or None
+    temp_dir_ : :obj:`str` or None
         location of temporary directory or None if not created.
 
     """
@@ -908,7 +910,7 @@ def _append_filters_to_query(query, filters):
 
     Parameters
     ----------
-    query : str
+    query : :obj:`str`
         URL to which the filters should be appended
 
     filters : dict or sequence of pairs
@@ -935,6 +937,7 @@ def _append_filters_to_query(query, filters):
     return new_query
 
 
+@fill_doc
 def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
     """Given an URL, get the HTTP response and transform it to python dict.
 
@@ -943,13 +946,13 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
 
     Parameters
     ----------
-    query : str
+    query : :obj:`str`
         The URL from which to get data.
 
-    prefix_msg : str, default=''
+    prefix_msg : :obj:`str`, default=''
         Prefix for all log messages.
 
-    timeout : float, default=_DEFAULT_TIME_OUT
+    timeout : :obj:`float`, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
     %(verbose3)s
@@ -1017,6 +1020,7 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
     return batch
 
 
+@fill_doc
 def _scroll_server_results(
     url,
     local_filter=_empty_filter,
@@ -1031,7 +1035,7 @@ def _scroll_server_results(
 
     Parameters
     ----------
-    url : str
+    url : :obj:`str`
         The base url (without the filters) from which to get data.
 
     local_filter : callable, default=_empty_filter
@@ -1052,10 +1056,10 @@ def _scroll_server_results(
         in batches. batch_size is used to choose the (maximum) number of
         elements in a batch. If None, ``_DEFAULT_BATCH_SIZE`` is used.
 
-    prefix_msg : str, default=''
+    prefix_msg : :obj:`str`, default=''
         Prefix for all log messages.
 
-    timeout : float, default=_DEFAULT_TIME_OUT
+    timeout : :obj:`float`, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
     %(verbose3)s
@@ -1107,6 +1111,7 @@ def _scroll_server_results(
                     yield result
 
 
+@fill_doc
 def _yield_from_url_list(url_list, timeout=_DEFAULT_TIME_OUT, verbose=3):
     """Get metadata coming from an explicit list of URLs.
 
@@ -1118,7 +1123,7 @@ def _yield_from_url_list(url_list, timeout=_DEFAULT_TIME_OUT, verbose=3):
     url_list : Container of str
         URLs from which to get data
 
-    timeout : float, default=_DEFAULT_TIME_OUT
+    timeout : :obj:`float`, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
     %(verbose3)s
@@ -1142,6 +1147,7 @@ def _yield_from_url_list(url_list, timeout=_DEFAULT_TIME_OUT, verbose=3):
             yield batch["results"][0]
 
 
+@fill_doc
 def _simple_download(url, target_file, temp_dir, verbose=3):
     """Wrap around ``utils.fetch_single_file``.
 
@@ -1149,10 +1155,10 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
 
     Parameters
     ----------
-    url : str
+    url : :obj:`str`
         URL of the file to download.
 
-    target_file : str
+    target_file : :obj:`str`
         Location of the downloaded file on filesystem.
 
     temp_dir : pathlib.Path
@@ -1162,7 +1168,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
 
     Returns
     -------
-    target_file : str
+    target_file : :obj:`str`
         The location in which the file was downloaded.
 
     Raises
@@ -1217,8 +1223,9 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
 
     %(verbose3)s
 
-    Keyword arguments are passed on to
-    ``sklearn.feature_extraction.DictVectorizer``.
+    kwargs :
+        Keyword arguments are passed on to
+        ``sklearn.feature_extraction.DictVectorizer``.
 
     Returns
     -------
@@ -1230,7 +1237,7 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
         `vocabulary[j]` for image ``i``.  This matrix is computed by
         an ``sklearn.feature_extraction.DictVectorizer`` instance.
 
-    vocabulary : list of str
+    vocabulary : :obj:`list` of str
         A list of all the words encountered in the word files.
 
     See Also
@@ -1308,7 +1315,7 @@ def _remove_none_strings(metadata):
     return metadata
 
 
-def _write_metadata(metadata, file_name):
+def _write_metadata(metadata, file_name) -> None:
     """Save metadata to disk.
 
     Absolute paths are not written; they are recomputed using the
@@ -1321,7 +1328,7 @@ def _write_metadata(metadata, file_name):
         Dictionary representing metadata for a file or a
         collection. Any key containing 'absolute' is ignored.
 
-    file_name : str or pathlib.Path
+    file_name : :obj:`str` or pathlib.Path
         Path to the file in which to write the data.
 
     """
@@ -1351,7 +1358,7 @@ def _add_absolute_paths(root_dir, metadata, force=True):
         relative path and the corresponding absolute path is added to
         the dictionary.
 
-    force : bool, default=True
+    force : :obj:`bool`, default=True
         If ``True``, if an absolute path is already present in the
         metadata, it is replaced with the recomputed value. If
         ``False``, already specified absolute paths have priority.
@@ -1382,7 +1389,7 @@ def _json_from_file(file_name):
 
     Parameters
     ----------
-    file_name : str or pathlib.Path
+    file_name : :obj:`str` or pathlib.Path
     """
     with Path(file_name).open("rb") as dumped:
         loaded = json.loads(dumped.read().decode("utf-8"))
@@ -1394,9 +1401,9 @@ def _json_add_collection_dir(file_name, force=True):
 
     Parameters
     ----------
-    file_name : str or pathlib.Path
+    file_name : :obj:`str` or pathlib.Path
 
-    force : bool
+    force : :obj:`bool`
     """
     file_name = Path(file_name)
     loaded = _json_from_file(file_name)
@@ -2516,6 +2523,7 @@ def fetch_neurovault(
     data_dir: DataDir = None,
     fetch_neurosynth_words: bool = False,
     resample: bool = False,
+    interpolation: Literal["continuous", "linear", "nearest"] = "continuous",
     vectorize_words: bool = True,
     timeout: float = _DEFAULT_TIME_OUT,
     verbose: Verbose = 3,
@@ -2746,6 +2754,7 @@ def fetch_neurovault(
         data_dir=data_dir,
         fetch_neurosynth_words=fetch_neurosynth_words,
         resample=resample,
+        interpolation=interpolation,
         vectorize_words=vectorize_words,
         timeout=timeout,
         verbose=verbose,
@@ -2886,6 +2895,8 @@ def fetch_neurovault_auditory_computation_task(
     %(data_dir)s
 
     %(verbose)s
+
+    timeout : :obj:`float`, default=10.0
 
     Returns
     -------

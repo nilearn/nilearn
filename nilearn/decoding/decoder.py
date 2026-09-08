@@ -13,7 +13,7 @@ ensembling to achieve state of the art performance
 import itertools
 import warnings
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Self
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -47,7 +47,7 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.tags import InputTags
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import (
     SUPPORTED_ESTIMATORS,
@@ -64,7 +64,6 @@ from nilearn.surface import SurfaceImage
 _MIN_N_FEATURES_FOR_SCREENING = 100
 
 
-@fill_doc
 def _check_param_grid(estimator, X, y, param_grid=None):
     """Check param_grid and return sensible default if param_grid is None.
 
@@ -73,7 +72,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     estimator : scikit-learn compatible estimator object
         The estimator for which to check the parameter grid.
 
-    X : list of Niimg-like objects
+    X : :obj:`list` of Niimg-like objects
         See :ref:`extracting_data`.
         Data on which model is to be fitted. If this is a list,
         the affine is considered the same for all.
@@ -124,7 +123,7 @@ def _default_param_grid(estimator, X, y):
     estimator : scikit-learn compatible estimator object
         The estimator for which to generate the parameter grid.
 
-    X : list of Niimg-like objects
+    X : :obj:`list` of Niimg-like objects
         See :ref:`extracting_data`.
         Data on which model is to be fitted. If this is a list,
         the affine is considered the same for all.
@@ -215,7 +214,7 @@ def _wrap_param_grid(param_grid, param_name):
     param_grid : dict of str to sequence, or sequence of such
         The parameter grid to wrap, as a dictionary mapping estimator
         parameters to sequences of allowed values.
-    param_name : str
+    param_name : :obj:`str`
         Name of parameter whose sequence of values should be wrapped
 
     Returns
@@ -266,9 +265,9 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
     param_grid : dict of str to sequence, or sequence of such
         The parameter grid to process, as a dictionary mapping estimator
         parameters to sequences of allowed values.
-    key_to_replace : str
+    key_to_replace : :obj:`str`
         Name of parameter to replace
-    new_key : str
+    new_key : :obj:`str`
         New parameter name. If this key already exists in the parameter grid,
         it is overwritten
 
@@ -470,17 +469,9 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         defaults to an empty dictionary. To tune a custom estimator's
         hyperparameters, provide ``param_grid`` explicitly.
 
-    clustering_percentile : int, float, in the [0, 100], default=100
-        Percentile of features to keep after clustering. If it is lower
-        than 100, a ReNA clustering is performed as a first step of fit
-        to agglomerate similar features together. ReNA is typically efficient
-        for clustering_percentile equal to 10. Only used with
-        :class:`nilearn.decoding.FREMClassifier` and
-        :class:`nilearn.decoding.FREMRegressor`.
-
     %(screening_percentile)s
 
-    scoring : str, callable or None,
+    scoring : :obj:`str`, callable or None,
              default=None
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
@@ -498,7 +489,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
     %(screening_n_features)s
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
 
@@ -547,6 +538,11 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
     """
 
+    # dummy_output_ starts as a dict of accumulated fold outputs
+    # (set in _fetch_parallel_fit_outputs) and is turned into an array
+    # once ensembled in fit().
+    dummy_output_: Any
+
     def __init__(
         self,
         estimator: SupportedRegressors | SupportedClassifiers | Any = "svc",
@@ -557,7 +553,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         screening_n_features=None,
         scoring=None,
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         low_pass=None,
@@ -599,12 +595,13 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         return 100
 
     @fill_doc
-    def fit(self, X, y, groups=None):
+    def fit(self, X, y, groups=None) -> Self:
         """Fit the decoder (learner).
 
         Parameters
         ----------
-        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
+        X : :obj:`list` of Niimg-like >
+            or :obj:`~nilearn.surface.SurfaceImage` objects
             See :ref:`extracting_data`.
             Data on which model is to be fitted.
             If this is a list,
@@ -627,7 +624,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         # TODO (sklearn >= 1.8) _estimator_type will be removed
         owning_class_type = getattr(self, "_estimator_type", None)
 
-        # TODO test with sklearn sklearn_version == 1.5.0
         if owning_class_type is None:
             owning_class_type = self.__sklearn_tags__().estimator_type
 
@@ -778,7 +774,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         # Build the final model (the aggregated one)
         if not isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
-            self.coef_ = np.vstack(
+            self.coef_: np.ndarray | None = np.vstack(
                 [
                     np.mean(coefs[class_index], axis=0)
                     for class_index in classes_
@@ -811,9 +807,10 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         else:
             # For Dummy estimators
             self.coef_ = None
+            dummy_output = self.dummy_output_
             self.dummy_output_ = np.vstack(
                 [
-                    np.mean(self.dummy_output_[class_index], axis=0)
+                    np.mean(dummy_output[class_index], axis=0)
                     for class_index in classes_
                 ]
             )
@@ -859,7 +856,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         Returns
         -------
-        score : float
+        score : :obj:`float`
             Prediction score.
 
         """
@@ -899,6 +896,9 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
                 f" expecting {self.n_elements_}"
             )
 
+        # coef_ is only None for Dummy estimators, which do not reach
+        # this code path (they are predicted through _predict_dummy).
+        assert self.coef_ is not None
         scores = (
             safe_sparse_dot(X, self.coef_.T, dense_output=True)
             + self.intercept_
@@ -974,13 +974,15 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         Parameters
         ----------
-        parallel_fit_outputs : list of tuples,
+        parallel_fit_outputs : :obj:`list` of tuples,
             each tuple contains results of
             one _parallel_fit for each cv fold (and each classification in the
             case of multiclass classification).
 
         y : ndarray, shape = (n_samples, )
             Vector of responses.
+
+        n_problems : int
 
         Returns
         -------
@@ -993,7 +995,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         intercepts = {}
         cv_scores = {}
         self.cv_params_ = {}
-        self.dummy_output_ = {}
+        self.dummy_output_: Any = {}
         classes_ = self._get_classes()
 
         for (
@@ -1099,15 +1101,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(require_y=True, niimg_like=True, surf_img=True)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.target_tags.required = True
         tags.input_tags = InputTags(niimg_like=True, surf_img=True)
@@ -1183,7 +1176,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
 
@@ -1249,7 +1242,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         mask_strategy="background",
@@ -1373,7 +1366,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
 
@@ -1433,7 +1426,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         mask_strategy="background",
@@ -1468,13 +1461,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             n_jobs=n_jobs,
             estimator_args=estimator_args,
         )
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -1536,14 +1522,14 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         in closed interval [0, 100] \
         default=10
         Used to perform a fast ReNA clustering on input data as a first step of
-        fit. It agglomerates similar features together to reduce their number
-        by this percentile. ReNA is typically efficient for cluster_percentile
-        equal to 10.
+        fit.
+        It agglomerates similar features together to reduce their number
+        by this percentile.
+        ReNA is typically efficient for cluster_percentile equal to 10.
 
     %(screening_percentile)s
 
     %(screening_n_features)s
-
 
     scoring : :obj:`str`, callable or None, default= 'r2'
 
@@ -1559,10 +1545,12 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
+
     %(target_shape)s
+
     %(mask_strategy)s
 
         .. note::
@@ -1575,11 +1563,17 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_brain_mask`.
 
         default='background'.
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
+
     %(memory)s
+
     %(memory_level)s
+
     %(n_jobs)s
 
     %(verbose0)s
@@ -1615,7 +1609,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         mask_strategy="background",
@@ -1652,13 +1646,6 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         )
 
         self.clustering_percentile = clustering_percentile
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -1719,9 +1706,10 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         in closed interval [0, 100], \
         default=10
         Used to perform a fast ReNA clustering on input data as a first step of
-        fit. It agglomerates similar features together to reduce their number
-        down to this percentile. ReNA is typically efficient for
-        cluster_percentile equal to 10.
+        fit.
+        It agglomerates similar features together to reduce their number
+        down to this percentile.
+        ReNA is typically efficient for cluster_percentile equal to 10.
 
     screening_percentile : :obj:`int`, :obj:`float`, \
         in closed interval [0, 100], \
@@ -1733,7 +1721,6 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         scores.
 
     %(screening_n_features)s
-
 
     scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1747,9 +1734,10 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         'recall' or 'roc_auc'; default='roc_auc'
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
+
     %(target_shape)s
 
     %(mask_strategy)s
@@ -1766,10 +1754,15 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         default='background'.
 
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
+
     %(memory)s
+
     %(memory_level)s
+
     %(n_jobs)s
 
     %(verbose0)s
@@ -1812,7 +1805,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         mask_strategy="background",

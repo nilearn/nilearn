@@ -1,6 +1,6 @@
 """
-Analysis of an fMRI dataset with a Finite Impule Response (FIR) model
-=====================================================================
+Analysis of an fMRI dataset with a Finite Impulse Response (FIR) model
+======================================================================
 
 :term:`FIR` models are used to estimate
 the hemodyamic response non-parametrically.

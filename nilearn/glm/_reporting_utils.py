@@ -10,7 +10,7 @@ from sklearn.utils import Bunch
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import is_matplotlib_installed, is_notebook
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import (
@@ -24,10 +24,7 @@ from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
     get_clusters_table,
 )
-from nilearn.reporting.html_report import (
-    HTMLReport,
-    is_notebook,
-)
+from nilearn.reporting.html_report import HTMLReport
 from nilearn.reporting.mixin import ReportMixin
 from nilearn.reporting.utils import figure_to_png_base64
 from nilearn.surface.surface import SurfaceImage
@@ -173,9 +170,9 @@ class GLMReportMixin(ReportMixin):
                 or numpy array of ints or floats.
 
             Contrasts are passed to ``contrast_def`` for FirstLevelModel
-            (:func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast`)
+            (:meth:`nilearn.glm.first_level.FirstLevelModel.compute_contrast`)
             & second_level_contrast for SecondLevelModel
-            (:func:`nilearn.glm.second_level.SecondLevelModel.compute_contrast`)
+            (:meth:`nilearn.glm.second_level.SecondLevelModel.compute_contrast`)
 
         %(first_level_contrast)s
 
@@ -406,19 +403,8 @@ def sanitize_generate_report_input(
         first_level_contrast = None
 
     if height_control is None:
-        # TODO (nilearn >= 0.15.0) update to DEFAULT_Z_THRESHOLD
         if threshold is None:
-            threshold = 3.09
-
-        # TODO (nilearn >= 0.15.0) remove
-        if threshold == 3.09:
-            warnings.warn(
-                "\nFrom nilearn version>=0.15, "
-                "the default 'threshold' will be set to "
-                f"{DEFAULT_Z_THRESHOLD}.",
-                FutureWarning,
-                stacklevel=find_stack_level(),
-            )
+            threshold = DEFAULT_Z_THRESHOLD
 
     elif threshold is not None:
         threshold = float(threshold)
@@ -471,7 +457,7 @@ def mask_to_plot(model, bg_img):
 
     Returns
     -------
-    mask_plot : str
+    mask_plot : :obj:`str`
         PNG Image for the mask plot.
 
     """
@@ -519,7 +505,6 @@ def make_stat_maps_contrast_clusters(
     cut_coords,
     display_mode,
     plot_type,
-    # clusters_tsvs,
 ):
     """Populate a smaller HTML sub-template with the proper values, \
     make a list containing one or more of such components \
@@ -530,31 +515,26 @@ def make_stat_maps_contrast_clusters(
 
     Parameters
     ----------
-    stat_img : dictionary of Niimg-like object or SurfaceImage, or None
-       Statistical image (presumably in z scale)
-       whenever height_control is 'fpr' or None,
-       stat_img=None is acceptable.
-       If it is 'fdr' or 'bonferroni',
-       an error is raised if stat_img is None.
+    model : FirstLevelModel or SecondLevelModel
 
-    mask_img: Nifti or Surface image
-        Mask used during the fit of the model.
+    contrasts : dict of contrasts definitions
 
-    contrasts_plots : Dict[str, str]
-        Contains contrast names & HTML code of the contrast's PNG plot.
+    output : path to contrast maps
 
-    threshold_orig : float
+    %(first_level_contrast)s
+
+    threshold_orig : :obj:`float`
        Desired threshold in z-scale.
        This is used only if height_control is None
 
-    alpha : float
+    alpha : :obj:`float`
         Number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
 
     %(cluster_threshold)s
 
-    height_control : string
+    height_control : :obj:`str`
         False positive control meaning of cluster forming
         threshold: 'fpr' or 'fdr' or 'bonferroni' or None.
 
@@ -562,7 +542,7 @@ def make_stat_maps_contrast_clusters(
         Whether to employ two-sided thresholding or to evaluate positive values
         only.
 
-    min_distance : float, default=8
+    min_distance : :obj:`float`, default=8
         For display purposes only.
         Minimum distance between subpeaks in mm.
 
@@ -575,7 +555,7 @@ def make_stat_maps_contrast_clusters(
 
     %(cut_coords)s
 
-    display_mode : string
+    display_mode : :obj:`str`
         Choose the direction of the cuts:
         'x' - sagittal, 'y' - coronal, 'z' - axial,
         'l' - sagittal left hemisphere only,
@@ -586,10 +566,8 @@ def make_stat_maps_contrast_clusters(
         'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
         'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
 
-    plot_type : string {'slice', 'glass'}
+    plot_type : :obj:`str` {'slice', 'glass'}
         The type of plot to be drawn.
-
-    clusters_tsvs : dictionary of path of to tsv files
 
     Returns
     -------
@@ -647,7 +625,7 @@ def make_stat_maps_contrast_clusters(
         # cluster tables generated by save_glm_to_bids
         # to save time.
         # However cluster tables may have been computed
-        # with different threshold, cluster_threshol...
+        # with different threshold, cluster_threshold...
         # by save_glm_to_bids than those requested in
         # generate_report.
         # So we are skipping this for now.
@@ -773,7 +751,7 @@ def _stat_map_to_png(
        Statistical image (presumably in z scale),
        to be plotted as slices or glass brain.
 
-    threshold : float
+    threshold : :obj:`float`
        Desired threshold in z-scale.
 
     bg_img : Niimg-like object
@@ -785,7 +763,7 @@ def _stat_map_to_png(
 
     %(cut_coords)s
 
-    display_mode : string
+    display_mode : :obj:`str`
         Choose the direction of the cuts:
         'x' - sagittal, 'y' - coronal, 'z' - axial,
         'l' - sagittal left hemisphere only,
@@ -796,7 +774,7 @@ def _stat_map_to_png(
         'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
         'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
 
-    plot_type : string {'slice', 'glass'}
+    plot_type : :obj:`str` {'slice', 'glass'}
         The type of plot to be drawn.
 
     table_details : pandas.Dataframe
@@ -809,7 +787,7 @@ def _stat_map_to_png(
 
     Returns
     -------
-    stat_map_png : string
+    stat_map_png : :obj:`str`
         PNG Image Data representing a statistical map.
 
     fig : matplotlib figure

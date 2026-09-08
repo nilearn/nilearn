@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import get_backend
 from matplotlib.colors import LinearSegmentedColormap, Normalize
+from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpecFromSubplotSpec
 from matplotlib.ticker import MaxNLocator
 
@@ -180,9 +181,15 @@ def _plot_img_with_bg(
     display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
 
+    cbar_vmin : :obj:`float` or None, default=None
+
+    cbar_vmax : :obj:`float` or None, default=None
+
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
+
+    brain_color : :obj:`tuple` of 3 :obj:`float`
 
     decimals : :obj:`int` or :obj:`bool`, default=False
         Number of decimal places on slice position annotation.
@@ -706,6 +713,7 @@ def plot_epi(
     return display
 
 
+@fill_doc
 def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     """Help for plotting regions of interest ROIs in contours.
 
@@ -1088,6 +1096,10 @@ def plot_prob_atlas(
         radiological=radiological,
         vmin=vmin,
         vmax=vmax,
+        # the colorbar for the atlas maps is added below;
+        # the background anatomical image should not get its own
+        # see issue https://github.com/nilearn/nilearn/issues/6516
+        colorbar=False,
         **kwargs,
     )
 
@@ -1493,8 +1505,6 @@ def plot_glass_brain(
     %(radiological)s
 
     %(transparency)s
-
-    %(transparency_range)s
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
@@ -1907,8 +1917,7 @@ def plot_carpet(
     title: Title = None,
     cmap="gray",
     cmap_labels="gist_ncar",
-    standardize=True,
-):
+) -> Figure:
     """Plot an image representation of :term:`voxel` intensities across time.
 
     This figure is also known as a "grayplot" or "Power plot".
@@ -1965,15 +1974,6 @@ def plot_carpet(
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.
 
-    %(standardize_true)s
-
-        .. note::
-
-            Added to control passing value to `standardize` of ``signal.clean``
-            to call new behavior since passing False or True (default) is
-            deprecated.
-            This parameter will be removed in version 0.15.
-
     Returns
     -------
     figure : :class:`matplotlib.figure.Figure`
@@ -2017,13 +2017,6 @@ def plot_carpet(
     """
     check_params(locals())
     img = check_niimg_4d(img, dtype="auto")
-
-    # TODO (nilearn >= 0.15) remove if and elif below
-    # and change default of function
-    if standardize is True:
-        standardize = "zscore_sample"
-    elif standardize is False:
-        standardize = None
 
     # Define TR and number of frames
     t_r = t_r or float(img.header.get_zooms()[-1])
@@ -2072,7 +2065,7 @@ def plot_carpet(
 
     # Detrend and standardize data
     if detrend:
-        data = clean(data, t_r=t_r, detrend=True, standardize=standardize)
+        data = clean(data, t_r=t_r, detrend=True)
 
     if figure is None:
         if not axes:

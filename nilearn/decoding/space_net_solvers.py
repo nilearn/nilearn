@@ -45,7 +45,9 @@ def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight : float
+    mask : ndarray
+
+    grad_weight : :obj:`float`
         l1_ratio * alpha.
 
     Returns
@@ -78,7 +80,9 @@ def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight : float
+    mask : ndarray
+
+    grad_weight : :obj:`float`
         l1_ratio * alpha
 
     Returns
@@ -106,13 +110,12 @@ def _graph_net_data_function(X, w, mask, grad_weight):
     X : ndarray, shape (n_samples, n_features)
         Design matrix.
 
-    y : ndarray, shape (n_samples,)
-        Target / response vector.
-
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight : float
+    mask : ndarray
+
+    grad_weight : :obj:`float`
         l1_ratio * alpha.
 
     Returns
@@ -146,13 +149,12 @@ def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
     X : ndarray, shape (n_samples, n_features)
         Design matrix.
 
-    y : ndarray, shape (n_samples,)
-        Target / response vector.
-
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight : float
+    adjoint_mask : ndarray
+
+    grad_weight : :obj:`float`
         l1_ratio * alpha.
 
     Returns
@@ -284,7 +286,7 @@ def graph_net_squared_loss(
     w : ndarray, shape (n_features,)
         Solution vector.
 
-    solver_info : float
+    solver_info : :obj:`float`
         Solver information, for warm start.
 
     objective : array of floats
@@ -529,6 +531,9 @@ def tvl1_solver(
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.
 
+    init : ndarray or None, default=None
+        Initialization vector for the prox.
+
     callback : callable(dict) -> :obj:`bool`, default=None
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
@@ -544,7 +549,7 @@ def tvl1_solver(
     objective : array of floats
         Objective function (fval) computed on every iteration.
 
-    solver_info : float
+    solver_info : :obj:`float`
         Solver information, for warm start.
 
     """

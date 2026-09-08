@@ -6,7 +6,7 @@ import string
 import numpy as np
 import pandas as pd
 
-from ..utils import _rng, generate_fake_fmri
+from .._utils import _rng, generate_fake_fmri
 
 
 class BaseBenchMarkFLM:

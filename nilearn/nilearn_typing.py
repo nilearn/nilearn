@@ -4,7 +4,7 @@ Many of those correspond to the types of variable
 declared in nilearn._utils.doc.
 
 Several of them can be enforced at run time using
-nilearn._utils.param_validaton.check_params.
+nilearn._utils.param_validation.check_params.
 
 To expand the functionality of check_params you need to:
 
@@ -96,7 +96,7 @@ Resolution: TypeAlias = Integer | None
 Resume: TypeAlias = bool
 ScreeningPercentile: TypeAlias = Scalar
 SmoothingFwhm: TypeAlias = Scalar
-Standardize: TypeAlias = Literal["zscore_sample", "psc", True, False, None]
+Standardize: TypeAlias = Literal["zscore_sample", "psc", None]
 StandardizeConfounds: TypeAlias = bool
 SupportedRegressors: TypeAlias = Literal[
     "ridge",

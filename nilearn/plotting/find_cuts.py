@@ -229,7 +229,9 @@ def _transform_cut_coords(cut_coords, direction, affine):
     return np.atleast_1d(cut_coords)
 
 
-def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
+def find_cut_slices(
+    img, direction="z", n_cuts=7, spacing="auto"
+) -> np.ndarray:
     """Find 'good' cross-section slicing positions along a given axis.
 
     Parameters
@@ -287,7 +289,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
     orig_data = np.abs(safe_get_data(img))
     this_shape = orig_data.shape[axis]
 
-    if not isinstance(n_cuts, numbers.Number):
+    if not isinstance(n_cuts, numbers.Real):
         raise TypeError(
             "The number of cuts (n_cuts) must be an integer "
             "greater than or equal to 1. "
@@ -297,7 +299,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
     # BF issue #575: Return all the slices along and axis if this axis
     # is the display mode and there are at least as many requested
     # n_slices as there are slices.
-    if n_cuts > this_shape:
+    if float(n_cuts) > this_shape:
         warnings.warn(
             "Too many cuts requested for the data: "
             f"n_cuts={n_cuts}, data size={this_shape}.",
@@ -316,8 +318,9 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
     # to control floating point error problems
     # during given input value "n_cuts"
     epsilon = np.finfo(np.float32).eps
-    difference = abs(round(n_cuts) - n_cuts)
-    if round(n_cuts) < 1.0 or difference > epsilon:
+    n_cuts_as_float = float(n_cuts)
+    difference = abs(round(n_cuts_as_float) - n_cuts_as_float)
+    if round(n_cuts_as_float) < 1.0 or difference > epsilon:
         message = (
             f"Image has {this_shape} slices in direction {direction}. "
             "Therefore, the number of cuts "
@@ -326,7 +329,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
         )
         raise ValueError(message)
     else:
-        n_cuts = round(n_cuts)
+        n_cuts = round(n_cuts_as_float)
 
     if spacing == "auto":
         spacing = max(int(0.5 / n_cuts * data.shape[axis]), 1)
@@ -386,10 +389,10 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
         cut_coords.append(best_candidate)
         cut_coords = np.unique(cut_coords).tolist()
 
-    cut_coords = np.array(cut_coords)
-    cut_coords.sort()
+    cut_coords_array = np.array(cut_coords)
+    cut_coords_array.sort()
 
-    return _transform_cut_coords(cut_coords, direction, affine)
+    return _transform_cut_coords(cut_coords_array, direction, affine)
 
 
 def find_parcellation_cut_coords(

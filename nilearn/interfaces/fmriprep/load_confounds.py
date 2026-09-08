@@ -339,7 +339,7 @@ def load_confounds(
         - "non-aggressive": use :term:`Tedana` tedana optimally combined
             image output.
             `~desc-optcom_bold.nii.gz`.
-            If non-aggresive is selected all the components classified as
+            If non-aggressive is selected all the components classified as
             either rejected or accepted will be returned as a pandas DataFrame
 
     demean : :obj:`bool`, default=True

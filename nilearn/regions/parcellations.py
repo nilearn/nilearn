@@ -113,9 +113,10 @@ def _estimator_fit(data, estimator, method=None):
     estimator : instance of estimator from sklearn
         MiniBatchKMeans or AgglomerativeClustering.
 
-    method : str,
-    {'kmeans', 'ward', 'complete', 'average', 'rena', 'hierarchical_kmeans'},
-    default=None
+    method : :obj:`str`,
+        {'kmeans', 'ward', 'complete', 'average', 'rena',
+        'hierarchical_kmeans'},
+        default=None
 
         A method to choose between for brain parcellations.
 
@@ -256,9 +257,9 @@ class Parcellations(_MultiPCA):
     %(smoothing_fwhm)s
         default=4.0.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
-    standardize_confounds : boolean, default=True
+    standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
@@ -391,7 +392,7 @@ class Parcellations(_MultiPCA):
         random_state=0,
         mask=None,
         smoothing_fwhm=4.0,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         low_pass=None,
@@ -612,21 +613,13 @@ class Parcellations(_MultiPCA):
         # Required for special cases like extracting signals on list of
         # 3D images or SurfaceImages.
 
-        # TODO (nilearn > 0.15.0)
-        # remove casting to None or "zscore_sample"
-        standardize = self.standardize
-        if standardize is False:
-            standardize = None
-        elif standardize is True:
-            standardize = "zscore_sample"
-
         if isinstance(self.masker_.mask_img_, SurfaceImage):
             imgs_list = imgs.copy()
             masker = SurfaceLabelsMasker(
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
                 smoothing_fwhm=self.smoothing_fwhm,
-                standardize=standardize,
+                standardize=self.standardize,
                 detrend=self.detrend,
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,
@@ -642,7 +635,7 @@ class Parcellations(_MultiPCA):
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
                 smoothing_fwhm=self.smoothing_fwhm,
-                standardize=standardize,
+                standardize=self.standardize,
                 detrend=self.detrend,
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,

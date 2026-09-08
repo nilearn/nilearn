@@ -137,15 +137,15 @@ def get_cbar_ticks(
 
     Parameters
     ----------
-    vmin: :obj:`float`
+    vmin : :obj:`float`
         minimum value for the colorbar, should not be None
-    vmax: :obj:`float`
+    vmax : :obj:`float`
         maximum value for the colorbar, should not be None
-    threshold: :obj:`float`, :obj:`int` or None
+    threshold : :obj:`float`, :obj:`int` or None
         threshold value
-    n_ticks: :obj:`int`
+    n_ticks : :obj:`int`
         number of tick values to return
-    tick_format: :obj:`str`, default="%.2g"
+    tick_format : :obj:`str`, default="%.2g"
         formatting to be used for colorbar ticks
 
     Returns

@@ -15,6 +15,7 @@ from numpy.typing import DTypeLike
 from scipy.ndimage import binary_dilation
 
 from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn.datasets.struct import load_mni152_brain_mask
 from nilearn.image.image import get_data, new_img_like
@@ -197,6 +198,8 @@ def generate_maps(
 
     Parameters
     ----------
+    shape : :obj:`tuple` of :obj:`int`
+
     n_regions : :obj:`int`
         Number of regions to generate.
 
@@ -639,7 +642,7 @@ def write_fake_bold_img(
 
     Parameters
     ----------
-    file_path : :obj:`str`
+    file_path : :obj:`str` or :obj:`filepath.Path`
         Output file path.
 
     shape : :obj:`tuple` of :obj:`int`
@@ -652,6 +655,9 @@ def write_fake_bold_img(
     rand_gen : :obj:`int`, :obj:`numpy.random.RandomState` \
         or :obj:`numpy.random.Generator`
         default=0
+
+    mask_file_path : :obj:`str` or :obj:`filepath.Path` or None, default=None
+        Output file path.
 
     Returns
     -------
@@ -690,7 +696,7 @@ def _generate_signals_from_precisions(
         A list of precision matrices. Every matrix must be square (with the
         same size) and positive definite.
 
-    min_samples, max_samples : :obj:`int`, optional
+    min_n_samples, max_n_samples : :obj:`int`, optional
         The number of samples drawn for each timeseries is taken at random
         between these two numbers. Defaults are 50 and 100.
 
@@ -720,6 +726,7 @@ def _generate_signals_from_precisions(
     return signals
 
 
+@fill_doc
 def generate_group_sparse_gaussian_graphs(
     n_subjects: int = 5,
     n_features: int = 30,
@@ -1203,7 +1210,7 @@ def _mock_bids_dataset(
 
     Parameters
     ----------
-    base_dir : :obj:`pathlib.Path`
+    bids_path : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1298,7 +1305,7 @@ def _mock_bids_derivatives(
 
     Parameters
     ----------
-    base_dir : :obj:`pathlib.Path`
+    bids_path : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1483,9 +1490,7 @@ def _write_bids_raw_func(
     func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
-    file_id : :obj:`str`
-        Root of the BIDS filename:
-        typically basename without the BIDS suffix and extension.
+    fields : :obj:`dict` of :obj:`str`
 
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.
@@ -1537,9 +1542,7 @@ def _write_bids_derivative_func(
     func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
-    file_id : :obj:`str`
-        Root of the BIDS filename:
-        typically basename without the BIDS suffix and extension.
+    fields : :obj:`dict` of :obj:`str`
 
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.

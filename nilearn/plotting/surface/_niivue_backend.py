@@ -33,12 +33,12 @@ def colorscale_niivue(values, vmax, threshold=None):
 
 def matplotlib_cm_to_niivue_cm(
     cmap: str | mpl.colors.Colormap | Any,
-) -> None | dict[str, dict[str, list[int]]]:
+) -> dict[str, dict[str, list[int]]] | None:
     """Convert matplotlib colormap to niivue colormap.
 
     Parameters
     ----------
-    cmap_name : str or Colormap
+    cmap : :obj:`str` or Colormap
         Name of the colormap to convert.
 
     Returns
@@ -118,7 +118,6 @@ def _one_mesh_info(
         info["bg_map"] = "null"
 
     info["bg_color"] = "[0, 0, 0, 1]" if black_bg else "[1, 1, 1, 1]"
-    info["bg_theme"] = "black" if black_bg else "white"
 
     info["colorbar"] = str(colorbar_kwargs.get("colorbar", True)).lower()
     info["font_size"] = str(title_fontsize) + "px"

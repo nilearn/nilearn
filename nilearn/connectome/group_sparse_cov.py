@@ -6,6 +6,7 @@ import collections.abc
 import itertools
 import operator
 import warnings
+from typing import Self
 
 import numpy as np
 import scipy.linalg
@@ -47,11 +48,11 @@ def compute_alpha_max(emp_covs, n_samples):
 
     Returns
     -------
-    alpha_max : float
+    alpha_max : :obj:`float`
         minimal value for the regularization parameter that gives a
         fully sparse matrix.
 
-    alpha_min : float
+    alpha_min : :obj:`float`
         minimal value for the regularization parameter that gives a fully
         dense matrix.
 
@@ -74,7 +75,7 @@ def compute_alpha_max(emp_covs, n_samples):
     return np.max(norms), np.min(norms[norms > 0])
 
 
-def _update_submatrix(full, sub, sub_inv, p, h, v):
+def _update_submatrix(full, sub, sub_inv, p, h, v) -> None:
     """Update submatrix and its inverse.
 
     sub_inv is the inverse of the submatrix of "full" obtained by removing
@@ -609,7 +610,7 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
         self.verbose = verbose
 
     @fill_doc
-    def fit(self, subjects, y=None):
+    def fit(self, subjects, y=None) -> Self:
         """Fits the group sparse precision model according \
         to the given training data and parameters.
 
@@ -776,15 +777,15 @@ def group_sparse_scores(
 
     Returns
     -------
-    log_lik : float
+    log_lik : :obj:`float`
         log-likelihood of precisions on the given covariances. This is the
         opposite of the loss function, without the regularization term
 
-    objective : float
+    objective : :obj:`float`
         value of objective function. This is the value minimized by
         group_sparse_covariance()
 
-    duality_gap : float
+    duality_gap : :obj:`float`
         duality gap upper bound. The returned bound is tight: it vanishes for
         the optimal precision matrices
 
@@ -1059,10 +1060,10 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         sparsity pattern (if a coefficient is zero for a given matrix, it
         is also zero for every other.)
 
-    alpha_ : float
+    alpha_ : :obj:`float`
         penalization parameter value selected.
 
-    cv_alphas_ : list of floats
+    cv_alphas_ : :obj:`list` of floats
         all values of the penalization parameter explored.
 
     cv_scores_ : numpy.ndarray, shape (n_alphas, n_folds)
@@ -1111,7 +1112,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         self.early_stopping = early_stopping
 
     @fill_doc
-    def fit(self, subjects, y=None):
+    def fit(self, subjects, y=None) -> Self:
         """Compute cross-validated group-sparse precisions.
 
         Parameters
@@ -1181,7 +1182,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
             n_refinements = self.n_refinements
             alpha_1, _ = compute_alpha_max(emp_covs, n_samples)
             alpha_0 = 1e-2 * alpha_1
-            alphas = np.logspace(
+            alphas = np.logspace(  # type: ignore[assignment]
                 np.log10(alpha_0), np.log10(alpha_1), n_alphas
             )[::-1]
 
@@ -1214,7 +1215,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
                     for _, test_subjs in train_test_subjs
                 ]
             else:
-                probes = itertools.repeat(None)
+                probes = itertools.repeat(None)  # type: ignore[assignment]
 
             this_path = Parallel(n_jobs=self.n_jobs, verbose=verbose)(
                 delayed(group_sparse_covariance_path)(
@@ -1242,8 +1243,12 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
             precisions_list, scores = list(zip(*this_path, strict=False))
             # now scores[i][j] is the score for the i-th folding, j-th value of
             # alpha (analogous for precisions_list)
-            precisions_list = list(zip(*precisions_list, strict=False))
-            scores = [np.mean(sc) for sc in zip(*scores, strict=False)]
+            precisions_list = list(  # type: ignore[assignment]
+                zip(*precisions_list, strict=False)
+            )
+            scores = [  # type: ignore[assignment]
+                np.mean(sc) for sc in zip(*scores, strict=False)
+            ]
             # scores[i] is the mean score obtained for the i-th value of alpha.
 
             path.extend(
@@ -1287,7 +1292,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
                 alpha_1 = path[best_index - 1][0]
                 alpha_0 = path[best_index + 1][0]
                 covs_init = path[best_index - 1][2]
-            alphas = np.logspace(
+            alphas = np.logspace(  # type: ignore[assignment]
                 np.log10(alpha_1), np.log10(alpha_0), len(alphas) + 2
             )
             alphas = alphas[1:-1]

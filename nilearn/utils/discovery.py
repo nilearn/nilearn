@@ -192,7 +192,7 @@ def all_functions() -> list[tuple[str, Callable]]:
     >>> functions = all_functions()
     >>>
     >>> print(f"Nilearn's API has {len(functions)} public functions.")
-    Nilearn's API has 172 public functions.
+    Nilearn's API has 170 public functions.
 
     """
     all_functions = []
@@ -244,7 +244,7 @@ def all_displays(type_filter=None) -> list[tuple[str, type]]:
 
     Returns
     -------
-    displays : list of tuples
+    displays : :obj:`list` of tuples
         List of (name, class), where ``name`` is the display class name as
         string and ``class`` is the actual type of the class.
 
