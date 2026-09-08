@@ -10,7 +10,7 @@ dev = [
     {include-group = "style"},
     {include-group = "rich"},
     "tox>=4.0.0",
-    "tox-uv>=1.0.0"
+    "tox-uv>=1.0.0",
     "docstring_parser"
 ]
 # Requirements necessary for building the documentation
