@@ -23,7 +23,6 @@ from nilearn._utils.helpers import (
 from nilearn._utils.tags import accept_surf_img_input
 from nilearn._utils.versions import SKLEARN_GTE_1_7
 from nilearn.conftest import _img_maps, _surf_maps_img
-from nilearn.image import get_data
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
     MultiNiftiMapsMasker,
@@ -35,6 +34,7 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
+from nilearn.masking import apply_mask
 from nilearn.reporting import HTMLReport
 from nilearn.reporting.tests._testing import generate_and_check_report
 from nilearn.surface import SurfaceImage
@@ -332,12 +332,13 @@ EXPECTED_COLUMNS = [
 def test_nifti_labels_masker_report(
     img_3d_rand_eye,
     img_mask_eye,
-    affine_eye,
-    n_regions,
     labels,
     img_labels,
 ):
-    """Check content nifti label masker."""
+    """Check content nifti label masker.
+
+    Some labels are masked by img_mask_eye.
+    """
     masker = NiftiLabelsMasker(
         img_labels, labels=labels, mask_img=img_mask_eye
     )
@@ -357,34 +358,36 @@ def test_nifti_labels_masker_report(
         extra_warnings_allowed=True,
     )
 
+    labels_data = apply_mask(img_labels, img_mask_eye)
+    regions_left_after_masking = list(np.unique(labels_data))
+
     # Check that the number of regions is correct
-    assert masker._report_content["number_of_regions"] == n_regions
+    assert masker._report_content["number_of_regions"] == len(
+        regions_left_after_masking
+    )
+
+    summary = masker._report_content["summary"]
 
     # Check that all expected columns are present with the right size
-    assert (
-        masker._report_content["summary"]["region name"].to_list()
-        == labels[1:]
-    )
-    assert len(masker._report_content["summary"]) == n_regions
+    assert summary["region name"].to_list() == [
+        f"region_{int(x)}" for x in regions_left_after_masking
+    ]
+    assert len(summary) == len(regions_left_after_masking)
     for col in EXPECTED_COLUMNS:
-        assert col in masker._report_content["summary"].columns
+        assert col in summary.columns
 
     # Relative sizes of regions should sum to 100%
-    assert_almost_equal(
-        sum(masker._report_content["summary"]["relative size (in %)"]),
-        100,
-        decimal=2,
-    )
+    # of the voxels that remain after masking.
+    assert_almost_equal(sum(summary["relative size (in %)"]), 100, decimal=2)
 
     # Check region sizes calculations
-    expected_region_sizes = Counter(get_data(img_labels).ravel())
-    for r in range(1, n_regions + 1):
+    expected_region_sizes = Counter(labels_data.ravel())
+    voxel_volume = np.abs(np.linalg.det(img_3d_rand_eye.affine[:3, :3]))
+    for r in regions_left_after_masking:
+        mask = summary["label value"] == r
         assert_almost_equal(
-            masker._report_content["summary"]["size (in mm^3)"].to_list()[
-                r - 1
-            ],
-            expected_region_sizes[r]
-            * np.abs(np.linalg.det(affine_eye[:3, :3])),
+            summary["size (in mm^3)"][mask].to_list(),
+            expected_region_sizes[r] * voxel_volume,
         )
 
 

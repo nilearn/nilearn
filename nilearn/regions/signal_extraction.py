@@ -242,7 +242,7 @@ def img_to_signals_labels(
         as background (i.e. no region).
 
     background_label : number, default=0
-        Number representing background in labels_img.
+        Number representing background in ``labels_img``.
 
     order : :obj:`str`, default='F'
         Ordering of output array ("C" or "F").
@@ -264,7 +264,9 @@ def img_to_signals_labels(
         the region with label labels[n].
 
     masked_atlas : :class:`nibabel.nifti1.Nifti1Image`
-        Regions definition as labels after applying the mask..
+        Regions definition as labels after applying the mask.
+        If no ``mask_img`` has been passed,
+        then this will be the same as the input ``labels_img``.
 
     See Also
     --------

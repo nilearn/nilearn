@@ -803,6 +803,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         self.region_atlas_ = masked_atlas
 
+        if self._has_report_data():
+            self._reporting_data["labels_image"] = masked_atlas
+
         imgs = load_img(imgs)
 
         target_dtype = self._get_target_dtype(imgs)
