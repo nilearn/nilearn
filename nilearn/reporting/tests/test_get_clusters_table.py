@@ -157,7 +157,6 @@ def test_get_clusters_table_return_label_maps_deprecation(
 ):
     """Warn on calls that keep the deprecated table-only return.
 
-
     TODO (nilearn >= 0.17.0) remove test.
     """
     match = 'The "return_label_maps" parameter is deprecated'
