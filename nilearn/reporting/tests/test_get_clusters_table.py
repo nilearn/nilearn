@@ -276,12 +276,14 @@ def test_get_clusters_table_surface_real_data(
         stat_img,
         stat_threshold=np.abs(stat_threshold),
         cluster_threshold=cluster_threshold,
+        two_sided=False,
     )
 
     clusters_table_negative = get_clusters_table(
         math_img("img*-1", img=stat_img),
         stat_threshold=stat_threshold,
         cluster_threshold=cluster_threshold,
+        two_sided=False,
     )
 
     assert len(clusters_table_two_sided) == (
@@ -348,6 +350,8 @@ def test_get_clusters_table_negative_threshold(shape, affine_eye):
     clusters_table = get_clusters_table(
         stat_img,
         stat_threshold=-1,
+        cluster_threshold=0,
+        two_sided=False,
     )
 
     validate_clusters_table(clusters_table, expected_n_cluster=1)
@@ -411,7 +415,7 @@ def test_get_clusters_table_nans(shape, affine_eye):
     data[data == 0] = np.nan
     stat_img = Nifti1Image(data, affine_eye)
     with pytest.warns(UserWarning, match="Non-finite values detected"):
-        clusters_table = get_clusters_table(stat_img, 1e-2, 0)
+        clusters_table = get_clusters_table(stat_img, 1e-2, 0, two_sided=False)
 
     validate_clusters_table(clusters_table, expected_n_cluster=1)
 

@@ -839,7 +839,7 @@ def test_connectivity_measure_check_mean(kind, signals):
         )
 
     # Check that the mean isn't modified in transform
-    conn_measure = ConnectivityMeasure()
+    conn_measure = ConnectivityMeasure(kind="covariance")
     conn_measure.fit(signals[:1])
     mean = conn_measure.mean_
     conn_measure.transform(signals[1:])
@@ -926,7 +926,7 @@ def test_connectivity_measure_inverse_transform_tangent(
     # Without vectorization
     tangent_measure = ConnectivityMeasure(kind="tangent")
     displacements = tangent_measure.fit_transform(signals)
-    covariances = ConnectivityMeasure().fit_transform(signals)
+    covariances = ConnectivityMeasure(kind="covariance").fit_transform(signals)
 
     assert_array_almost_equal(
         tangent_measure.inverse_transform(displacements), covariances
@@ -1014,10 +1014,10 @@ def test_confounds_connectome_measure_errors(signals):
         )
 
     with pytest.raises(TypeError, match=msg):
-        conn_measure.fit_transform(X=signals, confounds=1.0)
+        conn_measure.fit_transform(X=signals, y=None, confounds=1.0)
 
     # Raising error for input confounds are given but not vectorize=True
-    conn_measure = ConnectivityMeasure()
+    conn_measure = ConnectivityMeasure(vectorize=False)
     with pytest.raises(
         ValueError, match="'confounds' are provided but vectorize=False"
     ):

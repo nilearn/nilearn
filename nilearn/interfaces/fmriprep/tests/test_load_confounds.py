@@ -117,7 +117,9 @@ def _regression(confounds, tmp_path) -> None:
     confounds = _handle_non_steady(confounds)
     # Do the regression
     masker = NiftiMasker(mask_img=mask_conf, standardize="zscore_sample")
-    tseries_clean = masker.fit_transform(img, confounds=confounds)
+    tseries_clean = masker.fit_transform(
+        img, confounds=confounds, sample_mask=None
+    )
     assert tseries_clean.shape[0] == confounds.shape[0]
 
 
@@ -485,6 +487,7 @@ def test_not_found_exception(tmp_path, fmriprep_version):
                 "global_signal",
             ),
             global_signal="full",
+            motion="full",
         )
     assert f"{missing_params}" in exc_info.value.args[0]
 
@@ -499,6 +502,7 @@ def test_not_found_exception(tmp_path, fmriprep_version):
         load_confounds(
             img_missing_confounds,
             strategy=("high_pass", "compcor"),
+            compcor="anat_combined",
         )
 
 
@@ -536,7 +540,9 @@ def test_not_found_exception_ica_aroma(tmp_path, fmriprep_version):
     # non aggressive ICA-AROMA strategy requires
     # desc-smoothAROMAnonaggr nifti file
     with pytest.raises(ValueError, match="desc-smoothAROMAnonaggr_bold"):
-        load_confounds(img_missing_confounds, strategy=("ica_aroma",))
+        load_confounds(
+            img_missing_confounds, strategy=("ica_aroma",), ica_aroma="full"
+        )
 
     # no confound files along the image file
     (tmp_path / bad_conf).unlink()
@@ -648,7 +654,9 @@ def test_ica_aroma(tmp_path, fmriprep_version):
         assert re.match(r"(?:aroma_motion_+|non_steady_state+)", col_name)
 
     # Non-aggressive strategy
-    conf, _ = load_confounds(aroma_nii, strategy=("ica_aroma",))
+    conf, _ = load_confounds(
+        aroma_nii, strategy=("ica_aroma",), ica_aroma="full"
+    )
     assert conf.size == 0
 
     # invalid combination of strategy and option
@@ -670,7 +678,9 @@ def test_tedana_happy_path(tmp_path):
     assert conf.size > 0
 
     # check the different strategies for tedana
-    conf, _ = load_confounds(tedana_nii, strategy=("tedana",))
+    conf, _ = load_confounds(
+        tedana_nii, strategy=("tedana",), tedana="aggressive"
+    )
     assert conf.size > 0 and any("rejected" in col for col in conf.columns)
 
     conf, _ = load_confounds(
@@ -738,7 +748,7 @@ def test_sample_mask(
     )
 
     reg, mask = load_confounds(
-        regular_nii, strategy=("motion", "scrub"), fd_threshold=0.15
+        regular_nii, strategy=("motion", "scrub"), scrub=5, fd_threshold=0.15
     )
     # the "1.4.x" test data has 6 time points marked as motion outliers,
     # and one nonsteady state (overlap with the first motion outlier)
@@ -827,6 +837,7 @@ def test_load_confounds_for_gifti(tmp_path):
             ("run", "01"),
             ("hemi", "L"),
         ],
+        sub_folder=True,
     )
     assert len(selection) == 1
     load_confounds(

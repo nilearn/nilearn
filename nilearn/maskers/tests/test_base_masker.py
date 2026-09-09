@@ -19,8 +19,8 @@ def test_mask_logger(img_3d_mni, img_3d_mni_as_file, surf_img_1d):
     with (
         contextlib.redirect_stdout(buffer),
     ):
-        mask_logger("load_data", img=img_3d_mni)
-        mask_logger("load_data", img=surf_img_1d)
+        mask_logger("load_data", img=img_3d_mni, verbose=0)
+        mask_logger("load_data", img=surf_img_1d, verbose=0)
     output_verbose = buffer.getvalue()
 
     assert output_verbose == ""

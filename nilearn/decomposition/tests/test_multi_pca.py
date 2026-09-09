@@ -88,6 +88,7 @@ def test_multi_pca_score_single_subject_n_components(
     multi_pca = _MultiPCA(
         mask=decomposition_mask_img,
         random_state=RANDOM_STATE,
+        memory_level=0,
         n_components=5,
     )
     multi_pca.fit(decomposition_img)
@@ -103,7 +104,9 @@ def test_multi_pca_score_single_subject_n_components(
     elif data_type == "surface":
         masker = SurfaceMasker(decomposition_mask_img).fit()
 
-    s = multi_pca._raw_score(masker.transform(decomposition_img))
+    s = multi_pca._raw_score(
+        masker.transform(decomposition_img), per_component=True
+    )
 
     assert s.shape == (5,)
     assert np.all(s <= 1)

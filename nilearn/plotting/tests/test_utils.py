@@ -114,6 +114,7 @@ def test_get_colorbar_and_data_ranges_error():
             data_pos_neg,
             vmin=vmin,
             vmax=vmax,
+            symmetric_cbar=True,
         )
 
 
@@ -267,6 +268,8 @@ def test_get_colorbar_and_data_ranges_force_min_stat_map_value(data_pos_neg):
     expected_results = (0, None, 0, 3)
     assert expected_results == get_colorbar_and_data_ranges(
         data_pos_neg,
+        vmin=None,
+        vmax=None,
         symmetric_cbar="auto",
         force_min_stat_map_value=0,
     )
@@ -354,4 +357,6 @@ def test_get_cbar_ticks_int_threshold_float():
     with pytest.warns(
         UserWarning, match="You provided a non integer threshold"
     ):
-        get_cbar_ticks(vmin=3, vmax=5, threshold=2.4, tick_format="%i")
+        get_cbar_ticks(
+            vmin=3, vmax=5, threshold=2.4, n_ticks=5, tick_format="%i"
+        )

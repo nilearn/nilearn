@@ -111,7 +111,7 @@ def test_plot_glass_brain_colorbar_having_nans(
     """Smoke-test for plot_glass_brain and nans in the data image."""
     data = get_data(img_3d_mni)
     data[6, 5, 2] = np.inf
-    plot_glass_brain(Nifti1Image(data, affine_eye))
+    plot_glass_brain(Nifti1Image(data, affine_eye), colorbar=True)
 
 
 @pytest.mark.thread_unsafe
@@ -139,4 +139,4 @@ def test_plot_glass_brain_negative_vmin_with_plot_abs(
     """Test that warning is thrown if plot_abs is True and vmin is negative."""
     warning_message = "vmin is negative but plot_abs is True"
     with pytest.warns(UserWarning, match=warning_message):
-        plot_glass_brain(img_3d_mni, vmin=-2)
+        plot_glass_brain(img_3d_mni, vmin=-2, plot_abs=True)

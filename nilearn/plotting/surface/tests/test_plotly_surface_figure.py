@@ -181,7 +181,7 @@ def test_add_contours_hemi(surface_image_roi, hemi):
 
 def test_add_contours_plotly_surface_image(surface_image_roi):
     """Test that add_contours works with SurfaceImage."""
-    figure = plot_surf(surf_map=surface_image_roi, engine=ENGINE)
+    figure = plot_surf(surf_map=surface_image_roi, hemi="left", engine=ENGINE)
     figure.add_contours(roi_map=surface_image_roi)
 
 

@@ -356,6 +356,7 @@ def test_invalid_mask_arg_for_strategy():
     But a warning should be thrown.
     """
     masker = NiftiMasker(
+        mask_strategy="background",
         mask_args={"lower_cutoff": 0.1, "ensure_finite": False},
     )
     img, _ = data_gen.generate_random_img((9, 9, 5))
@@ -379,6 +380,7 @@ def test_no_warning_partial_joblib(strategy):
         mask_strategy=strategy,
         mask_args={"threshold": -0.5},
         memory="nilearn_cache",
+        memory_level=1,
     )
     img, _ = data_gen.generate_random_img((9, 9, 5))
     with warnings.catch_warnings(record=True) as warning_list:

@@ -27,21 +27,23 @@ def test_check_threshold_positive_and_zero_ts_true(matrix):
     two_sided=True, threshold is specified as a number and threshold >=0.
     """
     # Test threshold=0 should return as it is since it is not string
-    assert check_threshold(0, matrix, scoreatpercentile) == 0
+    assert check_threshold(0, matrix, scoreatpercentile, two_sided=True) == 0
 
     # Test threshold=6 should return as it is since it is not string
-    assert check_threshold(6, matrix, scoreatpercentile) == 6
+    assert check_threshold(6, matrix, scoreatpercentile, two_sided=True) == 6
 
     # test with numpy scalar as argument
     threshold = 2.0
     threshold_numpy_scalar = np.float64(threshold)
     assert check_threshold(
-        threshold, matrix, scoreatpercentile
-    ) == check_threshold(threshold_numpy_scalar, matrix, scoreatpercentile)
+        threshold, matrix, scoreatpercentile, two_sided=True
+    ) == check_threshold(
+        threshold_numpy_scalar, matrix, scoreatpercentile, two_sided=True
+    )
 
     # check whether raises a warning if given threshold is higher than expected
     with pytest.warns(UserWarning):
-        check_threshold(6.5, matrix, scoreatpercentile)
+        check_threshold(6.5, matrix, scoreatpercentile, two_sided=True)
 
 
 def test_check_threshold_positive_and_zero_ts_false(matrix):
@@ -64,13 +66,19 @@ def test_check_threshold_percentile_positive_and_zero_ts_true(matrix):
     """
     # Test for threshold provided as a percentile of the data
     # ()
-    threshold = check_threshold("10%", matrix, scoreatpercentile)
+    threshold = check_threshold(
+        "10%", matrix, scoreatpercentile, two_sided=True
+    )
     assert 0 < threshold < 1.0
 
-    threshold = check_threshold("40%", matrix, scoreatpercentile)
+    threshold = check_threshold(
+        "40%", matrix, scoreatpercentile, two_sided=True
+    )
     assert 2.0 < threshold < 3.0
 
-    threshold = check_threshold("90%", matrix, scoreatpercentile)
+    threshold = check_threshold(
+        "90%", matrix, scoreatpercentile, two_sided=True
+    )
     assert 5.0 < threshold < 6.0
 
 

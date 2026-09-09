@@ -34,7 +34,9 @@ def test_check_estimator_sklearn(estimator, check):
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimators=[ReNA(mask_img=_img_3d_mni())]),
+    nilearn_check_estimator(
+        estimators=[ReNA(mask_img=_img_3d_mni(), n_clusters=2)]
+    ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
@@ -61,7 +63,7 @@ def test_mask_error():
 
 def test_rena_clustering():
     """Test that ReNA fits, transforms, and inverse-transforms data."""
-    data_img, mask_img = generate_fake_fmri(length=5)
+    data_img, mask_img = generate_fake_fmri(shape=(10, 11, 12), length=5)
 
     data = get_data(data_img)
     mask = get_data(mask_img)

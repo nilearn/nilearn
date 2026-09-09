@@ -306,7 +306,7 @@ def test_mfista_solver_graph_net_no_l1_term():
         X, (np.eye(2) == 1).astype(bool), 1
     )
     estimate_solution, _, _ = mfista(
-        f1_grad, f2_prox, f1, lipschitz_constant, w.size, tol=1e-8
+        f1_grad, f2_prox, f1, lipschitz_constant, w.size, tol=1e-8, verbose=0
     )
 
     solution = np.array([-10, 5])

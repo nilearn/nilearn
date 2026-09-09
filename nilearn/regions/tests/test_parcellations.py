@@ -80,7 +80,7 @@ def test_error_parcellation_method_none(image_1):
     with pytest.raises(
         ValueError, match=r"Parcellation method is specified as None. "
     ):
-        Parcellations().fit(image_1)
+        Parcellations(method=None).fit(image_1)
 
 
 @pytest.mark.slow

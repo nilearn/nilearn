@@ -241,7 +241,9 @@ def test_fetch_adhd_edge_cases(tmp_path, request_mocker, subjects):
     request_mocker.url_mapping[re.compile(r".*adhd40_([0-9]+)\.tgz")] = (
         _adhd_example_subject
     )
-    func.fetch_adhd(data_dir=tmp_path, n_subjects=subjects, verbose=0)
+    func.fetch_adhd(
+        data_dir=tmp_path, n_subjects=subjects, verbose=0, url=None
+    )
 
 
 @pytest.mark.parametrize("n_subjects", [12, 40])
@@ -388,7 +390,7 @@ def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  #
 def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: ARG001
     # 2 subjects
     dataset = func.fetch_localizer_calculation_task(
-        n_subjects=2, data_dir=tmp_path
+        n_subjects=2, data_dir=tmp_path, verbose=1
     )
 
     assert isinstance(dataset, Bunch)
@@ -402,7 +404,7 @@ def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: 
 def test_fetch_localizer_button_task(tmp_path, localizer_mocker, capsys):  # noqa: ARG001
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # Only one subject
-    dataset = func.fetch_localizer_button_task(data_dir=tmp_path)
+    dataset = func.fetch_localizer_button_task(data_dir=tmp_path, verbose=1)
 
     assert isinstance(dataset, Bunch)
 
@@ -787,7 +789,7 @@ def test_fetch_development_fmri_phenotype(request_mocker):
 
     # check one of each age group returned if n_subject == 2
     # and age_group == 'both
-    data = fetch_development_fmri(n_subjects=2)
+    data = fetch_development_fmri(n_subjects=2, age_group="both")
     age_group = data.phenotypic["Child_Adult"]
 
     assert all(age_group == ["adult", "child"])
@@ -863,7 +865,7 @@ def test_select_from_index():
     assert data_prefix + "/sub-yyy.html" in new_urls
 
     # ALL subjects and not subject specific files get downloaded
-    new_urls = func.select_from_index(urls)
+    new_urls = func.select_from_index(urls, n_subjects=None)
 
     assert len(new_urls) == 9
 
@@ -949,6 +951,7 @@ def test_fetch_openneuro_dataset(tmp_path):
         match='Downloading "ds000030_R1.0.4".',
     ):
         _, urls = func.fetch_openneuro_dataset(
+            urls=None,
             data_dir=tmp_path,
             dataset_version="ds500_v2",
         )

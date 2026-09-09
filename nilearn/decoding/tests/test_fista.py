@@ -60,7 +60,7 @@ def test_input_args_and_kwargs(cb_retval, verbose, dgap_factor, rng):
     l1_weight = alpha_ * l1_ratio
 
     def f1(w):
-        return squared_loss(X, y, w)
+        return squared_loss(X, y, w, compute_grad=False)
 
     def f1_grad(w):
         return squared_loss(X, y, w, compute_grad=True, compute_energy=False)

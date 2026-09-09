@@ -152,7 +152,7 @@ def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     masker = NiftiMasker(mask_img).fit()
 
     correlations = plot_img_comparison(
-        target_images, query_images, masker, colorbar=False
+        target_images, query_images, masker, plot_hist=True, colorbar=False
     )
 
     correlations_1 = plot_img_comparison(

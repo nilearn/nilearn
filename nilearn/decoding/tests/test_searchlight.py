@@ -92,6 +92,7 @@ def test_searchlight_small_radius():
         n_jobs=n_jobs,
         scoring="accuracy",
         cv=cv,
+        verbose=0,
     )
     sl.fit(data_img, y=cond)
 
@@ -156,6 +157,7 @@ def test_searchlight_large_radius():
     sl = searchlight.SearchLight(
         mask_img,
         process_mask_img=mask_img,
+        radius=2,
         n_jobs=n_jobs,
         scoring="accuracy",
         cv=cv,
@@ -434,6 +436,7 @@ def test_searchlight_custom_no_cv_estimator_runs_and_warns():
         mask_img=mask_img,
         process_mask_img=mask_img,
         radius=1,
+        n_jobs=1,
         estimator=_NoCVEstimator(),
     )
 
@@ -468,6 +471,7 @@ def test_searchlight_no_cv_estimator_receives_groups():
         mask_img=mask_img,
         process_mask_img=mask_img,
         radius=1,
+        n_jobs=1,
         estimator=_GroupCheckEstimator(),
     )
 

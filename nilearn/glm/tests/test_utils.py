@@ -141,7 +141,10 @@ def test_z_score_opposite_contrast(rng, add_regs_i):
         add_regs=np.array(data[:, add_regs_i]).reshape(-1, 1),
     )
 
-    fmri_glm = FirstLevelModel()
+    fmri_glm = FirstLevelModel(
+        noise_model="ar1",
+        drift_model="cosine",
+    )
     fmri_glm.fit(fmri, design_matrices=design_matrix)
 
     c1 = np.array([1] + [0] * (design_matrix.shape[1] - 1))
@@ -149,10 +152,10 @@ def test_z_score_opposite_contrast(rng, add_regs_i):
     contrasts = {"seed1 - seed2": c1 - c2, "seed2 - seed1": c2 - c1}
 
     z_map_seed1_vs_seed2 = fmri_glm.compute_contrast(
-        contrasts["seed1 - seed2"]
+        contrasts["seed1 - seed2"], output_type="z_score"
     )
     z_map_seed2_vs_seed1 = fmri_glm.compute_contrast(
-        contrasts["seed2 - seed1"]
+        contrasts["seed2 - seed1"], output_type="z_score"
     )
 
     assert_almost_equal(

@@ -103,6 +103,7 @@ def test_threshold_stats_img_no_height_control(
         mask_img=img_3d_ones_eye,
         threshold=100,
         height_control=None,
+        cluster_threshold=0,
     )
     vals = get_data(th_map)
 
@@ -114,6 +115,7 @@ def test_threshold_stats_img_no_height_control(
         mask_img=img_3d_ones_eye,
         threshold=4.0,
         height_control=None,
+        cluster_threshold=0,
     )
     vals = get_data(th_map)
 
@@ -121,7 +123,7 @@ def test_threshold_stats_img_no_height_control(
 
     # without mask
     th_map, _ = threshold_stats_img(
-        stat_img, None, threshold=4.0, height_control=None
+        stat_img, None, threshold=4.0, height_control=None, cluster_threshold=0
     )
     vals = get_data(th_map)
 
@@ -133,6 +135,7 @@ def test_threshold_stats_img_no_height_control(
         None,
         threshold=DEFAULT_Z_THRESHOLD,
         height_control=None,
+        cluster_threshold=0,
     )
 
     assert threshold == DEFAULT_Z_THRESHOLD
@@ -178,6 +181,9 @@ def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
     th_map, _ = threshold_stats_img(
         stat_img,
         mask_img=img_3d_ones_eye,
+        alpha=0.001,
+        height_control="fpr",
+        cluster_threshold=0,
     )
     vals = get_data(th_map)
 
@@ -187,6 +193,8 @@ def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
     th_map, z_th = threshold_stats_img(
         stat_img,
         mask_img=img_3d_ones_eye,
+        alpha=0.001,
+        height_control="fpr",
         cluster_threshold=10,
     )
     vals = get_data(th_map)
@@ -208,7 +216,9 @@ def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
         assert np.sum(vals > 0) == 8
 
     # without a map or mask
-    th_map, threshold = threshold_stats_img(None, None, alpha=0.05)
+    th_map, threshold = threshold_stats_img(
+        None, None, alpha=0.05, height_control="fpr", cluster_threshold=0
+    )
 
     assert threshold > 1.64
     assert th_map is None
@@ -231,10 +241,14 @@ def test_threshold_stats_img_errors(img_3d_rand_eye):
         ValueError,
         match=r"should not be a negative value when two_sided=True.",
     ):
-        threshold_stats_img(img_3d_rand_eye, height_control=None, threshold=-2)
+        threshold_stats_img(
+            img_3d_rand_eye, height_control=None, threshold=-2, two_sided=True
+        )
     # but this is OK because threshold is only used
     # when height_control=None
-    threshold_stats_img(img_3d_rand_eye, height_control="fdr", threshold=-2)
+    threshold_stats_img(
+        img_3d_rand_eye, height_control="fdr", threshold=-2, two_sided=True
+    )
 
 
 @pytest.mark.parametrize(
@@ -286,7 +300,7 @@ def test_all_resolution_inference(
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
 
-    th_map = cluster_level_inference(stat_img, **kwargs)
+    th_map = cluster_level_inference(stat_img, alpha=0.05, **kwargs)
     vals = get_data(th_map)
 
     assert np.sum(vals > 0) == expected
@@ -325,7 +339,7 @@ def test_all_resolution_inference_surface(
         surf_img_1d, PolyData(left=data_left, right=data_right)
     )
 
-    th_map = cluster_level_inference(stat_img, **kwargs)
+    th_map = cluster_level_inference(stat_img, alpha=0.05, **kwargs)
 
     assert np.sum(th_map.data.parts["left"] > 0) == expected_left
     # only one unique non zero value: one per cluster
@@ -351,6 +365,7 @@ def test_all_resolution_inference_with_mask(
         stat_img,
         mask_img=img_3d_ones_eye,
         threshold=DEFAULT_Z_THRESHOLD,
+        alpha=0.05,
     )
     vals = get_data(th_map)
 
@@ -398,6 +413,7 @@ def test_all_resolution_inference_surface_mask(surf_img_1d):
         stat_img,
         mask_img=mask_img,
         threshold=DEFAULT_Z_THRESHOLD,
+        alpha=0.05,
     )
 
     assert np.sum(th_map.data.parts["left"] > 0) == 2
@@ -410,7 +426,7 @@ def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
     data[3, 6, 7] = 10
     stat_img = Nifti1Image(data, affine_eye)
 
-    th_map = cluster_level_inference(stat_img, threshold=7)
+    th_map = cluster_level_inference(stat_img, threshold=7, alpha=0.05)
     vals = get_data(th_map)
 
     assert np.sum(vals > 0) == 1
@@ -427,6 +443,8 @@ def test_all_resolution_inference_one_sided(
     _, z_th = threshold_stats_img(
         stat_img,
         mask_img=img_3d_ones_eye,
+        alpha=0.001,
+        height_control="fpr",
         cluster_threshold=10,
         two_sided=False,
     )
@@ -637,7 +655,7 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
 
     # two sided, with threshold = 0
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=0
+        surf_img_1d, height_control=None, threshold=0, two_sided=True
     )
 
     assert_equal(result.data.parts["left"], np.asarray([1.0, -1.0, 3.0, 4.0]))

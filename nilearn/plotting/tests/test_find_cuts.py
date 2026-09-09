@@ -224,7 +224,7 @@ def test_find_cut_slices_direction_z():
     )
     img = Nifti1Image(data, affine)
 
-    cuts = find_cut_slices(img)
+    cuts = find_cut_slices(img, direction="z")
 
     assert np.diff(cuts).min() != 0.0
 
@@ -238,7 +238,7 @@ def test_find_cut_slices_direction_z():
     )
     img = Nifti1Image(data, affine)
 
-    cuts = find_cut_slices(img)
+    cuts = find_cut_slices(img, direction="z")
 
     assert np.diff(cuts).min() != 0.0
 
@@ -250,7 +250,7 @@ def test_find_cut_slices_direction_z():
     affine[:2, :2] = rotation_matrix * 2.0
     img = Nifti1Image(data, affine)
 
-    cuts = find_cut_slices(img)
+    cuts = find_cut_slices(img, direction="z")
 
     assert np.diff(cuts).min() != 0.0
 
@@ -489,7 +489,7 @@ def test_find_parcellation_cut_coords_hemispheres(affine_mni):
 
     # Test when label_hemisphere is "left"
     coords, labels = find_parcellation_cut_coords(
-        labels_img, return_label_names=True
+        labels_img, return_label_names=True, label_hemisphere="left"
     )
     assert len(coords) == 1
     assert labels == [1]

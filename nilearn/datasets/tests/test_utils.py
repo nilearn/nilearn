@@ -487,7 +487,7 @@ def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
 
     request_mocker.url_mapping[url] = get_response
 
-    _utils.fetch_single_file(url=url, data_dir=tmp_path)
+    _utils.fetch_single_file(url=url, data_dir=tmp_path, resume=True)
 
     assert file_full.exists()
     assert file_full.read_text() == "Dummy content"  # not overwritten
@@ -500,7 +500,9 @@ def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
     # test for overwrite
     file_part.write_text("D")  # should be overwritten
 
-    _utils.fetch_single_file(url=url, data_dir=tmp_path, overwrite=True)
+    _utils.fetch_single_file(
+        url=url, data_dir=tmp_path, resume=True, overwrite=True
+    )
 
     assert file_full.exists()
     assert file_full.read_text() == "dummy content"  # overwritten
@@ -515,7 +517,7 @@ def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
     # the default Response from the mocker does not handle Range requests
     request_mocker.url_mapping[url] = "dummy content"
 
-    _utils.fetch_single_file(url=url, data_dir=tmp_path)
+    _utils.fetch_single_file(url=url, data_dir=tmp_path, resume=True)
 
     assert (
         "Resuming failed, try to download the whole file."
@@ -539,7 +541,7 @@ def test_fetch_single_file_overwrite(tmp_path, request_mocker):
 
     # Don't overwrite existing file.
     fil = _utils.fetch_single_file(
-        url="http://foo/", data_dir=tmp_path, verbose=0
+        url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=False
     )
 
     assert request_mocker.url_count == 1

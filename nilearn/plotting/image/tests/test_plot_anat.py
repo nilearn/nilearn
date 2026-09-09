@@ -10,7 +10,7 @@ from nilearn.plotting import plot_anat
 def test_plot_anat_3d_img(img_3d_mni, tmp_path):
     """Smoke test for plot_anat."""
     filename = tmp_path / "test.png"
-    slicer = plot_anat(img_3d_mni)
+    slicer = plot_anat(img_3d_mni, dim="auto")
     slicer.savefig(filename)
     plt.close()
 

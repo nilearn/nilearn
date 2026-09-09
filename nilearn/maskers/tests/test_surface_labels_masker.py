@@ -706,7 +706,7 @@ def test_labels_img_none():
         ValueError,
         match="provide a labels_img to the masker",
     ):
-        SurfaceLabelsMasker().fit()
+        SurfaceLabelsMasker(labels_img=None).fit()
 
 
 def test_error_wrong_strategy(surf_label_img):

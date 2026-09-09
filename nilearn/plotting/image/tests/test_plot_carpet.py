@@ -93,6 +93,7 @@ def test_plot_carpet_with_atlas_and_labels(
         img_4d_mni,
         mask_img=img_atlas["img"],
         mask_labels=img_atlas["labels"],
+        detrend=True,
         title="TEST",
         figure=fig,
         axes=ax,

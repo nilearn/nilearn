@@ -267,6 +267,7 @@ def test_bids_dataset_no_run_entity(tmp_path):
         n_ses=1,
         tasks=["main"],
         n_runs=[0],
+        with_derivatives=True,
     )
 
     files = list(bids_path.glob("**/*run-*"))
@@ -301,6 +302,7 @@ def test_bids_dataset_no_session(tmp_path):
         n_ses=0,
         tasks=["main"],
         n_runs=[1],
+        with_derivatives=True,
     )
 
     files = list(bids_path.glob("**/*ses-*"))
@@ -492,7 +494,9 @@ def test_generate_regions_ts_no_overlap(window):
     n_voxels = 50
     n_regions = 10
 
-    regions = generate_regions_ts(n_voxels, n_regions, window=window)
+    regions = generate_regions_ts(
+        n_voxels, n_regions, overlap=0, window=window
+    )
 
     assert regions.shape == (n_regions, n_voxels)
     # check no overlap
@@ -536,7 +540,7 @@ def test_generate_maps():
     # Basic testing of generate_maps()
     shape = (10, 11, 12)
     n_regions = 9
-    maps_img, _ = generate_maps(shape, n_regions)
+    maps_img, _ = generate_maps(shape, n_regions, border=1)
     maps = get_data(maps_img)
     assert maps.shape == (*shape, n_regions)
     # no empty map
@@ -583,6 +587,7 @@ def test_generate_fake_fmri_error(rng):
         generate_fake_fmri(
             length=10,
             n_blocks=10,
+            block_size=3,
             rand_gen=rng,
         )
 

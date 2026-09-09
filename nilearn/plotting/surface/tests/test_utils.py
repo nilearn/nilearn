@@ -96,6 +96,8 @@ def test_check_surface_plotting_inputs_many_time_points(
         check_surface_plotting_inputs(
             surf_map=surf_img_2d(10),
             surf_mesh=None,
+            hemi="left",
+            bg_map=None,
         )
 
     with pytest.raises(
@@ -104,6 +106,7 @@ def test_check_surface_plotting_inputs_many_time_points(
         check_surface_plotting_inputs(
             surf_map=surf_img_1d,
             surf_mesh=None,
+            hemi="left",
             bg_map=surf_img_2d(10),
         )
 

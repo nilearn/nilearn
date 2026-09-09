@@ -239,7 +239,7 @@ def test_one_minus_pvalue():
     effect = np.ones((1, 3))
     variance = effect[0]
 
-    contrast = Contrast(effect, variance)
+    contrast = Contrast(effect, variance, stat_type="t")
 
     assert np.allclose(contrast.one_minus_pvalue(), 0.84, 1)
     assert np.allclose(contrast.stat_, 1.0, 1)
@@ -262,13 +262,13 @@ def test_one_minus_pvalue():
 )
 def test_improper_contrast_inputs(effect, variance, match):
     with pytest.raises(ValueError, match=match):
-        Contrast(effect, variance)
+        Contrast(effect, variance, stat_type="t")
 
 
 def test_automatic_t2f_conversion():
     effect = np.ones((5, 3))
     variance = np.ones(5)
-    contrast = Contrast(effect, variance)
+    contrast = Contrast(effect, variance, stat_type="t")
     assert contrast.stat_type == "F"
 
 

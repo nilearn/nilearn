@@ -89,13 +89,13 @@ def test_check_surface_plotting_inputs_single_hemi_data(
 def test_check_surface_plotting_inputs_errors():
     """Fail if mesh is None and data is not a SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
-        plot_surf(surf_map=1)
+        plot_surf(surf_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
-        plot_surf_stat_map(stat_map=1)
+        plot_surf_stat_map(stat_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
-        plot_surf_contours(roi_map=1)
+        plot_surf_contours(roi_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
-        plot_surf_roi(roi_map=1)
+        plot_surf_roi(roi_map=1, surf_mesh=None)
 
 
 def test_plot_surf_engine_error(in_memory_mesh):
@@ -147,10 +147,11 @@ def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
     )
 
     # Plot with colorbar
-    plot_surf(in_memory_mesh, bg_map=bg_map, engine=engine)
+    plot_surf(in_memory_mesh, bg_map=bg_map, colorbar=True, engine=engine)
     plot_surf(
         in_memory_mesh,
         bg_map=bg_map,
+        colorbar=True,
         cbar_vmin=cbar_vmin,
         cbar_vmax=cbar_vmax,
         cbar_tick_format="%i",
@@ -179,6 +180,7 @@ def test_plot_surf_swap_hemi(plt, engine, surf_img_1d, hemi, flip_surf_img):
             surf_map=surf_img_1d,
             bg_map=flip_surf_img(surf_img_1d),
             hemi=hemi,
+            surf_mesh=None,
             engine=engine,
         )
 
@@ -237,6 +239,7 @@ def test_plot_surf_tick_format_warning_matplotlib(
         plot_surf(
             in_memory_mesh,
             surf_map=bg_map,
+            engine="matplotlib",
             threshold=0.5,
             cbar_tick_format="%i",
         )
@@ -259,6 +262,7 @@ def test_plot_surf_warnings_not_implemented_in_matplotlib(
         plot_surf(
             in_memory_mesh,
             surf_map=bg_map,
+            engine="matplotlib",
             **kwargs,
         )
 
@@ -427,7 +431,9 @@ def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
     """Test if figure title is set correctly in
     nilearn.plotting.surface.surf_plotting.plot_surf.
     """
-    display = plot_surf(in_memory_mesh, bg_map=bg_map, title="Test title")
+    display = plot_surf(
+        in_memory_mesh, bg_map=bg_map, title="Test title", engine="matplotlib"
+    )
 
     assert len(display.axes) == 1
     assert display.axes[0].title._text == "Test title"
@@ -756,6 +762,7 @@ def test_plot_surf_stat_map_symmetric_cmap_matplotlib(
         in_memory_mesh,
         stat_map=bg_map,
         symmetric_cmap=None,
+        engine="matplotlib",
     )
 
 
@@ -773,6 +780,7 @@ def test_plot_surf_stat_map_symmetric_cmap_matplotlib_error(
             in_memory_mesh,
             stat_map=bg_map,
             symmetric_cmap=symmetric_cmap,
+            engine="matplotlib",
         )
 
 
@@ -944,6 +952,7 @@ def test_plot_surf_roi_matplotlib_specific(
         cbar_tick_format="%i",
         vmin=1.2,
         vmax=8.9,
+        colorbar=True,
         engine=ENGINE,
     )
     img.canvas.draw()
@@ -959,6 +968,7 @@ def test_plot_surf_roi_matplotlib_specific(
         roi_map=surface_image_roi,
         vmin=1.2,
         vmax=8.9,
+        colorbar=True,
         cbar_tick_format="%.2g",
         engine=ENGINE,
     )
@@ -984,6 +994,8 @@ def test_plot_surf_roi_matplotlib_specific_nan_handling(
     img = plot_surf_roi(
         surface_image_parcellation.mesh,
         roi_map=surface_image_parcellation,
+        engine="matplotlib",
+        hemi="left",
     )
     # Check that the resulting plot facecolors contain no transparent faces
     # (last column equals zero) even though the texture contains nan values
@@ -1003,6 +1015,7 @@ def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
     plot_surf_roi(
         surface_image_roi.mesh,
         roi_map=surface_image_roi,
+        axes=None,
         figure=matplotlib_pyplot.gcf(),
         engine=ENGINE,
     )
@@ -1014,6 +1027,7 @@ def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
             surface_image_roi.mesh,
             roi_map=surface_image_roi,
             axes=ax,
+            figure=None,
             output_file=tmp_file.name,
             engine=ENGINE,
         )
@@ -1023,7 +1037,9 @@ def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
             surface_image_roi.mesh,
             roi_map=surface_image_roi,
             axes=ax,
+            figure=None,
             output_file=tmp_file.name,
+            colorbar=True,
             engine=ENGINE,
         )
 
@@ -1083,11 +1099,14 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
     mpl_plot = plot_surf_roi(
         in_memory_mesh,
         roi_map=roi_map,
+        colorbar=True,
+        engine="matplotlib",
         **kwargs,
     )
     plotly_plot = plot_surf_roi(
         in_memory_mesh,
         roi_map=roi_map,
+        colorbar=True,
         engine="plotly",
         **kwargs,
     )

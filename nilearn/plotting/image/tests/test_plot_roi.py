@@ -103,7 +103,7 @@ def test_cmap_with_one_level(matplotlib_pyplot, shape_3d_default, affine_eye):
 
     cmap = plt.get_cmap("tab20", len(clust_ids))
 
-    plot_roi(img, alpha=0.8, cmap=cmap)
+    plot_roi(img, alpha=0.8, colorbar=True, cmap=cmap)
 
 
 @pytest.mark.thread_unsafe

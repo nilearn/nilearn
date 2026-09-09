@@ -1255,12 +1255,12 @@ def test_surface_image_error():
 
 def test_polydata_error():
     with pytest.raises(ValueError, match="Either left or right"):
-        PolyData()
+        PolyData(left=None, right=None)
 
 
 def test_polymesh_error():
     with pytest.raises(ValueError, match="Either left or right"):
-        PolyMesh()
+        PolyMesh(left=None, right=None)
 
 
 def test_inmemorymesh_index_error(in_memory_mesh):

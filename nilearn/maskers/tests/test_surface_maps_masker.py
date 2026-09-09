@@ -114,7 +114,7 @@ def test_labels_img_none():
         ValueError,
         match="provide a maps_img during initialization",
     ):
-        SurfaceMapsMasker().fit()
+        SurfaceMapsMasker(maps_img=None).fit()
 
 
 def test_empty_map_img_error(surf_mesh):

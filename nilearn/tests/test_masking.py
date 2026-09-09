@@ -97,12 +97,15 @@ def test_high_variance_confounds():
 
     masker1 = NiftiMasker(
         standardize="zscore_sample",
+        detrend=False,
+        high_variance_confounds=False,
         mask_img=mask,
     ).fit()
     tseries1 = masker1.transform(img, confounds=[hv_confounds, conf])
 
     masker2 = NiftiMasker(
         standardize="zscore_sample",
+        detrend=False,
         high_variance_confounds=True,
         mask_img=mask,
     ).fit()
@@ -119,6 +122,7 @@ def _confounds_regression(
     masker = NiftiMasker(
         standardize=standardize_signal,
         standardize_confounds=standardize_confounds,
+        detrend=False,
         mask_img=mask,
     ).fit()
 
@@ -268,7 +272,7 @@ def test_compute_background_mask(affine_eye, value):
     mask = mean_image == 1
     mean_image = Nifti1Image(mean_image, affine_eye)
 
-    mask1 = compute_background_mask(mean_image, verbose=1)
+    mask1 = compute_background_mask(mean_image, opening=False, verbose=1)
 
     assert_array_equal(get_data(mask1), mask.astype(np.int8))
 
@@ -293,7 +297,7 @@ def test_compute_background_mask_errors_warnings(affine_eye):
 
 def test_compute_brain_mask():
     """Test compute_brain_mask."""
-    img, _ = data_gen.generate_mni_space_img(res=8)
+    img, _ = data_gen.generate_mni_space_img(res=8, rand_gen=0)
 
     brain_mask = compute_brain_mask(img, threshold=0.2, verbose=1)
     gm_mask = compute_brain_mask(img, threshold=0.2, mask_type="gm")
@@ -376,7 +380,7 @@ def test_apply_mask_surface(surf_img_1d, surf_mask_1d):
     0 and None should give the same results.
     Otherwise we expect the data to be smoother.
     """
-    img_none = apply_mask(surf_img_1d, surf_mask_1d)
+    img_none = apply_mask(surf_img_1d, surf_mask_1d, smoothing_fwhm=None)
     img_zero = apply_mask(surf_img_1d, surf_mask_1d, smoothing_fwhm=0)
 
     assert_array_equal(img_none, img_zero)
@@ -510,7 +514,7 @@ def test_unmask_4d(rng, affine_eye, shape_4d_default):
     assert not t.flags["F_CONTIGUOUS"]
     assert_array_equal(t, unmasked4D)
 
-    t = unmask([masked4D], mask_img)
+    t = unmask([masked4D], mask_img, order="F")
     t = [get_data(t_) for t_ in t]
 
     assert isinstance(t, list)
@@ -549,7 +553,7 @@ def test_unmask_3d_with_files(
     assert not t.flags["F_CONTIGUOUS"]
     assert_array_equal(t, unmasked3D)
 
-    t = unmask([masked3D], filename)
+    t = unmask([masked3D], filename, order="F")
     t = [get_data(t_) for t_ in t]
 
     assert isinstance(t, list)
@@ -571,7 +575,7 @@ def test_unmask_retain_datatype(rng, affine_eye, shape_3d_default):
     mask = mask.astype(bool)
     masked3D = data3D[mask]
 
-    t = unmask([masked3D], mask_img)
+    t = unmask([masked3D], mask_img, order="F")
     assert t[0].get_data_dtype() == data3D.dtype
 
 
@@ -862,7 +866,7 @@ def test_compute_multi_brain_mask_error():
 def test_compute_multi_brain_mask():
     """Check results are the same if affine is the same."""
     imgs1 = [
-        data_gen.generate_mni_space_img(res=9)[0],
+        data_gen.generate_mni_space_img(res=9, rand_gen=0)[0],
         data_gen.generate_mni_space_img(res=9, rand_gen=1)[0],
     ]
     imgs2 = [
@@ -993,7 +997,7 @@ def test_extrapolate_out_mask():
 
     # Test:
     extrapolated_data, extrapolated_mask = extrapolate_out_mask(
-        initial_data, initial_mask
+        initial_data, initial_mask, iterations=1
     )
 
     assert_array_equal(extrapolated_data, target_data)

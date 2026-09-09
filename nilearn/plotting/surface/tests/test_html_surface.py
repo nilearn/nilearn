@@ -159,6 +159,7 @@ def test_view_surf(tmp_path, rng, engine):
     html = view_surf(
         fsaverage["pial_right"],
         fsaverage["sulc_right"],
+        threshold=None,
         cmap="Greys",
         engine=engine,
     )

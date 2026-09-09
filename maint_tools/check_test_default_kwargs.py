@@ -166,7 +166,14 @@ def _match_owners(
         if arg not in defaults:
             continue
         try:
-            is_default = bool(value == defaults[arg])
+            # bool is a subclass of int, so False == 0 and True == 1
+            # in plain Python equality; treat those as distinct values
+            # so e.g. ``signal_scaling=False`` is not matched against
+            # a real default of ``0``.
+            if isinstance(value, bool) != isinstance(defaults[arg], bool):
+                is_default = False
+            else:
+                is_default = bool(value == defaults[arg])
         except Exception:
             is_default = False
         if is_default:
