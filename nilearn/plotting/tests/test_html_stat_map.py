@@ -260,7 +260,6 @@ def test_resample_stat_map(affine_eye):
     )
 
 
-@pytest.mark.ai_generated
 def test_json_view_params(affine_eye):
     """Check that _json_view_params generates the expected structure."""
     # Try to generate some sprite parameters
@@ -448,7 +447,6 @@ def test_json_view_data(black_bg, cbar, radiological):
 @pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("cbar", [True, False])
 @pytest.mark.parametrize("radiological", [True, False])
-@pytest.mark.ai_generated
 def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
     """Check that _json_view_to_html builds a valid viewer."""
     data, json_view = _get_data_and_json_view(black_bg, cbar, radiological)
@@ -474,7 +472,6 @@ def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
     check_html_view_img(html_view)
 
 
-@pytest.mark.ai_generated
 def test_brainsprite_viewers_have_unique_element_ids():
     """Check that multiple viewers bind to their own HTML elements."""
     img, _ = _simulate_img()
