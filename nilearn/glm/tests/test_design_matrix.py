@@ -355,9 +355,7 @@ def test_oversampling(n_frames):
     events = basic_paradigm()
     frame_times = np.linspace(0, n_frames - 1, n_frames)
     X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)
-    X2 = make_first_level_design_matrix(
-        frame_times, events, drift_model=None, oversampling=50
-    )
+    X2 = make_first_level_design_matrix(frame_times, events, drift_model=None)
     X3 = make_first_level_design_matrix(
         frame_times, events, drift_model=None, oversampling=10
     )
@@ -421,7 +419,6 @@ def test_csv_io(tmp_path, frame_times):
     DM = make_first_level_design_matrix(
         frame_times,
         events=modulated_event_paradigm(),
-        hrf_model="glover",
         drift_model="polynomial",
         drift_order=3,
     )

@@ -90,7 +90,7 @@ def test_set_repetition_time_warnings(tmp_path):
     so the TR value will be inferred from the raw.
     """
     bids_path = create_fake_bids_dataset(
-        base_dir=tmp_path, n_sub=10, n_ses=1, tasks=["main"], n_runs=[1]
+        base_dir=tmp_path, n_ses=1, tasks=["main"], n_runs=[1]
     )
     t_r = None
     warning_msg = "No bold.json .* BIDS"
@@ -131,7 +131,6 @@ def test_set_repetition_time_errors(tmp_path, t_r, error_type, error_msg):
             task_label="main",
             space_label="MNI",
             img_filters=[("desc", "preproc")],
-            slice_time_ref=None,
             t_r=t_r,
         )
 
@@ -143,7 +142,7 @@ def test_set_slice_timing_ref_warnings(tmp_path):
     In this case the model should be created with a slice_time_ref of 0.0.
     """
     bids_path = create_fake_bids_dataset(
-        base_dir=tmp_path, n_sub=10, n_ses=1, tasks=["main"], n_runs=[1]
+        base_dir=tmp_path, n_ses=1, tasks=["main"], n_runs=[1]
     )
 
     slice_time_ref = None
@@ -193,7 +192,7 @@ def test_get_metadata_from_derivatives(tmp_path):
     The model created should use the values found in the derivatives.
     """
     bids_path = create_fake_bids_dataset(
-        base_dir=tmp_path, n_sub=10, n_ses=1, tasks=["main"], n_runs=[1]
+        base_dir=tmp_path, n_ses=1, tasks=["main"], n_runs=[1]
     )
 
     RepetitionTime = 6.0
@@ -209,7 +208,6 @@ def test_get_metadata_from_derivatives(tmp_path):
             task_label="main",
             space_label="MNI",
             img_filters=[("desc", "preproc")],
-            slice_time_ref=None,
         )
         assert models[0].t_r == RepetitionTime
         assert models[0].slice_time_ref == StartTime / RepetitionTime
@@ -222,7 +220,7 @@ def test_get_repetition_time_from_derivatives(tmp_path):
     slice_time_ref cannot be inferred: defaults to 0.
     """
     bids_path = create_fake_bids_dataset(
-        base_dir=tmp_path, n_sub=10, n_ses=1, tasks=["main"], n_runs=[1]
+        base_dir=tmp_path, n_ses=1, tasks=["main"], n_runs=[1]
     )
     RepetitionTime = 6.0
     add_metadata_to_bids_dataset(
@@ -249,7 +247,7 @@ def test_get_start_time_from_derivatives(tmp_path):
     but RepetitionTime is still read from raw dataset.
     """
     bids_path = create_fake_bids_dataset(
-        base_dir=tmp_path, n_sub=10, n_ses=1, tasks=["main"], n_runs=[1]
+        base_dir=tmp_path, n_ses=1, tasks=["main"], n_runs=[1]
     )
     StartTime = 1.0
     add_metadata_to_bids_dataset(
@@ -264,7 +262,6 @@ def test_get_start_time_from_derivatives(tmp_path):
             task_label="main",
             space_label="MNI",
             img_filters=[("desc", "preproc")],
-            slice_time_ref=None,
         )
 
         # create_fake_bids_dataset generates a dataset
@@ -368,7 +365,6 @@ def test_space_none(tmp_path):
     models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_path,
         task_label="main",
-        space_label=None,
         img_filters=[("run", "01"), ("desc", "preproc")],
         slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
@@ -672,8 +668,7 @@ def test_no_tr(tmp_path_factory):
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
-            t_r=None,
+            slice_time_ref=0.0,
         )
 
 
@@ -832,7 +827,6 @@ def test_confounds_strategy_none(tmp_path, n_sub):
     models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_path,
         task_label="main",
-        space_label=None,
         img_filters=[("desc", "preproc")],
         slice_time_ref=0.0,
         confounds_strategy=None,
@@ -941,7 +935,6 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
         )
         assert any(
             "No column named 'trial_type' found" in r.message.args[0]
@@ -954,7 +947,7 @@ def test_load_confounds(tmp_path):
     n_sub = 2
 
     bids_path = create_fake_bids_dataset(
-        base_dir=tmp_path, n_sub=n_sub, n_ses=2, tasks=["main"], n_runs=[2]
+        base_dir=tmp_path, n_sub=n_sub, tasks=["main"], n_runs=[2]
     )
 
     _, _, _, confounds = first_level_from_bids(
@@ -997,7 +990,7 @@ def test_load_confounds_warnings(tmp_path):
     n_sub = 2
 
     bids_path = create_fake_bids_dataset(
-        base_dir=tmp_path, n_sub=n_sub, n_ses=2, tasks=["main"], n_runs=[2]
+        base_dir=tmp_path, n_sub=n_sub, tasks=["main"], n_runs=[2]
     )
 
     # high pass is loaded from the confounds: no warning
@@ -1021,7 +1014,6 @@ def test_load_confounds_warnings(tmp_path):
             task_label="main",
             space_label="MNI",
             img_filters=[("desc", "preproc")],
-            drift_model="cosine",
             confounds_strategy=("high_pass",),
             slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )

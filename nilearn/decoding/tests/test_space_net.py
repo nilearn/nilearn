@@ -265,7 +265,6 @@ def test_space_net_classifier_invalid_loss(rng):
         tol=1e-10,
         standardize=None,
         screening_percentile=100.0,
-        loss="logistic",
     ).fit(X_, y)
 
     SpaceNetClassifier(
@@ -415,7 +414,6 @@ def test_lasso_vs_graph_net():
         mask=mask,
         alphas=1.0 * X_.shape[0],
         l1_ratios=1,
-        penalty="graph-net",
         max_iter=100,
     )
     lasso.fit(X_, y)

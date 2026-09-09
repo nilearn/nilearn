@@ -398,7 +398,6 @@ def test_contrast_computation_errors(rng, n_subjects):
         non_parametric_inference(
             second_level_input=Y,
             design_matrix=X,
-            second_level_contrast=None,
         )
 
 

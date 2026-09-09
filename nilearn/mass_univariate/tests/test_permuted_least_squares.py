@@ -182,7 +182,6 @@ def permuted_ols_with_intercept(tested_var, target_var, n_perm, i):
     output = permuted_ols(
         tested_var,
         target_var,
-        model_intercept=True,
         n_perm=n_perm,
         two_sided_test=False,
         random_state=i,
@@ -322,7 +321,6 @@ def test_permuted_ols_no_covar_with_intercept(design):
     output = permuted_ols(
         tested_var,
         target_var,
-        model_intercept=True,
         n_perm=0,
         random_state=0,
     )
@@ -362,7 +360,6 @@ def test_permuted_ols_with_covar_with_intercept(design, confounding_vars):
         tested_var,
         target_var,
         confounding_vars,
-        model_intercept=True,
         n_perm=0,
         random_state=0,
     )
@@ -448,7 +445,6 @@ def test_permuted_ols_nocovar_multivariate(rng):
     output_intercept = permuted_ols(
         tested_var,
         target_vars,
-        model_intercept=True,
         n_perm=0,
         random_state=0,
     )
@@ -474,7 +470,6 @@ def test_permuted_ols_intercept_nocovar(rng):
     output = permuted_ols(
         tested_var,
         target_var,
-        confounding_vars=None,
         n_perm=N_PERM,
         random_state=0,
     )
@@ -491,7 +486,6 @@ def test_permuted_ols_intercept_nocovar(rng):
     output_addintercept = permuted_ols(
         tested_var,
         target_var,
-        confounding_vars=None,
         model_intercept=False,
         n_perm=0,
         random_state=0,
@@ -529,7 +523,6 @@ def test_permuted_ols_intercept_statsmodels_withcovar(
         tested_var,
         target_var,
         confounding_vars,
-        model_intercept=True,
         n_perm=0,
         random_state=0,
     )
@@ -564,7 +557,6 @@ def test_one_sided_versus_two_test(rng):
         tested_var,
         target_var,
         model_intercept=False,
-        two_sided_test=True,
         n_perm=N_PERM,
         random_state=0,
     )
@@ -615,7 +607,6 @@ def test_two_sided_recover_positive_and_negative_effects():
         tested_var,
         target_var,
         model_intercept=False,
-        two_sided_test=True,
         n_perm=N_PERM,
         random_state=0,
     )
@@ -713,7 +704,6 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
         tested_var,
         target_var,
         model_intercept=False,
-        two_sided_test=True,
         n_perm=n_perm,
         random_state=0,
         threshold=0.001,
@@ -758,7 +748,6 @@ def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
             tested_var,
             target_var,
             n_perm=4,
-            n_jobs=1,
             masker=masker,
         )
     assert all(
@@ -1013,5 +1002,4 @@ def test_cluster_level_parameters_error_no_masker(cluster_level_design):
             target_var,
             two_sided_test=False,
             threshold=0.001,
-            tfce=False,
         )

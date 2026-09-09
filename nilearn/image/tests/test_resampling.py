@@ -323,13 +323,11 @@ def test_resampling_continuous_with_affine(
     rot_img = resample_img(
         img,
         target_affine=rot,
-        interpolation="continuous",
         force_resample=force_resample,
     )
     rot_img_back = resample_img(
         rot_img,
         target_affine=affine_eye,
-        interpolation="continuous",
         force_resample=force_resample,
     )
 
@@ -420,7 +418,6 @@ def test_resampling_copy_has_no_shared_memory(
         img,
         target_affine=target_affine,
         target_shape=target_shape,
-        copy=True,
         force_resample=force_resample,
     )
 
@@ -464,7 +461,6 @@ def test_resampling_warning_binary_image(affine_eye, rng, force_resample):
         resample_img(
             img_binary,
             target_affine=rot,
-            interpolation="continuous",
             force_resample=force_resample,
         )
 
@@ -897,7 +893,6 @@ def test_resample_clip(affine_eye, force_resample):
         resample_img(
             source_img,
             target_affine=affine_eye,
-            clip=True,
             force_resample=force_resample,
         )
     )
@@ -1201,9 +1196,7 @@ def test_resample_input(affine_eye, shape, rng, tmp_path, force_resample):
     affine[:3, -1] = 0.5 * np.array(shape[:3])
     img = Nifti1Image(data, affine)
 
-    filename = testing.write_imgs_to_path(
-        img, file_path=tmp_path, create_files=True
-    )
+    filename = testing.write_imgs_to_path(img, file_path=tmp_path)
     filename = Path(filename)
     resample_img(
         filename,

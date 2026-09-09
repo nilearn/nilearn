@@ -407,7 +407,6 @@ def test_make_regressor_3():
         hrf_model,
         frame_times,
         fir_delays=np.arange(4),
-        oversampling=50.0,
     )
 
     assert_array_equal(reg, reg_)
