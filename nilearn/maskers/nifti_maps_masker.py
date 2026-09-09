@@ -683,6 +683,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             self.n_elements_ = len(extracted_maps)
             maps_data = get_data(maps_img_)[:, :, :, extracted_maps]
             self.maps_img_ = new_img_like(self.maps_img_, maps_data)
+            self._reporting_data["maps_image"] = self.maps_img_
 
         # if target_dtype is still None, self.dtype is None: no explicit
         # dtype was requested, so keep the dtype produced by the
