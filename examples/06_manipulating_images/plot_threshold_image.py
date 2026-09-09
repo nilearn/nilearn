@@ -13,6 +13,14 @@ behavior.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses a sample motor activation statistical map (`image 10426
+#    <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
+#    <neurovault_dataset>`).
+#
+
+# %%
 # Image without threshold
 # -----------------------
 #

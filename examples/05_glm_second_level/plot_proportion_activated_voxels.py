@@ -11,6 +11,13 @@ the error control accounts for arbitrary cluster selection.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Brainomics Localizer dataset
+#    <brainomics_maps>`.
+#
+
+# %%
 # Fetch dataset
 # --------------
 # We download a list of left vs right button press contrasts from a

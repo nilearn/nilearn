@@ -10,6 +10,12 @@ using :class:`~nilearn.regions.RegionExtractor` from regions module
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Smith 2009 atlas <smith_2009_atlas>`.
+#
+
+# %%
 # Fetching the smith :term:`ICA` 10 RSN by importing datasets utilities
 from nilearn import datasets
 

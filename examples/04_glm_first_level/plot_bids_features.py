@@ -23,6 +23,12 @@ More specifically:
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`ds000030 dataset <ds000030>`.
+#
+
+# %%
 # Fetch openneuro :term:`BIDS` dataset
 # ------------------------------------
 # We download one subject from the ``stopsignal`` task

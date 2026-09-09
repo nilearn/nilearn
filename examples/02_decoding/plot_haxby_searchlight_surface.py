@@ -17,6 +17,15 @@ as described in :footcite:t:`Chen2011`.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`Haxby dataset <haxby_dataset>`
+#    - the :ref:`fsaverage template <fs_average_template>`
+#
+
+# %%
 # Load Haxby dataset
 # ------------------
 import pandas as pd

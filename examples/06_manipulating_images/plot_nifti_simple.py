@@ -8,6 +8,13 @@ Here is a simple example of automatic mask computation using
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`development fMRI dataset
+#    <development_dataset>`.
+#
+
+# %%
 # Retrieve the brain development functional dataset
 # -------------------------------------------------
 #

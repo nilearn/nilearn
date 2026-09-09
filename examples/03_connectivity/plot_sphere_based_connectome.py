@@ -16,6 +16,16 @@ computing a connectome from them.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`Dosenbach 2010 atlas <dosenbach_atlas>`
+#    - the :ref:`Power 2011 atlas <power_atlas>`
+#    - the :ref:`development fMRI dataset <development_dataset>`
+#
+
+# %%
 # Retrieve the brain development :term:`fMRI` dataset
 # ---------------------------------------------------
 #

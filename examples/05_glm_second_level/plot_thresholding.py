@@ -12,6 +12,13 @@ narrative sentence reading/listening.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Brainomics Localizer dataset
+#    <brainomics_maps>`.
+#
+
+# %%
 # Prepare some images for a simple t test
 # ---------------------------------------
 # This is a simple manually performed second level analysis.

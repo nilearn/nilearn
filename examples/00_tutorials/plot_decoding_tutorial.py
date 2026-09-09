@@ -14,6 +14,12 @@ as it strives to be didactic. It is not
 meant to be copied to analyze new data: many of the steps are unnecessary.
 """
 
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
+
 # We ignore some warnings that would otherwise
 # be thrown when reading images.
 import warnings

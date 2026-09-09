@@ -20,6 +20,13 @@ More specifically, this example will be divided into three sections:
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`language localizer demo dataset
+#    <language_localizer_dataset>`.
+#
+
+# %%
 # Fetch example :term:`BIDS` dataset
 # ----------------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative

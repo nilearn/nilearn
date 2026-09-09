@@ -15,6 +15,13 @@ sampled in different positions (encoded by different affine functions).
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`SPM multimodal dataset
+#    <spm_multimodal_dataset>`.
+#
+
+# %%
 # Fetch and inspect the data
 # --------------------------
 # Fetch the :term:`SPM` multimodal_faces data.

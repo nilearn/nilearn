@@ -46,6 +46,15 @@ file paths.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`ADHD dataset <adhd_dataset>`
+#    - the :ref:`BASC multiscale atlas <basc_multiscale_2015_atlas>`
+#
+
+# %%
 # Create a large fMRI image
 # -------------------------
 # Here we will create a "large" fMRI image by fetching 6 subjects'

@@ -839,7 +839,8 @@ Examples
 
 All examples must give some description of the data they use
 in an admonition at the beginning of the example,
-and link to the full dataset description.
+and link to the full dataset description
+(see in ``nilearn/datasets/description``).
 
 .. code-block:: python
 
