@@ -156,8 +156,8 @@ def test_get_clusters_table_return_label_maps_deprecation(
     simple_stat_img, call_style
 ):
     """Warn on calls that keep the deprecated table-only return.
-    
-    
+
+
     TODO (nilearn >= 0.17.0) remove test.
     """
     match = 'The "return_label_maps" parameter is deprecated'
@@ -180,7 +180,7 @@ def test_get_clusters_table_return_label_maps_deprecation(
 
 def test_get_clusters_table_surface_return_label_maps_deprecation(surf_img_1d):
     """Warn on the deprecated table-only return for surface data.
-    
+
     TODO (nilearn >= 0.17.0) remove test.
     """
     with pytest.warns(
