@@ -34,6 +34,9 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
+
+
 Changes
 -------
 
