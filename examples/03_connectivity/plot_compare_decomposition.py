@@ -165,7 +165,7 @@ for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
 
 
 # %%
-# Estimate explained variance per component and plot using matplotlib
+# Estimate explained variance per component and plot using matplotlib.
 #
 # The fitted object ``dict_learning`` can be used
 # to calculate the score per component.
