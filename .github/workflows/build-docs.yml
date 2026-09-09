@@ -234,7 +234,7 @@ jobs:
 
         -   name: Install packages
             run: |
-                python -m pip install --user --upgrade pip setuptools
+                python -m pip install --user --upgrade pip setuptools rich
                 python -m pip install .
 
         -   name: Download build type

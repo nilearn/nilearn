@@ -9,6 +9,7 @@ dev = [
     {include-group = "doc"},
     {include-group = "style"},
     {include-group = "rich"},
+    "docstring_parser",
     "tox>=4",
     "tox-uv"
 ]

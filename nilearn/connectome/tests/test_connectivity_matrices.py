@@ -129,12 +129,11 @@ def random_spd(p, eig_min, cond, random_state=0):
 
 
 def _signals(
-    n_subjects: int = N_SUBJECTS,
+    n_subjects: int = N_SUBJECTS, n_features: int = N_FEATURES
 ) -> tuple[list[np.ndarray], np.ndarray]:
     """Generate signals and compute covariances \
     and apply confounds while computing covariances.
     """
-    n_features = N_FEATURES
     signals = []
     for k in range(n_subjects):
         n_samples = 200 + k
@@ -674,6 +673,23 @@ def test_connectivity_measure_generic_3d_array(kind, cov_estimator, signals):
     connectivities = conn_measure.fit_transform(signals_as_tuple)
 
     assert isinstance(connectivities, np.ndarray)
+
+
+def test_connectivity_measure_refit():
+    """Ensure ConnectivityMeasure can be refitted \
+        with data of different shape.
+
+    Regression test for issue
+    https://github.com/nilearn/nilearn/pull/6511#issuecomment-5566552823
+    """
+    conn_measure = ConnectivityMeasure()
+
+    signals = _signals(n_subjects=1)[0]
+    conn_measure.fit_transform(signals)
+
+    signals_different_shape = _signals(n_subjects=1, n_features=100)[0]
+
+    conn_measure.fit_transform(signals_different_shape)
 
 
 def _assert_connectivity_tangent(connectivities, conn_measure, covs):

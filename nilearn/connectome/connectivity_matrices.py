@@ -8,7 +8,6 @@ import numpy as np
 from scipy import linalg
 from sklearn.base import TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
-from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import validate_data
 
@@ -508,7 +507,12 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         self.discard_diagonal = discard_diagonal
         self.verbose = verbose
 
-    def _check_input(self, X, confounds=None):
+    def _check_input(self, X, confounds=None, reset=True):
+        """Run several checks on input and confounds.
+
+        - all inputs must be 2D arrays of same dimensions
+        - inputs must pass sklearn data validation
+        """
         subjects_types = [type(s) for s in X]
         if set(subjects_types) != {np.ndarray}:
             raise ValueError(
@@ -530,12 +534,8 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                 f"You provided: {features_dims}"
             )
 
-        if self.__sklearn_is_fitted__():
-            for x in X:
-                validate_data(self, x, reset=False, accept_sparse=False)
-        else:
-            for s in X:
-                check_array(s, accept_sparse=False)
+        for x in X:
+            validate_data(self, x, reset=reset, accept_sparse=False)
 
         if confounds is not None:
             if not hasattr(confounds, "__iter__"):
@@ -590,7 +590,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         if isinstance(X, np.ndarray) and X.ndim == 2:
             X = [X]
 
-        self._check_input(X, confounds=confounds)
+        self._check_input(X, confounds=confounds, reset=bool(do_fit))
 
         if do_fit:
             if self.cov_estimator is None:
