@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.11"
 # ///
-"""Check examples toh make sure they contain an admonition for data description
+"""Check examples to make sure they contain an admonition for data description
 if they use any of the nilearn fetchers.
 """
 
