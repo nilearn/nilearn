@@ -679,9 +679,10 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         # we update some attributes
         # that may have been changed by resampling or masking
-        self.n_elements_ = len(extracted_maps)
-        maps_data = get_data(maps_img_)[:, :, :, extracted_maps]
-        self.maps_img_ = new_img_like(self.maps_img_, maps_data)
+        if len(extracted_maps) != self.n_elements_:
+            self.n_elements_ = len(extracted_maps)
+            maps_data = get_data(maps_img_)[:, :, :, extracted_maps]
+            self.maps_img_ = new_img_like(self.maps_img_, maps_data)
 
         # if target_dtype is still None, self.dtype is None: no explicit
         # dtype was requested, so keep the dtype produced by the
