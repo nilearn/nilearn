@@ -505,7 +505,7 @@ def test_resampling_to_clipped_labels(
         ),
         pytest.warns(
             UserWarning,
-            match=(r"Out of 10 labels .* only contains 4 labels"),
+            match=(r"Out of 10 labels.* only contains 4 labels"),
         ),
     ):
         signals = masker.transform(fmri11_img)

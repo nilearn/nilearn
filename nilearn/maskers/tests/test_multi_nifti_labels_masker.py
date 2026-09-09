@@ -225,7 +225,7 @@ def test_resampling(affine_eye, length, img_labels):
         ),
         pytest.warns(
             UserWarning,
-            match=(r"Out of 10 labels .* only contains 3 labels"),
+            match=(r"Out of 10 labels.* only contains 3 labels"),
         ),
     ):
         signals = masker.fit_transform(fmri11_img)
