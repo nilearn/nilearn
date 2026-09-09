@@ -422,7 +422,10 @@ def test_resampling_to_maps(
     assert masker.n_elements_ == n_regions_left
 
     assert_array_equal(masker.maps_img_.affine, maps33_img.affine)
-    assert masker.maps_img_.shape == (*maps33_img.shape[:3], n_regions_left)
+    assert masker.region_atlas_.shape == (
+        *maps33_img.shape[:3],
+        n_regions_left,
+    )
 
     assert_array_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
@@ -470,7 +473,10 @@ def test_clipped_mask(estimator, affine_eye, length, n_regions, img_fmri):
     assert masker.n_elements_ == n_regions_left
 
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
-    assert masker.maps_img_.shape == (*maps33_img.shape[:3], n_regions_left)
+    assert masker.region_atlas_.shape == (
+        *maps33_img.shape[:3],
+        n_regions_left,
+    )
 
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
