@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.plotting import show
 
-haxby_dataset = datasets.fetch_haxby(subjects=[], fetch_stimuli=True)
+haxby_dataset = datasets.fetch_haxby(n_subjects=[], fetch_stimuli=True)
 stimulus_information = haxby_dataset.stimuli
 
 # %%
