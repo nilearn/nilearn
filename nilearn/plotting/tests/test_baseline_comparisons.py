@@ -373,7 +373,7 @@ def test_plot_surf_surface(plot_func, view, hemi):
         # cannot have negative values for roi_map
         surf_img = math_img(
             "img > 0",
-            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+            img=load_fsaverage_data(mesh_type="inflated"),
         )
     return plot_func(
         surf_img.mesh,
@@ -412,7 +412,7 @@ def test_plot_surf_surface_plotly(plot_func, view, hemi):
         # cannot have negative values for roi_map
         surf_img = math_img(
             "img > 0",
-            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+            img=load_fsaverage_data(mesh_type="inflated"),
         )
     return plot_func(
         surf_img.mesh,
@@ -436,7 +436,7 @@ def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
         # cannot have negative values for roi_map
         surf_img = math_img(
             "img > 0",
-            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+            img=load_fsaverage_data(mesh_type="inflated"),
         )
     return plot_func(
         surf_img.mesh,
@@ -466,7 +466,7 @@ def test_plot_surf_surface_colorbar_plotly(
         # cannot have negative values for roi_map
         surf_img = math_img(
             "img > 0",
-            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+            img=load_fsaverage_data(mesh_type="inflated"),
         )
     return plot_func(
         surf_img.mesh,
@@ -587,7 +587,7 @@ def test_surface_fs_vertices_order(hemi):
 
     resolution = ["fsaverage3", "fsaverage4", "fsaverage5"]
 
-    fs5 = fetch_surf_fsaverage(mesh="fsaverage5")
+    fs5 = fetch_surf_fsaverage()
 
     fig, ax = plt.subplots(
         nrows=len(resolution),

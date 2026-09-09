@@ -158,14 +158,10 @@ def test_overlap(rng, affine_eye):
     )
     overlapping_masker.fit_transform(fmri_img)
 
-    noverlapping_masker = NiftiSpheresMasker(
-        seeds, radius=1, allow_overlap=False
-    )
+    noverlapping_masker = NiftiSpheresMasker(seeds, radius=1)
     noverlapping_masker.fit_transform(fmri_img)
 
-    noverlapping_masker = NiftiSpheresMasker(
-        seeds, radius=2, allow_overlap=False
-    )
+    noverlapping_masker = NiftiSpheresMasker(seeds, radius=2)
 
     with pytest.raises(ValueError, match="Overlap detected"):
         noverlapping_masker.fit_transform(fmri_img)
@@ -319,12 +315,12 @@ def test_inverse_overlap(rng, affine_eye):
     assert_array_almost_equal(get_data(overlap)[1, 1, 1], np.mean(inv_data))
 
     noverlapping_masker = NiftiSpheresMasker(
-        seeds, radius=1, allow_overlap=False, mask_img=mask_img
+        seeds, radius=1, mask_img=mask_img
     ).fit()
 
     noverlapping_masker.inverse_transform(inv_data)
     noverlapping_masker = NiftiSpheresMasker(
-        seeds, radius=2, allow_overlap=False, mask_img=mask_img
+        seeds, radius=2, mask_img=mask_img
     ).fit()
 
     with pytest.raises(ValueError, match="Overlap detected"):

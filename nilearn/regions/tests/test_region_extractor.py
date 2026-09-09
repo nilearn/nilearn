@@ -236,9 +236,7 @@ def test_connected_regions_no_regions(map_img_3d):
     pos_thresholded_img = threshold_img(
         map_img_3d,
         threshold="99.9%",
-        copy=True,
         two_sided=False,
-        copy_header=True,
     )
     with pytest.warns(UserWarning, match="No supra threshold regions"):
         pos_regions_img, pos_index = connected_regions(
@@ -290,9 +288,7 @@ def test_fit_and_transform(maps_and_mask):
 
 
 def test_strategy_ratio_n_voxels(maps):
-    extract_ratio = RegionExtractor(
-        maps, threshold=0.2, thresholding_strategy="ratio_n_voxels"
-    )
+    extract_ratio = RegionExtractor(maps, threshold=0.2)
     extract_ratio.fit()
 
     assert extract_ratio.regions_img_ != ""
@@ -309,7 +305,6 @@ def test_two_sided(maps):
         maps,
         threshold=threshold,
         thresholding_strategy=thresholding_strategy,
-        two_sided=False,
         min_region_size=min_region_size,
         extractor="connected_components",
     )
@@ -366,7 +361,6 @@ def test_high_resolution_image(affine_eye, n_regions, shape_3d_large):
 
     extract_ratio = RegionExtractor(
         maps,
-        thresholding_strategy="ratio_n_voxels",
         smoothing_fwhm=0.6,
         min_region_size=0.4,
     )
@@ -387,9 +381,7 @@ def test_zeros_affine_diagonal(affine_eye, n_regions):
         rand_gen=42,
     )
 
-    extract_ratio = RegionExtractor(
-        maps, threshold=0.2, thresholding_strategy="ratio_n_voxels"
-    )
+    extract_ratio = RegionExtractor(maps, threshold=0.2)
     extract_ratio.fit()
 
     assert extract_ratio.regions_img_ != ""

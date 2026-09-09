@@ -375,9 +375,7 @@ def test_resampling_to_data(affine_eye, n_regions, length):
 
     fmri_img, _ = generate_random_img(shape22, affine=affine2)
 
-    masker = NiftiLabelsMasker(
-        labels_img, mask_img=mask_img, resampling_target="data"
-    )
+    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
     masker.fit_transform(fmri_img)
 
     assert_array_equal(masker.labels_img_.affine, affine2)
@@ -999,7 +997,6 @@ def test_region_names(
     masker = NiftiLabelsMasker(
         labels_img,
         labels=generate_labels(n_regions, background=background),
-        resampling_target="data",
     )
 
     signals = masker.fit_transform(fmri_img)
@@ -1077,7 +1074,6 @@ def test_region_names_ids_match_after_fit(
     masker = NiftiLabelsMasker(
         img_labels,
         labels=region_names,
-        resampling_target="data",
         mask_img=mask_img,
         keep_masked_labels=keep_masked_labels,
     )
@@ -1158,9 +1154,7 @@ def test_more_labels_than_actual_region_in_atlas(
 
     region_names = generate_labels(n_regions_in_labels, background=background)
 
-    masker = NiftiLabelsMasker(
-        img_labels, labels=region_names, resampling_target="data"
-    )
+    masker = NiftiLabelsMasker(img_labels, labels=region_names)
 
     fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
     with pytest.warns(

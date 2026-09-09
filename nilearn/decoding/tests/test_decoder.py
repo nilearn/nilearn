@@ -775,7 +775,7 @@ def test_decoder_dummy_classifier_strategy_most_frequent():
 def test_decoder_dummy_classifier_roc_scoring(binary_classification_data):
     X, y, mask = binary_classification_data
 
-    model = Decoder(estimator="dummy_classifier", mask=mask, scoring="roc_auc")
+    model = Decoder(estimator="dummy_classifier", mask=mask)
     model.fit(X, y)
 
     assert np.mean(model.cv_scores_[0]) >= 0.45
@@ -891,7 +891,6 @@ def test_decoder_dummy_regression(regression_data):
     model = DecoderRegressor(
         estimator="dummy_regressor",
         mask=mask,
-        scoring="r2",
         screening_percentile=1,
     )
     model.fit(X, y)
@@ -1100,7 +1099,6 @@ def test_decoder_multiclass_warnings_frem(multiclass_data):
         UserWarning, match=".*decoding model will be trained only.*"
     ):
         model = FREMClassifier(
-            clustering_percentile=10,
             screening_percentile=10,
             mask=NiftiMasker(),
             cv=1,

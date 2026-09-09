@@ -25,7 +25,7 @@ def test_tvl1_from_gradient(rng, alpha, l1_ratio, size=5, n_samples=10):
     assert _tvl1_objective(
         X, y, w.copy().ravel(), alpha, l1_ratio, mask
     ) == squared_loss(
-        X, y, w.copy().ravel(), compute_grad=False
+        X, y, w.copy().ravel()
     ) + alpha * _tvl1_objective_from_gradient(gradid)
 
 

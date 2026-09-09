@@ -314,7 +314,7 @@ def test_smooth_array_fwhm_is_odd_with_copy(smooth_array_data, affine):
     data = smooth_array_data
     fwhm = 9
 
-    filtered = smooth_array(data, affine, fwhm=fwhm, copy=True)
+    filtered = smooth_array(data, affine, fwhm=fwhm)
 
     assert not np.may_share_memory(filtered, data)
 
@@ -342,9 +342,7 @@ def test_smooth_array_nan_do_not_propagate():
     fwhm = 9
     affine = AFFINE_TO_TEST[2]
 
-    filtered = smooth_array(
-        data, affine, fwhm=fwhm, ensure_finite=True, copy=True
-    )
+    filtered = smooth_array(data, affine, fwhm=fwhm)
 
     assert np.all(np.isfinite(filtered))
 
@@ -354,7 +352,7 @@ def test_smooth_array_same_result_with_fwhm_none_or_zero(
 ):
     affine = AFFINE_TO_TEST[2]
 
-    out_fwhm_none = smooth_array(smooth_array_data, affine, fwhm=None)
+    out_fwhm_none = smooth_array(smooth_array_data, affine)
     out_fwhm_zero = smooth_array(smooth_array_data, affine, fwhm=0.0)
 
     assert_array_equal(out_fwhm_none, out_fwhm_zero)
@@ -1155,11 +1153,11 @@ def test_input_in_threshold_img(
     vol_mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
 
     # All of those should be OK
-    thr_img = threshold_img(vol_img, threshold=threshold, mask_img=None)
+    thr_img = threshold_img(vol_img, threshold=threshold)
 
     _check_thresholded_output(vol_img, thr_img, threshold)
 
-    thr_img = threshold_img(surf_img_1d, threshold=threshold, mask_img=None)
+    thr_img = threshold_img(surf_img_1d, threshold=threshold)
 
     # same but with a mask
     threshold_img(
@@ -1306,7 +1304,6 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
             threshold_img(
                 maps,
                 threshold=wrong_threshold,
-                two_sided=True,
             )
 
     with pytest.raises(ValueError, match="should not be a negative"):
@@ -1499,7 +1496,6 @@ def test_threshold_img_threshold_n_clusters(stat_img_test_data):
     thr_img = threshold_img(
         img=stat_img_test_data,
         threshold=2,
-        two_sided=True,
         cluster_threshold=5,
     )
 
@@ -1526,7 +1522,7 @@ def test_threshold_img_copy_surface(surf_img_1d):
     """
     threshold = 15
     input_img = surf_img_1d
-    result = threshold_img(input_img, threshold=threshold, copy=True)
+    result = threshold_img(input_img, threshold=threshold)
     with pytest.raises(ValueError):
         assert_surface_image_equal(result, surf_img_1d)
 
@@ -1700,9 +1696,7 @@ def test_math_img_copy_default_header(
     """
     formula_no_change = "img * 1"
     # using img_4d_ones_eye_tr2 with edited header in the formula
-    result = math_img(
-        formula_no_change, img=img_4d_ones_eye_tr2, copy_header_from=None
-    )
+    result = math_img(formula_no_change, img=img_4d_ones_eye_tr2)
     # header values should NOT match the input image header values
     assert result.header != img_4d_ones_eye_default_header.header
 
@@ -1792,8 +1786,8 @@ def test_binarize_negative_img(img_4d_rand_eye, rng):
     img_data[neg_mask] *= -1
     img = new_img_like(img_4d_rand_eye, img_data)
     # Binarize using original and absolute values
-    img_original = binarize_img(img, threshold=0, two_sided=False)
-    img_absolute = binarize_img(img, threshold=0, two_sided=True)
+    img_original = binarize_img(img)
+    img_absolute = binarize_img(img, two_sided=True)
     # Check that all values are 1 for absolute valued threshold
     assert_array_equal(np.unique(img_absolute.dataobj), np.array([1]))
     # Check that binarized image contains 0 and 1 for original threshold
@@ -1832,14 +1826,10 @@ def test_clean_img_error(
     with pytest.raises(
         ValueError, match=r"t_r.*must be specified.*imgs header suggest"
     ):
-        clean_img(
-            img_4d_rand_eye, t_r=None, low_pass=low_pass, high_pass=high_pass
-        )
+        clean_img(img_4d_rand_eye, low_pass=low_pass, high_pass=high_pass)
 
     with pytest.raises(ValueError, match=r"t_r.*must be specified"):
-        clean_img(
-            surf_img_2d(50), t_r=None, low_pass=low_pass, high_pass=high_pass
-        )
+        clean_img(surf_img_2d(50), low_pass=low_pass, high_pass=high_pass)
 
 
 def test_clean_img(affine_eye, shape_3d_default, rng):
@@ -1847,11 +1837,9 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     data_flat = data.T.reshape(100, -1)
     data_img = Nifti1Image(data, affine_eye)
 
-    data_img_ = clean_img(
-        data_img, detrend=True, standardize=None, low_pass=0.1, t_r=1.0
-    )
+    data_img_ = clean_img(data_img, standardize=None, low_pass=0.1, t_r=1.0)
     data_flat_ = signal.clean(
-        data_flat, detrend=True, standardize=None, low_pass=0.1, t_r=1.0
+        data_flat, standardize=None, low_pass=0.1, t_r=1.0
     )
 
     assert_almost_equal(get_data(data_img_).T.reshape(100, -1), data_flat_)
@@ -1869,9 +1857,7 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     # test_clean_img_passing_nifti2image
     data_img_nifti2 = Nifti2Image(data, affine_eye)
 
-    clean_img(
-        data_img_nifti2, detrend=True, standardize=None, low_pass=0.1, t_r=1.0
-    )
+    clean_img(data_img_nifti2, standardize=None, low_pass=0.1, t_r=1.0)
 
     # if mask_img
     img, mask_img = generate_fake_fmri(shape=shape_3d_default, length=10)
@@ -1896,9 +1882,7 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
     length = 50
     imgs = surf_img_2d(length)
 
-    cleaned_img = clean_img(
-        imgs, detrend=True, standardize=None, low_pass=0.1, t_r=1.0
-    )
+    cleaned_img = clean_img(imgs, standardize=None, low_pass=0.1, t_r=1.0)
 
     assert cleaned_img.shape == imgs.shape
     assert_polymesh_equal(cleaned_img.mesh, imgs.mesh)
@@ -1907,7 +1891,6 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
 
     cleaned_img_with_mask = clean_img(
         imgs,
-        detrend=True,
         standardize=None,
         low_pass=0.1,
         t_r=1.0,
@@ -1923,7 +1906,6 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
     )
     cleaned_img_with_full_mask = clean_img(
         imgs,
-        detrend=True,
         standardize=None,
         low_pass=0.1,
         t_r=1.0,
@@ -1933,14 +1915,13 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
 
     # 1D fails
     with pytest.raises(ValueError, match="should be 2D"):
-        clean_img(surf_img_1d, detrend=True)
+        clean_img(surf_img_1d)
 
     sample_mask = np.arange(length - 1)
 
     # check sample mask can be passed as a kwarg and used correctly
     cleaned_img = clean_img(
         imgs,
-        detrend=True,
         standardize=None,
         low_pass=0.1,
         t_r=1.0,
@@ -2089,7 +2070,7 @@ def test_concat_niimgs_errors(affine_eye, shape_3d_default):
 
     # check error for non-forced but necessary resampling
     with pytest.raises(ValueError, match="Field of view of image"):
-        concat_imgs([img1, img2], auto_resample=False)
+        concat_imgs([img1, img2])
 
     # Regression test for #601.
     # Dimensionality of first image was not checked properly.
@@ -2402,7 +2383,7 @@ def test_check_niimg_wildcards(affine_eye, shape, wildcards, tmp_path):
     """Test wildcards behavior."""
     img = Nifti1Image(np.zeros(shape), affine_eye)
 
-    filename = write_imgs_to_path(img, file_path=tmp_path, create_files=True)
+    filename = write_imgs_to_path(img, file_path=tmp_path)
     assert_array_equal(
         get_data(check_niimg(filename, wildcards=wildcards)),
         get_data(img),
@@ -2481,7 +2462,6 @@ def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
     globs = write_imgs_to_path(
         img_3d_zeros_eye,
         file_path=tmp_path,
-        create_files=True,
         use_wildcards=True,
     )
     assert_array_equal(
@@ -2500,7 +2480,6 @@ def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
         img_3d_zeros_eye,
         img_3d_zeros_eye,
         file_path=tmp_path,
-        create_files=True,
         use_wildcards=True,
     )
     assert_array_equal(get_data(check_niimg(globs)), get_data(img_4d))
@@ -2545,17 +2524,13 @@ def test_check_niimg_no_expand_wildcards(
 ):
     """Test wildcards are not expanded if requested."""
     # Testing with an exact filename matching (3d case)
-    filename = write_imgs_to_path(
-        img_3d_zeros_eye, file_path=tmp_path, create_files=True
-    )
+    filename = write_imgs_to_path(img_3d_zeros_eye, file_path=tmp_path)
     assert_array_equal(
         get_data(check_niimg(filename)), get_data(img_3d_zeros_eye)
     )
 
     # Testing with an exact filename matching (4d case)
-    filename = write_imgs_to_path(
-        img_4d_zeros_eye, file_path=tmp_path, create_files=True
-    )
+    filename = write_imgs_to_path(img_4d_zeros_eye, file_path=tmp_path)
     assert_array_equal(
         get_data(check_niimg(filename)), get_data(img_4d_zeros_eye)
     )
@@ -2576,9 +2551,7 @@ def test_check_niimg_3d_filename(affine_eye, tmp_path):
     data[20, 20, 20] = 1
     data_img = Nifti1Image(data, affine_eye)
 
-    filename = write_imgs_to_path(
-        data_img, file_path=tmp_path, create_files=True
-    )
+    filename = write_imgs_to_path(data_img, file_path=tmp_path)
     check_niimg_3d(filename)
 
 
@@ -2593,9 +2566,7 @@ def test_check_niimg_3d_datatype(img_3d_zeros_eye):
 @pytest.mark.thread_unsafe
 def test_check_niimg_3d_pathlike(img_3d_zeros_eye, tmp_path):
     """Test check_niimg_3d with file."""
-    filename = write_imgs_to_path(
-        img_3d_zeros_eye, file_path=tmp_path, create_files=True
-    )
+    filename = write_imgs_to_path(img_3d_zeros_eye, file_path=tmp_path)
     filename = Path(filename)
     check_niimg_3d(filename)
 
@@ -2724,7 +2695,6 @@ def test_check_niimg_4d_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
         img_3d_zeros_eye,
         img_3d_zeros_eye,
         file_path=tmp_path,
-        create_files=True,
         use_wildcards=True,
     )
     assert_array_equal(get_data(check_niimg(globs)), get_data(img_4d))

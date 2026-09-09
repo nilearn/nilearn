@@ -163,9 +163,7 @@ def test_butterworth(data_butterworth_single_timeseries):
 
     assert_almost_equal(data, data_original)
 
-    butterworth(
-        data, sampling, low_pass=low_pass, high_pass=high_pass, copy=False
-    )
+    butterworth(data, sampling, low_pass=low_pass, high_pass=high_pass)
 
     assert_almost_equal(out_single, data)
     assert id(out_single) != id(data)
@@ -200,9 +198,7 @@ def test_butterworth_multiple_timeseries(
 
     assert_almost_equal(out1[:, 0], out_single)
 
-    butterworth(
-        data, sampling, low_pass=low_pass, high_pass=high_pass, copy=False
-    )
+    butterworth(data, sampling, low_pass=low_pass, high_pass=high_pass)
 
     assert_almost_equal(out1, data)
 
@@ -400,12 +396,12 @@ def test_detrend():
     original = x.copy()
 
     # Mean removal only (out-of-place)
-    detrended = _detrend(x, inplace=False, type="constant")
+    detrended = _detrend(x, type="constant")
 
     assert abs(detrended.mean(axis=0)).max() < 15.0 * EPS
 
     # out-of-place detrending. Use scipy as a reference implementation
-    detrended = _detrend(x, inplace=False)
+    detrended = _detrend(x)
 
     detrended_scipy = scipy.signal.detrend(x, axis=0)
 
@@ -631,13 +627,11 @@ def test_clean_frequencies():
     standardize = None
 
     cleaned_signal = clean(
-        sx, standardize=standardize, high_pass=0.002, low_pass=None, t_r=t_r
+        sx, standardize=standardize, high_pass=0.002, t_r=t_r
     )
     assert cleaned_signal.max() > 0.1
 
-    cleaned_signal = clean(
-        sx, standardize=standardize, high_pass=0.2, low_pass=None, t_r=t_r
-    )
+    cleaned_signal = clean(sx, standardize=standardize, high_pass=0.2, t_r=t_r)
     assert cleaned_signal.max() < 0.01
 
     cleaned_signal = clean(sx, standardize=standardize, low_pass=0.01, t_r=t_r)
@@ -684,9 +678,6 @@ def test_clean_runs():
         x,
         confounds=confounds,
         standardize=None,
-        detrend=True,
-        low_pass=None,
-        high_pass=None,
         runs=runs,
     )
 
@@ -698,9 +689,6 @@ def test_clean_runs():
         x[0 : n_samples // 2, :],
         confounds=confounds[0 : n_samples // 2, :],
         standardize=None,
-        detrend=True,
-        low_pass=None,
-        high_pass=None,
     )
     assert array_equal(x_run1, x_detrended[0 : n_samples // 2, :])
 
@@ -775,9 +763,7 @@ def test_clean_confounds():
     # No signal: output must be zero.
     noises1 = noises.copy()
 
-    cleaned_signals = clean(
-        noises, confounds=confounds, detrend=True, standardize=None
-    )
+    cleaned_signals = clean(noises, confounds=confounds, standardize=None)
 
     assert abs(cleaned_signals).max() < 100.0 * EPS
     # clean should not modify inputs
@@ -831,7 +817,6 @@ def test_clean_confounds_detrending():
     cleaned_signals = clean(
         signals + noises,
         confounds=confounds,
-        detrend=True,
         standardize=None,
     )
     coeffs = np.polyfit(
@@ -911,7 +896,6 @@ def test_clean_warning(signals):
     with pytest.warns(UserWarning, match="not perform filtering"):
         clean(
             signals,
-            t_r=2.5,
             filter=False,
             low_pass=0.01,
         )
@@ -944,14 +928,11 @@ def test_clean_confounds_are_removed(signals, confounds):
     """
     signals_clean = clean(
         signals,
-        detrend=True,
         high_pass=0.01,
-        standardize_confounds=True,
         confounds=confounds,
     )
     confounds_clean = clean(
         confounds,
-        detrend=True,
         high_pass=0.01,
     )
     assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * EPS
@@ -976,17 +957,13 @@ def test_clean_frequencies_using_power_spectrum_density():
         sx,
         detrend=False,
         standardize=None,
-        filter="butterworth",
         low_pass=low_pass,
-        high_pass=None,
         t_r=t_r,
     )
     res_high = clean(
         sx,
         detrend=False,
         standardize=None,
-        filter="butterworth",
-        low_pass=None,
         high_pass=high_pass,
         t_r=t_r,
     )
@@ -997,7 +974,6 @@ def test_clean_frequencies_using_power_spectrum_density():
         detrend=False,
         standardize=None,
         filter="cosine",
-        low_pass=None,
         high_pass=high_pass,
         t_r=t_r,
     )
@@ -1062,7 +1038,6 @@ def test_clean_t_r_highpass_float_int(t_r, high_pass):
         detrend=False,
         standardize=None,
         filter="cosine",
-        low_pass=None,
         high_pass=high_pass,
         t_r=t_r,
     )
@@ -1193,9 +1168,7 @@ def test_high_variance_confounds_detrend():
     outG = high_variance_confounds(
         seriesG, detrend=False, n_confounds=n_confounds
     )
-    outGt = high_variance_confounds(
-        seriesGt, detrend=True, n_confounds=n_confounds
-    )
+    outGt = high_variance_confounds(seriesGt, n_confounds=n_confounds)
     # Since sign flips could occur, we look at the absolute values of the
     # covariance, rather than the absolute difference, and compare this to
     # the identity matrix
@@ -1244,7 +1217,6 @@ def test_clean_standardize_none():
         signals,
         detrend=False,
         standardize=None,
-        filter="butterworth",
         high_pass=0.01,
         t_r=t_r,
     )
@@ -1277,7 +1249,7 @@ def test_clean_psc(rng):
         # no detrend
         cleaned_signals = clean(s, standardize="psc", detrend=False)
 
-        ss_signals = standardize_signal(s, detrend=False, standardize="psc")
+        ss_signals = standardize_signal(s, standardize="psc")
         assert_almost_equal(cleaned_signals.mean(0), 0)
         assert_almost_equal(cleaned_signals, ss_signals)
 
@@ -1287,8 +1259,8 @@ def test_clean_psc(rng):
 
         _assert_correlation_almost_1(z_signals, cleaned_signals)
 
-        cleaned_signals = clean(s, standardize="psc", detrend=True)
-        z_signals = clean(s, detrend=True)
+        cleaned_signals = clean(s, standardize="psc")
+        z_signals = clean(s)
 
         assert_almost_equal(cleaned_signals.mean(0), 0)
         _assert_correlation_almost_1(z_signals, cleaned_signals)
@@ -1315,14 +1287,11 @@ def test_clean_psc_butterworth(rng):
         hp_butterworth_signals = clean(
             s,
             detrend=False,
-            filter="butterworth",
             high_pass=0.01,
             t_r=2,
             standardize="psc",
         )
-        z_butterworth_signals = clean(
-            s, detrend=False, filter="butterworth", high_pass=0.01, t_r=2
-        )
+        z_butterworth_signals = clean(s, detrend=False, high_pass=0.01, t_r=2)
 
         assert_almost_equal(hp_butterworth_signals.mean(0), 0)
         _assert_correlation_almost_1(

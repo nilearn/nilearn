@@ -28,17 +28,16 @@ def test_generate_atlas_look_up_table_errors():
     with pytest.raises(
         ValueError, match=r"'index' and 'name' cannot both be None."
     ):
-        generate_atlas_look_up_table(function=None, name=None, index=None)
+        generate_atlas_look_up_table()
 
     with pytest.raises(
         TypeError,
         match="must be one of",
     ):
-        generate_atlas_look_up_table(function=None, name=None, index=[1, 2, 3])
+        generate_atlas_look_up_table(index=[1, 2, 3])
 
     with pytest.raises(ValueError, match="have different lengths"):
         generate_atlas_look_up_table(
-            function=None,
             name=["a", "b"],
             index=np.array([1, 2, 3]),
             strict=True,

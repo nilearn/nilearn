@@ -635,9 +635,7 @@ def test_add_absolute_paths():
         "dir_0", "neurovault", "collection_1"
     )
 
-    meta = neurovault._add_absolute_paths(
-        Path("dir_1", "neurovault"), meta, force=True
-    )
+    meta = neurovault._add_absolute_paths(Path("dir_1", "neurovault"), meta)
 
     assert meta["col_absolute_path"] == Path(
         "dir_1", "neurovault", "collection_1"
@@ -646,7 +644,7 @@ def test_add_absolute_paths():
     meta = {"id": 0}
 
     meta_transformed = neurovault._add_absolute_paths(
-        Path("dir_1", "neurovault"), meta, force=True
+        Path("dir_1", "neurovault"), meta
     )
 
     assert meta == meta_transformed
@@ -935,9 +933,7 @@ def test_fetch_neurovault_ids_overwrite(tmp_path):
         meta_f.write(json.dumps(modified_meta).encode("UTF-8"))
 
     # fresh download
-    data = fetch_neurovault_ids(
-        image_ids=[img_ids[0]], data_dir=tmp_path, mode="download_new"
-    )
+    data = fetch_neurovault_ids(image_ids=[img_ids[0]], data_dir=tmp_path)
     data = fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
     )
@@ -1011,7 +1007,6 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
     data_orig = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
-        resample=False,
     )
 
     # Get the time of the last access to one of the original files
@@ -1044,7 +1039,6 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     data_orig = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
-        resample=False,
     )
 
     _check_original_version_is_here(data_orig)
