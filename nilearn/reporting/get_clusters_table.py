@@ -267,7 +267,7 @@ def get_clusters_table(
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
     min_distance: NonNullScalar = 8.0,
-    return_label_maps: bool = False, TODO (nilearn >= 0.17.0) remove
+    return_label_maps: bool = False,  # TODO (nilearn >= 0.17.0) remove
 ) -> (
     pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image] | list[SurfaceImage]]
 ):
