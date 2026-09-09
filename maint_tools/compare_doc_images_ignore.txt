@@ -20,4 +20,3 @@ sphx_glr_plot_ica_neurovault_*.png
 sphx_glr_plot_nifti_simple_002.png
 
 # --------------- Changes to ignore since last version ---------------
-
