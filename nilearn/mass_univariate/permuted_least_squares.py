@@ -641,19 +641,15 @@ def permuted_ols(
         >>> from nilearn.mass_univariate import permuted_ols
         >>>
         >>> n_samples = 1000
-        >>> random_state=42
-        >>> rng = np.random.RandomState(random_state)
-        >>>
-        >>> target_var = rng.randn(n_samples, 1)
+        >>> seed = 42
+        >>> target_var = np.random.RandomState(seed).randn(n_samples, 1)
         >>> tested_var = np.ones(n_samples, dtype="f8").reshape((-1, 1))
         >>>
         >>> output = permuted_ols(tested_var,
         ...                       target_var,
         ...                       model_intercept=False,
         ...                       n_perm=2000,
-        ...                       two_sided_test=False,
-        ...                       random_state=random_state,
-        ...                       output_type='dict',
+        ...                       random_state=seed,
         ... )
         >>>
         >>> _, ax = plt.subplots()
@@ -665,7 +661,8 @@ def permuted_ols(
         ... )
         >>> _ = ax.text(x=output["t"][0][0],
         ...              y=61,
-        ...              s=f"-log(p) = {output['logp_max_t'][0]}"
+        ...              s=f"-log(p) = {output['logp_max_t'][0]}",
+        ...              size=14,
         ... )
         >>> _ = ax.set(xlabel="t-statistic",
         ...            title="Distribution max t-statistic under $H_0$")
