@@ -787,7 +787,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         # to the columns in the region_signals array.
         self._lut_ = self.lut_.copy()
 
-        labels = set(np.unique(safe_get_data(self.labels_img_)))
+        labels = set(np.unique(safe_get_data(masked_atlas)))
         desired_order = [*ids]
         if self.background_label in labels:
             desired_order = [self.background_label, *ids]

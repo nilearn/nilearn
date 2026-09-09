@@ -64,28 +64,32 @@ def test_multi_nifti_labels_masker(
     masker11.fit()
     masker11.inverse_transform(signals11)
 
+    # the mask removes some regions
     masker11 = MultiNiftiLabelsMasker(
         img_labels, mask_img=mask11_img, resampling_target=None
     )
-    signals11 = masker11.fit_transform(fmri11_img)
+    with pytest.warns(
+        UserWarning,
+        match=r"After applying mask to the labels .*only contains 5 labels",
+    ):
+        signals11 = masker11.fit_transform(fmri11_img)
 
-    assert signals11.shape == (length, n_regions)
+    n_regions_left = 4
+    assert signals11.shape == (length, n_regions_left)
 
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
     signals11_list = masker11.fit_transform(signals_input)
 
     for signals in signals11_list:
-        assert signals.shape == (length, n_regions)
+        assert signals.shape == (length, n_regions_left)
 
     masker11 = MultiNiftiLabelsMasker(img_labels, resampling_target=None)
     signals11_list = masker11.fit_transform(signals_input)
 
-    for signals in signals11_list:
-        assert signals.shape == (length, n_regions)
-
     # Call inverse transform (smoke test)
     for signals in signals11_list:
+        assert signals.shape == (length, n_regions)
         fmri11_img_r = masker11.inverse_transform(signals)
 
         assert fmri11_img_r.shape == fmri11_img.shape
@@ -194,7 +198,7 @@ def test_reduction_strategies(affine_eye, test_values, strategy, fn):
     assert default_masker.strategy == "mean"
 
 
-def test_resampling(affine_eye, n_regions, length, img_labels):
+def test_resampling(affine_eye, length, img_labels):
     """Test resampling in MultiNiftiLabelsMasker."""
     shape1 = (10, 11, 12)
 
@@ -215,8 +219,18 @@ def test_resampling(affine_eye, n_regions, length, img_labels):
     )
 
     fmri11_img = [fmri11_img, fmri11_img]
+    with (
+        pytest.warns(
+            UserWarning, match=("Resampling images at transform time")
+        ),
+        pytest.warns(
+            UserWarning,
+            match=(r"Out of 10 labels .* only contains 3 labels"),
+        ),
+    ):
+        signals = masker.fit_transform(fmri11_img)
 
-    signals = masker.fit_transform(fmri11_img)
+    n_regions_left = 2
 
     assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
     assert masker.labels_img_.shape == img_labels.shape
@@ -225,7 +239,7 @@ def test_resampling(affine_eye, n_regions, length, img_labels):
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
     for t in signals:
-        assert t.shape == (length, n_regions)
+        assert t.shape == (length, n_regions_left)
 
         fmri11_img_r = masker.inverse_transform(t)
         assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
@@ -242,7 +256,6 @@ def test_resampling_clipped_labels(
     because there is some resampling taking place.
     """
     shape2 = (8, 9, 10)  # mask
-
     _, mask22_img = generate_fake_fmri(
         shape2, affine=affine_eye, length=length
     )
@@ -253,19 +266,27 @@ def test_resampling_clipped_labels(
     masker = MultiNiftiLabelsMasker(
         img_labels, mask_img=mask22_img, resampling_target="labels"
     )
+    with pytest.warns(
+        UserWarning,
+        match=(
+            "Out of 10 labels, the masked labels image only contains 6 labels"
+        ),
+    ):
+        signals = masker.fit_transform(fmri11_img)
 
-    signals = masker.fit_transform(fmri11_img)
+    n_regions_left = 5
 
     assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
     assert masker.labels_img_.shape == img_labels.shape
     assert_almost_equal(masker.mask_img_.affine, masker.labels_img_.affine)
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
-    uniq_labels = np.unique(get_data(masker.labels_img_))
+
+    uniq_labels = np.unique(get_data(masker.region_atlas_))
     assert uniq_labels[0] == 0
-    assert len(uniq_labels) - 1 == n_regions
+    assert len(uniq_labels) - 1 == n_regions_left
 
     for t in signals:
-        assert t.shape == (length, n_regions)
+        assert t.shape == (length, n_regions_left)
         # Some regions have been clipped. Resulting signal must be zero
         assert (t.var(axis=0) == 0).sum() < n_regions
 
@@ -330,7 +351,7 @@ def test_resampling_target():
         else:
             signals = masker.fit_transform(fmri_img)
 
-        resampled_labels_img = masker.labels_img_
+        resampled_labels_img = masker.region_atlas_
         n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
         assert n_resampled_labels - 1 == signals.shape[1]
 
