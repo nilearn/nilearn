@@ -1216,7 +1216,7 @@ smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
 
 # standardize
 standardize = """
-standardize : any of: 'zscore_sample', 'psc', True, False or None; \
+standardize : any of: 'zscore_sample', 'psc' or None; \
               default={}
     Strategy to standardize the signal:
 
@@ -1227,53 +1227,9 @@ standardize : any of: 'zscore_sample', 'psc', True, False or None; \
     - ``'psc'``:  Timeseries are shifted to zero mean value and scaled
       to percent signal change (as compared to original mean signal).
 
-    - ``True``: The signal is z-scored (same as option `zscore`).
-      Timeseries are shifted to zero mean and scaled to unit variance.
-
-      .. nilearn_deprecated:: 0.13.0
-
-        In nilearn version 0.15.0,
-        ``True`` will be replaced by  ``'zscore_sample'``.
-
-    - ``False``: Do not standardize the data.
-
-      .. nilearn_deprecated:: 0.13.0
-
-        In nilearn version 0.15.0,
-        ``False`` will be replaced by ``None``.
-
-
 """
-
-# TODO (nilearn >= 0.15.0) update to ..versionchanged
-deprecation_notice_false_to_none = """
-
-    .. nilearn_deprecated:: 0.13.0
-
-        The default will be changed to ``None``
-        in version 0.15.0.
-
-"""
-
-# TODO (nilearn >= 0.15.0) update to ..versionchanged
-deprecation_notice_true_to_zscore_sample = """
-
-    .. nilearn_deprecated:: 0.13.0
-
-        The default will be changed to ``'zscore_sample'``
-        in version 0.15.0.
-
-"""
-
-docdict["standardize_false"] = (
-    standardize.format("False") + deprecation_notice_false_to_none
-)
-# TODO (nilearn >= 0.15.0)
-# adapt the deprecation notices
-docdict["standardize_true"] = (
-    standardize.format("True") + deprecation_notice_true_to_zscore_sample
-)
 docdict["standardize_zscore"] = standardize.format("zscore_sample")
+docdict["standardize_none"] = standardize.format("None")
 
 
 # standardize_confounds

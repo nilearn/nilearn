@@ -343,7 +343,6 @@ def test_nifti_labels_masker_report(
         labels=labels,
         mask_img=img_mask_eye,
         keep_masked_labels=True,
-        standardize=None,
     )
     with pytest.warns(
         FutureWarning, match='"keep_masked_labels" parameter will be removed'
@@ -460,7 +459,6 @@ def test_nifti_masker_overlaid_report(
         mask_strategy="whole-brain-template",
         mask_args={"threshold": 0.0},
         target_affine=np.eye(3),
-        standardize=None,
     )
     masker.fit(img_fmri)
 
@@ -482,7 +480,7 @@ def test_nifti_masker_brainsprite(
     img_fmri,
 ):
     """Check that NiftiMasker Brainsprite reports use unique DOM IDs."""
-    masker = NiftiMasker(standardize=None)
+    masker = NiftiMasker()
     generate_and_check_masker_report(
         masker, extra_warnings_allowed=True, engine="brainsprite"
     )
@@ -524,7 +522,7 @@ def test_nifti_label_masker_brainsprite(
     img_labels,
 ):
     """Check that NiftiLabelsMasker work with brainsprite engine."""
-    masker = NiftiLabelsMasker(img_labels, standardize=None)
+    masker = NiftiLabelsMasker(img_labels)
     generate_and_check_masker_report(
         masker, extra_warnings_allowed=True, engine="brainsprite"
     )
@@ -544,7 +542,6 @@ def test_multi_nifti_masker_generate_report_mask(
         # to test resampling lines without imgs
         target_affine=affine_eye,
         target_shape=shape_3d_default,
-        standardize=None,
     )
     masker.fit()
 
@@ -564,7 +561,6 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
         # to test resampling lines with imgs
         target_affine=affine_eye,
         target_shape=shape_3d_default,
-        standardize=None,
     )
     masker.fit([img_fmri, img_fmri])
 
@@ -579,7 +575,7 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
 @pytest.mark.thread_unsafe
 def test_surface_masker_mask_img_generate_report(surf_img_1d, surf_mask_1d):
     """Smoke test generate report."""
-    masker = SurfaceMasker(surf_mask_1d, reports=True, standardize=None).fit()
+    masker = SurfaceMasker(surf_mask_1d, reports=True).fit()
 
     assert masker._reporting_data is not None
     assert masker._reporting_data["images"] is None
@@ -598,7 +594,7 @@ def test_surface_masker_minimal_report_no_fit(
 ):
     """Test minimal report generation with no fit."""
     mask = None if empty_mask else surf_mask_1d
-    masker = SurfaceMasker(mask_img=mask, reports=reports, standardize=None)
+    masker = SurfaceMasker(mask_img=mask, reports=reports)
     generate_and_check_masker_report(masker)
 
 
@@ -610,7 +606,7 @@ def test_surface_masker_minimal_report_fit(
 ):
     """Test minimal report generation with fit."""
     mask = None if empty_mask else surf_mask_1d
-    masker = SurfaceMasker(mask_img=mask, reports=reports, standardize=None)
+    masker = SurfaceMasker(mask_img=mask, reports=reports)
     masker.fit_transform(surf_img_1d)
 
     extend_includes = []
@@ -629,7 +625,7 @@ def test_surface_maps_masker_generate_report_engine_error(
     surf_img_2d,
 ):
     """Test error is raised when engine is not 'plotly' or 'matplotlib'."""
-    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
+    masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
     with pytest.raises(
         ValueError,
@@ -651,7 +647,7 @@ def test_surface_maps_masker_generate_report_engine_no_plotly_warning(
     """Test warning is raised when engine selected is plotly but it is not
     installed. Only run when plotly is not installed but matplotlib is.
     """
-    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
+    masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
     with pytest.warns(match="Plotly is not installed"):
         masker.generate_report(engine="plotly", displayed_maps=2)
@@ -683,7 +679,7 @@ def test_surface_maps_masker_generate_report_plotly_out_figure_type(
     """Test that the report has a iframe tag when engine is plotly
     (default).
     """
-    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
+    masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
     report = masker.generate_report(engine="plotly", displayed_maps=2)
 
@@ -702,7 +698,7 @@ def test_surface_maps_masker_generate_report_matplotlib_out_figure_type(
     surf_img_2d,
 ):
     """Test that the report has a img tag when engine is matplotlib."""
-    masker = SurfaceMapsMasker(surf_maps_img, standardize=None)
+    masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
     report = masker.generate_report(engine="matplotlib", displayed_maps=2)
 

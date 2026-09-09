@@ -15,7 +15,7 @@ from nilearn.datasets import load_fsaverage
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
-from nilearn.reporting import HTMLReport, make_glm_report
+from nilearn.reporting import HTMLReport
 from nilearn.reporting.tests._testing import generate_and_check_report
 from nilearn.surface import SurfaceImage
 
@@ -150,9 +150,7 @@ def flm(rk) -> FirstLevelModel:
         shapes, rk=rk
     )
     # generate_fake_fmri_data_and_design
-    return FirstLevelModel(standardize=None).fit(
-        fmri_data, design_matrices=design_matrices
-    )
+    return FirstLevelModel().fit(fmri_data, design_matrices=design_matrices)
 
 
 @pytest.fixture()
@@ -429,7 +427,7 @@ def test_masking_first_level_model(contrasts):
         shapes,
         rk,
     )
-    masker = NiftiMasker(mask_img=mask, standardize=None)
+    masker = NiftiMasker(mask_img=mask)
     masker.fit()
     flm = FirstLevelModel(mask_img=masker).fit(
         fmri_data, design_matrices=design_matrices
@@ -455,11 +453,7 @@ def test_fir_delays_in_params(contrasts):
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
     )
-    model = FirstLevelModel(
-        hrf_model="fir",
-        fir_delays=[1, 2, 3],
-        standardize=None,
-    )
+    model = FirstLevelModel(hrf_model="fir", fir_delays=[1, 2, 3])
     model.fit(fmri_data, design_matrices=design_matrices)
 
     # FIXME:
@@ -519,7 +513,7 @@ def test_flm_generate_report_surface_data(rng):
     fmri_data = SurfaceImage(mesh, data)
 
     # using smoothing_fwhm for coverage
-    model = FirstLevelModel(t_r=t_r, smoothing_fwhm=None, standardize=None)
+    model = FirstLevelModel(t_r=t_r, smoothing_fwhm=None)
 
     model.fit(fmri_data, events=events)
 
@@ -566,7 +560,7 @@ def test_carousel_several_runs(
     contrasts = np.zeros((1, rk))
     contrasts[0][1] = 1
 
-    flm_two_runs = FirstLevelModel(standardize=None).fit(
+    flm_two_runs = FirstLevelModel().fit(
         fmri_data, design_matrices=design_matrices
     )
 
@@ -579,14 +573,3 @@ def test_carousel_several_runs(
 
     # 3 runs should be in the carousel
     assert str(report).count('id="carousel-obj-') == len(shapes)
-
-
-@pytest.mark.thread_unsafe
-def test_report_make_glm_deprecation_warning(flm, contrasts):
-    """Test deprecation warning for nilearn.reporting.make_glm_report.
-
-    # TODO (nilearn >= 0.15)
-    # remove
-    """
-    with pytest.warns(FutureWarning):
-        make_glm_report(flm, contrasts=contrasts, height_control=None)

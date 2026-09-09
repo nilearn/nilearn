@@ -1,7 +1,7 @@
 """Masker for surface objects."""
 
 from copy import deepcopy
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Self
 from warnings import warn
 
 import numpy as np
@@ -15,7 +15,6 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
@@ -36,7 +35,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -106,7 +105,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         high_variance_confounds=False,
@@ -176,7 +175,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 "if no mask is passed to mask_img."
             )
 
-        mask_logger("compute_mask", verbose=self.verbose)
+        mask_logger("compute_mask", img=img, verbose=self.verbose)
 
         img = deepcopy(img)
         if not isinstance(img, list):
@@ -200,7 +199,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -226,6 +225,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._reset_report()
 
         if imgs is not None:
+            mask_logger("load_data", imgs, self.verbose)
             self._check_imgs(imgs)
 
             if isinstance(imgs, SurfaceImage) and any(
@@ -331,17 +331,15 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
-        input_type = (
-            imgs.data._dtype
-            if isinstance(imgs, SurfaceImage)
-            else imgs[0].data._dtype
-        )
-        target_dtype = get_target_dtype(input_type, self.dtype)
-        if target_dtype is None:
-            target_dtype = imgs.data._dtype
+        target_dtype = self._get_target_dtype(imgs)
 
         output = self._clean(output, confounds, sample_mask)
-        return output.astype(target_dtype)
+
+        # target_dtype is None: no explicit dtype was requested,
+        # so keep the dtype produced by the extraction/cleaning pipeline
+        # (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return output if target_dtype is None else output.astype(target_dtype)
 
     @fill_doc
     def inverse_transform(self, signals):
