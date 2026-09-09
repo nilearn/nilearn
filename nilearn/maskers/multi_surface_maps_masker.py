@@ -1,5 +1,7 @@
 """Extract data from multiple 2D surface objects."""
 
+from typing import Self
+
 from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
@@ -35,7 +37,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -102,7 +104,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         mask_img=None,
         allow_overlap=True,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         high_variance_confounds=False,
@@ -141,7 +143,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         self.n_jobs = n_jobs
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
