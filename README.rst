@@ -60,6 +60,35 @@ Install
 Latest release
 --------------
 
+The easiest way to install ``nilearn`` is using pip.
+Execute the following command in the command prompt / terminal
+in the proper python environment:
+
+.. code-block:: bash
+
+    python -m pip install nilearn
+
+If you want to upgrade your current version:
+
+.. code-block:: bash
+
+    python -m pip install --upgrade nilearn
+
+Nilearn comes with optional plotting dependencies (matplotlib, plotly).
+If you want to install matplotlib:
+
+.. code-block:: bash
+
+    python -m pip install 'nilearn[plotting]'
+
+If you want to install matplotlib and plotly:
+
+.. code-block:: bash
+
+    python -m pip install 'nilearn[plotting, plotly]'
+
+
+
 **1. Setup a virtual environment**
 
 We recommend that you install ``nilearn`` in a virtual Python environment,

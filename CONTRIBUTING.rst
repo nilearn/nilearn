@@ -925,14 +925,7 @@ along with all dependencies necessary for developers (hence the ``dev`` group).
 For more information about the dependency installation options, see ``pyproject.toml``.
 The installed version will also reflect any changes you make to your code.
 
-4. check that all tests pass with (this can take a while):
-
-.. code-block:: bash
-
-      pytest nilearn
-
-
-5. (optional) install `prek <https://prek.j178.dev>`_ hooks
+4. (optional) install `prek <https://prek.j178.dev>`_ hooks
    to run the linter and other checks before each commit:
 
 .. code-block:: bash
