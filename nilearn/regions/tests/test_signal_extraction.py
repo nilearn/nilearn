@@ -595,7 +595,7 @@ def test_img_to_signals_maps_warnings(
 ):
     """Apply img_to_signals_maps with a masking,
      containing only 3 regions, but
-    not keeping the masked maps§.
+    not keeping the masked maps.
     """
     labels = list(range(N_REGIONS + 1))
     labels_data = get_data(labeled_regions)
