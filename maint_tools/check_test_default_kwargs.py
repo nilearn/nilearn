@@ -17,6 +17,10 @@ flagged, because ``mask_img=None`` is already the default and passing it
 explicitly does not exercise anything beyond the implicit default
 behavior.
 
+The reason why we want to remove those extra default is
+that by explicitly using a default in a test may make this test blind
+to any change in the default value of the function or the method.
+
 This is a heuristic: method calls (``obj.method(...)``) are matched by
 method name only, since the type of ``obj`` is not resolved. A keyword
 argument is flagged if it matches the default of *any* nilearn callable
