@@ -75,8 +75,6 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
         - ``None`` means no resampling: if shapes and affines do not match,
           a :obj:`ValueError` is raised.
 
-    %(keep_masked_maps)s
-
     %(memory)s
 
     %(memory_level)s
@@ -142,7 +140,6 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        keep_masked_maps=False,
         memory=None,
         memory_level=0,
         verbose=0,
@@ -169,7 +166,6 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
-            keep_masked_maps=keep_masked_maps,
             reports=reports,
             cmap=cmap,
             clean_args=clean_args,
