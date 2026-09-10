@@ -324,7 +324,7 @@ print(table.to_latex())
 # You can also print the output to markdown,
 # if you have the `tabulate` dependencies installed.
 #
-# .. code-block:: bash
+# .. prompt:: bash
 #
 #    pip install tabulate
 #

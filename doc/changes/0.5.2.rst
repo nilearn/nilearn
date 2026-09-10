@@ -6,6 +6,8 @@ Version 0.5.2
 
 **Released April 2019**
 
+.. _v0-5-2-new:
+
 NEW
 ---
 
@@ -15,10 +17,14 @@ NEW
     The lowest Python version supported is now Python ``3.5``.
     We recommend switching to Python ``3.6``.
 
+.. _v0-5-2-fixes:
+
 Fixes
 -----
 
 - :bdg-info:`Plotting` Plotting ``.mgz`` files in MNE broke in ``0.5.1`` and has been fixed.
+
+.. _v0-5-2-contributors:
 
 Contributors
 ------------

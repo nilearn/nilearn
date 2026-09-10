@@ -612,7 +612,7 @@ to run a set of linters and autoformatters on the codebase.
 
 To install prek, run:
 
-.. code-block:: bash
+.. prompt:: bash
 
       pip install prek
 
@@ -630,7 +630,7 @@ To install prek, run:
 
 Then run the following to install the pre-commit hooks:
 
-.. code-block:: bash
+.. prompt:: bash
 
       prek install
 
@@ -668,7 +668,7 @@ When you have added a test you can check that your changes worked
 and didn't break anything by running ``pytest nilearn``.
 To do quicker checks it's possible to run only a subset of tests:
 
-.. code-block:: bash
+.. prompt:: bash
 
       pytest -v nilearn/module/tests/test_module.py
 
@@ -693,7 +693,7 @@ all the available fixtures with their description,
 though this will also list fixtures provided
 by any of the pytest plugins or extensions that may also be installed.
 
-.. code-block:: bash
+.. prompt:: bash
 
       pytest nilearn --fixtures
 
@@ -734,7 +734,7 @@ and ensure that the same commands can easily be run locally and in CI.
 
 It should already be installed if you ran:
 
-.. code-block:: bash
+.. prompt:: bash
 
     pip install -e . --group dev
 
@@ -749,13 +749,13 @@ Use ``tox run`` to run a specific environment.
 
 Example
 
-.. code-block:: bash
+.. prompt:: bash
 
     tox run -e lint
 
 Some environments allow passing extra argument:
 
-.. code-block:: bash
+.. prompt:: bash
 
     # only run ruff
     tox run -e lint -- ruff
@@ -765,7 +765,7 @@ Some environments allow passing extra argument:
 
 You can also run any arbitrary command in a given environment with ``tox exec``:
 
-.. code-block:: bash
+.. prompt:: bash
 
     tox exec -e latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
 
@@ -775,7 +775,7 @@ Running the tests with several python versions
 Running the following should let tox run all the tests on all the python versions
 it can find on your system.
 
-.. code-block:: bash
+.. prompt:: bash
 
       tox
 
@@ -785,7 +785,7 @@ by passing extra command line arguments to pytest after a ``--``.
 For example, the following would run all the tests in ``nilearn/image``
 that contain the word ``smooth``.
 
-.. code-block:: bash
+.. prompt:: bash
 
       tox -- nilearn/image -k smooth
 
@@ -803,7 +803,7 @@ to regenerate the associated JSON file
 from https://github.com/cjlano/svg
 is in the python path).
 
-.. code-block:: bash
+.. prompt:: bash
 
       python maint_tools/svg_to_json_converter.py \
             nilearn/plotting/glass_brain_files/input.svg \
@@ -863,25 +863,13 @@ Here are the key steps you need to go through to copy the repo before contributi
 1. fork the repo from github (fork button in the top right corner of our :nilearn-gh:`main github page <>`)
    and clone your fork locally:
 
-.. code-block:: bash
+.. prompt:: bash
 
       git clone git@github.com:<your_username>/nilearn.git
 
-2. (optional but highly recommended) set up a virtual environment to wor
+2. (optional but highly recommended) set up a virtual environment to work
    in using whichever environment management tool you're used to and activate it.
-   For example:
-
-.. code-block:: bash
-
-      python3 -m venv nilearn
-      source nilearn/bin/activate
-
-or:
-
-.. code-block:: bash
-
-      conda create -n nilearn pip
-      conda activate nilearn
+   See :ref:`our virtual environment setup instructiuons <virtual_env>`.
 
 3. install the forked version of ``nilearn``
 
@@ -891,13 +879,13 @@ or:
       (in this case git)
       to get the version number you would see if you typed in your terminal:
 
-      .. code-block:: bash
+      .. prompt:: bash
 
             pip show nilearn
 
       or:
 
-      .. code-block:: bash
+      .. prompt:: bash
 
             python -c "import nilearn; print(nilearn.__version__)"
 
@@ -905,7 +893,7 @@ or:
       all the git tags from the nilearn github repository,
       by running the following commands:
 
-      .. code-block:: bash
+      .. prompt:: bash
 
             # add the nilearn repo as an "upstream" remote
             git remote add upstream https://github.com/nilearn/nilearn.git
@@ -916,9 +904,9 @@ or:
 
 You can then install nilearn in editable mode:
 
-.. code-block:: bash
+.. prompt:: bash
 
-      pip install -e . --group dev
+      pip install -e '.[plotting,plotly]' --group dev
 
 This installs your local version of Nilearn,
 along with all dependencies necessary for developers (hence the ``dev`` group).
@@ -928,7 +916,7 @@ The installed version will also reflect any changes you make to your code.
 4. (optional) install `prek <https://prek.j178.dev>`_ hooks
    to run the linter and other checks before each commit:
 
-.. code-block:: bash
+.. prompt:: bash
 
       prek install
 
@@ -942,7 +930,7 @@ Here are the key steps you need to go through to contribute code to ``nilearn``:
 
 2. on your fork, create a new branch from main:
 
-.. code-block:: bash
+.. prompt:: bash
 
       git checkout -b your_branch
 
@@ -954,13 +942,13 @@ Here are the key steps you need to go through to contribute code to ``nilearn``:
     `ruff <https://docs.astral.sh/ruff/>`_ locally on the
     changes you have made.
 
-    .. code-block:: bash
+    .. prompt:: bash
 
         ruff check --fix <path_to_edited_file>
 
     To format your code, you can also use ruff and run:
 
-    .. code-block:: bash
+    .. prompt:: bash
 
         ruff format <path_to_edited_file>
 
@@ -972,13 +960,13 @@ Here are the key steps you need to go through to contribute code to ``nilearn``:
 5. run the tests locally (to go faster, only run tests which are relevant to what
    you work on with, for example):
 
-.. code-block:: bash
+.. prompt:: bash
 
       pytest -v nilearn/plotting/tests/test_surf_plotting.py
 
 6. push your changes to your online fork:
 
-.. code-block:: bash
+.. prompt:: bash
 
       git push
 
@@ -1001,7 +989,7 @@ If you wish to build documentation:
 1. First, ensure that you have installed sphinx and sphinx-gallery. When in your
    fork top folder, you can install the required packages using:
 
-.. code-block:: bash
+.. prompt:: bash
 
       pip install -e . --group doc
 
@@ -1010,26 +998,26 @@ If you wish to build documentation:
 
 3. You can now go to ``nilearn/doc`` and build the examples locally:
 
-.. code-block:: bash
+.. prompt:: bash
 
       make html-strict
 
 or, if you do not have make install (for instance under Windows):
 
-.. code-block:: bash
+.. prompt:: bash
 
       python3 -m sphinx -b html -d _build/doctrees . _build/html
 
 The full build can take a very long time.
 So if you don't need the plots, a quicker option is:
 
-.. code-block:: bash
+.. prompt:: bash
 
       make html-noplot
 
 An even quicker option is:
 
-.. code-block:: bash
+.. prompt:: bash
 
       make html-noplot-noreport
 
@@ -1047,7 +1035,7 @@ An even quicker option is:
 
 6. Request the CI builds the full documentation from your branch:
 
-.. code-block:: bash
+.. prompt:: bash
 
       git commit --allow-empty -m "[full doc] request full build"
 
@@ -1056,14 +1044,14 @@ An even quicker option is:
       When generating documentation locally, you can build only specific files
       to reduce building time. To do so, use the ``filename_pattern``:
 
-      .. code-block:: bash
+      .. prompt:: bash
 
             python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
             plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
 
       or if you want to use make :
 
-      .. code-block:: bash
+      .. prompt:: bash
 
             PATTERN='examples/04_glm_first_level/plot_bids_features.py'
             export PATTERN
@@ -1169,13 +1157,13 @@ The results are available on `nilearn.github.io/benchmarks/ <https://nilearn.git
 
 To run these benchmarks locally, you will need to install the asv package:
 
-.. code-block:: bash
+.. prompt:: bash
 
       pip install asv
 
 Then, change to the ``asv_benchmarks`` directory:
 
-.. code-block:: bash
+.. prompt:: bash
 
       cd asv_benchmarks
 
@@ -1184,7 +1172,7 @@ To run a specific set of benchmark matching a specific regex
 on the current HEAD of your clone of the repository,
 use the following command:
 
-.. code-block:: bash
+.. prompt:: bash
 
       asv run -b load_img
 
@@ -1193,7 +1181,7 @@ This will run any benchmark with ``load_img`` in the name.
 You can also track the performance of a specific benchmark over, say,
 5 equally spaced commits, until release 0.10.0, like this:
 
-.. code-block:: bash
+.. prompt:: bash
 
       asv run 0.10.0..main -b load_img --steps 5
 
@@ -1201,7 +1189,7 @@ There is also a ```hashestobenchmark.txt`` file
 with the shasum of the git tag of several of the last versions of nilearn
 that will allow you to run the benchmarks only for those versions by doing:
 
-.. code-block:: bash
+.. prompt:: bash
 
       asv run -b load_img HASHFILE:hashestobenchmark.txt
 
@@ -1215,13 +1203,13 @@ to list the shasum of all tags
 that you can then edit to only keep the versions
 you want to run your benchmarks on.
 
-.. code-block:: bash
+.. prompt:: bash
 
       git show-ref --tags > hashestobenchmark.txt
 
 Once you have run you benchmarks, you can view the results with:
 
-.. code-block:: bash
+.. prompt:: bash
 
       asv publish
       asv preview

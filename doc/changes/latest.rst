@@ -3,6 +3,8 @@
 Version 0.15.0dev
 =================
 
+.. _v0-15-0-highlights:
+
 HIGHLIGHTS
 ----------
 
@@ -27,15 +29,21 @@ HIGHLIGHTS
     - :bdg-dark:`Code`
 
 
+.. _v0-15-0-fixes:
+
 Fixes
 -----
 
+
+.. _v0-15-0-enhancements:
 
 Enhancements
 ------------
 
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
 
+
+.. _v0-15-0-changes:
 
 Changes
 -------

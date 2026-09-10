@@ -6,15 +6,21 @@ Version 0.6.1
 
 **Released January 2020**
 
+.. _v0-6-1-enhancements:
+
 ENHANCEMENTS
 ------------
 
 - :bdg-dark:`Code` HTML pages use the user-provided plot title, if any, as their title (:gh:`2272` by `Jerome Dockes`_).
 
+.. _v0-6-1-fixes:
+
 Fixes
 -----
 
 - :bdg-dark:`Code` Fetchers for developmental_fmri and localizer datasets resolve URLs correctly (:gh:`2290` by `Elizabeth DuPre`_).
+
+.. _v0-6-1-contributors:
 
 Contributors
 ------------

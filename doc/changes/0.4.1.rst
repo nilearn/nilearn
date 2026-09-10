@@ -8,6 +8,8 @@ Version 0.4.1
 
 This bug fix release is focused on few bug fixes and minor developments.
 
+.. _v0-4-1-enhancements:
+
 Enhancements
 ------------
 
@@ -20,10 +22,14 @@ Enhancements
 .. note::
     This feature is usable only if ``SciPy`` version is ``>= 1.0.0``.
 
+.. _v0-4-1-changes:
+
 Changes
 -------
 
 - :bdg-danger:`Deprecation` Using output attribute ``components_`` which is an extracted components in classes :class:`~decomposition.CanICA` and :class:`~decomposition.DictLearning` is deprecated and will be removed in next two releases. Use ``components_img_`` instead (:gh:`1536` by `Kamalakar Reddy Daddy`_).
+
+.. _v0-4-1-bug-fixes:
 
 Bug fixes
 ---------
