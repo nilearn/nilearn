@@ -6,8 +6,6 @@ Version 0.5.1
 
 **Released April 2019**
 
-.. _v0-5-1-new:
-
 NEW
 ---
 
@@ -25,8 +23,6 @@ NEW
 
 - :bdg-info:`Plotting` New display mode ``tiled`` which allows 2x2 plot arrangement when plotting three cuts (see :ref:`plotting`).
 
-
-.. _v0-5-1-changes:
 
 Changes
 -------
@@ -55,8 +51,6 @@ Changes
 
 - :bdg-info:`Plotting` Users can now control the size and fontsize of colorbars in interactive surface and connectome plots, or disable the colorbar.
 
-.. _v0-5-1-fixes:
-
 Fixes
 -----
 
@@ -70,16 +64,12 @@ Fixes
 
 - :bdg-dark:`Code` Interactive brainsprites generated from ``view_img`` are correctly rendered in Jupyter Book.
 
-.. _v0-5-1-known-issues:
-
 Known Issues
 ------------
 
 - :bdg-info:`Plotting` On Python2, functions :func:`~plotting.view_connectome` and function :func:`~plotting.view_markers` do not show parameters names in function signature when using ``help()`` and similar features. Please refer to their docstrings for this information.
 
 - :bdg-info:`Plotting` Plotting ``.mgz`` files in MNE is broken.
-
-.. _v0-5-1-contributors:
 
 Contributors
 ------------

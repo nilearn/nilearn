@@ -10,16 +10,12 @@ In addition, more details of this release are listed below.
 Please checkout in **0.3.0 beta** release section for minimum version
 support of dependencies, latest updates, highlights, changelog and enhancements.
 
-.. _v0-3-0-changes:
-
 Changes
 -------
 
 - :bdg-dark:`Code` Helper functions ``_get_mask_volume`` and ``_adjust_screening_percentile`` are now moved to ``param_validation`` file in utilities module to be used in common with Decoder object.
 
 - :bdg-info:`Plotting` Function :func:`~plotting.find_cut_slices` now supports to accept :class:`~nibabel.nifti1.Nifti1Image` as an input for argument ``img``.
-
-.. _v0-3-0-fixes:
 
 Fixes
 -----
@@ -31,8 +27,6 @@ Fixes
 - :bdg-dark:`Code` Fixed bug related to not accepting a list of arrays as an input to unmask, in :mod:`~nilearn.masking` module.
 
 - :bdg-secondary:`Maint` Fixed bunch of CircleCI documentation build failures.
-
-.. _v0-3-0-enhancements:
 
 Enhancements
 ------------
@@ -50,8 +44,6 @@ To install the beta version, use::
 
   pip install --upgrade --pre nilearn
 
-.. _v0-3-0-beta-highlights:
-
 Highlights
 ----------
 
@@ -65,16 +57,12 @@ Highlights
 
 - :bdg-info:`Plotting` Simple surface plotting.
 
-.. _v0-3-0-beta-changes:
-
 Changes
 -------
 
 - :bdg-success:`API` Functions :func:`~connectome.cov_to_corr` and :func:`~connectome.prec_to_partial` can now be used.
 
 - :bdg-dark:`Code` A helper function ``_safe_get_data`` as a nilearn utility now safely removes ``NaN`` values in the images with argument ``ensure_finite=True``.
-
-.. _v0-3-0-beta-fixes:
 
 Fixes
 -----
@@ -86,8 +74,6 @@ Fixes
 - :bdg-info:`Plotting` Fix plotting functions to work with ``NaN`` values in the images.
 
 - :bdg-info:`Plotting` Fix colormap issue with ``colorbar=True`` when using qualitative colormaps. Fixed in according with changes of ``matplotlib 2.0`` fixes.
-
-.. _v0-3-0-beta-enhancements:
 
 Enhancements
 ------------

@@ -5,8 +5,6 @@ Version 0.10.1
 
 **Released April 2023**
 
-.. _v0-10-1-new:
-
 NEW
 ---
 
@@ -15,8 +13,6 @@ NEW
 - :bdg-info:`Plotting` ``fsaverage`` meshes accessed through :func:`~datasets.fetch_surf_fsaverage` now come with flat maps for all resolutions (:gh:`3444` by `Alexis Thual`_).
 
 - :bdg-info:`Plotting` surface plotting functions allow setting custom view angles and are no longer limited to predefined views (:gh:`3259` by `Sam Buck Johnson`_ and `Alexis Thual`_).
-
-.. _v0-10-1-fixes:
 
 Fixes
 -----
@@ -35,8 +31,6 @@ Fixes
 
 - :bdg-danger:`Deprecation` Add correct "zscore_sample" strategy to ``signal.standardize_signal`` which will replace the default "zscore" strategy in release 0.13  (:gh:`3474` by `Yasmin Mzayek`_).
 
-.. _v0-10-1-enhancements:
-
 Enhancements
 ------------
 
@@ -51,8 +45,6 @@ Enhancements
 - :bdg-success:`API` :class:`~maskers.NiftiMasker` now warns users if the data is being resampled to mask resolution (:gh:`3631` by `Mohammad Torabi`_).
 
 - :bdg-primary:`Doc` The docstrings of the maskers module have been update to be more consistent across the classes (:gh:`3414` by `Yasmin Mzayek`_)
-
-.. _v0-10-1-changes:
 
 Changes
 -------
@@ -80,8 +72,6 @@ Version 0.10.1rc1
 This is a pre-release.
 
 
-.. _v0-10-1rc1-fixes:
-
 Fixes
 -----
 
@@ -91,8 +81,6 @@ Fixes
 
 - :bdg-dark:`Code` Restore :func:`~image.resample_img` compatibility with all :class:`nibabel.spatialimages.SpatialImage` objects (:gh:`3462` by `Mathias Goncalves`_).
 
-.. _v0-10-1rc1-enhancements:
-
 Enhancements
 ------------
 
@@ -101,8 +89,6 @@ Enhancements
 - :bdg-success:`API` Allow users to output label maps from :func:`~reporting.get_clusters_table` (:gh:`3477` by `Steven Meisler`_).
 
 - :bdg-primary:`Doc` Addition to docs to note that :meth:`~maskers.BaseMasker.inverse_transform` only performs spatial unmasking (:gh:`3445` by `Robert Williamson`_).
-
-.. _v0-10-1rc1-changes:
 
 Changes
 -------

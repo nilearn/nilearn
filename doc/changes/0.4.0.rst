@@ -6,16 +6,12 @@ Version 0.4.0
 
 **Released November 2017**
 
-.. _v0-4-0-highlights:
-
 Highlights
 ----------
 
 - :bdg-success:`API` New function :func:`~surface.vol_to_surf` to project volume data to the surface.
 
 - :bdg-info:`Plotting` New function :func:`~plotting.plot_matrix` to display matrices, eg connectomes.
-
-.. _v0-4-0-enhancements:
 
 Enhancements
 ------------
@@ -40,8 +36,6 @@ Enhancements
 
 - :bdg-info:`Plotting` Enhancing new surface plotting functions, added new parameters ``axes`` and ``figure`` to accept user-specified instances in :func:`~plotting.plot_surf`, :func:`~plotting.plot_surf_stat_map`, and :func:`~plotting.plot_surf_roi`.
 
-.. _v0-4-0-fixes:
-
 Fixes
 -----
 
@@ -50,8 +44,6 @@ Fixes
 - :bdg-secondary:`Maint` Fixed issues with ``matplotlib 2.1.0``.
 
 - :bdg-secondary:`Maint` Fixed issues with ``SciPy 1.0.0``.
-
-.. _v0-4-0-changes:
 
 Changes
 -------
@@ -71,8 +63,6 @@ Changes
 - :bdg-secondary:`Maint` The examples now use ``pandas`` for the behavioral information.
 
 - :bdg-info:`Plotting` New ``anterior`` and ``posterior`` view added to the ``plot_surf`` family views.
-
-.. _v0-4-0-contributors:
 
 Contributors
 ------------

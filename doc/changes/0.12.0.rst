@@ -5,8 +5,6 @@ Version 0.12.0
 
 **Released June 2025**
 
-.. _v0-12-0-highlights:
-
 HIGHLIGHTS
 ----------
 
@@ -27,8 +25,6 @@ HIGHLIGHTS
 - Fixes the behavior of :class:`~decoding.Decoder` where it used to set the score to zero if all coefficients are zero, irrespective of the scoring metric used. This change ensures that the average cross-validated scores are comparable to a pure scikit-learn implementation. (:gh:`5097`).
 
 - Improve compliance of nilearn maskers, GLM and decoder estimators with scikit-learn estimators guidelines.
-
-.. _v0-12-0-fixes:
 
 Fixes
 -----
@@ -56,8 +52,6 @@ Fixes
 - :bdg-dark:`Code` Do not set score to zero if all coefficients are zero in :class:`~decoding.Decoder` and ensure average scores are comparable to a pure scikit-learn implementation (:gh:`5097` by `Himanshu Aggarwal`_).
 
 - :bdg-dark:`Code` New interpolation method (``method='nearest_most_frequent'``) for :func:`~surface.vol_to_surf` to better handle deterministic atlases by assigning most frequent voxel value in the neighborhood of a vertex (:gh:`5169` by `Himanshu Aggarwal`_).
-
-.. _v0-12-0-enhancements:
 
 Enhancements
 ------------
@@ -107,8 +101,6 @@ Enhancements
 - :bdg-info:`Plotting` Allow a :func:`~plotting.plot_img_comparison` to compare images :class:`~surface.SurfaceImage` (:gh:`5132` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Colormaps can be passed as BIDS compliant look-up table via a :class:`pandas.DataFrame` to :func:`~plotting.plot_roi` and :func:`~plotting.plot_surf_roi` (:gh:`5160` by `Rémi Gau`_).
-
-.. _v0-12-0-changes:
 
 Changes
 -------

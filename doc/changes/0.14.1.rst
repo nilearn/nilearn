@@ -6,8 +6,6 @@ Version 0.14.1
 **Released September 2026**
 
 
-.. _v0-14-1-highlights:
-
 HIGHLIGHTS
 ----------
 
@@ -17,8 +15,6 @@ HIGHLIGHTS
 
 - Fix :func:`~image.smooth_img` leaving non-finite values in surface images, and spreading them over neighboring vertices when smoothing.
 
-
-.. _v0-14-1-fixes:
 
 Fixes
 -----
@@ -66,8 +62,6 @@ Fixes
 - :bdg-info:`Plotting` Fix a bug in :func:`~plotting.view_img` where the background colormap was not being applied correctly. (:gh:`6466` by `Pierre-Louis Barbarant`_).
 
 
-.. _v0-14-1-enhancements:
-
 Enhancements
 ------------
 
@@ -81,8 +75,6 @@ Enhancements
 
 - :bdg-primary:`Doc` Add ``Examples`` docstring sections to :func:`~masking.compute_epi_mask` (:gh:`6306` by `Marco Flores`_), :func:`~utils.all_displays`, :func:`~utils.all_estimators`, :func:`~utils.all_functions` (:gh:`6322`, :gh:`6324`, :gh:`6325` by `Alice Schiavone`_), :func:`~image.iter_img` (:gh:`6304` by `Ruben Dörfel`_), :func:`~plotting.plot_design_matrix` (:gh:`6380` by `Nirmitee Mulay`_), :func:`~signal.butterworth` (:gh:`6311` by `Hande Gözükan`_), :func:`~regions.img_to_signals_labels` (:gh:`6315` by `Hande Gözükan`_), :func:`~plotting.plot_design_matrix_correlation` function (:gh:`6413` by `Nirmitee Mulay`_).
 
-
-.. _v0-14-1-changes:
 
 Changes
 -------

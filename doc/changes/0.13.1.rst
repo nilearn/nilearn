@@ -5,15 +5,11 @@ Version 0.13.1
 
 **Released February 2026**
 
-.. _v0-13-1-highlights:
-
 HIGHLIGHTS
 ----------
 
 - This is mostly a release to fix some bugs introduced in ``0.13.0`` and to ensure better compatibility with scikit-learn ``1.8.0``.
 
-
-.. _v0-13-1-fixes:
 
 Fixes
 -----
@@ -31,8 +27,6 @@ Fixes
 - :bdg-info:`Plotting` Drop background color when using look up table as colormap (:gh:`5936` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Add support for dictionary as ``cut_coords`` for :class:`~plotting.displays.MosaicSlicer` and image plotting functions. (:gh:`5920` by `Hande Gözükan`_).
-
-.. _v0-13-1-changes:
 
 Changes
 -------

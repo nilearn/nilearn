@@ -9,8 +9,6 @@ Version 0.9.1
 This is a bugfix release.
 
 
-.. _v0-9-1-fixes:
-
 Fixes
 -----
 
@@ -26,8 +24,6 @@ Fixes
 
 - :bdg-info:`Plotting` Fix colorbars in :func:`~plotting.plot_stat_map`, :func:`~plotting.plot_glass_brain` and :func:`~plotting.plot_surf_stat_map` which could extend beyond the figure for users with newest matplotlib version (``>=3.5.1``) (:gh:`3188` by `Raphael Meudec`_).
 
-.. _v0-9-1-enhancements:
-
 Enhancements
 ------------
 
@@ -38,8 +34,6 @@ Enhancements
 - :bdg-primary:`Doc` Terms :term:`Probabilistic atlas` and :term:`Deterministic atlas` were added to the glossary and references were added to atlas fetchers (:gh:`3152` by `Nicolas Gensollen`_).
 
 - :bdg-secondary:`Maint` Functions in :mod:`~nilearn.datasets` have been organized by the type of data in the references page and :func:`~datasets.fetch_mixed_gambles` has been added to the documentation (:gh:`3207` by `Taylor Salo`_).
-
-.. _v0-9-1-changes:
 
 Changes
 -------

@@ -3,8 +3,6 @@
 Version 0.15.0dev
 =================
 
-.. _v0-15-0-highlights:
-
 HIGHLIGHTS
 ----------
 
@@ -29,13 +27,9 @@ HIGHLIGHTS
     - :bdg-dark:`Code`
 
 
-.. _v0-15-0-fixes:
-
 Fixes
 -----
 
-
-.. _v0-15-0-enhancements:
 
 Enhancements
 ------------
@@ -43,11 +37,13 @@ Enhancements
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
 
 
-.. _v0-15-0-changes:
-
 Changes
 -------
 
 - :bdg-danger:`Deprecation` The functions ``nilearn.reporting.make_glm_report`` and ``nilearn.interfaces.bids.glm.save_glm_to_bids`` have been removed: instead now use :meth:`~nilearn.glm.first_level.FirstLevelModel.generate_report` or :meth:`~nilearn.glm.second_level.SecondLevelModel.generate_report`, and :func:`nilearn.glm.save_glm_to_bids` respectively (:gh:`6548` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The parameter ``keep_masked_maps`` (and respectively the parameter ``keep_masked_labels``) has been removed from :func:`~nilearn.regions.img_to_signals_maps`, :class:`~nilearn.maskers.NiftiMapsMasker` and :class:`~nilearn.maskers.MultiNiftiMapsMasker` (and respectively from :func:`~nilearn.regions.img_to_signals_labels`, :class:`~nilearn.maskers.NiftiLabelsMasker` and :class:`~nilearn.maskers.MultiNiftiLabelsMasker`). In practice, this means that data will not be extracted from maps or labels that are excluded by a mask image (:gh:`6551` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` Boolean values for the ``standardize`` parameter (for maskers, glm, decoders...) are no longer supported. Use ``standardize="z_score_sample"`` instead of ``True`` and ``None`` instead of ``False`` (:gh:`6553` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter name ``filename`` of the :meth:`~nilearn.plotting.displays.BaseSlicer.savefig` will be permanently replaced by ``output_file`` in version 0.17.0 (:gh:`6471` by `Aniket Singh Yadav`_).
