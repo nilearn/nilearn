@@ -78,8 +78,6 @@ HeightControl: TypeAlias = Literal[None, "fpr", "fdr", "bonferroni"]
 HrfModel: TypeAlias = str | Callable | list | None
 
 HighPass: TypeAlias = Scalar
-KeepMaskedLabels: TypeAlias = bool
-KeepMaskedMaps: TypeAlias = bool
 LowerCutoff: TypeAlias = Float
 LowPass: TypeAlias = Scalar
 MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
