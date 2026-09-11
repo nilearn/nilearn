@@ -20,7 +20,7 @@ Here we discover how to work with 3D and 4D niimgs.
 # Downloading tutorial datasets from Internet
 # -------------------------------------------
 #
-# Nilearn comes with functions that download public data from Internet
+# Nilearn comes with functions that download public data from Internet.
 #
 # Let's first check where the data is downloaded on our disk:
 from nilearn.datasets import load_sample_motor_activation_image

@@ -1,10 +1,8 @@
 """
-An introduction tutorial to fMRI decoding
-=========================================
+An introduction tutorial to fMRI decoding with the Haxby dataset
+================================================================
 
 Here is a simple tutorial on decoding with nilearn.
-It reproduces the :footcite:t:`Haxby2001` study
-on a face vs cat discrimination task in a mask of the ventral stream.
 
 This tutorial is meant as an introduction to the various steps of a decoding
 analysis using Nilearn meta-estimator: :class:`~nilearn.decoding.Decoder`
@@ -17,7 +15,9 @@ meant to be copied to analyze new data: many of the steps are unnecessary.
 # %%
 # .. admonition:: dataset
 #
-#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#    This example reproduces the :footcite:t:`Haxby2001` study
+#    with the :ref:`Haxby dataset <haxby_dataset>`
+#    on a face vs cat discrimination task in a mask of the ventral stream.
 #
 
 # We ignore some warnings that would otherwise
