@@ -17,7 +17,8 @@ and subsequently for classification tasks or to analyze data at a local level.
 .. seealso::
 
     Which clustering method to use, an empirical comparison can be found
-    in :footcite:t:`Thirion2014`.
+   An empirical comparison on which clustering method to use can be found
+   in :footcite:t:`Thirion2014`.
 
     This :term:`parcellation` may be useful in a supervised learning,
     see for instance :footcite:t:`Michel2011b`.
@@ -43,16 +44,16 @@ print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 
 
 # %%
-# Brain parcellation with Ward Clustering
+# Brain parcellation with :term:`Ward clustering`
 # ---------------------------------------
 #
-# Transforming list of images to data matrix and build brain parcellation,
-# all can be done at once using ``Parcellation`` objects.
+# Transforming list of images to data matrix and building brain parcellations
+# can all be done at once using ``Parcellation`` objects.
 #
 # .. note::
 #
-#   Computing ward for the first time, will be long...
-#   This can be seen by measuring using time
+#   Computing ``ward`` for the first time will be long...
+#   Time spent can be measured using ``time``.
 #
 # We build parameters of our own for this object
 # with parameters related to masking,
@@ -78,11 +79,11 @@ ward.fit(dataset.func)
 print(f"Ward agglomeration 1000 clusters: {time.time() - start:.2f}s")
 
 # %%
-# We compute now ward clustering with 2000 clusters
-# and compare time with 1000 clusters.
-# To see the benefits of caching for second time.
+# We now compute ``ward`` clustering with ``2000 clusters``
+# and compare the time spent for computing with ``1000 clusters``
+# to see the benefits of caching.
 #
-# We initialize class again with ``n_parcels=2000`` this time.
+# We instantiate a new instance with ``n_parcels=2000`` this time.
 #
 start = time.time()
 ward = Parcellations(
@@ -96,7 +97,11 @@ ward = Parcellations(
 ward.fit(dataset.func)
 
 # %%
+# We can observe that although the number of clusters doubles, computation takes less time.
+
 print(f"Ward agglomeration 2000 clusters: {time.time() - start:.2f}s")
+
+
 
 # %%
 # Visualize: Brain parcellation (Ward)
@@ -121,7 +126,7 @@ cut_coords = first_plot.cut_coords
 # Compressed representation of Ward clustering
 # ............................................
 #
-# Second, we illustrate the effect that the clustering has on the signal.
+# Second, we illustrate the effect of the clustering on the signal.
 # We show the original data,
 # and the approximation provided by the clustering
 # by averaging the signal on each parcel.
@@ -181,16 +186,16 @@ plotting.plot_epi(
 plotting.show()
 
 # %%
-# As you can, this approximation is almost good,
-# although there are only 2000 parcels, instead of the original 60000 voxels.
+# As you can see, this approximation is almost good,
+# although there are only 2000 parcels instead of the original 60000 voxels.
 #
 
 # %%
 # Brain parcellation with KMeans Clustering
 # -----------------------------------------
 #
-# We use the same approach as with building parcellation
-# using Ward clustering.
+# We use the same approach as building parcellation
+# using :term:`Ward clustering`.
 # But, in the range of a small number of clusters,
 # it is most likely that we want to use standardization.
 # Indeed with standardization and smoothing, the clusters will form as regions.
@@ -235,7 +240,7 @@ plotting.show()
 # Brain parcellation with Hierarchical KMeans Clustering
 # ------------------------------------------------------
 #
-# As the number of images from which we try to cluster grows,
+# As the number of images from which we try to create clusters grows,
 # voxels display more and more specific activity patterns
 # causing KMeans clusters to be very unbalanced
 # with a few big clusters and many voxels left as singletons.
@@ -289,7 +294,7 @@ plotting.show()
 # ...........................................................
 # To compare those, we'll first count how many voxels are contained
 # in each of the 50 clusters for both algorithms
-# and compare those sizes distribution.
+# and compare their cluster size distributions.
 # Hierarchical KMeans should give clusters
 # closer to average (600 here) than KMeans.
 #
@@ -307,7 +312,7 @@ voxel_ratio = np.round(np.sum(kmeans_counts[1:]) / 50)
 print(f"... each cluster should contain {voxel_ratio} voxels")
 
 # %%
-# Let's plot clusters sizes distributions for both algorithms
+# Let's plot clusters' size distributions for both algorithms.
 #
 # You can just skip the plotting code, the important part is the figure.
 import matplotlib.pyplot as plt
@@ -353,7 +358,7 @@ plotting.show()
 # Brain parcellation with :term:`ReNA` Clustering
 # -----------------------------------------------
 #
-# One interesting algorithmic property of :term:`ReNA` (see References)
+# One interesting algorithmic property of :term:`ReNA`
 # is that it is very fast
 # for a large number of parcels (notably faster than Ward).
 # As before, the :term:`parcellation` is done with a ``Parcellations`` object.
@@ -399,7 +404,7 @@ plotting.show()
 # Compressed representation of :term:`ReNA` clustering
 # ....................................................
 #
-# We illustrate the effect that the clustering has on the signal.
+# We illustrate the effect of clustering on the signal.
 # We show the original data, and the approximation provided by
 # the clustering by averaging the signal on each parcel.
 #
