@@ -35,6 +35,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.niimg import (
     _get_data,
     ensure_finite_data,
+    has_non_finite,
     load_niimg,
     repr_niimgs,
     safe_get_data,
@@ -354,7 +355,12 @@ def _fast_smooth_array(arr):
 
 @fill_doc
 def smooth_array(
-    arr, affine, fwhm=None, ensure_finite: bool = True, copy: bool = True
+    arr,
+    affine,
+    fwhm=None,
+    ensure_finite: bool = True,
+    copy: bool = True,
+    raise_warning: bool = True,
 ) -> np.ndarray:
     """Smooth images by applying a Gaussian filter.
 
@@ -387,6 +393,14 @@ def smooth_array(
         If True, input array is not modified. True by default: the filtering
         is not performed in-place.
 
+    raise_warning : :obj:`bool`, default=True
+        Whether to warn when ``ensure_finite`` replaces values. Set to False
+        by callers that undo the replacement afterwards, or that only use the
+        filtered array internally, so that they do not report a replacement
+        the caller cannot observe.
+
+        .. nilearn_versionadded:: 0.15.0
+
     Returns
     -------
     :class:`numpy.ndarray`
@@ -415,7 +429,7 @@ def smooth_array(
         arr = arr.copy()
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
-        ensure_finite_data(arr)
+        ensure_finite_data(arr, raise_warning=raise_warning)
     if isinstance(fwhm, str) and (fwhm == "fast"):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
@@ -538,17 +552,14 @@ def smooth_img(
         for img in imgs:
             img = check_niimg(img)
             affine = img.affine
-            # Copy up front so the cleaning below cannot reach the input
-            # image, then let ``smooth_array`` work on the copy in place.
-            data = np.array(_get_data(img), copy=True)
-            if ensure_finite:
-                ensure_finite_data(data)
+            # ``copy=True`` keeps the cleaning and the filtering off the
+            # input image's array.
             filtered = smooth_array(
-                data,
+                _get_data(img),
                 affine,
                 fwhm=fwhm,
-                ensure_finite=False,
-                copy=False,
+                ensure_finite=ensure_finite,
+                copy=True,
             )
             ret.append(new_img_like(img, filtered, affine))
 
@@ -590,17 +601,32 @@ def _smooth_surface_img(
 
     # Calculate the adjacency matrix either weighting
     # by inverse distance or not weighting (ones)
+    # Match the volume path: non-finite values are replaced with zeros.
+    # Warn once for the image rather than once per hemisphere, and clean
+    # before the ``n_iter == 0`` shortcut so that the guarantee holds
+    # whatever ``fwhm`` is. Left as is, a single non-finite vertex is
+    # spread over its neighbors by the smoothing iterations.
+    if ensure_finite and any(
+        has_non_finite(part)[0] for part in img.data.parts.values()
+    ):
+        warnings.warn(
+            "Non-finite values detected. "
+            "These values will be replaced with zeros.",
+            RuntimeWarning,
+            stacklevel=find_stack_level(),
+        )
+
     new_data = {}
     for hemi, n_iter in zip(img.mesh.parts, iterations, strict=False):
         mesh = img.mesh.parts[hemi]
-        # Match the volume path: non-finite values are replaced with zeros.
-        # Copy first because ``ensure_finite_data`` works in place, and do it
-        # before the ``n_iter == 0`` shortcut so that the guarantee holds
-        # whatever ``fwhm`` is. Left as is, a single non-finite vertex is
-        # spread over its neighbors by the smoothing iterations.
-        data = np.array(img.data.parts[hemi], copy=True)
-        if ensure_finite:
-            ensure_finite_data(data)
+        # ``copy=True`` keeps the input image's data untouched.
+        data = (
+            ensure_finite_data(
+                img.data.parts[hemi], raise_warning=False, copy=True
+            )
+            if ensure_finite
+            else np.array(img.data.parts[hemi], copy=True)
+        )
 
         if n_iter == 0:
             new_data[hemi] = data
@@ -886,16 +912,15 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
 
     if smooth:
         nan_mask = np.isnan(mean_data)
-        # The NaNs are restored right after smoothing, so clean them here
-        # without warning rather than letting ``smooth_array`` report a
+        # The NaNs are restored right after smoothing, so do not report a
         # replacement that this function undoes.
-        ensure_finite_data(mean_data, raise_warning=False)
         mean_data = smooth_array(
             mean_data,
             affine=np.eye(4),
             fwhm=smooth,
-            ensure_finite=False,
+            ensure_finite=True,
             copy=False,
+            raise_warning=False,
         )
         mean_data[nan_mask] = np.nan
 
