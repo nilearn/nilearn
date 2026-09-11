@@ -11,7 +11,7 @@ import re
 import warnings
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Literal, TypeVar, cast
+from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
@@ -26,13 +26,13 @@ from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import (
-    check_is_of_allowed_type,
     check_parameter_in_allowed,
     check_params,
 )
 from nilearn.datasets._utils import (
     ALLOWED_MESH_TYPES,
     PACKAGE_DIRECTORY,
+    _validate_subjects,
     fetch_files,
     fetch_single_file,
     filter_columns,
@@ -48,50 +48,12 @@ from nilearn.interfaces.bids import get_bids_files
 from nilearn.nilearn_typing import (
     AvailableMeshes,
     DataDir,
+    NSubject,
     Resume,
     Url,
     Verbose,
 )
 from nilearn.surface import SurfaceImage
-
-_SubjectSelection = TypeVar(
-    "_SubjectSelection", bound=int | list[int] | tuple[int, ...]
-)
-
-
-def _validate_subjects(
-    n_subjects: _SubjectSelection | None,
-    max_subjects: int,
-    *,
-    subject_list_types: tuple[type, ...] = (),
-    min_subjects: int | None = None,
-    warning_message: str | None = None,
-) -> _SubjectSelection | int:
-    """Validate and normalize a dataset subject selection."""
-    if n_subjects is not None:
-        check_is_of_allowed_type(
-            n_subjects, (int, *subject_list_types), "n_subjects"
-        )
-
-    if n_subjects is None:
-        return max_subjects
-
-    if isinstance(n_subjects, (list, tuple)):
-        for subject_id in n_subjects:
-            check_parameter_in_allowed(
-                subject_id, list(range(1, max_subjects + 1)), "subject id"
-            )
-        return n_subjects
-
-    invalid_subjects = n_subjects > max_subjects or (
-        min_subjects is not None and n_subjects < min_subjects
-    )
-    if not invalid_subjects:
-        return n_subjects
-
-    if warning_message is not None:
-        warnings.warn(warning_message, stacklevel=find_stack_level())
-    return max_subjects
 
 
 # TODO (nilearn >= 0.17.0) remove decorator
@@ -99,7 +61,7 @@ def _validate_subjects(
 @fill_doc
 def fetch_haxby(
     data_dir: DataDir = None,
-    n_subjects: int | list[int] | tuple[int, ...] | None = (2,),
+    n_subjects: NSubject = (2,),
     fetch_stimuli: bool = False,
     url: Url = None,
     resume: Resume = True,
@@ -117,12 +79,8 @@ def fetch_haxby(
     ----------
     %(data_dir)s
 
-    n_subjects : :obj:`list` | :obj:`tuple` | :obj:`int` | None, default=(2,)
-        Either a list of subjects or the number of subjects to load,
-        from 1 to 6.
+    %(n_subjects)s
         By default, 2nd subject will be loaded.
-        Empty list returns no subject data.
-        None will load all subjects.
 
     fetch_stimuli : :obj:`bool`, default=False
         Indicate if stimuli images must be downloaded.
@@ -195,7 +153,6 @@ def fetch_haxby(
     n_subjects = _validate_subjects(
         n_subjects,
         max_subjects=6,
-        subject_list_types=(list, tuple),
     )
     if isinstance(n_subjects, (list, tuple)):
         subject_mask = np.array(n_subjects)
@@ -336,7 +293,7 @@ def adhd_ids():
 
 @fill_doc
 def fetch_adhd(
-    n_subjects: int | None = 30,
+    n_subjects: NSubject = 30,
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -349,10 +306,9 @@ def fetch_adhd(
 
     Parameters
     ----------
-    n_subjects : :obj:`int` or None, default=30
-        The number of subjects to load from maximum of 40 subjects.
+    %(n_subjects)s
+        A maximum of 40 subjects are available.
         By default, 30 subjects will be loaded.
-        If None is given, all 40 subjects will be loaded.
 
     %(data_dir)s
 
@@ -394,16 +350,22 @@ def fetch_adhd(
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    ids = adhd_ids()
-    nitrc_ids = range(7782, 7822)
-    max_subjects = len(ids)
+    all_ids = adhd_ids()
+    all_nitrc_ids = range(7782, 7822)
+    max_subjects = len(all_ids)
     n_subjects = _validate_subjects(
         n_subjects,
         max_subjects,
         warning_message=f"Warning: there are only {max_subjects} subjects.",
     )
-    ids = ids[:n_subjects]
-    nitrc_ids = nitrc_ids[:n_subjects]
+    subject_indices = (
+        range(n_subjects)
+        if isinstance(n_subjects, int)
+        else [subject_id - 1 for subject_id in n_subjects]
+    )
+    ids = [all_ids[index] for index in subject_indices]
+    nitrc_ids = [all_nitrc_ids[index] for index in subject_indices]
+    selected_subjects = len(ids)
 
     opts = {"uncompress": True}
 
@@ -444,14 +406,14 @@ def fetch_adhd(
 
     functionals = fetch_files(
         data_dir,
-        zip(functionals, archives, (opts,) * n_subjects, strict=False),
+        zip(functionals, archives, (opts,) * selected_subjects, strict=False),
         resume=resume,
         verbose=verbose,
     )
 
     confounds = fetch_files(
         data_dir,
-        zip(confounds, archives, (opts,) * n_subjects, strict=False),
+        zip(confounds, archives, (opts,) * selected_subjects, strict=False),
         resume=resume,
         verbose=verbose,
     )
@@ -673,7 +635,7 @@ ALLOWED_CONTRASTS = list(CONTRAST_NAME_WRAPPER.values())
 @fill_doc
 def fetch_localizer_contrasts(
     contrasts: list[str],
-    n_subjects: int | list[int] | None = None,
+    n_subjects: NSubject = None,
     get_tmaps: bool = False,
     get_masks: bool = False,
     get_anats: bool = False,
@@ -775,9 +737,8 @@ def fetch_localizer_contrasts(
         - "visual click vs visual sentences"
         - "auditory&visual motor vs cognitive processing"
 
-    n_subjects : :obj:`int` or :obj:`list` or None, default=None
-        The number or list of subjects to load. If None is given,
-        all 94 subjects are used.
+    %(n_subjects)s
+        A maximum of 94 subjects are available.
 
     get_tmaps : :obj:`bool`, default=False
         Whether t maps should be fetched or not.
@@ -826,17 +787,12 @@ def fetch_localizer_contrasts(
 
     _check_inputs_fetch_localizer_contrasts(contrasts)
 
-    n_subjects = cast(
-        "int | list[int]",
-        _validate_subjects(
-            n_subjects,
-            max_subjects=94,
-            subject_list_types=(list,),
-            min_subjects=1,
-            warning_message=(
-                "Wrong value for 'n_subjects' (%d). The maximum "
-                "value will be used instead ('n_subjects=94')."
-            ),
+    n_subjects = _validate_subjects(
+        n_subjects,
+        max_subjects=94,
+        warning_message=(
+            f"Wrong value for 'n_subjects' ({n_subjects}). The maximum "
+            "value will be used instead ('n_subjects=94')."
         ),
     )
 
@@ -1030,16 +986,17 @@ def _is_valid_path(path, index, verbose):
 
 @fill_doc
 def fetch_localizer_calculation_task(
-    n_subjects: int | None = 1, data_dir: DataDir = None, verbose: Verbose = 1
+    n_subjects: NSubject = 1,
+    data_dir: DataDir = None,
+    verbose: Verbose = 1,
 ) -> Bunch[str, Any]:
     """Fetch calculation task contrast maps from the localizer.
 
 
     Parameters
     ----------
-    n_subjects : :obj:`int` or None, default=1
-        The number of subjects to load. If None is given,
-        all 94 subjects are used.
+    %(n_subjects)s
+        A maximum of 94 subjects are available.
 
     %(data_dir)s
 
@@ -1139,7 +1096,7 @@ def fetch_localizer_button_task(
 @fill_doc
 def fetch_abide_pcp(
     data_dir: DataDir = None,
-    n_subjects: int | None = None,
+    n_subjects: NSubject = None,
     pipeline: Literal["cpac", "css", "dparsf", "niak"] = "cpac",
     band_pass_filtering: bool = False,
     global_signal_regression: bool = False,
@@ -1161,10 +1118,9 @@ def fetch_abide_pcp(
     ----------
     %(data_dir)s
 
-    n_subjects : :obj:`int` or None, default=None
-        The number of subjects to load. If None is given,
-        all available subjects are used (this number depends on the
-        preprocessing pipeline used).
+    %(n_subjects)s
+        The number of available subjects depends on the preprocessing
+        pipeline and filters used.
 
     pipeline : :obj:`str` {'cpac', 'css', 'dparsf', 'niak'}, default='cpac'
         Possible pipelines are "ccs", "cpac", "dparsf" and "niak".
@@ -1399,10 +1355,14 @@ def fetch_abide_pcp(
     url = f"{url}/Outputs/{pipeline}/{strategy}"
 
     # Get the files
+    n_subjects = _validate_subjects(n_subjects, len(pheno_df))
+    subject_indices = (
+        range(n_subjects)
+        if isinstance(n_subjects, int)
+        else [subject_id - 1 for subject_id in n_subjects]
+    )
+    pheno_df = pheno_df.iloc[subject_indices]
     file_ids = pheno_df["FILE_ID"].tolist()
-    n_subjects = _validate_subjects(n_subjects, len(file_ids))
-    file_ids = file_ids[:n_subjects]
-    pheno_df = pheno_df[:n_subjects]
 
     results = {
         "description": get_dataset_descr(dataset_name),
@@ -1476,7 +1436,7 @@ def _load_mixed_gambles(zmap_imgs):
 
 @fill_doc
 def fetch_mixed_gambles(
-    n_subjects: int | None = 1,
+    n_subjects: NSubject = 1,
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -1490,9 +1450,8 @@ def fetch_mixed_gambles(
 
     Parameters
     ----------
-    n_subjects : :obj:`int` or None, default=1
-        The number of subjects to load.
-        If ``None`` is given, all the subjects are used.
+    %(n_subjects)s
+        A maximum of 16 subjects are available.
 
     %(data_dir)s
 
@@ -1540,6 +1499,9 @@ def fetch_mixed_gambles(
         max_subjects=16,
         warning_message="Warning: there are only 16 subjects!",
     )
+    subject_ids = (
+        range(1, n_subjects + 1) if isinstance(n_subjects, int) else n_subjects
+    )
 
     if url is None:
         url = (
@@ -1548,8 +1510,8 @@ def fetch_mixed_gambles(
         )
     opts = {"uncompress": True}
     files = [
-        (f"zmaps{os.sep}sub{int(j + 1):03}_zmaps.nii.gz", url, opts)
-        for j in range(n_subjects)
+        (f"zmaps{os.sep}sub{subject_id:03}_zmaps.nii.gz", url, opts)
+        for subject_id in subject_ids
     ]
 
     data_dir = get_dataset_dir(
@@ -1559,7 +1521,7 @@ def fetch_mixed_gambles(
     zmap_fnames = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     subject_id = pd.DataFrame(
-        {"subject_id": np.repeat(np.arange(n_subjects), 6 * 8).tolist()}
+        {"subject_id": np.repeat(np.asarray(subject_ids) - 1, 6 * 8).tolist()}
     )
 
     description = get_dataset_descr("mixed_gambles")
@@ -1834,7 +1796,7 @@ def nki_ids():
 
 @fill_doc
 def fetch_surf_nki_enhanced(
-    n_subjects: int | None = 10,
+    n_subjects: NSubject = 10,
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -1850,10 +1812,9 @@ def fetch_surf_nki_enhanced(
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, default=10
-        The number of subjects to load from maximum of 102 subjects.
+    %(n_subjects)s
+        A maximum of 102 subjects are available.
         By default, 10 subjects will be loaded.
-        If None is given, all 102 subjects will be loaded.
 
     %(data_dir)s
 
@@ -1900,14 +1861,19 @@ def fetch_surf_nki_enhanced(
     )
 
     nitrc_ids = range(8260, 8464)
-    ids = nki_ids()
-    max_subjects = len(ids)
+    all_ids = nki_ids()
+    max_subjects = len(all_ids)
     n_subjects = _validate_subjects(
         n_subjects,
         max_subjects,
         warning_message=f"Warning: there are only {max_subjects} subjects.",
     )
-    ids = ids[:n_subjects]
+    subject_indices = (
+        range(n_subjects)
+        if isinstance(n_subjects, int)
+        else [subject_id - 1 for subject_id in n_subjects]
+    )
+    ids = [all_ids[index] for index in subject_indices]
 
     # Dataset description
     fdescr = get_dataset_descr(dataset_name)
@@ -1938,7 +1904,7 @@ def fetch_surf_nki_enhanced(
     # Download subjects' datasets
     func_right = []
     func_left = []
-    for i, ids_i in enumerate(ids):
+    for subject_index, ids_i in zip(subject_indices, ids, strict=True):
         archive = f"{url}%i{os.sep}%s_%s_preprocessed_fsaverage5_fwhm6.gii"
         func = f"%s{os.sep}%s_%s_preprocessed_fwhm6.gii"
         rh = fetch_files(
@@ -1946,7 +1912,7 @@ def fetch_surf_nki_enhanced(
             [
                 (
                     func % (ids_i, ids_i, "right"),
-                    archive % (nitrc_ids[2 * i + 1], ids_i, "rh"),
+                    archive % (nitrc_ids[2 * subject_index + 1], ids_i, "rh"),
                     {"move": func % (ids_i, ids_i, "right")},
                 )
             ],
@@ -1958,7 +1924,7 @@ def fetch_surf_nki_enhanced(
             [
                 (
                     func % (ids_i, ids_i, "left"),
-                    archive % (nitrc_ids[2 * i], ids_i, "lh"),
+                    archive % (nitrc_ids[2 * subject_index], ids_i, "lh"),
                     {"move": func % (ids_i, ids_i, "left")},
                 )
             ],
@@ -1983,7 +1949,7 @@ def load_nki(
     mesh_type: Literal[
         "pial", "white_matter", "inflated", "sphere", "flat"
     ] = "pial",
-    n_subjects: int | None = 1,
+    n_subjects: NSubject = 1,
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -2011,10 +1977,9 @@ def load_nki(
          - ``"sphere"``
          - ``"flat"``
 
-    n_subjects : :obj:`int`, default=1
-        The number of subjects to load from maximum of 102 subjects.
+    %(n_subjects)s
+        A maximum of 102 subjects are available.
         By default, 1 subjects will be loaded.
-        If None is given, all 102 subjects will be loaded.
 
     %(data_dir)s
 
@@ -2044,11 +2009,14 @@ def load_nki(
     )
 
     images = []
+    total_subjects = len(nki_dataset["func_left"])
     for i, (left, right) in enumerate(
         zip(nki_dataset["func_left"], nki_dataset["func_right"], strict=False),
         start=1,
     ):
-        logger.log(f"Loading subject {i} of {n_subjects}.", verbose=verbose)
+        logger.log(
+            f"Loading subject {i} of {total_subjects}.", verbose=verbose
+        )
 
         img = SurfaceImage(
             mesh=fsaverage[mesh_type],
@@ -2211,7 +2179,7 @@ def _fetch_development_fmri_functional(
 
 @fill_doc
 def fetch_development_fmri(
-    n_subjects: int | None = None,
+    n_subjects: NSubject = None,
     reduce_confounds: bool = True,
     data_dir: DataDir = None,
     resume: Resume = True,
@@ -2232,9 +2200,8 @@ def fetch_development_fmri(
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, default=None
-        The number of subjects to load. If None, all the subjects are
-        loaded. Total 155 subjects.
+    %(n_subjects)s
+        A maximum of 155 subjects are available.
 
     reduce_confounds : :obj:`bool`, default=True
         If True, the returned confounds only include 6 motion parameters,
@@ -2336,7 +2303,6 @@ def fetch_development_fmri(
     n_subjects = _validate_subjects(
         n_subjects,
         max_subjects,
-        min_subjects=1,
         warning_message=(
             f"Wrong value for n_subjects={n_subjects}. "
             f"The maximum value (for age_group={age_group}) "
@@ -2344,20 +2310,29 @@ def fetch_development_fmri(
         ),
     )
 
-    # To keep the proportion of children versus adults
-    percent_total = float(n_subjects) / max_subjects
-    n_child = np.round(percent_total * child_count).astype(int)
-    n_adult = np.round(percent_total * adult_count).astype(int)
+    if isinstance(n_subjects, (list, tuple)):
+        if age_group != "both":
+            participants = participants[
+                participants["Child_Adult"] == age_group
+            ]
+        subject_indices = [subject_id - 1 for subject_id in n_subjects]
+        participants = participants.iloc[subject_indices]
+    else:
+        # Keep the proportion of children versus adults.
+        percent_total = float(n_subjects) / max_subjects
+        n_child = np.round(percent_total * child_count).astype(int)
+        n_adult = np.round(percent_total * adult_count).astype(int)
 
-    # We want to return adults by default (i.e., `age_group=both`) or
-    # if explicitly requested.
-    if (age_group != "child") and (n_subjects == 1):
-        n_adult, n_child = 1, 0
+        # Return adults by default or if explicitly requested.
+        if (age_group != "child") and (n_subjects == 1):
+            n_adult, n_child = 1, 0
 
-    if (age_group == "both") and (n_subjects == 2):
-        n_adult, n_child = 1, 1
+        if (age_group == "both") and (n_subjects == 2):
+            n_adult, n_child = 1, 1
 
-    participants = _filter_csv_by_n_subjects(participants, n_adult, n_child)
+        participants = _filter_csv_by_n_subjects(
+            participants, n_adult, n_child
+        )
 
     funcs, regressors = _fetch_development_fmri_functional(
         participants,
@@ -2590,7 +2565,7 @@ def select_from_index(
     urls: list[str],
     inclusion_filters: list[str] | None = None,
     exclusion_filters: list[str] | None = None,
-    n_subjects: int | None = None,
+    n_subjects: NSubject = None,
 ) -> list[str]:
     """Select subset of urls with given filters.
 
@@ -2619,8 +2594,7 @@ def select_from_index(
         For example the filter '*task-rest*' would discard all urls
         that contain the 'task-rest' string.
 
-    n_subjects : :obj:`int` or None, default=None
-        Number of subjects to download from the dataset. All by default.
+    %(n_subjects)s
 
     Returns
     -------
@@ -2628,6 +2602,8 @@ def select_from_index(
         Sorted list of filtered dataset directories.
 
     """
+    check_params(locals())
+
     inclusion_filters = inclusion_filters or []
     exclusion_filters = exclusion_filters or []
     # We apply filters to the urls
@@ -2652,7 +2628,12 @@ def select_from_index(
     # We get a list of subjects (for the moment the first n subjects)
     subjects = infer_subjects(urls)
     n_subjects = _validate_subjects(n_subjects, len(subjects))
-    selected_subjects = set(subjects[:n_subjects])
+    subject_indices = (
+        range(n_subjects)
+        if isinstance(n_subjects, int)
+        else [subject_id - 1 for subject_id in n_subjects]
+    )
+    selected_subjects = {subjects[index] for index in subject_indices}
 
     # We exclude urls of subjects not selected
     def subject_selected(url: str) -> bool:

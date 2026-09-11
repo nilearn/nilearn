@@ -40,7 +40,7 @@ Enhancements
 Changes
 -------
 
-- :bdg-success:`API` Rename the ``subjects`` parameter of :func:`~nilearn.datasets.fetch_haxby` to ``n_subjects``, retain ``subjects`` as a deprecated alias, and centralize subject-selection validation used by functional dataset fetchers (:gh:`6462` by `Mohammad Sadeghi Hardengi`_).
+- :bdg-success:`API` Standardize ``n_subjects`` across dataset fetchers to accept a subject count or one-based subject indices, and rename the ``subjects`` parameter of :func:`~nilearn.datasets.fetch_haxby` to ``n_subjects`` while retaining ``subjects`` as a deprecated alias (:gh:`6462` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-danger:`Deprecation` The functions ``nilearn.reporting.make_glm_report`` and ``nilearn.interfaces.bids.glm.save_glm_to_bids`` have been removed: instead now use :meth:`~nilearn.glm.first_level.FirstLevelModel.generate_report` or :meth:`~nilearn.glm.second_level.SecondLevelModel.generate_report`, and :func:`nilearn.glm.save_glm_to_bids` respectively (:gh:`6548` by `Rémi Gau`_).
 

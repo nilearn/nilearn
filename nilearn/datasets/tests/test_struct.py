@@ -55,10 +55,10 @@ def test_fetch_icbm152_2009(tmp_path, request_mocker, capsys):
 
 
 def _make_oasis_data(dartel=True):
-    n_subjects = 457
+    n_subjects = 458
     prefix = "mwrc" if dartel else "mwc"
     ids = pd.DataFrame(
-        {"ID": [f"OAS1_{i:04}" for i in range(n_subjects)]}
+        {"ID": [f"OAS1_{i:04}_MR1" for i in range(1, n_subjects)]}
     ).to_csv(index=False, sep="\t")
     data = {"oasis_cross-sectional.csv": ids, "data_usage_agreement.txt": ""}
     path_pattern = str(
@@ -67,7 +67,7 @@ def _make_oasis_data(dartel=True):
             "{prefix}{kind}OAS1_{subj:04}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
         )
     )
-    for i in range(457):
+    for i in range(1, n_subjects):
         for kind in [1, 2]:
             data[path_pattern.format(subj=i, kind=kind, prefix=prefix)] = ""
     return dict_to_archive(data)
@@ -88,6 +88,19 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker, capsys):
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 1
+
+    selected_dataset = fetch_oasis_vbm(
+        n_subjects=(2, 4), data_dir=str(tmp_path), verbose=0
+    )
+    assert selected_dataset.gray_matter_maps == [
+        dataset.gray_matter_maps[1],
+        dataset.gray_matter_maps[3],
+    ]
+    assert selected_dataset.white_matter_maps == [
+        dataset.white_matter_maps[1],
+        dataset.white_matter_maps[3],
+    ]
+    assert len(selected_dataset.ext_vars) == 2
 
     check_fetcher_verbosity(fetch_oasis_vbm, capsys, data_dir=tmp_path)
 

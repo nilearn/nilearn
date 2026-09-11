@@ -17,7 +17,11 @@ from sklearn.utils import Bunch
 from nilearn._utils.data_gen import create_fake_bids_dataset
 from nilearn._utils.helpers import is_gil_enabled
 from nilearn.datasets import fetch_development_fmri, func
-from nilearn.datasets._utils import PACKAGE_DIRECTORY, get_dataset_dir
+from nilearn.datasets._utils import (
+    PACKAGE_DIRECTORY,
+    _validate_subjects,
+    get_dataset_dir,
+)
 from nilearn.datasets.tests._testing import (
     check_fetcher_verbosity,
     check_type_fetcher,
@@ -30,50 +34,6 @@ from nilearn.image import load_img
 def test_is_valid_path():
     assert func._is_valid_path(path="foo", index=["foo"], verbose=1)
     assert not func._is_valid_path(path="bar", index=["foo"], verbose=1)
-
-
-@pytest.mark.parametrize(
-    ("subjects", "max_subjects", "kwargs", "expected"),
-    [
-        (None, 6, {}, 6),
-        (2, 6, {}, 2),
-        (0, 6, {}, 0),
-        (-1, 6, {}, -1),
-        ([1, 3], 6, {"subject_list_types": (list,)}, [1, 3]),
-        ((1, 3), 6, {"subject_list_types": (tuple,)}, (1, 3)),
-    ],
-)
-def test_validate_subjects(subjects, max_subjects, kwargs, expected):
-    assert (
-        func._validate_subjects(subjects, max_subjects, **kwargs) == expected
-    )
-
-
-@pytest.mark.parametrize("subjects", [0, -1, 7])
-def test_validate_subjects_invalid_count_uses_max(subjects):
-    with pytest.warns(UserWarning, match="Only 6 subjects are available"):
-        result = func._validate_subjects(
-            subjects,
-            max_subjects=6,
-            min_subjects=1,
-            warning_message="Only 6 subjects are available.",
-        )
-
-    assert result == 6
-
-
-@pytest.mark.parametrize("subjects", [[0], [7], ["1"]])
-def test_validate_subjects_invalid_subject_id(subjects):
-    with pytest.raises(ValueError, match="'subject id' must be one of"):
-        func._validate_subjects(
-            subjects, max_subjects=6, subject_list_types=(list,)
-        )
-
-
-@pytest.mark.parametrize("subjects", [True, 1.0, "1", [1]])
-def test_validate_subjects_invalid_type(subjects):
-    with pytest.raises(TypeError, match="'n_subjects' must be of type"):
-        func._validate_subjects(subjects, max_subjects=6)
 
 
 @pytest.mark.parametrize(
@@ -235,11 +195,11 @@ def test_fetch_haxby_deprecated_subjects(tmp_path, request_mocker, subjects):
 
 
 def test_fetch_haxby_error(tmp_path):
-    subjects = ["a", 8]
-    message = "'subject id' must be one of"
-    for sub_id in subjects:
-        with pytest.raises(ValueError, match=message.format(sub_id)):
-            func.fetch_haxby(data_dir=tmp_path, n_subjects=[sub_id])
+    with pytest.raises(TypeError, match="'subject id' must be of type"):
+        func.fetch_haxby(data_dir=tmp_path, n_subjects=["a"])
+
+    with pytest.raises(ValueError, match="'subject id' must be one of"):
+        func.fetch_haxby(data_dir=tmp_path, n_subjects=[8])
 
 
 def _adhd_example_subject(match, request):  # noqa: ARG001
@@ -333,6 +293,20 @@ def test_fetch_adhd(tmp_path, request_mocker, capsys, n_subjects):
     check_fetcher_verbosity(
         func.fetch_adhd, capsys, n_subjects=1, data_dir=tmp_path
     )
+
+
+@pytest.mark.parametrize("n_subjects", [[1, 3], (1, 3)])
+def test_fetch_adhd_subject_selection(tmp_path, request_mocker, n_subjects):
+    request_mocker.url_mapping["*metadata.tgz"] = _adhd_metadata()
+    request_mocker.url_mapping[re.compile(r".*adhd40_([0-9]+)\.tgz")] = (
+        _adhd_example_subject
+    )
+
+    adhd = func.fetch_adhd(data_dir=tmp_path, n_subjects=n_subjects, verbose=0)
+
+    expected_ids = [func.adhd_ids()[index] for index in (0, 2)]
+    assert [Path(path).parent.name for path in adhd.func] == expected_ids
+    assert len(adhd.phenotypic) == 2
 
 
 def test_miyawaki2008(tmp_path, request_mocker, capsys):
@@ -441,10 +415,15 @@ def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):  # noqa:
     assert len(dataset.tmaps) == 1
 
 
-def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  # noqa: ARG001
+@pytest.mark.parametrize("n_subjects", [[2, 3, 5], (2, 3, 5)])
+def test_fetch_localizer_contrasts_list_subjects(
+    tmp_path,
+    localizer_mocker,  # noqa: ARG001
+    n_subjects,
+):
     # grab a given list of subjects
     dataset2 = func.fetch_localizer_contrasts(
-        ["checkerboard"], n_subjects=[2, 3, 5], data_dir=tmp_path
+        ["checkerboard"], n_subjects=n_subjects, data_dir=tmp_path
     )
 
     assert len(dataset2["ext_vars"]) == 3
@@ -456,10 +435,9 @@ def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  #
     ]
 
 
-@pytest.mark.parametrize("subjects", [(1, 2), [0], [95]])
+@pytest.mark.parametrize("subjects", [[], (), [0], [95]])
 def test_fetch_localizer_contrasts_invalid_subjects(subjects):
-    exception = TypeError if isinstance(subjects, tuple) else ValueError
-    with pytest.raises(exception):
+    with pytest.raises(ValueError):
         func.fetch_localizer_contrasts(["checkerboard"], n_subjects=subjects)
 
 
@@ -550,6 +528,15 @@ def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked, capsys):
         derivatives="func_preproc",
     )
 
+    selected_dataset = func.fetch_abide_pcp(
+        data_dir=tmp_path,
+        n_subjects=(1, 3),
+        quality_checked=quality_checked,
+        verbose=0,
+    )
+    expected_indices = dataset.phenotypic.iloc[[0, 2]].index.tolist()
+    assert selected_dataset.phenotypic.index.tolist() == expected_indices
+
     check_fetcher_verbosity(
         func.fetch_abide_pcp,
         capsys,
@@ -596,6 +583,21 @@ def test_fetch_mixed_gambles(tmp_path, n_subjects, capsys):
         return_raw_data=True,
         data_dir=tmp_path,
     )
+
+
+@pytest.mark.parametrize("n_subjects", [[2, 4], (2, 4)])
+def test_fetch_mixed_gambles_subject_selection(tmp_path, n_subjects):
+    mgambles = func.fetch_mixed_gambles(
+        n_subjects=n_subjects,
+        data_dir=tmp_path,
+        return_raw_data=True,
+    )
+
+    assert [Path(path).name for path in mgambles.zmaps] == [
+        "sub002_zmaps.nii.gz",
+        "sub004_zmaps.nii.gz",
+    ]
+    assert mgambles.subject_id["subject_id"].unique().tolist() == [1, 3]
 
 
 def test_check_parameters_megatrawls_datasets():
@@ -710,6 +712,15 @@ def test_fetch_surf_nki_enhanced(tmp_path, request_mocker, capsys):
     assert isinstance(nki_data.phenotypic, pd.DataFrame)
     assert nki_data.phenotypic.shape == (9, 4)
 
+    selected_data = func.fetch_surf_nki_enhanced(
+        n_subjects=(2, 3), data_dir=tmp_path
+    )
+    assert [Path(path).parent.name for path in selected_data.func_left] == [
+        func.nki_ids()[1],
+        func.nki_ids()[2],
+    ]
+    assert selected_data.phenotypic.shape == (2, 4)
+
     check_fetcher_verbosity(
         func.fetch_surf_nki_enhanced, capsys, data_dir=tmp_path
     )
@@ -818,6 +829,14 @@ def test_fetch_development_fmri(tmp_path, request_mocker, capsys):
     assert isinstance(data.phenotypic, pd.DataFrame)
     assert data.phenotypic.shape == (2, 6)
 
+    selected_data = fetch_development_fmri(
+        n_subjects=(1, 3), data_dir=tmp_path
+    )
+    assert selected_data.phenotypic["participant_id"].tolist() == [
+        mock_participants.iloc[0]["participant_id"],
+        mock_participants.iloc[2]["participant_id"],
+    ]
+
     check_fetcher_verbosity(
         func.fetch_development_fmri, capsys, n_subjects=1, data_dir=tmp_path
     )
@@ -884,18 +903,15 @@ def test_fetch_development_fmri_phenotype(request_mocker):
 
 def test_fetch_development_fmri_invalid_n_subjects():
     max_subjects = 155
-    n_subjects = func._validate_subjects(
-        n_subjects=None, max_subjects=max_subjects
-    )
+    n_subjects = _validate_subjects(n_subjects=None, max_subjects=max_subjects)
 
     assert n_subjects == max_subjects
-    with pytest.warns(UserWarning, match="Wrong value for n_subjects="):
-        func._validate_subjects(
-            n_subjects=-1,
+    with pytest.warns(UserWarning, match="Wrong value for n_subjects"):
+        _validate_subjects(
+            n_subjects=156,
             max_subjects=max_subjects,
-            min_subjects=1,
             warning_message=(
-                "Wrong value for n_subjects=-1. "
+                "Wrong value for n_subjects. "
                 "The maximum value (for age_group=adult) "
                 "will be used instead: n_subjects=155."
             ),
@@ -945,6 +961,13 @@ def test_select_from_index():
     new_urls = func.select_from_index(urls, n_subjects=2)
 
     assert len(new_urls) == 9
+    assert data_prefix + "/sub-yyy.html" in new_urls
+
+    # Select an exact subject by its one-based index.
+    new_urls = func.select_from_index(urls, n_subjects=(2,))
+
+    assert len(new_urls) == 4
+    assert data_prefix + "/sub-xxx.html" not in new_urls
     assert data_prefix + "/sub-yyy.html" in new_urls
 
     # ALL subjects and not subject specific files get downloaded

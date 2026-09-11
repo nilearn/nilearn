@@ -86,6 +86,7 @@ MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
 MemoryLevel: TypeAlias = Integer
 NJobs: TypeAlias = Integer
 NPerm: TypeAlias = Integer
+NSubject: TypeAlias = int | list[int] | tuple[int, ...] | None
 NiimgLike: TypeAlias = Nifti1Image | str | pathlib.Path
 Opening: TypeAlias = bool | Integer
 OutputFile: TypeAlias = str | pathlib.Path | None

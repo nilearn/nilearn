@@ -879,6 +879,14 @@ n_perm : :obj:`int`, default=10000
     one gets in the p-values estimation.
 """
 
+# n_subjects
+docdict["n_subjects"] = """
+n_subjects : :obj:`int`, :obj:`list` or :obj:`tuple` of :obj:`int`, or None
+    Number of subjects to load, or their one-based indices.
+    If ``None`` is given, all available subjects are loaded.
+    An empty list or tuple is not allowed.
+"""
+
 # opening
 docdict["opening"] = """
 opening : :obj:`bool` or :obj:`int`, optional
