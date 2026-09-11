@@ -1630,66 +1630,70 @@ def check_img_estimator_pickle(estimator_orig) -> None:
     if isinstance(estimator_orig, SearchLight) and not is_gil_enabled():
         pytest.xfail("May fail without the GIL")
 
-    estimator = clone(estimator_orig)
+    def clone_and_fit_estimator(estimator_orig):
+        # clone and fit estimator
+        estimator = clone(estimator_orig)
+        X, y = generate_data_to_fit(estimator)
+        set_random_state(estimator)
+        if isinstance(estimator, NiftiSpheresMasker):
+            # NiftiSpheresMasker needs mask_img to run inverse_transform
+            mask_img = new_img_like(X, np.ones(X.shape[:3]))
+            estimator.mask_img = mask_img
+        fitted_estimator = fit_estimator(estimator)
+        return fitted_estimator, X, y
 
-    X, y = generate_data_to_fit(estimator)
+    input_data: list | tuple | np.ndarray
+    for method in [
+        "transform",
+        "predict",
+        "decision_function",
+        "inverse_transform",
+    ]:
+        if hasattr(estimator_orig, method):
+            fitted_estimator, X, y = clone_and_fit_estimator(estimator_orig)
 
-    if isinstance(estimator, NiftiSpheresMasker):
-        # NiftiSpheresMasker needs mask_img to run inverse_transform
-        mask_img = new_img_like(X, np.ones(X.shape[:3]))
-        estimator.mask_img = mask_img
+            if method == "transform":
+                input_data = (
+                    [X]
+                    if isinstance(
+                        estimator_orig, (SearchLight, _BaseDecomposition)
+                    )
+                    else [[X]]
+                )
+            elif method in ["predict", "decision_function"]:
+                input_data = X
+            elif method in "score":
+                input_data = (X, y)
+            elif method == "inverse_transform" and hasattr(
+                estimator_orig, "inverse_transform"
+            ):
+                signal = _rng().random((1, fitted_estimator.n_elements_))
+                if isinstance(estimator_orig, _BaseDecomposition):
+                    signal = [signal]
+                input_data = signal
 
-    set_random_state(estimator)
+            pickled_estimator = pickle.dumps(fitted_estimator)
+            unpickled_estimator = pickle.loads(pickled_estimator)
 
-    fitted_estimator = fit_estimator(estimator)
-
-    pickled_estimator = pickle.dumps(fitted_estimator)
-    unpickled_estimator = pickle.loads(pickled_estimator)
-
-    result = {}
-
-    check_methods = ["transform"]
-    input_data = [X] if isinstance(estimator, SearchLight) else [[X]]
-
-    for method in ["predict", "decision_function"]:
-        check_methods.append(method)
-        input_data.append(X)
-
-    check_methods.append("score")
-    input_data.append((X, y))
-
-    if hasattr(estimator, "inverse_transform"):
-        check_methods.append("inverse_transform")
-        signal = _rng().random((1, fitted_estimator.n_elements_))
-        if isinstance(estimator, _BaseDecomposition):
-            signal = [signal]
-        input_data.append(signal)
-
-    for method, input in zip(check_methods, input_data, strict=False):
-        if hasattr(estimator, method):
-            result["input"] = input
             if method == "score":
-                result[method] = getattr(estimator, method)(*input)
+                result = getattr(fitted_estimator, method)(*input_data)
+                unpickled_result = getattr(unpickled_estimator, method)(
+                    *input_data
+                )
             else:
-                result[method] = getattr(estimator, method)(input)
+                result = getattr(fitted_estimator, method)(input_data)
+                unpickled_result = getattr(unpickled_estimator, method)(
+                    input_data
+                )
 
-    for method, input in zip(check_methods, input_data, strict=False):
-        if method not in result:
-            continue
-
-        if method == "score":
-            unpickled_result = getattr(unpickled_estimator, method)(*input)
-        else:
-            unpickled_result = getattr(unpickled_estimator, method)(input)
-
-        if isinstance(unpickled_result, np.ndarray):
-            assert_allclose_dense_sparse(result[method], unpickled_result)
-        elif isinstance(unpickled_result, SurfaceImage):
-            assert_surface_image_equal(
-                cast(SurfaceImage, result[method]), unpickled_result
-            )
-        elif isinstance(unpickled_result, Nifti1Image):
-            check_imgs_equal(result[method], unpickled_result)
+            if isinstance(unpickled_result, np.ndarray):
+                assert_allclose_dense_sparse(result, unpickled_result)
+            elif isinstance(unpickled_result, SurfaceImage):
+                assert_surface_image_equal(
+                    cast(SurfaceImage, result), unpickled_result
+                )
+            elif isinstance(unpickled_result, Nifti1Image):
+                check_imgs_equal(result, unpickled_result)
 
 
 def check_img_estimator_pipeline_consistency(estimator_orig) -> None:
