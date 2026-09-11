@@ -17,8 +17,8 @@ and subsequently for classification tasks or to analyze data at a local level.
 .. seealso::
 
     Which clustering method to use, an empirical comparison can be found
-   An empirical comparison on which clustering method to use can be found
-   in :footcite:t:`Thirion2014`.
+    An empirical comparison on which clustering method to use can be found
+    in :footcite:t:`Thirion2014`.
 
     This :term:`parcellation` may be useful in a supervised learning,
     see for instance :footcite:t:`Michel2011b`.
@@ -45,7 +45,7 @@ print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 
 # %%
 # Brain parcellation with :term:`Ward clustering`
-# ---------------------------------------
+# -----------------------------------------------
 #
 # Transforming list of images to data matrix and building brain parcellations
 # can all be done at once using ``Parcellation`` objects.
@@ -97,10 +97,10 @@ ward = Parcellations(
 ward.fit(dataset.func)
 
 # %%
-# We can observe that although the number of clusters doubles, computation takes less time.
+# We can observe that although the number of clusters doubles,
+# computation takes less time.
 
 print(f"Ward agglomeration 2000 clusters: {time.time() - start:.2f}s")
-
 
 
 # %%
