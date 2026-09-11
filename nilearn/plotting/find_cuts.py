@@ -313,7 +313,12 @@ def find_cut_slices(
     if data.dtype.kind in ("i", "u"):
         data = data.astype(np.float64)
 
-    data = smooth_array(data, affine, fwhm="fast")
+    # The smoothed copy is only used to locate cuts, never returned, so
+    # clean non-finite values without warning about a replacement the caller
+    # cannot see.
+    data = smooth_array(
+        data, affine, fwhm="fast", ensure_finite=True, raise_warning=False
+    )
 
     # to control floating point error problems
     # during given input value "n_cuts"

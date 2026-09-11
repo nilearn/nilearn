@@ -237,8 +237,15 @@ def connected_regions(
         map_3d = maps[..., index]
         # Mark the seeds using random walker
         if extract_type == "local_regions":
+            # ``smooth_map`` only seeds the random walker and is never
+            # returned, so clean non-finite values without warning.
             smooth_map = smooth_array(
-                map_3d, affine=affine, fwhm=smoothing_fwhm
+                map_3d,
+                affine=affine,
+                fwhm=smoothing_fwhm,
+                ensure_finite=True,
+                copy=True,
+                raise_warning=False,
             )
             seeds = peak_local_max(smooth_map)
             seeds_label, _ = label(seeds)
