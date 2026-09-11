@@ -12,6 +12,7 @@ from nibabel import Nifti1Image
 from scipy.signal import get_window
 
 from nilearn._utils.helpers import is_gil_enabled, is_matplotlib_installed
+from nilearn.image import get_data
 from nilearn.masking import unmask
 from nilearn.surface import (
     InMemoryMesh,
@@ -250,6 +251,26 @@ def _img_3d_mni(affine=None) -> Nifti1Image:
 def img_3d_mni() -> Nifti1Image:
     """Return a default random 3D Nifti1Image in MNI space."""
     return _img_3d_mni()
+
+
+def _add_nans_to_img(img) -> Nifti1Image:
+    """Add non-finite values to a 3D Nifti1Image.
+
+    Puts several NaN and one inf in the data,
+    so that tests do not have to spell out indices of their own.
+    """
+    data = get_data(img)
+    data[6, 5, 1] = np.nan
+    data[1, 5, 2] = np.nan
+    data[1, 3, 2] = np.nan
+    data[6, 5, 2] = np.inf
+    return Nifti1Image(data, img.affine)
+
+
+@pytest.fixture
+def add_nans_to_img() -> Callable[..., Nifti1Image]:
+    """Add non-finite values to a 3D Nifti1Image."""
+    return _add_nans_to_img
 
 
 @pytest.fixture()
@@ -836,6 +857,27 @@ def _drop_surf_img_part(img, part_name="right") -> SurfaceImage:
 def drop_surf_img_part() -> Callable[..., SurfaceImage]:
     """Remove one hemisphere from a SurfaceImage."""
     return _drop_surf_img_part
+
+
+def _add_nans_to_surf_img(img, parts=("left",)) -> SurfaceImage:
+    """Add non-finite values to a SurfaceImage.
+
+    Only the hemispheres listed in ``parts`` are touched,
+    so that the default leaves the other one finite:
+    several behaviors (for example warning once per image)
+    can only be told apart when a single hemisphere is affected.
+    """
+    for part in parts:
+        data = img.data.parts[part]
+        data[0] = np.nan
+        data[1] = np.inf
+    return img
+
+
+@pytest.fixture
+def add_nans_to_surf_img() -> Callable[..., SurfaceImage]:
+    """Add non-finite values to a SurfaceImage."""
+    return _add_nans_to_surf_img
 
 
 def _make_surface_img_and_design(
