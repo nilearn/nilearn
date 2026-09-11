@@ -2,19 +2,24 @@
 Working with long time series fMRI images
 =========================================
 
-In this example, we will demonstrate how one can work with large fMRI images
-more efficiently. Note that fMRI images can be large on-disk due to several
+In this example,
+we will demonstrate how one can work with large :term:`fMRI `images
+more efficiently.
+Note that :term:`fMRI` images can be large on-disk due to several
 different factors, including a long acquisition or high-resolution sampling.
 Currently, this example focuses on memory-efficient interactions with long
-time series fMRI data. In this case, loading the whole time series into memory
-may represent a significant computational cost. We will therefore explore
+time series :term:`fMRI` data.
+In this case, loading the whole time series into memory
+may represent a significant computational cost.
+We will therefore explore
 strategies to minimize the amount of data that is loaded into memory,
 and we will compare these strategies against a naive usage of
 :class:`~nilearn.maskers.NiftiMasker`.
 
 To make this more concrete, we will create a large fMRI image with over
 800 time points by concatenating individual subjects in the
-:func:`~nilearn.datasets.fetch_adhd` dataset.
+:ref:`ADHD200 dataset <adhd_dataset>`, accessed via the
+:func:`~nilearn.datasets.fetch_adhd` fetcher.
 Our goal is to extract data from several regions of interest (ROIs)
 defined by a number of binary masks, all in parallel.
 
