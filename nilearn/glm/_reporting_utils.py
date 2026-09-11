@@ -647,12 +647,13 @@ def make_stat_maps_contrast_clusters(
         #         )
         # else:
 
-        cluster_table = get_clusters_table(
+        cluster_table, _ = get_clusters_table(
             thresholded_img,
             stat_threshold=threshold,
             cluster_threshold=cluster_threshold,
             min_distance=min_distance,
             two_sided=two_sided,
+            return_label_maps=True,
         )
         cluster_table_html = dataframe_to_html(
             cluster_table,
