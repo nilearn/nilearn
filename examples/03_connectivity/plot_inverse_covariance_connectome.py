@@ -26,8 +26,10 @@ represent only the edges above 80% of the values.
 from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 
 atlas = fetch_atlas_msdl()
+
 # Loading atlas image stored in 'maps'
 atlas_filename = atlas["maps"]
+
 # Loading atlas data stored in 'labels'
 labels = atlas["labels"]
 
@@ -62,8 +64,10 @@ estimator = GraphicalLassoCV(verbose=True)
 estimator.fit(time_series)
 
 # %%
-# Display the connectome matrix
-# -----------------------------
+# Visualization: covariance
+# -------------------------
+# The covariance can be found at ``estimator.covariance_``.
+# We plot it along with its connectome graph.
 from nilearn.plotting import (
     plot_connectome,
     plot_matrix,
@@ -71,9 +75,6 @@ from nilearn.plotting import (
     view_connectome,
 )
 
-# Display the covariance
-
-# The covariance can be found at estimator.covariance_
 plot_matrix(
     estimator.covariance_,
     labels=labels,
@@ -83,20 +84,19 @@ plot_matrix(
     title="Covariance",
 )
 
-# %%
-# And now display the corresponding graph
-# ---------------------------------------
 coords = atlas.region_coords
 
 plot_connectome(
     estimator.covariance_, coords, title="Covariance", edge_threshold="80%"
 )
 
+show()
+
 
 # %%
-# Display the sparse inverse covariance
-# -------------------------------------
-# we negate it to get partial correlations
+# Visualization: sparse inverse covariance
+# ----------------------------------------
+# We negate the precision to get partial correlations.
 plot_matrix(
     -estimator.precision_,
     labels=labels,
@@ -106,9 +106,6 @@ plot_matrix(
     title="Sparse inverse covariance",
 )
 
-# %%
-# And now display the corresponding graph
-# ----------------------------------------
 plot_connectome(
     -estimator.precision_,
     coords,
@@ -123,8 +120,8 @@ show()
 # ---------------------------------
 # An alternative to :func:`~nilearn.plotting.plot_connectome` is to use
 # :func:`~nilearn.plotting.view_connectome` that gives more interactive
-# visualizations in a web browser. See :ref:`interactive-connectome-plotting`
-# for more details.
+# visualizations in a web browser.
+# See :ref:`interactive-connectome-plotting` for more details.
 
 
 view = view_connectome(-estimator.precision_, coords, edge_threshold="80%")
