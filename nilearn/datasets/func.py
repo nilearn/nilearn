@@ -779,7 +779,6 @@ def fetch_localizer_contrasts(
 
     See Also
     --------
-    nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_button_task
 
     """
@@ -991,6 +990,13 @@ def fetch_localizer_calculation_task(
 ) -> Bunch[str, Any]:
     """Fetch calculation task contrast maps from the localizer.
 
+    .. nilearn_deprecated:: 0.15.0
+
+        ``fetch_localizer_calculation_task`` will be removed
+        in version 0.17.0.
+        Use :func:`~nilearn.datasets.fetch_localizer_contrasts`
+        with ``contrasts=["calculation (auditory and visual cue)"]``
+        instead.
 
     Parameters
     ----------
@@ -1023,6 +1029,20 @@ def fetch_localizer_calculation_task(
 
     """
     check_params(locals())
+
+    # TODO (nilearn >= 0.17.0) remove the function
+    warnings.warn(
+        category=FutureWarning,
+        message=(
+            "'fetch_localizer_calculation_task' is deprecated "
+            "and will be removed in Nilearn 0.17.0.\n"
+            "Use 'fetch_localizer_contrasts' instead:\n"
+            "fetch_localizer_contrasts("
+            "['calculation (auditory and visual cue)'], "
+            "n_subjects=...)"
+        ),
+        stacklevel=find_stack_level(),
+    )
 
     data = fetch_localizer_contrasts(
         ["calculation (auditory and visual cue)"],
@@ -1070,7 +1090,6 @@ def fetch_localizer_button_task(
 
     See Also
     --------
-    nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_contrasts
 
 
