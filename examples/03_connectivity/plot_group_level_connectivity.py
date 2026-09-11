@@ -233,9 +233,7 @@ for kind in kinds:
     for train, test in cv.split(pooled_subjects, classes):
         # *ConnectivityMeasure* can output the estimated subjects coefficients
         # as a 1D arrays through the parameter *vectorize*.
-        connectivity = ConnectivityMeasure(
-            kind=kind, vectorize=True
-        )
+        connectivity = ConnectivityMeasure(kind=kind, vectorize=True)
         # build vectorized connectomes for subjects in the train set
         connectomes = connectivity.fit_transform(pooled_subjects[train])
         # fit the classifier
