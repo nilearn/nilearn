@@ -85,6 +85,8 @@ from nilearn.conftest import (
     _img_3d_zeros,
     _img_4d_rand_eye,
     _img_4d_rand_eye_medium,
+    _img_labels,
+    _img_maps,
     _img_mask_mni,
     _make_surface_img,
     _make_surface_img_and_design,
@@ -93,6 +95,7 @@ from nilearn.conftest import (
     _shape_3d_default,
     _shape_3d_large,
     _surf_img_1d,
+    _surf_maps_img,
     _surf_mask_1d,
 )
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
@@ -133,6 +136,7 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers._mixin import _MultiMixin
+from nilearn.maskers.tests.conftest import sklearn_surf_label_img
 from nilearn.maskers.tests.test_html_report import (
     generate_and_check_masker_report,
 )
@@ -507,6 +511,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
     yield (clone(estimator), check_set_output)
     yield (clone(estimator), check_verbose)
     yield (clone(estimator), check_doc_link)
+    yield (clone(estimator), check_refit)
 
     if isinstance(estimator, CacheMixin):
         yield (clone(estimator), check_img_estimator_cache_warning)
@@ -521,9 +526,9 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
         yield (clone(estimator), check_img_estimator_dont_overwrite_parameters)
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
         yield (clone(estimator), check_img_estimator_fit_idempotent)
+        yield (clone(estimator), check_img_estimator_fit_score_takes_y)
         yield (clone(estimator), check_img_estimator_overwrite_params)
         yield (clone(estimator), check_img_estimator_pickle)
-        yield (clone(estimator), check_img_estimator_fit_score_takes_y)
         yield (clone(estimator), check_img_estimator_n_elements)
         yield (clone(estimator), check_img_estimator_pipeline_consistency)
         yield (clone(estimator), check_img_estimator_standardization)
@@ -543,11 +548,11 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
+            yield (clone(estimator), check_decoder_estimator_args)
             yield (clone(estimator), check_decoder_compatibility_mask_image)
             yield (clone(estimator), check_decoder_screening_n_features)
             yield (clone(estimator), check_decoder_with_surface_data)
             yield (clone(estimator), check_decoder_with_arrays)
-            yield (clone(estimator), check_decoder_estimator_args)
             yield (clone(estimator), check_verbosity_embedded_masker)
             yield (clone(estimator), check_warning_embedded_masker)
 
@@ -1031,6 +1036,33 @@ def check_doc_link(estimator_orig) -> None:
     )
 
 
+def check_refit(estimator_orig) -> None:
+    """Check that estimator can be refitted data does not match n_elements_.
+
+    Easier to change n_elements_after a first fit.
+    """
+    if not hasattr(estimator_orig, "transform"):
+        return
+
+    estimator = clone(estimator_orig)
+
+    set_random_state(estimator)
+    estimator = fit_estimator(estimator)
+
+    set_random_state(estimator)
+    if isinstance(estimator, (NiftiLabelsMasker, SurfaceLabelsMasker)):
+        # for label maskers, n_elements_ is a property
+        # so we need to hack around
+        n_elements_ = estimator.n_elements_
+        estimator._lut_ = pd.DataFrame({"index": list(range(n_elements_ + 5))})
+    elif hasattr(estimator, "n_features_in_"):
+        estimator.n_features_in_ += 5
+    else:
+        estimator.n_elements_ += 5
+
+    fit_estimator(estimator)
+
+
 # ------------------ GENERIC IMG ESTIMATORS CHECKS ------------------
 
 
@@ -1440,7 +1472,7 @@ def check_img_estimator_cache_warning(estimator_orig) -> None:
 def check_img_estimator_fit_idempotent(estimator_orig) -> None:
     """Check that est.fit(X) is the same as est.fit(X).fit(X).
 
-    So we check that
+    Also check that
     predict(), decision_function() and transform() return
     the same results.
 
@@ -3275,7 +3307,11 @@ def check_masker_with_confounds(estimator_orig) -> None:
 
 
 def check_masker_refit(estimator_orig) -> None:
-    """Check masker can be refitted and give different results."""
+    """Check masker can be refitted and give different results.
+
+    Refit is done on images with different shape
+    and/or different number of features
+    """
     estimator = clone(estimator_orig)
 
     mask_img_1: Nifti1Image | SurfaceImage
@@ -3287,7 +3323,7 @@ def check_masker_refit(estimator_orig) -> None:
         mask[1:-1, 1:-1, 1:-1] = 1
         mask_img_1 = Nifti1Image(mask, _affine_eye())
 
-        mask = np.zeros(_shape_3d_large(), dtype=np.int8)
+        mask = np.zeros(tuple(x + 5 for x in _shape_3d_large()), dtype=np.int8)
         mask[3:-3, 3:-3, 3:-3] = 1
         mask_img_2 = Nifti1Image(mask, _affine_eye())
     else:
@@ -3301,6 +3337,19 @@ def check_masker_refit(estimator_orig) -> None:
     estimator.mask_img = mask_img_1
     estimator.fit()
     fitted_mask_1 = estimator.mask_img_
+
+    if isinstance(estimator, (NiftiLabelsMasker)):
+        estimator.labels_img = _img_labels(n_regions=estimator.n_elements_ + 5)
+    elif isinstance(estimator, (SurfaceLabelsMasker)):
+        estimator.labels_img = sklearn_surf_label_img(
+            n_regions=estimator.n_elements_ + 1
+        )
+    elif isinstance(estimator, (NiftiMapsMasker)):
+        estimator.maps_img = _img_maps(n_regions=estimator.n_elements_ + 5)
+    elif isinstance(estimator, (SurfaceMapsMasker)):
+        n_regions = 5
+        assert n_regions != estimator.n_elements_
+        estimator.maps_img = _surf_maps_img(n_regions=n_regions)
 
     estimator.mask_img = mask_img_2
     estimator.fit()
