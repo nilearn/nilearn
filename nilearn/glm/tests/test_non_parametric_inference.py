@@ -98,12 +98,7 @@ def test_warning(n_subjects):
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     c1 = np.eye(len(X.columns))[0]
 
-    masker = NiftiMasker(
-        mask,
-        smoothing_fwhm=2.0,
-        # TODO (nilearn >= 0.15) remove standardize=None
-        standardize=None,
-    )
+    masker = NiftiMasker(mask, smoothing_fwhm=2.0)
     with pytest.warns(
         UserWarning,
         match="Parameter 'smoothing_fwhm' of the masker overridden",
@@ -273,14 +268,18 @@ def test_cluster_level_with_covariates(shape_3d_default, rng, n_subjects):
     neg_log_pval = -np.log10(stats.t.sf(get_data(out["t"]), df=df))
     logp_unc = new_img_like(out["t"], neg_log_pval)
     logp_unc_cluster_sizes = list(
-        get_clusters_table(logp_unc, -np.log10(unc_pval))["Cluster Size (mm3)"]
+        get_clusters_table(
+            logp_unc,
+            -np.log10(unc_pval),
+            return_label_maps=True,
+        )[0]["Cluster Size (mm3)"]
     )
 
     # Calculate corrected cluster sizes
     logp_max_cluster_sizes = list(
-        get_clusters_table(out["logp_max_size"], unc_pval)[
-            "Cluster Size (mm3)"
-        ]
+        get_clusters_table(
+            out["logp_max_size"], unc_pval, return_label_maps=True
+        )[0]["Cluster Size (mm3)"]
     )
 
     # Compare cluster sizes
@@ -442,11 +441,7 @@ def test_with_surface_images_2d_mask(surf_img_2d, surf_mask_1d, n_subjects):
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
-    masker = SurfaceMasker(
-        surf_mask_1d,
-        # TODO (nilearn >= 0.15) remove standardize=None
-        standardize=None,
-    )
+    masker = SurfaceMasker(surf_mask_1d)
 
     non_parametric_inference(
         second_level_input=second_level_input,
