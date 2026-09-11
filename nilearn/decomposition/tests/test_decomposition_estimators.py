@@ -21,7 +21,10 @@ from nilearn.decomposition.tests.conftest import (
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 
-ESTIMATORS_TO_CHECK = [DictLearning(), CanICA()]
+ESTIMATORS_TO_CHECK = [
+    DictLearning(random_state=RANDOM_STATE),
+    CanICA(random_state=RANDOM_STATE),
+]
 
 
 @parametrize_with_checks(
@@ -33,7 +36,7 @@ def test_check_estimator_sklearn(estimator, check):
     check(estimator)
 
 
-@pytest.mark.flaky(reruns=10, reruns_delay=1)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -400,7 +403,7 @@ def test_with_globbing_patterns(
 
     Only for nifti as we cannot read surface from file.
     """
-    est = estimator(n_components=3)
+    est = estimator(n_components=3, random_state=RANDOM_STATE)
 
     est.fit(canica_data)
 
