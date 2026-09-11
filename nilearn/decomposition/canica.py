@@ -119,6 +119,9 @@ class CanICA(_MultiPCA):
         The amount of variance explained
         by each of the selected components.
 
+    fastica_kwargs : :obj:`dict` or None, default=None
+        Arguments passed to :func:`sklearn.decomposition.fastica`.
+        
     References
     ----------
     .. footbibliography::
@@ -149,6 +152,7 @@ class CanICA(_MultiPCA):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        fastica_args=None
     ):
         super().__init__(
             n_components=n_components,
@@ -175,6 +179,7 @@ class CanICA(_MultiPCA):
 
         self.threshold = threshold
         self.n_init = n_init
+        self.fastica_kwargs = fastica_args
 
     def _unmix_components(self, components) -> None:
         """Core function of CanICA than rotate components_ to maximize \
@@ -190,6 +195,7 @@ class CanICA(_MultiPCA):
                 whiten="arbitrary-variance",
                 fun="cube",
                 random_state=seed,
+                **self.fastica_kwargs
             )
             for seed in seeds
         )
