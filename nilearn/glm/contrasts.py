@@ -112,7 +112,7 @@ class Contrast:
         """
         return self.variance
 
-    def stat(self, baseline=0.0):
+    def stat(self, baseline=0.0) -> np.ndarray:
         """Return the decision statistic associated with the test of the \
         null hypothesis: (H0) 'contrast equals baseline'.
 
@@ -146,7 +146,7 @@ class Contrast:
         self.stat_ = stat.ravel()
         return self.stat_
 
-    def p_value(self, baseline=0.0):
+    def p_value(self, baseline=0.0) -> np.ndarray:
         """Return a parametric estimate of the p-value associated with \
         the null hypothesis (H0): 'contrast equals baseline', \
         using the survival function.
@@ -177,7 +177,7 @@ class Contrast:
         self.p_value_ = p_values
         return p_values
 
-    def one_minus_pvalue(self, baseline=0.0):
+    def one_minus_pvalue(self, baseline=0.0) -> float:
         """Return a parametric estimate of the 1 - p-value associated \
         with the null hypothesis (H0): 'contrast equals baseline', \
         using the cumulative distribution function, \
@@ -210,7 +210,7 @@ class Contrast:
         self.one_minus_pvalue_ = one_minus_pvalues
         return one_minus_pvalues
 
-    def z_score(self, baseline=0.0):
+    def z_score(self, baseline=0.0) -> np.ndarray:
         """Return a parametric estimation of the z-score associated \
         with the null hypothesis: (H0) 'contrast equals baseline'.
 

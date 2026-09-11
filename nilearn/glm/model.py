@@ -11,6 +11,66 @@ from nilearn.glm._utils import pad_contrast, positive_reciprocal
 inv_t_cdf = t_distribution.ppf
 
 
+class TContrastResults:
+    """Results from a t :term:`contrast` of coefficients in a parametric model.
+
+    The class does nothing.
+    It is a container for the results from T :term:`contrasts<contrast>`,
+    and returns the T-statistics when np.asarray is called.
+
+    """
+
+    def __init__(self, t, sd, effect, df_den=None):
+        if df_den is None:
+            df_den = np.inf
+        self.t = t
+        self.sd = sd
+        self.effect = effect
+        self.df_den = df_den
+
+    def __array__(self):
+        return np.asarray(self.t)
+
+    def __str__(self) -> str:
+        return (
+            "<T contrast: "
+            f"effect={self.effect}, "
+            f"sd={self.sd}, "
+            f"t={self.t}, "
+            f"df_den={self.df_den}>"
+        )
+
+
+class FContrastResults:
+    """Results from an F :term:`contrast` of coefficients \
+       in a parametric model.
+
+    The class does nothing.
+    It is a container for the results from F :term:`contrasts<contrast>`,
+    and returns the F-statistics when np.asarray is called.
+    """
+
+    def __init__(self, effect, covariance, F, df_num, df_den=None):
+        if df_den is None:
+            df_den = np.inf
+        self.effect = effect
+        self.covariance = covariance
+        self.F = F
+        self.df_den = df_den
+        self.df_num = df_num
+
+    def __array__(self):
+        return np.asarray(self.F)
+
+    def __str__(self) -> str:
+        return (
+            "<F contrast: "
+            f"F={self.F!r}, "
+            f"df_den={self.df_den}, "
+            f"df_num={self.df_num}>"
+        )
+
+
 class LikelihoodModelResults:
     """Class to contain results from likelihood models.
 
@@ -162,7 +222,9 @@ class LikelihoodModelResults:
             else:
                 return tmp[:, :, np.newaxis] * dispersion
 
-    def Tcontrast(self, matrix, store=("t", "effect", "sd"), dispersion=None):  # noqa: N802
+    def Tcontrast(  # noqa : N802
+        self, matrix, store=("t", "effect", "sd"), dispersion=None
+    ) -> TContrastResults:
         """Compute a Tcontrast for a row vector `matrix`.
 
         To get the t-statistic for a single column, use the 't' method.
@@ -200,10 +262,12 @@ class LikelihoodModelResults:
         if "t" in store or "effect" in store:
             effect = np.dot(matrix, self.theta)
         if "effect" in store:
+            assert effect is not None
             st_effect = np.squeeze(effect)
         if "t" in store or "sd" in store:
             sd = np.sqrt(self.vcov(matrix=matrix, dispersion=dispersion))
         if "sd" in store:
+            assert sd is not None
             st_sd = np.squeeze(sd)
         if "t" in store:
             st_t = np.squeeze(effect * positive_reciprocal(sd))
@@ -211,7 +275,9 @@ class LikelihoodModelResults:
             effect=st_effect, t=st_t, sd=st_sd, df_den=self.df_residuals
         )
 
-    def Fcontrast(self, matrix, dispersion=None, invcov=None):  # noqa: N802
+    def Fcontrast(  # noqa : N802
+        self, matrix, dispersion=None, invcov=None
+    ) -> FContrastResults:
         """Compute an F contrast for a :term:`contrast` matrix ``matrix``.
 
         Here, ``matrix`` M is assumed to be non-singular. More precisely
@@ -342,63 +408,3 @@ class LikelihoodModelResults:
                     * np.sqrt(self.vcov(column=i, dispersion=dispersion))
                 )
         return np.asarray(list(zip(lower, upper, strict=False)))
-
-
-class TContrastResults:
-    """Results from a t :term:`contrast` of coefficients in a parametric model.
-
-    The class does nothing.
-    It is a container for the results from T :term:`contrasts<contrast>`,
-    and returns the T-statistics when np.asarray is called.
-
-    """
-
-    def __init__(self, t, sd, effect, df_den=None):
-        if df_den is None:
-            df_den = np.inf
-        self.t = t
-        self.sd = sd
-        self.effect = effect
-        self.df_den = df_den
-
-    def __array__(self):
-        return np.asarray(self.t)
-
-    def __str__(self):
-        return (
-            "<T contrast: "
-            f"effect={self.effect}, "
-            f"sd={self.sd}, "
-            f"t={self.t}, "
-            f"df_den={self.df_den}>"
-        )
-
-
-class FContrastResults:
-    """Results from an F :term:`contrast` of coefficients \
-       in a parametric model.
-
-    The class does nothing.
-    It is a container for the results from F :term:`contrasts<contrast>`,
-    and returns the F-statistics when np.asarray is called.
-    """
-
-    def __init__(self, effect, covariance, F, df_num, df_den=None):
-        if df_den is None:
-            df_den = np.inf
-        self.effect = effect
-        self.covariance = covariance
-        self.F = F
-        self.df_den = df_den
-        self.df_num = df_num
-
-    def __array__(self):
-        return np.asarray(self.F)
-
-    def __str__(self):
-        return (
-            "<F contrast: "
-            f"F={self.F!r}, "
-            f"df_den={self.df_den}, "
-            f"df_num={self.df_num}>"
-        )

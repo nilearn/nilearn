@@ -13,14 +13,14 @@ from threading import Thread
 
 from nilearn._utils.logger import find_stack_level
 
-MAX_IMG_VIEWS_BEFORE_WARNING = 10
+MAX_IMG_VIEWS_BEFORE_WARNING: int | None = 10
 BROWSER_TIMEOUT_SECONDS = 3.0
 
 WIDTH_DEFAULT = 800
 HEIGHT_DEFAULT = 800
 
 
-def set_max_img_views_before_warning(new_value) -> None:
+def set_max_img_views_before_warning(new_value: int | None) -> None:
     """Set the number of open views which triggers a warning.
 
     If `None` or a negative number, disable the memory warning.
@@ -85,10 +85,15 @@ class HTMLDocument:
 
     _all_open_html_repr: weakref.WeakSet = weakref.WeakSet()
 
-    def __init__(self, html, width=WIDTH_DEFAULT, height=HEIGHT_DEFAULT):
-        self.html = html
-        self.width = width
-        self.height = height
+    def __init__(
+        self,
+        html: str,
+        width: int = WIDTH_DEFAULT,
+        height: int = HEIGHT_DEFAULT,
+    ):
+        self.html: str = html
+        self.width: int = width
+        self.height: int = height
         self._temp_file = None
         self._check_n_open()
         self._temp_file_removing_proc = None
@@ -128,7 +133,7 @@ class HTMLDocument:
             value = WIDTH_DEFAULT
         self._height = value
 
-    def _check_n_open(self):
+    def _check_n_open(self) -> None:
         HTMLDocument._all_open_html_repr.add(self)
         if MAX_IMG_VIEWS_BEFORE_WARNING is None:
             return
@@ -163,7 +168,7 @@ class HTMLDocument:
         self.height = height
         return self
 
-    def get_iframe(self, width=None, height=None):
+    def get_iframe(self, width=None, height=None) -> str:
         """Get the document wrapped in an inline frame.
 
         For inserting in another HTML page of for display in a Jupyter
@@ -195,11 +200,11 @@ class HTMLDocument:
         )
         return wrapped
 
-    def get_standalone(self):
+    def get_standalone(self) -> str:
         """Return the plot in an HTML page."""
         return self.html
 
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
         """Return html representation of the plot.
 
         Used by the Jupyter notebook.
@@ -211,7 +216,7 @@ class HTMLDocument:
         """
         return self.get_iframe()
 
-    def _repr_mimebundle_(self, include=None, exclude=None):
+    def _repr_mimebundle_(self, include=None, exclude=None) -> dict[str, str]:
         """Return html representation of the plot.
 
         Used by the Jupyter notebook.
@@ -224,7 +229,7 @@ class HTMLDocument:
         del include, exclude
         return {"text/html": self.get_iframe()}
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.html
 
     def save_as_html(self, file_name: str | Path) -> None:

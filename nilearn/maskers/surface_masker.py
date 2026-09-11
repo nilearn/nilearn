@@ -342,7 +342,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         return output if target_dtype is None else output.astype(target_dtype)
 
     @fill_doc
-    def inverse_transform(self, signals):
+    def inverse_transform(self, signals) -> SurfaceImage:
         """Transform extracted signal back to surface object.
 
         Parameters
