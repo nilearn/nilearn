@@ -1,11 +1,14 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#    "requests",
+#    "rich",
+#    "pandas",
+#    "plotly",
+#    "kaleido",
+# ]
+# ///
 """Collects and plot run time of jobs in a GHA workflow.
-
-Requires:
-- requests
-- rich
-- pandas
-- plotly
-- kaleido
 
 For a given github action workflow:
 - ping the github API to collect the start and end time

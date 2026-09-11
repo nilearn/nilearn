@@ -1,3 +1,10 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#    "numpydoc",
+#    "rich",
+# ]
+# ///
 """Utility to find non-documented default value in docstrings.
 
 Also flags if:

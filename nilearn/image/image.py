@@ -2207,7 +2207,7 @@ def clean_img(
     imgs: SurfaceImage | NiimgLike | list[NiimgLike],
     runs: np.ndarray | None = None,
     detrend: bool = True,
-    standardize: Standardize = True,
+    standardize: Standardize = "zscore_sample",
     confounds=None,
     low_pass: LowPass = None,
     high_pass: HighPass = None,
@@ -2260,7 +2260,7 @@ def clean_img(
         If detrending should be applied on timeseries
         (before confound removal).
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of \
         Confounds timeseries. default=None
