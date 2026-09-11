@@ -234,7 +234,7 @@ for kind in kinds:
         # *ConnectivityMeasure* can output the estimated subjects coefficients
         # as a 1D arrays through the parameter *vectorize*.
         connectivity = ConnectivityMeasure(
-            kind=kind, vectorize=True, verbose=1
+            kind=kind, vectorize=True
         )
         # build vectorized connectomes for subjects in the train set
         connectomes = connectivity.fit_transform(pooled_subjects[train])
