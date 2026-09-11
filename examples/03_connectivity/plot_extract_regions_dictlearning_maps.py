@@ -27,7 +27,7 @@ of :class:`~nilearn.regions.RegionExtractor` for more details.
 # Fetch brain development functional datasets
 # -------------------------------------------
 #
-# We use nilearn's datasets downloading utilities
+# We use nilearn's dataset downloading utilities:
 from nilearn.datasets import fetch_development_fmri
 
 rest_dataset = fetch_development_fmri(n_subjects=20)
