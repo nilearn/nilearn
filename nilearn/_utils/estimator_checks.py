@@ -1654,11 +1654,7 @@ def check_img_estimator_pickle(estimator_orig) -> None:
 
             if method == "transform":
                 input_data = (
-                    [X]
-                    if isinstance(
-                        estimator_orig, (SearchLight, _BaseDecomposition)
-                    )
-                    else [[X]]
+                    X if isinstance(estimator_orig, SearchLight) else [X]
                 )
             elif method in ["predict", "decision_function"]:
                 input_data = X
