@@ -84,7 +84,7 @@ y_pred = decoder.predict(func_img)
 
 # %%
 # Inspect the decoder's internal cross-validation scores
-# -----------------------------------------------------
+# ------------------------------------------------------
 # Define the cross-validation scheme used for validation. Here we use a
 # LeaveOneGroupOut cross-validation on the run group which corresponds to a
 # leave a run out scheme, then pass the cross-validator object
@@ -112,7 +112,7 @@ print(decoder.cv_scores_["face"])
 
 # %%
 # Evaluate the decoder on held-out runs
-# ------------------------------------
+# -------------------------------------
 # Use :func:`~nilearn.decoding.cross_val_decoder_score` to evaluate the full
 # decoder with an outer cross-validation loop. Each outer fold fits a fresh
 # clone, including its masker, feature selection, and internal model selection.
