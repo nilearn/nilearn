@@ -81,11 +81,16 @@ def has_non_finite(data: np.ndarray) -> tuple[bool, np.ndarray]:
 
 
 def ensure_finite_data(
-    data: np.ndarray, raise_warning: bool = True
+    data: np.ndarray, raise_warning: bool = True, copy: bool = False
 ) -> np.ndarray:
-    """Check if data contains NaN or inf values, set infinite values
-    to 0 inplace if exists and return data.
+    """Check if data contains NaN or inf values, set non-finite values
+    to 0 and return data.
+
+    The replacement happens in place unless ``copy`` is True, in which case
+    the input is left untouched and a cleaned copy is returned.
     """
+    if copy:
+        data = data.copy()
     has_not_finite, non_finite_mask = has_non_finite(data)
     if has_not_finite:
         if raise_warning:
