@@ -49,3 +49,5 @@ Changes
 - :bdg-danger:`Deprecation` Boolean values for the ``standardize`` parameter (for maskers, glm, decoders...) are no longer supported. Use ``standardize="z_score_sample"`` instead of ``True`` and ``None`` instead of ``False`` (:gh:`6553` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter name ``filename`` of the :meth:`~nilearn.plotting.displays.BaseSlicer.savefig` will be permanently replaced by ``output_file`` in version 0.17.0 (:gh:`6471` by `Aniket Singh Yadav`_).
+
+- :bdg-danger:`Deprecation` The parameter name ``output_dict`` of the :meth:`~nilearn.mass_univariate.permute_ols` has been removed and the function will only output its results as :obj:`dict` (:gh:`6550` by `Rémi Gau`_).
