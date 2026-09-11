@@ -24,6 +24,13 @@ The reference paper is :footcite:t:`Varoquaux2010c`.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`development fMRI dataset
+#    <development_dataset>`.
+#
+
+# %%
 # Load brain development :term:`fMRI` dataset
 # -------------------------------------------
 from nilearn.datasets import fetch_development_fmri

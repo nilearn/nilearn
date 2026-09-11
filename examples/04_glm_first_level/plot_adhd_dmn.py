@@ -20,6 +20,12 @@ More specifically:
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`ADHD dataset <adhd_dataset>`.
+#
+
+# %%
 import numpy as np
 
 from nilearn import plotting

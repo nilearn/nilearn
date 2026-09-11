@@ -19,6 +19,13 @@ numpy array, corresponding to the data inside the mask.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`development fMRI dataset
+#    <development_dataset>`.
+#
+
+# %%
 # Getting the data
 # ----------------
 #

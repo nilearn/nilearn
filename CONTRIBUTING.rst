@@ -834,6 +834,23 @@ main documentation and
 example tutorials. If you want to work on those, check out next section to
 learn how to use those tools to build documentation.
 
+Examples
+--------
+
+All examples must give some description of the data they use
+in an admonition at the beginning of the example,
+and link to the full dataset description
+(see in ``nilearn/datasets/description``).
+
+.. code-block:: python
+
+      # .. admonition:: dataset
+      #
+      #    This example uses the :ref:`haxby dataset <haxby_dataset>`.
+      #
+
+Where possible the dataset used should be mentioned in the title of the example.
+
 Reports
 -------
 

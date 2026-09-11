@@ -36,6 +36,13 @@ measures the speed  of pseudo-word reading (``pseudo``) and the
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Brainomics Localizer dataset
+#    <brainomics_maps>`.
+#
+
+# %%
 # Load Localizer contrast
 # -----------------------
 # First, we fetch all ``left button press (auditory cue)``

@@ -31,6 +31,12 @@ as revealed by the higher detection rate.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
+
+# %%
 # Load one subject from the Haxby dataset
 # ---------------------------------------
 from nilearn import datasets, image

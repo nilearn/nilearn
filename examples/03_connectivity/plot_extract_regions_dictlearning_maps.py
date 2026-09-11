@@ -24,6 +24,13 @@ of :class:`~nilearn.regions.RegionExtractor` for more details.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`development fMRI dataset
+#    <development_dataset>`.
+#
+
+# %%
 # Fetch brain development functional datasets
 # -------------------------------------------
 #

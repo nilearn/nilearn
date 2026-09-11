@@ -22,6 +22,12 @@ The example is divided into the following sections:
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
+
+# %%
 # Load Haxby dataset
 # ------------------
 # For a complete picture of this dataset,

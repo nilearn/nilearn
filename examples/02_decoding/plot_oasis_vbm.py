@@ -38,6 +38,12 @@ to limit the memory usage.
 
 """
 
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`OASIS VBM dataset <oasis_maps>`.
+#
+
 # Use a single variable to control the verbosity of the script.
 verbose = 1
 

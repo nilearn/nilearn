@@ -6,6 +6,12 @@ Simple example to show Nifti data visualization.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
+
+# %%
 # Fetch data
 # ----------
 from nilearn import datasets

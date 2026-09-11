@@ -29,6 +29,16 @@ asymmetric connectome, which would be similar to results from `Granger
 causality <https://en.wikipedia.org/wiki/Granger_causality>`_.
 """
 
+# %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`DiFuMo atlas <difumo_atlas>`
+#    - the :ref:`Yeo 2011 atlas <yeo_2011_atlas>`
+#    - the :ref:`development fMRI dataset <development_dataset>`
+#
+
 # control overall verbosity of the script
 verbose = 0
 

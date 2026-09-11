@@ -11,6 +11,13 @@ is included in the model.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Brainomics Localizer dataset
+#    <brainomics_maps>`.
+#
+
+# %%
 # At first, we need to load the Localizer contrasts.
 from nilearn.datasets import fetch_localizer_contrasts
 

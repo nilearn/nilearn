@@ -11,6 +11,13 @@ for more details.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`MegaTrawls Network Matrices dataset
+#    <megatrawls_maps>`.
+#
+
+# %%
 # Fetching the Megatrawls Network matrices
 # ----------------------------------------
 # Fetching the partial correlation matrices of dimensionality d=300 with

@@ -30,6 +30,13 @@ univariate analyses.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Brainomics Localizer dataset
+#    <brainomics_maps>`.
+#
+
+# %%
 # Load Localizer "calculation task" contrast maps
 # -----------------------------------------------
 # First, we fetch calculation task

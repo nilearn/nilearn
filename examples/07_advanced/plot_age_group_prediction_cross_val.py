@@ -12,6 +12,15 @@ see :footcite:t:`Dadi2019` for a careful study.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`MSDL atlas <msdl_atlas>`
+#    - the :ref:`development fMRI dataset <development_dataset>`
+#
+
+# %%
 # Load brain development :term:`fMRI` dataset
 # -------------------------------------------
 # To save computation time, we will use only a subset of subjects from

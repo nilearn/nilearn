@@ -13,6 +13,12 @@ depending on the software used.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`ADHD dataset <adhd_dataset>`.
+#
+
+# %%
 # Let's fetch two subjects from
 # an example :term:`fMRI` dataset,
 # :func:`~nilearn.datasets.fetch_adhd`.
