@@ -116,7 +116,9 @@ dependencies = [
     "jinja2>=3.1.6",
     "packaging>=26.0.0",
     "numpy",  # unpinned to let resolution pick the correct one
-    "scipy"  # unpinned to let resolution pick the correct one
+    # scipy 1.9.2 is the first version with wheels for our lowest
+    # supported python (3.11); older versions fail to build from source
+    "scipy>=1.9.2"
 ]
 description = "Statistical learning for neuroimaging in Python"
 # Version from setuptools_scm
