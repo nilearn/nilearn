@@ -34,6 +34,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` Add :func:`~decoding.cross_val_decoder_score` to evaluate image-based decoders with outer cross-validation using scikit-learn scoring and splitters (issue :gh:`6068`, PR :gh:`6552` by `Mohammad Sadeghi Hardengi`_).
+
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
 
 
