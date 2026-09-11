@@ -214,7 +214,7 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes, strict=False)):
 # We use random splits of the subjects into training/testing sets.
 # :class:`sklearn.model_selection.StratifiedShuffleSplit`
 # allows preserving the proportion of children in the test set. We also use
-# :class:`sklearn.dummy.DummyClassifier to get the chance level performance.
+# :class:`sklearn.dummy.DummyClassifier` to get the chance level performance.
 # As the the proportion of children in the training/testing sets are
 # preserved across all folds, we only need to calculate it once.
 from sklearn.dummy import DummyClassifier
