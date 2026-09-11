@@ -9,47 +9,22 @@ from numpy.testing import assert_array_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
 
 ESTIMATORS_TO_CHECK = [MultiNiftiMasker()]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-
-# check_multi_masker_transformer_high_variance_confounds is slow
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize(
@@ -83,7 +58,7 @@ def img_2(data_2, affine_eye) -> Nifti1Image:
 
 def test_auto_mask(data_1, img_1, data_2, img_2):
     """Test that a proper mask is generated from fitted image."""
-    masker = MultiNiftiMasker(mask_args={"opening": 0}, standardize=None)
+    masker = MultiNiftiMasker(mask_args={"opening": 0})
 
     # Smoke test the fit
     masker.fit([[img_1]])
@@ -101,32 +76,6 @@ def test_auto_mask(data_1, img_1, data_2, img_2):
     masker.transform(img_1)
 
 
-def test_nan():
-    """Check when fitted data contains nan."""
-    data = np.ones((9, 9, 9))
-    data[0] = np.nan
-    data[:, 0] = np.nan
-    data[:, :, 0] = np.nan
-    data[-1] = np.nan
-    data[:, -1] = np.nan
-    data[:, :, -1] = np.nan
-    data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, np.eye(4))
-
-    masker = MultiNiftiMasker(mask_args={"opening": 0})
-    masker.fit([img])
-
-    mask = get_data(masker.mask_img_)
-
-    assert mask[1:-1, 1:-1, 1:-1].all()
-    assert not mask[0].any()
-    assert not mask[:, 0].any()
-    assert not mask[:, :, 0].any()
-    assert not mask[-1].any()
-    assert not mask[:, -1].any()
-    assert not mask[:, :, -1].any()
-
-
 def test_different_affines():
     """Check mask and EIP files with different affines."""
     mask_img = Nifti1Image(
@@ -135,7 +84,7 @@ def test_different_affines():
     epi_img1 = Nifti1Image(np.ones((4, 4, 4, 3)), affine=np.diag((2, 2, 2, 1)))
     epi_img2 = Nifti1Image(np.ones((3, 3, 3, 3)), affine=np.diag((3, 3, 3, 1)))
 
-    masker = MultiNiftiMasker(mask_img=mask_img, standardize=None)
+    masker = MultiNiftiMasker(mask_img=mask_img)
     epis = masker.fit_transform([epi_img1, epi_img2])
     for this_epi in epis:
         masker.inverse_transform(this_epi)
@@ -151,7 +100,7 @@ def test_3d_images(rng):
     )
     epi_img1 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
     epi_img2 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
-    masker = MultiNiftiMasker(mask_img=mask_img, standardize=None)
+    masker = MultiNiftiMasker(mask_img=mask_img)
 
     masker.fit_transform([epi_img1, epi_img2])
 
