@@ -155,7 +155,7 @@ plotting.plot_epi(
     display_mode="xz",
 )
 
-# %
+# %%
 # A reduced dataset can be created by taking the parcel-level average.
 #
 # Parcellation objects with any method
