@@ -461,7 +461,7 @@ def signals_to_img_labels(
 @fill_doc
 def img_to_signals_maps(
     imgs, maps_img, mask_img=None
-) -> tuple[np.ndarray, list[int]]:
+) -> tuple[np.ndarray, list[int], Nifti1Image]:
     """Extract region signals from image.
 
     This function is applicable to regions defined by maps.
@@ -491,6 +491,13 @@ def img_to_signals_maps(
     maps : :obj:`list` of :obj:`int`
         maps_img[..., labels[n]] is the region that has been used to extract
         signal region_signals[:, n].
+
+    masked_atlas : :class:`nibabel.nifti1.Nifti1Image`
+        Regions definition as maps after applying the mask.
+        If no ``mask_img`` has been passed,
+        then this will be the same as the input ``maps_img``.
+
+        .. nilearn_versionadded:: 0.15.0dev
 
     See Also
     --------
@@ -544,7 +551,9 @@ def img_to_signals_maps(
         0
     ].T
 
-    return region_signals, list(maps)
+    masked_atlas = new_img_like(maps_img, maps_data)
+
+    return region_signals, list(maps), masked_atlas
 
 
 def signals_to_img_maps(
