@@ -565,26 +565,29 @@ def test_smooth_img_surface_does_not_modify_input(surf_img_1d):
 
 @pytest.mark.ai_generated
 @pytest.mark.parametrize("fwhm", [None, 0.0, 4.0])
-def test_smooth_img_surface_warns_on_non_finite(surf_img_1d, fwhm):
+def test_smooth_img_surface_warns_on_non_finite(
+    surf_img_1d, add_nans_to_surf_img, fwhm
+):
     """Users must be told when smoothing silently zeroes their data.
 
     See https://github.com/nilearn/nilearn/issues/6487.
     """
-    surf_img_1d.data.parts["left"][0] = np.nan
+    img = add_nans_to_surf_img(surf_img_1d)
 
     with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
-        smooth_img(surf_img_1d, fwhm=fwhm)
+        smooth_img(img, fwhm=fwhm)
 
 
 @pytest.mark.ai_generated
 @pytest.mark.parametrize("fwhm", [None, 4.0])
-def test_smooth_img_volume_warns_on_non_finite(img_3d_mni, fwhm):
+def test_smooth_img_volume_warns_on_non_finite(
+    img_3d_mni, add_nans_to_img, fwhm
+):
     """Volume branch must warn as well, so both paths behave the same."""
-    data = get_data(img_3d_mni)
-    data[0, 0, 0] = np.nan
+    img = add_nans_to_img(img_3d_mni)
 
     with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
-        smooth_img(img_3d_mni, fwhm=fwhm)
+        smooth_img(img, fwhm=fwhm)
 
 
 @pytest.mark.ai_generated
@@ -601,27 +604,30 @@ def test_smooth_img_does_not_warn_when_all_finite(
 
 @pytest.mark.ai_generated
 @pytest.mark.parametrize("fwhm", [None, 4.0])
-def test_smooth_img_surface_ensure_finite_false(surf_img_1d, fwhm):
+def test_smooth_img_surface_ensure_finite_false(
+    surf_img_1d, add_nans_to_surf_img, fwhm
+):
     """``ensure_finite=False`` leaves non-finite values alone, silently."""
-    surf_img_1d.data.parts["left"][0] = np.nan
+    img = add_nans_to_surf_img(surf_img_1d)
 
     with warnings.catch_warnings():
         warnings.simplefilter("error", UserWarning)
-        smoothed = smooth_img(surf_img_1d, fwhm=fwhm, ensure_finite=False)
+        smoothed = smooth_img(img, fwhm=fwhm, ensure_finite=False)
 
     assert not np.all(np.isfinite(smoothed.data.parts["left"]))
 
 
 @pytest.mark.ai_generated
 @pytest.mark.parametrize("fwhm", [None, 4.0])
-def test_smooth_img_volume_ensure_finite_false(img_3d_mni, fwhm):
+def test_smooth_img_volume_ensure_finite_false(
+    img_3d_mni, add_nans_to_img, fwhm
+):
     """``ensure_finite=False`` reaches the volume branch too."""
-    data = get_data(img_3d_mni)
-    data[0, 0, 0] = np.nan
+    img = add_nans_to_img(img_3d_mni)
 
     with warnings.catch_warnings():
         warnings.simplefilter("error", UserWarning)
-        smoothed = smooth_img(img_3d_mni, fwhm=fwhm, ensure_finite=False)
+        smoothed = smooth_img(img, fwhm=fwhm, ensure_finite=False)
 
     assert not np.all(np.isfinite(get_data(smoothed)))
 
