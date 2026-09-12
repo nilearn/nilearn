@@ -387,6 +387,8 @@
 
 .. _Victoria McCray: https://github.com/victoriamccray
 
+.. _VenishPaneliya: https://github.com/VenishPaneliya
+
 .. _Vincent Michel: https://github.com/vmichel
 
 .. _Virgile Fritsch: https://github.com/VirgileFritsch

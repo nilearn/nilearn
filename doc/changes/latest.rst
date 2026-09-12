@@ -30,6 +30,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-primary:`Doc` Fix documented defaults that disagreed with the signatures for :func:`~nilearn.datasets.fetch_atlas_smith_2009` and for the ``order``, ``report_hook`` and ``deep`` parameters of several private helpers (:gh:`6582` by `VenishPaneliya`_).
+
 
 Enhancements
 ------------
