@@ -1152,7 +1152,7 @@ def fetch_atlas_smith_2009(
         atlas. Specifying "nitrc" will force download from a mirror, with
         potentially higher bandwidth.
 
-    dimension : :obj:`int`, default=None
+    dimension : :obj:`int`, default=10
         Number of dimensions in the dictionary. Valid dimension
         available are {10, 20, 70}.
 
