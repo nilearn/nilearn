@@ -1,18 +1,18 @@
 """Nilearn tags for estimators.
 
-These tags override or extends some of the sklearn tags.
+These tags extend the sklearn estimator tags
+(https://scikit-learn.org/stable/developers/develop.html#estimator-tags)
+to say which inputs an estimator accepts:
 
-With those tags we can specify if one of Nilearn's 'estimator'
-(those include our maskers)
-has certain characteristics or expected behavior.
-For example if the estimator can accept nifti and / or surface images
-during fitting.
+- ``niimg_like``: Niimg-like inputs
+  (path to a ``.nii`` or ``.nii.gz`` file, or a Nifti image object)
+- ``surf_img``: :class:`~nilearn.surface.SurfaceImage` inputs
 
-This is mostly used internally to run some checks on our API
-and its behavior.
+Two ``estimator_type`` values are also used that sklearn does not define:
+``"masker"`` and ``"glm"``.
 
-See the sklearn documentation for more details on tags
-https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+Estimators declare their tags by overriding ``__sklearn_tags__``
+and setting ``tags.input_tags = InputTags(...)``.
 """
 
 from dataclasses import dataclass
@@ -25,8 +25,20 @@ from sklearn.utils import InputTags as SkInputTags
 class InputTags(SkInputTags):
     """Tags for the input data.
 
-    Nilearn version of sklearn.utils.InputTags
-    https://scikit-learn.org/1.6/modules/generated/sklearn.utils.InputTags.html#sklearn.utils.InputTags
+    Nilearn version of :class:`sklearn.utils.InputTags`
+    with two extra tags for neuroimaging inputs.
+    All other parameters are those of :class:`sklearn.utils.InputTags`.
+
+    .. nilearn_versionadded:: 0.15.0
+
+    Parameters
+    ----------
+    niimg_like : :obj:`bool`, default=True
+        Whether the estimator accepts Niimg-like inputs.
+
+    surf_img : :obj:`bool`, default=False
+        Whether the estimator accepts
+        :class:`~nilearn.surface.SurfaceImage` inputs.
     """
 
     # same as base input tags of
@@ -52,6 +64,24 @@ class InputTags(SkInputTags):
 
 
 def get_tag(estimator: Any, tag: str) -> bool:
+    """Get the value of an input tag of an estimator.
+
+    .. nilearn_versionadded:: 0.15.0
+
+    Parameters
+    ----------
+    estimator : estimator instance
+        Estimator with a ``__sklearn_tags__`` method.
+
+    tag : :obj:`str`
+        Name of the input tag, for example ``"surf_img"``.
+
+    Returns
+    -------
+    :obj:`bool`
+        Value of the tag, or ``False`` if the estimator
+        has no ``__sklearn_tags__`` method or no such tag.
+    """
     if not hasattr(estimator, "__sklearn_tags__"):
         return False
     tags = estimator.__sklearn_tags__()
