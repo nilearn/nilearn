@@ -17,11 +17,9 @@ dev = [
 doc = [
     "docutils>=0.17",
     "furo>=2024.8.6",
-    # 0.8 is the Pyodide 314 line, nilearn, and 0.23 raised
-    # jupyterlite-sphinx's jupyterlite-core cap to < 0.9 so
-    # the two resolve together.
-    "jupyterlite-pyodide-kernel >= 0.8",
-    "jupyterlite-sphinx >= 0.23",
+    # See https://github.com/jupyterlite/pyodide-kernel#compatibility
+    "jupyterlite-pyodide-kernel>=0.8.0,<=0.9.0",
+    "jupyterlite-sphinx>=0.23.0",
     "marimo>=0.12.0",
     "memory_profiler>=0.61",  # measuring memory during docs building
     "myst-parser>=3.0.1",

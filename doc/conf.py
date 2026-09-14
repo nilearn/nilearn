@@ -524,8 +524,8 @@ if with_jupyterlite:
     try_examples_global_button_text = "Try it in your browser!"
     try_examples_global_warning_text = (
         "Running the nilearn examples in JupyterLite is experimental"
-        " and you may encounter some unexpected behavior.\n\n"
-        " The main difference is that imports will take a lot longer"
+        " and you may encounter unexpected behavior.\n\n"
+        " In particular, note that imports will take a lot longer"
         " than usual, for example the first `import nilearn` can take"
         " roughly 10-20s.\n\nIf you notice problems, feel free to open"
         " an [issue](https://github.com/nilearn/nilearn/issues/new/choose) "
