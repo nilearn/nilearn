@@ -12,14 +12,14 @@ discriminate children from adults. In general, the tangent space embedding
 for a careful study.
 """
 
+# overall verbosity of the example
+verbose = 0
+
 # %%
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
 # We study only 30 subjects from the dataset, to save computation time.
-from nilearn.datasets import (
-    fetch_atlas_msdl,
-    fetch_development_fmri,
-)
+from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 from nilearn.plotting import (
     plot_connectome,
     plot_matrix,
@@ -43,11 +43,15 @@ print(
 # Region signals extraction
 # -------------------------
 # To extract regions time series, we instantiate a
-# :class:`~nilearn.maskers.NiftiMapsMasker` object and pass the atlas the
-# file name to it, as well as filtering band-width and detrending option.
-from nilearn.maskers import NiftiMapsMasker
+# :class:`~nilearn.maskers.MiltiNiftiMapsMasker` object
+# and pass the atlas the file name to it,
+# as well as filtering band-width and detrending option.
+#
+# Then we compute region signals and extract useful phenotypic information,
+# for all subjects and then group the outputs for children and adults.
+from nilearn.maskers import MultiNiftiMapsMasker
 
-masker = NiftiMapsMasker(
+masker = MultiNiftiMapsMasker(
     msdl_data.maps,
     resampling_target="data",
     t_r=development_dataset.t_r,
@@ -58,57 +62,53 @@ masker = NiftiMapsMasker(
     memory="nilearn_cache",
     memory_level=1,
     standardize_confounds=True,
-    verbose=1,
+    verbose=verbose,
 )
 
-# %%
-# Then we compute region signals and extract useful phenotypic information.
+pooled_subjects = masker.fit_transform(
+    development_dataset.func, confounds=development_dataset.confounds
+)
+
+groups = development_dataset.phenotypic["Child_Adult"].tolist()
+
 children = []
-pooled_subjects = []
 groups = []  # child or adult
-for func_file, confound_file, phenotype in zip(
-    development_dataset.func,
-    development_dataset.confounds,
-    development_dataset.phenotypic["Child_Adult"],
-    strict=False,
-):
-    time_series = masker.fit_transform(func_file, confounds=confound_file)
-    pooled_subjects.append(time_series)
+for time_series, phenotype in zip(pooled_subjects, groups, strict=False):
     if phenotype == "child":
         children.append(time_series)
-    groups.append(phenotype)
 
+#  %%
 print(f"Data has {len(children)} children.")
 
 # %%
 # ROI-to-ROI correlations of children
 # -----------------------------------
-# The simpler and most commonly used kind of connectivity is correlation. It
-# models the full (marginal) connectivity between pairwise ROIs. We can
-# estimate it using :class:`~nilearn.connectome.ConnectivityMeasure`.
+# The simpler and most commonly used kind of connectivity is correlation.
+# It models the full (marginal) connectivity between pairwise ROIs.
+# We can estimate it using :class:`~nilearn.connectome.ConnectivityMeasure`.
 from nilearn.connectome import ConnectivityMeasure
 
-correlation_measure = ConnectivityMeasure(kind="correlation", verbose=1)
+correlation_measure = ConnectivityMeasure(kind="correlation", verbose=verbose)
 
 # %%
-# From the list of ROIs time-series for children, the
-# `correlation_measure` computes individual correlation matrices.
+# From the list of ROIs time-series for children,
+# the ``correlation_measure`` computes individual correlation matrices.
 correlation_matrices = correlation_measure.fit_transform(children)
 
+# %%
 # All individual coefficients are stacked in a unique 2D matrix.
+# as well as the average correlation across all fitted subjects.
 print(
     "Correlations of children are stacked "
     f"in an array of shape {correlation_matrices.shape}"
 )
 
-# %%
-# as well as the average correlation across all fitted subjects.
 mean_correlation_matrix = correlation_measure.mean_
 print(f"Mean correlation has shape {mean_correlation_matrix.shape}.")
 
 
 # %%
-# We display the connectome matrices of the first 3 children
+# We display the connectome matrices of the first 3 children.
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -127,8 +127,7 @@ for i, (matrix, ax) in enumerate(
     )
 # %%
 # The blocks structure that reflect functional networks are visible.
-
-# %%
+#
 # Now we display as a connectome the mean correlation matrix over all children.
 plot_connectome(
     mean_correlation_matrix,
@@ -139,10 +138,11 @@ plot_connectome(
 # %%
 # Studying partial correlations
 # -----------------------------
-# We can also study **direct connections**, revealed by partial correlation
-# coefficients. We just change the `ConnectivityMeasure` kind
+# We can also study **direct connections**,
+# revealed by partial correlation coefficients.
+# We just change the ``ConnectivityMeasure`` kind.
 partial_correlation_measure = ConnectivityMeasure(
-    kind="partial correlation", verbose=1
+    kind="partial correlation", verbose=verbose
 )
 partial_correlation_matrices = partial_correlation_measure.fit_transform(
     children
@@ -176,21 +176,23 @@ plot_connectome(
 # ----------------------------------------------------------
 # We can use **both** correlations and partial correlations to capture
 # reproducible connectivity patterns at the group-level.
-# This is done by the tangent space embedding.
-tangent_measure = ConnectivityMeasure(kind="tangent", verbose=1)
+# This is done by the ``"tangent"`` space embedding.
+tangent_measure = ConnectivityMeasure(kind="tangent", verbose=verbose)
 
 # %%
-# We fit our children group and get the group connectivity matrix stored as
-# in `tangent_measure.mean_`, and individual deviation matrices of each subject
-# from it.
+# We fit our children group to estimate the group connectivity matrix
+# (stored in ``tangent_measure.mean_``),
+# and individual deviation matrices of each subject from it.
 tangent_matrices = tangent_measure.fit_transform(children)
 
 # %%
-# `tangent_matrices` model individual connectivities as
-# **perturbations** of the group connectivity matrix `tangent_measure.mean_`.
-# Keep in mind that these subjects-to-group variability matrices do not
-# directly reflect individual brain connections. For instance negative
-# coefficients can not be interpreted as anticorrelated regions.
+# ``tangent_matrices`` model individual connectivities
+# as **perturbations** of the group connectivity matrix
+# ``tangent_measure.mean_``.
+# Keep in mind that these subjects-to-group variability matrices
+# do not directly reflect individual brain connections.
+# For instance negative coefficients cannot be interpreted
+# as anticorrelated regions.
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes, strict=False)):
     plot_matrix(
@@ -202,21 +204,23 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes, strict=False)):
 
 
 # %%
-# The average tangent matrix cannot be interpreted, as individual matrices
-# represent deviations from the mean, which is set to 0.
+# The average tangent matrix cannot be interpreted,
+# as individual matrices represent deviations from the mean, which is set to 0.
 
 # %%
 # What kind of connectivity is most powerful for classification?
 # --------------------------------------------------------------
-# We will use connectivity matrices as features to distinguish children from
-# adults. We use cross-validation and measure classification accuracy to
-# compare the different kinds of connectivity matrices.
+# We will use connectivity matrices as features to distinguish children
+# from adults.
+# We use cross-validation and measure classification accuracy
+# to compare the different kinds of connectivity matrices.
 # We use random splits of the subjects into training/testing sets.
 # :class:`sklearn.model_selection.StratifiedShuffleSplit`
-# allows preserving the proportion of children in the test set. We also use
-# :class:`sklearn.dummy.DummyClassifier` to get the chance level performance.
-# As the the proportion of children in the training/testing sets are
-# preserved across all folds, we only need to calculate it once.
+# allows preserving the proportion of children in the test set.
+# We also use :class:`sklearn.dummy.DummyClassifier`
+# to get the chance level performance.
+# As the the proportion of children in the training/testing sets
+# are preserved across all folds, we only need to calculate it once.
 from sklearn.dummy import DummyClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import StratifiedShuffleSplit
@@ -233,11 +237,13 @@ for kind in kinds:
     for train, test in cv.split(pooled_subjects, classes):
         # *ConnectivityMeasure* can output the estimated subjects coefficients
         # as a 1D arrays through the parameter *vectorize*.
-        connectivity = ConnectivityMeasure(kind=kind, vectorize=True)
+        connectivity = ConnectivityMeasure(
+            kind=kind, vectorize=True, verbose=verbose
+        )
         # build vectorized connectomes for subjects in the train set
         connectomes = connectivity.fit_transform(pooled_subjects[train])
         # fit the classifier
-        classifier = LinearSVC(dual=True, random_state=0).fit(
+        classifier = LinearSVC(dual=True, random_state=0, verbose=verbose).fit(
             connectomes, classes[train]
         )
         # make predictions for the left-out test subjects
@@ -248,8 +254,8 @@ for kind in kinds:
         scores[kind].append(accuracy_score(classes[test], predictions))
 
         if not scores.get("dummy"):
-            # run dummy classifier to get chance level performance if its not
-            # there already
+            # run dummy classifier to get chance level performance
+            # if its not there already
             dummy_prediction = (
                 DummyClassifier()
                 .fit(connectomes, classes[train])
