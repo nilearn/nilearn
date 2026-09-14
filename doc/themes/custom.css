@@ -54,6 +54,14 @@ h3 {
   }
 }
 
+html[data-theme="light"] {
+  --pst-color-primary: --sd-color-primary;
+}
+
+html[data-theme="dark"] {
+  --pst-color-primary: --sd-color-primary;
+}
+
 div.sphx-glr-download a {
   background-color: transparent;
   background-image: none;
