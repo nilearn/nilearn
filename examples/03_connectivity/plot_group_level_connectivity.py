@@ -26,7 +26,7 @@ from nilearn.plotting import (
     show,
 )
 
-development_dataset = fetch_development_fmri(n_subjects=30)
+development_dataset = fetch_development_fmri(n_subjects=30, verbose=verbose)
 
 # %%
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
@@ -125,6 +125,9 @@ for i, (matrix, ax) in enumerate(
         vmax=vmax,
         vmin=-vmax,
     )
+
+show()
+
 # %%
 # The blocks structure that reflect functional networks are visible.
 #
@@ -134,6 +137,8 @@ plot_connectome(
     msdl_coords,
     title="mean correlation over all children",
 )
+
+show()
 
 # %%
 # Studying partial correlations
@@ -164,12 +169,14 @@ for i, (matrix, ax) in enumerate(
         vmax=vmax,
         vmin=-vmax,
     )
-# %%
+
 plot_connectome(
     partial_correlation_measure.mean_,
     msdl_coords,
     title="mean partial correlation over all children",
 )
+
+show()
 
 # %%
 # Extract subjects variabilities around a group connectivity
@@ -201,6 +208,8 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes, strict=False)):
         axes=ax,
         title=f"tangent offset, child {i}",
     )
+
+show()
 
 
 # %%
@@ -279,6 +288,7 @@ plt.gca().set_axisbelow(True)
 plt.gca().axvline(scores["dummy"], color="red", linestyle="--")
 plt.xlabel("Classification accuracy\n(red line = chance level)")
 
+show()
 
 # %%
 # This is a small example to showcase nilearn features. In practice such
@@ -288,7 +298,6 @@ plt.xlabel("Classification accuracy\n(red line = chance level)")
 # across many cohorts and clinical questions,
 # the tangent kind should be preferred.
 
-show()
 
 # %%
 # References
