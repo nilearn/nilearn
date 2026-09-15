@@ -55,11 +55,11 @@ h3 {
 }
 
 html[data-theme="light"] {
-  --pst-color-primary: --sd-color-primary;
+  --pst-color-primary: --sd-color-primary-highlight;
 }
 
 html[data-theme="dark"] {
-  --pst-color-primary: --sd-color-primary;
+  --pst-color-primary: --sd-color-primary-highlight;
 }
 
 div.sphx-glr-download a {
