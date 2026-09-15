@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any, Literal, Self, get_args
 from warnings import warn
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
@@ -1412,8 +1411,8 @@ class FirstLevelModel(BaseGLM):
         observed_ts,
         predicted_ts,
         residuals_ts,
-        figsize=(10, 8),
-        close=True,
+        figsize : tuple[int] = (10, 8),
+        close : bool = True,
     ):
         """Help plot observed vs predicted signal and residuals.
 
@@ -1449,7 +1448,7 @@ class FirstLevelModel(BaseGLM):
         )
         axes[0].axhline(y=0, color="black", linestyle="--", alpha=0.7)
         axes[0].set_title("Observed vs Predicted Signal")
-        axes[0].set_ylabel("Signal Intensity")
+        axes[0].set_ylabel("Signal Intensity (AU)")
         axes[0].legend()
         axes[0].set_xlabel(x_label)
 
@@ -1520,10 +1519,8 @@ class FirstLevelModel(BaseGLM):
             if isinstance(coords[0], (int, float)):
                 coords = [coords]
             masker = NiftiSpheresMasker(seeds=coords, radius=radius)
-            masker.fit()
-        else:
-            check_is_fitted(masker)
-
+        if not masker.__sklearn_is_fitted__():
+           masker.fit()
         # Get observed, predicted, and residual time series
         y_pred = self._get_element_wise_model_attribute(
             "predicted", result_as_time_series=True
@@ -1566,17 +1563,17 @@ class FirstLevelModel(BaseGLM):
         ----------
         coords : :obj:`tuple` or :obj:`list` of :obj:`tuple` of coordinates, or None, default = None
             Coordinates of the voxel(s) or region center(s).
-            Ignored if `masker` is provided.
-        masker : NiftiMasker or NiftiSpheresMasker, optional
+            Ignored if ``masker`` is provided.
+        masker : NiftiMasker or NiftiSpheresMasker or None, default = None
             Custom masker used to extract the time series. If None, a
             :class:`~nilearn.maskers.NiftiSpheresMasker` centered on `coords`
             with radius `radius` is created.
-        radius : float, optional
-            Radius of the sphere if `masker` is None. Default is 3mm.
-        figsize : tuple, optional
-            Size of the figure. Default is (10, 6).
-        show : bool, optional
-            Whether to display the figure. Default is False.
+        radius : :obj:`float`, default = 3.0
+            Radius of the sphere if `masker` is None.
+        figsize : :obj:`tuple`, default = (10, 8)
+            Size of the figure.
+        show : :obj:`bool`, default = False
+            Whether to display the figure.
 
         Returns
         -------
@@ -1584,8 +1581,8 @@ class FirstLevelModel(BaseGLM):
             DataFrame containing the observed, predicted, and residuals \
             time series. If several locations were provided, columns are
             suffixed with the index of the location (e.g. ``observed_0``).
-        fig : matplotlib.figure.Figure or list of Figure
-            The generated figure(s). A A list if several locations were
+        fig : matplotlib.figure.Figure or list of Figure or None
+            The generated figure(s). A list if several locations were
             provided.
 
         Notes
@@ -1605,7 +1602,7 @@ class FirstLevelModel(BaseGLM):
                 ImportWarning,
                 stacklevel=2,
             )
-            return timeseries_df
+            return timeseries_df, None
 
         n_regions = sum(1 for c in timeseries_df.columns if "observed" in c)
 
