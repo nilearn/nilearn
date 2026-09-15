@@ -5,6 +5,11 @@
       "@jupyterlite/pyodide-kernel-extension:kernel": {
         "pyodideUrl": "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js"
       }
+    },
+    "settingsOverrides": {
+      "@jupyterlab/logconsole-extension:plugin": {
+        "defaultLogLevel": "debug"
+      }
     }
   }
 }
