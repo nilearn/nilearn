@@ -2,18 +2,19 @@
 Comparing connectomes on different reference atlases
 ====================================================
 
-This examples shows how to turn a :term:`parcellation` into connectome for
+This example shows how to turn a :term:`parcellation` into connectome for
 visualization. This requires choosing centers for each parcel
 or network, via :func:`~nilearn.plotting.find_parcellation_cut_coords` for
-:term:`parcellation` based on labels and
+:term:`parcellation` based on deterministic atlases (labels) and
 :func:`~nilearn.plotting.find_probabilistic_atlas_cut_coords` for
-:term:`parcellation` based on probabilistic values.
+:term:`parcellation` based on probabilistic atlases (maps).
 
 In the intermediary steps, we make use of
 :class:`~nilearn.maskers.MultiNiftiLabelsMasker` and
 :class:`~nilearn.maskers.MultiNiftiMapsMasker`
 to extract time series from nifti
-objects from multiple subjects using different :term:`parcellation` atlases.
+objects representing multiple subjects
+using different :term:`parcellation` atlases.
 
 The time series of all subjects of the brain development dataset are
 concatenated and given directly to
@@ -21,22 +22,22 @@ concatenated and given directly to
 correlation matrices for each atlas across all subjects.
 
 Mean correlation matrix is displayed on glass brain on extracted coordinates.
+
+The example also covers a special case of plotting directed connectome, such
+as results from Granger causality. To demonstrate the utility, we created an
+asymmetric connectome, which would be similar to results from `Granger
+causality <https://en.wikipedia.org/wiki/Granger_causality>`_.
 """
 
-# %%
-# Load atlases
-# ------------
-from nilearn.datasets import fetch_atlas_yeo_2011, fetch_development_fmri
+# control overall verbosity of the script
+verbose = 0
 
-yeo = fetch_atlas_yeo_2011(n_networks=17)
-print(
-    "Yeo atlas nifti image (3D) with 17 parcels and liberal mask "
-    f" is located at: {yeo['maps']}"
-)
 
 # %%
 # Load functional data
 # --------------------
+from nilearn.datasets import fetch_development_fmri
+
 data = fetch_development_fmri(n_subjects=10)
 
 print(
@@ -45,29 +46,38 @@ print(
 )
 print(
     "Counfound csv files (of same subject) are located "
-    f"at : {data['confounds'][0]!r}"
+    f"at : {data.confounds[0]!r}"
 )
 
 
 # %%
-# Extract coordinates on Yeo atlas - parcellations
-# ------------------------------------------------
+# Extract coordinates from a deterministic parcellation - Yeo atlas
+# -----------------------------------------------------------------
+# For this first section we are using the :ref:`Yeo atlas <yeo_2011_atlas>`.
 from nilearn.connectome import ConnectivityMeasure
+from nilearn.datasets import fetch_atlas_yeo_2011
 from nilearn.maskers import MultiNiftiLabelsMasker
 
+yeo = fetch_atlas_yeo_2011(n_networks=17)
+print(
+    "Yeo atlas nifti image (3D) with 17 parcels and liberal mask "
+    f" is located at: {yeo['maps']}"
+)
+
 # ConnectivityMeasure from Nilearn uses simple 'correlation' to compute
-# connectivity matrices for all subjects in a list
-connectome_measure = ConnectivityMeasure(kind="correlation", verbose=1)
+# connectivity matrices for all subjects in a list.
+connectome_measure = ConnectivityMeasure(kind="correlation", verbose=verbose)
 
 # create masker using MultiNiftiLabelsMasker to extract functional data within
 # atlas parcels from multiple subjects using parallelization to speed up the
 # computation
 masker = MultiNiftiLabelsMasker(
-    labels_img=yeo["maps"],  # Both hemispheres
+    labels_img=yeo["maps"],  # Both hemispheres,
+    standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
     n_jobs=2,
-    verbose=1,
+    verbose=verbose,
 )
 
 # extract time series from all subjects
@@ -112,8 +122,7 @@ show()
 import nibabel as nb
 import numpy as np
 
-from nilearn.image import get_data, new_img_like
-from nilearn.image.resampling import coord_transform
+from nilearn.image import coord_transform, get_data, new_img_like
 
 # load the atlas image first
 label_image = nb.load(yeo["maps"])
@@ -124,7 +133,7 @@ labels_affine = label_image.affine
 # generate image coordinates using affine
 x, y, z = coord_transform(0, 0, 0, np.linalg.inv(labels_affine))
 
-# generate an separate image for the left hemisphere
+# generate a separate image for the left hemisphere
 # left/right split is done along x-axis
 left_hemi = get_data(label_image).copy()
 left_hemi[: int(x)] = 0
@@ -144,8 +153,9 @@ for hemi, img in zip(
 ):
     masker = MultiNiftiLabelsMasker(
         labels_img=img,
+        standardize="zscore_sample",
         standardize_confounds=True,
-        verbose=1,
+        verbose=verbose,
     )
 
     time_series = masker.fit_transform(data.func, confounds=data.confounds)
@@ -168,11 +178,14 @@ show()
 
 # %%
 # Plot a directed connectome - asymmetric connectivity measure
-# ------------------------------------------------------------
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 # In this section, we use the lag-1 correlation as the connectivity
 # measure, which leads to an asymmetric connectivity matrix.
-# The plot_connectome function accepts both symmetric and asymmetric
+# The :func:`~nilearn.plotting.plot_connectome` function
+# accepts both symmetric and asymmetric
 # matrices, but plots the latter as a directed graph.
+#
 
 
 # Define a custom function to compute lag correlation on the time series
@@ -205,8 +218,9 @@ for lag in [0, 1]:
     )
 
 # %%
-# Load probabilistic atlases - extracting coordinates on brain maps
-# -----------------------------------------------------------------
+# Extract coordinates from a probabilistic parcellation - Difumo atlas
+# --------------------------------------------------------------------
+# For this second section we are using the :ref:`Difumo atlas <difumo_atlas>`.
 from nilearn.datasets import fetch_atlas_difumo
 from nilearn.plotting import find_probabilistic_atlas_cut_coords
 
@@ -215,7 +229,6 @@ difumo = fetch_atlas_difumo(dimension=dim, resolution_mm=2)
 
 # %%
 # Iterate over fetched atlases to extract coordinates - probabilistic
-# -------------------------------------------------------------------
 from nilearn.maskers import MultiNiftiMapsMasker
 
 # Create masker using MultiNiftiMapsMasker to extract functional data within
@@ -223,11 +236,12 @@ from nilearn.maskers import MultiNiftiMapsMasker
 # computation.
 masker = MultiNiftiMapsMasker(
     maps_img=difumo.maps,
+    standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
     memory_level=1,
     n_jobs=2,
-    verbose=1,
+    verbose=verbose,
 )
 
 # extract time series from all subjects

@@ -85,7 +85,7 @@ def _gamma_difference_hrf(
     return hrf
 
 
-def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
+def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0) -> np.ndarray:
     """Implement the :term:`SPM` :term:`HRF` model.
 
     Parameters
@@ -123,7 +123,9 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     return _gamma_difference_hrf(t_r, oversampling, time_length, onset)
 
 
-def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
+def glover_hrf(
+    t_r, oversampling=50, time_length=32.0, onset=0.0
+) -> np.ndarray:
     """Implement the Glover :term:`HRF` model.
 
     Parameters
@@ -208,7 +210,9 @@ def _generic_time_derivative(
     )
 
 
-def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
+def spm_time_derivative(
+    t_r, oversampling=50, time_length=32.0, onset=0.0
+) -> np.ndarray:
     """Implement the :term:`SPM` time derivative :term:`HRF` (dhrf) model.
 
     Parameters
@@ -252,7 +256,9 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     )
 
 
-def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
+def glover_time_derivative(
+    t_r, oversampling=50, time_length=32.0, onset=0.0
+) -> np.ndarray:
     """Implement the Glover time derivative :term:`HRF` (dhrf) model.
 
     Parameters
@@ -315,7 +321,11 @@ def _generic_dispersion_derivative(
     dt : :obj:`float`, default=0.01
         Dispersion step for the derivative.
 
-    See _gamma_difference_hrf for the other parameters description.
+    .. do not check for missing parameters in docstring
+
+    Notes
+    -----
+    See ``_gamma_difference_hrf`` for the other parameters description.
     """
     return _compute_derivative_from_values(
         _gamma_difference_hrf(
@@ -342,7 +352,7 @@ def _generic_dispersion_derivative(
 
 def spm_dispersion_derivative(
     t_r, oversampling=50, time_length=32.0, onset=0.0
-):
+) -> np.ndarray:
     """Implement the :term:`SPM` dispersion derivative :term:`HRF` model.
 
     Parameters
@@ -386,7 +396,7 @@ def spm_dispersion_derivative(
 
 def glover_dispersion_derivative(
     t_r, oversampling=50, time_length=32.0, onset=0.0
-):
+) -> np.ndarray:
     """Implement the Glover dispersion derivative :term:`HRF` model.
 
     Parameters
@@ -636,6 +646,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     return names
 
 
+@fill_doc
 def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
     """Return the list of matching kernels \
     given the specification of the hemodynamic model and time parameters.
@@ -742,7 +753,7 @@ def compute_regressor(
     oversampling=50,
     fir_delays=None,
     min_onset=-24,
-):
+) -> tuple[np.ndarray, list[str]]:
     """Convolve regressors with :term:`HRF` model.
 
     Parameters

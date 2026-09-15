@@ -17,14 +17,22 @@ print(f"Path to MNI152 template: {MNI152_FILE_PATH!r}")
 # ----------------------------------
 #
 # Let's quickly plot this file:
-from nilearn import plotting
+from nilearn.plotting import plot_img
 
-plotting.plot_img(MNI152_FILE_PATH)
+plot_img(MNI152_FILE_PATH)
+
+# %%
+# Calling ``show`` function
+# from :mod:`nilearn.plotting` package is necessary to display the figure
+# when running as a script outside IPython.
+from nilearn.plotting import show
+
+show()
 
 # %%
 # This is not a very pretty plot. We just used the simplest possible
 # code. There is a whole :ref:`section of the documentation <plotting>`
-# on making prettier code.
+# on making prettier plots.
 #
 # **Exercise**: Try plotting one of your own files. In the above,
 # MNI152_FILE_PATH is nothing more than a string with a path pointing to
@@ -40,24 +48,26 @@ plotting.plot_img(MNI152_FILE_PATH)
 #
 # Functions containing 'img' can take either a filename or an image as input.
 #
-# Here we give as inputs the image filename and the smoothing value in mm
-from nilearn import image
+# Here we give as inputs the image filename and the smoothing value in mm.
+from nilearn.image import smooth_img
 
-smooth_anat_img = image.smooth_img(MNI152_FILE_PATH, fwhm=3)
+smooth_anat_img = smooth_img(MNI152_FILE_PATH, fwhm=3)
 
-# While we are giving a file name as input, the function returns
-# an in-memory object:
-smooth_anat_img
-
-# %%
-# This is an in-memory object. We can pass it to nilearn function, for
-# instance to look at it
-plotting.plot_img(smooth_anat_img)
+# While we are giving a file name as input,
+# the function returns an in-memory object:
+print(smooth_anat_img)
 
 # %%
-# We could also pass it to the smoothing function
-more_smooth_anat_img = image.smooth_img(smooth_anat_img, fwhm=3)
-plotting.plot_img(more_smooth_anat_img)
+# This is an in-memory object.
+# We can pass it to nilearn function, for instance to look at it.
+plot_img(smooth_anat_img)
+show()
+
+# %%
+# We could also pass it to the smoothing function again.
+more_smooth_anat_img = smooth_img(smooth_anat_img, fwhm=3)
+plot_img(more_smooth_anat_img)
+show()
 
 
 # %%
@@ -70,22 +80,22 @@ plotting.plot_img(more_smooth_anat_img)
 
 # %%
 # First let's fetch Haxby dataset for subject 1 and 2
-from nilearn import datasets
+from nilearn.datasets import fetch_haxby
 
-haxby = datasets.fetch_haxby(subjects=[1, 2])
+haxby = fetch_haxby(subjects=[1, 2])
 
 # %%
 # Now we can find the anatomical images from both
 # subjects using the `*` wildcard
 from pathlib import Path
 
-anats_all_subjects = (
-    Path(datasets.get_data_dirs()[0]) / "haxby2001" / "subj*" / "anat*"
-)
+from nilearn.datasets import get_data_dirs
+
+anats_all_subjects = Path(get_data_dirs()[0]) / "haxby2001" / "subj*" / "anat*"
 
 # %%
 # Now we can smooth all the anatomical images at once
-anats_all_subjects_smooth = image.smooth_img(anats_all_subjects, fwhm=5)
+anats_all_subjects_smooth = smooth_img(anats_all_subjects, fwhm=5)
 
 # %%
 # This is a 4D image containing one volume per subject
@@ -104,14 +114,6 @@ anats_all_subjects_smooth.to_filename(
 )
 
 # %%
-# Finally, calling plotting.show() is necessary to display the figure
-# when running as a script outside IPython
-plotting.show()
-
-# %%
-# |
-#
-# ______
 #
 # To recap, all the nilearn tools can take data as filenames or
 # glob-style patterns or in-memory objects, and return brain

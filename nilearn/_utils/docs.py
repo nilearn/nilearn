@@ -242,10 +242,10 @@ docdict["clean_args_"] = docdict["clean_args"].replace(
 
 # cluster_threshold
 docdict["cluster_threshold"] = """
-    cluster_threshold : :obj:`int`, default=0
-        Cluster size threshold.
-        Sets of connected voxels / vertices (`clusters`)
-        with size smaller than this number will be removed.
+cluster_threshold : :obj:`int`, default=0
+    Cluster size threshold.
+    Sets of connected voxels / vertices (`clusters`)
+    with size smaller than this number will be removed.
 """
 
 # cmap
@@ -379,7 +379,7 @@ docdict["cv8_5"] = cv.format(8, 5)
 docdict["cvNone_3"] = cv.format("None", 3)
 
 
-# data_dir
+# debias
 docdict["debias"] = """
 debias : :obj:`bool`, default=False
     If set, then the estimated weights maps will be debiased.
@@ -429,40 +429,42 @@ display_mode : {"ortho", "tiled", "mosaic", "x", \
 """
 
 # displayed_maps
-docdict["displayed_maps"] = """
-displayed_maps : :obj:`int`, \
+docdict["displayed_maps"] = """displayed_maps : :obj:`int`, \
                   :class:`~numpy.ndarray` or :obj:`list` of :obj:`int`, \
                   or "all", default=10
+
     Indicates which maps will be displayed in the HTML report.
 
-    - If ``"all"``: All maps will be displayed in the report.
+        -   If ``"all"``: All maps will be displayed in the report.
 
-    .. code-block:: python
+            .. code-block:: python
 
-        masker.generate_report("all")
+                masker.generate_report("all")
 
-    .. warning:
-        If there are too many maps, this might be time and
-        memory consuming, and will result in very heavy
-        reports.
+            .. warning:
+                If there are too many maps, this might be time and
+                memory consuming, and will result in very heavy
+                reports.
 
-    - If a :obj:`list` or :class:`~numpy.ndarray`:
-        This indicates the indices of the maps to be displayed in the report.
-        For example, the following code will generate a report with maps
-        6, 3, and 12, displayed in this specific order:
+        -   If a :obj:`list` or :class:`~numpy.ndarray`:
+            This indicates the indices of the maps
+            to be displayed in the report.
+            For example, the following code will generate a report with maps
+            6, 3, and 12, displayed in this specific order:
 
-    .. code-block:: python
+            .. code-block:: python
 
-        masker.generate_report([6, 3, 12])
+                masker.generate_report([6, 3, 12])
 
-    - If an :obj:`int`: This will only display the first n maps,
-        n being the value of the parameter. By default, the report
-        will only contain the first 10 maps. Example to display the
-        first 16 maps:
+        -   If an :obj:`int`:
+            This will only display the first n maps,
+            n being the value of the parameter. By default, the report
+            will only contain the first 10 maps. Example to display the
+            first 16 maps:
 
-    .. code-block:: python
+            .. code-block:: python
 
-        masker.generate_report(16)
+                masker.generate_report(16)
 """
 docdict["displayed_spheres"] = docdict["displayed_maps"].replace(
     "maps", "spheres"
@@ -491,7 +493,7 @@ docdict["estimator_args"] = """
 estimator_args : dict[str, Any] or None, default=None
     Extra parameters to pass to the scikit-learn estimators.
 
-    .. nilearn_versionadded:: 0.14.0dev
+    .. nilearn_versionadded:: 0.14.0
 """
 
 # extractor / extract_type
@@ -682,40 +684,9 @@ imgs : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
 """
 
-# keep_masked_labels
-docdict["keep_masked_labels"] = """
-keep_masked_labels : :obj:`bool`, default=False
-    When a mask is supplied through the "mask_img" parameter, some
-    atlas regions may lie entirely outside of the brain mask, resulting
-    in empty time series for those regions.
-    If True, the masked atlas with these empty labels will be retained
-    in the output, resulting in corresponding time series containing
-    zeros only. If False, the empty labels will be removed from the
-    output, ensuring no empty time series are present.
-
-    .. nilearn_deprecated:: 0.10.2
-
-    .. nilearn_versionchanged:: 0.13.0
-
-        The ``keep_masked_labels`` parameter will be removed in 0.15.
-
-"""
-
-# keep_masked_maps
-docdict["keep_masked_maps"] = """
-keep_masked_maps : :obj:`bool`, optional
-    If True, masked atlas with invalid maps (maps that contain only
-    zeros after applying the mask) will be retained in the output, resulting
-    in corresponding time series containing zeros only. If False, the
-    invalid maps will be removed from the trimmed atlas, resulting in
-    no empty time series in the output.
-
-    .. nilearn_deprecated:: 0.10.2
-
-    .. nilearn_versionchanged:: 0.13.0
-
-        The ``keep_masked_maps`` parameter will be removed in 0.15.
-
+docdict["imgs_list"] = """
+imgs_list : :obj:`list` of Niimg-like objects
+    See :ref:`extracting_data`.
 """
 
 # linewidth
@@ -920,7 +891,7 @@ radiological : :obj:`bool`, default=False
 
 # random_state
 docdict["random_state"] = """
-random_state : :obj:`int` or np.random.RandomState, optional
+random_state : :obj:`int` or :obj:`numpy.random.RandomState`, optional
     Pseudo-random number generator state used for random sampling.
 """
 
@@ -1209,7 +1180,7 @@ smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
 
 # standardize
 standardize = """
-standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
+standardize : any of: 'zscore_sample', 'psc' or None; \
               default={}
     Strategy to standardize the signal:
 
@@ -1220,53 +1191,9 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
     - ``'psc'``:  Timeseries are shifted to zero mean value and scaled
       to percent signal change (as compared to original mean signal).
 
-    - ``True``: The signal is z-scored (same as option `zscore`).
-      Timeseries are shifted to zero mean and scaled to unit variance.
-
-      .. nilearn_deprecated:: 0.13.0
-
-        In nilearn version 0.15.0,
-        ``True`` will be replaced by  ``'zscore_sample'``.
-
-    - ``False``: Do not standardize the data.
-
-      .. nilearn_deprecated:: 0.13.0
-
-        In nilearn version 0.15.0,
-        ``False`` will be replaced by ``None``.
-
-
 """
-
-# TODO (nilearn >= 0.15.0) update to ..versionchanged
-deprecation_notice_false_to_none = """
-
-    .. nilearn_deprecated:: 0.13.0
-
-        The default will be changed to ``None``
-        in version 0.15.0.
-
-"""
-
-# TODO (nilearn >= 0.15.0) update to ..versionchanged
-deprecation_notice_true_to_zscore_sample = """
-
-    .. nilearn_deprecated:: 0.13.0
-
-        The default will be changed to ``'zscore_sample'``
-        in version 0.15.0.
-
-"""
-
-docdict["standardize_false"] = (
-    standardize.format("False") + deprecation_notice_false_to_none
-)
-# TODO (nilearn >= 0.15.0)
-# adapt the deprecation notices
-docdict["standardize_true"] = (
-    standardize.format("True") + deprecation_notice_true_to_zscore_sample
-)
 docdict["standardize_zscore"] = standardize.format("zscore_sample")
+docdict["standardize_none"] = standardize.format("None")
 
 
 # standardize_confounds
@@ -1337,7 +1264,7 @@ target_shape : :obj:`tuple` or :obj:`list` or None, default=None
 
 """
 
-# threshold
+# tfce
 docdict["tfce"] = """
 tfce : :obj:`bool`, default=False
     Whether to calculate :term:`TFCE`
@@ -1364,7 +1291,7 @@ tfce : :obj:`bool`, default=False
 
 # threshold
 docdict["threshold"] = """
-threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
+threshold : :obj:`int` or :obj:`float`, :obj:`str`, None, or 'auto', optional
     If `None` is given, the image is not thresholded.
     If number is given, it must be non-negative. The specified value is used to
     threshold the image: values below the threshold (in absolute value) are
@@ -1687,7 +1614,7 @@ coef_ : ndarray, shape\
 coef_img_ : nifti image
     Masked model coefficients
 
-cv_ : list of pairs of lists
+cv_ : :obj:`list` of pairs of lists
     Each pair is the list of indices for the train and test samples
     for the corresponding fold.
 
@@ -1719,7 +1646,7 @@ n_elements_ : :obj:`int`
 
     .. nilearn_versionadded:: 0.12.1
 
-screening_percentile_ : float
+screening_percentile_ : :obj:`float`
     Screening percentile corrected according to volume of mask,
     relative to the volume of standard brain.
 

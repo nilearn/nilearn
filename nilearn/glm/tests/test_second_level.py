@@ -20,11 +20,9 @@ from nilearn._utils.data_gen import (
     write_fake_fmri_data_and_design,
 )
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level.second_level import (
     SecondLevelModel,
@@ -37,46 +35,24 @@ from nilearn.glm.second_level.second_level import (
     _process_second_level_input_as_firstlevelmodels,
     _sort_input_dataframe,
 )
+from nilearn.glm.tests.conftest import SHAPE, _confounds, fake_fmri_data
 from nilearn.image import concat_imgs, get_data
 from nilearn.maskers import NiftiMasker
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_surface_image_equal
 
-from .conftest import SHAPE, _confounds, fake_fmri_data
-
 ESTIMATORS_TO_CHECK = [SecondLevelModel()]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -141,7 +117,6 @@ def test_second_level_input_as_3d_images(
     )
 
 
-@pytest.mark.slow
 def test_process_second_level_input_as_firstlevelmodels(
     shape_4d_default, n_subjects
 ):
@@ -167,7 +142,6 @@ def test_process_second_level_input_as_firstlevelmodels(
     assert sample_map.shape == shape_4d_default[:3]
 
 
-@pytest.mark.slow
 def test_check_affine_first_level_models(
     affine_eye, shape_4d_default, n_subjects
 ):
@@ -205,7 +179,6 @@ def test_check_affine_first_level_models(
         )
 
 
-@pytest.mark.slow
 def test_check_shape_first_level_models(shape_4d_default, n_subjects):
     """Check all FirstLevelModel have the same shape."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -402,7 +375,6 @@ def test_check_first_level_contrast():
         _check_first_level_contrast([FirstLevelModel()], None)
 
 
-@pytest.mark.slow
 def test_infer_effect_maps(tmp_path, shape_4d_default):
     """Check that the right input is inferred.
 
@@ -459,7 +431,6 @@ def test_mask_img_volume(n_subjects):
     assert isinstance(model.mask_img_, Nifti1Image)
 
 
-@pytest.mark.slow
 def test_affine_output_mask(n_subjects):
     func_img, mask = fake_fmri_data()
 
@@ -475,7 +446,6 @@ def test_affine_output_mask(n_subjects):
     assert_array_equal(z_image.affine, mask.affine)
 
 
-@pytest.mark.slow
 def test_affine_shape_output_when_provided(affine_eye, n_subjects):
     """Check fov output corresponds to the one passed to model."""
     func_img, mask = fake_fmri_data()
@@ -533,7 +503,6 @@ def test_warning_overriding_with_masker_parameter(n_subjects):
         SecondLevelModel(mask_img=masker, verbose=1).fit(Y, design_matrix=X)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("confounds", [None, _confounds()])
 def test_fmri_inputs_flms(rng, confounds, shape_4d_default):
     """Test second level model with first level model as inputs."""
@@ -757,7 +726,7 @@ def test_error_list_2d_surface_image(rng):
         SecondLevelModel().fit(fmri_data, design_matrix=design_matrix)
 
 
-def test_error_mistmatch_n_image_row_design_matrix(rng):
+def test_error_mismatch_n_image_row_design_matrix(rng):
     """Check n_row in design matrix matches n_images."""
     p, q = 80, 10
     X = rng.standard_normal(size=(p, q))
@@ -773,7 +742,6 @@ def test_error_mistmatch_n_image_row_design_matrix(rng):
         SecondLevelModel().fit(fmri_data[0], design_matrix=design_matrix)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "filename, sep", [("design.csv", ","), ("design.tsv", "\t")]
 )
@@ -837,7 +805,6 @@ def test_fmri_img_inputs_errors(confounds):
         SecondLevelModel().fit([*niimgs, []], confounds)
 
 
-@pytest.mark.slow
 def test_second_level_glm_computation(n_subjects):
     func_img, mask = fake_fmri_data()
 
@@ -878,7 +845,6 @@ def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
         model._get_element_wise_model_attribute("foo", True)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "attribute", ["residuals_", "predicted_", "r_square_"]
 )
@@ -903,7 +869,6 @@ def test_second_level_voxelwise_attribute_errors_minimize_memory(
         getattr(model, attribute)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "attribute", ["residuals_", "predicted_", "r_square_"]
 )
@@ -918,7 +883,6 @@ def test_second_level_voxelwise_attribute(attribute, n_subjects):
     getattr(model, attribute)
 
 
-@pytest.mark.slow
 def test_second_level_residuals(n_subjects):
     """Tests residuals computation for SecondLevelModel."""
     mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
@@ -934,7 +898,6 @@ def test_second_level_residuals(n_subjects):
     assert_array_almost_equal(mean_residuals, 0)
 
 
-@pytest.mark.slow
 def test_second_level_contrast_computation_smoke(n_subjects):
     """Smoke test for different contrasts in fixed effects."""
     func_img, mask = fake_fmri_data()
@@ -955,7 +918,6 @@ def test_second_level_contrast_computation_smoke(n_subjects):
     model.compute_contrast()
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "output_type",
     [
@@ -992,7 +954,6 @@ def test_second_level_contrast_computation_all(output_type, n_subjects):
     )
 
 
-@pytest.mark.slow
 def test_second_level_contrast_computation_errors(rng, n_subjects):
     func_img, mask = fake_fmri_data()
 
@@ -1035,7 +996,6 @@ def test_second_level_contrast_computation_errors(rng, n_subjects):
         model.compute_contrast(None)
 
 
-@pytest.mark.slow
 def test_second_level_t_contrast_length_errors(n_subjects):
     func_img, mask = fake_fmri_data()
 
@@ -1053,7 +1013,6 @@ def test_second_level_t_contrast_length_errors(n_subjects):
         model.compute_contrast(second_level_contrast=[1, 2])
 
 
-@pytest.mark.slow
 def test_second_level_f_contrast_length_errors(n_subjects):
     func_img, mask = fake_fmri_data()
 
@@ -1071,7 +1030,6 @@ def test_second_level_f_contrast_length_errors(n_subjects):
         model.compute_contrast(second_level_contrast=np.eye(2))
 
 
-@pytest.mark.slow
 def test_second_level_contrast_computation_with_memory_caching(n_subjects):
     func_img, mask = fake_fmri_data()
 

@@ -10,3 +10,28 @@ updates:
     labels:
     -   Dependencies
     -   Infrastructure
+    groups:
+        actions-infrastructure:
+            patterns:
+            -   actions/*
+
+-   package-ecosystem: npm
+    directory: /
+    schedule:
+        interval: quarterly
+    groups:
+        npm:
+            patterns:
+            -   '*'
+    ignore:
+    # pixelmatch v6+ is ESM-only ("type": "module"), but tests/js/template.js
+    # uses require('pixelmatch'), which breaks Jest with
+    # "SyntaxError: Unexpected token 'export'".
+    # Stay on the 5.x line until the JS test suite is migrated to ESM.
+    -   dependency-name: pixelmatch
+        update-types:
+        -   version-update:semver-major
+    #   The following are shipped with nilearn so they must be updated manually
+    -   dependency-name: jquery
+    -   dependency-name: plotly.js-gl3d-dist-min
+    -   dependency-name: '@niivue/niivue'

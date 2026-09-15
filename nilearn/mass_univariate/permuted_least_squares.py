@@ -4,6 +4,7 @@ with OLS and permutation test.
 
 import time
 import warnings
+from typing import Literal, overload
 
 import joblib
 import numpy as np
@@ -28,6 +29,7 @@ from nilearn.mass_univariate._utils import (
 )
 
 
+@fill_doc
 def _permuted_ols_on_chunk(
     scores_original_data,
     tested_vars,
@@ -92,11 +94,11 @@ def _permuted_ols_on_chunk(
     n_perm_chunk : int, default=10000
         Number of permutations to be performed.
 
-    intercept_test : boolean, default=True
+    intercept_test : :obj:`bool`, default=True
         Change the permutation scheme (swap signs for intercept,
         switch labels otherwise). See :footcite:t:`Fisher1935`.
 
-    two_sided_test : boolean, default=True
+    two_sided_test : :obj:`bool`, default=True
         If True, performs an unsigned t-test. Both positive and negative
         effects are considered; the null hypothesis is that the effect is zero.
         If False, only positive effects are considered as relevant. The null
@@ -294,6 +296,43 @@ def _permuted_ols_on_chunk(
     )
 
 
+@overload
+def permuted_ols(
+    tested_vars,
+    target_vars,
+    confounding_vars=...,
+    model_intercept=...,
+    n_perm=...,
+    two_sided_test=...,
+    random_state=...,
+    n_jobs=...,
+    verbose=...,
+    masker=...,
+    tfce=...,
+    threshold=...,
+    output_type: Literal["dict"] = ...,
+) -> dict[str, np.ndarray]: ...
+
+
+@overload
+def permuted_ols(
+    tested_vars,
+    target_vars,
+    confounding_vars=...,
+    model_intercept=...,
+    n_perm=...,
+    two_sided_test=...,
+    random_state=...,
+    n_jobs=...,
+    verbose=...,
+    masker=...,
+    tfce=...,
+    threshold=...,
+    *,
+    output_type: Literal["legacy"],
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]: ...
+
+
 @fill_doc
 def permuted_ols(
     tested_vars,
@@ -309,7 +348,7 @@ def permuted_ols(
     tfce=False,
     threshold=None,
     output_type="dict",
-):
+) -> dict[str, np.ndarray] | tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Massively univariate group analysis with permuted OLS.
 
     Tested variates are independently fitted to target variates descriptors
@@ -341,7 +380,16 @@ def permuted_ols(
     Parameters
     ----------
     tested_vars : array-like, shape=(n_samples, n_regressors)
-        Explanatory variates, fitted and tested independently from each others.
+        Numerical or boolean labels for explanatory variates; fitted and tested
+        independently of each other.
+
+        .. note::
+
+            ``permuted_ols`` can support a wide range of analysis designs,
+            depending on the numerical labels in ``tested_var``.
+            For example, if you wished to perform a one-sample test,
+            you could simply provide an array of ones
+            (e.g., ``np.ones(n_samples)``).
 
     target_vars : array-like, shape=(n_samples, n_descriptors)
         :term:`fMRI` data to analyze according
@@ -580,6 +628,46 @@ def permuted_ols(
     ----------
     .. footbibliography::
 
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>>
+        >>> from matplotlib import pyplot as plt
+        >>>
+        >>> from nilearn.mass_univariate import permuted_ols
+        >>>
+        >>> n_samples = 1000
+        >>> seed = 42
+        >>> target_var = np.random.RandomState(seed).randn(n_samples, 1)
+        >>> tested_var = np.ones(n_samples, dtype="f8").reshape((-1, 1))
+        >>>
+        >>> output = permuted_ols(tested_var,
+        ...                       target_var,
+        ...                       model_intercept=False,
+        ...                       n_perm=2000,
+        ...                       random_state=seed,
+        ... )
+        >>>
+        >>> _, ax = plt.subplots()
+        >>> _ = ax.hist(output["h0_max_t"][0], bins=100)
+        >>> _ = ax.plot([output["t"][0], output["t"][0]],
+        ...              [0, 60],
+        ...              color="r",
+        ...              linewidth=3,
+        ... )
+        >>> _ = ax.text(x=output["t"][0][0],
+        ...              y=61,
+        ...              s=f"-log(p) = {output['logp_max_t'][0]}",
+        ...              size=14,
+        ... )
+        >>> _ = ax.set(xlabel="t-statistic",
+        ...            title="Distribution max t-statistic under $H_0$")
+        >>> plt.show()
+
     """
     check_params(locals())
     _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars)
@@ -734,7 +822,7 @@ def permuted_ols(
             return np.asarray([]), scores_original_data.T, np.asarray([])
 
         out = {"t": scores_original_data.T}
-        if tfce:
+        if tfce and tfce_original_data is not None:
             out["tfce"] = tfce_original_data.T
         return out
 
@@ -899,6 +987,15 @@ def _check_inputs_permuted_ols(
 def _sanitize_inputs_permuted_ols(
     n_jobs, output_type, tfce, threshold, target_vars, tested_vars
 ):
+    tested_vars = np.asanyarray(tested_vars)
+    if not (
+        np.issubdtype(tested_vars.dtype, np.number)
+        or np.issubdtype(tested_vars.dtype, np.bool_)
+    ):
+        raise TypeError(
+            "'tested_vars' must contain numerical or boolean values."
+        )
+
     # check n_jobs (number of CPUs)
     if n_jobs < 0:
         n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)

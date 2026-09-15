@@ -354,7 +354,7 @@ Associated entry in ``CITATION.cff``:
         - given-names: Dimitri Papadopoulos
           family-names: Orfanos
           website: https://github.com/DimitriPapadopoulos
-          affiliation: NeuroSpin, C.E.A., Université Paris-Saclay, Gif-sur-Yvette, France
+          affiliation: NeuroSpin, CEA, Université Paris-Saclay, Gif-sur-Yvette, France
           orcid: https://orcid.org/0000-0002-1242-8990
 
 
@@ -428,6 +428,75 @@ This is also useful for writing unit tests.
 
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
+
+Examples in docstrings
+^^^^^^^^^^^^^^^^^^^^^^
+
+Where possible an ``Examples`` section should be present in the docstring
+of a public function or method.
+
+To facilitate users to copy-paste those examples,
+they should be written as single block
+with inline comments.
+
+So it is better to do:
+
+      >>> # Create a 4D image with one volume of ones and one of zeros
+      >>> import numpy as np
+      >>> from nibabel import Nifti1Image
+      >>> shape = (2, 2, 2, 1)
+      >>> img = Nifti1Image(np.concatenate([np.ones(shape),
+      ...                                   np.zeros(shape)],
+      ...                                  axis=-1),
+      ...                   affine=np.eye(4),
+      ...                   dtype=np.int32)
+      >>>
+      >>> # Compute the mean image and get its content as a numpy array
+      >>> from nilearn.image import mean_img
+      >>> mean_image = mean_img(img)
+      >>> mean_image.get_fdata()
+      array([[[0.5, 0.5],
+                  [0.5, 0.5]],
+            [[0.5, 0.5],
+                  [0.5, 0.5]]])
+
+Than to do:
+
+
+      Create a 4D image with one volume of ones and one of zeros
+
+      >>> import numpy as np
+      >>> from nibabel import Nifti1Image
+      >>> shape = (2, 2, 2, 1)
+      >>> img = Nifti1Image(np.concatenate([np.ones(shape),
+      ...                                   np.zeros(shape)],
+      ...                                  axis=-1),
+      ...                   affine=np.eye(4),
+      ...                   dtype=np.int32)
+
+      Compute the mean image and get its content as a numpy array
+
+      >>> from nilearn.image import mean_img
+      >>> mean_image = mean_img(img)
+      >>> mean_image.get_fdata()
+      array([[[0.5, 0.5],
+                  [0.5, 0.5]],
+            [[0.5, 0.5],
+                  [0.5, 0.5]]])
+
+The latter can still be used to break several independent examples.
+
+Thanks to the `plot_directive <https://matplotlib.org/stable/api/sphinxext_plot_directive_api.html>`_
+from matplotlib,
+it is possible to plot the output of an example directly in the HTML documentation::
+
+      .. plot::
+
+            import matplotlib.pyplot as plt
+            plt.plot([1, 2, 3], [4, 5, 6])
+            plt.title("A plotting example")
+
+
 
 APIs of nilearn objects
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -535,21 +604,21 @@ This is implemented via a pre-commit hook.
 
 .. _pre_commit:
 
-Pre-commit
-----------
+Pre-commit/Prek
+---------------
 
-We use `pre-commit <https://pre-commit.com/>`__
+We use `prek <https://prek.j178.dev/>`__
 to run a set of linters and autoformatters on the codebase.
 
-To install pre-commit, run:
+To install prek, run:
 
 .. code-block:: bash
 
-      pip install pre-commit
+      pip install prek
 
 .. note::
 
-      Pre-commit will already be installed if you installed
+      Prek will already be installed if you installed
       the ``dev`` or ``style`` developers dependencies of nilearn
       with::
 
@@ -563,9 +632,9 @@ Then run the following to install the pre-commit hooks:
 
 .. code-block:: bash
 
-      pre-commit install
+      prek install
 
-Pre-commit will then run all those hooks on the files you have staged for commit.
+Prek will then run all those hooks on the files you have staged for commit.
 Note that if some of those hooks fail you may have to edit some files and stage them again.
 
 Tests
@@ -862,12 +931,13 @@ The installed version will also reflect any changes you make to your code.
 
       pytest nilearn
 
-5. (optional) install `pre-commit <https://pre-commit.com/#usage>`_ hooks
+
+5. (optional) install `prek <https://prek.j178.dev>`_ hooks
    to run the linter and other checks before each commit:
 
 .. code-block:: bash
 
-      pre-commit install
+      prek install
 
 
 Contributing
@@ -901,7 +971,7 @@ Here are the key steps you need to go through to contribute code to ``nilearn``:
 
         ruff format <path_to_edited_file>
 
-    Note that if you installed pre-commit and the pre-commit hooks,
+    Note that if you installed prek and the pre-commit hooks,
     those commands will be run automatically before each commit.
 
 4. commit your changes on this branch (don't forget to write tests!)
@@ -1087,26 +1157,24 @@ returned by the ``request_mocker`` pytest fixture, defined in
 ``Sender`` class it contains provide information on how to write a test using
 this fixture. Existing tests can also serve as examples.
 
+.. _performance:
+
 Performance monitoring
 ----------------------
 
 Nilearn includes performance monitoring in the
-library using `asv <https://asv.readthedocs.io/en/latest/index.html>`_
-benchmarks. The goal is two-fold:
+library using `asv <https://asv.readthedocs.io/en/latest/index.html>`_ benchmarks.
+The goal is two-fold:
 
-- To track the performance over time and flag regressions due to changes in the
-  codebase.
+- To track the performance over time and flag regressions due to changes in the codebase.
 - To compare the performance of different implementations of an algorithm
-  (for example, loading an image using :func:`nilearn.image.load_img` vs.
-  :func:`nibabel.loadsave.load`).
+  (for example, loading an image using :func:`nilearn.image.load_img` vs. :func:`nibabel.loadsave.load`).
 
-A collection of these benchmarks are located in the ``nilearn/asv_benchmarks``
-directory. Currently, we run them on GitHub CI regularly on the latest commit
-of the main branch. The results are available on
-`nilearn.github.io/benchmarks/ <https://nilearn.github.io/benchmarks/>`_.
+A collection of these benchmarks are located in the ``nilearn/asv_benchmarks`` directory.
+Currently, we run them on GitHub CI regularly on the latest commit of the main branch.
+The results are available on `nilearn.github.io/benchmarks/ <https://nilearn.github.io/benchmarks/>`_.
 
-To run these benchmarks locally, you will need to install
-the asv package:
+To run these benchmarks locally, you will need to install the asv package:
 
 .. code-block:: bash
 
@@ -1127,7 +1195,7 @@ use the following command:
 
       asv run -b load_img
 
-This will run any benchmarck with ``load_img`` in the name.
+This will run any benchmark with ``load_img`` in the name.
 
 You can also track the performance of a specific benchmark over, say,
 5 equally spaced commits, until release 0.10.0, like this:
@@ -1136,13 +1204,18 @@ You can also track the performance of a specific benchmark over, say,
 
       asv run 0.10.0..main -b load_img --steps 5
 
-There is also a ```hashestobenchmark.txt`` file with the shasum of the git tag of several
-of the last versions of nilearn that will allow you to run
-the benchmarks only for those versions by doing:
+There is also a ```hashestobenchmark.txt`` file
+with the shasum of the git tag of several of the last versions of nilearn
+that will allow you to run the benchmarks only for those versions by doing:
 
 .. code-block:: bash
 
       asv run -b load_img HASHFILE:hashestobenchmark.txt
+
+Note that versions older than 0.11.0 cannot be benchmarked this way:
+their ``nilearn/__init__.py`` imports ``pkg_resources``,
+which was removed from ``setuptools>=81``,
+the version pip installs by default in the virtualenv asv builds.
 
 If you want to update this file you can use
 to list the shasum of all tags
@@ -1169,6 +1242,19 @@ Adding new benchmarks
 Please see the `asv documentation writing tips <https://asv.readthedocs.io/en/stable/writing_benchmarks.html>`_
 to make sure you understand the basics about how to write benchmarks.
 
+Only benchmark functions and methods that are part of nilearn's public API
+(what a user could import and call directly),
+not private helpers (leading underscore) or implementation details.
+
+The structure of ``asv_benchmarks/benchmarks`` must mirror
+the structure of the ``nilearn`` package itself:
+a benchmark for a function or class living in ``nilearn/glm/first_level/first_level.py``
+belongs in ``asv_benchmarks/benchmarks/glm/first_level/first_level.py``,
+and a benchmark for ``nilearn/glm/io.py`` belongs in ``asv_benchmarks/benchmarks/glm/io.py``.
+This makes it easy to find the benchmark(s) for a given piece of the public API,
+and keeps benchmark files from growing unrelated content
+as nilearn's own modules get reorganized over time.
+
 For naming benchmarks, try to follow the following rules:
 
 - use snake_case instead of CamelCase
@@ -1182,6 +1268,24 @@ For naming benchmarks, try to follow the following rules:
   via the command line: ``asv run -b nifti_masker``
   would run all the benchmarks for the NiftiMasker.
 
+- if the benchmark exercises a function or class that was added recently,
+  import it locally inside ``setup()`` rather than at the top of the module.
+  All benchmarks in a given file share that file's module-level imports,
+  so a single top-level import of a function that does not exist yet in an older nilearn version
+  (for example when benchmarking past releases with ``HASHFILE:hashestobenchmark.txt``)
+  will fail to import the whole module,
+  and every other benchmark in that file will be reported as failed too,
+  even though they do not rely on the missing function.
+  A local import inside ``setup()`` confines the failure to that one benchmark.
+
+  Catch the ``ImportError`` and re-raise it as ``NotImplementedError``
+  instead of letting it propagate as-is.
+  asv treats a ``NotImplementedError`` raised in ``setup()`` as "this benchmark
+  does not apply here" and reports it as *skipped*,
+  whereas any other exception (including a bare ``ImportError``) is reported as *failed*,
+  which the CI benchmark workflow treats as a hard failure
+  (see the "Fail if any benchmark reported as failed" step).
+  See ``BenchMarkAllEstimators`` in ``asv_benchmarks/benchmarks/utils/discovery.py`` for a concrete example.
 
 Maintenance
 ===========

@@ -166,6 +166,7 @@ def restrict_tests(changed_files: list[str]) -> list[str]:
             x == lowest_layer
             for lowest_layer in [
                 "nilearn/_utils",
+                "nilearn/_base.py",
                 "nilearn/conftest.py",
                 "nilearn/exceptions.py",
                 "nilearn/signal.py",
@@ -292,6 +293,20 @@ try:
             ),
             (
                 ["nilearn/conftest.py"],
+                [
+                    *HIGHEST_LAYER,
+                    *TOP_LAYER,
+                    *MID_LAYER,
+                    "nilearn/tests/test_masking.py",
+                    "nilearn/tests/test_signal.py",
+                    "nilearn/connectome",
+                ],
+            ),
+            (
+                # NilearnBaseEstimator, used by nearly every estimator
+                # across the codebase, is defined here: as foundational
+                # as nilearn/_utils
+                ["nilearn/_base.py"],
                 [
                     *HIGHEST_LAYER,
                     *TOP_LAYER,

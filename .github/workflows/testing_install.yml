@@ -38,11 +38,11 @@ jobs:
                 shell: bash
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
-                python-version: '3.10'
+                python-version: '3.11'
         -   name: Install dependencies for building Nilearn
             run: |
                 set -e
@@ -76,11 +76,11 @@ jobs:
         -   name: Install uv
             uses: astral-sh/setup-uv@v7
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
-                python-version: '3.10'
+                python-version: '3.11'
         -   name: Test uv sync
             shell: bash {0}
             run: |
@@ -96,11 +96,11 @@ jobs:
                 shell: bash
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
-                python-version: '3.10'
+                python-version: '3.11'
 
         -   name: Check wheel size
             run: bash build_tools/github/wheel_size_check.sh
@@ -115,9 +115,9 @@ jobs:
                 python: ['3.14']
                 dependencies: [plotting]
                 include:
-                -   python: '3.10'
+                -   python: '3.11'
                     dependencies: min_plotting
-                -   python: '3.10'
+                -   python: '3.11'
                     dependencies: min
 
         name: check install size
@@ -126,7 +126,7 @@ jobs:
                 shell: bash
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
         -   name: Setup python
             uses: actions/setup-python@v6
             with:

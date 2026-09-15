@@ -182,11 +182,11 @@ def resize_plot_inches(plot, width_change=0, height_change=0):
     plot : matplotlib.Figure() or matplotlib.Axes()
         The matplotlib Figure/Axes object to be resized.
 
-    width_change : float, default=0
+    width_change : :obj:`float`, default=0
         The amount of change to be added on to original width.
         Use negative values for reducing figure dimensions.
 
-    height_change : float, default=0
+    height_change : :obj:`float`, default=0
         The amount of change to be added on to original height.
         Use negative values for reducing figure dimensions.
 

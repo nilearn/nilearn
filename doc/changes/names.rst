@@ -24,6 +24,8 @@
 
 .. _Alexis Thual: https://github.com/alexisthual
 
+.. _Alice Schiavone: https://aliswh.github.io
+
 .. _Alisha Kodibagkar: https://github.com/alishakodibagkar/
 
 
@@ -31,9 +33,15 @@
 
 .. _Anand Joshi: https://github.com/ajoshiusc
 
+.. _Andrew Chen: https://github.com/chuenchen309
+
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
 
+.. _Aniket Singh Yadav: https://github.com/Aniketsy
+
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
+
+.. _Anton Karpov: https://github.com/karpovantonme
 
 .. _Anupriya Kumari: https://github.com/anupriyakkumari
 
@@ -56,6 +64,8 @@
 .. _Binh Nguyen: https://tbng.github.io/
 
 .. _Caglar Cakan: https://github.com/caglorithm
+
+.. _Cedric Conday: https://github.com/CedricConday
 
 .. _Chloe Hampson: https://github.com/chlohamp
 
@@ -103,6 +113,8 @@
 
 .. _Fabian Pedregosa: https://github.com/fabianp
 
+.. _Fabricio Cravo: https://fabriciocravo.github.io/
+
 .. _Fernanda Ponce: https://github.com/ferponcem
 
 .. _Florent Pollet: https://florian6973.github.io/
@@ -110,6 +122,8 @@
 .. _Franz Liem: https://github.com/fliem
 
 .. _François Paugam: https://github.com/FrancoisPgm
+
+.. _Gabriele Amorosino: https://github.com/gamorosino
 
 .. _Gael Varoquaux: https://gael-varoquaux.info/
 
@@ -127,7 +141,11 @@
 
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
+.. _Hariom Patidar: https://github.com/HariomPtdr
+
 .. _Himanshu Aggarwal: https://github.com/man-shu
+
+.. _Hugo Delhaye: https://github.com/HugoDelhaye
 
 .. _Ian Abenes: https://github.com/boredStats
 
@@ -209,6 +227,10 @@
 
 .. _Manon Pietrantoni: https://github.com/ManonP38
 
+.. _Marco Flores: https://github.com/marco7877
+
+.. _Marco Bedini: https://github.com/mbedini
+
 .. _Martin Perez-Guevara: https://github.com/MartinPerez
 
 .. _Martin Wegrzyn: https://github.com/mwegrzyn
@@ -258,6 +280,8 @@
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
 
 .. _Nikhil Krish: https://github.com/NIkhilgKrish
+
+.. _Nirmitee Mulay: https://github.com/nirmitee-mulay
 
 .. _Noah C. Benson: https://nben.net/
 
@@ -348,6 +372,8 @@
 .. _Taylor Salo: https://tsalo.github.io/
 
 .. _Tharun K: https://github.com/tharun634
+
+.. _Thibault de Varax: https://github.com/thibaultdvx
 
 .. _Thiti Premrudeepreechacharn: https://tpremrud.github.io/
 

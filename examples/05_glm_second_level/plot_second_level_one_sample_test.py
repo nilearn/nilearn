@@ -169,6 +169,7 @@ out_dict = non_parametric_inference(
     smoothing_fwhm=8.0,
     n_jobs=2,
     threshold=0.001,
+    random_state=0,  # to ensure reproducible results
     verbose=1,
 )
 
