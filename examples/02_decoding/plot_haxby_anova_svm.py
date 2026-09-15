@@ -136,6 +136,8 @@ scores = cross_val_decoder_score(
     params={"groups": run_label},
     scoring="accuracy",
 )
+
+# %%
 print(f"Held-out run accuracies: {scores}")
 print(f"Mean accuracy: {scores.mean():.3f} +/- {scores.std():.3f}")
 # The original decoder remains fitted on all runs for visualization below.
