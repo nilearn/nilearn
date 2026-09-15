@@ -1564,7 +1564,7 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        coords: tuple, or list of tuples of coordinates, optional
+        coords : :obj:`tuple` or :obj:`list` of :obj:`tuple` of coordinates, or None, default = None
             Coordinates of the voxel(s) or region center(s).
             Ignored if `masker` is provided.
         masker : NiftiMasker or NiftiSpheresMasker, optional
