@@ -1411,8 +1411,9 @@ class FirstLevelModel(BaseGLM):
         observed_ts,
         predicted_ts,
         residuals_ts,
-        figsize : tuple[int] = (10, 8),
-        close : bool = True,
+        title_ref: str | None = None,
+        figsize: tuple[int, int] = (10, 8),
+        close: bool = True,
     ):
         """Help plot observed vs predicted signal and residuals.
 
@@ -1424,6 +1425,8 @@ class FirstLevelModel(BaseGLM):
             The predicted time series.
         residuals_ts : array-like
             The residuals time series.
+        title_ref : str, optional
+            Reference string for the title of the plots. Default is None.
         figsize : tuple, optional
             Size of the figure. Default is (10, 6).
         close : bool, optional
@@ -1434,6 +1437,8 @@ class FirstLevelModel(BaseGLM):
         fig : matplotlib.figure.Figure
             The generated figure.
         """
+        import matplotlib.pyplot as plt
+
         # Generate a time axis
         n_timepoints = len(observed_ts)
         time_axis = np.arange(n_timepoints)
@@ -1469,6 +1474,9 @@ class FirstLevelModel(BaseGLM):
         axes[2].set_title("Histogram of Residuals")
         axes[2].set_xlabel("Residuals")
         axes[2].set_ylabel("Frequency")
+
+        if title_ref is not None:
+            fig.suptitle(f"{title_ref}", fontsize=16)
 
         plt.tight_layout()
         if close:
@@ -1520,7 +1528,7 @@ class FirstLevelModel(BaseGLM):
                 coords = [coords]
             masker = NiftiSpheresMasker(seeds=coords, radius=radius)
         if not masker.__sklearn_is_fitted__():
-           masker.fit()
+            masker.fit()
         # Get observed, predicted, and residual time series
         y_pred = self._get_element_wise_model_attribute(
             "predicted", result_as_time_series=True
@@ -1561,7 +1569,8 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        coords : :obj:`tuple` or :obj:`list` of :obj:`tuple` of coordinates, or None, default = None
+        coords : :obj:`tuple` or :obj:`list` of :obj:`tuple` of coordinates, \
+                or None, default = None
             Coordinates of the voxel(s) or region center(s).
             Ignored if ``masker`` is provided.
         masker : NiftiMasker or NiftiSpheresMasker or None, default = None
@@ -1613,6 +1622,7 @@ class FirstLevelModel(BaseGLM):
                 observed_ts=timeseries_df[f"observed{suffix}"].values,
                 predicted_ts=timeseries_df[f"predicted{suffix}"].values,
                 residuals_ts=timeseries_df[f"residuals{suffix}"].values,
+                title_ref=f"Region {i}" if n_regions > 1 else None,
                 figsize=figsize,
                 close=not show,
             )
