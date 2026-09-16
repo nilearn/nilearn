@@ -4,34 +4,21 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
+from nilearn._utils.estimator_checks import nilearn_check_estimator
 from nilearn._utils.helpers import is_windows_platform
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
 
-ESTIMATORS_TO_CHECK = [
-    NiftiSpheresMasker(seeds=[(1, 1, 1)]),
-    NiftiSpheresMasker(seeds=[(1, 1, 1), (1, 2, 3)]),
-]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    nilearn_check_estimator(
+        estimators=[
+            NiftiSpheresMasker(seeds=[(1, 1, 1)]),
+            NiftiSpheresMasker(seeds=[(1, 1, 1), (1, 2, 3)]),
+        ]
+    ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""

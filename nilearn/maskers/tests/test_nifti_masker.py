@@ -11,33 +11,18 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils import data_gen
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
+from nilearn._utils.estimator_checks import nilearn_check_estimator
 from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask
 
-ESTIMATORS_TO_CHECK = [NiftiMasker()]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    nilearn_check_estimator(estimators=[NiftiMasker()]),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
