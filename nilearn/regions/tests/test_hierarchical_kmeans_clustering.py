@@ -1,13 +1,9 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
+from nilearn._utils.estimator_checks import nilearn_check_estimator
 from nilearn._utils.helpers import is_windows_platform
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
@@ -22,16 +18,6 @@ from nilearn.surface.tests.test_surface import flat_mesh
 # keeping the n_clusters low (< 3) to make it easier
 # to run sklearn checks
 ESTIMATORS_TO_CHECK = [HierarchicalKMeans(n_clusters=2)]
-
-
-@pytest.mark.single_process
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
 
 
 @pytest.mark.thread_unsafe

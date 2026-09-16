@@ -2,13 +2,9 @@ import numpy as np
 import pytest
 from joblib import Memory
 from numpy.testing import assert_array_equal
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
+from nilearn._utils.estimator_checks import nilearn_check_estimator
 from nilearn.conftest import _img_3d_mni, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker, SurfaceMasker
@@ -20,15 +16,6 @@ from nilearn.regions.rena_clustering import (
 from nilearn.surface import SurfaceImage
 
 ESTIMATORS_TO_CHECK = [ReNA()]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
 
 
 @pytest.mark.slow

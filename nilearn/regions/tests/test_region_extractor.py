@@ -4,13 +4,9 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from scipy.ndimage import label
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
+from nilearn._utils.estimator_checks import nilearn_check_estimator
 from nilearn.conftest import _affine_eye, _img_4d_zeros, _shape_3d_large
 from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, threshold_img
@@ -70,16 +66,6 @@ def maps_and_mask(
 
 
 ESTIMATORS_TO_CHECK = [RegionExtractor()]
-
-
-@pytest.mark.slow
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
 
 
 @pytest.mark.slow
