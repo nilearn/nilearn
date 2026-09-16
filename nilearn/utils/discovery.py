@@ -132,8 +132,16 @@ def all_estimators(
         c
         for c in all_classes
         if (
-            issubclass(c[1], NilearnBaseEstimator)
-            and c[0] != "NilearnBaseEstimator"
+            issubclass(c[-1], NilearnBaseEstimator)
+            and (
+                c[0]
+                not in [
+                    "NilearnBaseEstimator",
+                    "BaseMasker",
+                    "BaseGLM",
+                    "BaseSpaceNet",
+                ]
+            )
         )
     ]
 
