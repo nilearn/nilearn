@@ -83,8 +83,6 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
 
     %(strategy)s
 
-    %(keep_masked_labels)s
-
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
 
@@ -139,7 +137,6 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
         memory_level=1,
         verbose=0,
         strategy="mean",
-        keep_masked_labels=False,
         reports=True,
         cmap="CMRmap_r",
         n_jobs=1,
@@ -169,5 +166,4 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
             reports=reports,
             cmap=cmap,
             clean_args=clean_args,
-            keep_masked_labels=keep_masked_labels,
         )
