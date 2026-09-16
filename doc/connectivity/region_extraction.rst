@@ -29,7 +29,7 @@ dataset.
 
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # We use nilearn's datasets downloading utilities
+    :start-after: # We use nilearn's dataset downloading utilities:
     :end-before: # %%
 
 .. currentmodule:: nilearn.decomposition
@@ -58,7 +58,7 @@ onto the anatomical standard template. Each map is displayed in different
 color and colors are random and automatically picked.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # Show networks using plotting utilities
+    :start-after: # Get the extracted functional networks
     :end-before: # %%
 
 .. |dict-maps| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_001.png
@@ -90,7 +90,7 @@ units to adapt well to the resolution of the image. Please see the documentation
 :func:`~connected_regions` for more details.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # more intense non-voxels will be survived.
+    :start-after: # :mod:`~nilearn.regions` module.
     :end-before: # Visualization of region extraction results
 
 .. currentmodule:: nilearn.plotting
@@ -132,7 +132,7 @@ extracted regions. Likewise, we have a total of 20 subject specific time series 
 The third step, we compute the mean correlation across all subjects.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # To estimate correlation matrices we import connectome utilities from nilearn
+    :start-after: # First we need to extract timeseries signals for each subject
     :end-before: # %%
 
 .. currentmodule:: nilearn.plotting
@@ -147,7 +147,7 @@ Left image is the correlations in a matrix form and right image is the
 connectivity relations to brain regions plotted using :func:`plot_connectome`
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # connectome relations.
+    :start-after: # to plot the connectome relations.
     :end-before: # %%
 
 .. |matrix| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_003.png
@@ -167,7 +167,7 @@ Showing only one specific network regions before and after region extraction.
 The first image displays the regions of one specific functional network without region extraction.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # without region extraction (left plot).
+    :start-after: # without region extraction.
     :end-before: # %%
 
 .. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
