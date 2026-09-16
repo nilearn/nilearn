@@ -1,0 +1,264 @@
+{
+  "errors": [
+    {
+      "path": "nilearn/_utils/bids.py",
+      "name": "not-iterable",
+      "concise_description": "Type `None` is not iterable"
+    },
+    {
+      "path": "nilearn/_utils/bids.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `float | int` is not assignable to parameter `value` with type `int` in function `list.index`"
+    },
+    {
+      "path": "nilearn/_utils/data_gen.py",
+      "name": "not-iterable",
+      "concise_description": "Type `None` is not iterable"
+    },
+    {
+      "path": "nilearn/_utils/estimator_checks.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `tuple[Unknown, Unknown]` is not assignable to parameter `object` with type `list[Unknown]` in function `list.append`"
+    },
+    {
+      "path": "nilearn/_utils/testing.py",
+      "name": "not-callable",
+      "concise_description": "Expected a callable, got `None`"
+    },
+    {
+      "path": "nilearn/datasets/_utils.py",
+      "name": "bad-override",
+      "concise_description": "Class member `_NaiveFTPAdapter.send` overrides parent class `BaseAdapter` in an inconsistent manner"
+    },
+    {
+      "path": "nilearn/datasets/func.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `int | None` is not assignable to parameter `x` with type `Buffer | SupportsFloat | SupportsIndex | str` in function `float.__new__`"
+    },
+    {
+      "path": "nilearn/decoding/searchlight.py",
+      "name": "no-matching-overload",
+      "concise_description": "No matching overload found for function `nilearn.masking.load_mask_img` called with arguments: (Unknown | None)"
+    },
+    {
+      "path": "nilearn/decoding/space_net.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `SurfaceImage | Unknown` is not assignable to parameter `img` with type `Nifti1Image | Path | SpatialImage | str` in function `nilearn.image.image.get_data`"
+    },
+    {
+      "path": "nilearn/decoding/space_net.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `Iterable[Unknown] | list[Unknown]` is not assignable to parameter `obj` with type `Sized` in function `len`"
+    },
+    {
+      "path": "nilearn/decoding/space_net.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `Iterable[Unknown] | list[Unknown]` is not assignable to parameter `obj` with type `Sized` in function `len`"
+    },
+    {
+      "path": "nilearn/decomposition/tests/conftest.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `parts`"
+    },
+    {
+      "path": "nilearn/decomposition/tests/conftest.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `parts`"
+    },
+    {
+      "path": "nilearn/decomposition/tests/conftest.py",
+      "name": "not-iterable",
+      "concise_description": "Expected an iterable, got `Unknown | None`"
+    },
+    {
+      "path": "nilearn/glm/_base.py",
+      "name": "bad-assignment",
+      "concise_description": "`None` is not assignable to dict key `prefix` with type `str`"
+    },
+    {
+      "path": "nilearn/glm/_base.py",
+      "name": "bad-assignment",
+      "concise_description": "`None` is not assignable to dict key `prefix` with type `str`"
+    },
+    {
+      "path": "nilearn/glm/_base.py",
+      "name": "bad-assignment",
+      "concise_description": "`None` is not assignable to dict key `prefix` with type `str`"
+    },
+    {
+      "path": "nilearn/glm/_base.py",
+      "name": "bad-assignment",
+      "concise_description": "`None` is not assignable to dict key `prefix` with type `str`"
+    },
+    {
+      "path": "nilearn/glm/first_level/first_level.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `tuple[ndarray | ndarray[Unknown], dict[float, RegressionResults] | dict[Any, Unknown]]` is not assignable to declared return type `tuple[ndarray, dict[float | str, RegressionResults]]`"
+    },
+    {
+      "path": "nilearn/glm/first_level/first_level.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `Unknown | None` is not assignable to parameter `x` with type `Buffer | SupportsIndex | SupportsInt | SupportsTrunc | str` in function `int.__new__`"
+    },
+    {
+      "path": "nilearn/glm/first_level/first_level.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `Unknown | None` is not assignable to parameter `x` with type `Buffer | SupportsIndex | SupportsInt | SupportsTrunc | str` in function `int.__new__`"
+    },
+    {
+      "path": "nilearn/image/image.py",
+      "name": "not-iterable",
+      "concise_description": "Type `Path` is not iterable"
+    },
+    {
+      "path": "nilearn/image/image.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `Iterable[Unknown] | SurfaceImage | Unknown` is not assignable to parameter `imgs` with type `SurfaceImage` in function `_compute_surface_mean`"
+    },
+    {
+      "path": "nilearn/image/image.py",
+      "name": "not-iterable",
+      "concise_description": "Type `SurfaceImage` is not iterable"
+    },
+    {
+      "path": "nilearn/image/image.py",
+      "name": "no-matching-overload",
+      "concise_description": "No matching overload found for function `nilearn.masking.load_mask_img` called with arguments: (Nifti1Image | Path | SurfaceImage | str | None)"
+    },
+    {
+      "path": "nilearn/image/image.py",
+      "name": "no-matching-overload",
+      "concise_description": "No matching overload found for function `check_niimg` called with arguments: (Unknown, ensure_ndim=Unknown | None)"
+    },
+    {
+      "path": "nilearn/image/resampling.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `list[Unknown] | ndarray | tuple[int, int, int] | tuple[Unknown, ...] | None` is not assignable to parameter `iterable` with type `Iterable[int]` in function `tuple.__new__`"
+    },
+    {
+      "path": "nilearn/image/tests/test_image.py",
+      "name": "bad-assignment",
+      "concise_description": "`Literal[False]` is not assignable to attribute `EXPAND_PATH_WILDCARDS` with type `Literal[True]`"
+    },
+    {
+      "path": "nilearn/image/tests/test_image.py",
+      "name": "bad-override",
+      "concise_description": "Class member `PhonyNiimage.get_data` overrides parent class `SpatialImage` in an inconsistent manner"
+    },
+    {
+      "path": "nilearn/image/tests/test_image.py",
+      "name": "bad-override",
+      "concise_description": "Class member `PhonyNiimage._data_cache` overrides parent class `SpatialImage` in an inconsistent manner"
+    },
+    {
+      "path": "nilearn/image/tests/test_image.py",
+      "name": "bad-override",
+      "concise_description": "Class member `PhonyNiimage._dataobj` overrides parent class `SpatialImage` in an inconsistent manner"
+    },
+    {
+      "path": "nilearn/maskers/base_masker.py",
+      "name": "bad-override",
+      "concise_description": "Class member `BaseMasker._get_summary_html` overrides parent class `_BaseMasker` in an inconsistent manner"
+    },
+    {
+      "path": "nilearn/maskers/base_masker.py",
+      "name": "bad-override",
+      "concise_description": "Class member `_BaseSurfaceMasker._get_summary_html` overrides parent class `_BaseMasker` in an inconsistent manner"
+    },
+    {
+      "path": "nilearn/masking.py",
+      "name": "unsupported-operation",
+      "concise_description": "`>` is not supported between `None` and `float`"
+    },
+    {
+      "path": "nilearn/mass_univariate/permuted_least_squares.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `inverse_transform`"
+    },
+    {
+      "path": "nilearn/mass_univariate/permuted_least_squares.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `mask_img_`"
+    },
+    {
+      "path": "nilearn/mass_univariate/permuted_least_squares.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `mask_img_`"
+    },
+    {
+      "path": "nilearn/mass_univariate/permuted_least_squares.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `mask_img_`"
+    },
+    {
+      "path": "nilearn/plotting/displays/_axes.py",
+      "name": "unsupported-operation",
+      "concise_description": "`>` is not supported between `None` and `Literal[0]`"
+    },
+    {
+      "path": "nilearn/plotting/displays/_axes.py",
+      "name": "unsupported-operation",
+      "concise_description": "Unary `-` is not supported on `None`"
+    },
+    {
+      "path": "nilearn/plotting/displays/_axes.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `Unknown | None` is not assignable to parameter `x` with type `SupportsAbs[Unknown]` in function `abs`"
+    },
+    {
+      "path": "nilearn/plotting/displays/_figures.py",
+      "name": "bad-override",
+      "concise_description": "Class member `PlotlySurfaceFigure.add_contours` overrides parent class `SurfaceFigure` in an inconsistent manner"
+    },
+    {
+      "path": "nilearn/plotting/html_stat_map.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `str | Unknown` is not assignable to parameter `black_bg` with type `Literal['auto'] | bool` in function `load_bg_img`"
+    },
+    {
+      "path": "nilearn/plotting/image/utils.py",
+      "name": "bad-override",
+      "concise_description": "Class member `_MNI152Template.load` overrides parent class `SpatialImage` in an inconsistent manner"
+    },
+    {
+      "path": "nilearn/plotting/image/utils.py",
+      "name": "bad-override",
+      "concise_description": "Class member `_MNI152Template._data_cache` overrides parent class `SpatialImage` in an inconsistent manner"
+    },
+    {
+      "path": "nilearn/plotting/image/utils.py",
+      "name": "bad-override",
+      "concise_description": "Class member `_MNI152Template._dataobj` overrides parent class `SpatialImage` in an inconsistent manner"
+    },
+    {
+      "path": "nilearn/plotting/image/utils.py",
+      "name": "bad-override",
+      "concise_description": "Class member `_MNI152Template.get_data` overrides parent class `SpatialImage` in an inconsistent manner"
+    },
+    {
+      "path": "nilearn/regions/region_extractor.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `Iterable[Unknown] | list[str | Unknown]` is not assignable to parameter `obj` with type `Sized` in function `len`"
+    },
+    {
+      "path": "nilearn/regions/region_extractor.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `Iterable[Unknown] | list[str | Unknown]` is not assignable to parameter `obj` with type `Sized` in function `len`"
+    },
+    {
+      "path": "nilearn/regions/signal_extraction.py",
+      "name": "no-matching-overload",
+      "concise_description": "No matching overload found for function `numpy._core.multiarray.asarray` called with arguments: (Unknown, dtype=type[float64] | type[float32], order=str | Unknown)"
+    },
+    {
+      "path": "nilearn/regions/signal_extraction.py",
+      "name": "no-matching-overload",
+      "concise_description": "No matching overload found for function `numpy._core.multiarray.zeros` called with arguments: (Unknown, dtype=Unknown, order=str | Unknown)"
+    },
+    {
+      "path": "nilearn/reporting/tests/_testing.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `str | None` is not assignable to parameter `object` with type `str` in function `list.append`"
+    }
+  ]
+}
