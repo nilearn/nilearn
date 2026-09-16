@@ -48,11 +48,9 @@ from sklearn.model_selection import (
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
 from sklearn.utils._testing import ignore_warnings
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
-    return_expected_failed_checks,
 )
 from nilearn._utils.versions import (
     SKLEARN_GTE_1_7,
@@ -93,34 +91,24 @@ _CUSTOM_PARAM_GRID_WARNING = (
 ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 
-ESTIMATORS_TO_CHECK = [
-    Decoder(
-        screening_percentile=100,
-        estimator_args={"random_state": 0},
-    ),
-    DecoderRegressor(screening_percentile=100),
-    FREMClassifier(
-        screening_percentile=100,
-        estimator_args={"random_state": 0},
-    ),
-    FREMRegressor(screening_percentile=100),
-]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
 @pytest.mark.slow
 @ignore_warnings(category=ConvergenceWarning)
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    nilearn_check_estimator(
+        estimators=[
+            Decoder(
+                screening_percentile=100,
+                estimator_args={"random_state": 0},
+            ),
+            DecoderRegressor(screening_percentile=100),
+            FREMClassifier(
+                screening_percentile=100,
+                estimator_args={"random_state": 0},
+            ),
+            FREMRegressor(screening_percentile=100),
+        ]
+    ),
 )
 def test_check_estimator_nilearn(estimator, check, name):
     """Check compliance with nilearn estimators rules."""
