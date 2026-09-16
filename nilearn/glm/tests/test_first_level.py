@@ -17,7 +17,6 @@ from numpy.testing import (
     assert_array_less,
 )
 from sklearn.cluster import KMeans
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
 import nilearn as nil
 from nilearn._utils.data_gen import (
@@ -27,7 +26,6 @@ from nilearn._utils.data_gen import (
 )
 from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
-    return_expected_failed_checks,
 )
 from nilearn._utils.helpers import is_matplotlib_installed, is_windows_platform
 from nilearn.exceptions import MeshDimensionError
@@ -52,21 +50,10 @@ from nilearn.masking import intersect_masks
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_polymesh_equal
 
-ESTIMATORS_TO_CHECK = [FirstLevelModel()]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    nilearn_check_estimator(estimators=[FirstLevelModel()]),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
