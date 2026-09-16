@@ -26,4 +26,3 @@
    all_displays
    all_estimators
    all_functions
-   get_tag

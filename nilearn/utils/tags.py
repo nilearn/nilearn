@@ -66,8 +66,6 @@ class InputTags(SkInputTags):
 def get_tag(estimator: Any, tag: str) -> bool:
     """Get the value of an input tag of an estimator.
 
-    .. nilearn_versionadded:: 0.15.0
-
     Parameters
     ----------
     estimator : estimator instance
@@ -89,20 +87,24 @@ def get_tag(estimator: Any, tag: str) -> bool:
 
 
 def is_masker(estimator: Any) -> bool:
+    """Return True if the estimator is a masker."""
     if not hasattr(estimator, "__sklearn_tags__"):
         return False
     return estimator.__sklearn_tags__().estimator_type == "masker"
 
 
 def is_glm(estimator: Any) -> bool:
+    """Return True if the estimator is a GLM."""
     if not hasattr(estimator, "__sklearn_tags__"):
         return False
     return estimator.__sklearn_tags__().estimator_type == "glm"
 
 
 def accept_niimg_input(estimator: Any) -> bool:
+    """Return True if the estimator accepts Niimg-like inputs."""
     return get_tag(estimator, "niimg_like")
 
 
 def accept_surf_img_input(estimator: Any) -> bool:
+    """Return True if the estimator accepts SurfaceImage inputs."""
     return get_tag(estimator, "surf_img")
