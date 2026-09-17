@@ -42,7 +42,6 @@ from numpy.testing import (
     assert_raises,
 )
 from numpydoc.docscrape import NumpyDocString
-from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import is_classifier, is_regressor
 from sklearn.datasets import load_iris, make_classification, make_regression
@@ -56,9 +55,6 @@ from sklearn.utils._testing import (
 from sklearn.utils.estimator_checks import (
     _is_public_parameter,
     check_is_fitted,
-)
-from sklearn.utils.estimator_checks import (
-    check_estimator as sklearn_check_estimator,
 )
 
 from nilearn._base import NilearnBaseEstimator
@@ -79,7 +75,6 @@ from nilearn._utils.tags import (
     is_masker,
 )
 from nilearn._utils.testing import is_ci, write_imgs_to_path
-from nilearn._utils.versions import SKLEARN_LT_1_6, compare_version
 from nilearn.conftest import (
     _affine_eye,
     _drop_surf_img_part,
@@ -151,60 +146,9 @@ from nilearn.surface.utils import (
     assert_surface_image_equal,
 )
 
-SKLEARN_GTE_1_6 = compare_version(sklearn_version, ">=", "1.6.0")
-
 
 def nilearn_dir() -> Path:
     return Path(__file__).parents[1]
-
-
-def check_estimator(
-    estimators: list[NilearnBaseEstimator], valid: bool = True
-):
-    """Yield a valid or invalid sklearn estimators check.
-
-    ONLY USED FOR sklearn<1.6
-
-    As some of Nilearn estimators do not comply
-    with sklearn recommendations
-    (cannot fit Numpy arrays, do input validation in the constructor...)
-    we cannot directly use
-    sklearn.utils.estimator_checks.check_estimator.
-
-    So this is a home made generator that yields an estimator instance
-    along with a
-    - valid check from sklearn: those should stay valid
-    - or an invalid check that is known to fail.
-
-    See this section rolling-your-own-estimator in
-    the scikit-learn doc for more info:
-    https://scikit-learn.org/stable/developers/develop.html
-
-    Parameters
-    ----------
-    estimators : :obj:`list` of estimator object
-        Estimator instance to check.
-    valid : :obj:`bool`, default=True
-        Whether to return only the valid checks or not.
-    """
-    # TODO (sklearn >= 1.6.0) remove this function
-    if not SKLEARN_LT_1_6:  # pragma: no cover
-        raise RuntimeError(
-            "Use dedicated sklearn utilities to test estimators."
-        )
-
-    check_is_of_allowed_type(estimators, (list,), "estimators")
-
-    for est in estimators:
-        expected_failed_checks = return_expected_failed_checks(est)
-
-        for e, check in sklearn_check_estimator(
-            estimator=est, generate_only=True
-        ):
-            if not valid and check.func.__name__ in expected_failed_checks:
-                yield e, check, check.func.__name__
-            if valid and check.func.__name__ not in expected_failed_checks:
-                yield e, check, check.func.__name__
 
 
 def return_expected_failed_checks(
@@ -249,11 +193,8 @@ def return_expected_failed_checks(
             "check_readonly_memmap_input": "TODO",
             "check_transformer_data_not_an_array": "TODO",
             "check_transformer_general": "TODO",
+            "check_transformer_preserve_dtypes": "TODO",
         }
-        if SKLEARN_GTE_1_6:
-            expected_failed_checks |= {
-                "check_transformer_preserve_dtypes": "TODO",
-            }
 
         return expected_failed_checks
 
@@ -361,8 +302,7 @@ def return_expected_failed_checks(
         expected_failed_checks.pop("check_estimator_sparse_data")
         expected_failed_checks.pop("check_estimator_sparse_matrix")
         expected_failed_checks.pop("check_estimator_sparse_array")
-        if SKLEARN_GTE_1_6:
-            expected_failed_checks.pop("check_estimator_sparse_tag")
+        expected_failed_checks.pop("check_estimator_sparse_tag")
 
         expected_failed_checks |= {
             # have nilearn replacements
@@ -390,8 +330,7 @@ def return_expected_failed_checks(
             "check_transformer_general": "TODO",
             "check_transformer_preserve_dtypes": "TODO",
         }
-        if SKLEARN_GTE_1_6:
-            expected_failed_checks.pop("check_estimator_sparse_tag")
+        expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if is_masker(estimator):
         expected_failed_checks |= {
@@ -547,17 +486,6 @@ def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
 
     checks_to_run = []
     for est in estimators:
-        # TODO (nilearn >= 0.15.0)
-        # remove this entire if block
-        # as standardize as bool should not be possible anymore
-        if hasattr(est, "standardize"):
-            # forcing the new default on all estiamtors
-            # to avoid FutureWarnings
-            if est.standardize is False:
-                est.standardize = None
-            elif est.standardize is True:
-                est.standardize = "zscore_sample"
-
         for e, check in nilearn_check_generator(estimator=est):
             checks_to_run.append((e, check, check.__name__))
 
@@ -573,17 +501,10 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
     Each nilearn check can be run on an initialized estimator.
     """
     tags = estimator.__sklearn_tags__()
-
-    # TODO (sklearn >= 1.6.0) simplify
-    #  for sklearn >= 1.6 tags are always a dataclass
-    if isinstance(tags, dict) and "X_types" in tags:
-        requires_y = isinstance(estimator, (_BaseDecoder, BaseSpaceNet))
-    else:
-        requires_y = getattr(tags.target_tags, "required", True)
+    requires_y = getattr(tags.target_tags, "required", True)
 
     yield (clone(estimator), check_doc_attributes)
     yield (clone(estimator), check_set_output)
-    yield (clone(estimator), check_tags)
     yield (clone(estimator), check_verbose)
     yield (clone(estimator), check_doc_link)
 
@@ -845,18 +766,6 @@ def fit_estimator(
 
 
 # ------------------ GENERIC CHECKS ------------------
-
-
-def check_tags(estimator_orig) -> None:
-    """Check tags are the same with old and new methods.
-
-    TODO (sklearn >= 1.6) remove this check when bumping sklearn above 1.5
-    """
-    estimator = clone(estimator_orig)
-
-    old_tags = estimator._more_tags()
-    new_tags = estimator.__sklearn_tags__()
-    assert old_tags == new_tags
 
 
 def check_verbose(estimator) -> None:
@@ -2480,11 +2389,7 @@ def check_img_estimator_standardization(estimator_orig) -> None:
             continue
 
         results = {}
-        standardize_values = [
-            "zscore_sample",
-            "psc",
-            None,
-        ]
+        standardize_values = ["zscore_sample", "psc", None]
         for standardize in standardize_values:
             estimator = clone(estimator_orig)
 
@@ -2867,13 +2772,7 @@ def check_masker_standardization(estimator_orig) -> None:
         default_result = estimator.transform(input_img)
 
         results = {}
-        standardize_values = [
-            "zscore_sample",
-            "psc",
-            True,
-            False,
-            None,
-        ]
+        standardize_values = ["zscore_sample", "psc", None]
         for standardize in standardize_values:
             estimator = clone(estimator_orig)
 
@@ -2881,25 +2780,11 @@ def check_masker_standardization(estimator_orig) -> None:
 
             estimator.fit(input_img)
 
-            # TODO (nilearn >= 0.15.0) remove warning catch
-            # Make sure that a FutureWarning warning is thrown
-            # and not one during call to fit and then call to clean.
-            if standardize in [True, False]:
-                with pytest.warns(
-                    FutureWarning,
-                    match=(
-                        "boolean values for 'standardize' will be deprecated"
-                    ),
-                ):
-                    results[str(standardize)] = estimator.transform(input_img)
-            else:
-                results[str(standardize)] = estimator.transform(input_img)
+            results[str(standardize)] = estimator.transform(input_img)
 
-        unstandarized_result = results[str(False)]
+        unstandarized_result = results[str(None)]
 
         # check which options are equal or different
-        assert_array_equal(results[str(None)], results[str(False)])
-
         for x in ["zscore_sample", "psc"]:
             with pytest.raises(AssertionError):
                 assert_array_equal(unstandarized_result, results[x])

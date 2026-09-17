@@ -37,6 +37,8 @@
 
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
 
+.. _Aniket Singh Yadav: https://github.com/Aniketsy
+
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
 
 .. _Anton Karpov: https://github.com/karpovantonme

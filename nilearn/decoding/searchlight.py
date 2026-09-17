@@ -7,14 +7,14 @@ in the neighborhood of each location of a domain.
 import time
 import warnings
 from copy import deepcopy
-from typing import Any
+from typing import Any, Self
 
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
-from sklearn.utils import check_array
+from sklearn.utils import ClassifierTags, RegressorTags, check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import has_fit_parameter
 
@@ -23,7 +23,7 @@ from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import readable_time
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.tags import InputTags
 from nilearn.decoding._utils import SUPPORTED_ESTIMATORS, validate_estimator
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
@@ -428,30 +428,14 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags()
-
-        from sklearn.utils import ClassifierTags, RegressorTags
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=False)
 
         if self._estimator_type == "regressor":
-            if SKLEARN_LT_1_6:
-                tags["multioutput"] = True
-                return tags
             tags.estimator_type = "regressor"
             tags.regressor_tags = RegressorTags()
 
         elif self._estimator_type == "classifier":
-            if SKLEARN_LT_1_6:
-                return tags
             tags.estimator_type = "classifier"
             tags.classifier_tags = ClassifierTags()
 
@@ -474,7 +458,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
                 return self.estimator._estimator_type
         return ""
 
-    def fit(self, imgs, y, groups=None):
+    def fit(self, imgs, y, groups=None) -> Self:
         """Fit the searchlight.
 
         Parameters
@@ -509,7 +493,9 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         process_mask_img = self.process_mask_img or self.mask_img_
 
         # Compute world coordinates of the seeds
-        process_mask, process_mask_affine = load_mask_img(process_mask_img)
+        process_mask, process_mask_affine = load_mask_img(
+            process_mask_img  # type: ignore[arg-type]
+        )
 
         self.process_mask_ = process_mask
 
@@ -522,7 +508,9 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             process_mask_coords[2],
             process_mask_affine,
         )
-        process_mask_coords = np.asarray(process_mask_coords).T
+        process_mask_coords = np.asarray(  # type: ignore[assignment]
+            process_mask_coords
+        ).T
 
         X, A = apply_mask_and_get_affinity(
             process_mask_coords,
@@ -535,7 +523,6 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         # TODO (sklearn >= 1.8) _estimator_type will be removed
         owning_class_type = getattr(self, "_estimator_type", None)
 
-        # TODO test with sklearn sklearn_version == 1.5.0
         if owning_class_type is None:
             owning_class_type = self.__sklearn_tags__().estimator_type
 
@@ -569,7 +556,6 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             hasattr(self, "scores_")
             and hasattr(self, "process_mask_")
             and hasattr(self, "mask_img_")
-            and self.scores_ is not None
             and self.process_mask_ is not None
         )
 
@@ -607,7 +593,6 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         # TODO (sklearn >= 1.8) _estimator_type will be removed
         owning_class_type = getattr(self, "_estimator_type", None)
 
-        # TODO test with sklearn sklearn_version == 1.5.0
         if owning_class_type is None:
             owning_class_type = self.__sklearn_tags__().estimator_type
 

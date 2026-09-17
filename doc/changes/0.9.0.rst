@@ -75,7 +75,7 @@ Fixes
 
 - :bdg-dark:`Code` When a label image with non integer values was provided to the :class:`~maskers.NiftiLabelsMasker`, its :meth:`~maskers.NiftiLabelsMasker.generate_report` method was raising an ``IndexError`` (:gh:`3009` by `Nicolas Gensollen`_).
 
-- :bdg-dark:`Code` Method :meth:`~glm.first_level.FirstLevelModel.generate_report` threw a ``TypeError`` when :class:`~glm.first_level.FirstLevelModel` was instantiated with ``mask_img`` being a :class:`~maskers.NiftiMasker`. Function :func:`~reporting.make_glm_report` was fixed accordingly (:gh:`3035` by `Alexis Thual`_).
+- :bdg-dark:`Code` Method :meth:`~glm.first_level.FirstLevelModel.generate_report` threw a ``TypeError`` when :class:`~glm.first_level.FirstLevelModel` was instantiated with ``mask_img`` being a :class:`~maskers.NiftiMasker`. Function ``nilearn.reporting.make_glm_report`` was fixed accordingly (:gh:`3035` by `Alexis Thual`_).
 
 - :bdg-dark:`Code` Function :func:`~plotting.find_parcellation_cut_coords` now returns coordinates and labels having the same order as the one of the input labels index (:gh:`3078` by `Myeong Seop Song`_).
 

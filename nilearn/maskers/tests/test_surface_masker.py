@@ -3,11 +3,9 @@ import pytest
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import (
@@ -17,34 +15,14 @@ from nilearn.surface.utils import (
 
 ESTIMATORS_TO_CHECK = [SurfaceMasker()]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize(
@@ -70,7 +48,7 @@ def test_transform_inverse_transform_no_mask(surf_mesh, n_timepoints):
         img_data[key] = data_part.T
 
     img = SurfaceImage(surf_mesh, img_data)
-    masker = SurfaceMasker(standardize=None).fit(img)
+    masker = SurfaceMasker().fit(img)
     signals = masker.transform(img)
 
     # make sure none of the data has been removed
@@ -101,7 +79,7 @@ def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
     }
     mask = SurfaceImage(surf_mesh, mask_data)
 
-    masker = SurfaceMasker(mask, standardize=None).fit(img)
+    masker = SurfaceMasker(mask).fit(img)
     signals = masker.transform(img)
 
     # check the data for first seven vertices is as expected

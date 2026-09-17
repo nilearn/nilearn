@@ -2,7 +2,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Self
 
 import numpy as np
 from scipy import ndimage
@@ -98,7 +98,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -180,7 +180,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         high_variance_confounds=False,
@@ -221,7 +221,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self._reset_report()
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -347,14 +347,15 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
             table = self.lut_.copy()
 
+            part_data = self.labels_img_.data.parts[part]
+            n_non_background_vertices = np.sum(
+                part_data != self.background_label
+            )
+
             for _, row in table.iterrows():
-                n_vertices = self.labels_img_.data.parts[part] == row["index"]
+                n_vertices = part_data == row["index"]
                 size.append(n_vertices.sum())
-                tmp = (
-                    n_vertices.sum()
-                    / self.labels_img_.mesh.parts[part].n_vertices
-                    * 100
-                )
+                tmp = n_vertices.sum() / n_non_background_vertices * 100
                 relative_size.append(f"{tmp:.2}")
 
             table["size"] = size

@@ -13,7 +13,7 @@ ensembling to achieve state of the art performance
 import itertools
 import warnings
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Self
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -47,7 +47,7 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.tags import InputTags
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import (
     SUPPORTED_ESTIMATORS,
@@ -489,7 +489,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
     %(screening_n_features)s
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
 
@@ -538,6 +538,11 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
     """
 
+    # dummy_output_ starts as a dict of accumulated fold outputs
+    # (set in _fetch_parallel_fit_outputs) and is turned into an array
+    # once ensembled in fit().
+    dummy_output_: Any
+
     def __init__(
         self,
         estimator: SupportedRegressors | SupportedClassifiers | Any = "svc",
@@ -548,7 +553,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         screening_n_features=None,
         scoring=None,
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         low_pass=None,
@@ -590,7 +595,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         return 100
 
     @fill_doc
-    def fit(self, X, y, groups=None):
+    def fit(self, X, y, groups=None) -> Self:
         """Fit the decoder (learner).
 
         Parameters
@@ -619,7 +624,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         # TODO (sklearn >= 1.8) _estimator_type will be removed
         owning_class_type = getattr(self, "_estimator_type", None)
 
-        # TODO test with sklearn sklearn_version == 1.5.0
         if owning_class_type is None:
             owning_class_type = self.__sklearn_tags__().estimator_type
 
@@ -770,7 +774,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
 
         # Build the final model (the aggregated one)
         if not isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
-            self.coef_ = np.vstack(
+            self.coef_: np.ndarray | None = np.vstack(
                 [
                     np.mean(coefs[class_index], axis=0)
                     for class_index in classes_
@@ -803,9 +807,10 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         else:
             # For Dummy estimators
             self.coef_ = None
+            dummy_output = self.dummy_output_
             self.dummy_output_ = np.vstack(
                 [
-                    np.mean(self.dummy_output_[class_index], axis=0)
+                    np.mean(dummy_output[class_index], axis=0)
                     for class_index in classes_
                 ]
             )
@@ -891,6 +896,9 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
                 f" expecting {self.n_elements_}"
             )
 
+        # coef_ is only None for Dummy estimators, which do not reach
+        # this code path (they are predicted through _predict_dummy).
+        assert self.coef_ is not None
         scores = (
             safe_sparse_dot(X, self.coef_.T, dense_output=True)
             + self.intercept_
@@ -987,7 +995,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         intercepts = {}
         cv_scores = {}
         self.cv_params_ = {}
-        self.dummy_output_ = {}
+        self.dummy_output_: Any = {}
         classes_ = self._get_classes()
 
         for (
@@ -1093,15 +1101,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(require_y=True, niimg_like=True, surf_img=True)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.target_tags.required = True
         tags.input_tags = InputTags(niimg_like=True, surf_img=True)
@@ -1177,7 +1176,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
 
@@ -1243,7 +1242,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         mask_strategy="background",
@@ -1367,7 +1366,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
 
@@ -1427,7 +1426,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         mask_strategy="background",
@@ -1462,13 +1461,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             n_jobs=n_jobs,
             estimator_args=estimator_args,
         )
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -1553,7 +1545,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
 
@@ -1617,7 +1609,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         screening_n_features=None,
         scoring="r2",
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         mask_strategy="background",
@@ -1654,13 +1646,6 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         )
 
         self.clustering_percentile = clustering_percentile
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -1749,7 +1734,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         'recall' or 'roc_auc'; default='roc_auc'
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(target_affine)s
 
@@ -1820,7 +1805,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         screening_n_features=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         target_affine=None,
         target_shape=None,
         mask_strategy="background",
