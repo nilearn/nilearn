@@ -18,7 +18,7 @@ from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, get_data, new_img_like, reorder_img
 from nilearn.image.image import _check_fov
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
-from nilearn.nilearn_typing import NiimgLike, OutputFile
+from nilearn.nilearn_typing import BlackBg, NiimgLike, OutputFile
 from nilearn.plotting._engine_utils import create_colorbar_for_fig
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
@@ -61,7 +61,7 @@ class BaseSlicer:
         self,
         cut_coords,
         axes=None,
-        black_bg=False,
+        black_bg: BlackBg = False,
         brain_color=(0.5, 0.5, 0.5),
         **kwargs,
     ):
@@ -84,7 +84,7 @@ class BaseSlicer:
             "top": 0.05 * bb.height,
             "bottom": 0.05 * bb.height,
         }
-        self._init_axes(**kwargs)
+        self._init_axes(**kwargs)  # type: ignore[attr-defined]
 
     @property
     def brain_color(self):
@@ -233,7 +233,7 @@ class BaseSlicer:
         cut_coords=None,
         figure=None,
         axes=None,
-        black_bg=False,
+        black_bg: BlackBg = False,
         leave_space=False,
         colorbar=False,
         brain_color=(0.5, 0.5, 0.5),

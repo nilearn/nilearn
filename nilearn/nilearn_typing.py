@@ -41,6 +41,7 @@ AvailableMeshes: TypeAlias = Literal[
     "fsaverage",
 ]
 BgOnData: TypeAlias = bool
+BlackBg: TypeAlias = Literal[True, False, "auto"]
 BorderSize: TypeAlias = Integer
 ColorBar: TypeAlias = bool
 ClusterThreshold: TypeAlias = Integer

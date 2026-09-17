@@ -176,6 +176,7 @@ TYPE_MAPS = {
     "annotate": nilearn_typing.Annotate,
     "border_size": nilearn_typing.BorderSize,
     "bg_on_data": nilearn_typing.BgOnData,
+    "black_bg": nilearn_typing.BlackBg,
     "colorbar": nilearn_typing.ColorBar,
     "cluster_threshold": nilearn_typing.ClusterThreshold,
     "connected": nilearn_typing.Connected,

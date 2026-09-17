@@ -44,6 +44,7 @@ from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.nilearn_typing import (
     Annotate,
+    BlackBg,
     ColorBar,
     DisplayMode,
     DrawCross,
@@ -322,7 +323,7 @@ def plot_img(
     threshold=None,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg: bool = False,
+    black_bg: BlackBg = False,
     colorbar: ColorBar = True,
     cbar_tick_format: str = DEFAULT_TICK_FORMAT,
     resampling_interpolation: ResamplingInterpolation = "continuous",
@@ -492,7 +493,7 @@ def plot_anat(
     annotate: Annotate = True,
     threshold=None,
     draw_cross: DrawCross = True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     dim="auto",
     cmap="gray",
     colorbar: ColorBar = True,
@@ -622,7 +623,7 @@ def plot_epi(
     title: Title = None,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg: bool = True,
+    black_bg: BlackBg = True,
     colorbar: ColorBar = True,
     cbar_tick_format=DEFAULT_TICK_FORMAT,
     cmap="gray",
@@ -777,7 +778,7 @@ def plot_roi(
     title: Title = None,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     threshold=0.5,
     alpha=0.7,
     cmap="gist_ncar",
@@ -961,7 +962,7 @@ def plot_prob_atlas(
     title: Title = None,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     dim="auto",
     colorbar: ColorBar = True,
     cmap="gist_rainbow",
@@ -1251,7 +1252,7 @@ def plot_stat_map(
     threshold=1e-6,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cbar="auto",
     dim="auto",
@@ -1418,7 +1419,7 @@ def plot_glass_brain(
     title=None,
     threshold="auto",
     annotate=True,
-    black_bg=False,
+    black_bg: BlackBg = False,
     cmap=None,
     alpha=0.7,
     vmin=None,
@@ -1529,9 +1530,9 @@ def plot_glass_brain(
     check_threshold_not_negative(threshold)
 
     if cmap is None:
-        cmap = cm.cold_white_hot
+        cmap = cm.cold_white_hot  # type: ignore[attr-defined]
         if black_bg:
-            cmap = cm.cold_hot
+            cmap = cm.cold_hot  # type: ignore[attr-defined]
         if not plot_abs:
             cmap = plt.cm.RdBu_r
         # use only positive half of colormap if plotting absolute values
@@ -1615,7 +1616,7 @@ def plot_connectome(
     axes=None,
     title: Title = None,
     annotate: Annotate = True,
-    black_bg: bool = False,
+    black_bg: BlackBg = False,
     alpha=0.7,
     edge_kwargs=None,
     node_kwargs=None,
@@ -1663,7 +1664,9 @@ def plot_connectome(
         If it is a string it must finish with a percent sign,
         e.g. "25.3%%", and only the edges with a abs(value) above
         the given percentile will be shown.
+
     %(output_file)s
+
     display_mode : :obj:`str`, default='ortho'
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'l' - sagittal left hemisphere only,
@@ -1671,12 +1674,18 @@ def plot_connectome(
         performed in orthogonal directions. Possible values are: 'ortho',
         'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
         'lzry', 'lyrz'.
+
     %(figure)s
+
     %(axes)s
+
     %(title)s
+
     %(annotate)s
+
     %(black_bg)s
         default=False.
+
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for the brain schematics.
 
@@ -1753,7 +1762,7 @@ def plot_markers(
     axes=None,
     title: Title = None,
     annotate: Annotate = True,
-    black_bg: bool = False,
+    black_bg: BlackBg = False,
     node_kwargs=None,
     colorbar: ColorBar = True,
     radiological: Radiological = False,
@@ -1793,6 +1802,7 @@ def plot_markers(
 
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for markers.
+
     %(output_file)s
 
     display_mode : :obj:`str`, default='ortho'
@@ -1802,17 +1812,25 @@ def plot_markers(
         performed in orthogonal directions. Possible values are: 'ortho',
         'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
         'lzry', 'lyrz'.
+
     %(figure)s
+
     %(axes)s
+
     %(title)s
+
     %(annotate)s
+
     %(black_bg)s
         default=False.
+
     node_kwargs : :obj:`dict` or None, default=None
         will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go
+
     %(colorbar)s
         default=True.
+
     %(radiological)s
 
     Returns
