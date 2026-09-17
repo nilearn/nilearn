@@ -111,9 +111,9 @@ def all_estimators(
     >>> from nilearn.utils import all_estimators
     >>> estimators = all_estimators()
     >>> len(estimators)
-    33
+    31
     >>> estimators[0]
-    ('BaseGLM', <class 'nilearn.glm._base.BaseGLM'>)
+    ('Decoder', <class 'nilearn.decoding.decoder.Decoder'>)
 
     """
     # TODO: add GLM?
