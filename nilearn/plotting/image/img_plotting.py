@@ -575,6 +575,20 @@ def plot_anat(
     For visualization, non-finite values found in passed 'anat_img'
     are set to zero.
 
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_anat, show
+        >>> from nilearn.datasets import load_mni152_template
+        >>>
+        >>> mni152_template = load_mni152_template()
+        >>>
+        >>> plot_anat(mni152_template, title="mni152 template")
+        >>>
+        >>> show()
+
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -893,6 +907,20 @@ def plot_roi(
     --------
     nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
         (4D images)
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_roi, show
+        >>> from nilearn.datasets import load_mni152_gm_mask
+        >>>
+        >>> grey_matter_mask = load_mni152_gm_mask()
+        >>>
+        >>> plot_roi(grey_matter_mask, title="grey matter mni152")
+        >>>
+        >>> show()
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -1356,6 +1384,20 @@ def plot_stat_map(
     nilearn.plotting.plot_anat : To simply plot anatomical images
     nilearn.plotting.plot_epi : To simply plot raw EPI images
     nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_stat_map, show
+        >>> from nilearn.datasets import load_sample_motor_activation_image
+        >>>
+        >>> motor_activation_image = load_sample_motor_activation_image()
+        >>>
+        >>> plot_stat_map(motor_activation_image)
+        >>>
+        >>> show()
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -1524,6 +1566,20 @@ def plot_glass_brain(
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_glass_brain, show
+        >>> from nilearn.datasets import load_sample_motor_activation_image
+        >>>
+        >>> motor_activation_image = load_sample_motor_activation_image()
+        >>>
+        >>> plot_glass_brain(motor_activation_image, plot_abs=False)
+        >>>
+        >>> show()
     """
     check_params(locals())
     check_threshold_not_negative(threshold)

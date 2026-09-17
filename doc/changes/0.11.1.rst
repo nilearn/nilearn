@@ -5,6 +5,8 @@ Version 0.11.1
 
 **Released december 2024**
 
+.. _v0-11-1-highlights:
+
 HIGHLIGHTS
 ----------
 
@@ -13,6 +15,8 @@ HIGHLIGHTS
 - Adds a :obj:`~maskers.SurfaceMapsMasker` class.
 
 - Allows to run :obj:`~regions.Parcellations` with surface data.
+
+.. _v0-11-1-fixes:
 
 Fixes
 -----
@@ -32,6 +36,8 @@ Fixes
 - :bdg-dark:`Code` Support for confounds as numpy arrays in :meth:`~glm.first_level.FirstLevelModel.fit` (:gh:`4967` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Update :obj:`~regions.HierarchicalKMeans` to take X as array of shape ``[n_samples, n_features]`` (:gh:`4939` by `Himanshu Aggarwal`_ and `Rémi Gau`_).
+
+.. _v0-11-1-enhancements:
 
 Enhancements
 ------------

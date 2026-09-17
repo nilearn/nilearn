@@ -6,6 +6,8 @@ Version 0.1.3
 
 **Released May 2015**
 
+.. _v0-1-3-changelog:
+
 Changelog
 ---------
 
@@ -20,6 +22,8 @@ It also includes a full rewamp of the documentation, and support for Python 3.
     - ``scipy -- 0.9.0``
     - ``scikit-learn -- 0.12.1``
     - ``Matplotlib -- 1.1.1`` (optional)
+
+.. _v0-1-3-fixes:
 
 Fixes
 -----

@@ -5,6 +5,8 @@ Version 0.13.0
 
 **Released January 2026**
 
+.. _v0-13-0-highlights:
+
 HIGHLIGHTS
 ----------
 
@@ -44,6 +46,8 @@ Several classes and functions / methods have been added to the public API:
 - Nilearn specific exceptions and warnings,
 - also most maskers can now extract data and return it as a Pandas or `Polar dataframe <https://docs.pola.rs/api/python/stable/reference/index.html>`_ via the scikit-learn ``set_output`` `method <https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html>`_
 
+.. _v0-13-0-fixes:
+
 Fixes
 -----
 
@@ -67,6 +71,8 @@ Fixes
 
 - :bdg-info:`Plotting` Make it possible to use ``kwargs`` to override default in matrix plotting and :meth:`~plotting.displays.BaseSlicer.title` (:gh:`5905` by `Rémi Gau`_).
 
+
+.. _v0-13-0-enhancements:
 
 Enhancements
 ------------
@@ -102,6 +108,8 @@ Enhancements
 - :bdg-info:`Plotting` Add ``view`` parameter to :func:`~plotting.view_img_on_surf` to select the default view that will be used when displaying the figure  (:gh:`5692` by `Rémi Gau`_).
 
 
+.. _v0-13-0-changes:
+
 Changes
 -------
 
@@ -113,6 +121,8 @@ the following section has been divided into :
 - changes coming into effect in this release,
 
 - changes that will start throwing deprecation warnings in this release but will be implemented in a future release.
+
+.. _v0-13-0-changes-affecting-this-release:
 
 Changes affecting this release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -169,6 +179,8 @@ Changes affecting this release
 
 - :bdg-danger:`Deprecation` The value ``'nearest'`` for the parameter ``interpolation`` of :func:`~surface.vol_to_surf` is no longer allowed. Use ``'nearest_most_frequent'`` instead (:gh:`5662` by `Rémi Gau`_).
 
+.. _v0-13-0-deprecation-cycle-starting-in-this-release:
+
 Deprecation cycle starting in this release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -182,6 +194,8 @@ Deprecation cycle starting in this release
 
 - :bdg-danger:`Deprecation` The parameter ``output_type`` of :func:`~mass_univariate.permuted_ols` was changed from ``legacy`` to ``dict``. The parameter ``output_type`` will be removed in Nilearn >= 0.15.0 (:gh:`5631` by `Rémi Gau`_).
 
+
+.. _v0-13-0-documentation:
 
 Documentation
 -------------

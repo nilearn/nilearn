@@ -5,6 +5,8 @@ Version 0.10.4
 
 **Released April 2024**
 
+.. _v0-10-4-highlights:
+
 HIGHLIGHTS
 ----------
 
@@ -16,6 +18,8 @@ HIGHLIGHTS
 
 - :bdg-dark:`Code` Remove unused ``**kwargs`` from :func:`~plotting.view_img` and :func:`~plotting.plot_surf` (:gh:`4270` by `Rémi Gau`_).
 
+
+.. _v0-10-4-fixes:
 
 Fixes
 -----
@@ -52,6 +56,8 @@ Fixes
 
 - :bdg-primary:`Doc` Update minor information on the :ref:`contributing` page (:gh:`4318` and :gh:`4320` by `Himanshu Aggarwal`_).
 
+.. _v0-10-4-enhancements:
+
 Enhancements
 ------------
 
@@ -59,6 +65,8 @@ Enhancements
 
 - :bdg-primary:`Doc` Advertise nilearn's in built globbing capability in an example (:gh:`4334` by `Himanshu Aggarwal`_).
 
+
+.. _v0-10-4-changes:
 
 Changes
 -------

@@ -6,6 +6,8 @@ Version 0.8.0
 
 **Released June 2021**
 
+.. _v0-8-0-highlights:
+
 HIGHLIGHTS
 ----------
 
@@ -35,6 +37,8 @@ HIGHLIGHTS
 
 - :bdg-success:`API` Function :func:`~glm.first_level.run_glm` now allows auto regressive noise models of order greater than one (:gh:`2532` by `Robert Luke`_).
 
+.. _v0-8-0-new:
+
 NEW
 ---
 
@@ -43,6 +47,8 @@ NEW
 - :bdg-success:`API` All inherent classes of :class:`~maskers.BaseMasker` can use the parameter ``sample_mask`` for sub-sample masking (:gh:`2858` by `Hao-Ting Wang`_).
 
 - :bdg-success:`API` Class :class:`~maskers.NiftiLabelsMasker` can now generate HTML reports in the same way as :class:`~maskers.NiftiMasker`. The report shows the regions defined by the provided label image and provide summary statistics on each region (name, volume...). If a functional image was provided to fit, the middle image is plotted with the regions overlaid as contours. Finally, if a mask is provided, its contours are shown in green (:gh:`2707` by `Nicolas Gensollen`_).
+
+.. _v0-8-0-fixes:
 
 Fixes
 -----
@@ -58,6 +64,8 @@ Fixes
 - :bdg-info:`Plotting` Plotting functions that show a stack of slices from a 3D image (e.g. :func:`~plotting.plot_stat_map`) will now plot the slices in the user specified order, rather than automatically sorting into ascending order (see :gh:`1155`) (:gh:`2831` by `Evan Edmond`_).
 
 - :bdg-info:`Plotting` Fix the axes zoom in function :func:`~plotting.plot_img_on_surf` so brain would not be cutoff, and edited function so less white space surrounds brain views and smaller colorbar using gridspec (:gh:`2798` by `Tom Vanasse`_).
+
+.. _v0-8-0-enhancements:
 
 Enhancements
 ------------
@@ -85,6 +93,8 @@ Enhancements
 - :bdg-secondary:`Maint` Function :func:`~signal.clean` has been refactored to clarify the data flow (:gh:`2821` by `Hao-Ting Wang`_).
 
 - :bdg-secondary:`Maint` Moves parameter ``sample_mask`` from :class:`~maskers.NiftiMasker` to method ``transform`` in base class :class:`~maskers.BaseMasker` (:gh:`2858` by `Hao-Ting Wang`_).
+
+.. _v0-8-0-changes:
 
 Changes
 -------

@@ -5,6 +5,8 @@ Version 0.10.0
 
 **Released January 2023**
 
+.. _v0-10-0-highlights:
+
 HIGHLIGHTS
 ----------
 
@@ -33,10 +35,14 @@ HIGHLIGHTS
 - :bdg-primary:`Doc` Updated docs with a new theme using `furo <https://github.com/pradyunsg/furo>`_ (:gh:`3125` by `Alexis Thual`_).
 
 
+.. _v0-10-0-new:
+
 NEW
 ---
 
 - :bdg-success:`API` New classes :class:`~maskers.MultiNiftiLabelsMasker` and :class:`~maskers.MultiNiftiMapsMasker` create maskers to extract signals from a list of subjects with 4D images using parallelization (:gh:`3237` by `Yasmin Mzayek`_).
+
+.. _v0-10-0-fixes:
 
 Fixes
 -----
@@ -61,6 +67,8 @@ Fixes
 
 - :bdg-warning:`Test` Fix failing CanICA test by adding noise to the data creation step (:gh:`3453` by `Yasmin Mzayek`_).
 
+.. _v0-10-0-enhancements:
+
 Enhancements
 ------------
 
@@ -76,6 +84,8 @@ Enhancements
 
 - :bdg-primary:`Doc` Added instructions for maintainers to make sure LaTeX dependencies are installed before building and deploying the stable docs (:gh:`3426` by `Yasmin Mzayek`_).
 
+
+.. _v0-10-0-changes:
 
 Changes
 -------

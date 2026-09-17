@@ -5,6 +5,8 @@ Version 0.7.1
 
 **Released March 2021**
 
+.. _v0-7-1-highlights:
+
 HIGHLIGHTS
 ----------
 
@@ -16,6 +18,8 @@ HIGHLIGHTS
 
 - :bdg-info:`Plotting` Function :func:`~plotting.plot_carpet` now supports discrete atlases. When an atlas is used, a colorbar is added to the figure, optionally with labels corresponding to the different values in the atlas (:gh:`2702` by `Taylor Salo`_).
 
+.. _v0-7-1-new:
+
 NEW
 ---
 
@@ -23,12 +27,16 @@ NEW
 
 - :bdg-success:`API` Function :func:`glm.Contrast.one_minus_pvalue` was added to ensure numerical stability of p-value estimation. It computes 1 - p-value using the Cumulative Distribution Function in the same way as function :func:`~glm.Contrast.p_value` computes the p-value using the Survival Function. (:gh:`2567` by `Ana Luisa Pinho`_).
 
+.. _v0-7-1-fixes:
+
 Fixes
 -----
 
 - :bdg-dark:`Code` Fix altered, non-zero baseline in design matrices where multiple events in the same condition end at the same time (see :gh:`2674`) (:gh:`2553` by `Martin Wegrzyn`_).
 
 - :bdg-dark:`Code` Fix testing issues on ARM machine (:gh:`2606` by `Kamalakar Reddy Daddy`_).
+
+.. _v0-7-1-enhancements:
 
 Enhancements
 ------------
