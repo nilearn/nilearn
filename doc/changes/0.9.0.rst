@@ -6,8 +6,6 @@ Version 0.9.0
 
 **Released January 2022**
 
-.. _v0-9-0-highlights:
-
 HIGHLIGHTS
 ----------
 
@@ -38,8 +36,6 @@ HIGHLIGHTS
 - :bdg-primary:`Doc` The :doc:`contributing documentation</development>` and :doc:`maintenance</maintenance>` pages were improved (:gh:`3010` by `Nicolas Gensollen`_).
 
 - :bdg-info:`Plotting` Surface plotting functions can now produce interactive plots with ``Plotly``. This can be selected with the ``engine`` parameter (set it to ``matplotlib`` or ``plotly``) (:gh:`2902` by `Nicolas Gensollen`_).
-
-.. _v0-9-0-new:
 
 NEW
 ---
@@ -74,8 +70,6 @@ NEW
 
 - :bdg-info:`Plotting` Surface plotting functions like :func:`~plotting.plot_surf_stat_map` now have an ``engine`` parameter, defaulting to ``matplotlib``, but which can be set to ``plotly``. If ``plotly`` and ``kaleido`` are installed, this will generate an interactive plot of the surface map using ``plotly`` instead of ``matplotlib``. Note that this functionality is still experimental, and that some capabilities supported by our ``matplotlib`` engine are not yet supported by the ``plotly`` engine (:gh:`2902` by `Nicolas Gensollen`_).
 
-.. _v0-9-0-fixes:
-
 Fixes
 -----
 
@@ -94,8 +88,6 @@ Fixes
 - :bdg-primary:`Doc` Convert references in ``nilearn/regions/region_extractor.py`` to use footcite / footbibliography (:gh:`3111` by `Neelay Shah`_).
 
 - :bdg-info:`Plotting` Function :func:`~plotting.plot_markers` did not work when the ``display_mode`` parameter included ``l`` and ``r`` and the parameter ``node_size`` was provided as an array (:gh:`3013` by `Leonard Sasse`_).
-
-.. _v0-9-0-enhancements:
 
 Enhancements
 ------------
@@ -120,8 +112,6 @@ Enhancements
 
 - :bdg-info:`Plotting` Function :func:`~plotting.plot_img` and deriving functions like :func:`~plotting.plot_anat`, :func:`~plotting.plot_stat_map`, or :func:`~plotting.plot_epi` now accept an optional argument ``cbar_tick_format`` to specify how numbers should be displayed on the colorbar. This is consistent with the API of surface plotting functions (see release ``0.7.1``). The default format is scientific notation (:gh:`2859` by `Nicolas Gensollen`_).
 
-
-.. _v0-9-0-changes:
 
 Changes
 -------

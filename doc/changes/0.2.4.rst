@@ -8,8 +8,6 @@ Version 0.2.4
 
 The ``0.2.4`` is a small release focused on documentation for teaching.
 
-.. _v0-2-4-new:
-
 New
 ---
 
@@ -20,8 +18,6 @@ New
 - :bdg-success:`API` New function :func:`~image.resample_to_img` to resample one image on another one (just resampling / interpolation, no coregistration).
 
 - :bdg-info:`Plotting` Function :func:`~plotting.plot_connectome` now plots connectome with colorbars.
-
-.. _v0-2-4-changes:
 
 Changes
 -------

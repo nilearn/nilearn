@@ -6,14 +6,10 @@ Version 0.2.3
 
 **Released February 2016**
 
-.. _v0-2-3-changelog:
-
 Changelog
 ---------
 
 The ``0.2.3`` is a small feature release for BrainHack 2016.
-
-.. _v0-2-3-new-features:
 
 New features
 ------------
@@ -25,8 +21,6 @@ New features
 - :bdg-dark:`Code` Downloader for Dosenbach atlas :func:`~datasets.fetch_coords_dosenbach_2010`.
 
 - :bdg-dark:`Code` Fetcher for multiscale functional brain parcellations (BASC) :func:`~datasets.fetch_atlas_basc_multiscale_2015`.
-
-.. _v0-2-3-bug-fixes:
 
 Bug fixes
 ---------

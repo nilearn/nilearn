@@ -5,14 +5,10 @@ Version 0.12.1
 
 **Released September 2025**
 
-.. _v0-12-1-highlights:
-
 HIGHLIGHTS
 ----------
 
 - This is mostly a bug fix release that also removes a few public attributes from some classes for better compatibility with scikit-learn, and to avoid some edge cases bugs.
-
-.. _v0-12-1-fixes:
 
 Fixes
 -----
@@ -46,16 +42,12 @@ Fixes
 - :bdg-info:`Plotting` Plots of thresholded statistical maps included in GLM reports now take into account the ``two_sided`` parameter (:gh:`5578` by `Rémi Gau`_).
 
 
-.. _v0-12-1-enhancements:
-
 Enhancements
 ------------
 
 - :bdg-success:`API` The fitted attribute ``n_elements_`` was added to following estimators: :class:`~glm.first_level.FirstLevelModel`, :class:`~glm.second_level.SecondLevelModel`, :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMClassifier`, :class:`~decoding.FREMRegressor`, :class:`~decoding.SearchLight`. This attribute is equivalent to the `n_features_in_ <https://scikit-learn.org/stable/developers/develop.html#universal-attributes>`_ of scikit-learn estimators.
 
 - :bdg-dark:`Code` Enforce consistent ``dtype`` for all parts of :class:`~surface.SurfaceImage` and :class:`~surface.PolyData` (:gh:`5530` by `Rémi Gau`_).
-
-.. _v0-12-1-changes:
 
 Changes
 -------
