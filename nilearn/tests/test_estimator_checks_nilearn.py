@@ -1,7 +1,18 @@
+import numpy as np
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn._utils.estimator_checks import nilearn_check_estimator
 from nilearn.conftest import _img_labels, _img_maps, _surf_maps_img
+from nilearn.decoding import (
+    Decoder,
+    DecoderRegressor,
+    FREMClassifier,
+    FREMRegressor,
+)
+from nilearn.decoding.searchlight import SearchLight
+from nilearn.decoding.space_net import SpaceNetClassifier, SpaceNetRegressor
+from nilearn.decomposition import CanICA, DictLearning
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
     MultiNiftiMapsMasker,
@@ -17,10 +28,31 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
-from nilearn.maskers.tests.conftest import sklearn_surf_label_img
+from nilearn.maskers.tests.conftest import sklearn_surf_label_img  # TODO move
+
+# this to here
 from nilearn.utils.discovery import all_estimators
 
 ESTIMATORS_TO_CHECK = [
+    Decoder(
+        screening_percentile=100,
+        estimator_args={"random_state": 0},
+    ),
+    DecoderRegressor(screening_percentile=100),
+    FREMClassifier(
+        screening_percentile=100,
+        estimator_args={"random_state": 0},
+    ),
+    FREMRegressor(screening_percentile=100),
+    SpaceNetClassifier(),
+    SpaceNetRegressor(),
+    SearchLight(
+        mask_img=Nifti1Image(
+            np.ones((5, 5, 5), dtype=bool).astype("uint8"), np.eye(4)
+        )
+    ),
+    DictLearning(),
+    CanICA(),
     NiftiMasker(),
     NiftiLabelsMasker(labels_img=_img_labels()),
     NiftiLabelsMasker(labels_img=_img_labels(n_regions=1)),
@@ -55,6 +87,7 @@ def test_check_estimator_count():
     )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),

@@ -10,8 +10,6 @@ Order of tests from top to bottom:
 
 """
 
-# ruff: noqa: ARG001
-
 import collections
 import numbers
 import warnings
@@ -49,9 +47,6 @@ from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
 from sklearn.utils._testing import ignore_warnings
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-)
 from nilearn._utils.versions import (
     SKLEARN_GTE_1_7,
     compare_version,
@@ -89,30 +84,6 @@ _CUSTOM_PARAM_GRID_WARNING = (
 )
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
-
-
-@pytest.mark.slow
-@ignore_warnings(category=ConvergenceWarning)
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=[
-            Decoder(
-                screening_percentile=100,
-                estimator_args={"random_state": 0},
-            ),
-            DecoderRegressor(screening_percentile=100),
-            FREMClassifier(
-                screening_percentile=100,
-                estimator_args={"random_state": 0},
-            ),
-            FREMRegressor(screening_percentile=100),
-        ]
-    ),
-)
-def test_check_estimator_nilearn(estimator, check, name):
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def _make_binary_classification_test_data(
