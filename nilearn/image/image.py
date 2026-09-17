@@ -360,7 +360,7 @@ def smooth_array(
     fwhm=None,
     ensure_finite: bool = True,
     copy: bool = True,
-    raise_warning: bool = True,
+    verbose: bool | int = 1,
 ) -> np.ndarray:
     """Smooth images by applying a Gaussian filter.
 
@@ -381,23 +381,19 @@ def smooth_array(
 
     ensure_finite : :obj:`bool`, default=True
         If True, replace every non-finite value (like NaNs) by zero before
-        filtering, and warn when any value was replaced. If False, non-finite
-        values are left untouched; note that filtering then spreads them over
-        neighboring voxels.
+        filtering, and warn when any value was replaced, unless ``verbose``
+        is 0. If False, non-finite values are left untouched; note that
+        filtering then spreads them over neighboring voxels.
 
         .. nilearn_versionchanged:: 0.15.0
 
-            A warning is now emitted when values are replaced.
+            A warning is now emitted by default when values are replaced.
 
     copy : :obj:`bool`, default=True
         If True, input array is not modified. True by default: the filtering
         is not performed in-place.
-
-    raise_warning : :obj:`bool`, default=True
-        Whether to warn when ``ensure_finite`` replaces values. Set to False
-        by callers that undo the replacement afterwards, or that only use the
-        filtered array internally, so that they do not report a replacement
-        the caller cannot observe.
+    %(verbose)s
+        Whether to warn when ``ensure_finite`` replaces values.
 
         .. nilearn_versionadded:: 0.15.0
 
@@ -429,7 +425,7 @@ def smooth_array(
         arr = arr.copy()
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
-        ensure_finite_data(arr, raise_warning=raise_warning)
+        ensure_finite_data(arr, verbose=verbose)
     if isinstance(fwhm, str) and (fwhm == "fast"):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
@@ -601,7 +597,6 @@ def _smooth_surface_img(
 
     # Calculate the adjacency matrix either weighting
     # by inverse distance or not weighting (ones)
-    # Match the volume path: non-finite values are replaced with zeros.
     # Warn once for the image rather than once per hemisphere, and clean
     # before the ``n_iter == 0`` shortcut so that the guarantee holds
     # whatever ``fwhm`` is. Left as is, a single non-finite vertex is
@@ -621,9 +616,7 @@ def _smooth_surface_img(
         mesh = img.mesh.parts[hemi]
         # ``copy=True`` keeps the input image's data untouched.
         data = (
-            ensure_finite_data(
-                img.data.parts[hemi], raise_warning=False, copy=True
-            )
+            ensure_finite_data(img.data.parts[hemi], verbose=0, copy=True)
             if ensure_finite
             else np.array(img.data.parts[hemi], copy=True)
         )
@@ -920,7 +913,7 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
             fwhm=smooth,
             ensure_finite=True,
             copy=False,
-            raise_warning=False,
+            verbose=0,
         )
         mean_data[nan_mask] = np.nan
 

@@ -417,11 +417,7 @@ def test_apply_mask_surface_ensure_finite(
 
 @pytest.mark.ai_generated
 def test_apply_mask_surface_ensure_finite_false(surf_img_1d, surf_mask_1d):
-    """Without smoothing, ``ensure_finite=False`` keeps non-finite values.
-
-    This is what the volume branch already did; the surface branch cleaned
-    unconditionally regardless of the argument.
-    """
+    """Without smoothing, ``ensure_finite=False`` keeps non-finite values."""
     # vertex 2 is inside ``surf_mask_1d``, so it survives into the output
     surf_img_1d.data.parts["left"][2] = np.nan
 

@@ -245,7 +245,7 @@ def connected_regions(
                 fwhm=smoothing_fwhm,
                 ensure_finite=True,
                 copy=True,
-                raise_warning=False,
+                verbose=0,
             )
             seeds = peak_local_max(smooth_map)
             seeds_label, _ = label(seeds)

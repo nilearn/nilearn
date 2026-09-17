@@ -317,7 +317,7 @@ def find_cut_slices(
     # clean non-finite values without warning about a replacement the caller
     # cannot see.
     data = smooth_array(
-        data, affine, fwhm="fast", ensure_finite=True, raise_warning=False
+        data, affine, fwhm="fast", ensure_finite=True, verbose=0
     )
 
     # to control floating point error problems
