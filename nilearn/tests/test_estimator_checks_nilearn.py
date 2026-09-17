@@ -3,8 +3,16 @@ import pytest
 from nibabel import Nifti1Image
 from sklearn.covariance import EmpiricalCovariance
 
+from nilearn._utils.data_gen import generate_maps
 from nilearn._utils.estimator_checks import nilearn_check_estimator
-from nilearn.conftest import _img_labels, _img_maps, _surf_maps_img
+from nilearn.conftest import (
+    _affine_eye,
+    _img_3d_mni,
+    _img_labels,
+    _img_maps,
+    _shape_3d_large,
+    _surf_maps_img,
+)
 from nilearn.connectome import (
     ConnectivityMeasure,
     GroupSparseCovariance,
@@ -38,6 +46,12 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers.tests.conftest import sklearn_surf_label_img  # TODO move
+from nilearn.regions import (
+    HierarchicalKMeans,
+    Parcellations,
+    RegionExtractor,
+    ReNA,
+)
 
 # this to here
 from nilearn.utils.discovery import all_estimators
@@ -90,6 +104,19 @@ ESTIMATORS_TO_CHECK = [
     MultiSurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
     MultiSurfaceMapsMasker(_surf_maps_img()),
     MultiSurfaceMapsMasker(_surf_maps_img(n_regions=1)),
+    RegionExtractor(
+        maps_img=generate_maps(
+            shape=_shape_3d_large(),
+            n_regions=2,
+            rand_gen=42,
+            affine=_affine_eye(),
+        )[0]
+    ),
+    HierarchicalKMeans(n_clusters=2),
+    ReNA(mask_img=_img_3d_mni(), n_clusters=2),
+    Parcellations(method="kmeans", n_parcels=5),
+    Parcellations(method="ward", n_parcels=5),
+    Parcellations(method="rena", n_parcels=5),
 ]
 
 

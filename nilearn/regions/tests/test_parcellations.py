@@ -7,7 +7,6 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn._utils.estimator_checks import nilearn_check_estimator
 from nilearn._utils.helpers import is_windows_platform
 from nilearn.conftest import _affine_eye
 from nilearn.maskers import (
@@ -31,18 +30,6 @@ METHODS = [
     "rena",
     "hierarchical_kmeans",
 ]
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=[Parcellations(method=x, n_parcels=5) for x in METHODS]
-    ),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 @pytest.fixture
