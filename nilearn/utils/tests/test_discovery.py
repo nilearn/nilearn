@@ -14,13 +14,13 @@ with contextlib.suppress(ImportError):
 @pytest.mark.parametrize(
     "type_filter, n_expected",
     [
-        (None, 33),
+        (None, 31),
         ("classifier", 3),
         ("regressor", 3),
         ("cluster", 2),
-        ("masker", 15),
+        ("masker", 14),
         ("multi_masker", 6),
-        ("transformer", 22),
+        ("transformer", 21),
     ],
 )
 def test_all_estimators(
@@ -29,7 +29,6 @@ def test_all_estimators(
 ):
     """Check number of estimators in public API."""
     estimators = all_estimators(type_filter=type_filter)
-    print(estimators)
     assert len(estimators) == n_expected
 
 
