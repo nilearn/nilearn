@@ -65,9 +65,6 @@ def maps_and_mask(
     )
 
 
-ESTIMATORS_TO_CHECK = [RegionExtractor()]
-
-
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",

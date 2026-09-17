@@ -32,13 +32,13 @@ METHODS = [
     "hierarchical_kmeans",
 ]
 
-ESTIMATORS_TO_CHECK = [Parcellations(method=x, n_parcels=5) for x in METHODS]
-
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    nilearn_check_estimator(
+        estimators=[Parcellations(method=x, n_parcels=5) for x in METHODS]
+    ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""

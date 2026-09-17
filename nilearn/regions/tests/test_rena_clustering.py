@@ -15,8 +15,6 @@ from nilearn.regions.rena_clustering import (
 )
 from nilearn.surface import SurfaceImage
 
-ESTIMATORS_TO_CHECK = [ReNA()]
-
 
 @pytest.mark.slow
 @pytest.mark.parametrize(

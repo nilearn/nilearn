@@ -14,17 +14,12 @@ from nilearn.regions.hierarchical_kmeans_clustering import (
 from nilearn.surface import SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
 
-# IMPORTANT
-# keeping the n_clusters low (< 3) to make it easier
-# to run sklearn checks
-ESTIMATORS_TO_CHECK = [HierarchicalKMeans(n_clusters=2)]
-
 
 @pytest.mark.thread_unsafe
 @pytest.mark.single_process
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    nilearn_check_estimator(estimators=[HierarchicalKMeans(n_clusters=2)]),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
