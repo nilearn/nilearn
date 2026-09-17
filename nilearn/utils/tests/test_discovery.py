@@ -29,6 +29,7 @@ def test_all_estimators(
 ):
     """Check number of estimators in public API."""
     estimators = all_estimators(type_filter=type_filter)
+    print(estimators)
     assert len(estimators) == n_expected
 
 
