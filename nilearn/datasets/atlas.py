@@ -183,8 +183,8 @@ def fetch_atlas_difumo(
         Number of dimensions in the dictionary. Valid resolutions
         available are {64, 128, 256, 512, 1024}.
 
-    resolution_mm : :obj:`int`, default=2mm
-        The resolution in mm of the atlas to fetch. Valid options
+    resolution_mm : :obj:`int`, default=2
+        The resolution of the atlas to fetch, in mm. Valid options
         available are {2, 3}.
 
     %(data_dir)s
@@ -2397,8 +2397,8 @@ def fetch_atlas_schaefer_2018(
     yeo_networks : {7, 17}, default=7
         ROI annotation according to yeo networks.
 
-    resolution_mm : {1, 2}, default=1mm
-        Spatial resolution of atlas image in mm.
+    resolution_mm : {1, 2}, default=1
+        Spatial resolution of atlas image, in mm.
     %(data_dir)s
     base_url : :obj:`str`,  default=None
         Base URL of files to download (``None`` results in
