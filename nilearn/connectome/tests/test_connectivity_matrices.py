@@ -9,9 +9,6 @@ from pandas import DataFrame
 from scipy import linalg
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-)
 from nilearn._utils.extmath import is_spd
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
@@ -37,20 +34,6 @@ CONNECTIVITY_KINDS = (
 N_FEATURES = 49
 
 N_SUBJECTS = 5
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=[
-            ConnectivityMeasure(cov_estimator=EmpiricalCovariance()),
-            ConnectivityMeasure(),
-        ]
-    ),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def random_diagonal(p, v_min=1.0, v_max=2.0, random_state=0):

@@ -24,9 +24,6 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_fmri_data_and_design,
 )
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-)
 from nilearn._utils.helpers import is_matplotlib_installed, is_windows_platform
 from nilearn.exceptions import MeshDimensionError
 from nilearn.glm.contrasts import compute_fixed_effects
@@ -49,15 +46,6 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.masking import intersect_masks
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_polymesh_equal
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=[FirstLevelModel()]),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def test_glm_fit_unfitted_masker(shape_4d_default):

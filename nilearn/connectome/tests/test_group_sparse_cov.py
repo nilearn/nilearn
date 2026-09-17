@@ -3,25 +3,11 @@ import pytest
 from sklearn.model_selection import KFold
 
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-)
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.group_sparse_cov import (
     group_sparse_covariance,
     group_sparse_scores,
 )
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=[GroupSparseCovarianceCV(), GroupSparseCovariance()]
-    ),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def test_group_sparse_covariance(rng):

@@ -18,9 +18,6 @@ from nilearn._utils.data_gen import (
     write_fake_bold_img,
     write_fake_fmri_data_and_design,
 )
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-)
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level.second_level import (
     SecondLevelModel,
@@ -38,15 +35,6 @@ from nilearn.image import concat_imgs, get_data
 from nilearn.maskers import NiftiMasker
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_surface_image_equal
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=[SecondLevelModel()]),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 @pytest.mark.thread_unsafe

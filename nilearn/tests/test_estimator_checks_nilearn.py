@@ -1,18 +1,27 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from sklearn.covariance import EmpiricalCovariance
 
 from nilearn._utils.estimator_checks import nilearn_check_estimator
 from nilearn.conftest import _img_labels, _img_maps, _surf_maps_img
+from nilearn.connectome import (
+    ConnectivityMeasure,
+    GroupSparseCovariance,
+    GroupSparseCovarianceCV,
+)
 from nilearn.decoding import (
     Decoder,
     DecoderRegressor,
     FREMClassifier,
     FREMRegressor,
+    SearchLight,
+    SpaceNetClassifier,
+    SpaceNetRegressor,
 )
-from nilearn.decoding.searchlight import SearchLight
-from nilearn.decoding.space_net import SpaceNetClassifier, SpaceNetRegressor
 from nilearn.decomposition import CanICA, DictLearning
+from nilearn.glm.first_level import FirstLevelModel
+from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
     MultiNiftiMapsMasker,
@@ -34,6 +43,10 @@ from nilearn.maskers.tests.conftest import sklearn_surf_label_img  # TODO move
 from nilearn.utils.discovery import all_estimators
 
 ESTIMATORS_TO_CHECK = [
+    ConnectivityMeasure(cov_estimator=EmpiricalCovariance()),
+    ConnectivityMeasure(),
+    GroupSparseCovarianceCV(),
+    GroupSparseCovariance(),
     Decoder(
         screening_percentile=100,
         estimator_args={"random_state": 0},
@@ -53,6 +66,8 @@ ESTIMATORS_TO_CHECK = [
     ),
     DictLearning(),
     CanICA(),
+    FirstLevelModel(),
+    SecondLevelModel(),
     NiftiMasker(),
     NiftiLabelsMasker(labels_img=_img_labels()),
     NiftiLabelsMasker(labels_img=_img_labels(n_regions=1)),
