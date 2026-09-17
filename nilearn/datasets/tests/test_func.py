@@ -388,10 +388,13 @@ def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  #
 
 
 def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: ARG001
-    # 2 subjects
-    dataset = func.fetch_localizer_calculation_task(
-        n_subjects=2, data_dir=tmp_path, verbose=1
-    )
+    # TODO (nilearn >= 0.17.0) remove the test with the function
+    with pytest.warns(
+        FutureWarning, match="will be removed in Nilearn 0.17.0"
+    ):
+        dataset = func.fetch_localizer_calculation_task(
+            n_subjects=2, data_dir=tmp_path, verbose=1
+        )
 
     assert isinstance(dataset, Bunch)
     check_type_fetcher(dataset)
