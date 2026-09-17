@@ -16,7 +16,6 @@ and subsequently for classification tasks or to analyze data at a local level.
 
 .. seealso::
 
-    Which clustering method to use, an empirical comparison can be found
     An empirical comparison on which clustering method to use can be found
     in :footcite:t:`Thirion2014`.
 
