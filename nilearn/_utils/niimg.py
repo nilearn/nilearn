@@ -81,19 +81,23 @@ def has_non_finite(data: np.ndarray) -> tuple[bool, np.ndarray]:
 
 
 def ensure_finite_data(
-    data: np.ndarray, raise_warning: bool = True, copy: bool = False
+    data: np.ndarray, verbose: bool | int = 1, copy: bool = False
 ) -> np.ndarray:
     """Check if data contains NaN or inf values, set non-finite values
     to 0 and return data.
 
+    ``verbose=0`` suppresses the warning, for callers that undo the
+    replacement afterwards or only use the cleaned array internally.
+
     The replacement happens in place unless ``copy`` is True, in which case
-    the input is left untouched and a cleaned copy is returned.
+    the input is left untouched and a cleaned copy is returned. Nothing is
+    copied when there is nothing to replace.
     """
-    if copy:
-        data = data.copy()
     has_not_finite, non_finite_mask = has_non_finite(data)
     if has_not_finite:
-        if raise_warning:
+        if copy:
+            data = data.copy()
+        if verbose:
             warn(
                 "Non-finite values detected. "
                 "These values will be replaced with zeros.",

@@ -177,7 +177,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
     extrapolation = np.nansum(extrapolation, axis=0) / np.sum(
         np.isfinite(extrapolation), axis=0
     )
-    ensure_finite_data(extrapolation, raise_warning=False)
+    ensure_finite_data(extrapolation, verbose=0)
     new_data = np.zeros_like(masked_data)
     new_data[outer_shell] = extrapolation
     new_data[larger_mask] = masked_data[larger_mask]
@@ -442,7 +442,7 @@ def compute_epi_mask(
         # Get rid of memmapping
         mean_epi = as_ndarray(mean_epi)
         # SPM tends to put NaNs in the data outside the brain
-        ensure_finite_data(mean_epi, raise_warning=False)
+        ensure_finite_data(mean_epi, verbose=0)
     sorted_input = np.sort(np.ravel(mean_epi))
     if exclude_zeros:
         sorted_input = sorted_input[sorted_input != 0]
