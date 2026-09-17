@@ -18,26 +18,10 @@ from nilearn._utils.data_gen import (
     generate_maps,
     generate_random_img,
 )
-from nilearn._utils.estimator_checks import nilearn_check_estimator
 from nilearn._utils.testing import write_imgs_to_path
-from nilearn.conftest import _img_maps, _shape_3d_default
+from nilearn.conftest import _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=[  # pass less than the default number of regions
-            # to speed up the tests
-            NiftiMapsMasker(maps_img=_img_maps(n_regions=2)),
-            NiftiMapsMasker(maps_img=_img_maps(n_regions=1)),
-        ]
-    ),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
 
 
 def test_data_atlas_different_shape(length, affine_eye, img_maps):

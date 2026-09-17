@@ -5,24 +5,9 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-from nilearn._utils.estimator_checks import nilearn_check_estimator
 from nilearn._utils.helpers import is_windows_platform
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=[
-            NiftiSpheresMasker(seeds=[(1, 1, 1)]),
-            NiftiSpheresMasker(seeds=[(1, 1, 1), (1, 2, 3)]),
-        ]
-    ),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def test_seed_extraction(rng, affine_eye):

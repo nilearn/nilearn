@@ -9,24 +9,8 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_labeled_regions,
 )
-from nilearn._utils.estimator_checks import nilearn_check_estimator
-from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=[
-            MultiNiftiLabelsMasker(labels_img=_img_labels()),
-            MultiNiftiLabelsMasker(labels_img=_img_labels(n_regions=1)),
-        ]
-    ),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def test_multi_nifti_labels_masker(

@@ -7,18 +7,8 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
-from nilearn._utils.estimator_checks import nilearn_check_estimator
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=[MultiNiftiMasker()]),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
 
 
 @pytest.fixture

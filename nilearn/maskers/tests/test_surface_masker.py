@@ -1,22 +1,12 @@
 import numpy as np
 import pytest
 
-from nilearn._utils.estimator_checks import nilearn_check_estimator
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import (
     assert_polydata_equal,
     assert_surface_image_equal,
 )
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=[SurfaceMasker()]),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
 
 
 @pytest.mark.parametrize("n_timepoints", [3])

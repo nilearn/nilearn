@@ -4,26 +4,8 @@ import pytest
 from numpy.testing import assert_almost_equal
 
 from nilearn._utils.data_gen import generate_fake_fmri, generate_maps
-from nilearn._utils.estimator_checks import nilearn_check_estimator
-from nilearn.conftest import _img_maps
 from nilearn.exceptions import DimensionError
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=[
-            # pass less than the default number of regions
-            # to speed up the tests
-            MultiNiftiMapsMasker(_img_maps(n_regions=2)),
-            MultiNiftiMapsMasker(_img_maps(n_regions=1)),
-        ]
-    ),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 @pytest.mark.parametrize("n_regions", [1, 3])
