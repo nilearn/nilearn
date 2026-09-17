@@ -113,7 +113,7 @@ def all_estimators(
     >>> len(estimators)
     31
     >>> estimators[0]
-    ('Decoder', <class 'nilearn.decoding.decoder.Decoder'>)
+    ('CanICA', <class 'nilearn.decomposition.canica.CanICA'>)
 
     """
     # TODO: add GLM?
