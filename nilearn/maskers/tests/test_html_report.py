@@ -20,7 +20,6 @@ from nilearn._utils.helpers import (
     is_matplotlib_installed,
     is_plotly_installed,
 )
-from nilearn._utils.tags import accept_surf_img_input
 from nilearn._utils.versions import SKLEARN_GTE_1_7
 from nilearn.conftest import _img_maps, _surf_maps_img
 from nilearn.maskers import (
@@ -39,6 +38,7 @@ from nilearn.masking import apply_mask
 from nilearn.reporting import HTMLReport
 from nilearn.reporting.tests._testing import generate_and_check_report
 from nilearn.surface import SurfaceImage
+from nilearn.utils.tags import accept_surf_img_input
 
 
 def generate_and_check_masker_report(

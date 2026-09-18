@@ -203,10 +203,12 @@ ignore_imports = [
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
-    "nilearn.plotting.matrix.* -> nilearn.glm.**"
+    "nilearn.plotting.matrix.* -> nilearn.glm.**",
+    "nilearn.** -> nilearn.utils.tags"  # estimator tags are used by all layers
 ]
 # ** utils:
 # - can import from any lower layers
+# - nilearn.utils.tags is a leaf module imported by all layers (see ignore_imports)
 # ** glm, decoding, connectome, decomposition:
 # - cannot import from each other
 # - but can import from any lower layers

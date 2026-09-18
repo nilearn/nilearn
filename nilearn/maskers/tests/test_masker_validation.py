@@ -5,9 +5,9 @@ from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
 
 from nilearn._base import NilearnBaseEstimator
-from nilearn._utils.tags import InputTags
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker, get_params
+from nilearn.utils.tags import InputTags
 
 
 class A(NilearnBaseEstimator):

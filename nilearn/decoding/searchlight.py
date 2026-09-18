@@ -23,13 +23,13 @@ from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import readable_time
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import InputTags
 from nilearn.decoding._utils import SUPPORTED_ESTIMATORS, validate_estimator
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 from nilearn.masking import load_mask_img
 from nilearn.nilearn_typing import SupportedClassifiers, SupportedRegressors
+from nilearn.utils.tags import InputTags
 
 
 def _check_searchlight_estimator(estimator, *, scoring, y):
