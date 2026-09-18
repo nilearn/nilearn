@@ -22,6 +22,12 @@ focusing on distinguishing two categories:
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
+
+# %%
 # Retrieve and load the :term:`fMRI` data from the Haxby study
 # ------------------------------------------------------------
 #

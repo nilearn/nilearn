@@ -24,6 +24,15 @@ were already normalized to the same :term:`MNI` space.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`language localizer demo dataset <language_localizer_dataset>`
+#    - the :ref:`fsaverage template <fs_average_template>`
+#
+
+# %%
 # Fetch example :term:`BIDS` dataset
 # ----------------------------------
 # We download a simplified :term:`BIDS` dataset

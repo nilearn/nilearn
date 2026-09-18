@@ -18,6 +18,13 @@ hemisphere, negative in the left hemisphere).
 
 """
 
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Brainomics Localizer dataset
+#    <brainomics_maps>`.
+#
+
 from nilearn import plotting
 
 # %%

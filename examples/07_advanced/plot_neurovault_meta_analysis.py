@@ -9,6 +9,12 @@ documentation for more details.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Neurovault dataset <neurovault_dataset>`.
+#
+
+# %%
 import scipy
 
 from nilearn.datasets import fetch_neurovault_ids

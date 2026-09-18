@@ -30,6 +30,15 @@ Note that more power would be obtained from using a larger sample of subjects.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`ICBM 152 template <icbm_152_template>`
+#    - the :ref:`OASIS VBM dataset <oasis_maps>`
+#
+
+# %%
 # Load Oasis dataset
 # ------------------
 from nilearn.datasets import (

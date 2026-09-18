@@ -26,6 +26,13 @@ level.
     in the documentation section :ref:`parcellating_brain`.
 """
 
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`development fMRI dataset
+#    <development_dataset>`.
+#
+
 from nilearn._utils.helpers import check_matplotlib
 
 check_matplotlib()

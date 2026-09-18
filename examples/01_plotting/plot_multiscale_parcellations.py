@@ -13,6 +13,13 @@ documentation.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`BASC multiscale atlas
+#    <basc_multiscale_2015_atlas>`.
+#
+
+# %%
 # Retrieving multiscale group brain parcellations
 # -----------------------------------------------
 

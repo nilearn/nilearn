@@ -6,6 +6,12 @@ Small script to show how to plot several masks at the same time.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
+
+# %%
 # Load Haxby dataset
 # ------------------
 from nilearn import datasets

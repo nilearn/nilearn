@@ -11,6 +11,15 @@ operation in just a few lines of code.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`Harvard-Oxford atlas <harvard_oxford_atlas>`
+#    - the :ref:`development fMRI dataset <development_dataset>`
+#
+
+# %%
 # Retrieve the brain development functional dataset
 # -------------------------------------------------
 #

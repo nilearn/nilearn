@@ -23,6 +23,12 @@ with less control over the plot (see below)
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`MSDL atlas <msdl_atlas>`.
+#
+
+# %%
 # Fetching :term:`Probabilistic atlas` - MSDL atlas
 # -------------------------------------------------
 from nilearn import datasets

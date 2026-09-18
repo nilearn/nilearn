@@ -21,6 +21,15 @@ statistical maps.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`Neurovault dataset <neurovault_dataset>`
+#    - the :ref:`ICBM 152 template <icbm_152_template>`
+#
+
+# %%
 # Get image and associated term data
 # ----------------------------------
 #
