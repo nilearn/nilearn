@@ -10,7 +10,6 @@ from sklearn.base import (
     TransformerMixin,
 )
 from sklearn.cluster import MiniBatchKMeans
-from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted, validate_data
 
 from nilearn._base import NilearnBaseEstimator
@@ -388,8 +387,8 @@ class HierarchicalKMeans(
             Data reduced expanded to the original feature space
         """
         check_is_fitted(self)
+        X_red = validate_data(self, X=X_red, reset=False)
 
-        X_red = check_array(X_red, estimator=self)
         X_red = X_red.T
         inverse = self.labels_
         if self.scaling:
