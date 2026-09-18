@@ -92,16 +92,14 @@ table, _ = get_clusters_table(
 table.set_index("Cluster ID", drop=True)
 print(table)
 
+# %%
+# Find the coordinates of the 6 most significant clusters
 coords = table.loc[range(1, 7), ["X", "Y", "Z"]].to_numpy()
 print(coords)
 
 masker = NiftiSpheresMasker(coords, verbose=1)
-real_timeseries = masker.fit_transform(fmri_img)
-predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
 
-# %%
-# Let's have a look at the report to make sure
-# the spheres are well placed.
+# let's have a look at the report to make sure the spheres are well placed.
 report = masker.generate_report()
 report
 
@@ -112,13 +110,19 @@ import matplotlib.pyplot as plt
 
 # colors for each of the clusters
 colors = ["blue", "navy", "purple", "magenta", "olive", "teal"]
+
+# get the predicted time series for each cluster, along with the residuals
+time_series_df, _ = fmri_glm.plot_predicted_signal_and_residuals(
+    coords=coords, masker=masker, show=False
+)
+
 # plot the time series and corresponding locations
 fig1, axs1 = plt.subplots(2, 6)
 for i in range(6):
     # plotting time series
     axs1[0, i].set_title(f"Cluster peak {coords[i]}\n")
-    axs1[0, i].plot(real_timeseries[:, i], c=colors[i], lw=2)
-    axs1[0, i].plot(predicted_timeseries[:, i], c="r", ls="--", lw=2)
+    axs1[0, i].plot(time_series_df[f"observed_{i}"], c=colors[i], lw=2)
+    axs1[0, i].plot(time_series_df[f"predicted_{i}"], c="orange", lw=2)
     axs1[0, i].set_xlabel("Time")
     axs1[0, i].set_ylabel("Signal intensity", labelpad=0)
     # plotting image below the time series
@@ -142,7 +146,7 @@ show()
 # Get residuals
 # -------------
 
-resid = masker.fit_transform(fmri_glm.residuals_[0])
+resid = time_series_df[[f"residuals_{i}" for i in range(6)]].to_numpy()
 
 
 # %%
@@ -160,6 +164,15 @@ for i in range(6):
 fig2.set_size_inches(12, 7)
 
 show()
+
+# %%
+# Plot predicted vs observed time series together
+# -----------------------------------------------
+# We can actually plot the predicted and observed time series together for a
+# more direct comparison.
+_, fig = fmri_glm.plot_predicted_signal_and_residuals(
+    coords=coords[0:2], masker=masker, show=True
+)
 
 
 # %%
