@@ -1048,6 +1048,26 @@ def swap_img_hemispheres(img) -> Nifti1Image:
 
     Note that this does not require a change of the affine matrix.
 
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_stat_map, show
+        >>> from nilearn.datasets import load_sample_motor_activation_image
+        >>> from nilearn.image import swap_img_hemispheres
+        >>>
+        >>> motor_activation_image = load_sample_motor_activation_image()
+        >>>
+        >>> swapped_image = swap_img_hemispheres(motor_activation_image)
+        >>>
+        >>> fig1 = plot_stat_map(motor_activation_image, title="original")
+        >>> fig2 = plot_stat_map(
+        ...     swapped_image, title="swapped", cut_coords=fig1.cut_coords
+        ... )
+        >>>
+        >>> show()
+
     """
     from nilearn.image import reorder_img
 
