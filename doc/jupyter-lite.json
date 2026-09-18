@@ -3,7 +3,12 @@
   "jupyter-config-data": {
     "litePluginSettings": {
       "@jupyterlite/pyodide-kernel-extension:kernel": {
-        "pyodideUrl": "https://cdn.jsdelivr.net/pyodide/v0.29.4/full/pyodide.js"
+        "pyodideUrl": "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js"
+      }
+    },
+    "settingsOverrides": {
+      "@jupyterlab/logconsole-extension:plugin": {
+        "defaultLogLevel": "debug"
       }
     }
   }

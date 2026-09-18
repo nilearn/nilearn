@@ -4,8 +4,8 @@
 .try_examples_button {
   position: relative;
   overflow: hidden;
-  color: white;
-  background-color: var(--pst-color-info);
+  /* color: white; */
+  color: var(--sd-color-primary);
   border: none;
   padding: 5px 10px;
   border-radius: 0.25rem;

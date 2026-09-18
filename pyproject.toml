@@ -17,8 +17,9 @@ dev = [
 doc = [
     "docutils>=0.17",
     "furo>=2024.8.6",
-    "jupyterlite-pyodide-kernel>=0.7.2",
-    "jupyterlite-sphinx>=0.22.1",
+    # See https://github.com/jupyterlite/pyodide-kernel#compatibility
+    "jupyterlite-pyodide-kernel>=0.8.0,<=0.9.0",
+    "jupyterlite-sphinx>=0.23.0",
     "marimo>=0.12.0",
     "memory_profiler>=0.61",  # measuring memory during docs building
     "myst-parser>=3.0.1",
