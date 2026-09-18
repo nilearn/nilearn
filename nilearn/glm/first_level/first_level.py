@@ -57,7 +57,7 @@ from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import intersect_masks
-from nilearn.nilearn_typing import NiimgLike, Tr
+from nilearn.nilearn_typing import HrfModel, NiimgLike, Tr
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 
@@ -509,7 +509,7 @@ class FirstLevelModel(BaseGLM):
         self,
         t_r=None,
         slice_time_ref=0.0,
-        hrf_model="glover",
+        hrf_model: HrfModel = "glover",
         drift_model="cosine",
         high_pass=0.01,
         drift_order=1,
@@ -1511,7 +1511,7 @@ def first_level_from_bids(
     img_filters=None,
     t_r=None,
     slice_time_ref=None,
-    hrf_model="glover",
+    hrf_model: HrfModel = "glover",
     drift_model="cosine",
     high_pass=0.01,
     drift_order=1,
