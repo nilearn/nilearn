@@ -18,7 +18,15 @@ from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, get_data, new_img_like, reorder_img
 from nilearn.image.image import _check_fov
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
-from nilearn.nilearn_typing import NiimgLike, OutputFile
+from nilearn.nilearn_typing import (
+    BlackBg,
+    CbarTickFormat,
+    ColorBar,
+    NiimgLike,
+    OutputFile,
+    Transparency,
+    TransparencyRange,
+)
 from nilearn.plotting._engine_utils import create_colorbar_for_fig
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
@@ -61,7 +69,7 @@ class BaseSlicer:
         self,
         cut_coords,
         axes=None,
-        black_bg=False,
+        black_bg: BlackBg = False,
         brain_color=(0.5, 0.5, 0.5),
         **kwargs,
     ):
@@ -84,7 +92,7 @@ class BaseSlicer:
             "top": 0.05 * bb.height,
             "bottom": 0.05 * bb.height,
         }
-        self._init_axes(**kwargs)
+        self._init_axes(**kwargs)  # type: ignore[attr-defined]
 
     @property
     def brain_color(self):
@@ -233,9 +241,9 @@ class BaseSlicer:
         cut_coords=None,
         figure=None,
         axes=None,
-        black_bg=False,
+        black_bg: BlackBg = False,
         leave_space=False,
-        colorbar=False,
+        colorbar: ColorBar = False,
         brain_color=(0.5, 0.5, 0.5),
         **kwargs,
     ):
@@ -406,12 +414,12 @@ class BaseSlicer:
         self,
         img,
         threshold=1e-6,
-        colorbar=False,
-        cbar_tick_format=DEFAULT_TICK_FORMAT,
+        colorbar: ColorBar = False,
+        cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
         cbar_vmin=None,
         cbar_vmax=None,
-        transparency=None,
-        transparency_range=None,
+        transparency: Transparency = None,
+        transparency_range: TransparencyRange = None,
         **kwargs,
     ) -> None:
         """Plot a 3D map in all the views.
@@ -458,6 +466,7 @@ class BaseSlicer:
             if the specified threshold is a negative number
 
         """
+        check_params(locals())
         check_threshold_not_negative(threshold)
 
         if colorbar and self._colorbar:

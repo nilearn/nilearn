@@ -10,7 +10,14 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, get_data
-from nilearn.nilearn_typing import ColorBar, OutputFile, Title
+from nilearn.nilearn_typing import (
+    CbarTickFormat,
+    ColorBar,
+    OutputFile,
+    Title,
+    Vmax,
+    Vmin,
+)
 from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
@@ -48,17 +55,17 @@ def plot_surf(
     view=None,
     engine: Literal["matplotlib", "plotly"] = DEFAULT_ENGINE,
     cmap=None,
-    symmetric_cmap=None,
+    symmetric_cmap: bool | None = None,
     colorbar: ColorBar = True,
     avg_method=None,
     threshold=None,
     alpha=None,
     bg_on_data: bool = False,
-    vmin=None,
-    vmax=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     cbar_vmin=None,
     cbar_vmax=None,
-    cbar_tick_format="auto",
+    cbar_tick_format: CbarTickFormat = "auto",
     title: Title = None,
     title_font_size=None,
     output_file: OutputFile = None,
@@ -143,6 +150,7 @@ def plot_surf(
 
         .. nilearn_versionchanged:: 0.12.0
             Default value changed to None.
+            If  ``None`` is passed it will default to ``False``.
 
     %(colorbar)s
         default=True.
@@ -425,10 +433,10 @@ def plot_surf_stat_map(
     threshold=None,
     alpha=None,
     bg_on_data: bool = False,
-    vmin=None,
-    vmax=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     symmetric_cbar="auto",
-    cbar_tick_format="auto",
+    cbar_tick_format: CbarTickFormat = "auto",
     title: Title = None,
     title_font_size=None,
     output_file: OutputFile = None,
@@ -645,10 +653,10 @@ def plot_img_on_surf(
     threshold=None,
     bg_on_data: bool = False,
     inflate: bool = False,
-    vmin=None,
-    vmax=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     symmetric_cbar="auto",
-    cbar_tick_format="%i",
+    cbar_tick_format: CbarTickFormat = "%i",
     title: Title = None,
     output_file: OutputFile = None,
     **kwargs,
@@ -823,9 +831,9 @@ def plot_surf_roi(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    vmin=None,
-    vmax=None,
-    cbar_tick_format="auto",
+    vmin: Vmin = None,
+    vmax: Vmax = None,
+    cbar_tick_format: CbarTickFormat = "auto",
     title: Title = None,
     title_font_size=None,
     output_file: OutputFile = None,

@@ -15,6 +15,7 @@ from scipy.stats import gamma
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
+from nilearn.nilearn_typing import HrfModel
 
 
 def _gamma_difference_hrf(
@@ -747,12 +748,12 @@ def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
 @fill_doc
 def compute_regressor(
     exp_condition,
-    hrf_model,
+    hrf_model: HrfModel,
     frame_times,
-    con_id="cond",
-    oversampling=50,
+    con_id: str = "cond",
+    oversampling: int = 50,
     fir_delays=None,
-    min_onset=-24,
+    min_onset: float = -24.0,
 ) -> tuple[np.ndarray, list[str]]:
     """Convolve regressors with :term:`HRF` model.
 
@@ -761,7 +762,9 @@ def compute_regressor(
     exp_condition : array-like of shape (3, n_events)
         yields description of events for this condition as a
         (onsets, durations, amplitudes) triplet
+
     %(hrf_model)s
+
     frame_times : array of shape (n_scans)
         the desired sampling times
 

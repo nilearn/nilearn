@@ -33,7 +33,7 @@ from nilearn.image import (
     resample_img,
     resample_to_img,
 )
-from nilearn.nilearn_typing import Threshold
+from nilearn.nilearn_typing import Threshold, Vmax, Vmin
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
@@ -260,7 +260,7 @@ def load_bg_img(
     stat_map_img,
     bg_img: Any = "MNI152",
     black_bg: bool | Literal["auto"] = "auto",
-    dim="auto",
+    dim: float | Literal["auto"] = "auto",
 ):
     """Load and resample bg_img in an isotropic resolution, \
     with a positive diagonal affine matrix.
@@ -631,10 +631,10 @@ def view_img(
     draw_cross=True,
     black_bg="auto",
     cmap=DEFAULT_DIVERGING_CMAP,
-    symmetric_cmap=True,
-    dim="auto",
-    vmax=None,
-    vmin=None,
+    symmetric_cmap: bool = True,
+    dim: float | Literal["auto"] = "auto",
+    vmax: Vmax = None,
+    vmin: Vmin = None,
     resampling_interpolation="continuous",
     width_view=600,
     opacity=1,
@@ -784,10 +784,10 @@ def create_brainsprite(
     draw_cross=True,
     black_bg="auto",
     cmap=DEFAULT_DIVERGING_CMAP,
-    symmetric_cmap=True,
-    dim="auto",
-    vmax=None,
-    vmin=None,
+    symmetric_cmap: bool = True,
+    dim: float | Literal["auto"] = "auto",
+    vmax: Vmax = None,
+    vmin: Vmin = None,
     resampling_interpolation="continuous",
     opacity=1,
     radiological=False,
