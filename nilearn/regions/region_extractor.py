@@ -582,6 +582,7 @@ class RegionExtractor(NiftiMapsMasker):
         self._fit_cache()
 
         self._maps_img = self.regions_img_
+        assert self._maps_img is not None
         super().fit(imgs)
 
         return self

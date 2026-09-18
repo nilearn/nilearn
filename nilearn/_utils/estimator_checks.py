@@ -1047,6 +1047,12 @@ def check_refit(estimator_orig) -> None:
     estimator = clone(estimator_orig)
 
     set_random_state(estimator)
+
+    if isinstance(estimator, (ReNA)):
+        # TODO
+        # adapt fit_estimator to handle ReNA and GroupSparseCovarianceCV
+        return
+
     estimator = fit_estimator(estimator)
 
     set_random_state(estimator)
@@ -1055,6 +1061,8 @@ def check_refit(estimator_orig) -> None:
         # so we need to hack around
         n_elements_ = estimator.n_elements_
         estimator._lut_ = pd.DataFrame({"index": list(range(n_elements_ + 5))})
+    elif isinstance(estimator, (Parcellations)):
+        estimator.maps_masker_.n_elements_ += 5
     elif hasattr(estimator, "n_features_in_"):
         estimator.n_features_in_ += 5
     else:
