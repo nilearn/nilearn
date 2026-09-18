@@ -72,7 +72,6 @@ pooled_subjects = masker.fit_transform(
 groups = development_dataset.phenotypic["Child_Adult"].tolist()
 
 children = []
-groups = []  # child or adult
 for time_series, phenotype in zip(pooled_subjects, groups, strict=False):
     if phenotype == "child":
         children.append(time_series)
