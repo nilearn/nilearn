@@ -42,7 +42,7 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -74,8 +74,6 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
           resampled to the shape and affine of ``maps_img``
         - ``None`` means no resampling: if shapes and affines do not match,
           a :obj:`ValueError` is raised.
-
-    %(keep_masked_maps)s
 
     %(memory)s
 
@@ -133,7 +131,7 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
         mask_img=None,
         allow_overlap=True,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         high_variance_confounds=False,
         detrend=False,
@@ -142,7 +140,6 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        keep_masked_maps=False,
         memory=None,
         memory_level=0,
         verbose=0,
@@ -169,7 +166,6 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
-            keep_masked_maps=keep_masked_maps,
             reports=reports,
             cmap=cmap,
             clean_args=clean_args,

@@ -1,7 +1,0 @@
-docstring_parser
-kaleido
-numpydoc
-pandas
-plotly
-requests
-rich

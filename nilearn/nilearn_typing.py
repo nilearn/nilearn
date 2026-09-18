@@ -78,8 +78,6 @@ HeightControl: TypeAlias = Literal[None, "fpr", "fdr", "bonferroni"]
 HrfModel: TypeAlias = str | Callable | list | None
 
 HighPass: TypeAlias = Scalar
-KeepMaskedLabels: TypeAlias = bool
-KeepMaskedMaps: TypeAlias = bool
 LowerCutoff: TypeAlias = Float
 LowPass: TypeAlias = Scalar
 MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
@@ -96,7 +94,7 @@ Resolution: TypeAlias = Integer | None
 Resume: TypeAlias = bool
 ScreeningPercentile: TypeAlias = Scalar
 SmoothingFwhm: TypeAlias = Scalar
-Standardize: TypeAlias = Literal["zscore_sample", "psc", True, False, None]
+Standardize: TypeAlias = Literal["zscore_sample", "psc", None]
 StandardizeConfounds: TypeAlias = bool
 SupportedRegressors: TypeAlias = Literal[
     "ridge",
