@@ -30,7 +30,7 @@
 # You can request a full build from a Pull Request at any time by including the tag ``[full doc]`` in your commit message.
 # Note that this will trigger a full build of the documentation which usually takes >90 minutes.
 #
-# .. code-block:: bash
+# .. prompt:: bash
 #
 #   $ git commit --message "[full doc] request full build"
 #
@@ -45,7 +45,7 @@
 # by using the tag ``[example]`` and the name of the example.
 # This is useful when wanting to get quick feedback from reviewers.
 #
-# .. code-block:: bash
+# .. prompt:: bash
 #
 #   $ git commit --message "[example] plot_nilearn_101.py"
 #
@@ -77,7 +77,7 @@
 #
 # To run a full build and download all datasets, you would then combine both tags:
 #
-# .. code-block:: bash
+# .. prompt:: bash
 #
 #   $ git commit --message "[full doc][force download] request full build"
 ###

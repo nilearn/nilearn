@@ -23,7 +23,7 @@ Initial setup to access GPU acceleration
 You would need to have a compatible GPU and scikit-learn >= 1.8 to run the
 code here:
 
-.. code-block:: bash
+.. prompt:: bash
 
     pip install -U scikit-learn>=1.8
 

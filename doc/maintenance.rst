@@ -139,7 +139,7 @@ Python
 We use the ``pytest-mpl`` pytest plugin to run several regression tests on our Matplotlib figures.
 Those tests can be run with tox.
 
-.. code-block:: bash
+.. prompt:: bash
 
     pip install tox
     tox run -e pytest_mpl
@@ -147,7 +147,7 @@ Those tests can be run with tox.
 You can set a new 'baseline' (set of reference images) by running the following
 with the oldest supported Python and Matplotlib:
 
-.. code-block:: bash
+.. prompt:: bash
 
     pip install tox
     tox run -e pytest_mpl_generate
@@ -162,14 +162,14 @@ This requires to have `node and npm <https://nodejs.org/en>`_ installed
 
 Those tests can be run with tox.
 
-.. code-block:: bash
+.. prompt:: bash
 
     pip install tox
     tox run -e test_html
 
 You can set a new 'baseline' (set of reference images) by running the following:
 
-.. code-block:: bash
+.. prompt:: bash
 
     pip install tox
     tox run -e test_html_generate
@@ -280,7 +280,7 @@ then the release protocol is simplified and only consists of:
 
 -   adding a git tag and updating the upstream repository
 
-    .. code-block:: bash
+    .. prompt:: bash
 
         git checkout main
         git pull upstream main
@@ -385,7 +385,7 @@ Prepare the release
 
 Switch to a new branch locally:
 
-.. code-block:: bash
+.. prompt:: bash
 
     git checkout -b REL-X.Y.Z
 
@@ -478,35 +478,35 @@ Build the distributions and upload them to Pypi
 
 First of all we should make sure we don't include files that shouldn't be present:
 
-.. code-block:: bash
+.. prompt:: bash
 
     git checkout X.Y.Z
 
 
 If the workspace contains a ``dist`` folder, make sure to clean it:
 
-.. code-block:: bash
+.. prompt:: bash
 
     rm -r dist
 
 
 In order to build the binary wheel files, we need to install `build <https://pypi.org/project/build/>`_:
 
-.. code-block:: bash
+.. prompt:: bash
 
     pip install build
 
 
 And, in order to upload to ``Pypi``, we will use `twine <https://pypi.org/project/twine/>`_ that you can also install with ``pip``:
 
-.. code-block:: bash
+.. prompt:: bash
 
     pip install twine
 
 
 Build the source and binary distributions:
 
-.. code-block:: bash
+.. prompt:: bash
 
     python -m build
 
@@ -521,14 +521,14 @@ This will also update ``_version.py``.
 
 Optionally, we can run some basic checks with ``twine``:
 
-.. code-block:: bash
+.. prompt:: bash
 
     twine check dist/*
 
 
 We are now ready to upload to ``Pypi``. Note that you will need to have an `account on Pypi <https://pypi.org/account/register/>`_, and be added to the maintainers of `Nilearn <https://pypi.org/project/nilearn/>`_. If you satisfy these conditions, you should be able to run:
 
-.. code-block:: bash
+.. prompt:: bash
 
     twine upload dist/*
 
@@ -575,7 +575,7 @@ dependencies are installed on your system:
 You can check if each package is installed by using
 ``command -v <command-name>`` as in:
 
-.. code-block:: bash
+.. prompt:: bash
 
     command -v dvipng
 
@@ -583,7 +583,7 @@ If the package is installed, then the path to its location on your system will
 be returned. Otherwise, you can install using your system's package manager or
 from source, for example:
 
-.. code-block:: bash
+.. prompt:: bash
 
     wget https://mirrors.ctan.org/dviware/dvipng.zip
     unzip dvipng.zip
@@ -604,7 +604,7 @@ We let tox handle creating virtual env and install dependencies.
 
     The doc build is done with the minimum python version supported by Nilearn.
 
-.. code-block:: bash
+.. prompt:: bash
 
     pip install tox
     tox run --colored yes --list-dependencies -e doc -- html
