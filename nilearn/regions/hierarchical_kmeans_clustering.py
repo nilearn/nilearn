@@ -170,7 +170,7 @@ class HierarchicalKMeans(
 
     Parameters
     ----------
-    n_clusters : :obj:`int`
+    n_clusters : :obj:`int`, default=2
         The number of clusters to find.
 
     init : {'k-means++', 'random' or an ndarray}, default='k-means++'
@@ -227,7 +227,7 @@ class HierarchicalKMeans(
 
     def __init__(
         self,
-        n_clusters=None,
+        n_clusters=2,
         init="k-means++",
         batch_size=1000,
         n_init=10,

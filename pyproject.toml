@@ -268,7 +268,6 @@ forbidden_modules = [
     "nilearn.datasets"
 ]
 ignore_imports = [
-    "nilearn.connectome.tests.* -> nilearn._utils.estimator_checks",
     "nilearn.connectome.tests.test_connectivity_matrices -> nilearn.tests.test_signal",
     "nilearn.connectome.tests.test_group_sparse_cov -> nilearn._utils.data_gen"
 ]
