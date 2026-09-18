@@ -43,7 +43,7 @@ print(
 # Region signals extraction
 # -------------------------
 # To extract regions time series, we instantiate a
-# :class:`~nilearn.maskers.MiltiNiftiMapsMasker` object
+# :class:`~nilearn.maskers.MultiNiftiMapsMasker` object
 # and pass the atlas the file name to it,
 # as well as filtering band-width and detrending option.
 #
