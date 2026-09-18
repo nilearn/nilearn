@@ -347,14 +347,15 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
             table = self.lut_.copy()
 
+            part_data = self.labels_img_.data.parts[part]
+            n_non_background_vertices = np.sum(
+                part_data != self.background_label
+            )
+
             for _, row in table.iterrows():
-                n_vertices = self.labels_img_.data.parts[part] == row["index"]
+                n_vertices = part_data == row["index"]
                 size.append(n_vertices.sum())
-                tmp = (
-                    n_vertices.sum()
-                    / self.labels_img_.mesh.parts[part].n_vertices
-                    * 100
-                )
+                tmp = n_vertices.sum() / n_non_background_vertices * 100
                 relative_size.append(f"{tmp:.2}")
 
             table["size"] = size
