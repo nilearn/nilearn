@@ -94,7 +94,7 @@ print(table)
 
 # %%
 # Find the coordinates of the 6 most significant clusters
-coords = table.loc[range(1, 6), ["X", "Y", "Z"]].to_numpy()
+coords = table.loc[range(1, 7), ["X", "Y", "Z"]].to_numpy()
 print(coords)
 
 masker = NiftiSpheresMasker(coords, verbose=1)
