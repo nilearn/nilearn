@@ -174,9 +174,47 @@ You can set a new 'baseline' (set of reference images) by running the following:
     pip install tox
     tox run -e test_html_generate
 
+Dependency version policy
+=========================
+
+Currently we do not strictly follow the `SPEC0 <https://scientific-python.org/specs/spec-0000/>`_
+regarding our python dependencies
+to allow for a broader range of supported python and packages versions.
+
+Python
+------
+
+We usually try to keep up with the python release cycle.
+In practice this means that we aim to do a release of Nilearn
+at the end of the year that supports the latest released pythons
+and drops support for the python version that has reached end of life
+in the last quarter of the year.
+
+Python packages
+---------------
+
+We usually increase the minimum supported scikit-learn version
+when the maintenance burden becomes too big for us,
+or when we need to make use of some more recent scikit-learn feature.
+
+Numpy and scipy are declared as direct dependencies without a pinned minimum version.
+This is motivated by the fact that some of our other direct dependencies (like scikit-learn)
+already pin a minimum version for numpy and scipy and
+that it is easier to let installers (pip, uv...) resolve the version to install
+and to figure out the minimum version required when doing:
+
+.. code-block:: bash
+
+    pip install --resolution lowest-direct
+
+or
+
+.. code-block:: bash
+
+    uv sync --resolution lowest-direct
 
 Updating vendored dependencies
-==============================
+------------------------------
 
 Some javascript dependencies are vendored with Nilearn
 and need to be updated manually
