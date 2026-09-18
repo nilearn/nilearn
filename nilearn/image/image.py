@@ -1061,8 +1061,8 @@ def swap_img_hemispheres(img) -> Nifti1Image:
         >>>
         >>> swapped_image = swap_img_hemispheres(motor_activation_image)
         >>>
-        >>> plot_stat_map(motor_activation_image, title="original")
-        >>> plot_stat_map(swapped_image, title="swapped")
+        >>> fig1 = plot_stat_map(motor_activation_image, title="original")
+        >>> fig2 = plot_stat_map(swapped_image, title="swapped")
         >>>
         >>> show()
 

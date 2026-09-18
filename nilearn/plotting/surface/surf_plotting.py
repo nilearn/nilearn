@@ -271,7 +271,7 @@ def plot_surf(
         ...     data_type="thickness",
         ... )
         >>>
-        >>> plot_surf(surf_map=surf_img, title="fsaverage thickness")
+        >>> fig = plot_surf(surf_map=surf_img, title="fsaverage thickness")
         >>>
         >>> show()
     """
@@ -616,7 +616,7 @@ def plot_surf_stat_map(
         ...     data_type="thickness",
         ... )
         >>>
-        >>> plot_surf_stat_map(
+        >>> fig = plot_surf_stat_map(
         ...     stat_map=surf_img,
         ...     title="fsaverage thickness",
         ...     vmin=0,
@@ -792,7 +792,7 @@ def plot_img_on_surf(
         >>>
         >>> motor_activation_image = load_sample_motor_activation_image()
         >>>
-        >>> plot_img_on_surf(motor_activation_image)
+        >>> fig = plot_img_on_surf(motor_activation_image)
         >>>
         >>> show()
 

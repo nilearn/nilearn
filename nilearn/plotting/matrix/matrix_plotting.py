@@ -272,7 +272,7 @@ def plot_matrix(
         >>> matrix = rng.normal(size=(10, 10))
         >>> vmax = np.max(np.abs(matrix.ravel()))
         >>>
-        >>> plot_matrix(matrix, vmax=vmax, vmin=-vmax)
+        >>> fig = plot_matrix(matrix, vmax=vmax, vmin=-vmax)
         >>>
         >>> show()
 
@@ -541,7 +541,7 @@ def plot_event(
         ...                             "duration": duration,
         ...                             "trial_type": trial_type})
         >>>
-        >>> plot_event(model_event)
+        >>> fig = plot_event(model_event)
         >>>
         >>> show()
 

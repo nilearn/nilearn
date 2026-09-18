@@ -585,7 +585,7 @@ def plot_anat(
         >>>
         >>> mni152_template = load_mni152_template()
         >>>
-        >>> plot_anat(mni152_template, title="mni152 template")
+        >>> fig = plot_anat(mni152_template, title="mni152 template")
         >>>
         >>> show()
 
@@ -918,7 +918,7 @@ def plot_roi(
         >>>
         >>> grey_matter_mask = load_mni152_gm_mask()
         >>>
-        >>> plot_roi(grey_matter_mask, title="grey matter mni152")
+        >>> fig = plot_roi(grey_matter_mask, title="grey matter mni152")
         >>>
         >>> show()
     """
@@ -1395,7 +1395,7 @@ def plot_stat_map(
         >>>
         >>> motor_activation_image = load_sample_motor_activation_image()
         >>>
-        >>> plot_stat_map(motor_activation_image)
+        >>> fig = plot_stat_map(motor_activation_image)
         >>>
         >>> show()
     """
@@ -1577,7 +1577,7 @@ def plot_glass_brain(
         >>>
         >>> motor_activation_image = load_sample_motor_activation_image()
         >>>
-        >>> plot_glass_brain(motor_activation_image, plot_abs=False)
+        >>> fig = plot_glass_brain(motor_activation_image, plot_abs=False)
         >>>
         >>> show()
     """
