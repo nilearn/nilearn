@@ -89,7 +89,7 @@ if TYPE_CHECKING:
         | None
     )
 else:
-    HrfModel: TypeAlias = str | Callable | list[Callable] | None
+    HrfModel: TypeAlias = str | Callable | list | None
 
 HighPass: TypeAlias = Scalar
 LowerCutoff: TypeAlias = Float
