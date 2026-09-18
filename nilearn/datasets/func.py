@@ -2580,6 +2580,7 @@ def fetch_ds000030_urls(
     return urls_path, urls
 
 
+@fill_doc
 def select_from_index(
     urls: list[str],
     inclusion_filters: list[str] | None = None,
