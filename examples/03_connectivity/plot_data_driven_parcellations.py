@@ -420,6 +420,7 @@ plotting.plot_epi(
     display_mode="xz",
 )
 
+# %%
 # A reduced data can be created by taking the parcel-level average:
 # Note that, as many scikit-learn objects, the ``rena`` object exposes
 # a ``transform`` method that modifies input features.
