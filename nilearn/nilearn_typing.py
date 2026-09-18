@@ -18,7 +18,7 @@ To expand the functionality of check_params you need to:
 
 import pathlib
 from collections.abc import Callable
-from typing import Literal, TypeAlias
+from typing import TYPE_CHECKING, Literal, TypeAlias
 
 import numpy as np
 from joblib.memory import Memory
@@ -73,24 +73,23 @@ DisplayModeGlassBrain: TypeAlias = Literal[
 DrawCross: TypeAlias = bool
 ForceResample: TypeAlias = bool
 HeightControl: TypeAlias = Literal[None, "fpr", "fdr", "bonferroni"]
-# Note that for HrfModel
-# str is too generic here
-# and it should actually be Literal["spm", "glover", ...]
-# if we wanted to use proper type annotation
-HrfModel: TypeAlias = (
-    Literal[
-        "spm",
-        "spm + derivative",
-        "spm + derivative + dispersion",
-        "fir",
-        "glover",
-        "glover + derivative",
-        "glover + derivative + dispersion",
-    ]
-    | Callable
-    | list[Callable]
-    | None
-)
+if TYPE_CHECKING:
+    HrfModel: TypeAlias = (
+        Literal[
+            "spm",
+            "spm + derivative",
+            "spm + derivative + dispersion",
+            "fir",
+            "glover",
+            "glover + derivative",
+            "glover + derivative + dispersion",
+        ]
+        | Callable
+        | list[Callable]
+        | None
+    )
+else:
+    HrfModel: TypeAlias = str | Callable | list[Callable] | None
 
 HighPass: TypeAlias = Scalar
 LowerCutoff: TypeAlias = Float
