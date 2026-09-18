@@ -1568,7 +1568,7 @@ def check_img_estimator_dict_unchanged(estimator_orig) -> None:
 
         # TODO NiftiLabelsMasker is modified at transform time
         # see issue https://github.com/nilearn/nilearn/issues/2720
-        if isinstance(estimator, (NiftiLabelsMasker)):
+        if isinstance(estimator, (NiftiLabelsMasker, NiftiMapsMasker)):
             with pytest.raises(AssertionError):
                 assert dict_after == dict_before
         else:
