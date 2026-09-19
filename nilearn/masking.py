@@ -1078,7 +1078,7 @@ def _unmask_3d(X, mask, order="C"):
         See :ref:`extracting_data`.
         Mask. mask.ndim must be equal to 3, and dtype *must* be bool.
 
-    order : "F" or "C", default='F'
+    order : "F" or "C", default='C'
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
     """
@@ -1110,7 +1110,7 @@ def _unmask_4d(X, mask, order="C"):
     mask : :class:`numpy.ndarray`
         Mask. mask.ndim must be equal to 4, and dtype *must* be bool.
 
-    order : "F" or "C", default='F'
+    order : "F" or "C", default='C'
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
 
