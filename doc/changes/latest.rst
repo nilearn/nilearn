@@ -30,7 +30,7 @@ HIGHLIGHTS
 Fixes
 -----
 
-- :bdg-primary:`Doc` Use run-aware cross-validation in the Haxby multiclass decoding example to avoid splitting samples from the same run between training and validation sets (:gh:`6573` by `Mohammad Sadeghi Hardengi`_).
+- :bdg-primary:`Doc` Use run-aware cross-validation in the Haxby multiclass decoding example to avoid splitting samples from the same run between training and validation sets (:gh:`6591` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-primary:`Doc` Fix documented defaults that did not match the signatures in :func:`~nilearn.datasets.fetch_atlas_smith_2009`, :func:`~nilearn.datasets.fetch_atlas_difumo`, :func:`~nilearn.datasets.fetch_atlas_schaefer_2018` and in several private helpers (:gh:`6582` by `Venish Paneliya`_).
 
