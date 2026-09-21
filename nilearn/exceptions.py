@@ -74,7 +74,7 @@ class DimensionError(TypeError):
         self.stack_counter += 1
 
     @property
-    def message(self):
+    def message(self) -> str:
         """Format error message."""
         expected_dim = self.required_dimension + self.stack_counter
         total_file_dim = f" ({self.file_dimension + self.stack_counter}D)"
