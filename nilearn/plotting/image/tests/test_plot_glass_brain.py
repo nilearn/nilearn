@@ -2,13 +2,17 @@
 
 # ruff: noqa: ARG001
 
+import json
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
+import nilearn.plotting
 from nilearn.image import get_data
 from nilearn.plotting import plot_glass_brain
+from nilearn.plotting.glass_brain import plot_brain_schematics
 
 
 @pytest.mark.thread_unsafe
@@ -140,3 +144,72 @@ def test_plot_glass_brain_negative_vmin_with_plot_abs(
     warning_message = "vmin is negative but plot_abs is True"
     with pytest.warns(UserWarning, match=warning_message):
         plot_glass_brain(img_3d_mni, vmin=-2, plot_abs=True)
+
+
+# bounds of the square drawn in the fake schematics
+BOUNDS = [0, 10, 0, 20]
+
+MNI_TRANSFORM_SIDE = (0.38, 0, 0, 0.38, -108, -70)
+
+
+def _expected_bounds(transform):
+    """Bounds of BOUNDS after applying a diagonal + offset transform."""
+    sx, _, _, sy, tx, ty = transform
+    xmin, xmax = BOUNDS[0] * sx + tx, BOUNDS[1] * sx + tx
+    ymin, ymax = BOUNDS[2] * sy + ty, BOUNDS[3] * sy + ty
+    # margin: 2.5% of the drawing + a guess of the linewidth
+    xmargin = (xmax - xmin) * 0.025 + 0.1
+    ymargin = (ymax - ymin) * 0.025 + 0.1
+    return xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin
+
+
+def _write_fake_schematics(folder, transform=None):
+    """Write a square as brain schematics for each view."""
+    xmin, xmax, ymin, ymax = BOUNDS
+    corners = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
+    items = [
+        {"type": "segment", "pts": [corners[i], corners[(i + 1) % 4]]}
+        for i in range(4)
+    ]
+    metadata = {"bounds": BOUNDS}
+    if transform is not None:
+        metadata["transform"] = list(transform)
+    content = {
+        "metadata": metadata,
+        "paths": [
+            {
+                "edgecolor": "#000000",
+                "linewidth": 1.0,
+                "id": "square",
+                "items": items,
+            }
+        ],
+    }
+    for view in ["side", "back", "top", "front"]:
+        (folder / f"brain_schematics_{view}.json").write_text(
+            json.dumps(content)
+        )
+
+
+@pytest.mark.ai_generated
+@pytest.mark.thread_unsafe
+@pytest.mark.parametrize(
+    "transform, expected_transform",
+    [
+        # transform stored with the schematics takes precedence
+        ((2, 0, 0, 3, 10, -5), (2, 0, 0, 3, 10, -5)),
+        # otherwise fall back on the transform tuned for the MNI template
+        (None, MNI_TRANSFORM_SIDE),
+    ],
+)
+def test_plot_brain_schematics_transform_from_metadata(
+    matplotlib_pyplot, monkeypatch, tmp_path, transform, expected_transform
+):
+    """Check that non human schematics can carry their own transform."""
+    _write_fake_schematics(tmp_path, transform)
+    monkeypatch.setattr(nilearn.plotting, "GLASS_BRAIN_ASSETS", tmp_path)
+
+    _, ax = plt.subplots()
+    bounds = plot_brain_schematics(ax, "x")
+
+    assert bounds == pytest.approx(_expected_bounds(expected_transform))

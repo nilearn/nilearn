@@ -177,6 +177,13 @@ def plot_brain_schematics(ax, direction, **kwargs):
     with json_filename.open() as json_file:
         json_content = json.load(json_file)
 
+    # schematics that are not aligned on the MNI template
+    # (for example for non human brains)
+    # can carry their own transform in their metadata
+    custom_transform = json_content["metadata"].get("transform")
+    if custom_transform is not None:
+        transform = transforms.Affine2D.from_values(*custom_transform)
+
     mpl_patches = _get_mpl_patches(
         json_content,
         transform=transform + ax.transData,

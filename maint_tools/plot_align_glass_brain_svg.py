@@ -3,8 +3,8 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
-#    "templateflow"
-#   "nilearn[plotting,plotly]>=0.12",
+#    "templateflow",
+#    "nilearn[plotting,plotly]>=0.12",
 #    "PyQt6"
 # ]
 # ///

@@ -69,6 +69,10 @@ class SVGToJSONConverter:
         for path in self.paths:
             style = path.style
             edgecolor = self._get_style_attr(style, "stroke")
+            if edgecolor is None:
+                # unstroked paths are invisible in the SVG
+                # but would still inflate the bounds of the drawing
+                continue
             linewidth = float(self._get_style_attr(style, "stroke-width"))
             path_id = path.id
             path_dict = {
