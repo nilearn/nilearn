@@ -72,10 +72,10 @@ jobs:
             # only run latest and oldest python versions on PR
             id: py
             run: |
-                versions='py=["3.14", "3.13", "3.12", "3.11"]'
+                versions='py=["3.15", "3.14", "3.13", "3.12", "3.11"]'
 
                 if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
-                    versions='py=["3.14", "3.11"]'
+                    versions='py=["3.15", "3.11"]'
                 fi
 
                 echo "Will run on the following python: ${versions}"
@@ -207,7 +207,7 @@ jobs:
             fail-fast: false
             matrix:
                 description: [pre-release dependencies]
-                py: ['3.14']
+                py: ['3.15']
                 os: [ubuntu-latest]
                 env: [pre]
 

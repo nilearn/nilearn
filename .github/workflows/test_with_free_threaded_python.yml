@@ -50,7 +50,7 @@ jobs:
             fail-fast: false
             matrix:
                 description: [latest dependencies]
-                py: [3.14t]
+                py: [3.15t]
                 # TODO: ubuntu-latest fails - figure out why
                 os: [macos-latest]
                 env: [free_threaded]
@@ -72,7 +72,7 @@ jobs:
             # cannot be installed for free threaded python
             # so only testing with matplotlib
             run: |
-                uv venv -p 3.14t
+                uv venv -p 3.15t
                 source .venv/bin/activate
                 uv pip install -e . --group test_free_threaded
 
