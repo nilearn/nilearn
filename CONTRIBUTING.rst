@@ -881,12 +881,6 @@ Here are the key steps you need to go through to copy the repo before contributi
 
       .. prompt:: bash
 
-            pip show nilearn
-
-      or:
-
-      .. prompt:: bash
-
             python -c "import nilearn; print(nilearn.__version__)"
 
       To make sure that you get the correct version number, you must fetch

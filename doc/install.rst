@@ -105,7 +105,7 @@ for both static and **interactive** visualizations.
 
         .. tab-set::
 
-            .. tab-item:: pip
+            .. tab-item:: pip / conda
                 :class-label: tab-4
 
                 .. prompt:: bash
@@ -119,19 +119,12 @@ for both static and **interactive** visualizations.
 
                     uv pip install nilearn
 
-            .. tab-item:: pip / conda
-                :class-label: tab-4
-
-                .. prompt:: bash
-
-                    pip install nilearn
-
     .. tab-item:: static
         :class-label: tab-4
 
         .. tab-set::
 
-            .. tab-item:: pip
+            .. tab-item:: pip / conda
                 :class-label: tab-4
 
                 .. prompt:: bash
@@ -145,19 +138,13 @@ for both static and **interactive** visualizations.
 
                     uv pip install 'nilearn[plotting]'
 
-            .. tab-item:: pip / conda
-                :class-label: tab-4
-
-                .. prompt:: bash
-
-                    pip install 'nilearn[plotting]'
 
     .. tab-item:: interactive
         :class-label: tab-4
 
         .. tab-set::
 
-            .. tab-item:: pip
+            .. tab-item:: pip / conda
                 :class-label: tab-4
 
                 .. prompt:: bash
@@ -170,13 +157,6 @@ for both static and **interactive** visualizations.
                 .. prompt:: bash
 
                     uv pip install 'nilearn[plotting,plotly]'
-
-            .. tab-item:: pip / conda
-                :class-label: tab-4
-
-                .. prompt:: bash
-
-                    pip install 'nilearn[plotting,plotly]'
 
 Note that Nilearn also optionally supports `rich <https://rich.readthedocs.io/en/latest/introduction.html>`_
 to get prettier log output and download progress bar.
