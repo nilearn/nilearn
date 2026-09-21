@@ -92,9 +92,11 @@ Installing Nilearn
 ------------------
 
 You can then install Nilearn.
-Nilearn uses ``matplotlib`` as optiopnal dependenciy for static visualizations,
-and ``matplotlib`` as well as ``plotly`` as optiopnal dependencies
-for both static and interactive visualizations.
+Nilearn comes in different flavor.
+On top of the  the **base** linearn,
+you can use ``matplotlib`` as optional dependenciy for **static** visualizations,
+and ``matplotlib`` as well as ``plotly`` as optional dependencies
+for both static and **interactive** visualizations.
 
 .. tab-set::
 
@@ -124,7 +126,7 @@ for both static and interactive visualizations.
 
                     pip install nilearn
 
-    .. tab-item:: static visualizations
+    .. tab-item:: static
         :class-label: tab-4
 
         .. tab-set::
@@ -150,7 +152,7 @@ for both static and interactive visualizations.
 
                     pip install 'nilearn[plotting]'
 
-    .. tab-item:: interactive visualizations
+    .. tab-item:: interactive
         :class-label: tab-4
 
         .. tab-set::
@@ -176,6 +178,9 @@ for both static and interactive visualizations.
 
                     pip install 'nilearn[plotting,plotly]'
 
+Note that Nilearn also optionally supports `rich <https://rich.readthedocs.io/en/latest/introduction.html>`_
+to get prettier log output and download progress bar.
+Simply install rich to benefit from those.
 
 Check installation
 ------------------
