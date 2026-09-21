@@ -3346,7 +3346,14 @@ def check_masker_refit(estimator_orig) -> None:
     estimator.fit()
     fitted_mask_1 = estimator.mask_img_
 
-    if isinstance(estimator, (NiftiLabelsMasker)):
+    if isinstance(estimator, (RegionExtractor)):
+        # RegionExtractor is a NiftiMapsMasker
+        # but the maps must be kept so that regions can still be extracted
+        # so only change the mask, but keep it overlapping with the maps
+        mask = np.zeros(_shape_3d_large(), dtype=np.int8)
+        mask[2:-2, 2:-2, 2:-2] = 1
+        mask_img_2 = Nifti1Image(mask, _affine_eye())
+    elif isinstance(estimator, (NiftiLabelsMasker)):
         estimator.labels_img = _img_labels(n_regions=estimator.n_elements_ + 5)
     elif isinstance(estimator, (SurfaceLabelsMasker)):
         estimator.labels_img = sklearn_surf_label_img(
