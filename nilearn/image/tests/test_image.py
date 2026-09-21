@@ -581,7 +581,7 @@ def test_smooth_img_warns_on_non_finite(non_finite_img, modality, fwhm):
     """Users must be told when smoothing zeroes their data.
 
     Both modalities must warn, exactly once, and the values must really be
-    finite afterwards — the two branches stay in step on all three.
+    finite afterwards; the two branches stay in step on all three.
     See https://github.com/nilearn/nilearn/issues/6487.
     """
     with pytest.warns(
