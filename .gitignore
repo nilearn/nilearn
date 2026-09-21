@@ -7,8 +7,6 @@
 *.swo
 *#
 
-.mypy_cache
-
 # ignore python type annotation stubs for now
 *.pyi
 
