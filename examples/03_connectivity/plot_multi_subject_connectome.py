@@ -124,7 +124,7 @@ plot_connectome(
     display_mode="lzr",
 )
 
-#  %%
+# %%
 plot_connectome(
     -gl.precision_,
     atlas_region_coords,
