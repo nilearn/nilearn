@@ -146,7 +146,7 @@ plot_connectome(
 
 show()
 
-#  %%
+# %%
 plot_matrices(gl.covariance_, gl.precision_, "GraphicalLasso", labels)
 plot_matrices(
     gsc.covariances_[..., 0],
