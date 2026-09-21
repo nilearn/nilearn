@@ -519,8 +519,8 @@ class MaskerReportMixin(ReportMixin):
             HTML report for the masker.
         """
         self._reset_report_warnings()
-        self._set_report_basics(engine, title)
         self._run_report_checks(**kwargs)
+        self._set_report_basics(engine, title)
         self._generate_report_htmls()
         self._display_report_warnings()
         html_report = self._assemble_report()
