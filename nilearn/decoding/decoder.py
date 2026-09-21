@@ -1278,7 +1278,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             estimator_args=estimator_args,
         )
 
-    def decision_function(self, X):
+    def decision_function(self, X) -> np.ndarray:
         """Predict class labels for samples in X.
 
         Parameters
@@ -1843,7 +1843,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
 
         self.clustering_percentile = clustering_percentile
 
-    def decision_function(self, X):
+    def decision_function(self, X) -> np.ndarray:
         """Predict class labels for samples in X.
 
         Parameters
