@@ -191,7 +191,6 @@ def _write_fake_schematics(folder, transform=None):
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "transform, expected_transform",
