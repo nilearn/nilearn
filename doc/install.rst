@@ -162,12 +162,16 @@ Note that Nilearn also optionally supports `rich <https://rich.readthedocs.io/en
 to get prettier log output and download progress bar.
 Simply install ``rich`` to benefit from those.
 
+.. code-block::
+
+    pip install rich
+
 Check installation
 ------------------
 
 From a terminal window:
 
-.. prompt:: bash
+.. code-block:: bash
 
     python3 -c 'import nilearn; print(nilearn.__version__)'
 

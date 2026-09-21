@@ -36,7 +36,7 @@ You can either:
 USAGE
 -----
 
-.. prompt:: bash
+.. code-block:: bash
 
     python maint_tools/check_gha_workflow.py $GITHUB_TOKEN
 """

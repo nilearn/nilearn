@@ -64,7 +64,7 @@ The easiest way to install ``nilearn`` is using pip.
 Execute the following command in the command prompt / terminal
 in the proper python environment:
 
-.. prompt:: bash
+.. code-block:: bash
 
     python -m pip install nilearn
 
