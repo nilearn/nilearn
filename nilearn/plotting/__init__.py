@@ -1,9 +1,7 @@
 """Plotting code for nilearn."""
 
-from pathlib import Path
-
-from nilearn._utils.helpers import set_mpl_backend
 import warnings
+from pathlib import Path
 
 from nilearn._utils.logger import find_stack_level
 
