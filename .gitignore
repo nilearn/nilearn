@@ -102,8 +102,5 @@ nilearn.svg
 uv.lock
 .python-version
 
-# glass brain generation
-maint_tools/svg
-
 # complexipy
 .complexipy_cache
