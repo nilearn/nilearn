@@ -30,9 +30,6 @@ The example is divided into the following sections:
 # %%
 # Load Haxby dataset
 # ------------------
-# For a complete picture of this dataset,
-# please refer to the
-# :ref:`dataset description <haxby_dataset>`.
 #
 import numpy as np
 import pandas as pd

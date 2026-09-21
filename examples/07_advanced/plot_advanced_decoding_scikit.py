@@ -14,17 +14,16 @@ estimators directly.
 If some concepts seem unclear,
 please refer to the :ref:`documentation on decoding <decoding_intro>`
 and in particular to the :ref:`advanced section <going_further>`.
-As in many other examples, we decode the visual category of
-stimuli in the :footcite:t:`Haxby2001` dataset,
-focusing on distinguishing two categories:
-"face" and "cat" images.
 
 """
 
 # %%
 # .. admonition:: dataset
 #
-#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#    As in many other examples, we decode the visual category of
+#    stimuli in the the :ref:`Haxby dataset <haxby_dataset>`,
+#    focusing on distinguishing two categories:
+#    "face" and "cat" images.
 #
 
 # %%
@@ -33,15 +32,16 @@ focusing on distinguishing two categories:
 #
 # Download the data
 # .................
-# The :func:`~nilearn.datasets.fetch_haxby` function will download the
-# Haxby dataset object, whose attributes include
+# From the Haxby dataset, we use
 # the fMRI images as Niimg objects (``func``),
 # a spatial mask (``mask_vt``),
-# and a CSV with the visual category label for each image (``session_target``).
+# and a table with the visual category label
+# for each image (``session_target``).
 
 from nilearn import datasets
 
 haxby_dataset = datasets.fetch_haxby()
+
 mask_filename = haxby_dataset.mask_vt[0]
 fmri_filename = haxby_dataset.func[0]
 

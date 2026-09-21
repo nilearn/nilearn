@@ -37,10 +37,7 @@ More specifically, this example will be divided into three sections:
 # respectively.
 # The derivatives folders include preprocessed :term:`fMRI`
 # files ``preproc.nii`` and their accompanying ``confounds.tsv`` files.
-#
-# For more information on this dataset, see
-# the :func:`~nilearn.datasets.fetch_language_localizer_demo_dataset`
-# description.
+# .
 #
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 

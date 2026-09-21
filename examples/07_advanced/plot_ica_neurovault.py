@@ -25,7 +25,7 @@ statistical maps.
 #
 #    This example uses:
 #
-#    - the :ref:`Neurovault dataset <neurovault_dataset>`
+#    - data from :ref:`Neurovault <neurovault_dataset>`
 #    - the :ref:`ICBM 152 template <icbm_152_template>`
 #
 

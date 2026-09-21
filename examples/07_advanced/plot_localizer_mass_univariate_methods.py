@@ -27,29 +27,22 @@ The example is structured as follows:
    This model explicitly tests whether or not a voxel responds differently
    under different conditions of a visual task.
 
-We use the ``left button press (auditory cue)`` task contrast maps from the
-Localizer dataset (:func:`~nilearn.datasets.fetch_localizer_contrasts`).
-This dataset includes external, behavioral variates (``ext_vars``); we
-therefore evaluate the association between a behavioral variate that
-measures the speed  of pseudo-word reading (``pseudo``) and the
-:term:`contrast` map values, at every :term:`voxel`.
 """
 
 # %%
 # .. admonition:: dataset
 #
-#    This example uses the :ref:`Brainomics Localizer dataset
-#    <brainomics_maps>`.
+#    We use the ``left button press (auditory cue)`` task contrast maps
+#    from the :ref:`Brainomics Localizer dataset <brainomics_maps>`.
+#    This dataset includes external, behavioral variates (``ext_vars``);
+#    we therefore evaluate the association between a behavioral variate
+#    that measures the speed of pseudo-word reading (``pseudo``)
+#    and the :term:`contrast` map values, at every :term:`voxel`.
 #
 
 # %%
 # Load Localizer contrast
 # -----------------------
-# First, we fetch all ``left button press (auditory cue)``
-# contrast maps and associated ``pseudo`` behavioral variates
-# from the
-# :func:`~nilearn.datasets.fetch_localizer_contrasts`
-# data fetcher.
 #
 import numpy as np
 

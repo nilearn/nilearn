@@ -16,24 +16,24 @@ see :footcite:t:`Dadi2019` for a careful study.
 #
 #    This example uses:
 #
-#    - the :ref:`MSDL atlas <msdl_atlas>`
-#    - the :ref:`development fMRI dataset <development_dataset>`
+#    - the probabilistic regions of interest (ROIs) defined
+#      in the :ref:`MSDL atlas <msdl_atlas>`,
+#    - a subset of subjects from
+#      the :ref:`development fMRI dataset <development_dataset>`
+#      to save computation time.
 #
 
 # %%
 # Load brain development :term:`fMRI` dataset
 # -------------------------------------------
-# To save computation time, we will use only a subset of subjects from
-# the :func:`~nilearn.datasets.fetch_development_fmri` dataset.
-from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
+from nilearn.datasets import fetch_development_fmri
 
 development_dataset = fetch_development_fmri(n_subjects=60)
 
 # %%
 # Load Multi-Subject Dictionary Learning (MSDL) atlas and extract time series
 # ---------------------------------------------------------------------------
-# We use probabilistic regions of interest (ROIs) defined
-# using the :func:`~nilearn.datasets.fetch_atlas_msdl` atlas.
+# We fetch the atlas with the :func:`~nilearn.datasets.fetch_atlas_msdl` atlas.
 #
 # We then use the :class:`~nilearn.maskers.MultiNiftiMapsMasker` object
 # to extract time series from the pre-defined ROIs for each subject.
@@ -41,7 +41,7 @@ development_dataset = fetch_development_fmri(n_subjects=60)
 # using :class:`~nilearn.maskers.NiftiMapsMasker` objects,
 # but :class:`~nilearn.maskers.MultiNiftiMapsMasker` allows to
 # extract time series for all subjects in a single step.
-
+from nilearn.datasets import fetch_atlas_msdl
 from nilearn.maskers import MultiNiftiMapsMasker
 
 msdl_data = fetch_atlas_msdl()

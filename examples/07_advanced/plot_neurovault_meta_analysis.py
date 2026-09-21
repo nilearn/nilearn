@@ -4,14 +4,14 @@ NeuroVault meta-analysis of stop-go paradigm studies
 
 This example shows how to download statistical maps from :term:`Neurovault`.
 
-See :func:`~nilearn.datasets.fetch_neurovault_ids`
-documentation for more details.
 """
 
 # %%
 # .. admonition:: dataset
 #
-#    This example uses the :ref:`Neurovault dataset <neurovault_dataset>`.
+#    This example data from :ref:`Neurovault <neurovault_dataset>`.
+#    See :func:`~nilearn.datasets.fetch_neurovault_ids`
+#    documentation for more details.
 #
 
 # %%

@@ -10,39 +10,28 @@ Using :func:`sklearn.feature_selection.f_regression`,
 is performed; we then threshold and plot the resulting
 :term:`Bonferroni-corrected <FPR correction>` p-values.
 
-We use the calculation-task :term:`contrast` maps from the
-:ref:`Localizer dataset <brainomics_maps>`,
-accessed via the
-:func:`~nilearn.datasets.fetch_localizer_contrasts` fetcher.
-For a complete picture of this dataset,
-please refer to the :ref:`dataset description <brainomics_maps>`.
+.. admonition:: dataset
 
-Here we only fetch a single contrast of the broader Localizer task;
-note that the same fetcher also gives access to many other
-contrast maps as well as external, subject-related or behavioral variates.
-Please refer to the
-:ref:`sphx_glr_auto_examples_07_advanced_plot_localizer_mass_univariate_methods.py`
-example for an illustration of
-how to use these external variates in other massively
-univariate analyses.
+   This example uses the calculation-task :term:`contrast` maps
+   from the :ref:`Localizer dataset <brainomics_maps>`,
+   accessed via the
+   :func:`~nilearn.datasets.fetch_localizer_contrasts` fetcher.
+
+   Here we only fetch a single contrast of the broader Localizer task;
+   note that the same fetcher also gives access to many other
+   contrast maps as well as external, subject-related or behavioral variates.
+   Please refer to the
+   :ref:`sphx_glr_auto_examples_07_advanced_plot_localizer_mass_univariate_methods.py`
+   example for an illustration of
+   how to use these external variates in other massively
+   univariate analyses.
+
 """
-
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`Brainomics Localizer dataset
-#    <brainomics_maps>`.
-#
 
 # %%
 # Load Localizer "calculation task" contrast maps
 # -----------------------------------------------
-# First, we fetch the "calculation (auditory and visual cue)"
-# :term:`contrast` maps
-# from the
-# :func:`~nilearn.datasets.fetch_localizer_contrasts`
-# data fetcher for a subset of subjects.
-# Here, we only use :term:`contrast` maps from 20 subjects
+# Here, we only use :term:`contrast` maps from a subset of subjects
 # in order to speed up computation.
 # Paths on disk for all :term:`contrast` maps are accessed
 # via the ``cmaps`` attribute.
